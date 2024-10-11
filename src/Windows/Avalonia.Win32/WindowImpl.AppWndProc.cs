@@ -1,17 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
-using Avalonia.Platform;
 using Avalonia.Threading;
 using Avalonia.Win32.Automation;
 using Avalonia.Win32.Input;
-using Avalonia.Win32.Interop;
 using Avalonia.Win32.Interop.Automation;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
@@ -151,6 +148,18 @@ namespace Avalonia.Win32
                         }
 
                         return IntPtr.Zero;
+                    }
+                    else
+                    {
+                        // In case parent is on another screen with different scaling, window will have header scaled with
+                        // parent's scaling factor, so need to update frame
+                        SetWindowPos(hWnd,
+                            IntPtr.Zero, 0, 0, 0, 0,
+                            SetWindowPosFlags.SWP_FRAMECHANGED |
+                            SetWindowPosFlags.SWP_NOSIZE |
+                            SetWindowPosFlags.SWP_NOMOVE |
+                            SetWindowPosFlags.SWP_NOZORDER |
+                            SetWindowPosFlags.SWP_NOACTIVATE);
                     }
                     break;
 
@@ -439,6 +448,38 @@ namespace Avalonia.Win32
                         {
                             foreach (var touchInput in touchInputs)
                             {
+                                var position = PointToClient(new PixelPoint(touchInput.X / 100, touchInput.Y / 100));
+                                var rawPointerPoint = new RawPointerPoint()
+                                {
+                                    Position = position,
+                                };
+
+                                // Try to get the touch width and height.
+                                // See https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-touchinput
+                                // > The width of the touch contact area in hundredths of a pixel in physical screen coordinates. This value is only valid if the dwMask member has the TOUCHEVENTFMASK_CONTACTAREA flag set.
+                                const int TOUCHEVENTFMASK_CONTACTAREA = 0x0004; // Known as TOUCHINPUTMASKF_CONTACTAREA in the docs.
+                                if ((touchInput.Mask & TOUCHEVENTFMASK_CONTACTAREA) != 0)
+                                {
+                                    var centerX = touchInput.X / 100.0;
+                                    var centerY = touchInput.Y / 100.0;
+
+                                    var rightX = centerX + touchInput.CxContact / 100.0 /
+                                        2 /*The center X add the half width is the right X*/;
+                                    var bottomY = centerY + touchInput.CyContact / 100.0 /
+                                        2 /*The center Y add the half height is the bottom Y*/;
+
+                                    var bottomRightPixelPoint =
+                                        new PixelPoint((int)rightX, (int)bottomY);
+                                    var bottomRightPosition = PointToClient(bottomRightPixelPoint);
+
+                                    var centerPosition = position;
+                                    var halfWidth = bottomRightPosition.X - centerPosition.X;
+                                    var halfHeight = bottomRightPosition.Y - centerPosition.Y;
+                                    var leftTopPosition = new Point(centerPosition.X - halfWidth, centerPosition.Y - halfHeight);
+
+                                    rawPointerPoint.ContactRect = new Rect(leftTopPosition, bottomRightPosition);
+                                }
+
                                 input.Invoke(new RawTouchEventArgs(_touchDevice, touchInput.Time,
                                     Owner,
                                     touchInput.Flags.HasAllFlags(TouchInputFlags.TOUCHEVENTF_UP) ?
@@ -446,7 +487,7 @@ namespace Avalonia.Win32
                                         touchInput.Flags.HasAllFlags(TouchInputFlags.TOUCHEVENTF_DOWN) ?
                                             RawPointerEventType.TouchBegin :
                                             RawPointerEventType.TouchUpdate,
-                                    PointToClient(new PixelPoint(touchInput.X / 100, touchInput.Y / 100)),
+                                    rawPointerPoint,
                                     WindowsKeyboardDevice.Instance.Modifiers,
                                     touchInput.Id));
                             }
@@ -614,12 +655,7 @@ namespace Avalonia.Win32
                     break;
 
                 case WindowsMessage.WM_SHOWWINDOW:
-                    _shown = wParam != default;
-
-                    if (_isClientAreaExtended)
-                    {
-                        ExtendClientArea();
-                    }
+                    OnShowHideMessage(wParam != default);
                     break;
 
                 case WindowsMessage.WM_SIZE:
@@ -648,6 +684,8 @@ namespace Avalonia.Win32
                             Resized(clientSize / RenderScaling, _resizeReason);
                         }
 
+                        if (IsWindowVisible(_hwnd) && !_shown)
+                            _shown = true;
 
                         if (stateChanged)
                         {
@@ -666,10 +704,16 @@ namespace Avalonia.Win32
 
                             if (_isClientAreaExtended)
                             {
-                                UpdateExtendMargins();
+                                ExtendClientArea();
 
                                 ExtendClientAreaToDecorationsChanged?.Invoke(true);
                             }
+                        }
+                        else if (windowState == WindowState.Maximized && _isClientAreaExtended)
+                        {
+                            ExtendClientArea();
+
+                            ExtendClientAreaToDecorationsChanged?.Invoke(true);
                         }
 
                         return IntPtr.Zero;
@@ -681,8 +725,7 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_MOVE:
                     {
-                        PositionChanged?.Invoke(new PixelPoint((short)(ToInt32(lParam) & 0xffff),
-                            (short)(ToInt32(lParam) >> 16)));
+                        PositionChanged?.Invoke(Position);
                         return IntPtr.Zero;
                     }
 
@@ -801,11 +844,11 @@ namespace Avalonia.Win32
                     var winPos = Marshal.PtrToStructure<WINDOWPOS>(lParam);
                     if((winPos.flags & (uint)SetWindowPosFlags.SWP_SHOWWINDOW) != 0)
                     {
-                        _shown = true;
+                        OnShowHideMessage(true);
                     }
                     else if ((winPos.flags & (uint)SetWindowPosFlags.SWP_HIDEWINDOW) != 0)
                     {
-                        _shown = false;
+                        OnShowHideMessage(false);
                     }
                     break;
             }
@@ -852,6 +895,16 @@ namespace Avalonia.Win32
             }
 
             return DefWindowProc(hWnd, msg, wParam, lParam);
+        }
+
+        private void OnShowHideMessage(bool shown)
+        {
+            _shown = shown;
+
+            if (_isClientAreaExtended)
+            {
+                ExtendClientArea();
+            }
         }
 
         private Lazy<IReadOnlyList<RawPointerPoint>?>? CreateLazyIntermediatePoints(POINTER_INFO info)
@@ -946,7 +999,7 @@ namespace Avalonia.Win32
                     {
                         continue;
                     }
-                    // Skip poins older from previous WM_MOUSEMOVE point.
+                    // Skip points older from previous WM_MOUSEMOVE point.
                     if (historyInfo.time < prevMovePoint.time ||
                         (historyInfo.time == prevMovePoint.time &&
                             historyInfo.x == prevMovePoint.x &&
@@ -1044,13 +1097,35 @@ namespace Avalonia.Win32
         {
             var pointerInfo = info.pointerInfo;
             var point = PointToClient(new PixelPoint(pointerInfo.ptPixelLocationX, pointerInfo.ptPixelLocationY));
-            return new RawPointerPoint
+
+            var pointerPoint = new RawPointerPoint
             {
                 Position = point,
                 // POINTER_PEN_INFO.pressure is normalized to a range between 0 and 1024, with 512 as a default.
                 // But in our API we use range from 0.0 to 1.0.
-                Pressure = info.pressure / 1024f
+                Pressure = info.pressure / 1024f,
             };
+
+            // See https://learn.microsoft.com/en-us/windows/win32/inputmsg/touch-mask-constants
+            // > TOUCH_MASK_CONTACTAREA: rcContact of the POINTER_TOUCH_INFO structure is valid.
+            if ((info.touchMask & TouchMask.TOUCH_MASK_CONTACTAREA) != 0)
+            {
+                // See https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-pointer_touch_info
+                // > The predicted screen coordinates of the contact area, in pixels. By default, if the device does not report a contact area, this field defaults to a 0-by-0 rectangle centered around the pointer location.
+                var leftTopPixelPoint =
+                    new PixelPoint(info.rcContactLeft, info.rcContactTop);
+                var leftTopPosition = PointToClient(leftTopPixelPoint);
+
+                var bottomRightPixelPoint =
+                    new PixelPoint(info.rcContactRight, info.rcContactBottom);
+                var bottomRightPosition = PointToClient(bottomRightPixelPoint);
+
+                // Why not use ptPixelLocationX and ptPixelLocationY to as leftTopPosition?
+                // Because ptPixelLocationX and ptPixelLocationY will be the center of the contact area.
+                pointerPoint.ContactRect = new Rect(leftTopPosition, bottomRightPosition);
+            }
+
+            return pointerPoint;
         }
         private RawPointerPoint CreateRawPointerPoint(POINTER_PEN_INFO info)
         {

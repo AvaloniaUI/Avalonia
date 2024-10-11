@@ -180,6 +180,11 @@ namespace Avalonia.Controls
 
         private static string GetTextLineText(TextLine textLine)
         {
+            if (textLine.Length == 0)
+            {
+                return string.Empty;
+            }
+
             var builder = StringBuilderCache.Acquire(textLine.Length);
 
             foreach (var run in textLine.TextRuns)

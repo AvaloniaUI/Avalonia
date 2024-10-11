@@ -362,7 +362,8 @@ namespace Avalonia.Headless
 
         void IWindowImpl.Move(PixelPoint point)
         {
-
+            Position = point;
+            PositionChanged?.Invoke(point);
         }
 
         public IPopupImpl? CreatePopup()
@@ -441,6 +442,10 @@ namespace Avalonia.Headless
                 if (windows[i].PlatformImpl is HeadlessWindowImpl headlessWindowImpl)
                     zOrder[i] = headlessWindowImpl._zOrder;
             }
+        }
+
+        public void TakeFocus() 
+        {
         }
     }
 }

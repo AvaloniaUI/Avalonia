@@ -18,7 +18,10 @@ namespace Avalonia
         /// <returns>An <see cref="IBinding"/>.</returns>
         public static IBinding ToBinding<T>(this IObservable<T> source)
         {
-            return new BindingAdaptor(source.Select(x => (object?)x));
+            return new BindingAdaptor(
+                typeof(T).IsValueType
+                    ? source.Select(x => (object?)x)
+                    : (IObservable<object?>)source);
         }
 
         /// <summary>
@@ -375,7 +378,7 @@ namespace Avalonia
                 return new InstancedBinding(expression, BindingMode.OneWay, BindingPriority.LocalValue);
             }
 
-            BindingExpressionBase IBinding2.Instance(AvaloniaObject target, AvaloniaProperty property, object? anchor)
+            BindingExpressionBase IBinding2.Instance(AvaloniaObject target, AvaloniaProperty? property, object? anchor)
             {
                 return new UntypedObservableBindingExpression(_source, BindingPriority.LocalValue);
             }

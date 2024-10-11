@@ -297,6 +297,7 @@ namespace Avalonia.Controls
             _pane = e.NameScope.Find<Panel>("PART_PaneRoot");
 
             UpdateVisualStateForDisplayMode(DisplayMode);
+            UpdatePaneStatePseudoClass(IsPaneOpen);
         }
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -331,19 +332,13 @@ namespace Avalonia.Controls
             else if (change.Property == IsPaneOpenProperty)
             {
                 bool isPaneOpen = change.GetNewValue<bool>();
-
+                UpdatePaneStatePseudoClass(isPaneOpen);
                 if (isPaneOpen)
                 {
-                    PseudoClasses.Add(pcOpen);
-                    PseudoClasses.Remove(pcClosed);
-
                     OnPaneOpened(new RoutedEventArgs(PaneOpenedEvent, this));
                 }
                 else
                 {
-                    PseudoClasses.Add(pcClosed);
-                    PseudoClasses.Remove(pcOpen);
-
                     OnPaneClosed(new RoutedEventArgs(PaneClosedEvent, this));
                 }
             }
@@ -577,6 +572,20 @@ namespace Avalonia.Controls
 
             SetCurrentValue(IsPaneOpenProperty, false);
             e.Handled = true;
+        }
+
+        private void UpdatePaneStatePseudoClass(bool isPaneOpen)
+        {
+            if (isPaneOpen)
+            {
+                PseudoClasses.Add(pcOpen);
+                PseudoClasses.Remove(pcClosed);
+            }
+            else
+            {
+                PseudoClasses.Add(pcClosed);
+                PseudoClasses.Remove(pcOpen);
+            }
         }
 
         /// <summary>

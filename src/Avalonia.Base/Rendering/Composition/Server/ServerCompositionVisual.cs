@@ -22,24 +22,22 @@ namespace Avalonia.Rendering.Composition.Server
         private LtrbRect? _transformedClipBounds;
         private LtrbRect _combinedTransformedClipBounds;
 
-        protected virtual void RenderCore(CompositorDrawingContextProxy canvas, LtrbRect currentTransformedClip,
-            IDirtyRectTracker dirtyRects)
+        protected virtual void RenderCore(ServerVisualRenderContext canvas, LtrbRect currentTransformedClip)
         {
         }
 
-        public void Render(CompositorDrawingContextProxy canvas, LtrbRect? parentTransformedClip, IDirtyRectTracker dirtyRects)
+        public void Render(ServerVisualRenderContext context, LtrbRect? parentTransformedClip)
         {
             if (Visible == false || IsVisibleInFrame == false)
                 return;
             if (Opacity == 0)
                 return;
-
+            var canvas = context.Canvas;
+            
             var currentTransformedClip = parentTransformedClip.HasValue
                 ? parentTransformedClip.Value.Intersect(_combinedTransformedClipBounds)
                 : _combinedTransformedClipBounds;
-            if (currentTransformedClip.IsZeroSize)
-                return;
-            if(!dirtyRects.Intersects(currentTransformedClip))
+            if(!context.ShouldRender(this, currentTransformedClip))
                 return;
 
             Root!.RenderedVisuals++;
@@ -49,12 +47,16 @@ namespace Avalonia.Rendering.Composition.Server
 
             if (AdornedVisual != null)
             {
+                // Adorners are currently not supported in detached rendering mode
+                if(context.DetachedRendering)
+                    return;
+                
                 canvas.Transform = Matrix.Identity;
                 if (AdornerIsClipped)
                     canvas.PushClip(AdornedVisual._combinedTransformedClipBounds.ToRect());
             }
-            var transform = GlobalTransformMatrix;
-            canvas.Transform = transform;
+
+            using var _ = context.SetOrPushTransform(this);
 
             var applyRenderOptions = RenderOptions != default;
 
@@ -72,7 +74,7 @@ namespace Avalonia.Rendering.Composition.Server
             if (OpacityMaskBrush != null)
                 canvas.PushOpacityMask(OpacityMaskBrush, boundsRect);
 
-            RenderCore(canvas, currentTransformedClip, dirtyRects);
+            RenderCore(context, currentTransformedClip);
             
             if (OpacityMaskBrush != null)
                 canvas.PopOpacityMask();

@@ -13,7 +13,7 @@
     NSMutableArray* _children;
 }
 
-+ (id _Nullable)acquire:(IAvnAutomationPeer *)peer
++ (NSAccessibilityElement *)acquire:(IAvnAutomationPeer *)peer
 {
     if (peer == nullptr)
         return nil;
@@ -23,7 +23,12 @@
     if (instance != nullptr)
         return dynamic_cast<AvnAutomationNode*>(instance)->GetOwner();
     
-    if (peer->IsRootProvider())
+    if (peer->IsInteropPeer())
+    {
+        auto view = (__bridge NSAccessibilityElement*)peer->InteropPeer_GetNativeControlHandle();
+        return view;
+    }
+    else if (peer->IsRootProvider())
     {
         auto window = peer->RootProvider_GetWindow();
         
@@ -35,7 +40,7 @@
         
         auto holder = dynamic_cast<INSViewHolder*>(window);
         auto view = holder->GetNSView();
-        return [view window];
+        return (NSAccessibilityElement*)[view window];
     }
     else
     {
@@ -142,6 +147,11 @@
     }
     
     return [super accessibilityTitle];
+}
+
+- (NSString *)accessibilityHelp
+{
+    return GetNSStringAndRelease(_peer->GetHelpText()); 
 }
 
 - (id)accessibilityValue

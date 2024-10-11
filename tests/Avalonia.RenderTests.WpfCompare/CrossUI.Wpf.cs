@@ -191,6 +191,7 @@ namespace Avalonia.RenderTests.WpfCompare
                                 CrossPathSegment.CubicBezier cubicBezier => new BezierSegment(cubicBezier.Point1.ToWpf(), cubicBezier.Point2.ToWpf(), cubicBezier.Point3.ToWpf(), cubicBezier.IsStroked),
                                 CrossPathSegment.QuadraticBezier quadraticBezier => new QuadraticBezierSegment(quadraticBezier.Point1.ToWpf(), quadraticBezier.Point2.ToWpf(), quadraticBezier.IsStroked),
                                 CrossPathSegment.PolyLine polyLine => new PolyLineSegment(polyLine.Points.Select(p => p.ToWpf()).ToList(), polyLine.IsStroked),
+                                CrossPathSegment.PolyBezierSegment pb => new PolyBezierSegment(pb.Points.Select(p => p.ToWpf()), pb.IsStroked),
                                 _ => throw new NotImplementedException(),
                             }), f.Closed)))
                 };
@@ -295,7 +296,22 @@ namespace Avalonia.RenderTests.WpfCompare
                 return new DrawingImage(ConvertDrawing(di.Drawing));
             throw new NotSupportedException();
         }
-    
+
+        public void PushTransform(Matrix matrix)
+        {
+            _ctx.PushTransform(new MatrixTransform(matrix.ToWpf()));
+        }
+
+        public void Pop()
+        {
+            _ctx.Pop();
+        }
+
+        public void DrawLine(CrossPen pen, Point p1, Point p2)
+        {
+            _ctx.DrawLine(ConvertPen(pen), p1.ToWpf(), p2.ToWpf());
+        }
+
         public void DrawRectangle(CrossBrush? brush, CrossPen? pen, Rect rc) => _ctx.DrawRectangle(ConvertBrush(brush), ConvertPen(pen), rc.ToWpf());
         public void DrawGeometry(CrossBrush? brush, CrossPen? pen, CrossGeometry geo) => 
             _ctx.DrawGeometry(ConvertBrush(brush), ConvertPen(pen), ConvertGeometry(geo));

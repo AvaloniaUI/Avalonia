@@ -1,8 +1,12 @@
+using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Controls;
+using Avalonia.Rendering.Composition;
 using ControlCatalog.Pages.OpenGl;
 
 // ReSharper disable StringLiteralTypo
@@ -16,6 +20,30 @@ namespace ControlCatalog.Pages
             AvaloniaXamlLoader.Load(this);
             this.FindControl<OpenGlPageControl>("GL")
                 !.Init(this.FindControl<GlPageKnobs>("Knobs")!);
+            
+            AttachedToVisualTree += delegate
+            {
+                if (TopLevel.GetTopLevel(this) is Window)
+                    this.FindControl<Button>("Snapshot")!.IsVisible = true;
+            };
+        }
+        
+        private async void SnapshotClick(object sender, RoutedEventArgs e)
+        {
+            var v = ElementComposition.GetElementVisual(this)!;
+            var snap = await v.Compositor.CreateCompositionVisualSnapshot(v, 1.5);
+            await new Window()
+            {
+                Content = new ScrollViewer()
+                {
+                    HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+                    VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                    Content = new Image()
+                    {
+                        Source = snap
+                    }
+                }
+            }.ShowDialog((Window)TopLevel.GetTopLevel(this)!);
         }
     }
 

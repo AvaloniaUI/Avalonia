@@ -109,7 +109,7 @@ protected:
     bool _isModal;
 
 public:
-    WindowBaseImpl* Parent;
+    WindowBaseImpl* Parent = nullptr;
     NSWindow * Window;
     ComPtr<IAvnWindowBaseEvents> BaseEvents;
 };

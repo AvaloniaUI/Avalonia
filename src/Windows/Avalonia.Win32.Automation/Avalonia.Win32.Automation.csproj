@@ -15,9 +15,5 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Avalonia.Win32, PublicKey=$(AvaloniaPublicKey)"/>
-    <SupportedPlatform Remove="@(SupportedPlatform)" />
-    <SupportedPlatform Include="windows" />
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.DisableRuntimeMarshalling"
-                       Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))" />
   </ItemGroup>
 </Project>

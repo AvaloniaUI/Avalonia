@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.Marshalling;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
+using Avalonia.Controls.Automation.Peers;
 using Avalonia.Threading;
 using Avalonia.Win32.Interop.Automation;
 using AAP = Avalonia.Automation.Provider;
@@ -35,11 +36,9 @@ namespace Avalonia.Win32.Automation
             { AutomationElementIdentifiers.BoundingRectangleProperty, UiaPropertyId.BoundingRectangle },
             { AutomationElementIdentifiers.ClassNameProperty, UiaPropertyId.ClassName },
             { AutomationElementIdentifiers.NameProperty, UiaPropertyId.Name },
-            {
-                ExpandCollapsePatternIdentifiers.ExpandCollapseStateProperty,
-                UiaPropertyId.ExpandCollapseExpandCollapseState
-            },
-            { RangeValuePatternIdentifiers.IsReadOnlyProperty, UiaPropertyId.RangeValueIsReadOnly },
+            { AutomationElementIdentifiers.HelpTextProperty, UiaPropertyId.HelpText },
+            { ExpandCollapsePatternIdentifiers.ExpandCollapseStateProperty, UiaPropertyId.ExpandCollapseExpandCollapseState },
+            { RangeValuePatternIdentifiers.IsReadOnlyProperty, UiaPropertyId.RangeValueIsReadOnly},
             { RangeValuePatternIdentifiers.MaximumProperty, UiaPropertyId.RangeValueMaximum },
             { RangeValuePatternIdentifiers.MinimumProperty, UiaPropertyId.RangeValueMinimum },
             { RangeValuePatternIdentifiers.ValueProperty, UiaPropertyId.RangeValueValue },
@@ -77,7 +76,7 @@ namespace Avalonia.Win32.Automation
 
         public AutomationPeer Peer { get; protected set; }
 
-        public Rect BoundingRectangle()
+        public virtual Rect BoundingRectangle()
         {
             return InvokeSync(() =>
             {
@@ -93,7 +92,7 @@ namespace Avalonia.Win32.Automation
         }
 
         public virtual IRawElementProviderSimple? HostRawElementProvider() => null;
-        public ProviderOptions GetProviderOptions() => ProviderOptions.ServerSideProvider;
+        public virtual ProviderOptions GetProviderOptions() => ProviderOptions.ServerSideProvider;
 
         public virtual object? GetPatternProvider(int patternId)
         {
@@ -133,8 +132,10 @@ namespace Avalonia.Win32.Automation
                 UiaPropertyId.IsControlElement => InvokeSync(() => Peer.IsControlElement()),
                 UiaPropertyId.IsEnabled => InvokeSync(() => Peer.IsEnabled()),
                 UiaPropertyId.IsKeyboardFocusable => InvokeSync(() => Peer.IsKeyboardFocusable()),
+                UiaPropertyId.IsOffscreen => InvokeSync(() => Peer.IsOffscreen()),
                 UiaPropertyId.LocalizedControlType => InvokeSync(() => Peer.GetLocalizedControlType()),
                 UiaPropertyId.Name => InvokeSync(() => Peer.GetName()),
+                UiaPropertyId.HelpText => InvokeSync(() => Peer.GetHelpText()),
                 UiaPropertyId.ProcessId => Process.GetCurrentProcess().Id,
                 UiaPropertyId.RuntimeId => _runtimeId,
                 _ => null,
@@ -298,9 +299,12 @@ namespace Avalonia.Win32.Automation
 
         private static AutomationNode Create(AutomationPeer peer)
         {
-            return peer.GetProvider<AAP.IRootProvider>() is object ?
-                new RootAutomationNode(peer) :
-                new AutomationNode(peer);
+            if (peer is InteropAutomationPeer interop)
+                return new InteropAutomationNode(interop);
+            else if (peer.GetProvider<AAP.IRootProvider>() is not null)
+                return new RootAutomationNode(peer);
+            else 
+                return new AutomationNode(peer);
         }
 
         private static UiaControlTypeId ToUiaControlType(AutomationControlType role)

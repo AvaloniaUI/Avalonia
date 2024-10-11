@@ -57,7 +57,7 @@ namespace Avalonia.Media
             
             using var recorder = new RenderDataDrawingContext(null);
             ImmediateRenderer.Render(recorder, Visual, Visual.Bounds);
-            return recorder.GetImmediateSceneBrushContent(this, new(Visual.Bounds.Size), false);
+            return recorder.GetImmediateSceneBrushContent(this, new(Visual.Bounds.Size), true);
         }
         
         internal override Func<Compositor, ServerCompositionSimpleBrush> Factory =>
@@ -99,7 +99,7 @@ namespace Avalonia.Media
                 }
 
                 if (data != null)
-                    content = new(data.Data.Server, data.Rect, false);
+                    content = new(data.Data.Server, data.Rect, true);
             }
             
             writer.WriteObject(content);

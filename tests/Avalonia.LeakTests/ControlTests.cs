@@ -463,12 +463,17 @@ namespace Avalonia.LeakTests
         {
             using (Start())
             {
+                var screen1 = new Mock<Screen>(1.75, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 966)), true);
+                var screens = new Mock<IScreenImpl>();
+                screens.Setup(x => x.ScreenFromWindow(It.IsAny<IWindowBaseImpl>())).Returns(screen1.Object);
+
                 var impl = new Mock<IWindowImpl>();
                 impl.Setup(r => r.TryGetFeature(It.IsAny<Type>())).Returns(null);
                 impl.SetupGet(x => x.RenderScaling).Returns(1);
                 impl.SetupProperty(x => x.Closed);
                 impl.Setup(x => x.Compositor).Returns(RendererMocks.CreateDummyCompositor());
                 impl.Setup(x => x.Dispose()).Callback(() => impl.Object.Closed());
+                impl.Setup(x => x.TryGetFeature(It.Is<Type>(t => t == typeof(IScreenImpl)))).Returns(screens.Object);
 
                 AvaloniaLocator.CurrentMutable.Bind<IWindowingPlatform>()
                     .ToConstant(new MockWindowingPlatform(() => impl.Object));

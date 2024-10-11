@@ -1,0 +1,20 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:embedding="using:IntegrationTestApp.Embedding"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="IntegrationTestApp.EmbeddingPage">
+  <StackPanel>
+    <embedding:NativeTextBox Name="NativeTextBox" Height="23"/>
+    <StackPanel Orientation="Horizontal">
+      <CheckBox Name="EmbeddingPopupOpenCheckBox">Open Popup</CheckBox>
+      <Popup IsOpen="{Binding #EmbeddingPopupOpenCheckBox.IsChecked}"
+             PlacementTarget="EmbeddingPopupOpenCheckBox"
+             Placement="Right">
+        <embedding:NativeTextBox Name="NativeTextBoxInPopup" Width="200" Height="23"/>
+      </Popup>
+    </StackPanel>
+    <Button Name="Reset" Click="Reset_Click">Reset</Button>
+  </StackPanel>
+</UserControl>

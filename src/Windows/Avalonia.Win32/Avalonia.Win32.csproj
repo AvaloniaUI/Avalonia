@@ -2,9 +2,9 @@
   <PropertyGroup>
     <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsLegacyTargetFrameworks);netstandard2.0</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <EnableRuntimeMarshalling>true</EnableRuntimeMarshalling>
     <!-- We still keep BinaryFormatter for WinForms compatibility. -->
     <EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
-    <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
   </PropertyGroup>
   <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))">
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
@@ -37,9 +37,14 @@
     <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <SupportedPlatform Remove="@(SupportedPlatform)" />
-    <SupportedPlatform Include="windows" />
     <InternalsVisibleTo Include="Avalonia.Win32.Interoperability, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Direct2D1, PublicKey=$(AvaloniaPublicKey)" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- By default, any projects supports Windows, Linux, MacOS platforms. -->
+    <!-- To properly support analyzers, we need to re-set this value -->
+    <!-- https://github.com/dotnet/sdk/blob/v8.0.403/src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.SupportedPlatforms.props -->
+    <SupportedPlatform Remove="@(SupportedPlatform)" />
+    <SupportedPlatform Include="Windows" />
   </ItemGroup>
 </Project>

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
 using XamlX.Ast;
-using XamlX.Transform;
 using XamlX.TypeSystem;
 using XamlX.IL;
 using XamlX.Emit;
@@ -22,9 +21,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             _builder = builder;
         }
 
-        static string GetKey(IXamlProperty property, string indexerArgumentsKey)
+        static string GetKey(IXamlProperty property, string? indexerArgumentsKey)
         {
-            var baseKey = property.Getter.DeclaringType.GetFullName() + "." + property.Name;
+            var declaringType = (property.Getter ?? property.Setter)?.DeclaringType
+                ?? throw new InvalidOperationException($"Couldn't get declaring type for property {property}");
+
+            var baseKey = declaringType.GetFullName() + "." + property.Name;
 
             if (indexerArgumentsKey is null)
             {
@@ -34,9 +36,14 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             return baseKey + $"[{indexerArgumentsKey}]";
         }
 
-        public IXamlType Emit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen, IXamlProperty property, IReadOnlyCollection<IXamlAstValueNode> indexerArguments = null, string indexerArgumentsKey = null)
+        public IXamlType Emit(
+            XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context,
+            IXamlILEmitter codeGen,
+            IXamlProperty property,
+            IReadOnlyCollection<IXamlAstValueNode>? indexerArguments = null,
+            string? indexerArgumentsKey = null)
         {
-            indexerArguments = indexerArguments ?? Array.Empty<IXamlAstValueNode>();
+            indexerArguments ??= [];
             var types = context.GetAvaloniaTypes();
             IXamlMethod Get()
             {
@@ -83,7 +90,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         new[] {types.XamlIlTypes.Object}, name + "!Getter", XamlVisibility.Private, true, false);
                 if (getter != null)
                 {
-                    Load(property.Getter, getter.Generator, !property.Getter.IsStatic);
+                    Load(property.Getter!, getter.Generator, !property.Getter!.IsStatic);
                     
                     getter.Generator.EmitCall(property.Getter);
                     if (property.Getter.ReturnType.IsValueType)
@@ -98,7 +105,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         name + "!Setter", XamlVisibility.Private, true, false);
                 if (setter != null)
                 {
-                    Load(property.Setter, setter.Generator, !property.Getter.IsStatic);
+                    Load(property.Setter!, setter.Generator, !property.Setter!.IsStatic);
                     
                     setter.Generator.Ldarg(1);
 
@@ -128,7 +135,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     .MarkLabel(cacheMiss)
                     .Ldstr(property.Name);
 
-                void EmitFunc(IXamlILEmitter emitter, IXamlMethod method, IXamlType del)
+                void EmitFunc(IXamlILEmitter emitter, IXamlMethod? method, IXamlType del)
                 {
                     if (method == null)
                         emitter.Ldnull();
