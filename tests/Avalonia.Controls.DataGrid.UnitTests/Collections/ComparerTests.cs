@@ -112,6 +112,29 @@ public class NoStringTypeComparerTests
                 LogEventLevel.Error
             }
         ];
+        yield return
+        [
+            nameof(Item.CustomProp2),
+            (object item, object value) =>
+            {
+                (item as Item)!.CustomProp2 = (CustomType?)value;
+            },
+            (object item) => (object)(item as Item)!.CustomProp2,
+            new object[]
+            {
+                new CustomType() { Prop = 2 },
+                new CustomType() { Prop = 3 },
+                null,
+                new CustomType() { Prop = 1 }
+            },
+            new object[]
+            {
+                null,
+                new CustomType() { Prop = 1 },
+                new CustomType() { Prop = 2 },
+                new CustomType() { Prop = 3 }
+            }
+        ];
     }
 
     [Theory]
@@ -169,5 +192,32 @@ public class NoStringTypeComparerTests
 
         public LogEventLevel EnumProp1 { get; set; }
         public LogEventLevel? EnumProp2 { get; set; }
+        public CustomType? CustomProp2 { get; set; }
+    }
+
+    public struct CustomType : IComparable
+    {
+        public int Prop { get; set; }
+
+        public int CompareTo(object obj)
+        {
+            if (obj is CustomType other)
+            {
+                return Prop.CompareTo(other.Prop);
+            }
+            else
+            {
+                return 1;
+            }
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is CustomType other)
+            {
+                return Prop == other.Prop;
+            }
+            return false;
+        }
     }
 }
