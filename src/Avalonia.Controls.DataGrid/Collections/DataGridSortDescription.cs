@@ -170,8 +170,27 @@ namespace Avalonia.Collections
                 if (type == typeof(string))
                     return _cultureSensitiveComparer.Value;
                 else
+                    return GetComparerForNotStringType(type);
+            }
+
+            public static IComparer GetComparerForNotStringType(Type type)
+            {
+#if NET6_0_OR_GREATER
+                if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>) && type.GetGenericArguments()[0].IsAssignableTo(typeof(IComparable)))
+                    return Comparer<object>.Create((x, y) => 
+                    {
+                        if (x == null)
+                            return y == null ? 0 : -1;
+                        else
+                            return (x as IComparable)!.CompareTo(y);
+                    });
+                else if (type.IsAssignableTo(typeof(IComparable)))
+                    return Comparer<object>.Create((x, y) => (x as IComparable)!.CompareTo(y));
+                else
+#endif
                     return (typeof(Comparer<>).MakeGenericType(type).GetProperty("Default")).GetValue(null, null) as IComparer;
             }
+
             private Type GetPropertyType(object o)
             {
                 return o.GetType().GetNestedPropertyType(_propertyPath);
