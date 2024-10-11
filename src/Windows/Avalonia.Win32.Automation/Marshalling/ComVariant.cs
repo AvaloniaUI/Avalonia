@@ -56,14 +56,14 @@ internal struct ComVariant : IDisposable
         [FieldOffset(0)] public IntPtr _dispatch;
         [FieldOffset(0)] public IntPtr _pvarVal;
         [FieldOffset(0)] public IntPtr _byref;
-        [FieldOffset(0)] public SafeArray*parray;
-        [FieldOffset(0)] public SafeArray**pparray;
+        [FieldOffset(0)] public SafeArrayRef parray;
+        [FieldOffset(0)] public SafeArrayRef*pparray;
     }
 
     /// <summary>
     /// Release resources owned by this <see cref="ComVariant"/> instance.
     /// </summary>
-    public unsafe void Dispose()
+    public void Dispose()
     {
         // Re-implement the same clearing semantics as PropVariantClear manually for non-Windows platforms.
         if (VarType == VarEnum.VT_BSTR)
@@ -72,7 +72,7 @@ internal struct ComVariant : IDisposable
         }
         else if (VarType.HasFlag(VarEnum.VT_ARRAY))
         {
-            SafeArray.SafeArrayDestroy(_typeUnion._unionTypes.parray);
+            _typeUnion._unionTypes.parray.Destroy();
         }
         else if (VarType == VarEnum.VT_UNKNOWN || VarType == VarEnum.VT_DISPATCH)
         {
@@ -181,10 +181,10 @@ internal struct ComVariant : IDisposable
             variant.VarType = VarEnum.VT_UI8;
             variant._typeUnion._unionTypes._ui8 = (ulong)value;
         }
-        else if (value is IEnumerable list && SafeArray.TryCreate(list, out var array, out var arrayEnum))
+        else if (value is IEnumerable list && SafeArrayRef.TryCreate(list, out var array, out var arrayEnum))
         {
             variant.VarType = arrayEnum | VarEnum.VT_ARRAY;
-            variant._typeUnion._unionTypes.parray = array;
+            variant._typeUnion._unionTypes.parray = array.Value;
         }
         else if (ComWrappers.TryGetComInstance(value, out var unknown))
         {
@@ -246,24 +246,24 @@ internal struct ComVariant : IDisposable
             { } varEnum when varEnum.HasFlag(VarEnum.VT_ARRAY) => (varEnum ^ VarEnum.VT_ARRAY) switch
             {
                 // integer
-                VarEnum.VT_I1 => SafeArray.ToReadOnlyList<sbyte>(_typeUnion._unionTypes.parray),
-                VarEnum.VT_I2 => SafeArray.ToReadOnlyList<short>(_typeUnion._unionTypes.parray),
-                VarEnum.VT_I4 => SafeArray.ToReadOnlyList<int>(_typeUnion._unionTypes.parray),
-                VarEnum.VT_I8 => SafeArray.ToReadOnlyList<long>(_typeUnion._unionTypes.parray),
-                VarEnum.VT_INT => SafeArray.ToReadOnlyList<int>(_typeUnion._unionTypes.parray),
+                VarEnum.VT_I1 => SafeArrayRef.ToReadOnlyList<sbyte>(_typeUnion._unionTypes.parray),
+                VarEnum.VT_I2 => SafeArrayRef.ToReadOnlyList<short>(_typeUnion._unionTypes.parray),
+                VarEnum.VT_I4 => SafeArrayRef.ToReadOnlyList<int>(_typeUnion._unionTypes.parray),
+                VarEnum.VT_I8 => SafeArrayRef.ToReadOnlyList<long>(_typeUnion._unionTypes.parray),
+                VarEnum.VT_INT => SafeArrayRef.ToReadOnlyList<int>(_typeUnion._unionTypes.parray),
                 // unsigned integer
-                VarEnum.VT_UI1 => SafeArray.ToReadOnlyList<byte>(_typeUnion._unionTypes.parray),
-                VarEnum.VT_UI2 => SafeArray.ToReadOnlyList<ushort>(_typeUnion._unionTypes.parray),
-                VarEnum.VT_UI4 => SafeArray.ToReadOnlyList<uint>(_typeUnion._unionTypes.parray),
-                VarEnum.VT_UI8 => SafeArray.ToReadOnlyList<ulong>(_typeUnion._unionTypes.parray),
-                VarEnum.VT_UINT => SafeArray.ToReadOnlyList<uint>(_typeUnion._unionTypes.parray),
+                VarEnum.VT_UI1 => SafeArrayRef.ToReadOnlyList<byte>(_typeUnion._unionTypes.parray),
+                VarEnum.VT_UI2 => SafeArrayRef.ToReadOnlyList<ushort>(_typeUnion._unionTypes.parray),
+                VarEnum.VT_UI4 => SafeArrayRef.ToReadOnlyList<uint>(_typeUnion._unionTypes.parray),
+                VarEnum.VT_UI8 => SafeArrayRef.ToReadOnlyList<ulong>(_typeUnion._unionTypes.parray),
+                VarEnum.VT_UINT => SafeArrayRef.ToReadOnlyList<uint>(_typeUnion._unionTypes.parray),
                 // floating
-                VarEnum.VT_R4 => SafeArray.ToReadOnlyList<float>(_typeUnion._unionTypes.parray),
-                VarEnum.VT_R8 => SafeArray.ToReadOnlyList<double>(_typeUnion._unionTypes.parray),
+                VarEnum.VT_R4 => SafeArrayRef.ToReadOnlyList<float>(_typeUnion._unionTypes.parray),
+                VarEnum.VT_R8 => SafeArrayRef.ToReadOnlyList<double>(_typeUnion._unionTypes.parray),
                 // string
-                VarEnum.VT_BSTR => SafeArray.ToReadOnlyList<string>(_typeUnion._unionTypes.parray),
+                VarEnum.VT_BSTR => SafeArrayRef.ToReadOnlyList<string>(_typeUnion._unionTypes.parray),
                 // variant
-                VarEnum.VT_UNKNOWN => SafeArray.ToReadOnlyList<IntPtr>(_typeUnion._unionTypes.parray),
+                VarEnum.VT_UNKNOWN => SafeArrayRef.ToReadOnlyList<IntPtr>(_typeUnion._unionTypes.parray),
                 _ => throw new ArgumentException($"Unknown variant type: {varEnum}")
             },
             _ => throw new ArgumentException($"Unknown variant type: {VarType}")

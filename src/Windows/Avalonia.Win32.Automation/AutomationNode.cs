@@ -143,7 +143,7 @@ namespace Avalonia.Win32.Automation
 
             if (value?.GetType().IsEnum == true)
             {
-                return Convert.ToInt32((object)value);
+                return Convert.ToInt32(value!);
             }
 
             return value;

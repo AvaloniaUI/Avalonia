@@ -16,9 +16,6 @@ namespace Avalonia.Win32.Interop.Automation
         LastChild,
     }
 
-// NOTE: This interface needs to be public otherwise Navigate is never called. I have no idea
-// why given that IRawElementProviderSimple and IRawElementProviderFragmentRoot seem to get
-// called fine when they're internal, but I lost a couple of days to this.
 #if NET8_0_OR_GREATER
     [GeneratedComInterface]
 #else
@@ -30,7 +27,7 @@ namespace Avalonia.Win32.Interop.Automation
     {
         IRawElementProviderFragment? Navigate(NavigateDirection direction);
 #if NET8_0_OR_GREATER
-    [return: MarshalUsing(typeof(SafeArrayMarshaller<int>))]
+        [return: MarshalUsing(typeof(SafeArrayMarshaller<int>))]
 #endif
         IReadOnlyList<int>? GetRuntimeId();
         Rect BoundingRectangle();

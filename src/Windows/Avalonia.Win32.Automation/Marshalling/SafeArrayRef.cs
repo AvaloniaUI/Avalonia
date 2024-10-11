@@ -9,14 +9,41 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Avalonia.Controls.Documents;
+// ReSharper disable InconsistentNaming
 
 namespace Avalonia.Win32.Automation.Marshalling;
 
 #pragma warning disable CS0649 // Field is never assigned to, and will always have its default value
 #if NET7_0_OR_GREATER
-internal partial struct SafeArray
+internal unsafe partial struct SafeArrayRef
 {
-    internal partial struct SAFEARRAYBOUND
+    private SAFEARRAY* _ptr;
+
+    internal struct SAFEARRAY
+    {
+        /// <summary>The number of dimensions.</summary>
+        internal ushort cDims;
+
+        /// <summary>
+        /// <para>Flags. </para>
+        /// <para>This doc was truncated.</para>
+        /// <para><see href="https://learn.microsoft.com/windows/win32/api/oaidl/ns-oaidl-safearray#members">Read more on docs.microsoft.com</see>.</para>
+        /// </summary>
+        internal ADVANCED_FEATURE_FLAGS fFeatures;
+
+        /// <summary>The size of an array element.</summary>
+        internal uint cbElements;
+
+        /// <summary>The number of times the array has been locked without a corresponding unlock.</summary>
+        internal uint cLocks;
+
+        /// <summary>The data.</summary>
+        internal void* pvData;
+
+        /// <summary>One bound for each dimension.</summary>
+        internal VariableLengthInlineArray<SAFEARRAYBOUND> rgsabound;
+    }
+    internal struct SAFEARRAYBOUND
     {
         /// <summary>The number of elements in the dimension.</summary>
         internal uint cElements;
@@ -62,33 +89,19 @@ internal partial struct SafeArray
         FADF_RESERVED = 0xF008,
     }
 
-    /// <summary>The number of dimensions.</summary>
-    internal ushort cDims;
+    public void Destroy()
+    {
+        if (_ptr != default)
+        {
+            SafeArrayDestroy(_ptr);
+        }
+    }
 
-    /// <summary>
-    /// <para>Flags. </para>
-    /// <para>This doc was truncated.</para>
-    /// <para><see href="https://learn.microsoft.com/windows/win32/api/oaidl/ns-oaidl-safearray#members">Read more on docs.microsoft.com</see>.</para>
-    /// </summary>
-    internal ADVANCED_FEATURE_FLAGS fFeatures;
-
-    /// <summary>The size of an array element.</summary>
-    internal uint cbElements;
-
-    /// <summary>The number of times the array has been locked without a corresponding unlock.</summary>
-    internal uint cLocks;
-
-    /// <summary>The data.</summary>
-    internal unsafe void* pvData;
-
-    /// <summary>One bound for each dimension.</summary>
-    internal VariableLengthInlineArray<SAFEARRAYBOUND> rgsabound;
-
-    public static unsafe IReadOnlyList<T>? ToReadOnlyList<T>(SafeArray* safearray)
+    public static IReadOnlyList<T>? ToReadOnlyList<T>(SafeArrayRef? safearray)
     {
         if (safearray is null) return null;
 
-        return AccessData(safearray, static (data, length) =>
+        return AccessData(safearray.Value, static (data, length) =>
         {
             var array = new T[length];
             if (typeof(T) == typeof(sbyte))
@@ -145,7 +158,7 @@ internal partial struct SafeArray
         });
     }
 
-    public static unsafe bool TryCreate(IEnumerable? managed, out SafeArray* safearray, out VarEnum varEnum)
+    public static bool TryCreate(IEnumerable? managed, [NotNullWhen(true)] out SafeArrayRef? safearray, out VarEnum varEnum)
     {
         safearray = default;
         varEnum = default;
@@ -155,7 +168,7 @@ internal partial struct SafeArray
             return false;
         }
 
-        static SafeArray* CreateFromCollection<T>(IReadOnlyCollection<T> collection, VarEnum varEnum)
+        static SafeArrayRef CreateFromCollection<T>(IReadOnlyCollection<T> collection, VarEnum varEnum)
         {
             var collectionSpan = collection switch
             {
@@ -166,13 +179,16 @@ internal partial struct SafeArray
             return CreateFromSpan<T>(collectionSpan, varEnum);
         }
 
-        static SafeArray* CreateFromSpan<T>(ReadOnlySpan<T> span, VarEnum varEnum)
+        static SafeArrayRef CreateFromSpan<T>(ReadOnlySpan<T> span, VarEnum varEnum)
         {
             var bound = new SAFEARRAYBOUND { cElements = (uint)span.Length, lLbound = 0 };
             var safearray = SafeArrayCreate(varEnum, 1, bound);
             if (span.Length == 0)
             {
-                return safearray;
+                return new SafeArrayRef
+                {
+                    _ptr = safearray
+                };
             }
 
             var lockResult = SafeArrayLock(safearray);
@@ -189,10 +205,13 @@ internal partial struct SafeArray
                 SafeArrayUnlock(safearray);
             }
 
-            return safearray;
+            return new SafeArrayRef
+            {
+                _ptr = safearray
+            };
         }
 
-        static SafeArray* CreateFromStrings(IReadOnlyList<string> strings, VarEnum varEnum)
+        static SafeArrayRef CreateFromStrings(IReadOnlyList<string> strings, VarEnum varEnum)
         {
             Debug.Assert(varEnum == VarEnum.VT_BSTR); // other types not supported yet
             var pointers = ArrayPool<IntPtr>.Shared.Rent(strings.Count);
@@ -211,7 +230,7 @@ internal partial struct SafeArray
             }
         }
 
-        static SafeArray* CreateFromBools(IReadOnlyList<bool> bools, VarEnum varEnum)
+        static SafeArrayRef CreateFromBools(IReadOnlyList<bool> bools, VarEnum varEnum)
         {
             Debug.Assert(varEnum == VarEnum.VT_BOOL); // other types not supported
             var shorts = ArrayPool<short>.Shared.Rent(bools.Count);
@@ -230,7 +249,7 @@ internal partial struct SafeArray
             }
         }
 
-        static SafeArray* CreateFromObjects(IReadOnlyList<object> objects, VarEnum varEnum)
+        static SafeArrayRef CreateFromObjects(IReadOnlyList<object> objects, VarEnum varEnum)
         {
             Debug.Assert(varEnum == VarEnum.VT_UNKNOWN); // other types not supported yet
             var pointers = ArrayPool<IntPtr>.Shared.Rent(objects.Count);
@@ -283,37 +302,37 @@ internal partial struct SafeArray
     }
 
     [LibraryImport("oleaut32.dll")]
-    internal static unsafe partial SafeArray* SafeArrayCreate(VarEnum vt, uint cDims, in SAFEARRAYBOUND rgsabound);
+    private static unsafe partial SAFEARRAY* SafeArrayCreate(VarEnum vt, uint cDims, in SAFEARRAYBOUND rgsabound);
 
     [LibraryImport("oleaut32.dll")]
-    internal static unsafe partial void SafeArrayDestroy(SafeArray* array);
+    private static unsafe partial void SafeArrayDestroy(SAFEARRAY* array);
 
     [LibraryImport("oleaut32.dll")]
     [PreserveSig]
-    internal static unsafe partial int SafeArrayLock(SafeArray* array);
+    private static unsafe partial int SafeArrayLock(SAFEARRAY* array);
 
     [LibraryImport("oleaut32.dll")]
-    internal static unsafe partial void SafeArrayUnlock(SafeArray* array);
+    private static unsafe partial void SafeArrayUnlock(SAFEARRAY* array);
 
-    private static unsafe TRes AccessData<TRes>(SafeArray* safearray, Func<IntPtr, int, TRes> accessor)
+    private static TRes AccessData<TRes>(SafeArrayRef safearray, Func<IntPtr, int, TRes> accessor)
     {
-        var lockResult = SafeArrayLock(safearray);
+        var lockResult = SafeArrayLock(safearray._ptr);
         if (lockResult != 0)
         {
             throw new Win32Exception(lockResult);
         }
 
-        Debug.Assert(safearray->cDims == 1);
+        Debug.Assert(safearray._ptr->cDims == 1);
 
         try
         {
-            var data = safearray->pvData;
-            var length= safearray->rgsabound[0].cElements;
+            var data = safearray._ptr->pvData;
+            var length= safearray._ptr->rgsabound[0].cElements;
             return accessor(new IntPtr(data), (int)length);
         }
         finally
         {
-            SafeArrayUnlock(safearray);
+            SafeArrayUnlock(safearray._ptr);
         }
     }
 }
