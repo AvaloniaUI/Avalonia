@@ -455,7 +455,7 @@ namespace Avalonia.Controls
         /// </summary>
         public void Close()
         {
-            CloseCore(WindowCloseReason.WindowClosing, true);
+            CloseCore(WindowCloseReason.WindowClosing, true, false);
         }
 
         /// <summary>
@@ -471,10 +471,10 @@ namespace Avalonia.Controls
         public void Close(object? dialogResult)
         {
             _dialogResult = dialogResult;
-            CloseCore(WindowCloseReason.WindowClosing, true);
+            CloseCore(WindowCloseReason.WindowClosing, true, false);
         }
 
-        internal void CloseCore(WindowCloseReason reason, bool isProgrammatic)
+        internal void CloseCore(WindowCloseReason reason, bool isProgrammatic, bool ignoreCancel)
         {
             bool close = true;
 
@@ -487,7 +487,7 @@ namespace Avalonia.Controls
             }
             finally
             {
-                if (close)
+                if (close || ignoreCancel)
                 {
                     CloseInternal();
                 }
@@ -1054,9 +1054,11 @@ namespace Avalonia.Controls
 
         private protected sealed override void HandleClosed()
         {
-            RaiseEvent(new RoutedEventArgs(WindowClosedEvent));
+            _shown = false;
 
             base.HandleClosed();
+
+            RaiseEvent(new RoutedEventArgs(WindowClosedEvent));
 
             Owner = null;
         }

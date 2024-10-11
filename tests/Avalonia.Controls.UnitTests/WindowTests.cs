@@ -114,6 +114,8 @@ namespace Avalonia.Controls.UnitTests
                 var window = new Window();
 
                 window.Show();
+                Assert.True(window.IsVisible);
+
                 windowImpl.Object.Closed();
 
                 Assert.False(window.IsVisible);
