@@ -177,7 +177,8 @@
                     <MultiBinding Converter="{x:Static BoolConverters.And}">
                       <MultiBinding Converter="{x:Static BoolConverters.Or}" >
                         <Binding Path="IsActive" />
-                        <Binding Path="#Main.((vm:ControlDetailsViewModel)DataContext).ShowInactiveFrames" />
+                        <!-- Rider marks it as an error, because it doesn't know about new binding rules yet. -->
+                        <Binding Path="#Main.DataContext.ShowInactiveFrames" />
                       </MultiBinding>
                       <Binding Path="IsVisible" />
                     </MultiBinding>
