@@ -4,32 +4,31 @@ using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.Marshalling;
 using Avalonia.Win32.Automation.Marshalling;
 
-namespace Avalonia.Win32.Interop.Automation
+namespace Avalonia.Win32.Interop.Automation;
+
+[Guid("15fdf2e2-9847-41cd-95dd-510612a025ea")]
+internal enum RowOrColumnMajor
 {
-    [Guid("15fdf2e2-9847-41cd-95dd-510612a025ea")]
-    internal enum RowOrColumnMajor
-    {
-        RowMajor,
-        ColumnMajor,
-        Indeterminate,
-    }
+    RowMajor,
+    ColumnMajor,
+    Indeterminate,
+}
 #if NET8_0_OR_GREATER
-    [GeneratedComInterface]
+[GeneratedComInterface]
 #else
-    [ComImport()]
-    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+[ComImport()]
+[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
 #endif
-    [Guid("9c860395-97b3-490a-b52a-858cc22af166")]
-    internal partial interface ITableProvider
-    {
+[Guid("9c860395-97b3-490a-b52a-858cc22af166")]
+internal partial interface ITableProvider
+{
 #if NET8_0_OR_GREATER
-        [return: MarshalUsing(typeof(SafeArrayMarshaller<IRawElementProviderSimple>))]
+    [return: MarshalUsing(typeof(SafeArrayMarshaller<IRawElementProviderSimple>))]
 #endif
-        IReadOnlyList<IRawElementProviderSimple> GetRowHeaders();
+    IReadOnlyList<IRawElementProviderSimple> GetRowHeaders();
 #if NET8_0_OR_GREATER
-        [return: MarshalUsing(typeof(SafeArrayMarshaller<IRawElementProviderSimple>))]
+    [return: MarshalUsing(typeof(SafeArrayMarshaller<IRawElementProviderSimple>))]
 #endif
-        IReadOnlyList<IRawElementProviderSimple> GetColumnHeaders();
-        RowOrColumnMajor RowOrColumnMajor();
-    }
+    IReadOnlyList<IRawElementProviderSimple> GetColumnHeaders();
+    RowOrColumnMajor GetRowOrColumnMajor();
 }

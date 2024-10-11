@@ -6,7 +6,7 @@ namespace Avalonia.Win32.Automation
 {
     internal partial class AutomationNode : UIA.IExpandCollapseProvider
     {
-        ExpandCollapseState UIA.IExpandCollapseProvider.ExpandCollapseState()
+        ExpandCollapseState UIA.IExpandCollapseProvider.GetExpandCollapseState()
         {
             return InvokeSync<IExpandCollapseProvider, ExpandCollapseState>(x => x.ExpandCollapseState);
         }

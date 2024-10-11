@@ -76,7 +76,7 @@ namespace Avalonia.Win32.Automation
 
         public AutomationPeer Peer { get; protected set; }
 
-        public virtual Rect BoundingRectangle()
+        public virtual Rect GetBoundingRectangle()
         {
             return InvokeSync(() =>
             {
@@ -86,12 +86,12 @@ namespace Avalonia.Win32.Automation
             });
         }
 
-        public virtual IRawElementProviderFragmentRoot? FragmentRoot()
+        public virtual IRawElementProviderFragmentRoot? GetFragmentRoot()
         {
             return InvokeSync(() => GetRoot());
         }
 
-        public virtual IRawElementProviderSimple? HostRawElementProvider() => null;
+        public virtual IRawElementProviderSimple? GetHostRawElementProvider() => null;
         public virtual ProviderOptions GetProviderOptions() => ProviderOptions.ServerSideProvider;
 
         public virtual object? GetPatternProvider(int patternId)
@@ -121,7 +121,7 @@ namespace Avalonia.Win32.Automation
                 UiaPropertyId.AccessKey => InvokeSync(() => Peer.GetAccessKey()),
                 UiaPropertyId.AutomationId => InvokeSync(() => Peer.GetAutomationId()),
                 UiaPropertyId.ClassName => InvokeSync(() => Peer.GetClassName()),
-                UiaPropertyId.ClickablePoint => BoundingRectangle() is var rect ?
+                UiaPropertyId.ClickablePoint => GetBoundingRectangle() is var rect ?
                     new[] { rect.Center.X, rect.Center.Y } :
                     default,
                 UiaPropertyId.ControlType => InvokeSync(() => ToUiaControlType(Peer.GetAutomationControlType())),

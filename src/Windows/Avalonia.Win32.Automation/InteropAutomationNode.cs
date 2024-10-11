@@ -25,14 +25,14 @@ internal partial class InteropAutomationNode : AutomationNode, IRawElementProvid
         _handle = peer.NativeControlHandle.Handle;
     }
 
-    public override Rect BoundingRectangle() => default;
-    public override IRawElementProviderFragmentRoot? FragmentRoot() => null;
+    public override Rect GetBoundingRectangle() => default;
+    public override IRawElementProviderFragmentRoot? GetFragmentRoot() => null;
     public override ProviderOptions GetProviderOptions() => ProviderOptions.ServerSideProvider | ProviderOptions.OverrideProvider;
 
     public override object? GetPatternProvider(int patternId) => null;
     public override object? GetPropertyValue(int propertyId) => null;
 
-    public override IRawElementProviderSimple? HostRawElementProvider()
+    public override IRawElementProviderSimple? GetHostRawElementProvider()
     {
         var hr = UiaCoreProviderApi.UiaHostProviderFromHwnd(_handle, out var result);
         Marshal.ThrowExceptionForHR(hr);

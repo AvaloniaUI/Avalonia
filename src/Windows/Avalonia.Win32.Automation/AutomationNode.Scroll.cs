@@ -5,12 +5,12 @@ namespace Avalonia.Win32.Automation
 {
     internal partial class AutomationNode : UIA.IScrollProvider, UIA.IScrollItemProvider
     {
-        bool UIA.IScrollProvider.HorizontallyScrollable() => InvokeSync<IScrollProvider, bool>(x => x.HorizontallyScrollable);
-        double UIA.IScrollProvider.HorizontalScrollPercent() => InvokeSync<IScrollProvider, double>(x => x.HorizontalScrollPercent);
-        double UIA.IScrollProvider.HorizontalViewSize() => InvokeSync<IScrollProvider, double>(x => x.HorizontalViewSize);
-        bool UIA.IScrollProvider.VerticallyScrollable() => InvokeSync<IScrollProvider, bool>(x => x.VerticallyScrollable);
-        double UIA.IScrollProvider.VerticalScrollPercent() => InvokeSync<IScrollProvider, double>(x => x.VerticalScrollPercent);
-        double UIA.IScrollProvider.VerticalViewSize() => InvokeSync<IScrollProvider, double>(x => x.VerticalViewSize);
+        bool UIA.IScrollProvider.GetHorizontallyScrollable() => InvokeSync<IScrollProvider, bool>(x => x.HorizontallyScrollable);
+        double UIA.IScrollProvider.GetHorizontalScrollPercent() => InvokeSync<IScrollProvider, double>(x => x.HorizontalScrollPercent);
+        double UIA.IScrollProvider.GetHorizontalViewSize() => InvokeSync<IScrollProvider, double>(x => x.HorizontalViewSize);
+        bool UIA.IScrollProvider.GetVerticallyScrollable() => InvokeSync<IScrollProvider, bool>(x => x.VerticallyScrollable);
+        double UIA.IScrollProvider.GetVerticalScrollPercent() => InvokeSync<IScrollProvider, double>(x => x.VerticalScrollPercent);
+        double UIA.IScrollProvider.GetVerticalViewSize() => InvokeSync<IScrollProvider, double>(x => x.VerticalViewSize);
 
         void UIA.IScrollProvider.Scroll(ScrollAmount horizontalAmount, ScrollAmount verticalAmount)
         {

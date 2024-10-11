@@ -13,9 +13,9 @@ namespace Avalonia.Win32.Automation
         bool UIA.ISelectionProvider.IsSelectionRequired() =>
             InvokeSync<ISelectionProvider, bool>(x => x.IsSelectionRequired);
 
-        bool UIA.ISelectionItemProvider.IsSelected() => InvokeSync<ISelectionItemProvider, bool>(x => x.IsSelected);
+        bool UIA.ISelectionItemProvider.GetIsSelected() => InvokeSync<ISelectionItemProvider, bool>(x => x.IsSelected);
 
-        UIA.IRawElementProviderSimple? UIA.ISelectionItemProvider.SelectionContainer()
+        UIA.IRawElementProviderSimple? UIA.ISelectionItemProvider.GetSelectionContainer()
         {
             var peer = InvokeSync<ISelectionItemProvider, ISelectionProvider?>(x => x.SelectionContainer);
             return GetOrCreate(peer as AutomationPeer);

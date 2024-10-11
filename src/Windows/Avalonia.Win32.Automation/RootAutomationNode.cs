@@ -27,7 +27,7 @@ namespace Avalonia.Win32.Automation
             Peer.FocusChanged += OnRootFocusChanged;
         }
 
-        public override IRawElementProviderFragmentRoot? FragmentRoot() => this;
+        public override IRawElementProviderFragmentRoot? GetFragmentRoot() => this;
         public new IRootProvider Peer { get; }
         public IWindowBaseImpl? WindowImpl => Peer.PlatformImpl as IWindowBaseImpl;
 
@@ -58,7 +58,7 @@ namespace Avalonia.Win32.Automation
                 .ToRect(1);
         }
 
-        public override IRawElementProviderSimple? HostRawElementProvider()
+        public override IRawElementProviderSimple? GetHostRawElementProvider()
         {
             var handle = WindowImpl?.Handle?.Handle ?? IntPtr.Zero;
             if (handle == IntPtr.Zero)
