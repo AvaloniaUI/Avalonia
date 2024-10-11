@@ -80,7 +80,7 @@ namespace Avalonia.Headless
             AvaloniaLocator.CurrentMutable
                 .BindToSelf(opts)
                 .BindToSelf(timeProvider)
-                .Bind<IDispatcherImpl>().ToConstant(new HeadlessDispatcherImpl(timeProvider))
+                .Bind<IDispatcherImpl>().ToConstant(new ManagedDispatcherImpl(timeProvider, null))
                 .Bind<IClipboard>().ToSingleton<HeadlessClipboardStub>()
                 .Bind<ICursorFactory>().ToSingleton<HeadlessCursorFactoryStub>()
                 .Bind<IPlatformSettings>().ToSingleton<DefaultPlatformSettings>()
@@ -90,7 +90,7 @@ namespace Avalonia.Headless
                 .Bind<IWindowingPlatform>().ToConstant(new HeadlessWindowingPlatform(opts.FrameBufferFormat))
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
                 .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>() { }));
-            Compositor = new Compositor( null);
+            Compositor = new Compositor(RenderLoop.LocatorAutoInstance, gpu: null, timeProvider: timeProvider);
         }
 
         /// <summary>

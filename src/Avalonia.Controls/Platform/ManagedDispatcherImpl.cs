@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Threading;
+using Avalonia.Compatibility;
 using Avalonia.Metadata;
 using Avalonia.Threading;
 using Avalonia.Utilities;
@@ -14,9 +15,10 @@ public class ManagedDispatcherImpl : IControlledDispatcherImpl
     private readonly AutoResetEvent _wakeup = new(false);
     private bool _signaled;
     private readonly object _lock = new();
-    private long? _nextTimerMs;
-    private Stopwatch _sw = Stopwatch.StartNew();
+    private TimeSpan? _nextTimer; 
+    private long _startedDispatcherAt;
     private readonly Thread _loopThread = Thread.CurrentThread;
+    private readonly IAvnTimeProvider _timeProvider;
 
     public interface IManagedDispatcherInputProvider
     {
@@ -25,8 +27,15 @@ public class ManagedDispatcherImpl : IControlledDispatcherImpl
     }
 
     public ManagedDispatcherImpl(IManagedDispatcherInputProvider? inputProvider)
+        : this(new StopwatchTimeProvider(), inputProvider)
+    {
+    }
+
+    internal ManagedDispatcherImpl(IAvnTimeProvider timeProvider, IManagedDispatcherInputProvider? inputProvider)
     {
         _inputProvider = inputProvider;
+        _startedDispatcherAt = timeProvider.GetTimestamp();
+        _timeProvider = timeProvider;
     }
 
     public bool CurrentThreadIsLoopThread => _loopThread == Thread.CurrentThread;
@@ -41,12 +50,14 @@ public class ManagedDispatcherImpl : IControlledDispatcherImpl
 
     public event Action? Signaled;
     public event Action? Timer;
-    public long Now => GetElapsedTimeMs();
+    public long Now => (long)GetElapsedTime().TotalMilliseconds;
     public void UpdateTimer(long? dueTimeInMs)
     {
         lock (_lock)
         {
-            _nextTimerMs = dueTimeInMs;
+            _nextTimer = dueTimeInMs == null
+                ? null
+                : TimeSpan.FromMilliseconds(dueTimeInMs.Value);
             if (!CurrentThreadIsLoopThread)
                 _wakeup.Set();
         }
@@ -79,10 +90,10 @@ public class ManagedDispatcherImpl : IControlledDispatcherImpl
             bool fireTimer = false;
             lock (_lock)
             {
-                if (_nextTimerMs.HasValue && _nextTimerMs < GetElapsedTimeMs())
+                if (_nextTimer < GetElapsedTime())
                 {
                     fireTimer = true;
-                    _nextTimerMs = null;
+                    _nextTimer = null;
                 }
             }
 
@@ -98,19 +109,18 @@ public class ManagedDispatcherImpl : IControlledDispatcherImpl
                 continue;
             }
 
-            long? nextTimerMs;
+            TimeSpan? nextTimer;
             lock (_lock)
             {
-                nextTimerMs = _nextTimerMs;
+                nextTimer = _nextTimer;
             }
 
-            if (nextTimerMs != null)
+            if (nextTimer != null)
             {
-                var waitFor = nextTimerMs.Value - GetElapsedTimeMs();
-                if (waitFor < 1)
+                var waitFor = nextTimer.Value - GetElapsedTime();
+                if (waitFor.TotalMilliseconds < 1)
                     continue;
-                Debug.Assert(waitFor < int.MaxValue);
-                _wakeup.WaitOne((int)waitFor);
+                _wakeup.WaitOne(waitFor);
             }
             else
                 _wakeup.WaitOne();
@@ -119,5 +129,5 @@ public class ManagedDispatcherImpl : IControlledDispatcherImpl
         registration.Dispose();
     }
 
-    private protected virtual long GetElapsedTimeMs() => _sw.ElapsedMilliseconds;
+    private TimeSpan GetElapsedTime() => _timeProvider.GetElapsedTime(_startedDispatcherAt, _timeProvider.GetTimestamp());
 }

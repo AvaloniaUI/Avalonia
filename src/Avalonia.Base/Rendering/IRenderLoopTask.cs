@@ -5,6 +5,6 @@ namespace Avalonia.Rendering
 {
     internal interface IRenderLoopTask
     {
-        void Render(TimeSpan timestamp);
+        void Render();
     }
 }

@@ -1,13 +1,14 @@
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using Avalonia.Compatibility;
 using Avalonia.Controls.Platform;
 using Avalonia.Threading;
 using Avalonia.Utilities;
 
 namespace Avalonia.Headless;
 
-internal class HeadlessTimeProvider : TimeProvider
+internal class HeadlessTimeProvider : TimeProvider, IAvnTimeProvider
 {
     private readonly bool _autoStart;
 

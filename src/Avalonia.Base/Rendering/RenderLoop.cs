@@ -108,7 +108,7 @@ namespace Avalonia.Rendering
 
                     for (int i = 0; i < _itemsCopy.Count; i++)
                     {
-                        _itemsCopy[i].Render(time);
+                        _itemsCopy[i].Render();
                     }
                     
                     _itemsCopy.Clear();

@@ -87,12 +87,5 @@ public static class HeadlessExtensions
     private static void ValidateDispatcher(this Dispatcher dispatcher)
     {
         dispatcher.VerifyAccess();
-
-        var impl = AvaloniaLocator.Current.GetRequiredService<IDispatcherImpl>();
-        if (impl is not HeadlessDispatcherImpl)
-        {
-            throw new InvalidOperationException(
-                "Headless Dispatcher extenions can only be applied when Avalonia runs in a headless mode.");
-        }
     }
 }

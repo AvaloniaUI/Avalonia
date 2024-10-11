@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
+using Avalonia.Compatibility;
 using Avalonia.Logging;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition.Animations;
@@ -25,11 +26,13 @@ namespace Avalonia.Rendering.Composition.Server
         private readonly Queue<Action> _receivedJobQueue = new();
         private readonly Queue<Action> _receivedPostTargetJobQueue = new();
         public long LastBatchId { get; private set; }
+        public IAvnTimeProvider TimeProvider { get; }
         public TimeSpan ServerNow { get; private set; }
         private readonly List<ServerCompositionTarget> _activeTargets = new();
         internal BatchStreamObjectPool<object?> BatchObjectPool;
         internal BatchStreamMemoryPool BatchMemoryPool;
         private readonly object _lock = new object();
+        private readonly long _serverStartedAt;
         private Thread? _safeThread;
         private bool _uiThreadIsInsideRender;
         public PlatformRenderInterfaceContextManager RenderInterface { get; }
@@ -43,7 +46,8 @@ namespace Avalonia.Rendering.Composition.Server
 
         public ServerCompositor(IRenderLoop renderLoop, IPlatformGraphics? platformGraphics,
             CompositionOptions options,
-            BatchStreamObjectPool<object?> batchObjectPool, BatchStreamMemoryPool batchMemoryPool)
+            BatchStreamObjectPool<object?> batchObjectPool, BatchStreamMemoryPool batchMemoryPool,
+            IAvnTimeProvider timeProvider)
         {
             Options = options;
             Animations = new();
@@ -53,6 +57,8 @@ namespace Avalonia.Rendering.Composition.Server
             RenderInterface.ContextCreated += RT_OnContextCreated;
             BatchObjectPool = batchObjectPool;
             BatchMemoryPool = batchMemoryPool;
+            TimeProvider = timeProvider;
+            _serverStartedAt = TimeProvider.GetTimestamp();
             _renderLoop.Add(this);
         }
 
@@ -62,8 +68,11 @@ namespace Avalonia.Rendering.Composition.Server
                 _batches.Enqueue(batch);
         }
 
+        internal void UpdateServerTime() => ServerNow = TimeProvider.GetElapsedTime(_serverStartedAt, TimeProvider.GetTimestamp());
+
         readonly List<CompositionBatch> _reusableToNotifyProcessedList = new();
         readonly List<CompositionBatch> _reusableToNotifyRenderedList = new();
+
         void ApplyPendingBatches()
         {
             while (true)
@@ -165,14 +174,8 @@ namespace Avalonia.Rendering.Composition.Server
             _reusableToNotifyRenderedList.Clear();
         }
 
-        // This Render overload can be called outside of the compositor, like MediaContext.SyncCommit.
-        // In this case we can't use external timestamp, as it might be out-sync with IRenderLoop.
-        // Instead, pass last known ServerNow time.
-        public void Render(bool catchExceptions) => Render(ServerNow, catchExceptions);
-
-        void IRenderLoopTask.Render(TimeSpan timestamp) => Render(timestamp, true);
-
-        private void Render(TimeSpan timestamp, bool catchExceptions)
+        public void Render() => Render(true);
+        public void Render(bool catchExceptions)
         {
             if (Dispatcher.UIThread.CheckAccess())
             {
@@ -182,7 +185,7 @@ namespace Avalonia.Rendering.Composition.Server
                 try
                 {
                     using (Dispatcher.UIThread.DisableProcessing()) 
-                        RenderReentrancySafe(timestamp, catchExceptions);
+                        RenderReentrancySafe(catchExceptions);
                 }
                 finally
                 {
@@ -190,10 +193,10 @@ namespace Avalonia.Rendering.Composition.Server
                 }
             }
             else
-                RenderReentrancySafe(timestamp, catchExceptions);
+                RenderReentrancySafe(catchExceptions);
         }
         
-        private void RenderReentrancySafe(TimeSpan timestamp, bool catchExceptions)
+        private void RenderReentrancySafe(bool catchExceptions)
         {
             lock (_lock)
             {
@@ -202,7 +205,7 @@ namespace Avalonia.Rendering.Composition.Server
                     try
                     {
                         _safeThread = Thread.CurrentThread;
-                        RenderCore(timestamp, catchExceptions);
+                        RenderCore(catchExceptions);
                     }
                     finally
                     {
@@ -216,9 +219,9 @@ namespace Avalonia.Rendering.Composition.Server
             }
         }
         
-        private void RenderCore(TimeSpan timestamp, bool catchExceptions)
+        private void RenderCore(bool catchExceptions)
         {
-            ServerNow = timestamp;
+            UpdateServerTime();
             ApplyPendingBatches();
             NotifyBatchesProcessed();
 
