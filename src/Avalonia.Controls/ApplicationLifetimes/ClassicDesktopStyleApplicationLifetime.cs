@@ -187,8 +187,8 @@ namespace Avalonia.Controls.ApplicationLifetimes
                 {
                     if (w.Owner is null)
                     {
-                        var shouldForceClose = ShutdownMode == ShutdownMode.OnMainWindowClose && w != MainWindow;
-                        w.CloseCore(WindowCloseReason.ApplicationShutdown, isProgrammatic, shouldForceClose);
+                        var ignoreCancel = force || (ShutdownMode == ShutdownMode.OnMainWindowClose && w != MainWindow);
+                        w.CloseCore(WindowCloseReason.ApplicationShutdown, isProgrammatic, ignoreCancel);
                     }
                 }
 

@@ -480,7 +480,7 @@ namespace Avalonia.Controls
             CloseCore(WindowCloseReason.WindowClosing, true, false);
         }
 
-        internal void CloseCore(WindowCloseReason reason, bool isProgrammatic, bool forceClose)
+        internal void CloseCore(WindowCloseReason reason, bool isProgrammatic, bool ignoreCancel)
         {
             bool close = true;
 
@@ -493,7 +493,7 @@ namespace Avalonia.Controls
             }
             finally
             {
-                if (close || forceClose)
+                if (close || ignoreCancel)
                 {
                     CloseInternal();
                 }

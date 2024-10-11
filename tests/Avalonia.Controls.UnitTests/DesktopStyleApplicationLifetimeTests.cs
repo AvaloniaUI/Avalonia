@@ -481,6 +481,8 @@ namespace Avalonia.Controls.UnitTests
                 lifetime.SetupCore(Array.Empty<string>());
 
                 var hasExit = false;
+                var closingRaised = 0;
+                var closedRaised = 0;
 
                 lifetime.Exit += (_, _) => hasExit = true;
 
@@ -491,18 +493,21 @@ namespace Avalonia.Controls.UnitTests
                 var windowB = new Window();
 
                 windowB.Show();
-                
-                var raised = 0;
 
                 windowA.Closing += (_, e) =>
                 {
                     e.Cancel = true;
-                    ++raised;
+                    ++closingRaised;
+                };
+                windowA.Closed += (_, e) =>
+                {
+                    ++closedRaised;
                 };
 
                 lifetime.Shutdown();
 
-                Assert.Equal(1, raised);
+                Assert.Equal(1, closingRaised);
+                Assert.Equal(1, closedRaised);
                 Assert.True(hasExit);
             }
         }
