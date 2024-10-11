@@ -173,7 +173,7 @@ namespace Avalonia.Collections
                     return GetComparerForNotStringType(type);
             }
 
-            public static IComparer GetComparerForNotStringType(Type type)
+            internal static IComparer GetComparerForNotStringType(Type type)
             {
 #if NET6_0_OR_GREATER
                 if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>) && type.GetGenericArguments()[0].IsAssignableTo(typeof(IComparable)))
