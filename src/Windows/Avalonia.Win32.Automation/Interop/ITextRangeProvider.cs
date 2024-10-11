@@ -58,7 +58,7 @@ internal partial interface ITextRangeProvider
 #if NET8_0_OR_GREATER
     [return: MarshalUsing(typeof(SafeArrayMarshaller<double>))]
 #endif
-    IReadOnlyList<double> GetBoundingRectangles();
+    double[] GetBoundingRectangles();
     IRawElementProviderSimple GetEnclosingElement();
     [return: MarshalAs(UnmanagedType.BStr)]
     string GetText(int maxLength);
@@ -75,5 +75,5 @@ internal partial interface ITextRangeProvider
 #if NET8_0_OR_GREATER
     [return: MarshalUsing(typeof(SafeArrayMarshaller<IRawElementProviderSimple>))]
 #endif
-    IReadOnlyList<IRawElementProviderSimple> GetChildren();
+    IRawElementProviderSimple[] GetChildren();
 }

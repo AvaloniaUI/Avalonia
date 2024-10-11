@@ -17,9 +17,9 @@ internal partial interface ITableItemProvider
 #if NET8_0_OR_GREATER
     [return: MarshalUsing(typeof(SafeArrayMarshaller<IRawElementProviderSimple>))]
 #endif
-    IReadOnlyList<IRawElementProviderSimple> GetRowHeaderItems();
+    IRawElementProviderSimple[] GetRowHeaderItems();
 #if NET8_0_OR_GREATER
     [return: MarshalUsing(typeof(SafeArrayMarshaller<IRawElementProviderSimple>))]
 #endif
-    IReadOnlyList<IRawElementProviderSimple> GetColumnHeaderItems();
+    IRawElementProviderSimple[] GetColumnHeaderItems();
 }

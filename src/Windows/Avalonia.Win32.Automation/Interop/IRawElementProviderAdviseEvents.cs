@@ -18,11 +18,11 @@ internal partial interface IRawElementProviderAdviseEvents
 #if NET8_0_OR_GREATER
         [MarshalUsing(typeof(SafeArrayMarshaller<int>))]
 #endif
-        IReadOnlyList<int> properties);
+        int[] properties);
 
     void AdviseEventRemoved(int eventId,
 #if NET8_0_OR_GREATER
         [MarshalUsing(typeof(SafeArrayMarshaller<int>))]
 #endif
-        IReadOnlyList<int> properties);
+        int[] properties);
 }

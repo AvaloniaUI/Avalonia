@@ -149,7 +149,7 @@ namespace Avalonia.Win32.Automation
             return value;
         }
 
-        public IReadOnlyList<int> GetRuntimeId() => _runtimeId;
+        public int[] GetRuntimeId() => _runtimeId;
 
         public virtual IRawElementProviderFragment? Navigate(NavigateDirection direction)
         {
@@ -196,7 +196,7 @@ namespace Avalonia.Win32.Automation
 
         public static void Release(AutomationPeer peer) => s_nodes.Remove(peer);
 
-        IReadOnlyList<IRawElementProviderSimple>? IRawElementProviderFragment.GetEmbeddedFragmentRoots() => null;
+        IRawElementProviderSimple[]? IRawElementProviderFragment.GetEmbeddedFragmentRoots() => null;
         void IRawElementProviderSimple2.ShowContextMenu() => InvokeSync(() => Peer.ShowContextMenu());
         void IInvokeProvider.Invoke() => InvokeSync((AAP.IInvokeProvider x) => x.Invoke());
 

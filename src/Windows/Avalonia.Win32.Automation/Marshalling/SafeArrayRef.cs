@@ -97,7 +97,7 @@ internal unsafe partial struct SafeArrayRef
         }
     }
 
-    public static IReadOnlyList<T>? ToReadOnlyList<T>(SafeArrayRef? safearray)
+    public static T[]? ToArray<T>(SafeArrayRef? safearray)
     {
         if (safearray is null) return null;
 

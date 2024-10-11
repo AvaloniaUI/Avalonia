@@ -21,7 +21,7 @@ namespace Avalonia.Win32.Automation
             return GetOrCreate(peer as AutomationPeer);
         }
 
-        IReadOnlyList<UIA.IRawElementProviderSimple> UIA.ISelectionProvider.GetSelection()
+        UIA.IRawElementProviderSimple[] UIA.ISelectionProvider.GetSelection()
         {
             var peers = InvokeSync<ISelectionProvider, IReadOnlyList<AutomationPeer>>(x => x.GetSelection());
             return peers.Select(x => (UIA.IRawElementProviderSimple)GetOrCreate(x)).ToArray();

@@ -17,7 +17,7 @@ internal partial interface ISelectionProvider
 #if NET8_0_OR_GREATER
     [return: MarshalUsing(typeof(SafeArrayMarshaller<IRawElementProviderSimple>))]
 #endif
-    IReadOnlyList<IRawElementProviderSimple> GetSelection();
+    IRawElementProviderSimple[] GetSelection();
 
     [return: MarshalAs(UnmanagedType.Bool)]
     bool CanSelectMultiple();

@@ -21,5 +21,5 @@ internal partial interface IMultipleViewProvider
 #if NET8_0_OR_GREATER
     [return: MarshalUsing(typeof(SafeArrayMarshaller<int>))]
 #endif
-    IReadOnlyList<int> GetSupportedViews();
+    int[] GetSupportedViews();
 }

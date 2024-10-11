@@ -27,11 +27,11 @@ internal partial interface ITextProvider
 #if NET8_0_OR_GREATER
     [return: MarshalUsing(typeof(SafeArrayMarshaller<ITextRangeProvider>))]
 #endif
-    IReadOnlyList<ITextRangeProvider> GetSelection();
+    ITextRangeProvider[] GetSelection();
 #if NET8_0_OR_GREATER
     [return: MarshalUsing(typeof(SafeArrayMarshaller<ITextRangeProvider>))]
 #endif
-    IReadOnlyList<ITextRangeProvider> GetVisibleRanges();
+    ITextRangeProvider[] GetVisibleRanges();
     ITextRangeProvider RangeFromChild(IRawElementProviderSimple childElement);
 
     ITextRangeProvider RangeFromPoint(double X, double Y);

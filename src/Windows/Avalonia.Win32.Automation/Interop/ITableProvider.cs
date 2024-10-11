@@ -24,10 +24,10 @@ internal partial interface ITableProvider
 #if NET8_0_OR_GREATER
     [return: MarshalUsing(typeof(SafeArrayMarshaller<IRawElementProviderSimple>))]
 #endif
-    IReadOnlyList<IRawElementProviderSimple> GetRowHeaders();
+    IRawElementProviderSimple[] GetRowHeaders();
 #if NET8_0_OR_GREATER
     [return: MarshalUsing(typeof(SafeArrayMarshaller<IRawElementProviderSimple>))]
 #endif
-    IReadOnlyList<IRawElementProviderSimple> GetColumnHeaders();
+    IRawElementProviderSimple[] GetColumnHeaders();
     RowOrColumnMajor GetRowOrColumnMajor();
 }

@@ -28,12 +28,12 @@ internal partial interface IRawElementProviderFragment
 #if NET8_0_OR_GREATER
     [return: MarshalUsing(typeof(SafeArrayMarshaller<int>))]
 #endif
-    IReadOnlyList<int>? GetRuntimeId();
+    int[]? GetRuntimeId();
     Rect GetBoundingRectangle();
 #if NET8_0_OR_GREATER
     [return: MarshalUsing(typeof(SafeArrayMarshaller<IRawElementProviderSimple>))]
 #endif
-    IReadOnlyList<IRawElementProviderSimple>? GetEmbeddedFragmentRoots();
+    IRawElementProviderSimple[]? GetEmbeddedFragmentRoots();
     void SetFocus();
     IRawElementProviderFragmentRoot? GetFragmentRoot();
 }
