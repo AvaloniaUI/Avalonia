@@ -187,20 +187,16 @@ namespace Avalonia.Controls.ApplicationLifetimes
                 {
                     if (w.Owner is null)
                     {
-                        w.CloseCore(WindowCloseReason.ApplicationShutdown, isProgrammatic);
+                        var shouldForceClose = ShutdownMode == ShutdownMode.OnMainWindowClose && w != MainWindow;
+                        w.CloseCore(WindowCloseReason.ApplicationShutdown, isProgrammatic, shouldForceClose);
                     }
                 }
 
-                if (!force)
+                if (!force && Windows.Count > 0)
                 {
-                    if (ShutdownMode == ShutdownMode.OnMainWindowClose ?
-                            MainWindow?.IsVisible == true :
-                            Windows.Count > 0)
-                    {
-                        e.Cancel = true;
-                        shutdownCancelled = true;
-                        return false;
-                    }
+                    e.Cancel = true;
+                    shutdownCancelled = true;
+                    return false;
                 }
 
                 var args = new ControlledApplicationLifetimeExitEventArgs(exitCode);

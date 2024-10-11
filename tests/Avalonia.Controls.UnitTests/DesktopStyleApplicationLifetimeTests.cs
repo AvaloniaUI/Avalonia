@@ -137,6 +137,7 @@ namespace Avalonia.Controls.UnitTests
 
                 var hasExit = false;
                 var secondaryWindowClosingExecuted = false;
+                var secondaryWindowClosedExecuted = false;
 
                 lifetime.Exit += (_, _) => hasExit = true;
 
@@ -151,11 +152,16 @@ namespace Avalonia.Controls.UnitTests
                     secondaryWindowClosingExecuted = true;
                     args.Cancel = true;
                 };
+                window.Closed += (_, _) =>
+                {
+                    secondaryWindowClosedExecuted = true;
+                };
                 window.Show();
 
                 mainWindow.Close();
 
                 Assert.True(secondaryWindowClosingExecuted);
+                Assert.True(secondaryWindowClosedExecuted);
                 Assert.True(hasExit);
             }
         }
@@ -171,6 +177,7 @@ namespace Avalonia.Controls.UnitTests
 
                 var hasExit = false;
                 var secondaryWindowClosingExecuted = false;
+                var secondaryWindowClosedExecuted = false;
 
                 lifetime.Exit += (_, _) => hasExit = true;
 
@@ -185,11 +192,16 @@ namespace Avalonia.Controls.UnitTests
                     secondaryWindowClosingExecuted = true;
                     args.Cancel = true;
                 };
+                window.Closed += (_, _) =>
+                {
+                    secondaryWindowClosedExecuted = true;
+                };
                 window.Show();
 
                 lifetime.TryShutdown();
 
                 Assert.True(secondaryWindowClosingExecuted);
+                Assert.True(secondaryWindowClosedExecuted);
                 Assert.True(hasExit);
             }
         }
