@@ -1,14 +1,12 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.Marshalling;
 
 // Just to keep "netstandard2.0" build happy
 namespace System.Runtime.InteropServices.Marshalling
 {
 }
 
-namespace Avalonia.Win32.Interop.Automation
+namespace Avalonia.Win32.Automation.Interop
 {
     internal static partial class UiaCoreTypesApi
     {

@@ -1,9 +1,8 @@
-using System;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.Marshalling;
 using Avalonia.Automation;
 
-namespace Avalonia.Win32.Interop.Automation;
+namespace Avalonia.Win32.Automation.Interop;
 
 #if NET8_0_OR_GREATER
 [GeneratedComInterface]

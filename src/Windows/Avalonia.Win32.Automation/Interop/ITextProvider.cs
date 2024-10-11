@@ -1,11 +1,10 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.Marshalling;
 using Avalonia.Win32.Automation.Marshalling;
 
-namespace Avalonia.Win32.Interop.Automation;
+namespace Avalonia.Win32.Automation.Interop;
 
 [Flags]
 [Guid("3d9e3d8f-bfb0-484f-84ab-93ff4280cbc4")]

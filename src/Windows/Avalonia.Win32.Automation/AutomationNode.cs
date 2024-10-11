@@ -11,9 +11,9 @@ using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Automation.Peers;
 using Avalonia.Threading;
-using Avalonia.Win32.Interop.Automation;
+using Avalonia.Win32.Automation.Interop;
 using AAP = Avalonia.Automation.Provider;
-using UIA = Avalonia.Win32.Interop.Automation;
+using UIA = Avalonia.Win32.Automation.Interop;
 
 namespace Avalonia.Win32.Automation
 {

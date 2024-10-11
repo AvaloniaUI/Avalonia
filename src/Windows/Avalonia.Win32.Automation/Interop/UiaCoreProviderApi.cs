@@ -1,9 +1,8 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.Marshalling;
-using Avalonia.Win32.Automation.Marshalling;
 
-namespace Avalonia.Win32.Interop.Automation
+namespace Avalonia.Win32.Automation.Interop
 {
     [Guid("d8e55844-7043-4edc-979d-593cc6b4775e")]
     internal enum AsyncContentLoadedState

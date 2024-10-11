@@ -5,7 +5,7 @@ using System.Runtime.InteropServices.Marshalling;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
 using Avalonia.Platform;
-using Avalonia.Win32.Interop.Automation;
+using Avalonia.Win32.Automation.Interop;
 
 namespace Avalonia.Win32.Automation
 {

@@ -1,5 +1,5 @@
 ﻿using Avalonia.Automation.Provider;
-using UIA = Avalonia.Win32.Interop.Automation;
+using UIA = Avalonia.Win32.Automation.Interop;
 
 namespace Avalonia.Win32.Automation
 {

@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.Marshalling;
 using Avalonia.Controls.Automation.Peers;
-using Avalonia.Win32.Interop.Automation;
+using Avalonia.Win32.Automation.Interop;
 
 namespace Avalonia.Win32.Automation;
 

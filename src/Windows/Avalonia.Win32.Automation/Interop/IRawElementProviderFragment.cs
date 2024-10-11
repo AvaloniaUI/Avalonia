@@ -1,10 +1,9 @@
-using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.Marshalling;
 using Avalonia.Win32.Automation.Marshalling;
 
-namespace Avalonia.Win32.Interop.Automation;
+namespace Avalonia.Win32.Automation.Interop;
 
 [Guid("670c3006-bf4c-428b-8534-e1848f645122")]
 internal enum NavigateDirection

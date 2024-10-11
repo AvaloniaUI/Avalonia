@@ -1,8 +1,7 @@
-using System;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.Marshalling;
 
-namespace Avalonia.Win32.Interop.Automation;
+namespace Avalonia.Win32.Automation.Interop;
 
 [Guid("70d46e77-e3a8-449d-913c-e30eb2afecdb")]
 internal enum DockPosition

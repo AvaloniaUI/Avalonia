@@ -1,8 +1,7 @@
-using System;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.Marshalling;
 
-namespace Avalonia.Win32.Interop.Automation;
+namespace Avalonia.Win32.Automation.Interop;
 
 [Guid("fdc8f176-aed2-477a-8c89-ea04cc5f278d")]
 internal enum WindowVisualState
