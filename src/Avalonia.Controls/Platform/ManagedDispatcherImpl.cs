@@ -12,13 +12,14 @@ namespace Avalonia.Controls.Platform;
 public class ManagedDispatcherImpl : IControlledDispatcherImpl
 {
     private readonly IManagedDispatcherInputProvider? _inputProvider;
+    private readonly IAvnTimeProvider _timeProvider;
     private readonly AutoResetEvent _wakeup = new(false);
     private bool _signaled;
     private readonly object _lock = new();
-    private TimeSpan? _nextTimer; 
-    private long _startedDispatcherAt;
+    private readonly long _startedDispatcherAt;
+    private long? _nextTimerMs;
     private readonly Thread _loopThread = Thread.CurrentThread;
-    private readonly IAvnTimeProvider _timeProvider;
+
 
     public interface IManagedDispatcherInputProvider
     {
@@ -34,8 +35,8 @@ public class ManagedDispatcherImpl : IControlledDispatcherImpl
     internal ManagedDispatcherImpl(IAvnTimeProvider timeProvider, IManagedDispatcherInputProvider? inputProvider)
     {
         _inputProvider = inputProvider;
-        _startedDispatcherAt = timeProvider.GetTimestamp();
         _timeProvider = timeProvider;
+        _startedDispatcherAt = timeProvider.GetTimestamp();
     }
 
     public bool CurrentThreadIsLoopThread => _loopThread == Thread.CurrentThread;
@@ -50,14 +51,12 @@ public class ManagedDispatcherImpl : IControlledDispatcherImpl
 
     public event Action? Signaled;
     public event Action? Timer;
-    public long Now => (long)GetElapsedTime().TotalMilliseconds;
+    public long Now => GetElapsedTimeMs();
     public void UpdateTimer(long? dueTimeInMs)
     {
         lock (_lock)
         {
-            _nextTimer = dueTimeInMs == null
-                ? null
-                : TimeSpan.FromMilliseconds(dueTimeInMs.Value);
+            _nextTimerMs = dueTimeInMs;
             if (!CurrentThreadIsLoopThread)
                 _wakeup.Set();
         }
@@ -90,10 +89,10 @@ public class ManagedDispatcherImpl : IControlledDispatcherImpl
             bool fireTimer = false;
             lock (_lock)
             {
-                if (_nextTimer < GetElapsedTime())
+                if (_nextTimerMs.HasValue && _nextTimerMs < GetElapsedTimeMs())
                 {
                     fireTimer = true;
-                    _nextTimer = null;
+                    _nextTimerMs = null;
                 }
             }
 
@@ -109,18 +108,19 @@ public class ManagedDispatcherImpl : IControlledDispatcherImpl
                 continue;
             }
 
-            TimeSpan? nextTimer;
+            long? nextTimerMs;
             lock (_lock)
             {
-                nextTimer = _nextTimer;
+                nextTimerMs = _nextTimerMs;
             }
 
-            if (nextTimer != null)
+            if (nextTimerMs != null)
             {
-                var waitFor = nextTimer.Value - GetElapsedTime();
-                if (waitFor.TotalMilliseconds < 1)
+                var waitFor = nextTimerMs.Value - GetElapsedTimeMs();
+                if (waitFor < 1)
                     continue;
-                _wakeup.WaitOne(waitFor);
+                Debug.Assert(waitFor < int.MaxValue);
+                _wakeup.WaitOne((int)waitFor);
             }
             else
                 _wakeup.WaitOne();
@@ -129,5 +129,7 @@ public class ManagedDispatcherImpl : IControlledDispatcherImpl
         registration.Dispose();
     }
 
-    private TimeSpan GetElapsedTime() => _timeProvider.GetElapsedTime(_startedDispatcherAt, _timeProvider.GetTimestamp());
+    // Note: Avalonia Dispatcher doesn't work with any precision less than 1ms.
+    private long GetElapsedTimeMs() => (long)_timeProvider
+        .GetElapsedMilliseconds(_startedDispatcherAt, _timeProvider.GetTimestamp());
 }

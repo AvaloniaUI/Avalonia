@@ -68,7 +68,8 @@ namespace Avalonia.Rendering.Composition.Server
                 _batches.Enqueue(batch);
         }
 
-        internal void UpdateServerTime() => ServerNow = TimeProvider.GetElapsedTime(_serverStartedAt, TimeProvider.GetTimestamp());
+        internal void UpdateServerTime() => ServerNow = TimeSpan.FromMilliseconds(
+            TimeProvider.GetElapsedMilliseconds(_serverStartedAt, TimeProvider.GetTimestamp()));
 
         readonly List<CompositionBatch> _reusableToNotifyProcessedList = new();
         readonly List<CompositionBatch> _reusableToNotifyRenderedList = new();

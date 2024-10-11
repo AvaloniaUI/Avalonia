@@ -7,13 +7,13 @@ namespace Avalonia.Compatibility;
 internal interface IAvnTimeProvider
 {
     long GetTimestamp();
-    TimeSpan GetElapsedTime(long startingTimestamp, long endingTimestamp);
+    double GetElapsedMilliseconds(long startingTimestamp, long endingTimestamp);
 }
 
 internal class StopwatchTimeProvider : IAvnTimeProvider
 {
-    public long GetTimestamp() => Stopwatch.GetTimestamp();
+    private static readonly double s_conversionFactor = (double)TimeSpan.TicksPerSecond / (Stopwatch.Frequency * TimeSpan.TicksPerMillisecond);
 
-    public TimeSpan GetElapsedTime(long startingTimestamp, long endingTimestamp) => new(
-        (long)((endingTimestamp - startingTimestamp) * ((double)TimeSpan.TicksPerSecond / Stopwatch.Frequency)));
+    public double GetElapsedMilliseconds(long startingTimestamp, long endingTimestamp) => (endingTimestamp - startingTimestamp) * s_conversionFactor;
+    public long GetTimestamp() => Stopwatch.GetTimestamp();
 }

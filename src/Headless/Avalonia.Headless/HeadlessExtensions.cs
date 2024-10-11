@@ -32,6 +32,10 @@ public static class HeadlessExtensions
         {
             throw new ArgumentException("Only non-negative TimeSpan argument is allowed.", nameof(duration));
         }
+        if (Math.Abs(duration.TotalMilliseconds) < 1)
+        {
+            throw new ArgumentException("Minimal pulse duration is 1ms.", nameof(duration));
+        }
 
         if (duration == default)
         {
@@ -66,9 +70,9 @@ public static class HeadlessExtensions
         ValidateDispatcher(dispatcher);
 
         var timer = (AvaloniaHeadlessPlatform.RenderTimer)AvaloniaLocator.Current.GetRequiredService<IRenderTimer>();
-        var singleFrame = 1d / timer.FramesPerSecond;
+        var singleFrameMs = 1000 / timer.FramesPerSecond;
         for (var c = 0; c < framesCount; c++)
-            dispatcher.PulseTime(TimeSpan.FromSeconds(singleFrame));
+            dispatcher.PulseTime(TimeSpan.FromMilliseconds(Math.Max(1, singleFrameMs)));
     }
 
     /// <summary>

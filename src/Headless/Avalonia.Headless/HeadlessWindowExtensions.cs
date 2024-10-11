@@ -131,7 +131,7 @@ public static class HeadlessWindowExtensions
         // Most of input operations that involve hit test require frame to be rendered.
         Dispatcher.UIThread.PulseRenderFrames(1);
         action(GetImpl(topLevel));
-        Dispatcher.UIThread.PulseTime(TimeSpan.FromTicks(1));
+        Dispatcher.UIThread.PulseTime(TimeSpan.FromMilliseconds(1));
     }
 
     private static IHeadlessWindow GetImpl(this TopLevel topLevel)

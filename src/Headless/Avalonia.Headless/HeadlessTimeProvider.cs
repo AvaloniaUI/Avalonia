@@ -39,6 +39,11 @@ internal class HeadlessTimeProvider : TimeProvider, IAvnTimeProvider
         }
     }
 
+    public double GetElapsedMilliseconds(long startingTimestamp, long endingTimestamp)
+    {
+        return base.GetElapsedTime(startingTimestamp, endingTimestamp).TotalMilliseconds;
+    }
+
     private void Pause()
     {
         lock (_sync)
