@@ -466,7 +466,7 @@ namespace Avalonia.Collections
 
             if (newIndex > oldIndex)
             {
-                modifiedNewIndex -= count;
+                modifiedNewIndex -= count - 1;
             }
 
             _inner.InsertRange(modifiedNewIndex, items);

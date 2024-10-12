@@ -99,14 +99,29 @@ namespace Avalonia.Collections
                         break;
 
                     case NotifyCollectionChangedAction.Move:
-                    case NotifyCollectionChangedAction.Replace:
+                        if (e.OldStartingIndex < 0)
+                        {
+                            goto case NotifyCollectionChangedAction.Reset;
+                        }
+
                         Remove(e.OldStartingIndex, e.OldItems!);
-                        int newIndex = e.NewStartingIndex;
+                        var newIndex = e.NewStartingIndex;
+
                         if(newIndex > e.OldStartingIndex)
                         {
-                            newIndex -= e.OldItems!.Count;
+                            newIndex -= e.OldItems!.Count - 1;
                         }
+
                         Add(newIndex, e.NewItems!);
+                        break;
+                    case NotifyCollectionChangedAction.Replace:
+                        if (e.OldStartingIndex < 0)
+                        {
+                            goto case NotifyCollectionChangedAction.Reset;
+                        }
+
+                        Remove(e.OldStartingIndex, e.OldItems!);
+                        Add(e.NewStartingIndex, e.NewItems!);
                         break;
 
                     case NotifyCollectionChangedAction.Remove:

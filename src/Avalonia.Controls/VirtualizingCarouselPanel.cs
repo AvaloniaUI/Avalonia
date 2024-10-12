@@ -236,9 +236,29 @@ namespace Avalonia.Controls
                     Remove(e.OldStartingIndex, e.OldItems!.Count);
                     break;
                 case NotifyCollectionChangedAction.Replace:
-                case NotifyCollectionChangedAction.Move:
+                    if (e.OldStartingIndex < 0)
+                    {
+                        goto case NotifyCollectionChangedAction.Reset;
+                    }
+
                     Remove(e.OldStartingIndex, e.OldItems!.Count);
                     Add(e.NewStartingIndex, e.NewItems!.Count);
+                    break;
+                case NotifyCollectionChangedAction.Move:
+                    if (e.OldStartingIndex < 0)
+                    {
+                        goto case NotifyCollectionChangedAction.Reset;
+                    }
+
+                    Remove(e.OldStartingIndex, e.OldItems!.Count);
+                    var insertIndex = e.NewStartingIndex;
+
+                    if (e.NewStartingIndex > e.OldStartingIndex)
+                    {
+                        insertIndex -= e.OldItems.Count - 1;
+                    }
+
+                    Add(insertIndex, e.NewItems!.Count);
                     break;
                 case NotifyCollectionChangedAction.Reset:
                     if (_realized is not null)

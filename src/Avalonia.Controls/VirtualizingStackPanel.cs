@@ -272,8 +272,20 @@ namespace Avalonia.Controls
                     _realizedElements.ItemsReplaced(e.OldStartingIndex, e.OldItems!.Count, _recycleElementOnItemRemoved);
                     break;
                 case NotifyCollectionChangedAction.Move:
+                    if (e.OldStartingIndex < 0)
+                    {
+                        goto case NotifyCollectionChangedAction.Reset;
+                    }
+
                     _realizedElements.ItemsRemoved(e.OldStartingIndex, e.OldItems!.Count, _updateElementIndex, _recycleElementOnItemRemoved);
-                    _realizedElements.ItemsInserted(e.NewStartingIndex, e.NewItems!.Count, _updateElementIndex);
+                    var insertIndex = e.NewStartingIndex;
+
+                    if (e.NewStartingIndex > e.OldStartingIndex)
+                    {
+                        insertIndex -= e.OldItems.Count - 1;
+                    }
+
+                    _realizedElements.ItemsInserted(insertIndex, e.NewItems!.Count, _updateElementIndex);
                     break;
                 case NotifyCollectionChangedAction.Reset:
                     _realizedElements.ItemsReset(_recycleElementOnItemRemoved);
