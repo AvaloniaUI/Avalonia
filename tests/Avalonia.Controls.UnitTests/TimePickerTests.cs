@@ -433,11 +433,6 @@ namespace Avalonia.Controls.UnitTests
                     Name = "PART_PickerContainer"
                 }.RegisterInNameScope(scope);
 
-                var firstSpacer = new Rectangle
-                {
-                    Name = "PART_FirstSpacer"
-                }.RegisterInNameScope(scope);
-
                 var secondSpacer = new Rectangle
                 {
                     Name = "PART_SecondSpacer"
@@ -449,7 +444,7 @@ namespace Avalonia.Controls.UnitTests
                 }.RegisterInNameScope(scope);
 
                 var contentPanel = new StackPanel();
-                contentPanel.Children.AddRange(new Control[] { acceptButton, hourSelector, minuteSelector, secondHost, secondSelector, periodHost, periodSelector, pickerContainer, firstSpacer, secondSpacer, thirdSpacer });
+                contentPanel.Children.AddRange(new Control[] { acceptButton, hourSelector, minuteSelector, secondHost, secondSelector, periodHost, periodSelector, pickerContainer, secondSpacer, thirdSpacer });
                 return contentPanel;
             });
         }

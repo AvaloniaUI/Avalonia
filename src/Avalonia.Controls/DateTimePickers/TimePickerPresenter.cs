@@ -28,7 +28,6 @@ namespace Avalonia.Controls
     [TemplatePart("PART_PeriodSelector",   typeof(DateTimePickerPanel), IsRequired = true)]
     [TemplatePart("PART_PeriodUpButton",   typeof(RepeatButton))]
     [TemplatePart("PART_PickerContainer",  typeof(Grid), IsRequired = true)]
-    [TemplatePart("PART_FirstSpacer",      typeof(Rectangle), IsRequired = true)]
     [TemplatePart("PART_SecondSpacer",     typeof(Rectangle), IsRequired = true)]
     [TemplatePart("PART_ThirdSpacer",      typeof(Rectangle), IsRequired = true)]
     public class TimePickerPresenter : PickerPresenterBase
