@@ -198,17 +198,19 @@ public class GetProcAddressInitializationGenerator : IIncrementalGenerator
                             .AppendLine("\");");
 
                     foreach(var p in method.Parameters)
-                        if (NeedsPin(p.Type))
+                        if (NeedsPin(p.Type, p.RefKind))
                             classBuilder.Pad(2)
                                 .Append("fixed(")
-                                .Append(MapToNative(p.Type))
+                                .Append(MapToNative(p.Type, p.RefKind))
                                 .Append(" @__p_")
                                 .Append(p.Name)
                                 .Append(" = ")
+                                .Append(p.RefKind != RefKind.None ? "&" : "")
                                 .Append(p.Name)
                                 .AppendLine(")");
                     
                     classBuilder.Pad(2);
+
                     if (!method.ReturnsVoid)
                         classBuilder.Append("return ");
 
@@ -224,10 +226,9 @@ public class GetProcAddressInitializationGenerator : IIncrementalGenerator
                             firstArg = false;
                         else
                             invokeBuilder.Append(", ");
-                        AppendRefKind(invokeBuilder, p.RefKind);
                         invokeBuilder
                             .Append("@")
-                            .Append(ConvertToNative(p.Name, p.Type));
+                            .Append(ConvertToNative(p.Name, p.Type, p.RefKind));
                     }
 
                     invokeBuilder.Append(")");
@@ -278,16 +279,16 @@ public class GetProcAddressInitializationGenerator : IIncrementalGenerator
         return sb;
     }
 
-    static bool NeedsPin(ITypeSymbol type)
+    static bool NeedsPin(ITypeSymbol type, RefKind refKind)
     {
-        if (type.TypeKind == TypeKind.Array)
+        if (type.TypeKind == TypeKind.Array || refKind != RefKind.None)
             return true;
         return false;
     }
 
-    static string ConvertToNative(string name, ITypeSymbol type)
+    static string ConvertToNative(string name, ITypeSymbol type, RefKind refKind)
     {
-        if (NeedsPin(type))
+        if (NeedsPin(type, refKind))
             return "__p_" + name;
         if (IsBool(type))
             return $"{name} ? 1 : 0";
@@ -304,10 +305,12 @@ public class GetProcAddressInitializationGenerator : IIncrementalGenerator
     static bool IsBool(ITypeSymbol type) => type.GetFullyQualifiedName() == "global::System.Boolean" ||
                                             type.GetFullyQualifiedName() == "bool";
     
-    static string MapToNative(ITypeSymbol type)
+    static string MapToNative(ITypeSymbol type, RefKind refKind)
     {
         if (type.TypeKind == TypeKind.Array)
             return ((IArrayTypeSymbol)type).ElementType.GetFullyQualifiedName() + "*";
+        else if (refKind != RefKind.None)
+            return MapToNative(type, RefKind.None) + "*";
         if (IsBool(type))
             return "int";
         return type.GetFullyQualifiedName();
@@ -322,7 +325,7 @@ public class GetProcAddressInitializationGenerator : IIncrementalGenerator
         StringBuilder fakeDelegate = new(
             "    [global::System.Runtime.InteropServices.UnmanagedFunctionPointerAttribute(global::System.Runtime.InteropServices.CallingConvention.Cdecl)]\n    internal delegate ");
         fakeDelegate
-            .Append(MapToNative(method.ReturnType))
+            .Append(MapToNative(method.ReturnType, RefKind.None))
             .Append(" __wasmDummy")
             .Append(method.Name)
             .Append("(");
@@ -330,20 +333,19 @@ public class GetProcAddressInitializationGenerator : IIncrementalGenerator
 
         int arg = 0;
 
-        void AppendArgCore(StringBuilder builder, string a, RefKind kind, bool isFirstArg)
+        void AppendArgCore(StringBuilder builder, string a, bool isFirstArg)
         {
             if (!isFirstArg)
                 builder.Append(",");
-            AppendRefKind(builder, kind);
             builder.Append(a);
         }
 
-        void AppendArg(string a, RefKind kind, bool returnArg = false)
+        void AppendArg(string a, bool returnArg = false)
         {
-            AppendArgCore(functionPointer, a, kind, arg == 0);
+            AppendArgCore(functionPointer, a, arg == 0);
             if (!returnArg)
             {
-                AppendArgCore(fakeDelegate, a, kind, arg == 0);
+                AppendArgCore(fakeDelegate, a, arg == 0);
                 fakeDelegate.Append($" a{arg}");
             }
 
@@ -352,10 +354,10 @@ public class GetProcAddressInitializationGenerator : IIncrementalGenerator
 
         foreach (var p in method.Parameters)
         {
-            AppendArg(MapToNative(p.Type), p.RefKind);
+            AppendArg(MapToNative(p.Type, p.RefKind));
         }
 
-        AppendArg(MapToNative(method.ReturnType), RefKind.None, true);
+        AppendArg(MapToNative(method.ReturnType, RefKind.None), true);
         functionPointer.Append(">");
         fakeDelegate.Append(");");
         

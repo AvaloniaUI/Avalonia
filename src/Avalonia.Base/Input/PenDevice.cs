@@ -52,7 +52,7 @@ namespace Avalonia.Input
             }
             
             var props = new PointerPointProperties(e.InputModifiers, e.Type.ToUpdateKind(),
-                e.Point.Twist, e.Point.Pressure, e.Point.XTilt, e.Point.YTilt);
+                e.Point.Twist, e.Point.Pressure, e.Point.XTilt, e.Point.YTilt, e.Point.ContactRect);
             var keyModifiers = e.InputModifiers.ToKeyModifiers();
 
             bool shouldReleasePointer = false;

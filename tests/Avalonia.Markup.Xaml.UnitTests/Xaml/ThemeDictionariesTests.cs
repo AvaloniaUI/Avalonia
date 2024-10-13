@@ -45,7 +45,8 @@ public class ThemeDictionariesTests : XamlTestBase
         
         Assert.Equal(Colors.White, ((ISolidColorBrush)border.Background)!.Color);
 
-        themeVariantScope.RequestedThemeVariant = ThemeVariant.Dark;
+        var themeVariantKey = new string(['D', 'a', 'r', 'k']); // Ensure that a non-interned string works
+        themeVariantScope.RequestedThemeVariant = new ThemeVariant(themeVariantKey, null);
 
         Assert.Equal(Colors.Black, ((ISolidColorBrush)border.Background)!.Color);
     }

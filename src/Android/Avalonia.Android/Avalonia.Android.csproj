@@ -4,7 +4,6 @@
     <SupportedOSPlatformVersion>$(AvsMinSupportedAndroidVersion)</SupportedOSPlatformVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AndroidResgenNamespace>Avalonia.Android.Internal</AndroidResgenNamespace>
-    <EnableRuntimeMarshalling>true</EnableRuntimeMarshalling>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\packages\Avalonia\Avalonia.csproj" />
