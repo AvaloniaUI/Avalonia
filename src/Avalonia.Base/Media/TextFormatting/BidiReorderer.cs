@@ -169,7 +169,7 @@ namespace Avalonia.Media.TextFormatting
 
             if (run is TextEndOfLine)
             {
-                return defaultLevel;
+                return 0;
             }
 
             if(previousLevel is not null)
