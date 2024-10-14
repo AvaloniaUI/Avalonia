@@ -715,6 +715,8 @@ namespace Avalonia.Controls
             _textLayout?.Dispose();
             _textLayout = null;
 
+            InvalidateVisual();
+
             var inlines = Inlines;
 
             if (HasComplexContent)
@@ -749,6 +751,7 @@ namespace Avalonia.Controls
                 _textLayout?.Dispose();
                 _textLayout = null;
                 _constraint = availableSize;
+                InvalidateVisual();
             }
 
             if (HasComplexContent)
