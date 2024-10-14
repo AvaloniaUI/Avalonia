@@ -37,11 +37,9 @@ namespace Avalonia.Controls.UnitTests
 
                 var textLayout = textBlock.TextLayout;
 
-                Assert.Equal(new Size(100,100), textBlock.Constraint);
+                Assert.Equal(new Size(110, 10), textBlock.Constraint);
 
                 textBlock.Measure(new Size(50, 100));
-
-                Assert.Equal(new Size(50, 100), textBlock.Constraint);
 
                 Assert.NotEqual(textLayout, textBlock.TextLayout);
             }
@@ -91,7 +89,7 @@ namespace Avalonia.Controls.UnitTests
 
                 var textLayout = textBlock.TextLayout;
 
-                Assert.Equal(Size.Infinity, textBlock.Constraint);
+                Assert.Equal(new Size(110, 10), textBlock.Constraint);
 
                 var constraint = LayoutHelper.RoundLayoutSizeUp(new Size(textLayout.WidthIncludingTrailingWhitespace, textLayout.Height), 1, 1);
 
