@@ -133,7 +133,9 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the scaling factor for Window positioning and sizing.
         /// </summary>
-        public double DesktopScaling => PlatformImpl?.DesktopScaling ?? 1;
+        public double DesktopScaling => DesktopScalingOverride ?? PlatformImpl?.DesktopScaling ?? 1;
+
+        private protected double? DesktopScalingOverride { get; set; }
         
         /// <summary>
         /// Activates the window.

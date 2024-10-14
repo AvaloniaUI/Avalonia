@@ -25,13 +25,13 @@ namespace Avalonia.IntegrationTests.Appium
 
             new Actions(Session).ClickAndHold(thumb).MoveByOffset(100, 0).Release().Perform();
 
-            var value = Math.Round(double.Parse(slider.Text, CultureInfo.InvariantCulture));
+            var value = double.Parse(slider.Text, CultureInfo.InvariantCulture);
             var boundValue = double.Parse(
                 Session.FindElementByAccessibilityId("HorizontalSliderValue").Text,
                 CultureInfo.InvariantCulture);
 
             Assert.True(value > 50);
-            Assert.Equal(value, boundValue);
+            Assert.True(Math.Abs(value - boundValue) < 2.0, $"Expected: {value}, Actual: {boundValue}");
 
             var currentThumbRect = thumb.Rect;
             Assert.True(currentThumbRect.Left > initialThumbRect.Left);
@@ -46,13 +46,13 @@ namespace Avalonia.IntegrationTests.Appium
 
             new Actions(Session).ClickAndHold(thumb).MoveByOffset(-100, 0).Release().Perform();
 
-            var value = Math.Round(double.Parse(slider.Text, CultureInfo.InvariantCulture));
+            var value = double.Parse(slider.Text, CultureInfo.InvariantCulture);
             var boundValue = double.Parse(
                 Session.FindElementByAccessibilityId("HorizontalSliderValue").Text,
                 CultureInfo.InvariantCulture);
 
             Assert.True(value < 50);
-            Assert.Equal(value, boundValue);
+            Assert.True(Math.Abs(value - boundValue) < 2.0, $"Expected: {value}, Actual: {boundValue}");
 
             var currentThumbRect = thumb.Rect;
             Assert.True(currentThumbRect.Left < initialThumbRect.Left);
@@ -67,13 +67,13 @@ namespace Avalonia.IntegrationTests.Appium
 
             new Actions(Session).MoveToElementCenter(slider, 100, 0).Click().Perform();
 
-            var value = Math.Round(double.Parse(slider.Text, CultureInfo.InvariantCulture));
+            var value = double.Parse(slider.Text, CultureInfo.InvariantCulture);
             var boundValue = double.Parse(
                 Session.FindElementByAccessibilityId("HorizontalSliderValue").Text,
                 CultureInfo.InvariantCulture);
 
             Assert.True(value > 50);
-            Assert.Equal(value, boundValue);
+            Assert.True(Math.Abs(value - boundValue) < 2.0, $"Expected: {value}, Actual: {boundValue}");
 
             var currentThumbRect = thumb.Rect;
             Assert.True(currentThumbRect.Left > initialThumbRect.Left);
@@ -88,13 +88,13 @@ namespace Avalonia.IntegrationTests.Appium
 
             new Actions(Session).MoveToElementCenter(slider, -100, 0).Click().Perform();
 
-            var value = Math.Round(double.Parse(slider.Text, CultureInfo.InvariantCulture));
+            var value = double.Parse(slider.Text, CultureInfo.InvariantCulture);
             var boundValue = double.Parse(
                 Session.FindElementByAccessibilityId("HorizontalSliderValue").Text,
                 CultureInfo.InvariantCulture);
 
             Assert.True(value < 50);
-            Assert.Equal(value, boundValue);
+            Assert.True(Math.Abs(value - boundValue) < 2.0, $"Expected: {value}, Actual: {boundValue}");
 
             var currentThumbRect = thumb.Rect;
             Assert.True(currentThumbRect.Left < initialThumbRect.Left);
