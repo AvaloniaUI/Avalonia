@@ -702,7 +702,14 @@ namespace Avalonia.Controls
             var scale = LayoutHelper.GetLayoutScale(this);
             var padding = LayoutHelper.RoundLayoutThickness(Padding, scale, scale);
 
-            _constraint = availableSize.Deflate(padding);
+            var deflatedSize = availableSize.Deflate(padding);
+
+            if(deflatedSize == _constraint)
+            {
+                return _constraint;
+            }
+
+            _constraint = deflatedSize;
 
             //Reset TextLayout otherwise constraint might be outdated.
             _textLayout?.Dispose();
@@ -724,7 +731,9 @@ namespace Avalonia.Controls
 
             var width = TextLayout.OverhangLeading + TextLayout.WidthIncludingTrailingWhitespace + TextLayout.OverhangTrailing;
 
-            return new Size(width, TextLayout.Height).Inflate(padding);
+            _constraint = LayoutHelper.RoundLayoutSizeUp(new Size(width, TextLayout.Height).Inflate(padding), 1, 1);
+
+            return _constraint;
         }
 
         protected override Size ArrangeOverride(Size finalSize)
@@ -732,12 +741,14 @@ namespace Avalonia.Controls
             var scale = LayoutHelper.GetLayoutScale(this);
             var padding = LayoutHelper.RoundLayoutThickness(Padding, scale, scale);
 
+            var availableSize = finalSize.Deflate(padding);
+
             //Fixes: #11019
-            if (finalSize.Width < _constraint.Width)
+            if (availableSize != _constraint)
             {
                 _textLayout?.Dispose();
                 _textLayout = null;
-                _constraint = finalSize.Deflate(padding);
+                _constraint = availableSize;
             }
 
             if (HasComplexContent)
