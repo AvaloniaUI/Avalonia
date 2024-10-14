@@ -518,3 +518,19 @@ HRESULT WindowBaseImpl::SetParent(IAvnWindowBase *parent) {
         return S_OK;
     }
 }
+
+HRESULT WindowBaseImpl::SetCanBecomeKeyWindow(bool canBecomeKeyWindow){
+    START_COM_CALL;
+    
+    CanBecomeKeyWindow = canBecomeKeyWindow;
+    
+    return S_OK;
+}
+
+HRESULT WindowBaseImpl::GetCanBecomeKeyWindow(bool *ret){
+    START_COM_CALL;
+    
+    *ret = CanBecomeKeyWindow;
+    
+    return S_OK;
+}

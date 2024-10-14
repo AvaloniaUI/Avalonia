@@ -85,6 +85,9 @@ public:
                            
     virtual HRESULT SetParent(IAvnWindowBase* parent) override;
                            
+    virtual HRESULT SetCanBecomeKeyWindow (bool canBecomeKeyWindow) override;
+                           
+    virtual HRESULT GetCanBecomeKeyWindow (bool* ret) override;
 protected:
     virtual NSWindowStyleMask CalculateStyleMask() = 0;
     virtual void UpdateAppearance() override;
@@ -107,11 +110,13 @@ protected:
     bool _shown;
     std::list<WindowBaseImpl*> _children;
     bool _isModal;
+    
 
 public:
     WindowBaseImpl* Parent = nullptr;
     NSWindow * Window;
     ComPtr<IAvnWindowBaseEvents> BaseEvents;
+    bool CanBecomeKeyWindow;
 };
 
 #endif //AVALONIA_NATIVE_OSX_WINDOWBASEIMPL_H
