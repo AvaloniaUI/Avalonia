@@ -187,13 +187,19 @@ internal class GlibDispatcherImpl :
             // Completely drain X11 socket while we are at it
             while (_x11Events.IsPending)
             {
-                _x11Events.DispatchX11Events(token);
-                while (_platform.EventGrouperDispatchQueue.HasJobs)
+                // If we don't actually drain our X11 socket, GLib _will_ call us again even if
+                // we request the run loop to quit
+                _x11Events.DispatchX11Events(CancellationToken.None);
+                if (!token.IsCancellationRequested)
                 {
-                    CheckSignaled();
-                    _platform.EventGrouperDispatchQueue.DispatchNext();
+                    while (_platform.EventGrouperDispatchQueue.HasJobs)
+                    {
+                        CheckSignaled();
+                        _platform.EventGrouperDispatchQueue.DispatchNext();
+                    }
+
+                    _x11Events.Flush();
                 }
-                _x11Events.Flush();
             }
         }
         catch (Exception e)
