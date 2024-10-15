@@ -45,10 +45,6 @@ jobs:
       sudo pkill IntegrationTestApp
     displayName: 'Stop IntegrationTestApp'
 
-  - publish: appium.out
-    displayName: 'Publish appium logs on failure'
-    condition: failed()
-
 - job: Windows
   pool:
     vmImage: 'windows-2022'
