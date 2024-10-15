@@ -3,131 +3,13 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Platform.Interop;
+using Avalonia.Threading;
+using Avalonia.X11.Dispatching;
+using Avalonia.X11.Interop;
 
 // ReSharper disable IdentifierTypo
 namespace Avalonia.X11.NativeDialogs
 {
-    internal static unsafe class Glib
-    {
-        private const string GlibName = "libglib-2.0.so.0";
-        private const string GObjectName = "libgobject-2.0.so.0";
-
-        [DllImport(GlibName)]
-        public static extern void g_slist_free(GSList* data);
-
-        [DllImport(GObjectName)]
-        private static extern void g_object_ref(IntPtr instance);
-
-        [DllImport(GObjectName)]
-        private static extern ulong g_signal_connect_object(IntPtr instance, Utf8Buffer signal,
-            IntPtr handler, IntPtr userData, int flags);
-
-        [DllImport(GObjectName)]
-        private static extern void g_object_unref(IntPtr instance);
-
-        [DllImport(GObjectName)]
-        private static extern ulong g_signal_handler_disconnect(IntPtr instance, ulong connectionId);
-
-        private delegate bool timeout_callback(IntPtr data);
-
-        [DllImport(GlibName)]
-        private static extern ulong g_timeout_add_full(int prio, uint interval, timeout_callback callback, IntPtr data,
-            IntPtr destroy);
-
-
-        private class ConnectedSignal : IDisposable
-        {
-            private readonly IntPtr _instance;
-            private GCHandle _handle;
-            private readonly ulong _id;
-
-            public ConnectedSignal(IntPtr instance, GCHandle handle, ulong id)
-            {
-                _instance = instance;
-                g_object_ref(instance);
-                _handle = handle;
-                _id = id;
-            }
-
-            public void Dispose()
-            {
-                if (_handle.IsAllocated)
-                {
-                    g_signal_handler_disconnect(_instance, _id);
-                    g_object_unref(_instance);
-                    _handle.Free();
-                }
-            }
-        }
-
-        public static IDisposable ConnectSignal<T>(IntPtr obj, string name, T handler)
-        {
-            var handle = GCHandle.Alloc(handler);
-            var ptr = Marshal.GetFunctionPointerForDelegate<T>(handler);
-            using (var utf = new Utf8Buffer(name))
-            {
-                var id = g_signal_connect_object(obj, utf, ptr, IntPtr.Zero, 0);
-                if (id == 0)
-                    throw new ArgumentException("Unable to connect to signal " + name);
-                return new ConnectedSignal(obj, handle, id);
-            }
-        }
-
-
-        private static bool TimeoutHandler(IntPtr data)
-        {
-            var handle = GCHandle.FromIntPtr(data);
-            var cb = (Func<bool>)handle.Target;
-            if (!cb())
-            {
-                handle.Free();
-                return false;
-            }
-
-            return true;
-        }
-
-        private static readonly timeout_callback s_pinnedHandler;
-
-        static Glib()
-        {
-            s_pinnedHandler = TimeoutHandler;
-        }
-
-        private static void AddTimeout(int priority, uint interval, Func<bool> callback)
-        {
-            var handle = GCHandle.Alloc(callback);
-            g_timeout_add_full(priority, interval, s_pinnedHandler, GCHandle.ToIntPtr(handle), IntPtr.Zero);
-        }
-
-        public static Task<T> RunOnGlibThread<T>(Func<T> action)
-        {
-            var tcs = new TaskCompletionSource<T>();
-            AddTimeout(0, 0, () =>
-            {
-
-                try
-                {
-                    tcs.SetResult(action());
-                }
-                catch (Exception e)
-                {
-                    tcs.TrySetException(e);
-                }
-
-                return false;
-            });
-            return tcs.Task;
-        }
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe struct GSList
-    {
-        public readonly IntPtr Data;
-        public readonly GSList* Next;
-    }
-
     internal enum GtkFileChooserAction
     {
         Open,
@@ -247,6 +129,9 @@ namespace Avalonia.X11.NativeDialogs
 
         [DllImport(GdkName)]
         private static extern IntPtr gdk_display_get_default();
+        
+        [DllImport(GdkName)]
+        private static extern IntPtr gdk_x11_display_get_xdisplay(IntPtr display);
 
         [DllImport(GtkName)]
         private static extern IntPtr gtk_application_new(Utf8Buffer appId, int flags);
@@ -265,10 +150,21 @@ namespace Avalonia.X11.NativeDialogs
                 return s_startGtkTask ??= StartGtkCore();
         }
 
-        private static void GtkThread(TaskCompletionSource<bool> tcs)
+        static bool InitializeGtk()
         {
             try
             {
+                // Check if GTK was already initialized
+                var existingDisplay = gdk_display_get_default();
+                if (existingDisplay != IntPtr.Zero)
+                {
+                    if (gdk_x11_display_get_xdisplay(existingDisplay) == IntPtr.Zero)
+                        return false;
+                    s_display = existingDisplay;
+                    return true;
+
+                }
+                
                 try
                 {
                     using (var backends = new Utf8Buffer("x11"))
@@ -284,8 +180,7 @@ namespace Avalonia.X11.NativeDialogs
 
                 if (!gtk_init_check(0, IntPtr.Zero))
                 {
-                    tcs.SetResult(false);
-                    return;
+                    return false;
                 }
 
                 IntPtr app;
@@ -293,26 +188,51 @@ namespace Avalonia.X11.NativeDialogs
                     app = gtk_application_new(utf, 0);
                 if (app == IntPtr.Zero)
                 {
-                    tcs.SetResult(false);
-                    return;
+                    return false;
                 }
 
                 s_display = gdk_display_get_default();
+            }
+            catch
+            {
+                return false;
+            }
+
+            return true;
+        }
+        
+        private static void GtkThread(TaskCompletionSource<bool> tcs)
+        {
+            try
+            {
+                if (!InitializeGtk())
+                {
+                    tcs.SetResult(false);
+                    return;
+                }
+                
                 tcs.SetResult(true);
                 while (true)
                     gtk_main_iteration();
             }
             catch
             {
-                tcs.SetResult(false);
+                tcs.TrySetResult(false);
             }
         }
         
         private static Task<bool> StartGtkCore()
         {
-            var tcs = new TaskCompletionSource<bool>();
-            new Thread(() => GtkThread(tcs)) {Name = "GTK3THREAD", IsBackground = true}.Start();
-            return tcs.Task;
+            if (AvaloniaLocator.Current.GetService<X11PlatformOptions>()?.UseGLibMainLoop == true)
+            {
+                return Task.FromResult(InitializeGtk());
+            }
+            else
+            {
+                var tcs = new TaskCompletionSource<bool>();
+                new Thread(() => GtkThread(tcs)) { Name = "GTK3THREAD", IsBackground = true }.Start();
+                return tcs.Task;
+            }
         }
     }
 }

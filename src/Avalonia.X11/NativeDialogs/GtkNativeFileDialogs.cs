@@ -10,7 +10,7 @@ using Avalonia.Platform;
 using Avalonia.Platform.Interop;
 using Avalonia.Platform.Storage;
 using Avalonia.Platform.Storage.FileIO;
-using static Avalonia.X11.NativeDialogs.Glib;
+using static Avalonia.X11.Interop.Glib;
 using static Avalonia.X11.NativeDialogs.Gtk;
 
 namespace Avalonia.X11.NativeDialogs

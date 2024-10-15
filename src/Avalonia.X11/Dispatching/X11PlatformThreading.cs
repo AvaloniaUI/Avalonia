@@ -12,11 +12,7 @@ namespace Avalonia.X11
     internal unsafe class X11PlatformThreading : IControlledDispatcherImpl
     {
         private readonly AvaloniaX11Platform _platform;
-        private readonly IntPtr _display;
-
-        public delegate void EventHandler(ref XEvent xev);
-        private readonly Dictionary<IntPtr, EventHandler> _eventHandlers;
-        private Thread _mainThread;
+        private Thread _mainThread = Thread.CurrentThread;
 
         [StructLayout(LayoutKind.Explicit)]
         private struct epoll_data
@@ -72,14 +68,12 @@ namespace Avalonia.X11
         private long? _nextTimer;
         private int _epoll;
         private Stopwatch _clock = Stopwatch.StartNew();
+        private readonly X11EventDispatcher _x11Events;
 
         public X11PlatformThreading(AvaloniaX11Platform platform)
         {
             _platform = platform;
-            _display = platform.Display;
-            _eventHandlers = platform.Windows;
-            _mainThread = Thread.CurrentThread;
-            var fd = XLib.XConnectionNumber(_display);
+            _x11Events = new X11EventDispatcher(platform);
             var ev = new epoll_event()
             {
                 events = EPOLLIN,
@@ -89,7 +83,7 @@ namespace Avalonia.X11
             if (_epoll == -1)
                 throw new X11Exception("epoll_create1 failed");
 
-            if (epoll_ctl(_epoll, EPOLL_CTL_ADD, fd, ref ev) == -1)
+            if (epoll_ctl(_epoll, EPOLL_CTL_ADD, _x11Events.Fd, ref ev) == -1)
                 throw new X11Exception("Unable to attach X11 connection handle to epoll");
 
             var fds = stackalloc int[2];
@@ -117,40 +111,7 @@ namespace Avalonia.X11
 
             Signaled?.Invoke();
         }
-
-        private unsafe void HandleX11(CancellationToken cancellationToken)
-        {
-            while (XPending(_display) != 0)
-            {
-                if (cancellationToken.IsCancellationRequested)
-                    return;
-                
-                XNextEvent(_display, out var xev);
-                if(XFilterEvent(ref xev, IntPtr.Zero))
-                    continue;
-
-                if (xev.type == XEventName.GenericEvent)
-                    XGetEventData(_display, &xev.GenericEventCookie);
-                try
-                {
-                    if (xev.type == XEventName.GenericEvent)
-                    {
-                        if (_platform.XI2 != null && _platform.Info.XInputOpcode ==
-                            xev.GenericEventCookie.extension)
-                        {
-                            _platform.XI2.OnEvent((XIEvent*)xev.GenericEventCookie.data);
-                        }
-                    }
-                    else if (_eventHandlers.TryGetValue(xev.AnyEvent.window, out var handler))
-                        handler(ref xev);
-                }
-                finally
-                {
-                    if (xev.type == XEventName.GenericEvent && xev.GenericEventCookie.data != null)
-                        XFreeEventData(_display, &xev.GenericEventCookie);
-                }
-            }
-        }
+        
 
         public void RunLoop(CancellationToken cancellationToken)
         {
@@ -166,9 +127,9 @@ namespace Avalonia.X11
                     return;
                 
                 //Flush whatever requests were made to XServer
-                XFlush(_display);
+                _x11Events.Flush();
                 epoll_event ev;
-                if (XPending(_display) == 0)
+                if (!_x11Events.IsPending)
                 {
                     now = _clock.ElapsedMilliseconds;
                     if (_nextTimer < now)
@@ -190,7 +151,7 @@ namespace Avalonia.X11
                 if (cancellationToken.IsCancellationRequested)
                     return;
                 CheckSignaled();
-                HandleX11(cancellationToken);
+                _x11Events.DispatchX11Events(cancellationToken);
                 while (_platform.EventGrouperDispatchQueue.HasJobs)
                 {
                     CheckSignaled();
@@ -238,6 +199,6 @@ namespace Avalonia.X11
         public long Now => _clock.ElapsedMilliseconds;
         public bool CanQueryPendingInput => true;
 
-        public bool HasPendingInput => _platform.EventGrouperDispatchQueue.HasJobs || XPending(_display) != 0;
+        public bool HasPendingInput => _platform.EventGrouperDispatchQueue.HasJobs || _x11Events.IsPending;
     }
 }

@@ -10,6 +10,6 @@ public class GtkInteropHelper
     {
         if (!await NativeDialogs.Gtk.StartGtk().ConfigureAwait(false))
             throw new Win32Exception("Unable to initialize GTK");
-        return await NativeDialogs.Glib.RunOnGlibThread(cb).ConfigureAwait(false);
+        return await Glib.RunOnGlibThread(cb).ConfigureAwait(false);
     }
 }

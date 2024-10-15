@@ -5,7 +5,7 @@ using Avalonia.Platform.Interop;
 using Avalonia.X11.Interop;
 using Avalonia.X11.NativeDialogs;
 using static Avalonia.X11.NativeDialogs.Gtk;
-using static Avalonia.X11.NativeDialogs.Glib;
+using static Avalonia.X11.Interop.Glib;
 
 namespace ControlCatalog.NetCore;
 
