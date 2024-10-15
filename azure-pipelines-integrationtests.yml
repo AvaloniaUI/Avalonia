@@ -25,8 +25,8 @@ jobs:
       arch="arm64"
       fi
       sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
-      pkill node
-      pkill testmanagerd
+      sudo pkill node
+      sudo pkill testmanagerd
       sudo appium --base-path=/wd/hub > appium.out &
       pkill IntegrationTestApp
       ./build.sh CompileNative
@@ -45,8 +45,8 @@ jobs:
       arguments: '-l "console;verbosity=detailed" /p:IsRunningAppium2=true'
 
   - script: |
-      pkill IntegrationTestApp
-      pkill node
+      sudo pkill IntegrationTestApp
+      sudo pkill node
     displayName: 'Stop Appium'
 
   - publish: appium.out
