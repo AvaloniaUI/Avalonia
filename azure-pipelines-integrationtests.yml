@@ -1,7 +1,7 @@
 jobs:
 - job: Mac
   pool:
-    name: 'AvaloniaMacPool'
+    name: 'AvaloniaMacAppium2Pool'
 
   steps:
   - task: UseDotNet@2
