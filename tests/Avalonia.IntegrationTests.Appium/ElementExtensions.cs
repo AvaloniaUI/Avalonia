@@ -151,7 +151,25 @@ namespace Avalonia.IntegrationTests.Appium
                 if (delay is not null)
                     Thread.Sleep((int)delay.Value.TotalMilliseconds);
 
-                var newHandle = session.WindowHandles.Except(oldHandles).SingleOrDefault();
+                string? newHandle = null;
+                IWebElement? newChildWindow = null;
+
+                for (var i = 0; i < 10; ++i)
+                {
+                    newHandle = session.WindowHandles.Except(oldHandles).SingleOrDefault();
+                    if (newHandle is not null)
+                        break;
+
+                    // If a new window handle hasn't been added to the session then it's likely
+                    // that a child window was opened. These don't appear in session.WindowHandles
+                    // so we have to use an XPath query to get hold of it.
+                    var newChildWindows = session.FindElements(By.XPath("//Window"));
+                    newChildWindow = newChildWindows.Except(oldChildWindows).SingleOrDefault();
+                    if (newChildWindow is not null)
+                        break;
+
+                    Thread.Sleep(100);
+                }
 
                 if (newHandle is not null)
                 {
@@ -164,20 +182,17 @@ namespace Avalonia.IntegrationTests.Appium
                         session.SwitchTo().Window(oldHandle);
                     });
                 }
-                else
-                {
-                    // If a new window handle hasn't been added to the session then it's likely
-                    // that a child window was opened. These don't appear in session.WindowHandles
-                    // so we have to use an XPath query to get hold of it.
-                    var newChildWindows = session.FindElements(By.XPath("//Window"));
-                    var pageSource = session.PageSource;
-                    var childWindow = Assert.Single(newChildWindows.Except(oldChildWindows));
 
+                if (newChildWindow is not null)
+                {
                     return Disposable.Create(() =>
                     {
-                        childWindow.SendKeys(Keys.Alt + Keys.F4 + Keys.Alt);
+                        newChildWindow.SendKeys(Keys.Alt + Keys.F4 + Keys.Alt);
                     });
                 }
+
+                Assert.Fail("Could not find the newly opened window");
+                return Disposable.Empty;
             }
             else
             {
