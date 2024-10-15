@@ -448,6 +448,9 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { "CB", LineBreakClass.ContingentBreak},
                 { "XX", LineBreakClass.Unknown},
                 { "AI", LineBreakClass.Ambiguous},
+                { "AK", LineBreakClass.Aksara},
+                { "AP", LineBreakClass.AksaraPrebase},
+                { "AS", LineBreakClass.AksaraStart},
                 { "BK", LineBreakClass.MandatoryBreak},
                 { "CJ", LineBreakClass.ConditionalJapaneseStarter},
                 { "CR", LineBreakClass.CarriageReturn},
@@ -456,6 +459,8 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { "SA", LineBreakClass.ComplexContext},
                 { "SG", LineBreakClass.Surrogate},
                 { "SP", LineBreakClass.Space},
+                { "VF", LineBreakClass.ViramaFinal},
+                { "VI", LineBreakClass.Virama},
         };
 
         public static LineBreakClass GetLineBreakClass(string tag)

@@ -40,6 +40,33 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
             return entries;
         }
 
+        public static List<DataEntry> CreateEastAsianWidthClassEnum()
+        {
+            var entries = new List<DataEntry>();
+
+            ParseDataEntries("# East_Asian_Width (ea)", entries);
+
+            using (var stream = File.Create("Generated\\EastAsianWidthClass.cs"))
+            using (var writer = new StreamWriter(stream))
+            {
+                writer.WriteLine("namespace Avalonia.Media.TextFormatting.Unicode");
+                writer.WriteLine("{");
+                writer.WriteLine("    public enum EastAsianWidthClass");
+                writer.WriteLine("    {");
+
+                foreach (var entry in entries)
+                {
+                    writer.WriteLine("        " + entry.Name.Replace("_", "") + ", //" + entry.Tag +
+                                     (string.IsNullOrEmpty(entry.Comment) ? string.Empty : "#" + entry.Comment));
+                }
+
+                writer.WriteLine("    }");
+                writer.WriteLine("}");
+            }
+
+            return entries;
+        }
+
         public static List<DataEntry> CreateGeneralCategoryEnum()
         {
             var entries = new List<DataEntry> { new DataEntry("Other", "C", " Cc | Cf | Cn | Co | Cs") };
@@ -320,9 +347,9 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
                 
                 WritePropertyValueAlias(writer, unicodeDataEntries.LineBreakClasses, "LineBreakClass", "Unknown");
 
-                WritePropertyValueAlias(writer, biDiDataEntries.PairedBracketTypes, "BiDiPairedBracketType", "None");
+                WritePropertyValueAlias(writer, biDiDataEntries.PairedBracketTypes, "BidiPairedBracketType", "None");
                 
-                WritePropertyValueAlias(writer, biDiDataEntries.BiDiClasses, "BiDiClass", "LeftToRight");
+                WritePropertyValueAlias(writer, biDiDataEntries.BiDiClasses, "BidiClass", "LeftToRight");
 
                 writer.WriteLine("    }");
                 writer.WriteLine("}");

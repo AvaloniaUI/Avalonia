@@ -105,5 +105,16 @@ namespace Avalonia.Media.TextFormatting.Unicode
         {
             return (GraphemeBreakClass)GraphemeBreakTrie.Trie.Get(codepoint);
         }
+
+        /// <summary>
+        /// Gets the EastAsianWidth class for the Unicode codepoint.
+        /// </summary>
+        /// <param name="codepoint">The codepoint in question.</param>
+        /// <returns>The code point's EastAsianWidth class.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static EastAsianWidthClass GetEastAsianWidthClass(uint codepoint)
+        {
+            return (EastAsianWidthClass)EastAsianWidthTrie.Trie.Get(codepoint);
+        }
     }
 }
