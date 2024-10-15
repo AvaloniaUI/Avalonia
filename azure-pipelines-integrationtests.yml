@@ -27,7 +27,7 @@ jobs:
       sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
       pkill node
       pkill testmanagerd
-      appium --base-path=/wd/hub > appium.out &
+      sudo appium --base-path=/wd/hub > appium.out &
       pkill IntegrationTestApp
       ./build.sh CompileNative
       rm -rf $(osascript -e "POSIX path of (path to application id \"net.avaloniaui.avalonia.integrationtestapp\")")
