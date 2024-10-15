@@ -25,9 +25,6 @@ jobs:
       arch="arm64"
       fi
       sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
-      sudo pkill node
-      sudo pkill testmanagerd
-      sudo appium --base-path=/wd/hub > appium.out &
       pkill IntegrationTestApp
       ./build.sh CompileNative
       rm -rf $(osascript -e "POSIX path of (path to application id \"net.avaloniaui.avalonia.integrationtestapp\")")
@@ -46,8 +43,7 @@ jobs:
 
   - script: |
       sudo pkill IntegrationTestApp
-      sudo pkill node
-    displayName: 'Stop Appium'
+    displayName: 'Stop IntegrationTestApp'
 
   - publish: appium.out
     displayName: 'Publish appium logs on failure'
