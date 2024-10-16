@@ -30,7 +30,10 @@ namespace Avalonia.Controls
         {
             AccessKeyHandler.AccessKeyPressedEvent.AddClassHandler<Label>((lbl, args) => lbl.LabelActivated(args));
             // IsTabStopProperty.OverrideDefaultValue<Label>(false)
-            FocusableProperty.OverrideDefaultValue<Label>(false);
+            
+            // Set the default value to true, to ensure that the target control can be focused,
+            // when the label is focused. 
+            FocusableProperty.OverrideDefaultValue<Label>(true);
         }
 
         /// <summary>
@@ -60,6 +63,15 @@ namespace Avalonia.Controls
                 LabelActivated(e);
             }
             base.OnPointerPressed(e);
+        }
+
+        /// <summary>
+        /// Focus the target control instead if the label gets the focus. 
+        /// </summary>
+        /// <param name="e">The event args</param>
+        protected override void OnGotFocus(GotFocusEventArgs e)
+        {
+            Target?.Focus();
         }
 
         protected override AutomationPeer OnCreateAutomationPeer()
