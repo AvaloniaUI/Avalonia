@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Reactive.Subjects;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
@@ -91,6 +92,67 @@ namespace Avalonia.Controls.UnitTests
 
                 timePicker.UseSeconds = false;
                 Assert.False(periodTextHost.IsVisible);
+            }
+        }
+
+        [Fact]
+        public void UseSeconds_Equals_False_Should_Have_Zero_Seconds()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                TimePicker timePicker = new TimePicker()
+                {
+                    UseSeconds = false,
+                    Template = CreateTemplate(includePopup: true)
+                };
+                timePicker.ApplyTemplate();
+
+                var desc = timePicker.GetVisualDescendants();
+                Assert.True(desc.Count() > 2);
+
+                // find button
+                Assert.True(desc.ElementAt(1) is Button);
+                var btn = (Button)desc.ElementAt(1);
+
+                Assert.True(desc.ElementAt(2) is Popup);
+                var popup = (Popup)desc.ElementAt(2);
+
+                Assert.True(popup.Child is TimePickerPresenter);
+                var timePickerPresenter = (TimePickerPresenter)popup.Child;
+
+                var panel = (Panel)timePickerPresenter.VisualChildren[0];
+                var acceptBtn = (Button)panel.VisualChildren[0];
+
+                Assert.False(popup.IsOpen);
+                btn.PerformClick();
+                Assert.True(popup.IsOpen);
+                Assert.False(timePickerPresenter.UseSeconds);
+
+                acceptBtn.PerformClick();
+
+                Assert.Equal(0, timePickerPresenter.Time.Seconds);
+                Assert.Equal(0, timePicker.SelectedTime?.Seconds);
+            }
+        }
+
+        [Fact]
+        public void TimePickerPresenter_UseSeconds_Equals_False_Should_Have_Zero_Seconds()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                TimePickerPresenter timePickerPresenter = new TimePickerPresenter()
+                {
+                    UseSeconds = false,
+                    Template = CreatePickerTemplate(),
+                };
+                timePickerPresenter.ApplyTemplate();
+
+                var panel = (Panel)timePickerPresenter.VisualChildren[0];
+                var acceptBtn = (Button)panel.VisualChildren[0];
+
+                acceptBtn.PerformClick();
+
+                Assert.Equal(0, timePickerPresenter.Time.Seconds);
             }
         }
 
@@ -219,7 +281,7 @@ namespace Avalonia.Controls.UnitTests
             textShaperImpl: new HeadlessTextShaperStub(),
             renderInterface: new HeadlessPlatformRenderInterface());
 
-        private static IControlTemplate CreateTemplate()
+        private static IControlTemplate CreateTemplate(bool includePopup = false)
         {
             return new FuncControlTemplate((control, scope) =>
             {
@@ -227,6 +289,7 @@ namespace Avalonia.Controls.UnitTests
                 {
                     Name = "LayoutRoot"
                 }.RegisterInNameScope(scope);
+
                 //Skip contentpresenter
                 var flyoutButton = new Button
                 {
@@ -288,7 +351,7 @@ namespace Avalonia.Controls.UnitTests
                     Name = "PART_SecondColumnDivider"
                 }.RegisterInNameScope(scope);
                 Grid.SetColumn(secondSpacer, 3);
-                
+
                 var thirdSpacer = new Rectangle
                 {
                     Name = "PART_ThirdColumnDivider"
@@ -298,7 +361,91 @@ namespace Avalonia.Controls.UnitTests
                 contentGrid.Children.AddRange(new Control[] { firstPickerHost, firstSpacer, secondPickerHost, secondSpacer, thirdPickerHost, thirdSpacer, fourthPickerHost });
                 flyoutButton.Content = contentGrid;
                 layoutRoot.Children.Add(flyoutButton);
+
+                if (includePopup)
+                {
+                    var popup = new Popup
+                    {
+                        Name = "PART_Popup"
+                    }.RegisterInNameScope(scope);
+
+                    var pickerPresenter = new TimePickerPresenter
+                    {
+                        Name = "PART_PickerPresenter",
+                        Template = CreatePickerTemplate()
+                    }.RegisterInNameScope(scope);
+                    pickerPresenter.ApplyTemplate();
+
+                    popup.Child = pickerPresenter;
+
+                    layoutRoot.Children.Add(popup);
+                }
+
                 return layoutRoot;
+            });
+        }
+
+        private static IControlTemplate CreatePickerTemplate()
+        {
+            return new FuncControlTemplate((control, scope) =>
+            {
+                var acceptButton = new Button
+                {
+                    Name = "PART_AcceptButton"
+                }.RegisterInNameScope(scope);
+
+                var hourSelector = new DateTimePickerPanel
+                {
+                    Name = "PART_HourSelector",
+                    PanelType = DateTimePickerPanelType.Hour,
+                }.RegisterInNameScope(scope);
+
+                var minuteSelector = new DateTimePickerPanel
+                {
+                    Name = "PART_MinuteSelector",
+                    PanelType = DateTimePickerPanelType.Minute,
+                }.RegisterInNameScope(scope);
+
+                var secondHost = new Panel
+                {
+                    Name = "PART_SecondHost"
+                }.RegisterInNameScope(scope);
+
+                var secondSelector = new DateTimePickerPanel
+                {
+                    Name = "PART_SecondSelector",
+                    PanelType = DateTimePickerPanelType.Second,
+                }.RegisterInNameScope(scope);
+
+                var periodHost = new Panel
+                {
+                    Name = "PART_PeriodHost"
+                }.RegisterInNameScope(scope);
+
+                var periodSelector = new DateTimePickerPanel
+                {
+                    Name = "PART_PeriodSelector",
+                    PanelType = DateTimePickerPanelType.TimePeriod,
+                }.RegisterInNameScope(scope);
+
+                var pickerContainer = new Grid
+                {
+                    Name = "PART_PickerContainer"
+                }.RegisterInNameScope(scope);
+
+                var secondSpacer = new Rectangle
+                {
+                    Name = "PART_SecondSpacer"
+                }.RegisterInNameScope(scope);
+
+                var thirdSpacer = new Rectangle
+                {
+                    Name = "PART_ThirdSpacer"
+                }.RegisterInNameScope(scope);
+
+                var contentPanel = new StackPanel();
+                contentPanel.Children.AddRange(new Control[] { acceptButton, hourSelector, minuteSelector, secondHost, secondSelector, periodHost, periodSelector, pickerContainer, secondSpacer, thirdSpacer });
+                return contentPanel;
             });
         }
     }
