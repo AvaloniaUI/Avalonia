@@ -90,6 +90,8 @@
                     </MenuItem>
                     <MenuItem Header="_Help">
                         <MenuItem Header="_About"/>
+                        <MenuItem Header="_File"/>
+                        <MenuItem Header="_Find"/>
                     </MenuItem>
                 </Menu>
             </StackPanel>
