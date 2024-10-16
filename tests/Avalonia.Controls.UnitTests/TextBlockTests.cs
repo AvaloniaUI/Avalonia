@@ -33,6 +33,8 @@ namespace Avalonia.Controls.UnitTests
             {
                 var textBlock = new TestTextBlock { Text = "Hello World" };
 
+                Assert.Equal(Size.Infinity, textBlock.Constraint);
+
                 textBlock.Measure(new Size(100, 100));
 
                 var textLayout = textBlock.TextLayout;
@@ -52,7 +54,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 var textBlock = new TestTextBlock { Text = "Hello World" };
 
-                textBlock.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+                textBlock.Measure(Size.Infinity);
 
                 var textLayout = textBlock.TextLayout;
 
@@ -72,7 +74,9 @@ namespace Avalonia.Controls.UnitTests
 
                 constraint += new Size(50, 0);
 
-                textBlock.Measure(constraint);
+                textBlock.Arrange(new Rect(constraint));
+
+                Assert.Equal(constraint, textBlock.Constraint);
 
                 Assert.NotEqual(textLayout, textBlock.TextLayout);
             }

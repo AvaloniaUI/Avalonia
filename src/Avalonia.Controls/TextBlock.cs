@@ -162,7 +162,7 @@ namespace Avalonia.Controls
                 nameof(Inlines), t => t.Inlines, (t, v) => t.Inlines = v);
 
         private TextLayout? _textLayout;
-        protected Size _constraint;
+        protected Size _constraint = Size.Infinity;
         protected IReadOnlyList<TextRun>? _textRuns;
         private InlineCollection? _inlines;
 
@@ -704,18 +704,16 @@ namespace Avalonia.Controls
 
             var deflatedSize = availableSize.Deflate(padding);
 
-            if(deflatedSize == _constraint)
+            if(_constraint != deflatedSize)
             {
-                return _constraint;
+                //Reset TextLayout when the constraint is not matching.
+                _textLayout?.Dispose();
+                _textLayout = null;
+                _constraint = deflatedSize;
+
+                //Force arrange so text will be properly alligned.
+                InvalidateArrange();
             }
-
-            _constraint = deflatedSize;
-
-            //Reset TextLayout otherwise constraint might be outdated.
-            _textLayout?.Dispose();
-            _textLayout = null;
-
-            InvalidateVisual();
 
             var inlines = Inlines;
 
@@ -733,9 +731,11 @@ namespace Avalonia.Controls
 
             var width = TextLayout.OverhangLeading + TextLayout.WidthIncludingTrailingWhitespace + TextLayout.OverhangTrailing;
 
-            _constraint = LayoutHelper.RoundLayoutSizeUp(new Size(width, TextLayout.Height).Inflate(padding), 1, 1);
+            var size = LayoutHelper.RoundLayoutSizeUp(new Size(width, TextLayout.Height).Inflate(padding), 1, 1);   
 
-            return _constraint;
+            _constraint = size;
+
+            return size;
         }
 
         protected override Size ArrangeOverride(Size finalSize)
@@ -751,8 +751,7 @@ namespace Avalonia.Controls
                 _textLayout?.Dispose();
                 _textLayout = null;
                 _constraint = availableSize;
-                InvalidateVisual();
-            }
+            }    
 
             if (HasComplexContent)
             {             
