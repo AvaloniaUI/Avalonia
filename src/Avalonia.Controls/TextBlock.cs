@@ -162,7 +162,7 @@ namespace Avalonia.Controls
                 nameof(Inlines), t => t.Inlines, (t, v) => t.Inlines = v);
 
         private TextLayout? _textLayout;
-        protected Size _constraint;
+        protected Size _constraint = Size.Infinity;
         protected IReadOnlyList<TextRun>? _textRuns;
         private InlineCollection? _inlines;
 
@@ -702,11 +702,18 @@ namespace Avalonia.Controls
             var scale = LayoutHelper.GetLayoutScale(this);
             var padding = LayoutHelper.RoundLayoutThickness(Padding, scale, scale);
 
-            _constraint = availableSize.Deflate(padding);
+            var deflatedSize = availableSize.Deflate(padding);
 
-            //Reset TextLayout otherwise constraint might be outdated.
-            _textLayout?.Dispose();
-            _textLayout = null;
+            if(_constraint != deflatedSize)
+            {
+                //Reset TextLayout when the constraint is not matching.
+                _textLayout?.Dispose();
+                _textLayout = null;
+                _constraint = deflatedSize;
+
+                //Force arrange so text will be properly alligned.
+                InvalidateArrange();
+            }
 
             var inlines = Inlines;
 
@@ -724,7 +731,11 @@ namespace Avalonia.Controls
 
             var width = TextLayout.OverhangLeading + TextLayout.WidthIncludingTrailingWhitespace + TextLayout.OverhangTrailing;
 
-            return new Size(width, TextLayout.Height).Inflate(padding);
+            var size = LayoutHelper.RoundLayoutSizeUp(new Size(width, TextLayout.Height).Inflate(padding), 1, 1);   
+
+            _constraint = size;
+
+            return size;
         }
 
         protected override Size ArrangeOverride(Size finalSize)
@@ -732,13 +743,15 @@ namespace Avalonia.Controls
             var scale = LayoutHelper.GetLayoutScale(this);
             var padding = LayoutHelper.RoundLayoutThickness(Padding, scale, scale);
 
+            var availableSize = finalSize.Deflate(padding);
+
             //Fixes: #11019
-            if (finalSize.Width < _constraint.Width)
+            if (availableSize != _constraint)
             {
                 _textLayout?.Dispose();
                 _textLayout = null;
-                _constraint = finalSize.Deflate(padding);
-            }
+                _constraint = availableSize;
+            }    
 
             if (HasComplexContent)
             {             
