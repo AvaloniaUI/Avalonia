@@ -449,6 +449,11 @@ namespace Avalonia.X11
         [DllImport(libX11)]
         public static extern int XPutImage(IntPtr display, IntPtr drawable, IntPtr gc, ref XImage image,
             int srcx, int srcy, int destx, int desty, uint width, uint height);
+
+        [DllImport(libX11)]
+        public static extern int XPutImage(IntPtr display, IntPtr drawable, IntPtr gc, XImage* image,
+            int srcx, int srcy, int destx, int desty, uint width, uint height);
+
         [DllImport(libX11)]
         public static extern int XSync(IntPtr display, bool discard);
         

@@ -22,10 +22,12 @@ using Avalonia.Threading;
 using Avalonia.X11.Glx;
 using Avalonia.X11.NativeDialogs;
 using static Avalonia.X11.XLib;
+using static Avalonia.X11.XShmExtensions.XShm;
 using Avalonia.Input.Platform;
 using System.Runtime.InteropServices;
 using Avalonia.Dialogs;
 using Avalonia.Platform.Storage.FileIO;
+using Avalonia.X11.XShmExtensions;
 
 // ReSharper disable IdentifierTypo
 // ReSharper disable StringLiteralTypo
@@ -195,6 +197,42 @@ namespace Avalonia.X11
                 new X11FramebufferSurface(_x11.DeferredDisplay, _renderHandle, 
                    depth, _platform.Options.UseRetainedFramebuffer ?? false)
             };
+
+            if (_platform.Options.UseXShmFramebuffer is true)
+            {
+                TryInsertX11ShmFramebufferSurface();
+
+                void TryInsertX11ShmFramebufferSurface()
+                {
+                    if (depth != 32)
+                    {
+                        // If the depth is not 32, we should do some conversion to make the XShmPutImage work. But the conversion is slowly, so we should not use XShmPutImage when the depth is not 32.
+                        return;
+                    }
+
+                    var status = XShmQueryExtension(_x11.DeferredDisplay);
+                    if (status == 0)
+                    {
+                        // XShmQueryExtension failed
+                        return;
+                    }
+
+                    status = XShmQueryVersion(_x11.DeferredDisplay, out var major, out var minor, out var pixmaps);
+                    
+                    if (status == 0)
+                    {
+                        // XShmQueryExtension failed
+                        return;
+                    }
+
+                    // The reason for using `_x11.Display` instead of `_x11.DeferredDisplay` is that XSHM requires pushing to a Display that can receive Events, in order to obtain the XShmCompletionEvent when rendering is complete.
+                    // Do not use `_renderHandle`, because the `_renderHandle` was introduced to fix gl, and the XShm should receive the events from the `_handle`. In other words, the XShm should only be use when disable the gl, which means the `_renderHandle` is equal to `_handle`.
+                    var x11ShmFramebufferSurface =
+                        new X11ShmFramebufferSurface(this, _x11.Display, _handle, visual, depth, platform.Options.ShouldRenderOnUIThread);
+                    _x11ShmFramebufferSurface = x11ShmFramebufferSurface;
+                    surfaces.Insert(0, x11ShmFramebufferSurface);
+                }
+            }
             
             if (egl != null)
                 surfaces.Insert(0,
@@ -611,6 +649,10 @@ namespace Avalonia.X11
                     return;
                 HandleKeyEvent(ref ev);
             }
+            else if ((int) ev.type == _x11ShmFramebufferSurface?.XShmCompletionType)
+            {
+                _x11ShmFramebufferSurface.OnXShmCompletionEvent(ev);
+            }
         }
 
         private Thickness? GetFrameExtents()
@@ -798,6 +840,7 @@ namespace Avalonia.X11
             new PixelSize(MaxWindowDimension, MaxWindowDimension));
         
         private double _scaling = 1;
+        private X11ShmFramebufferSurface? _x11ShmFramebufferSurface;
 
         private void ScheduleInput(RawInputEventArgs args, ref XEvent xev)
         {

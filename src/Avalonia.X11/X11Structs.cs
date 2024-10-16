@@ -737,7 +737,8 @@ namespace Avalonia.X11 {
 		InputOnly	= 2
 	}
 
-	internal enum XEventName {
+	internal enum XEventName 
+    {
 		KeyPress                = 2,
 		KeyRelease              = 3,
 		ButtonPress             = 4,
@@ -772,7 +773,7 @@ namespace Avalonia.X11 {
 		ClientMessage		= 33,
 		MappingNotify		= 34,
         GenericEvent = 35,
-		LASTEvent
+        LASTEvent
 	}
 
 	[Flags]
