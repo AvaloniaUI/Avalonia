@@ -1,0 +1,1328 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:Sandbox="clr-namespace:Sandbox"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Sandbox.UserControl2"
+             x:DataType="Sandbox:ViewModel">
+    <StackPanel Orientation="Vertical">
+
+        <TextBlock>Control 2</TextBlock>
+
+        <ScrollViewer>
+
+            <StackPanel>
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+                <ComboBox
+                    ItemsSource="{Binding  DocumentOpenItems}"
+                    SelectedValue="{Binding Selected}"
+                    SelectedValueBinding="{Binding Value}" />
+
+            </StackPanel>
+
+        </ScrollViewer>
+
+    </StackPanel>
+
+
+</UserControl>

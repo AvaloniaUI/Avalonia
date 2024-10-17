@@ -93,7 +93,8 @@ public class TransitioningContentControl : ContentControl
                 var to = _isFirstFull ? presenter : _presenter2;
                 var fromContent = from.Content;
                 var toContent = to.Content;
-
+                
+                
                 transition.Start(from, to, !IsTransitionReversed, cancel.Token).ContinueWith(task =>
                 {
                     OnTransitionCompleted(new TransitionCompletedEventArgs(
