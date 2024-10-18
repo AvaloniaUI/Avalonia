@@ -701,7 +701,6 @@ namespace Avalonia.Controls
         {
             var scale = LayoutHelper.GetLayoutScale(this);
             var padding = LayoutHelper.RoundLayoutThickness(Padding, scale, scale);
-
             var deflatedSize = availableSize.Deflate(padding);
 
             if(_constraint != deflatedSize)
@@ -715,6 +714,8 @@ namespace Avalonia.Controls
                 InvalidateArrange();
             }
 
+            //This implicitly recreated the TextLayout with a new constraint if we previously reset it.
+            var textLayout = TextLayout;
             var inlines = Inlines;
 
             if (HasComplexContent)
@@ -729,9 +730,9 @@ namespace Avalonia.Controls
                 _textRuns = textRuns;
             }
 
-            var width = TextLayout.OverhangLeading + TextLayout.WidthIncludingTrailingWhitespace + TextLayout.OverhangTrailing;
+            var width = textLayout.OverhangLeading + textLayout.WidthIncludingTrailingWhitespace + textLayout.OverhangTrailing;
 
-            var size = LayoutHelper.RoundLayoutSizeUp(new Size(width, TextLayout.Height).Inflate(padding), 1, 1);   
+            var size = LayoutHelper.RoundLayoutSizeUp(new Size(width, textLayout.Height).Inflate(padding), 1, 1);   
 
             _constraint = size;
 
@@ -751,13 +752,16 @@ namespace Avalonia.Controls
                 _textLayout?.Dispose();
                 _textLayout = null;
                 _constraint = availableSize;
-            }    
+            }
+
+            //This implicitly recreated the TextLayout with a new constraint if we previously reset it.
+            var textLayout = TextLayout;
 
             if (HasComplexContent)
             {             
                 var currentY = padding.Top;
 
-                foreach (var textLine in TextLayout.TextLines)
+                foreach (var textLine in textLayout.TextLines)
                 {
                     var currentX = padding.Left + textLine.Start;
 
