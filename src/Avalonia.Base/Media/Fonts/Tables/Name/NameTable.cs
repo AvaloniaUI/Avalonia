@@ -98,11 +98,11 @@ namespace Avalonia.Media.Fonts.Tables.Name
         public string GetNameById(ushort culture, ushort nameId)
             => GetNameById(culture, (KnownNameIds)nameId);
 
-        public static NameTable Load(IGlyphTypeface glyphTypeface)
+        public static NameTable? Load(IGlyphTypeface glyphTypeface)
         {
             if (!glyphTypeface.TryGetTable(Tag, out var table))
             {
-                throw new MissingFontTableException("Could not load table", "name");
+                return null;
             }
 
             using var stream = new MemoryStream(table);
