@@ -61,6 +61,6 @@ namespace Avalonia.Diagnostics
         /// <summary>
         /// Gets or inits the <see cref="HotKeyConfiguration" /> used to activate DevTools features
         /// </summary>
-        internal HotKeyConfiguration HotKeys { get; init; } = new();
+        public HotKeyConfiguration HotKeys { get; init; } = new();
     }
 }
