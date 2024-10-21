@@ -713,9 +713,7 @@ namespace Avalonia.Controls
                 //Force arrange so text will be properly alligned.
                 InvalidateArrange();
             }
-
-            //This implicitly recreated the TextLayout with a new constraint if we previously reset it.
-            var textLayout = TextLayout;
+           
             var inlines = Inlines;
 
             if (HasComplexContent)
@@ -729,6 +727,9 @@ namespace Avalonia.Controls
 
                 _textRuns = textRuns;
             }
+
+            //This implicitly recreated the TextLayout with a new constraint if we previously reset it.
+            var textLayout = TextLayout;
 
             var width = textLayout.OverhangLeading + textLayout.WidthIncludingTrailingWhitespace + textLayout.OverhangTrailing;
 
