@@ -102,6 +102,12 @@ namespace Avalonia.Controls.Primitives
         public void Show()
         {
             _overlayLayer.Children.Add(this);
+
+            if (Content is Visual { IsAttachedToVisualTree: false })
+            {
+                // We need to force a measure pass so any descendants are built, for focus to work.
+                UpdateLayout();
+            }
         }
 
         /// <inheritdoc />
