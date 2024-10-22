@@ -1244,9 +1244,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 popup.Open();
                 root.LayoutManager.ExecuteLayoutPass();
 
-                // Ideally, callback should be executed only once for this test.
-                // But currently PlacementTargetLayoutUpdated triggers second update either way.
-                Assert.Equal(2, callbackExecuted);
+                Assert.Equal(1, callbackExecuted);
             }
         }
 
