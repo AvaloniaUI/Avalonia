@@ -42,10 +42,15 @@ namespace Avalonia.X11
             public DeviceInfo(XIDeviceInfo info)
             {
                 Id = info.Deviceid;
-                Update(info.Classes, info.NumClasses);
+                UpdateCore(info.Classes, info.NumClasses);
             }
 
             public virtual void Update(XIAnyClassInfo** classes, int num)
+            {
+                UpdateCore(classes, num);
+            }
+
+            private void UpdateCore(XIAnyClassInfo** classes, int num)
             {
                 var valuators = new List<XIValuatorClassInfo>();
                 var scrollers = new List<XIScrollClassInfo>();
@@ -73,8 +78,48 @@ namespace Avalonia.X11
 
         private class PointerDeviceInfo : DeviceInfo
         {
-            public PointerDeviceInfo(XIDeviceInfo info) : base(info)
+            public PointerDeviceInfo(XIDeviceInfo info, X11Info x11Info) : base(info)
             {
+                _x11 = x11Info;
+
+                UpdateKnownValuator();
+            }
+
+            private readonly X11Info _x11;
+
+            private void UpdateKnownValuator()
+            {
+                // ABS_MT_TOUCH_MAJOR ABS_MT_TOUCH_MINOR
+                // https://www.kernel.org/doc/html/latest/input/multi-touch-protocol.html
+                var touchMajorAtom = XInternAtom(_x11.Display, "Abs MT Touch Major", false);
+                var touchMinorAtom = XInternAtom(_x11.Display, "Abs MT Touch Minor", false);
+
+                var pressureAtom = XInternAtom(_x11.Display, "Abs MT Pressure", false);
+
+                var pressureXIValuatorClassInfo = Valuators.FirstOrDefault(t => t.Label == pressureAtom);
+                if (pressureXIValuatorClassInfo.Label == pressureAtom)
+                {
+                    // Why check twice? The XIValuatorClassInfo is struct, so the FirstOrDefault will return the default struct when not found.
+                    PressureXIValuatorClassInfo = pressureXIValuatorClassInfo;
+                }
+
+                var touchMajorXIValuatorClassInfo = Valuators.FirstOrDefault(t => t.Label == touchMajorAtom);
+                if (touchMajorXIValuatorClassInfo.Label == touchMajorAtom)
+                {
+                    TouchMajorXIValuatorClassInfo = touchMajorXIValuatorClassInfo;
+                }
+
+                var touchMinorXIValuatorClassInfo = Valuators.FirstOrDefault(t => t.Label == touchMinorAtom);
+                if (touchMinorXIValuatorClassInfo.Label == touchMinorAtom)
+                {
+                    TouchMinorXIValuatorClassInfo = touchMinorXIValuatorClassInfo;
+                }
+            }
+
+            public override void Update(XIAnyClassInfo** classes, int num)
+            {
+                base.Update(classes, num);
+                UpdateKnownValuator();
             }
 
             public bool HasScroll(ParsedDeviceEvent ev)
@@ -94,15 +139,14 @@ namespace Avalonia.X11
 
                 return false;
             }
-            
+
+            public XIValuatorClassInfo? PressureXIValuatorClassInfo { get; private set; }
+            public XIValuatorClassInfo? TouchMajorXIValuatorClassInfo { get; private set; }
+            public XIValuatorClassInfo? TouchMinorXIValuatorClassInfo { get; private set; }
         }
         
         private PointerDeviceInfo _pointerDevice;
         private AvaloniaX11Platform _platform;
-
-        private XIValuatorClassInfo? _pressureXIValuatorClassInfo;
-        private XIValuatorClassInfo? _touchMajorXIValuatorClassInfo;
-        private XIValuatorClassInfo? _touchMinorXIValuatorClassInfo;
 
         public bool Init(AvaloniaX11Platform platform)
         {
@@ -115,42 +159,12 @@ namespace Avalonia.X11
             {
                 if (devices[c].Use == XiDeviceType.XIMasterPointer)
                 {
-                    _pointerDevice = new PointerDeviceInfo(devices[c]);
+                    _pointerDevice = new PointerDeviceInfo(devices[c], _x11);
                     break;
                 }
             }
             if(_pointerDevice == null)
                 return false;
-
-            if (_multitouch)
-            {
-                // ABS_MT_TOUCH_MAJOR ABS_MT_TOUCH_MINOR
-                // https://www.kernel.org/doc/html/latest/input/multi-touch-protocol.html
-                var touchMajorAtom = XInternAtom(_x11.Display, "Abs MT Touch Major", false);
-                var touchMinorAtom = XInternAtom(_x11.Display, "Abs MT Touch Minor", false);
-
-                var pressureAtom = XInternAtom(_x11.Display, "Abs MT Pressure", false);
-
-                var pressureXIValuatorClassInfo = _pointerDevice.Valuators.FirstOrDefault(t => t.Label == pressureAtom);
-                if (pressureXIValuatorClassInfo.Label == pressureAtom)
-                {
-                    // Why check twice? The XIValuatorClassInfo is struct, so the FirstOrDefault will return the default struct when not found.
-                    _pressureXIValuatorClassInfo = pressureXIValuatorClassInfo;
-                }
-
-                var touchMajorXIValuatorClassInfo = _pointerDevice.Valuators.FirstOrDefault(t => t.Label == touchMajorAtom);
-                if (touchMajorXIValuatorClassInfo.Label == touchMajorAtom)
-                {
-                    _touchMajorXIValuatorClassInfo = touchMajorXIValuatorClassInfo;
-                }
-
-                var touchMinorXIValuatorClassInfo = _pointerDevice.Valuators.FirstOrDefault(t => t.Label == touchMinorAtom);
-                if (touchMinorXIValuatorClassInfo.Label == touchMinorAtom)
-                {
-                    _touchMinorXIValuatorClassInfo = touchMinorXIValuatorClassInfo;
-                }
-            }
-
             /*
             int mask = 0;
             
@@ -275,7 +289,7 @@ namespace Avalonia.X11
                     Position = ev.Position
                 };
 
-                if (_pressureXIValuatorClassInfo is {} valuatorClassInfo)
+                if (_pointerDevice.PressureXIValuatorClassInfo is {} valuatorClassInfo)
                 {
                     if (ev.Valuators.TryGetValue(valuatorClassInfo.Number, out var pressureValue))
                     {
@@ -285,7 +299,7 @@ namespace Avalonia.X11
                     }
                 }
 
-                if(_touchMajorXIValuatorClassInfo is {} touchMajorXIValuatorClassInfo)
+                if(_pointerDevice.TouchMajorXIValuatorClassInfo is {} touchMajorXIValuatorClassInfo)
                 {
                     double? touchMajor = null;
                     double? touchMinor = null;
@@ -308,7 +322,7 @@ namespace Avalonia.X11
 
                     if (touchMajor != null)
                     {
-                        if(_touchMinorXIValuatorClassInfo is {} touchMinorXIValuatorClassInfo)
+                        if(_pointerDevice.TouchMinorXIValuatorClassInfo is {} touchMinorXIValuatorClassInfo)
                         {
                             if (ev.Valuators.TryGetValue(touchMinorXIValuatorClassInfo.Number, out var touchMinorValue))
                             {
