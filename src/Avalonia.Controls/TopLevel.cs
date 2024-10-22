@@ -471,12 +471,12 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the access key handler for the window.
         /// </summary>
-        internal IAccessKeyHandler AccessKeyHandler => _accessKeyHandler!;
+        internal IAccessKeyHandler? AccessKeyHandler => _accessKeyHandler;
 
         /// <summary>
         /// Gets or sets the keyboard navigation handler for the window.
         /// </summary>
-        IKeyboardNavigationHandler IInputRoot.KeyboardNavigationHandler => _keyboardNavigationHandler!;
+        IKeyboardNavigationHandler? IInputRoot.KeyboardNavigationHandler => _keyboardNavigationHandler;
 
         /// <inheritdoc/>
         IInputElement? IInputRoot.PointerOverElement
