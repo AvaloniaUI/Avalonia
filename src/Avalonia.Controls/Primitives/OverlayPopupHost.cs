@@ -2,14 +2,15 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Diagnostics;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Metadata;
-using Avalonia.VisualTree;
+using Avalonia.Platform;
 
 namespace Avalonia.Controls.Primitives
 {
-    public class OverlayPopupHost : ContentControl, IPopupHost, IManagedPopupPositionerPopup
+    public class OverlayPopupHost : ContentControl, IPopupHost, IManagedPopupPositionerPopup, IInputRoot
     {
         /// <summary>
         /// Defines the <see cref="Transform"/> property.
@@ -19,15 +20,21 @@ namespace Avalonia.Controls.Primitives
 
         private readonly OverlayLayer _overlayLayer;
         private readonly ManagedPopupPositioner _positioner;
+        private readonly IKeyboardNavigationHandler? _keyboardNavigationHandler;
         private Point _lastRequestedPosition;
         private PopupPositionRequest? _popupPositionRequest;
         private Size _popupSize;
         private bool _needsUpdate;
 
+        static OverlayPopupHost()
+            => KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue<OverlayPopupHost>(KeyboardNavigationMode.Cycle);
+
         public OverlayPopupHost(OverlayLayer overlayLayer)
         {
             _overlayLayer = overlayLayer;
             _positioner = new ManagedPopupPositioner(this);
+            _keyboardNavigationHandler = AvaloniaLocator.Current.GetService<IKeyboardNavigationHandler>();
+            _keyboardNavigationHandler?.SetOwner(this);
         }
 
         /// <inheritdoc />
@@ -53,6 +60,38 @@ namespace Avalonia.Controls.Primitives
             set { /* Not currently supported in overlay popups */ }
         }
 
+        private IInputRoot? InputRoot
+            => TopLevel.GetTopLevel(this);
+
+        IKeyboardNavigationHandler? IInputRoot.KeyboardNavigationHandler
+            => _keyboardNavigationHandler;
+
+        IFocusManager? IInputRoot.FocusManager
+            => InputRoot?.FocusManager;
+
+        IPlatformSettings? IInputRoot.PlatformSettings
+            => InputRoot?.PlatformSettings;
+
+        IInputElement? IInputRoot.PointerOverElement
+        {
+            get => InputRoot?.PointerOverElement;
+            set
+            {
+                if (InputRoot is { } inputRoot)
+                    inputRoot.PointerOverElement = value;
+            }
+        }
+
+        bool IInputRoot.ShowAccessKeys
+        {
+            get => InputRoot?.ShowAccessKeys ?? false;
+            set
+            {
+                if (InputRoot is { } inputRoot)
+                    inputRoot.ShowAccessKeys = value;
+            }
+        }
+
         /// <inheritdoc />
         internal override Interactive? InteractiveParent => Parent as Interactive;
 
@@ -63,6 +102,12 @@ namespace Avalonia.Controls.Primitives
         public void Show()
         {
             _overlayLayer.Children.Add(this);
+
+            if (Content is Visual { IsAttachedToVisualTree: false })
+            {
+                // We need to force a measure pass so any descendants are built, for focus to work.
+                UpdateLayout();
+            }
         }
 
         /// <inheritdoc />
@@ -147,7 +192,7 @@ namespace Avalonia.Controls.Primitives
         double IManagedPopupPositionerPopup.Scaling => 1;
 
         // TODO12: mark PrivateAPI or internal.
-        [Unstable("PopupHost is consireded an internal API. Use Popup or any Popup-based controls (Flyout, Tooltip) instead.")]
+        [Unstable("PopupHost is considered an internal API. Use Popup or any Popup-based controls (Flyout, Tooltip) instead.")]
         public static IPopupHost CreatePopupHost(Visual target, IAvaloniaDependencyResolver? dependencyResolver)
         {
             if (TopLevel.GetTopLevel(target) is { } topLevel && topLevel.PlatformImpl?.CreatePopup() is { } popupImpl)
