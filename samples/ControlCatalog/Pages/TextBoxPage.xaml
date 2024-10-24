@@ -43,7 +43,7 @@
         <TextBox Width="200" Text="Right aligned text" TextAlignment="Right" />
         <TextBox Width="200" Text="Custom selection brush"
                   SelectionStart="5" SelectionEnd="22"
-                  SelectionBrush="Green" SelectionForegroundBrush="Yellow"/>
+                  SelectionBrush="Green" SelectionForegroundBrush="Yellow" ClearSelectionOnLostFocus="False"/>
         <TextBox Width="200" Text="Custom caret brush" CaretBrush="DarkOrange"/>
       </StackPanel>
 
