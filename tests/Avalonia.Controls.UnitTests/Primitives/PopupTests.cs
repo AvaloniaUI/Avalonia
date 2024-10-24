@@ -633,46 +633,39 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             using (CreateServicesWithFocus())
             {
-                var window = PreparedWindow();
+                var window = PreparedWindow(new Panel { Children = { new Slider() }});
 
-                var tb = new TextBox();
-                var b = new Button();
-                var p = new Popup
+                var textBox = new TextBox();
+                var button = new Button();
+                var popup = new Popup
                 {
                     PlacementTarget = window,
                     Child = new StackPanel
                     {
                         Children =
                         {
-                            tb,
-                            b
+                            textBox,
+                            button
                         }
                     }
                 };
-                ((ISetLogicalParent)p).SetParent(p.PlacementTarget);
+
+                ((ISetLogicalParent)popup).SetParent(popup.PlacementTarget);
                 window.Show();
+                popup.Open();
 
-                p.Open();
+                button.Focus();
 
-                if(p.Host is OverlayPopupHost host)
-                {
-                    //Need to measure/arrange for visual children to show up
-                    //in OverlayPopupHost
-                    host.Measure(Size.Infinity);
-                    host.Arrange(new Rect(host.DesiredSize));
-                }
+                var inputRoot = Assert.IsAssignableFrom<IInputRoot>(popup.Host);
 
-                tb.Focus();
-
-                var focusManager = TopLevel.GetTopLevel(tb)!.FocusManager;
-                tb = Assert.IsType<TextBox>(focusManager.GetFocusedElement());
+                var focusManager = inputRoot.FocusManager!;
+                Assert.Same(button, focusManager.GetFocusedElement());
 
                 //Ensure focus remains in the popup
-                var nextFocus = KeyboardNavigationHandler.GetNext(tb, NavigationDirection.Next);
+                inputRoot.KeyboardNavigationHandler!.Move(focusManager.GetFocusedElement()!, NavigationDirection.Next);
+                Assert.Same(textBox, focusManager.GetFocusedElement());
 
-                Assert.True(nextFocus == b);
-
-                p.Close();
+                popup.Close();
             }
         }
 
@@ -1248,7 +1241,6 @@ namespace Avalonia.Controls.UnitTests.Primitives
             }
         }
 
-
         private static PopupRoot CreateRoot(TopLevel popupParent, IPopupImpl impl = null)
         {
             impl ??= popupParent.PlatformImpl.CreatePopup();
@@ -1279,7 +1271,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
             return UnitTestApplication.Start(TestServices.StyledWindow.With(
                 windowingPlatform: CreateMockWindowingPlatform(),
                 focusManager: new FocusManager(),
-                keyboardDevice: () => new KeyboardDevice()));
+                keyboardDevice: () => new KeyboardDevice(),
+                keyboardNavigation: () => new KeyboardNavigationHandler()));
         }
 
        
