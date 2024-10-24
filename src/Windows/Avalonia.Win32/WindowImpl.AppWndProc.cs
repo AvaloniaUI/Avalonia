@@ -8,8 +8,8 @@ using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Threading;
 using Avalonia.Win32.Automation;
+using Avalonia.Win32.Automation.Interop;
 using Avalonia.Win32.Input;
-using Avalonia.Win32.Interop.Automation;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia.Win32

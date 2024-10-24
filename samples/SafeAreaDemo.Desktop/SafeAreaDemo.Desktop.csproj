@@ -3,7 +3,6 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
     <Nullable>enable</Nullable>
-    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
   </PropertyGroup>
 
   <PropertyGroup>
