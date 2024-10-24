@@ -759,7 +759,10 @@ namespace Avalonia.Controls
             var textLayout = TextLayout;
 
             if (HasComplexContent)
-            {             
+            {
+                //Clear visual children before complex run arrangement
+                VisualChildren.Clear();
+
                 var currentY = padding.Top;
 
                 foreach (var textLine in textLayout.TextLines)
@@ -773,6 +776,10 @@ namespace Avalonia.Controls
                             if (drawable is EmbeddedControlRun controlRun
                                 && controlRun.Control is Control control)
                             {
+                                //Add again to prevent clipping
+                                //Fixes: #17194
+                                VisualChildren.Add(control);
+
                                 control.Arrange(
                                     new Rect(new Point(currentX, currentY),
                                     new Size(control.DesiredSize.Width, textLine.Height)));
@@ -964,6 +971,6 @@ namespace Avalonia.Controls
 
                 return new TextEndOfParagraph();
             }
-         }
+        }
     }
 }
