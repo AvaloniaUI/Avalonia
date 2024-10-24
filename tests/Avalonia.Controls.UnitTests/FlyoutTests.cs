@@ -20,6 +20,8 @@ namespace Avalonia.Controls.UnitTests
 {
     public class FlyoutTests
     {
+        protected bool UseOverlayPopups { get; set; }
+
         [Fact]
         public void Opening_Raises_Single_Opening_Event()
         {
@@ -373,10 +375,10 @@ namespace Avalonia.Controls.UnitTests
                 window.Show();
 
                 button.Focus();
-                Assert.True(window.FocusManager.GetFocusedElement() == button);
+                Assert.Same(button, window.FocusManager!.GetFocusedElement());
                 button.Flyout.ShowAt(button);
                 Assert.False(button.IsFocused);
-                Assert.True(window.FocusManager.GetFocusedElement() == flyoutTextBox);
+                Assert.Same(flyoutTextBox, window.FocusManager!.GetFocusedElement());
             }
         }
 
@@ -640,14 +642,11 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        private static IDisposable CreateServicesWithFocus()
+        private IDisposable CreateServicesWithFocus()
         {
             return UnitTestApplication.Start(TestServices.StyledWindow.With(windowingPlatform:
                 new MockWindowingPlatform(null,
-                    x =>
-                    {
-                        return MockWindowingPlatform.CreatePopupMock(x).Object;
-                    }),
+                    x => UseOverlayPopups ? null : MockWindowingPlatform.CreatePopupMock(x).Object),
                     focusManager: new FocusManager(),
                     keyboardDevice: () => new KeyboardDevice()));
         }
@@ -680,5 +679,11 @@ namespace Avalonia.Controls.UnitTests
         {
             public new Popup Popup => base.Popup;
         }
+    }
+
+    public class OverlayPopupFlyoutTests : FlyoutTests
+    {
+        public OverlayPopupFlyoutTests()
+            => UseOverlayPopups = true;
     }
 }
