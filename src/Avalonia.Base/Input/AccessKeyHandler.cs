@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Input
 {
@@ -11,6 +12,8 @@ namespace Avalonia.Input
     /// </summary>
     internal class AccessKeyHandler : IAccessKeyHandler
     {
+        private IInputElement? _focusElement;
+
         /// <summary>
         /// Defines the AccessKeyPressed attached event.
         /// </summary>
@@ -78,6 +81,39 @@ namespace Avalonia.Input
         }
 
         /// <summary>
+        /// Gets the next element to be focused from the given matches.
+        /// If the current element is the last element, the first element will be returned. 
+        /// </summary>
+        /// <param name="matches">Matched elements with the same accelerator.</param>
+        /// <param name="currentFocusedElement">The currently focused element.</param>
+        /// <returns>The next element to receive the focus.</returns>
+        public static IInputElement? GetNextElementToFocus(IEnumerable<IInputElement> matches,
+            IInputElement currentFocusedElement)
+        {
+            var elements = matches
+                .OfType<Visual>()
+                .Select(x => x.Parent)
+                .Where(m => m != null)
+                .OfType<IInputElement>()
+                .ToArray();
+
+            for (var i = 0; i < elements.Length; i++)
+            {
+                var hasNext = i < elements.Length - 1;
+                if (elements[i] == currentFocusedElement)
+                {
+                    // focus the next menu item or the first elem if there is no next element  
+                    return hasNext ?
+                        elements[i + 1] // next item 
+                        :
+                        elements[0]; // first item
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Sets the owner of the access key handler.
         /// </summary>
         /// <param name="owner">The owner.</param>
@@ -142,7 +178,7 @@ namespace Avalonia.Input
                 if (MainMenu == null || !MainMenu.IsOpen)
                 {
                     var focusManager = FocusManager.GetFocusManager(e.Source as IInputElement);
-                    
+
                     // TODO: Use FocusScopes to store the current element and restore it when context menu is closed.
                     // Save currently focused input element.
                     _restoreFocusElement = focusManager?.GetFocusedElement();
@@ -176,29 +212,43 @@ namespace Avalonia.Input
         {
             bool menuIsOpen = MainMenu?.IsOpen == true;
 
-            if (e.KeyModifiers.HasAllFlags(KeyModifiers.Alt) && !e.KeyModifiers.HasAllFlags(KeyModifiers.Control) || menuIsOpen)
+            if (e.KeyModifiers.HasAllFlags(KeyModifiers.Alt) && !e.KeyModifiers.HasAllFlags(KeyModifiers.Control) ||
+                menuIsOpen)
             {
                 // If any other key is pressed with the Alt key held down, or the main menu is open,
                 // find all controls who have registered that access key.
                 var text = e.Key.ToString();
                 var matches = _registered
                     .Where(x => string.Equals(x.AccessKey, text, StringComparison.OrdinalIgnoreCase)
-                        && x.Element.IsEffectivelyVisible
-                        && x.Element.IsEffectivelyEnabled)
+                                && x.Element is
+                                {
+                                    IsEffectivelyVisible: true,
+                                    IsEffectivelyEnabled: true
+                                })
                     .Select(x => x.Element);
+
 
                 // If the menu is open, only match controls in the menu's visual tree.
                 if (menuIsOpen)
                 {
-                    matches = matches.Where(x => x is not null && ((Visual)MainMenu!).IsLogicalAncestorOf((Visual)x));
+                    matches = matches.Where(x => ((Visual)MainMenu!).IsLogicalAncestorOf((Visual)x));
                 }
 
-                var match = matches.FirstOrDefault();
-
-                // If there was a match, raise the AccessKeyPressed event on it.
-                if (match is not null)
+                var count = matches.Count();
+                if (count == 1) // If there is a match, raise the AccessKeyPressed event on it.
                 {
-                    match.RaiseEvent(new RoutedEventArgs(AccessKeyPressedEvent));
+                    // reset the currently selected focus element
+                    _focusElement = null;
+                    var element = matches.FirstOrDefault();
+                    element?.RaiseEvent(new RoutedEventArgs(AccessKeyPressedEvent));
+                }
+                else if (count > 1) // If there are multiple elements, cycle focus through them.
+                {
+                    _focusElement = _focusElement == null ?
+                        (matches.FirstOrDefault() as Visual)?.Parent as IInputElement :
+                        GetNextElementToFocus(matches, _focusElement);
+
+                    _focusElement?.Focus(NavigationMethod.Tab, KeyModifiers.Alt);
                 }
             }
         }
@@ -249,6 +299,7 @@ namespace Avalonia.Input
         {
             MainMenu!.Close();
             _owner!.ShowAccessKeys = _showingAccessKeys = false;
+            _focusElement = null;
         }
 
         private void MainMenuClosed(object? sender, EventArgs e)
