@@ -566,15 +566,7 @@ namespace Avalonia.Controls
                 }
             }
         }
-
-        /// <inheritdoc />
-        protected override void OnAccessKey(RoutedEventArgs e)
-        {
-            IsSelected = true;
-            base.OnAccessKey(e);
-            e.Handled = true;
-        }
-
+        
         /// <summary>
         /// Closes all submenus of the menu item.
         /// </summary>
