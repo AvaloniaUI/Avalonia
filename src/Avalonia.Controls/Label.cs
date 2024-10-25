@@ -30,10 +30,6 @@ namespace Avalonia.Controls
         {
             AccessKeyHandler.AccessKeyPressedEvent.AddClassHandler<Label>(OnAccessKeyPressed);
             IsTabStopProperty.OverrideDefaultValue<Label>(false);
-
-            // Set the default value to true, to ensure that the target control can be focused,
-            // when the label is focused. 
-            // FocusableProperty.OverrideDefaultValue<Label>(true);
         }
 
         /// <summary>
