@@ -143,6 +143,7 @@ namespace Avalonia.Controls
             ClickEvent.AddClassHandler<MenuItem>((x, e) => x.OnClick(e));
             SubmenuOpenedEvent.AddClassHandler<MenuItem>((x, e) => x.OnSubmenuOpened(e));
             AutomationProperties.IsOffscreenBehaviorProperty.OverrideDefaultValue<MenuItem>(IsOffscreenBehavior.FromClip);
+            AccessKeyHandler.AccessKeyPressedEvent.AddClassHandler<MenuItem>(OnAccessKeyPressed);
         }
 
         public MenuItem()
@@ -538,7 +539,7 @@ namespace Avalonia.Controls
 
             if (_popup != null)
             {
-                _popup.DependencyResolver = DependencyResolver.Instance;
+                _popup.DependencyResolver = AvaloniaLocator.Current;
                 _popup.Opened += PopupOpened;
                 _popup.Closed += PopupClosed;
             }
@@ -564,6 +565,14 @@ namespace Avalonia.Controls
                     UpdateIsEffectivelyEnabled();
                 }
             }
+        }
+
+        /// <inheritdoc />
+        protected override void OnAccessKey(RoutedEventArgs e)
+        {
+            IsSelected = true;
+            base.OnAccessKey(e);
+            e.Handled = true;
         }
 
         /// <summary>
@@ -658,6 +667,15 @@ namespace Avalonia.Controls
                 _commandCanExecute = canExecute;
                 UpdateIsEffectivelyEnabled();
             }
+        }
+
+        private static void OnAccessKeyPressed(MenuItem sender, AccessKeyPressedEventArgs e)
+        {
+            if (e is not { Handled: false, Target: null }) 
+                return;
+            
+            e.Target = sender;
+            e.Handled = true;
         }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -858,34 +876,6 @@ namespace Avalonia.Controls
             if (IsEffectivelyEnabled)
             {
                 RaiseEvent(new RoutedEventArgs(ClickEvent));
-            }
-        }
-
-        /// <summary>
-        /// A dependency resolver which returns a <see cref="MenuItemAccessKeyHandler"/>.
-        /// </summary>
-        private class DependencyResolver : IAvaloniaDependencyResolver
-        {
-            /// <summary>
-            /// Gets the default instance of <see cref="DependencyResolver"/>.
-            /// </summary>
-            public static readonly DependencyResolver Instance = new DependencyResolver();
-
-            /// <summary>
-            /// Gets a service of the specified type.
-            /// </summary>
-            /// <param name="serviceType">The service type.</param>
-            /// <returns>A service of the requested type.</returns>
-            public object? GetService(Type serviceType)
-            {
-                if (serviceType == typeof(IAccessKeyHandler))
-                {
-                    return new MenuItemAccessKeyHandler();
-                }
-                else
-                {
-                    return AvaloniaLocator.Current.GetService(serviceType);
-                }
             }
         }
     }

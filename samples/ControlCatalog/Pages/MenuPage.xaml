@@ -97,27 +97,5 @@
             </StackPanel>
         </WrapPanel>
     
-      <StackPanel>
-        <TextBlock>Labels for testing Access Keys Handling for Menus and Labels. (Use ALT+[Key] to select or cycle.)</TextBlock>
-        
-        <Label Name="Label0">Label with Ac_celerator 'C' and no Target</Label>
-        <TextBox Name="TextBox0" Text="Some Text"></TextBox>
-
-        <Label Name="Label1" Target="TextBox1">_Label with Accelerator 'L'</Label>
-        <TextBox Name="TextBox1" Text="Some Text"></TextBox>
-
-        <Label Name="Label2" Target="TextBox2">La_bel with Accelerator 'B'</Label>
-        <TextBox Name="TextBox2" Text="Some Text"></TextBox>
-        
-        <Label Name="Label3" Target="TextBox3">L_abel with Accelerator 'A'</Label>
-        <TextBox Name="TextBox3" Text="Some Text"></TextBox>
-        
-        <Label Name="Label4" Target="TextBox4">La_bel with Accelerator 'B'</Label>
-        <TextBox Name="TextBox4" Text="Some Text"></TextBox>
-        
-        <Label Name="Label5" Target="TextBox5">_Flabel with Accelerator 'F' (Same as in Menu > File)</Label>
-        <TextBox Name="TextBox5" Text="Some Text"></TextBox>
-
-      </StackPanel>
     </StackPanel>
 </UserControl>

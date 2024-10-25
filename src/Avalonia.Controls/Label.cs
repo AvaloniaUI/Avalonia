@@ -28,12 +28,12 @@ namespace Avalonia.Controls
 
         static Label()
         {
-            AccessKeyHandler.AccessKeyPressedEvent.AddClassHandler<Label>((lbl, args) => lbl.LabelActivated(args));
-            // IsTabStopProperty.OverrideDefaultValue<Label>(false)
-            
+            AccessKeyHandler.AccessKeyPressedEvent.AddClassHandler<Label>(OnAccessKeyPressed);
+            IsTabStopProperty.OverrideDefaultValue<Label>(false);
+
             // Set the default value to true, to ensure that the target control can be focused,
             // when the label is focused. 
-            FocusableProperty.OverrideDefaultValue<Label>(true);
+            // FocusableProperty.OverrideDefaultValue<Label>(true);
         }
 
         /// <summary>
@@ -43,13 +43,11 @@ namespace Avalonia.Controls
         {
         }
 
-        /// <summary>
-        /// Method which focuses <see cref="Target"/> input element
-        /// </summary>
-        private void LabelActivated(RoutedEventArgs args)
+
+        /// <inheritdoc />
+        protected override void OnAccessKey(RoutedEventArgs e)
         {
-            Target?.Focus();
-            args.Handled = Target != null;
+            LabelActivated(e);
         }
 
         /// <summary>
@@ -65,18 +63,25 @@ namespace Avalonia.Controls
             base.OnPointerPressed(e);
         }
 
-        /// <summary>
-        /// Focus the target control instead if the label gets the focus. 
-        /// </summary>
-        /// <param name="e">The event args</param>
-        protected override void OnGotFocus(GotFocusEventArgs e)
-        {
-            Target?.Focus();
-        }
-
+        /// <inheritdoc />
         protected override AutomationPeer OnCreateAutomationPeer()
         {
             return new LabelAutomationPeer(this);
+        }
+
+        private void LabelActivated(RoutedEventArgs e)
+        {
+            Target?.Focus();
+            e.Handled = Target != null;
+        }
+
+        private static void OnAccessKeyPressed(Label label, AccessKeyPressedEventArgs e)
+        {
+            if (e is not { Handled: false, Target: null }) 
+                return;
+            
+            e.Target = label.Target;
+            e.Handled = true;
         }
     }
 }
