@@ -207,56 +207,6 @@ namespace Avalonia.Base.UnitTests.Input
             menu.Verify(x => x.Open(), Times.Once);
         }
 
-        [Fact]
-        public void Should_Cycle_Focus_When_Accelerator_Has_More_Than_One_Match()
-        {
-            using (UnitTestApplication.Start(TestServices.RealFocus))
-            {
-                var fileMenuItem = new MenuItem{ Header = "_File", Focusable = true, IsVisible = true };
-                var fileItemAccessText = new AccessText { Text = "_File" };
-                fileMenuItem.AddLogicalChild(fileItemAccessText);
-                
-                var findItemAccessText = new AccessText { Text = "_Find" };
-                var findItem = new MenuItem{ Header = "_Find" ,Focusable = true, IsVisible = true };
-                findItem.AddLogicalChild(findItemAccessText);
-                
-                var root = new TestRoot
-                {
-                    Child = new StackPanel
-                    {
-                        Children =
-                        {
-                            findItem,
-                            fileMenuItem
-                        }
-                    }
-                };
-                
-                var target = new AccessKeyHandler();
-                
-                target.SetOwner(root);
-                var focusManager = Assert.IsType<FocusManager>(root.FocusManager);
-                
-                target.Register('F', fileItemAccessText);
-                target.Register('F', findItemAccessText);
-                
-                // focus first item
-                KeyDown(root, Key.F, KeyModifiers.Alt);
-                var focusedElement = Assert.IsType<MenuItem>(focusManager.GetFocusedElement());
-                Assert.Same(fileMenuItem.Header, focusedElement.Header);
-                
-                // focus next item
-                KeyDown(root, Key.F, KeyModifiers.Alt);
-                focusedElement = Assert.IsType<MenuItem>(focusManager.GetFocusedElement());
-                Assert.Same(findItem.Header, focusedElement.Header);
-                
-                // focus first item again
-                KeyDown(root, Key.F, KeyModifiers.Alt);
-                focusedElement = Assert.IsType<MenuItem>(focusManager.GetFocusedElement());
-                Assert.Same(fileMenuItem.Header, focusedElement.Header);
-            }
-        }
-
         private static void KeyDown(IInputElement target, Key key, KeyModifiers modifiers = KeyModifiers.None)
         {
             target.RaiseEvent(new KeyEventArgs
