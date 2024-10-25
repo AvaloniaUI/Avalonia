@@ -108,7 +108,7 @@ namespace Avalonia.Controls.Presenters
 
         static TextPresenter()
         {
-            AffectsRender<TextPresenter>(CaretBrushProperty, SelectionBrushProperty, SelectionForegroundBrushProperty, TextElement.ForegroundProperty);
+            AffectsRender<TextPresenter>(CaretBrushProperty, SelectionBrushProperty, SelectionForegroundBrushProperty, TextElement.ForegroundProperty, ShowSelectionHighlightProperty);
         }
 
         public TextPresenter() { }
@@ -1043,6 +1043,7 @@ namespace Avalonia.Controls.Presenters
                 case nameof(SelectionStart):
                 case nameof(SelectionEnd):
                 case nameof(SelectionForegroundBrush):
+                case nameof(ShowSelectionHighlightProperty):
 
                 case nameof(PasswordChar):
                 case nameof(RevealPassword):
