@@ -28,7 +28,8 @@ namespace Avalonia.Controls
     [TemplatePart("PART_PeriodSelector",   typeof(DateTimePickerPanel), IsRequired = true)]
     [TemplatePart("PART_PeriodUpButton",   typeof(RepeatButton))]
     [TemplatePart("PART_PickerContainer",  typeof(Grid), IsRequired = true)]
-    [TemplatePart("PART_ThirdSpacer",     typeof(Rectangle), IsRequired = true)]
+    [TemplatePart("PART_SecondSpacer",     typeof(Rectangle), IsRequired = true)]
+    [TemplatePart("PART_ThirdSpacer",      typeof(Rectangle), IsRequired = true)]
     public class TimePickerPresenter : PickerPresenterBase
     {
         /// <summary>
@@ -241,7 +242,7 @@ namespace Avalonia.Controls
                 hr = per == 1 ? (hr == 12) ? 12 : hr + 12 : per == 0 && hr == 12 ? 0 : hr;
             }
 
-            SetCurrentValue(TimeProperty, new TimeSpan(hr, min, sec));
+            SetCurrentValue(TimeProperty, new TimeSpan(hr, min, UseSeconds ? sec : 0));
 
             base.OnConfirmed();
         }
@@ -262,14 +263,14 @@ namespace Avalonia.Controls
             _minuteSelector!.MaximumValue = 59;
             _minuteSelector.MinimumValue = 0;
             _minuteSelector.Increment = MinuteIncrement;
-            _minuteSelector.SelectedValue = Time.Minutes;
             _minuteSelector.ItemFormat = "mm";
+            _minuteSelector.SelectedValue = Time.Minutes;
             
             _secondSelector!.MaximumValue = 59;
             _secondSelector.MinimumValue = 0;
             _secondSelector.Increment = SecondIncrement;
-            _secondSelector.SelectedValue = Time.Seconds;
             _secondSelector.ItemFormat = "ss";
+            _secondSelector.SelectedValue = Time.Seconds;
 
             _periodSelector!.MaximumValue = 1;
             _periodSelector.MinimumValue = 0;
