@@ -12,7 +12,7 @@ namespace Avalonia.Media.TextFormatting
     internal sealed class TextFormatterImpl : TextFormatter
     {
         private static readonly char[] s_empty = { ' ' };
-        private static readonly string s_defaultText = new string('a', TextRun.DefaultTextSourceLength);
+        private static readonly string s_defaultText = new string(' ', TextRun.DefaultTextSourceLength);
 
         [ThreadStatic] private static BidiData? t_bidiData;
         [ThreadStatic] private static BidiAlgorithm? t_bidiAlgorithm;
@@ -209,7 +209,7 @@ namespace Avalonia.Media.TextFormatting
                     text = s_defaultText.AsSpan();
                 else
                 {
-                    text = new string('a', textRun.Length).AsSpan();
+                    text = new string(' ', textRun.Length).AsSpan();
                 }
 
                 bidiData.Append(text);
