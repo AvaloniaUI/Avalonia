@@ -458,7 +458,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 
                 var finder = new ScopeRegistrationFinder(name);
                 namescopeRoot.Visit(finder);
-                return finder.TargetType is not null ? (finder.TargetType, DataType: finder.DataContextType) : null;
+                return finder.TargetType is not null ? (finder.TargetType, finder.DataContextType) : null;
             }
 
             void IXamlAstVisitor.Pop()
