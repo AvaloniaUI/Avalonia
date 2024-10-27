@@ -1283,6 +1283,28 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         }
 
         [Fact]
+        public void SupportsParentInPathWithTypeAndLevelFilter()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Border x:Name='p2'>
+        <Border x:Name='p1'>
+            <Button x:Name='p0'>
+                <TextBlock x:Name='textBlock' Text='{CompiledBinding $parent[Control;1].Name}' />
+            </Button>
+        </Border>
+    </Border>
+</Window>");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
+
+                Assert.Equal("p1", textBlock.Text);
+            }
+        }
+
+        [Fact]
         public void SupportConverterWithParameter()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
@@ -2172,6 +2194,140 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
                 var brush = Assert.IsType<ImmutableSolidColorBrush>(textBlock!.Background);
                 Assert.Equal(Colors.Red, brush.Color);
+            }
+        }
+
+        [Fact]
+        public void ResolvesElementNameDataContextTypeBasedOnContext()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'
+        x:Name='MyWindow'>
+    <TextBlock Text='{CompiledBinding ElementName=MyWindow, Path=DataContext.StringProperty}' Name='textBlock' />
+</Window>");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
+
+                var dataContext = new TestDataContext
+                {
+                    StringProperty = "foobar"
+                };
+
+                window.DataContext = dataContext;
+
+                Assert.Equal(dataContext.StringProperty, textBlock.Text);
+            }
+        }
+
+        [Fact]
+        public void ResolvesElementNameDataContextTypeBasedOnContextShortSyntax()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            { 
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'
+        x:Name='MyWindow'>
+    <TextBlock Text='{CompiledBinding #MyWindow.DataContext.StringProperty}' Name='textBlock' />
+</Window>");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
+
+                var dataContext = new TestDataContext
+                {
+                    StringProperty = "foobar"
+                };
+
+                window.DataContext = dataContext;
+
+                Assert.Equal(dataContext.StringProperty, textBlock.Text);
+            }
+        }
+
+        [Fact]
+        public void TypeCastWorksWithElementNameDataContext()
+        {
+            // By default, DataContext will infer DataType from the XAML context, which will be local:TestDataContext here.
+            // But developer should be able to re-define this type via type casing, if they know better.
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'
+        x:Name='MyWindow'>
+    <Panel>
+        <TextBlock Text='{CompiledBinding $parent.((Button)DataContext).Tag}' Name='textBlock' />
+    </Panel>
+</Window>");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
+
+                var panelDataContext = new Button { Tag = "foo" };
+                ((Panel)window.Content!).DataContext = panelDataContext;
+
+                Assert.Equal(panelDataContext.Tag, textBlock.Text);
+            }
+        }
+
+        [Fact]
+        public void ResolvesParentDataContextTypeBasedOnContext()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'
+        x:Name='MyWindow'>
+    <Panel>
+        <TextBlock Text='{CompiledBinding $parent[Panel].DataContext.StringProperty}' Name='textBlock' />
+    </Panel>
+</Window>");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
+
+                var dataContext = new TestDataContext
+                {
+                    StringProperty = "foobar"
+                };
+
+                window.DataContext = dataContext;
+
+                Assert.Equal(dataContext.StringProperty, textBlock.Text);
+            }
+        }
+
+        [Fact]
+        public void ResolvesParentDataContextTypeBasedOnContextShortSyntax()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'
+        x:Name='MyWindow'>
+    <Panel>
+        <TextBlock Text='{CompiledBinding $parent.DataContext.StringProperty}' Name='textBlock' />
+    </Panel>
+</Window>");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
+
+                var dataContext = new TestDataContext
+                {
+                    StringProperty = "foobar"
+                };
+
+                window.DataContext = dataContext;
+
+                Assert.Equal(dataContext.StringProperty, textBlock.Text);
             }
         }
 

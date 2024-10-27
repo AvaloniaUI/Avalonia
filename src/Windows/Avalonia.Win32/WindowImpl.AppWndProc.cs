@@ -176,7 +176,7 @@ namespace Avalonia.Win32
                     {
                         requestDpi = _dpi;
                     }
-                                        
+
                     return LoadIcon(requestIcon, requestDpi)?.Handle ?? default;
 
                 case WindowsMessage.WM_KEYDOWN:
@@ -778,7 +778,7 @@ namespace Avalonia.Win32
                     {
                         LostFocus?.Invoke();
                     }
-                   
+
                     break;
 
                 case WindowsMessage.WM_INPUTLANGCHANGE:
@@ -1095,8 +1095,8 @@ namespace Avalonia.Win32
         }
         private RawPointerPoint CreateRawPointerPoint(POINTER_TOUCH_INFO info)
         {
-            var pointerInfo = info.pointerInfo;
-            var point = PointToClient(new PixelPoint(pointerInfo.ptPixelLocationX, pointerInfo.ptPixelLocationY));
+            var himetricLocation = GetHimetricLocation(info.pointerInfo);
+            var point = PointToClient(himetricLocation);
 
             var pointerPoint = new RawPointerPoint
             {
@@ -1129,8 +1129,8 @@ namespace Avalonia.Win32
         }
         private RawPointerPoint CreateRawPointerPoint(POINTER_PEN_INFO info)
         {
-            var pointerInfo = info.pointerInfo;
-            var point = PointToClient(new PixelPoint(pointerInfo.ptPixelLocationX, pointerInfo.ptPixelLocationY));
+            var himetricLocation = GetHimetricLocation(info.pointerInfo);
+            var point = PointToClient(himetricLocation);
             return new RawPointerPoint
             {
                 Position = point,
@@ -1196,6 +1196,20 @@ namespace Avalonia.Win32
             _langid = langid;
 
             Imm32InputMethod.Current.SetLanguageAndWindow(this, Hwnd, hkl);
+        }
+
+        /// <summary>
+        /// Get the location of the pointer in himetric units.
+        /// </summary>
+        /// <param name="info">The pointer info.</param>
+        /// <returns>The location of the pointer in himetric units.</returns>
+        private Point GetHimetricLocation(POINTER_INFO info)
+        {
+            GetPointerDeviceRects(info.sourceDevice, out var pointerDeviceRect, out var displayRect);
+            var himetricLocation = new Point(
+                info.ptHimetricLocationRawX * displayRect.Width / (double)pointerDeviceRect.Width + displayRect.left,
+                info.ptHimetricLocationRawY * displayRect.Height / (double)pointerDeviceRect.Height + displayRect.top);
+            return himetricLocation;
         }
 
         private static int ToInt32(IntPtr ptr)
