@@ -147,6 +147,10 @@ internal unsafe partial struct SafeArrayRef
                     {
                         array[i] = (T)instance;
                     }
+                    else
+                    {
+                        throw new NotImplementedException("COM items not owned by managed code can't be unwrapped from SafeArray.");
+                    }
                 }
             }
             else
