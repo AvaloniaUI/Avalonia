@@ -6,7 +6,7 @@ using Avalonia.Win32.Automation.Marshalling;
 namespace Avalonia.Win32.Automation.Interop;
 
 #if NET8_0_OR_GREATER
-[GeneratedComInterface]
+[GeneratedComInterface(Options = ComInterfaceOptions.ManagedObjectWrapper)]
 #else
 [ComImport()]
 [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
