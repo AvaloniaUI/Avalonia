@@ -167,6 +167,78 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 Assert.Equal("Hello".AsMemory(), first.Text);
             }
         }
+        
+        [Fact]
+        public void Should_Position_Whitespace_Correctly_In_RightToLeft_Paragraph()
+        {
+            using (Start())
+            {
+                const string text = "Hello ";
+
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+
+                var textSource = new SimpleTextSource(text, defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(FlowDirection.RightToLeft, TextAlignment.Right, true, true, defaultProperties, TextWrapping.NoWrap, 0, 0, 0));
+
+                Assert.NotNull(textLine);
+
+                Assert.Equal(3, textLine.TextRuns.Count);
+
+                var first = textLine.TextRuns[0] as ShapedTextRun;
+
+                var second = textLine.TextRuns[1] as ShapedTextRun;
+
+                Assert.NotNull(first);
+
+                Assert.NotNull(second);
+
+                Assert.Equal(" ", first.Text.ToString());
+
+                Assert.Equal("Hello", second.Text.ToString());
+
+                Assert.NotNull(textLine.TextRuns[2] as TextEndOfParagraph);
+            }
+        }
+
+        [Fact]
+        public void Should_Coalesce_Bidi_Levels_After_TextWrapping()
+        {
+            using (Start())
+            {
+                const string text = "Hello World";
+
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+
+                var textSource = new SimpleTextSource(text, defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, 50,
+                        new GenericTextParagraphProperties(FlowDirection.RightToLeft, TextAlignment.Right, true, true, defaultProperties, TextWrapping.Wrap, 0, 0, 0));
+
+                Assert.NotNull(textLine);
+
+                Assert.Equal(2, textLine.TextRuns.Count);
+
+                var first = textLine.TextRuns[0] as ShapedTextRun;
+
+                var second = textLine.TextRuns[1] as ShapedTextRun;
+
+                Assert.NotNull(first);
+
+                Assert.NotNull(second);
+
+                Assert.Equal(" ", first.Text.ToString());
+
+                Assert.Equal("Hello", second.Text.ToString());
+            }
+        }
 
         [Fact]
         public void Should_Format_TextRuns_With_TextRunStyles()
