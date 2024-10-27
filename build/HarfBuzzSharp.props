@@ -2,6 +2,6 @@
   <ItemGroup>
     <PackageReference Include="HarfBuzzSharp" Version="7.3.0.2" />
     <PackageReference Condition="'$(IncludeLinuxSkia)' == 'true'" Include="HarfBuzzSharp.NativeAssets.Linux" Version="7.3.0.2" />
-    <PackageReference Condition="'$(IncludeWasmSkia)' == 'true'" Include="HarfBuzzSharp.NativeAssets.WebAssembly" Version="7.3.0.2" />
+    <PackageReference Condition="'$(IncludeWasmSkia)' == 'true'" Include="HarfBuzzSharp.NativeAssets.WebAssembly" Version="7.3.0.3-preview.2.2" />
   </ItemGroup>
 </Project>
