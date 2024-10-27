@@ -2,6 +2,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Utilities;
@@ -194,31 +195,7 @@ namespace Avalonia.Media.TextFormatting
                 return shapedRuns;
             }
 
-            var bidiData = t_bidiData ??= new();
-            bidiData.Reset();
-            bidiData.ParagraphEmbeddingLevel = (sbyte)flowDirection;
-
-            for (var i = 0; i < textRuns.Count; ++i)
-            {
-                var textRun = textRuns[i];
-
-                ReadOnlySpan<char> text;
-                if (!textRun.Text.IsEmpty)
-                    text = textRun.Text.Span;
-                else if (textRun.Length == TextRun.DefaultTextSourceLength)
-                    text = s_defaultText.AsSpan();
-                else
-                {
-                    text = new string(' ', textRun.Length).AsSpan();
-                }
-
-                bidiData.Append(text);
-            }
-
-            var bidiAlgorithm = t_bidiAlgorithm ??= new();
-            bidiAlgorithm.Process(bidiData);
-
-            var resolvedEmbeddingLevel = bidiAlgorithm.ResolveEmbeddingLevel(bidiData.Classes);
+            ResolveBidiLevels(null, textRuns, (sbyte)flowDirection, out var resolvedEmbeddingLevel, out var resolvedLevels);
 
             resolvedFlowDirection =
                 (resolvedEmbeddingLevel & 1) == 0 ? FlowDirection.LeftToRight : FlowDirection.RightToLeft;
@@ -228,11 +205,7 @@ namespace Avalonia.Media.TextFormatting
 
             try
             {
-                CoalesceLevels(textRuns, bidiAlgorithm.ResolvedLevels.Span, fontManager, processedRuns);
-
-                bidiData.Reset();
-                bidiAlgorithm.Reset();
-
+                CoalesceLevels(textRuns, resolvedLevels, fontManager, processedRuns);
 
                 var textShaper = TextShaper.Current;
 
@@ -908,6 +881,11 @@ namespace Avalonia.Media.TextFormatting
                     textLineBreak = null;
                 }
 
+                if (postSplitRuns?.Count > 0)
+                {
+                    CoalesceLevelsForLine(preSplitRuns, paragraphProperties.FlowDirection, objectPool);
+                }
+
                 var textLine = new TextLineImpl(preSplitRuns.ToArray(), firstTextSourceIndex, measuredLength,
                     paragraphWidth, paragraphProperties, resolvedFlowDirection,
                     textLineBreak);
@@ -921,6 +899,141 @@ namespace Avalonia.Media.TextFormatting
                 objectPool.TextRunLists.Return(ref preSplitRuns);
                 objectPool.TextRunLists.Return(ref postSplitRuns);
             }
+        }
+
+        private static void CoalesceLevelsForLine(RentedList<TextRun> textRuns, FlowDirection paragraphFlowDirection, FormattingObjectPool objectPool)
+        {
+            if (textRuns.Count == 0)
+            {
+                return;
+            }
+
+            var lastTextRun = textRuns[textRuns.Count - 1];
+
+            if (lastTextRun.Text.IsEmpty)
+            {
+                return;
+            }
+
+            var paragraphEmbeddingLevel = (sbyte)paragraphFlowDirection;
+
+            ResolveBidiLevels(lastTextRun, null, paragraphEmbeddingLevel, out var resolvedEmbeddingLevel, out var resolvedLevels);
+
+            var textRunLength = resolvedLevels.Length;
+
+            if (paragraphEmbeddingLevel == resolvedEmbeddingLevel)
+            {
+                return;
+            }
+
+            for (int i = resolvedLevels.Length - 1; i >= 0; i--)
+            {
+                var level = resolvedLevels[i];
+
+                if (level != paragraphEmbeddingLevel)
+                {
+                    break;
+                }
+
+                textRunLength--;
+            }
+
+            if (textRunLength == 0 || textRunLength == resolvedLevels.Length)
+            {
+                return;
+            }
+
+            var textRunsLengthExcludedLast = 0;
+
+            for (var i = 0; i < textRuns.Count - 1; i++)
+            {
+                textRunsLengthExcludedLast += textRuns[i].Length;
+            }
+
+            var (firstTextRuns, secondTextRuns) = SplitTextRuns(textRuns, textRunsLengthExcludedLast + textRunLength, objectPool);
+
+            try
+            {
+                textRuns.Clear();
+                textRuns.AddRange(firstTextRuns);
+
+                Debug.Assert(secondTextRuns != null, "second runs must contain any value, (trailing whitespace usually)");
+
+                if (secondTextRuns != null)
+                {
+                    for (var i = 0; i < secondTextRuns.Count; i++)
+                    {
+                        if (secondTextRuns[i] is ShapedTextRun shapedTextRun)
+                        {
+                            shapedTextRun.ShapedBuffer.ChangeBidiLevel(paragraphEmbeddingLevel);
+                        }
+                    }
+
+                    textRuns.AddRange(secondTextRuns);
+                }
+            }
+            finally
+            {
+                objectPool.TextRunLists.Return(ref firstTextRuns);
+                objectPool.TextRunLists.Return(ref secondTextRuns);
+            }
+        }
+
+        private static void ResolveBidiLevels(TextRun? textRun, IReadOnlyList<TextRun>? textRuns, sbyte paragraphEmbeddingLevel, out sbyte resolvedEmbeddingLevel, out ReadOnlySpan<sbyte> resolvedLevels)
+        {
+            if (textRun == null && (textRuns == null || textRuns.Count == 0))
+            {
+                resolvedEmbeddingLevel = paragraphEmbeddingLevel;
+                resolvedLevels = [];
+                return;
+            }
+
+            var bidiData = t_bidiData ??= new();
+            var bidiAlgorithm = t_bidiAlgorithm ??= new();
+
+            bidiData.Reset();
+            bidiData.ParagraphEmbeddingLevel = paragraphEmbeddingLevel;
+
+            void AppendTextRun(TextRun textRun)
+            {
+                ReadOnlySpan<char> text;
+
+                if (textRun.Text.IsEmpty == false)
+                {
+                    text = textRun.Text.Span;
+                }
+                else if (textRun.Length == TextRun.DefaultTextSourceLength)
+                {
+                    text = s_defaultText.AsSpan();
+                }
+                else
+                {
+                    text = new string(' ', textRun.Length).AsSpan();
+                }
+
+                bidiData.Append(text);
+            }
+
+            if (textRun != null)
+            {
+                AppendTextRun(textRun);
+            }
+
+            if (textRuns != null)
+            {
+                for (var i = 0; i < textRuns.Count; i++)
+                {
+                    AppendTextRun(textRuns[i]);
+                }
+            }
+
+            bidiAlgorithm.Process(bidiData);
+
+            resolvedEmbeddingLevel = bidiAlgorithm.ResolveEmbeddingLevel(bidiData.Classes);
+            resolvedLevels = bidiAlgorithm.ResolvedLevels.Span;
+
+            bidiData.Reset();
+            bidiAlgorithm.Reset();
         }
 
         private struct TextRunEnumerator
