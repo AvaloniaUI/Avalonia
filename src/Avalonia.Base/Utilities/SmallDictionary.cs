@@ -77,7 +77,15 @@ internal struct InlineDictionary<TKey, TValue> : IEnumerable<KeyValuePair<TKey, 
         }
         else
         {
-            // We have a single element, upgrade to array
+            // We have a single element, check if we should update the value.
+            if((TKey)_data == key && overwrite)
+            {
+                _data = key;
+                _value = value;
+
+                return;
+            }
+            // If we do not replace it, upgrade to array.
             arr = new KeyValuePair[6];
             arr[0] = new KeyValuePair((TKey)_data, _value);
             arr[1] = new KeyValuePair(key, value);
