@@ -79,7 +79,7 @@ namespace Avalonia.Controls
 
         private static void OnAccessKeyPressed(TabItem tabItem, AccessKeyPressedEventArgs e)
         {
-            if (e is not { Handled: false, Target: not null }) 
+            if (e.Handled || (e.Target != null && tabItem.IsSelected)) 
                 return;
             
             e.Target = tabItem;
