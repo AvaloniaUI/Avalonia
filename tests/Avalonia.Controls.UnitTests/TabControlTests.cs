@@ -37,16 +37,8 @@ namespace Avalonia.Controls.UnitTests
                 Template = TabControlTemplate(),
                 Items =
                 {
-                    (selected = new TabItem
-                    {
-                        Name = "first",
-                        Content = "foo",
-                    }),
-                    new TabItem
-                    {
-                        Name = "second",
-                        Content = "bar",
-                    },
+                    (selected = new TabItem { Name = "first", Content = "foo", }),
+                    new TabItem { Name = "second", Content = "bar", },
                 }
             };
 
@@ -65,7 +57,7 @@ namespace Avalonia.Controls.UnitTests
                 Template = TabControlTemplate(),
                 Items =
                 {
-                    new TabItem { Header = "First"},
+                    new TabItem { Header = "First" },
                     new TabItem { Header = "Second", Content = secondContent, IsSelected = true }
                 },
             };
@@ -81,17 +73,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new TabControl
             {
                 Template = TabControlTemplate(),
-                Items =
-                {
-                    new TabItem
-                    {
-                        Content = "foo"
-                    },
-                    new TabItem
-                    {
-                        Content = "bar"
-                    },
-                }
+                Items = { new TabItem { Content = "foo" }, new TabItem { Content = "bar" }, }
             };
 
             Assert.Equal(target.Items, target.GetLogicalChildren().ToList());
@@ -107,21 +89,9 @@ namespace Avalonia.Controls.UnitTests
                 Template = TabControlTemplate(),
                 Items =
                 {
-                    new TabItem
-                    {
-                        Name = "first",
-                        Content = "foo",
-                    },
-                    new TabItem
-                    {
-                        Name = "second",
-                        Content = "bar",
-                    },
-                    new TabItem
-                    {
-                        Name = "3rd",
-                        Content = "barf",
-                    },
+                    new TabItem { Name = "first", Content = "foo", },
+                    new TabItem { Name = "second", Content = "bar", },
+                    new TabItem { Name = "3rd", Content = "barf", },
                 }
             };
 
@@ -147,21 +117,9 @@ namespace Avalonia.Controls.UnitTests
                 Template = TabControlTemplate(),
                 Items =
                 {
-                    new TabItem
-                    {
-                        Name = "first",
-                        Content = "foo",
-                    },
-                    new TabItem
-                    {
-                        Name = "second",
-                        Content = "bar",
-                    },
-                    new TabItem
-                    {
-                        Name = "3rd",
-                        Content = "barf",
-                    },
+                    new TabItem { Name = "first", Content = "foo", },
+                    new TabItem { Name = "second", Content = "bar", },
+                    new TabItem { Name = "3rd", Content = "barf", },
                 }
             };
 
@@ -186,16 +144,10 @@ namespace Avalonia.Controls.UnitTests
 
             var collection = new ObservableCollection<Item>()
             {
-                new Item("first"),
-                new Item("second"),
-                new Item("3rd"),
+                new Item("first"), new Item("second"), new Item("3rd"),
             };
 
-            var target = new TabControl
-            {
-                Template = TabControlTemplate(),
-                ItemsSource = collection,
-            };
+            var target = new TabControl { Template = TabControlTemplate(), ItemsSource = collection, };
 
             Prepare(target);
             target.SelectedItem = collection[0];
@@ -220,10 +172,7 @@ namespace Avalonia.Controls.UnitTests
                 {
                     new Style(x => x.OfType<TabItem>())
                     {
-                        Setters =
-                        {
-                            new Setter(TemplatedControl.TemplateProperty, template)
-                        }
+                        Setters = { new Setter(TemplatedControl.TemplateProperty, template) }
                     }
                 },
                 Child = (target = new TabControl
@@ -231,21 +180,9 @@ namespace Avalonia.Controls.UnitTests
                     Template = TabControlTemplate(),
                     Items =
                     {
-                        new TabItem
-                        {
-                            Name = "first",
-                            Content = "foo",
-                        },
-                        new TabItem
-                        {
-                            Name = "second",
-                            Content = "bar",
-                        },
-                        new TabItem
-                        {
-                            Name = "3rd",
-                            Content = "barf",
-                        },
+                        new TabItem { Name = "first", Content = "foo", },
+                        new TabItem { Name = "second", Content = "bar", },
+                        new TabItem { Name = "3rd", Content = "barf", },
                     },
                 })
             };
@@ -261,10 +198,7 @@ namespace Avalonia.Controls.UnitTests
         {
             var items = new object[]
             {
-                "Foo",
-                new Item("Bar"),
-                new TextBlock { Text = "Baz" },
-                new TabItem { Content = "Qux" },
+                "Foo", new Item("Bar"), new TextBlock { Text = "Baz" }, new TabItem { Content = "Qux" },
                 new TabItem { Content = new TextBlock { Text = "Bob" } }
             };
 
@@ -272,10 +206,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 Template = TabControlTemplate(),
                 DataContext = "Base",
-                DataTemplates =
-                {
-                    new FuncDataTemplate<Item>((x, __) => new Button { Content = x })
-                },
+                DataTemplates = { new FuncDataTemplate<Item>((x, __) => new Button { Content = x }) },
                 ItemsSource = items,
             };
 
@@ -321,11 +252,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new TabControl
             {
                 Template = TabControlTemplate(),
-                Items =
-                {
-                    new TextBlock { Text = "foo" },
-                    new TextBlock { Text = "bar" },
-                },
+                Items = { new TextBlock { Text = "foo" }, new TextBlock { Text = "bar" }, },
             };
 
             ApplyTemplate(target);
@@ -387,11 +314,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void SelectedContentTemplate_Updates_After_New_ContentTemplate()
         {
-            TabControl target = new TabControl
-            {
-                Template = TabControlTemplate(),
-                ItemsSource = new[] { "Foo" },
-            };
+            TabControl target = new TabControl { Template = TabControlTemplate(), ItemsSource = new[] { "Foo" }, };
             var root = new TestRoot(target);
 
             ApplyTemplate(target);
@@ -400,7 +323,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(null, Assert.IsType<TextBlock>(target.ContentPart.Child).Tag);
 
             target.ContentTemplate = new FuncDataTemplate<string>((x, _) =>
-                    new TextBlock { Tag = "bar", Text = x });
+                new TextBlock { Tag = "bar", Text = x });
 
             Assert.Equal("bar", Assert.IsType<TextBlock>(target.ContentPart.Child).Tag);
         }
@@ -413,11 +336,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new TabControl
             {
                 Template = TabControlTemplate(),
-                Items =
-                {
-                    TabItemFactory("First tab content"),
-                    TabItemFactory("Second tab content"),
-                },
+                Items = { TabItemFactory("First tab content"), TabItemFactory("Second tab content"), },
             };
 
             var root = new TestRoot(target);
@@ -449,9 +368,7 @@ namespace Avalonia.Controls.UnitTests
 
             var target = new TabControl
             {
-                Template = TabControlTemplate(),
-                DataContext = dataContext,
-                Items = { tabItem }
+                Template = TabControlTemplate(), DataContext = dataContext, Items = { tabItem }
             };
 
             ApplyTemplate(target);
@@ -522,23 +439,9 @@ namespace Avalonia.Controls.UnitTests
                 }
             };
 
-            var button = new Button
-            {
-                Content = "Button",
-                [DockPanel.DockProperty] = Dock.Top,
-            };
+            var button = new Button { Content = "Button", [DockPanel.DockProperty] = Dock.Top, };
 
-            var root = new TestRoot
-            {
-                Child = new DockPanel
-                {
-                    Children =
-                    {
-                        button,
-                        target,
-                    }
-                }
-            };
+            var root = new TestRoot { Child = new DockPanel { Children = { button, target, } } };
 
             var navigation = new KeyboardNavigationHandler();
             navigation.SetOwner(root);
@@ -571,24 +474,11 @@ namespace Avalonia.Controls.UnitTests
                 }
             };
 
-            var button = new Button
-            {
-                Content = "Button",
-                [DockPanel.DockProperty] = Dock.Top,
-            };
+            var button = new Button { Content = "Button", [DockPanel.DockProperty] = Dock.Top, };
 
             var root = new TestRoot
             {
-                Width = 1000,
-                Height = 1000,
-                Child = new DockPanel
-                {
-                    Children =
-                    {
-                        button,
-                        target,
-                    }
-                }
+                Width = 1000, Height = 1000, Child = new DockPanel { Children = { button, target, } }
             };
 
             var navigation = new KeyboardNavigationHandler();
@@ -617,10 +507,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void TabItem_Header_Should_Be_Settable_By_Style_When_DataContext_Is_Set()
         {
-            var tabItem = new TabItem
-            {
-                DataContext = "Some DataContext"
-            };
+            var tabItem = new TabItem { DataContext = "Some DataContext" };
 
             _ = new TestRoot
             {
@@ -628,10 +515,7 @@ namespace Avalonia.Controls.UnitTests
                 {
                     new Style(x => x.OfType<TabItem>())
                     {
-                        Setters =
-                        {
-                            new Setter(HeaderedContentControl.HeaderProperty, "Header from style")
-                        }
+                        Setters = { new Setter(HeaderedContentControl.HeaderProperty, "Header from style") }
                     }
                 },
                 Child = tabItem
@@ -643,18 +527,9 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void TabItem_TabStripPlacement_Should_Be_Correctly_Set()
         {
-            var items = new object[]
-            {
-                "Foo",
-                new TabItem { Content = new TextBlock { Text = "Baz" } }
-            };
+            var items = new object[] { "Foo", new TabItem { Content = new TextBlock { Text = "Baz" } } };
 
-            var target = new TabControl
-            {
-                Template = TabControlTemplate(),
-                DataContext = "Base",
-                ItemsSource = items
-            };
+            var target = new TabControl { Template = TabControlTemplate(), DataContext = "Base", ItemsSource = items };
 
             ApplyTemplate(target);
 
@@ -681,17 +556,9 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void TabItem_TabStripPlacement_Should_Be_Correctly_Set_For_New_Items()
         {
-            var items = new object[]
-            {
-                "Foo",
-                new TabItem { Content = new TextBlock { Text = "Baz" } }
-            };
+            var items = new object[] { "Foo", new TabItem { Content = new TextBlock { Text = "Baz" } } };
 
-            var target = new TabControl
-            {
-                Template = TabControlTemplate(),
-                DataContext = "Base"
-            };
+            var target = new TabControl { Template = TabControlTemplate(), DataContext = "Base" };
 
             ApplyTemplate(target);
 
@@ -724,7 +591,12 @@ namespace Avalonia.Controls.UnitTests
         public void Should_TabControl_Recognizes_AccessKey(Key accessKey, int selectedTabIndex)
         {
             var ah = new AccessKeyHandler();
-            using (UnitTestApplication.Start(TestServices.StyledWindow.With(accessKeyHandler: ah)))
+            var kd = new KeyboardDevice();
+            using (UnitTestApplication.Start(TestServices.StyledWindow
+                       .With(
+                           accessKeyHandler: ah,
+                           keyboardDevice: () => kd)
+                   ))
             {
                 var impl = CreateMockTopLevelImpl();
 
@@ -733,21 +605,15 @@ namespace Avalonia.Controls.UnitTests
                     Template = TabControlTemplate(),
                     Items =
                     {
-                        new TabItem
-                        {
-                            Header = "General",
-                        },
+                        new TabItem { Header = "General",  },
                         new TabItem { Header = "_Arch" },
-                        new TabItem { Header = "_Leaf"},
+                        new TabItem { Header = "_Leaf" },
                         new TabItem { Header = "_Disabled", IsEnabled = false },
                     }
                 };
-
-                var root = new TestTopLevel(impl.Object)
-                {
-                    Template = CreateTemplate(),
-                    Content = tabControl,
-                };
+                kd.SetFocusedElement((TabItem)tabControl.Items[selectedTabIndex], NavigationMethod.Unspecified, KeyModifiers.None);
+                
+                var root = new TestTopLevel(impl.Object) { Template = CreateTemplate(), Content = tabControl, };
 
                 root.ApplyTemplate();
                 root.Presenter.UpdateChild();
@@ -768,7 +634,8 @@ namespace Avalonia.Controls.UnitTests
                     {
                         Name = "PART_ContentPresenter",
                         [~ContentPresenter.ContentProperty] = new TemplateBinding(ContentControl.ContentProperty),
-                        [~ContentPresenter.ContentTemplateProperty] = new TemplateBinding(ContentControl.ContentTemplateProperty)
+                        [~ContentPresenter.ContentTemplateProperty] =
+                            new TemplateBinding(ContentControl.ContentTemplateProperty)
                     }.RegisterInNameScope(scope));
             }
 
@@ -786,9 +653,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 target.RaiseEvent(new KeyEventArgs
                 {
-                    RoutedEvent = InputElement.KeyDownEvent,
-                    Key = key,
-                    KeyModifiers = modifiers,
+                    RoutedEvent = InputElement.KeyDownEvent, Key = key, KeyModifiers = modifiers,
                 });
             }
 
@@ -796,9 +661,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 target.RaiseEvent(new KeyEventArgs
                 {
-                    RoutedEvent = InputElement.KeyUpEvent,
-                    Key = key,
-                    KeyModifiers = modifiers,
+                    RoutedEvent = InputElement.KeyUpEvent, Key = key, KeyModifiers = modifiers,
                 });
             }
         }
@@ -810,15 +673,14 @@ namespace Avalonia.Controls.UnitTests
                 {
                     Children =
                     {
-                        new ItemsPresenter
-                        {
-                            Name = "PART_ItemsPresenter",
-                        }.RegisterInNameScope(scope),
+                        new ItemsPresenter { Name = "PART_ItemsPresenter", }.RegisterInNameScope(scope),
                         new ContentPresenter
                         {
                             Name = "PART_SelectedContentHost",
-                            [~ContentPresenter.ContentProperty] = new TemplateBinding(TabControl.SelectedContentProperty),
-                            [~ContentPresenter.ContentTemplateProperty] = new TemplateBinding(TabControl.SelectedContentTemplateProperty),
+                            [~ContentPresenter.ContentProperty] =
+                                new TemplateBinding(TabControl.SelectedContentProperty),
+                            [~ContentPresenter.ContentTemplateProperty] =
+                                new TemplateBinding(TabControl.SelectedContentTemplateProperty),
                         }.RegisterInNameScope(scope)
                     }
                 });
@@ -861,9 +723,7 @@ namespace Avalonia.Controls.UnitTests
         {
             target.RaiseEvent(new KeyEventArgs
             {
-                RoutedEvent = InputElement.KeyDownEvent,
-                KeyModifiers = inputModifiers,
-                Key = key
+                RoutedEvent = InputElement.KeyDownEvent, KeyModifiers = inputModifiers, Key = key
             });
         }
 

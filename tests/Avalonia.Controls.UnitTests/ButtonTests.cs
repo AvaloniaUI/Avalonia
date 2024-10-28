@@ -25,10 +25,7 @@ namespace Avalonia.Controls.UnitTests
         public void Button_Is_Disabled_When_Command_Is_Disabled()
         {
             var command = new TestCommand(false);
-            var target = new Button
-            {
-                Command = command,
-            };
+            var target = new Button { Command = command, };
             var root = new TestRoot { Child = target };
 
             Assert.False(target.IsEffectivelyEnabled);
@@ -42,11 +39,7 @@ namespace Avalonia.Controls.UnitTests
         public void Button_Is_Disabled_When_Command_Is_Enabled_But_IsEnabled_Is_False()
         {
             var command = new TestCommand(true);
-            var target = new Button
-            {
-                IsEnabled = false,
-                Command = command,
-            };
+            var target = new Button { IsEnabled = false, Command = command, };
 
             var root = new TestRoot { Child = target };
 
@@ -56,10 +49,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Button_Is_Disabled_When_Bound_Command_Doesnt_Exist()
         {
-            var target = new Button
-            {
-                [!Button.CommandProperty] = new Binding("Command"),
-            };
+            var target = new Button { [!Button.CommandProperty] = new Binding("Command"), };
 
             Assert.True(target.IsEnabled);
             Assert.False(target.IsEffectivelyEnabled);
@@ -68,16 +58,9 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Button_Is_Disabled_When_Bound_Command_Is_Removed()
         {
-            var viewModel = new
-            {
-                Command = new TestCommand(true),
-            };
+            var viewModel = new { Command = new TestCommand(true), };
 
-            var target = new Button
-            {
-                DataContext = viewModel,
-                [!Button.CommandProperty] = new Binding("Command"),
-            };
+            var target = new Button { DataContext = viewModel, [!Button.CommandProperty] = new Binding("Command"), };
 
             Assert.True(target.IsEnabled);
             Assert.True(target.IsEffectivelyEnabled);
@@ -91,16 +74,9 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Button_Is_Enabled_When_Bound_Command_Is_Added()
         {
-            var viewModel = new
-            {
-                Command = new TestCommand(true),
-            };
+            var viewModel = new { Command = new TestCommand(true), };
 
-            var target = new Button
-            {
-                DataContext = new object(),
-                [!Button.CommandProperty] = new Binding("Command"),
-            };
+            var target = new Button { DataContext = new object(), [!Button.CommandProperty] = new Binding("Command"), };
             var root = new TestRoot { Child = target };
 
             Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
@@ -117,16 +93,9 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Button_Is_Disabled_When_Disabled_Bound_Command_Is_Added()
         {
-            var viewModel = new
-            {
-                Command = new TestCommand(false),
-            };
+            var viewModel = new { Command = new TestCommand(false), };
 
-            var target = new Button
-            {
-                DataContext = new object(),
-                [!Button.CommandProperty] = new Binding("Command"),
-            };
+            var target = new Button { DataContext = new object(), [!Button.CommandProperty] = new Binding("Command"), };
 
             Assert.True(target.IsEnabled);
             Assert.False(target.IsEffectivelyEnabled);
@@ -180,11 +149,7 @@ namespace Avalonia.Controls.UnitTests
         public void Button_Does_Not_Raise_Click_When_PointerReleased_Outside()
         {
             var root = new TestRoot();
-            var target = new Button()
-            {
-                Width = 100,
-                Height = 100
-            };
+            var target = new Button() { Width = 100, Height = 100 };
             root.Child = target;
 
             bool clicked = false;
@@ -213,7 +178,8 @@ namespace Avalonia.Controls.UnitTests
             renderer.Setup(r => r.HitTest(It.IsAny<Point>(), It.IsAny<Visual>(), It.IsAny<Func<Visual, bool>>()))
                 .Returns<Point, Visual, Func<Visual, bool>>((p, r, f) =>
                     r.Bounds.Contains(p.Transform(r.RenderTransform.Value.Invert())) ?
-                    new Visual[] { r } : new Visual[0]);
+                        new Visual[] { r } :
+                        new Visual[0]);
 
             using var _ = UnitTestApplication.Start(TestServices.StyledWindow);
 
@@ -257,10 +223,7 @@ namespace Avalonia.Controls.UnitTests
         public void Button_Does_Not_Subscribe_To_Command_CanExecuteChanged_Until_Added_To_Logical_Tree()
         {
             var command = new TestCommand(true);
-            var target = new Button
-            {
-                Command = command,
-            };
+            var target = new Button { Command = command, };
 
             Assert.Equal(0, command.SubscriptionCount);
         }
@@ -293,9 +256,9 @@ namespace Avalonia.Controls.UnitTests
             var raised = 0;
 
             target.Click += (s, e) => ++raised;
-
-            target.RaiseEvent(new RoutedEventArgs(AccessKeyHandler.AccessKeyPressedEvent));
-
+            
+            target.RaiseEvent(new AccessKeyEventArgs("b", false));
+            
             Assert.Equal(1, raised);
         }
 
@@ -304,7 +267,12 @@ namespace Avalonia.Controls.UnitTests
         {
             var raised = 0;
             var ah = new AccessKeyHandler();
-            using var app = UnitTestApplication.Start(TestServices.StyledWindow.With(accessKeyHandler: ah));
+            var kd = new KeyboardDevice();
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow
+                .With(
+                    accessKeyHandler: ah, 
+                    keyboardDevice: () => kd)
+            );
 
             var impl = CreateMockTopLevelImpl();
             var command = new TestCommand(p => p is bool value && value, _ => raised++);
@@ -323,12 +291,15 @@ namespace Avalonia.Controls.UnitTests
                         {
                             Name = "PART_ContentPresenter",
                             [~ContentPresenter.ContentProperty] = new TemplateBinding(Button.ContentProperty),
-                            [~ContentPresenter.ContentTemplateProperty] = new TemplateBinding(Button.ContentProperty),
+                            [~ContentPresenter.ContentTemplateProperty] =
+                                new TemplateBinding(Button.ContentProperty),
                             RecognizesAccessKey = true,
                         }.RegisterInNameScope(scope);
                     })
                 },
             };
+            kd.SetFocusedElement(target, NavigationMethod.Unspecified, KeyModifiers.None);
+            
 
             root.ApplyTemplate();
             root.Presenter.UpdateChild();
@@ -349,7 +320,7 @@ namespace Avalonia.Controls.UnitTests
             RaiseAccessKey(root, accessKey);
 
             Assert.Equal(1, raised);
-
+            
             static FuncControlTemplate<TestTopLevel> CreateTemplate()
             {
                 return new FuncControlTemplate<TestTopLevel>((x, scope) =>
@@ -357,7 +328,8 @@ namespace Avalonia.Controls.UnitTests
                     {
                         Name = "PART_ContentPresenter",
                         [~ContentPresenter.ContentProperty] = new TemplateBinding(ContentControl.ContentProperty),
-                        [~ContentPresenter.ContentTemplateProperty] = new TemplateBinding(ContentControl.ContentTemplateProperty)
+                        [~ContentPresenter.ContentTemplateProperty] =
+                            new TemplateBinding(ContentControl.ContentTemplateProperty)
                     }.RegisterInNameScope(scope));
             }
 
@@ -383,9 +355,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 target.RaiseEvent(new KeyEventArgs
                 {
-                    RoutedEvent = InputElement.KeyDownEvent,
-                    Key = key,
-                    KeyModifiers = modifiers,
+                    RoutedEvent = InputElement.KeyDownEvent, Key = key, KeyModifiers = modifiers,
                 });
             }
 
@@ -393,9 +363,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 target.RaiseEvent(new KeyEventArgs
                 {
-                    RoutedEvent = InputElement.KeyUpEvent,
-                    Key = key,
-                    KeyModifiers = modifiers,
+                    RoutedEvent = InputElement.KeyUpEvent, Key = key, KeyModifiers = modifiers,
                 });
             }
         }
@@ -491,19 +459,20 @@ namespace Avalonia.Controls.UnitTests
             var generator = new Random();
             var onlyOnce = false;
             var command = new TestCommand(parameter =>
-            {
-                if (!onlyOnce)
                 {
-                    onlyOnce = true;
-                    target.CommandParameter = generator.Next();
-                }
-                lastParamenter = parameter;
-                return true;
-            },
-            parameter =>
-            {
-                Assert.Equal(lastParamenter, parameter);
-            });
+                    if (!onlyOnce)
+                    {
+                        onlyOnce = true;
+                        target.CommandParameter = generator.Next();
+                    }
+
+                    lastParamenter = parameter;
+                    return true;
+                },
+                parameter =>
+                {
+                    Assert.Equal(lastParamenter, parameter);
+                });
             target.CommandParameter = lastParamenter;
             target.Command = command;
             var root = new TestRoot { Child = target };
@@ -518,10 +487,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 var raised = 0;
                 var target = new TextBox();
-                var button = new Button()
-                {
-                    Content = target,
-                };
+                var button = new Button() { Content = target, };
 
                 var window = new Window { Content = button };
                 window.Show();
@@ -568,7 +534,6 @@ namespace Avalonia.Controls.UnitTests
         {
             _helper.Move(button, pos);
         }
-
 
 
         private class TestTopLevel : TopLevel
