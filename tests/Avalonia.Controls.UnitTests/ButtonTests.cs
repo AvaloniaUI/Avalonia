@@ -377,7 +377,7 @@ namespace Avalonia.Controls.UnitTests
             target.IsEnabled = false;
             target.Click += (s, e) => ++raised;
 
-            target.RaiseEvent(new RoutedEventArgs(AccessKeyHandler.AccessKeyPressedEvent));
+            target.RaiseEvent(new AccessKeyEventArgs("b", false));
 
             Assert.Equal(0, raised);
         }
