@@ -628,7 +628,8 @@ namespace Avalonia.Controls
                         element.DesiredSize.Width :
                         element.DesiredSize.Height;
                     var endU = u + sizeU;
-                    if (i > 0)
+                    var currentElementAbsoluteIndex = _realizedElements.FirstIndex + i;
+                    if (currentElementAbsoluteIndex > 0)
                         endU += spacing;
 
                     if (endU > viewportStartU && u < viewportEndU)
