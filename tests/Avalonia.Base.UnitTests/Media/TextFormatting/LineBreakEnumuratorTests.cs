@@ -143,119 +143,121 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
             Assert.True(pass);
         }
 
-        private class LineBreakTestDataGenerator : IEnumerable<object[]>
+      
+    }
+
+    public class LineBreakTestDataGenerator : IEnumerable<object[]>
+    {
+        private readonly List<object[]> _testData;
+
+        public LineBreakTestDataGenerator()
         {
-            private readonly List<object[]> _testData;
+            _testData = GenerateTestData();
+        }
 
-            public LineBreakTestDataGenerator()
+        public IEnumerator<object[]> GetEnumerator()
+        {
+            return _testData.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        private static List<object[]> GenerateTestData()
+        {
+            // Process each line
+            var tests = new List<object[]>();
+
+            // Read the test file
+            var url = Path.Combine(UnicodeDataGenerator.Ucd, "auxiliary/LineBreakTest.txt");
+
+            using (var client = new HttpClient())
+            using (var result = client.GetAsync(url).GetAwaiter().GetResult())
             {
-                _testData = GenerateTestData();
-            }
-
-            public IEnumerator<object[]> GetEnumerator()
-            {
-                return _testData.GetEnumerator();
-            }
-
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                return GetEnumerator();
-            }
-
-            private static List<object[]> GenerateTestData()
-            {
-                // Process each line
-                var tests = new List<object[]>();
-
-                // Read the test file
-                var url = Path.Combine(UnicodeDataGenerator.Ucd, "auxiliary/LineBreakTest.txt");
-
-                using (var client = new HttpClient())
-                using (var result = client.GetAsync(url).GetAwaiter().GetResult())
+                if (!result.IsSuccessStatusCode)
                 {
-                    if (!result.IsSuccessStatusCode)
-                    {
-                        return tests;
-                    }
+                    return tests;
+                }
 
-                    using (var stream = result.Content.ReadAsStreamAsync().GetAwaiter().GetResult())
-                    using (var reader = new StreamReader(stream))
-                    {
-                        var lineNumber = 1;
+                using (var stream = result.Content.ReadAsStreamAsync().GetAwaiter().GetResult())
+                using (var reader = new StreamReader(stream))
+                {
+                    var lineNumber = 1;
 
-                        while (!reader.EndOfStream)
+                    while (!reader.EndOfStream)
+                    {
+                        var line = reader.ReadLine();
+
+                        if (line is null)
                         {
-                            var line = reader.ReadLine();
+                            break;
+                        }
 
-                            if (line is null)
+                        // Get the line, remove comments
+                        line = line.Split('#')[0].Trim();
+
+                        // Ignore blank/comment only lines
+                        if (string.IsNullOrWhiteSpace(line))
+                        {
+                            lineNumber++;
+                            continue;
+                        }
+
+                        var codePoints = new List<int>();
+                        var breakPoints = new List<int>();
+
+                        // Parse the test
+                        var p = 0;
+
+                        while (p < line.Length)
+                        {
+                            // Ignore white space
+                            if (char.IsWhiteSpace(line[p]))
                             {
-                                break;
-                            }
-
-                            // Get the line, remove comments
-                            line = line.Split('#')[0].Trim();
-
-                            // Ignore blank/comment only lines
-                            if (string.IsNullOrWhiteSpace(line))
-                            {
-                                lineNumber++;
+                                p++;
                                 continue;
                             }
 
-                            var codePoints = new List<int>();
-                            var breakPoints = new List<int>();
-
-                            // Parse the test
-                            var p = 0;
-
-                            while (p < line.Length)
+                            if (line[p] == '×')
                             {
-                                // Ignore white space
-                                if (char.IsWhiteSpace(line[p]))
-                                {
-                                    p++;
-                                    continue;
-                                }
-
-                                if (line[p] == '×')
-                                {
-                                    p++;
-                                    continue;
-                                }
-
-                                if (line[p] == '÷')
-                                {
-                                    breakPoints.Add(codePoints.Select(x=> x > ushort.MaxValue ? 2 : 1).Sum());
-                                    p++;
-                                    continue;
-                                }
-
-                                var codePointPos = p;
-
-                                while (p < line.Length && IsHexDigit(line[p]))
-                                {
-                                    p++;
-                                }
-
-                                var codePointStr = line.Substring(codePointPos, p - codePointPos);
-                                var codePoint = Convert.ToInt32(codePointStr, 16);
-                                codePoints.Add(codePoint);
+                                p++;
+                                continue;
                             }
 
-                            tests.Add(new object[] { lineNumber, codePoints.ToArray(), breakPoints.ToArray() });
+                            if (line[p] == '÷')
+                            {
+                                breakPoints.Add(codePoints.Select(x => x > ushort.MaxValue ? 2 : 1).Sum());
+                                p++;
+                                continue;
+                            }
 
-                            lineNumber++;
+                            var codePointPos = p;
+
+                            while (p < line.Length && IsHexDigit(line[p]))
+                            {
+                                p++;
+                            }
+
+                            var codePointStr = line.Substring(codePointPos, p - codePointPos);
+                            var codePoint = Convert.ToInt32(codePointStr, 16);
+                            codePoints.Add(codePoint);
                         }
+
+                        tests.Add(new object[] { lineNumber, codePoints.ToArray(), breakPoints.ToArray() });
+
+                        lineNumber++;
                     }
                 }
-
-                return tests;
             }
 
-            private static bool IsHexDigit(char ch)
-            {
-                return char.IsDigit(ch) || (ch >= 'A' && ch <= 'F') || (ch >= 'a' && ch <= 'f');
-            }
+            return tests;
+        }
+
+        private static bool IsHexDigit(char ch)
+        {
+            return char.IsDigit(ch) || (ch >= 'A' && ch <= 'F') || (ch >= 'a' && ch <= 'f');
         }
     }
 }
