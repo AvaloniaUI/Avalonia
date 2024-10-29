@@ -15,10 +15,10 @@ namespace Avalonia.Controls.Chrome
     [PseudoClasses(":minimized", ":normal", ":maximized", ":fullscreen")]
     public class CaptionButtons : TemplatedControl
     {
-        private const string PART_CloseButton = "PART_CloseButton";
-        private const string PART_RestoreButton = "PART_RestoreButton";
-        private const string PART_MinimizeButton = "PART_MinimizeButton";
-        private const string PART_FullScreenButton = "PART_FullScreenButton";
+        internal const string PART_CloseButton = "PART_CloseButton";
+        internal const string PART_RestoreButton = "PART_RestoreButton";
+        internal const string PART_MinimizeButton = "PART_MinimizeButton";
+        internal const string PART_FullScreenButton = "PART_FullScreenButton";
 
         private Button? _restoreButton;
         private IDisposable? _disposables;

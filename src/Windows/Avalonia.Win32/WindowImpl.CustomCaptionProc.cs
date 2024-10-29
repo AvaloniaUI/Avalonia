@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Controls;
+using Avalonia.Controls.Chrome;
 using Avalonia.Input;
 using Avalonia.VisualTree;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
@@ -92,7 +93,7 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_NCHITTEST:
                     if (lRet == IntPtr.Zero)
                     {
-                        if(WindowState == WindowState.FullScreen)
+                        if (WindowState == WindowState.FullScreen)
                         {
                             return (IntPtr)HitTestValues.HTCLIENT;
                         }
@@ -102,26 +103,11 @@ namespace Avalonia.Win32
 
                         if (hittestResult == HitTestValues.HTCAPTION)
                         {
-                            var position = PointToClient(PointFromLParam(lParam));
-
-                            if (_owner is Window window)
+                            var captionHittestResult = HitTestCaption(lParam);
+                            if (captionHittestResult != HitTestValues.HTNOWHERE)
                             {
-                                var visual = window.GetVisualAt(position, x =>
-                                {
-                                    if (x is IInputElement ie && (!ie.IsHitTestVisible || !ie.IsEffectivelyVisible))
-                                    {
-                                        return false;
-                                    }
-
-                                    return true;
-                                });
-
-                                if (visual != null)
-                                {
-                                    hittestResult = HitTestValues.HTCLIENT;
-                                    lRet = (IntPtr)hittestResult;
-                                }
-                            }
+                                lRet = (IntPtr)captionHittestResult;
+                            } 
                         }
 
                         if (hittestResult != HitTestValues.HTNOWHERE)
@@ -133,6 +119,40 @@ namespace Avalonia.Win32
             }
 
             return lRet;
+        }
+
+        private HitTestValues HitTestCaption(IntPtr lParam)
+        {
+            var position = PointToClient(PointFromLParam(lParam));
+            if (_owner is Window window)
+            {
+                var visual = window.GetVisualAt(position, x =>
+                {
+                    if (x is IInputElement ie && (!ie.IsHitTestVisible || !ie.IsEffectivelyVisible))
+                    {
+                        return false;
+                    }
+
+                    return true;
+                });
+
+                if (visual != null)
+                {
+                    var nearestButton = visual.FindAncestorOfType<Button>(includeSelf: true);
+                    var isCaptionButton = nearestButton?.FindAncestorOfType<CaptionButtons>() is not null;
+                    if (nearestButton is null || !isCaptionButton)
+                        return HitTestValues.HTCLIENT;
+    
+                    return nearestButton.Name switch
+                    {
+                        CaptionButtons.PART_CloseButton => HitTestValues.HTCLOSE,
+                        CaptionButtons.PART_MinimizeButton => HitTestValues.HTMINBUTTON,
+                        CaptionButtons.PART_RestoreButton => HitTestValues.HTMAXBUTTON,
+                        _ => HitTestValues.HTCLIENT, // CaptionButtons.PART_FullScreenButton...
+                    };
+                }
+            }
+            return HitTestValues.HTNOWHERE;
         }
     }
 }
