@@ -1,6 +1,5 @@
 ﻿using System;
 using Avalonia.Controls;
-using Avalonia.Controls.Chrome;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.VisualTree;
@@ -10,7 +9,6 @@ namespace Avalonia.Win32
 {
     internal partial class WindowImpl
     {
-        // Hit test the frame for resizing and moving.
         private HitTestValues HitTestNCA(IntPtr hWnd, IntPtr wParam, IntPtr lParam)
         {
             // Get the point coordinates for the hit test (screen space).
@@ -67,9 +65,10 @@ namespace Avalonia.Win32
                 uRow = 2;
             }
 
+            var captionAreaHitTest = WindowState == WindowState.FullScreen ? HitTestValues.HTNOWHERE : HitTestValues.HTCAPTION;
             ReadOnlySpan<HitTestValues> hitZones = stackalloc HitTestValues[]
             {
-                HitTestValues.HTTOPLEFT, onResizeBorder ? HitTestValues.HTTOP : HitTestValues.HTCAPTION,
+                HitTestValues.HTTOPLEFT, onResizeBorder ? HitTestValues.HTTOP : captionAreaHitTest,
                 HitTestValues.HTTOPRIGHT, HitTestValues.HTLEFT, HitTestValues.HTNOWHERE, HitTestValues.HTRIGHT,
                 HitTestValues.HTBOTTOMLEFT, HitTestValues.HTBOTTOM, HitTestValues.HTBOTTOMRIGHT
             };
@@ -95,25 +94,19 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_NCHITTEST:
                     if (lRet == IntPtr.Zero)
                     {
-                        if (WindowState == WindowState.FullScreen)
-                        {
-                            return (IntPtr)HitTestValues.HTCLIENT;
-                        }
                         var hittestResult = HitTestNCA(hWnd, wParam, lParam);
-
-                        lRet = (IntPtr)hittestResult;
-
-                        if (hittestResult == HitTestValues.HTCAPTION)
+                        if (hittestResult is HitTestValues.HTNOWHERE or HitTestValues.HTCAPTION)
                         {
-                            var captionHittestResult = HitTestCaption(lParam);
-                            if (captionHittestResult != HitTestValues.HTNOWHERE)
+                            var visualHittestResult = HitTestVisual(lParam);
+                            if (visualHittestResult != HitTestValues.HTNOWHERE)
                             {
-                                lRet = (IntPtr)captionHittestResult;
-                            } 
+                                hittestResult = visualHittestResult;
+                            }
                         }
 
                         if (hittestResult != HitTestValues.HTNOWHERE)
                         {
+                            lRet = (IntPtr)hittestResult;
                             callDwp = false;
                         }
                     }
@@ -128,9 +121,7 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_NCLBUTTONDOWN when !IsMouseInPointerEnabled:
                 case WindowsMessage.WM_NCLBUTTONUP when !IsMouseInPointerEnabled:
                     if (lRet == IntPtr.Zero
-                        && WindowState != WindowState.FullScreen
-                        && HitTestNCA(hWnd, wParam, lParam) is HitTestValues.HTCAPTION
-                        && HitTestCaption(lParam) is HitTestValues.HTCLOSE or HitTestValues.HTMINBUTTON or HitTestValues.HTMAXBUTTON)
+                        && ShouldRedirectNonClientInput(hWnd, wParam, lParam))
                     {
                         e = new RawPointerEventArgs(
                             _mouseDevice,
@@ -151,9 +142,7 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_NCPOINTERDOWN when _wmPointerEnabled:
                 case WindowsMessage.WM_NCPOINTERUP when _wmPointerEnabled:
                     if (lRet == IntPtr.Zero
-                        && WindowState != WindowState.FullScreen
-                        && HitTestNCA(hWnd, wParam, lParam) is HitTestValues.HTCAPTION
-                        && HitTestCaption(lParam) is HitTestValues.HTCLOSE or HitTestValues.HTMINBUTTON or HitTestValues.HTMAXBUTTON)
+                        && ShouldRedirectNonClientInput(hWnd, wParam, lParam))
                     {
                         uint timestamp = 0;
                         GetDevicePointerInfo(wParam, out var device, out var info, out var point, out var modifiers, ref timestamp);
@@ -182,7 +171,7 @@ namespace Avalonia.Win32
             return lRet;
         }
 
-        private HitTestValues HitTestCaption(IntPtr lParam)
+        private HitTestValues HitTestVisual(IntPtr lParam)
         {
             var position = PointToClient(PointFromLParam(lParam));
             if (_owner is Window window)
@@ -199,21 +188,27 @@ namespace Avalonia.Win32
 
                 if (visual != null)
                 {
-                    var nearestButton = visual.FindAncestorOfType<Button>(includeSelf: true);
-                    var isCaptionButton = nearestButton?.FindAncestorOfType<CaptionButtons>() is not null;
-                    if (nearestButton is null || !isCaptionButton)
-                        return HitTestValues.HTCLIENT;
-    
-                    return nearestButton.Name switch
-                    {
-                        CaptionButtons.PART_CloseButton => HitTestValues.HTCLOSE,
-                        CaptionButtons.PART_MinimizeButton => HitTestValues.HTMINBUTTON,
-                        CaptionButtons.PART_RestoreButton => HitTestValues.HTMAXBUTTON,
-                        _ => HitTestValues.HTCLIENT, // CaptionButtons.PART_FullScreenButton...
-                    };
+                    var hitTest = Win32Properties.GetNonClientHitTestResult(visual);
+                    return (HitTestValues)hitTest;
                 }
             }
             return HitTestValues.HTNOWHERE;
+        }
+
+        private bool ShouldRedirectNonClientInput(IntPtr hWnd, IntPtr wParam, IntPtr lParam)
+        {
+            // We touched frame borders or caption, don't redirect.
+            if (HitTestNCA(hWnd, wParam, lParam) is not (HitTestValues.HTNOWHERE or HitTestValues.HTCAPTION))
+                return false;
+
+            // Redirect only for buttons.
+            return HitTestVisual(lParam)
+                is HitTestValues.HTMINBUTTON
+                or HitTestValues.HTMAXBUTTON
+                or HitTestValues.HTCLOSE
+                or HitTestValues.HTHELP
+                or HitTestValues.HTMENU
+                or HitTestValues.HTSYSMENU;
         }
     }
 }

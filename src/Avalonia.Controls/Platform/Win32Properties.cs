@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
+using Avalonia.Input;
 using Avalonia.Metadata;
 using Avalonia.Platform;
 using static Avalonia.Controls.Platform.IWin32OptionsTopLevelImpl;
@@ -14,7 +15,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// Set of Win32 specific properties and events that allow deeper customization of the application per platform.
     /// </summary>
-    public static class Win32Properties
+    public class Win32Properties
     {
         public delegate (uint style, uint exStyle) CustomWindowStylesCallback(uint style, uint exStyle);
         public delegate IntPtr CustomWndProcHookCallback(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam, ref bool handled);
@@ -69,6 +70,33 @@ namespace Avalonia.Controls
             {
                 toplevelImpl.WndProcHookCallback -= callback;
             }
+        }
+
+        public static readonly AttachedProperty<Win32HitTestValue> NonClientHitTestResultProperty =
+            AvaloniaProperty.RegisterAttached<Win32Properties, Visual, Win32HitTestValue>(
+                "NonClientHitTestResult",
+                inherits: true,
+                defaultValue: Win32HitTestValue.Client);
+
+        public static void SetNonClientHitTestResult(Visual obj, Win32HitTestValue value) => obj.SetValue(NonClientHitTestResultProperty, value);
+        public static Win32HitTestValue GetNonClientHitTestResult(Visual obj) => obj.GetValue(NonClientHitTestResultProperty);
+
+        public enum Win32HitTestValue
+        {
+            Nowhere = 0,
+            Client = 1,
+            Caption = 2,
+            MinButton = 8,
+            MaxButton = 9,
+            Left = 10,
+            Right = 11,
+            Top = 12,
+            TopLeft = 13,
+            TopRight = 14,
+            Bottom = 15,
+            BottomLeft = 16,
+            BottomRight = 17,
+            Close = 20,
         }
     }
 }
