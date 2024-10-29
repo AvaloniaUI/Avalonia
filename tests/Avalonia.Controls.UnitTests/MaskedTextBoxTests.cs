@@ -884,7 +884,42 @@ namespace Avalonia.Controls.UnitTests
 
                 RaiseKeyEvent(target, key, modifiers);
                 RaiseKeyEvent(target, Key.Z, KeyModifiers.Control); // undo
-                Assert.True(target.Text == "0123");
+                Assert.Equal("0123", target.Text);
+            }
+        }
+
+        [Fact]
+        public void Invalid_Text_Is_Coerced_Without_Raising_Intermediate_Change()
+        {
+            using (Start())
+            {
+                var target = new MaskedTextBox
+                {
+                    Template = CreateTemplate()
+                };
+
+                var impl = CreateMockTopLevelImpl();
+                var topLevel = new TestTopLevel(impl.Object) {
+                    Template = CreateTopLevelTemplate(),
+                    Content = target
+                };
+                topLevel.ApplyTemplate();
+                topLevel.LayoutManager.ExecuteInitialLayoutPass();
+
+                var texts = new List<string>();
+
+                target.PropertyChanged += (_, e) =>
+                {
+                    if (e.Property == TextBox.TextProperty)
+                        texts.Add(e.GetNewValue<string>());
+                };
+
+                target.Mask = "000";
+
+                target.Text = "123";
+                target.Text = "abc";
+
+                Assert.Equal(["___", "123"], texts);
             }
         }
 
