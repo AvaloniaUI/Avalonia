@@ -183,7 +183,7 @@ namespace Avalonia.Controls
                 // We handle horizontal and vertical layouts here so X and Y are abstracted to:
                 // - Horizontal layouts: U = horizontal, V = vertical
                 // - Vertical layouts: U = vertical, V = horizontal
-                var viewport = CalculateMeasureViewport(orientation, items, spacing);
+                var viewport = CalculateMeasureViewport(orientation, items);
 
                 // If the viewport is disjunct then we can recycle everything.
                 if (viewport.viewportIsDisjunct)
@@ -488,7 +488,7 @@ namespace Avalonia.Controls
             return _realizedElements?.Elements ?? Array.Empty<Control>();
         }
 
-        private MeasureViewport CalculateMeasureViewport(Orientation orientation, IReadOnlyList<object?> items, double spacing)
+        private MeasureViewport CalculateMeasureViewport(Orientation orientation, IReadOnlyList<object?> items)
         {
             Debug.Assert(_realizedElements is not null);
 
@@ -515,7 +515,6 @@ namespace Avalonia.Controls
                     viewportStart,
                     viewportEnd,
                     items.Count,
-                    spacing,
                     out anchorIndex,
                     out anchorU);
             }
@@ -601,7 +600,6 @@ namespace Avalonia.Controls
             double viewportStartU,
             double viewportEndU,
             int itemCount,
-            double spacing,
             out int index,
             out double position)
         {
@@ -612,6 +610,8 @@ namespace Avalonia.Controls
                 position = 0;
                 return;
             }
+
+            var spacing = Spacing;
 
             // If we have realised elements and a valid StartU then try to use this information to
             // get the anchor element.
