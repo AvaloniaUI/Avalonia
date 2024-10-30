@@ -624,13 +624,15 @@ namespace Avalonia.Controls
                     if (_realizedElements.Elements[i] is not { } element)
                         continue;
 
+                    // Indent the spacing from the previous element if there was one
+                    var currentElementAbsoluteIndex = _realizedElements.FirstIndex + i;
+                    if (currentElementAbsoluteIndex > 0)
+                        u += spacing;
+
                     var sizeU = orientation == Orientation.Horizontal ?
                         element.DesiredSize.Width :
                         element.DesiredSize.Height;
                     var endU = u + sizeU;
-                    var currentElementAbsoluteIndex = _realizedElements.FirstIndex + i;
-                    if (currentElementAbsoluteIndex > 0)
-                        endU += spacing;
 
                     if (endU > viewportStartU && u < viewportEndU)
                     {
