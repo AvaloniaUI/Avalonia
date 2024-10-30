@@ -44,6 +44,12 @@
               <MenuItem Header="Radio 5" ToggleType="Radio" />
             </MenuItem>
           </MenuItem>
+          <MenuItem Header="Thir_d">
+            <MenuItem Header="About"/>
+            <MenuItem Header="_Child">
+              <MenuItem Header="_Grandchild"/>
+            </MenuItem>
+          </MenuItem>
         </Menu>
       </StackPanel>
 

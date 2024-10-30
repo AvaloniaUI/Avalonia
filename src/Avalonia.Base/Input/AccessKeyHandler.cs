@@ -46,7 +46,20 @@ namespace Avalonia.Input
         /// <summary>
         /// The registered access keys.
         /// </summary>
-        private readonly List<AccessKeyRegistration> _registered = new();
+        private readonly List<AccessKeyRegistration> _registrations = [];
+
+        protected IReadOnlyList<AccessKeyRegistration> Registrations
+        {
+            get
+            {
+                {
+                    lock (_registrations)
+                    {
+                        return _registrations.AsReadOnly();
+                    }
+                }
+            }
+        }
 
         /// <summary>
         /// The window to which the handler belongs.
@@ -120,6 +133,12 @@ namespace Avalonia.Input
             _owner.AddHandler(InputElement.KeyDownEvent, OnKeyDown, RoutingStrategies.Bubble);
             _owner.AddHandler(InputElement.KeyUpEvent, OnPreviewKeyUp, RoutingStrategies.Tunnel);
             _owner.AddHandler(InputElement.PointerPressedEvent, OnPreviewPointerPressed, RoutingStrategies.Tunnel);
+
+            OnSetOwner(owner);
+        }
+
+        protected virtual void OnSetOwner(IInputRoot owner)
+        {
         }
 
         /// <summary>
@@ -130,19 +149,19 @@ namespace Avalonia.Input
         public void Register(char accessKey, IInputElement element)
         {
             var key = NormalizeKey(accessKey.ToString());
-
-            lock (_registered)
+            
+            lock (_registrations)
             {
-                var registrationsToRemove = _registered.Where(m =>
-                        m.Key == key && m.GetInputElement() == null)
-                    .ToList();
+                var registrationsToRemove = _registrations.Where(m =>
+                            m.Key == key && m.GetInputElement() == null)
+                        .ToList();
 
                 foreach (var registration in registrationsToRemove)
                 {
-                    _registered.Remove(registration);
+                    _registrations.Remove(registration);
                 }
 
-                _registered.Add(new AccessKeyRegistration(key, new WeakReference<IInputElement>(element)));
+                _registrations.Add(new AccessKeyRegistration(key, new WeakReference<IInputElement>(element)));
             }
         }
 
@@ -152,10 +171,10 @@ namespace Avalonia.Input
         /// <param name="element">The input element.</param>
         public void Unregister(IInputElement element)
         {
-            lock (_registered)
+            lock (_registrations)
             {
                 // Get all elements bound to this key and remove this element
-                var registrationsToRemove = _registered
+                var registrationsToRemove = _registrations
                     .Where(m =>
                     {
                         var inputElement = m.GetInputElement();
@@ -165,7 +184,7 @@ namespace Avalonia.Input
 
                 foreach (var mapping in registrationsToRemove)
                 {
-                    _registered.Remove(mapping);
+                    _registrations.Remove(mapping);
                 }
             }
         }
@@ -211,6 +230,7 @@ namespace Avalonia.Input
                     {
                         Dispatcher.UIThread.Post(() => restoreElement.Focus());
                     }
+
                     _restoreFocusElement = null;
                 }
             }
@@ -234,13 +254,12 @@ namespace Avalonia.Input
                 return;
 
             if ((!e.KeyModifiers.HasAllFlags(KeyModifiers.Alt) || e.KeyModifiers.HasAllFlags(KeyModifiers.Control)) &&
-                MainMenu?.IsOpen != true) 
+                MainMenu?.IsOpen != true)
                 return;
-            
-            var key = NormalizeKey(e.Key.ToString());
-            var targets = SortByHierarchy(GetTargetsForSender(e.Source as IInputElement, key));
-            e.Handled = ProcessKey(targets, key) != ProcessKeyResult.NoMatch;
+
+            e.Handled = ProcessKey(e.Key.ToString(), e.Source as IInputElement);
         }
+
 
         /// <summary>
         /// Handles the Alt/F10 keys being released in the window.
@@ -295,9 +314,23 @@ namespace Avalonia.Input
             _owner!.ShowAccessKeys = false;
         }
 
+        /// <summary>
+        /// Processes the given key for the element's targets 
+        /// </summary>
+        /// <param name="key">The access key to process.</param>
+        /// <param name="element">The element to get the targets which are in scope.</param>
+        /// <returns>If there matches <c>true</c>, otherwise <c>false</c>.</returns>
+        protected bool ProcessKey(string key, IInputElement? element)
+        {
+            key = NormalizeKey(key);
+            var targets = SortByHierarchy(GetTargetsForSender(element, key));
+            var result = ProcessKey(key, targets);
+            return result != ProcessKeyResult.NoMatch;
+        }
+
         private static string NormalizeKey(string key) => key.ToUpperInvariant();
 
-        private static ProcessKeyResult ProcessKey(List<IInputElement> targets, string key)
+        private static ProcessKeyResult ProcessKey(string key, List<IInputElement> targets)
         {
             if (!targets.Any())
                 return ProcessKeyResult.NoMatch;
@@ -334,15 +367,13 @@ namespace Avalonia.Input
                 lastWasFocused = target.IsFocused;
             }
 
-            if (effectiveTarget == null) 
+            if (effectiveTarget == null)
                 return ProcessKeyResult.NoMatch;
-            
+
             var args = new AccessKeyEventArgs(key, isMultiple: !isSingleTarget);
             effectiveTarget.RaiseEvent(args);
 
-            return chosenIndex == targets.Count - 1 
-                ? ProcessKeyResult.LastMatch 
-                : ProcessKeyResult.MoreMatches;
+            return chosenIndex == targets.Count - 1 ? ProcessKeyResult.LastMatch : ProcessKeyResult.MoreMatches;
         }
 
         /// <summary>
@@ -359,7 +390,8 @@ namespace Avalonia.Input
             return GetTargetsForScope(key, sender, senderInfo);
         }
 
-        private List<IInputElement> GetTargetsForScope(string key, IInputElement? sender, AccessKeyInformation senderInfo)
+        private List<IInputElement> GetTargetsForScope(string key, IInputElement? sender,
+            AccessKeyInformation senderInfo)
         {
             var possibleElements = CopyAndPurgeDead(key);
 
@@ -401,18 +433,18 @@ namespace Avalonia.Input
 
         private List<IInputElement> CopyAndPurgeDead(string key)
         {
-            lock (_registered)
+            lock (_registrations)
             {
-                var registrationsToRemove = _registered
+                var registrationsToRemove = _registrations
                     .Where(m => m.GetInputElement() == null)
                     .ToList();
 
                 foreach (var registration in registrationsToRemove)
                 {
-                    _registered.Remove(registration);
+                    _registrations.Remove(registration);
                 }
 
-                return _registered
+                return _registrations
                     .Where(m => m.Key == key)
                     .Select(m => m.GetInputElement())
                     .OfType<IInputElement>()
@@ -467,7 +499,7 @@ namespace Avalonia.Input
                 var parent = elements[i];
                 if (sorted.Contains(parent))
                     continue;
-                
+
                 sorted.Add(parent);
                 for (var j = i + 1; j < elements.Count; j++)
                 {
@@ -525,7 +557,7 @@ namespace Avalonia.Input
         /// <value></value>
         public string? Key { get; }
     }
-    
+
     /// <summary>
     /// Information pertaining to when the access key associated with an element is pressed
     /// </summary>
