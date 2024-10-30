@@ -1141,7 +1141,7 @@ namespace Avalonia.Win32
                 Win32WindowCornerHints.NoHint => noHintDefault,
                 Win32WindowCornerHints.PlatformDefault => DwmWindowCornerPreference.DWMWCP_DEFAULT,
                 Win32WindowCornerHints.Rounded => DwmWindowCornerPreference.DWMWCP_ROUND,
-                Win32WindowCornerHints.DoNotRound => DwmWindowCornerPreference.DWMWCP_DONOTROUND,
+                Win32WindowCornerHints.NotRounded => DwmWindowCornerPreference.DWMWCP_DONOTROUND,
                 _ => throw new ArgumentOutOfRangeException(nameof(cornerHints), cornerHints, null)
             };
         }

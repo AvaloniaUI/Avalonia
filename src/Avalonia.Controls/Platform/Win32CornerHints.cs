@@ -26,5 +26,5 @@ public enum Win32WindowCornerHints
     /// <summary>
     /// Prevents corners from being rounded.
     /// </summary>
-    DoNotRound
+    NotRounded
 }
