@@ -624,9 +624,10 @@ namespace Avalonia.Controls
                     if (_realizedElements.Elements[i] is not { } element)
                         continue;
 
-                    // Indent the spacing from the previous element if there was one
-                    var currentElementAbsoluteIndex = _realizedElements.FirstIndex + i;
-                    if (currentElementAbsoluteIndex > 0)
+                    // Indent the spacing from the previous element
+                    // if we aren't currently on a first realized element
+                    // which already got spacing from the previous element (if there was one)
+                    if (i > 0)
                         u += spacing;
 
                     var sizeU = orientation == Orientation.Horizontal ?
@@ -701,8 +702,10 @@ namespace Avalonia.Controls
                 var sizeU = horizontal ? e.DesiredSize.Width : e.DesiredSize.Height;
                 var sizeV = horizontal ? e.DesiredSize.Height : e.DesiredSize.Width;
 
-                // Indent the interval from the previous element if there was one
-                if (index > 0)
+                // Indent the spacing from the previous element
+                // if we aren't currently on an anchor
+                // which already got spacing from the previous element (if there was one)
+                if (index - viewport.anchorIndex > 0)
                     u += spacing;
 
                 _measureElements!.Add(index, e, u, sizeU);
