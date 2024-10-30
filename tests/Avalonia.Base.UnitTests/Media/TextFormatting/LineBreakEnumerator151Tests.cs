@@ -48,6 +48,27 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
             Assert.False(lineBreaker.MoveNext(out lineBreak));
         }
 
+        [InlineData("Hello\nWorld", 5, 6)]
+        [InlineData("Hello\rWorld", 5, 6 )]
+        [InlineData("Hello\r\nWorld", 5 , 7)]
+        [Theory]
+        public void ShouldFindMandatoryBreaks(string text, int positionMeasure, int positionWrap)
+        {
+            var lineBreaker = new LineBreakEnumeratorV151(text);
+            
+            var breaks = GetBreaks(lineBreaker);
+
+            Assert.Equal(2, breaks.Count);
+
+            var firstBreak = breaks[0];
+
+            Assert.True(firstBreak.Required);
+
+            Assert.Equal(positionMeasure, firstBreak.PositionMeasure);
+
+            Assert.Equal(positionWrap, firstBreak.PositionWrap);
+        }
+
         [Fact]
         public void ForwardTextWithOuterWhitespace()
         {
@@ -63,7 +84,7 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
             Assert.Equal(21, positionsF[3].PositionMeasure);
         }
 
-        [Theory(Skip="Just for testing")]
+        [Theory]
         [ClassData(typeof(LineBreakTestDataGenerator))]
         public void ShouldFindBreaks(int lineNumber, int[] codePoints, int[] breakPoints)
         {

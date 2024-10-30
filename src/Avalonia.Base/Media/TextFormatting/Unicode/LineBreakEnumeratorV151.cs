@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Avalonia.Media.TextFormatting.Unicode
 {
@@ -66,18 +67,20 @@ namespace Avalonia.Media.TextFormatting.Unicode
             switch (state.Current.LineBreakClass)
             {
                 case LineBreakClass.Space:
-                    {
-                        positionMeasure = FindPriorNonWhitespace(text, positionMeasure);
-
-                        break;
-                    }
                 case LineBreakClass.CarriageReturn:
                 case LineBreakClass.LineFeed:
-                    {
-                        positionWrap += 1;
+                {
+                        if(state.Previous.LineBreakClass == LineBreakClass.CarriageReturn)
+                        {
+                            positionMeasure = FindPriorNonWhitespace(text, state.Previous.Start);
+                        }
+                        else
+                        {
+                            positionMeasure = FindPriorNonWhitespace(text, positionMeasure);
+                        }
 
                         break;
-                    }
+                }
             }
 
             return new LineBreak(positionMeasure, positionWrap, isRequired);
@@ -130,7 +133,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                         return null;
                     case RuleResult.MayBreak:
                     case RuleResult.MustBreak:
-                        return GetLineBreak(text, state, res == RuleResult.MustBreak);
+                        return GetLineBreak(text, state, IsBreakClass(state.Current.LineBreakClass));
                     default:
                         throw new InvalidOperationException("Invalid state.");
                 }
@@ -1035,15 +1038,21 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 case LineBreakClass.Alphabetic:
                 case LineBreakClass.HebrewLetter:
                 case LineBreakClass.Numeric:
-                    // (AL | HL | NU) × [OP-[\p{ea=F}\p{ea=W}\p{ea=H}]]
-                    if ((state.Next(text).LineBreakClass == LineBreakClass.OpenPunctuation) && state.Next(text).Codepoint.EastAsianWidthClass == EastAsianWidthClass.Ambiguous)
                     {
-                        return RuleResult.NoBreak;
+                        var next = state.Next(text);
+
+                        // (AL | HL | NU) × [OP-[\p{ea=F}\p{ea=W}\p{ea=H}]]
+                        if ((next.LineBreakClass == LineBreakClass.OpenPunctuation) && 
+                            (next.Codepoint.EastAsianWidthClass == EastAsianWidthClass.Ambiguous || next.Codepoint.EastAsianWidthClass == EastAsianWidthClass.Narrow))
+                        {
+                            return RuleResult.NoBreak;
+                        }
+                        break;
                     }
-                    break;
+                    
                 case LineBreakClass.CloseParenthesis:
                     // [CP-[\p{ea=F}\p{ea=W}\p{ea=H}]] × (AL | HL | NU)
-                    if (state.Current.Codepoint.EastAsianWidthClass == EastAsianWidthClass.Ambiguous)
+                    if (state.Current.Codepoint.EastAsianWidthClass == EastAsianWidthClass.Ambiguous || state.Current.Codepoint.EastAsianWidthClass == EastAsianWidthClass.Narrow)
                     {
                         switch (state.Next(text).LineBreakClass)
                         {
