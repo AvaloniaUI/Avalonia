@@ -26,6 +26,7 @@ namespace Avalonia.Media
 
         private readonly ConcurrentDictionary<Uri, IFontCollection> _fontCollections = new ConcurrentDictionary<Uri, IFontCollection>();
         private readonly IReadOnlyList<FontFallback>? _fontFallbacks;
+        private readonly IReadOnlyDictionary<string, FontFamily>? _fontFamilyMappings;
 
         public FontManager(IFontManagerImpl platformImpl)
         {
@@ -35,6 +36,7 @@ namespace Avalonia.Media
 
             var options = AvaloniaLocator.Current.GetService<FontManagerOptions>();
             _fontFallbacks = options?.FontFallbacks;
+            _fontFamilyMappings = options?.FontFamilyMappings;
 
             var defaultFontFamilyName = GetDefaultFontFamilyName(options);
             DefaultFontFamily = new FontFamily(defaultFontFamilyName);
@@ -91,8 +93,8 @@ namespace Avalonia.Media
         {
             glyphTypeface = null;
 
-            var fontFamily = typeface.FontFamily;
-
+            var fontFamily = GetMappedFontFamily(typeface.FontFamily);
+            
             if (typeface.FontFamily.Name == FontFamily.DefaultFontFamilyName)
             {
                 return TryGetGlyphTypeface(new Typeface(DefaultFontFamily, typeface.Style, typeface.Weight, typeface.Stretch), out glyphTypeface);
@@ -107,6 +109,20 @@ namespace Avalonia.Media
                         var key = compositeKey.Keys[i];
 
                         var familyName = fontFamily.FamilyNames[i];
+
+                        if(_fontFamilyMappings != null && _fontFamilyMappings.TryGetValue(familyName, out var mappedFontFamily))
+                        {
+                            if(mappedFontFamily.Key != null)
+                            {
+                                key = mappedFontFamily.Key;
+                            }
+                            else
+                            {
+                                key = new FontFamilyKey(SystemFontsKey);
+                            }
+
+                            familyName = mappedFontFamily.FamilyNames.PrimaryFamilyName;
+                        }
 
                         if (TryGetGlyphTypefaceByKeyAndName(typeface, key, familyName, out glyphTypeface) &&
                             glyphTypeface.FamilyName.Contains(familyName))
@@ -144,6 +160,16 @@ namespace Avalonia.Media
 
             //Nothing was found so use the default
             return TryGetGlyphTypeface(new Typeface(FontFamily.DefaultFontFamilyName, typeface.Style, typeface.Weight, typeface.Stretch), out glyphTypeface);
+
+            FontFamily GetMappedFontFamily(FontFamily fontFamily)
+            {
+                if (_fontFamilyMappings == null ||!_fontFamilyMappings.TryGetValue(fontFamily.FamilyNames.PrimaryFamilyName, out var mappedFontFamily))
+                {
+                    return fontFamily;
+                }
+
+                return mappedFontFamily;
+            }
         }
 
         private bool TryGetGlyphTypefaceByKeyAndName(Typeface typeface, FontFamilyKey key, string familyName, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)

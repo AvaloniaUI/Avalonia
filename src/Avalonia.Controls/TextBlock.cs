@@ -162,7 +162,7 @@ namespace Avalonia.Controls
                 nameof(Inlines), t => t.Inlines, (t, v) => t.Inlines = v);
 
         private TextLayout? _textLayout;
-        protected Size _constraint;
+        protected Size _constraint = Size.Infinity;
         protected IReadOnlyList<TextRun>? _textRuns;
         private InlineCollection? _inlines;
 
@@ -701,13 +701,19 @@ namespace Avalonia.Controls
         {
             var scale = LayoutHelper.GetLayoutScale(this);
             var padding = LayoutHelper.RoundLayoutThickness(Padding, scale, scale);
+            var deflatedSize = availableSize.Deflate(padding);
 
-            _constraint = availableSize.Deflate(padding);
+            if(_constraint != deflatedSize)
+            {
+                //Reset TextLayout when the constraint is not matching.
+                _textLayout?.Dispose();
+                _textLayout = null;
+                _constraint = deflatedSize;
 
-            //Reset TextLayout otherwise constraint might be outdated.
-            _textLayout?.Dispose();
-            _textLayout = null;
-
+                //Force arrange so text will be properly alligned.
+                InvalidateArrange();
+            }
+           
             var inlines = Inlines;
 
             if (HasComplexContent)
@@ -722,9 +728,16 @@ namespace Avalonia.Controls
                 _textRuns = textRuns;
             }
 
-            var width = TextLayout.OverhangLeading + TextLayout.WidthIncludingTrailingWhitespace + TextLayout.OverhangTrailing;
+            //This implicitly recreated the TextLayout with a new constraint if we previously reset it.
+            var textLayout = TextLayout;
 
-            return new Size(width, TextLayout.Height).Inflate(padding);
+            var width = textLayout.OverhangLeading + textLayout.WidthIncludingTrailingWhitespace + textLayout.OverhangTrailing;
+
+            var size = LayoutHelper.RoundLayoutSizeUp(new Size(width, textLayout.Height).Inflate(padding), 1, 1);   
+
+            _constraint = size;
+
+            return size;
         }
 
         protected override Size ArrangeOverride(Size finalSize)
@@ -732,19 +745,27 @@ namespace Avalonia.Controls
             var scale = LayoutHelper.GetLayoutScale(this);
             var padding = LayoutHelper.RoundLayoutThickness(Padding, scale, scale);
 
+            var availableSize = finalSize.Deflate(padding);
+
             //Fixes: #11019
-            if (finalSize.Width < _constraint.Width)
+            if (availableSize != _constraint)
             {
                 _textLayout?.Dispose();
                 _textLayout = null;
-                _constraint = finalSize.Deflate(padding);
+                _constraint = availableSize;
             }
 
+            //This implicitly recreated the TextLayout with a new constraint if we previously reset it.
+            var textLayout = TextLayout;
+
             if (HasComplexContent)
-            {             
+            {
+                //Clear visual children before complex run arrangement
+                VisualChildren.Clear();
+
                 var currentY = padding.Top;
 
-                foreach (var textLine in TextLayout.TextLines)
+                foreach (var textLine in textLayout.TextLines)
                 {
                     var currentX = padding.Left + textLine.Start;
 
@@ -755,6 +776,10 @@ namespace Avalonia.Controls
                             if (drawable is EmbeddedControlRun controlRun
                                 && controlRun.Control is Control control)
                             {
+                                //Add again to prevent clipping
+                                //Fixes: #17194
+                                VisualChildren.Add(control);
+
                                 control.Arrange(
                                     new Rect(new Point(currentX, currentY),
                                     new Size(control.DesiredSize.Width, textLine.Height)));
@@ -946,6 +971,6 @@ namespace Avalonia.Controls
 
                 return new TextEndOfParagraph();
             }
-         }
+        }
     }
 }

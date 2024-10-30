@@ -1,11 +1,6 @@
 using System;
 using System.Diagnostics;
 using Avalonia.Metadata;
-using Avalonia.Reactive;
-using Avalonia.Threading;
-using System;
-using System.Diagnostics;
-using Avalonia.Metadata;
 using Avalonia.Threading;
 
 namespace Avalonia.Rendering;

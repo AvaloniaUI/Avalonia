@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
@@ -454,7 +454,7 @@ namespace Avalonia.Win32
         {
             SetUseHostBackdropBrush(false);
             SetLegacyTransparency(false);
-            
+
             CompositionEffectsSurface!.SetBlur(_currentThemeVariant switch
             {
                 PlatformThemeVariant.Light => BlurEffect.MicaLight,
@@ -468,7 +468,7 @@ namespace Avalonia.Win32
         {
             if (Win32Platform.WindowsVersion < PlatformConstants.Windows8 || !UseRedirectionBitmap)
                 return false;
-            
+
             // On pre-Win8 this method was blurring a window, which is a different from desired behavior.
             // On win8+ we use this method as a fallback, when WinUI/DComp composition with true transparency isn't available.
             // Note: there is no guarantee that this behavior won't be changed back to true blur in Win12.
@@ -496,7 +496,7 @@ namespace Avalonia.Win32
 
             // AcrylicBlur requires window to set DWMWA_USE_HOSTBACKDROPBRUSH flag on Win11+.
             // It's not necessary on older versions and it's not necessary with Mica brush.
-            
+
             var pvUseBackdropBrush = useHostBackdropBrush ? 1 : 0;
             var result = DwmSetWindowAttribute(_hwnd, (int)DwmWindowAttribute.DWMWA_USE_HOSTBACKDROPBRUSH, &pvUseBackdropBrush, sizeof(int));
             return result == 0;
@@ -524,6 +524,21 @@ namespace Avalonia.Win32
                     0,
                     0,
                     SetWindowPosFlags.SWP_NOSIZE | SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_NOZORDER);
+                
+                if (ShCoreAvailable && Win32Platform.WindowsVersion >= PlatformConstants.Windows8_1)
+                {
+                    var monitor = MonitorFromPoint(new POINT() { X = value.X, Y = value.Y },
+                        MONITOR.MONITOR_DEFAULTTONEAREST);
+
+                    if (GetDpiForMonitor(
+                            monitor,
+                            MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI,
+                            out _dpi,
+                            out _) == 0)
+                    {
+                        _scaling = _dpi / StandardDpi;
+                    }
+                }
             }
         }
 
@@ -642,11 +657,30 @@ namespace Avalonia.Win32
             InvalidateRect(_hwnd, ref r, false);
         }
 
+        /// <summary>
+        /// Transform a screen pixel point to the point in the client area.<br/>
+        /// To transform a point with precise value, use the <see cref="PointToClient(Point)"/> overload instead.
+        /// </summary>
+        /// <param name="point">The screen pixel point to be transformed.</param>
+        /// <returns>The point in the client area.</returns>
         public Point PointToClient(PixelPoint point)
         {
             var p = new POINT { X = point.X, Y = point.Y };
             ScreenToClient(_hwnd, ref p);
             return new Point(p.X, p.Y) / RenderScaling;
+        }
+
+        /// <summary>
+        /// Transform a screen point to the point in the client area.<br/>
+        /// Comparing to the <see cref="PixelPoint"/> overload, this method receives double values and can be more precise.
+        /// </summary>
+        /// <param name="point">The screen point to be transformed.</param>
+        /// <returns>The point in the client area.</returns>
+        public Point PointToClient(Point point)
+        {
+            var p = new POINT { X = 0, Y = 0 };
+            ClientToScreen(_hwnd, ref p);
+            return new Point(point.X - p.X, point.Y - p.Y) / RenderScaling;
         }
 
         public PixelPoint PointToScreen(Point point)
@@ -945,7 +979,7 @@ namespace Avalonia.Win32
 
             Handle = new WindowImplPlatformHandle(this);
 
-            RegisterTouchWindow(_hwnd, 0);
+                RegisterTouchWindow(_hwnd, 0);
 
             if (ShCoreAvailable && Win32Platform.WindowsVersion >= PlatformConstants.Windows8_1)
             {
