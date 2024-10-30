@@ -701,16 +701,20 @@ namespace Avalonia.Controls
                 var sizeU = horizontal ? e.DesiredSize.Width : e.DesiredSize.Height;
                 var sizeV = horizontal ? e.DesiredSize.Height : e.DesiredSize.Width;
 
+                // Indent the interval from the previous element if there was one
+                if (index > 0)
+                    u += spacing;
+
                 _measureElements!.Add(index, e, u, sizeU);
                 viewport.measuredV = Math.Max(viewport.measuredV, sizeV);
 
-                if (index != 0)
-                    u += spacing;
+                // Causes u to point to the end of the currently added element
                 u += sizeU;
                 ++index;
                 _realizingIndex = -1;
                 _realizingElement = null;
-            } while (u < viewport.viewportUEnd && index < items.Count);
+                // TODO The "u + spacing" given below is actually the beginning of the next element, but it isn't very clear
+            } while (u + spacing < viewport.viewportUEnd && index < items.Count);
 
             // Store the last index and end U position for the desired size calculation.
             viewport.lastIndex = index - 1;
