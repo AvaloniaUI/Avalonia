@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Avalonia.Media.TextFormatting.Unicode
 {
@@ -1150,6 +1149,14 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 LineBreakClass = LineBreakClass.Unknown;
             }
 
+            public BreakUnit(BreakUnit other, LineBreakClass lineBreakClass)
+            {
+                Codepoint = other.Codepoint;
+                Start = other.Start;
+                Length = other.Length;
+                LineBreakClass = lineBreakClass;
+            }
+
             public BreakUnit(Codepoint codepoint, int start, int length)
             {
                 Codepoint = codepoint;
@@ -1290,6 +1297,11 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 Position += next.Length;
 
                 _next = null;
+
+                if (Current.Ignored)
+                {
+                    Current = new BreakUnit(Current, Previous.LineBreakClass);
+                }
 
                 return next;
             }
