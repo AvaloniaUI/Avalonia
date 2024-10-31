@@ -48,6 +48,7 @@
       "src\\tools\\DevAnalyzers\\DevAnalyzers.csproj",
       "src\\tools\\DevGenerators\\DevGenerators.csproj",
       "src\\Windows\\Avalonia.Direct2D1\\Avalonia.Direct2D1.csproj",
+      "src\\Windows\\Avalonia.Win32.Automation\\Avalonia.Win32.Automation.csproj",
       "src\\Windows\\Avalonia.Win32.Interoperability\\Avalonia.Win32.Interoperability.csproj",
       "src\\Windows\\Avalonia.Win32\\Avalonia.Win32.csproj",
       "tests\\Avalonia.Base.UnitTests\\Avalonia.Base.UnitTests.csproj",
