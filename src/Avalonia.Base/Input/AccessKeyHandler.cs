@@ -8,25 +8,13 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Input
 {
-    // /// <summary>
-    // /// Handles access keys for a window.
-    // /// </summary>
+    /// <summary>
+    /// Handles access keys for a window.
+    /// </summary>
     internal class AccessKeyHandler : IAccessKeyHandler
     {
-        private enum ProcessKeyResult
-        {
-            NoMatch,
-            MoreMatches,
-            LastMatch
-        }
-
-        private struct AccessKeyInformation
-        {
-            public IInputElement? Target { get; set; }
-        }
-
         /// <summary>
-        /// Defines the AccessKeyPressed attached event.
+        /// Defines the AccessKey attached event.
         /// </summary>
         public static readonly RoutedEvent<AccessKeyEventArgs> AccessKeyEvent =
             RoutedEvent.Register<AccessKeyEventArgs>(
