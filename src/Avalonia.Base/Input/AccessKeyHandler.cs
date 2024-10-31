@@ -36,18 +36,7 @@ namespace Avalonia.Input
         /// </summary>
         private readonly List<AccessKeyRegistration> _registrations = [];
 
-        protected IReadOnlyList<AccessKeyRegistration> Registrations
-        {
-            get
-            {
-                {
-                    lock (_registrations)
-                    {
-                        return _registrations.AsReadOnly();
-                    }
-                }
-            }
-        }
+        protected IReadOnlyList<AccessKeyRegistration> Registrations => _registrations;
 
         /// <summary>
         /// The window to which the handler belongs.
@@ -138,19 +127,17 @@ namespace Avalonia.Input
         {
             var key = NormalizeKey(accessKey.ToString());
             
-            lock (_registrations)
+            // remove dead elements with matching key
+            for (var i = _registrations.Count - 1; i >= 0; i--)
             {
-                var registrationsToRemove = _registrations.Where(m =>
-                            m.Key == key && m.GetInputElement() == null)
-                        .ToList();
-
-                foreach (var registration in registrationsToRemove)
+                var registration = _registrations[i];
+                if (registration.Key == key && registration.GetInputElement() == null)
                 {
-                    _registrations.Remove(registration);
+                    _registrations.RemoveAt(i);    
                 }
-
-                _registrations.Add(new AccessKeyRegistration(key, new WeakReference<IInputElement>(element)));
             }
+
+            _registrations.Add(new AccessKeyRegistration(key, new WeakReference<IInputElement>(element)));
         }
 
         /// <summary>
@@ -159,20 +146,14 @@ namespace Avalonia.Input
         /// <param name="element">The input element.</param>
         public void Unregister(IInputElement element)
         {
-            lock (_registrations)
+            // remove element and all dead elements
+            for (var i = _registrations.Count - 1; i >= 0; i--)
             {
-                // Get all elements bound to this key and remove this element
-                var registrationsToRemove = _registrations
-                    .Where(m =>
-                    {
-                        var inputElement = m.GetInputElement();
-                        return inputElement == null || inputElement == element;
-                    })
-                    .ToList();
-
-                foreach (var mapping in registrationsToRemove)
+                var registration = _registrations[i];
+                var inputElement = registration.GetInputElement();
+                if (inputElement == null || inputElement == element)
                 {
-                    _registrations.Remove(mapping);
+                    _registrations.RemoveAt(i);    
                 }
             }
         }
@@ -381,10 +362,10 @@ namespace Avalonia.Input
         private List<IInputElement> GetTargetsForScope(string key, IInputElement? sender,
             AccessKeyInformation senderInfo)
         {
-            var possibleElements = CopyAndPurgeDead(key);
+            var possibleElements = CopyMatchingAndPurgeDead(key);
 
             if (!possibleElements.Any())
-                return [];
+                return possibleElements;
 
             var finalTargets = new List<IInputElement>(1);
 
@@ -419,25 +400,33 @@ namespace Avalonia.Input
         private static bool IsTargetable(IInputElement element) =>
             element is { IsEffectivelyEnabled: true, IsEffectivelyVisible: true };
 
-        private List<IInputElement> CopyAndPurgeDead(string key)
+        private List<IInputElement> CopyMatchingAndPurgeDead(string key)
         {
-            lock (_registrations)
+            var matches = new List<IInputElement>(_registrations.Count);
+                
+            // collect live elements with matching key and remove dead elements
+            for (var i = _registrations.Count - 1; i >= 0; i--)
             {
-                var registrationsToRemove = _registrations
-                    .Where(m => m.GetInputElement() == null)
-                    .ToList();
-
-                foreach (var registration in registrationsToRemove)
+                var registration = _registrations[i];
+                var inputElement = registration.GetInputElement();
+                if (inputElement != null)
                 {
-                    _registrations.Remove(registration);
+                    if (registration.Key == key)
+                    {
+                        matches.Add(inputElement);
+                    }
                 }
-
-                return _registrations
-                    .Where(m => m.Key == key)
-                    .Select(m => m.GetInputElement())
-                    .OfType<IInputElement>()
-                    .ToList();
+                else
+                {
+                    _registrations.RemoveAt(i);
+                }
             }
+
+            // since we collected the elements when iterating from back to front
+            // we need to reverse them to ensure the original order
+            matches.Reverse();
+            
+            return matches;
         }
 
         /// <summary>
