@@ -61,7 +61,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Element to restore following AltKey taking focus.
         /// </summary>
-        private WeakReference<IInputElement>? _restoreFocusElement;
+        private WeakReference<IInputElement>? _restoreFocusElementRef;
 
         /// <summary>
         /// The window's main menu.
@@ -183,7 +183,7 @@ namespace Avalonia.Input
                     // Save currently focused input element.
                     var focusedElement = focusManager?.GetFocusedElement();
                     if (focusedElement is not null)
-                        _restoreFocusElement = new WeakReference<IInputElement>(focusedElement);
+                        _restoreFocusElementRef = new WeakReference<IInputElement>(focusedElement);
 
                     // When Alt is pressed without a main menu, or with a closed main menu, show
                     // access key markers in the window (i.e. "_File").
@@ -195,12 +195,11 @@ namespace Avalonia.Input
                     CloseMenu();
                     _ignoreAltUp = true;
 
-                    if (_restoreFocusElement?.TryGetTarget(out var restoreElement) ?? false)
+                    if (_restoreFocusElementRef?.TryGetTarget(out var restoreElement) ?? false)
                     {
-                        Dispatcher.UIThread.Post(() => restoreElement.Focus());
+                        restoreElement.Focus();
                     }
-
-                    _restoreFocusElement = null;
+                    _restoreFocusElementRef = null;
                 }
             }
             else if (_altIsDown)
