@@ -81,7 +81,6 @@ internal struct InlineDictionary<TKey, TValue> : IEnumerable<KeyValuePair<TKey, 
             var data = (TKey)_data;
             if (data == key && overwrite)
             {
-                _data = key;
                 _value = value;
 
                 return;
