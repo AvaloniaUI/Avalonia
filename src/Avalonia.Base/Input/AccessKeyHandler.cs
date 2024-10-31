@@ -501,12 +501,18 @@ namespace Avalonia.Input
 
             return sorted;
         }
-    }
 
-    internal sealed record AccessKeyRegistration(string Key, WeakReference<IInputElement> Target)
-    {
-        public IInputElement? GetInputElement() =>
-            Target.TryGetTarget(out var target) ? target : null;
+        private enum ProcessKeyResult
+        {
+            NoMatch,
+            MoreMatches,
+            LastMatch
+        }
+
+        private struct AccessKeyInformation
+        {
+            public IInputElement? Target { get; set; }
+        }
     }
 
     /// <summary>
@@ -573,5 +579,20 @@ namespace Avalonia.Input
         /// </summary>
         /// <value></value>
         public bool IsMultiple { get; }
+    }
+
+    internal class AccessKeyRegistration
+    {
+        private readonly WeakReference<IInputElement> _target;
+        public string Key { get; }
+
+        public AccessKeyRegistration(string key, WeakReference<IInputElement> target)
+        {
+            _target = target;
+            Key = key;
+        }
+
+        public IInputElement? GetInputElement() =>
+            _target.TryGetTarget(out var target) ? target : null;
     }
 }
