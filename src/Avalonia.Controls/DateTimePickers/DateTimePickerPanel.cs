@@ -18,8 +18,8 @@ namespace Avalonia.Controls.Primitives
         Day,
         Hour,
         Minute,
+        TimePeriod, //AM or PM
         Second,
-        TimePeriod //AM or PM
     }
 
     public class DateTimePickerPanel : Panel, ILogicalScrollable
