@@ -708,7 +708,7 @@ namespace Avalonia.Controls
                 //Reset TextLayout when the constraint is not matching.
                 _textLayout?.Dispose();
                 _textLayout = null;
-                _constraint = deflatedSize;
+                _constraint = new Size(double.PositiveInfinity, deflatedSize.Height);
 
                 //Force arrange so text will be properly alligned.
                 InvalidateArrange();
