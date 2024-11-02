@@ -232,7 +232,7 @@ namespace Avalonia.Controls
                 }
                 else
                 {
-                    await ContentTransition.Start(visualContent, null, forward, _lastTransitionCts.Token);
+                    await ContentTransition.Start(visualContent, null, !forward, _lastTransitionCts.Token);
                 }
             }
 
