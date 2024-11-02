@@ -148,8 +148,19 @@ namespace Avalonia.Rendering.Composition.Server
                             // Check if render target can be rendered to directly and preserves the previous frame
                             || !(renderTargetWithProperties?.Properties.RetainsPreviousFrameContents == true
                                 && renderTargetWithProperties?.Properties.IsSuitableForDirectRendering == true);
+
+            IDrawingContextImpl renderTargetContext;
+            RenderTargetDrawingContextProperties properties;
+            try
+            {
+                renderTargetContext = _renderTarget.CreateDrawingContextWithProperties(false, out properties);
+            }
+            catch (RenderTargetNotReadyException)
+            {
+                return;
+            }
             
-            using (var renderTargetContext = _renderTarget.CreateDrawingContextWithProperties(false, out var properties))
+            using (renderTargetContext)
             {
                 if(needLayer && (PixelSize != _layerSize || _layer == null || _layer.IsCorrupted))
                 {
