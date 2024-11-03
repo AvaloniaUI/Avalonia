@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
-using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Input
@@ -291,7 +290,9 @@ namespace Avalonia.Input
         protected bool ProcessKey(string key, IInputElement? element)
         {
             key = NormalizeKey(key);
-            var targets = SortByHierarchy(GetTargetsForSender(element, key));
+            var senderInfo = GetTargetForElement(element, key);
+            // Find the possible targets matching the access key
+            var targets = SortByHierarchy(GetTargetsForKey(key, element, senderInfo));
             var result = ProcessKey(key, targets);
             return result != ProcessKeyResult.NoMatch;
         }
@@ -344,21 +345,7 @@ namespace Avalonia.Input
             return chosenIndex == targets.Count - 1 ? ProcessKeyResult.LastMatch : ProcessKeyResult.MoreMatches;
         }
 
-        /// <summary>
-        /// Get the list of access key targets for the sender of the keyboard event.  If sender is null,
-        /// pretend key was pressed in the active window.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        private List<IInputElement> GetTargetsForSender(IInputElement? sender, string key)
-        {
-            // Find the scope for the sender -- will be matched against the possible targets' scopes
-            var senderInfo = GetInfoForElement(sender, key);
-            return GetTargetsForScope(key, sender, senderInfo);
-        }
-
-        private List<IInputElement> GetTargetsForScope(string key, IInputElement? sender,
+        private List<IInputElement> GetTargetsForKey(string key, IInputElement? sender,
             AccessKeyInformation senderInfo)
         {
             var possibleElements = CopyMatchingAndPurgeDead(key);
@@ -376,7 +363,7 @@ namespace Avalonia.Input
                     if (!IsTargetable(element))
                         continue;
 
-                    var elementInfo = GetInfoForElement(element, key);
+                    var elementInfo = GetTargetForElement(element, key);
                     if (elementInfo.Target == null)
                         continue;
 
@@ -434,7 +421,7 @@ namespace Avalonia.Input
         /// <param name="element"></param>
         /// <param name="key"></param>
         /// <returns>AccessKeyInformation with target for the access key.</returns>
-        private static AccessKeyInformation GetInfoForElement(IInputElement? element, string key)
+        private static AccessKeyInformation GetTargetForElement(IInputElement? element, string key)
         {
             var info = new AccessKeyInformation();
             if (element == null)
