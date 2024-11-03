@@ -463,30 +463,34 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-        /// Sorts the list of targets in hierarchical order to ensure that elements within a tab,
-        /// for example, are processed before the next tab item in case of identical access keys
+        /// Sorts the list of targets according to logical ancestors in the hierarchy
+        /// so that child elements, for example within in the content of a tab,
+        /// are processed before the next parent item i.e. the next tab item.
         /// </summary>
         private static List<IInputElement> SortByHierarchy(List<IInputElement> targets)
         {
-            var sorted = new List<IInputElement>();
-            var elements = targets.OfType<InputElement>().ToList();
-            for (var i = 0; i < elements.Count; i++)
+            var sorted = new List<IInputElement>(targets.Count);
+            var queue = new Queue<IInputElement>(targets);
+            while (queue.Count > 0)
             {
-                var parent = elements[i];
-                if (sorted.Contains(parent))
+                var element = queue.Dequeue();
+            
+                // if the element was already added, do nothing
+                if (sorted.Contains(element))
                     continue;
+            
+                // add the element itself
+                sorted.Add(element);
 
-                sorted.Add(parent);
-                for (var j = i + 1; j < elements.Count; j++)
-                {
-                    var current = elements[j];
-                    if (parent.IsLogicalAncestorOf(current))
-                    {
-                        sorted.Add(current);
-                    }
-                }
+                // if the element is not a potential parent, do nothing
+                if (element is not ILogical parentElement) 
+                    continue;
+                
+                // add all descendants of the element
+                sorted.AddRange(queue
+                    .Where(child => parentElement
+                        .IsLogicalAncestorOf(child as ILogical)));
             }
-
             return sorted;
         }
 
