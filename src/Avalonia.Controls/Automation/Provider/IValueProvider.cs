@@ -10,11 +10,35 @@
         /// <summary>
         /// Gets a value that indicates whether the value of a control is read-only.
         /// </summary>
+        /// <remarks>
+        /// <list type="table">
+        ///   <item>
+        ///     <term>Windows</term>
+        ///     <description><c>IValueProvider.IsReadOnly</c></description>
+        ///   </item>
+        ///   <item>
+        ///     <term>macOS</term>
+        ///     <description>No mapping.</description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
         bool IsReadOnly { get; }
 
         /// <summary>
         /// Gets the value of the control.
         /// </summary>
+        /// <remarks>
+        /// <list type="table">
+        ///   <item>
+        ///     <term>Windows</term>
+        ///     <description><c>IValueProvider.Value</c></description>
+        ///   </item>
+        ///   <item>
+        ///     <term>macOS</term>
+        ///     <description><c>NSAccessibilityProtocol.accessibilityValue</c></description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
         public string? Value { get; }
 
         /// <summary>
@@ -24,6 +48,20 @@
         /// The value to set. The provider is responsible for converting the value to the
         /// appropriate data type.
         /// </param>
+        /// <remarks>
+        /// <list type="table">
+        ///   <item>
+        ///     <term>Windows</term>
+        ///     <description><c>IValueProvider.SetValue</c></description>
+        ///   </item>
+        ///   <item>
+        ///     <term>macOS</term>
+        ///     <description>
+        ///       <c>NSAccessibilityProtocol.setAccessibilityValue</c> (not implemented)
+        ///     </description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
         public void SetValue(string? value);
     }
 }
