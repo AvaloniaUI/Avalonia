@@ -30,7 +30,7 @@ internal partial class InteropAutomationNode : AutomationNode, IRawElementProvid
     public override ProviderOptions GetProviderOptions() => ProviderOptions.ServerSideProvider | ProviderOptions.OverrideProvider;
 
     public override object? GetPatternProvider(int patternId) => null;
-    //public override object? GetPropertyValue(int propertyId) => null;
+    public override object? GetPropertyValue(int propertyId) => null;
 
     public override IRawElementProviderSimple? GetHostRawElementProvider()
     {
