@@ -25,7 +25,13 @@ namespace Avalonia.Base.UnitTests.Input
             KeyUp(root, Key.A, KeyModifiers.Alt);
             KeyUp(root, Key.LeftAlt);
 
-            Assert.Equal(new[] { "KeyDown LeftAlt", "KeyDown A", "KeyUp A", "KeyUp LeftAlt", }, events);
+            Assert.Equal(new[]
+            {
+                "KeyDown LeftAlt",
+                "KeyDown A",
+                "KeyUp A",
+                "KeyUp LeftAlt",
+            }, events);
         }
 
         [Fact]
@@ -46,7 +52,13 @@ namespace Avalonia.Base.UnitTests.Input
             KeyUp(root, Key.A, KeyModifiers.Alt);
             KeyUp(root, Key.LeftAlt);
 
-            Assert.Equal(new[] { "KeyDown LeftAlt", "KeyDown A", "KeyUp A", "KeyUp LeftAlt", }, events);
+            Assert.Equal(new[]
+            {
+                "KeyDown LeftAlt",
+                "KeyDown A",
+                "KeyUp A",
+                "KeyUp LeftAlt",
+            }, events);
         }
 
         [Fact]
@@ -63,7 +75,11 @@ namespace Avalonia.Base.UnitTests.Input
             KeyDown(root, Key.LeftAlt);
             KeyUp(root, Key.LeftAlt);
 
-            Assert.Equal(new[] { "KeyDown LeftAlt", "KeyUp LeftAlt", }, events);
+            Assert.Equal(new[]
+            {
+                "KeyDown LeftAlt",
+                "KeyUp LeftAlt",
+            }, events);
         }
 
         [Fact]
@@ -88,7 +104,13 @@ namespace Avalonia.Base.UnitTests.Input
             KeyDown(root, Key.LeftAlt);
             KeyUp(root, Key.LeftAlt);
 
-            Assert.Equal(new[] { "KeyDown LeftAlt", "KeyUp LeftAlt", "KeyDown LeftAlt", "KeyUp LeftAlt", }, events);
+            Assert.Equal(new[]
+            {
+                "KeyDown LeftAlt",
+                "KeyUp LeftAlt",
+                "KeyDown LeftAlt",
+                "KeyUp LeftAlt",
+            }, events);
         }
 
         [Fact]
@@ -110,7 +132,13 @@ namespace Avalonia.Base.UnitTests.Input
             KeyUp(root, Key.LeftAlt);
 
             // This differs from WPF which doesn't raise the `A` key event, but matches UWP.
-            Assert.Equal(new[] { "KeyDown LeftAlt", "KeyDown A", "KeyUp A", "KeyUp LeftAlt", }, events);
+            Assert.Equal(new[]
+            {
+                "KeyDown LeftAlt",
+                "KeyDown A",
+                "KeyUp A",
+                "KeyUp LeftAlt",
+            }, events);
         }
 
         [Fact]
@@ -199,7 +227,9 @@ namespace Avalonia.Base.UnitTests.Input
         {
             target.RaiseEvent(new KeyEventArgs
             {
-                RoutedEvent = InputElement.KeyDownEvent, Key = key, KeyModifiers = modifiers,
+                RoutedEvent = InputElement.KeyDownEvent,
+                Key = key,
+                KeyModifiers = modifiers,
             });
         }
 
@@ -207,10 +237,12 @@ namespace Avalonia.Base.UnitTests.Input
         {
             target.RaiseEvent(new KeyEventArgs
             {
-                RoutedEvent = InputElement.KeyUpEvent, Key = key, KeyModifiers = modifiers,
+                RoutedEvent = InputElement.KeyUpEvent,
+                Key = key,
+                KeyModifiers = modifiers,
             });
         }
-
+        
         class FakeMenu : Menu
         {
             public int TimesOpenCalled { get; set; }
