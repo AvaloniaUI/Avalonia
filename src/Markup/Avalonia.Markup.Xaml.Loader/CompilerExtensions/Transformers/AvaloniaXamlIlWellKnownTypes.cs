@@ -129,6 +129,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType WindowTransparencyLevel { get; }
         public IXamlType IReadOnlyListOfT { get; }
         public IXamlType ControlTemplate { get; }
+        public IXamlType IControlTemplate { get; }
         public IXamlType EventHandlerT {  get; }
         public IXamlMethod GetClassProperty { get; }
 
@@ -325,6 +326,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             Style = cfg.TypeSystem.GetType("Avalonia.Styling.Style");
             ControlTheme = cfg.TypeSystem.GetType("Avalonia.Styling.ControlTheme");
             ControlTemplate = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.Templates.ControlTemplate");
+            IControlTemplate = cfg.TypeSystem.GetType("Avalonia.Controls.Templates.IControlTemplate");
             IReadOnlyListOfT = cfg.TypeSystem.GetType("System.Collections.Generic.IReadOnlyList`1");
             EventHandlerT = cfg.TypeSystem.GetType("System.EventHandler`1");
             Interactivity = new InteractivityWellKnownTypes(cfg);
