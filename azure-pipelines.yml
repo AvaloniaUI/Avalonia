@@ -69,7 +69,7 @@ jobs:
   variables:
     SolutionDir: '$(Build.SourcesDirectory)'
   pool:
-    vmImage: 'macos-12'
+    vmImage: 'macos-13'
   steps:
   - task: UseDotNet@2
     displayName: 'Use .NET 6.0 Runtime'
@@ -109,10 +109,11 @@ jobs:
     inputs:
       actions: 'build'
       scheme: ''
-      sdk: 'macosx12.3'
+      sdk: 'macosx13.0'
       configuration: 'Release'
       xcWorkspacePath: '**/*.xcodeproj/project.xcworkspace'
-      xcodeVersion: '13' # Options: 8, 9, default, specifyPath
+      xcodeVersion: 'specifyPath' # Options: 8, 9, default, specifyPath
+      xcodeDeveloperDir: '/Applications/Xcode_14.1.app/Contents/Developer'
       args: '-derivedDataPath ./'
 
   - task: CmdLine@2
