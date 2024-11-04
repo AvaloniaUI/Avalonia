@@ -119,7 +119,7 @@ public:
 @implementation MetalRenderTarget
 {
     ComPtr<AvnMetalDevice> _device;
-    CAMetalLayer* _layer;
+    CALayer* _layer;
     ComPtr<AvnMetalRenderTarget> _target;
 }
 - (MetalRenderTarget *)initWithDevice:(IAvnMetalDevice *)device {
