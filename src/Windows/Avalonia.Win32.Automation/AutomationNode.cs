@@ -62,14 +62,10 @@ namespace Avalonia.Win32.Automation
 
         private readonly int[] _runtimeId;
 
-        private readonly int _pid;
+        private static readonly int s_pid = GetProcessId();
+
         public AutomationNode(AutomationPeer peer)
         {
-#if NET6_0_OR_GREATER
-            _pid = Environment.ProcessId;
-#else
-            _pid = GetProcessId();
-#endif
             _runtimeId = new int[] { 3, GetHashCode() };
             Peer = peer;
             s_nodes.Add(peer, this);
@@ -142,7 +138,7 @@ namespace Avalonia.Win32.Automation
                 UiaPropertyId.LocalizedControlType => InvokeSync(() => Peer.GetLocalizedControlType()),
                 UiaPropertyId.Name => InvokeSync(() => Peer.GetName()),
                 UiaPropertyId.HelpText => InvokeSync(() => Peer.GetHelpText()),
-                UiaPropertyId.ProcessId => _pid,
+                UiaPropertyId.ProcessId => s_pid,
                 UiaPropertyId.RuntimeId => _runtimeId,
                 _ => null,
             };
@@ -364,8 +360,12 @@ namespace Avalonia.Win32.Automation
 
         private static int GetProcessId()
         {
+#if NET6_0_OR_GREATER
+            return Environment.ProcessId;
+#else
             using var proccess = Process.GetCurrentProcess();
             return proccess.Id;
+#endif
         }
     }
 }
