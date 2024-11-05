@@ -538,7 +538,7 @@ namespace Avalonia.Input
     /// <summary>
     /// Information pertaining to when the access key associated with an element is pressed
     /// </summary>
-    public class AccessKeyEventArgs : RoutedEventArgs
+    internal class AccessKeyEventArgs : RoutedEventArgs
     {
         /// <summary>
         /// Constructor
