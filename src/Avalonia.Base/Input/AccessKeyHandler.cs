@@ -456,6 +456,10 @@ namespace Avalonia.Input
         /// </summary>
         private static List<IInputElement> SortByHierarchy(List<IInputElement> targets)
         {
+            // bail out, if there are no targets to sort
+            if (targets.Count <= 1) 
+                return targets;
+            
             var sorted = new List<IInputElement>(targets.Count);
             var queue = new Queue<IInputElement>(targets);
             while (queue.Count > 0)
