@@ -501,7 +501,7 @@ namespace Avalonia.Input
     /// <summary>
     /// The inputs to an AccessKeyPressedEventHandler
     /// </summary>
-    public class AccessKeyPressedEventArgs : RoutedEventArgs
+    internal class AccessKeyPressedEventArgs : RoutedEventArgs
     {
         /// <summary>
         /// The constructor for AccessKeyPressed event args
