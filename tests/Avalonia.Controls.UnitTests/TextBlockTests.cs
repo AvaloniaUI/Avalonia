@@ -27,7 +27,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Calling_Measure_Should_Update_Constraint_And_TextLayout()
+        public void Calling_Measure_Should_Update_TextLayout()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
@@ -38,8 +38,6 @@ namespace Avalonia.Controls.UnitTests
                 textBlock.Measure(new Size(100, 100));
 
                 var textLayout = textBlock.TextLayout;
-
-                Assert.Equal(new Size(110, 10), textBlock.Constraint);
 
                 textBlock.Measure(new Size(50, 100));
 
@@ -60,13 +58,12 @@ namespace Avalonia.Controls.UnitTests
 
                 var constraint = LayoutHelper.RoundLayoutSizeUp(new Size(textLayout.WidthIncludingTrailingWhitespace, textLayout.Height), 1, 1);
 
-                Assert.Equal(constraint, textBlock.Constraint);
-
                 textBlock.Arrange(new Rect(constraint));
 
-                Assert.Equal(constraint, textBlock.Constraint);
+                //TextLayout is recreated after arrange
+                textLayout = textBlock.TextLayout;
 
-                Assert.Equal(textLayout, textBlock.TextLayout);
+                Assert.Equal(constraint, textBlock.Constraint);
 
                 textBlock.Measure(constraint);
 
@@ -78,6 +75,7 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.Equal(constraint, textBlock.Constraint);
 
+                //TextLayout is recreated after arrange
                 Assert.NotEqual(textLayout, textBlock.TextLayout);
             }
         }
@@ -92,8 +90,6 @@ namespace Avalonia.Controls.UnitTests
                 textBlock.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
 
                 var textLayout = textBlock.TextLayout;
-
-                Assert.Equal(new Size(110, 10), textBlock.Constraint);
 
                 var constraint = LayoutHelper.RoundLayoutSizeUp(new Size(textLayout.WidthIncludingTrailingWhitespace, textLayout.Height), 1, 1);
 
