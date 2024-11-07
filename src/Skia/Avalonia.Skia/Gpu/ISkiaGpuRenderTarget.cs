@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Metadata;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -15,5 +16,12 @@ namespace Avalonia.Skia
         ISkiaGpuRenderSession BeginRenderingSession();
         
         bool IsCorrupted { get; }
+    }
+
+    [PrivateApi]
+    //TODO12: Merge with ISkiaGpuRenderTarget
+    public interface ISkiaGpuRenderTarget2 : ISkiaGpuRenderTarget
+    {
+        ISkiaGpuRenderSession BeginRenderingSession(PixelSize pixelSize);
     }
 }

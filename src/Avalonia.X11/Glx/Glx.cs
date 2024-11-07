@@ -40,8 +40,13 @@ namespace Avalonia.X11.Glx
         
         [GetProcAddress("glXCreateContext")]
         public partial  IntPtr CreateContext(IntPtr dpy,  XVisualInfo* vis,  IntPtr shareList,  bool direct);
-        
 
+        [GetProcAddress("glXCreateWindow")]
+        public partial IntPtr CreateWindow(IntPtr dpy, IntPtr fbConfig, IntPtr window, int[] attrib_list);
+        
+        [GetProcAddress("glXDestroyWindow")]
+        public partial IntPtr DestroyWindow(IntPtr dpy, IntPtr fb);
+        
         [GetProcAddress("glXCreateContextAttribsARB")]
         public partial IntPtr CreateContextAttribsARB(IntPtr dpy, IntPtr fbconfig, IntPtr shareList,
             bool direct, int[] attribs);
