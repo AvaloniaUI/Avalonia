@@ -179,7 +179,7 @@ namespace Avalonia.Rendering.Composition.Server
                         using (var context = _layer.CreateDrawingContext(false))
                             RenderRootToContextWithClip(context, Root);
 
-                        renderTargetContext.Clear(Colors.Red);
+                        renderTargetContext.Clear(Colors.Transparent);
                         renderTargetContext.Transform = Matrix.Identity;
                         if (_layer.CanBlit)
                             _layer.Blit(renderTargetContext);
