@@ -6,6 +6,7 @@ using Avalonia.Layout;
 using System;
 using System.Globalization;
 using Avalonia.Controls.Utils;
+using Avalonia.Automation.Peers;
 
 namespace Avalonia.Controls
 {
@@ -329,6 +330,8 @@ namespace Avalonia.Controls
                 _periodText.Text = DateTime.Now.Hour >= 12 ?  TimeUtils.GetPMDesignator() :  TimeUtils.GetAMDesignator();
             }
         }
+
+        protected override AutomationPeer OnCreateAutomationPeer() => new TimePickerAutomationPeer(this);
 
         protected virtual void OnSelectedTimeChanged(TimeSpan? oldTime, TimeSpan? newTime)
         {
