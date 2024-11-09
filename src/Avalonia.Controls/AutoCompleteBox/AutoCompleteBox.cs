@@ -1732,7 +1732,7 @@ namespace Avalonia.Controls
 
         private void ClearTextBoxSelection()
         {
-            if (TextBox != null)
+            if (TextBox != null && ContextMenu is not { IsOpen: true })
             {
                 int length = TextBox.Text?.Length ?? 0;
                 TextBox.SelectionStart = length;
