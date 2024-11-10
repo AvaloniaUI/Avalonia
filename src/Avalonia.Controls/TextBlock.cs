@@ -653,7 +653,7 @@ namespace Avalonia.Controls
                 TextDecorations,
                 Foreground);
 
-            var paragraphProperties = new GenericTextParagraphProperties(FlowDirection, TextAlignment, true, false,
+            var paragraphProperties = new GenericTextParagraphProperties(FlowDirection, IsMeasureValid ? TextAlignment : TextAlignment.Left, true, false,
                 defaultProperties, TextWrapping, LineHeight, 0, LetterSpacing)
             {
                 LineSpacing = LineSpacing
@@ -703,7 +703,7 @@ namespace Avalonia.Controls
             var padding = LayoutHelper.RoundLayoutThickness(Padding, scale, scale);
             var deflatedSize = availableSize.Deflate(padding);
 
-            if(_constraint != deflatedSize)
+            if (_constraint != deflatedSize)
             {
                 //Reset TextLayout when the constraint is not matching.
                 _textLayout?.Dispose();
@@ -733,9 +733,7 @@ namespace Avalonia.Controls
 
             var width = textLayout.OverhangLeading + textLayout.WidthIncludingTrailingWhitespace + textLayout.OverhangTrailing;
 
-            var size = LayoutHelper.RoundLayoutSizeUp(new Size(width, textLayout.Height).Inflate(padding), 1, 1);   
-
-            _constraint = size;
+            var size = LayoutHelper.RoundLayoutSizeUp(new Size(width, textLayout.Height).Inflate(padding), 1, 1);
 
             return size;
         }
@@ -747,15 +745,12 @@ namespace Avalonia.Controls
 
             var availableSize = finalSize.Deflate(padding);
 
-            //Fixes: #11019
-            if (availableSize != _constraint)
-            {
-                _textLayout?.Dispose();
-                _textLayout = null;
-                _constraint = availableSize;
-            }
+            //ToDo: Introduce a text run cache to be able to reuse shaped runs etc.
+            _textLayout?.Dispose();
+            _textLayout = null;
+            _constraint = availableSize;
 
-            //This implicitly recreated the TextLayout with a new constraint if we previously reset it.
+            //This implicitly recreated the TextLayout with a new constraint.
             var textLayout = TextLayout;
 
             if (HasComplexContent)
