@@ -901,6 +901,11 @@ namespace Avalonia.Controls
 
                     switch (SelectedDateFormat)
                     {
+                        case CalendarDatePickerFormat.Custom:
+                            {
+                                watermarkText = string.Format(CultureInfo.CurrentCulture, watermarkFormat, CustomDateFormatString);
+                                break;
+                            }
                         case CalendarDatePickerFormat.Long:
                             {
                                 watermarkText = string.Format(CultureInfo.CurrentCulture, watermarkFormat, dtfi.LongDatePattern.ToString());
@@ -913,6 +918,7 @@ namespace Avalonia.Controls
                                 break;
                             }
                     }
+
                     _textBox.Watermark = watermarkText;
                 }
                 else
