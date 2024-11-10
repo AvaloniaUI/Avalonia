@@ -812,7 +812,11 @@ namespace Avalonia.Controls
                 }
 
                 _userCalledPopulate = false;
-                ClearTextBoxSelection();
+
+                if (ContextMenu is not { IsOpen: true })
+                {
+                    ClearTextBoxSelection();
+                }
             }
 
             _isFocused = hasFocus;
@@ -1732,7 +1736,7 @@ namespace Avalonia.Controls
 
         private void ClearTextBoxSelection()
         {
-            if (TextBox != null && ContextMenu is not { IsOpen: true })
+            if (TextBox != null)
             {
                 int length = TextBox.Text?.Length ?? 0;
                 TextBox.SelectionStart = length;
