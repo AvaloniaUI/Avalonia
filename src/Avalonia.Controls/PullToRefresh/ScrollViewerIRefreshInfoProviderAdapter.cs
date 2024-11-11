@@ -14,7 +14,7 @@ namespace Avalonia.Controls.PullToRefresh
         private PullDirection _refreshPullDirection;
         private ScrollViewer? _scrollViewer;
         private RefreshInfoProvider? _refreshInfoProvider;
-        private PullGestureRecognizer? _pullGestureRecognizer;
+        private ScrollViewerGestureRecognizer? _pullGestureRecognizer;
         private InputElement? _interactionSource;
         private bool _isVisualizerInteractionSourceAttached;
 
@@ -124,7 +124,7 @@ namespace Avalonia.Controls.PullToRefresh
 
             _refreshInfoProvider = new RefreshInfoProvider(_refreshPullDirection, refreshVIsualizerSize, ElementComposition.GetElementVisual(content));
 
-            _pullGestureRecognizer = new PullGestureRecognizer(_refreshPullDirection);
+            _pullGestureRecognizer = new ScrollViewerGestureRecognizer(_refreshPullDirection);
 
             if (_interactionSource != null)
             {
