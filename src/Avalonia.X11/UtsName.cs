@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Avalonia.X11;
 
@@ -51,34 +48,49 @@ internal struct UtsName : IDisposable
     }
 
     private const int SystemNameFieldIndex = 0;
-    public Span<byte> SystemNameSpan => GetValue(SystemNameFieldIndex);
-    public string SystemName => Encoding.UTF8.GetString(SystemNameSpan);
+    public ReadOnlySpan<byte> SystemNameSpan => GetValue(SystemNameFieldIndex);
+    public string SystemName => GetAsciiString(SystemNameSpan);
 
     private const int NodeNameFieldIndex = 1;
-    public Span<byte> NodeNameSpan => GetValue(NodeNameFieldIndex);
-    public string NodeName => Encoding.UTF8.GetString(NodeNameSpan);
+    public ReadOnlySpan<byte> NodeNameSpan => GetValue(NodeNameFieldIndex);
+    public string NodeName => GetAsciiString(NodeNameSpan);
 
     private const int ReleaseFieldIndex = 2;
-    public Span<byte> ReleaseSpan => GetValue(ReleaseFieldIndex);
-    public string Release => Encoding.UTF8.GetString(ReleaseSpan);
+    public ReadOnlySpan<byte> ReleaseSpan => GetValue(ReleaseFieldIndex);
+    public string Release => GetAsciiString(ReleaseSpan);
 
     private const int VersionFieldIndex = 3;
-    public Span<byte> VersionSpan => GetValue(VersionFieldIndex);
-    public string Version => Encoding.UTF8.GetString(VersionSpan);
+    public ReadOnlySpan<byte> VersionSpan => GetValue(VersionFieldIndex);
+    public string Version => GetAsciiString(VersionSpan);
 
     private const int MachineFieldIndex = 4;
-    public Span<byte> MachineSpan => GetValue(MachineFieldIndex);
-    public string Machine => Encoding.UTF8.GetString(MachineSpan);
+    public ReadOnlySpan<byte> MachineSpan => GetValue(MachineFieldIndex);
+    public string Machine => GetAsciiString(MachineSpan);
 
     private const int DomainNameFieldIndex = 5;
-    public Span<byte> DomainNameSpan => GetValue(DomainNameFieldIndex);
-    public string DomainName => Encoding.UTF8.GetString(DomainNameSpan);
+    public ReadOnlySpan<byte> DomainNameSpan => GetValue(DomainNameFieldIndex);
+    public string DomainName => GetAsciiString(DomainNameSpan);
 
     private const int UtsLength = 64;
 
     private const int FieldCount = 6;
 
-    private Span<byte> GetValue(int fieldIndex)
+    private static string GetAsciiString(ReadOnlySpan<byte> value)
+    {
+#if NET6_0_OR_GREATER
+        return Encoding.ASCII.GetString(value);
+#else
+        unsafe
+        {
+            fixed (byte* ptr = value)
+            {
+                return Encoding.ASCII.GetString(ptr, value.Length);
+            }
+        }
+#endif
+    }
+
+    private ReadOnlySpan<byte> GetValue(int fieldIndex)
     {
         var startOffset = (UtsLength + 1) * fieldIndex;
         var length = 0;
@@ -89,7 +101,7 @@ internal struct UtsName : IDisposable
 
         unsafe
         {
-            return new Span<byte>((byte*)_buffer + startOffset, length);
+            return new ReadOnlySpan<byte>((byte*)_buffer + startOffset, length);
         }
     }
 
