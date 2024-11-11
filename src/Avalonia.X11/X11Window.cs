@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using Avalonia.Reactive;
 using System.Text;
@@ -336,16 +337,37 @@ namespace Avalonia.X11
         private void AppendPid(IntPtr windowXId)
         {
             // See https://github.com/AvaloniaUI/Avalonia/issues/17444
-#if NET6_0_OR_GREATER
-            var pid = (uint) Environment.ProcessId;
-#else
-            using var currentProcess = Process.GetCurrentProcess();
-            var pid = (uint) currentProcess.Id;
-#endif
+            var pid = (uint)s_pid;
             // The type of `_NET_WM_PID` is `CARDINAL` which is 32-bit unsigned integer, see https://specifications.freedesktop.org/wm-spec/1.3/ar01s05.html
             XChangeProperty(_x11.Display, windowXId,
                 _x11.Atoms._NET_WM_PID, _x11.Atoms.XA_CARDINAL, 32,
                 PropertyMode.Replace, ref pid, 1);
+
+            // If _NET_WM_PID is set, the ICCCM-specified property WM_CLIENT_MACHINE MUST also be set. 
+            var hostNameFilePath = "cat /proc/sys/kernel/hostname";
+            if (File.Exists(hostNameFilePath))
+            {
+                var WM_CLIENT_MACHINE = XInternAtom(_x11.Display, "WM_CLIENT_MACHINE", false);
+                var hostName = File.ReadAllText(hostNameFilePath);
+                var stringToHGlobalAnsi = Marshal.StringToHGlobalAnsi(hostName);
+
+                XChangeProperty(_x11.Display, windowXId,
+                    WM_CLIENT_MACHINE, _x11.Atoms.XA_STRING, 8,
+                    PropertyMode.Replace, ref stringToHGlobalAnsi, (int)hostName.Length);
+            }
+        }
+
+        private static readonly int s_pid = GetProcessId();
+
+        private static int GetProcessId()
+        {
+#if NET6_0_OR_GREATER
+            var pid = Environment.ProcessId;
+#else
+            using var currentProcess = Process.GetCurrentProcess();
+            var pid = currentProcess.Id;
+#endif
+            return pid;
         }
 
         private void UpdateSizeHints(PixelSize? preResize, bool forceDisableResize = false)
