@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using Avalonia.Reactive;
 using System.Text;
@@ -343,17 +342,20 @@ namespace Avalonia.X11
                 _x11.Atoms._NET_WM_PID, _x11.Atoms.XA_CARDINAL, 32,
                 PropertyMode.Replace, ref pid, 1);
 
-            // If _NET_WM_PID is set, the ICCCM-specified property WM_CLIENT_MACHINE MUST also be set. 
-            var hostNameFilePath = "cat /proc/sys/kernel/hostname";
-            if (File.Exists(hostNameFilePath))
-            {
-                var WM_CLIENT_MACHINE = XInternAtom(_x11.Display, "WM_CLIENT_MACHINE", false);
-                var hostName = File.ReadAllText(hostNameFilePath);
-                var stringToHGlobalAnsi = Marshal.StringToHGlobalAnsi(hostName);
+            // If _NET_WM_PID is set, the ICCCM-specified property WM_CLIENT_MACHINE MUST also be set.
+            // the hostname can change, so we can't cache it
+            // gethostname(3) on Linux just calls uname(2), so do it ourselves
+            // and avoid a memcpy
+            using var utsName = UtsName.GetUtsName();
 
+            var WM_CLIENT_MACHINE = XInternAtom(_x11.Display, "WM_CLIENT_MACHINE", false);
+
+            var nodeNameSpan = utsName.NodeNameSpan;
+            fixed (byte* pNodeName = &nodeNameSpan.GetPinnableReference())
+            {
                 XChangeProperty(_x11.Display, windowXId,
                     WM_CLIENT_MACHINE, _x11.Atoms.XA_STRING, 8,
-                    PropertyMode.Replace, ref stringToHGlobalAnsi, (int)hostName.Length);
+                    PropertyMode.Replace, pNodeName, nodeNameSpan.Length);
             }
         }
 
