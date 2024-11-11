@@ -151,15 +151,21 @@ namespace Avalonia.X11
                 (int)CreateWindowArgs.InputOutput, 
                 visual,
                 new UIntPtr((uint)valueMask), ref attr);
+            AppendPid(_handle);
 
             if (_useRenderWindow)
+            {
                 _renderHandle = XCreateWindow(_x11.Display, _handle, 0, 0, defaultWidth, defaultHeight, 0, depth,
                     (int)CreateWindowArgs.InputOutput,
                     visual,
                     new UIntPtr((uint)(SetWindowValuemask.BorderPixel | SetWindowValuemask.BitGravity |
                                        SetWindowValuemask.WinGravity | SetWindowValuemask.BackingStore)), ref attr);
+                AppendPid(_renderHandle);
+            }
             else
+            {
                 _renderHandle = _handle;
+            }
 
             Handle = new PlatformHandle(_handle, "XID");
             
@@ -321,6 +327,25 @@ namespace Avalonia.X11
             XChangeProperty(_x11.Display, _handle,
                 _x11.Atoms._MOTIF_WM_HINTS, _x11.Atoms._MOTIF_WM_HINTS, 32,
                 PropertyMode.Replace, ref hints, 5);
+        }
+
+        /// <summary>
+        /// Append `_NET_WM_PID` atom to X11 window
+        /// </summary>
+        /// <param name="windowXId"></param>
+        private void AppendPid(IntPtr windowXId)
+        {
+            // See https://github.com/AvaloniaUI/Avalonia/issues/17444
+#if NET6_0_OR_GREATER
+            var pid = (uint) Environment.ProcessId;
+#else
+            using var currentProcess = Process.GetCurrentProcess();
+            var pid = (uint) currentProcess.Id;
+#endif
+            // The type of `_NET_WM_PID` is `CARDINAL` which is 32-bit unsigned integer, see https://specifications.freedesktop.org/wm-spec/1.3/ar01s05.html
+            XChangeProperty(_x11.Display, windowXId,
+                _x11.Atoms._NET_WM_PID, _x11.Atoms.XA_CARDINAL, 32,
+                PropertyMode.Replace, ref pid, 1);
         }
 
         private void UpdateSizeHints(PixelSize? preResize, bool forceDisableResize = false)
