@@ -6,10 +6,10 @@ using Avalonia.Vulkan;
 
 namespace Avalonia.Android.Platform.Vulkan
 {
-    internal class VulkanSupport
+    internal partial class VulkanSupport
     {
-        [DllImport("libvulkan.so")]
-        private static extern IntPtr vkGetInstanceProcAddr(IntPtr instance, string name);
+        [LibraryImport("libvulkan.so", StringMarshalling = StringMarshalling.Utf8)]
+        private static partial IntPtr vkGetInstanceProcAddr(IntPtr instance, string name);
 
         public static VulkanPlatformGraphics? TryInitialize(VulkanOptions options) =>
             VulkanPlatformGraphics.TryCreate(options ?? new(), new VulkanPlatformSpecificOptions

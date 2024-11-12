@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using Avalonia.Fonts.Inter;
 using Avalonia.Headless;
@@ -332,6 +334,33 @@ namespace Avalonia.Skia.UnitTests.Media
                     var features = ((IGlyphTypeface2)glyphTypeface).SupportedFeatures;
 
                     Assert.NotEmpty(features);
+                }
+            }
+        }
+
+        [Fact]
+        public void Should_Map_FontFamily()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                using (AvaloniaLocator.EnterScope())
+                {
+                    AvaloniaLocator.CurrentMutable.BindToSelf(new FontManagerOptions 
+                    { 
+                        DefaultFamilyName = s_fontUri, 
+                        FontFamilyMappings = new Dictionary<string, FontFamily> 
+                        { 
+                            { "Segoe UI", new FontFamily("fonts:Inter#Inter") } 
+                        }
+                    });
+
+                    FontManager.Current.AddFontCollection(new InterFontCollection());
+
+                    var result = FontManager.Current.TryGetGlyphTypeface(new Typeface("Abc, Segoe UI"), out var glyphTypeface);
+
+                    Assert.True(result);
+
+                    Assert.Equal("Inter", glyphTypeface.FamilyName);
                 }
             }
         }

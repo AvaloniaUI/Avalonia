@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsLegacyTargetFrameworks);netstandard2.0</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <EnableRuntimeMarshalling>true</EnableRuntimeMarshalling>
     <!-- We still keep BinaryFormatter for WinForms compatibility. -->
     <EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
   </PropertyGroup>
@@ -23,6 +24,7 @@
     <MicroComIdl Include="Win32Com\win32.idl" CSharpInteropPath="Win32Com\Win32.Generated.cs" />
     <MicroComIdl Include="DirectX\directx.idl" CSharpInteropPath="DirectX\directx.Generated.cs" />
     <MicroComIdl Include="DComposition\dcomp.idl" CSharpInteropPath="DComposition\DComp.Generated.cs" />
+    <ProjectReference Include="..\Avalonia.Win32.Automation\Avalonia.Win32.Automation.csproj" />
   </ItemGroup>
   <Import Project="..\..\..\build\NullableEnable.props" />
   <Import Project="..\..\..\build\DevAnalyzers.props" />
@@ -37,5 +39,12 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Avalonia.Win32.Interoperability, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Direct2D1, PublicKey=$(AvaloniaPublicKey)" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- By default, any projects supports Windows, Linux, MacOS platforms. -->
+    <!-- To properly support analyzers, we need to re-set this value -->
+    <!-- https://github.com/dotnet/sdk/blob/v8.0.403/src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.SupportedPlatforms.props -->
+    <SupportedPlatform Remove="@(SupportedPlatform)" />
+    <SupportedPlatform Include="Windows" />
   </ItemGroup>
 </Project>

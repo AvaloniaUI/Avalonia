@@ -43,7 +43,7 @@ namespace ControlCatalog.Pages
                         Source = snap
                     }
                 }
-            }.ShowDialog((Window)TopLevel.GetTopLevel(this));
+            }.ShowDialog((Window)TopLevel.GetTopLevel(this)!);
         }
     }
 

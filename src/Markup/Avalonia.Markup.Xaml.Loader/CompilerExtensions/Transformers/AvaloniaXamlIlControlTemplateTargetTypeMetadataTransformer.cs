@@ -11,7 +11,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlAstNode Transform(AstTransformationContext context, IXamlAstNode node)
         {
             if (!(node is XamlAstObjectNode on
-                  && on.Type.GetClrType() == context.GetAvaloniaTypes().ControlTemplate))
+                  && context.GetAvaloniaTypes().IControlTemplate.IsAssignableFrom(on.Type.GetClrType())))
                 return node;
             var tt = on.Children.OfType<XamlAstXamlPropertyValueNode>().FirstOrDefault(ch =>
                                               ch.Property.GetClrProperty().Name == "TargetType");

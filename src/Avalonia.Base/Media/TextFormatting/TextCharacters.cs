@@ -9,6 +9,8 @@ namespace Avalonia.Media.TextFormatting
     /// </summary>
     public class TextCharacters : TextRun
     {
+        private static char ZeroWidthSpace = '\u200b';
+
         /// <summary>
         /// Constructs a run for text content from a string.
         /// </summary>
@@ -82,7 +84,21 @@ namespace Avalonia.Media.TextFormatting
             var previousGlyphTypeface = previousProperties?.CachedGlyphTypeface;
             var textSpan = text.Span;
 
-            if (TryGetShapeableLength(textSpan, defaultGlyphTypeface, null, out var count))
+            var count = 0;
+            var codepoints = new CodepointEnumerator(textSpan);
+
+            while(codepoints.MoveNext(out var firstCodepoint) && firstCodepoint.Value == 0)
+            {
+                count++;
+            }
+
+            //Detect null terminator
+            if (count > 0)
+            {
+                return new UnshapedTextRun(new string(ZeroWidthSpace, count).AsMemory(), defaultProperties, biDiLevel);
+            }
+
+            if (TryGetShapeableLength(textSpan, defaultGlyphTypeface, null, out count))
             {
                 return new UnshapedTextRun(text.Slice(0, count), defaultProperties.WithTypeface(defaultTypeface),
                     biDiLevel);
@@ -176,6 +192,12 @@ namespace Avalonia.Media.TextFormatting
             {
                 var currentCodepoint = currentGrapheme.FirstCodepoint;
                 var currentScript = currentCodepoint.Script;
+
+                if(currentCodepoint.Value == 0)
+                {
+                    //Do not include null terminators
+                    break;
+                }
 
                 if (!currentCodepoint.IsWhiteSpace
                     && defaultGlyphTypeface != null

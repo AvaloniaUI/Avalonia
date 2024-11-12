@@ -11,16 +11,7 @@ namespace Avalonia.Diagnostics;
 [PrivateApi]
 public static class StyledElementExtensions
 {
-    /// <summary>
-    /// Gets a style diagnostics for a <see cref="StyledElement"/>.
-    /// </summary>
-    /// <param name="styledElement">The element.</param>
-    public static ValueStoreDiagnostic GetValueStoreDiagnostic(this StyledElement styledElement)
-    {
-        return styledElement.GetValueStore().GetStoreDiagnostic();
-    }
-
-    [Obsolete("Use StyledElementExtensions.GetValueStoreDiagnostic instead", true)]
+    [Obsolete("Use AvaloniaObjectExtensions.GetValueStoreDiagnostic instead", true)]
     public static StyleDiagnostics GetStyleDiagnostics(this StyledElement styledElement)
     {
         var diagnostics = styledElement.GetValueStore().GetStoreDiagnostic();

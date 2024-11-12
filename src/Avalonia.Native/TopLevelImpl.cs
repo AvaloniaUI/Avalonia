@@ -494,7 +494,7 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
                 var args = new RawDragEvent(device, (RawDragEventType)type,
                     _parent._inputRoot, position.ToAvaloniaPoint(), dataObject, (DragDropEffects)effects,
                     (RawInputModifiers)modifiers);
-                _parent.Input(args);
+                _parent.Input?.Invoke(args);
                 return (AvnDragDropEffects)args.Effects;
             }
         }

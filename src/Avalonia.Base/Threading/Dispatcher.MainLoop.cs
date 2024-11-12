@@ -128,7 +128,7 @@ public partial class Dispatcher
     private void ShutdownImpl()
     {
         DispatcherOperation? operation = null;
-        _impl.Timer -= PromoteTimers;
+        _impl.Timer -= OnOSTimer;
         _impl.Signaled -= Signaled;
         do
         {

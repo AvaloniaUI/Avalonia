@@ -197,7 +197,21 @@ namespace Avalonia.DesignerSupport.Remote
         public void SetFrameThemeVariant(PlatformThemeVariant themeVariant) { }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 1, 1);
-        public object TryGetFeature(Type featureType) => null;
+        public object TryGetFeature(Type featureType)
+        {
+            if (featureType == typeof(IStorageProvider))
+            {
+                return new NoopStorageProvider();
+            }
+
+            if (featureType == typeof(IScreenImpl))
+            {
+                return new ScreenStub();
+            }
+
+            return null;
+        }
+        public void TakeFocus() { }
     }
 
     class ClipboardStub : IClipboard

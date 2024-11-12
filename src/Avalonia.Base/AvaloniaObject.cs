@@ -458,6 +458,17 @@ namespace Avalonia
             IObservable<object?> source,
             BindingPriority priority = BindingPriority.LocalValue)
         {
+            return TryBindStyledPropertyUntyped(property, source, priority)
+                ?? _values.AddBinding(property, source, priority);
+        }
+
+        // Non-generic path extracted to avoid unnecessary generic code duplication
+        private BindingExpressionBase? TryBindStyledPropertyUntyped(
+            AvaloniaProperty property,
+            IObservable<object?> source,
+            BindingPriority priority)
+        {
+            Debug.Assert(!property.IsDirect);
             ThrowHelper.ThrowIfNull(property, nameof(property));
             ThrowHelper.ThrowIfNull(source, nameof(source));
             VerifyAccess();
@@ -466,18 +477,20 @@ namespace Avalonia
             if (source is IBinding2 b)
             {
                 if (b.Instance(this, property, null) is not UntypedBindingExpressionBase expression)
-                    throw new NotSupportedException("Binding returned unsupported IBindingExpression.");
+                    throw new NotSupportedException($"Binding returned unsupported {nameof(BindingExpressionBase)}.");
+
                 if (priority != expression.Priority)
+                {
                     throw new NotSupportedException(
                         $"The binding priority passed to AvaloniaObject.Bind ('{priority}') " +
                         "conflicts with the binding priority of the provided binding expression " +
                         $" ({expression.Priority}').");
+                }
+
                 return GetValueStore().AddBinding(property, expression);
             }
-            else
-            {
-                return _values.AddBinding(property, source, priority);
-            }
+
+            return null;
         }
 
         /// <summary>
@@ -539,10 +552,22 @@ namespace Avalonia
             DirectPropertyBase<T> property,
             IObservable<object?> source)
         {
+            AvaloniaProperty untypedProperty = property;
+
+            return TryBindDirectPropertyUntyped(ref untypedProperty, source)
+                ?? _values.AddBinding((DirectPropertyBase<T>)untypedProperty, source);
+        }
+
+        // Non-generic path extracted to avoid unnecessary generic code duplication
+        private BindingExpressionBase? TryBindDirectPropertyUntyped(
+            ref AvaloniaProperty property,
+            IObservable<object?> source)
+        {
+            Debug.Assert(property.IsDirect);
             ThrowHelper.ThrowIfNull(property, nameof(property));
             VerifyAccess();
 
-            property = AvaloniaPropertyRegistry.Instance.GetRegisteredDirect(this, property);
+            property = AvaloniaPropertyRegistry.Instance.GetRegisteredDirectUntyped(this, property);
 
             if (property.IsReadOnly)
             {
@@ -552,13 +577,11 @@ namespace Avalonia
             if (source is IBinding2 b)
             {
                 if (b.Instance(this, property, null) is not UntypedBindingExpressionBase expression)
-                    throw new NotSupportedException("Binding returned unsupported IBindingExpression.");
+                    throw new NotSupportedException($"Binding returned unsupported {nameof(BindingExpressionBase)}.");
                 return GetValueStore().AddBinding(property, expression);
             }
-            else
-            {
-                return _values.AddBinding(property, source);
-            }
+
+            return null;
         }
 
         /// <summary>
@@ -638,7 +661,7 @@ namespace Avalonia
             if (binding is not IBinding2 b)
                 throw new NotSupportedException($"Unsupported IBinding implementation '{binding}'.");
             if (b.Instance(this, property, anchor) is not UntypedBindingExpressionBase expression)
-                throw new NotSupportedException("Binding returned unsupported IBindingExpression.");
+                throw new NotSupportedException($"Binding returned unsupported {nameof(BindingExpressionBase)}.");
 
             return GetValueStore().AddBinding(property, expression);
         }

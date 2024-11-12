@@ -297,6 +297,15 @@ internal class RoslynMethod : IXamlMethod
     public bool IsFamily => _symbol.DeclaredAccessibility == Accessibility.Protected;
 
     public bool IsStatic => false;
+    public bool ContainsGenericParameters => _symbol.TypeParameters.Any();
+    public bool IsGenericMethod => _symbol.IsGenericMethod;
+    public bool IsGenericMethodDefinition => _symbol.IsDefinition && _symbol.IsGenericMethod;
+
+    public IReadOnlyList<IXamlType> GenericParameters => throw new NotImplementedException();
+
+    public IReadOnlyList<IXamlType> GenericArguments => _symbol.TypeArguments
+        .Select(ga => new RoslynType((INamedTypeSymbol)ga, _assembly))
+        .ToArray();
 
     public IXamlType ReturnType => new RoslynType((INamedTypeSymbol) _symbol.ReturnType, _assembly);
 
