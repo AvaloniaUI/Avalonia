@@ -10,7 +10,7 @@ namespace Avalonia.LinuxFramebuffer.Input.EvDev
             
         }
         
-        public string Path { get; set; }
+        public string? Path { get; set; }
 
         internal static EvDevDeviceDescription ParseFromEnv(string env)
         {
