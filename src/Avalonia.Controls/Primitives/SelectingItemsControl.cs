@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Selection;
 using Avalonia.Data;
 using Avalonia.Data.Core;
@@ -115,7 +116,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public static readonly StyledProperty<bool> IsTextSearchEnabledProperty =
             AvaloniaProperty.Register<SelectingItemsControl, bool>(nameof(IsTextSearchEnabled), false);
-
+        
         /// <summary>
         /// Event that should be raised by containers when their selection state changes to notify
         /// the parent <see cref="SelectingItemsControl"/> that their selection state has changed.
@@ -626,8 +627,8 @@ namespace Avalonia.Controls.Primitives
                            control.Content?.ToString()?.StartsWith(_textSearchTerm, StringComparison.OrdinalIgnoreCase) == true;
                 }
 
-                var container = GetRealizedContainers().FirstOrDefault(Match);
-
+                var container = Presenter.Panel?.Children.FirstOrDefault(Match);
+                
                 if (container != null)
                 {
                     SelectedIndex = IndexFromContainer(container);
