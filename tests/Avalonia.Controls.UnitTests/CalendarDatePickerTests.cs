@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
@@ -84,7 +84,7 @@ namespace Avalonia.Controls.UnitTests
                 tb.Clear();
                 RaiseTextEvent(tb, "17.10.2024");
                 RaiseKeyEvent(tb, Key.Enter, KeyModifiers.None);
-                
+
                 Assert.Equal("17.10.2024", datePicker.Text);
                 Assert.True(CompareDates(datePicker.SelectedDate.Value, new DateTime(2024, 10, 17)));
 
