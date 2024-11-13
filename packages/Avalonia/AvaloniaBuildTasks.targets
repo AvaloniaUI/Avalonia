@@ -133,7 +133,7 @@
     DependsOnTargets="$(CompileAvaloniaXamlDependsOn)"
     Inputs="@(CompileAvaloniaXamlInputs)"
     Outputs="@(CompileAvaloniaXamlOutputs)"
-    Condition="'@(AvaloniaResource)@(AvaloniaXaml)' != '' AND $(EnableAvaloniaXamlCompilation) != false AND '$(SkipCompilerExecution)' != 'true'">
+    Condition="'@(AvaloniaResource)@(AvaloniaXaml)' != '' AND $(DesignTimeBuild) != true AND $(EnableAvaloniaXamlCompilation) != false">
 
     <!--
       $(IntermediateOutputPath)/Avalonia/references is using from AvaloniaVS for retrieve library references.
@@ -161,7 +161,7 @@
   </Target>
   
   <Target Name="InjectAvaloniaXamlOutput" DependsOnTargets="PrepareToCompileAvaloniaXaml" AfterTargets="CompileAvaloniaXaml" BeforeTargets="CopyFilesToOutputDirectory;BuiltProjectOutputGroup;ComputeResolvedFilesToPublishList"
-          Condition="'@(AvaloniaResource)@(AvaloniaXaml)' != '' AND $(EnableAvaloniaXamlCompilation) != false AND '$(SkipCompilerExecution)' != 'true'">
+          Condition="'@(AvaloniaResource)@(AvaloniaXaml)' != '' AND $(EnableAvaloniaXamlCompilation) != false">
     <ItemGroup>
       <_AvaloniaXamlCompiledAssembly Include="@(IntermediateAssembly->Metadata('AvaloniaCompileOutput'))"/>
       <IntermediateAssembly Remove="@(IntermediateAssembly)"/>
@@ -192,7 +192,7 @@
           DependsOnTargets="InjectAvaloniaXamlOutput"
           AfterTargets="ComputeIlcCompileInputs"
           BeforeTargets="PrepareForILLink"
-          Condition="$([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '9.0')) AND '@(AvaloniaResource)@(AvaloniaXaml)' != '' AND $(EnableAvaloniaXamlCompilation) != false AND '$(SkipCompilerExecution)' != 'true'">
+          Condition="$([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '9.0')) AND '@(AvaloniaResource)@(AvaloniaXaml)' != '' AND $(EnableAvaloniaXamlCompilation) != false">
     <ItemGroup>
       <ManagedBinary Remove="$(IntermediateOutputPath)$(TargetName)$(TargetExt)" />
       <ManagedBinary Include="@(_AvaloniaXamlCompiledAssembly)" />
