@@ -627,7 +627,7 @@ namespace Avalonia.Controls.Primitives
                            control.Content?.ToString()?.StartsWith(_textSearchTerm, StringComparison.OrdinalIgnoreCase) == true;
                 }
 
-                var container = Presenter.Panel?.Children.FirstOrDefault(Match);
+                var container = Presenter?.Panel?.Children.FirstOrDefault(Match);
                 
                 if (container != null)
                 {
