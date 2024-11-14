@@ -23,17 +23,55 @@ namespace Avalonia.Automation.Provider
         /// <summary>
         /// Gets the currently focused element.
         /// </summary>
+        /// <remarks>
+        /// <list type="table">
+        ///   <item>
+        ///     <term>Windows</term>
+        ///     <description><c>IRawElementProviderFragmentRoot.GetFocus</c></description>
+        ///   </item>
+        ///   <item>
+        ///     <term>macOS</term>
+        ///     <description><c>UIAccessibility.accessibilityFocusedUIElement</c></description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
         AutomationPeer? GetFocus();
 
         /// <summary>
         /// Gets the element at the specified point, expressed in top-level coordinates.
         /// </summary>
         /// <param name="p">The point.</param>
+        /// <remarks>
+        /// <list type="table">
+        ///   <item>
+        ///     <term>Windows</term>
+        ///     <description>
+        ///       <c>IRawElementProviderFragmentRoot.ElementProviderFromPoint</c>
+        ///     </description>
+        ///   </item>
+        ///   <item>
+        ///     <term>macOS</term>
+        ///     <description><c>UIAccessibility.accessibilityHitTest</c></description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
         AutomationPeer? GetPeerFromPoint(Point p);
 
         /// <summary>
         /// Raised by the automation peer when the focus changes.
         /// </summary>
+        /// <remarks>
+        /// <list type="table">
+        ///   <item>
+        ///     <term>Windows</term>
+        ///     <description><c>UIA_AutomationFocusChangedEventId</c></description>
+        ///   </item>
+        ///   <item>
+        ///     <term>macOS</term>
+        ///     <description><c>NSAccessibilityFocusedUIElementChangedNotification</c></description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
         event EventHandler? FocusChanged;
     }
 }
