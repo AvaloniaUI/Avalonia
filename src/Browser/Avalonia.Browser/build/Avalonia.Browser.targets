@@ -38,7 +38,7 @@
 
   <!-- https://github.com/dotnet/runtime/issues/109289 -->
   <Target Name="Issue109289_Workaround"
-          Condition="'$(DisableIssue109289Workaround)' != 'true'"
+          Condition="'$(DisableIssue109289Workaround)' != 'true' AND $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '9.0'))"
           AfterTargets="_BrowserWasmWriteRspForLinking">
     <ItemGroup>
       <_WasmLinkStepArgs Remove="@(_EmccLinkStepArgs)" />
