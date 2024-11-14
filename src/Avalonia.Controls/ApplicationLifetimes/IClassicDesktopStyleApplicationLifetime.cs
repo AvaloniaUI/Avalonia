@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Avalonia.Collections;
 using Avalonia.Metadata;
 
 namespace Avalonia.Controls.ApplicationLifetimes
@@ -44,7 +45,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
         /// <summary>
         /// Gets the list of all open windows in the application.
         /// </summary>
-        IReadOnlyList<Window> Windows { get; }
+        IAvaloniaReadOnlyList<Window> Windows { get; }
 
         /// <summary>
         /// Raised by the platform when an application shutdown is requested.
