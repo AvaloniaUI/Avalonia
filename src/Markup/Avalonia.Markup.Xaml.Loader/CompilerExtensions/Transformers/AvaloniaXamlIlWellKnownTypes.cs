@@ -36,6 +36,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType InheritDataTypeFromAttribute { get; }
         public IXamlType MarkupExtensionOptionAttribute { get; }
         public IXamlType MarkupExtensionDefaultOptionAttribute { get; }
+        public IXamlType ControlTemplateScopeAttribute { get; }
         public IXamlType AvaloniaListAttribute { get; }
         public IXamlType AvaloniaList { get; }
         public IXamlType OnExtensionType { get; }
@@ -129,7 +130,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType WindowTransparencyLevel { get; }
         public IXamlType IReadOnlyListOfT { get; }
         public IXamlType ControlTemplate { get; }
-        public IXamlType IControlTemplate { get; }
         public IXamlType EventHandlerT {  get; }
 
         sealed internal class InteractivityWellKnownTypes
@@ -203,6 +203,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             InheritDataTypeFromAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.InheritDataTypeFromAttribute");
             MarkupExtensionOptionAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.MarkupExtensionOptionAttribute");
             MarkupExtensionDefaultOptionAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.MarkupExtensionDefaultOptionAttribute");
+            ControlTemplateScopeAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.ControlTemplateScopeAttribute");
             AvaloniaListAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.AvaloniaListAttribute");
             AvaloniaList = cfg.TypeSystem.GetType("Avalonia.Collections.AvaloniaList`1");
             OnExtensionType = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.MarkupExtensions.On");
@@ -325,7 +326,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             Style = cfg.TypeSystem.GetType("Avalonia.Styling.Style");
             ControlTheme = cfg.TypeSystem.GetType("Avalonia.Styling.ControlTheme");
             ControlTemplate = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.Templates.ControlTemplate");
-            IControlTemplate = cfg.TypeSystem.GetType("Avalonia.Controls.Templates.IControlTemplate");
             IReadOnlyListOfT = cfg.TypeSystem.GetType("System.Collections.Generic.IReadOnlyList`1");
             EventHandlerT = cfg.TypeSystem.GetType("System.EventHandler`1");
             Interactivity = new InteractivityWellKnownTypes(cfg);
