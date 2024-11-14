@@ -18,6 +18,8 @@ namespace Avalonia.Controls
         private const float ParallaxPositionRatio = 0.5f;
         private double _executingRatio = 0.8;
 
+        private Vector3D _initialVisualOffset = default;
+
         private RefreshVisualizerState _refreshVisualizerState;
         private RefreshInfoProvider? _refreshInfoProvider;
         private IDisposable? _isInteractingSubscription;
@@ -211,47 +213,27 @@ namespace Avalonia.Controls
                                 _rotateAnimation.IterationBehavior = AnimationIterationBehavior.Count;
                                 _rotateAnimation = null;
                             }
+
                             contentVisual.Opacity = MinimumIndicatorOpacity;
                             contentVisual.RotationAngle = _startingRotationAngle;
-                            visualizerVisual.Offset = IsPullDirectionVertical ?
-                                new Vector3D(visualizerVisual.Offset.X, 0, 0) :
-                                new Vector3D(0, visualizerVisual.Offset.Y, 0);
-                            visual.Offset = visualizerVisual.Offset;
+
+                            visualizerVisual.Offset = new Vector3D(0, 0, 0);
                             _content.InvalidateMeasure();
+
                             break;
                         case RefreshVisualizerState.Interacting:
                             _played = false;
                             contentVisual.Opacity = MinimumIndicatorOpacity;
                             contentVisual.RotationAngle = (float)(_startingRotationAngle + _interactionRatio * 2 * Math.PI);
-                            Vector3D offset = default;
-                            if (IsPullDirectionVertical)
-                            {
-                                offset = new Vector3D(visual.Offset.X, (_interactionRatio * (IsPullDirectionFar ? -1 : 1) * root.Bounds.Height), visual.Offset.Z);
-                            }
-                            else
-                            {
-                                offset = new Vector3D((_interactionRatio * (IsPullDirectionFar ? -1 : 1) * root.Bounds.Width), visual.Offset.Y, visual.Offset.Z);
-                            }
-                            visual.Offset = offset;
-                            visualizerVisual.Offset = IsPullDirectionVertical ? 
-                                new Vector3D(visualizerVisual.Offset.X, offset.Y, 0) :
-                                new Vector3D(offset.X, visualizerVisual.Offset.Y, 0);
+                            
+                            CalculateAndSetOffsets(root, visual, visualizerVisual);
+
                             break;
                         case RefreshVisualizerState.Pending:
                             contentVisual.Opacity = 1;
                             contentVisual.RotationAngle = _startingRotationAngle + (float)(2 * Math.PI);
-                            if (IsPullDirectionVertical)
-                            {
-                                offset = new Vector3D(visual.Offset.X, (_interactionRatio * (IsPullDirectionFar ? -1 : 1) * root.Bounds.Height), visual.Offset.Z);
-                            }
-                            else
-                            {
-                                offset = new Vector3D((_interactionRatio * (IsPullDirectionFar ? -1 : 1) * root.Bounds.Width), visual.Offset.Y, visual.Offset.Z);
-                            }
-                            visual.Offset = offset;
-                            visualizerVisual.Offset = IsPullDirectionVertical ? 
-                                new Vector3D(visualizerVisual.Offset.X, offset.Y, 0) : 
-                                new Vector3D(offset.X, visualizerVisual.Offset.Y, 0);
+
+                            CalculateAndSetOffsets(root, visual, visualizerVisual);
 
                             if (!_played)
                             {
@@ -278,20 +260,8 @@ namespace Avalonia.Controls
                             contentVisual.Opacity = 1;
                             float translationRatio = (float)(_refreshInfoProvider != null ?  (1.0f - _refreshInfoProvider.ExecutionRatio) * ParallaxPositionRatio : 1.0f) 
                                 * (IsPullDirectionFar ? -1f : 1f);
-                            if (IsPullDirectionVertical)
-                            {
-                                offset = new Vector3D(visual.Offset.X, (_executingRatio * (IsPullDirectionFar ? -1 : 1) * root.Bounds.Height), visual.Offset.Z);
-                            }
-                            else
-                            {
-                                offset = new Vector3D((_executingRatio * (IsPullDirectionFar ? -1 : 1) * root.Bounds.Width), visual.Offset.Y, visual.Offset.Z);
-                            }
-                            visual.Offset = offset;
-                            contentVisual.Offset += IsPullDirectionVertical ? new Vector3D(0, (translationRatio * root.Bounds.Height), 0) :
-                                new Vector3D((translationRatio * root.Bounds.Width), 0, 0);
-                            visualizerVisual.Offset = IsPullDirectionVertical ?
-                                new Vector3D(visualizerVisual.Offset.X, offset.Y, 0) :
-                                new Vector3D(offset.X, visualizerVisual.Offset.Y, 0);
+
+                            CalculateAndSetOffsets(root, visual, visualizerVisual);
                             break;
                         case RefreshVisualizerState.Peeking:
                             contentVisual.Opacity = 1;
@@ -302,13 +272,43 @@ namespace Avalonia.Controls
             }
         }
 
+        private void CalculateAndSetOffsets(Grid root, CompositionVisual visual, CompositionVisual indicatorVisualizer)
+        {
+            if (IsPullDirectionVertical)
+            {
+                // As long as the indicator-container isn't visible,
+                // the initial offset is the current offset
+                if (indicatorVisualizer.Offset.Y == 0)
+                {
+                    _initialVisualOffset = visual.Offset;
+                }
+
+                var offset = _interactionRatio * (IsPullDirectionFar ? -1 : 1) * root.Bounds.Height;
+                indicatorVisualizer.Offset = indicatorVisualizer.Offset with { Y = offset };
+
+                visual.Offset = _initialVisualOffset with { Y = _initialVisualOffset.Y + offset };         
+            }
+            else
+            {
+                if (indicatorVisualizer.Offset.X == 0)
+                {
+                    _initialVisualOffset = visual.Offset;
+                }
+
+                var offset = _interactionRatio * (IsPullDirectionFar ? -1 : 1) * root.Bounds.Width;
+                indicatorVisualizer.Offset = indicatorVisualizer.Offset with { X = offset };
+
+                visual.Offset = _initialVisualOffset with { X = _initialVisualOffset.X + offset }; 
+            }
+        }
+
         /// <summary>
         /// Initiates an update of the content.
         /// </summary>
         public void RequestRefresh()
         {
             RefreshVisualizerState = RefreshVisualizerState.Refreshing;
-            RefreshInfoProvider?.OnRefreshStarted();
+            RefreshInfoProvider?.OnRefreshStarted();            
 
             RaiseRefreshRequested();
         }
