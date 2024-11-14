@@ -612,7 +612,7 @@ namespace Avalonia.Controls.Primitives
                 _textSearchTerm += e.Text;
 
                 var newIndex = Presenter?.GetIndexFromTextSearch(_textSearchTerm);
-                if (newIndex is not null && newIndex > 0)
+                if (newIndex >= 0)
                 {
                     SelectedIndex = (int)newIndex;
                 }
