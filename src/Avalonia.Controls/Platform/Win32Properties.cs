@@ -15,7 +15,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// Set of Win32 specific properties and events that allow deeper customization of the application per platform.
     /// </summary>
-    public class Win32Properties
+    public static class Win32Properties
     {
         public delegate (uint style, uint exStyle) CustomWindowStylesCallback(uint style, uint exStyle);
         public delegate IntPtr CustomWndProcHookCallback(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam, ref bool handled);
@@ -73,8 +73,9 @@ namespace Avalonia.Controls
         }
 
         public static readonly AttachedProperty<Win32HitTestValue> NonClientHitTestResultProperty =
-            AvaloniaProperty.RegisterAttached<Win32Properties, Visual, Win32HitTestValue>(
+            AvaloniaProperty.RegisterAttached<Visual, Win32HitTestValue>(
                 "NonClientHitTestResult",
+                typeof(Win32Properties),
                 inherits: true,
                 defaultValue: Win32HitTestValue.Client);
 

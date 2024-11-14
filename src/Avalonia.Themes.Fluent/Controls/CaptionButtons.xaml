@@ -51,6 +51,7 @@
       <ControlTemplate>
         <StackPanel Spacing="2" VerticalAlignment="Stretch" TextElement.FontSize="10" Orientation="Horizontal">
           <Button x:Name="PART_FullScreenButton"
+                  Theme="{StaticResource FluentCaptionButton}"
                   IsVisible="False">
             <Viewbox Width="11" Margin="2">
               <Path Name="FullScreenButtonPath"

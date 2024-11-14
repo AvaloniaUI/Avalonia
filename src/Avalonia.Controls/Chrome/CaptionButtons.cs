@@ -102,19 +102,19 @@ namespace Avalonia.Controls.Chrome
             
             if (e.NameScope.Find<Button>(PART_CloseButton) is { } closeButton)
             {
-                closeButton.Click += (sender, e) =>
+                closeButton.Click += (_, args) =>
                 {
                     OnClose();
-                    e.Handled = true;
+                    args.Handled = true;
                 };
             }
 
             if (e.NameScope.Find<Button>(PART_RestoreButton) is { } restoreButton)
             {
-                restoreButton.Click += (sender, e) =>
+                restoreButton.Click += (_, args) =>
                 {
                     OnRestore();
-                    e.Handled = true;
+                    args.Handled = true;
                 };
                 restoreButton.IsEnabled = HostWindow?.CanResize ?? true;
                 _restoreButton = restoreButton;
@@ -122,19 +122,19 @@ namespace Avalonia.Controls.Chrome
             
             if (e.NameScope.Find<Button>(PART_MinimizeButton) is { } minimizeButton)
             {
-                minimizeButton.Click += (sender, e) =>
+                minimizeButton.Click += (_, args) =>
                 {
                     OnMinimize();
-                    e.Handled = true;
+                    args.Handled = true;
                 };
             }
             
             if (e.NameScope.Find<Button>(PART_FullScreenButton) is { } fullScreenButton)
             {
-                fullScreenButton.Click += (sender, e) =>
+                fullScreenButton.Click += (_, args) =>
                 {
                     OnToggleFullScreen();
-                    e.Handled = true;
+                    args.Handled = true;
                 };
             }
         }
