@@ -611,29 +611,12 @@ namespace Avalonia.Controls.Primitives
 
                 _textSearchTerm += e.Text;
 
-                bool Match(Control container)
+                var newIndex = Presenter?.GetIndexFromTextSearch(_textSearchTerm);
+                if (newIndex is not null && newIndex > 0)
                 {
-                    if (container is AvaloniaObject ao && ao.IsSet(TextSearch.TextProperty))
-                    {
-                        var searchText = ao.GetValue(TextSearch.TextProperty);
-
-                        if (searchText?.StartsWith(_textSearchTerm, StringComparison.OrdinalIgnoreCase) == true)
-                        {
-                            return true;
-                        }
-                    }
-
-                    return container is IContentControl control &&
-                           control.Content?.ToString()?.StartsWith(_textSearchTerm, StringComparison.OrdinalIgnoreCase) == true;
+                    SelectedIndex = (int)newIndex;
                 }
-
-                var container = Presenter?.Panel?.Children.FirstOrDefault(Match);
                 
-                if (container != null)
-                {
-                    SelectedIndex = IndexFromContainer(container);
-                }
-
                 StartTextSearchTimer();
 
                 e.Handled = true;
