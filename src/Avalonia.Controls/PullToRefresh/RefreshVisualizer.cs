@@ -226,11 +226,11 @@ namespace Avalonia.Controls
                             Vector3D offset = default;
                             if (IsPullDirectionVertical)
                             {
-                                offset = new Vector3D(0, (_interactionRatio * (IsPullDirectionFar ? -1 : 1) * root.Bounds.Height), 0);
+                                offset = new Vector3D(visual.Offset.X, (_interactionRatio * (IsPullDirectionFar ? -1 : 1) * root.Bounds.Height), visual.Offset.Z);
                             }
                             else
                             {
-                                offset = new Vector3D((_interactionRatio * (IsPullDirectionFar ? -1 : 1) * root.Bounds.Width), 0, 0);
+                                offset = new Vector3D((_interactionRatio * (IsPullDirectionFar ? -1 : 1) * root.Bounds.Width), visual.Offset.Y, visual.Offset.Z);
                             }
                             visual.Offset = offset;
                             visualizerVisual.Offset = IsPullDirectionVertical ? 
@@ -242,11 +242,11 @@ namespace Avalonia.Controls
                             contentVisual.RotationAngle = _startingRotationAngle + (float)(2 * Math.PI);
                             if (IsPullDirectionVertical)
                             {
-                                offset = new Vector3D(0, (_interactionRatio * (IsPullDirectionFar ? -1 : 1) * root.Bounds.Height), 0);
+                                offset = new Vector3D(visual.Offset.X, (_interactionRatio * (IsPullDirectionFar ? -1 : 1) * root.Bounds.Height), visual.Offset.Z);
                             }
                             else
                             {
-                                offset = new Vector3D((_interactionRatio * (IsPullDirectionFar ? -1 : 1) * root.Bounds.Width), 0, 0);
+                                offset = new Vector3D((_interactionRatio * (IsPullDirectionFar ? -1 : 1) * root.Bounds.Width), visual.Offset.Y, visual.Offset.Z);
                             }
                             visual.Offset = offset;
                             visualizerVisual.Offset = IsPullDirectionVertical ? 
@@ -280,11 +280,11 @@ namespace Avalonia.Controls
                                 * (IsPullDirectionFar ? -1f : 1f);
                             if (IsPullDirectionVertical)
                             {
-                                offset = new Vector3D(0, (_executingRatio * (IsPullDirectionFar ? -1 : 1) * root.Bounds.Height), 0);
+                                offset = new Vector3D(visual.Offset.X, (_executingRatio * (IsPullDirectionFar ? -1 : 1) * root.Bounds.Height), visual.Offset.Z);
                             }
                             else
                             {
-                                offset = new Vector3D((_executingRatio * (IsPullDirectionFar ? -1 : 1) * root.Bounds.Width), 0, 0);
+                                offset = new Vector3D((_executingRatio * (IsPullDirectionFar ? -1 : 1) * root.Bounds.Width), visual.Offset.Y, visual.Offset.Z);
                             }
                             visual.Offset = offset;
                             contentVisual.Offset += IsPullDirectionVertical ? new Vector3D(0, (translationRatio * root.Bounds.Height), 0) :
