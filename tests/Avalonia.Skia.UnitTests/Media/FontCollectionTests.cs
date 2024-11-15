@@ -46,6 +46,10 @@ namespace Avalonia.Skia.UnitTests.Media
                 Assert.Equal(2, glyphTypefaces.Count);
 
                 Assert.True(glyphTypefaces.ContainsKey(new FontCollectionKey(FontStyle.Normal, FontWeight.Black, FontStretch.Normal)));
+
+                fontCollection.TryGetGlyphTypeface("Arial", FontStyle.Normal, FontWeight.ExtraBlack, FontStretch.Normal, out var otherGlyphTypeface);
+
+                Assert.Equal(glyphTypeface, otherGlyphTypeface);
             }
         }
 

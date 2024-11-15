@@ -109,6 +109,10 @@ namespace Avalonia.Skia.UnitTests.Media
                 Assert.True(fontCollection.GlyphTypefaceCache.TryGetValue("Manrope", out var glyphTypefaces));
 
                 Assert.Equal(2, glyphTypefaces.Count);
+
+                fontCollection.TryGetGlyphTypeface("Manrope", FontStyle.Normal, FontWeight.ExtraBlack, FontStretch.Normal, out var otherGlyphTypeface);
+
+                Assert.Equal(glyphTypeface, otherGlyphTypeface);
             }
         }
 
