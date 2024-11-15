@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using Avalonia.Media;
 using Avalonia.Media.Fonts;
-using Avalonia.Platform;
 using Avalonia.UnitTests;
-using SkiaSharp;
 using Xunit;
 
 namespace Avalonia.Skia.UnitTests.Media
