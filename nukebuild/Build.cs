@@ -407,6 +407,63 @@ partial class Build : NukeBuild
             file.GenerateCppHeader());
     });
 
+    Target VerifyXamlCompilation => _ => _
+        .Executes(() =>
+        {
+            var buildTestsDirectory = RootDirectory / "tests" / "BuildTests";
+            var artifactsDirectory = buildTestsDirectory / "artifacts";
+            var nugetCacheDirectory = artifactsDirectory / "nuget-cache";
+
+            DeleteDirectory(artifactsDirectory);
+            BuildAndVerify("Debug");
+            BuildAndVerify("Release");
+
+            void BuildAndVerify(string configuration)
+            {
+                var configName = configuration.ToLowerInvariant();
+
+                DotNetBuild(settings => settings
+                    .SetConfiguration(configuration)
+                    .SetProperty("AvaloniaVersion", Parameters.Version)
+                    .SetPackageDirectory(nugetCacheDirectory)
+                    .SetProjectFile(buildTestsDirectory / "BuildTests.sln")
+                    .SetProcessArgumentConfigurator(arguments => arguments.Add("--nodeReuse:false")));
+
+                // Standard compilation - should have compiled XAML
+                VerifyBuildTestAssembly("bin", "BuildTests");
+                VerifyBuildTestAssembly("bin", "BuildTests.Android");
+                VerifyBuildTestAssembly("bin", "BuildTests.Browser");
+                VerifyBuildTestAssembly("bin", "BuildTests.Desktop");
+                VerifyBuildTestAssembly("bin", "BuildTests.iOS");
+                VerifyBuildTestAssembly("bin", "BuildTests.WpfHybrid");
+
+                // Publish previously built project without rebuilding - should have compiled XAML
+                PublishBuildTestProject("BuildTests.Desktop", noBuild: true);
+                VerifyBuildTestAssembly("publish", "BuildTests.Desktop");
+
+                // Publish NativeAOT build, then run it - should not crash and have the expected output
+                PublishBuildTestProject("BuildTests.NativeAot");
+                var exeExtension = OperatingSystem.IsWindows() ? ".exe" : null;
+                XamlCompilationVerifier.VerifyNativeAot(
+                    GetBuildTestOutputPath("publish", "BuildTests.NativeAot", exeExtension));
+
+                void PublishBuildTestProject(string projectName, bool? noBuild = null)
+                    => DotNetPublish(settings => settings
+                        .SetConfiguration(configuration)
+                        .SetProperty("AvaloniaVersion", Parameters.Version)
+                        .SetPackageDirectory(nugetCacheDirectory)
+                        .SetNoBuild(noBuild)
+                        .SetProject(buildTestsDirectory / projectName / (projectName + ".csproj"))
+                        .SetProcessArgumentConfigurator(arguments => arguments.Add("--nodeReuse:false")));
+
+                void VerifyBuildTestAssembly(string folder, string projectName)
+                    => XamlCompilationVerifier.VerifyAssemblyCompiledXaml(
+                        GetBuildTestOutputPath(folder, projectName, ".dll"));
+
+                AbsolutePath GetBuildTestOutputPath(string folder, string projectName, string extension)
+                    => artifactsDirectory / folder / projectName / configName / (projectName + extension);
+            }
+        });
 
     public static int Main() =>
         RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
