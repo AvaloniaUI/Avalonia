@@ -361,6 +361,7 @@ partial class Build : NukeBuild
 
     Target CiAzureWindows => _ => _
         .DependsOn(Package)
+        .DependsOn(VerifyXamlCompilation)
         .DependsOn(ZipFiles);
 
     Target BuildToNuGetCache => _ => _
