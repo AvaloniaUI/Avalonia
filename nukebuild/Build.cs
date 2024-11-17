@@ -425,6 +425,7 @@ partial class Build : NukeBuild
                 DotNetBuild(settings => settings
                     .SetConfiguration(configuration)
                     .SetProperty("AvaloniaVersion", Parameters.Version)
+                    .SetProperty("NuGetPackageRoot", nugetCacheDirectory)
                     .SetPackageDirectory(nugetCacheDirectory)
                     .SetProjectFile(buildTestsDirectory / "BuildTests.sln")
                     .SetProcessArgumentConfigurator(arguments => arguments.Add("--nodeReuse:false")));
@@ -451,6 +452,7 @@ partial class Build : NukeBuild
                     => DotNetPublish(settings => settings
                         .SetConfiguration(configuration)
                         .SetProperty("AvaloniaVersion", Parameters.Version)
+                        .SetProperty("NuGetPackageRoot", nugetCacheDirectory)
                         .SetPackageDirectory(nugetCacheDirectory)
                         .SetNoBuild(noBuild)
                         .SetProject(buildTestsDirectory / projectName / (projectName + ".csproj"))
