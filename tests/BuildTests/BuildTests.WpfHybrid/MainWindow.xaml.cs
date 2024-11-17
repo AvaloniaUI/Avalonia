@@ -3,5 +3,8 @@
 public partial class MainWindow
 {
     public MainWindow()
-        => InitializeComponent();
+    {
+        InitializeComponent();
+        WpfTextBlock.Text = "Hello from WPF";
+    }
 }
