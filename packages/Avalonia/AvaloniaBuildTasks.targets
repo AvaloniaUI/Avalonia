@@ -132,7 +132,6 @@
       <AvaloniaXamlIlVerifyIl Condition="'$(AvaloniaXamlIlVerifyIl)' == ''">false</AvaloniaXamlIlVerifyIl>
       <AvaloniaXamlIlDebuggerLaunch Condition="'$(AvaloniaXamlIlDebuggerLaunch)' == ''">false</AvaloniaXamlIlDebuggerLaunch>
       <AvaloniaXamlVerboseExceptions Condition="'$(AvaloniaXamlVerboseExceptions)' == ''">false</AvaloniaXamlVerboseExceptions>
-      <_AvaloniaHasCompiledXaml>true</_AvaloniaHasCompiledXaml>
     </PropertyGroup>
 
     <ItemGroup>
@@ -204,7 +203,7 @@
     Name="AvaloniaDeleteRefAssemblyBeforeOutputCopy"
     BeforeTargets="CopyFilesToOutputDirectory"
     Condition="
-      '$(_AvaloniaHasCompiledXaml)' == 'true' and
+      '@(AvaloniaResource)@(AvaloniaXaml)' != '' and
       '$(TargetRefPath)' != '' and
       '$(ProduceReferenceAssembly)' == 'true' and
       ('$(CopyBuildOutputToOutputDirectory)' == '' or '$(CopyBuildOutputToOutputDirectory)' == 'true') and
