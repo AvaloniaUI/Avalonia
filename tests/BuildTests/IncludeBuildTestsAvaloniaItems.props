@@ -17,7 +17,7 @@
       Link="%(Filename)%(Extension)" />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
     <Compile
       Include="$(MSBuildThisFileDirectory)/BuildTests/*.cs"
       Link="%(Filename)%(Extension)"

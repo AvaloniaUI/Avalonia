@@ -15,6 +15,7 @@
     <PackageVersion Include="Avalonia.Themes.Fluent" Version="[$(AvaloniaVersion)]" />
     <PackageVersion Include="Avalonia.Win32" Version="[$(AvaloniaVersion)]" />
     <PackageVersion Include="Avalonia.X11" Version="[$(AvaloniaVersion)]" />
+    <PackageVersion Include="FSharp.Core" Version="8.0.403" />
     <PackageVersion Include="Xamarin.AndroidX.Core.SplashScreen" Version="1.0.1.13" />
   </ItemGroup>
 

@@ -17,13 +17,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		Directory.Packages.props = Directory.Packages.props
 		Directory.Build.props = Directory.Build.props
-		Directory.Targets.props = Directory.Targets.props
+		Directory.Build.targets = Directory.Build.targets
 		IncludeBuildTestsAvaloniaItems.props = IncludeBuildTestsAvaloniaItems.props
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuildTests.NativeAot", "BuildTests.NativeAot\BuildTests.NativeAot.csproj", "{767D97D5-4E74-4B54-ACFB-D2D845A2AB85}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuildTests.WpfHybrid", "BuildTests.WpfHybrid\BuildTests.WpfHybrid.csproj", "{B84C58C1-AE11-4C10-8E18-8482085486F1}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "BuildTests.FSharp", "BuildTests.FSharp\BuildTests.FSharp.fsproj", "{7040B498-C281-490A-98D4-39FCDADAFDBF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -59,6 +61,10 @@ Global
 		{B84C58C1-AE11-4C10-8E18-8482085486F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B84C58C1-AE11-4C10-8E18-8482085486F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B84C58C1-AE11-4C10-8E18-8482085486F1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7040B498-C281-490A-98D4-39FCDADAFDBF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7040B498-C281-490A-98D4-39FCDADAFDBF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7040B498-C281-490A-98D4-39FCDADAFDBF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7040B498-C281-490A-98D4-39FCDADAFDBF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

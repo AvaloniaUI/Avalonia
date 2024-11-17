@@ -437,6 +437,7 @@ partial class Build : NukeBuild
                 VerifyBuildTestAssembly("bin", "BuildTests.Android");
                 VerifyBuildTestAssembly("bin", "BuildTests.Browser");
                 VerifyBuildTestAssembly("bin", "BuildTests.Desktop");
+                VerifyBuildTestAssembly("bin", "BuildTests.FSharp");
                 VerifyBuildTestAssembly("bin", "BuildTests.iOS");
                 VerifyBuildTestAssembly("bin", "BuildTests.WpfHybrid");
 

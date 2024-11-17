@@ -1,12 +1,7 @@
-﻿using System.Windows.Controls;
+﻿namespace BuildTests.WpfHybrid;
 
-namespace BuildTests.WpfHybrid;
-
-public partial class UserControl1 : UserControl
+public partial class UserControl1
 {
     public UserControl1()
-    {
-        InitializeComponent();
-    }
+        => InitializeComponent();
 }
-
