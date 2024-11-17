@@ -24,4 +24,13 @@
       DependentUpon="%(Filename)" />
   </ItemGroup>
 
+  <Target
+    Name="ErrorOnUnsetAvaloniaVersion"
+    BeforeTargets="Restore"
+    Condition="'$(AvaloniaVersion)' == '' Or '$(AvaloniaVersion)' == '9999.9999.9999'">
+
+    <Error Text="Please set the AvaloniaVersion property on build (using -p:AvaloniaVersion=x.y.z)" />
+
+  </Target>
+
 </Project>

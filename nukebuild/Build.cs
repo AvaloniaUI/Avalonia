@@ -408,6 +408,7 @@ partial class Build : NukeBuild
     });
 
     Target VerifyXamlCompilation => _ => _
+        .DependsOn(CreateNugetPackages)
         .Executes(() =>
         {
             var buildTestsDirectory = RootDirectory / "tests" / "BuildTests";
@@ -415,10 +416,10 @@ partial class Build : NukeBuild
             var nugetCacheDirectory = artifactsDirectory / "nuget-cache";
 
             DeleteDirectory(artifactsDirectory);
-            BuildAndVerify("Debug");
-            BuildAndVerify("Release");
+            BuildTestsAndVerify("Debug");
+            BuildTestsAndVerify("Release");
 
-            void BuildAndVerify(string configuration)
+            void BuildTestsAndVerify(string configuration)
             {
                 var configName = configuration.ToLowerInvariant();
 
