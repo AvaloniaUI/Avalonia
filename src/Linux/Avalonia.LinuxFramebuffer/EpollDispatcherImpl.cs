@@ -11,7 +11,7 @@ namespace Avalonia.LinuxFramebuffer;
 internal unsafe class EpollDispatcherImpl : IControlledDispatcherImpl
 {
     private readonly ManagedDispatcherImpl.IManagedDispatcherInputProvider _inputProvider;
-    private Thread _mainThread;
+    private readonly Thread _mainThread;
 
     [StructLayout(LayoutKind.Explicit)]
     private struct epoll_data
@@ -161,6 +161,7 @@ internal unsafe class EpollDispatcherImpl : IControlledDispatcherImpl
 
                 itimerspec timer = new()
                 {
+                    it_interval = default,
                     it_value = new()
                     {
                         tv_sec = new IntPtr(Math.Min((int)waitFor.TotalSeconds, 100)),
@@ -219,8 +220,8 @@ internal unsafe class EpollDispatcherImpl : IControlledDispatcherImpl
 
     public bool CurrentThreadIsLoopThread => Thread.CurrentThread == _mainThread;
 
-    public event Action Signaled;
-    public event Action Timer;
+    public event Action? Signaled;
+    public event Action? Timer;
 
     public void UpdateTimer(long? dueTimeInMs)
     {
