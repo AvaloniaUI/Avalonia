@@ -6,6 +6,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <Import Project="AutoImport.props" Sdk="Samsung.Tizen.Sdk" Version="$(AvsCurrentTizenTargetSdk)" />
+
   <ItemGroup>
     <ProjectReference Include="..\..\..\packages\Avalonia\Avalonia.csproj" />
     <ProjectReference Include="..\..\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
@@ -14,4 +16,11 @@
   <Import Project="..\..\..\build\DevAnalyzers.props" />
   <Import Project="..\..\..\build\TrimmingEnable.props" />
   <Import Project="..\..\..\build\NullableEnable.props" />
+
+  <Import Project="Sdk.targets" Sdk="Samsung.Tizen.Sdk" Version="$(AvsCurrentTizenTargetSdk)" />
+
+  <ItemGroup>
+    <KnownFrameworkReference Update="Samsung.Tizen" TargetingPackVersion="$(AvsCurrentTizenTargetSdk)" />
+  </ItemGroup>
+
 </Project>
