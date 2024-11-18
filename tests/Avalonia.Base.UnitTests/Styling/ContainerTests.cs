@@ -2,6 +2,7 @@
 using Avalonia.Base.UnitTests.Layout;
 using Avalonia.Controls;
 using Avalonia.Styling;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests.Styling
@@ -20,6 +21,7 @@ namespace Avalonia.Base.UnitTests.Styling
         [Fact]
         public void Container_Width_Queries_Matches()
         {
+            using var app = UnitTestApplication.Start();
             var root = new LayoutTestRoot()
             {
                 ClientSize = new Size(400, 400)
@@ -65,6 +67,7 @@ namespace Avalonia.Base.UnitTests.Styling
         [Fact]
         public void Container_Height_Queries_Matches()
         {
+            using var app = UnitTestApplication.Start();
             var root = new LayoutTestRoot()
             {
                 ClientSize = new Size(400, 400)
@@ -110,6 +113,7 @@ namespace Avalonia.Base.UnitTests.Styling
         [Fact]
         public void Container_Queries_Matches_Name()
         {
+            using var app = UnitTestApplication.Start();
             var root = new LayoutTestRoot()
             {
                 ClientSize = new Size(600, 600)
