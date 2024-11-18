@@ -45,7 +45,7 @@ namespace Avalonia.X11.NativeDialogs
                 var res = await ShowDialog(options.Title, _window, GtkFileChooserAction.Open,
                     options.AllowMultiple, options.SuggestedStartLocation, null, options.FileTypeFilter, null, false)
                     .ConfigureAwait(false);
-                return res?.Select(f => new BclStorageFile(new FileInfo(f))).ToArray() ?? Array.Empty<IStorageFile>();
+                return res?.Where(f => File.Exists(f)).Select(f => new BclStorageFile(new FileInfo(f))).ToArray() ?? Array.Empty<IStorageFile>();
             });
         }
 

@@ -144,15 +144,15 @@ namespace Avalonia.Controls
 
             _pickerContainer = e.NameScope.Get<Grid>("PART_PickerContainer");
             _periodHost = e.NameScope.Get<Panel>("PART_PeriodHost");
-            _secondHost = e.NameScope.Get<Panel>("PART_SecondHost");
+            _secondHost = e.NameScope.Find<Panel>("PART_SecondHost");
 
             _hourSelector = e.NameScope.Get<DateTimePickerPanel>("PART_HourSelector");
             _minuteSelector = e.NameScope.Get<DateTimePickerPanel>("PART_MinuteSelector");
-            _secondSelector = e.NameScope.Get<DateTimePickerPanel>("PART_SecondSelector");
+            _secondSelector = e.NameScope.Find<DateTimePickerPanel>("PART_SecondSelector");
             _periodSelector = e.NameScope.Get<DateTimePickerPanel>("PART_PeriodSelector");
             
             _spacer2 = e.NameScope.Get<Rectangle>("PART_SecondSpacer");
-            _spacer3 = e.NameScope.Get<Rectangle>("PART_ThirdSpacer");
+            _spacer3 = e.NameScope.Find<Rectangle>("PART_ThirdSpacer");
 
             _acceptButton = e.NameScope.Get<Button>("PART_AcceptButton");
             _acceptButton.Click += OnAcceptButtonClicked;
@@ -234,7 +234,7 @@ namespace Avalonia.Controls
         {
             var hr = _hourSelector!.SelectedValue;
             var min = _minuteSelector!.SelectedValue;
-            var sec = _secondSelector!.SelectedValue;
+            var sec = _secondSelector?.SelectedValue ?? 0;
             var per = _periodSelector!.SelectedValue;
 
             if (ClockIdentifier == "12HourClock")
@@ -265,12 +265,15 @@ namespace Avalonia.Controls
             _minuteSelector.Increment = MinuteIncrement;
             _minuteSelector.ItemFormat = "mm";
             _minuteSelector.SelectedValue = Time.Minutes;
-            
-            _secondSelector!.MaximumValue = 59;
-            _secondSelector.MinimumValue = 0;
-            _secondSelector.Increment = SecondIncrement;
-            _secondSelector.ItemFormat = "ss";
-            _secondSelector.SelectedValue = Time.Seconds;
+
+            if (_secondSelector is not null)
+            {
+                _secondSelector.MaximumValue = 59;
+                _secondSelector.MinimumValue = 0;
+                _secondSelector.Increment = SecondIncrement;
+                _secondSelector.ItemFormat = "ss";
+                _secondSelector.SelectedValue = Time.Seconds;
+            }
 
             _periodSelector!.MaximumValue = 1;
             _periodSelector.MinimumValue = 0;
@@ -282,26 +285,47 @@ namespace Avalonia.Controls
 
         private void SetGrid()
         {
-            bool use24HourClock = ClockIdentifier == "24HourClock";
-
-            var columnsD = "*, Auto, *";
-            if (UseSeconds) columnsD += ", Auto *";
-            if (!use24HourClock) columnsD += ", Auto *";
+            var use24HourClock = ClockIdentifier == "24HourClock";
+            var canUseSeconds = _secondHost is not null && _spacer3 is not null;
             
-            _pickerContainer!.ColumnDefinitions = new ColumnDefinitions(columnsD);
+            var columnsD = new ColumnDefinitions();
+            columnsD.Add(new ColumnDefinition(GridLength.Star));
+            columnsD.Add(new ColumnDefinition(GridLength.Auto));
+            columnsD.Add(new ColumnDefinition(GridLength.Star));
+            if (canUseSeconds && UseSeconds)
+            {
+                columnsD.Add(new ColumnDefinition(GridLength.Auto));
+                columnsD.Add(new ColumnDefinition(GridLength.Star));
+            }
+            if (!use24HourClock)
+            {
+                columnsD.Add(new ColumnDefinition(GridLength.Auto));
+                columnsD.Add(new ColumnDefinition(GridLength.Star));
+            }
 
-            _spacer2!.IsVisible = UseSeconds;
-            _secondHost!.IsVisible = UseSeconds;
+            _pickerContainer!.ColumnDefinitions = columnsD;
 
-            _spacer3!.IsVisible = !use24HourClock;
-            _periodHost!.IsVisible = !use24HourClock;
-            
-            var amPmColumn = (UseSeconds) ? 6 : 4;
-            
-            Grid.SetColumn(_spacer2, UseSeconds ? 3 : 0);
-            Grid.SetColumn(_secondHost, UseSeconds ? 4 : 0);
-            Grid.SetColumn(_spacer3, use24HourClock ? 0 : amPmColumn-1);
-            Grid.SetColumn(_periodHost, use24HourClock ? 0 : amPmColumn);
+            if (canUseSeconds)
+            {
+                _spacer2!.IsVisible = UseSeconds;
+                _secondHost!.IsVisible = UseSeconds;
+                _spacer3!.IsVisible = !use24HourClock;
+                _periodHost!.IsVisible = !use24HourClock;
+
+                var amPmColumn = (UseSeconds) ? 6 : 4;
+
+                Grid.SetColumn(_spacer2, UseSeconds ? 3 : 0);
+                Grid.SetColumn(_secondHost, UseSeconds ? 4 : 0);
+                Grid.SetColumn(_spacer3, use24HourClock ? 0 : amPmColumn-1);
+                Grid.SetColumn(_periodHost, use24HourClock ? 0 : amPmColumn);
+            }
+            else
+            {
+                _spacer2!.IsVisible = !use24HourClock;
+                _periodHost!.IsVisible = !use24HourClock;
+                Grid.SetColumn(_spacer2, use24HourClock ? 0 : 3);
+                Grid.SetColumn(_periodHost, use24HourClock ? 0 : 4);
+            }
         }
 
         private void OnDismissButtonClicked(object? sender, RoutedEventArgs e)
