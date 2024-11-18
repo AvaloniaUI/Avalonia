@@ -1,12 +1,7 @@
-using System;
-using Avalonia.Collections;
-using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Utils;
 using Avalonia.Layout;
 using Avalonia.Media;
-using Avalonia.Platform;
 using Avalonia.Rendering.Composition;
-using Avalonia.Styling;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
 
