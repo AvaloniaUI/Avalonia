@@ -1528,6 +1528,48 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(selected[0], target.SelectedItem);
             Assert.Equal(selected, target.SelectedItems);
         }
+        
+        [Fact]
+        public void CollapseEvent_Can_Be_Captured_By_TreeView_When_Collapsing_TreeViewItem()
+        {
+            using var app = Start();
+            var data = CreateTestTreeData();
+            var target = CreateTarget(data: data);
+            var item = data[0];
+            var container = Assert.IsType<TreeViewItem>(target.TreeContainerFromItem(item));
+
+            var raised = false;
+            object? source = null;
+            target.AddHandler(TreeViewItem.CollapsedEvent, (o, e) =>
+            {
+                raised = true;
+                source = e.Source;
+            });
+            container.IsExpanded = false;
+            Assert.True(raised);
+            Assert.Equal(container, source);
+        }
+        
+        [Fact]
+        public void CollapseEvent_Should_Be_Raised_When_Collapsing_TreeViewItem()
+        {
+            using var app = Start();
+            var data = CreateTestTreeData();
+            var target = CreateTarget(data: data);
+            var item = data[0];
+            var container = Assert.IsType<TreeViewItem>(target.TreeContainerFromItem(item));
+
+            var raised = false;
+            object? source = null;
+            container.AddHandler(TreeViewItem.CollapsedEvent, (o, e) =>
+            {
+                raised = true;
+                source = e.Source;
+            });
+            container.IsExpanded = false;
+            Assert.True(raised);
+            Assert.Equal(container, source);
+        }
 
         private static TreeView CreateTarget(Optional<IList<Node>?> data = default,
             bool expandAll = true,
