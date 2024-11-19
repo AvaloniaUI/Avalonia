@@ -1,6 +1,7 @@
 ﻿using System;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Input.Raw;
 using Avalonia.VisualTree;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
@@ -8,7 +9,6 @@ namespace Avalonia.Win32
 {
     internal partial class WindowImpl
     {
-        // Hit test the frame for resizing and moving.
         private HitTestValues HitTestNCA(IntPtr hWnd, IntPtr wParam, IntPtr lParam)
         {
             // Get the point coordinates for the hit test (screen space).
@@ -65,9 +65,10 @@ namespace Avalonia.Win32
                 uRow = 2;
             }
 
+            var captionAreaHitTest = WindowState == WindowState.FullScreen ? HitTestValues.HTNOWHERE : HitTestValues.HTCAPTION;
             ReadOnlySpan<HitTestValues> hitZones = stackalloc HitTestValues[]
             {
-                HitTestValues.HTTOPLEFT, onResizeBorder ? HitTestValues.HTTOP : HitTestValues.HTCAPTION,
+                HitTestValues.HTTOPLEFT, onResizeBorder ? HitTestValues.HTTOP : captionAreaHitTest,
                 HitTestValues.HTTOPRIGHT, HitTestValues.HTLEFT, HitTestValues.HTNOWHERE, HitTestValues.HTRIGHT,
                 HitTestValues.HTBOTTOMLEFT, HitTestValues.HTBOTTOM, HitTestValues.HTBOTTOMRIGHT
             };
@@ -79,6 +80,7 @@ namespace Avalonia.Win32
 
         protected virtual IntPtr CustomCaptionProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam, ref bool callDwp)
         {
+            RawPointerEventArgs? e = null;
             IntPtr lRet = IntPtr.Zero;
 
             callDwp = !DwmDefWindowProc(hWnd, msg, wParam, lParam, ref lRet);
@@ -92,47 +94,121 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_NCHITTEST:
                     if (lRet == IntPtr.Zero)
                     {
-                        if(WindowState == WindowState.FullScreen)
-                        {
-                            return (IntPtr)HitTestValues.HTCLIENT;
-                        }
                         var hittestResult = HitTestNCA(hWnd, wParam, lParam);
-
-                        lRet = (IntPtr)hittestResult;
-
-                        if (hittestResult == HitTestValues.HTCAPTION)
+                        if (hittestResult is HitTestValues.HTNOWHERE or HitTestValues.HTCAPTION)
                         {
-                            var position = PointToClient(PointFromLParam(lParam));
-
-                            if (_owner is Window window)
+                            var visualHittestResult = HitTestVisual(lParam);
+                            if (visualHittestResult != HitTestValues.HTNOWHERE)
                             {
-                                var visual = window.GetVisualAt(position, x =>
-                                {
-                                    if (x is IInputElement ie && (!ie.IsHitTestVisible || !ie.IsEffectivelyVisible))
-                                    {
-                                        return false;
-                                    }
-
-                                    return true;
-                                });
-
-                                if (visual != null)
-                                {
-                                    hittestResult = HitTestValues.HTCLIENT;
-                                    lRet = (IntPtr)hittestResult;
-                                }
+                                hittestResult = visualHittestResult;
                             }
                         }
 
                         if (hittestResult != HitTestValues.HTNOWHERE)
                         {
+                            lRet = (IntPtr)hittestResult;
                             callDwp = false;
                         }
                     }
                     break;
+
+                // Normally, Avalonia doesn't handles non-client input as a special NonClientLeftButtonDown, ignoring move and up events.
+                // What makes it a problem, Avalonia has to mark templated caption buttons as a non-client area.
+                // Meaning, these buttons no longer can accept normal client input.
+                // These messages are needed to explicitly fake this normal client input from non-client messages.
+                // For both WM_NCMOUSE and WM_NCPOINTERUPDATE
+                case WindowsMessage.WM_NCMOUSEMOVE when !IsMouseInPointerEnabled:
+                case WindowsMessage.WM_NCLBUTTONDOWN when !IsMouseInPointerEnabled:
+                case WindowsMessage.WM_NCLBUTTONUP when !IsMouseInPointerEnabled:
+                    if (lRet == IntPtr.Zero
+                        && ShouldRedirectNonClientInput(hWnd, wParam, lParam))
+                    {
+                        e = new RawPointerEventArgs(
+                            _mouseDevice,
+                            unchecked((uint)GetMessageTime()),
+                            Owner,
+                            (WindowsMessage)msg switch
+                            {
+                                WindowsMessage.WM_NCMOUSEMOVE => RawPointerEventType.Move,
+                                WindowsMessage.WM_NCLBUTTONDOWN => RawPointerEventType.LeftButtonDown,
+                                WindowsMessage.WM_NCLBUTTONUP => RawPointerEventType.LeftButtonUp,
+                                _ => throw new ArgumentOutOfRangeException(nameof(msg), msg, null)
+                            },
+                            PointToClient(PointFromLParam(lParam)),
+                            RawInputModifiers.None);
+                    }
+                    break;
+                case WindowsMessage.WM_NCPOINTERUPDATE when _wmPointerEnabled:
+                case WindowsMessage.WM_NCPOINTERDOWN when _wmPointerEnabled:
+                case WindowsMessage.WM_NCPOINTERUP when _wmPointerEnabled:
+                    if (lRet == IntPtr.Zero
+                        && ShouldRedirectNonClientInput(hWnd, wParam, lParam))
+                    {
+                        uint timestamp = 0;
+                        GetDevicePointerInfo(wParam, out var device, out var info, out var point, out var modifiers, ref timestamp);
+                        var eventType = (WindowsMessage)msg switch
+                        {
+                            WindowsMessage.WM_NCPOINTERUPDATE => RawPointerEventType.Move,
+                            WindowsMessage.WM_NCPOINTERDOWN => RawPointerEventType.LeftButtonDown,
+                            WindowsMessage.WM_NCPOINTERUP => RawPointerEventType.LeftButtonUp,
+                            _ => throw new ArgumentOutOfRangeException(nameof(msg), msg, null)
+                        };
+                        e = CreatePointerArgs(device, timestamp, eventType, point, modifiers, info.pointerId);
+                    }
+                    break;
+            }
+
+            if (e is not null && Input is not null)
+            {
+                Input(e);
+                if (e.Handled)
+                {
+                    callDwp = false;
+                    return IntPtr.Zero;
+                }
             }
 
             return lRet;
+        }
+
+        private HitTestValues HitTestVisual(IntPtr lParam)
+        {
+            var position = PointToClient(PointFromLParam(lParam));
+            if (_owner is Window window)
+            {
+                var visual = window.GetVisualAt(position, x =>
+                {
+                    if (x is IInputElement ie && (!ie.IsHitTestVisible || !ie.IsEffectivelyVisible))
+                    {
+                        return false;
+                    }
+
+                    return true;
+                });
+
+                if (visual != null)
+                {
+                    var hitTest = Win32Properties.GetNonClientHitTestResult(visual);
+                    return (HitTestValues)hitTest;
+                }
+            }
+            return HitTestValues.HTNOWHERE;
+        }
+
+        private bool ShouldRedirectNonClientInput(IntPtr hWnd, IntPtr wParam, IntPtr lParam)
+        {
+            // We touched frame borders or caption, don't redirect.
+            if (HitTestNCA(hWnd, wParam, lParam) is not (HitTestValues.HTNOWHERE or HitTestValues.HTCAPTION))
+                return false;
+
+            // Redirect only for buttons.
+            return HitTestVisual(lParam)
+                is HitTestValues.HTMINBUTTON
+                or HitTestValues.HTMAXBUTTON
+                or HitTestValues.HTCLOSE
+                or HitTestValues.HTHELP
+                or HitTestValues.HTMENU
+                or HitTestValues.HTSYSMENU;
         }
     }
 }

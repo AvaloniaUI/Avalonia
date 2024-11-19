@@ -1,17 +1,13 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.ComponentModel;
+using System;
 using System.Linq;
 using Avalonia.Controls.Primitives;
-using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
-using Avalonia.Data;
-using Avalonia.Markup.Data;
+using Avalonia.Input;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
+using System.Globalization;
 
 namespace Avalonia.Controls.UnitTests
 {
@@ -73,6 +69,34 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Setting_Date_Manually_With_CustomDateFormatString_Should_Be_Accepted()
+        {
+            CultureInfo.CurrentCulture = CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("en-US");
+            using (UnitTestApplication.Start(Services))
+            {
+                CalendarDatePicker datePicker = CreateControl();
+                datePicker.SelectedDateFormat = CalendarDatePickerFormat.Custom;
+                datePicker.CustomDateFormatString = "dd.MM.yyyy";
+
+                var tb = GetTextBox(datePicker);
+
+                tb.Clear();
+                RaiseTextEvent(tb, "17.10.2024");
+                RaiseKeyEvent(tb, Key.Enter, KeyModifiers.None);
+
+                Assert.Equal("17.10.2024", datePicker.Text);
+                Assert.True(CompareDates(datePicker.SelectedDate.Value, new DateTime(2024, 10, 17)));
+
+                tb.Clear();
+                RaiseTextEvent(tb, "12.10.2024");
+                RaiseKeyEvent(tb, Key.Enter, KeyModifiers.None);
+
+                Assert.Equal("12.10.2024", datePicker.Text);
+                Assert.True(CompareDates(datePicker.SelectedDate.Value, new DateTime(2024, 10, 12)));
+            }
+        }
+
         private static TestServices Services => TestServices.MockThreadingInterface.With(
             standardCursorFactory: Mock.Of<ICursorFactory>());
 
@@ -127,5 +151,32 @@ namespace Avalonia.Controls.UnitTests
             });
 
         }
+
+        private TextBox GetTextBox(CalendarDatePicker control)
+        {
+            return control.GetTemplateChildren()
+                .OfType<TextBox>()
+                .First();
+        }
+
+        private static void RaiseKeyEvent(TextBox textBox, Key key, KeyModifiers inputModifiers)
+        {
+            textBox.RaiseEvent(new KeyEventArgs
+            {
+                RoutedEvent = InputElement.KeyDownEvent,
+                KeyModifiers = inputModifiers,
+                Key = key
+            });
+        }
+
+        private static void RaiseTextEvent(TextBox textBox, string text)
+        {
+            textBox.RaiseEvent(new TextInputEventArgs
+            {
+                RoutedEvent = InputElement.TextInputEvent,
+                Text = text
+            });
+        }
+
     }
 }

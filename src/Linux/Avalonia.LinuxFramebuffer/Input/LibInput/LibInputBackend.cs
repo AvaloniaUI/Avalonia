@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using System.IO;
 using System.Threading;
@@ -24,6 +23,9 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
         {
             _options = options;
         }
+
+        private IInputRoot InputRoot
+            => _inputRoot ?? throw new InvalidOperationException($"{nameof(InputRoot)} hasn't been set");
 
         private unsafe void InputThread(IntPtr ctx, LibInputBackendOptions options)
         {
