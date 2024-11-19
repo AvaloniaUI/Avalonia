@@ -44,13 +44,6 @@ jobs:
        dotnet workload install android macos wasm-tools
 
   - task: CmdLine@2
-    displayName: 'Install Tizen Workload'
-    inputs:
-      targetType: 'inline'
-      script: |
-       curl -sSL https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.sh | sudo bash -s -- -d "/opt/hostedtoolcache/dotnet"
-
-  - task: CmdLine@2
     displayName: 'Run Build'
     inputs:
       script: |
@@ -88,13 +81,6 @@ jobs:
     inputs:
       script: |
        dotnet workload install android ios macos wasm-tools
-
-  - task: CmdLine@2
-    displayName: 'Install Tizen Workload'
-    inputs:
-      targetType: 'inline'
-      script: |
-       curl -sSL https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.sh | sudo bash
   
   - task: CmdLine@2
     displayName: 'Generate avalonia-native'
@@ -169,13 +155,6 @@ jobs:
     inputs:
       script: |
        dotnet workload install android ios tvos wasm-tools
-
-  - task: PowerShell@2
-    displayName: 'Install Tizen Workload'
-    inputs:
-      targetType: 'inline'
-      script: |
-       (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1') | Invoke-Expression
 
   - task: CmdLine@2
     displayName: 'Install Nuke'
