@@ -85,7 +85,7 @@ namespace Avalonia.Controls
         {
             var routedEvent = args.NewValue.Value ? ExpandedEvent : CollapsedEvent;
             var eventArgs = new RoutedEventArgs() { RoutedEvent = routedEvent, Source = this };
-            TreeViewOwner?.RaiseEvent(eventArgs);
+            RaiseEvent(eventArgs);
         }
 
         /// <summary>
