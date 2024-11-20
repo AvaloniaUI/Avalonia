@@ -165,7 +165,9 @@ public class RenderingTests
         var snapshot = await compositionVisual.Compositor.CreateCompositionVisualSnapshot(compositionVisual, 1);
 
         Assert.NotNull(snapshot);
-        Assert.AreEqual(100, snapshot.Size.Width);
-        Assert.AreEqual(100, snapshot.Size.Height);
+        // ReSharper disable CompareOfFloatsByEqualityOperator
+        Assert.True(100 == snapshot.Size.Width);
+        Assert.True(100 == snapshot.Size.Height);
+        // ReSharper restore CompareOfFloatsByEqualityOperator
     }
 }
