@@ -160,7 +160,6 @@ namespace Avalonia.X11
                     visual,
                     new UIntPtr((uint)(SetWindowValuemask.BorderPixel | SetWindowValuemask.BitGravity |
                                        SetWindowValuemask.WinGravity | SetWindowValuemask.BackingStore)), ref attr);
-                AppendPid(_renderHandle);
             }
             else
             {
