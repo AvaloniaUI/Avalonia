@@ -73,7 +73,8 @@ internal partial class ServerCompositor
                     visual.Render(ctx, null);
                 }
 
-                if (target is IDrawingContextLayerWithRenderContextAffinityImpl affined)
+                if (target is IDrawingContextLayerWithRenderContextAffinityImpl affined
+                    && affined.HasRenderContextAffinity)
                     return affined.CreateNonAffinedSnapshot();
                 
                 // We are returning the original target, so prevent it from being disposed
