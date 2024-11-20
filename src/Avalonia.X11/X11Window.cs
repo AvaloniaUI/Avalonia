@@ -347,13 +347,11 @@ namespace Avalonia.X11
             // and avoid a memcpy
             using var utsName = UtsName.GetUtsName();
 
-            var WM_CLIENT_MACHINE = XInternAtom(_x11.Display, "WM_CLIENT_MACHINE", false);
-
             var nodeNameSpan = utsName.NodeNameSpan;
             fixed (byte* pNodeName = &nodeNameSpan.GetPinnableReference())
             {
                 XChangeProperty(_x11.Display, windowXId,
-                    WM_CLIENT_MACHINE, _x11.Atoms.XA_STRING, 8,
+                    _x11.Atoms.XA_WM_CLIENT_MACHINE, _x11.Atoms.XA_STRING, 8,
                     PropertyMode.Replace, pNodeName, nodeNameSpan.Length);
             }
         }
