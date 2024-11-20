@@ -86,7 +86,7 @@ namespace Avalonia.Native
         {
             if (AvaloniaLocator.Current.GetService<IActivatableLifetime>() is ActivatableLifetimeBase lifetime)
             {
-                lifetime.OnActivated(ActivationKind.Background);    
+                lifetime.OnDeactivated(ActivationKind.Background);    
             }
         }
 
