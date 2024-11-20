@@ -1,8 +1,10 @@
 ﻿using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 
 namespace Avalonia.Headless.UnitTests;
@@ -37,7 +39,7 @@ public class RenderingTests
 
         Assert.NotNull(frame);
     }
-    
+
 #if NUNIT
     [AvaloniaTest, Timeout(10000)]
 #elif XUNIT
@@ -135,5 +137,35 @@ public class RenderingTests
 
         var frame = window.CaptureRenderedFrame();
         Assert.NotNull(frame);
+    }
+
+#if NUNIT
+    [AvaloniaTest, Timeout(10000)]
+#elif XUNIT
+    [AvaloniaFact(Timeout = 10000)]
+#endif
+    public async Task Should_Render_To_A_Compositor_Snapshot_Capture()
+    {
+        var window = new Window
+        {
+            Content = new ContentControl
+            {
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                VerticalAlignment = VerticalAlignment.Stretch,
+                Width = 100,
+                Height = 100,
+                Background = Brushes.Green
+            },
+            SizeToContent = SizeToContent.WidthAndHeight
+        };
+
+        window.Show();
+
+        var compositionVisual = ElementComposition.GetElementVisual(window)!;
+        var snapshot = await compositionVisual.Compositor.CreateCompositionVisualSnapshot(compositionVisual, 1);
+
+        Assert.NotNull(snapshot);
+        Assert.AreEqual(100, snapshot.Size.Width);
+        Assert.AreEqual(100, snapshot.Size.Height);
     }
 }
