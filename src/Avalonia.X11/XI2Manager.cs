@@ -96,23 +96,24 @@ namespace Avalonia.X11
 
                 var pressureAtom = XInternAtom(_x11.Display, "Abs MT Pressure", false);
 
-                var pressureXIValuatorClassInfo = Valuators.FirstOrDefault(t => t.Label == pressureAtom);
-                if (pressureXIValuatorClassInfo.Label == pressureAtom)
-                {
-                    // Why check twice? The XIValuatorClassInfo is struct, so the FirstOrDefault will return the default struct when not found.
-                    PressureXIValuatorClassInfo = pressureXIValuatorClassInfo;
-                }
+                PressureXIValuatorClassInfo = null;
+                TouchMajorXIValuatorClassInfo = null;
+                TouchMinorXIValuatorClassInfo = null;
 
-                var touchMajorXIValuatorClassInfo = Valuators.FirstOrDefault(t => t.Label == touchMajorAtom);
-                if (touchMajorXIValuatorClassInfo.Label == touchMajorAtom)
+                foreach (var xiValuatorClassInfo in Valuators)
                 {
-                    TouchMajorXIValuatorClassInfo = touchMajorXIValuatorClassInfo;
-                }
-
-                var touchMinorXIValuatorClassInfo = Valuators.FirstOrDefault(t => t.Label == touchMinorAtom);
-                if (touchMinorXIValuatorClassInfo.Label == touchMinorAtom)
-                {
-                    TouchMinorXIValuatorClassInfo = touchMinorXIValuatorClassInfo;
+                    if (xiValuatorClassInfo.Label == pressureAtom)
+                    {
+                        PressureXIValuatorClassInfo = xiValuatorClassInfo;
+                    }
+                    else if (xiValuatorClassInfo.Label == touchMajorAtom)
+                    {
+                        TouchMajorXIValuatorClassInfo = xiValuatorClassInfo;
+                    }
+                    else if (xiValuatorClassInfo.Label == touchMinorAtom)
+                    {
+                        TouchMinorXIValuatorClassInfo = xiValuatorClassInfo;
+                    }
                 }
             }
 
