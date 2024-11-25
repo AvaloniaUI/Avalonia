@@ -173,8 +173,7 @@ public:
             if(initialDirectory != nullptr)
             {
                 auto directoryString = [NSString stringWithUTF8String:initialDirectory];
-                panel.directoryURL = [NSURL fileURLWithPath:directoryString
-                                            isDirectory:true];
+                panel.directoryURL = [NSURL URLWithString:directoryString];
             }
             
             auto handler = ^(NSModalResponse result) {
@@ -239,8 +238,7 @@ public:
             if(initialDirectory != nullptr)
             {
                 auto directoryString = [NSString stringWithUTF8String:initialDirectory];
-                panel.directoryURL = [NSURL fileURLWithPath:directoryString
-                                            isDirectory:true];
+                panel.directoryURL = [NSURL URLWithString:directoryString];
             }
             
             if(initialFile != nullptr)
@@ -309,8 +307,7 @@ public:
             if(initialDirectory != nullptr)
             {
                 auto directoryString = [NSString stringWithUTF8String:initialDirectory];
-                panel.directoryURL = [NSURL fileURLWithPath:directoryString
-                                            isDirectory:true];
+                panel.directoryURL = [NSURL URLWithString:directoryString];
             }
             
             if(initialFile != nullptr)

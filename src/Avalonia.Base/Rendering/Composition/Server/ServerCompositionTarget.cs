@@ -215,7 +215,7 @@ namespace Avalonia.Rendering.Composition.Server
 
                 using (var proxy = new CompositorDrawingContextProxy(context))
                 {
-                    var ctx = new ServerVisualRenderContext(proxy, DirtyRects, false);
+                    var ctx = new ServerVisualRenderContext(proxy, DirtyRects, false, true);
                     root.Render(ctx, null);
                 }
 
