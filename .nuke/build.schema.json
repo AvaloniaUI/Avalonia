@@ -94,6 +94,7 @@
               "RunTests",
               "RunToolsTests",
               "ValidateApiDiff",
+              "VerifyXamlCompilation",
               "ZipFiles"
             ]
           }
@@ -131,6 +132,7 @@
               "RunTests",
               "RunToolsTests",
               "ValidateApiDiff",
+              "VerifyXamlCompilation",
               "ZipFiles"
             ]
           }

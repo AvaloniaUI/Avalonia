@@ -81,6 +81,9 @@ namespace Avalonia.Media.Fonts
             //No exact match
             if (createdKey != key)
             {
+                //Add the created glyph typeface to the cache so we can match it.
+                glyphTypefaces.TryAdd(createdKey, glyphTypeface);
+
                 //Try to find nearest match if possible
                 if (TryGetNearestMatch(glyphTypefaces, key, out var nearestMatch))
                 {
