@@ -1142,6 +1142,8 @@ interface IAvnApplicationEvents : IUnknown
      void OnReopen ();
      void OnHide ();
      void OnUnhide ();
+     void OnActivate();
+     void OnDeactivate();
 }
 
 [uuid(b4284791-055b-4313-8c2e-50f0a8c72ce9)]
