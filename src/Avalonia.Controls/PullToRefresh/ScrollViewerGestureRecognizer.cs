@@ -9,6 +9,8 @@ namespace Avalonia.Controls.PullToRefresh
         private int _gestureId;
         private bool _pullInProgress;
 
+        private double _delta = 1;
+
         private Point _initialPosition;
         private IPointer? _tracking;
 
@@ -56,7 +58,7 @@ namespace Avalonia.Controls.PullToRefresh
 
                 var delta = CalculateDelta(currentPosition);
 
-                bool pulling = delta.X > 0 || delta.Y > 0;
+                bool pulling = delta.Y > 0 || delta.X > 0;
                 _pullInProgress = (_pullInProgress, pulling) switch
                 {
                     (false, false) => false,
@@ -113,10 +115,10 @@ namespace Avalonia.Controls.PullToRefresh
 
         private bool CanPull(ScrollViewer visual) => PullDirection switch
         {
-            PullDirection.TopToBottom => visual.Offset.Y == 0,
-            PullDirection.BottomToTop => Math.Abs(visual.Offset.Y + visual.Viewport.Height - visual.Extent.Height) <= 0.01,
-            PullDirection.LeftToRight => true,
-            PullDirection.RightToLeft => true,
+            PullDirection.TopToBottom => visual.Offset.Y < _delta,
+            PullDirection.BottomToTop => Math.Abs(visual.Offset.Y + visual.Viewport.Height - visual.Extent.Height) <= _delta,
+            PullDirection.LeftToRight => visual.Offset.X < _delta,
+            PullDirection.RightToLeft => Math.Abs(visual.Offset.X + visual.Viewport.Width - visual.Extent.Width) <= _delta,
             _ => false,
         };
     }

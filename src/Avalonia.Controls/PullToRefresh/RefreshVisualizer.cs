@@ -217,7 +217,9 @@ namespace Avalonia.Controls
                             contentVisual.Opacity = MinimumIndicatorOpacity;
                             contentVisual.RotationAngle = _startingRotationAngle;
 
+                            visual.Offset = _initialVisualOffset;
                             visualizerVisual.Offset = new Vector3D(0, 0, 0);
+
                             _content.InvalidateMeasure();
 
                             break;
