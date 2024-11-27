@@ -6,7 +6,7 @@ using Xunit.Sdk;
 
 namespace Avalonia.Base.UnitTests.Layout
 {
-    public class LayoutableTests_LayoutRounding
+    public class LayoutableTests_LayoutRounding : ScopedTestBase
     {
         [Theory]
         [InlineData(100, 100)]
