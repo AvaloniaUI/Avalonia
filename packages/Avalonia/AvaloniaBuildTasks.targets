@@ -119,8 +119,10 @@
   </Target>
 
   <Target Name="AvaloniaCollectUpToDateCheckInputDesignTime" BeforeTargets="CollectUpToDateCheckInputDesignTime">
-    <UpToDateCheckInput Include="@(AvaloniaResource)" />
-    <UpToDateCheckInput Include="@(AvaloniaXaml)" />
+    <ItemGroup>
+      <UpToDateCheckInput Include="@(AvaloniaResource)" />
+      <UpToDateCheckInput Include="@(AvaloniaXaml)" />
+    </ItemGroup>
   </Target>
 
   <Target
