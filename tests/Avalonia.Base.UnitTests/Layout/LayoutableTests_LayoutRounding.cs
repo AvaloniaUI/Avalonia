@@ -112,7 +112,7 @@ namespace Avalonia.Base.UnitTests.Layout
         {
             if (!expected.NearlyEquals(actual))
             {
-                throw new EqualException(expected, actual);
+                throw EqualException.ForMismatchedValues(expected, actual);
             }
         }
 
@@ -120,7 +120,7 @@ namespace Avalonia.Base.UnitTests.Layout
         {
             if (!expected.NearlyEquals(actual))
             {
-                throw new EqualException(expected, actual);
+                throw EqualException.ForMismatchedValues(expected, actual);
             }
         }
 
