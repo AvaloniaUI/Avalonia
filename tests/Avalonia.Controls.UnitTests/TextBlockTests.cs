@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
@@ -33,7 +34,9 @@ namespace Avalonia.Controls.UnitTests
             {
                 var textBlock = new TestTextBlock { Text = "Hello World" };
 
-                Assert.Equal(Size.Infinity, textBlock.Constraint);
+                var constraint = textBlock.Constraint;
+                Assert.True(double.IsNaN(constraint.Width));
+                Assert.True(double.IsNaN(constraint.Height));
 
                 textBlock.Measure(new Size(100, 100));
 
