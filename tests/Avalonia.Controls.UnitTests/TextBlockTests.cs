@@ -413,6 +413,24 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void TextBlock_With_Infinite_Size_Should_Be_Remeasured_After_TextLayout_Created()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var target = new TextBlock { Text = "" };
+            var layout = target.TextLayout;
+
+            Assert.Equal(0.0, layout.MaxWidth);
+            Assert.Equal(0.0, layout.MaxHeight);
+
+            target.Text = "foo";
+            target.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+
+            Assert.True(target.DesiredSize.Width > 0);
+            Assert.True(target.DesiredSize.Height > 0);
+        }
+
         private class TestTextBlock : TextBlock
         {
             public Size Constraint => _constraint;
