@@ -9,7 +9,7 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
 {
     internal static class UnicodeDataGenerator
     {
-        public const string Ucd = "https://www.unicode.org/Public/15.1.0/ucd/";
+        public const string Ucd = "https://www.unicode.org/Public/16.0.0/ucd/";
 
         public static UnicodeTrie GenerateBiDiTrie(out BiDiDataEntries biDiDataEntries, out Dictionary<int, BiDiDataItem> biDiData)
         {
