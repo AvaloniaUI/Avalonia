@@ -1,5 +1,3 @@
-#nullable enable
-
 using Avalonia.Platform;
 
 namespace Avalonia.LinuxFramebuffer.Output;

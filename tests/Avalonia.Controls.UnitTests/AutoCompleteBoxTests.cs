@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls.Primitives;
@@ -9,7 +9,10 @@ using Avalonia.UnitTests;
 using Xunit;
 using System.Collections.ObjectModel;
 using System.Reactive.Subjects;
+using Avalonia.Headless;
 using Avalonia.Input;
+using Avalonia.Platform;
+using Moq;
 
 namespace Avalonia.Controls.UnitTests
 {
@@ -518,6 +521,42 @@ namespace Avalonia.Controls.UnitTests
                 // DropDown can now be opened.
                 Assert.True(control.IsDropDownOpen);
             });
+        }
+
+        [Fact]
+        public void Opening_Context_Menu_Does_not_Lose_Selection()
+        {
+            using (UnitTestApplication.Start(FocusServices))
+            {
+                var target1 = CreateControl();
+                target1.ContextMenu = new TestContextMenu();
+                var textBox1 = GetTextBox(target1);
+                textBox1.Text = "1234";
+
+                var target2 = CreateControl();
+                var textBox2 = GetTextBox(target2);
+                textBox2.Text = "5678";
+
+                var sp = new StackPanel();
+                sp.Children.Add(target1);
+                sp.Children.Add(target2);
+
+                target1.ApplyTemplate();
+                target2.ApplyTemplate();
+
+                var root = new TestRoot() { Child = sp };
+
+                textBox1.SelectionStart = 0;
+                textBox1.SelectionEnd = 3;
+
+                target1.Focus();
+                Assert.False(target2.IsFocused);
+                Assert.True(target1.IsFocused);
+
+                target2.Focus();
+
+                Assert.Equal("123", textBox1.SelectedText);
+            }
         }
 
         /// <summary>
@@ -1197,6 +1236,23 @@ namespace Avalonia.Controls.UnitTests
 
                 return panel;
             });
+        }
+
+        private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
+            focusManager: new FocusManager(),
+            keyboardDevice: () => new KeyboardDevice(),
+            keyboardNavigation: () => new KeyboardNavigationHandler(),
+            inputManager: new InputManager(),
+            standardCursorFactory: Mock.Of<ICursorFactory>(),
+            textShaperImpl: new HeadlessTextShaperStub(),
+            fontManagerImpl: new HeadlessFontManagerStub());
+
+        private class TestContextMenu : ContextMenu
+        {
+            public TestContextMenu()
+            {
+                IsOpen = true;
+            }
         }
     }
 }
