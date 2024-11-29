@@ -44,7 +44,9 @@ namespace Avalonia.Utilities
             }
         }
 
-        public ReadOnlySpan<char> CurrentToken => _tokenIndex < 0 ? ReadOnlySpan<char>.Empty : _s.AsSpan().Slice(_tokenIndex, _tokenLength);
+        public string? CurrentToken => _tokenIndex < 0 ? null : _s.Substring(_tokenIndex, _tokenLength);
+
+        public ReadOnlySpan<char> CurrentTokenSpan => _tokenIndex < 0 ? ReadOnlySpan<char>.Empty : _s.AsSpan().Slice(_tokenIndex, _tokenLength);
 
         public void Dispose()
         {
@@ -105,7 +107,7 @@ namespace Avalonia.Utilities
         public bool TryReadString([NotNull] out string result, char? separator = null)
         {
             var success = TryReadToken(separator ?? _separator);
-            result = CurrentToken.ToString();
+            result = CurrentTokenSpan.ToString();
             return success;
         }
 
@@ -122,7 +124,7 @@ namespace Avalonia.Utilities
         public bool TryReadSpan(out ReadOnlySpan<char> result, char? separator = null)
         {
             var success = TryReadToken(separator ?? _separator);
-            result = CurrentToken;
+            result = CurrentTokenSpan;
             return success;
         }
 
