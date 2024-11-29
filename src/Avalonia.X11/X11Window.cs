@@ -341,20 +341,28 @@ namespace Avalonia.X11
                 _x11.Atoms._NET_WM_PID, _x11.Atoms.XA_CARDINAL, 32,
                 PropertyMode.Replace, ref pid, 1);
 
-            // If _NET_WM_PID is set, the ICCCM-specified property WM_CLIENT_MACHINE MUST also be set.
-            // the hostname can change, so we can't cache it
-            // gethostname(3) on Linux just calls uname(2), so do it ourselves
-            // and avoid a memcpy
-            using var utsName = UtsName.GetUtsName();
-
-            var nodeNameSpan = utsName.NodeNameSpan;
-            fixed (byte* pNodeName = &nodeNameSpan.GetPinnableReference())
+            const int maxLength = 1024;
+            var name = stackalloc byte[maxLength];
+            var result = gethostname(name, maxLength);
+            if (result != 0)
             {
-                XChangeProperty(_x11.Display, windowXId,
-                    _x11.Atoms.XA_WM_CLIENT_MACHINE, _x11.Atoms.XA_STRING, 8,
-                    PropertyMode.Replace, pNodeName, nodeNameSpan.Length);
+                // Fail
+                return;
             }
+
+            var length = 0;
+            while (length < maxLength && name[length] != 0)
+            {
+                length++;
+            }
+
+            XChangeProperty(_x11.Display, windowXId,
+                _x11.Atoms.XA_WM_CLIENT_MACHINE, _x11.Atoms.XA_STRING, 8,
+                PropertyMode.Replace, name, length);
         }
+
+        [DllImport("libc")]
+        private static extern int gethostname(byte* name, int len);
 
         private static readonly int s_pid = GetProcessId();
 
