@@ -411,16 +411,16 @@ namespace Avalonia.IntegrationTests.Appium
                 // the position of a centered window can be off by a bit. From initial testing, looks
                 // like this shouldn't be more than 10 pixels.
                 if (Math.Abs(expected.X - actual.X) > 10)
-                    throw new EqualException(expected, actual);
+                    throw EqualException.ForMismatchedValues(expected, actual);
                 if (Math.Abs(expected.Y - actual.Y) > 10)
-                    throw new EqualException(expected, actual);
+                    throw EqualException.ForMismatchedValues(expected, actual);
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
                 if (Math.Abs(expected.X - actual.X) > 15)
-                    throw new EqualException(expected, actual);
+                    throw EqualException.ForMismatchedValues(expected, actual);
                 if (Math.Abs(expected.Y - actual.Y) > 15)
-                    throw new EqualException(expected, actual);
+                    throw EqualException.ForMismatchedValues(expected, actual);
             }
             else
             {

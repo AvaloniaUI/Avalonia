@@ -408,6 +408,8 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Previous_ContentTemplate_Is_Not_Reused_When_TabItem_Changes()
         {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
             int templatesBuilt = 0;
 
             var target = new TabControl
