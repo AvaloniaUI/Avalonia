@@ -14,7 +14,7 @@ public class RenderingTests
 #if NUNIT
     [AvaloniaTest, Timeout(10000)]
 #elif XUNIT
-    [AvaloniaFact(Timeout = 10000)]
+    [AvaloniaFact]
 #endif
     public void Should_Render_Last_Frame_To_Bitmap()
     {
@@ -43,7 +43,7 @@ public class RenderingTests
 #if NUNIT
     [AvaloniaTest, Timeout(10000)]
 #elif XUNIT
-    [AvaloniaFact(Timeout = 10000)]
+    [AvaloniaFact]
 #endif
     public void Should_Not_Crash_On_GeometryGroup()
     {
@@ -79,7 +79,7 @@ public class RenderingTests
 #if NUNIT
     [AvaloniaTest, Timeout(10000)]
 #elif XUNIT
-    [AvaloniaFact(Timeout = 10000)]
+    [AvaloniaFact]
 #endif
     public void Should_Not_Crash_On_CombinedGeometry()
     {
@@ -110,7 +110,7 @@ public class RenderingTests
 #if NUNIT
     [AvaloniaTest, Timeout(10000)]
 #elif XUNIT
-    [AvaloniaFact(Timeout = 10000)]
+    [AvaloniaFact]
 #endif
     public void Should_Not_Hang_With_Non_Trivial_Layout()
     {

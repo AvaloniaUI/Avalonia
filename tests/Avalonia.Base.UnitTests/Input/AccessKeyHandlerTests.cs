@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests.Input
 {
-    public class AccessKeyHandlerTests
+    public class AccessKeyHandlerTests : ScopedTestBase
     {
         [Fact]
         public void Should_Raise_Key_Events_For_Unregistered_Access_Key()
