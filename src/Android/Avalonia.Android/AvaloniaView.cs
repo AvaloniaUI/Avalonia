@@ -26,6 +26,8 @@ namespace Avalonia.Android
         public AvaloniaView(Context context) : base(context)
         {
             _view = new ViewImpl(this);
+            _view.View.SetAccessibilityDelegate(new AvaloniaAccessibilityHelper());
+
             AddView(_view.View);
 
             _root = new EmbeddableControlRoot(_view);

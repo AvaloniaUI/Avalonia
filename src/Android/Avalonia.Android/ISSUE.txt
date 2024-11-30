@@ -1,0 +1,10 @@
+﻿## Android Accessibility Features Aren't Implemented
+
+Hello Avalonia team! I'm opening this issue to discuss the possiblity of using the 
+Android ExploreByTouchHelper class in conjunction with the AutomationPeer API in Avalonia in 
+order to add support for Android UI automation and accessiblity features.
+
+Thoughts?
+
+Thanks, 
+Isabelle Santin
