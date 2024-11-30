@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests.Layout
 {
-    public class LayoutableTests_EffectiveViewportChanged
+    public class LayoutableTests_EffectiveViewportChanged : ScopedTestBase
     {
         [Fact]
         public async Task EffectiveViewportChanged_Not_Raised_When_Control_Added_To_Tree_And_Layout_Pass_Has_Not_Run()
@@ -38,9 +38,7 @@ namespace Avalonia.Base.UnitTests.Layout
         [Fact]
         public async Task EffectiveViewportChanged_Raised_When_Control_Added_To_Tree_And_Layout_Pass_Has_Run()
         {
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
             await RunOnUIThread.Execute(async () =>
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
             {
                 var root = CreateRoot();
                 var target = new Canvas();
@@ -64,9 +62,7 @@ namespace Avalonia.Base.UnitTests.Layout
         [Fact]
         public async Task EffectiveViewportChanged_Raised_When_Root_LayedOut_And_Then_Control_Added_To_Tree_And_Layout_Pass_Runs()
         {
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
             await RunOnUIThread.Execute(async () =>
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
             {
                 var root = CreateRoot();
                 var target = new Canvas();

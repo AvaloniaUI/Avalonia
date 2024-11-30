@@ -15,7 +15,7 @@ using Xunit.Sdk;
 
 namespace Avalonia.Base.UnitTests.Composition;
 
-public class CompositionAnimationTests
+public class CompositionAnimationTests : ScopedTestBase
 {
 
     class AnimationDataProvider : DataAttribute
