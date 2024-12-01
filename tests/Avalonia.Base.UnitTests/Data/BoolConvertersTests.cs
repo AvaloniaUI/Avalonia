@@ -39,7 +39,7 @@ public class BoolConvertersTests
 
     [Theory]
     [InlineData(false, false, false)]
-    [InlineData(false, true, false)]
+    [InlineData(false, true, true)]
     [InlineData(true, false, true)]
     [InlineData(true, true, true)]
     public void BoolConverters_Or_Works(bool a, bool b, bool y)
