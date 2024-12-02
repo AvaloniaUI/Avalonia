@@ -217,8 +217,11 @@ namespace Avalonia.Controls
                             contentVisual.Opacity = MinimumIndicatorOpacity;
                             contentVisual.RotationAngle = _startingRotationAngle;
 
-                            visual.Offset = _initialVisualOffset;
-                            visualizerVisual.Offset = new Vector3D(0, 0, 0);
+                            if (visualizerVisual.Offset.X != 0 || visualizerVisual.Offset.Y != 0)
+                            {
+                                visual.Offset = _initialVisualOffset;
+                                visualizerVisual.Offset = new Vector3D(0, 0, 0);
+                            }
 
                             _content.InvalidateMeasure();
 
@@ -373,29 +376,36 @@ namespace Avalonia.Controls
             }
             else if (change.Property == BoundsProperty)
             {
-                switch (PullDirection)
-                {
-                    case PullDirection.TopToBottom:
-                        RenderTransform = new TranslateTransform(0, -Bounds.Height);
-                        break;
-                    case PullDirection.BottomToTop:
-                        RenderTransform = new TranslateTransform(0, Bounds.Height);
-                        break;
-                    case PullDirection.LeftToRight:
-                        RenderTransform = new TranslateTransform(-Bounds.Width, 0);
-                        break;
-                    case PullDirection.RightToLeft:
-                        RenderTransform = new TranslateTransform(Bounds.Width, 0);
-                        break;
-                }
+                OnBoundsChanged();
 
                 UpdateContent();
             }
-            else if(change.Property == PullDirectionProperty)
+            else if (change.Property == PullDirectionProperty)
             {
                 OnOrientationChanged();
 
+                OnBoundsChanged();
+
                 UpdateContent();
+            }
+        }
+
+        private void OnBoundsChanged()
+        {
+            switch (PullDirection)
+            {
+                case PullDirection.TopToBottom:
+                    RenderTransform = new TranslateTransform(0, -Bounds.Height);
+                    break;
+                case PullDirection.BottomToTop:
+                    RenderTransform = new TranslateTransform(0, Bounds.Height);
+                    break;
+                case PullDirection.LeftToRight:
+                    RenderTransform = new TranslateTransform(-Bounds.Width, 0);
+                    break;
+                case PullDirection.RightToLeft:
+                    RenderTransform = new TranslateTransform(Bounds.Width, 0);
+                    break;
             }
         }
 

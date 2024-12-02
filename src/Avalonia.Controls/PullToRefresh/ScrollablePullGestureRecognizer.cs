@@ -1,10 +1,11 @@
 ﻿using System;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.GestureRecognizers;
 
 namespace Avalonia.Controls.PullToRefresh
 {
-    internal class ScrollViewerGestureRecognizer : GestureRecognizer
+    internal class ScrollablePullGestureRecognizer : GestureRecognizer
     {
         private int _gestureId;
         private bool _pullInProgress;
@@ -18,7 +19,7 @@ namespace Avalonia.Controls.PullToRefresh
         /// Defines the <see cref="PullDirection"/> property.
         /// </summary>
         public static readonly StyledProperty<PullDirection> PullDirectionProperty =
-            AvaloniaProperty.Register<ScrollViewerGestureRecognizer, PullDirection>(nameof(PullDirection));
+            AvaloniaProperty.Register<ScrollablePullGestureRecognizer, PullDirection>(nameof(PullDirection));
 
         public PullDirection PullDirection
         {
@@ -26,12 +27,12 @@ namespace Avalonia.Controls.PullToRefresh
             set => SetValue(PullDirectionProperty, value);
         }
 
-        public ScrollViewerGestureRecognizer(PullDirection pullDirection)
+        public ScrollablePullGestureRecognizer(PullDirection pullDirection)
         {
             PullDirection = pullDirection;
         }
 
-        public ScrollViewerGestureRecognizer() { }
+        public ScrollablePullGestureRecognizer() { }
 
         protected override void PointerCaptureLost(IPointer pointer)
         {
@@ -43,7 +44,7 @@ namespace Avalonia.Controls.PullToRefresh
 
         protected override void PointerPressed(PointerPressedEventArgs e)
         {
-            if (Target != null && Target is ScrollViewer visual && (e.Pointer.Type == PointerType.Touch || e.Pointer.Type == PointerType.Pen))
+            if (Target != null && Target is Visual visual && (e.Pointer.Type == PointerType.Touch || e.Pointer.Type == PointerType.Pen))
             {
                 _tracking = e.Pointer;
                 _initialPosition = e.GetPosition(visual);
@@ -52,9 +53,12 @@ namespace Avalonia.Controls.PullToRefresh
 
         protected override void PointerMoved(PointerEventArgs e)
         {
-            if (_tracking == e.Pointer && Target is ScrollViewer viewer && CanPull(viewer))
+            if (_tracking != e.Pointer)
+                return;
+
+            if (Target is Visual visual && visual is IScrollable scrollable && CanPull(scrollable))
             {
-                var currentPosition = e.GetPosition(viewer);
+                var currentPosition = e.GetPosition(visual);
 
                 var delta = CalculateDelta(currentPosition);
 
@@ -62,9 +66,9 @@ namespace Avalonia.Controls.PullToRefresh
                 _pullInProgress = (_pullInProgress, pulling) switch
                 {
                     (false, false) => false,
-                    (false, true ) => BeginPull(e, delta),
-                    (true , true ) => HandlePull(e, delta),
-                    (true , false) => EndPull(),
+                    (false, true) => BeginPull(e, delta),
+                    (true, true) => HandlePull(e, delta),
+                    (true, false) => EndPull(),
                 };
             }
         }
@@ -113,12 +117,12 @@ namespace Avalonia.Controls.PullToRefresh
             _ => default,
         };
 
-        private bool CanPull(ScrollViewer visual) => PullDirection switch
+        private bool CanPull(IScrollable scrollable) => PullDirection switch
         {
-            PullDirection.TopToBottom => visual.Offset.Y < _delta,
-            PullDirection.BottomToTop => Math.Abs(visual.Offset.Y + visual.Viewport.Height - visual.Extent.Height) <= _delta,
-            PullDirection.LeftToRight => visual.Offset.X < _delta,
-            PullDirection.RightToLeft => Math.Abs(visual.Offset.X + visual.Viewport.Width - visual.Extent.Width) <= _delta,
+            PullDirection.TopToBottom => scrollable.Offset.Y < _delta,
+            PullDirection.BottomToTop => Math.Abs(scrollable.Offset.Y + scrollable.Viewport.Height - scrollable.Extent.Height) <= _delta,
+            PullDirection.LeftToRight => scrollable.Offset.X < _delta,
+            PullDirection.RightToLeft => Math.Abs(scrollable.Offset.X + scrollable.Viewport.Width - scrollable.Extent.Width) <= _delta,
             _ => false,
         };
     }
