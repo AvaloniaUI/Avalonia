@@ -1,10 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Input;
-using Avalonia.Interactivity;
 using Avalonia.Layout;
-using Avalonia.Media;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
@@ -161,7 +160,7 @@ namespace Avalonia.Controls.Primitives
                 {
                     if (position >= _textBox.SelectionEnd)
                         position = _textBox.SelectionEnd - 1;
-                        _textBox.SelectionStart = position;
+                    _textBox.SelectionStart = position;
                 }
                 else
                 {
@@ -174,13 +173,12 @@ namespace Avalonia.Controls.Primitives
                 var selectionEnd = _textBox.SelectionEnd;
                 var start = Math.Min(selectionStart, selectionEnd);
                 var length = Math.Max(selectionStart, selectionEnd) - start;
+                var rects = new List<Rect>(_presenter.TextLayout.HitTestTextRange(start, length));
 
-                var rects = _presenter.TextLayout.HitTestTextRange(start, length);
-
-                if (rects.Any())
+                if (rects.Count > 0)
                 {
-                    var first = rects.First();
-                    var last = rects.Last();
+                    var first = rects[0];
+                    var last = rects[rects.Count -1];
 
                     if (handle.SelectionHandleType == SelectionHandleType.Start)
                         handle?.SetTopLeft(ToLayer(first.BottomLeft));
@@ -234,12 +232,12 @@ namespace Avalonia.Controls.Primitives
                 var start = Math.Min(selectionStart, selectionEnd);
                 var length = Math.Max(selectionStart, selectionEnd) - start;
 
-                var rects = _presenter.TextLayout.HitTestTextRange(start, length);
+                var rects = new List<Rect>(_presenter.TextLayout.HitTestTextRange(start, length));
 
-                if (rects.Any())
+                if (rects.Count > 0)
                 {
-                    var first = rects.First();
-                    var last = rects.Last();
+                    var first = rects[0];
+                    var last = rects[rects.Count - 1];
 
                     if (!_startHandle.IsDragging)
                     {
@@ -273,7 +271,6 @@ namespace Avalonia.Controls.Primitives
                 {
                     _textBox.AddHandler(TextBox.TextChangingEvent, TextChanged, handledEventsToo: true);
                     _textBox.AddHandler(KeyDownEvent, TextBoxKeyDown, handledEventsToo: true);
-                    _textBox.AddHandler(LostFocusEvent, TextBoxLostFocus, handledEventsToo: true);
                     _textBox.AddHandler(PointerReleasedEvent, TextBoxPointerReleased, handledEventsToo: true);
                     _textBox.AddHandler(Gestures.HoldingEvent, TextBoxHolding, handledEventsToo: true);
 
@@ -289,7 +286,6 @@ namespace Avalonia.Controls.Primitives
                     _textBox.RemoveHandler(TextBox.TextChangingEvent, TextChanged);
                     _textBox.RemoveHandler(KeyDownEvent, TextBoxKeyDown);
                     _textBox.RemoveHandler(PointerReleasedEvent, TextBoxPointerReleased);
-                    _textBox.RemoveHandler(LostFocusEvent, TextBoxLostFocus);
                     _textBox.RemoveHandler(Gestures.HoldingEvent, TextBoxHolding);
 
                     _textBox.PropertyChanged -= TextBoxPropertyChanged;
@@ -388,11 +384,6 @@ namespace Avalonia.Controls.Primitives
                 MoveHandlesToSelection();
                 EnsureVisible();
             }
-        }
-
-        private void TextBoxLostFocus(object? sender, RoutedEventArgs e)
-        {
-            ShowHandles = false;
         }
 
         private void TextBoxKeyDown(object? sender, KeyEventArgs e)

@@ -311,6 +311,44 @@ namespace Avalonia.IntegrationTests.Appium
             }
         }
 
+        [Fact]
+        public void Changing_SystemDecorations_Should_Not_Change_Frame_Size_And_Position()
+        {
+            using (OpenWindow(null, ShowWindowMode.NonOwned, WindowStartupLocation.Manual))
+            {
+                var info = GetWindowInfo();
+
+                Session.FindElementByAccessibilityId("CurrentSystemDecorations").Click();
+                Session.FindElementByAccessibilityId("SystemDecorationsNone").SendClick();
+                var updatedInfo = GetWindowInfo();
+                Assert.Equal(info.FrameSize, updatedInfo.FrameSize);
+                Assert.Equal(info.Position, updatedInfo.Position);
+
+                Session.FindElementByAccessibilityId("CurrentSystemDecorations").Click();
+                Session.FindElementByAccessibilityId("SystemDecorationsFull").SendClick();
+                updatedInfo = GetWindowInfo();
+                Assert.Equal(info.FrameSize, updatedInfo.FrameSize);
+                Assert.Equal(info.Position, updatedInfo.Position);
+            }
+        }
+
+        [Fact]
+        public void Changing_WindowState_Should_Not_Change_Frame_Size_And_Position()
+        {
+            using (OpenWindow())
+            {
+                var info = GetWindowInfo();
+
+                Session.FindElementByAccessibilityId("CurrentWindowState").SendClick();
+                Session.FindElementByAccessibilityId("WindowStateMaximized").SendClick();
+                Session.FindElementByAccessibilityId("CurrentWindowState").SendClick();
+                Session.FindElementByAccessibilityId("WindowStateNormal").SendClick();
+                var updatedInfo = GetWindowInfo();
+                Assert.Equal(info.FrameSize, updatedInfo.FrameSize);
+                Assert.Equal(info.Position, updatedInfo.Position);
+            }
+        }
+
         public static TheoryData<Size?, ShowWindowMode, WindowStartupLocation, bool> StartupLocationData()
         {
             var sizes = new Size?[] { null, new Size(400, 300) };
@@ -373,16 +411,16 @@ namespace Avalonia.IntegrationTests.Appium
                 // the position of a centered window can be off by a bit. From initial testing, looks
                 // like this shouldn't be more than 10 pixels.
                 if (Math.Abs(expected.X - actual.X) > 10)
-                    throw new EqualException(expected, actual);
+                    throw EqualException.ForMismatchedValues(expected, actual);
                 if (Math.Abs(expected.Y - actual.Y) > 10)
-                    throw new EqualException(expected, actual);
+                    throw EqualException.ForMismatchedValues(expected, actual);
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
                 if (Math.Abs(expected.X - actual.X) > 15)
-                    throw new EqualException(expected, actual);
+                    throw EqualException.ForMismatchedValues(expected, actual);
                 if (Math.Abs(expected.Y - actual.Y) > 15)
-                    throw new EqualException(expected, actual);
+                    throw EqualException.ForMismatchedValues(expected, actual);
             }
             else
             {
@@ -391,8 +429,8 @@ namespace Avalonia.IntegrationTests.Appium
         }
 
         private IDisposable OpenWindow(
-            Size? size,
-            ShowWindowMode mode,
+            Size? size = null,
+            ShowWindowMode mode = ShowWindowMode.NonOwned,
             WindowStartupLocation location = WindowStartupLocation.Manual,
             WindowState state = Controls.WindowState.Normal,
             bool canResize = true,

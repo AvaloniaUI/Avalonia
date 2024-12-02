@@ -10,7 +10,7 @@ namespace Avalonia.Media.Fonts.Tables
     /// Exception font loading can throw if it finds a required table is missing during font loading.
     /// </summary>
     /// <seealso cref="Exception" />
-    public class MissingFontTableException : Exception
+    internal class MissingFontTableException : Exception
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="MissingFontTableException"/> class.

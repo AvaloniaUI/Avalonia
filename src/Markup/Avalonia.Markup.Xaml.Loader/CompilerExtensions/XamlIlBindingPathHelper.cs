@@ -197,8 +197,13 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
                             if (avaloniaPropertyFieldMaybe != null)
                             {
-                                nodes.Add(new XamlIlAvaloniaPropertyPropertyPathElementNode(avaloniaPropertyFieldMaybe,
-                                    XamlIlAvaloniaPropertyHelper.GetAvaloniaPropertyType(avaloniaPropertyFieldMaybe, context.GetAvaloniaTypes(), lineInfo)));
+                                var isDataContextProperty = avaloniaPropertyFieldMaybe.Name == "DataContextProperty" && Equals(avaloniaPropertyFieldMaybe.DeclaringType, context.GetAvaloniaTypes().StyledElement);
+                                var propertyType = isDataContextProperty
+                                    ? (nodes.LastOrDefault() as IXamlIlBindingPathNodeWithDataContextType)?.DataContextType
+                                    : null;
+                                propertyType ??= XamlIlAvaloniaPropertyHelper.GetAvaloniaPropertyType(avaloniaPropertyFieldMaybe, context.GetAvaloniaTypes(), lineInfo);
+
+                                nodes.Add(new XamlIlAvaloniaPropertyPropertyPathElementNode(avaloniaPropertyFieldMaybe, propertyType));
                             }
                             else if (GetAllDefinedProperties(targetType).FirstOrDefault(p => p.Name == propName.PropertyName) is IXamlProperty clrProperty)
                             {
@@ -297,34 +302,55 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         nodes.Add(new TemplatedParentPathElementNode(templatedParentType.GetClrType()));
                         break;
                     case BindingExpressionGrammar.AncestorNode ancestor:
-                        if (ancestor.Namespace is null && ancestor.TypeName is null)
-                        {
-                            var styledElementType = context.GetAvaloniaTypes().StyledElement;
-                            var ancestorType = context
-                                .ParentNodes()
-                                .OfType<XamlAstConstructableObjectNode>()
-                                .Where(x => styledElementType.IsAssignableFrom(x.Type.GetClrType()))
-                                .Skip(1)
-                                .ElementAtOrDefault(ancestor.Level)
-                                ?.Type.GetClrType();
+                        var styledElement = context.GetAvaloniaTypes().StyledElement;
+                        var ancestorTypeFilter = !(ancestor.Namespace is null && ancestor.TypeName is null) ? GetType(ancestor.Namespace, ancestor.TypeName) : null;
 
-                            if (ancestorType is null)
+                        var ancestorNode = context
+                            .ParentNodes()
+                            .OfType<XamlAstConstructableObjectNode>()
+                            .Where(x => styledElement.IsAssignableFrom(x.Type.GetClrType()))
+                            .Skip(1)
+                            .Where(x => ancestorTypeFilter is not null
+                                ? ancestorTypeFilter.IsAssignableFrom(x.Type.GetClrType()) : true)
+                            .ElementAtOrDefault(ancestor.Level);
+
+                        IXamlType? dataContextType = null;
+                        if (ancestorNode is not null)
+                        {
+                            var isSkipping = true;
+                            foreach (var node in context.ParentNodes())
                             {
-                                throw new XamlX.XamlTransformException("Unable to resolve implicit ancestor type based on XAML tree.", lineInfo);
+                                if (node == ancestorNode)
+                                    isSkipping = false;
+                                if (node is AvaloniaNameScopeRegistrationXamlIlNode)
+                                    break;
+                                if (!isSkipping && node is AvaloniaXamlIlDataContextTypeMetadataNode metadataNode)
+                                {
+                                    dataContextType = metadataNode.DataContextType;
+                                    break;
+                                }
                             }
+                        }
 
-                            nodes.Add(new FindAncestorPathElementNode(ancestorType, ancestor.Level));
-                        }
-                        else
+                        // We need actual ancestor for a correct DataContextType,
+                        // but since in current design bindings do a double-work by enumerating the tree,
+                        // we want to keep original ancestor type filter, if it was present.
+                        var bindingAncestorType = ancestorTypeFilter is not null
+                            ? ancestorTypeFilter
+                            : ancestorNode?.Type.GetClrType();
+
+                        if (bindingAncestorType is null)
                         {
-                            nodes.Add(new FindAncestorPathElementNode(GetType(ancestor.Namespace, ancestor.TypeName), ancestor.Level));
+                            throw new XamlX.XamlTransformException("Unable to resolve implicit ancestor type based on XAML tree.", lineInfo);
                         }
+
+                        nodes.Add(new FindAncestorPathElementNode(bindingAncestorType, ancestor.Level, dataContextType));
                         break;
                     case BindingExpressionGrammar.NameNode elementName:
-                        IXamlType? elementType = null;
+                        IXamlType? elementType = null, dataType = null;
                         foreach (var deferredContent in context.ParentNodes().OfType<NestedScopeMetadataNode>())
                         {
-                            elementType = ScopeRegistrationFinder.GetTargetType(deferredContent, elementName.Name);
+                            (elementType, dataType) = ScopeRegistrationFinder.GetTargetType(deferredContent, elementName.Name) ?? default;
                             if (!(elementType is null))
                             {
                                 break;
@@ -332,14 +358,14 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         }
                         if (elementType is null)
                         {
-                            elementType = ScopeRegistrationFinder.GetTargetType(context.ParentNodes().Last(), elementName.Name);
+                            (elementType, dataType) = ScopeRegistrationFinder.GetTargetType(context.ParentNodes().Last(), elementName.Name) ?? default;
                         }
 
                         if (elementType is null)
                         {
                             throw new XamlX.XamlTransformException($"Unable to find element '{elementName.Name}' in the current namescope. Unable to use a compiled binding with a name binding if the name cannot be found at compile time.", lineInfo);
                         }
-                        nodes.Add(new ElementNamePathElementNode(elementName.Name, elementType));
+                        nodes.Add(new ElementNamePathElementNode(elementName.Name, elementType, dataType));
                         break;
                     case BindingExpressionGrammar.TypeCastNode typeCastNode:
                         var castType = GetType(typeCastNode.Namespace, typeCastNode.TypeName);
@@ -420,8 +446,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             string Name { get; }
 
             IXamlType? TargetType { get; set; }
+            IXamlType? DataContextType { get; set; }
 
-            public static IXamlType? GetTargetType(IXamlAstNode namescopeRoot, string name)
+            public static (IXamlType Target, IXamlType? DataContextType)? GetTargetType(IXamlAstNode namescopeRoot, string name)
             {
                 // If we start from the nested scope - skip it.
                 if (namescopeRoot is NestedScopeMetadataNode scope)
@@ -431,7 +458,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 
                 var finder = new ScopeRegistrationFinder(name);
                 namescopeRoot.Visit(finder);
-                return finder.TargetType;
+                return finder.TargetType is not null ? (finder.TargetType, finder.DataContextType) : null;
             }
 
             void IXamlAstVisitor.Pop()
@@ -455,11 +482,19 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             IXamlAstNode IXamlAstVisitor.Visit(IXamlAstNode node)
             {
                 // Ignore name registrations, if we are inside of the nested namescope.
-                if (_childScopesStack.Count == 0 && node is AvaloniaNameScopeRegistrationXamlIlNode registration)
+                if (_childScopesStack.Count == 0)
                 {
-                    if (registration.Name is XamlAstTextNode text && text.Text == Name)
+                    if (node is AvaloniaNameScopeRegistrationXamlIlNode registration
+                        && registration.Name is XamlAstTextNode text && text.Text == Name)
                     {
                         TargetType = registration.TargetType;
+                    }
+                    // We are visiting nodes top to bottom.
+                    // If we have already found target type by its name,
+                    // it means all next nodes will be below, and not applicable for data context inheritance.
+                    else if (TargetType is null && node is AvaloniaXamlIlDataContextTypeMetadataNode dataContextTypeMetadata)
+                    {
+                        DataContextType = dataContextTypeMetadata.DataContextType;
                     }
                 }
                 return node;
@@ -471,6 +506,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             IXamlType Type { get; }
 
             void Emit(XamlIlEmitContext context, IXamlILEmitter codeGen);
+        }
+
+        interface IXamlIlBindingPathNodeWithDataContextType
+        {
+            IXamlType? DataContextType { get; }
         }
 
         class XamlIlNotPathElementNode : IXamlIlBindingPathElementNode
@@ -533,17 +573,19 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             }
         }
 
-        class FindAncestorPathElementNode : IXamlIlBindingPathElementNode
+        class FindAncestorPathElementNode : IXamlIlBindingPathElementNode, IXamlIlBindingPathNodeWithDataContextType
         {
             private readonly int _level;
 
-            public FindAncestorPathElementNode(IXamlType ancestorType, int level)
+            public FindAncestorPathElementNode(IXamlType ancestorType, int level, IXamlType? dataContextType)
             {
                 Type = ancestorType;
                 _level = level;
+                DataContextType = dataContextType;
             }
 
             public IXamlType Type { get; }
+            public IXamlType? DataContextType { get; }
 
             public void Emit(XamlIlEmitContext context, IXamlILEmitter codeGen)
             {
@@ -573,17 +615,19 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             }
         }
 
-        class ElementNamePathElementNode : IXamlIlBindingPathElementNode
+        class ElementNamePathElementNode : IXamlIlBindingPathElementNode, IXamlIlBindingPathNodeWithDataContextType
         {
             private readonly string _name;
 
-            public ElementNamePathElementNode(string name, IXamlType elementType)
+            public ElementNamePathElementNode(string name, IXamlType elementType, IXamlType? dataType)
             {
                 _name = name;
                 Type = elementType;
+                DataContextType = dataType;
             }
 
             public IXamlType Type { get; }
+            public IXamlType? DataContextType { get; }
 
             public void Emit(XamlIlEmitContext context, IXamlILEmitter codeGen)
             {

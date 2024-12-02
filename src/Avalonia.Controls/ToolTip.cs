@@ -4,6 +4,7 @@ using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
+using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Reactive;
 using Avalonia.Styling;
 
@@ -50,6 +51,10 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly AttachedProperty<double> VerticalOffsetProperty =
             AvaloniaProperty.RegisterAttached<ToolTip, Control, double>("VerticalOffset", 20);
+
+        /// <inheritdoc cref="Popup.CustomPopupPlacementCallbackProperty"/>
+        public static readonly AttachedProperty<CustomPopupPlacementCallback?> CustomPopupPlacementCallbackProperty =
+            AvaloniaProperty.RegisterAttached<ToolTip, Control, CustomPopupPlacementCallback?>("CustomPopupPlacementCallback");
 
         /// <summary>
         /// Defines the ToolTip.ShowDelay property.
@@ -327,6 +332,22 @@ namespace Avalonia.Controls
         public static void RemoveToolTipClosingHandler(Control element, EventHandler<RoutedEventArgs> handler) =>
             element.RemoveHandler(ToolTipClosingEvent, handler);
 
+        /// <summary>
+        /// Gets the value of the ToolTip.CustomPopupPlacementCallback attached property.
+        /// </summary>
+        public static CustomPopupPlacementCallback? GetCustomPopupPlacementCallback(Control element)
+        {
+            return element.GetValue(CustomPopupPlacementCallbackProperty);
+        }
+
+        /// <summary>
+        /// Sets the value of the ToolTip.CustomPopupPlacementCallback attached property.
+        /// </summary>
+        public static void SetCustomPopupPlacementCallback(Control element, CustomPopupPlacementCallback? value)
+        {
+            element.SetValue(CustomPopupPlacementCallbackProperty, value);
+        }
+
         private static void IsOpenChanged(AvaloniaPropertyChangedEventArgs e)
         {
             var control = (Control)e.Sender;
@@ -387,6 +408,7 @@ namespace Avalonia.Controls
             {
                 _popup = new Popup();
                 _popup.Child = this;
+                _popup.TakesFocusFromNativeControl = false;
                 _popup.WindowManagerAddShadowHint = false;
 
                 _popup.Opened += OnPopupOpened;
@@ -397,7 +419,8 @@ namespace Avalonia.Controls
             {
                 _popup.Bind(Popup.HorizontalOffsetProperty, control.GetBindingObservable(HorizontalOffsetProperty)),
                 _popup.Bind(Popup.VerticalOffsetProperty, control.GetBindingObservable(VerticalOffsetProperty)),
-                _popup.Bind(Popup.PlacementProperty, control.GetBindingObservable(PlacementProperty))
+                _popup.Bind(Popup.PlacementProperty, control.GetBindingObservable(PlacementProperty)),
+                _popup.Bind(Popup.CustomPopupPlacementCallbackProperty, control.GetBindingObservable(CustomPopupPlacementCallbackProperty))
             });
 
             _popup.PlacementTarget = control;
@@ -415,14 +438,14 @@ namespace Avalonia.Controls
                 adornedControl.RaiseEvent(args);
             }
 
-            _subscriptions?.Dispose();
-
             if (_popup is not null)
             {
                 _popup.IsOpen = false;
                 _popup.SetPopupParent(null);
                 _popup.PlacementTarget = null;
             }
+
+            _subscriptions?.Dispose();
         }
 
         private void OnPopupClosed(object? sender, EventArgs e)

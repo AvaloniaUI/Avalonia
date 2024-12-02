@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Avalonia.Data;
+using Avalonia.Metadata;
 using Avalonia.PropertyStore;
 using Avalonia.Styling;
 
@@ -14,12 +15,7 @@ internal class StyleValueFrameDiagnostic : IValueFrameDiagnostic
         _styleInstance = styleInstance;
     }
 
-    public string? Description => _styleInstance.Source switch
-    {
-        Style s => GetFullSelector(s),
-        ControlTheme t => t.TargetType?.Name,
-        _ => null
-    };
+    public object? Source => _styleInstance.Source;
 
     public IValueFrameDiagnostic.FrameType Type => _styleInstance.Source switch
     {
@@ -44,20 +40,6 @@ internal class StyleValueFrameDiagnostic : IValueFrameDiagnostic
         }
     }
 
-    private string GetFullSelector(Style? style)
-    {
-        var selectors = new Stack<string>();
-
-        while (style is not null)
-        {
-            if (style.Selector is not null)
-            {
-                selectors.Push(style.Selector.ToString());
-            }
-            
-            style = style.Parent as Style;
-        }
-
-        return string.Concat(selectors);
-    }
+    [Unstable("Compatibility with 11.x")]
+    public AppliedStyle AsAppliedStyle() => new AppliedStyle(_styleInstance);
 }

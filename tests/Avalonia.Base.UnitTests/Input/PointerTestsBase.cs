@@ -14,7 +14,7 @@ using Moq;
 
 namespace Avalonia.Base.UnitTests.Input;
 
-public abstract class PointerTestsBase
+public abstract class PointerTestsBase : ScopedTestBase
 {
     private protected static void SetHit(Mock<IHitTester> renderer, Control? hit)
     {
@@ -41,6 +41,12 @@ public abstract class PointerTestsBase
         impl.Setup(r => r.Compositor).Returns(RendererMocks.CreateDummyCompositor());
         impl.Setup(r => r.PointToScreen(It.IsAny<Point>())).Returns<Point>(p => new PixelPoint((int)p.X, (int)p.Y));
         impl.Setup(r => r.PointToClient(It.IsAny<PixelPoint>())).Returns<PixelPoint>(p => new Point(p.X, p.Y));
+        
+        var screen1 = new Mock<Screen>(1.75, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 966)), true);
+        var screens = new Mock<IScreenImpl>();
+        screens.Setup(x => x.ScreenFromWindow(It.IsAny<IWindowBaseImpl>())).Returns(screen1.Object);
+        impl.Setup(x => x.TryGetFeature(It.Is<Type>(t => t == typeof(IScreenImpl)))).Returns(screens.Object);
+
         return impl;
     }
 

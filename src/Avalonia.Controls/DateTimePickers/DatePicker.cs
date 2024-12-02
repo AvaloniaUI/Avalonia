@@ -1,4 +1,5 @@
-﻿using Avalonia.Controls.Metadata;
+﻿using Avalonia.Automation.Peers;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Data;
@@ -266,6 +267,8 @@ namespace Avalonia.Controls
                 _presenter[!DatePickerPresenter.YearFormatProperty] = this[!YearFormatProperty];
             }
         }
+
+        protected override AutomationPeer OnCreateAutomationPeer() => new DatePickerAutomationPeer(this);
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {

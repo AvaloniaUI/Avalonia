@@ -293,9 +293,9 @@ namespace Avalonia.Controls.UnitTests
             var raised = 0;
 
             target.Click += (s, e) => ++raised;
-
-            target.RaiseEvent(new RoutedEventArgs(AccessKeyHandler.AccessKeyPressedEvent));
-
+            
+            target.RaiseEvent(new AccessKeyEventArgs("b", false));
+            
             Assert.Equal(1, raised);
         }
 
@@ -304,7 +304,12 @@ namespace Avalonia.Controls.UnitTests
         {
             var raised = 0;
             var ah = new AccessKeyHandler();
-            using var app = UnitTestApplication.Start(TestServices.StyledWindow.With(accessKeyHandler: ah));
+            var kd = new KeyboardDevice();
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow
+                .With(
+                    accessKeyHandler: ah, 
+                    keyboardDevice: () => kd)
+            );
 
             var impl = CreateMockTopLevelImpl();
             var command = new TestCommand(p => p is bool value && value, _ => raised++);
@@ -329,6 +334,8 @@ namespace Avalonia.Controls.UnitTests
                     })
                 },
             };
+            kd.SetFocusedElement(target, NavigationMethod.Unspecified, KeyModifiers.None);
+            
 
             root.ApplyTemplate();
             root.Presenter.UpdateChild();
@@ -349,7 +356,7 @@ namespace Avalonia.Controls.UnitTests
             RaiseAccessKey(root, accessKey);
 
             Assert.Equal(1, raised);
-
+            
             static FuncControlTemplate<TestTopLevel> CreateTemplate()
             {
                 return new FuncControlTemplate<TestTopLevel>((x, scope) =>
@@ -409,7 +416,7 @@ namespace Avalonia.Controls.UnitTests
             target.IsEnabled = false;
             target.Click += (s, e) => ++raised;
 
-            target.RaiseEvent(new RoutedEventArgs(AccessKeyHandler.AccessKeyPressedEvent));
+            target.RaiseEvent(new AccessKeyEventArgs("b", false));
 
             Assert.Equal(0, raised);
         }
@@ -511,9 +518,37 @@ namespace Avalonia.Controls.UnitTests
             (target as IClickableControl).RaiseClick();
         }
 
+        [Fact]
+        void Should_Not_Fire_Click_Event_On_Space_Key_When_It_Is_Not_Focus()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var raised = 0;
+                var target = new TextBox();
+                var button = new Button()
+                {
+                    Content = target,
+                };
+
+                var window = new Window { Content = button };
+                window.Show();
+
+                button.Click += (s, e) => ++raised;
+                target.Focus();
+                target.RaiseEvent(CreateKeyDownEvent(Key.Space));
+                target.RaiseEvent(CreateKeyUpEvent(Key.Space));
+                Assert.Equal(0, raised);
+            }
+        }
+
         private KeyEventArgs CreateKeyDownEvent(Key key, Interactive source = null)
         {
             return new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = key, Source = source };
+        }
+
+        private KeyEventArgs CreateKeyUpEvent(Key key, Interactive source = null)
+        {
+            return new KeyEventArgs { RoutedEvent = InputElement.KeyUpEvent, Key = key, Source = source };
         }
 
         private void RaisePointerPressed(Button button, int clickCount, MouseButton mouseButton, Point position)

@@ -167,7 +167,7 @@ namespace Avalonia.Controls
                 // We handle horizontal and vertical layouts here so X and Y are abstracted to:
                 // - Horizontal layouts: U = horizontal, V = vertical
                 // - Vertical layouts: U = vertical, V = horizontal
-                var viewport = CalculateMeasureViewport(items);
+                var viewport = CalculateMeasureViewport(orientation, items);
 
                 // If the viewport is disjunct then we can recycle everything.
                 if (viewport.viewportIsDisjunct)
@@ -272,8 +272,20 @@ namespace Avalonia.Controls
                     _realizedElements.ItemsReplaced(e.OldStartingIndex, e.OldItems!.Count, _recycleElementOnItemRemoved);
                     break;
                 case NotifyCollectionChangedAction.Move:
+                    if (e.OldStartingIndex < 0)
+                    {
+                        goto case NotifyCollectionChangedAction.Reset;
+                    }
+
                     _realizedElements.ItemsRemoved(e.OldStartingIndex, e.OldItems!.Count, _updateElementIndex, _recycleElementOnItemRemoved);
-                    _realizedElements.ItemsInserted(e.NewStartingIndex, e.NewItems!.Count, _updateElementIndex);
+                    var insertIndex = e.NewStartingIndex;
+
+                    if (e.NewStartingIndex > e.OldStartingIndex)
+                    {
+                        insertIndex -= e.OldItems.Count - 1;
+                    }
+
+                    _realizedElements.ItemsInserted(insertIndex, e.NewItems!.Count, _updateElementIndex);
                     break;
                 case NotifyCollectionChangedAction.Reset:
                     _realizedElements.ItemsReset(_recycleElementOnItemRemoved);
@@ -465,15 +477,15 @@ namespace Avalonia.Controls
             return _realizedElements?.Elements ?? Array.Empty<Control>();
         }
 
-        private MeasureViewport CalculateMeasureViewport(IReadOnlyList<object?> items)
+        private MeasureViewport CalculateMeasureViewport(Orientation orientation, IReadOnlyList<object?> items)
         {
             Debug.Assert(_realizedElements is not null);
 
             var viewport = _viewport;
 
             // Get the viewport in the orientation direction.
-            var viewportStart = Orientation == Orientation.Horizontal ? viewport.X : viewport.Y;
-            var viewportEnd = Orientation == Orientation.Horizontal ? viewport.Right : viewport.Bottom;
+            var viewportStart = orientation == Orientation.Horizontal ? viewport.X : viewport.Y;
+            var viewportEnd = orientation == Orientation.Horizontal ? viewport.Right : viewport.Bottom;
 
             // Get or estimate the anchor element from which to start realization. If we are
             // scrolling to an element, use that as the anchor element. Otherwise, estimate the
@@ -484,7 +496,7 @@ namespace Avalonia.Controls
             if (_scrollToIndex >= 0 && _scrollToElement is not null)
             {
                 anchorIndex = _scrollToIndex;
-                anchorU = _scrollToElement.Bounds.Top;
+                anchorU = orientation == Orientation.Horizontal ? _scrollToElement.Bounds.Left : _scrollToElement.Bounds.Top;
             }
             else
             {
@@ -841,6 +853,8 @@ namespace Avalonia.Controls
         private void RecycleElementOnItemRemoved(Control element)
         {
             Debug.Assert(ItemContainerGenerator is not null);
+
+            _scrollAnchorProvider?.UnregisterAnchorCandidate(element);
 
             var recycleKey = element.GetValue(RecycleKeyProperty);
             

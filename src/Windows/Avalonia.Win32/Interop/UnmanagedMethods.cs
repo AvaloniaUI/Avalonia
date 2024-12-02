@@ -112,7 +112,7 @@ namespace Avalonia.Win32.Interop
             /// </summary>
             Hide = 0,
             /// <summary>
-            /// Activates and displays a window. If the window is minimized, maximized, or arranged, the system restores it to its original 
+            /// Activates and displays a window. If the window is minimized, maximized, or arranged, the system restores it to its original
             /// size and position. An application should specify this flag when displaying the window for the first time.
             /// </summary>
             Normal = 1,
@@ -147,12 +147,12 @@ namespace Avalonia.Win32.Interop
             /// </summary>
             ShowNA = 8,
             /// <summary>
-            /// Activates and displays the window. If the window is minimized, maximized, or arranged, the system restores it to its original size and position. 
+            /// Activates and displays the window. If the window is minimized, maximized, or arranged, the system restores it to its original size and position.
             /// An application should specify this flag when restoring a minimized window.
             /// </summary>
             Restore = 9,
             /// <summary>
-            /// Sets the show state based on the <see cref="ShowWindowCommand"/> value specified in the STARTUPINFO structure passed to the CreateProcess function 
+            /// Sets the show state based on the <see cref="ShowWindowCommand"/> value specified in the STARTUPINFO structure passed to the CreateProcess function
             /// by the program that started the application.
             /// </summary>
             ShowDefault = 10,
@@ -1174,6 +1174,9 @@ namespace Avalonia.Win32.Interop
         public static extern bool GetPointerTouchInfo(uint pointerId, out POINTER_TOUCH_INFO touchInfo);
 
         [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool GetPointerDeviceRects(IntPtr device, out RECT pointerDeviceRect, out RECT displayRect);
+
+        [DllImport("user32.dll", SetLastError = true)]
         public static extern bool GetPointerTouchInfoHistory(uint pointerId, ref int entriesCount, [MarshalAs(UnmanagedType.LPArray), In, Out] POINTER_TOUCH_INFO[] touchInfos);
 
         [DllImport("user32.dll", SetLastError = true)]
@@ -1221,12 +1224,12 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("user32.dll", EntryPoint = "DefWindowProcW")]
         public static extern IntPtr DefWindowProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
-        
+
         public const int SC_MOUSEMOVE = 0xf012;
- 
+
         [DllImport("user32.dll", CharSet = CharSet.Unicode, EntryPoint = "SendMessageW")]
         public static extern IntPtr SendMessage(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam);
-        
+
         [DllImport("user32.dll", EntryPoint = "DispatchMessageW")]
         public static extern IntPtr DispatchMessage(ref MSG lpmsg);
 
@@ -1534,7 +1537,7 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("user32.dll", EntryPoint = "SetCursor")]
         internal static extern IntPtr SetCursor(IntPtr hCursor);
-        
+
         [DllImport("ole32.dll", PreserveSig = true)]
         internal static extern int CoCreateInstance(in Guid clsid,
             IntPtr ignore1, int ignore2, in Guid iid, [Out] out IntPtr pUnkOuter);
@@ -2176,7 +2179,7 @@ namespace Avalonia.Win32.Interop
             /// </summary>
             CF_UNICODETEXT = 13,
             /// <summary>
-            /// A handle to type HDROP that identifies a list of files. 
+            /// A handle to type HDROP that identifies a list of files.
             /// </summary>
             CF_HDROP = 15,
         }

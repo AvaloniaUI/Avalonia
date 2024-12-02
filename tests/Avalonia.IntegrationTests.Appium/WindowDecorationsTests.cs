@@ -12,7 +12,7 @@ public class WindowDecorationsTests : TestBase, IDisposable
     {
     }
 
-    [PlatformFact(TestPlatforms.MacOS)] // TODO fix me on Windows
+    [Fact]
     public void Window_Size_Should_Be_Consistent_Between_Toggles()
     {
         var window = Session.FindElementByAccessibilityId("MainWindow");

@@ -82,6 +82,7 @@ namespace Avalonia.iOS
                 .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformStub())
                 .Bind<IPlatformSettings>().ToSingleton<PlatformSettings>()
                 .Bind<IPlatformIconLoader>().ToConstant(new PlatformIconLoaderStub())
+                .Bind<IScreenImpl>().ToSingleton<iOSScreens>()
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
                 .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>()
                     {

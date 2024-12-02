@@ -156,11 +156,15 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(14, textLine.Length);
 
-                var second = textLine.TextRuns[1] as ShapedTextRun;
+                var first = textLine.TextRuns[0] as ShapedTextRun;
 
-                Assert.NotNull(second);
+                var last = textLine.TextRuns[4] as TextEndOfParagraph;
 
-                Assert.Equal("Hello".AsMemory(), second.Text);
+                Assert.NotNull(first);
+
+                Assert.NotNull(last);
+
+                Assert.Equal("Hello".AsMemory(), first.Text);
             }
         }
 

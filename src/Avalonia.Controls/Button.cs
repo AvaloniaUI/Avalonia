@@ -104,7 +104,7 @@ namespace Avalonia.Controls
         static Button()
         {
             FocusableProperty.OverrideDefaultValue(typeof(Button), true);
-            AccessKeyHandler.AccessKeyPressedEvent.AddClassHandler<Button>((lbl, args) => lbl.OnAccessKey(args));
+            AccessKeyHandler.AccessKeyPressedEvent.AddClassHandler<Button>(OnAccessKeyPressed);
         }
 
         /// <summary>
@@ -199,7 +199,7 @@ namespace Avalonia.Controls
 
         /// <inheritdoc/>
         protected override bool IsEnabledCore => base.IsEnabledCore && _commandCanExecute;
-
+        
         /// <inheritdoc/>
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
@@ -278,7 +278,18 @@ namespace Avalonia.Controls
             }
         }
 
-        protected virtual void OnAccessKey(RoutedEventArgs e) => OnClick();
+        /// <inheritdoc />
+        protected override void OnAccessKey(RoutedEventArgs e)
+        {
+            if (e is AccessKeyEventArgs { IsMultiple: true })
+            {
+                base.OnAccessKey(e);
+            }
+            else
+            {
+                OnClick();    
+            }
+        }
 
         /// <inheritdoc/>
         protected override void OnKeyDown(KeyEventArgs e)
@@ -289,8 +300,9 @@ namespace Avalonia.Controls
                     OnClick();
                     e.Handled = true;
                     break;
-
                 case Key.Space:
+                    // Avoid handling Space if the button isn't focused: a child TextBox might need it for text input
+                    if (IsFocused)
                     {
                         if (ClickMode == ClickMode.Press)
                         {
@@ -299,22 +311,21 @@ namespace Avalonia.Controls
 
                         IsPressed = true;
                         e.Handled = true;
-                        break;
                     }
-
+                    break;
                 case Key.Escape when Flyout != null:
                     // If Flyout doesn't have focusable content, close the flyout here
                     CloseFlyout();
                     break;
             }
-
             base.OnKeyDown(e);
         }
 
         /// <inheritdoc/>
         protected override void OnKeyUp(KeyEventArgs e)
         {
-            if (e.Key == Key.Space)
+            // Avoid handling Space if the button isn't focused: a child TextBox might need it for text input
+            if (e.Key == Key.Space && IsFocused)
             {
                 if (ClickMode == ClickMode.Release)
                 {
@@ -563,6 +574,14 @@ namespace Avalonia.Controls
 
         internal void PerformClick() => OnClick();
 
+        private static void OnAccessKeyPressed(Button sender, AccessKeyPressedEventArgs e)
+        {
+            if (e.Handled || e.Target is not null) 
+                return;
+            e.Target = sender;
+            e.Handled = true;
+        }
+        
         /// <summary>
         /// Called when the <see cref="ICommand.CanExecuteChanged"/> event fires.
         /// </summary>

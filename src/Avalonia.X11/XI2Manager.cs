@@ -1,8 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
+
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Platform;
 using static Avalonia.X11.XLib;
 
 namespace Avalonia.X11
@@ -38,10 +42,15 @@ namespace Avalonia.X11
             public DeviceInfo(XIDeviceInfo info)
             {
                 Id = info.Deviceid;
-                Update(info.Classes, info.NumClasses);
+                UpdateCore(info.Classes, info.NumClasses);
             }
 
             public virtual void Update(XIAnyClassInfo** classes, int num)
+            {
+                UpdateCore(classes, num);
+            }
+
+            private void UpdateCore(XIAnyClassInfo** classes, int num)
             {
                 var valuators = new List<XIValuatorClassInfo>();
                 var scrollers = new List<XIScrollClassInfo>();
@@ -69,8 +78,49 @@ namespace Avalonia.X11
 
         private class PointerDeviceInfo : DeviceInfo
         {
-            public PointerDeviceInfo(XIDeviceInfo info) : base(info)
+            public PointerDeviceInfo(XIDeviceInfo info, X11Info x11Info) : base(info)
             {
+                _x11 = x11Info;
+
+                UpdateKnownValuator();
+            }
+
+            private readonly X11Info _x11;
+
+            private void UpdateKnownValuator()
+            {
+                // ABS_MT_TOUCH_MAJOR ABS_MT_TOUCH_MINOR
+                // https://www.kernel.org/doc/html/latest/input/multi-touch-protocol.html
+                var touchMajorAtom = XInternAtom(_x11.Display, "Abs MT Touch Major", false);
+                var touchMinorAtom = XInternAtom(_x11.Display, "Abs MT Touch Minor", false);
+
+                var pressureAtom = XInternAtom(_x11.Display, "Abs MT Pressure", false);
+
+                PressureXIValuatorClassInfo = null;
+                TouchMajorXIValuatorClassInfo = null;
+                TouchMinorXIValuatorClassInfo = null;
+
+                foreach (var xiValuatorClassInfo in Valuators)
+                {
+                    if (xiValuatorClassInfo.Label == pressureAtom)
+                    {
+                        PressureXIValuatorClassInfo = xiValuatorClassInfo;
+                    }
+                    else if (xiValuatorClassInfo.Label == touchMajorAtom)
+                    {
+                        TouchMajorXIValuatorClassInfo = xiValuatorClassInfo;
+                    }
+                    else if (xiValuatorClassInfo.Label == touchMinorAtom)
+                    {
+                        TouchMinorXIValuatorClassInfo = xiValuatorClassInfo;
+                    }
+                }
+            }
+
+            public override void Update(XIAnyClassInfo** classes, int num)
+            {
+                base.Update(classes, num);
+                UpdateKnownValuator();
             }
 
             public bool HasScroll(ParsedDeviceEvent ev)
@@ -90,38 +140,32 @@ namespace Avalonia.X11
 
                 return false;
             }
-            
+
+            public XIValuatorClassInfo? PressureXIValuatorClassInfo { get; private set; }
+            public XIValuatorClassInfo? TouchMajorXIValuatorClassInfo { get; private set; }
+            public XIValuatorClassInfo? TouchMinorXIValuatorClassInfo { get; private set; }
         }
         
         private PointerDeviceInfo _pointerDevice;
         private AvaloniaX11Platform _platform;
-
-        private XIValuatorClassInfo? _pressureXIValuatorClassInfo;
 
         public bool Init(AvaloniaX11Platform platform)
         {
             _platform = platform;
             _x11 = platform.Info;
             _multitouch = platform.Options?.EnableMultiTouch ?? true;
-            var devices =(XIDeviceInfo*) XIQueryDevice(_x11.Display,
+            var devices = (XIDeviceInfo*) XIQueryDevice(_x11.Display,
                 (int)XiPredefinedDeviceId.XIAllMasterDevices, out int num);
             for (var c = 0; c < num; c++)
             {
                 if (devices[c].Use == XiDeviceType.XIMasterPointer)
                 {
-                    _pointerDevice = new PointerDeviceInfo(devices[c]);
+                    _pointerDevice = new PointerDeviceInfo(devices[c], _x11);
                     break;
                 }
             }
             if(_pointerDevice == null)
                 return false;
-
-            if (_multitouch)
-            {
-                var pressureAtom = XInternAtom(_x11.Display, "Abs MT Pressure", false);
-                _pressureXIValuatorClassInfo = _pointerDevice.Valuators.FirstOrDefault(t => t.Label == pressureAtom);
-            }
-
             /*
             int mask = 0;
             
@@ -246,13 +290,64 @@ namespace Avalonia.X11
                     Position = ev.Position
                 };
 
-                if (_pressureXIValuatorClassInfo is {} valuatorClassInfo)
+                if (_pointerDevice.PressureXIValuatorClassInfo is {} valuatorClassInfo)
                 {
                     if (ev.Valuators.TryGetValue(valuatorClassInfo.Number, out var pressureValue))
                     {
                         // In our API we use range from 0.0 to 1.0.
                         var pressure = (pressureValue - valuatorClassInfo.Min) / (valuatorClassInfo.Max - valuatorClassInfo.Min);
                         rawPointerPoint.Pressure = (float)pressure;
+                    }
+                }
+
+                if(_pointerDevice.TouchMajorXIValuatorClassInfo is {} touchMajorXIValuatorClassInfo)
+                {
+                    double? touchMajor = null;
+                    double? touchMinor = null;
+                    PixelRect screenBounds = default;
+                    if (ev.Valuators.TryGetValue(touchMajorXIValuatorClassInfo.Number, out var touchMajorValue))
+                    {
+                        var pixelPoint = new PixelPoint((int)ev.RootPosition.X, (int)ev.RootPosition.Y);
+                        var screen = _platform.Screens.ScreenFromPoint(pixelPoint);
+                        var screenBoundsFromPoint = screen?.Bounds;
+                        Debug.Assert(screenBoundsFromPoint != null);
+                        if (screenBoundsFromPoint != null)
+                        {
+                            screenBounds = screenBoundsFromPoint.Value;
+
+                            // As https://www.kernel.org/doc/html/latest/input/multi-touch-protocol.html says, using `screenBounds.Width` is not accurate enough.
+                            touchMajor = (touchMajorValue - touchMajorXIValuatorClassInfo.Min) /
+                                (touchMajorXIValuatorClassInfo.Max - touchMajorXIValuatorClassInfo.Min) * screenBounds.Width;
+                        }
+                    }
+
+                    if (touchMajor != null)
+                    {
+                        if(_pointerDevice.TouchMinorXIValuatorClassInfo is {} touchMinorXIValuatorClassInfo)
+                        {
+                            if (ev.Valuators.TryGetValue(touchMinorXIValuatorClassInfo.Number, out var touchMinorValue))
+                            {
+                                touchMinor = (touchMinorValue - touchMinorXIValuatorClassInfo.Min) /
+                                             (touchMinorXIValuatorClassInfo.Max - touchMinorXIValuatorClassInfo.Min) * screenBounds.Height;
+                            }
+                        }
+
+                        if (touchMinor == null)
+                        {
+                            touchMinor = touchMajor;
+                        }
+
+                        var center = ev.Position;
+                        var leftX = center.X - touchMajor.Value / 2;
+                        var topY = center.Y - touchMinor.Value / 2;
+
+                        rawPointerPoint.ContactRect = new Rect
+                        (
+                            leftX,
+                            topY,
+                            touchMajor.Value,
+                            touchMinor.Value
+                        );
                     }
                 }
 
@@ -340,6 +435,7 @@ namespace Avalonia.X11
         public RawInputModifiers Modifiers { get; }
         public ulong Timestamp { get; }
         public Point Position { get; }
+        public Point RootPosition { get; }
         public int Button { get; set; }
         public int Detail { get; set; }
         public bool Emulated { get; set; }
@@ -385,6 +481,7 @@ namespace Avalonia.X11
 
             Valuators = new Dictionary<int, double>();
             Position = new Point(ev->event_x, ev->event_y);
+            RootPosition = new Point(ev->root_x, ev->root_y);
             var values = ev->valuators.Values;
             if(ev->valuators.Mask != null)
                 for (var c = 0; c < ev->valuators.MaskLen * 8; c++)

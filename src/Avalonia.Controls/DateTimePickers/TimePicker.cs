@@ -6,6 +6,7 @@ using Avalonia.Layout;
 using System;
 using System.Globalization;
 using Avalonia.Controls.Utils;
+using Avalonia.Automation.Peers;
 
 namespace Avalonia.Controls
 {
@@ -24,9 +25,9 @@ namespace Avalonia.Controls
     [TemplatePart("PART_Popup",                   typeof(Popup))]
     [TemplatePart("PART_SecondColumnDivider",     typeof(Rectangle))]
     [TemplatePart("PART_SecondPickerHost",        typeof(Border))]
-    [TemplatePart("PART_ThirdColumnDivider",     typeof(Rectangle))]
-    [TemplatePart("PART_ThirdPickerHost",        typeof(Border))]
-    [TemplatePart("PART_FourthPickerHost",         typeof(Border))]
+    [TemplatePart("PART_ThirdColumnDivider",      typeof(Rectangle))]
+    [TemplatePart("PART_ThirdPickerHost",         typeof(Border))]
+    [TemplatePart("PART_FourthPickerHost",        typeof(Border))]
     [PseudoClasses(":hasnotime")]
     public class TimePicker : TemplatedControl
     {
@@ -258,12 +259,13 @@ namespace Avalonia.Controls
                 return;
 
             var use24HourClock = ClockIdentifier == "24HourClock";
+            var canUseSeconds = _secondText is not null && _fourthPickerHost is not null && _thirdSplitter is not null;
 
             var columnsD = new ColumnDefinitions();
             columnsD.Add(new ColumnDefinition(GridLength.Star));
             columnsD.Add(new ColumnDefinition(GridLength.Auto));
             columnsD.Add(new ColumnDefinition(GridLength.Star));
-            if (UseSeconds)
+            if (canUseSeconds && UseSeconds)
             {
                 columnsD.Add(new ColumnDefinition(GridLength.Auto));
                 columnsD.Add(new ColumnDefinition(GridLength.Star));
@@ -273,30 +275,45 @@ namespace Avalonia.Controls
                 columnsD.Add(new ColumnDefinition(GridLength.Auto));
                 columnsD.Add(new ColumnDefinition(GridLength.Star));
             }
-            
+
             _contentGrid.ColumnDefinitions = columnsD;
-            
-            _thirdPickerHost!.IsVisible = UseSeconds;
-            _secondSplitter!.IsVisible = UseSeconds;
 
-            _fourthPickerHost!.IsVisible = !use24HourClock;
-            _thirdSplitter!.IsVisible = !use24HourClock;
-
-            var amPmColumn = (UseSeconds) ? 6 : 4;
+            if (canUseSeconds)
+            {
+                _thirdPickerHost!.IsVisible = UseSeconds;
+                _secondSplitter!.IsVisible = UseSeconds;
+                _fourthPickerHost!.IsVisible = !use24HourClock;
+                _thirdSplitter!.IsVisible = !use24HourClock;
+            }
+            else
+            {
+                _thirdPickerHost!.IsVisible = !use24HourClock;
+                _secondSplitter!.IsVisible = !use24HourClock;
+            }
 
             Grid.SetColumn(_firstPickerHost!, 0);
             Grid.SetColumn(_secondPickerHost!, 2);
-            Grid.SetColumn(_thirdPickerHost!, UseSeconds ? 4 : 0);
-            Grid.SetColumn(_fourthPickerHost, use24HourClock ? 0 : amPmColumn);
 
-            Grid.SetColumn(_firstSplitter!, 1);
-            Grid.SetColumn(_secondSplitter!, UseSeconds ? 3 : 0);
-            Grid.SetColumn(_thirdSplitter, use24HourClock ? 0 : amPmColumn-1);
+            if (canUseSeconds)
+            {
+                var amPmColumn = (UseSeconds) ? 6 : 4;
+                Grid.SetColumn(_thirdPickerHost!, UseSeconds ? 4 : 0);
+                Grid.SetColumn(_fourthPickerHost!, use24HourClock ? 0 : amPmColumn);
+                Grid.SetColumn(_firstSplitter!, 1);
+                Grid.SetColumn(_secondSplitter!, UseSeconds ? 3 : 0);
+                Grid.SetColumn(_thirdSplitter!, use24HourClock ? 0 : amPmColumn-1);
+            }
+            else
+            {
+                Grid.SetColumn(_thirdPickerHost, use24HourClock ? 0 : 4);
+                Grid.SetColumn(_firstSplitter!, 1);
+                Grid.SetColumn(_secondSplitter, use24HourClock ? 0 : 3);
+            }
         }
 
         private void SetSelectedTimeText()
         {
-            if (_hourText == null || _minuteText == null || _secondText ==  null || _periodText == null)
+            if (_hourText == null || _minuteText == null || _periodText == null)
                 return;
 
             var time = SelectedTime;
@@ -313,7 +330,11 @@ namespace Avalonia.Controls
 
                 _hourText.Text = newTime.ToString("%h");
                 _minuteText.Text = newTime.ToString("mm");
-                _secondText.Text = newTime.ToString("ss");
+                if (_secondText is not null)
+                {
+                    _secondText.Text = newTime.ToString("ss");
+                }
+
                 PseudoClasses.Set(":hasnotime", false);
 
                 _periodText.Text = time.Value.Hours >= 12 ? TimeUtils.GetPMDesignator() : TimeUtils.GetAMDesignator();
@@ -323,12 +344,18 @@ namespace Avalonia.Controls
                 // By clearing local value, we reset text property to the value from the template.
                 _hourText.ClearValue(TextBlock.TextProperty);
                 _minuteText.ClearValue(TextBlock.TextProperty);
-                _secondText.ClearValue(TextBlock.TextProperty);
+                if (_secondText is not null)
+                {
+                    _secondText.ClearValue(TextBlock.TextProperty);
+                }
+
                 PseudoClasses.Set(":hasnotime", true);
 
                 _periodText.Text = DateTime.Now.Hour >= 12 ?  TimeUtils.GetPMDesignator() :  TimeUtils.GetAMDesignator();
             }
         }
+
+        protected override AutomationPeer OnCreateAutomationPeer() => new TimePickerAutomationPeer(this);
 
         protected virtual void OnSelectedTimeChanged(TimeSpan? oldTime, TimeSpan? newTime)
         {

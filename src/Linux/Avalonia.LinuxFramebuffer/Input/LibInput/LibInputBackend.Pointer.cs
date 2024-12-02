@@ -16,14 +16,14 @@ public partial class LibInputBackend
     {
         var modifiers = RawInputModifiers.None; //TODO: support input modifiers
         var pev = libinput_event_get_pointer_event(ev);
-        var info = _screen.ScaledSize;
+        var info = _screen!.ScaledSize;
         var ts = libinput_event_pointer_get_time_usec(pev) / 1000;
         switch (type)
         {
             case LibInputEventType.LIBINPUT_EVENT_POINTER_MOTION_ABSOLUTE:
                 _mousePosition = new Point(libinput_event_pointer_get_absolute_x_transformed(pev, (int)info.Width),
                     libinput_event_pointer_get_absolute_y_transformed(pev, (int)info.Height));
-                ScheduleInput(new RawPointerEventArgs(_mouse, ts, _inputRoot, RawPointerEventType.Move, _mousePosition,
+                ScheduleInput(new RawPointerEventArgs(_mouse, ts, InputRoot, RawPointerEventType.Move, _mousePosition,
                     modifiers));
                 break;
             case LibInputEventType.LIBINPUT_EVENT_POINTER_BUTTON:
@@ -31,20 +31,20 @@ public partial class LibInputBackend
                     var button = (EvKey)libinput_event_pointer_get_button(pev);
                     var buttonState = libinput_event_pointer_get_button_state(pev);
 
-                    RawPointerEventArgs evnt = button switch
+                    RawPointerEventArgs? evnt = button switch
                     {
                         EvKey.BTN_LEFT when buttonState == 1
-                            => new(_mouse, ts, _inputRoot, RawPointerEventType.LeftButtonDown, _mousePosition, modifiers),
+                            => new(_mouse, ts, InputRoot, RawPointerEventType.LeftButtonDown, _mousePosition, modifiers),
                         EvKey.BTN_LEFT when buttonState == 0
-                            => new(_mouse, ts, _inputRoot, RawPointerEventType.LeftButtonUp, _mousePosition, modifiers),
+                            => new(_mouse, ts, InputRoot, RawPointerEventType.LeftButtonUp, _mousePosition, modifiers),
                         EvKey.BTN_RIGHT when buttonState == 1
-                            => new(_mouse, ts, _inputRoot, RawPointerEventType.RightButtonUp, _mousePosition, modifiers),
+                            => new(_mouse, ts, InputRoot, RawPointerEventType.RightButtonUp, _mousePosition, modifiers),
                         EvKey.BTN_RIGHT when buttonState == 2
-                            => new(_mouse, ts, _inputRoot, RawPointerEventType.RightButtonDown, _mousePosition, modifiers),
+                            => new(_mouse, ts, InputRoot, RawPointerEventType.RightButtonDown, _mousePosition, modifiers),
                         EvKey.BTN_MIDDLE when buttonState == 1
-                            => new(_mouse, ts, _inputRoot, RawPointerEventType.MiddleButtonDown, _mousePosition, modifiers),
+                            => new(_mouse, ts, InputRoot, RawPointerEventType.MiddleButtonDown, _mousePosition, modifiers),
                         EvKey.BTN_MIDDLE when buttonState == 2
-                            => new(_mouse, ts, _inputRoot, RawPointerEventType.MiddleButtonUp, _mousePosition, modifiers),
+                            => new(_mouse, ts, InputRoot, RawPointerEventType.MiddleButtonUp, _mousePosition, modifiers),
                         _ => default,
                     };
                     if (evnt is not null)
@@ -70,7 +70,7 @@ public partial class LibInputBackend
                                     LibInputPointerAxis.LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL);
                                 ScheduleInput(new RawMouseWheelEventArgs(_mouse
                                     , ts
-                                    , _inputRoot
+                                    , InputRoot
                                     , _mousePosition
                                     , new Vector(0, -value)
                                     , modifiers));
@@ -94,7 +94,7 @@ public partial class LibInputBackend
                             LibInputPointerAxis.LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL) / 120);
                     ScheduleInput(new RawMouseWheelEventArgs(_mouse
                         , ts
-                        , _inputRoot
+                        , InputRoot
                         , _mousePosition
                         , value
                         , modifiers));

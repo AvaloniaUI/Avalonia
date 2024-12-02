@@ -358,8 +358,10 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void FlowDirection_Of_RectangleContent_Shuold_Be_LeftToRight()
+        public void FlowDirection_Of_RectangleContent_Should_Be_LeftToRight()
         {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
             var target = new ComboBox
             {
                 FlowDirection = FlowDirection.RightToLeft,
@@ -385,6 +387,8 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void FlowDirection_Of_RectangleContent_Updated_After_InvalidateMirrorTransform()
         {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
             var parentContent = new Decorator()
             {
                 Child = new Control()
@@ -516,6 +520,25 @@ namespace Avalonia.Controls.UnitTests
             target.SelectionBoxItemTemplate = null;
 
             Assert.Equal(itemTemplate2, target.SelectionBoxItemTemplate);
+        }
+
+        [Fact]
+        public void DisplayMemberBinding_Is_Not_Applied_To_SelectionBoxItem_Without_Selection()
+        {
+            var target = new ComboBox
+            {
+                DisplayMemberBinding = new Binding(),
+                ItemsSource = new[] { "foo", "bar" }
+            };
+
+            target.SelectedItem = null;
+            Assert.Null(target.SelectionBoxItem);
+
+            target.SelectedItem = "foo";
+            Assert.NotNull(target.SelectionBoxItem);
+
+            target.SelectedItem = null;
+            Assert.Null(target.SelectionBoxItem);
         }
     }
 }

@@ -17,7 +17,7 @@ namespace Avalonia.Skia
     {
         private bool _isDisposed;
         private readonly SKTypeface _typeface;
-        private readonly NameTable _nameTable;
+        private readonly NameTable? _nameTable;
         private readonly OS2Table? _os2Table;
         private readonly HorizontalHeadTable? _hhTable;
         private IReadOnlyList<OpenTypeTag>? _supportedFeatures;
@@ -100,17 +100,29 @@ namespace Avalonia.Skia
 
             _nameTable = NameTable.Load(this);
 
-            FamilyName = _nameTable.FontFamilyName((ushort)CultureInfo.InvariantCulture.LCID);
+            //Rely on Skia if no name table is present
+            FamilyName = _nameTable?.FontFamilyName((ushort)CultureInfo.InvariantCulture.LCID) ?? typeface.FamilyName;
 
-            var familyNames = new Dictionary<ushort, string>(_nameTable.Languages.Count);
+            TypographicFamilyName = _nameTable?.GetNameById((ushort)CultureInfo.InvariantCulture.LCID, KnownNameIds.TypographicFamilyName) ?? FamilyName;
 
-            foreach (var language in _nameTable.Languages)
+            if(_nameTable != null)
             {
-                familyNames.Add(language, _nameTable.FontFamilyName(language));
-            }
+                var familyNames = new Dictionary<ushort, string>(_nameTable.Languages.Count);
 
-            FamilyNames = familyNames;
+                foreach (var language in _nameTable.Languages)
+                {
+                    familyNames.Add(language, _nameTable.FontFamilyName(language));
+                }
+
+                FamilyNames = familyNames;
+            }
+            else
+            {
+                FamilyNames = new Dictionary<ushort, string> { { (ushort)CultureInfo.InvariantCulture.LCID, FamilyName } };
+            }
         }
+
+        public string TypographicFamilyName { get; }
 
         public IReadOnlyDictionary<ushort, string> FamilyNames { get; }
 

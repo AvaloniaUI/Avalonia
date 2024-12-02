@@ -172,6 +172,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
             if (type.Equals(types.Color))
             {
+                text = text.Trim();
                 if (!Color.TryParse(text, out Color color))
                 {
                     return ReturnOnParseError($"Unable to parse \"{text}\" as a color", out result);
