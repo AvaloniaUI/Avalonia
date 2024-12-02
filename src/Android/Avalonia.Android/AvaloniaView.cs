@@ -26,7 +26,9 @@ namespace Avalonia.Android
         public AvaloniaView(Context context) : base(context)
         {
             _view = new ViewImpl(this);
-            _view.View.SetAccessibilityDelegate(new AvaloniaAccessibilityHelper());
+            _view.View.SetAccessibilityDelegate(
+                new AvaloniaAccessHelper(this).JavaCast<AccessibilityDelegate>()
+                );
 
             AddView(_view.View);
 

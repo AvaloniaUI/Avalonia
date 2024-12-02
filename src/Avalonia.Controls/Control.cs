@@ -462,7 +462,7 @@ namespace Avalonia.Controls
             return _automationPeer;
         }
 
-        public AutomationPeer GetOrCreateAutomationPeer()
+        internal AutomationPeer GetOrCreateAutomationPeer()
         {
             VerifyAccess();
 
