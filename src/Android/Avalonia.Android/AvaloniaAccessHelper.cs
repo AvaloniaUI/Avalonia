@@ -13,11 +13,11 @@ namespace Avalonia.Android
 {
     internal class AvaloniaAccessHelper : ExploreByTouchHelper
     {
-        private static readonly IReadOnlyDictionary<Type, Type> s_nodeInfoProviderTypes = 
-            new Dictionary<Type, Type>() 
+        private static readonly IReadOnlyDictionary<Type, Func<AutomationPeer, int, INodeInfoProvider>> s_nodeInfoProviderTypes = 
+            new Dictionary<Type, Func<AutomationPeer, int, INodeInfoProvider>>() 
             {
-                { typeof(IEmbeddedRootProvider), typeof(EmbeddedRootNodeInfoProvider) },
-                { typeof(IInvokeProvider), typeof(InvokeNodeInfoProvider) }
+                { typeof(IEmbeddedRootProvider), (peer, id) => new EmbeddedRootNodeInfoProvider(peer, id) },
+                { typeof(IInvokeProvider), (peer, id) => new InvokeNodeInfoProvider(peer, id) },
             };
 
         private readonly Dictionary<int, AutomationPeer> _peers;
@@ -55,10 +55,8 @@ namespace Avalonia.Android
             {
                 Type peerType = peer.GetType();
                 Type peerInterfaceType = peerType.GetInterfaces().Single();
-                Type nodeInfoProviderType = s_nodeInfoProviderTypes[peerInterfaceType];
 
-                nodeInfoProvider = (INodeInfoProvider)Activator.CreateInstance(
-                    nodeInfoProviderType, peer, _nodeInfoProviders.Count)!;
+                nodeInfoProvider = s_nodeInfoProviderTypes[peerInterfaceType](peer, _nodeInfoProviders.Count);
 
                 _peers.Add(nodeInfoProvider.VirtualViewId, peer);
                 _nodeInfoProviders.Add(peer, nodeInfoProvider);

@@ -7,7 +7,7 @@ namespace Avalonia.Android.Automation
 {
     public class InvokeNodeInfoProvider : NodeInfoProvider<IInvokeProvider>
     {
-        public InvokeNodeInfoProvider(AutomationPeer peer) : base(peer)
+        public InvokeNodeInfoProvider(AutomationPeer peer, int virtualViewId) : base(peer, virtualViewId)
         {
         }
 
