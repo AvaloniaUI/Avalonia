@@ -102,7 +102,7 @@ public sealed class DropShadowDirectionEffect : DropShadowEffectBase, IDirection
 
     static DropShadowDirectionEffect()
     {
-        AffectsRender<DropShadowEffect>(ShadowDepthProperty, DirectionProperty);
+        AffectsRender<DropShadowDirectionEffect>(ShadowDepthProperty, DirectionProperty);
     }
 
     public IImmutableEffect ToImmutable() => new ImmutableDropShadowDirectionEffect(OffsetX, OffsetY, BlurRadius, Color, Opacity);
