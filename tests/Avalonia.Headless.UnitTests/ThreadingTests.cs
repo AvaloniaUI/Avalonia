@@ -12,7 +12,7 @@ public class ThreadingTests
 #if NUNIT
     [AvaloniaTest, Timeout(10000)]
 #elif XUNIT
-    [AvaloniaFact(Timeout = 10000)]
+    [AvaloniaFact]
 #endif
     public void Should_Be_On_Dispatcher_Thread()
     {
