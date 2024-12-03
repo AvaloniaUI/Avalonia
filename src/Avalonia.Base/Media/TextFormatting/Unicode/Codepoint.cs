@@ -63,6 +63,26 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// </summary>
         public EastAsianWidthClass EastAsianWidthClass => UnicodeData.GetEastAsianWidthClass(_value);
 
+        internal bool IsEastAsian
+        {
+            get
+            {
+                var eastAsianWidth = EastAsianWidthClass;
+
+                switch (eastAsianWidth)
+                {
+                    case EastAsianWidthClass.Fullwidth:
+                    case EastAsianWidthClass.Halfwidth:
+                    case EastAsianWidthClass.Wide:
+                        {
+                            return true;
+                        }
+                }
+
+                return false;
+            }
+        }
+
         /// <summary>
         /// Determines whether this <see cref="Codepoint"/> is a break char.
         /// </summary>

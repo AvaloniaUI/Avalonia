@@ -89,110 +89,9 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
             Assert.Equal(21, positionsF[3].PositionMeasure);
         }
 
-        [Fact]
-        public void Should_Execute_Rule25_5()
-        {
-            var codePoints = new int[] { Convert.ToInt32("0030", 16), Convert.ToInt32("FE6A", 16) };
-
-            var text = string.Join(null, codePoints.Select(char.ConvertFromUtf32));
-
-            var lineBreaker = new LineBreakEnumerator(text);
-
-            var foundBreaks = new List<int>();
-
-            while (lineBreaker.MoveNext(out var lineBreak))
-            {
-                foundBreaks.Add(lineBreak.PositionWrap);
-            }
-        }
-
-        [Fact]
-        public void Should_Execute_Rule9()
-        {
-            var codePoints = new int[] { Convert.ToInt32("0030", 16), Convert.ToInt32("0308", 16) };
-
-            var text = string.Join(null, codePoints.Select(char.ConvertFromUtf32));
-
-            var lineBreaker = new LineBreakEnumerator(text);
-
-            var foundBreaks = new List<int>();
-
-            while (lineBreaker.MoveNext(out var lineBreak))
-            {
-                foundBreaks.Add(lineBreak.PositionWrap);
-            }
-        }
-
-        [Fact]
-        public void Should_Execute_Rule()
-        {
-            var foundBreaks = GetBreaks("9676 43443 43456 43424");
-        }
-
-        [Fact]
-        public void Should_Break_After_Spaces()
-        {
-            var foundBreaks = GetBreaks("48 32 32 32 32 48");
-        }
-
-        private static List<(int, BreakUnitDelegate)> GetBreaks(string data)
-        {
-            var codePoints = data.Split(" ").Select(int.Parse).ToArray();
-
-            var text = string.Join(null, codePoints.Select(char.ConvertFromUtf32));
-
-            var lineBreaker = new LineBreakEnumerator(text);
-
-            var foundBreaks = new List<(int, BreakUnitDelegate)>();
-
-            while (lineBreaker.MoveNext(out var lineBreak))
-            {
-                foundBreaks.Add((lineBreak.PositionWrap, lineBreaker.State.CurrentRule));
-            }
-
-            return foundBreaks;
-        }
-
-        [Fact]
-        public void Blubb()
-        {
-            var failedTests = new List<int>();
-
-            var testData = new LineBreakTestDataGenerator();
-
-            foreach (var test in testData)
-            {
-                int lineNumber = (int)test[0];
-
-                switch (lineNumber)
-                {
-                    // Rule [15.11] is conflicting
-                    case 16499:
-                    case 16504:
-                        {
-                            continue;
-                        }
-                }
-
-                int[] codePoints = (int[])test[1];
-                int[] breakPoints = (int[])test[2];
-                string rules = (string)test[3];
-
-
-                var result = ShouldFindBreaks(lineNumber, codePoints, breakPoints, rules);
-
-                if (!result)
-                {
-                    failedTests.Add(lineNumber);
-                }
-            }
-
-            _outputHelper.WriteLine($"Failed tests: [ {string.Join(",", failedTests)} ]");
-        }
-
-        [Theory]
+        [Theory(Skip = "Only runs when the spec changes")]
         [ClassData(typeof(LineBreakTestDataGenerator))]
-        public bool ShouldFindBreaks(int lineNumber, int[] codePoints, int[] breakPoints, string rules)
+        public void ShouldFindBreaks(int lineNumber, int[] codePoints, int[] breakPoints, string rules)
         {
             var text = string.Join(null, codePoints.Select(char.ConvertFromUtf32));
 
@@ -236,7 +135,7 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
                 _outputHelper.WriteLine("");
             }
 
-            return pass;
+            Assert.True(pass);
         }
 
         private static List<LineBreak> GetBreaks(LineBreakEnumerator lineBreaker)

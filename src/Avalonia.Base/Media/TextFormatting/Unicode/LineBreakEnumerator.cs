@@ -4,8 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace Avalonia.Media.TextFormatting.Unicode
 {
-    //Make this internal
-    public ref struct LineBreakEnumerator
+    internal ref struct LineBreakEnumerator
     {
         private static readonly BreakUnit s_sot = new() { StartOfText = true };
         private static readonly BreakUnit s_eot = new() { EndOfText = true };
@@ -18,8 +17,6 @@ namespace Avalonia.Media.TextFormatting.Unicode
             _text = text;
             _state = new LineBreakState();
         }
-
-        public LineBreakState State => _state;
 
         public readonly bool MoveNext([NotNullWhen(true)] out LineBreak lineBreak)
         {
@@ -127,8 +124,6 @@ namespace Avalonia.Media.TextFormatting.Unicode
             {
                 var res = rule.Invoke(text, state);
 
-                state.CurrentRule = rule;
-
                 switch (res)
                 {
                     case RuleResult.Pass:
@@ -148,7 +143,12 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
         public static RuleResult QuotationAndRegionalIndicator(ReadOnlySpan<char> text, LineBreakState state)
         {
-            if (!state.Current.Inherited && state.Current.LineBreakClass == LineBreakClass.RegionalIndicator)
+            if (state.Current.Inherited)
+            {
+                return RuleResult.Pass;
+            }
+
+            if (state.Current.LineBreakClass == LineBreakClass.RegionalIndicator)
             {
                 if(++state.RegionalIndicator % 2 == 0)
                 {
@@ -156,21 +156,16 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 }
             }
 
-            if (state.Current.LineBreakClass == LineBreakClass.Quotation)
+            switch (state.Current.LineBreakClass)
             {
-                switch (state.Current.Codepoint.GeneralCategory)
-                {
-                    case GeneralCategory.InitialPunctuation:
+                case LineBreakClass.Quotation:
+                    {
+                        if (++state.Quotation % 2 == 0)
                         {
-                            state.Quotation++;
-                            break;
+                            state.Quotation -= 2;
                         }
-                    case GeneralCategory.FinalPunctuation:
-                        {
-                            state.Quotation--;
-                            break;
-                        }
-                }
+                        break;
+                    }
             }
 
             return RuleResult.Pass;
@@ -428,39 +423,60 @@ namespace Avalonia.Media.TextFormatting.Unicode
         public static RuleResult LB15a(ReadOnlySpan<char> text, LineBreakState state)
         {
             // (sot | BK | CR | LF | NL | OP | QU | GL | SP | ZW) [\p{Pi}&QU] SP* ×
-            if (state.Quotation > 0 && IsMatch(state.LastBeforeWhitespace) &&
-                state.LastBeforeWhitespace.Codepoint.GeneralCategory == GeneralCategory.InitialPunctuation &&
+            if (state.Quotation > 0 && state.LastBeforeWhitespace.Codepoint.GeneralCategory == GeneralCategory.InitialPunctuation && 
                 state.LastBeforeWhitespace.LineBreakClass == LineBreakClass.Quotation)
             {
-                return RuleResult.NoBreak;
-            }
-
-            return RuleResult.Pass;
-
-            static bool IsMatch(BreakUnit unit)
-            {
-                if (unit.StartOfText)
+                //at the start of the line
+                if (state.Current.StartOfText)
                 {
-                    return true;
+                    return RuleResult.NoBreak;
                 }
 
-                if (IsBreakClass(unit.LineBreakClass))
+                //at the start of the line
+                if (IsBreakClass(state.Previous.LineBreakClass))
                 {
-                    return true;
+                    return RuleResult.NoBreak;
                 }
 
-                switch (unit.LineBreakClass)
+                if (state.Current.Inherited)
                 {
-                    case LineBreakClass.OpenPunctuation:
-                    case LineBreakClass.Quotation:
+                    //LineBreakClass.Glue
+                    return RuleResult.NoBreak;
+                }
+
+                //after a space
+                switch (state.Current.LineBreakClass)
+                {
                     case LineBreakClass.Glue:
                     case LineBreakClass.Space:
                     case LineBreakClass.ZWSpace:
-                        return true;
+                        return RuleResult.NoBreak;
                 }
 
-                return false;
+                //after a space
+                switch (state.Previous.LineBreakClass)
+                {
+                    case LineBreakClass.Glue:
+                    case LineBreakClass.Space:
+                    case LineBreakClass.ZWSpace:
+                        return RuleResult.NoBreak;
+                }
+
+                // after opening punctuation
+                switch (LineBreakState.Before(text, state.LastBeforeWhitespace).LineBreakClass)
+                {
+                    case LineBreakClass.OpenPunctuation:                  
+                        return RuleResult.NoBreak;
+                }
+
+                // after an unresolved quotation mark
+                if (state.Quotation - 1 > 0)
+                {
+                    return RuleResult.NoBreak;
+                }
             }
+
+            return RuleResult.Pass;         
         }
 
         /// <summary>
@@ -603,11 +619,52 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// </summary>
         public static RuleResult LB19(ReadOnlySpan<char> text, LineBreakState state)
         {
-            // × QU
-            // QU ×
-            if ((state.Current.LineBreakClass == LineBreakClass.Quotation) || (state.Next(text).LineBreakClass == LineBreakClass.Quotation))
+            var next = state.Next(text);
+     
+            if (next.LineBreakClass == LineBreakClass.Quotation)
+            {
+                // × [QU - \p{Pi}]
+                if (next.Codepoint.GeneralCategory != GeneralCategory.InitialPunctuation)
+                {
+                    return RuleResult.NoBreak;
+                }
+
+                //[^$EastAsian] × QU
+                if (!state.LastBeforeWhitespace.Codepoint.IsEastAsian)
+                {
+                    return RuleResult.NoBreak;
+                }
+
+                var after = LineBreakState.After(text, next);
+
+                //× QU ( [^$EastAsian] | eot )
+                if(!after.Codepoint.IsEastAsian || after.EndOfText)
+                {
+                    return RuleResult.NoBreak;
+                }
+            }
+
+            // [QU - \p{Pf}] ×
+            if (state.LastBeforeWhitespace.LineBreakClass == LineBreakClass.Quotation && state.LastBeforeWhitespace.Codepoint.GeneralCategory != GeneralCategory.InitialPunctuation)
             {
                 return RuleResult.NoBreak;
+            }
+
+            if(state.LastBeforeSpace.LineBreakClass == LineBreakClass.Quotation)
+            {
+                //QU × [^$EastAsian]
+                if (!state.Next(text).Codepoint.IsEastAsian)
+                {
+                    return RuleResult.NoBreak;
+                }
+
+                var before = LineBreakState.Before(text, state.LastBeforeSpace);
+
+                //( sot | [^$EastAsian] ) QU ×
+                if (before.StartOfText || !before.Codepoint.IsEastAsian)
+                {
+                    return RuleResult.NoBreak;
+                }               
             }
 
             return RuleResult.Pass;
@@ -705,7 +762,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
             {
                 // [21.1] HL(HY|NonEastAsianBA) × [^HL]
                 if (state.Previous.LineBreakClass == LineBreakClass.HebrewLetter
-                    && state.Current.LineBreakClass is LineBreakClass.Hyphen or LineBreakClass.BreakAfter)
+                    && state.Current.LineBreakClass is LineBreakClass.Hyphen or LineBreakClass.BreakAfter && !state.Current.Codepoint.IsEastAsian)
                 {
                     return RuleResult.NoBreak;
                 }
@@ -1253,8 +1310,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                         var next = state.Next(text);
 
                         // (AL | HL | NU) × [OP-[\p{ea=F}\p{ea=W}\p{ea=H}]]
-                        if ((next.LineBreakClass == LineBreakClass.OpenPunctuation) &&
-                            (next.Codepoint.EastAsianWidthClass == EastAsianWidthClass.Ambiguous || next.Codepoint.EastAsianWidthClass == EastAsianWidthClass.Narrow))
+                        if ((next.LineBreakClass == LineBreakClass.OpenPunctuation) && !next.Codepoint.IsEastAsian)
                         {
                             return RuleResult.NoBreak;
                         }
@@ -1263,7 +1319,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
                 case LineBreakClass.CloseParenthesis:
                     // [CP-[\p{ea=F}\p{ea=W}\p{ea=H}]] × (AL | HL | NU)
-                    if (state.Current.Codepoint.EastAsianWidthClass == EastAsianWidthClass.Ambiguous || state.Current.Codepoint.EastAsianWidthClass == EastAsianWidthClass.Narrow)
+                    if (!state.Current.Codepoint.IsEastAsian)
                     {
                         switch (state.Next(text).LineBreakClass)
                         {
@@ -1448,8 +1504,6 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 LastBeforeSpace = s_sot;
                 LastBeforeWhitespace = s_sot;
             }
-
-            public BreakUnitDelegate? CurrentRule { get; set; }
 
             public BreakUnit Current { get; set; }
 
