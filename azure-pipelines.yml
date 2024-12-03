@@ -44,13 +44,6 @@ jobs:
        dotnet workload install android macos wasm-tools
 
   - task: CmdLine@2
-    displayName: 'Install Tizen Workload'
-    inputs:
-      targetType: 'inline'
-      script: |
-       curl -sSL https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.sh | sudo bash -s -- -d "/opt/hostedtoolcache/dotnet"
-
-  - task: CmdLine@2
     displayName: 'Run Build'
     inputs:
       script: |
@@ -69,7 +62,7 @@ jobs:
   variables:
     SolutionDir: '$(Build.SourcesDirectory)'
   pool:
-    vmImage: 'macos-12'
+    vmImage: 'macos-13'
   steps:
   - task: UseDotNet@2
     displayName: 'Use .NET 6.0 Runtime'
@@ -88,13 +81,6 @@ jobs:
     inputs:
       script: |
        dotnet workload install android ios macos wasm-tools
-
-  - task: CmdLine@2
-    displayName: 'Install Tizen Workload'
-    inputs:
-      targetType: 'inline'
-      script: |
-       curl -sSL https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.sh | sudo bash
   
   - task: CmdLine@2
     displayName: 'Generate avalonia-native'
@@ -109,10 +95,11 @@ jobs:
     inputs:
       actions: 'build'
       scheme: ''
-      sdk: 'macosx12.3'
+      sdk: 'macosx13.0'
       configuration: 'Release'
       xcWorkspacePath: '**/*.xcodeproj/project.xcworkspace'
-      xcodeVersion: '13' # Options: 8, 9, default, specifyPath
+      xcodeVersion: 'specifyPath' # Options: 8, 9, default, specifyPath
+      xcodeDeveloperDir: '/Applications/Xcode_14.1.app/Contents/Developer'
       args: '-derivedDataPath ./'
 
   - task: CmdLine@2
@@ -168,13 +155,6 @@ jobs:
     inputs:
       script: |
        dotnet workload install android ios tvos wasm-tools
-
-  - task: PowerShell@2
-    displayName: 'Install Tizen Workload'
-    inputs:
-      targetType: 'inline'
-      script: |
-       (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1') | Invoke-Expression
 
   - task: CmdLine@2
     displayName: 'Install Nuke'

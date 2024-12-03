@@ -79,7 +79,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         
         internal struct ANativeWindow_Buffer
         {
-            // The number of pixels that are show horizontally.
+            // The number of pixels that are shown horizontally.
             public int width;
 
             // The number of pixels that are shown vertically.

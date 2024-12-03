@@ -88,17 +88,25 @@ namespace Avalonia.Native
 
         void IAvnApplicationEvents.OnHide()
         {
-            if (AvaloniaLocator.Current.GetService<IActivatableLifetime>() is ActivatableLifetimeBase lifetime)
-            {
-                lifetime.OnActivated(ActivationKind.Background);    
-            }
         }
 
         void IAvnApplicationEvents.OnUnhide()
         {
+        }
+
+        void IAvnApplicationEvents.OnActivate()
+        {
             if (AvaloniaLocator.Current.GetService<IActivatableLifetime>() is ActivatableLifetimeBase lifetime)
             {
-                lifetime.OnActivated(ActivationKind.Background);    
+                lifetime.OnActivated(ActivationKind.Background);
+            }
+        }
+
+        void IAvnApplicationEvents.OnDeactivate()
+        {
+            if (AvaloniaLocator.Current.GetService<IActivatableLifetime>() is ActivatableLifetimeBase lifetime)
+            {
+                lifetime.OnDeactivated(ActivationKind.Background);
             }
         }
 

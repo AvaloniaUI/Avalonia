@@ -36,6 +36,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType InheritDataTypeFromAttribute { get; }
         public IXamlType MarkupExtensionOptionAttribute { get; }
         public IXamlType MarkupExtensionDefaultOptionAttribute { get; }
+        public IXamlType ControlTemplateScopeAttribute { get; }
         public IXamlType AvaloniaListAttribute { get; }
         public IXamlType AvaloniaList { get; }
         public IXamlType OnExtensionType { get; }
@@ -203,6 +204,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             InheritDataTypeFromAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.InheritDataTypeFromAttribute");
             MarkupExtensionOptionAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.MarkupExtensionOptionAttribute");
             MarkupExtensionDefaultOptionAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.MarkupExtensionDefaultOptionAttribute");
+            ControlTemplateScopeAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.ControlTemplateScopeAttribute");
             AvaloniaListAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.AvaloniaListAttribute");
             AvaloniaList = cfg.TypeSystem.GetType("Avalonia.Collections.AvaloniaList`1");
             OnExtensionType = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.MarkupExtensions.On");

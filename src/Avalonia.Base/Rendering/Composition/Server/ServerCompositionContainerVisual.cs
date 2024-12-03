@@ -20,9 +20,12 @@ namespace Avalonia.Rendering.Composition.Server
         {
             base.RenderCore(context, currentTransformedClip);
 
-            foreach (var ch in Children)
+            if (context.RenderChildren)
             {
-                ch.Render(context, currentTransformedClip);
+                foreach (var ch in Children)
+                {
+                    ch.Render(context, currentTransformedClip);
+                }
             }
         }
 

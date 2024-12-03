@@ -4,7 +4,7 @@
     <ProjectReference Include="src/Avalonia.Build.Tasks/Avalonia.Build.Tasks.csproj" />
     <ProjectReference Include="src/**/*.*proj" />
     <ProjectReference Condition="'$(SkipBuildingSamples)' != 'True'" Include="samples/**/*.*proj" />
-    <ProjectReference Condition="'$(SkipBuildingTests)' != 'True'" Include="tests/**/*.*proj" />
+    <ProjectReference Condition="'$(SkipBuildingTests)' != 'True'" Include="tests/**/*.*proj" Exclude="tests/BuildTests/**" />
     <ProjectReference Include="packages/**/*.*proj" />
     <ProjectReference Remove="**/*.shproj" />
     <ProjectReference Remove="src/Markup/Avalonia.Markup.Xaml.Loader/xamlil.github/**/*.*proj" />
