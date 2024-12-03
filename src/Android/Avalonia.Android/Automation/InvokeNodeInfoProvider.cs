@@ -11,7 +11,7 @@ namespace Avalonia.Android.Automation
         {
         }
 
-        public override bool PerformNodeAction(int action, Bundle arguments)
+        public override bool PerformNodeAction(int action, Bundle? arguments)
         {
             if (action == AccessibilityNodeInfoCompat.ActionClick)
             {
@@ -24,9 +24,12 @@ namespace Avalonia.Android.Automation
             }
         }
 
-        public override void PopulateNodeInfo(AccessibilityNodeInfoCompat nodeInfo)
+        public override void PopulateNodeInfo(AccessibilityNodeInfoCompat nodeInfo, bool invokeDefault)
         {
-            base.PopulateNodeInfo(nodeInfo);
+            if (invokeDefault)
+            {
+                PopulateNodeInfo(nodeInfo);
+            }
 
             nodeInfo.AddAction(AccessibilityNodeInfoCompat.ActionClick);
             nodeInfo.Clickable = true;

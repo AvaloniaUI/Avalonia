@@ -9,6 +9,6 @@ namespace Avalonia.Android.Automation
 
         bool PerformNodeAction(int action, Bundle? arguments);
 
-        void PopulateNodeInfo(AccessibilityNodeInfoCompat nodeInfo);
+        void PopulateNodeInfo(AccessibilityNodeInfoCompat nodeInfo, bool invokeDefault = true);
     }
 }

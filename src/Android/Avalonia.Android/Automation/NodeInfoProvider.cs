@@ -10,7 +10,7 @@ namespace Avalonia.Android.Automation
     {
         private readonly AutomationPeer _peer;
 
-        public NodeInfoProvider(AutomationPeer peer, int virtualViewId) 
+        public NodeInfoProvider(AutomationPeer peer, int virtualViewId)
         {
             _peer = peer;
             VirtualViewId = virtualViewId;
@@ -18,12 +18,14 @@ namespace Avalonia.Android.Automation
 
         public int VirtualViewId { get; }
 
-        public T GetProvider() => _peer.GetProvider<T>() ?? 
+        public T GetProvider() => _peer.GetProvider<T>() ??
             throw new InvalidOperationException($"Peer instance does not implement {nameof(T)}.");
 
-        public abstract bool PerformNodeAction(int action, Bundle arguments);
+        public abstract bool PerformNodeAction(int action, Bundle? arguments);
 
-        public virtual void PopulateNodeInfo(AccessibilityNodeInfoCompat nodeInfo) 
+        public abstract void PopulateNodeInfo(AccessibilityNodeInfoCompat nodeInfo, bool invokeDefault);
+
+        protected void PopulateNodeInfo(AccessibilityNodeInfoCompat nodeInfo)
         {
             nodeInfo.ClassName = _peer.GetClassName();
             nodeInfo.Enabled = _peer.IsEnabled();
