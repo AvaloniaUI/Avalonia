@@ -63,7 +63,13 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// </summary>
         public EastAsianWidthClass EastAsianWidthClass => UnicodeData.GetEastAsianWidthClass(_value);
 
-        internal bool IsEastAsian
+        /// <summary>
+        /// Determines whether this <see cref="Codepoint"/> is an east asian char.
+        /// </summary>
+        /// <returns>
+        /// <c>true</c> if [is an east asian character]; otherwise, <c>false</c>.
+        /// </returns>
+        public bool IsEastAsian
         {
             get
             {
