@@ -21,24 +21,20 @@ namespace Avalonia.Android
             };
 
         private readonly Dictionary<int, AutomationPeer> _peers;
+        private readonly Dictionary<AutomationPeer, int> _peerIds;
         private readonly Dictionary<AutomationPeer, HashSet<INodeInfoProvider>> _peerNodeInfoProviders;
 
         private readonly AvaloniaView _view;
 
-        public AvaloniaAccessHelper(AvaloniaView view) : base(view.TopLevelImpl.View)
+        public AvaloniaAccessHelper(AvaloniaView view) : base(view)
         {
             _peers = [];
+            _peerIds = [];
             _peerNodeInfoProviders = [];
 
             AutomationPeer rootPeer = ControlAutomationPeer.CreatePeerForElement(view.TopLevel!);
             GetOrCreateNodeInfoProvidersFromPeer(rootPeer, out int _);
-            rootPeer.ChildrenChanged += (s, ev) => 
-            {
-                _peerNodeInfoProviders.Clear();
-                _peers.Clear();
-
-                InvalidateRoot();
-            };
+            rootPeer.ChildrenChanged += (s, ev) => InvalidateRoot();
 
             _view = view;
         }
@@ -61,10 +57,7 @@ namespace Avalonia.Android
             int peerViewId;
             if (_peerNodeInfoProviders.TryGetValue(peer, out HashSet<INodeInfoProvider>? nodeInfoProviders))
             {
-                peerViewId = nodeInfoProviders
-                    .Select(x => x.VirtualViewId)
-                    .Distinct()
-                    .Single();
+                peerViewId = _peerIds[peer];
             }
             else
             {
@@ -72,6 +65,7 @@ namespace Avalonia.Android
                 peerViewId = _peerNodeInfoProviders.Count;
 
                 _peers.Add(peerViewId, peer);
+                _peerIds.Add(peer, peerViewId);
                 _peerNodeInfoProviders.Add(peer, nodeInfoProviders);
 
                 peer.PropertyChanged += (s, ev) => InvalidateVirtualView(peerViewId);
@@ -93,16 +87,10 @@ namespace Avalonia.Android
             return nodeInfoProviders;
         }
 
-        private NodeInfoProvider<IEmbeddedRootProvider>? GetHostNodeInfoProvider()
-        {
-            return GetNodeInfoProvidersFromVirtualViewId(HostId)
-                ?.SingleOrDefault() as NodeInfoProvider<IEmbeddedRootProvider>;
-        }
-
         protected override int GetVirtualViewAt(float x, float y)
         {
-            AutomationPeer? peer = GetHostNodeInfoProvider()?
-                .GetProvider().GetPeerFromPoint(new(x, y));
+            Point p = _view.TopLevelImpl.PointToClient(new PixelPoint((int)x, (int)y));
+            AutomationPeer? peer = _peers[0].GetProvider<IEmbeddedRootProvider>()?.GetPeerFromPoint(p);
             if (peer is not null)
             {
                 GetOrCreateNodeInfoProvidersFromPeer(peer, out int virtualViewId);
@@ -121,7 +109,7 @@ namespace Avalonia.Android
                 return;
             }
 
-            foreach (AutomationPeer peer in _peers[HostId].GetChildren().Where(x => !x.IsOffscreen()))
+            foreach (AutomationPeer peer in _peers[0].GetAllDescendants().Where(x => x is not NoneAutomationPeer && !x.IsOffscreen()))
             {
                 GetOrCreateNodeInfoProvidersFromPeer(peer, out int virtualViewId);
                 virtualViewIds.Add(Integer.ValueOf(virtualViewId));
@@ -148,6 +136,8 @@ namespace Avalonia.Android
             nodeInfo.Focusable = peer.IsKeyboardFocusable();
             nodeInfo.HintText = peer.GetHelpText();
 
+            nodeInfo.SetParent(_view, HostId);
+
             AutomationPeer? labeledBy = peer.GetLabeledBy();
             if (labeledBy is not null)
             {
@@ -160,8 +150,8 @@ namespace Avalonia.Android
                 _view.TopLevelImpl.PointToScreen(bounds.TopLeft),
                 _view.TopLevelImpl.PointToScreen(bounds.BottomRight)
                 );
-            nodeInfo.SetBoundsInScreen(new(
-                screenRect.X, screenRect.Y, 
+            nodeInfo.SetBoundsInParent(new(
+                screenRect.X, screenRect.Y,
                 screenRect.Right, screenRect.Bottom
                 ));
 

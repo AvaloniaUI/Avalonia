@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
@@ -6,7 +7,7 @@ using Avalonia.Controls.Embedding;
 using Avalonia.Input;
 using Avalonia.VisualTree;
 
-namespace Avalonia.Controls.Automation
+namespace Avalonia.Controls.Automation.Peers
 {
     public class EmbeddableControlRootAutomationPeer : ContentControlAutomationPeer, IEmbeddedRootProvider
     {
@@ -29,21 +30,12 @@ namespace Avalonia.Controls.Automation
 
         public AutomationPeer? GetPeerFromPoint(Point p)
         {
-            var hit = Owner.GetVisualAt(p)?.FindAncestorOfType<Control>(includeSelf: true);
+            var hit = Owner.GetVisualAt(p)?.FindAncestorOfType<Control>();
 
             if (hit is null)
                 return null;
 
             var peer = GetOrCreate(hit);
-
-            while (peer != this && peer.GetProvider<IEmbeddedRootProvider>() is { } embedded)
-            {
-                var embeddedHit = embedded.GetPeerFromPoint(p);
-                if (embeddedHit is null)
-                    break;
-                peer = embeddedHit;
-            }
-
             return peer;
         }
 
