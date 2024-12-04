@@ -136,6 +136,39 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         }
 
         [Fact]
+        public void Should_Format_TextLine_With_Non_Text_TextRuns_RightToLeft()
+        {
+            using (Start())
+            {
+                var defaultProperties =
+                    new GenericTextRunProperties(Typeface.Default, 12, foregroundBrush: Brushes.Black);
+
+                var textSource = new TextSourceWithDummyRuns(defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine = formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                    new GenericTextParagraphProperties(FlowDirection.RightToLeft, TextAlignment.Left, true, true, defaultProperties, TextWrapping.NoWrap, 0, 0, 0));
+
+                Assert.NotNull(textLine);
+
+                Assert.Equal(5, textLine.TextRuns.Count);
+
+                Assert.Equal(14, textLine.Length);
+
+                var first = textLine.TextRuns[0] as ShapedTextRun;
+
+                var last = textLine.TextRuns[4] as TextEndOfParagraph;
+
+                Assert.NotNull(first);
+
+                Assert.NotNull(last);
+
+                Assert.Equal("Hello".AsMemory(), first.Text);
+            }
+        }
+
+        [Fact]
         public void Should_Format_TextRuns_With_TextRunStyles()
         {
             using (Start())

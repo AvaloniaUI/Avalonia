@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
     <OutputType>Library</OutputType>
   </PropertyGroup>
   <Import Project="..\..\build\UnitTests.NetCore.targets" />
@@ -14,8 +14,5 @@
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Properties\" />
   </ItemGroup>
 </Project>

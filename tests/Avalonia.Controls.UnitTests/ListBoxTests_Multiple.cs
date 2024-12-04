@@ -3,6 +3,7 @@ using System.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Styling;
@@ -163,6 +164,36 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.Equal(1, target.SelectedIndex);
                 Assert.Equal("Bar", target.SelectedItem);
+            }
+        }
+
+        [Fact]
+        public void ToggleModifier_And_Range_Should_Select_Second_Range()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var target = new ListBox
+                {
+                    Template = new FuncControlTemplate(CreateListBoxTemplate),
+                    ItemsSource = new[] { "Foo", "Bar", "Baz", "Gap", "Boo", "Far", "Faz" },
+                    SelectionMode = SelectionMode.Multiple,
+                    Width = 100,
+                    Height = 100,
+                };
+
+                var root = new TestRoot(target);
+                root.LayoutManager.ExecuteInitialLayoutPass();
+
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
+                // Select first range
+                _helper.Click(target.Presenter.Panel.Children[0]);
+                _helper.Click(target.Presenter.Panel.Children[2], modifiers: KeyModifiers.Shift);
+
+                // Select second range
+                _helper.Click(target.Presenter.Panel.Children[4], modifiers: KeyModifiers.Control);
+                _helper.Click(target.Presenter.Panel.Children[6], modifiers: KeyModifiers.Control | KeyModifiers.Shift);
+
+                Assert.Equal(new[] { "Foo", "Bar", "Baz", "Boo", "Far", "Faz" }, target.SelectedItems);
             }
         }
 
@@ -575,6 +606,64 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new[] { "Foo", "Bar", "Baz", "Qux" }, target.SelectedItems);
             Assert.Equal(new[] { 0, 1, 2, 3 }, SelectedContainers(target));
             Assert.True(target.ContainerFromIndex(3).IsFocused);
+        }
+
+        [Fact]
+        public void SelectAll_Works_From_No_Selection_When_SelectedItem_Is_Bound_TwoWay()
+        {
+            // Issue #13676
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+            var target = new ListBox
+            {
+                Template = new FuncControlTemplate(CreateListBoxTemplate),
+                ItemsSource = new[] { "Foo", "Bar", "Baz", "Qux" },
+                SelectionMode = SelectionMode.Multiple,
+                Width = 100,
+                Height = 100,
+            };
+
+            var root = new TestRoot(target);
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            target.Bind(ListBox.SelectedItemProperty, new Binding("Tag") 
+            { 
+                Mode = BindingMode.TwoWay,
+                RelativeSource = new RelativeSource(RelativeSourceMode.Self),
+            });
+
+            target.SelectAll();
+
+            Assert.Equal(new[] { 0, 1, 2, 3 }, target.Selection.SelectedIndexes);
+            Assert.Equal(new[] { "Foo", "Bar", "Baz", "Qux" }, target.SelectedItems);
+        }
+
+        [Fact]
+        public void SelectAll_Works_From_No_Selection_When_SelectedIndex_Is_Bound_TwoWay()
+        {
+            // Issue #13676
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+            var target = new ListBox
+            {
+                Template = new FuncControlTemplate(CreateListBoxTemplate),
+                ItemsSource = new[] { "Foo", "Bar", "Baz", "Qux" },
+                SelectionMode = SelectionMode.Multiple,
+                Width = 100,
+                Height = 100,
+            };
+
+            var root = new TestRoot(target);
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            target.Bind(ListBox.SelectedIndexProperty, new Binding("Tag")
+            {
+                Mode = BindingMode.TwoWay,
+                RelativeSource = new RelativeSource(RelativeSourceMode.Self),
+            });
+
+            target.SelectAll();
+
+            Assert.Equal(new[] { 0, 1, 2, 3 }, target.Selection.SelectedIndexes);
+            Assert.Equal(new[] { "Foo", "Bar", "Baz", "Qux" }, target.SelectedItems);
         }
 
         private Control CreateListBoxTemplate(TemplatedControl parent, INameScope scope)

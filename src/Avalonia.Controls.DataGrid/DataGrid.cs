@@ -22,6 +22,8 @@ using System.Text;
 using System.Linq;
 using Avalonia.Input.Platform;
 using System.ComponentModel.DataAnnotations;
+using Avalonia.Automation.Peers;
+using Avalonia.Controls.Automation.Peers;
 using Avalonia.Controls.Utils;
 using Avalonia.Layout;
 using Avalonia.Controls.Metadata;
@@ -716,6 +718,17 @@ namespace Avalonia.Controls
             set { SetValue(RowDetailsVisibilityModeProperty, value); }
         }
 
+
+        public static readonly DirectProperty<DataGrid, IDataGridCollectionView> CollectionViewProperty =
+            AvaloniaProperty.RegisterDirect<DataGrid, IDataGridCollectionView>(nameof(CollectionView),
+                o => o.CollectionView);
+
+        /// <summary>
+        /// Gets current <see cref="IDataGridCollectionView"/>.
+        /// </summary>
+        public IDataGridCollectionView CollectionView =>
+            DataConnection.CollectionView;
+
         static DataGrid()
         {
             AffectsMeasure<DataGrid>(
@@ -789,6 +802,11 @@ namespace Avalonia.Controls
             UpdatePseudoClasses();
         }
 
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new DataGridAutomationPeer(this);
+        }
+
         private void SetValueNoCallback<T>(AvaloniaProperty<T> property, T value, BindingPriority priority = BindingPriority.LocalValue)
         {
             _areHandlersSuspended = true;
@@ -837,6 +855,8 @@ namespace Avalonia.Controls
             {
                 Debug.Assert(DataConnection != null);
 
+                var oldCollectionView = DataConnection.CollectionView;
+
                 var oldValue = (IEnumerable)e.OldValue;
                 var newItemsSource = (IEnumerable)e.NewValue;
 
@@ -865,14 +885,24 @@ namespace Avalonia.Controls
 
                 // Wrap an IEnumerable in an ICollectionView if it's not already one
                 bool setDefaultSelection = false;
-                if (newItemsSource != null && !(newItemsSource is IDataGridCollectionView))
+                if (newItemsSource is IDataGridCollectionView newCollectionView)
                 {
-                    DataConnection.DataSource = DataGridDataConnection.CreateView(newItemsSource);
+                    setDefaultSelection = true;
                 }
                 else
                 {
-                    DataConnection.DataSource = newItemsSource;
-                    setDefaultSelection = true;
+                    newCollectionView =  newItemsSource is not null
+                        ? DataGridDataConnection.CreateView(newItemsSource)
+                        : default;
+                }
+
+                DataConnection.DataSource = newCollectionView;
+
+                if (oldCollectionView != DataConnection.CollectionView)
+                {
+                    RaisePropertyChanged(CollectionViewProperty, 
+                        oldCollectionView, 
+                        newCollectionView);
                 }
 
                 if (DataConnection.DataSource != null)
@@ -1153,7 +1183,7 @@ namespace Avalonia.Controls
                             row.EnsureHeaderStyleAndVisibility(null);
                             if (newValueRows)
                             {
-                                row.UpdatePseudoClasses();
+                                row.ApplyState();
                                 row.EnsureHeaderVisibility();
                             }
                         }
@@ -1509,14 +1539,11 @@ namespace Avalonia.Controls
             set;
         }
 
-        // Height currently available for cells this value is smaller.  This height is reduced by the existence of ColumnHeaders
-        // or a horizontal scrollbar.  Layout is asynchronous so changes to the ColumnHeaders or the horizontal scrollbar are
-        // not reflected immediately.
-        internal double CellsHeight
+        internal double CellsEstimatedHeight
         {
             get
             {
-                return RowsPresenterEstimatedAvailableHeight ?? 0;
+                return RowsPresenterAvailableSize?.Height ?? 0;
             }
         }
 
@@ -1690,7 +1717,7 @@ namespace Avalonia.Controls
                     // State for the old row needs to be applied after setting the new value
                     if (oldMouseOverRow != null)
                     {
-                        oldMouseOverRow.UpdatePseudoClasses();
+                        oldMouseOverRow.ApplyState();
                     }
 
                     if (_mouseOverRowIndex.HasValue)
@@ -1702,7 +1729,7 @@ namespace Avalonia.Controls
                             Debug.Assert(newMouseOverRow != null);
                             if (newMouseOverRow != null)
                             {
-                                newMouseOverRow.UpdatePseudoClasses();
+                                newMouseOverRow.ApplyState();
                             }
                         }
                     }
@@ -1802,11 +1829,6 @@ namespace Avalonia.Controls
                 _rowsPresenterAvailableSize = value;
             }
         }
-        internal double? RowsPresenterEstimatedAvailableHeight
-        {
-            get;
-            set;
-        }
 
         internal double[] RowGroupSublevelIndents
         {
@@ -1826,12 +1848,6 @@ namespace Avalonia.Controls
         {
             get;
             private set;
-        }
-
-        internal bool UpdatedStateOnMouseLeftButtonDown
-        {
-            get;
-            set;
         }
 
         /// <summary>
@@ -2116,7 +2132,7 @@ namespace Avalonia.Controls
             if (DataConnection.DataSource != null && !DataConnection.EventsWired)
             {
                 DataConnection.WireEvents(DataConnection.DataSource);
-                InitializeElements(false /*recycleRows*/);
+                InitializeElements(true /*recycleRows*/);
             }
         }
 
@@ -2340,7 +2356,7 @@ namespace Avalonia.Controls
                     }
                     else
                     {
-                        double maximum = EdgedRowsHeightCalculated - CellsHeight;
+                        double maximum = EdgedRowsHeightCalculated - CellsEstimatedHeight;
                         scrollHeight = Math.Min(Math.Max(0, maximum - _verticalOffset), -delta.Y);
                     }
                 }
@@ -2813,7 +2829,6 @@ namespace Avalonia.Controls
                         if (SelectionMode == DataGridSelectionMode.Extended && AnchorSlot != -1)
                         {
                             int anchorSlot = AnchorSlot;
-                            ClearRowSelection(slot, setAnchorSlot: false);
                             if (slot <= anchorSlot)
                             {
                                 SetRowsSelection(slot, anchorSlot);
@@ -3163,7 +3178,7 @@ namespace Avalonia.Controls
         {
             if (_vScrollBar != null && _vScrollBar.IsVisible)
             {
-                double cellsHeight = CellsHeight;
+                double cellsHeight = CellsEstimatedHeight;
                 double edgedRowsHeightCalculated = EdgedRowsHeightCalculated;
                 UpdateVerticalScrollBar(
                     needVertScrollbar: edgedRowsHeightCalculated > cellsHeight,
@@ -3297,7 +3312,7 @@ namespace Avalonia.Controls
                 }
                 if (updated)
                 {
-                    UpdateDisplayedRows(DisplayData.FirstScrollingSlot, CellsHeight);
+                    UpdateDisplayedRows(DisplayData.FirstScrollingSlot, CellsEstimatedHeight);
                     InvalidateRowsMeasure(invalidateIndividualElements: false);
                 }
             }
@@ -3531,7 +3546,7 @@ namespace Avalonia.Controls
             bool isVerticalScrollBarOverCells = IsVerticalScrollBarOverCells;
 
             double cellsWidth = CellsWidth;
-            double cellsHeight = CellsHeight;
+            double cellsHeight = CellsEstimatedHeight;
 
             bool allowHorizScrollbar = false;
             bool forceHorizScrollbar = false;
@@ -3588,7 +3603,7 @@ namespace Avalonia.Controls
             double totalVisibleWidth = ColumnsInternal.VisibleEdgedColumnsWidth;
             double totalVisibleFrozenWidth = ColumnsInternal.GetVisibleFrozenEdgedColumnsWidth();
 
-            UpdateDisplayedRows(DisplayData.FirstScrollingSlot, CellsHeight);
+            UpdateDisplayedRows(DisplayData.FirstScrollingSlot, CellsEstimatedHeight);
             double totalVisibleHeight = EdgedRowsHeightCalculated;
 
             if (!forceHorizScrollbar && !forceVertScrollbar)
@@ -4154,7 +4169,7 @@ namespace Avalonia.Controls
                             if (editingRow.IsValid)
                             {
                                 editingRow.IsValid = false;
-                                editingRow.UpdatePseudoClasses();
+                                editingRow.ApplyState();
                             }
                         }
 
@@ -4345,7 +4360,7 @@ namespace Avalonia.Controls
             //IsTabStop = true;
             if (IsSlotVisible(EditingRow.Slot))
             {
-                EditingRow.UpdatePseudoClasses();
+                EditingRow.ApplyState();
             }
             ResetEditingRow();
             if (keepFocus)
@@ -6201,7 +6216,7 @@ namespace Avalonia.Controls
                             cell.UpdatePseudoClasses();
                         }
                     }
-                    EditingRow.UpdatePseudoClasses();
+                    EditingRow.ApplyState();
                 }
             }
             IsValid = true;

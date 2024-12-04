@@ -67,7 +67,7 @@ namespace Avalonia.Input
                 else if (pointerDevice.TryGetPointer(args) is { } pointer &&
                     pointer.Type != PointerType.Touch)
                 {
-                    var element = pointer.Captured ?? args.InputHitTestResult;
+                    var element = pointer.Captured ?? args.InputHitTestResult.firstEnabledAncestor;
 
                     SetPointerOver(pointer, args.Root, element, args.Timestamp, args.Position,
                         new PointerPointProperties(args.InputModifiers, args.Type.ToUpdateKind()),

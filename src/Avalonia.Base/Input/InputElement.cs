@@ -1,16 +1,14 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
-using Avalonia.Data;
 using Avalonia.Input.GestureRecognizers;
 using Avalonia.Input.TextInput;
 using Avalonia.Interactivity;
 using Avalonia.Reactive;
 using Avalonia.VisualTree;
-
-#nullable enable
 
 namespace Avalonia.Input
 {
@@ -231,6 +229,10 @@ namespace Avalonia.Input
             PointerPressedEvent.AddClassHandler<InputElement>((x, e) => x.OnGesturePointerPressed(e), handledEventsToo: true);
             PointerReleasedEvent.AddClassHandler<InputElement>((x, e) => x.OnGesturePointerReleased(e), handledEventsToo: true);
             PointerCaptureLostEvent.AddClassHandler<InputElement>((x, e) => x.OnGesturePointerCaptureLost(e), handledEventsToo: true);
+            
+            
+            // Access Key Handling
+            AccessKeyHandler.AccessKeyEvent.AddClassHandler<InputElement>((x, e) => x.OnAccessKey(e));
         }
 
         public InputElement()
@@ -282,7 +284,7 @@ namespace Avalonia.Input
             add { AddHandler(TextInputEvent, value); }
             remove { RemoveHandler(TextInputEvent, value); }
         }
-        
+
         /// <summary>
         /// Occurs when an input element gains input focus and input method is looking for the corresponding client
         /// </summary>
@@ -346,7 +348,7 @@ namespace Avalonia.Input
             add => AddHandler(PointerCaptureLostEvent, value);
             remove => RemoveHandler(PointerCaptureLostEvent, value);
         }
-        
+
         /// <summary>
         /// Occurs when the mouse is scrolled over the control.
         /// </summary>
@@ -355,7 +357,7 @@ namespace Avalonia.Input
             add { AddHandler(PointerWheelChangedEvent, value); }
             remove { RemoveHandler(PointerWheelChangedEvent, value); }
         }
-        
+
         /// <summary>
         /// Occurs when a tap gesture occurs on the control.
         /// </summary>
@@ -364,7 +366,7 @@ namespace Avalonia.Input
             add { AddHandler(TappedEvent, value); }
             remove { RemoveHandler(TappedEvent, value); }
         }
-        
+
         /// <summary>
         /// Occurs when a hold gesture occurs on the control.
         /// </summary>
@@ -409,7 +411,7 @@ namespace Avalonia.Input
             get { return GetValue(CursorProperty); }
             set { SetValue(CursorProperty, value); }
         }
-        
+
         /// <summary>
         /// Gets a value indicating whether keyboard focus is anywhere within the element or its visual tree child elements.
         /// </summary>
@@ -513,6 +515,17 @@ namespace Avalonia.Input
             {
                 FocusManager.GetFocusManager(this)?.ClearFocusOnElementRemoved(this, e.Parent);
             }
+        }
+
+        /// <summary>
+        /// This method is used to execute the action on an effective IInputElement when a corresponding access key has been invoked.
+        /// By default, the Focus() method is invoked with the NavigationMethod.Tab to indicate a visual focus adorner.
+        /// Overwrite this method if other methods or additional functionality is needed when an item should receive the focus.
+        /// </summary>
+        /// <param name="e">AccessKeyEventArgs are passed on to indicate if there are multiple matches or not.</param>
+        protected virtual void OnAccessKey(RoutedEventArgs e)
+        {
+            Focus(NavigationMethod.Tab);
         }
 
         /// <inheritdoc/>

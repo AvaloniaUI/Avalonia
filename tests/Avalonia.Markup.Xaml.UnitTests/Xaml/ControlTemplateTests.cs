@@ -1,12 +1,17 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Xml;
 using Avalonia.Controls;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Diagnostics;
 using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Media;
+using Avalonia.Metadata;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
@@ -276,7 +281,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 <ControlTemplate xmlns='https://github.com/avaloniaui' 
                  xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
                  TargetType='{x:Type ContentControl}'>
-    <ContentPresenter Content='{TemplateBinding Content}' />
+    <ContentPresenter x:Name='PART_ContentPresenter' Content='{TemplateBinding Content}' />
 </ControlTemplate>
 ";
             var template = AvaloniaRuntimeXamlLoader.Parse<ControlTemplate>(xaml);
@@ -293,7 +298,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 <ControlTemplate xmlns='https://github.com/avaloniaui' 
                  xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
                  TargetType='ContentControl'>
-    <ContentPresenter Content='{TemplateBinding Content}' />
+    <ContentPresenter x:Name='PART_ContentPresenter' Content='{TemplateBinding Content}' />
 </ControlTemplate>
 ";
             var template = AvaloniaRuntimeXamlLoader.Parse<ControlTemplate>(xaml);
@@ -337,16 +342,168 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             var templateResult = template.Build(new TemplatedControl());
             Assert.Null(templateResult);
         }
+
+        [Fact]
+        public void ControlTemplate_Outputs_Error_When_Missing_TemplatePart()
+        {
+            using var _ = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var xaml = @"
+<ControlTemplate xmlns='https://github.com/avaloniaui'
+                 xmlns:controls='using:Avalonia.Markup.Xaml.UnitTests.Xaml'
+                 TargetType='controls:CustomButtonWithParts'>
+    <Border Name='PART_Typo_MainContentBorder'>
+        <ContentPresenter Name='PART_ContentPresenter'
+                          Content='{TemplateBinding Content}'/>
+    </Border>
+</ControlTemplate>";
+            var diagnostics = new List<RuntimeXamlDiagnostic>();
+            AvaloniaRuntimeXamlLoader.Load(new RuntimeXamlLoaderDocument(xaml), new RuntimeXamlLoaderConfiguration
+            {
+                LocalAssembly = typeof(XamlIlTests).Assembly,
+                DiagnosticHandler = diagnostic =>
+                {
+                    diagnostics.Add(diagnostic);
+                    return diagnostic.Severity;
+                }
+            });
+            var warning = Assert.Single(diagnostics);
+            Assert.Equal(RuntimeXamlDiagnosticSeverity.Info, warning.Severity);
+            Assert.Contains("'PART_MainContentBorder'", warning.Title);
+        }
+        
+        [Fact]
+        public void ControlTemplate_Outputs_Error_When_Using_Wrong_Type_With_TemplatePart()
+        {
+            using var _ = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var xaml = @"
+<ControlTemplate xmlns='https://github.com/avaloniaui'
+                 xmlns:controls='using:Avalonia.Markup.Xaml.UnitTests.Xaml'
+                 TargetType='controls:CustomControlWithParts'>
+    <Border Name='PART_MainContentBorder'>
+        <ContentControl Name='PART_ContentPresenter'
+                        Content='{TemplateBinding Content}'/>
+    </Border>
+</ControlTemplate>";
+            var diagnostics = new List<RuntimeXamlDiagnostic>();
+            Assert.ThrowsAny<XmlException>(() => AvaloniaRuntimeXamlLoader.Load(new RuntimeXamlLoaderDocument(xaml), new RuntimeXamlLoaderConfiguration
+            {
+                LocalAssembly = typeof(XamlIlTests).Assembly,
+                DiagnosticHandler = diagnostic =>
+                {
+                    diagnostics.Add(diagnostic);
+                    return diagnostic.Severity;
+                }
+            }));
+            var warning = Assert.Single(diagnostics);
+            Assert.Equal(RuntimeXamlDiagnosticSeverity.Error, warning.Severity);
+            Assert.Contains("'ContentPresenter'", warning.Title);
+        }
+
+        [Fact]
+        public void ControlTemplate_Outputs_Error_When_Missing_TemplatePart_Nested_ItemTemplate_Case()
+        {
+            using var _ = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var xaml = @"
+<ControlTemplate xmlns='https://github.com/avaloniaui'
+                 xmlns:controls='using:Avalonia.Markup.Xaml.UnitTests.Xaml'
+                 TargetType='controls:CustomControlWithParts'>
+    <Border Name='PART_Typo_MainContentBorder'>
+        <StackPanel>
+            <ItemsControl>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <!-- This PART_MainContentBorder shouldn't full parent ControlTemplate, PART_Typo_MainContentBorder still isn't properly named. -->
+                        <Border Name='PART_MainContentBorder' />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <ContentPresenter Name='PART_ContentPresenter'
+                              Content='{TemplateBinding Content}'/>
+        </StackPanel>
+    </Border>
+</ControlTemplate>";
+            var diagnostics = new List<RuntimeXamlDiagnostic>();
+            AvaloniaRuntimeXamlLoader.Load(new RuntimeXamlLoaderDocument(xaml), new RuntimeXamlLoaderConfiguration
+            {
+                LocalAssembly = typeof(XamlIlTests).Assembly,
+                DiagnosticHandler = diagnostic =>
+                {
+                    diagnostics.Add(diagnostic);
+                    return diagnostic.Severity;
+                }
+            });
+            var warning = Assert.Single(diagnostics);
+            Assert.Equal(RuntimeXamlDiagnosticSeverity.Info, warning.Severity);
+            Assert.Contains("'PART_MainContentBorder'", warning.Title);
+        }
+
+#nullable enable
+
+        [Fact]
+        public void Custom_ControlTemplate_Allows_TemplateBindings()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(
+                    """
+                    <Window xmlns="https://github.com/avaloniaui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:controls="using:Avalonia.Markup.Xaml.UnitTests.Xaml">
+                        <Button Content="Foo">
+                            <Button.Template>
+                                <controls:CustomControlTemplate>
+                                    <ContentPresenter Name="PART_ContentPresenter"
+                                                      Content="{TemplateBinding Content}"/>
+                                </controls:CustomControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </Window>
+                    """);
+                var button = Assert.IsType<Button>(window.Content);
+
+                window.ApplyTemplate();
+                button.ApplyTemplate();
+
+                var presenter = button.Presenter;
+                Assert.NotNull(presenter);
+                Assert.Equal("Foo", presenter.Content);
+            }
+        }
     }
+
     public class ListBoxHierarchyLine : Panel
     {
-        public static readonly StyledProperty<DashStyle> LineDashStyleProperty =
-        AvaloniaProperty.Register<ListBoxHierarchyLine, DashStyle>(nameof(LineDashStyle));
+        public static readonly StyledProperty<DashStyle?> LineDashStyleProperty =
+            AvaloniaProperty.Register<ListBoxHierarchyLine, DashStyle?>(nameof(LineDashStyle));
 
-        public DashStyle LineDashStyle
+        public DashStyle? LineDashStyle
         {
             get => GetValue(LineDashStyleProperty);
             set => SetValue(LineDashStyleProperty, value);
         }
+    }
+
+    [TemplatePart("PART_MainContentBorder", typeof(Border))]
+    [TemplatePart("PART_ContentPresenter", typeof(ContentPresenter))]
+    public class CustomControlWithParts : ContentControl
+    {
+    }
+
+    public class CustomButtonWithParts : CustomControlWithParts
+    {
+    }
+
+    public class CustomControlTemplate : IControlTemplate
+    {
+        [Content]
+        [TemplateContent]
+        public object? Content { get; set; }
+
+        public Type? TargetType { get; set; }
+
+        public TemplateResult<Control>? Build(TemplatedControl control) => TemplateContent.Load(Content);
     }
 }

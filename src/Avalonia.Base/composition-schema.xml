@@ -31,7 +31,7 @@
         <Property Name="TransformMatrix" Type="Avalonia.Matrix" DefaultValue="Avalonia.Matrix.Identity" Animated="true" Internal="true"/>
         <Property Name="AdornedVisual" Type="CompositionVisual?" Internal="true" />
         <Property Name="AdornerIsClipped" Type="bool" Internal="true" />
-        <Property Name="OpacityMaskBrush" Type="Avalonia.Media.IImmutableBrush?" Internal="true" />
+        <Property Name="OpacityMaskBrush" ClientName="OpacityMaskBrushTransportField" Type="Avalonia.Media.IBrush?" Private="true"  />
         <Property Name="Effect" Type="Avalonia.Media.IImmutableEffect?" Internal="true" />
         <Property Name="RenderOptions" Type="Avalonia.Media.RenderOptions" />
     </Object>
@@ -54,7 +54,7 @@
         <Property Name="DebugOverlays" Type="RendererDebugOverlays"/>
         <Property Name="LastLayoutPassTiming" Type="LayoutPassTiming" Internal="true"/>
         <Property Name="Scaling" Type="double"/>
-        <Property Name="Size" Type="Size" />
+        <Property Name="PixelSize" Type="PixelSize" />
     </Object>
     <KeyFrameAnimation Name="Scalar" Type="float"/>
     <KeyFrameAnimation Name="Double" Type="double"/>
@@ -93,7 +93,8 @@
     <Object Name="CompositionSimpleRadialGradientBrush" Internal="true" ServerOnly="true" ServerBase="ServerCompositionSimpleGradientBrush">
         <Property Name="Center" Type="Avalonia.RelativePoint" />
         <Property Name="GradientOrigin" Type="Avalonia.RelativePoint" />
-        <Property Name="Radius" Type="double" />
+        <Property Name="RadiusX" Type="Avalonia.RelativeScalar" />
+        <Property Name="RadiusY" Type="Avalonia.RelativeScalar" />
     </Object>
     <Object Name="CompositionSimpleLinearGradientBrush" Internal="true" ServerOnly="true" ServerBase="ServerCompositionSimpleGradientBrush">
         <Property Name="StartPoint" Type="Avalonia.RelativePoint" />

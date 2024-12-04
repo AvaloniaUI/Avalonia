@@ -1,9 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
-using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.FreeDesktop;
 using Avalonia.FreeDesktop.DBusIme;
@@ -15,8 +13,11 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
+using Avalonia.Vulkan;
 using Avalonia.X11;
+using Avalonia.X11.Dispatching;
 using Avalonia.X11.Glx;
+using Avalonia.X11.Vulkan;
 using Avalonia.X11.Screens;
 using static Avalonia.X11.XLib;
 
@@ -26,9 +27,8 @@ namespace Avalonia.X11
     {
         private Lazy<KeyboardDevice> _keyboardDevice = new Lazy<KeyboardDevice>(() => new KeyboardDevice());
         public KeyboardDevice KeyboardDevice => _keyboardDevice.Value;
-        public Dictionary<IntPtr, X11PlatformThreading.EventHandler> Windows =
-            new Dictionary<IntPtr, X11PlatformThreading.EventHandler>();
-        public XI2Manager XI2;
+        public Dictionary<IntPtr, X11EventDispatcher.EventHandler> Windows { get; } = new ();
+        public XI2Manager XI2 { get; private set; }
         public X11Info Info { get; private set; }
         public X11Screens X11Screens { get; private set; }
         public Compositor Compositor { get; private set; }
@@ -66,15 +66,19 @@ namespace Avalonia.X11
             Info = new X11Info(Display, DeferredDisplay, useXim);
             Globals = new X11Globals(this);
             Resources = new XResources(this);
-            //TODO: log
-            if (options.UseDBusMenu)
-                DBusHelper.TryInitialize();
+
+            IRenderTimer timer = options.ShouldRenderOnUIThread
+               ? new UiThreadRenderTimer(60)
+               : new SleepLoopRenderTimer(60);
 
             AvaloniaLocator.CurrentMutable.BindToSelf(this)
                 .Bind<IWindowingPlatform>().ToConstant(this)
-                .Bind<IDispatcherImpl>().ToConstant(new X11PlatformThreading(this))
-                .Bind<IRenderTimer>().ToConstant(new SleepLoopRenderTimer(60))
+                .Bind<IDispatcherImpl>().ToConstant<IDispatcherImpl>(options.UseGLibMainLoop
+                    ? new GlibDispatcherImpl(this)
+                    : new X11PlatformThreading(this))
+                .Bind<IRenderTimer>().ToConstant(timer)
                 .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Control))
+                .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>() { }, meta: "Super"))
                 .Bind<IKeyboardDevice>().ToFunc(() => KeyboardDevice)
                 .Bind<ICursorFactory>().ToConstant(new X11CursorFactory(Display))
                 .Bind<IClipboard>().ToConstant(new X11Clipboard(this))
@@ -98,6 +102,7 @@ namespace Avalonia.X11
             }
 
             Compositor = new Compositor(graphics);
+            AvaloniaLocator.CurrentMutable.Bind<Compositor>().ToConstant(Compositor);
         }
 
         public IntPtr DeferredDisplay { get; set; }
@@ -126,6 +131,8 @@ namespace Avalonia.X11
         {
             return new X11Window(this, null);
         }
+
+        public ITopLevelImpl CreateEmbeddableTopLevel() => CreateEmbeddableWindow();
 
         public IWindowImpl CreateEmbeddableWindow()
         {
@@ -209,6 +216,14 @@ namespace Avalonia.X11
                         return egl;
                     }
                 }
+
+                if (renderingMode == X11RenderingMode.Vulkan)
+                {
+                    var vulkan = VulkanSupport.TryInitialize(info,
+                        AvaloniaLocator.Current.GetService<VulkanOptions>() ?? new());
+                    if (vulkan != null)
+                        return vulkan;
+                }
             }
 
             throw new InvalidOperationException($"{nameof(X11PlatformOptions)}.{nameof(X11PlatformOptions.RenderingMode)} has a value of \"{string.Join(", ", opts.RenderingMode)}\", but no options were applied.");
@@ -236,7 +251,12 @@ namespace Avalonia
         /// <summary>
         /// Enables native Linux EGL rendering.
         /// </summary>
-        Egl = 3
+        Egl = 3,
+        
+        /// <summary>
+        /// Enables Vulkan rendering
+        /// </summary>
+        Vulkan = 4
     }
     
     /// <summary>
@@ -302,7 +322,14 @@ namespace Avalonia
         /// </remarks>
         public bool EnableSessionManagement { get; set; } = 
             Environment.GetEnvironmentVariable("AVALONIA_X11_USE_SESSION_MANAGEMENT") != "0";
-        
+
+        /// <summary>
+        /// Render directly on the UI thread instead of using a dedicated render thread.
+        /// This can be usable if your device don't have multiple cores to begin with.
+        /// This setting is false by default.
+        /// </summary>
+        public bool ShouldRenderOnUIThread { get; set; }
+
         public IList<GlVersion> GlProfiles { get; set; } = new List<GlVersion>
         {
             new GlVersion(GlProfileType.OpenGL, 4, 0),
@@ -318,7 +345,12 @@ namespace Avalonia
             // llvmpipe is a software GL rasterizer. If it's returned by glGetString,
             // that usually means that something in the system is horribly misconfigured
             // and sometimes attempts to use GLX might cause a segfault
-            "llvmpipe"
+            "llvmpipe",
+            // SVGA3D is a driver for VMWare virtual GPU
+            // There were reports of various glitches like parts of the UI not being rendered
+            // Given that VMs are mostly used by testing, we've decided to blacklist that driver
+            // for now
+            "SVGA3D"
         };
 
         
@@ -332,6 +364,30 @@ namespace Avalonia
         /// </remarks>
         public bool? EnableMultiTouch { get; set; } = true;
 
+        /// <summary>
+        /// Retain window framebuffer contents if using CPU rendering mode.
+        /// This will keep an offscreen bitmap for each window with contents of the previous frame
+        /// While improving performance by saving a blit, it will increase memory consumption
+        /// if you have many windows 
+        /// </summary>
+        public bool? UseRetainedFramebuffer { get; set; }
+
+        /// <summary>
+        /// If this option is set to true, GMainLoop and GSource based dispatcher implementation will be used instead
+        /// of epoll-based one.
+        /// Use this if you need to use GLib-based libraries on the main thread
+        /// </summary>
+        public bool UseGLibMainLoop { get; set; }
+        
+        /// <summary>
+        /// If Avalonia is in control of a run loop, we propagate exceptions by stopping the run loop frame
+        /// and rethrowing an exception. However, if there is no Avalonia-controlled run loop frame,
+        /// there is no way to report such exceptions, since allowing those to escape native->managed call boundary
+        /// will likely brick GLib machinery since it's not aware of managed Exceptions
+        /// This property allows to inspect such exceptions before they will be ignored
+        /// </summary>
+        public Action<Exception>? ExterinalGLibMainLoopExceptionLogger { get; set; }
+        
         public X11PlatformOptions()
         {
             try

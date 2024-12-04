@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Data;
+using Avalonia.Data.Core;
 
 namespace Avalonia.PropertyStore
 {
@@ -12,6 +13,12 @@ namespace Avalonia.PropertyStore
         public ImmediateValueFrame(BindingPriority priority)
             : base(priority, FrameType.Style)
         {
+        }
+
+        public IValueEntry AddBinding(UntypedBindingExpressionBase source)
+        {
+            Add(source);
+            return source;
         }
 
         public TypedBindingEntry<T> AddBinding<T>(

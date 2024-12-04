@@ -16,12 +16,16 @@ namespace Avalonia.Headless
 {
     internal class HeadlessWindowImpl : IWindowImpl, IPopupImpl, IFramebufferPlatformSurface, IHeadlessWindow
     {
+        private static int _nextGlobalZOrder = 1;
+
         private readonly IKeyboardDevice _keyboard;
+        private readonly IScreenImpl _screen;
         private readonly Stopwatch _st = Stopwatch.StartNew();
         private readonly Pointer _mousePointer;
         private WriteableBitmap? _lastRenderedFrame;
         private readonly object _sync = new object();
         private readonly PixelFormat _frameBufferFormat;
+        private int _zOrder;
         public bool IsPopup { get; }
 
         public HeadlessWindowImpl(bool isPopup, PixelFormat frameBufferFormat)
@@ -29,6 +33,7 @@ namespace Avalonia.Headless
             IsPopup = isPopup;
             Surfaces = new object[] { this };
             _keyboard = AvaloniaLocator.Current.GetRequiredService<IKeyboardDevice>();
+            _screen = new HeadlessScreensStub();
             _mousePointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
             MouseDevice = new MouseDevice(_mousePointer);
             ClientSize = new Size(1024, 768);
@@ -80,7 +85,10 @@ namespace Avalonia.Headless
         public void Show(bool activate, bool isDialog)
         {
             if (activate)
+            {
+                _zOrder = _nextGlobalZOrder++;
                 Dispatcher.UIThread.Post(() => Activated?.Invoke(), DispatcherPriority.Input);
+            }
         }
 
         public void Hide()
@@ -102,13 +110,13 @@ namespace Avalonia.Headless
         public Action<PixelPoint>? PositionChanged { get; set; }
         public void Activate()
         {
+            _zOrder = _nextGlobalZOrder++;
             Dispatcher.UIThread.Post(() => Activated?.Invoke(), DispatcherPriority.Input);
         }
 
         public Action? Deactivated { get; set; }
         public Action? Activated { get; set; }
         public IPlatformHandle Handle { get; } = new PlatformHandle(IntPtr.Zero, "STUB");
-        public Size MaxClientSize { get; } = new Size(1920, 1280);
         public void Resize(Size clientSize, WindowResizeReason reason)
         {
             if (ClientSize == clientSize)
@@ -144,7 +152,6 @@ namespace Avalonia.Headless
 
         }
 
-        public IScreenImpl Screen { get; } = new HeadlessScreensStub();
         public WindowState WindowState { get; set; }
         public Action<WindowState>? WindowStateChanged { get; set; }
         public void SetTitle(string? title)
@@ -241,7 +248,7 @@ namespace Avalonia.Headless
 
         public Action<WindowTransparencyLevel>? TransparencyLevelChanged { get; set; }
 
-        public WindowTransparencyLevel TransparencyLevel => WindowTransparencyLevel.None;
+        public WindowTransparencyLevel TransparencyLevel { get; set; } = WindowTransparencyLevel.Transparent;
 
         public Action? GotInputWhenDisabled { get; set; }
 
@@ -260,9 +267,14 @@ namespace Avalonia.Headless
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels => new AcrylicPlatformCompensationLevels(1, 1, 1);
         public object? TryGetFeature(Type featureType)
         {
-        	if(featureType == typeof(IClipboard))
+        	if (featureType == typeof(IClipboard))
             {
                 return AvaloniaLocator.Current.GetRequiredService<IClipboard>();
+            }
+
+            if (featureType == typeof(IScreenImpl))
+            {
+                return _screen;
             }
 
             return null;
@@ -350,7 +362,8 @@ namespace Avalonia.Headless
 
         void IWindowImpl.Move(PixelPoint point)
         {
-
+            Position = point;
+            PositionChanged?.Invoke(point);
         }
 
         public IPopupImpl? CreatePopup()
@@ -366,7 +379,15 @@ namespace Avalonia.Headless
 
         public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevel)
         {
-            
+            foreach (var item in transparencyLevel)
+            {
+                if (item == WindowTransparencyLevel.Transparent) {
+                    TransparencyLevel = item;
+                    return;
+                }
+            }
+
+            TransparencyLevel = WindowTransparencyLevel.None;
         }
 
         public void SetParent(IWindowImpl? parent)
@@ -412,6 +433,19 @@ namespace Avalonia.Headless
         public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
         {
             
+        }
+
+        public void GetWindowsZOrder(Span<Window> windows, Span<long> zOrder)
+        {
+            for (int i = 0; i < windows.Length; ++i)
+            {
+                if (windows[i].PlatformImpl is HeadlessWindowImpl headlessWindowImpl)
+                    zOrder[i] = headlessWindowImpl._zOrder;
+            }
+        }
+
+        public void TakeFocus() 
+        {
         }
     }
 }

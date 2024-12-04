@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Platform;
 using Avalonia.Rendering.Composition;
 using Avalonia.Rendering.Composition.Server;
 using Avalonia.Rendering.Composition.Transport;
@@ -45,8 +46,9 @@ class CompositionBorderVisual : CompositionDrawListVisual
         {
         }
 
-        protected override void RenderCore(CompositorDrawingContextProxy canvas, Rect currentTransformedClip)
+        protected override void RenderCore(ServerVisualRenderContext ctx, LtrbRect currentTransformedClip)
         {
+            var canvas = ctx.Canvas;
             if (ClipToBounds)
             {
                 var clipRect = Root!.SnapToDevicePixels(new Rect(new Size(Size.X, Size.Y)));
@@ -56,7 +58,7 @@ class CompositionBorderVisual : CompositionDrawListVisual
                     canvas.PushClip(new RoundedRect(clipRect, _cornerRadius));
             }
 
-            base.RenderCore(canvas, currentTransformedClip);
+            base.RenderCore(ctx, currentTransformedClip);
             
             if(ClipToBounds)
                 canvas.PopClip();

@@ -1,8 +1,11 @@
 using System;
+using System.Text;
 using System.Windows.Input;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Media.Imaging;
 using Avalonia.Metadata;
+using Avalonia.Threading;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls
@@ -54,18 +57,22 @@ namespace Avalonia.Controls
             return value;
         }
 
+        /// <inheritdoc cref="MenuItem.IconProperty"/>
         public static readonly StyledProperty<Bitmap?> IconProperty =
             AvaloniaProperty.Register<NativeMenuItem, Bitmap?>(nameof(Icon));
 
+        /// <inheritdoc cref="MenuItem.Icon"/>
         public Bitmap? Icon
         {
             get => GetValue(IconProperty);
             set => SetValue(IconProperty, value);
         }
 
+        /// <inheritdoc cref="HeaderedSelectingItemsControl.HeaderProperty"/>
         public static readonly StyledProperty<string?> HeaderProperty =
             AvaloniaProperty.Register<NativeMenuItem, string?>(nameof(Header));
 
+        /// <inheritdoc cref="HeaderedSelectingItemsControl.Header"/>
         public string? Header
         {
             get => GetValue(HeaderProperty);
@@ -89,68 +96,91 @@ namespace Avalonia.Controls
             set => SetValue(ToolTipProperty, value);
         }
 
+        /// <inheritdoc cref="MenuItem.InputGestureProperty"/>
         public static readonly StyledProperty<KeyGesture?> GestureProperty =
             AvaloniaProperty.Register<NativeMenuItem, KeyGesture?>(nameof(Gesture));
 
+        /// <inheritdoc cref="MenuItem.InputGesture"/>
         public KeyGesture? Gesture
         {
             get => GetValue(GestureProperty);
             set => SetValue(GestureProperty, value);
         }
 
+        /// <inheritdoc cref="MenuItem.IsCheckedProperty"/>
         public static readonly StyledProperty<bool> IsCheckedProperty =
-            AvaloniaProperty.Register<NativeMenuItem, bool>(nameof(IsChecked));
+            MenuItem.IsCheckedProperty.AddOwner<NativeMenuItem>();
 
+        /// <inheritdoc cref="MenuItem.IsChecked"/>
         public bool IsChecked
         {
             get => GetValue(IsCheckedProperty);
             set => SetValue(IsCheckedProperty, value);
         }
         
+        /// <inheritdoc cref="MenuItem.ToggleTypeProperty"/>
         public static readonly StyledProperty<NativeMenuItemToggleType> ToggleTypeProperty =
             AvaloniaProperty.Register<NativeMenuItem, NativeMenuItemToggleType>(nameof(ToggleType));
 
+        /// <inheritdoc cref="MenuItem.ToggleType"/>
         public NativeMenuItemToggleType ToggleType
         {
             get => GetValue(ToggleTypeProperty);
             set => SetValue(ToggleTypeProperty, value);
         }
 
+        /// <inheritdoc cref="MenuItem.CommandProperty"/>
         public static readonly StyledProperty<ICommand?> CommandProperty =
-            Button.CommandProperty.AddOwner<NativeMenuItem>(new(enableDataValidation: true));
+            MenuItem.CommandProperty.AddOwner<NativeMenuItem>(new(enableDataValidation: true));
 
-        /// <summary>
-        /// Defines the <see cref="CommandParameter"/> property.
-        /// </summary>
+        /// <inheritdoc cref="MenuItem.CommandParameterProperty"/>
         public static readonly StyledProperty<object?> CommandParameterProperty =
-            Button.CommandParameterProperty.AddOwner<NativeMenuItem>();
+            MenuItem.CommandParameterProperty.AddOwner<NativeMenuItem>();
 
+        /// <inheritdoc cref="InputElement.IsEnabledProperty"/>
         public static readonly StyledProperty<bool> IsEnabledProperty =
            AvaloniaProperty.Register<NativeMenuItem, bool>(nameof(IsEnabled), true);
 
+        /// <inheritdoc cref="InputElement.IsEnabled"/>
         public bool IsEnabled
         {
             get => GetValue(IsEnabledProperty);
             set => SetValue(IsEnabledProperty, value);
         }
 
+        /// <summary>
+        /// Defines the <see cref="IsVisible"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsVisibleProperty =
+           Visual.IsVisibleProperty.AddOwner<NativeMenuItem>();
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this menu item is visible.
+        /// </summary>
+        public bool IsVisible
+        {
+            get => GetValue(IsVisibleProperty);
+            set => SetValue(IsVisibleProperty, value);
+        }
+
         void CanExecuteChanged()
         {
-            SetCurrentValue(IsEnabledProperty, Command?.CanExecute(CommandParameter) ?? true);
+            if (!Dispatcher.UIThread.CheckAccess())
+                Dispatcher.UIThread.Invoke(() => CanExecuteChanged());
+            else
+                SetCurrentValue(IsEnabledProperty, Command?.CanExecute(CommandParameter) ?? true);
         }
 
         public bool HasClickHandlers => Click != null;
 
+        /// <inheritdoc cref="MenuItem.Command"/>
         public ICommand? Command
         {
             get => GetValue(CommandProperty);
             set => SetValue(CommandProperty, value);
         }
 
-        /// <summary>
-        /// Gets or sets the parameter to pass to the <see cref="Command"/> property of a
-        /// <see cref="NativeMenuItem"/>.
-        /// </summary>
+        /// <inheritdoc cref="MenuItem.CommandParameter"/>
         public object? CommandParameter
         {
             get => GetValue(CommandParameterProperty);
@@ -191,12 +221,23 @@ namespace Avalonia.Controls
                 CanExecuteChanged();
             }
         }
+
+        internal override void BuildDebugDisplay(StringBuilder builder, bool includeContent)
+        {
+            base.BuildDebugDisplay(builder, includeContent);
+
+            if (includeContent)
+            {
+                DebugDisplayHelper.AppendOptionalValue(builder, nameof(Header), Header, true);
+            }
+        }
     }
-    
+
+    // TODO12: remove this enum and use MenuItemToggleType only 
     public enum NativeMenuItemToggleType
     {
-        None,
-        CheckBox,
-        Radio
+        None = MenuItemToggleType.None,
+        CheckBox = MenuItemToggleType.CheckBox,
+        Radio = MenuItemToggleType.Radio
     }
 }

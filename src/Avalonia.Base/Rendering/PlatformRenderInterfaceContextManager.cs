@@ -11,31 +11,50 @@ internal class PlatformRenderInterfaceContextManager
     private readonly IPlatformGraphics? _graphics;
     private IPlatformRenderInterfaceContext? _backend;
     private OwnedDisposable<IPlatformGraphicsContext>? _gpuContext;
+    private readonly IPlatformGraphicsReadyStateFeature? _readyStateFeature;
+    public event Action? ContextDisposed;
+    public event Action<IPlatformRenderInterfaceContext>? ContextCreated;
 
     public PlatformRenderInterfaceContextManager(IPlatformGraphics? graphics)
     {
         _graphics = graphics;
+        _readyStateFeature = (_graphics as IPlatformGraphicsWithFeatures)
+            ?.TryGetFeature<IPlatformGraphicsReadyStateFeature>();
     }
 
+    public bool IsReady => _readyStateFeature?.IsReady ?? true;
+    
     public void EnsureValidBackendContext()
     {
+        if (!IsReady)
+            throw new InvalidOperationException("Platform graphics isn't ready yet");
+        
         if (_backend == null || _gpuContext?.Value.IsLost == true)
         {
             _backend?.Dispose();
             _backend = null;
-            _gpuContext?.Dispose();
-            _gpuContext = null;
+            if (_gpuContext != null)
+            {
+                _gpuContext?.Dispose();
+                _gpuContext = null;
+                ContextDisposed?.Invoke();
+            }
 
             if (_graphics != null)
             {
-                if (_graphics.UsesSharedContext)
-                    _gpuContext = new OwnedDisposable<IPlatformGraphicsContext>(_graphics.GetSharedContext(), false);
-                else
-                    _gpuContext = new OwnedDisposable<IPlatformGraphicsContext>(_graphics.CreateContext(), true);
+                if (_readyStateFeature?.UsesContexts != false)
+                {
+                    if (_graphics.UsesSharedContext)
+                        _gpuContext =
+                            new OwnedDisposable<IPlatformGraphicsContext>(_graphics.GetSharedContext(), false);
+                    else
+                        _gpuContext = new OwnedDisposable<IPlatformGraphicsContext>(_graphics.CreateContext(), true);
+                }
             }
 
             _backend = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>()
                 .CreateBackendContext(_gpuContext?.Value);
+            ContextCreated?.Invoke(_backend);
         }
     }
 

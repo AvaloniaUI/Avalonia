@@ -66,7 +66,7 @@ namespace Avalonia.Collections
     }
 
     /// <summary>Enables collections to have the functionalities of current record management, custom sorting, filtering, and grouping.</summary>
-    internal interface IDataGridCollectionView : IEnumerable, INotifyCollectionChanged
+    public interface IDataGridCollectionView : IEnumerable, INotifyCollectionChanged
     {
         /// <summary>Gets or sets the cultural information for any operations of the view that may differ by culture, such as sorting.</summary>
         /// <returns>The culture information to use during culture-sensitive operations. </returns>

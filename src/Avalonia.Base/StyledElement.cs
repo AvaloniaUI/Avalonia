@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq;
+using System.Text;
 using Avalonia.Animation;
 using Avalonia.Collections;
 using Avalonia.Controls;
@@ -33,6 +33,8 @@ namespace Avalonia
         ISetLogicalParent,
         ISetInheritanceParent,
         ISupportInitialize,
+        INamed,
+        IAvaloniaListItemValidator<ILogical>,
 #pragma warning disable CS0618 // Type or member is obsolete
         IStyleable
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -276,7 +278,7 @@ namespace Avalonia
                     var list = new AvaloniaList<ILogical>
                     {
                         ResetBehavior = ResetBehavior.Remove,
-                        Validate = logical => ValidateLogicalChild(logical)
+                        Validator = this
                     };
                     list.CollectionChanged += LogicalChildrenCollectionChanged;
                     _logicalChildren = list;
@@ -416,19 +418,6 @@ namespace Avalonia
                 OnInitialized();
                 Initialized?.Invoke(this, EventArgs.Empty);
             }
-        }
-
-        internal StyleDiagnostics GetStyleDiagnosticsInternal()
-        {
-            var styles = new List<AppliedStyle>();
-
-            foreach (var frame in GetValueStore().Frames)
-            {
-                if (frame is IStyleInstance style)
-                    styles.Add(new(style));
-            }
-
-            return new StyleDiagnostics(styles);
         }
 
         /// <inheritdoc/>
@@ -786,11 +775,11 @@ namespace Avalonia
             return null;
         }
 
-        private static void ValidateLogicalChild(ILogical c)
+        void IAvaloniaListItemValidator<ILogical>.Validate(ILogical item)
         {
-            if (c == null)
+            if (item is null)
             {
-                throw new ArgumentException("Cannot add null to LogicalChildren.");
+                throw new ArgumentException($"Cannot add null to {nameof(LogicalChildren)}.");
             }
         }
 
@@ -1015,6 +1004,12 @@ namespace Avalonia
                 e ??= ResourcesChangedEventArgs.Empty;
                 NotifyChildResourcesChanged(e);
             }
+        }
+
+        internal override void BuildDebugDisplay(StringBuilder builder, bool includeContent)
+        {
+            base.BuildDebugDisplay(builder, includeContent);
+            DebugDisplayHelper.AppendOptionalValue(builder, nameof(Name), Name, includeContent);
         }
 
         private static IReadOnlyList<Style>? FlattenStyles(IReadOnlyList<IStyle> styles)

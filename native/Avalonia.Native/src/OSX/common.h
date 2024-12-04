@@ -11,10 +11,11 @@
 extern IAvnPlatformThreadingInterface* CreatePlatformThreading();
 extern void FreeAvnGCHandle(void* handle);
 extern void PostDispatcherCallback(IAvnActionCallback* cb);
+extern IAvnTopLevel* CreateAvnTopLevel(IAvnTopLevelEvents* events);
 extern IAvnWindow* CreateAvnWindow(IAvnWindowEvents*events);
 extern IAvnPopup* CreateAvnPopup(IAvnWindowEvents*events);
-extern IAvnSystemDialogs* CreateSystemDialogs();
-extern IAvnScreens* CreateScreens();
+extern IAvnStorageProvider* CreateStorageProvider();
+extern IAvnScreens* CreateScreens(IAvnScreenEvents* cb);
 extern IAvnClipboard* CreateClipboard(NSPasteboard*, NSPasteboardItem*);
 extern NSPasteboardItem* TryGetPasteboardItem(IAvnClipboard*);
 extern NSObject<NSDraggingSource>* CreateDraggingSource(NSDragOperation op, IAvnDndResultCallback* cb, void* handle);
@@ -46,6 +47,7 @@ extern NSRect ToNSRect (AvnRect r);
 extern AvnPoint ToAvnPoint (NSPoint p);
 extern AvnPoint ConvertPointY (AvnPoint p);
 extern NSSize ToNSSize (AvnSize s);
+extern AvnSize FromNSSize (NSSize s);
 #ifdef DEBUG
 #define NSDebugLog(...) NSLog(__VA_ARGS__)
 #else
@@ -87,6 +89,13 @@ public:
 - (void) action;
 @end
 
+@implementation NSScreen (AvNSScreen)
+- (CGDirectDisplayID)av_displayId
+{
+    return [self.deviceDescription[@"NSScreenNumber"] unsignedIntValue];
+}
+@end
+
 class AvnInsidePotentialDeadlock
 {
 public:
@@ -101,6 +110,7 @@ class AvnApplicationCommands : public ComSingleObject<IAvnApplicationCommands, &
 public:
     FORWARD_IUNKNOWN()
     
+    virtual HRESULT UnhideApp() override;
     virtual HRESULT HideApp() override;
     virtual HRESULT ShowAll() override;
     virtual HRESULT HideOthers() override;

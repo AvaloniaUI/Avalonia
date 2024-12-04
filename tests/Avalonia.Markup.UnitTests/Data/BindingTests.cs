@@ -1,18 +1,14 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.ComponentModel;
 using System.Reactive.Linq;
+using System.Runtime.CompilerServices;
 using Avalonia.Controls;
 using Avalonia.Data;
-using Avalonia.Markup.Data;
+using Avalonia.Data.Converters;
+using Avalonia.Threading;
 using Moq;
 using Xunit;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using Avalonia.UnitTests;
-using Avalonia.Data.Converters;
-using Avalonia.Data.Core;
-using Avalonia.Threading;
 
 namespace Avalonia.Markup.UnitTests.Data
 {
@@ -110,10 +106,13 @@ namespace Avalonia.Markup.UnitTests.Data
 
             public override bool Equals(object obj)
             {
-                if (ReferenceEquals(null, obj)) return false;
-                if (ReferenceEquals(this, obj)) return true;
-                if (obj.GetType() != this.GetType()) return false;
-                return Equals((DummyObject) obj);
+                if (ReferenceEquals(null, obj))
+                    return false;
+                if (ReferenceEquals(this, obj))
+                    return true;
+                if (obj.GetType() != this.GetType())
+                    return false;
+                return Equals((DummyObject)obj);
             }
 
             public override int GetHashCode()
@@ -163,7 +162,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             // Forces WeakEvent compact
             Dispatcher.UIThread.RunJobs();
-            
+
             Assert.Equal(0, source.SubscriberCount);
         }
 
@@ -314,62 +313,15 @@ namespace Avalonia.Markup.UnitTests.Data
             child.GetObservable(Control.DataContextProperty).Subscribe(x => values.Add(x));
             child.Bind(Control.DataContextProperty, new Binding("Foo"));
 
-            // When binding to DataContext and the target isn't found, the binding should produce
+            // When binding to DataContext and the source isn't found, the binding should produce
             // null rather than UnsetValue in order to not propagate incorrect DataContexts from
             // parent controls while things are being set up. This logic is implemented in 
-            // `Avalonia.Markup.Data.Binding.Initiate`.
+            // `UntypedBindingExpressionBase.PublishValue`.
             Assert.True(child.IsSet(Control.DataContextProperty));
 
             root.Child = child;
 
             Assert.Equal(new[] { null, "bar" }, values);
-        }
-
-        [Fact]
-        public void Should_Use_DefaultValueConverter_When_No_Converter_Specified()
-        {
-            var target = new TextBlock(); ;
-            var binding = new Binding
-            {
-                Path = "Foo",
-            };
-
-            var result = binding.Initiate(target, TextBox.TextProperty).Source;
-
-            Assert.IsType<DefaultValueConverter>(((BindingExpression)result).Converter);
-        }
-
-        [Fact]
-        public void Should_Use_Supplied_Converter()
-        {
-            var target = new TextBlock();
-            var converter = new Mock<IValueConverter>();
-            var binding = new Binding
-            {
-                Converter = converter.Object,
-                Path = "Foo",
-            };
-
-            var result = binding.Initiate(target, TextBox.TextProperty).Source;
-
-            Assert.Same(converter.Object, ((BindingExpression)result).Converter);
-        }
-
-        [Fact]
-        public void Should_Pass_ConverterParameter_To_Supplied_Converter()
-        {
-            var target = new TextBlock();
-            var converter = new Mock<IValueConverter>();
-            var binding = new Binding
-            {
-                Converter = converter.Object,
-                ConverterParameter = "foo",
-                Path = "Bar",
-            };
-
-            var result = binding.Initiate(target, TextBox.TextProperty).Source;
-
-            Assert.Same("foo", ((BindingExpression)result).ConverterParameter);
         }
 
         [Fact]
@@ -614,10 +566,10 @@ namespace Avalonia.Markup.UnitTests.Data
 
             // Forces WeakEvent compact
             Dispatcher.UIThread.RunJobs();
-            
+
             Assert.Equal(0, source.SubscriberCount);
         }
-        
+
         [Fact]
         public void Binding_Can_Resolve_Property_From_IReflectableType_Type()
         {
@@ -692,6 +644,54 @@ namespace Avalonia.Markup.UnitTests.Data
             Assert.Null(target.NullableDouble);
         }
 
+        [Fact]
+        public void OneWayToSource_Binding_Does_Not_Override_TwoWay_Binding()
+        {
+            // Issue #2983
+            var target1 = new TextBlock();
+            var target2 = new TextBlock { Text = "OneWayToSource" };
+            var source = new Source { Foo = "foo" };
+            var root = new Panel
+            {
+                DataContext = source,
+                Children = { target1, target2 }
+            };
+
+            target1.Bind(TextBlock.TextProperty, new Binding("Foo", BindingMode.TwoWay));
+            target2.Bind(TextBlock.TextProperty, new Binding("Foo", BindingMode.OneWayToSource));
+
+            Assert.Equal("OneWayToSource", source.Foo);
+
+            target1.Text = "TwoWay";
+
+            Assert.Equal("TwoWay", source.Foo);
+        }
+
+        [Fact]
+        public void Target_Undoing_Property_Change_During_TwoWay_Binding_Does_Not_Cause_StackOverflow()
+        {
+            var source = new TestStackOverflowViewModel { BoolValue = true };
+            var target = new TwoWayBindingTest();
+
+            source.ResetSetterInvokedCount();
+
+            // The AlwaysFalse property is set to false in the PropertyChanged callback. Ensure
+            // that binding it to an initial `true` value with a two-way binding does not cause a
+            // stack overflow.
+            target.Bind(
+                TwoWayBindingTest.AlwaysFalseProperty,
+                new Binding(nameof(TestStackOverflowViewModel.BoolValue))
+                {
+                    Mode = BindingMode.TwoWay,
+                });
+
+            target.DataContext = source;
+
+            Assert.Equal(1, source.SetterInvokedCount);
+            Assert.False(source.BoolValue);
+            Assert.False(target.AlwaysFalse);
+        }
+
         private class StyledPropertyClass : AvaloniaObject
         {
             public static readonly StyledProperty<double> DoubleValueProperty =
@@ -703,7 +703,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 set => SetValue(DoubleValueProperty, value);
             }
 
-            public static StyledProperty<double?> NullableDoubleProperty = 
+            public static StyledProperty<double?> NullableDoubleProperty =
                 AvaloniaProperty.Register<StyledPropertyClass, double?>(nameof(NullableDoubleProperty), -1);
 
             public double? NullableDouble
@@ -750,9 +750,23 @@ namespace Avalonia.Markup.UnitTests.Data
 
             public const int MaxInvokedCount = 1000;
 
+            private bool _boolValue;
             private double _value;
 
             public event PropertyChangedEventHandler PropertyChanged;
+
+            public bool BoolValue
+            {
+                get => _boolValue;
+                set
+                {
+                    if (_boolValue != value)
+                    {
+                        _boolValue = value;
+                        SetterInvokedCount++;
+                        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(BoolValue)));
+                    }
+                } }
 
             public double Value
             {
@@ -765,8 +779,10 @@ namespace Avalonia.Markup.UnitTests.Data
                         if (SetterInvokedCount < MaxInvokedCount)
                         {
                             _value = (int)value;
-                            if (_value > 75) _value = 75;
-                            if (_value < 25) _value = 25;
+                            if (_value > 75)
+                                _value = 75;
+                            if (_value < 25)
+                                _value = 25;
                         }
                         else
                         {
@@ -777,19 +793,37 @@ namespace Avalonia.Markup.UnitTests.Data
                     }
                 }
             }
+
+            public void ResetSetterInvokedCount() => SetterInvokedCount = 0;
         }
 
         private class TwoWayBindingTest : Control
         {
+            public static readonly StyledProperty<bool> AlwaysFalseProperty =
+                AvaloniaProperty.Register<StyledPropertyClass, bool>(nameof(AlwaysFalse));
             public static readonly StyledProperty<string> TwoWayProperty =
                 AvaloniaProperty.Register<TwoWayBindingTest, string>(
-                    "TwoWay", 
+                    "TwoWay",
                     defaultBindingMode: BindingMode.TwoWay);
+
+            public bool AlwaysFalse
+            {
+                get => GetValue(AlwaysFalseProperty);
+                set => SetValue(AlwaysFalseProperty, value);
+            }
 
             public string TwoWay
             {
                 get => GetValue(TwoWayProperty);
                 set => SetValue(TwoWayProperty, value);
+            }
+
+            protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+            {
+                base.OnPropertyChanged(change);
+
+                if (change.Property == AlwaysFalseProperty)
+                    SetCurrentValue(AlwaysFalseProperty, false);
             }
         }
 

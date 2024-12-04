@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia.Input.Raw;
@@ -59,17 +60,25 @@ namespace Avalonia.FreeDesktop.DBusIme
 
         private async Task WatchAsync()
         {
+            var dbus = new OrgFreedesktopDBus(Connection, "org.freedesktop.DBus", "/org/freedesktop/DBus");
+            try
+            {
+                _disposables.Add(await dbus.WatchNameOwnerChangedAsync(OnNameChange));
+            }
+            catch (DBusException e)
+            {
+                Logger.TryGet(LogEventLevel.Error, LogArea.FreeDesktopPlatform)?.Log(this, $"WatchNameOwnerChangedAsync failed: {e}");
+            }
             foreach (var name in _knownNames)
             {
-                var dbus = new OrgFreedesktopDBus(Connection, "org.freedesktop.DBus", "/org/freedesktop/DBus");
                 try
                 {
-                    _disposables.Add(await dbus.WatchNameOwnerChangedAsync(OnNameChange));
                     var nameOwner = await dbus.GetNameOwnerAsync(name);
                     OnNameChange(null, (name, null, nameOwner));
                 }
-                catch (DBusException)
+                catch (DBusException e)
                 {
+                    Logger.TryGet(LogEventLevel.Error, LogArea.FreeDesktopPlatform)?.Log(this, $"GetNameOwnerAsync failed: {e}");
                 }
             }
         }
@@ -84,6 +93,11 @@ namespace Avalonia.FreeDesktop.DBusIme
             if (e is not null)
             {
                 Logger.TryGet(LogEventLevel.Error, LogArea.FreeDesktopPlatform)?.Log(this, $"OnNameChange failed: {e}");
+                return;
+            }
+
+            if (!_knownNames.Contains(args.ServiceName))
+            {
                 return;
             }
 
@@ -179,12 +193,23 @@ namespace Avalonia.FreeDesktop.DBusIme
                 _disposables.Add(d);
         }
 
-        public void Dispose()
+        public async void Dispose()
         {
             foreach(var d in _disposables)
                 d.Dispose();
             _disposables.Clear();
-            _ = DisconnectAsync();
+            if (!IsConnected)
+                return;
+            try
+            {
+                await DisconnectAsync();
+            }
+            catch (Exception ex)
+            {
+                Logger.TryGet(LogEventLevel.Error, "IME")
+                    ?.Log(this, "Error while destroying the context:\n" + ex);
+            }
+
             _currentName = null;
         }
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Linq;
@@ -6,6 +7,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform;
 using Avalonia.Media.Fonts;
 using Avalonia.Media;
+using Avalonia.Metadata;
 
 namespace Avalonia
 {
@@ -55,15 +57,26 @@ namespace Avalonia
         public Action? RenderingSubsystemInitializer { get; private set; }
 
         /// <summary>
+        /// Gets a method to override a lifetime factory.
+        /// </summary>
+        [Obsolete("This property has no effect", true)]
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        public Func<Type, IApplicationLifetime?>? LifetimeOverride { get; private set; }
+
+        /// <summary>
         /// Gets the name of the currently selected rendering subsystem.
         /// </summary>
         public string? RenderingSubsystemName { get; private set; }
 
         /// <summary>
-        /// Gets or sets a method to call after the <see cref="Application"/> is setup.
+        /// Gets a method to call after the <see cref="Application"/> is setup.
         /// </summary>
         public Action<AppBuilder> AfterSetupCallback { get; private set; } = builder => { };
 
+        /// <summary>
+        /// Callbacks that are commonly used by backends to initialize avalonia views.
+        /// </summary>
+        private Action<AppBuilder> AfterApplicationSetupCallback { get; set; } = builder => { };
 
         public Action<AppBuilder> AfterPlatformServicesSetupCallback { get; private set; } = builder => { };
         
@@ -150,8 +163,14 @@ namespace Avalonia
             AfterSetupCallback = (Action<AppBuilder>)Delegate.Combine(AfterSetupCallback, callback);
             return Self;
         }
-        
-        
+
+        [PrivateApi]
+        public AppBuilder AfterApplicationSetup(Action<AppBuilder> callback)
+        {
+            AfterApplicationSetupCallback = (Action<AppBuilder>)Delegate.Combine(AfterApplicationSetupCallback, callback);
+            return Self;
+        }
+
         public AppBuilder AfterPlatformServicesSetup(Action<AppBuilder> callback)
         {
             AfterPlatformServicesSetupCallback = (Action<AppBuilder>)Delegate.Combine(AfterPlatformServicesSetupCallback, callback);
@@ -319,6 +338,7 @@ namespace Avalonia
             AvaloniaLocator.CurrentMutable.BindToSelf(Instance);
             Instance.RegisterServices();
             Instance.Initialize();
+            AfterApplicationSetupCallback?.Invoke(Self);
             AfterSetupCallback?.Invoke(Self);
             Instance.OnFrameworkInitializationCompleted();
         }

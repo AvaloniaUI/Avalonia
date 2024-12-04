@@ -31,7 +31,7 @@ namespace Avalonia.Media
                 throw new ArgumentException("Font stretch must be > 1.");
             }
 
-            FontFamily = fontFamily;
+            FontFamily = fontFamily ?? FontFamily.Default;
             Style = style;
             Weight = weight;
             Stretch = stretch;
@@ -48,7 +48,7 @@ namespace Avalonia.Media
             FontStyle style = FontStyle.Normal,
             FontWeight weight = FontWeight.Normal,
             FontStretch stretch = FontStretch.Normal)
-            : this(new FontFamily(fontFamilyName), style, weight, stretch)
+            : this(fontFamilyName == null ? FontFamily.Default : new FontFamily(fontFamilyName), style, weight, stretch)
         {
         }
 
@@ -89,7 +89,8 @@ namespace Avalonia.Media
                     return glyphTypeface;
                 }
 
-                throw new InvalidOperationException("Could not create glyphTypeface.");
+                throw new InvalidOperationException(
+                    $"Could not create glyphTypeface. Font family: {FontFamily?.Name} (key: {FontFamily?.Key}). Style: {Style}. Weight: {Weight}. Stretch: {Stretch}");
             }
         }
 

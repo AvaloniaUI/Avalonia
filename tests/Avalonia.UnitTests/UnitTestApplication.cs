@@ -1,13 +1,10 @@
 using System;
 using Avalonia.Input;
-using Avalonia.Layout;
 using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.Controls;
-using Avalonia.Rendering;
 using Avalonia.Threading;
 using System.Reactive.Disposables;
-using System.Reactive.Concurrency;
 using System.Threading;
 using Avalonia.Input.Platform;
 using Avalonia.Animation;
@@ -53,6 +50,8 @@ namespace Avalonia.UnitTests
                     Dispatcher.UIThread.RunJobs();
                 }
 
+                ((ToolTipService)AvaloniaLocator.Current.GetService<IToolTipService>())?.Dispose();
+
                 scope.Dispose();
                 Dispatcher.ResetForUnitTests();
                 SynchronizationContext.SetSynchronizationContext(oldContext);
@@ -67,9 +66,10 @@ namespace Avalonia.UnitTests
                 .Bind<IGlobalClock>().ToConstant(Services.GlobalClock)
                 .BindToSelf<IGlobalStyles>(this)
                 .Bind<IInputManager>().ToConstant(Services.InputManager)
+                .Bind<IToolTipService>().ToConstant(Services.InputManager == null ? null : new ToolTipService(Services.InputManager))
                 .Bind<IKeyboardDevice>().ToConstant(Services.KeyboardDevice?.Invoke())
-                .Bind<IKeyboardNavigationHandler>().ToConstant(Services.KeyboardNavigation)
                 .Bind<IMouseDevice>().ToConstant(Services.MouseDevice?.Invoke())
+                .Bind<IKeyboardNavigationHandler>().ToFunc(Services.KeyboardNavigation ?? (() => null))
                 .Bind<IRuntimePlatform>().ToConstant(Services.Platform)
                 .Bind<IPlatformRenderInterface>().ToConstant(Services.RenderInterface)
                 .Bind<IFontManagerImpl>().ToConstant(Services.FontManagerImpl)
@@ -78,7 +78,9 @@ namespace Avalonia.UnitTests
                 .Bind<ICursorFactory>().ToConstant(Services.StandardCursorFactory)
                 .Bind<IWindowingPlatform>().ToConstant(Services.WindowingPlatform)
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
-                .Bind<IPlatformSettings>().ToSingleton<DefaultPlatformSettings>();
+                .Bind<IPlatformSettings>().ToSingleton<DefaultPlatformSettings>()
+                .Bind<IAccessKeyHandler>().ToConstant(Services.AccessKeyHandler)
+                ;
             
             // This is a hack to make tests work, we need to refactor the way font manager is registered
             // See https://github.com/AvaloniaUI/Avalonia/issues/10081

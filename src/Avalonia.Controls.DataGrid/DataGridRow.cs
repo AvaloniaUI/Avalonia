@@ -15,7 +15,9 @@ using Avalonia.Utilities;
 using Avalonia.VisualTree;
 using System;
 using System.Diagnostics;
+using Avalonia.Automation.Peers;
 using Avalonia.Reactive;
+using Avalonia.Automation;
 
 namespace Avalonia.Controls
 {
@@ -62,6 +64,7 @@ namespace Avalonia.Controls
         private Control _detailsContent;
         private IDisposable _detailsContentSizeSubscription;
         private DataGridDetailsPresenter _detailsElement;
+        private bool _isSelected;
 
         // Locally cache whether or not details are visible so we don't run redundant storyboards
         // The Details Template that is actually applied to the Row
@@ -82,6 +85,18 @@ namespace Avalonia.Controls
         {
             get { return GetValue(HeaderProperty); }
             set { SetValue(HeaderProperty, value); }
+        }
+
+        public static readonly DirectProperty<DataGridRow, bool> IsSelectedProperty =
+            AvaloniaProperty.RegisterDirect<DataGridRow, bool>(
+                nameof(IsSelected),
+                o => o.IsSelected,
+                (o, v) => o.IsSelected = v);
+
+        public bool IsSelected
+        {
+            get => _isSelected;
+            set => SetAndRaise(IsSelectedProperty, ref _isSelected, value);
         }
 
         public static readonly DirectProperty<DataGridRow, bool> IsValidProperty =
@@ -129,6 +144,7 @@ namespace Avalonia.Controls
             AreDetailsVisibleProperty.Changed.AddClassHandler<DataGridRow>((x, e) => x.OnAreDetailsVisibleChanged(e));
             PointerPressedEvent.AddClassHandler<DataGridRow>((x, e) => x.DataGridRow_PointerPressed(e), handledEventsToo: true);
             IsTabStopProperty.OverrideDefaultValue<DataGridRow>(false);
+            AutomationProperties.IsOffscreenBehaviorProperty.OverrideDefaultValue<DataGridRow>(IsOffscreenBehavior.FromClip);
         }
 
         /// <summary>
@@ -148,6 +164,11 @@ namespace Avalonia.Controls
             Cells = new DataGridCellCollection(this);
             Cells.CellAdded += DataGridCellCollection_CellAdded;
             Cells.CellRemoved += DataGridCellCollection_CellRemoved;
+        }
+
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new DataGridRowAutomationPeer(this);
         }
 
         private void SetValueNoCallback<T>(AvaloniaProperty<T> property, T value, BindingPriority priority = BindingPriority.LocalValue)
@@ -214,13 +235,18 @@ namespace Avalonia.Controls
             set;
         }
 
+        private int _index;
+
+        public static readonly DirectProperty<DataGridRow, int> IndexProperty = AvaloniaProperty.RegisterDirect<DataGridRow, int>(
+            nameof(Index), o => o.Index, (o, v) => o.Index = v);
+
         /// <summary>
         /// Index of the row
         /// </summary>
-        internal int Index
+        public int Index
         {
-            get;
-            set;
+            get => _index;
+            internal set => SetAndRaise(IndexProperty, ref _index, value);
         }
 
         internal double ActualBottomGridLineHeight
@@ -341,20 +367,6 @@ namespace Avalonia.Controls
             }
         }
 
-        internal bool IsSelected
-        {
-            get
-            {
-                if (OwningGrid == null || Slot == -1)
-                {
-                    // The Slot can be -1 if we're about to reuse or recycle this row, but the layout cycle has not
-                    // passed so we don't know the outcome yet.  We don't care whether or not it's selected in this case
-                    return false;
-                }
-                return OwningGrid.GetRowSelection(Slot);
-            }
-        }
-
         internal int? MouseOverColumnIndex
         {
             get
@@ -429,6 +441,7 @@ namespace Avalonia.Controls
         /// <returns>
         /// The index of the current row.
         /// </returns>
+        [Obsolete("This API is going to be removed in a future version. Use the Index property instead.")]
         public int GetIndex()
         {
             return Index;
@@ -552,7 +565,7 @@ namespace Avalonia.Controls
             RootElement = e.NameScope.Find<Panel>(DATAGRIDROW_elementRoot);
             if (RootElement != null)
             {
-                UpdatePseudoClasses();
+                ApplyState();
             }
 
             bool updateVerticalScrollBar = false;
@@ -638,11 +651,12 @@ namespace Avalonia.Controls
             }
         }
 
-        internal void UpdatePseudoClasses()
+        internal void ApplyState()
         {
             if (RootElement != null && OwningGrid != null && IsVisible)
             {
-                PseudoClasses.Set(":selected", IsSelected);
+                var isSelected = Slot != -1 && OwningGrid.GetRowSelection(Slot);
+                IsSelected = isSelected;
                 PseudoClasses.Set(":editing", IsEditing);
                 PseudoClasses.Set(":invalid", !IsValid);
                 ApplyHeaderStatus();
@@ -771,14 +785,6 @@ namespace Avalonia.Controls
             if (OwningGrid != null)
             {
                 OwningGrid.IsDoubleClickRecordsClickOnCall(this);
-                if (OwningGrid.UpdatedStateOnMouseLeftButtonDown)
-                {
-                    OwningGrid.UpdatedStateOnMouseLeftButtonDown = false;
-                }
-                else
-                {
-                    e.Handled = OwningGrid.UpdateStateOnMouseLeftButtonDown(e, -1, Slot, false);
-                }
             }
         }
 
@@ -1063,7 +1069,6 @@ namespace Avalonia.Controls
             }
         }
 
-
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             if (change.Property == DataContextProperty)
@@ -1082,6 +1087,18 @@ namespace Avalonia.Controls
                     }
                 }
             }
+            else if (change.Property == IsSelectedProperty)
+            {
+                var value = change.GetNewValue<bool>();
+
+                if (OwningGrid != null && Slot != -1)
+                {
+                    OwningGrid.SetRowSelection(Slot, value, false);
+                }
+
+                PseudoClasses.Set(":selected", value);
+            }
+
             base.OnPropertyChanged(change);
         }
 

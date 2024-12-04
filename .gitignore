@@ -45,8 +45,8 @@ x64/
 *.vssscc
 .builds
 *.pidb
-*.log
 *.scc
+*.binlog
 
 # Visual C++ cache files
 ipch/
@@ -217,3 +217,5 @@ node_modules
 src/Browser/Avalonia.Browser.Blazor/webapp/package-lock.json
 src/Browser/Avalonia.Browser.Blazor/wwwroot
 src/Browser/Avalonia.Browser/wwwroot
+api/diff
+src/Browser/Avalonia.Browser/staticwebassets

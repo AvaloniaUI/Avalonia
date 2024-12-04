@@ -1,4 +1,6 @@
-﻿#pragma warning disable MA0048 // File name must match type name
+﻿#nullable enable
+
+#pragma warning disable MA0048 // File name must match type name
 // https://github.com/dotnet/runtime/tree/main/src/libraries/System.Private.CoreLib/src/System/Diagnostics/CodeAnalysis
 
 // Licensed to the .NET Foundation under one or more agreements.
@@ -7,7 +9,6 @@
 
 namespace System.Diagnostics.CodeAnalysis
 {
-#nullable enable
 #if !NET6_0_OR_GREATER
     [AttributeUsage(
         AttributeTargets.Field | AttributeTargets.ReturnValue | AttributeTargets.GenericParameter |

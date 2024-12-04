@@ -1,4 +1,6 @@
 ﻿using System;
+using Avalonia.Automation.Peers;
+using Avalonia.Controls.Automation.Peers;
 using Avalonia.Reactive;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
@@ -8,7 +10,7 @@ namespace Avalonia.Controls.Chrome
     /// <summary>
     /// Draws a titlebar when managed client decorations are enabled.
     /// </summary>
-    [TemplatePart("PART_CaptionButtons", typeof(CaptionButtons))]
+    [TemplatePart("PART_CaptionButtons", typeof(CaptionButtons), IsRequired = true)]
     [PseudoClasses(":minimized", ":normal", ":maximized", ":fullscreen")]
     public class TitleBar : TemplatedControl
     {
@@ -25,7 +27,7 @@ namespace Avalonia.Controls.Chrome
 
             if (window.WindowState != WindowState.FullScreen)
             {
-                Height = window.WindowDecorationMargin.Top;
+                Height = Math.Max(0, window.WindowDecorationMargin.Top);
 
                 if (_captionButtons != null)
                 {
@@ -94,5 +96,8 @@ namespace Avalonia.Controls.Chrome
             _captionButtons?.Detach();
             _captionButtons = null;
         }
+
+        /// <inheritdoc />
+        protected override AutomationPeer OnCreateAutomationPeer() => new TitleBarAutomationPeer(this);
     }
 }

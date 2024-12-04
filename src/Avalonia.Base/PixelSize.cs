@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Avalonia.Utilities;
 
@@ -67,13 +68,38 @@ namespace Avalonia
         /// </summary>
         /// <param name="s">The string.</param>
         /// <returns>The <see cref="PixelSize"/>.</returns>
+        /// <exception cref="FormatException"/>
         public static PixelSize Parse(string s)
         {
-            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid PixelSize."))
+            if (TryParse(s, out var result))
             {
-                return new PixelSize(
-                    tokenizer.ReadInt32(),
-                    tokenizer.ReadInt32());
+                return result;
+            }
+            throw new FormatException("Invalid PixelSize.");
+        }
+
+        /// <summary>
+        /// Try parsing <paramref name="source"/> as <see cref="PixelSize"/>.
+        /// </summary>
+        /// <param name="source">The <see cref="string"/> to parse.</param>
+        /// <param name="result">The result of parsing. if <paramref name="source"/> is not valid <paramref name="result"/> is <see cref="PixelSize.Empty"/> </param>
+        /// <returns><c>true</c> if <paramref name="source"/> is valid <see cref="PixelSize"/>, otherwise <c>false</c>.</returns>
+        public static bool TryParse([NotNullWhen(true)] string? source,
+            out PixelSize result)
+        {
+            result = Empty;
+            if(string.IsNullOrEmpty(source))
+            {
+                return false;
+            }
+            using (var tokenizer = new StringTokenizer(source, exceptionMessage: "Invalid PixelSize."))
+            {
+                if (tokenizer.TryReadInt32(out var w) && tokenizer.TryReadInt32(out var h))
+                {
+                    result = new(w, h);
+                    return true;
+                }
+                return false;
             }
         }
 
@@ -166,6 +192,17 @@ namespace Avalonia
         public static PixelSize FromSize(Size size, double scale) => new PixelSize(
             (int)Math.Ceiling(size.Width * scale),
             (int)Math.Ceiling(size.Height * scale));
+        
+        /// <summary>
+        /// A reversible variant of <see cref="FromSize(Size, double)"/> that uses Round instead of Ceiling to make it reversible from ToSize
+        /// </summary>
+        /// <param name="size">The size.</param>
+        /// <param name="scale">The scaling factor.</param>
+        /// <returns>The device-independent size.</returns>
+        internal static PixelSize FromSizeRounded(Size size, double scale) => new PixelSize(
+            (int)Math.Round(size.Width * scale),
+            (int)Math.Round(size.Height * scale));
+
 
         /// <summary>
         /// Converts a <see cref="Size"/> to device pixels using the specified scaling factor.

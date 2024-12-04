@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Avalonia.Platform.Internal;
 using Avalonia.Utilities;
 using Mono.Cecil;
@@ -67,11 +68,13 @@ namespace Avalonia.Build.Tasks
 
                 AvaloniaResourcesIndexReaderWriter.WriteResources(
                     output,
-                    _resources.Select(x => (
-                        Path: x.Key,
-                        Size: x.Value.FileContents.Length,
-                        Open: (Func<Stream>) (() => new MemoryStream(x.Value.FileContents))
-                    )).ToList());
+                    _resources.Select(x => new AvaloniaResourcesEntry
+                    {
+                        Path = x.Key,
+                        Size = x.Value.FileContents.Length,
+                        SystemPath = x.Value.FilePath,
+                        Open = () => new MemoryStream(x.Value.FileContents)
+                    }).ToList());
 
                 output.Position = 0L;
                 _embedded = new EmbeddedResource(Constants.AvaloniaResourceName, ManifestResourceAttributes.Public, output);

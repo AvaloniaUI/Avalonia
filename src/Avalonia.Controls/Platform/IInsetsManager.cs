@@ -1,11 +1,11 @@
 ﻿using System;
 using Avalonia.Media;
 using Avalonia.Metadata;
+using Avalonia.Threading;
 
 #nullable enable
 namespace Avalonia.Controls.Platform
 {
-    [Unstable]
     [NotClientImplementable]
     public interface IInsetsManager
     {
@@ -15,7 +15,7 @@ namespace Avalonia.Controls.Platform
         bool? IsSystemBarVisible { get; set; }
 
         /// <summary>
-        /// Gets or sets whether the window draws edge to edge. behind any visibile system bars.
+        /// Gets or sets whether the window draws edge to edge. behind any visible system bars.
         /// </summary>
         bool DisplayEdgeToEdge { get; set; }
 
@@ -33,6 +33,23 @@ namespace Avalonia.Controls.Platform
         /// Occurs when safe area for the current window changes.
         /// </summary>
         event EventHandler<SafeAreaChangedArgs>? SafeAreaChanged;
+    }
+
+    [PrivateApi]
+    public abstract class InsetsManagerBase : IInsetsManager
+    {
+        public virtual bool? IsSystemBarVisible { get; set; }
+        public virtual bool DisplayEdgeToEdge { get; set; }
+        public virtual Thickness SafeAreaPadding { get; protected set; }
+        public virtual Color? SystemBarColor { get; set; }
+        public event EventHandler<SafeAreaChangedArgs>? SafeAreaChanged;
+
+        protected void OnSafeAreaChanged(SafeAreaChangedArgs eventArgs)
+        {
+            Dispatcher.UIThread.Send(
+                _ => SafeAreaChanged?.Invoke(this, eventArgs),
+                null, DispatcherPriority.Send);
+        }
     }
     
     public class SafeAreaChangedArgs : EventArgs

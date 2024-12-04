@@ -6,7 +6,7 @@
   </Design.PreviewWith>
 
   <MenuFlyout x:Key="SelectableTextBlockContextFlyout" Placement="Bottom">
-    <MenuItem x:Name="SelectableTextBlockContextFlyoutCopyItem" Header="Copy" Command="{Binding $parent[SelectableTextBlock].Copy}"
+    <MenuItem x:Name="SelectableTextBlockContextFlyoutCopyItem" Header="{DynamicResource StringTextFlyoutCopyText}" Command="{Binding $parent[SelectableTextBlock].Copy}"
               IsEnabled="{Binding $parent[SelectableTextBlock].CanCopy}" InputGesture="{x:Static TextBox.CopyGesture}" />
   </MenuFlyout>
 

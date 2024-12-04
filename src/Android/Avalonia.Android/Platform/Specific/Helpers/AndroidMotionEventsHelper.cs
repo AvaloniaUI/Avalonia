@@ -8,8 +8,6 @@ using Avalonia.Collections.Pooled;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 
-#nullable enable
-
 namespace Avalonia.Android.Platform.Specific.Helpers
 {
     internal class AndroidMotionEventsHelper : IDisposable
@@ -30,16 +28,19 @@ namespace Avalonia.Android.Platform.Specific.Helpers
             _view = view;
         }
 
-        public bool? DispatchMotionEvent(MotionEvent e, out bool callBase)
+        public bool? DispatchMotionEvent(MotionEvent? e, out bool callBase)
         {
             callBase = true;
-            if (_disposed)
+            if (_disposed || e is null)
             {
                 return null;
             }
 
             var eventTime = (ulong)e.EventTime;
             var inputRoot = _view.InputRoot;
+            if (inputRoot is null)
+                return false; // too early to handle events.
+
             var actionMasked = e.ActionMasked;
             var modifiers = GetModifiers(e.MetaState, e.ButtonState);
 
@@ -75,7 +76,7 @@ namespace Avalonia.Android.Platform.Specific.Helpers
                             return s_intermediatePointsPooledList;
                         })
                     };
-                    _view.Input(args);
+                    _view.Input?.Invoke(args);
                 }
             }
             else
@@ -90,7 +91,7 @@ namespace Avalonia.Android.Platform.Specific.Helpers
                 {
                     var delta = new Vector(e.GetAxisValue(Axis.Hscroll), e.GetAxisValue(Axis.Vscroll));
                     var args = new RawMouseWheelEventArgs(device, eventTime, inputRoot, point.Position, delta, RawInputModifiers.None);
-                    _view.Input(args);
+                    _view.Input?.Invoke(args);
                 }
                 else
                 {
@@ -98,7 +99,7 @@ namespace Avalonia.Android.Platform.Specific.Helpers
                     if (eventType >= 0)
                     {
                         var args = new RawTouchEventArgs(device, eventTime, inputRoot, eventType, point, modifiers, e.GetPointerId(index));
-                        _view.Input(args);
+                        _view.Input?.Invoke(args);
                     }
                 }
             }
@@ -145,7 +146,7 @@ namespace Avalonia.Android.Platform.Specific.Helpers
             {
                 modifiers |= RawInputModifiers.XButton2MouseButton;
             }
-            if (buttonState.HasAnyFlag(MotionEventButtonState.StylusPrimary))
+            if (OperatingSystem.IsAndroidVersionAtLeast(23) && buttonState.HasAnyFlag(MotionEventButtonState.StylusPrimary))
             {
                 modifiers |= RawInputModifiers.PenBarrelButton;
             }

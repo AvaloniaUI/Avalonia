@@ -8,6 +8,7 @@ using Avalonia.MicroCom;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Rendering;
 using Avalonia.Win32.Interop;
+using MicroCom.Runtime;
 
 namespace Avalonia.Win32.WinRT.Composition;
 
@@ -80,18 +81,65 @@ internal class WinUiCompositorConnection : IRenderTimer, Win32.IWindowsSurfaceFa
     {
         private readonly WinUiCompositorConnection _parent;
         private readonly Stopwatch _st = Stopwatch.StartNew();
-
+        private TimeSpan? _commitDueAt;
+        private IAsyncAction? _currentCommit;
         public RunLoopHandler(WinUiCompositorConnection parent)
         {
             _parent = parent;
         }
-        
-        public void Invoke(IAsyncAction asyncInfo, AsyncStatus asyncStatus)
+
+        public void Invoke(IAsyncAction? asyncInfo, AsyncStatus asyncStatus)
         { 
-            _parent.Tick?.Invoke(_st.Elapsed);
-            using var act = _parent._shared.Compositor5.RequestCommitAsync();
-            act.SetCompleted(this);
+            if (_currentCommit == null ||
+              _currentCommit.GetNativeIntPtr() != asyncInfo.GetNativeIntPtr())
+                return;
+            OnCommitCompleted();
         }
+        
+        private void OnCommitCompleted()
+        {
+            _currentCommit?.Dispose();
+            _currentCommit = null;
+            _parent.Tick?.Invoke(_st.Elapsed);
+            ScheduleNextCommit();
+        }
+
+        private void ScheduleNextCommit()
+        {
+            lock (_parent._shared.SyncRoot)
+            {
+                _commitDueAt = _st.Elapsed + TimeSpan.FromSeconds(1);
+                _currentCommit = _parent._shared.Compositor5.RequestCommitAsync();
+                _currentCommit.SetCompleted(this);
+            }
+        }
+
+        public void WatchDog()
+        {
+            // This is a workaround for a nasty WinUI composition API bug that prevents
+            // RequestCommitAsync to ever complete after D3D device loss event with some systems
+            // (A notable example is after pause/resume in Parallels Desktop)
+            // We check if we haven't got a commit completion callback for a second
+            // And forcefully trigger the next one, which makes the entire thing to unstuck
+            
+            if (_st.Elapsed > _commitDueAt && _currentCommit != null)
+            {
+                Logger.TryGet(LogEventLevel.Error, LogArea.Visual)?.Log(this,
+                    "windows::UI::Composition::ICompositor5.RequestCommitAsync timed out, force-triggering next tick");
+                try
+                {
+                    _currentCommit?.GetResults();
+                }
+                catch (Exception e)
+                {
+                    Logger.TryGet(LogEventLevel.Error, LogArea.Visual)?.Log(this,
+                        "ICompositor5::RequestCommitAsync failed: {HR}, {ERR}", e.HResult, e.ToString());
+                }
+                OnCommitCompleted();
+            }
+        }
+
+        public void Start() => ScheduleNextCommit();
     }
 
     private void RunLoop()
@@ -100,15 +148,32 @@ internal class WinUiCompositorConnection : IRenderTimer, Win32.IWindowsSurfaceFa
         AppDomain.CurrentDomain.ProcessExit += (_, _) =>
             cts.Cancel();
 
-        lock (_shared.SyncRoot)
-            using (var act = _shared.Compositor5.RequestCommitAsync())
-                act.SetCompleted(new RunLoopHandler(this));
+        var handler = new RunLoopHandler(this);
+        handler.Start();
 
-        while (!cts.IsCancellationRequested)
+        using var dw = new SimpleWindow((hwnd, msg, w, l) =>
         {
-            UnmanagedMethods.GetMessage(out var msg, IntPtr.Zero, 0, 0);
+            if (msg == (uint)UnmanagedMethods.WindowsMessage.WM_TIMER)
+            {
+                handler.WatchDog();
+                UnmanagedMethods.SetTimer(hwnd, IntPtr.Zero, 1000, null);
+            }
+            return UnmanagedMethods.DefWindowProc(hwnd, msg, w, l);
+        });
+        UnmanagedMethods.SetTimer(dw.Handle, IntPtr.Zero, 1000, null);
+
+        var result = 0;
+        while (!cts.IsCancellationRequested
+               && (result = UnmanagedMethods.GetMessage(out var msg, IntPtr.Zero, 0, 0)) > 0)
+        {
             lock (_shared.SyncRoot)
                 UnmanagedMethods.DispatchMessage(ref msg);
+        }
+
+        if (result < 0)
+        {
+            Logger.TryGet(LogEventLevel.Error, "WinUIComposition")
+                ?.Log(this, "Unmanaged error in {0}. Error Code: {1}", nameof(RunLoop), Marshal.GetLastWin32Error());
         }
     }
 

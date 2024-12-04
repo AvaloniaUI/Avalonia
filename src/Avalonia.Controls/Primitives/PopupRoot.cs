@@ -1,8 +1,10 @@
 using System;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Primitives.PopupPositioning;
+using Avalonia.Diagnostics;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Metadata;
 using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
@@ -20,7 +22,15 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<Transform?> TransformProperty =
             AvaloniaProperty.Register<PopupRoot, Transform?>(nameof(Transform));
 
-        private PopupPositionerParameters _positionerParameters;        
+        /// <summary>
+        /// Defines the <see cref="WindowManagerAddShadowHint"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> WindowManagerAddShadowHintProperty =
+            Popup.WindowManagerAddShadowHintProperty.AddOwner<PopupRoot>();
+
+        private PopupPositionRequest? _popupPositionRequest;
+        private Size _popupSize;
+        private bool _needsUpdate;
 
         /// <summary>
         /// Initializes static members of the <see cref="PopupRoot"/> class.
@@ -50,6 +60,7 @@ namespace Avalonia.Controls.Primitives
             : base(impl, dependencyResolver)
         {
             ParentTopLevel = parent;
+            impl.SetWindowManagerAddShadowHint(WindowManagerAddShadowHint);
         }
 
         /// <summary>
@@ -64,6 +75,15 @@ namespace Avalonia.Controls.Primitives
         {
             get => GetValue(TransformProperty);
             set => SetValue(TransformProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets a hint to the window manager that a shadow should be added to the popup.
+        /// </summary>
+        public bool WindowManagerAddShadowHint
+        {
+            get => GetValue(WindowManagerAddShadowHintProperty);
+            set => SetValue(WindowManagerAddShadowHintProperty, value);
         }
 
         /// <summary>
@@ -108,23 +128,35 @@ namespace Avalonia.Controls.Primitives
 
         private void UpdatePosition()
         {
-            PlatformImpl?.PopupPositioner?.Update(_positionerParameters);
+            if (_needsUpdate && _popupPositionRequest is not null)
+            {
+                _needsUpdate = false;
+                PlatformImpl?.PopupPositioner?
+                    .Update(ParentTopLevel, _popupPositionRequest, _popupSize, FlowDirection);
+            }
         }
 
+        [Unstable(ObsoletionMessages.MayBeRemovedInAvalonia12)]
         public void ConfigurePosition(Visual target, PlacementMode placement, Point offset,
             PopupAnchor anchor = PopupAnchor.None,
             PopupGravity gravity = PopupGravity.None,
             PopupPositionerConstraintAdjustment constraintAdjustment = PopupPositionerConstraintAdjustment.All,
             Rect? rect = null)
         {
-            _positionerParameters.ConfigurePosition(ParentTopLevel, target,
-                placement, offset, anchor, gravity, constraintAdjustment, rect, FlowDirection);
+            ((IPopupHost)this).ConfigurePosition(new PopupPositionRequest(target, placement, offset, anchor, gravity,
+                constraintAdjustment, rect, null));
+        }
 
-            if (_positionerParameters.Size != default)
-                UpdatePosition();
+        void IPopupHost.ConfigurePosition(PopupPositionRequest request)
+        {
+            _popupPositionRequest = request;
+            _needsUpdate = true;
+            UpdatePosition();
         }
 
         public void SetChild(Control? control) => Content = control;
+
+        public void TakeFocus() => PlatformImpl?.TakeFocus();
 
         Visual IPopupHost.HostedVisualTreeRoot => this;
         
@@ -168,16 +200,31 @@ namespace Avalonia.Controls.Primitives
             return new Size(width, height);
         }
 
-        protected override sealed Size ArrangeSetBounds(Size size)
+        protected sealed override Size ArrangeSetBounds(Size size)
         {
-            _positionerParameters.Size = size;
-            UpdatePosition();
+            if (_popupSize != size)
+            {
+                _popupSize = size;
+                _needsUpdate = true;
+                UpdatePosition();
+            }
+
             return ClientSize;
         }
 
         protected override AutomationPeer OnCreateAutomationPeer()
         {
             return new PopupRootAutomationPeer(this);
+        }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == WindowManagerAddShadowHintProperty)
+            {
+                PlatformImpl?.SetWindowManagerAddShadowHint(change.GetNewValue<bool>());
+            }
         }
     }
 }

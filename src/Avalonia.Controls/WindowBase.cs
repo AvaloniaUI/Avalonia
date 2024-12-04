@@ -4,6 +4,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Platform;
+using Avalonia.Styling;
 
 namespace Avalonia.Controls
 {
@@ -47,11 +48,12 @@ namespace Avalonia.Controls
         public WindowBase(IWindowBaseImpl impl) : this(impl, AvaloniaLocator.Current)
         {
             CreatePlatformImplBinding(TopmostProperty, topmost => PlatformImpl!.SetTopmost(topmost));
+            
+            FrameSize = impl.FrameSize;
         }
 
         public WindowBase(IWindowBaseImpl impl, IAvaloniaDependencyResolver? dependencyResolver) : base(impl, dependencyResolver)
         {
-            Screens = new Screens(impl.Screen);
             impl.Activated = HandleActivated;
             impl.Deactivated = HandleDeactivated;
             impl.PositionChanged = HandlePositionChanged;
@@ -106,7 +108,9 @@ namespace Avalonia.Controls
             private set => SetAndRaise(IsActiveProperty, ref _isActive, value);
         }
 
-        public Screens Screens { get; }
+        /// <inheritdoc cref="TopLevel.Screens"/>
+        public new Screens Screens => base.Screens
+            ?? throw new InvalidOperationException("Windowing backend wasn't properly initialized.");
 
         /// <summary>
         /// Gets or sets the owner of the window.
@@ -129,7 +133,9 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the scaling factor for Window positioning and sizing.
         /// </summary>
-        public double DesktopScaling => PlatformImpl?.DesktopScaling ?? 1;
+        public double DesktopScaling => DesktopScalingOverride ?? PlatformImpl?.DesktopScaling ?? 1;
+
+        private protected double? DesktopScalingOverride { get; set; }
         
         /// <summary>
         /// Activates the window.
@@ -212,6 +218,8 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override void OnOpened(EventArgs e)
         {
+            FrameSize = PlatformImpl?.FrameSize;
+            
             // Window must manually raise Loaded/Unloaded events as it is a visual root and
             // does not raise OnAttachedToVisualTreeCore/OnDetachedFromVisualTreeCore events
             ScheduleOnLoadedCore();

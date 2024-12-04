@@ -349,15 +349,15 @@ namespace Avalonia.Controls
         {
             Debug.Assert(index >= 0);
 
+            if (DataSource is DataGridCollectionView collectionView)
+            {
+                return (index < collectionView.Count) ? collectionView.GetItemAt(index) : null;
+            }
+
             IList list = List;
             if (list != null)
             {
                 return (index < list.Count) ? list[index] : null;
-            }
-
-            if (DataSource is DataGridCollectionView collectionView)
-            {
-                return (index < collectionView.Count) ? collectionView.GetItemAt(index) : null;
             }
 
             IEnumerable enumerable = DataSource;
@@ -419,15 +419,15 @@ namespace Avalonia.Controls
 
         public int IndexOf(object dataItem)
         {
+            if (DataSource is DataGridCollectionView cv)
+            {
+                return cv.IndexOf(dataItem);
+            }
+
             IList list = List;
             if (list != null)
             {
                 return list.IndexOf(dataItem);
-            }
-
-            if (DataSource is DataGridCollectionView cv)
-            {
-                return cv.IndexOf(dataItem);
             }
 
             IEnumerable enumerable = DataSource;

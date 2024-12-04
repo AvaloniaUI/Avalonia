@@ -23,10 +23,11 @@ namespace Avalonia.PropertyStore
             AvaloniaObject owner,
             StyledProperty<T> property,
             EffectiveValue<T>? inherited)
+            : base(property)
         {
             Priority = BindingPriority.Unset;
             BasePriority = BindingPriority.Unset;
-            _metadata = property.GetMetadata(owner.GetType());
+            _metadata = property.GetMetadata(owner);
 
             var value = inherited is null ? _metadata.DefaultValue : inherited.Value;
 
@@ -64,6 +65,14 @@ namespace Avalonia.PropertyStore
             {
                 owner.Owner.OnUpdateDataValidation(value.Property, state, error);
             }
+        }
+
+        public override void SetLocalValueAndRaise(
+            ValueStore owner,
+            AvaloniaProperty property,
+            object? value)
+        {
+            SetLocalValueAndRaise(owner, (StyledProperty<T>)property, (T)value!);
         }
 
         public void SetLocalValueAndRaise(
@@ -138,6 +147,10 @@ namespace Avalonia.PropertyStore
 
         public override void DisposeAndRaiseUnset(ValueStore owner, AvaloniaProperty property)
         {
+            var clearDataValidation = ValueEntry?.GetDataValidationState(out _, out _) ??
+                BaseValueEntry?.GetDataValidationState(out _, out _) ??
+                false;
+
             ValueEntry?.Unsubscribe();
             BaseValueEntry?.Unsubscribe();
 
@@ -163,12 +176,8 @@ namespace Avalonia.PropertyStore
                     owner.OnInheritedEffectiveValueDisposed(p, Value, newValue);
             }
 
-            if (ValueEntry?.GetDataValidationState(out _, out _) ??
-                BaseValueEntry?.GetDataValidationState(out _, out _) ??
-                false)
-            {
+            if (clearDataValidation)
                 owner.Owner.OnUpdateDataValidation(p, BindingValueType.UnsetValue, null);
-            }
         }
 
         protected override void CoerceDefaultValueAndRaise(ValueStore owner, AvaloniaProperty property)
@@ -183,7 +192,7 @@ namespace Avalonia.PropertyStore
         }
 
         protected override object? GetBoxedValue() => Value;
-        
+
         private static T GetValue(IValueEntry entry)
         {
             if (entry is IValueEntry<T> typed)
@@ -231,14 +240,11 @@ namespace Avalonia.PropertyStore
 
             if (valueChanged)
             {
-                using var notifying = PropertyNotifying.Start(owner.Owner, property);
-                owner.Owner.RaisePropertyChanged(property, oldValue, Value, Priority, true);
-                if (property.Inherits)
-                    owner.OnInheritedEffectiveValueChanged(property, oldValue, this);
+                NotifyValueChanged(owner, property, oldValue);
             }
             else if (baseValueChanged)
             {
-                owner.Owner.RaisePropertyChanged(property, default, _baseValue!, BasePriority, false);
+                NotifyBaseValueChanged(owner, property);
             }
         }
 
@@ -287,19 +293,27 @@ namespace Avalonia.PropertyStore
 
             if (valueChanged)
             {
-                using var notifying = PropertyNotifying.Start(owner.Owner, property);
-                owner.Owner.RaisePropertyChanged(property, oldValue, Value, Priority, true);
-                if (property.Inherits)
-                    owner.OnInheritedEffectiveValueChanged(property, oldValue, this);
+                NotifyValueChanged(owner, property, oldValue);
             }
             
             if (baseValueChanged)
             {
-                owner.Owner.RaisePropertyChanged(property, default, _baseValue!, BasePriority, false);
+                NotifyBaseValueChanged(owner, property);
             }
         }
 
-        private class UncommonFields
+        private void NotifyValueChanged(ValueStore owner, StyledProperty<T> property, T oldValue)
+        {
+            using var notifying = PropertyNotifying.Start(owner.Owner, property);
+            owner.Owner.RaisePropertyChanged(property, oldValue, Value, Priority, true);
+            if (property.Inherits)
+                owner.OnInheritedEffectiveValueChanged(property, oldValue, this);
+        }
+
+        private void NotifyBaseValueChanged(ValueStore owner, StyledProperty<T> property)
+            => owner.Owner.RaisePropertyChanged(property, default, _baseValue!, BasePriority, false);
+
+        private sealed class UncommonFields
         {
             public Func<AvaloniaObject, T, T>? _coerce;
             public T? _uncoercedValue;

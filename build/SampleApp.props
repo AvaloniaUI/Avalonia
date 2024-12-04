@@ -1,13 +1,22 @@
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
   <PropertyGroup Condition="'$(TargetFramework)'=='net461'" >
     <OutputType>WinExe</OutputType>
   </PropertyGroup>
-  <ItemGroup>
-    <ProjectReference Include="$(MSBuildThisFileDirectory)..\src\Avalonia.Desktop\Avalonia.Desktop.csproj" />
+
+  <ItemGroup Condition="'$(TargetFramework)'!='net461'">
+    <ProjectReference Include="$(MSBuildThisFileDirectory)../src/Avalonia.Desktop/Avalonia.Desktop.csproj" />
   </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'=='net461'">
+    <ProjectReference Include="$(MSBuildThisFileDirectory)../src/Windows/Avalonia.Win32/Avalonia.Win32.csproj" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)../src/Skia/Avalonia.Skia/Avalonia.Skia.csproj" />
+  </ItemGroup>
+
   <Target Name="GatherReferences" AfterTargets="CoreCompile">
     <WriteLinesToFile File="$(TargetPath).refs"
                       Lines="@(ReferencePathWithRefAssemblies)"
                       Overwrite="true" />
   </Target>
+
 </Project>

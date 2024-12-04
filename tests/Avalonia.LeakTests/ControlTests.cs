@@ -463,12 +463,17 @@ namespace Avalonia.LeakTests
         {
             using (Start())
             {
+                var screen1 = new Mock<Screen>(1.75, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 966)), true);
+                var screens = new Mock<IScreenImpl>();
+                screens.Setup(x => x.ScreenFromWindow(It.IsAny<IWindowBaseImpl>())).Returns(screen1.Object);
+
                 var impl = new Mock<IWindowImpl>();
                 impl.Setup(r => r.TryGetFeature(It.IsAny<Type>())).Returns(null);
                 impl.SetupGet(x => x.RenderScaling).Returns(1);
                 impl.SetupProperty(x => x.Closed);
                 impl.Setup(x => x.Compositor).Returns(RendererMocks.CreateDummyCompositor());
                 impl.Setup(x => x.Dispose()).Callback(() => impl.Object.Closed());
+                impl.Setup(x => x.TryGetFeature(It.Is<Type>(t => t == typeof(IScreenImpl)))).Returns(screens.Object);
 
                 AvaloniaLocator.CurrentMutable.Bind<IWindowingPlatform>()
                     .ToConstant(new MockWindowingPlatform(() => impl.Object));
@@ -713,23 +718,28 @@ namespace Avalonia.LeakTests
                 GC.KeepAlive(geometry);
             }
         }
-
+        
         [Fact]
-        public void ItemsRepeater_Is_Freed()
+        public void Polyline_WithObservableCollectionPointsBinding_Is_Freed()
         {
             using (Start())
             {
+                var observableCollection = new ObservableCollection<Point>(){new()};
+
                 Func<Window> run = () =>
                 {
                     var window = new Window
                     {
-                        Content = new ItemsRepeater(),
+                        Content = new Polyline()
+                        {
+                            Points = observableCollection
+                        }
                     };
 
                     window.Show();
 
                     window.LayoutManager.ExecuteInitialLayoutPass();
-                    Assert.IsType<ItemsRepeater>(window.Presenter.Child);
+                    Assert.IsType<Polyline>(window.Presenter.Child);
 
                     window.Content = null;
                     window.LayoutManager.ExecuteLayoutPass();
@@ -744,7 +754,10 @@ namespace Avalonia.LeakTests
                 Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
                 dotMemory.Check(memory =>
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<ItemsRepeater>()).ObjectsCount));
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Polyline>()).ObjectsCount));
+
+                // We are keeping collection alive to simulate a resource that outlives the control.
+                GC.KeepAlive(observableCollection);
             }
         }
 
@@ -836,7 +849,7 @@ namespace Avalonia.LeakTests
                     var gesture1 = new KeyGesture(Key.A, KeyModifiers.Control);
                     var tl = new Window
                     {
-                        Content = new ItemsRepeater(),
+                        Content = new ItemsControl(),
                     };
 
                     tl.Show();

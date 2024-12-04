@@ -13,7 +13,7 @@ namespace Avalonia.Controls.Embedding
         {
         }
 
-        public EmbeddableControlRoot() : base(PlatformManager.CreateEmbeddableWindow())
+        public EmbeddableControlRoot() : base(PlatformManager.CreateEmbeddableTopLevel())
         {
         }
 
@@ -51,6 +51,11 @@ namespace Avalonia.Controls.Embedding
         }
 
         protected override Type StyleKeyOverride => typeof(EmbeddableControlRoot);
-        public void Dispose() => PlatformImpl?.Dispose();
+
+        public void Dispose()
+        {
+            PlatformImpl?.Dispose();
+            LayoutManager?.Dispose();
+        }
     }
 }

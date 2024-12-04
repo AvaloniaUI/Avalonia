@@ -8,7 +8,7 @@ namespace Avalonia.X11.Screens;
 
 internal partial class X11Screens
 {
-    interface IScalingProvider
+    internal interface IScalingProvider
     {
         double GetScaling(X11Screen screen, int index);
     }
@@ -137,7 +137,7 @@ internal partial class X11Screens
                     return _indexedConfig[index];
                 return 1;
             }
-            if (_namedConfig?.TryGetValue(screen.Name, out var scaling) == true)
+            if (_namedConfig?.TryGetValue(screen.DisplayName!, out var scaling) == true)
                 return scaling;
 
             return 1;

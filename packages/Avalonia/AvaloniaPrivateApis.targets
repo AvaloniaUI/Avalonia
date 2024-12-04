@@ -21,6 +21,6 @@
       <ReferencePath Include="$(MSBuildThisFileDirectory)/../lib/$(AvaloniaUnstableApiFrameworkToUse)/*.dll"/>
       <ReferencePathWithRefAssemblies Include="$(MSBuildThisFileDirectory)/../lib/$(AvaloniaUnstableApiFrameworkToUse)/*.dll"/>
     </ItemGroup>
-    <Warning Text="AvaloniaAccessUnstablePrivateApis is Enabled: This means you are using unstable internal APIs, and your code may be depending on APIs which may change or be removed in future versions of Avalonia. Set AvaloniaAccessUnstablePrivateApis to 'False' to disable this warning." />
+    <Warning Code="AVA3001" Text="AvaloniaAccessUnstablePrivateApis is Enabled: This means you are using unstable internal APIs, and your code may be depending on APIs which may change or be removed in future versions of Avalonia. Set AvaloniaAccessUnstablePrivateApis to 'False' to disable this warning." />
   </Target>
 </Project>

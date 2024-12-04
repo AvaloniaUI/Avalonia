@@ -21,14 +21,17 @@ public class EmbedSampleWeb : INativeDemoControl
         }
         else
         {
-            var defaultHandle = (JSObjectControlHandle)createDefault();
+            var parentContainer = (JSObjectControlHandle)createDefault();
 
-            _ = JSHost.ImportAsync("embed.js", "./embed.js").ContinueWith(_ =>
+            AddButton(parentContainer.Object);
+
+            return parentContainer;
+
+            static async void AddButton(JSObject parent)
             {
-                EmbedInterop.AddAppButton(defaultHandle.Object);
-            }, TaskScheduler.FromCurrentSynchronizationContext());
-
-            return defaultHandle;
+                await JSHost.ImportAsync("embed.js", "../embed.js");
+                EmbedInterop.AddAppButton(parent);
+            } 
         }
     }
 }

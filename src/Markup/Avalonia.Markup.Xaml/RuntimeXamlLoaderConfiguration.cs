@@ -39,13 +39,18 @@ public class RuntimeXamlLoaderConfiguration
 
 public enum RuntimeXamlDiagnosticSeverity
 {
-    None = 0,
-    
+    /// <summary>
+    /// Something that is an issue, as determined by some authority,
+    /// but is not surfaced through normal means.
+    /// There may be different mechanisms that act on these issues.
+    /// </summary>
+    Info = 1,
+
     /// <summary>
     /// Diagnostic is reported as a warning.
     /// </summary>
-    Warning = 1,
-    
+    Warning,
+
     /// <summary>
     /// Diagnostic is reported as an error.
     /// Compilation process is continued until the end of the parsing and transforming stage, throwing an aggregated exception of all errors.
@@ -66,5 +71,5 @@ public record RuntimeXamlDiagnostic(
     int? LineNumber,
     int? LinePosition)
 {
-    public string? Document { get; init; }
+    public string? Document { get; set; }
 }

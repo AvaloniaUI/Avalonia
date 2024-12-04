@@ -14,6 +14,7 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
+using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
@@ -45,6 +46,25 @@ namespace Avalonia.Controls.UnitTests
             var itemTemplate = new FuncTreeDataTemplate<Node>(
                 (_, _) => new Canvas(),
                 x => x.Children);
+            var target = CreateTarget(itemTemplate: itemTemplate);
+
+            var items = target.GetRealizedTreeContainers()
+                .OfType<TreeViewItem>()
+                .ToList();
+
+            Assert.Equal(5, items.Count);
+            Assert.All(items, x => Assert.IsType<Canvas>(x.HeaderPresenter?.Child));
+        }
+
+        [Fact]
+        public void Items_Should_Be_Created_Using_ItemTemplate_If_Present_2()
+        {
+            using var app = Start();
+            var itemTemplate = new TreeDataTemplate
+            {
+                Content = (IServiceProvider? _) => new TemplateResult<Control>(new Canvas(), new NameScope()),
+                ItemsSource = new Binding("Children"),
+            };
             var target = CreateTarget(itemTemplate: itemTemplate);
 
             var items = target.GetRealizedTreeContainers()
@@ -1508,6 +1528,48 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(selected[0], target.SelectedItem);
             Assert.Equal(selected, target.SelectedItems);
         }
+        
+        [Fact]
+        public void CollapseEvent_Can_Be_Captured_By_TreeView_When_Collapsing_TreeViewItem()
+        {
+            using var app = Start();
+            var data = CreateTestTreeData();
+            var target = CreateTarget(data: data);
+            var item = data[0];
+            var container = Assert.IsType<TreeViewItem>(target.TreeContainerFromItem(item));
+
+            var raised = false;
+            object? source = null;
+            target.AddHandler(TreeViewItem.CollapsedEvent, (o, e) =>
+            {
+                raised = true;
+                source = e.Source;
+            });
+            container.IsExpanded = false;
+            Assert.True(raised);
+            Assert.Equal(container, source);
+        }
+        
+        [Fact]
+        public void CollapseEvent_Should_Be_Raised_When_Collapsing_TreeViewItem()
+        {
+            using var app = Start();
+            var data = CreateTestTreeData();
+            var target = CreateTarget(data: data);
+            var item = data[0];
+            var container = Assert.IsType<TreeViewItem>(target.TreeContainerFromItem(item));
+
+            var raised = false;
+            object? source = null;
+            container.AddHandler(TreeViewItem.CollapsedEvent, (o, e) =>
+            {
+                raised = true;
+                source = e.Source;
+            });
+            container.IsExpanded = false;
+            Assert.True(raised);
+            Assert.Equal(container, source);
+        }
 
         private static TreeView CreateTarget(Optional<IList<Node>?> data = default,
             bool expandAll = true,
@@ -1777,7 +1839,7 @@ namespace Avalonia.Controls.UnitTests
                     focusManager: new FocusManager(),
                     fontManagerImpl: new HeadlessFontManagerStub(),
                     keyboardDevice: () => new KeyboardDevice(),
-                    keyboardNavigation: new KeyboardNavigationHandler(),
+                    keyboardNavigation: () => new KeyboardNavigationHandler(),
                     inputManager: new InputManager(),
                     renderInterface: new HeadlessPlatformRenderInterface(),
                     textShaperImpl: new HeadlessTextShaperStub()));
@@ -1826,8 +1888,8 @@ namespace Avalonia.Controls.UnitTests
 
             public InstancedBinding ItemsSelector(object item)
             {
-                var obs = ExpressionObserver.Create(item, o => ((Node)o).Children);
-                return InstancedBinding.OneWay(obs);
+                var obs = BindingExpression.Create(item, o => ((Node)o).Children);
+                return new InstancedBinding(obs, BindingMode.OneWay, BindingPriority.LocalValue);
             }
 
             public bool Match(object? data)

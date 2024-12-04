@@ -74,37 +74,37 @@ namespace Avalonia.Layout
         /// Defines the <see cref="Width"/> property.
         /// </summary>
         public static readonly StyledProperty<double> WidthProperty =
-            AvaloniaProperty.Register<Layoutable, double>(nameof(Width), double.NaN);
+            AvaloniaProperty.Register<Layoutable, double>(nameof(Width), double.NaN, validate: ValidateDimension);
 
         /// <summary>
         /// Defines the <see cref="Height"/> property.
         /// </summary>
         public static readonly StyledProperty<double> HeightProperty =
-            AvaloniaProperty.Register<Layoutable, double>(nameof(Height), double.NaN);
+            AvaloniaProperty.Register<Layoutable, double>(nameof(Height), double.NaN, validate: ValidateDimension);
 
         /// <summary>
         /// Defines the <see cref="MinWidth"/> property.
         /// </summary>
         public static readonly StyledProperty<double> MinWidthProperty =
-            AvaloniaProperty.Register<Layoutable, double>(nameof(MinWidth));
+            AvaloniaProperty.Register<Layoutable, double>(nameof(MinWidth), validate: ValidateMinimumDimension);
 
         /// <summary>
         /// Defines the <see cref="MaxWidth"/> property.
         /// </summary>
         public static readonly StyledProperty<double> MaxWidthProperty =
-            AvaloniaProperty.Register<Layoutable, double>(nameof(MaxWidth), double.PositiveInfinity);
+            AvaloniaProperty.Register<Layoutable, double>(nameof(MaxWidth), double.PositiveInfinity, validate: ValidateMaximumDimension);
 
         /// <summary>
         /// Defines the <see cref="MinHeight"/> property.
         /// </summary>
         public static readonly StyledProperty<double> MinHeightProperty =
-            AvaloniaProperty.Register<Layoutable, double>(nameof(MinHeight));
+            AvaloniaProperty.Register<Layoutable, double>(nameof(MinHeight), validate: ValidateMinimumDimension);
 
         /// <summary>
         /// Defines the <see cref="MaxHeight"/> property.
         /// </summary>
         public static readonly StyledProperty<double> MaxHeightProperty =
-            AvaloniaProperty.Register<Layoutable, double>(nameof(MaxHeight), double.PositiveInfinity);
+            AvaloniaProperty.Register<Layoutable, double>(nameof(MaxHeight), double.PositiveInfinity, validate: ValidateMaximumDimension);
 
         /// <summary>
         /// Defines the <see cref="Margin"/> property.
@@ -135,6 +135,7 @@ namespace Avalonia.Layout
         private Rect? _previousArrange;
         private EventHandler<EffectiveViewportChangedEventArgs>? _effectiveViewportChanged;
         private EventHandler? _layoutUpdated;
+        private bool _isAttachingToVisualTree;
 
         /// <summary>
         /// Initializes static members of the <see cref="Layoutable"/> class.
@@ -153,6 +154,10 @@ namespace Avalonia.Layout
                 VerticalAlignmentProperty);
         }
 
+        private static bool ValidateDimension(double value) => double.IsNaN(value) || ValidateMinimumDimension(value);
+        private static bool ValidateMinimumDimension(double value) => !double.IsPositiveInfinity(value) && ValidateMaximumDimension(value);
+        private static bool ValidateMaximumDimension(double value) => value >= 0;
+
         /// <summary>
         /// Occurs when the element's effective viewport changes.
         /// </summary>
@@ -160,7 +165,7 @@ namespace Avalonia.Layout
         {
             add
             {
-                if (_effectiveViewportChanged is null && VisualRoot is ILayoutRoot r)
+                if (_effectiveViewportChanged is null && VisualRoot is ILayoutRoot r && !_isAttachingToVisualTree)
                 {
                     r.LayoutManager.RegisterEffectiveViewportListener(this);
                 }
@@ -186,7 +191,7 @@ namespace Avalonia.Layout
         {
             add
             {
-                if (_layoutUpdated is null && VisualRoot is ILayoutRoot r)
+                if (_layoutUpdated is null && VisualRoot is ILayoutRoot r && !_isAttachingToVisualTree)
                 {
                     r.LayoutManager.LayoutUpdated += LayoutManagedLayoutUpdated;
                 }
@@ -731,9 +736,18 @@ namespace Avalonia.Layout
             InvalidateMeasure();
         }
 
+        /// <inheritdoc />
         protected override void OnAttachedToVisualTreeCore(VisualTreeAttachmentEventArgs e)
         {
-            base.OnAttachedToVisualTreeCore(e);
+            _isAttachingToVisualTree = true;
+            try
+            {
+                base.OnAttachedToVisualTreeCore(e);
+            }
+            finally
+            {
+                _isAttachingToVisualTree = false;
+            }
 
             if (e.Root is ILayoutRoot r)
             {
@@ -791,7 +805,7 @@ namespace Avalonia.Layout
                     InvalidateMeasure();
 
                     // If any descendant had its measure/arrange invalidated while we were hidden,
-                    // they will need to to be registered with the layout manager now that they
+                    // they will need to be registered with the layout manager now that they
                     // are again effectively visible. If IsEffectivelyVisible becomes an observable
                     // property then we can piggy-pack on that; for the moment we do this manually.
                     if (VisualRoot is ILayoutRoot layoutRoot)

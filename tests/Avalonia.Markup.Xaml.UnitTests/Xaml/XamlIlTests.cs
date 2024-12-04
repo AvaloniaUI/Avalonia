@@ -309,7 +309,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
         {
             var sp = new TestServiceProvider
             {
-                Parents = new List<object>
+                ParentsStack = new List<object>
                 {
                     new UserControl { Resources = { ["Resource1"] = new SolidColorBrush(Colors.Blue) } }
                 }

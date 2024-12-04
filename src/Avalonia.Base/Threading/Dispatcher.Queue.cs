@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 
@@ -65,7 +66,7 @@ public partial class Dispatcher
                 job = _queue.Peek();
             if (job == null)
                 return;
-            if (priority != null && job.Priority < priority.Value)
+            if (job.Priority < priority.Value)
                 return;
             ExecuteJob(job);
         }
@@ -194,7 +195,6 @@ public partial class Dispatcher
                 
                 if (Now - backgroundJobExecutionStartedAt.Value > _maximumInputStarvationTime)
                 {
-                    _signaled = true;
                     RequestBackgroundProcessing();
                     return;
                 }
@@ -270,5 +270,26 @@ public partial class Dispatcher
     {
         lock (InstanceLock)
             return _queue.MaxPriority >= priority;
+    }
+
+    /// <summary>
+    /// Gets all pending jobs, unordered, without removing them.
+    /// </summary>
+    /// <remarks>Only use between unit tests!</remarks>
+    /// <returns>A list of jobs.</returns>
+    internal List<DispatcherOperation> GetJobs()
+    {
+        lock (InstanceLock)
+            return _queue.PeekAll();
+    }
+
+    /// <summary>
+    /// Clears all pending jobs.
+    /// </summary>
+    /// <remarks>Only use between unit tests!</remarks>
+    internal void ClearJobs()
+    {
+        lock (InstanceLock)
+            _queue.Clear();
     }
 }

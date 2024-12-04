@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using XamlX;
@@ -19,7 +20,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 && prop.DeclaringType is XamlAstClrTypeReference declaringRef)
             {
                 // Target and declared type aren't assignable but both inherit from AvaloniaObject
-                var avaloniaObject = context.Configuration.TypeSystem.FindType("Avalonia.AvaloniaObject");
+                var avaloniaObject = context.GetAvaloniaTypes().AvaloniaObject;
                 if (avaloniaObject.IsAssignableFrom(targetRef.Type)
                     && avaloniaObject.IsAssignableFrom(declaringRef.Type)
                     && !declaringRef.Type.IsAssignableFrom(targetRef.Type))
@@ -29,7 +30,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     if (clrProp != null
                         && (clrProp.Getter?.IsStatic == false || clrProp.Setter?.IsStatic == false))
                     {
-                        var declaringType = (clrProp.Getter ?? clrProp.Setter)?.DeclaringType;
+                        var declaringType = clrProp.DeclaringType;
                         var avaloniaPropertyFieldName = prop.Name + "Property";
                         var avaloniaPropertyField = declaringType.Fields.FirstOrDefault(f => f.IsStatic && f.Name == avaloniaPropertyFieldName);
                         if (avaloniaPropertyField != null)
@@ -51,10 +52,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                             if (avaloniaPropertyType == null)
                                 return node;
 
-                            if (avaloniaPropertyType.GenericArguments?.Count > 1)
+                            if (avaloniaPropertyType.GenericArguments.Count > 1)
                                 return node;
 
-                            var propertyType = avaloniaPropertyType.GenericArguments?.Count == 1 ?
+                            var propertyType = avaloniaPropertyType.GenericArguments.Count == 1 ?
                                 avaloniaPropertyType.GenericArguments[0] :
                                 context.Configuration.WellKnownTypes.Object;
 
@@ -96,8 +97,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 _avaloniaPropertyType = avaloniaPropertyType;
                 
                 // XamlIl doesn't support generic methods yet
-                if (_avaloniaPropertyType.GenericArguments?.Count > 0)
-                    _avaloniaPropertyType = _avaloniaPropertyType.BaseType;
+                if (_avaloniaPropertyType.GenericArguments.Count > 0)
+                    _avaloniaPropertyType = _avaloniaPropertyType.BaseType!;
                 
                 _avaloniaObject = avaloniaObject;
                 _field = field;
@@ -123,6 +124,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 public IXamlType TargetType => _parent.DeclaringType;
                 public PropertySetterBinderParameters BinderParameters { get; } = new PropertySetterBinderParameters();
                 public IReadOnlyList<IXamlType> Parameters { get; }
+                public IReadOnlyList<IXamlCustomAttribute> CustomAttributes => _parent.CustomAttributes;
                 public void Emit(IXamlILEmitter emitter)
                 {
                     var so = _parent._config.WellKnownTypes.Object;
@@ -163,19 +165,27 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 }
                 public AvaloniaAttachedInstanceProperty Parent { get; }
                 public bool IsPublic => true;
+                public bool IsPrivate => false;
+                public bool IsFamily => false;
                 public bool IsStatic => true;
+                public bool ContainsGenericParameters => false;
+                public bool IsGenericMethod => false;
+                public bool IsGenericMethodDefinition => false;
                 public string Name { get; protected set; }
                 public IXamlType DeclaringType { get; }
                 public IXamlMethod MakeGenericMethod(IReadOnlyList<IXamlType> typeArguments) 
                     => throw new System.NotSupportedException();
 
-
-                public bool Equals(IXamlMethod other) =>
+                public bool Equals(IXamlMethod? other) =>
                     other is GetterMethod m && m.Name == Name && m.DeclaringType.Equals(DeclaringType);
+
                 public IXamlType ReturnType => Parent.PropertyType;
                 public IReadOnlyList<IXamlType> Parameters { get; }
 
                 public IReadOnlyList<IXamlCustomAttribute> CustomAttributes => DeclaringType.CustomAttributes;
+                public IXamlParameterInfo GetParameterInfo(int index) => new AnonymousParameterInfo(Parameters[index], index);
+                public IReadOnlyList<IXamlType> GenericParameters => [];
+                public IReadOnlyList<IXamlType> GenericArguments => [];
 
                 public void EmitCall(IXamlILEmitter emitter)
                 {

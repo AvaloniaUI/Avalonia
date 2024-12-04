@@ -4,24 +4,22 @@ using System.IO;
 using System.Runtime.InteropServices;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Enums;
-using OpenQA.Selenium.Appium.Mac;
-using OpenQA.Selenium.Appium.Windows;
 
 namespace Avalonia.IntegrationTests.Appium
 {
     public class DefaultAppFixture : IDisposable
     {
-        private const string TestAppPath = @"..\..\..\..\..\samples\IntegrationTestApp\bin\Debug\net7.0\IntegrationTestApp.exe";
+        private const string TestAppPath = @"..\..\..\..\..\samples\IntegrationTestApp\bin\Debug\net8.0\IntegrationTestApp.exe";
         private const string TestAppBundleId = "net.avaloniaui.avalonia.integrationtestapp";
 
         public DefaultAppFixture()
         {
             var options = new AppiumOptions();
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (OperatingSystem.IsWindows())
             {
                 ConfigureWin32Options(options);
-                Session = new WindowsDriver<AppiumWebElement>(
+                Session = new WindowsDriver(
                     new Uri("http://127.0.0.1:4723"),
                     options);
 
@@ -30,36 +28,35 @@ namespace Avalonia.IntegrationTests.Appium
                     Session.WindowHandles[0].Substring(2),
                     NumberStyles.AllowHexSpecifier)));
             }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            else if (OperatingSystem.IsMacOS())
             {
                 ConfigureMacOptions(options);
-                Session = new MacDriver<AppiumWebElement>(
+                Session = new MacDriver(
                     new Uri("http://127.0.0.1:4723/wd/hub"),
                     options);
             }
             else
             {
-                throw new NotSupportedException("Unsupported platform.");
+                throw new PlatformNotSupportedException();
             }
         }
 
-        protected virtual void ConfigureWin32Options(AppiumOptions options)
+        protected virtual void ConfigureWin32Options(AppiumOptions options, string? app = null)
         {
-            var path = Path.GetFullPath(TestAppPath);
-            options.AddAdditionalCapability(MobileCapabilityType.App, path);
+            options.AddAdditionalCapability(MobileCapabilityType.App, app ?? Path.GetFullPath(TestAppPath));
             options.AddAdditionalCapability(MobileCapabilityType.PlatformName, MobilePlatform.Windows);
             options.AddAdditionalCapability(MobileCapabilityType.DeviceName, "WindowsPC");
         }
 
-        protected virtual void ConfigureMacOptions(AppiumOptions options)
+        protected virtual void ConfigureMacOptions(AppiumOptions options, string? app = null)
         {
-            options.AddAdditionalCapability("appium:bundleId", TestAppBundleId);
+            options.AddAdditionalCapability("appium:bundleId", app ?? TestAppBundleId);
             options.AddAdditionalCapability(MobileCapabilityType.PlatformName, MobilePlatform.MacOS);
             options.AddAdditionalCapability(MobileCapabilityType.AutomationName, "mac2");
             options.AddAdditionalCapability("appium:showServerLogs", true);
         }
 
-        public AppiumDriver<AppiumWebElement> Session { get; }
+        public AppiumDriver Session { get; }
 
         public void Dispose()
         {
@@ -70,6 +67,26 @@ namespace Avalonia.IntegrationTests.Appium
             catch
             {
                 // Closing the session currently seems to crash the mac2 driver.
+            }
+        }
+
+        public AppiumDriver CreateNestedSession(string appName)
+        {
+            var options = new AppiumOptions();
+            if (OperatingSystem.IsWindows())
+            {
+                ConfigureWin32Options(options, appName);
+            
+                return new WindowsDriver(new Uri("http://127.0.0.1:4723"), options);
+            }
+            else if (OperatingSystem.IsMacOS())
+            {
+                ConfigureMacOptions(options, appName);
+                return new MacDriver(new Uri("http://127.0.0.1:4723/wd/hub"), options);
+            }
+            else
+            {
+                throw new PlatformNotSupportedException();
             }
         }
 

@@ -91,7 +91,7 @@ partial class MediaContext
     /// Executes a synchronous commit when we need to wait for composition jobs to be done
     /// Is used in resize and TopLevel destruction scenarios
     /// </summary>
-    private void SyncCommit(Compositor compositor, bool waitFullRender)
+    private void SyncCommit(Compositor compositor, bool waitFullRender, bool catchExceptions)
     {
         // Unit tests are assuming that they can call any API without setting up platforms
         if (AvaloniaLocator.Current.GetService<IPlatformRenderInterface>() == null)
@@ -109,7 +109,7 @@ partial class MediaContext
         else
         {
             CommitCompositor(compositor);
-            compositor.Server.Render();
+            compositor.Server.Render(catchExceptions);
         }
     }
     
@@ -118,9 +118,9 @@ partial class MediaContext
     /// </summary>
     // TODO: do we need to execute a render pass here too?
     // We've previously tried that and it made the resize experience worse
-    public void ImmediateRenderRequested(CompositionTarget target)
+    public void ImmediateRenderRequested(CompositionTarget target, bool catchExceptions)
     {
-        SyncCommit(target.Compositor, true);
+        SyncCommit(target.Compositor, true, catchExceptions);
     }
 
 
@@ -133,7 +133,7 @@ partial class MediaContext
         compositionTarget.Dispose();
         
         // TODO: introduce a way to skip any actual rendering for other targets and only do a dispose?
-        SyncCommit(compositionTarget.Compositor, false);
+        SyncCommit(compositionTarget.Compositor, false, true);
     }
     
     /// <summary>
@@ -146,6 +146,6 @@ partial class MediaContext
             return;
 
         // TODO: maybe skip the full render here?
-        ScheduleRender(true);
+        ScheduleRender(false);
     }
 }

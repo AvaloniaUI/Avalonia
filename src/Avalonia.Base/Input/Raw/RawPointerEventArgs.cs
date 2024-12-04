@@ -123,7 +123,7 @@ namespace Avalonia.Input.Raw
         /// </summary>
         public Lazy<IReadOnlyList<RawPointerPoint>?>? IntermediatePoints { get; set; }
 
-        internal IInputElement? InputHitTestResult { get; set; }
+        internal (IInputElement? element, IInputElement? firstEnabledAncestor) InputHitTestResult { get; set; }
     }
 
     [PrivateApi]
@@ -143,6 +143,14 @@ namespace Avalonia.Input.Raw
         /// <inheritdoc cref="PointerPointProperties.YTilt" />
         public float YTilt { get; set; }
 
+        /// <inheritdoc cref="PointerPointProperties.ContactRect" />
+        public Rect ContactRect
+        {
+            get => _contactRect ?? new Rect(Position, new Size());
+            set => _contactRect = value;
+        }
+
+        private Rect? _contactRect;
 
         public RawPointerPoint()
         {

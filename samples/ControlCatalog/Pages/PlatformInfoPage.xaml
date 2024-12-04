@@ -19,6 +19,9 @@
         <Border Height="100" Width="100" Background="{OnFormFactor Gray, Mobile=Green}">
           <TextBlock Text="Mobile" />
         </Border>
+        <Border Height="100" Width="100" Background="{OnFormFactor Gray, TV=Green}">
+          <TextBlock Text="Tv" />
+        </Border>
       </StackPanel>
       <WrapPanel>
         <Border Height="100" Width="100" Background="{OnPlatform Gray, Windows=Green}">

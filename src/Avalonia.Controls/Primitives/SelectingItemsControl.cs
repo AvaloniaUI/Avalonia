@@ -1,14 +1,13 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Controls.Selection;
 using Avalonia.Data;
+using Avalonia.Data.Core;
 using Avalonia.Input;
-using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Metadata;
 using Avalonia.Threading;
@@ -143,8 +142,8 @@ namespace Avalonia.Controls.Primitives
         private DispatcherTimer? _textSearchTimer;
         private ISelectionModel? _selection;
         private int _oldSelectedIndex;
-        private object? _oldSelectedItem;
-        private IList? _oldSelectedItems;
+        private WeakReference _oldSelectedItem = new(null);
+        private WeakReference<IList?> _oldSelectedItems = new(null);
         private bool _ignoreContainerSelectionChanged;
         private UpdateState? _updateState;
         private bool _hasScrolledToSelectedItem;
@@ -187,14 +186,21 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public int SelectedIndex
         {
-            get =>
+            get
+            {
                 // When a Begin/EndInit/DataContext update is in place we return the value to be
                 // updated here, even though it's not yet active and the property changed notification
                 // has not yet been raised. If we don't do this then the old value will be written back
                 // to the source when two-way bound, and the update value will be lost.
-                _updateState?.SelectedIndex.HasValue == true ?
-                    _updateState.SelectedIndex.Value :
-                    Selection.SelectedIndex;
+                if (_updateState is not null)
+                {
+                    return _updateState.SelectedIndex.HasValue ?
+                        _updateState.SelectedIndex.Value :
+                        TryGetExistingSelection()?.SelectedIndex ?? -1;
+                }
+
+                return Selection.SelectedIndex;
+            }
             set
             {
                 if (_updateState is object)
@@ -213,11 +219,18 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public object? SelectedItem
         {
-            get =>
-                // See SelectedIndex setter for more information.
-                _updateState?.SelectedItem.HasValue == true ?
-                    _updateState.SelectedItem.Value :
-                    Selection.SelectedItem;
+            get
+            {
+                // See SelectedIndex getter for more information.
+                if (_updateState is not null)
+                {
+                    return _updateState.SelectedItem.HasValue ?
+                        _updateState.SelectedItem.Value :
+                        TryGetExistingSelection()?.SelectedItem;
+                }
+
+                return Selection.SelectedItem;
+            }
             set
             {
                 if (_updateState is object)
@@ -270,10 +283,11 @@ namespace Avalonia.Controls.Primitives
                 {
                     return _updateState.SelectedItems.Value;
                 }
+
                 else if (Selection is InternalSelectionModel ism)
                 {
                     var result = ism.WritableSelectedItems;
-                    _oldSelectedItems = result;
+                    _oldSelectedItems.SetTarget(result);
                     return result;
                 }
 
@@ -335,11 +349,12 @@ namespace Avalonia.Controls.Primitives
                     }
 
                     InitializeSelectionModel(_selection);
-
-                    if (_oldSelectedItems != SelectedItems)
+                    var selectedItems = SelectedItems;
+                    _oldSelectedItems.TryGetTarget(out var oldSelectedItems);
+                    if (oldSelectedItems != selectedItems)
                     {
-                        RaisePropertyChanged(SelectedItemsProperty, _oldSelectedItems, SelectedItems);
-                        _oldSelectedItems = SelectedItems;
+                        RaisePropertyChanged(SelectedItemsProperty, oldSelectedItems, selectedItems);
+                        _oldSelectedItems.SetTarget(selectedItems);
                     }
                 }
             }
@@ -397,18 +412,6 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
-        /// Scrolls the specified item into view.
-        /// </summary>
-        /// <param name="index">The index of the item.</param>
-        public void ScrollIntoView(int index) => Presenter?.ScrollIntoView(index);
-
-        /// <summary>
-        /// Scrolls the specified item into view.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        public void ScrollIntoView(object item) => ScrollIntoView(ItemsView.IndexOf(item));
-
-        /// <summary>
         /// Gets the value of the <see cref="IsSelectedProperty"/> on the specified control.
         /// </summary>
         /// <param name="control">The control.</param>
@@ -446,6 +449,12 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnItemsViewCollectionChanged(sender!, e);
 
+            //Do not change SelectedIndex during initialization
+            if (_updateState is not null)
+            {
+                return;
+            }
+
             if (AlwaysSelected && SelectedIndex == -1 && ItemCount > 0)
             {
                 SelectedIndex = 0;
@@ -456,10 +465,8 @@ namespace Avalonia.Controls.Primitives
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
-            if (Selection?.AnchorIndex is int index)
-            {
-                AutoScrollToSelectedItemIfNecessary(index);
-            }
+
+            AutoScrollToSelectedItemIfNecessary(GetAnchorIndex());
         }
 
         /// <inheritdoc />
@@ -470,10 +477,8 @@ namespace Avalonia.Controls.Primitives
             void ExecuteScrollWhenLayoutUpdated(object? sender, EventArgs e)
             {
                 LayoutUpdated -= ExecuteScrollWhenLayoutUpdated;
-                if (Selection?.AnchorIndex is int index)
-                {
-                    AutoScrollToSelectedItemIfNecessary(index);
-                }
+
+                AutoScrollToSelectedItemIfNecessary(GetAnchorIndex());
             }
 
             if (AutoScrollToSelectedItem)
@@ -481,6 +486,15 @@ namespace Avalonia.Controls.Primitives
                 LayoutUpdated += ExecuteScrollWhenLayoutUpdated;
             }
         }
+
+        internal int GetAnchorIndex()
+        {
+            var selection = _updateState is not null ? TryGetExistingSelection() : Selection;
+            return selection?.AnchorIndex ?? -1;
+        }
+
+        private ISelectionModel? TryGetExistingSelection()
+            => _updateState?.Selection.HasValue == true ? _updateState.Selection.Value : _selection;
 
         protected internal override void PrepareContainerForItemOverride(Control container, object? item, int index)
         {
@@ -634,10 +648,7 @@ namespace Avalonia.Controls.Primitives
 
             if (change.Property == AutoScrollToSelectedItemProperty)
             {
-                if (Selection?.AnchorIndex is int index)
-                {
-                    AutoScrollToSelectedItemIfNecessary(index);
-                }
+                AutoScrollToSelectedItemIfNecessary(GetAnchorIndex());
             }
             else if (change.Property == SelectionModeProperty && _selection is object)
             {
@@ -671,11 +682,11 @@ namespace Avalonia.Controls.Primitives
                     return;
                 }
 
-                var value = change.GetNewValue<IBinding>();
+                var value = change.GetNewValue<IBinding?>();
                 if (value is null)
                 {
                     // Clearing SelectedValueBinding makes the SelectedValue the item itself
-                    SelectedValue = SelectedItem;
+                    SetCurrentValue(SelectedValueProperty, SelectedItem);
                     return;
                 }
 
@@ -695,7 +706,7 @@ namespace Avalonia.Controls.Primitives
                     }
 
                     // Re-evaluate SelectedValue with the new binding
-                    SelectedValue = _bindingHelper.Evaluate(selectedItem);
+                    SetCurrentValue(SelectedValueProperty, _bindingHelper.Evaluate(selectedItem));
                 }
                 finally
                 {
@@ -806,7 +817,10 @@ namespace Avalonia.Controls.Primitives
             else if (range)
             {
                 using var operation = Selection.BatchUpdate();
-                Selection.Clear();
+                if (!toggleModifier)
+                {
+                    Selection.Clear();
+                }
                 Selection.SelectRange(Selection.AnchorIndex, index);
             }
             else if (!fromFocus && toggle)
@@ -921,27 +935,40 @@ namespace Avalonia.Controls.Primitives
             if (e.PropertyName == nameof(ISelectionModel.AnchorIndex))
             {
                 _hasScrolledToSelectedItem = false;
-                if (Selection?.AnchorIndex is int index)
+
+                var anchorIndex = GetAnchorIndex();
+                KeyboardNavigation.SetTabOnceActiveElement(this, ContainerFromIndex(anchorIndex));
+                AutoScrollToSelectedItemIfNecessary(anchorIndex);
+            }
+            else if (e.PropertyName == nameof(ISelectionModel.SelectedIndex))
+            {
+                var selectedIndex = SelectedIndex;
+                var oldSelectedIndex = _oldSelectedIndex;
+                if (_oldSelectedIndex != selectedIndex)
                 {
-                    KeyboardNavigation.SetTabOnceActiveElement(this, ContainerFromIndex(index));
-                    AutoScrollToSelectedItemIfNecessary(index);
+                    RaisePropertyChanged(SelectedIndexProperty, oldSelectedIndex, selectedIndex);
+                    _oldSelectedIndex = selectedIndex;
                 }
             }
-            else if (e.PropertyName == nameof(ISelectionModel.SelectedIndex) && _oldSelectedIndex != SelectedIndex)
+            else if (e.PropertyName == nameof(ISelectionModel.SelectedItem))
             {
-                RaisePropertyChanged(SelectedIndexProperty, _oldSelectedIndex, SelectedIndex);
-                _oldSelectedIndex = SelectedIndex;
+                var selectedItem = SelectedItem;
+                var oldSelectedItem = _oldSelectedItem.Target;
+                if (selectedItem != oldSelectedItem)
+                {
+                    RaisePropertyChanged(SelectedItemProperty, oldSelectedItem, selectedItem);
+                    _oldSelectedItem.Target = selectedItem;
+                }
             }
-            else if (e.PropertyName == nameof(ISelectionModel.SelectedItem) && _oldSelectedItem != SelectedItem)
+            else if (e.PropertyName == nameof(InternalSelectionModel.WritableSelectedItems))
             {
-                RaisePropertyChanged(SelectedItemProperty, _oldSelectedItem, SelectedItem);
-                _oldSelectedItem = SelectedItem;
-            }
-            else if (e.PropertyName == nameof(InternalSelectionModel.WritableSelectedItems) &&
-                     _oldSelectedItems != (Selection as InternalSelectionModel)?.SelectedItems)
-            {
-                RaisePropertyChanged(SelectedItemsProperty, _oldSelectedItems, SelectedItems);
-                _oldSelectedItems = SelectedItems;
+                _oldSelectedItems.TryGetTarget(out var oldSelectedItems);
+                if (oldSelectedItems != (Selection as InternalSelectionModel)?.SelectedItems)
+                {
+                    var selectedItems = SelectedItems;
+                    RaisePropertyChanged(SelectedItemsProperty, oldSelectedItems, selectedItems);
+                    _oldSelectedItems.SetTarget(selectedItems);
+                }
             }
             else if (e.PropertyName == nameof(ISelectionModel.Source))
             {
@@ -1066,7 +1093,7 @@ namespace Avalonia.Controls.Primitives
             {
                 var itemValue = _bindingHelper.Evaluate(item);
 
-                if (itemValue.Equals(value))
+                if (Equals(itemValue, value))
                 {
                     return item;
                 }
@@ -1089,7 +1116,7 @@ namespace Avalonia.Controls.Primitives
                 try
                 {
                     _isSelectionChangeActive = true;
-                    SelectedValue = item;
+                    SetCurrentValue(SelectedValueProperty, item);
                 }
                 finally
                 {
@@ -1103,7 +1130,7 @@ namespace Avalonia.Controls.Primitives
             try
             {
                 _isSelectionChangeActive = true;
-                SelectedValue = _bindingHelper.Evaluate(item);
+                SetCurrentValue(SelectedValueProperty, _bindingHelper.Evaluate(item));
             }
             finally
             {
@@ -1213,9 +1240,9 @@ namespace Avalonia.Controls.Primitives
             }
 
             _oldSelectedIndex = model.SelectedIndex;
-            _oldSelectedItem = model.SelectedItem;
+            _oldSelectedItem.Target = model.SelectedItem;
 
-            if (AlwaysSelected && model.Count == 0)
+            if (_updateState is null && AlwaysSelected && model.Count == 0)
             {
                 model.SelectedIndex = 0;
             }
@@ -1279,13 +1306,26 @@ namespace Avalonia.Controls.Primitives
                         state.SelectedItem = item;
                 }
 
+                // SelectedIndex vs SelectedItem:
+                // - If only one has a value, use it
+                // - If both have a value, prefer the one having a "non-empty" value, e.g. not -1 nor null
+                // - If both have a "non-empty" value, prefer the index
                 if (state.SelectedIndex.HasValue)
                 {
-                    SelectedIndex = state.SelectedIndex.Value;
+                    var selectedIndex = state.SelectedIndex.Value;
+                    if (selectedIndex >= 0 || !state.SelectedItem.HasValue)
+                        SelectedIndex = selectedIndex;
+                    else
+                        SelectedItem = state.SelectedItem.Value;
                 }
                 else if (state.SelectedItem.HasValue)
                 {
                     SelectedItem = state.SelectedItem.Value;
+                }
+
+                if (AlwaysSelected && SelectedIndex == -1 && ItemCount > 0)
+                {
+                    SelectedIndex = 0;
                 }
             }
         }
@@ -1338,39 +1378,12 @@ namespace Avalonia.Controls.Primitives
         // - Both the old and new SelectionModels have the incorrect Source
         private class UpdateState
         {
-            private Optional<int> _selectedIndex;
-            private Optional<object?> _selectedItem;
-            private Optional<object?> _selectedValue;
-
             public int UpdateCount { get; set; }
             public Optional<ISelectionModel> Selection { get; set; }
             public Optional<IList?> SelectedItems { get; set; }
-
-            public Optional<int> SelectedIndex
-            {
-                get => _selectedIndex;
-                set
-                {
-                    _selectedIndex = value;
-                    _selectedItem = default;
-                }
-            }
-
-            public Optional<object?> SelectedItem
-            {
-                get => _selectedItem;
-                set
-                {
-                    _selectedItem = value;
-                    _selectedIndex = default;
-                }
-            }
-
-            public Optional<object?> SelectedValue
-            {
-                get => _selectedValue;
-                set => _selectedValue = value;
-            }
+            public Optional<int> SelectedIndex { get; set; }
+            public Optional<object?> SelectedItem { get; set; }
+            public Optional<object?> SelectedValue { get; set; }
         }
 
         /// <summary>
@@ -1378,6 +1391,9 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         private class BindingHelper : StyledElement
         {
+            private BindingExpressionBase? _expression;
+            private IBinding? _lastBinding;
+
             public BindingHelper(IBinding binding)
             {
                 UpdateBinding(binding);
@@ -1386,7 +1402,7 @@ namespace Avalonia.Controls.Primitives
             public static readonly StyledProperty<object> ValueProperty =
                 AvaloniaProperty.Register<BindingHelper, object>("Value");
 
-            public object Evaluate(object? dataContext)
+            public object? Evaluate(object? dataContext)
             {
                 // Only update the DataContext if necessary
                 if (!Equals(dataContext, DataContext))
@@ -1397,17 +1413,13 @@ namespace Avalonia.Controls.Primitives
 
             public void UpdateBinding(IBinding binding)
             {
+                if (binding == _lastBinding)
+                    return;
+
+                _expression?.Dispose();
+                _expression = Bind(ValueProperty, binding);
                 _lastBinding = binding;
-                var ib = binding.Initiate(this, ValueProperty);
-                if (ib is null)
-                {
-                    throw new InvalidOperationException("Unable to create binding");
-                }
-
-                BindingOperations.Apply(this, ValueProperty, ib, null);
             }
-
-            private IBinding? _lastBinding;
         }
     }
 }

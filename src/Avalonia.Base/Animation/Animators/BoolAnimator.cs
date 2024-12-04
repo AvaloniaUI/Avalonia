@@ -5,7 +5,7 @@
     /// </summary>
     internal class BoolAnimator : Animator<bool>
     {
-        /// <inheritdocs/>
+        /// <inheritdoc/>
         public override bool Interpolate(double progress, bool oldValue, bool newValue)
         {
             if(progress >= 1d)

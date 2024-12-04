@@ -18,6 +18,9 @@
       <TabItem Header="Composition">
         <pages:CompositionPage />
       </TabItem>
+      <TabItem Header="Accelerator">
+        <pages:AcceleratorPage />
+      </TabItem>
       <TabItem Header="Acrylic">
         <pages:AcrylicPage />
       </TabItem>
@@ -95,6 +98,9 @@
       <TabItem Header="Flyouts">
         <pages:FlyoutsPage />
       </TabItem>
+      <TabItem Header="Focus">
+        <pages:FocusPage />
+      </TabItem>
       <TabItem Header="Gestures">
         <pages:GesturePage />
       </TabItem>
@@ -102,11 +108,6 @@
                ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                ScrollViewer.VerticalScrollBarVisibility="Disabled">
         <pages:ImagePage />
-      </TabItem>
-      <TabItem Header="ItemsRepeater"
-               ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-               ScrollViewer.VerticalScrollBarVisibility="Disabled">
-        <pages:ItemsRepeaterPage />
       </TabItem>
       <TabItem Header="Label">
         <pages:LabelsPage />
@@ -128,6 +129,9 @@
       </TabItem>
       <TabItem Header="OpenGL">
         <pages:OpenGlPage />
+      </TabItem>
+      <TabItem Header="OpenGL Lease">
+        <pages:OpenGlLeasePage />
       </TabItem>
       <TabItem Header="Platform Information">
         <pages:PlatformInfoPage />
@@ -194,6 +198,9 @@
       </TabItem>
       <TabItem Header="HeaderedContentControl">
         <pages:HeaderedContentPage />
+      </TabItem>
+      <TabItem Header="Screens">
+        <pages:ScreenPage />
       </TabItem>
       <FlyoutBase.AttachedFlyout>
         <Flyout>

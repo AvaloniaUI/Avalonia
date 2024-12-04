@@ -4,10 +4,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using Avalonia.Input;
-using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
-using Avalonia.Styling;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -82,8 +79,8 @@ namespace Avalonia.Controls
         /// <summary>
         ///  Constructs the MaskedTextBox with the specified MaskedTextProvider object.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", 
-            "AVP1012:An AvaloniaObject should use SetCurrentValue when assigning its own StyledProperty or AttachedProperty values", 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty",
+            "AVP1012:An AvaloniaObject should use SetCurrentValue when assigning its own StyledProperty or AttachedProperty values",
             Justification = "These values are being explicitly provided by a constructor parameter.")]
         public MaskedTextBox(MaskedTextProvider maskedTextProvider)
         {
@@ -216,7 +213,15 @@ namespace Avalonia.Controls
                 if (clipboard is null)
                     return;
 
-                var text = await clipboard.GetTextAsync();
+                string? text = null;
+                try
+                {
+                    text = await clipboard.GetTextAsync();
+                }
+                catch (TimeoutException)
+                {
+                    // Silently ignore.
+                }
 
                 if (text == null)
                     return;
@@ -297,20 +302,7 @@ namespace Avalonia.Controls
                 }
                 RefreshText(MaskProvider, 0);
             }
-            if (change.Property == TextProperty && MaskProvider != null && _ignoreTextChanges == false)
-            {
-                if (string.IsNullOrEmpty(Text))
-                {
-                    MaskProvider.Clear();
-                    RefreshText(MaskProvider, CaretIndex);
-                    base.OnPropertyChanged(change);
-                    return;
-                }
-
-                MaskProvider.Set(Text);
-                RefreshText(MaskProvider, CaretIndex);
-            }
-            else if (change.Property == MaskProperty)
+            if (change.Property == MaskProperty)
             {
                 UpdateMaskProvider();
 
@@ -437,5 +429,20 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <inheritdoc />
+        protected override string? CoerceText(string? text)
+        {
+            if (!_ignoreTextChanges && MaskProvider is { } maskProvider)
+            {
+                if (string.IsNullOrEmpty(text))
+                    maskProvider.Clear();
+                else
+                    maskProvider.Set(text);
+
+                text = maskProvider.ToDisplayString();
+            }
+
+            return base.CoerceText(text);
+        }
     }
 }

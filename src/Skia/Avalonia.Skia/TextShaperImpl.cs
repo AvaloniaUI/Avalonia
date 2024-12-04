@@ -15,6 +15,7 @@ namespace Avalonia.Skia
     internal class TextShaperImpl : ITextShaperImpl
     {
         private static readonly ConcurrentDictionary<int, Language> s_cachedLanguage = new();
+
         public ShapedBuffer ShapeText(ReadOnlyMemory<char> text, TextShaperOptions options)
         {
             var textSpan = text.Span;
@@ -41,7 +42,7 @@ namespace Avalonia.Skia
 
                 var font = ((GlyphTypefaceImpl)typeface).Font;
 
-                font.Shape(buffer);
+                font.Shape(buffer, GetFeatures(options));
 
                 if (buffer.Direction == Direction.RightToLeft)
                 {
@@ -66,7 +67,7 @@ namespace Avalonia.Skia
 
                     var glyphIndex = (ushort)sourceInfo.Codepoint;
 
-                    var glyphCluster = (int)(sourceInfo.Cluster);
+                    var glyphCluster = (int)sourceInfo.Cluster;
 
                     var glyphAdvance = GetGlyphAdvance(glyphPositions, i, textScale) + options.LetterSpacing;
 
@@ -142,7 +143,7 @@ namespace Avalonia.Skia
 
             var offsetX = position.XOffset * textScale;
 
-            var offsetY = position.YOffset * textScale;
+            var offsetY = -position.YOffset * textScale;
 
             return new Vector(offsetX, offsetY);
         }
@@ -175,6 +176,29 @@ namespace Avalonia.Skia
 
             // should never happen
             throw new InvalidOperationException("Memory not backed by string, array or manager");
+        }
+
+        private static Feature[] GetFeatures(TextShaperOptions options)
+        {
+            if (options.FontFeatures is null || options.FontFeatures.Count == 0)
+            {
+                return Array.Empty<Feature>();
+            }
+
+            var features = new Feature[options.FontFeatures.Count];
+            
+            for (var i = 0; i < options.FontFeatures.Count; i++)
+            {
+                var fontFeature = options.FontFeatures[i];
+
+                features[i] = new Feature(
+                    Tag.Parse(fontFeature.Tag), 
+                    (uint)fontFeature.Value,
+                    (uint)fontFeature.Start,
+                    (uint)fontFeature.End);
+            }
+            
+            return features;
         }
     }
 }

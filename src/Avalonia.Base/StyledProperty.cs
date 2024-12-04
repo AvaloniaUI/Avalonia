@@ -1,8 +1,10 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using Avalonia.Data;
 using Avalonia.PropertyStore;
 using Avalonia.Utilities;
+using static Avalonia.StyledPropertyNonGenericHelper;
 
 namespace Avalonia
 {
@@ -11,6 +13,10 @@ namespace Avalonia
     /// </summary>
     public class StyledProperty<TValue> : AvaloniaProperty<TValue>, IStyledPropertyAccessor
     {
+        // For performance, cache the default value if there's only one (mostly for AvaloniaObject.GetValue()),
+        // avoiding a GetMetadata() call which might need to iterate through the control hierarchy.
+        private Optional<TValue> _singleDefaultValue;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="StyledProperty{T}"/> class.
         /// </summary>
@@ -39,9 +45,10 @@ namespace Avalonia
 
             if (validate?.Invoke(metadata.DefaultValue) == false)
             {
-                throw new ArgumentException(
-                    $"'{metadata.DefaultValue}' is not a valid default value for '{name}'.");
+                ThrowInvalidDefaultValue(name, metadata.DefaultValue, name);
             }
+
+            _singleDefaultValue = metadata.DefaultValue;
         }
 
         /// <summary>
@@ -67,7 +74,7 @@ namespace Avalonia
 
         public TValue CoerceValue(AvaloniaObject instance, TValue baseValue)
         {
-            var metadata = GetMetadata(instance.GetType());
+            var metadata = GetMetadata(instance);
 
             if (metadata.CoerceValue != null)
             {
@@ -82,22 +89,51 @@ namespace Avalonia
         /// </summary>
         /// <param name="type">The type.</param>
         /// <returns>The default value.</returns>
+        /// <remarks>
+        /// For performance, prefer the <see cref="GetDefaultValue(Avalonia.AvaloniaObject)"/> overload when possible.
+        /// </remarks>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public TValue GetDefaultValue(Type type)
         {
-            return GetMetadata(type).DefaultValue;
+            return _singleDefaultValue.HasValue ?
+                _singleDefaultValue.GetValueOrDefault()! :
+                GetMetadata(type).DefaultValue;
         }
 
         /// <summary>
-        /// Gets the property metadata for the specified type.
+        /// Gets the default value for the property on the specified object.
         /// </summary>
-        /// <param name="type">The type.</param>
-        /// <returns>
-        /// The property metadata.
-        /// </returns>
-        public new StyledPropertyMetadata<TValue> GetMetadata(Type type)
+        /// <param name="owner">The object.</param>
+        /// <returns>The default value.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public TValue GetDefaultValue(AvaloniaObject owner)
         {
-            _ = type ?? throw new ArgumentNullException(nameof(type));
-            return (StyledPropertyMetadata<TValue>)base.GetMetadata(type);
+            return _singleDefaultValue.HasValue ?
+                _singleDefaultValue.GetValueOrDefault()! :
+                GetMetadata(owner).DefaultValue;
+        }
+
+        /// <inheritdoc cref="AvaloniaProperty.GetMetadata(System.Type)"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public new StyledPropertyMetadata<TValue> GetMetadata(Type type)
+            => CastMetadata(base.GetMetadata(type));
+
+        /// <inheritdoc cref="AvaloniaProperty.GetMetadata(Avalonia.AvaloniaObject)"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public new StyledPropertyMetadata<TValue> GetMetadata(AvaloniaObject owner)
+            => CastMetadata(base.GetMetadata(owner));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static StyledPropertyMetadata<TValue> CastMetadata(AvaloniaPropertyMetadata metadata)
+        {
+#if DEBUG
+            return (StyledPropertyMetadata<TValue>)metadata;
+#else
+            // Avoid casts in release mode for performance (GetMetadata is a hot path).
+            // We control every path:
+            // it shouldn't be possible a metadata type other than a StyledPropertyMetadata<T> stored for a StyledProperty<T>.
+            return Unsafe.As<StyledPropertyMetadata<TValue>>(metadata);
+#endif
         }
 
         /// <summary>
@@ -138,12 +174,16 @@ namespace Avalonia
             {
                 if (!ValidateValue(metadata.DefaultValue))
                 {
-                    throw new ArgumentException(
-                        $"'{metadata.DefaultValue}' is not a valid default value for '{Name}'.");
+                    ThrowInvalidDefaultValue(Name, metadata.DefaultValue, nameof(metadata));
                 }
             }
 
             base.OverrideMetadata(type, metadata);
+
+            if (_singleDefaultValue != metadata.DefaultValue)
+            {
+                _singleDefaultValue = default;
+            }
         }
 
         /// <summary>
@@ -155,15 +195,22 @@ namespace Avalonia
             return Name;
         }
 
-        /// <inheritdoc/>
-        object? IStyledPropertyAccessor.GetDefaultValue(Type type) => GetDefaultBoxedValue(type);
+        object? IStyledPropertyAccessor.GetDefaultValue(Type type) => GetDefaultValue(type);
+
+        object? IStyledPropertyAccessor.GetDefaultValue(AvaloniaObject owner) => GetDefaultValue(owner);
 
         bool IStyledPropertyAccessor.ValidateValue(object? value)
         {
-            if (value is null && !typeof(TValue).IsValueType)
-                return ValidateValue?.Invoke(default!) ?? true;
-            if (value is TValue typed)
+            if (value is null)
+            {
+                if (!typeof(TValue).IsValueType || Nullable.GetUnderlyingType(typeof(TValue)) != null)
+                    return ValidateValue?.Invoke(default!) ?? true;
+            }
+            else if (value is TValue typed)
+            {
                 return ValidateValue?.Invoke(typed) ?? true;
+            }
+
             return false;
         }
 
@@ -224,33 +271,25 @@ namespace Avalonia
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.ImplicitTypeConversionSupressWarningMessage)]
         private bool ShouldSetValue(AvaloniaObject target, object? value, [NotNullWhen(true)] out TValue? converted)
         {
-            if (value == BindingOperations.DoNothing)
+            if (value != BindingOperations.DoNothing)
             {
-                converted = default;
-                return false; 
+                if (value == UnsetValue)
+                {
+                    target.ClearValue(this);
+                }
+                else if (TypeUtilities.TryConvertImplicit(PropertyType, value, out var v))
+                {
+                    converted = (TValue)v!;
+                    return true;
+                }
+                else
+                {
+                    ThrowInvalidValue(Name, value, nameof(value));
+                }
             }
-            if (value == UnsetValue)
-            {
-                target.ClearValue(this);
-                converted = default;
-                return false;
-            }
-            else if (TypeUtilities.TryConvertImplicit(PropertyType, value, out var v))
-            {
-                converted = (TValue)v!;
-                return true;
-            }
-            else
-            {
-                var type = value?.GetType().FullName ?? "(null)";
-                throw new ArgumentException($"Invalid value for Property '{Name}': '{value}' ({type})");
-            }
-        }
 
-        private object? GetDefaultBoxedValue(Type type)
-        {
-            _ = type ?? throw new ArgumentNullException(nameof(type));
-            return GetMetadata(type).DefaultValue;
+            converted = default;
+            return false;
         }
     }
 }

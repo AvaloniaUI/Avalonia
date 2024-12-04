@@ -13,17 +13,25 @@ namespace Avalonia.Android
     internal abstract class InvalidationAwareSurfaceView : SurfaceView, ISurfaceHolderCallback, INativePlatformHandleSurface
     {
         bool _invalidateQueued;
+        private bool _isDisposed;
         readonly object _lock = new object();
         private readonly Handler _handler;
 
-        IntPtr IPlatformHandle.Handle =>
-            AndroidFramebuffer.ANativeWindow_fromSurface(JNIEnv.Handle, Holder.Surface.Handle);
+        internal event EventHandler? SurfaceWindowCreated;
+
+        IntPtr IPlatformHandle.Handle => Holder?.Surface?.Handle is { } handle ?
+            AndroidFramebuffer.ANativeWindow_fromSurface(JNIEnv.Handle, handle) :
+            default;
 
         public InvalidationAwareSurfaceView(Context context) : base(context)
         {
+            if (Holder is null)
+                throw new InvalidOperationException(
+                    "SurfaceView.Holder was not expected to be null during InvalidationAwareSurfaceView initialization.");
+
             Holder.AddCallback(this);
             Holder.SetFormat(global::Android.Graphics.Format.Transparent);
-            _handler = new Handler(context.MainLooper);
+            _handler = new Handler(context.MainLooper!);
         }
 
         public override void Invalidate()
@@ -34,7 +42,7 @@ namespace Avalonia.Android
                     return;
                 _handler.Post(() =>
                 {
-                    if (Holder.Surface?.IsValid != true)
+                    if (_isDisposed || Holder?.Surface?.IsValid != true)
                         return;
                     try
                     {
@@ -48,6 +56,11 @@ namespace Avalonia.Android
             }
         }
 
+        internal new void Dispose()
+        {
+            _isDisposed = true;
+        }
+
         public void SurfaceChanged(ISurfaceHolder holder, Format format, int width, int height)
         {
             Log.Info("AVALONIA", "Surface Changed");
@@ -57,6 +70,7 @@ namespace Avalonia.Android
         public void SurfaceCreated(ISurfaceHolder holder)
         {
             Log.Info("AVALONIA", "Surface Created");
+            SurfaceWindowCreated?.Invoke(this, EventArgs.Empty);
             DoDraw();
         }
 
@@ -77,8 +91,8 @@ namespace Avalonia.Android
         protected abstract void Draw();
         public string HandleDescriptor => "SurfaceView";
 
-        public PixelSize Size => new PixelSize(Holder.SurfaceFrame.Width(), Holder.SurfaceFrame.Height());
+        public PixelSize Size => new(Holder?.SurfaceFrame?.Width() ?? 1, Holder?.SurfaceFrame?.Height() ?? 1);
 
-        public double Scaling => Resources.DisplayMetrics.Density;
+        public double Scaling => Resources?.DisplayMetrics?.Density ?? 1;
     }
 }

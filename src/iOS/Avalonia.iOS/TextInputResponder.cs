@@ -14,8 +14,6 @@ using UIKit;
 
 namespace Avalonia.iOS;
 
-#nullable enable
-
 partial class AvaloniaView
 {
 
@@ -108,7 +106,12 @@ partial class AvaloniaView
         {
             get
             {
-                var mode = UITextInputMode.CurrentInputMode;
+                UITextInputMode? mode = null;
+#if !TVOS
+#pragma warning disable CA1422
+                mode = UITextInputMode.CurrentInputMode;
+#pragma warning restore CA1422
+#endif
                 // Can be empty see https://developer.apple.com/documentation/uikit/uitextinputmode/1614522-activeinputmodes
                 if (mode is null && UITextInputMode.ActiveInputModes.Length > 0)
                 {
@@ -217,15 +220,17 @@ partial class AvaloniaView
 
             string result = "";
             if (string.IsNullOrEmpty(_markedText))
+            {
                 if(surroundingText != null && r.EndIndex < surroundingText.Length)
                 {
                     result = surroundingText[r.StartIndex..r.EndIndex];
                 }
+            }
             else
             {
                 var span = new CombinedSpan3<char>(surroundingText.AsSpan().Slice(0, currentSelection.Start),
                     _markedText,
-                    surroundingText.AsSpan().Slice(currentSelection.Start));
+                    surroundingText.AsSpan().Slice(currentSelection.Start, currentSelection.End - currentSelection.Start));
                 var buf = new char[r.EndIndex - r.StartIndex];
                 span.CopyTo(buf, r.StartIndex);
                 result = new string(buf);

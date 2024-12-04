@@ -13,17 +13,11 @@ using Xunit.Sdk;
 namespace Avalonia.IntegrationTests.Appium
 {
     [Collection("Default")]
-    public class WindowTests
+    public class WindowTests : TestBase
     {
-        private readonly AppiumDriver<AppiumWebElement> _session;
-
         public WindowTests(DefaultAppFixture fixture)
+            : base(fixture, "Window")
         {
-            _session = fixture.Session;
-
-            var tabs = _session.FindElementByAccessibilityId("MainTabs");
-            var tab = tabs.FindElementByName("Window");
-            tab.Click();
         }
 
         [Theory]
@@ -90,8 +84,8 @@ namespace Avalonia.IntegrationTests.Appium
                 {
                     try
                     {
-                        _session.FindElementByAccessibilityId("CurrentWindowState").SendClick();
-                        _session.FindElementByAccessibilityId("WindowStateNormal").SendClick();
+                        Session.FindElementByAccessibilityId("CurrentWindowState").SendClick();
+                        Session.FindElementByAccessibilityId("WindowStateNormal").SendClick();
 
                         // Wait for animations to run.
                         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
@@ -110,14 +104,14 @@ namespace Avalonia.IntegrationTests.Appium
         {
             using (OpenWindow(new Size(400, 400), ShowWindowMode.NonOwned, WindowStartupLocation.Manual))
             {
-                var windowState = _session.FindElementByAccessibilityId("CurrentWindowState");
+                var windowState = Session.FindElementByAccessibilityId("CurrentWindowState");
 
                 Assert.Equal("Normal", windowState.GetComboBoxValue());
                 
                 
-                var window = _session.FindElements(By.XPath("//Window")).First();
+                var window = Session.FindElements(By.XPath("//Window")).First();
                 
-                new Actions(_session)
+                new Actions(Session)
                     .KeyDown(Keys.Meta)
                     .SendKeys(Keys.Left)
                     .KeyUp(Keys.Meta)
@@ -126,9 +120,9 @@ namespace Avalonia.IntegrationTests.Appium
                 var original = GetWindowInfo();
                 
                 windowState.Click();
-                _session.FindElementByName("Minimized").SendClick();
+                Session.FindElementByName("Minimized").SendClick();
                 
-                new Actions(_session)
+                new Actions(Session)
                     .KeyDown(Keys.Alt)
                     .SendKeys(Keys.Tab)
                     .KeyUp(Keys.Alt)
@@ -147,8 +141,8 @@ namespace Avalonia.IntegrationTests.Appium
         {
             using (OpenWindow(new Size(4000, 2200), ShowWindowMode.NonOwned, WindowStartupLocation.Manual))
             {
-                var screenRectTextBox = _session.FindElementByAccessibilityId("CurrentClientSize");
-                var measuredWithTextBlock = _session.FindElementByAccessibilityId("CurrentMeasuredWithText");
+                var screenRectTextBox = Session.FindElementByAccessibilityId("CurrentClientSize");
+                var measuredWithTextBlock = Session.FindElementByAccessibilityId("CurrentMeasuredWithText");
                 
                 var measuredWithString = measuredWithTextBlock.Text;
                 var workingAreaString = screenRectTextBox.Text;
@@ -167,17 +161,17 @@ namespace Avalonia.IntegrationTests.Appium
         public void ShowMode(ShowWindowMode mode)
         {
             using var window = OpenWindow(null, mode, WindowStartupLocation.Manual);
-            var windowState = _session.FindElementByAccessibilityId("CurrentWindowState");
+            var windowState = Session.FindElementByAccessibilityId("CurrentWindowState");
             var original = GetWindowInfo();
 
             Assert.Equal("Normal", windowState.GetComboBoxValue());
 
             windowState.Click();
-            _session.FindElementByAccessibilityId("WindowStateMaximized").SendClick();
+            Session.FindElementByAccessibilityId("WindowStateMaximized").SendClick();
             Assert.Equal("Maximized", windowState.GetComboBoxValue());
 
             windowState.Click();
-            _session.FindElementByAccessibilityId("WindowStateNormal").SendClick();
+            Session.FindElementByAccessibilityId("WindowStateNormal").SendClick();
 
             var current = GetWindowInfo();
             Assert.Equal(original.Position, current.Position);
@@ -187,7 +181,7 @@ namespace Avalonia.IntegrationTests.Appium
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX) || mode == ShowWindowMode.NonOwned)
             {
                 windowState.Click();
-                _session.FindElementByAccessibilityId("WindowStateFullScreen").SendClick();
+                Session.FindElementByAccessibilityId("WindowStateFullScreen").SendClick();
                 Assert.Equal("FullScreen", windowState.GetComboBoxValue());
 
                 current = GetWindowInfo();
@@ -197,7 +191,7 @@ namespace Avalonia.IntegrationTests.Appium
 
                 windowState.SendClick();
                 
-                _session.FindElementByAccessibilityId("WindowStateNormal").SendClick();
+                Session.FindElementByAccessibilityId("WindowStateNormal").SendClick();
 
                 current = GetWindowInfo();
                 Assert.Equal(original.Position, current.Position);
@@ -206,13 +200,24 @@ namespace Avalonia.IntegrationTests.Appium
         }
 
         [Fact]
+        public void Extended_Client_Window_Shows_With_Requested_Size()
+        {
+            var clientSize = new Size(400, 400);
+            using var window = OpenWindow(clientSize, ShowWindowMode.NonOwned, WindowStartupLocation.CenterScreen, extendClientArea: true);
+            var windowState = Session.FindElementByAccessibilityId("CurrentWindowState");
+            var current = GetWindowInfo();
+
+            Assert.Equal(current.ClientSize, clientSize);
+        }
+
+        [Fact]
         public void TransparentWindow()
         {
-            var showTransparentWindow = _session.FindElementByAccessibilityId("ShowTransparentWindow");
+            var showTransparentWindow = Session.FindElementByAccessibilityId("ShowTransparentWindow");
             showTransparentWindow.Click();
             Thread.Sleep(1000);
 
-            var window = _session.FindElementByAccessibilityId("TransparentWindow");
+            var window = Session.FindElementByAccessibilityId("TransparentWindow");
             var screenshot = window.GetScreenshot();
 
             window.Click();
@@ -228,11 +233,11 @@ namespace Avalonia.IntegrationTests.Appium
         [Fact]
         public void TransparentPopup()
         {
-            var showTransparentWindow = _session.FindElementByAccessibilityId("ShowTransparentPopup");
+            var showTransparentWindow = Session.FindElementByAccessibilityId("ShowTransparentPopup");
             showTransparentWindow.Click();
             Thread.Sleep(1000);
 
-            var window = _session.FindElementByAccessibilityId("TransparentPopupBackground");
+            var window = Session.FindElementByAccessibilityId("TransparentPopupBackground");
             var container = window.FindElementByAccessibilityId("PopupContainer");
             var screenshot = container.GetScreenshot();
 
@@ -246,6 +251,35 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal(new Rgba32(255, 0, 0), centerColor);
         }
 
+        [PlatformFact(TestPlatforms.Windows)]
+        public void Owned_Window_Should_Appear_Above_Topmost_Owner()
+        {
+            var showTopmostWindow = Session.FindElementByAccessibilityId("ShowTopmostWindow");
+            using var window = showTopmostWindow.OpenWindowWithClick();
+            Thread.Sleep(1000);
+            var ownerWindow = Session.GetWindowById("OwnerWindow");
+            var ownedWindow = Session.GetWindowById("OwnedWindow");
+
+            Assert.NotNull(ownerWindow);
+            Assert.NotNull(ownedWindow);
+
+            var ownerPosition = GetPosition(ownerWindow);
+            var ownedPosition = GetPosition(ownedWindow);
+
+            // Owned Window moves 
+            var moveButton = ownedWindow.FindElementByAccessibilityId("MoveButton");
+            moveButton.Click();
+            Thread.Sleep(1000);
+
+            Assert.Equal(GetPosition(ownerWindow), ownerPosition);
+            Assert.NotEqual(GetPosition(ownedWindow), ownedPosition);
+
+            PixelPoint GetPosition(AppiumWebElement window)
+            {
+                return PixelPoint.Parse(window.FindElementByAccessibilityId("CurrentPosition").Text);
+            }
+        }
+
         [Theory]
         [InlineData(ShowWindowMode.NonOwned, true)]
         [InlineData(ShowWindowMode.Owned, true)]
@@ -257,7 +291,7 @@ namespace Avalonia.IntegrationTests.Appium
         {
             using (OpenWindow(null, mode, WindowStartupLocation.Manual, canResize: false, extendClientArea: extendClientArea))
             {
-                var secondaryWindow = GetWindow("SecondaryWindow");
+                var secondaryWindow = Session.GetWindowById("SecondaryWindow");
                 AppiumWebElement? maximizeButton;
 
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -274,6 +308,44 @@ namespace Avalonia.IntegrationTests.Appium
                 }
 
                 Assert.False(maximizeButton.Enabled);
+            }
+        }
+
+        [Fact]
+        public void Changing_SystemDecorations_Should_Not_Change_Frame_Size_And_Position()
+        {
+            using (OpenWindow(null, ShowWindowMode.NonOwned, WindowStartupLocation.Manual))
+            {
+                var info = GetWindowInfo();
+
+                Session.FindElementByAccessibilityId("CurrentSystemDecorations").Click();
+                Session.FindElementByAccessibilityId("SystemDecorationsNone").SendClick();
+                var updatedInfo = GetWindowInfo();
+                Assert.Equal(info.FrameSize, updatedInfo.FrameSize);
+                Assert.Equal(info.Position, updatedInfo.Position);
+
+                Session.FindElementByAccessibilityId("CurrentSystemDecorations").Click();
+                Session.FindElementByAccessibilityId("SystemDecorationsFull").SendClick();
+                updatedInfo = GetWindowInfo();
+                Assert.Equal(info.FrameSize, updatedInfo.FrameSize);
+                Assert.Equal(info.Position, updatedInfo.Position);
+            }
+        }
+
+        [Fact]
+        public void Changing_WindowState_Should_Not_Change_Frame_Size_And_Position()
+        {
+            using (OpenWindow())
+            {
+                var info = GetWindowInfo();
+
+                Session.FindElementByAccessibilityId("CurrentWindowState").SendClick();
+                Session.FindElementByAccessibilityId("WindowStateMaximized").SendClick();
+                Session.FindElementByAccessibilityId("CurrentWindowState").SendClick();
+                Session.FindElementByAccessibilityId("WindowStateNormal").SendClick();
+                var updatedInfo = GetWindowInfo();
+                Assert.Equal(info.FrameSize, updatedInfo.FrameSize);
+                Assert.Equal(info.Position, updatedInfo.Position);
             }
         }
 
@@ -339,16 +411,16 @@ namespace Avalonia.IntegrationTests.Appium
                 // the position of a centered window can be off by a bit. From initial testing, looks
                 // like this shouldn't be more than 10 pixels.
                 if (Math.Abs(expected.X - actual.X) > 10)
-                    throw new EqualException(expected, actual);
+                    throw EqualException.ForMismatchedValues(expected, actual);
                 if (Math.Abs(expected.Y - actual.Y) > 10)
-                    throw new EqualException(expected, actual);
+                    throw EqualException.ForMismatchedValues(expected, actual);
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
                 if (Math.Abs(expected.X - actual.X) > 15)
-                    throw new EqualException(expected, actual);
+                    throw EqualException.ForMismatchedValues(expected, actual);
                 if (Math.Abs(expected.Y - actual.Y) > 15)
-                    throw new EqualException(expected, actual);
+                    throw EqualException.ForMismatchedValues(expected, actual);
             }
             else
             {
@@ -357,20 +429,20 @@ namespace Avalonia.IntegrationTests.Appium
         }
 
         private IDisposable OpenWindow(
-            Size? size,
-            ShowWindowMode mode,
+            Size? size = null,
+            ShowWindowMode mode = ShowWindowMode.NonOwned,
             WindowStartupLocation location = WindowStartupLocation.Manual,
             WindowState state = Controls.WindowState.Normal,
             bool canResize = true,
             bool extendClientArea = false)
         {
-            var sizeTextBox = _session.FindElementByAccessibilityId("ShowWindowSize");
-            var modeComboBox = _session.FindElementByAccessibilityId("ShowWindowMode");
-            var locationComboBox = _session.FindElementByAccessibilityId("ShowWindowLocation");
-            var stateComboBox = _session.FindElementByAccessibilityId("ShowWindowState");
-            var canResizeCheckBox = _session.FindElementByAccessibilityId("ShowWindowCanResize");
-            var showButton = _session.FindElementByAccessibilityId("ShowWindow");
-            var extendClientAreaCheckBox = _session.FindElementByAccessibilityId("ShowWindowExtendClientAreaToDecorationsHint");
+            var sizeTextBox = Session.FindElementByAccessibilityId("ShowWindowSize");
+            var modeComboBox = Session.FindElementByAccessibilityId("ShowWindowMode");
+            var locationComboBox = Session.FindElementByAccessibilityId("ShowWindowLocation");
+            var stateComboBox = Session.FindElementByAccessibilityId("ShowWindowState");
+            var canResizeCheckBox = Session.FindElementByAccessibilityId("ShowWindowCanResize");
+            var showButton = Session.FindElementByAccessibilityId("ShowWindow");
+            var extendClientAreaCheckBox = Session.FindElementByAccessibilityId("ShowWindowExtendClientAreaToDecorationsHint");
 
             if (size.HasValue)
                 sizeTextBox.SendKeys($"{size.Value.Width}, {size.Value.Height}");
@@ -378,19 +450,19 @@ namespace Avalonia.IntegrationTests.Appium
             if (modeComboBox.GetComboBoxValue() != mode.ToString())
             {
                 modeComboBox.Click();
-                _session.FindElementByName(mode.ToString()).SendClick();
+                Session.FindElementByName(mode.ToString()).SendClick();
             }
 
             if (locationComboBox.GetComboBoxValue() != location.ToString())
             {
                 locationComboBox.Click();
-                _session.FindElementByName(location.ToString()).SendClick();
+                Session.FindElementByName(location.ToString()).SendClick();
             }
 
             if (stateComboBox.GetComboBoxValue() != state.ToString())
             {
                 stateComboBox.Click();
-                _session.FindElementByAccessibilityId($"ShowWindowState{state}").SendClick();
+                Session.FindElementByAccessibilityId($"ShowWindowState{state}").SendClick();
             }
 
             if (canResizeCheckBox.GetIsChecked() != canResize)
@@ -402,26 +474,11 @@ namespace Avalonia.IntegrationTests.Appium
             return showButton.OpenWindowWithClick();
         }
 
-        private AppiumWebElement GetWindow(string identifier)
-        {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                // The Avalonia a11y tree currently exposes two nested Window elements, this is a bug and should be fixed 
-                // but in the meantime use the `parent::' selector to return the parent "real" window. 
-                return _session.FindElementByXPath(
-                    $"XCUIElementTypeWindow//*[@identifier='{identifier}']/parent::XCUIElementTypeWindow");
-            }
-            else
-            {
-                return _session.FindElementByXPath($"//Window[@AutomationId='{identifier}']");
-            }
-        }
-
         private WindowInfo GetWindowInfo()
         {
             PixelRect? ReadOwnerRect()
             {
-                var text = _session.FindElementByAccessibilityId("CurrentOwnerRect").Text;
+                var text = Session.FindElementByAccessibilityId("CurrentOwnerRect").Text;
                 return !string.IsNullOrWhiteSpace(text) ? PixelRect.Parse(text) : null;
             }
 
@@ -432,13 +489,13 @@ namespace Avalonia.IntegrationTests.Appium
                 try
                 {
                     return new(
-                        Size.Parse(_session.FindElementByAccessibilityId("CurrentClientSize").Text),
-                        Size.Parse(_session.FindElementByAccessibilityId("CurrentFrameSize").Text),
-                        PixelPoint.Parse(_session.FindElementByAccessibilityId("CurrentPosition").Text),
+                        Size.Parse(Session.FindElementByAccessibilityId("CurrentClientSize").Text),
+                        Size.Parse(Session.FindElementByAccessibilityId("CurrentFrameSize").Text),
+                        PixelPoint.Parse(Session.FindElementByAccessibilityId("CurrentPosition").Text),
                         ReadOwnerRect(),
-                        PixelRect.Parse(_session.FindElementByAccessibilityId("CurrentScreenRect").Text),
-                        double.Parse(_session.FindElementByAccessibilityId("CurrentScaling").Text),
-                        Enum.Parse<WindowState>(_session.FindElementByAccessibilityId("CurrentWindowState").Text));
+                        PixelRect.Parse(Session.FindElementByAccessibilityId("CurrentScreenRect").Text),
+                        double.Parse(Session.FindElementByAccessibilityId("CurrentScaling").Text),
+                        Enum.Parse<WindowState>(Session.FindElementByAccessibilityId("CurrentWindowState").Text));
                 }
                 catch (OpenQA.Selenium.NoSuchElementException) when (retry++ < 3)
                 {

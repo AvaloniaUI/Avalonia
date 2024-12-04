@@ -16,13 +16,13 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             if (node is XamlPropertyAssignmentNode pa)
             {
                 if (pa.Property.Name == "Name"
-                    && pa.Property.DeclaringType.FullName == "Avalonia.StyledElement")
+                    && pa.Property.DeclaringType.Interfaces.Any(t => t.FullName == "Avalonia.INamed"))
                 {
                     if (context.ParentNodes().FirstOrDefault() is XamlManipulationGroupNode mg
                         && mg.Children.OfType<AvaloniaNameScopeRegistrationXamlIlNode>().Any())
                         return node;
 
-                    IXamlAstValueNode value = null;
+                    IXamlAstValueNode? value = null;
                     for (var c = 0; c < pa.Values.Count; c++)
                         if (pa.Values[c].Type.GetClrType().Equals(context.Configuration.WellKnownTypes.String))
                         {
@@ -73,9 +73,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
     class AvaloniaNameScopeRegistrationXamlIlNode : XamlAstNode, IXamlAstManipulationNode
     {
         public IXamlAstValueNode Name { get; set; }
-        public IXamlType TargetType { get; }
+        public IXamlType? TargetType { get; }
 
-        public AvaloniaNameScopeRegistrationXamlIlNode(IXamlAstValueNode name, IXamlType targetType) : base(name)
+        public AvaloniaNameScopeRegistrationXamlIlNode(IXamlAstValueNode name, IXamlType? targetType) : base(name)
         {
             TargetType = targetType;
             Name = name;
@@ -87,7 +87,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
     class AvaloniaNameScopeRegistrationXamlIlNodeEmitter : IXamlAstLocalsNodeEmitter<IXamlILEmitter, XamlILNodeEmitResult>
     {
-        public XamlILNodeEmitResult Emit(IXamlAstNode node, XamlEmitContextWithLocals<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
+        public XamlILNodeEmitResult? Emit(IXamlAstNode node, XamlEmitContextWithLocals<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
         {
             if (node is AvaloniaNameScopeRegistrationXamlIlNode registration)
             {
@@ -114,7 +114,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
                 return XamlILNodeEmitResult.Void(1);
             }
-            return default;
+            return null;
         }
     }
 }

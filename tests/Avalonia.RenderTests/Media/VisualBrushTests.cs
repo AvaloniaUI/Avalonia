@@ -687,5 +687,80 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             await RenderToFile(target, dpi: 192);
             CompareImages();
         }
+        
+        
+        [Theory,
+         InlineData(false),
+         InlineData(true)
+        ]
+        public async Task VisualBrush_Is_Properly_Mapped(bool relative)
+        {
+            var brush = new VisualBrush()
+            {
+                Stretch = Stretch.Fill,
+                TileMode = TileMode.Tile,
+                DestinationRect = relative
+                    ? new RelativeRect(0, 0, 1, 1, RelativeUnit.Relative)
+                    : new RelativeRect(0, 0, 256, 256, RelativeUnit.Absolute),
+                Visual = Visual
+            };
+
+            var testName =
+                $"{nameof(VisualBrush_Is_Properly_Mapped)}_{brush.DestinationRect.Unit}";
+            await RenderToFile(new RelativePointTestPrimitivesHelper(brush), testName);
+            CompareImages(testName);
+        }
+        
+        
+        [Fact]
+        public async Task VisualBrush_Should_Be_Usable_As_Opacity_Mask()
+        {
+            var target = new Border()
+            {
+                Padding = new Thickness(8),
+                Width = 920,
+                Height = 920,
+                Background = Brushes.Magenta,
+                OpacityMask = new VisualBrush
+                {
+                    Stretch = Stretch.Fill,
+                    TileMode = TileMode.None,
+
+                    Visual = new Border()
+                    {
+                        Width = 200,
+                        Height = 200,
+                        Padding = new Thickness(20),
+                        Child = new Grid()
+                        {
+
+                            ColumnDefinitions = ColumnDefinitions.Parse("*,*,*"),
+                            RowDefinitions = RowDefinitions.Parse("*,*,*"),
+                            Children =
+                            {
+                                new Border()
+                                {
+                                    Background = Brushes.Aqua,
+                                },
+                                new Border()
+                                {
+                                    [Grid.ColumnProperty] = 1,
+                                    [Grid.RowProperty] = 2,
+                                    Background = Brushes.Aqua,
+                                },
+                                new Border()
+                                {
+                                    [Grid.ColumnProperty] = 3,
+                                    Background = Brushes.Aqua,
+                                },
+                            }
+                        },
+                    }
+                }
+            };
+
+            await RenderToFile(target);
+            CompareImages();
+        }
     }
 }

@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Animation;
+using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
@@ -110,6 +112,28 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal("bar", container.Content);
         }
 
+        [Fact]
+        public void Handles_Moved_Item_Range()
+        {
+            using var app = Start();
+            AvaloniaList<string> items = ["foo", "bar", "baz", "qux", "quux"];
+            var (target, carousel) = CreateTarget(items);
+            var container = Assert.IsType<ContentPresenter>(target.Children[0]);
+
+            carousel.SelectedIndex = 3;
+            Layout(target);
+            items.MoveRange(0, 2, 4);
+            Layout(target);
+
+            Assert.Multiple(() =>
+            {
+                Assert.Single(target.Children);
+                Assert.Same(container, target.Children[0]);
+                Assert.Equal("qux", container.Content);
+                Assert.Equal(1, carousel.SelectedIndex);
+            });
+        }
+
         public class Transitions
         {
             [Fact]
@@ -145,6 +169,55 @@ namespace Avalonia.Controls.UnitTests
                         true,
                         It.IsAny<CancellationToken>()),
                     Times.Once);
+            }
+
+            [Fact]
+            public void Changing_SelectedIndex_transitions_forward_cycle()
+            {
+                using var app = Start();
+                var items = new Control[] { new Button(), new Canvas(), new Label() };
+                var transition = new Mock<IPageTransition>();
+                var (target, carousel) = CreateTarget(items, transition.Object);
+                var cycleindexes = new[] { 1, 2, 0};
+
+                for (int cycleIndex = 0; cycleIndex < cycleindexes.Length; cycleIndex++)
+                {
+                    carousel.SelectedIndex = cycleindexes[cycleIndex];
+                    Layout(target);
+
+                    var index = cycleIndex;
+                    transition.Verify(x => x.Start(
+                            index > 0 ? items[cycleindexes[index - 1]] : items[0],
+                            items[cycleindexes[index]],
+                            true,
+                            It.IsAny<CancellationToken>()),
+                        Times.Once);
+                }
+            }
+
+            [Fact]
+            public void Changing_SelectedIndex_transitions_backward_cycle()
+            {
+                using var app = Start();
+                var items = new Control[] { new Button(), new Canvas(), new Label() };
+                var transition = new Mock<IPageTransition>();
+                var (target, carousel) = CreateTarget(items, transition.Object);
+
+                var cycleindexes = new[] { 2, 1, 0};
+
+                for (int cycleIndex = 0; cycleIndex < cycleindexes.Length; cycleIndex++)
+                {
+                    carousel.SelectedIndex = cycleindexes[cycleIndex];
+                    Layout(target);
+
+                    var index = cycleIndex;
+                    transition.Verify(x => x.Start(
+                            index > 0 ? items[cycleindexes[index - 1]] : items[0],
+                            items[cycleindexes[index]],
+                            false,
+                            It.IsAny<CancellationToken>()),
+                        Times.Once);
+                }
             }
 
             [Fact]

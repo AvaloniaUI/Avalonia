@@ -3,6 +3,7 @@
 // Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
 
+using Avalonia.Automation;
 using Avalonia.Controls.Metadata;
 using Avalonia.Input;
 using Avalonia.Media;
@@ -48,6 +49,11 @@ namespace Avalonia.Controls.Primitives
         public DataGridRowHeader()
         {
             AddHandler(PointerPressedEvent, DataGridRowHeader_PointerPressed, handledEventsToo: true);
+        }
+
+        static DataGridRowHeader()
+        {
+            AutomationProperties.IsOffscreenBehaviorProperty.OverrideDefaultValue<DataGridRowHeader>(IsOffscreenBehavior.FromClip);
         }
 
         internal Control Owner
@@ -195,7 +201,6 @@ namespace Avalonia.Controls.Primitives
                     Debug.Assert(sender is DataGridRowHeader);
                     Debug.Assert(sender == this);
                     e.Handled = OwningGrid.UpdateStateOnMouseLeftButtonDown(e, -1, Slot, false);
-                    OwningGrid.UpdatedStateOnMouseLeftButtonDown = true;
                 }
             }
             else if (e.GetCurrentPoint(this).Properties.IsRightButtonPressed)

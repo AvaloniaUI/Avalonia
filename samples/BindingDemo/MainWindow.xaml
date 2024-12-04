@@ -12,9 +12,6 @@
       <Setter Property="FontSize" Value="18"/>
     </Style>
   </Window.Styles>
-  <Window.Resources>
-    <vm:TestItem x:Key="SharedItem" StringValue="shared" />
-  </Window.Resources>
   
   <TabControl>
     <TabItem Header="Basic">
@@ -23,6 +20,7 @@
           <StackPanel Margin="18" Spacing="4" Width="200">
             <TextBlock FontSize="16" Text="Simple Bindings"/>
             <TextBox Watermark="Two Way" UseFloatingWatermark="True" Text="{Binding Path=StringValue}" Name="first"/>
+            <TextBox Watermark="Two Way (LostFocus)" UseFloatingWatermark="True" Text="{Binding Path=StringValue, UpdateSourceTrigger=LostFocus}"/>
             <TextBox Watermark="One Way" UseFloatingWatermark="True" Text="{Binding Path=StringValue, Mode=OneWay}"/>
             <TextBox Watermark="One Time" UseFloatingWatermark="True" Text="{Binding Path=StringValue, Mode=OneTime}"/>
             <!-- Removed due to #2983: reinstate when that's fixed.
@@ -53,9 +51,9 @@
             <TextBox Watermark="Value of first TextBox" UseFloatingWatermark="True" 
                      Text="{Binding #first.Text, Mode=TwoWay}"/>
             <TextBox Watermark="Value of SharedItem.StringValue" UseFloatingWatermark="True"
-                     Text="{Binding StringValue, Source={StaticResource SharedItem}, Mode=TwoWay}"/>
+                     Text="{Binding StringValue, Source={StaticResource SharedItem}, Mode=TwoWay, DataType=vm:MainWindowViewModel+TestItem}"/>
             <TextBox Watermark="Value of SharedItem.StringValue (duplicate)" UseFloatingWatermark="True"
-                     Text="{Binding StringValue, Source={StaticResource SharedItem}, Mode=TwoWay}"/>
+                     Text="{Binding StringValue, Source={StaticResource SharedItem}, Mode=TwoWay, DataType=vm:MainWindowViewModel+TestItem}"/>
           </StackPanel>
           <StackPanel Margin="18" Spacing="4" Width="200" HorizontalAlignment="Left">
             <TextBlock FontSize="16" Text="Scheduler"/>
@@ -69,7 +67,7 @@
     <TabItem Header="ListBox">
       <StackPanel Orientation="Horizontal">
         <StackPanel.DataTemplates>
-          <DataTemplate DataType="vm:TestItem">
+          <DataTemplate DataType="vm:MainWindowViewModel+TestItem">
             <TextBlock Text="{Binding StringValue}"/>
           </DataTemplate>
         </StackPanel.DataTemplates>
@@ -83,7 +81,7 @@
         </StackPanel>
         <ContentControl Content="{ReflectionBinding Selection.SelectedItems[0]}">
           <ContentControl.DataTemplates>
-            <DataTemplate DataType="vm:TestItem">
+            <DataTemplate DataType="vm:MainWindowViewModel+TestItem">
               <local:TestItemView></local:TestItemView>
             </DataTemplate>
           </ContentControl.DataTemplates>
@@ -117,6 +115,21 @@
         <TextBox Text="{Binding Path=StringValue}"/>
         <Button Content="Nested View Model Button" Name="NestedTest" Command="{Binding NestedModel.Command}" />
         <Button Content="Command Method Do" Command="{Binding Do}" x:Name="ToDo"/>
+      </StackPanel>
+    </TabItem>
+    <TabItem Header="Advanced">
+      <TabItem.Resources>
+        <local:GenericValueConverter x:Key="BrushConverter" x:TypeArguments="SolidColorBrush"/>
+      </TabItem.Resources>
+      <StackPanel>
+        <!-- Tests for #10856  -->
+        <TextBlock Text="{local:GenericMarkupExtension Value=Red, x:TypeArguments=Color}"/>
+        <TextBlock HorizontalAlignment="Left"
+                   Text="{Binding $self.Background, Converter={StaticResource BrushConverter}}">
+          <TextBlock.Background>
+            <SolidColorBrush Color="Yellow"/>
+          </TextBlock.Background>
+        </TextBlock>
       </StackPanel>
     </TabItem>
   </TabControl>

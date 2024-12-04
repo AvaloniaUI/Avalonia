@@ -33,14 +33,14 @@ namespace Avalonia.Markup.Xaml.XamlIl
     internal static class AvaloniaXamlIlRuntimeCompiler
     {
 #if !RUNTIME_XAML_CECIL
-        private static SreTypeSystem _sreTypeSystem;
-        private static Type _ignoresAccessChecksFromAttribute;
-        private static ModuleBuilder _sreBuilder;
-        private static IXamlType _sreContextType; 
-        private static XamlLanguageTypeMappings _sreMappings;
-        private static XamlLanguageEmitMappings<IXamlILEmitter, XamlILNodeEmitResult> _sreEmitMappings;
-        private static XamlXmlnsMappings _sreXmlns;
-        private static AssemblyBuilder _sreAsm;
+        private static SreTypeSystem? _sreTypeSystem;
+        private static Type? _ignoresAccessChecksFromAttribute;
+        private static ModuleBuilder? _sreBuilder;
+        private static IXamlType? _sreContextType;
+        private static XamlLanguageTypeMappings? _sreMappings;
+        private static XamlLanguageEmitMappings<IXamlILEmitter, XamlILNodeEmitResult>? _sreEmitMappings;
+        private static XamlXmlnsMappings? _sreXmlns;
+        private static AssemblyBuilder? _sreAsm;
         private static bool _sreCanSave;
 
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = XamlX.TrimmingMessages.CanBeSafelyTrimmed)]
@@ -48,7 +48,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
         {
             if (_sreBuilder == null)
                 return;
-            var saveMethod = _sreAsm.GetType().GetMethods()
+            var saveMethod = _sreAsm!.GetType().GetMethods()
                 .FirstOrDefault(m => m.Name == "Save" && m.GetParameters().Length == 1);
             if (saveMethod == null)
                 return;
@@ -65,6 +65,13 @@ namespace Avalonia.Markup.Xaml.XamlIl
 
         [CompilerDynamicDependencies]
         [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = XamlX.TrimmingMessages.GeneratedTypes)]
+        [MemberNotNull(nameof(_sreTypeSystem))]
+        [MemberNotNull(nameof(_sreBuilder))]
+        [MemberNotNull(nameof(_sreMappings))]
+        [MemberNotNull(nameof(_sreEmitMappings))]
+        [MemberNotNull(nameof(_sreXmlns))]
+        [MemberNotNull(nameof(_sreContextType))]
+        [MemberNotNull(nameof(_ignoresAccessChecksFromAttribute))]
         static void InitializeSre()
         {
             if (_sreTypeSystem == null)
@@ -81,8 +88,8 @@ namespace Avalonia.Markup.Xaml.XamlIl
                         {
                             name, (AssemblyBuilderAccess)3,
                             Path.GetDirectoryName(typeof(AvaloniaXamlIlRuntimeCompiler).Assembly.GetModules()[0]
-                                .FullyQualifiedName)
-                        });
+                                .FullyQualifiedName)!
+                        })!;
                     else
                         _sreCanSave = false;
                 }
@@ -94,7 +101,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
                 _sreBuilder = _sreAsm.DefineDynamicModule("XamlIlLoader.ildump");
             }
 
-            if (_sreMappings == null)
+            if (_sreMappings is null || _sreEmitMappings is null)
                 (_sreMappings, _sreEmitMappings) = AvaloniaXamlIlLanguage.Configure(_sreTypeSystem);
             if (_sreXmlns == null)
                 _sreXmlns = XamlXmlnsMappings.Resolve(_sreTypeSystem, _sreMappings);
@@ -108,7 +115,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
         }
 
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = XamlX.TrimmingMessages.CanBeSafelyTrimmed)]
-        static MethodInfo GetDefineDynamicAssembly() => AppDomain.CurrentDomain.GetType().GetMethods()
+        static MethodInfo? GetDefineDynamicAssembly() => AppDomain.CurrentDomain.GetType().GetMethods()
             .FirstOrDefault(m => m.Name == "DefineDynamicAssembly"
                                  && m.GetParameters().Length == 3 &&
                                  m.GetParameters()[2].ParameterType == typeof(string));
@@ -142,12 +149,12 @@ namespace Avalonia.Markup.Xaml.XamlIl
             ctorIl.Emit(OpCodes.Ret);
 
             tb.SetCustomAttribute(new CustomAttributeBuilder(
-                typeof(AttributeUsageAttribute).GetConstructor(new[] { typeof(AttributeTargets) }),
+                typeof(AttributeUsageAttribute).GetConstructor(new[] { typeof(AttributeTargets) })!,
                 new object[] { AttributeTargets.Assembly },
-                new[] { typeof(AttributeUsageAttribute).GetProperty("AllowMultiple") },
+                new[] { typeof(AttributeUsageAttribute).GetProperty(nameof(AttributeUsageAttribute.AllowMultiple))! },
                 new object[] { true }));
             
-            return tb.CreateTypeInfo();
+            return tb.CreateTypeInfo()!;
         }
 
         [UnconditionalSuppressMessage("Trimming", "IL2080", Justification = XamlX.TrimmingMessages.GeneratedTypes)]
@@ -159,8 +166,8 @@ namespace Avalonia.Markup.Xaml.XamlIl
             var key = assemblyName.GetPublicKey();
             if (key != null && key.Length != 0)
                 name += ", PublicKey=" + BitConverter.ToString(key).Replace("-", "").ToUpperInvariant();
-            _sreAsm.SetCustomAttribute(new CustomAttributeBuilder(
-                _ignoresAccessChecksFromAttribute.GetConstructors()[0],
+            _sreAsm!.SetCustomAttribute(new CustomAttributeBuilder(
+                _ignoresAccessChecksFromAttribute!.GetConstructors()[0],
                 new object[] { name }));
         }
 
@@ -215,21 +222,34 @@ namespace Avalonia.Markup.Xaml.XamlIl
                 HandleDiagnostic = (diagnostic) =>
                 {
                     var runtimeDiagnostic = new RuntimeXamlDiagnostic(diagnostic.Code.ToString(),
-                        (RuntimeXamlDiagnosticSeverity)diagnostic.Severity,
+                        diagnostic.Severity switch
+                        {
+                            XamlDiagnosticSeverity.None => RuntimeXamlDiagnosticSeverity.Info,
+                            XamlDiagnosticSeverity.Warning => RuntimeXamlDiagnosticSeverity.Warning,
+                            XamlDiagnosticSeverity.Error => RuntimeXamlDiagnosticSeverity.Error,
+                            XamlDiagnosticSeverity.Fatal => RuntimeXamlDiagnosticSeverity.Fatal,
+                            _ => throw new ArgumentOutOfRangeException()
+                        },
                         diagnostic.Title, diagnostic.LineNumber, diagnostic.LinePosition)
                     {
                         Document = diagnostic.Document
                     };
                     var newSeverity =
-                        (XamlDiagnosticSeverity?)configuration.DiagnosticHandler?.Invoke(runtimeDiagnostic) ??
-                        diagnostic.Severity;
+                        configuration.DiagnosticHandler?.Invoke(runtimeDiagnostic) switch
+                        {
+                            RuntimeXamlDiagnosticSeverity.Info => XamlDiagnosticSeverity.None,
+                            RuntimeXamlDiagnosticSeverity.Warning => XamlDiagnosticSeverity.Warning,
+                            RuntimeXamlDiagnosticSeverity.Error => XamlDiagnosticSeverity.Error,
+                            RuntimeXamlDiagnosticSeverity.Fatal => XamlDiagnosticSeverity.Fatal,
+                            _ => (XamlDiagnosticSeverity?)null
+                        } ?? diagnostic.Severity;
                     diagnostic = diagnostic with { Severity = newSeverity };
                     diagnostics.Add(diagnostic);
                     return newSeverity;
                 },
                 CodeMappings = AvaloniaXamlDiagnosticCodes.XamlXDiagnosticCodeToAvalonia
             };
-            
+
             var compiler = new AvaloniaXamlIlCompiler(new AvaloniaXamlIlCompilerConfiguration(_sreTypeSystem, asm,
                     _sreMappings, _sreXmlns, AvaloniaXamlIlLanguage.CustomValueConverter,
                     new XamlIlClrPropertyInfoEmitter(_sreTypeSystem.CreateTypeBuilder(clrPropertyBuilder)),
@@ -254,7 +274,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
                 using (var sr = new StreamReader(document.XamlStream))
                     xaml = sr.ReadToEnd();
                 
-                IXamlType overrideType = null;
+                IXamlType? overrideType = null;
                 if (document.RootInstance != null)
                 {
                     overrideType = _sreTypeSystem.GetType(document.RootInstance.GetType());
@@ -279,6 +299,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
                     () => new XamlDocumentTypeBuilderProvider(
                         builder,
                         compiler.DefinePopulateMethod(builder, parsed, AvaloniaXamlIlCompiler.PopulateName, XamlVisibility.Public),
+                        document.RootInstance is null ? builder : null,
                         document.RootInstance is null ?
                             compiler.DefineBuildMethod(builder, parsed, AvaloniaXamlIlCompiler.BuildName, XamlVisibility.Public) :
                             null)));
@@ -292,7 +313,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
             var createdTypes = parsedDocuments.Select(document =>
             {
                 compiler.Compile(document.XamlDocument, document.TypeBuilderProvider, document.Uri, document.FileSource);
-                return _sreTypeSystem.GetType(document.TypeBuilderProvider.TypeBuilder.CreateType());
+                return _sreTypeSystem.GetType(document.TypeBuilderProvider.PopulateDeclaringType.CreateType());
             }).ToArray();
             
             clrPropertyBuilder.CreateTypeInfo();
@@ -312,13 +333,16 @@ namespace Avalonia.Markup.Xaml.XamlIl
 
         [UnconditionalSuppressMessage("Trimming", "IL2075", Justification = XamlX.TrimmingMessages.GeneratedTypes)]
         [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = XamlX.TrimmingMessages.GeneratedTypes)]
-        static object LoadOrPopulate([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type created, object rootInstance, IServiceProvider parentServiceProvider)
+        static object LoadOrPopulate(
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type created,
+            object? rootInstance,
+            IServiceProvider? parentServiceProvider)
         {
             var isp = Expression.Parameter(typeof(IServiceProvider));
 
 
             var epar = Expression.Parameter(typeof(object));
-            var populate = created.GetMethod(AvaloniaXamlIlCompiler.PopulateName);
+            var populate = created.GetMethod(AvaloniaXamlIlCompiler.PopulateName)!;
             isp = Expression.Parameter(typeof(IServiceProvider));
             var populateCb = Expression.Lambda<Action<IServiceProvider, object>>(
                 Expression.Call(populate, isp, Expression.Convert(epar, populate.GetParameters()[1].ParameterType)),
@@ -339,7 +363,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
                             target => { populateCb(serviceProvider, target); }));
                     try
                     {
-                        return Activator.CreateInstance(targetType);
+                        return Activator.CreateInstance(targetType)!;
                     }
                     finally
                     {
@@ -349,7 +373,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
                 
                 var createCb = Expression.Lambda<Func<IServiceProvider, object>>(
                     Expression.Convert(Expression.Call(
-                        created.GetMethod(AvaloniaXamlIlCompiler.BuildName), isp), typeof(object)), isp).Compile();
+                        created.GetMethod(AvaloniaXamlIlCompiler.BuildName)!, isp), typeof(object)), isp).Compile();
                 return createCb(serviceProvider);
             }
             else
@@ -380,7 +404,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
 #endif
         }
 
-        private static string GetSafeUriIdentifier(Uri uri)
+        private static string? GetSafeUriIdentifier(Uri? uri)
         {
             return uri?.ToString()
                 .Replace(":", "_")

@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -18,6 +19,8 @@ using static Nuke.Common.Tools.Xunit.XunitTasks;
 using static Nuke.Common.Tools.VSWhere.VSWhereTasks;
 using static Serilog.Log;
 using MicroCom.CodeGenerator;
+using NuGet.Configuration;
+using Nuke.Common.IO;
 
 /*
  Before editing this file, install support plugin for your IDE,
@@ -33,10 +36,17 @@ partial class Build : NukeBuild
 
     [PackageExecutable("Microsoft.DotNet.ApiCompat.Tool", "Microsoft.DotNet.ApiCompat.Tool.dll", Framework = "net6.0")]
     Tool ApiCompatTool;
+    
+    [PackageExecutable("Microsoft.DotNet.GenAPI.Tool", "Microsoft.DotNet.GenAPI.Tool.dll", Framework = "net8.0")]
+    Tool ApiGenTool;
 
+    [PackageExecutable("dotnet-ilrepack", "ILRepackTool.dll", Framework = "net8.0")]
+    Tool IlRepackTool;
+    
     protected override void OnBuildInitialized()
     {
-        Parameters = new BuildParameters(this);
+        Parameters = new BuildParameters(this, ScheduledTargets.Contains(BuildToNuGetCache));
+
         Information("Building version {0} of Avalonia ({1}) using version {2} of Nuke.",
             Parameters.Version,
             Parameters.Configuration,
@@ -78,6 +88,12 @@ partial class Build : NukeBuild
         c.AddProperty("PackageVersion", Parameters.Version)
             .SetConfiguration(Parameters.Configuration)
             .SetVerbosity(DotNetVerbosity.Minimal);
+        if (Parameters.IsPackingToLocalCache)
+            c
+                .AddProperty("ForcePackAvaloniaNative", "True")
+                .AddProperty("SkipObscurePlatforms", "True")
+                .AddProperty("SkipBuildingSamples", "True")
+                .AddProperty("SkipBuildingTests", "True");
         return c;
     }
     DotNetBuildSettings ApplySetting(DotNetBuildSettings c, Configure<DotNetBuildSettings> configurator = null) =>
@@ -92,7 +108,6 @@ partial class Build : NukeBuild
     Target Clean => _ => _.Executes(() =>
     {
         Parameters.BuildDirs.ForEach(DeleteDirectory);
-        Parameters.BuildDirs.ForEach(EnsureCleanDirectory);
         EnsureCleanDirectory(Parameters.ArtifactsDir);
         EnsureCleanDirectory(Parameters.NugetIntermediateRoot);
         EnsureCleanDirectory(Parameters.NugetRoot);
@@ -136,6 +151,21 @@ partial class Build : NukeBuild
             );
         });
 
+    Target OutputVersion => _ => _
+        .Requires(() => VersionOutputDir)
+        .Executes(() =>
+        {
+            var versionFile = Path.Combine(Parameters.VersionOutputDir, "version.txt");
+            var currentBuildVersion = Parameters.Version;
+            Console.WriteLine("Version is: " + currentBuildVersion);
+            File.WriteAllText(versionFile, currentBuildVersion);
+
+            var prIdFile = Path.Combine(Parameters.VersionOutputDir, "prId.txt");
+            var prId = Environment.GetEnvironmentVariable("SYSTEM_PULLREQUEST_PULLREQUESTNUMBER");
+            Console.WriteLine("PR Number  is: " + prId);
+            File.WriteAllText(prIdFile, prId);
+        });
+
     void RunCoreTest(string projectName)
     {
         Information($"Running tests from {projectName}");
@@ -162,19 +192,29 @@ partial class Build : NukeBuild
 
         foreach (var fw in targetFrameworks)
         {
-            if (fw.StartsWith("net4")
+            var tfm = fw;
+            if (tfm == "$(AvsCurrentTargetFramework)")
+            {
+                tfm = "net8.0";
+            }
+            if (tfm == "$(AvsLegacyTargetFrameworks)")
+            {
+                tfm = "net6.0";
+            }
+            
+            if (tfm.StartsWith("net4")
                 && (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 && Environment.GetEnvironmentVariable("FORCE_LINUX_TESTS") != "1")
             {
-                Information($"Skipping {projectName} ({fw}) tests on *nix - https://github.com/mono/mono/issues/13969");
+                Information($"Skipping {projectName} ({tfm}) tests on *nix - https://github.com/mono/mono/issues/13969");
                 continue;
             }
 
-            Information($"Running for {projectName} ({fw}) ...");
+            Information($"Running for {projectName} ({tfm}) ...");
 
             DotNetTest(c => ApplySetting(c)
                 .SetProjectFile(project)
-                .SetFramework(fw)
+                .SetFramework(tfm)
                 .EnableNoBuild()
                 .EnableNoRestore()
                 .When(Parameters.PublishTestResults, _ => _
@@ -267,7 +307,8 @@ partial class Build : NukeBuild
         .Executes(() =>
         {
             BuildTasksPatcher.PatchBuildTasksInPackage(Parameters.NugetIntermediateRoot / "Avalonia.Build.Tasks." +
-                                                       Parameters.Version + ".nupkg");
+                                                       Parameters.Version + ".nupkg",
+                                                       IlRepackTool);
             var config = Numerge.MergeConfiguration.LoadFile(RootDirectory / "nukebuild" / "numerge.config");
             EnsureCleanDirectory(Parameters.NugetRoot);
             if(!Numerge.NugetPackageMerger.Merge(Parameters.NugetIntermediateRoot, Parameters.NugetRoot, config,
@@ -283,9 +324,19 @@ partial class Build : NukeBuild
         .Executes(async () =>
         {
             await Task.WhenAll(
-                Directory.GetFiles(Parameters.NugetRoot, "*.nupkg").Select(nugetPackage => ApiDiffValidation.ValidatePackage(
+                Directory.GetFiles(Parameters.NugetRoot, "*.nupkg").Select(nugetPackage => ApiDiffHelper.ValidatePackage(
                     ApiCompatTool, nugetPackage, Parameters.ApiValidationBaseline,
                     Parameters.ApiValidationSuppressionFiles, Parameters.UpdateApiValidationSuppression)));
+        });
+    
+    Target OutputApiDiff => _ => _
+        .DependsOn(CreateNugetPackages)
+        .Executes(async () =>
+        {
+            await Task.WhenAll(
+                Directory.GetFiles(Parameters.NugetRoot, "*.nupkg").Select(nugetPackage => ApiDiffHelper.GetDiff(
+                    ApiGenTool, RootDirectory / "api" / "diff",
+                    nugetPackage, Parameters.ApiValidationBaseline)));
         });
     
     Target RunTests => _ => _
@@ -309,7 +360,44 @@ partial class Build : NukeBuild
 
     Target CiAzureWindows => _ => _
         .DependsOn(Package)
+        .DependsOn(VerifyXamlCompilation)
         .DependsOn(ZipFiles);
+
+    Target BuildToNuGetCache => _ => _
+        .DependsOn(CreateNugetPackages)
+        .Executes(() =>
+        {
+            if (!Parameters.IsPackingToLocalCache)
+                throw new InvalidOperationException();
+
+            var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(
+                Settings.LoadDefaultSettings(RootDirectory));
+            
+            foreach (var path in Parameters.NugetRoot.GlobFiles("*.nupkg"))
+            {
+                using var f = File.Open(path.ToString(), FileMode.Open, FileAccess.Read);
+                using var zip = new ZipArchive(f, ZipArchiveMode.Read);
+                var nuspecEntry = zip.Entries.First(e => e.FullName.EndsWith(".nuspec") && e.FullName == e.Name);
+                var packageId = XDocument.Load(nuspecEntry.Open()).Document.Root
+                    .Elements().First(x => x.Name.LocalName == "metadata")
+                    .Elements().First(x => x.Name.LocalName == "id").Value;
+
+                var packagePath = Path.Combine(
+                    globalPackagesFolder,
+                    packageId.ToLowerInvariant(),
+                    BuildParameters.LocalBuildVersion);
+
+                if (Directory.Exists(packagePath))
+                    Directory.Delete(packagePath, true);
+                Directory.CreateDirectory(packagePath);
+                zip.ExtractToDirectory(packagePath);
+                File.WriteAllText(Path.Combine(packagePath, ".nupkg.metadata"), @"{
+  ""version"": 2,
+  ""contentHash"": ""e900dFK7jHJ2WcprLcgJYQoOMc6ejRTwAAMi0VGOFbSczcF98ZDaqwoQIiyqpAwnja59FSbV+GUUXfc3vaQ2Jg=="",
+  ""source"": ""https://api.nuget.org/v3/index.json""
+}");
+            }
+        });
 
     Target GenerateCppHeaders => _ => _.Executes(() =>
     {
@@ -319,6 +407,67 @@ partial class Build : NukeBuild
             file.GenerateCppHeader());
     });
 
+    Target VerifyXamlCompilation => _ => _
+        .DependsOn(CreateNugetPackages)
+        .Executes(() =>
+        {
+            var buildTestsDirectory = RootDirectory / "tests" / "BuildTests";
+            var artifactsDirectory = buildTestsDirectory / "artifacts";
+            var nugetCacheDirectory = artifactsDirectory / "nuget-cache";
+
+            DeleteDirectory(artifactsDirectory);
+            BuildTestsAndVerify("Debug");
+            BuildTestsAndVerify("Release");
+
+            void BuildTestsAndVerify(string configuration)
+            {
+                var configName = configuration.ToLowerInvariant();
+
+                DotNetBuild(settings => settings
+                    .SetConfiguration(configuration)
+                    .SetProperty("AvaloniaVersion", Parameters.Version)
+                    .SetProperty("NuGetPackageRoot", nugetCacheDirectory)
+                    .SetPackageDirectory(nugetCacheDirectory)
+                    .SetProjectFile(buildTestsDirectory / "BuildTests.sln")
+                    .SetProcessArgumentConfigurator(arguments => arguments.Add("--nodeReuse:false")));
+
+                // Standard compilation - should have compiled XAML
+                VerifyBuildTestAssembly("bin", "BuildTests");
+                VerifyBuildTestAssembly("bin", "BuildTests.Android");
+                VerifyBuildTestAssembly("bin", "BuildTests.Browser");
+                VerifyBuildTestAssembly("bin", "BuildTests.Desktop");
+                VerifyBuildTestAssembly("bin", "BuildTests.FSharp");
+                VerifyBuildTestAssembly("bin", "BuildTests.iOS");
+                VerifyBuildTestAssembly("bin", "BuildTests.WpfHybrid");
+
+                // Publish previously built project without rebuilding - should have compiled XAML
+                PublishBuildTestProject("BuildTests.Desktop", noBuild: true);
+                VerifyBuildTestAssembly("publish", "BuildTests.Desktop");
+
+                // Publish NativeAOT build, then run it - should not crash and have the expected output
+                PublishBuildTestProject("BuildTests.NativeAot");
+                var exeExtension = OperatingSystem.IsWindows() ? ".exe" : null;
+                XamlCompilationVerifier.VerifyNativeAot(
+                    GetBuildTestOutputPath("publish", "BuildTests.NativeAot", exeExtension));
+
+                void PublishBuildTestProject(string projectName, bool? noBuild = null)
+                    => DotNetPublish(settings => settings
+                        .SetConfiguration(configuration)
+                        .SetProperty("AvaloniaVersion", Parameters.Version)
+                        .SetProperty("NuGetPackageRoot", nugetCacheDirectory)
+                        .SetPackageDirectory(nugetCacheDirectory)
+                        .SetNoBuild(noBuild)
+                        .SetProject(buildTestsDirectory / projectName / (projectName + ".csproj"))
+                        .SetProcessArgumentConfigurator(arguments => arguments.Add("--nodeReuse:false")));
+
+                void VerifyBuildTestAssembly(string folder, string projectName)
+                    => XamlCompilationVerifier.VerifyAssemblyCompiledXaml(
+                        GetBuildTestOutputPath(folder, projectName, ".dll"));
+
+                AbsolutePath GetBuildTestOutputPath(string folder, string projectName, string extension)
+                    => artifactsDirectory / folder / projectName / configName / (projectName + extension);
+            }
+        });
 
     public static int Main() =>
         RuntimeInformation.IsOSPlatform(OSPlatform.Windows)

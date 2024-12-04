@@ -4,6 +4,8 @@ using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
+using Avalonia.Input;
+using Avalonia.Interactivity;
 
 namespace Avalonia.Controls
 {
@@ -37,6 +39,8 @@ namespace Avalonia.Controls
             FocusableProperty.OverrideDefaultValue(typeof(TabItem), true);
             DataContextProperty.Changed.AddClassHandler<TabItem>((x, e) => x.UpdateHeader(e));
             AutomationProperties.ControlTypeOverrideProperty.OverrideDefaultValue<TabItem>(AutomationControlType.TabItem);
+            AutomationProperties.IsOffscreenBehaviorProperty.OverrideDefaultValue<TabItem>(IsOffscreenBehavior.FromClip);
+            AccessKeyHandler.AccessKeyPressedEvent.AddClassHandler<TabItem>(OnAccessKeyPressed);
         }
 
         /// <summary>
@@ -57,11 +61,29 @@ namespace Avalonia.Controls
             set => SetValue(IsSelectedProperty, value);
         }
 
+        /// <inheritdoc />
+        protected override void OnAccessKey(RoutedEventArgs e)
+        {
+            Focus();
+            SetCurrentValue(IsSelectedProperty, true);
+            e.Handled = true;
+        }
+
         protected override AutomationPeer OnCreateAutomationPeer() => new ListItemAutomationPeer(this);
 
+        
         [Obsolete("Owner manages its children properties by itself")]
         protected void SubscribeToOwnerProperties(AvaloniaObject owner)
         {
+        }
+
+        private static void OnAccessKeyPressed(TabItem tabItem, AccessKeyPressedEventArgs e)
+        {
+            if (e.Handled || (e.Target != null && tabItem.IsSelected)) 
+                return;
+            
+            e.Target = tabItem;
+            e.Handled = true;
         }
 
         private void UpdateHeader(AvaloniaPropertyChangedEventArgs obj)

@@ -25,7 +25,10 @@ namespace Avalonia.Native
                 var basic = new GlBasicInfoInterface(display.GetProcAddress);
                 basic.GetIntegerv(GlConsts.GL_MAJOR_VERSION, out major);
                 basic.GetIntegerv(GlConsts.GL_MINOR_VERSION, out minor);
-                _version = new GlVersion(GlProfileType.OpenGL, major, minor);
+                basic.GetIntegerv(GlConsts.GL_CONTEXT_PROFILE_MASK, out var profileMask);
+                var isCompatibilityProfile = (profileMask & GlConsts.GL_CONTEXT_COMPATIBILITY_PROFILE_BIT) == GlConsts.GL_CONTEXT_COMPATIBILITY_PROFILE_BIT;
+
+                _version = new GlVersion(GlProfileType.OpenGL, major, minor, isCompatibilityProfile);
                 glInterface = new GlInterface(_version, (name) =>
                 {
                     var rv = _display.GetProcAddress(name);
@@ -187,10 +190,10 @@ namespace Avalonia.Native
 
     class GlPlatformSurface : IGlPlatformSurface
     {
-        private readonly IAvnWindowBase _window;
-        public GlPlatformSurface(IAvnWindowBase window)
+        private readonly IAvnTopLevel _topLevel;
+        public GlPlatformSurface(IAvnTopLevel topLevel)
         {
-            _window = window;
+            _topLevel = topLevel;
         }
         
         public IGlPlatformSurfaceRenderTarget CreateGlRenderTarget(IGlContext context)
@@ -198,7 +201,7 @@ namespace Avalonia.Native
             if (!Dispatcher.UIThread.CheckAccess())
                 throw new RenderTargetNotReadyException();
             var avnContext = (GlContext)context;
-            return new GlPlatformSurfaceRenderTarget(_window.CreateGlRenderTarget(avnContext.Context), avnContext);
+            return new GlPlatformSurfaceRenderTarget(_topLevel.CreateGlRenderTarget(avnContext.Context), avnContext);
         }
 
     }

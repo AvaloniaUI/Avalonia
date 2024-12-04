@@ -18,6 +18,7 @@ namespace Avalonia.Controls
     /// A tab control that displays a tab strip along with the content of the selected tab.
     /// </summary>
     [TemplatePart("PART_ItemsPresenter", typeof(ItemsPresenter))]
+    [TemplatePart("PART_SelectedContentHost", typeof(ContentPresenter))]
     public class TabControl : SelectingItemsControl, IContentPresenterHost
     {
         private object? _selectedContent;
@@ -73,7 +74,6 @@ namespace Avalonia.Controls
         {
             SelectionModeProperty.OverrideDefaultValue<TabControl>(SelectionMode.AlwaysSelected);
             ItemsPanelProperty.OverrideDefaultValue<TabControl>(DefaultPanel);
-            TabStripPlacementProperty.Changed.AddClassHandler<TabControl>((x, e) => x.UpdateTabStripPlacement());
             AffectsMeasure<TabControl>(TabStripPlacementProperty);
             SelectedItemProperty.Changed.AddClassHandler<TabControl>((x, e) => x.UpdateSelectedContent());
             AutomationProperties.ControlTypeOverrideProperty.OverrideDefaultValue<TabControl>(AutomationControlType.Tab);
@@ -154,7 +154,7 @@ namespace Avalonia.Controls
 
         protected internal override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
         {
-            return new TabItem { TabStripPlacement = TabStripPlacement };
+            return new TabItem();
         }
 
         protected internal override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
@@ -166,6 +166,11 @@ namespace Avalonia.Controls
         {
             base.PrepareContainerForItemOverride(element, item, index);
 
+            if (element is TabItem tabItem)
+            {
+                tabItem.TabStripPlacement = TabStripPlacement;
+            }
+            
             if (index == SelectedIndex)
             {
                 UpdateSelectedContent(element);
@@ -202,10 +207,21 @@ namespace Avalonia.Controls
                 container ??= ContainerFromIndex(SelectedIndex);
                 if (container != null)
                 {
+                    if (SelectedContentTemplate != SelectContentTemplate(container.GetValue(ContentTemplateProperty)))
+                    {
+                        // If the value of SelectedContentTemplate is about to change, clear it first. This ensures
+                        // that the template is not reused as soon as SelectedContent changes in the statement below
+                        // this block, and also that controls generated from it are unloaded before SelectedContent
+                        // (which is typically their DataContext) changes.
+                        SelectedContentTemplate = null;
+                    }
+
                     _selectedItemSubscriptions = new CompositeDisposable(
                         container.GetObservable(ContentControl.ContentProperty).Subscribe(v => SelectedContent = v),
-                        // Note how we fall back to our own ContentTemplate if the container doesn't specify one
-                        container.GetObservable(ContentControl.ContentTemplateProperty).Subscribe(v => SelectedContentTemplate = v ?? ContentTemplate));
+                        container.GetObservable(ContentControl.ContentTemplateProperty).Subscribe(v => SelectedContentTemplate = SelectContentTemplate(v)));
+
+                    // Note how we fall back to our own ContentTemplate if the container doesn't specify one
+                    IDataTemplate? SelectContentTemplate(IDataTemplate? containerTemplate) => containerTemplate ?? ContentTemplate;
                 }
             }
         }
@@ -251,7 +267,7 @@ namespace Avalonia.Controls
         {
             base.OnGotFocus(e);
 
-            if (e.NavigationMethod == NavigationMethod.Directional)
+            if (e.NavigationMethod == NavigationMethod.Directional && e.Source is TabItem)
             {
                 e.Handled = UpdateSelectionFromEventSource(e.Source);
             }

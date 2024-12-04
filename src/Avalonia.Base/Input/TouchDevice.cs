@@ -44,14 +44,14 @@ namespace Avalonia.Input
             {
                 if (args.Type == RawPointerEventType.TouchEnd)
                     return;
-                var hit = args.InputHitTestResult;
+                var hit = args.InputHitTestResult.firstEnabledAncestor;
 
                 _pointers[args.RawPointerId] = pointer = new Pointer(Pointer.GetNextFreeId(),
                     PointerType.Touch, _pointers.Count == 0);
                 pointer.Capture(hit);
             }
 
-            var target = pointer.Captured ?? args.InputHitTestResult ?? args.Root;
+            var target = pointer.Captured ?? args.InputHitTestResult.firstEnabledAncestor ?? args.Root;
             var gestureTarget = pointer.CapturedGestureRecognizer?.Target;
             var updateKind = args.Type.ToUpdateKind();
             var keyModifier = args.InputModifiers.ToKeyModifiers();
@@ -87,7 +87,7 @@ namespace Avalonia.Input
 
                 target.RaiseEvent(new PointerPressedEventArgs(target, pointer,
                     (Visual)args.Root, args.Position, ev.Timestamp,
-                    new PointerPointProperties(GetModifiers(args.InputModifiers, true), updateKind),
+                    new PointerPointProperties(GetModifiers(args.InputModifiers, true), updateKind, args.Point),
                     keyModifier, _clickCount));
             }
 
@@ -99,7 +99,7 @@ namespace Avalonia.Input
                     target = gestureTarget ?? target;
                     var e = new PointerReleasedEventArgs(target, pointer,
                             (Visual)args.Root, args.Position, ev.Timestamp,
-                            new PointerPointProperties(GetModifiers(args.InputModifiers, false), updateKind),
+                            new PointerPointProperties(GetModifiers(args.InputModifiers, false), updateKind, args.Point),
                             keyModifier, MouseButton.Left);
                     if (gestureTarget != null)
                     {
@@ -119,6 +119,8 @@ namespace Avalonia.Input
                 {
                     pointer?.Capture(null);
                     pointer?.CaptureGestureRecognizer(null);
+                    if (pointer != null)
+                        pointer.IsGestureRecognitionSkipped = false;
                 }
             }
 
@@ -127,7 +129,7 @@ namespace Avalonia.Input
                 target = gestureTarget ?? target;
                 var e = new PointerEventArgs(InputElement.PointerMovedEvent, target, pointer!, (Visual)args.Root,
                     args.Position, ev.Timestamp,
-                    new PointerPointProperties(GetModifiers(args.InputModifiers, true), updateKind),
+                    new PointerPointProperties(GetModifiers(args.InputModifiers, true), updateKind, args.Point),
                     keyModifier, args.IntermediatePoints);
 
                 if (gestureTarget != null)
@@ -157,6 +159,12 @@ namespace Avalonia.Input
             return _pointers.TryGetValue(ev.RawPointerId, out var pointer)
                 ? pointer
                 : null;
+        }
+
+        internal void PlatformCaptureLost()
+        {
+            foreach (var pointer in _pointers.Values)
+                pointer.Capture(null);
         }
     }
 }

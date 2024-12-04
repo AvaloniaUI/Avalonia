@@ -82,6 +82,10 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<Control?> PlacementTargetProperty =
             Popup.PlacementTargetProperty.AddOwner<ContextMenu>();
 
+        /// <inheritdoc cref="Popup.CustomPopupPlacementCallbackProperty"/>
+        public static readonly StyledProperty<CustomPopupPlacementCallback?> CustomPopupPlacementCallbackProperty =
+            Popup.CustomPopupPlacementCallbackProperty.AddOwner<ContextMenu>();
+
         private Popup? _popup;
         private List<Control>? _attachedControls;
         private IInputElement? _previousFocus;
@@ -185,6 +189,13 @@ namespace Avalonia.Controls
             set => SetValue(PlacementTargetProperty, value);
         }
 
+        /// <inheritdoc cref="Popup.CustomPopupPlacementCallback"/>
+        public CustomPopupPlacementCallback? CustomPopupPlacementCallback
+        {
+            get => GetValue(CustomPopupPlacementCallbackProperty);
+            set => SetValue(CustomPopupPlacementCallbackProperty, value);
+        }
+
         /// <summary>
         /// Occurs when the value of the
         /// <see cref="P:Avalonia.Controls.ContextMenu.IsOpen" />
@@ -265,7 +276,7 @@ namespace Avalonia.Controls
             }
 
             control ??= _attachedControls![0];
-            Open(control, PlacementTarget ?? control, false);
+            Open(control, PlacementTarget ?? control, Placement);
         }
 
         /// <summary>
@@ -303,7 +314,7 @@ namespace Avalonia.Controls
             remove => _popupHostChangedHandler -= value;
         }
 
-        private void Open(Control control, Control placementTarget, bool requestedByPointer)
+        private void Open(Control control, Control placementTarget, PlacementMode placement)
         {
             if (IsOpen)
             {
@@ -316,6 +327,7 @@ namespace Avalonia.Controls
                 {
                     IsLightDismissEnabled = true,
                     OverlayDismissEventPassThrough = true,
+                    TakesFocusFromNativeControl = Popup.GetTakesFocusFromNativeControl(this),
                 };
 
                 _popup.Opened += PopupOpened;
@@ -324,15 +336,9 @@ namespace Avalonia.Controls
                 _popup.KeyUp += PopupKeyUp;
             }
 
-            if (_popup.Parent != control)
-            {
-                ((ISetLogicalParent)_popup).SetParent(null);
-                ((ISetLogicalParent)_popup).SetParent(control);
-            }
+            _popup.SetPopupParent(control);
 
-            _popup.Placement = !requestedByPointer && Placement == PlacementMode.Pointer
-                ? PlacementMode.Bottom
-                : Placement;
+            _popup.Placement = placement;
 
             //Position of the line below is really important. 
             //All styles are being applied only when control has logical parent.
@@ -346,6 +352,7 @@ namespace Avalonia.Controls
             _popup.PlacementConstraintAdjustment = PlacementConstraintAdjustment;
             _popup.PlacementGravity = PlacementGravity;
             _popup.PlacementRect = PlacementRect;
+            _popup.CustomPopupPlacementCallback = CustomPopupPlacementCallback;
             _popup.WindowManagerAddShadowHint = WindowManagerAddShadowHint;
             IsOpen = true;
             _popup.IsOpen = true;
@@ -385,7 +392,7 @@ namespace Avalonia.Controls
 
             if (_attachedControls is null || _attachedControls.Count == 0)
             {
-                ((ISetLogicalParent)_popup!).SetParent(null);
+                _popup!.SetPopupParent(null);
             }
 
             RaiseEvent(new RoutedEventArgs
@@ -420,7 +427,10 @@ namespace Avalonia.Controls
                 && !contextMenu.CancelOpening())
             {
                 var requestedByPointer = e.TryGetPosition(null, out _);
-                contextMenu.Open(control, e.Source as Control ?? control, requestedByPointer);
+                contextMenu.Open(
+                    control, 
+                    e.Source as Control ?? control, 
+                    requestedByPointer ? contextMenu.Placement : PlacementMode.Bottom);
                 e.Handled = true;
             }
         }

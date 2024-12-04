@@ -1,0 +1,8 @@
+version: '1.1.0'
+invalidStatus: "pending"
+labelRule:
+  values:
+    - "bug"
+    - "feature"
+    - "enhancement"
+    - "area-infrastructure"

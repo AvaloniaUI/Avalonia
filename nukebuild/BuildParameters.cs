@@ -25,9 +25,12 @@ public partial class Build
 
     [Parameter(Name = "api-baseline")]
     public string ApiValidationBaseline { get; set; }
-    
+
     [Parameter(Name = "update-api-suppression")]
     public bool? UpdateApiValidationSuppression { get; set; }
+
+    [Parameter(Name = "version-output-dir")]
+    public AbsolutePath VersionOutputDir { get; set; }
 
     public class BuildParameters
     {
@@ -53,7 +56,10 @@ public partial class Build
         public bool IsMyGetRelease { get; }
         public bool IsNuGetRelease { get; }
         public bool PublishTestResults { get; }
-        public string Version { get; }
+        public string Version { get; set; }
+        public const string LocalBuildVersion = "9999.0.0-localbuild";
+        public bool IsPackingToLocalCache { get; private set; }
+
         public AbsolutePath ArtifactsDir { get; }
         public AbsolutePath NugetIntermediateRoot { get; }
         public AbsolutePath NugetRoot { get; }
@@ -67,8 +73,9 @@ public partial class Build
         public string ApiValidationBaseline { get; }
         public bool UpdateApiValidationSuppression { get; }
         public AbsolutePath ApiValidationSuppressionFiles { get; }
+        public AbsolutePath VersionOutputDir { get; }
 
-        public BuildParameters(Build b)
+        public BuildParameters(Build b, bool isPackingToLocalCache)
         {
             // ARGUMENTS
             Configuration = b.Configuration ?? "Release";
@@ -109,9 +116,10 @@ public partial class Build
             IsNuGetRelease = IsMainRepo && IsReleasable && IsReleaseBranch;
 
             // VERSION
-            Version = b.ForceNugetVersion ?? GetVersion();
+            var (propsVersion, propsApiCompatVersion) = GetVersion();
+            Version = b.ForceNugetVersion ?? propsVersion;
 
-            ApiValidationBaseline = b.ApiValidationBaseline ?? new Version(new Version(Version.Split('-', StringSplitOptions.None).First()).Major, 0).ToString();
+            ApiValidationBaseline = b.ApiValidationBaseline ?? propsApiCompatVersion;
             UpdateApiValidationSuppression = b.UpdateApiValidationSuppression ?? IsLocalBuild;
             
             if (IsRunningOnAzure)
@@ -119,10 +127,16 @@ public partial class Build
                 if (!IsNuGetRelease)
                 {
                     // Use AssemblyVersion with Build as version
-                    Version += "-cibuild" + int.Parse(Environment.GetEnvironmentVariable("BUILD_BUILDID")).ToString("0000000") + "-beta";
+                    Version += "-cibuild" + int.Parse(Environment.GetEnvironmentVariable("BUILD_BUILDID")).ToString("0000000") + "-alpha";
                 }
 
                 PublishTestResults = true;
+            }
+            
+            if (isPackingToLocalCache)
+            {
+                IsPackingToLocalCache = true;
+                Version = LocalBuildVersion;
             }
 
             // DIRECTORIES
@@ -131,18 +145,26 @@ public partial class Build
             NugetIntermediateRoot = RootDirectory / "build-intermediate" / "nuget";
             ZipRoot = ArtifactsDir / "zip";
             TestResultsRoot = ArtifactsDir / "test-results";
-            BuildDirs = GlobDirectories(RootDirectory, "**bin").Concat(GlobDirectories(RootDirectory, "**obj")).ToList();
+            BuildDirs = GlobDirectories(RootDirectory, "**/bin")
+                .Concat(GlobDirectories(RootDirectory, "**/obj"))
+                .Where(dir => !dir.Contains("nukebuild"))
+                .Concat(GlobDirectories(RootDirectory, "**/node_modules"))
+                .ToList();
             DirSuffix = Configuration;
             FileZipSuffix = Version + ".zip";
             ZipCoreArtifacts = ZipRoot / ("Avalonia-" + FileZipSuffix);
             ZipNuGetArtifacts = ZipRoot / ("Avalonia-NuGet-" + FileZipSuffix);
             ApiValidationSuppressionFiles = RootDirectory / "api";
+            VersionOutputDir = b.VersionOutputDir;
         }
 
-        string GetVersion()
+        (string Version, string ApiCompatVersion) GetVersion()
         {
             var xdoc = XDocument.Load(RootDirectory / "build/SharedVersion.props");
-            return xdoc.Descendants().First(x => x.Name.LocalName == "Version").Value;
+            return (
+                xdoc.Descendants().First(x => x.Name.LocalName == "Version").Value,
+                xdoc.Descendants().First(x => x.Name.LocalName == "ApiCompatVersion").Value
+            );
         }
     }
 

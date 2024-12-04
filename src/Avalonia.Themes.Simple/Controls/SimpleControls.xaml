@@ -1,6 +1,7 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:ClassModifier="internal">
+
   <Styles.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
@@ -29,6 +30,7 @@
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/FlyoutPresenter.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/MenuFlyoutPresenter.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/GridSplitter.xaml" />
+        <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/HyperlinkButton.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/ItemsControl.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/ListBoxItem.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/ListBox.xaml" />
@@ -57,7 +59,6 @@
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/CalendarDatePicker.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/Slider.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/NotificationCard.xaml" />
-        <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/NativeMenuBar.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/NumericUpDown.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/DateTimePickerShared.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/DatePicker.xaml" />

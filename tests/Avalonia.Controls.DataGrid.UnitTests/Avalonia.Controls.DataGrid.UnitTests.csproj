@@ -1,8 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
     <OutputType>Library</OutputType>
     <IsTestProject>true</IsTestProject>
+    <RootNamespace>Avalonia.Controls.DataGridTests</RootNamespace>
   </PropertyGroup>
   <Import Project="..\..\build\UnitTests.NetCore.targets" />
   <Import Project="..\..\build\UnitTests.NetFX.props" />

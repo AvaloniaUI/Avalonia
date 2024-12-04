@@ -1,16 +1,21 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
     <Nullable>enable</Nullable>
+
+    <IsRunningAppium2 Condition="'$(IsRunningAppium2)' == ''">false</IsRunningAppium2>
+    <DefineConstants Condition="'$(IsRunningAppium2)' == 'false'">$(DefineConstants);APPIUM1</DefineConstants>
+    <DefineConstants Condition="'$(IsRunningAppium2)' == 'true'">$(DefineConstants);APPIUM2</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Avalonia.Controls\Avalonia.Controls.csproj" />
   </ItemGroup>
-  
+
   <ItemGroup>
-    <PackageReference Include="Appium.WebDriver" Version="4.4.0" />
+    <PackageReference Include="Appium.WebDriver" Version="4.4.0" Condition="'$(IsRunningAppium2)' == 'false'" />
+    <PackageReference Include="Appium.WebDriver" Version="5.0.0-rc.8" Condition="'$(IsRunningAppium2)' == 'true'" />
     <PackageReference Include="Xunit.Extensions.Ordering" Version="1.4.5" />
   </ItemGroup>
 

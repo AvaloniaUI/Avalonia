@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Avalonia.Collections;
@@ -8,6 +7,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Interactivity;
 using Avalonia.Platform;
+using Avalonia.Reactive;
 using Avalonia.Threading;
 
 namespace Avalonia.Controls.ApplicationLifetimes
@@ -18,38 +18,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
         private CancellationTokenSource? _cts;
         private bool _isShuttingDown;
         private readonly AvaloniaList<Window> _windows = new();
-
-        private static ClassicDesktopStyleApplicationLifetime? s_activeLifetime;
-
-        static ClassicDesktopStyleApplicationLifetime()
-        {
-            Window.WindowOpenedEvent.AddClassHandler(typeof(Window), OnWindowOpened);
-            Window.WindowClosedEvent.AddClassHandler(typeof(Window), OnWindowClosed);
-        }
-
-        private static void OnWindowClosed(object? sender, RoutedEventArgs e)
-        {
-            var window = (Window)sender!;
-            s_activeLifetime?._windows.Remove(window);
-            s_activeLifetime?.HandleWindowClosed(window);
-        }
-
-        private static void OnWindowOpened(object? sender, RoutedEventArgs e)
-        {
-            var window = (Window)sender!;
-            if (s_activeLifetime is not null && !s_activeLifetime._windows.Contains(window))
-            {
-                s_activeLifetime._windows.Add(window);
-            }
-        }
-
-        public ClassicDesktopStyleApplicationLifetime()
-        {
-            if (s_activeLifetime != null)
-                throw new InvalidOperationException(
-                    "Can not have multiple active ClassicDesktopStyleApplicationLifetime instances and the previously created one was not disposed");
-            s_activeLifetime = this;
-        }
+        private CompositeDisposable? _compositeDisposable; 
 
         /// <inheritdoc/>
         public event EventHandler<ControlledApplicationLifetimeStartupEventArgs>? Startup;
@@ -97,9 +66,37 @@ namespace Avalonia.Controls.ApplicationLifetimes
         {
             return DoShutdown(new ShutdownRequestedEventArgs(), true, false, exitCode);
         }
-        
-        public int Start(string[] args)
+
+        internal void SubscribeGlobalEvents()
         {
+            if (_compositeDisposable is not null)
+            {
+                // There could be a case, when lifetime was setup without starting.
+                // Until developer started it manually later. To avoid API breaking changes, it will execute Setup method twice.
+                return;
+            }
+
+            _compositeDisposable = new CompositeDisposable(
+                Window.WindowOpenedEvent.AddClassHandler(typeof(Window), (sender, _) =>
+                {
+                    var window = (Window)sender!;
+                    if (!_windows.Contains(window))
+                    {
+                        _windows.Add(window);
+                    }
+                }),
+                Window.WindowClosedEvent.AddClassHandler(typeof(Window), (sender, _) =>
+                {
+                    var window = (Window)sender!;
+                    _windows.Remove(window);
+                    HandleWindowClosed(window);
+                }));            
+        }
+
+        internal void SetupCore(string[] args)
+        {
+            SubscribeGlobalEvents();
+
             Startup?.Invoke(this, new ControlledApplicationLifetimeStartupEventArgs(args));
 
             var options = AvaloniaLocator.Current.GetService<ClassicDesktopStyleApplicationLifetimeOptions>();
@@ -116,14 +113,33 @@ namespace Avalonia.Controls.ApplicationLifetimes
 
             if (lifetimeEvents != null)
                 lifetimeEvents.ShutdownRequested += OnShutdownRequested;
+        }
+
+        public int Start(string[] args)
+        {
+            return StartCore(args);
+        }
+
+        /// <summary>
+        /// Since the lifetime must be set up/prepared with 'args' before executing Start(), an overload with no parameters seems more suitable for integrating with some lifetime manager providers, such as MS HostApplicationBuilder.
+        /// </summary>
+        /// <returns>exit code</returns>
+        public int Start()
+        {
+            return StartCore(Args ?? Array.Empty<string>());
+        }
+
+        internal int StartCore(string[] args)
+        {
+            SetupCore(args);
 
             _cts = new CancellationTokenSource();
-            
+
             // Note due to a bug in the JIT we wrap this in a method, otherwise MainWindow
             // gets stuffed into a local var and can not be GCed until after the program stops.
             // this method never exits until program end.
-            ShowMainWindow(); 
-                              
+            ShowMainWindow();
+
             Dispatcher.UIThread.MainLoop(_cts.Token);
             Environment.ExitCode = _exitCode;
             return _exitCode;
@@ -137,8 +153,8 @@ namespace Avalonia.Controls.ApplicationLifetimes
 
         public void Dispose()
         {
-            if (s_activeLifetime == this)
-                s_activeLifetime = null;
+            _compositeDisposable?.Dispose();
+            _compositeDisposable = null;
         }
 
         private bool DoShutdown(
@@ -160,23 +176,26 @@ namespace Avalonia.Controls.ApplicationLifetimes
 
             _exitCode = exitCode;
             _isShuttingDown = true;
+            var shutdownCancelled = false;
 
             try
             {
                 // When an OS shutdown request is received, try to close all non-owned windows. Windows can cancel
                 // shutdown by setting e.Cancel = true in the Closing event. Owned windows will be shutdown by their
                 // owners.
-                foreach (var w in Windows.ToArray())
+                foreach (var w in new List<Window>(_windows))
                 {
                     if (w.Owner is null)
                     {
-                        w.CloseCore(WindowCloseReason.ApplicationShutdown, isProgrammatic);
+                        var ignoreCancel = force || (ShutdownMode == ShutdownMode.OnMainWindowClose && w != MainWindow);
+                        w.CloseCore(WindowCloseReason.ApplicationShutdown, isProgrammatic, ignoreCancel);
                     }
                 }
 
                 if (!force && Windows.Count > 0)
                 {
                     e.Cancel = true;
+                    shutdownCancelled = true;
                     return false;
                 }
 
@@ -186,10 +205,14 @@ namespace Avalonia.Controls.ApplicationLifetimes
             }
             finally
             {
-                _cts?.Cancel();
-                _cts = null;
                 _isShuttingDown = false;
-                Dispatcher.UIThread.InvokeShutdown();
+
+                if (!shutdownCancelled)
+                {
+                    _cts?.Cancel();
+                    _cts = null;
+                    Dispatcher.UIThread.InvokeShutdown();
+                }
             }
 
             return true;
@@ -206,16 +229,65 @@ namespace Avalonia.Controls.ApplicationLifetimes
 
 namespace Avalonia
 {
+    /// <summary>
+    /// IClassicDesktopStyleApplicationLifetime related AppBuilder extensions.
+    /// </summary>
     public static class ClassicDesktopStyleApplicationLifetimeExtensions
     {
-        public static int StartWithClassicDesktopLifetime(
-            this AppBuilder builder, string[] args, ShutdownMode shutdownMode = ShutdownMode.OnLastWindowClose)
+        private static ClassicDesktopStyleApplicationLifetime PrepareLifetime(AppBuilder builder, string[] args,
+            Action<IClassicDesktopStyleApplicationLifetime>? lifetimeBuilder)
         {
-            var lifetime = new ClassicDesktopStyleApplicationLifetime()
-            {
-                Args = args,
-                ShutdownMode = shutdownMode
-            };
+            var lifetime = new ClassicDesktopStyleApplicationLifetime();
+            lifetime.SubscribeGlobalEvents();
+
+            lifetime.Args = args;
+            lifetimeBuilder?.Invoke(lifetime);
+
+            return lifetime;
+        }
+
+        /// <summary>
+        /// Setups the Application with a IClassicDesktopStyleApplicationLifetime, but doesn't show the main window and doesn't run application main loop.
+        /// </summary>
+        /// <param name="builder">Application builder.</param>
+        /// <param name="args">Startup arguments.</param>
+        /// <param name="lifetimeBuilder">Lifetime builder to modify the lifetime before application started.</param>
+        /// <returns>Exit code.</returns>
+        public static AppBuilder SetupWithClassicDesktopLifetime(this AppBuilder builder, string[] args,
+            Action<IClassicDesktopStyleApplicationLifetime>? lifetimeBuilder = null)
+        {
+            var lifetime = PrepareLifetime(builder, args, lifetimeBuilder);
+            lifetime.SetupCore(args);
+            return builder.SetupWithLifetime(lifetime);
+        }
+
+        /// <summary>
+        /// Starts the Application with a IClassicDesktopStyleApplicationLifetime, shows main window and runs application main loop.
+        /// </summary>
+        /// <param name="builder">Application builder.</param>
+        /// <param name="args">Startup arguments.</param>
+        /// <param name="lifetimeBuilder">Lifetime builder to modify the lifetime before application started.</param>
+        /// <returns>Exit code.</returns>
+        public static int StartWithClassicDesktopLifetime(
+            this AppBuilder builder, string[] args,
+            Action<IClassicDesktopStyleApplicationLifetime>? lifetimeBuilder = null)
+        {
+            var lifetime = PrepareLifetime(builder, args, lifetimeBuilder);
+            builder.SetupWithLifetime(lifetime);
+            return lifetime.Start(args);
+        }
+
+        /// <summary>
+        /// Starts the Application with a IClassicDesktopStyleApplicationLifetime, shows main window and runs application main loop.
+        /// </summary>
+        /// <param name="builder">Application builder.</param>
+        /// <param name="args">Startup arguments.</param>
+        /// <param name="shutdownMode">Lifetime shutdown mode.</param>
+        /// <returns>Exit code.</returns>
+        public static int StartWithClassicDesktopLifetime(
+            this AppBuilder builder, string[] args, ShutdownMode shutdownMode)
+        {
+            var lifetime = PrepareLifetime(builder, args, l => l.ShutdownMode = shutdownMode);
             builder.SetupWithLifetime(lifetime);
             return lifetime.Start(args);
         }

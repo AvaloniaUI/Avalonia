@@ -159,12 +159,12 @@ dotnet_diagnostic.CA1815.severity = warning
 # CA1820: Test for empty strings using string length
 dotnet_diagnostic.CA1820.severity = warning
 # CA1821: Remove empty finalizers
-dotnet_diagnostic.CA1821.severity = warning
+dotnet_diagnostic.CA1821.severity = error
 # CA1822: Mark members as static
 dotnet_diagnostic.CA1822.severity = suggestion
-# CA1823: Avoid unused private fields
-dotnet_diagnostic.CA1823.severity = warning
 dotnet_code_quality.CA1822.api_surface = private, internal
+# CA1823: Avoid unused private fields
+dotnet_diagnostic.CA1823.severity = error
 # CA1825: Avoid zero-length array allocations
 dotnet_diagnostic.CA1825.severity = warning
 # CA1826: Use property instead of Linq Enumerable method
@@ -177,6 +177,8 @@ dotnet_diagnostic.CA1828.severity = warning
 dotnet_diagnostic.CA1829.severity = warning
 #CA1847: Use string.Contains(char) instead of string.Contains(string) with single characters
 dotnet_diagnostic.CA1847.severity = warning
+# CA1851: Possible multiple enumerations of IEnumerable collection
+dotnet_diagnostic.CA1851.severity = warning
 #CA1854: Prefer the IDictionary.TryGetValue(TKey, out TValue) method
 dotnet_diagnostic.CA1854.severity = warning
 #CA2211:Non-constant fields should not be visible
@@ -212,6 +214,12 @@ indent_size = 2
 avalonia_xaml_diagnostic.AVLN2203.severity = error
 # StyleInMergedDictionaries
 avalonia_xaml_diagnostic.AVLN2204.severity = error
+# RequiredTemplatePartMissing
+avalonia_xaml_diagnostic.AVLN2205.severity = error
+# OptionalTemplatePartMissing
+avalonia_xaml_diagnostic.AVLN2206.severity = info
+# TemplatePartWrongType
+avalonia_xaml_diagnostic.AVLN2207.severity = error
 # Obsolete
 avalonia_xaml_diagnostic.AVLN5001.severity = error
 

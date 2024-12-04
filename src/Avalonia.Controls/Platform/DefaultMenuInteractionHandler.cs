@@ -22,6 +22,7 @@ namespace Avalonia.Controls.Platform
         private readonly bool _isContextMenu;
         private IDisposable? _inputManagerSubscription;
         private IRenderRoot? _root;
+        private RadioButtonGroupManager? _groupManager;
 
         public DefaultMenuInteractionHandler(bool isContextMenu)
             : this(isContextMenu, Input.InputManager.Instance, DefaultDelayRun)
@@ -42,7 +43,7 @@ namespace Avalonia.Controls.Platform
 
         public void Attach(MenuBase menu) => AttachCore(menu);
         public void Detach(MenuBase menu) => DetachCore(menu);
-
+        
         protected Action<Action, TimeSpan> DelayRun { get; }
 
         protected IInputManager? InputManager { get; }
@@ -79,12 +80,16 @@ namespace Avalonia.Controls.Platform
         protected internal virtual void AccessKeyPressed(object? sender, RoutedEventArgs e)
         {
             var item = GetMenuItemCore(e.Source as Control);
+            if (item is null)
+                return;
 
-            if (item == null)
+            if (e is AccessKeyEventArgs { IsMultiple: true })
             {
+                // in case we have multiple matches, only focus item and bail
+                item.Focus(NavigationMethod.Tab);
                 return;
             }
-
+            
             if (item.HasSubMenu && item.IsEffectivelyEnabled)
             {
                 Open(item, true);
@@ -289,13 +294,19 @@ namespace Avalonia.Controls.Platform
             Menu.KeyDown += KeyDown;
             Menu.PointerPressed += PointerPressed;
             Menu.PointerReleased += PointerReleased;
-            Menu.AddHandler(AccessKeyHandler.AccessKeyPressedEvent, AccessKeyPressed);
+            Menu.AddHandler(AccessKeyHandler.AccessKeyEvent, AccessKeyPressed);
             Menu.AddHandler(MenuBase.OpenedEvent, MenuOpened);
             Menu.AddHandler(MenuItem.PointerEnteredItemEvent, PointerEntered);
             Menu.AddHandler(MenuItem.PointerExitedItemEvent, PointerExited);
             Menu.AddHandler(InputElement.PointerMovedEvent, PointerMoved);
 
             _root = Menu.VisualRoot;
+
+            if (_root is not null)
+            {
+                _groupManager = RadioButtonGroupManager.GetOrCreateForRoot(_root);
+                AddMenuItemToRadioGroup(_groupManager, menu);
+            }
 
             if (_root is InputElement inputRoot)
             {
@@ -325,11 +336,17 @@ namespace Avalonia.Controls.Platform
             Menu.KeyDown -= KeyDown;
             Menu.PointerPressed -= PointerPressed;
             Menu.PointerReleased -= PointerReleased;
-            Menu.RemoveHandler(AccessKeyHandler.AccessKeyPressedEvent, AccessKeyPressed);
+            Menu.RemoveHandler(AccessKeyHandler.AccessKeyEvent, AccessKeyPressed);
             Menu.RemoveHandler(MenuBase.OpenedEvent, MenuOpened);
             Menu.RemoveHandler(MenuItem.PointerEnteredItemEvent, PointerEntered);
             Menu.RemoveHandler(MenuItem.PointerExitedItemEvent, PointerExited);
             Menu.RemoveHandler(InputElement.PointerMovedEvent, PointerMoved);
+
+            if (_root is not null && _groupManager is { } oldManager)
+            {
+                _groupManager = null;
+                RemoveMenuItemFromRadioGroup(oldManager, menu);
+            }
 
             if (_root is InputElement inputRoot)
             {
@@ -352,6 +369,19 @@ namespace Avalonia.Controls.Platform
 
         internal void Click(IMenuItem item)
         {
+            if (!item.HasSubMenu)
+            {
+                if (item.ToggleType == MenuItemToggleType.CheckBox)
+                {
+                    var newValue = !item.IsChecked;
+                    item.IsChecked = newValue;   
+                }
+                else if (item.ToggleType == MenuItemToggleType.Radio && !item.IsChecked)
+                {
+                    item.IsChecked = true;
+                }
+            }
+
             item.RaiseClick();
 
             if (!item.StaysOpenOnClick)
@@ -494,7 +524,7 @@ namespace Avalonia.Controls.Platform
                             }
                             else if (item?.Parent?.MoveSelection(direction.Value, true) == true)
                             {
-                                // If the the parent is an IMenu which successfully moved its selection,
+                                // If the parent is an IMenu which successfully moved its selection,
                                 // and the current menu is open then close the current menu and open the
                                 // new menu.
                                 if (item.IsSubMenuOpen &&
@@ -553,6 +583,26 @@ namespace Avalonia.Controls.Platform
             }
         }
 
+        internal void OnCheckedChanged(IMenuItem item)
+        {
+            if (item is IRadioButton radioButton)
+            {
+                _groupManager?.OnCheckedChanged(radioButton);
+            }
+        }
+        
+        internal void OnGroupOrTypeChanged(IRadioButton button, string? oldGroupName)
+        {
+            if (!string.IsNullOrEmpty(oldGroupName))
+            {
+                _groupManager?.Remove(button, oldGroupName);
+            }
+            if (!string.IsNullOrEmpty(button.GroupName))
+            {
+                _groupManager?.Add(button);
+            }
+        }
+
         internal static IMenuItem? GetMenuItemCore(StyledElement? item)
         {
             while (true)
@@ -573,6 +623,33 @@ namespace Avalonia.Controls.Platform
         private static void DefaultDelayRun(Action action, TimeSpan timeSpan)
         {
             DispatcherTimer.RunOnce(action, timeSpan);
+        }
+
+        private static void AddMenuItemToRadioGroup(RadioButtonGroupManager manager, IMenuElement element)
+        {
+            // Instead add menu item to the group on attached/detached + ensure checked stated on attached.
+            if (element is IRadioButton button)
+            {
+                manager.Add(button);
+            }
+
+            foreach (var subItem in element.SubItems)
+            {
+                AddMenuItemToRadioGroup(manager, subItem);
+            }
+        }
+
+        private static void RemoveMenuItemFromRadioGroup(RadioButtonGroupManager manager, IMenuElement element)
+        {
+            if (element is IRadioButton button)
+            {
+                manager.Remove(button, button.GroupName);
+            }
+
+            foreach (var subItem in element.SubItems)
+            {
+                RemoveMenuItemFromRadioGroup(manager, subItem);
+            }
         }
     }
 }

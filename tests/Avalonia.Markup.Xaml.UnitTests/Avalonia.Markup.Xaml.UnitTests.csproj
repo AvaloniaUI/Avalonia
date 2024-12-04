@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
-    <TargetFrameworks>net6.0;net47</TargetFrameworks>
+    <TargetFrameworks>$(AvsCurrentTargetFramework);net47</TargetFrameworks>
     <OutputType>Library</OutputType>
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
@@ -17,7 +17,6 @@
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup\Avalonia.Markup.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Controls\Avalonia.Controls.csproj" />
-    <ProjectReference Include="..\..\src\Avalonia.Controls.ItemsRepeater\Avalonia.Controls.ItemsRepeater.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Themes.Simple\Avalonia.Themes.Simple.csproj" />
     <ProjectReference Include="..\Avalonia.UnitTests\Avalonia.UnitTests.csproj" />
   </ItemGroup>
@@ -36,6 +35,16 @@
     <Compile Include="..\Avalonia.IntegrationTests.Appium\PlatformFactAttribute.cs">
       <Link>PlatformFactAttribute.cs</Link>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Update="xunit.runner.console" Version="2.9.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Update="xunit.runner.visualstudio" Version="2.8.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
   <Import Project="..\..\build\BuildTargets.targets" />
 </Project>

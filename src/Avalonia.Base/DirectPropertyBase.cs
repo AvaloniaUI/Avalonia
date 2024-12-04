@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using Avalonia.Data;
+using Avalonia.Data.Core;
 using Avalonia.PropertyStore;
 
 namespace Avalonia
@@ -26,6 +28,7 @@ namespace Avalonia
             AvaloniaPropertyMetadata metadata)
             : base(name, ownerType, ownerType, metadata)
         {
+            IsDirect = true;
             Owner = ownerType;
         }
 
@@ -41,6 +44,7 @@ namespace Avalonia
             AvaloniaPropertyMetadata metadata)
             : base(source, ownerType, metadata)
         {
+            IsDirect = true;
             Owner = ownerType;
         }
 
@@ -69,21 +73,37 @@ namespace Avalonia
         /// <param name="type">The type.</param>
         /// <returns>The unset value.</returns>
         public TValue GetUnsetValue(Type type)
-        {
-            type = type ?? throw new ArgumentNullException(nameof(type));
-            return GetMetadata(type).UnsetValue;
-        }
+            => GetMetadata(type).UnsetValue;
 
         /// <summary>
-        /// Gets the property metadata for the specified type.
+        /// Gets the unset value for the property on the specified object.
         /// </summary>
-        /// <param name="type">The type.</param>
-        /// <returns>
-        /// The property metadata.
-        /// </returns>
+        /// <param name="owner">The object.</param>
+        /// <returns>The unset value.</returns>
+        public TValue GetUnsetValue(AvaloniaObject owner)
+            => GetMetadata(owner).UnsetValue;
+
+        /// <inheritdoc cref="AvaloniaProperty.GetMetadata(System.Type)"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public new DirectPropertyMetadata<TValue> GetMetadata(Type type)
+            => CastMetadata(base.GetMetadata(type));
+
+        /// <inheritdoc cref="AvaloniaProperty.GetMetadata(Avalonia.AvaloniaObject)"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public new DirectPropertyMetadata<TValue> GetMetadata(AvaloniaObject owner)
+            => CastMetadata(base.GetMetadata(owner));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static DirectPropertyMetadata<TValue> CastMetadata(AvaloniaPropertyMetadata metadata)
         {
-            return (DirectPropertyMetadata<TValue>)base.GetMetadata(type);
+#if DEBUG
+            return (DirectPropertyMetadata<TValue>)metadata;
+#else
+            // Avoid casts in release mode for performance.
+            // We control every path:
+            // it shouldn't be possible a metadata type other than a DirectPropertyMetadata<T> stored for a DirectPropertyBase<T>.
+            return Unsafe.As<DirectPropertyMetadata<TValue>>(metadata);
+#endif
         }
 
         /// <summary>
@@ -155,6 +175,12 @@ namespace Avalonia
             }
 
             return null;
+        }
+
+        internal override void RouteSetDirectValueUnchecked(AvaloniaObject o, object? value)
+        {
+            var bindingValue = BindingValue<TValue>.FromUntypedStrict(value);
+            o.SetDirectValueUnchecked<TValue>(this, bindingValue);
         }
 
         internal override void RouteSetCurrentValue(AvaloniaObject o, object? value)

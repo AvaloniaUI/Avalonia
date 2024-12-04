@@ -57,7 +57,7 @@ public class AvaloniaNameSourceGenerator : ISourceGenerator
                 && sourceItemGroup == "AvaloniaXaml");
     }
 
-    private static INameGenerator CreateNameGenerator(GeneratorExecutionContext context)
+    private static INameGenerator? CreateNameGenerator(GeneratorExecutionContext context)
     {
         var options = new GeneratorOptions(context);
         if (!options.AvaloniaNameGeneratorIsEnabled)
@@ -68,7 +68,7 @@ public class AvaloniaNameSourceGenerator : ISourceGenerator
         var types = new RoslynTypeSystem((CSharpCompilation)context.Compilation);
         ICodeGenerator generator = options.AvaloniaNameGeneratorBehavior switch {
             Behavior.OnlyProperties => new OnlyPropertiesCodeGenerator(),
-            Behavior.InitializeComponent => new InitializeComponentCodeGenerator(types),
+            Behavior.InitializeComponent => new InitializeComponentCodeGenerator(types, options.AvaloniaNameGeneratorAttachDevTools),
             _ => throw new ArgumentOutOfRangeException()
         };
 

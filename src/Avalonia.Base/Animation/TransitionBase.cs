@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Text;
 using Avalonia.Animation.Easings;
 
 namespace Avalonia.Animation
@@ -77,7 +78,7 @@ namespace Avalonia.Animation
             set { SetAndRaise(EasingProperty, ref _easing, value); }
         }
 
-        /// <inheritdocs/>
+        /// <inheritdoc/>
         [DisallowNull]
         public AvaloniaProperty? Property
         {
@@ -91,10 +92,17 @@ namespace Avalonia.Animation
             set => Property = value;
         }
 
-        /// <inheritdocs/>
+        /// <inheritdoc/>
         IDisposable ITransition.Apply(Animatable control, IClock clock, object? oldValue, object? newValue)
             => Apply(control, clock, oldValue, newValue);
         
         internal abstract IDisposable Apply(Animatable control, IClock clock, object? oldValue, object? newValue);
+
+        internal override void BuildDebugDisplay(StringBuilder builder, bool includeContent)
+        {
+            base.BuildDebugDisplay(builder, includeContent);
+            DebugDisplayHelper.AppendOptionalValue(builder, nameof(Property), Property, includeContent);
+            DebugDisplayHelper.AppendOptionalValue(builder, nameof(Duration), Duration, includeContent);
+        }
     }
 }

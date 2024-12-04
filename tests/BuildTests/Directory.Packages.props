@@ -1,0 +1,22 @@
+<Project>
+
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <!-- The version should be set explicitly using -p:AvaloniaVersion=x.y.z when calling dotnet build -->
+    <AvaloniaVersion Condition="'$(AvaloniaVersion)' == ''">9999.9999.9999</AvaloniaVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageVersion Include="Avalonia" Version="[$(AvaloniaVersion)]" />
+    <PackageVersion Include="Avalonia.Android" Version="[$(AvaloniaVersion)]" />
+    <PackageVersion Include="Avalonia.Browser" Version="[$(AvaloniaVersion)]" />
+    <PackageVersion Include="Avalonia.iOS" Version="[$(AvaloniaVersion)]" />
+    <PackageVersion Include="Avalonia.Skia" Version="[$(AvaloniaVersion)]" />
+    <PackageVersion Include="Avalonia.Themes.Fluent" Version="[$(AvaloniaVersion)]" />
+    <PackageVersion Include="Avalonia.Win32" Version="[$(AvaloniaVersion)]" />
+    <PackageVersion Include="Avalonia.X11" Version="[$(AvaloniaVersion)]" />
+    <PackageVersion Include="FSharp.Core" Version="8.0.403" />
+    <PackageVersion Include="Xamarin.AndroidX.Core.SplashScreen" Version="1.0.1.13" />
+  </ItemGroup>
+
+</Project>

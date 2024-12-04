@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Text;
 using Avalonia.Controls.Platform.Surfaces;
@@ -14,7 +15,9 @@ namespace Avalonia.LinuxFramebuffer
         private fb_var_screeninfo _varInfo;
         private IntPtr _mappedLength;
         private IntPtr _mappedAddress;
-        private FbDevBackBuffer _backBuffer;
+        private FbDevBackBuffer? _backBuffer;
+        private readonly FbDevOutputOptions _options;
+        private bool _lockedAtLeastOnce;
         public double Scaling { get; set; }
 
         /// <summary>
@@ -22,7 +25,7 @@ namespace Avalonia.LinuxFramebuffer
         /// </summary>
         /// <param name="fileName">The frame buffer device name.
         /// Defaults to the value in environment variable FRAMEBUFFER or /dev/fb0 when FRAMEBUFFER is not set</param>
-        public FbdevOutput(string fileName = null) : this(fileName, null)
+        public FbdevOutput(string? fileName = null) : this(fileName, null)
         {
         }
 
@@ -34,16 +37,30 @@ namespace Avalonia.LinuxFramebuffer
         /// <param name="format">The required pixel format for the frame buffer.
         /// A null value will leave the frame buffer in the current pixel format.
         /// Otherwise sets the frame buffer to the required format</param>
-        public FbdevOutput(string fileName, PixelFormat? format)
+        public FbdevOutput(string? fileName, PixelFormat? format) : this(new FbDevOutputOptions()
         {
-            fileName ??= Environment.GetEnvironmentVariable("FRAMEBUFFER") ?? "/dev/fb0";
+            FileName = fileName,
+            PixelFormat = format
+        })
+        {
+            
+        }
+
+        /// <summary>
+        /// Create a Linux frame buffer device output
+        /// </summary>
+        /// <param name="options">Options</param>
+        public FbdevOutput(FbDevOutputOptions options)
+        {
+            var fileName = options.FileName ?? Environment.GetEnvironmentVariable("FRAMEBUFFER") ?? "/dev/fb0";
             _fd = NativeUnsafeMethods.open(fileName, 2, 0);
             if (_fd <= 0)
                 throw new Exception("Error: " + Marshal.GetLastWin32Error());
-
+            _options = options;
+            Scaling = options.Scaling;
             try
             {
-                Init(format);
+                Init(options.PixelFormat);
             }
             catch
             {
@@ -52,6 +69,7 @@ namespace Avalonia.LinuxFramebuffer
             }
         }
 
+        [MemberNotNull(nameof(Id))]
         void Init(PixelFormat? format)
         {
             fixed (void* pnfo = &_varInfo)
@@ -144,16 +162,32 @@ namespace Avalonia.LinuxFramebuffer
             }
         }
 
-        public ILockedFramebuffer Lock()
+        public ILockedFramebuffer Lock() => Lock(out _);
+
+        private ILockedFramebuffer Lock(out FramebufferLockProperties properties)
         {
             if (_fd <= 0)
                 throw new ObjectDisposedException("LinuxFramebuffer");
+
+            var dpi = new Vector(96, 96) * Scaling;
+            
+            if (_options.RenderDirectlyToMappedMemory)
+            {
+                properties = new FramebufferLockProperties(_lockedAtLeastOnce);
+                _lockedAtLeastOnce = true;
+                NativeUnsafeMethods.ioctl(_fd, FbIoCtl.FBIO_WAITFORVSYNC, null);
+                return FbDevBackBuffer.LockFb(_mappedAddress, _varInfo, _fixedInfo, dpi, null);
+            }
+
+            var retained = _lockedAtLeastOnce && _backBuffer != null;
+            _lockedAtLeastOnce = true;
+            properties = new FramebufferLockProperties(retained);
             return (_backBuffer ??=
-                    new FbDevBackBuffer(_fd, _fixedInfo, _varInfo, _mappedAddress))
+                    new FbDevBackBuffer(_fd, _fixedInfo, _varInfo, _mappedAddress, _options.UseAsyncFrontBufferBlit == true))
                 .Lock(new Vector(96, 96) * Scaling);
         }
         
-        public IFramebufferRenderTarget CreateFramebufferRenderTarget() => new FuncFramebufferRenderTarget(Lock);
+        public IFramebufferRenderTarget CreateFramebufferRenderTarget() => new FuncRetainedFramebufferRenderTarget(Lock);
 
 
         private void ReleaseUnmanagedResources()

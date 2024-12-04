@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using Avalonia.Reactive;
 using Avalonia.Data;
 using Avalonia.Threading;
+using static Avalonia.PropertyStore.BindingEntryBaseNonGenericHelper;
 
 namespace Avalonia.PropertyStore
 {
@@ -11,8 +11,6 @@ namespace Avalonia.PropertyStore
         IObserver<BindingValue<TSource>>,
         IDisposable
     {
-        private static readonly IDisposable s_creating = Disposable.Empty;
-        private static readonly IDisposable s_creatingQuiet = Disposable.Create(() => { });
         private IDisposable? _subscription;
         private bool _hasValue;
         private TValue? _value;
@@ -45,7 +43,7 @@ namespace Avalonia.PropertyStore
             Frame = frame;
             Property = property;
             Source = source;
-            if (property.GetMetadata(target.GetType()).EnableDataValidation == true)
+            if (property.GetMetadata(target).EnableDataValidation == true)
                 _uncommon = new() { _hasDataValidation = true };
         }
 
@@ -112,14 +110,14 @@ namespace Avalonia.PropertyStore
 
         protected abstract BindingValue<TValue> ConvertAndValidate(TSource value);
         protected abstract BindingValue<TValue> ConvertAndValidate(BindingValue<TSource> value);
-        protected abstract TValue GetDefaultValue(Type ownerType);
+        protected abstract TValue GetDefaultValue(AvaloniaObject owner);
 
         protected virtual void Start(bool produceValue)
         {
             if (_subscription is not null)
                 return;
 
-            _subscription = produceValue ? s_creating : s_creatingQuiet;
+            _subscription = produceValue ? Creating : CreatingQuiet;
             _subscription = Source switch
             {
                 IObservable<BindingValue<TSource>> bv => bv.Subscribe(this),
@@ -139,8 +137,6 @@ namespace Avalonia.PropertyStore
                 var property = instance.Property;
                 var originalType = value.Type;
 
-                LoggingUtils.LogIfNecessary(owner, property, value);
-
                 if (!value.HasValue && value.Type != BindingValueType.DataValidationError)
                     value = value.WithValue(instance.GetCachedDefaultValue());
 
@@ -155,7 +151,7 @@ namespace Avalonia.PropertyStore
                 {
                     instance._value = value.Value;
                     instance._hasValue = true;
-                    if (instance._subscription is not null && instance._subscription != s_creatingQuiet)
+                    if (instance._subscription is not null && instance._subscription != CreatingQuiet)
                         instance.Frame.Owner?.OnBindingValueChanged(instance, instance.Frame.Priority);
                 }
             }
@@ -188,7 +184,7 @@ namespace Avalonia.PropertyStore
             if (_uncommon?._isDefaultValueInitialized != true)
             {
                 _uncommon ??= new();
-                _uncommon._defaultValue = GetDefaultValue(Frame.Owner!.Owner.GetType());
+                _uncommon._defaultValue = GetDefaultValue(Frame.Owner!.Owner);
                 _uncommon._isDefaultValueInitialized = true;
             }
 

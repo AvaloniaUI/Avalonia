@@ -18,6 +18,7 @@ using FieldAttributes = Mono.Cecil.FieldAttributes;
 using MethodAttributes = Mono.Cecil.MethodAttributes;
 using TypeAttributes = Mono.Cecil.TypeAttributes;
 using XamlX.IL;
+using XamlX.IL.Emitters;
 
 namespace Avalonia.Build.Tasks
 {
@@ -114,22 +115,22 @@ namespace Avalonia.Build.Tasks
                 // documentation, on not windows platform Debugger.Launch() always return true without running a debugger.
                 if (System.Diagnostics.Debugger.Launch())
                 {
-                    // Set timeout at 1 minut.
+                    // Set timeout at 1 minute.
                     var time = new System.Diagnostics.Stopwatch();
                     var timeout = TimeSpan.FromMinutes(1);
                     time.Start();
 
-                    // wait for the debugger to be attacked or timeout.
+                    // wait for the debugger to be attached or timeout.
                     while (!System.Diagnostics.Debugger.IsAttached && time.Elapsed < timeout)
                     {
-                        engine.LogMessage($"[PID:{System.Diagnostics.Process.GetCurrentProcess().Id}] Wating attach debugger. Elapsed {time.Elapsed}...", MessageImportance.High);
+                        engine.LogMessage($"[PID:{System.Diagnostics.Process.GetCurrentProcess().Id}] Waiting to attach debugger. Elapsed {time.Elapsed}...", MessageImportance.High);
                         System.Threading.Thread.Sleep(100);
                     }
 
-                    time.Stop();                    
+                    time.Stop();
                     if (time.Elapsed >= timeout)
                     {
-                        engine.LogMessage("Wating attach debugger timeout.", MessageImportance.Normal);
+                        engine.LogMessage("Waiting to attach debugger has timed out.", MessageImportance.Normal);
                     }
                 }
                 else
@@ -137,7 +138,7 @@ namespace Avalonia.Build.Tasks
                     engine.LogMessage("Debugging cancelled.", MessageImportance.Normal);
                 }
             }
-            
+
             // Some transformers might need to parse "avares://" Uri.
             AssetLoader.RegisterResUriParsers();
 
@@ -157,15 +158,21 @@ namespace Avalonia.Build.Tasks
                 asm.CustomAttributes.Add(new CustomAttribute(ctor) { ConstructorArguments = { arg1, arg2 } });
             }
 
-            var clrPropertiesDef = new TypeDefinition(CompiledAvaloniaXamlNamespace, "XamlIlHelpers",
-                TypeAttributes.Class, asm.MainModule.TypeSystem.Object);
-            asm.MainModule.Types.Add(clrPropertiesDef);
-            var indexerAccessorClosure = new TypeDefinition(CompiledAvaloniaXamlNamespace, "!IndexerAccessorFactoryClosure",
-                TypeAttributes.Class, asm.MainModule.TypeSystem.Object);
-            asm.MainModule.Types.Add(indexerAccessorClosure);
-            var trampolineBuilder = new TypeDefinition(CompiledAvaloniaXamlNamespace, "XamlIlTrampolines",
-                TypeAttributes.Class, asm.MainModule.TypeSystem.Object);
-            asm.MainModule.Types.Add(trampolineBuilder);
+            TypeDefinition AddClass(string name, TypeAttributes extraAttributes = 0)
+            {
+                var typeDef = new TypeDefinition(
+                    CompiledAvaloniaXamlNamespace,
+                    name,
+                    TypeAttributes.Class | extraAttributes,
+                    asm.MainModule.TypeSystem.Object);
+                asm.MainModule.Types.Add(typeDef);
+                return typeDef;
+            }
+
+            var clrPropertiesDef = AddClass("XamlIlHelpers");
+            var indexerAccessorClosure = AddClass("!IndexerAccessorFactoryClosure");
+            var trampolineBuilder = AddClass("XamlIlTrampolines");
+            var dynamicSettersBuilder = typeSystem.CreateTypeBuilder(AddClass("XamlDynamicSetters"));
 
             var (xamlLanguage , emitConfig) = AvaloniaXamlIlLanguage.Configure(typeSystem);
             var diagnostics = new List<XamlDiagnostic>();
@@ -194,14 +201,17 @@ namespace Avalonia.Build.Tasks
                 diagnosticsHandler);
 
 
-            var contextDef = new TypeDefinition(CompiledAvaloniaXamlNamespace, "XamlIlContext", 
-                TypeAttributes.Class, asm.MainModule.TypeSystem.Object);
-            asm.MainModule.Types.Add(contextDef);
+            var contextDef = AddClass("XamlIlContext");
 
             var contextClass = XamlILContextDefinition.GenerateContextClass(typeSystem.CreateTypeBuilder(contextDef), typeSystem,
                 xamlLanguage, emitConfig);
 
-            var compiler = new AvaloniaXamlIlCompiler(compilerConfig, emitConfig, contextClass) { EnableIlVerification = verifyIl, DefaultCompileBindings = defaultCompileBindings };
+            var compiler = new AvaloniaXamlIlCompiler(compilerConfig, emitConfig, contextClass)
+            {
+                EnableIlVerification = verifyIl,
+                DefaultCompileBindings = defaultCompileBindings,
+                DynamicSetterContainerProvider = new DefaultXamlDynamicSetterContainerProvider(dynamicSettersBuilder)
+            };
 
             var editorBrowsableAttribute = typeSystem
                 .GetTypeReference(typeSystem.FindType("System.ComponentModel.EditorBrowsableAttribute"))
@@ -215,10 +225,8 @@ namespace Avalonia.Build.Tasks
                 typeSystem.GetTypeReference(runtimeHelpers).Resolve().Methods
                     .First(x => x.Name == "CreateRootServiceProviderV3"));
             var serviceProviderType = createRootServiceProviderMethod.ReturnType;
-            
-            var loaderDispatcherDef = new TypeDefinition(CompiledAvaloniaXamlNamespace, "!XamlLoader",
-                TypeAttributes.Class | TypeAttributes.Public, asm.MainModule.TypeSystem.Object);
 
+            var loaderDispatcherDef = AddClass("!XamlLoader", TypeAttributes.Public);
 
             loaderDispatcherDef.CustomAttributes.Add(new CustomAttribute(editorBrowsableCtor)
             {
@@ -257,7 +265,6 @@ namespace Avalonia.Build.Tasks
             };
             loaderDispatcherDef.Methods.Add(loaderDispatcherMethod);
             loaderDispatcherDef.Methods.Add(loaderDispatcherMethodOld);
-            asm.MainModule.Types.Add(loaderDispatcherDef);
 
 
             var stringEquals = asm.MainModule.ImportReference(asm.MainModule.TypeSystem.String.Resolve().Methods.First(
@@ -270,17 +277,15 @@ namespace Avalonia.Build.Tasks
             
             bool CompileGroup(IResourceGroup group)
             {
-                var typeDef = new TypeDefinition(CompiledAvaloniaXamlNamespace, "!"+ group.Name,
-                    TypeAttributes.Class | TypeAttributes.Public, asm.MainModule.TypeSystem.Object);
+                var typeDef = AddClass("!" + group.Name, TypeAttributes.Public);
                 var transformFailed = false;
 
                 typeDef.CustomAttributes.Add(new CustomAttribute(editorBrowsableCtor)
                 {
                     ConstructorArguments = {new CustomAttributeArgument(editorBrowsableCtor.Parameters[0].ParameterType, 1)}
                 });
-                asm.MainModule.Types.Add(typeDef);
                 var builder = typeSystem.CreateTypeBuilder(typeDef);
-                
+
                 IReadOnlyCollection<XamlDocumentResource> parsedXamlDocuments = new List<XamlDocumentResource>();
                 foreach (var res in group.Resources.Where(CheckXamlName).OrderBy(x => x.FilePath.ToLowerInvariant()))
                 {
@@ -325,7 +330,7 @@ namespace Avalonia.Build.Tasks
                             else
                                 throw new XamlParseException("Invalid value for x:ClassModifier. Expected value are: Public, NotPublic (internal).", classModifierDirective);
                         }
-                        
+
                         var classDirective = initialRoot.Children.OfType<XamlAstXmlDirective>()
                             .FirstOrDefault(d => d.Namespace == XamlNamespaces.Xaml2006 && d.Name == "Class");
                         IXamlType classType = null;
@@ -348,7 +353,7 @@ namespace Avalonia.Build.Tasks
                                     "XAML file x:ClassModifier doesn't match the x:Class type modifiers.",
                                     precompileDirective);
                             }
-                            
+
                             compiler.OverrideRootType(parsed,
                                 new XamlAstClrTypeReference(classDirective, classType, false));
                             initialRoot.Children.Remove(classDirective);
@@ -380,6 +385,7 @@ namespace Avalonia.Build.Tasks
                                     classTypeDefinition == null && classModifierPublic.Value
                                         ? XamlVisibility.Public
                                         : XamlVisibility.Private),
+                                buildName == null ? null : builder,
                                 buildName == null ?
                                     null :
                                     compiler.DefineBuildMethod(
@@ -407,7 +413,7 @@ namespace Avalonia.Build.Tasks
                     transformFailed = true;
                     engine.LogError(AvaloniaXamlDiagnosticCodes.TransformError, "", e);
                 }
-                
+
                 var hasAnyError = ReportDiagnostics(engine, diagnostics) || transformFailed;
                 if (hasAnyError)
                 {
@@ -426,22 +432,20 @@ namespace Avalonia.Build.Tasks
 
                     var parsed = document.XamlDocument;
                     var classType = document.ClassType;
-                    var populateBuilder = document.TypeBuilderProvider.TypeBuilder;
+                    var populateBuilder = document.TypeBuilderProvider.PopulateDeclaringType;
 
                     try
                     {
                         var classTypeDefinition =
                             classType == null ? null : typeSystem.GetTypeReference(classType).Resolve();
 
-                        compiler.Compile(parsed, 
+                        compiler.Compile(parsed,
                             contextClass,
                             document.TypeBuilderProvider.PopulateMethod,
+                            populateBuilder,
                             document.TypeBuilderProvider.BuildMethod,
-                            builder.DefineSubType(compilerConfig.WellKnownTypes.Object, "NamespaceInfo:" + res.Name, XamlVisibility.Public),
-                            (closureName, closureBaseType) =>
-                                populateBuilder.DefineSubType(closureBaseType, closureName, XamlVisibility.Private),
-                            (closureName, returnType, parameterTypes) =>
-                                populateBuilder.DefineDelegateSubType(closureName, XamlVisibility.Private, returnType, parameterTypes),
+                            builder,
+                            builder.DefineSubType(compilerConfig.WellKnownTypes.Object, "NamespaceInfo:" + res.Name, XamlVisibility.Assembly),
                             res.Uri, res
                         );
 
@@ -480,10 +484,10 @@ namespace Avalonia.Build.Tasks
                                     MethodAttributes.Static | MethodAttributes.Private, asm.MainModule.TypeSystem.Void);
                                 if (hasSystemProviderArg)
                                 {
-                                    trampoline.Parameters.Add(new ParameterDefinition(serviceProviderType));   
+                                    trampoline.Parameters.Add(new ParameterDefinition(serviceProviderType));
                                 }
                                 trampoline.Parameters.Add(new ParameterDefinition(classTypeDefinition));
-                                
+
                                 classTypeDefinition.Methods.Add(trampoline);
 
                                 var regularStart = Instruction.Create(OpCodes.Nop);
@@ -498,7 +502,7 @@ namespace Avalonia.Build.Tasks
                                 trampoline.Body.Instructions.Add(regularStart);
                                 trampoline.Body.Instructions.Add(Instruction.Create(hasSystemProviderArg ? OpCodes.Ldarg_0 : OpCodes.Ldnull));
                                 trampoline.Body.Instructions.Add(Instruction.Create(OpCodes.Call, createRootServiceProviderMethod));
-                                trampoline.Body.Instructions.Add(Instruction.Create(hasSystemProviderArg ? OpCodes.Ldarg_1 : OpCodes.Ldarg_0)); 
+                                trampoline.Body.Instructions.Add(Instruction.Create(hasSystemProviderArg ? OpCodes.Ldarg_1 : OpCodes.Ldarg_0));
                                 trampoline.Body.Instructions.Add(Instruction.Create(OpCodes.Call, compiledPopulateMethod));
                                 trampoline.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
                                 CopyDebugDocument(trampoline, compiledPopulateMethod);
@@ -650,10 +654,10 @@ namespace Avalonia.Build.Tasks
                             dupe.Name += "_dup" + dupeCounter++;
                     }
                 }
-                
+
                 return true;
             }
-            
+
             if (avares.Resources.Count(CheckXamlName) != 0)
             {
                 if (!CompileGroup(avares))
@@ -698,7 +702,7 @@ namespace Avalonia.Build.Tasks
                 foreach (var ogType in compiledTypes)
                 {
                     var wrappedOgType = sourceTypeSystem.TargetAssembly.FindType(ogType.FullName);
-                    
+
                     var clrPropertiesDef = new TypeDefinition(ogType.Namespace, ogType.Name,
                         TypeAttributes.Class | TypeAttributes.Public, asm.MainModule.TypeSystem.Object);
                     asm.MainModule.Types.Add(clrPropertiesDef);

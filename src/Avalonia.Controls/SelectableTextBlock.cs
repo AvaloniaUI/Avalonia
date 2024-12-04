@@ -186,6 +186,7 @@ namespace Avalonia.Controls
 
             var defaultProperties = new GenericTextRunProperties(
                 typeface,
+                FontFeatures,
                 FontSize,
                 TextDecorations,
                 Foreground);
@@ -207,7 +208,7 @@ namespace Avalonia.Controls
                 textStyleOverrides = new[]
                 {
                         new ValueSpan<TextRunProperties>(start, length,
-                        new GenericTextRunProperties(typeface, FontSize,
+                        new GenericTextRunProperties(typeface, FontFeatures, FontSize,
                             foregroundBrush: SelectionForegroundBrush))
                     };
             }
@@ -223,12 +224,14 @@ namespace Avalonia.Controls
                 textSource = new FormattedTextSource(text ?? "", defaultProperties, textStyleOverrides);
             }
 
+            var maxSize = GetMaxSizeFromConstraint();
+
             return new TextLayout(
                 textSource,
                 paragraphProperties,
                 TextTrimming,
-                _constraint.Width,
-                _constraint.Height,
+                maxSize.Width,
+                maxSize.Height,
                 MaxLines);
         }
 
@@ -346,13 +349,9 @@ namespace Avalonia.Controls
                         }
                         else
                         {
-                            if (_wordSelectionStart == -1 || index < SelectionStart || index > SelectionEnd)
-                            {
-                                SetCurrentValue(SelectionStartProperty, index);
-                                SetCurrentValue(SelectionEndProperty, index);
-
-                                _wordSelectionStart = -1;
-                            }
+                            SetCurrentValue(SelectionStartProperty, index);
+                            SetCurrentValue(SelectionEndProperty, index);
+                            _wordSelectionStart = -1;
                         }
 
                         break;

@@ -603,9 +603,6 @@ namespace Avalonia.X11
         [DllImport(libXCursor)]
         public static extern IntPtr XcursorImageLoadCursor(IntPtr display, IntPtr image);
 
-        [DllImport(libXCursor)]
-        public static extern IntPtr XcursorImageDestroy(IntPtr image);
-
         public static void XISetMask(ref int mask, XiEventType ev)
         {
             mask |= (1 << (int)ev);
@@ -736,7 +733,7 @@ namespace Avalonia.X11
             }
         }
 
-        public static IntPtr CreateEventWindow(AvaloniaX11Platform plat, X11PlatformThreading.EventHandler handler)
+        public static IntPtr CreateEventWindow(AvaloniaX11Platform plat, X11EventDispatcher.EventHandler handler)
         {
             var win = XCreateSimpleWindow(plat.Display, plat.Info.DefaultRootWindow, 
                 0, 0, 1, 1, 0, IntPtr.Zero, IntPtr.Zero);

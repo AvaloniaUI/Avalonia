@@ -25,12 +25,14 @@ internal class PictureRenderTarget : IDisposable
         _picture = null;
         return rv;
     }
-
-    public IDrawingContextImpl CreateDrawingContext(Size size)
+    
+    public IDrawingContextImpl CreateDrawingContext(Size size, bool scaleToDpi = true)
     {
+        if (scaleToDpi)
+            size *= (_dpi / 96);
         var recorder = new SKPictureRecorder();
-        var canvas = recorder.BeginRecording(new SKRect(0, 0, (float)(size.Width * _dpi.X / 96),
-            (float)(size.Height * _dpi.Y / 96)));
+        var canvas = recorder.BeginRecording(new SKRect(0, 0, (float)size.Width,
+            (float)size.Height));
         
         canvas.RestoreToCount(-1);
         canvas.ResetMatrix();
@@ -38,6 +40,7 @@ internal class PictureRenderTarget : IDisposable
         var createInfo = new DrawingContextImpl.CreateInfo
         {
             Canvas = canvas,
+            ScaleDrawingToDpi = scaleToDpi,
             Dpi = _dpi,
             DisableSubpixelTextRendering = true,
             GrContext = _grContext,

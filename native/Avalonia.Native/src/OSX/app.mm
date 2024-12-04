@@ -43,6 +43,32 @@ ComPtr<IAvnApplicationEvents> _events;
     [[NSRunningApplication currentApplication] activateWithOptions:NSApplicationActivateIgnoringOtherApps];
 }
 
+-(BOOL)applicationShouldHandleReopen:(NSApplication *)sender hasVisibleWindows:(BOOL)flag
+{
+    _events->OnReopen();
+    return YES;
+}
+
+- (void)applicationDidHide:(NSNotification *)notification
+{
+    _events->OnHide();
+}
+
+- (void)applicationDidUnhide:(NSNotification *)notification
+{
+    _events->OnUnhide();
+}
+
+- (void) applicationDidBecomeActive:(NSNotification *) notification
+{
+    _events->OnActivate();
+}
+
+- (void) applicationDidResignActive:(NSNotification *) notification
+{
+    _events->OnDeactivate();
+}
+
 - (void)application:(NSApplication *)sender openFiles:(NSArray<NSString *> *)filenames
 {
     auto array = CreateAvnStringArray(filenames);
@@ -54,7 +80,7 @@ ComPtr<IAvnApplicationEvents> _events;
 {
     auto array = CreateAvnStringArray(urls);
     
-    _events->FilesOpened(array);
+    _events->UrlsOpened(array);
 }
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
@@ -121,6 +147,13 @@ extern void ReleaseAvnAppEvents()
         [avnDelegate releaseEvents];
         [app setDelegate:nil];
     }
+}
+
+HRESULT AvnApplicationCommands::UnhideApp()
+{
+    START_COM_CALL;
+    [[NSApplication sharedApplication] unhide:[NSApp delegate]];
+    return S_OK;
 }
 
 HRESULT AvnApplicationCommands::HideApp()

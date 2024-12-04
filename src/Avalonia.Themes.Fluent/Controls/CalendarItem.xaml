@@ -27,12 +27,11 @@
     <Setter Property="HorizontalAlignment" Value="Stretch" />
     <Setter Property="VerticalAlignment" Value="Stretch" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
-    <Setter Property="FontSize" Value="20" />
     <Setter Property="Background" Value="{DynamicResource CalendarViewNavigationButtonBackground}" />
     <Setter Property="Template">
       <ControlTemplate>
         <!-- HCA was changed here to ensure nav arrows display correctly -->
-        <ContentPresenter Name="Text" Background="{TemplateBinding Background}"
+        <ContentPresenter Name="PART_ContentPresenter" Background="{TemplateBinding Background}"
                           BorderBrush="{DynamicResource CalendarViewNavigationButtonBorderBrush}"
                           BorderThickness="{TemplateBinding BorderThickness}"
                           Content="{TemplateBinding Content}"
@@ -42,11 +41,11 @@
       </ControlTemplate>
     </Setter>
 
-    <Style Selector="^:pointerover /template/ ContentPresenter#Text">
+    <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
       <Setter Property="BorderBrush" Value="{DynamicResource CalendarViewNavigationButtonBorderBrushPointerOver}" />
       <Setter Property="Foreground" Value="{DynamicResource CalendarViewNavigationButtonForegroundPointerOver}" />
     </Style>
-    <Style Selector="^:pressed /template/ ContentPresenter#Text">
+    <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
       <Setter Property="Foreground" Value="{DynamicResource CalendarViewNavigationButtonForegroundPressed}" />
     </Style>
     <Style Selector="^:disabled /template/ ContentPresenter">
@@ -61,7 +60,7 @@
         <TextBlock Text="{Binding}"
                    HorizontalAlignment="Center"
                    VerticalAlignment="Center"
-                   FontSize="12" />
+                   FontSize="{DynamicResource CalendarDayButtonFontSize}" />
       </Template>
     </Setter>
 

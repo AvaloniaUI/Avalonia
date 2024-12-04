@@ -158,7 +158,15 @@ namespace Avalonia.Controls
                 GetTransition() is { } transition)
             {
                 _transition = new CancellationTokenSource();
-                transition.Start(_transitionFrom, to, _realizedIndex > _transitionFromIndex, _transition.Token)
+
+                var forward = (_realizedIndex > _transitionFromIndex);
+                if (Items.Count > 2)
+                {
+                    forward = forward || (_transitionFromIndex == Items.Count - 1 && _realizedIndex == 0);
+                    forward = forward && !(_transitionFromIndex == 0 && _realizedIndex == Items.Count - 1);
+                }
+
+                transition.Start(_transitionFrom, to, forward, _transition.Token)
                     .ContinueWith(TransitionFinished, TaskScheduler.FromCurrentSynchronizationContext());
             }
 
@@ -228,9 +236,29 @@ namespace Avalonia.Controls
                     Remove(e.OldStartingIndex, e.OldItems!.Count);
                     break;
                 case NotifyCollectionChangedAction.Replace:
-                case NotifyCollectionChangedAction.Move:
+                    if (e.OldStartingIndex < 0)
+                    {
+                        goto case NotifyCollectionChangedAction.Reset;
+                    }
+
                     Remove(e.OldStartingIndex, e.OldItems!.Count);
                     Add(e.NewStartingIndex, e.NewItems!.Count);
+                    break;
+                case NotifyCollectionChangedAction.Move:
+                    if (e.OldStartingIndex < 0)
+                    {
+                        goto case NotifyCollectionChangedAction.Reset;
+                    }
+
+                    Remove(e.OldStartingIndex, e.OldItems!.Count);
+                    var insertIndex = e.NewStartingIndex;
+
+                    if (e.NewStartingIndex > e.OldStartingIndex)
+                    {
+                        insertIndex -= e.OldItems.Count - 1;
+                    }
+
+                    Add(insertIndex, e.NewItems!.Count);
                     break;
                 case NotifyCollectionChangedAction.Reset:
                     if (_realized is not null)

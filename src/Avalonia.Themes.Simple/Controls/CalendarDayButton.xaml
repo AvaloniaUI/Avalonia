@@ -36,15 +36,15 @@
                      IsVisible="False"
                      Opacity="0.5" />
 
-          <ContentControl Name="Content"
-                          Margin="5,1,5,1"
-                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                          Content="{TemplateBinding Content}"
-                          ContentTemplate="{TemplateBinding ContentTemplate}"
-                          FontSize="{TemplateBinding FontSize}"
-                          Foreground="{TemplateBinding Foreground}"
-                          Opacity="1" />
+          <ContentPresenter Name="PART_ContentPresenter"
+                            Margin="5,1,5,1"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            FontSize="{TemplateBinding FontSize}"
+                            Foreground="{TemplateBinding Foreground}"
+                            Opacity="1" />
 
           <Path Name="BlackoutVisual"
                 Margin="3"
@@ -80,7 +80,7 @@
     <Style Selector="^:disabled /template/ Rectangle#Background">
       <Setter Property="IsVisible" Value="False" />
     </Style>
-    <Style Selector="^:disabled /template/ ContentControl#Content">
+    <Style Selector="^:disabled /template/ ContentPresenter#PART_ContentPresenter">
       <Setter Property="Opacity" Value="0.3" />
     </Style>
 
@@ -92,10 +92,10 @@
       <Setter Property="IsVisible" Value="True" />
     </Style>
 
-    <Style Selector="^:inactive /template/ ContentControl#Content">
+    <Style Selector="^:inactive /template/ ContentPresenter#PART_ContentPresenter">
       <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundLowBrush}" />
     </Style>
-    <Style Selector="^:today /template/ ContentControl#Content">
+    <Style Selector="^:today /template/ ContentPresenter#PART_ContentPresenter">
       <Setter Property="Foreground" Value="{DynamicResource ThemeControlLowBrush}" />
     </Style>
 

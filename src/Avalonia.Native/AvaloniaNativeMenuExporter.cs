@@ -76,9 +76,13 @@ namespace Avalonia.Native
                 var dialog = new AboutAvaloniaDialog();
 
                 if (Application.Current is
-                    { ApplicationLifetime: IClassicDesktopStyleApplicationLifetime { MainWindow: { } mainWindow } })
+                    { ApplicationLifetime: IClassicDesktopStyleApplicationLifetime { MainWindow: { IsVisible: true } mainWindow } })
                 {
                     await dialog.ShowDialog(mainWindow);   
+                }
+                else
+                {
+                    dialog.Show();
                 }
             };
             
@@ -146,6 +150,8 @@ namespace Avalonia.Native
             appMenu.Add(quitItem);
         }
 
+        private void DoLayoutReset() => DoLayoutReset(false);
+
         private void DoLayoutReset(bool forceUpdate = false)
         {
             var macOpts = AvaloniaLocator.Current.GetService<MacOSPlatformOptions>() ?? new MacOSPlatformOptions();
@@ -195,7 +201,7 @@ namespace Avalonia.Native
             if (_resetQueued)
                 return;
             _resetQueued = true;
-            Dispatcher.UIThread.Post(() => DoLayoutReset(), DispatcherPriority.Background);
+            Dispatcher.UIThread.Post(DoLayoutReset, DispatcherPriority.Background);
         }
 
         private void SetMenu(NativeMenu menu)
@@ -252,9 +258,9 @@ namespace Avalonia.Native
             {
                 _nativeMenu = __MicroComIAvnMenuProxy.Create(_factory);
 
-                _nativeMenu.Initialize(this, menu, "");     
+                _nativeMenu.Initialize(this, menu, "");
 
-                setMenu = true;           
+                setMenu = true;
             }
 
             _nativeMenu.Update(_factory, menu);
@@ -273,9 +279,9 @@ namespace Avalonia.Native
             {
                 _nativeMenu = __MicroComIAvnMenuProxy.Create(_factory);
 
-                _nativeMenu.Initialize(this, menu, "");     
+                _nativeMenu.Initialize(this, menu, "");
 
-                setMenu = true;           
+                setMenu = true;
             }
 
             _nativeMenu.Update(_factory, menu);

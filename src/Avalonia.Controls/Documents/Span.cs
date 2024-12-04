@@ -77,9 +77,6 @@ namespace Avalonia.Controls.Documents
 
         private void OnInlinesChanged(InlineCollection? oldValue, InlineCollection? newValue)
         {
-            void OnInlinesInvalidated(object? sender, EventArgs e)
-                => InlineHost?.Invalidate();
-
             if (oldValue is not null)
             {
                 oldValue.LogicalChildren = null;
@@ -93,6 +90,11 @@ namespace Avalonia.Controls.Documents
                 newValue.InlineHost = InlineHost;
                 newValue.Invalidated += OnInlinesInvalidated;
             }
+
+            return;
+
+            void OnInlinesInvalidated(object? sender, EventArgs e)
+                => InlineHost?.Invalidate();
         }
     }
 }

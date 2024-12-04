@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace Avalonia.LinuxFramebuffer.Input.EvDev
@@ -10,7 +8,7 @@ namespace Avalonia.LinuxFramebuffer.Input.EvDev
     {
         public int Fd { get; }
         private IntPtr _dev;
-        public string Name { get; }
+        public string? Name { get; }
         public List<EvType> EventTypes { get; private set; } = new List<EvType>();
         public input_absinfo? AbsX { get; }
         public input_absinfo? AbsY { get; }
@@ -20,7 +18,11 @@ namespace Avalonia.LinuxFramebuffer.Input.EvDev
             Fd = fd;
             _dev = dev;
             Name = Marshal.PtrToStringAnsi(NativeUnsafeMethods.libevdev_get_name(_dev));
+#if NET6_0_OR_GREATER
+            foreach (EvType type in Enum.GetValues<EvType>())
+#else 
             foreach (EvType type in Enum.GetValues(typeof(EvType)))
+#endif
             {
                 if (NativeUnsafeMethods.libevdev_has_event_type(dev, type) != 0)
                     EventTypes.Add(type);

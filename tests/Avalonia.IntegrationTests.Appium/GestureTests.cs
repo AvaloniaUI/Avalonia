@@ -1,34 +1,27 @@
 ﻿using System;
 using System.Threading;
-using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Interactions;
 using Xunit;
 
 namespace Avalonia.IntegrationTests.Appium
 {
     [Collection("Default")]
-    public class GestureTests
+    public class GestureTests : TestBase
     {
-        private readonly AppiumDriver<AppiumWebElement> _session;
-
         public GestureTests(DefaultAppFixture fixture)
+            : base(fixture, "Gestures")
         {
-            _session = fixture.Session;
-
-            var tabs = _session.FindElementByAccessibilityId("MainTabs");
-            var tab = tabs.FindElementByName("Gestures");
-            tab.Click();
-            var clear = _session.FindElementByAccessibilityId("ResetGestures");
+            var clear = Session.FindElementByAccessibilityId("ResetGestures");
             clear.Click();
         }
 
         [Fact]
         public void Tapped_Is_Raised()
         {
-            var border = _session.FindElementByAccessibilityId("GestureBorder");
-            var lastGesture = _session.FindElementByAccessibilityId("LastGesture");
+            var border = Session.FindElementByAccessibilityId("GestureBorder");
+            var lastGesture = Session.FindElementByAccessibilityId("LastGesture");
 
-            new Actions(_session).Click(border).Perform();
+            new Actions(Session).Click(border).Perform();
 
             Assert.Equal("Tapped", lastGesture.Text);
         }
@@ -36,14 +29,14 @@ namespace Avalonia.IntegrationTests.Appium
         [Fact]
         public void Tapped_Is_Raised_Slow()
         {
-            var border = _session.FindElementByAccessibilityId("GestureBorder");
-            var lastGesture = _session.FindElementByAccessibilityId("LastGesture");
+            var border = Session.FindElementByAccessibilityId("GestureBorder");
+            var lastGesture = Session.FindElementByAccessibilityId("LastGesture");
 
-            new Actions(_session).ClickAndHold(border).Perform();
+            new Actions(Session).ClickAndHold(border).Perform();
 
             Thread.Sleep(2000);
 
-            new Actions(_session).Release(border).Perform();
+            new Actions(Session).Release(border).Perform();
 
             Assert.Equal("Tapped", lastGesture.Text);
         }
@@ -51,10 +44,10 @@ namespace Avalonia.IntegrationTests.Appium
         [Fact]
         public void Tapped_Is_Not_Raised_For_Drag()
         {
-            var border = _session.FindElementByAccessibilityId("GestureBorder");
-            var lastGesture = _session.FindElementByAccessibilityId("LastGesture");
+            var border = Session.FindElementByAccessibilityId("GestureBorder");
+            var lastGesture = Session.FindElementByAccessibilityId("LastGesture");
 
-            new Actions(_session)
+            new Actions(Session)
                 .ClickAndHold(border)
                 .MoveByOffset(50, 50)
                 .Release()
@@ -66,10 +59,10 @@ namespace Avalonia.IntegrationTests.Appium
         [Fact]
         public void DoubleTapped_Is_Raised()
         {
-            var border = _session.FindElementByAccessibilityId("GestureBorder");
-            var lastGesture = _session.FindElementByAccessibilityId("LastGesture");
+            var border = Session.FindElementByAccessibilityId("GestureBorder");
+            var lastGesture = Session.FindElementByAccessibilityId("LastGesture");
 
-            new Actions(_session).DoubleClick(border).Perform();
+            new Actions(Session).DoubleClick(border).Perform();
 
             Assert.Equal("DoubleTapped", lastGesture.Text);
         }
@@ -77,15 +70,15 @@ namespace Avalonia.IntegrationTests.Appium
         [PlatformFact(TestPlatforms.Windows | TestPlatforms.Linux)]
         public void DoubleTapped_Is_Raised_2()
         {
-            var border = _session.FindElementByAccessibilityId("GestureBorder");
-            var lastGesture = _session.FindElementByAccessibilityId("LastGesture");
+            var border = Session.FindElementByAccessibilityId("GestureBorder");
+            var lastGesture = Session.FindElementByAccessibilityId("LastGesture");
 
-            new Actions(_session).ClickAndHold(border).Release().Perform();
+            new Actions(Session).ClickAndHold(border).Release().Perform();
 
             Thread.Sleep(50);
 
             // DoubleTapped is raised on second pointer press, not release.
-            new Actions(_session).ClickAndHold(border).Perform();
+            new Actions(Session).ClickAndHold(border).Perform();
 
             try
             {
@@ -94,21 +87,21 @@ namespace Avalonia.IntegrationTests.Appium
             finally
             {
                 
-                new Actions(_session).MoveToElement(lastGesture).Release().Perform();
+                new Actions(Session).MoveToElement(lastGesture).Release().Perform();
             }
         }
 
         [Fact]
         public void DoubleTapped_Is_Raised_Not_Raised_If_Too_Slow()
         {
-            var border = _session.FindElementByAccessibilityId("GestureBorder");
-            var lastGesture = _session.FindElementByAccessibilityId("LastGesture");
+            var border = Session.FindElementByAccessibilityId("GestureBorder");
+            var lastGesture = Session.FindElementByAccessibilityId("LastGesture");
 
-            new Actions(_session).ClickAndHold(border).Release().Perform();
+            new Actions(Session).ClickAndHold(border).Release().Perform();
 
             Thread.Sleep(2000);
 
-            new Actions(_session).ClickAndHold(border).Release().Perform();
+            new Actions(Session).ClickAndHold(border).Release().Perform();
 
             Assert.Equal("Tapped", lastGesture.Text);
         }
@@ -117,17 +110,17 @@ namespace Avalonia.IntegrationTests.Appium
         public void DoubleTapped_Is_Raised_After_Control_Changes()
         {
             // #8733
-            var border = _session.FindElementByAccessibilityId("GestureBorder");
-            var lastGesture = _session.FindElementByAccessibilityId("LastGesture");
+            var border = Session.FindElementByAccessibilityId("GestureBorder");
+            var lastGesture = Session.FindElementByAccessibilityId("LastGesture");
             
-            new Actions(_session)
+            new Actions(Session)
                 .MoveToElement(border)
                 .DoubleClick()
                 .Perform();
             
             Thread.Sleep(100);
             
-            new Actions(_session).MoveToElement(lastGesture, 200, 200).DoubleClick().Perform();
+            new Actions(Session).MoveToElement(lastGesture, 200, 200).DoubleClick().Perform();
 
             Assert.Equal("DoubleTapped2", lastGesture.Text);
         }
@@ -135,10 +128,10 @@ namespace Avalonia.IntegrationTests.Appium
         [Fact]
         public void RightTapped_Is_Raised()
         {
-            var border = _session.FindElementByAccessibilityId("GestureBorder");
-            var lastGesture = _session.FindElementByAccessibilityId("LastGesture");
+            var border = Session.FindElementByAccessibilityId("GestureBorder");
+            var lastGesture = Session.FindElementByAccessibilityId("LastGesture");
 
-            new Actions(_session).ContextClick(border).Perform();
+            new Actions(Session).ContextClick(border).Perform();
 
             Assert.Equal("RightTapped", lastGesture.Text);
         }
@@ -146,8 +139,8 @@ namespace Avalonia.IntegrationTests.Appium
         [PlatformFact(TestPlatforms.MacOS)]
         public void RightTapped_Is_Raised_2()
         {
-            var border = _session.FindElementByAccessibilityId("GestureBorder");
-            var lastGesture = _session.FindElementByAccessibilityId("LastGesture");
+            var border = Session.FindElementByAccessibilityId("GestureBorder");
+            var lastGesture = Session.FindElementByAccessibilityId("LastGesture");
             var device = new PointerInputDevice(PointerKind.Mouse);
             var b = new ActionBuilder();
 
@@ -155,7 +148,7 @@ namespace Avalonia.IntegrationTests.Appium
             b.AddAction(device.CreatePointerDown(MouseButton.Right));
             b.AddAction(device.CreatePointerMove(border, 52, 52, TimeSpan.FromMilliseconds(50)));
             b.AddAction(device.CreatePointerUp(MouseButton.Right));
-            _session.PerformActions(b.ToActionSequenceList());
+            Session.PerformActions(b.ToActionSequenceList());
 
             Assert.Equal("RightTapped", lastGesture.Text);
         }
@@ -163,8 +156,8 @@ namespace Avalonia.IntegrationTests.Appium
         [PlatformFact(TestPlatforms.MacOS)]
         public void RightTapped_Is_Not_Raised_For_Drag()
         {
-            var border = _session.FindElementByAccessibilityId("GestureBorder");
-            var lastGesture = _session.FindElementByAccessibilityId("LastGesture");
+            var border = Session.FindElementByAccessibilityId("GestureBorder");
+            var lastGesture = Session.FindElementByAccessibilityId("LastGesture");
             var device = new PointerInputDevice(PointerKind.Mouse);
             var b = new ActionBuilder();
 

@@ -15,7 +15,7 @@ namespace Avalonia.UnitTests;
 /// Some tests are formatting numbers, expecting a dot as a decimal point.
 /// Use this fixture to set the current culture to the invariant culture.
 /// </remarks>
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
+[AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Class | AttributeTargets.Method)]
 public sealed class InvariantCultureAttribute : BeforeAfterTestAttribute
 {
     private CultureInfo? _previousCulture;

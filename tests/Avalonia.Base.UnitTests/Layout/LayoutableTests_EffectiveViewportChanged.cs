@@ -11,10 +11,10 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests.Layout
 {
-    public class LayoutableTests_EffectiveViewportChanged
+    public class LayoutableTests_EffectiveViewportChanged : ScopedTestBase
     {
         [Fact]
-        public async Task EffectiveViewportChanged_Not_Raised_When_Control_Added_To_Tree()
+        public async Task EffectiveViewportChanged_Not_Raised_When_Control_Added_To_Tree_And_Layout_Pass_Has_Not_Run()
         {
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
             await RunOnUIThread.Execute(async () =>
@@ -34,6 +34,56 @@ namespace Avalonia.Base.UnitTests.Layout
                 Assert.Equal(0, raised);
             });
         }
+        
+        [Fact]
+        public async Task EffectiveViewportChanged_Raised_When_Control_Added_To_Tree_And_Layout_Pass_Has_Run()
+        {
+            await RunOnUIThread.Execute(async () =>
+            {
+                var root = CreateRoot();
+                var target = new Canvas();
+                var raised = 0;
+
+                target.EffectiveViewportChanged += (s, e) =>
+                {
+                    ++raised;
+                };
+
+                root.Child = target;
+
+                Assert.Equal(0, raised);
+
+                await ExecuteInitialLayoutPass(root);
+
+                Assert.Equal(1, raised);
+            });
+        }
+        
+        [Fact]
+        public async Task EffectiveViewportChanged_Raised_When_Root_LayedOut_And_Then_Control_Added_To_Tree_And_Layout_Pass_Runs()
+        {
+            await RunOnUIThread.Execute(async () =>
+            {
+                var root = CreateRoot();
+                var target = new Canvas();
+                var raised = 0;
+
+                target.EffectiveViewportChanged += (s, e) =>
+                {
+                    ++raised;
+                };
+
+                await ExecuteInitialLayoutPass(root);
+
+                root.Child = target;
+
+                Assert.Equal(0, raised);
+
+                await ExecuteInitialLayoutPass(root);
+
+                Assert.Equal(1, raised);
+            });
+        }
 
         [Fact]
         public async Task EffectiveViewportChanged_Raised_Before_LayoutUpdated()
@@ -47,6 +97,28 @@ namespace Avalonia.Base.UnitTests.Layout
                 target.EffectiveViewportChanged += (s, e) =>
                 {
                     ++raised;
+                };
+
+                root.Child = target;
+
+                await ExecuteInitialLayoutPass(root);
+
+                Assert.Equal(1, raised);
+            });
+        }
+
+        [Fact]
+        public async Task EffectiveViewportChanged_Should_Not_Be_Raised_Twice_If_Subcribed_In_AttachedToVisualTree()
+        {
+            await RunOnUIThread.Execute(async () =>
+            {
+                var root = CreateRoot();
+                var target = new Canvas();
+                var raised = 0;
+
+                target.AttachedToVisualTree += (_, _) =>
+                {
+                    target.EffectiveViewportChanged += (_, _) => ++raised;
                 };
 
                 root.Child = target;
@@ -246,8 +318,11 @@ namespace Avalonia.Base.UnitTests.Layout
 
                 root.Child = parent;
 
-                await ExecuteInitialLayoutPass(root);
                 target.EffectiveViewportChanged += (s, e) => ++raised;
+                await ExecuteInitialLayoutPass(root);
+                
+                raised = 0; // The initial layout pass is expected to raise.
+                
                 target.RenderTransform = new TranslateTransform { X = 8 };
                 target.InvalidateMeasure();
                 await ExecuteLayoutPass(root);

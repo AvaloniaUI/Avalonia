@@ -463,6 +463,7 @@ namespace Avalonia.Controls
         static AutoCompleteBox()
         {
             FocusableProperty.OverrideDefaultValue<AutoCompleteBox>(true);
+            IsTabStopProperty.OverrideDefaultValue<AutoCompleteBox>(false);
 
             MinimumPopulateDelayProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnMinimumPopulateDelayChanged(e));
             IsDropDownOpenProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnIsDropDownOpenChanged(e));
@@ -710,7 +711,9 @@ namespace Avalonia.Controls
             else
             {
                 // The drop down is not open, the Down key will toggle it open.
-                if (e.Key == Key.Down)
+                // Ignore key buttons, if they are used for XY focus.
+                if (e.Key == Key.Down
+                    && !XYFocusHelpers.IsAllowedXYNavigationMode(this, e.KeyDeviceType))
                 {
                     SetCurrentValue(IsDropDownOpenProperty, true);
                     e.Handled = true;
@@ -770,33 +773,7 @@ namespace Avalonia.Controls
         /// <returns>true to indicate the
         /// <see cref="T:Avalonia.Controls.AutoCompleteBox" /> has focus;
         /// otherwise, false.</returns>
-        protected bool HasFocus()
-        {
-            Visual? focused = FocusManager.GetFocusManager(this)?.GetFocusedElement() as Visual;
-
-            while (focused != null)
-            {
-                if (object.ReferenceEquals(focused, this))
-                {
-                    return true;
-                }
-
-                // This helps deal with popups that may not be in the same
-                // visual tree
-                Visual? parent = focused.GetVisualParent();
-                if (parent == null)
-                {
-                    // Try the logical parent.
-                    Control? element = focused as Control;
-                    if (element != null)
-                    {
-                        parent = element.VisualParent;
-                    }
-                }
-                focused = parent;
-            }
-            return false;
-        }
+        protected bool HasFocus() => IsKeyboardFocusWithin;
 
         /// <summary>
         /// Handles the FocusChanged event.
@@ -820,8 +797,7 @@ namespace Avalonia.Controls
                 if (!wasFocused && TextBox != null && TextBoxSelectionLength <= 0)
                 {
                     TextBox.Focus();
-                    TextBox.SelectionStart = 0;
-                    TextBox.SelectionEnd = TextBox.Text?.Length ?? 0;
+                    TextBox.SelectAll();
                 }
             }
             else
@@ -836,7 +812,11 @@ namespace Avalonia.Controls
                 }
 
                 _userCalledPopulate = false;
-                ClearTextBoxSelection();
+
+                if (ContextMenu is not { IsOpen: true })
+                {
+                    ClearTextBoxSelection();
+                }
             }
 
             _isFocused = hasFocus;
@@ -1427,74 +1407,75 @@ namespace Avalonia.Controls
             // Indicate that filtering is ongoing
             _filterInAction = true;
 
-            if (_items == null)
+            try
             {
-                ClearView();
-                return;
+                if (_items == null)
+                {
+                    ClearView();
+                    return;
+                }
+
+                // Cache the current text value
+                string text = Text ?? string.Empty;
+
+                // Determine if any filtering mode is on
+                bool stringFiltering = TextFilter != null;
+                bool objectFiltering = FilterMode == AutoCompleteFilterMode.Custom && TextFilter == null;
+
+                List<object> items = _items;
+
+                // cache properties
+                var textFilter = TextFilter;
+                var itemFilter = ItemFilter;
+                var _newViewItems = new Collection<object>();
+
+                // if the mode is objectFiltering and itemFilter is null, we throw an exception
+                if (objectFiltering && itemFilter is null)
+                {
+                    throw new Exception(
+                        "ItemFilter property can not be null when FilterMode has value AutoCompleteFilterMode.Custom");
+                }
+
+                foreach (object item in items)
+                {
+                    // Exit the fitter when requested if cancellation is requested
+                    if (_cancelRequested)
+                    {
+                        return;
+                    }
+
+                    bool inResults = !(stringFiltering || objectFiltering);
+
+                    if (!inResults)
+                    {
+                        if (stringFiltering)
+                        {
+                            inResults = textFilter!(text, FormatValue(item));
+                        }
+                        else if (objectFiltering)
+                        {
+                            inResults = itemFilter!(text, item);
+                        }
+                    }
+
+                    if (inResults)
+                    {
+                        _newViewItems.Add(item);
+                    }
+                }
+
+                _view?.Clear();
+                _view?.AddRange(_newViewItems);
+
+                // Clear the evaluator to discard a reference to the last item
+                _valueBindingEvaluator?.ClearDataContext();
             }
-
-            // Cache the current text value
-            string text = Text ?? string.Empty;
-
-            // Determine if any filtering mode is on
-            bool stringFiltering = TextFilter != null;
-            bool objectFiltering = FilterMode == AutoCompleteFilterMode.Custom && TextFilter == null;
-            
-            List<object> items = _items;
-
-            // cache properties
-            var textFilter = TextFilter;
-            var itemFilter = ItemFilter;
-            var _newViewItems = new Collection<object>();
-            
-            // if the mode is objectFiltering and itemFilter is null, we throw an exception
-            if (objectFiltering && itemFilter is null)
+            finally
             {
                 // indicate that filtering is not ongoing anymore
                 _filterInAction = false;
                 _cancelRequested = false;
-                
-                throw new Exception(
-                    "ItemFilter property can not be null when FilterMode has value AutoCompleteFilterMode.Custom");
             }
-
-            foreach (object item in items)
-            {
-                // Exit the fitter when requested if cancellation is requested
-                if (_cancelRequested)
-                {
-                    return;
-                }
-
-                bool inResults = !(stringFiltering || objectFiltering);
-
-                if (!inResults)
-                {
-                    if (stringFiltering)
-                    {
-                        inResults = textFilter!(text, FormatValue(item));
-                    }
-                    else if (objectFiltering)
-                    {
-                        inResults = itemFilter!(text, item);
-                    }
-                }
-
-                if (inResults)
-                {
-                    _newViewItems.Add(item);
-                }
-            }
-
-            _view?.Clear();
-            _view?.AddRange(_newViewItems);
-
-            // Clear the evaluator to discard a reference to the last item
-            _valueBindingEvaluator?.ClearDataContext();
-
-            // indicate that filtering is not ongoing anymore
-            _filterInAction = false;
-            _cancelRequested = false;
         }
 
         /// <summary>
@@ -2094,7 +2075,7 @@ namespace Avalonia.Controls
                 {
                     _binding = value;
                     if (value is not null)
-                        AvaloniaObjectExtensions.Bind(this, ValueProperty, value);
+                        Bind(ValueProperty, value);
                 }
             }
 

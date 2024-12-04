@@ -1,4 +1,5 @@
-﻿using Avalonia.Controls.Metadata;
+﻿using Avalonia.Automation.Peers;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Data;
@@ -78,7 +79,7 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<DateTimeOffset?> SelectedDateProperty =
             AvaloniaProperty.Register<DatePicker, DateTimeOffset?>(nameof(SelectedDate),
-                defaultBindingMode: BindingMode.TwoWay);
+                defaultBindingMode: BindingMode.TwoWay, enableDataValidation: true);
 
         // Template Items
         private Button? _flyoutButton;
@@ -267,6 +268,8 @@ namespace Avalonia.Controls
             }
         }
 
+        protected override AutomationPeer OnCreateAutomationPeer() => new DatePickerAutomationPeer(this);
+
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
@@ -373,10 +376,11 @@ namespace Avalonia.Controls
             }
             else
             {
+                // By clearing local value, we reset text property to the value from the template.
+                _monthText!.ClearValue(TextBlock.TextProperty);
+                _yearText!.ClearValue(TextBlock.TextProperty);
+                _dayText!.ClearValue(TextBlock.TextProperty);
                 PseudoClasses.Set(":hasnodate", true);
-                _monthText!.Text = "month";
-                _yearText!.Text = "year";
-                _dayText!.Text = "day";
             }
         }
 
@@ -417,6 +421,14 @@ namespace Avalonia.Controls
         public void Clear()
         {
             SetCurrentValue(SelectedDateProperty, null);
+        }
+
+        protected override void UpdateDataValidation(AvaloniaProperty property, BindingValueType state, Exception? error)
+        {
+            base.UpdateDataValidation(property, state, error);
+
+            if (property == SelectedDateProperty)
+                DataValidationErrors.SetError(this, error);
         }
     }
 }

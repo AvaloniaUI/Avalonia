@@ -30,7 +30,7 @@ namespace Avalonia.Controls.Documents
                     baseline = baselineOffsetValue;
                 }
 
-                return -baseline;
+                return baseline;
             }
         }
 

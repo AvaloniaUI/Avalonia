@@ -3,6 +3,9 @@
 // Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
 
+using Avalonia.Automation;
+using Avalonia.Automation.Peers;
+using Avalonia.Controls.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
@@ -35,6 +38,7 @@ namespace Avalonia.Controls
                 (x,e) => x.DataGridCell_PointerPressed(e), handledEventsToo: true);
             FocusableProperty.OverrideDefaultValue<DataGridCell>(true);
             IsTabStopProperty.OverrideDefaultValue<DataGridCell>(false);
+            AutomationProperties.IsOffscreenBehaviorProperty.OverrideDefaultValue<DataGridCell>(IsOffscreenBehavior.FromClip);
         }
         public DataGridCell()
         { }
@@ -123,6 +127,11 @@ namespace Avalonia.Controls
             }
         }
 
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new DataGridCellAutomationPeer(this);
+        }
+
         /// <summary>
         /// Builds the visual tree for the cell control when a new template is applied.
         /// </summary>
@@ -189,8 +198,6 @@ namespace Avalonia.Controls
                     {
                         e.Handled = handled;
                     }
-
-                    OwningGrid.UpdatedStateOnMouseLeftButtonDown = true;
                 }
             }
             else if (e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
