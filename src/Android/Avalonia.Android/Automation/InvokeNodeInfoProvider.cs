@@ -5,7 +5,7 @@ using Avalonia.Automation.Provider;
 
 namespace Avalonia.Android.Automation
 {
-    public class InvokeNodeInfoProvider : NodeInfoProvider<IInvokeProvider>
+    internal class InvokeNodeInfoProvider : NodeInfoProvider<IInvokeProvider>
     {
         public InvokeNodeInfoProvider(AutomationPeer peer, int virtualViewId) : base(peer, virtualViewId)
         {
@@ -24,13 +24,8 @@ namespace Avalonia.Android.Automation
             }
         }
 
-        public override void PopulateNodeInfo(AccessibilityNodeInfoCompat nodeInfo, bool invokeDefault)
+        public override void PopulateNodeInfo(AccessibilityNodeInfoCompat nodeInfo)
         {
-            if (invokeDefault)
-            {
-                PopulateNodeInfo(nodeInfo);
-            }
-
             nodeInfo.AddAction(AccessibilityNodeInfoCompat.ActionClick);
             nodeInfo.Clickable = true;
         }

@@ -1,12 +1,13 @@
 ﻿using System;
-using System.Linq;
 using Android.OS;
 using AndroidX.Core.View.Accessibility;
 using Avalonia.Automation.Peers;
 
 namespace Avalonia.Android.Automation
 {
-    public abstract class NodeInfoProvider<T> : INodeInfoProvider
+    internal delegate INodeInfoProvider NodeInfoProviderInitializer(AutomationPeer peer, int virtualViewId);
+
+    internal abstract class NodeInfoProvider<T> : INodeInfoProvider
     {
         private readonly AutomationPeer _peer;
 
@@ -23,14 +24,6 @@ namespace Avalonia.Android.Automation
 
         public abstract bool PerformNodeAction(int action, Bundle? arguments);
 
-        public abstract void PopulateNodeInfo(AccessibilityNodeInfoCompat nodeInfo, bool invokeDefault);
-
-        protected void PopulateNodeInfo(AccessibilityNodeInfoCompat nodeInfo)
-        {
-            nodeInfo.ClassName = _peer.GetClassName();
-            nodeInfo.Enabled = _peer.IsEnabled();
-            nodeInfo.Focusable = _peer.IsKeyboardFocusable();
-            nodeInfo.HintText = _peer.GetHelpText();
-        }
+        public abstract void PopulateNodeInfo(AccessibilityNodeInfoCompat nodeInfo);
     }
 }

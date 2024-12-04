@@ -5,7 +5,7 @@ using Avalonia.Automation.Provider;
 
 namespace Avalonia.Android.Automation
 {
-    public class EmbeddedRootNodeInfoProvider : NodeInfoProvider<IEmbeddedRootProvider>
+    internal class EmbeddedRootNodeInfoProvider : NodeInfoProvider<IEmbeddedRootProvider>
     {
         public EmbeddedRootNodeInfoProvider(AutomationPeer peer, int virtualViewId) : base(peer, virtualViewId)
         {
@@ -13,9 +13,6 @@ namespace Avalonia.Android.Automation
 
         public override bool PerformNodeAction(int action, Bundle? arguments) => false;
 
-        public override void PopulateNodeInfo(AccessibilityNodeInfoCompat nodeInfo, bool invokeDefault)
-        {
-            PopulateNodeInfo(nodeInfo);
-        }
+        public override void PopulateNodeInfo(AccessibilityNodeInfoCompat nodeInfo) { }
     }
 }
