@@ -32,7 +32,13 @@ namespace Avalonia.Android
 
             AutomationPeer rootPeer = ControlAutomationPeer.CreatePeerForElement(view.TopLevel!);
             GetOrCreateNodeInfoProvidersFromPeer(rootPeer, out int _);
-            rootPeer.ChildrenChanged += (s, ev) => InvalidateRoot();
+            rootPeer.ChildrenChanged += (s, ev) => 
+            {
+                _peerNodeInfoProviders.Clear();
+                _peers.Clear();
+
+                InvalidateRoot();
+            };
 
             _view = view;
         }
