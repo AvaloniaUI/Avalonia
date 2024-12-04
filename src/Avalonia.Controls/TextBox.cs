@@ -1425,7 +1425,7 @@ namespace Avalonia.Controls
             }
             else
             {
-                bool hasWholeWordModifiers = modifiers.HasAllFlags(keymap.WholeWordTextActionModifiers);
+                bool hasWholeWordModifiers = modifiers.HasAllFlags(keymap.WholeWordTextActionModifiers) && !IsPasswordBox;
                 switch (e.Key)
                 {
                     case Key.Left:
