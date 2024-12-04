@@ -167,7 +167,7 @@ namespace Avalonia
         [PrivateApi]
         public AppBuilder AfterApplicationSetup(Action<AppBuilder> callback)
         {
-            AfterApplicationSetupCallback = (Action<AppBuilder>)Delegate.Combine(AfterPlatformServicesSetupCallback, callback);
+            AfterApplicationSetupCallback = (Action<AppBuilder>)Delegate.Combine(AfterApplicationSetupCallback, callback);
             return Self;
         }
 
