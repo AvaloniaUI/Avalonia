@@ -7,6 +7,7 @@ using AndroidX.CustomView.Widget;
 using Avalonia.Android.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
+using Avalonia.Controls.Automation.Peers;
 using Java.Lang;
 
 namespace Avalonia.Android
@@ -90,15 +91,17 @@ namespace Avalonia.Android
         protected override int GetVirtualViewAt(float x, float y)
         {
             Point p = _view.TopLevelImpl.PointToClient(new PixelPoint((int)x, (int)y));
-            AutomationPeer? peer = _peers[0].GetProvider<IEmbeddedRootProvider>()?.GetPeerFromPoint(p);
+            IEmbeddedRootProvider? embeddedRootProvider = _peers[0].GetProvider<IEmbeddedRootProvider>();
+            AutomationPeer? peer = embeddedRootProvider?.GetPeerFromPoint(p);
             if (peer is not null)
             {
                 GetOrCreateNodeInfoProvidersFromPeer(peer, out int virtualViewId);
-                return virtualViewId;
+                return virtualViewId == 0 ? InvalidId : virtualViewId;
             }
             else
             {
-                return InvalidId;
+                peer = embeddedRootProvider?.GetFocus();
+                return peer is null ? InvalidId : _peerIds[peer];
             }
         }
 
@@ -109,7 +112,8 @@ namespace Avalonia.Android
                 return;
             }
 
-            foreach (AutomationPeer peer in _peers[0].GetAllDescendants().Where(x => x is not NoneAutomationPeer && !x.IsOffscreen()))
+            foreach (AutomationPeer peer in _peers[0].GetAllDescendants()
+                .Where(x => x is not NoneAutomationPeer && !x.IsOffscreen()))
             {
                 GetOrCreateNodeInfoProvidersFromPeer(peer, out int virtualViewId);
                 virtualViewIds.Add(Integer.ValueOf(virtualViewId));
@@ -130,12 +134,6 @@ namespace Avalonia.Android
                 return;
             }
 
-            nodeInfo.Text = peer.GetName();
-            nodeInfo.ClassName = peer.GetClassName();
-            nodeInfo.Enabled = peer.IsEnabled();
-            nodeInfo.Focusable = peer.IsKeyboardFocusable();
-            nodeInfo.HintText = peer.GetHelpText();
-
             nodeInfo.SetParent(_view, HostId);
 
             AutomationPeer? labeledBy = peer.GetLabeledBy();
@@ -144,6 +142,12 @@ namespace Avalonia.Android
                 GetOrCreateNodeInfoProvidersFromPeer(labeledBy, out int labeledById);
                 nodeInfo.SetLabeledBy(_view.TopLevelImpl.View, labeledById);
             }
+
+            nodeInfo.Text = peer.GetName() ?? labeledBy?.GetName();
+            nodeInfo.ClassName = peer.GetClassName();
+            nodeInfo.Enabled = peer.IsEnabled();
+            nodeInfo.Focusable = peer.IsControlElement();
+            nodeInfo.HintText = peer.GetHelpText();
 
             Rect bounds = peer.GetBoundingRectangle();
             PixelRect screenRect = new(
