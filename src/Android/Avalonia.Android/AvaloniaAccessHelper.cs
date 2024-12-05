@@ -1,17 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using Android.OS;
-using Android.Runtime;
 using AndroidX.Core.View.Accessibility;
 using AndroidX.CustomView.Widget;
 using Avalonia.Android.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
-using Avalonia.Threading;
 using Java.Lang;
-using Java.Nio.Channels;
 
 namespace Avalonia.Android
 {
@@ -30,8 +26,8 @@ namespace Avalonia.Android
             };
 
         private readonly Dictionary<int, AutomationPeer> _peers;
-        private readonly Dictionary<int, AutomationPeerState> _peerStates;
         private readonly Dictionary<AutomationPeer, int> _peerIds;
+
         private readonly Dictionary<AutomationPeer, HashSet<INodeInfoProvider>> _peerNodeInfoProviders;
 
         private readonly AvaloniaView _view;
@@ -39,8 +35,6 @@ namespace Avalonia.Android
         public AvaloniaAccessHelper(AvaloniaView view) : base(view)
         {
             _peers = [];
-            _peerStates = [];
-
             _peerIds = [];
             _peerNodeInfoProviders = [];
 
@@ -78,10 +72,9 @@ namespace Avalonia.Android
             {
                 peerViewId = _peerNodeInfoProviders.Count;
                 _peers.Add(peerViewId, peer);
-                _peerStates.Add(peerViewId, new(peer));
+                _peerIds.Add(peer, peerViewId);
 
                 nodeInfoProviders = new();
-                _peerIds.Add(peer, peerViewId);
                 _peerNodeInfoProviders.Add(peer, nodeInfoProviders);
 
                 peer.PropertyChanged += (s, ev) => InvalidateVirtualView(peerViewId, 
@@ -148,15 +141,17 @@ namespace Avalonia.Android
         {
             if (!_peers.TryGetValue(virtualViewId, out AutomationPeer? peer))
             {
-                return;
+                return; // BAIL!! No work to be done
             }
 
+            // UI logical structure
             foreach (AutomationPeer child in peer.GetChildren())
             {
                 GetOrCreateNodeInfoProvidersFromPeer(child, out int childId);
                 nodeInfo.AddChild(_view, childId);
             }
 
+            // UI labeling
             AutomationPeer? labeledBy = peer.GetLabeledBy();
             if (labeledBy is not null)
             {
@@ -164,12 +159,16 @@ namespace Avalonia.Android
                 nodeInfo.SetLabeledBy(_view.TopLevelImpl.View, labeledById);
             }
 
+            // UI text contents
             nodeInfo.Text = peer.GetName();
+            nodeInfo.ContentDescription = peer.GetHelpText();
+
+            // UI metadata
             nodeInfo.ClassName = peer.GetClassName();
             nodeInfo.Enabled = peer.IsEnabled();
-            nodeInfo.Focusable = !peer.IsOffscreen() && peer.IsContentElement();
-            nodeInfo.HintText = peer.GetHelpText();
+            nodeInfo.Focusable = peer.IsContentElement() && !peer.IsOffscreen();
 
+            // On-screen bounds
             Rect bounds = peer.GetBoundingRectangle();
             PixelRect screenRect = new PixelRect(
                 _view.TopLevelImpl.PointToScreen(bounds.TopLeft),
@@ -180,6 +179,7 @@ namespace Avalonia.Android
                 screenRect.Right, screenRect.Bottom
                 ));
 
+            // UI provider specifics
             foreach (INodeInfoProvider nodeInfoProvider in _peerNodeInfoProviders[peer])
             {
                 nodeInfoProvider.PopulateNodeInfo(nodeInfo);

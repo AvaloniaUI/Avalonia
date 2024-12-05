@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Android.OS;
+﻿using Android.OS;
 using AndroidX.Core.View.Accessibility;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;

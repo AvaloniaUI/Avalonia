@@ -1,5 +1,4 @@
-﻿using System;
-using Android.OS;
+﻿using Android.OS;
 using AndroidX.Core.View.Accessibility;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
