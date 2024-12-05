@@ -46,6 +46,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { Script.Elbasan, "Elba"},
                 { Script.Elymaic, "Elym"},
                 { Script.Ethiopic, "Ethi"},
+                { Script.Garay, "Gara"},
                 { Script.Georgian, "Geor"},
                 { Script.Glagolitic, "Glag"},
                 { Script.GunjalaGondi, "Gong"},
@@ -54,6 +55,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { Script.Grantha, "Gran"},
                 { Script.Greek, "Grek"},
                 { Script.Gujarati, "Gujr"},
+                { Script.GurungKhema, "Gukh"},
                 { Script.Gurmukhi, "Guru"},
                 { Script.Hangul, "Hang"},
                 { Script.Han, "Hani"},
@@ -76,6 +78,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { Script.Khojki, "Khoj"},
                 { Script.KhitanSmallScript, "Kits"},
                 { Script.Kannada, "Knda"},
+                { Script.KiratRai, "Krai"},
                 { Script.Kaithi, "Kthi"},
                 { Script.TaiTham, "Lana"},
                 { Script.Lao, "Laoo"},
@@ -112,6 +115,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { Script.Nushu, "Nshu"},
                 { Script.Ogham, "Ogam"},
                 { Script.OlChiki, "Olck"},
+                { Script.OlOnal, "Onao"},
                 { Script.OldTurkic, "Orkh"},
                 { Script.Oriya, "Orya"},
                 { Script.Osage, "Osge"},
@@ -143,6 +147,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { Script.SoraSompeng, "Sora"},
                 { Script.Soyombo, "Soyo"},
                 { Script.Sundanese, "Sund"},
+                { Script.Sunuwar, "Sunu"},
                 { Script.SylotiNagri, "Sylo"},
                 { Script.Syriac, "Syrc"},
                 { Script.Tagbanwa, "Tagb"},
@@ -160,7 +165,9 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { Script.Tibetan, "Tibt"},
                 { Script.Tirhuta, "Tirh"},
                 { Script.Tangsa, "Tnsa"},
+                { Script.Todhri, "Todr"},
                 { Script.Toto, "Toto"},
+                { Script.TuluTigalari, "Tutg"},
                 { Script.Ugaritic, "Ugar"},
                 { Script.Vai, "Vaii"},
                 { Script.Vithkuqi, "Vith"},
@@ -175,11 +182,11 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
         public static string GetTag(Script script)
         {
-            if (!s_scriptToTag.TryGetValue(script, out var value))
+            if(!s_scriptToTag.ContainsKey(script))
             {
                 return "Zzzz";
             }
-            return value;
+            return s_scriptToTag[script];
         }
 
         private static readonly Dictionary<string, Script> s_tagToScript = 
@@ -224,6 +231,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { "Elba", Script.Elbasan},
                 { "Elym", Script.Elymaic},
                 { "Ethi", Script.Ethiopic},
+                { "Gara", Script.Garay},
                 { "Geor", Script.Georgian},
                 { "Glag", Script.Glagolitic},
                 { "Gong", Script.GunjalaGondi},
@@ -232,6 +240,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { "Gran", Script.Grantha},
                 { "Grek", Script.Greek},
                 { "Gujr", Script.Gujarati},
+                { "Gukh", Script.GurungKhema},
                 { "Guru", Script.Gurmukhi},
                 { "Hang", Script.Hangul},
                 { "Hani", Script.Han},
@@ -254,6 +263,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { "Khoj", Script.Khojki},
                 { "Kits", Script.KhitanSmallScript},
                 { "Knda", Script.Kannada},
+                { "Krai", Script.KiratRai},
                 { "Kthi", Script.Kaithi},
                 { "Lana", Script.TaiTham},
                 { "Laoo", Script.Lao},
@@ -290,6 +300,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { "Nshu", Script.Nushu},
                 { "Ogam", Script.Ogham},
                 { "Olck", Script.OlChiki},
+                { "Onao", Script.OlOnal},
                 { "Orkh", Script.OldTurkic},
                 { "Orya", Script.Oriya},
                 { "Osge", Script.Osage},
@@ -321,6 +332,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { "Sora", Script.SoraSompeng},
                 { "Soyo", Script.Soyombo},
                 { "Sund", Script.Sundanese},
+                { "Sunu", Script.Sunuwar},
                 { "Sylo", Script.SylotiNagri},
                 { "Syrc", Script.Syriac},
                 { "Tagb", Script.Tagbanwa},
@@ -338,7 +350,9 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { "Tibt", Script.Tibetan},
                 { "Tirh", Script.Tirhuta},
                 { "Tnsa", Script.Tangsa},
+                { "Todr", Script.Todhri},
                 { "Toto", Script.Toto},
+                { "Tutg", Script.TuluTigalari},
                 { "Ugar", Script.Ugaritic},
                 { "Vaii", Script.Vai},
                 { "Vith", Script.Vithkuqi},
@@ -353,11 +367,11 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
         public static Script GetScript(string tag)
         {
-            if (!s_tagToScript.TryGetValue(tag, out var value))
+            if(!s_tagToScript.ContainsKey(tag))
             {
                 return Script.Unknown;
             }
-            return value;
+            return s_tagToScript[tag];
         }
 
         private static readonly Dictionary<string, GeneralCategory> s_tagToGeneralCategory = 
@@ -404,11 +418,11 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
         public static GeneralCategory GetGeneralCategory(string tag)
         {
-            if (!s_tagToGeneralCategory.TryGetValue(tag, out var value))
+            if(!s_tagToGeneralCategory.ContainsKey(tag))
             {
                 return GeneralCategory.Other;
             }
-            return value;
+            return s_tagToGeneralCategory[tag];
         }
 
         private static readonly Dictionary<string, LineBreakClass> s_tagToLineBreakClass = 
@@ -448,6 +462,9 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { "CB", LineBreakClass.ContingentBreak},
                 { "XX", LineBreakClass.Unknown},
                 { "AI", LineBreakClass.Ambiguous},
+                { "AK", LineBreakClass.Aksara},
+                { "AP", LineBreakClass.AksaraPrebase},
+                { "AS", LineBreakClass.AksaraStart},
                 { "BK", LineBreakClass.MandatoryBreak},
                 { "CJ", LineBreakClass.ConditionalJapaneseStarter},
                 { "CR", LineBreakClass.CarriageReturn},
@@ -456,15 +473,17 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { "SA", LineBreakClass.ComplexContext},
                 { "SG", LineBreakClass.Surrogate},
                 { "SP", LineBreakClass.Space},
+                { "VF", LineBreakClass.ViramaFinal},
+                { "VI", LineBreakClass.Virama},
         };
 
         public static LineBreakClass GetLineBreakClass(string tag)
         {
-            if (!s_tagToLineBreakClass.TryGetValue(tag, out var value))
+            if(!s_tagToLineBreakClass.ContainsKey(tag))
             {
                 return LineBreakClass.Unknown;
             }
-            return value;
+            return s_tagToLineBreakClass[tag];
         }
 
         private static readonly Dictionary<string, BidiPairedBracketType> s_tagToBidiPairedBracketType = 
@@ -476,11 +495,11 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
         public static BidiPairedBracketType GetBidiPairedBracketType(string tag)
         {
-            if (!s_tagToBidiPairedBracketType.TryGetValue(tag, out var value))
+            if(!s_tagToBidiPairedBracketType.ContainsKey(tag))
             {
                 return BidiPairedBracketType.None;
             }
-            return value;
+            return s_tagToBidiPairedBracketType[tag];
         }
 
         private static readonly Dictionary<string, BidiClass> s_tagToBidiClass = 
@@ -512,11 +531,11 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
         public static BidiClass GetBidiClass(string tag)
         {
-            if (!s_tagToBidiClass.TryGetValue(tag, out var value))
+            if(!s_tagToBidiClass.ContainsKey(tag))
             {
                 return BidiClass.LeftToRight;
             }
-            return value;
+            return s_tagToBidiClass[tag];
         }
 
     }
