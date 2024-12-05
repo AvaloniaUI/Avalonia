@@ -32,7 +32,6 @@
     ComObjectWeakPtr<WindowBaseImpl> _parent;
     bool _closed;
     bool _isEnabled;
-    bool _canBecomeKeyWindow;
     bool _isExtended;
     bool _isTransitioningToFullScreen;
     AvnMenu* _menu;
@@ -190,6 +189,8 @@
     {
         [self setCollectionBehavior:NSWindowCollectionBehaviorCanJoinAllSpaces|NSWindowCollectionBehaviorFullScreenAuxiliary];
     }
+    
+    [self setInitialFirstResponder:_parent->View];
 
     return self;
 }
@@ -243,7 +244,7 @@
 
 -(BOOL)canBecomeKeyWindow
 {
-    if(_canBecomeKeyWindow && !_closed)
+    if(_parent->CanBecomeKeyWindow && !_closed)
     {
         // If the window has a child window being shown as a dialog then don't allow it to become the key window.
         auto parent = _parent.tryGet().dynamicCast<WindowImpl>();
@@ -259,16 +260,14 @@
     return false;
 }
 
-#ifndef IS_NSPANEL
 -(BOOL)canBecomeMainWindow
 {
-    return true;
+    return _parent->CanBecomeKeyWindow;
 }
-#endif
 
 -(void)setCanBecomeKeyWindow:(bool)value
 {
-    _canBecomeKeyWindow = value;
+    _parent->CanBecomeKeyWindow = value;
 }
 
 -(bool)shouldTryToHandleEvents
