@@ -156,7 +156,7 @@ namespace Avalonia.Android
             if (labeledBy is not null)
             {
                 GetOrCreateNodeInfoProvidersFromPeer(labeledBy, out int labeledById);
-                nodeInfo.SetLabeledBy(_view.TopLevelImpl.View, labeledById);
+                nodeInfo.SetLabeledBy(_view, labeledById);
             }
 
             // UI text contents
