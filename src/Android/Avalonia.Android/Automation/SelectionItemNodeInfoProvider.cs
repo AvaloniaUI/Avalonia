@@ -5,9 +5,9 @@ using Avalonia.Automation.Provider;
 
 namespace Avalonia.Android.Automation
 {
-    internal class InvokeNodeInfoProvider : NodeInfoProvider<IInvokeProvider>
+    internal class SelectionItemNodeInfoProvider : NodeInfoProvider<ISelectionItemProvider>
     {
-        public InvokeNodeInfoProvider(AutomationPeer peer, int virtualViewId) : base(peer, virtualViewId)
+        public SelectionItemNodeInfoProvider(AutomationPeer peer, int virtualViewId) : base(peer, virtualViewId)
         {
         }
 
@@ -15,8 +15,8 @@ namespace Avalonia.Android.Automation
         {
             switch (action)
             {
-                case AccessibilityNodeInfoCompat.ActionClick:
-                    GetProvider().Invoke();
+                case AccessibilityNodeInfoCompat.ActionSelect:
+                    GetProvider().Select();
                     return true;
                 default:
                     return false;
@@ -25,8 +25,8 @@ namespace Avalonia.Android.Automation
 
         public override void PopulateNodeInfo(AccessibilityNodeInfoCompat nodeInfo)
         {
-            nodeInfo.AddAction(AccessibilityNodeInfoCompat.ActionClick);
-            nodeInfo.Clickable = true;
+            nodeInfo.AddAction(AccessibilityNodeInfoCompat.ActionSelect);
+            nodeInfo.Selected = GetProvider().IsSelected;
         }
     }
 }

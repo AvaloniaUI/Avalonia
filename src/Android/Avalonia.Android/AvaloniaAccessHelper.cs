@@ -1,14 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Android.OS;
+using Android.Runtime;
 using AndroidX.Core.View.Accessibility;
 using AndroidX.CustomView.Widget;
 using Avalonia.Android.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
-using Avalonia.Controls.Automation.Peers;
+using Avalonia.Threading;
 using Java.Lang;
+using Java.Nio.Channels;
 
 namespace Avalonia.Android
 {
@@ -17,11 +20,17 @@ namespace Avalonia.Android
         private static readonly IReadOnlyDictionary<Type, NodeInfoProviderInitializer>
             s_providerTypeInitializers = new Dictionary<Type, NodeInfoProviderInitializer>()
             {
-                { typeof(IEmbeddedRootProvider), (peer, id) => new EmbeddedRootNodeInfoProvider(peer, id) },
+                { typeof(IExpandCollapseProvider), (peer, id) => new ExpandCollapseNodeInfoProvider(peer, id) },
                 { typeof(IInvokeProvider), (peer, id) => new InvokeNodeInfoProvider(peer, id) },
+                { typeof(IRangeValueProvider), (peer, id) => new RangeValueNodeInfoProvider(peer, id) },
+                { typeof(IScrollProvider), (peer, id) => new ScrollNodeInfoProvider(peer, id) },
+                { typeof(ISelectionItemProvider), (peer, id) => new SelectionItemNodeInfoProvider(peer, id) },
+                { typeof(IToggleProvider), (peer, id) => new ToggleNodeInfoProvider(peer, id) },
+                { typeof(IValueProvider), (peer, id) => new ValueNodeInfoProvider(peer, id) },
             };
 
         private readonly Dictionary<int, AutomationPeer> _peers;
+        private readonly Dictionary<int, AutomationPeerState> _peerStates;
         private readonly Dictionary<AutomationPeer, int> _peerIds;
         private readonly Dictionary<AutomationPeer, HashSet<INodeInfoProvider>> _peerNodeInfoProviders;
 
@@ -30,12 +39,17 @@ namespace Avalonia.Android
         public AvaloniaAccessHelper(AvaloniaView view) : base(view)
         {
             _peers = [];
+            _peerStates = [];
+
             _peerIds = [];
             _peerNodeInfoProviders = [];
 
             AutomationPeer rootPeer = ControlAutomationPeer.CreatePeerForElement(view.TopLevel!);
-            GetOrCreateNodeInfoProvidersFromPeer(rootPeer, out int _);
-            rootPeer.ChildrenChanged += (s, ev) => InvalidateRoot();
+            GetOrCreateNodeInfoProvidersFromPeer(rootPeer, out int rootId);
+            rootPeer.ChildrenChanged += (s, ev) => InvalidateVirtualView(rootId, 
+                AccessibilityEventCompat.ContentChangeTypeSubtree);
+            rootPeer.PropertyChanged += (s, ev) => InvalidateVirtualView(rootId,
+                AccessibilityEventCompat.ContentChangeTypeUndefined);
 
             _view = view;
         }
@@ -62,14 +76,18 @@ namespace Avalonia.Android
             }
             else
             {
-                nodeInfoProviders = new();
                 peerViewId = _peerNodeInfoProviders.Count;
-
                 _peers.Add(peerViewId, peer);
+                _peerStates.Add(peerViewId, new(peer));
+
+                nodeInfoProviders = new();
                 _peerIds.Add(peer, peerViewId);
                 _peerNodeInfoProviders.Add(peer, nodeInfoProviders);
 
-                peer.PropertyChanged += (s, ev) => InvalidateVirtualView(peerViewId);
+                peer.PropertyChanged += (s, ev) => InvalidateVirtualView(peerViewId, 
+                    AccessibilityEventCompat.ContentChangeTypeUndefined);
+                peer.ChildrenChanged += (s, ev) => InvalidateVirtualView(peerViewId, 
+                    AccessibilityEventCompat.ContentChangeTypeSubtree);
 
                 Type peerType = peer.GetType();
                 IEnumerable<Type> providerTypes = peerType.GetInterfaces()
@@ -112,8 +130,7 @@ namespace Avalonia.Android
                 return;
             }
 
-            foreach (AutomationPeer peer in _peers[0].GetAllDescendants()
-                .Where(x => x is not NoneAutomationPeer && !x.IsOffscreen()))
+            foreach (AutomationPeer peer in _peers[0].GetChildren())
             {
                 GetOrCreateNodeInfoProvidersFromPeer(peer, out int virtualViewId);
                 virtualViewIds.Add(Integer.ValueOf(virtualViewId));
@@ -134,7 +151,11 @@ namespace Avalonia.Android
                 return;
             }
 
-            nodeInfo.SetParent(_view, HostId);
+            foreach (AutomationPeer child in peer.GetChildren())
+            {
+                GetOrCreateNodeInfoProvidersFromPeer(child, out int childId);
+                nodeInfo.AddChild(_view, childId);
+            }
 
             AutomationPeer? labeledBy = peer.GetLabeledBy();
             if (labeledBy is not null)
@@ -143,14 +164,14 @@ namespace Avalonia.Android
                 nodeInfo.SetLabeledBy(_view.TopLevelImpl.View, labeledById);
             }
 
-            nodeInfo.Text = peer.GetName() ?? labeledBy?.GetName();
+            nodeInfo.Text = peer.GetName();
             nodeInfo.ClassName = peer.GetClassName();
             nodeInfo.Enabled = peer.IsEnabled();
-            nodeInfo.Focusable = peer.IsControlElement();
+            nodeInfo.Focusable = !peer.IsOffscreen() && peer.IsContentElement();
             nodeInfo.HintText = peer.GetHelpText();
 
             Rect bounds = peer.GetBoundingRectangle();
-            PixelRect screenRect = new(
+            PixelRect screenRect = new PixelRect(
                 _view.TopLevelImpl.PointToScreen(bounds.TopLeft),
                 _view.TopLevelImpl.PointToScreen(bounds.BottomRight)
                 );

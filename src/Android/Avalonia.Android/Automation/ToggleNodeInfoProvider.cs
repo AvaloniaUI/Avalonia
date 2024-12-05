@@ -1,13 +1,14 @@
-﻿using Android.OS;
+﻿using System;
+using Android.OS;
 using AndroidX.Core.View.Accessibility;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
 
 namespace Avalonia.Android.Automation
 {
-    internal class InvokeNodeInfoProvider : NodeInfoProvider<IInvokeProvider>
+    internal class ToggleNodeInfoProvider : NodeInfoProvider<IToggleProvider>
     {
-        public InvokeNodeInfoProvider(AutomationPeer peer, int virtualViewId) : base(peer, virtualViewId)
+        public ToggleNodeInfoProvider(AutomationPeer peer, int virtualViewId) : base(peer, virtualViewId)
         {
         }
 
@@ -16,7 +17,7 @@ namespace Avalonia.Android.Automation
             switch (action)
             {
                 case AccessibilityNodeInfoCompat.ActionClick:
-                    GetProvider().Invoke();
+                    GetProvider().Toggle();
                     return true;
                 default:
                     return false;
@@ -27,6 +28,9 @@ namespace Avalonia.Android.Automation
         {
             nodeInfo.AddAction(AccessibilityNodeInfoCompat.ActionClick);
             nodeInfo.Clickable = true;
+
+            nodeInfo.Checked = GetProvider().ToggleState == ToggleState.On;
+            nodeInfo.Checkable = true;
         }
     }
 }
