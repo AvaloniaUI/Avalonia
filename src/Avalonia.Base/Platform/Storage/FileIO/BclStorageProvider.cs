@@ -153,20 +153,15 @@ internal abstract class BclStorageProvider : IStorageProvider
         char* path = null;
         string? result = null;
 
-        try
+        var hr = SHGetKnownFolderPath(&guid, 0, null, &path);
+        if (hr == 0)
         {
-            var hr = SHGetKnownFolderPath(&guid, 0, null, &path);
-            if (hr == 0)
-            {
-                result = Marshal.PtrToStringUni((IntPtr)path);
-            }
+            result = Marshal.PtrToStringUni((IntPtr)path);
         }
-        finally
+
+        if (path != null)
         {
-            if (path != null)
-            {
-                Marshal.FreeCoTaskMem((IntPtr)path);
-            }
+            Marshal.FreeCoTaskMem((IntPtr)path);
         }
 
         return result;
