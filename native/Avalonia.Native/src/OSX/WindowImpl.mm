@@ -91,7 +91,6 @@ void WindowImpl::BringToFront()
         }
         
         [Window invalidateShadow];
-        ZOrderChildWindows();
     }
 }
 

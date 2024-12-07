@@ -311,7 +311,21 @@
             if(parent != nullptr){
                 auto parentWindow = parent->Window;
                 
-                [parentWindow makeFirstResponder:parent->View];
+                @try
+                {
+                    if(parentWindow != nullptr)
+                        [parentWindow makeFirstResponder:parent->View];
+                    else
+                        NSLog(@"parentWindow is null");
+                }
+                @catch (NSException *exception)
+                {
+                  NSLog(@"Exception caught: %@", exception.reason);
+                }
+                @finally
+                {
+                  NSLog(@"Finally block executed");
+                }
             }
         } else{
             [self becomeFirstResponder];
