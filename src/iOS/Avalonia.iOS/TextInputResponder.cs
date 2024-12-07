@@ -220,15 +220,17 @@ partial class AvaloniaView
 
             string result = "";
             if (string.IsNullOrEmpty(_markedText))
+            {
                 if(surroundingText != null && r.EndIndex < surroundingText.Length)
                 {
                     result = surroundingText[r.StartIndex..r.EndIndex];
                 }
+            }
             else
             {
                 var span = new CombinedSpan3<char>(surroundingText.AsSpan().Slice(0, currentSelection.Start),
                     _markedText,
-                    surroundingText.AsSpan().Slice(currentSelection.Start));
+                    surroundingText.AsSpan().Slice(currentSelection.Start, currentSelection.End - currentSelection.Start));
                 var buf = new char[r.EndIndex - r.StartIndex];
                 span.CopyTo(buf, r.StartIndex);
                 result = new string(buf);
