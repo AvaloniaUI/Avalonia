@@ -76,6 +76,8 @@ public:
     virtual HRESULT SetTransparencyMode(AvnWindowTransparencyMode mode) override;
                            
     virtual bool IsModal();
+    
+    bool IsActivationEventsSuppressed();
 
     id<AvnWindowProtocol> GetWindowProtocol ();
                            
@@ -107,6 +109,7 @@ protected:
     bool _shown;
     std::list<WindowBaseImpl*> _children;
     bool _isModal;
+    bool _suppressActivationEvents;
 
 public:
     WindowBaseImpl* Parent = nullptr;

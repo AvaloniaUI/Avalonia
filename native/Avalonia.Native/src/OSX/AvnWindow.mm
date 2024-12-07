@@ -288,7 +288,12 @@
     auto parent = _parent.tryGet();
     if(parent != nullptr)
     {
-        parent->BaseEvents->Activated();
+        NSLog(parent->IsActivationEventsSuppressed() ? @"From AvnWindow::becomeKeyWindow: supressed" : @"From AvnWindow::becomeKeyWindow: notsuppressed");
+        if(!parent->IsActivationEventsSuppressed())
+        {
+            NSLog( @"From AvnWindow::becomeKeyWindow: Activated"  );
+            parent->BaseEvents->Activated();
+        }
     }
 
     [super becomeKeyWindow];
@@ -412,8 +417,16 @@
 -(void)windowDidResignKey:(NSNotification* _Nonnull)notification
 {
     auto parent = _parent.tryGet();
-    if(parent)
-        parent->BaseEvents->Deactivated();
+
+    if(parent != nullptr)
+    {
+        NSLog(parent->IsActivationEventsSuppressed() ? @"From AvnWindow::windowDidResignKey: supressed" : @"From AvnWindow::windowDidResignKey: notsuppressed");
+        if(!parent->IsActivationEventsSuppressed())
+        {
+            NSLog( @"From AvnWindow::windowDidResignKey: Deactivated"  );
+            parent->BaseEvents->Deactivated();
+        }
+    }
 
     [self showAppMenuOnly];
     

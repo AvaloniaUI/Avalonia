@@ -97,6 +97,9 @@ void WindowImpl::BringToFront()
 
 void WindowImpl::ZOrderChildWindows()
 {
+    _suppressActivationEvents = true;
+    NSLog(IsActivationEventsSuppressed() ? @"From AvnWindow::ZOrderChildWindows: set to suppressed" : @"From AvnWindow::ZOrderChildWindows: set to not suppressed");
+    
     for(auto iterator = _children.begin(); iterator != _children.end(); iterator++)
     {
         auto window = (*iterator)->Window;
@@ -106,6 +109,8 @@ void WindowImpl::ZOrderChildWindows()
             (*iterator)->BringToFront();
         }
     }
+    _suppressActivationEvents = false;
+    NSLog(IsActivationEventsSuppressed() ? @"From AvnWindow::ZOrderChildWindows: set to suppressed" : @"From AvnWindow::ZOrderChildWindows: set to not suppressed");
 }
 
 bool WindowImpl::CanBecomeKeyWindow()

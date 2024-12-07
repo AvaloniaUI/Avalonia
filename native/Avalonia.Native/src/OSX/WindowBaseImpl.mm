@@ -447,6 +447,10 @@ bool WindowBaseImpl::IsModal() {
     return false;
 }
 
+bool WindowBaseImpl::IsActivationEventsSuppressed() {
+    return _suppressActivationEvents;
+}
+
 void WindowBaseImpl::UpdateAppearance() {
     [Window setStyleMask:CalculateStyleMask()];
 }
