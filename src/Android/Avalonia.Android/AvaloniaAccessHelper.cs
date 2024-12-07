@@ -160,7 +160,9 @@ namespace Avalonia.Android
             }
 
             // UI text contents
-            nodeInfo.Text = peer.GetHelpText() ?? peer.GetName();
+            string labelText = peer.GetName();
+            string helpText = peer.GetHelpText();
+            nodeInfo.Text = string.IsNullOrEmpty(helpText) ? labelText : helpText;
 
             // UI metadata
             nodeInfo.ClassName = peer.GetClassName();
