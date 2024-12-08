@@ -120,6 +120,7 @@ namespace Avalonia.Data
                 source,
                 nodes,
                 FallbackValue,
+                delay: TimeSpan.FromMilliseconds(Delay),
                 converter: Converter,
                 converterParameter: ConverterParameter,
                 targetNullValue: TargetNullValue);
@@ -168,6 +169,7 @@ namespace Avalonia.Data
                 source,
                 nodes,
                 FallbackValue,
+                delay: TimeSpan.FromMilliseconds(Delay),
                 converter: Converter,
                 converterCulture: ConverterCulture,
                 converterParameter: ConverterParameter,
