@@ -514,7 +514,7 @@ namespace Avalonia.Controls.Presenters
                 Vector delta = default;
                 if (isLogical)
                     _activeLogicalGestureScrolls?.TryGetValue(e.Id, out delta);
-                delta += e.Delta;
+                delta += CheckFlowDirection(e.Delta);
 
                 if (isLogical && scrollable is object)
                 {
@@ -665,7 +665,7 @@ namespace Avalonia.Controls.Presenters
 
                 var x = Offset.X;
                 var y = Offset.Y;
-                var delta = e.Delta;
+                var delta = CheckFlowDirection(e.Delta);
 
                 // KeyModifiers.Shift should scroll in horizontal direction. This does not work on every platform. 
                 // If Shift-Key is pressed and X is close to 0 we swap the Vector.
@@ -1064,6 +1064,15 @@ namespace Avalonia.Controls.Presenters
             }
 
             return snapPointsInfo;
+        }
+
+        private Vector CheckFlowDirection(Vector delta)
+        {
+            if (FlowDirection == Media.FlowDirection.RightToLeft)
+            {
+                return delta.WithX(-delta.X);
+            }
+            return delta;
         }
     }
 }
