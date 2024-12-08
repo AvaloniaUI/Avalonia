@@ -160,12 +160,11 @@ namespace Avalonia.Android
             }
 
             // UI text contents
-            string labelText = peer.GetName();
-            string helpText = peer.GetHelpText();
-            nodeInfo.Text = string.IsNullOrEmpty(helpText) ? labelText : helpText;
+            nodeInfo.Text = peer.GetName();
+            nodeInfo.ContentDescription = peer.GetHelpText();
 
             // UI metadata
-            nodeInfo.ClassName = peer.GetClassName();
+            nodeInfo.ClassName = peer.GetLocalizedControlType();
             nodeInfo.Enabled = peer.IsEnabled();
             nodeInfo.Focusable = peer.IsContentElement() && !peer.IsOffscreen();
 
