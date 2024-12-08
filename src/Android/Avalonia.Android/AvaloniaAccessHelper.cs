@@ -164,7 +164,7 @@ namespace Avalonia.Android
             nodeInfo.ContentDescription = peer.GetHelpText();
 
             // UI metadata
-            nodeInfo.ClassName = peer.GetLocalizedControlType();
+            nodeInfo.ClassName = peer.GetClassName();
             nodeInfo.Enabled = peer.IsEnabled();
             nodeInfo.Focusable = peer.IsContentElement() && !peer.IsOffscreen();
 
