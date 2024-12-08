@@ -977,6 +977,29 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void ContainerClearing_Is_Raised_When_ItemsSource_Is_Cleared()
+        {
+            using var app = Start();
+            var itemsSource = new ObservableCollection<object> { "Foo", "Bar", "Baz" };
+            var target = CreateTarget(itemsSource: itemsSource);
+
+            var expectedContainers = itemsSource.Select(x => target.ContainerFromItem(x)).ToArray();
+            var actualContainers = new List<Control>();
+            var raised = 0;
+
+            target.ContainerClearing += (s, e) =>
+            {
+                actualContainers.Add(e.Container);
+                ++raised;
+            };
+
+            itemsSource.Clear();
+
+            Assert.Equal(3, raised);
+            Assert.Equal(expectedContainers, actualContainers);
+        }
+
+        [Fact]
         public void Handles_Recycling_Control_Items_Inside_Containers()
         {
             // Issue #10825

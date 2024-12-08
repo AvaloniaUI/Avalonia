@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Avalonia.OpenGL;
@@ -41,19 +42,19 @@ namespace Avalonia.LinuxFramebuffer.Output
         public IPlatformGraphics PlatformGraphics { get; private set; }
 
         public DrmOutput(DrmCard card, DrmResources resources, DrmConnector connector, DrmModeInfo modeInfo,
-            DrmOutputOptions options = null)
+            DrmOutputOptions? options = null)
         {
             if (options != null)
                 _outputOptions = options;
             Init(card, resources, connector, modeInfo);
         }
 
-        public DrmOutput(string path = null, bool connectorsForceProbe = false, DrmOutputOptions options = null)
+        public DrmOutput(string? path = null, bool connectorsForceProbe = false, DrmOutputOptions? options = null)
             :this(new DrmCard(path), connectorsForceProbe, options)
         {
         }
 
-        public DrmOutput(DrmCard card, bool connectorsForceProbe = false, DrmOutputOptions options = null)
+        public DrmOutput(DrmCard card, bool connectorsForceProbe = false, DrmOutputOptions? options = null)
         {
             if (options != null)
                 _outputOptions = options;
@@ -67,9 +68,9 @@ namespace Avalonia.LinuxFramebuffer.Output
                 connectors = connectors.Where(c => c.ConnectorType == connectorType);
             }
 
-            if (options?.ConnectorType_Id is { } connectorType_Id)
+            if (options?.ConnectorTypeId is { } connectorTypeId)
             {
-                connectors = connectors.Where(c => c.ConnectorType_Id == connectorType_Id);
+                connectors = connectors.Where(c => c.ConnectorTypeId == connectorTypeId);
             }
 
             var connector =
@@ -78,7 +79,7 @@ namespace Avalonia.LinuxFramebuffer.Output
             if (connector == null)
                 throw new InvalidOperationException("Unable to find connected DRM connector");
 
-            DrmModeInfo mode = null;
+            DrmModeInfo? mode = null;
 
             if (options?.VideoMode != null)
             {
@@ -157,6 +158,12 @@ namespace Avalonia.LinuxFramebuffer.Output
         }
 
 
+        [MemberNotNull(nameof(_card))]
+        [MemberNotNull(nameof(PlatformGraphics))]
+        [MemberNotNull(nameof(FbDestroyDelegate))]
+        [MemberNotNull(nameof(_eglDisplay))]
+        [MemberNotNull(nameof(_eglSurface))]
+        [MemberNotNull(nameof(_deferredContext))]
         void Init(DrmCard card, DrmResources resources, DrmConnector connector, DrmModeInfo modeInfo)
         {
             FbDestroyDelegate = FbDestroyCallback;
@@ -232,7 +239,7 @@ namespace Avalonia.LinuxFramebuffer.Output
 
             if (_outputOptions.EnableInitialBufferSwapping)
             {
-                //Go trough two cycles of buffer swapping (there are render artifacts otherwise)
+                //Go through two cycles of buffer swapping (there are render artifacts otherwise)
                 for (var c = 0; c < 2; c++)
                     using (CreateGlRenderTarget().BeginDraw())
                     {
@@ -311,7 +318,7 @@ namespace Avalonia.LinuxFramebuffer.Output
                         };
                         while (waitingForFlip)
                         {
-                            var pfd = new pollfd {events = 1, fd = _parent._card.Fd};
+                            var pfd = new PollFd {events = 1, fd = _parent._card.Fd};
                             poll(&pfd, new IntPtr(1), -1);
                             drmHandleEvent(_parent._card.Fd, &ctx);
                         }
@@ -330,7 +337,7 @@ namespace Avalonia.LinuxFramebuffer.Output
 
                 public double Scaling => _parent.Scaling;
 
-                public bool IsYFlipped { get; }
+                public bool IsYFlipped => false;
             }
 
             public IGlPlatformSurfaceRenderingSession BeginDraw()

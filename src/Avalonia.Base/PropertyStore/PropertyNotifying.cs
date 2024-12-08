@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 
 namespace Avalonia.PropertyStore
 {
@@ -10,26 +9,28 @@ namespace Avalonia.PropertyStore
     /// Uses the disposable pattern to ensure that the closing Notifying call is made even in the
     /// presence of exceptions. 
     /// </remarks>
-    internal readonly struct PropertyNotifying : IDisposable
+    internal struct PropertyNotifying : IDisposable
     {
-        private readonly AvaloniaObject _owner;
-        private readonly AvaloniaProperty _property;
+        private readonly AvaloniaObject? _owner;
+        private Action<AvaloniaObject, bool>? _notifying;
 
-        private PropertyNotifying(AvaloniaObject owner, AvaloniaProperty property)
+        private PropertyNotifying(AvaloniaObject owner, Action<AvaloniaObject, bool>? notifying)
         {
-            Debug.Assert(property.Notifying is not null);
             _owner = owner;
-            _property = property;
-            _property.Notifying!(owner, true);
+            _notifying = notifying;
+            notifying?.Invoke(owner, true);
         }
 
-        public void Dispose() => _property.Notifying!(_owner, false);
-
-        public static PropertyNotifying? Start(AvaloniaObject owner, AvaloniaProperty property)
+        public void Dispose()
         {
-            if (property.Notifying is null)
-                return null;
-            return new PropertyNotifying(owner, property);
+            if (_notifying is null)
+                return;
+
+            _notifying(_owner!, false);
+            _notifying = null;
         }
+
+        public static PropertyNotifying Start(AvaloniaObject owner, AvaloniaProperty property)
+            => new(owner, property.Notifying);
     }
 }

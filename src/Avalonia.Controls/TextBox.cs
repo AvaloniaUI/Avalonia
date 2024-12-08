@@ -45,6 +45,18 @@ namespace Avalonia.Controls
         public static KeyGesture? PasteGesture => Application.Current?.PlatformSettings?.HotkeyConfiguration.Paste.FirstOrDefault();
 
         /// <summary>
+        /// Defines the <see cref="IsInactiveSelectionHighlightEnabled"/> property
+        /// </summary>
+        public static readonly StyledProperty<bool> IsInactiveSelectionHighlightEnabledProperty = 
+            AvaloniaProperty.Register<TextBox, bool>(nameof(IsInactiveSelectionHighlightEnabled), defaultValue: true);
+
+        /// <summary>
+        /// Defines the <see cref="ClearSelectionOnLostFocus"/> property
+        /// </summary>
+        public static readonly StyledProperty<bool> ClearSelectionOnLostFocusProperty = 
+            AvaloniaProperty.Register<TextBox, bool>(nameof(ClearSelectionOnLostFocus), defaultValue: true);
+
+        /// <summary>
         /// Defines the <see cref="AcceptsReturn"/> property
         /// </summary>
         public static readonly StyledProperty<bool> AcceptsReturnProperty =
@@ -374,6 +386,24 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value that determines whether the TextBox shows a selection highlight when it is not focused.
+        /// </summary>
+        public bool IsInactiveSelectionHighlightEnabled
+        {
+            get => GetValue(IsInactiveSelectionHighlightEnabledProperty);
+            set => SetValue(IsInactiveSelectionHighlightEnabledProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets a value that determines whether the TextBox clears its selection after it loses focus.
+        /// </summary>
+        public bool ClearSelectionOnLostFocus
+        {
+            get=> GetValue(ClearSelectionOnLostFocusProperty);
+            set=> SetValue(ClearSelectionOnLostFocusProperty, value);
+        }
+
+        /// <summary>
         /// Gets or sets a value that determines whether the TextBox allows and displays newline or return characters
         /// </summary>
         public bool AcceptsReturn
@@ -406,9 +436,13 @@ namespace Avalonia.Controls
             if (IsUndoEnabled && _undoRedoHelper.TryGetLastState(out state) && state.Text == Text)
                 _undoRedoHelper.UpdateLastState();
 
+            using var _ = _imClient.BeginChange();
+
             var newValue = e.GetNewValue<int>();
             SetCurrentValue(SelectionStartProperty, newValue);
             SetCurrentValue(SelectionEndProperty, newValue);
+
+           _presenter?.SetCurrentValue(TextPresenter.CaretIndexProperty, newValue);
         }
 
         /// <summary>
@@ -564,19 +598,29 @@ namespace Avalonia.Controls
         }
 
         private static string? CoerceText(AvaloniaObject sender, string? value)
-        {
-            var textBox = (TextBox)sender;
+            => ((TextBox)sender).CoerceText(value);
 
+        /// <summary>
+        /// Coerces the current text.
+        /// </summary>
+        /// <param name="value">The initial text.</param>
+        /// <returns>A coerced text.</returns>
+        /// <remarks>
+        /// This method also manages the internal undo/redo state whenever the text changes:
+        /// if overridden, ensure that the base is called or undo/redo won't work correctly.
+        /// </remarks>
+        protected virtual string? CoerceText(string? value)
+        {
             // Before #9490, snapshot here was done AFTER text change - this doesn't make sense
-            // since intial state would never be no text and you'd always have to make a text 
+            // since initial state would never be no text and you'd always have to make a text
             // change before undo would be available
             // The undo/redo stacks were also cleared at this point, which also doesn't make sense
             // as it is still valid to want to undo a programmatic text set
             // So we snapshot text now BEFORE the change so we can always revert
             // Also don't need to check IsUndoEnabled here, that's done in SnapshotUndoRedo
-            if (!textBox._isUndoingRedoing)
+            if (!_isUndoingRedoing)
             {
-                textBox.SnapshotUndoRedo();
+                SnapshotUndoRedo();
             }
 
             return value;
@@ -866,6 +910,13 @@ namespace Avalonia.Controls
                 {
                     _presenter.ShowCaret();
                 }
+                else
+                {
+                    if (IsInactiveSelectionHighlightEnabled)
+                    {
+                        _presenter.ShowSelectionHighlight = true;
+                    }
+                }
 
                 _presenter.PropertyChanged += PresenterPropertyChanged;
             }
@@ -963,6 +1014,11 @@ namespace Avalonia.Controls
         {
             base.OnGotFocus(e);
 
+            if(_presenter != null)
+            {
+                _presenter.ShowSelectionHighlight = true;
+            }           
+
             // when navigating to a textbox via the tab key, select all text if
             //   1) this textbox is *not* a multiline textbox
             //   2) this textbox has any text to select
@@ -987,7 +1043,11 @@ namespace Avalonia.Controls
             if ((ContextFlyout == null || !ContextFlyout.IsOpen) &&
                 (ContextMenu == null || !ContextMenu.IsOpen))
             {
-                ClearSelection();
+                if (ClearSelectionOnLostFocus)
+                {
+                    ClearSelection();
+                }
+
                 SetCurrentValue(RevealPasswordProperty, false);
             }
 
@@ -996,6 +1056,11 @@ namespace Avalonia.Controls
             _presenter?.HideCaret();
 
             _imClient.SetPresenter(null, null);
+
+            if (_presenter != null && !IsInactiveSelectionHighlightEnabled)
+            {
+                _presenter.ShowSelectionHighlight = false;
+            }
         }
 
         protected override void OnTextInput(TextInputEventArgs e)
@@ -1215,6 +1280,8 @@ namespace Avalonia.Controls
             var modifiers = e.KeyModifiers;
 
             var keymap = Application.Current!.PlatformSettings!.HotkeyConfiguration;
+
+            using var _ = _imClient.BeginChange();
 
             bool Match(List<KeyGesture> gestures) => gestures.Any(g => g.Matches(e));
             bool DetectSelection() => e.KeyModifiers.HasAllFlags(keymap.SelectionModifiers);
@@ -1438,6 +1505,17 @@ namespace Avalonia.Controls
 
                                 var backspacePosition = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
 
+                                var lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(caretIndex, true);
+
+                                var backspaceCharacterHit = _presenter.TextLayout.TextLines[lineIndex]
+                                    .GetBackspaceCaretCharacterHit(new CharacterHit(caretIndex));
+
+                                if (backspaceCharacterHit.FirstCharacterIndex > backspacePosition &&
+                                    backspaceCharacterHit.FirstCharacterIndex < caretIndex)
+                                {
+                                    backspacePosition = backspaceCharacterHit.FirstCharacterIndex;
+                                }
+
                                 if (caretIndex != backspacePosition)
                                 {
                                     var start = Math.Min(backspacePosition, caretIndex);
@@ -1452,6 +1530,8 @@ namespace Avalonia.Controls
                                     SetCurrentValue(TextProperty, StringBuilderCache.GetStringAndRelease(sb));
 
                                     SetCurrentValue(CaretIndexProperty, start);
+
+                                    _presenter.MoveCaretToTextPosition(start);
                                 }
                             }
 
@@ -1547,6 +1627,8 @@ namespace Avalonia.Controls
             var text = Text;
             var clickInfo = e.GetCurrentPoint(this);
 
+            using var _ = _imClient.BeginChange();
+
             if (text != null && (e.Pointer.Type == PointerType.Mouse || e.ClickCount >= 2) && clickInfo.Properties.IsLeftButtonPressed &&
                 !(clickInfo.Pointer?.Captured is Border))
             {
@@ -1631,6 +1713,7 @@ namespace Avalonia.Controls
             {
                 return;
             }
+            using var _ = _imClient.BeginChange();
 
             // selection should not change during pointer move if the user right clicks
             if (e.Pointer.Captured == _presenter && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
@@ -1650,7 +1733,7 @@ namespace Avalonia.Controls
                 if (Math.Abs(caretIndex - previousIndex) == 1)
                     e.PreventGestureRecognition();
 
-                if (e.Pointer.Type == PointerType.Mouse)
+                if (e.Pointer.Type == PointerType.Mouse || _isDoubleTapped)
                 {
                     var selectionStart = SelectionStart;
                     var selectionEnd = SelectionEnd;
@@ -1713,8 +1796,12 @@ namespace Avalonia.Controls
                 return;
             }
 
+            using var _ = _imClient.BeginChange();
+
             if (e.Pointer.Type != PointerType.Mouse && !_isDoubleTapped)
             {
+                _imClient.ShowInputPanel();
+
                 var text = Text;
                 var clickInfo = e.GetCurrentPoint(this);
                 if (text != null && !(clickInfo.Pointer?.Captured is Border))
@@ -1856,6 +1943,8 @@ namespace Avalonia.Controls
             {
                 return;
             }
+
+            using var _ = _imClient.BeginChange();
 
             var text = Text ?? string.Empty;
             var selectionStart = SelectionStart;
@@ -2017,6 +2106,8 @@ namespace Avalonia.Controls
         /// </summary>
         public void SelectAll()
         {
+            using var _ = _imClient.BeginChange();
+
             SetCurrentValue(SelectionStartProperty, 0);
             SetCurrentValue(SelectionEndProperty, Text?.Length ?? 0);
         }
@@ -2033,6 +2124,8 @@ namespace Avalonia.Controls
         {
             if (IsReadOnly)
                 return true;
+
+            using var _ = _imClient.BeginChange();
 
             var (start, end) = GetSelectionRange();
 
@@ -2141,6 +2234,8 @@ namespace Avalonia.Controls
             var text = Text ?? string.Empty;
             var selectionStart = CaretIndex;
 
+            using var _ = _imClient.BeginChange();
+
             MoveHorizontal(-1, true, false, false);
 
             if (SelectionEnd > 0 &&
@@ -2159,6 +2254,8 @@ namespace Avalonia.Controls
             {
                 return;
             }
+
+            using var _ = _imClient.BeginChange();
 
             SetCurrentValue(SelectionStartProperty, CaretIndex);
 

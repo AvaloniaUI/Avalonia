@@ -17,18 +17,19 @@ namespace Avalonia.FreeDesktop
     internal class DBusMenuExporter
     {
         public static ITopLevelNativeMenuExporter? TryCreateTopLevelNativeMenu(IntPtr xid) =>
-            DBusHelper.Connection is null ? null : new DBusMenuExporterImpl(DBusHelper.Connection, xid);
+            DBusHelper.DefaultConnection is {} conn ?  new DBusMenuExporterImpl(conn, xid) : null;
 
         public static INativeMenuExporter TryCreateDetachedNativeMenu(string path, Connection currentConnection) =>
             new DBusMenuExporterImpl(currentConnection, path);
 
         public static string GenerateDBusMenuObjPath => $"/net/avaloniaui/dbusmenu/{Guid.NewGuid():N}";
 
-        private class DBusMenuExporterImpl : ComCanonicalDbusmenu, ITopLevelNativeMenuExporter, IDisposable
+        private sealed class DBusMenuExporterImpl : ComCanonicalDbusmenu, ITopLevelNativeMenuExporter, IDisposable
         {
             private readonly Dictionary<int, NativeMenuItemBase> _idsToItems = new();
             private readonly Dictionary<NativeMenuItemBase, int> _itemsToIds = new();
-            private readonly HashSet<NativeMenu> _menus = new();
+            private readonly HashSet<NativeMenu> _menus = [];
+            private readonly PathHandler _pathHandler;
             private readonly uint _xid;
             private readonly bool _appMenu = true;
             private ComCanonicalAppMenuRegistrar? _registrar;
@@ -40,32 +41,27 @@ namespace Avalonia.FreeDesktop
 
             public DBusMenuExporterImpl(Connection connection, IntPtr xid)
             {
-                InitBackingProperties();
+                Version = 4;
                 Connection = connection;
                 _xid = (uint)xid.ToInt32();
-                Path = GenerateDBusMenuObjPath;
-                SetNativeMenu(new NativeMenu());
+                _pathHandler = new PathHandler(GenerateDBusMenuObjPath);
+                _pathHandler.Add(this);
+                SetNativeMenu([]);
                 _ = InitializeAsync();
             }
 
             public DBusMenuExporterImpl(Connection connection, string path)
             {
-                InitBackingProperties();
+                Version = 4;
                 Connection = connection;
                 _appMenu = false;
-                Path = path;
-                SetNativeMenu(new NativeMenu());
+                _pathHandler = new PathHandler(path);
+                _pathHandler.Add(this);
+                SetNativeMenu([]);
                 _ = InitializeAsync();
             }
 
-            private void InitBackingProperties()
-            {
-                Version = 4;
-            }
-
-            protected override Connection Connection { get; }
-
-            public override string Path { get; }
+            public override Connection Connection { get; }
 
             protected override ValueTask<(uint Revision, (int, Dictionary<string, Variant>, Variant[]) Layout)> OnGetLayoutAsync(int parentId, int recursionDepth, string[] propertyNames)
             {
@@ -96,17 +92,17 @@ namespace Avalonia.FreeDesktop
             {
                 foreach (var e in events)
                     HandleEvent(e.Item1, e.Item2);
-                return new ValueTask<int[]>(Array.Empty<int>());
+                return new ValueTask<int[]>([]);
             }
 
             protected override ValueTask<bool> OnAboutToShowAsync(int id) => new(false);
 
             protected override ValueTask<(int[] UpdatesNeeded, int[] IdErrors)> OnAboutToShowGroupAsync(int[] ids) =>
-                new((Array.Empty<int>(), Array.Empty<int>()));
+                new(([], []));
 
             private async Task InitializeAsync()
             {
-                Connection.AddMethodHandler(this);
+                Connection.AddMethodHandler(_pathHandler);
                 if (!_appMenu)
                     return;
 
@@ -114,7 +110,7 @@ namespace Avalonia.FreeDesktop
                 try
                 {
                     if (!_disposed)
-                        await _registrar.RegisterWindowAsync(_xid, Path);
+                        await _registrar.RegisterWindowAsync(_xid, _pathHandler.Path);
                 }
                 catch
                 {
@@ -133,9 +129,9 @@ namespace Avalonia.FreeDesktop
                 _disposed = true;
                 // Fire and forget
                 _ = _registrar?.UnregisterWindowAsync(_xid);
+                _pathHandler.Remove(this);
+                Connection.RemoveMethodHandler(_pathHandler.Path);
             }
-
-
 
             public bool IsNativeMenuExported { get; private set; }
 
@@ -143,7 +139,7 @@ namespace Avalonia.FreeDesktop
 
             public void SetNativeMenu(NativeMenu? menu)
             {
-                menu ??= new NativeMenu();
+                menu ??= [];
 
                 if (_menu is not null)
                     ((INotifyCollectionChanged)_menu.Items).CollectionChanged -= OnMenuItemsChanged;
@@ -213,9 +209,7 @@ namespace Avalonia.FreeDesktop
 
             private void OnItemPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e) => QueueReset();
 
-            private static readonly string[] s_allProperties = {
-                "type", "label", "enabled", "visible", "shortcut", "toggle-type", "children-display", "toggle-state", "icon-data"
-            };
+            private static readonly string[] s_allProperties = ["type", "label", "enabled", "visible", "shortcut", "toggle-type", "children-display", "toggle-state", "icon-data"];
 
             private static Variant? GetProperty((NativeMenuItemBase? item, NativeMenu? menu) i, string name)
             {
@@ -250,18 +244,18 @@ namespace Avalonia.FreeDesktop
                             return null;
                         if (item.Gesture.KeyModifiers == 0)
                             return null;
-                        var lst = new Array<Variant>();
+                        var lst = new Array<string>();
                         var mod = item.Gesture;
                         if (mod.KeyModifiers.HasAllFlags(KeyModifiers.Control))
-                            lst.Add(new Variant("Control"));
+                            lst.Add("Control");
                         if (mod.KeyModifiers.HasAllFlags(KeyModifiers.Alt))
-                            lst.Add(new Variant("Alt"));
+                            lst.Add("Alt");
                         if (mod.KeyModifiers.HasAllFlags(KeyModifiers.Shift))
-                            lst.Add(new Variant("Shift"));
+                            lst.Add("Shift");
                         if (mod.KeyModifiers.HasAllFlags(KeyModifiers.Meta))
-                            lst.Add(new Variant("Super"));
-                        lst.Add(new Variant(item.Gesture.Key.ToString()));
-                        return Variant.FromArray(new Array<Array<Variant>>(new[] { lst }));
+                            lst.Add("Super");
+                        lst.Add(item.Gesture.Key.ToString());
+                        return Variant.FromArray(new Array<Array<string>>([lst]));
                     }
 
                     if (name == "toggle-type")
@@ -321,7 +315,7 @@ namespace Avalonia.FreeDesktop
             {
                 var id = item is null ? 0 : GetId(item);
                 var props = GetProperties((item, menu), propertyNames);
-                var children = depth == 0 || menu is null ? Array.Empty<Variant>() : new Variant[menu.Items.Count];
+                var children = depth == 0 || menu is null ? [] : new Variant[menu.Items.Count];
                 if (menu is not null)
                 {
                     for (var c = 0; c < children.Length; c++)
@@ -334,7 +328,6 @@ namespace Avalonia.FreeDesktop
 
                 return (id, props, children);
             }
-
 
             private void HandleEvent(int id, string eventId)
             {

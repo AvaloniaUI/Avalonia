@@ -207,10 +207,21 @@ namespace Avalonia.Controls
                 container ??= ContainerFromIndex(SelectedIndex);
                 if (container != null)
                 {
+                    if (SelectedContentTemplate != SelectContentTemplate(container.GetValue(ContentTemplateProperty)))
+                    {
+                        // If the value of SelectedContentTemplate is about to change, clear it first. This ensures
+                        // that the template is not reused as soon as SelectedContent changes in the statement below
+                        // this block, and also that controls generated from it are unloaded before SelectedContent
+                        // (which is typically their DataContext) changes.
+                        SelectedContentTemplate = null;
+                    }
+
                     _selectedItemSubscriptions = new CompositeDisposable(
                         container.GetObservable(ContentControl.ContentProperty).Subscribe(v => SelectedContent = v),
-                        // Note how we fall back to our own ContentTemplate if the container doesn't specify one
-                        container.GetObservable(ContentControl.ContentTemplateProperty).Subscribe(v => SelectedContentTemplate = v ?? ContentTemplate));
+                        container.GetObservable(ContentControl.ContentTemplateProperty).Subscribe(v => SelectedContentTemplate = SelectContentTemplate(v)));
+
+                    // Note how we fall back to our own ContentTemplate if the container doesn't specify one
+                    IDataTemplate? SelectContentTemplate(IDataTemplate? containerTemplate) => containerTemplate ?? ContentTemplate;
                 }
             }
         }
@@ -256,7 +267,7 @@ namespace Avalonia.Controls
         {
             base.OnGotFocus(e);
 
-            if (e.NavigationMethod == NavigationMethod.Directional)
+            if (e.NavigationMethod == NavigationMethod.Directional && e.Source is TabItem)
             {
                 e.Handled = UpdateSelectionFromEventSource(e.Source);
             }

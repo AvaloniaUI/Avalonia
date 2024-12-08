@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Threading;
 using Tmds.DBus.Protocol;
 using Tmds.DBus.SourceGenerator;
 
@@ -17,10 +18,10 @@ namespace Avalonia.FreeDesktop
 
         public DBusPlatformSettings()
         {
-            if (DBusHelper.Connection is null)
+            if (DBusHelper.DefaultConnection is not { } conn)
                 return;
 
-            _settings = new OrgFreedesktopPortalSettings(DBusHelper.Connection, "org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop");
+            _settings = new OrgFreedesktopPortalSettings(conn, "org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop");
             _ = _settings.WatchSettingChangedAsync(SettingsChangedHandler);
             _ = TryGetInitialValuesAsync();
         }
@@ -33,7 +34,7 @@ namespace Avalonia.FreeDesktop
             _accentColor = await TryGetAccentColorAsync();
             _lastColorValues = BuildPlatformColorValues();
             if (_lastColorValues is not null)
-                OnColorValuesChanged(_lastColorValues);
+                Dispatcher.UIThread.Post(() => OnColorValuesChanged(_lastColorValues));
         }
 
         private async Task<PlatformThemeVariant?> TryGetThemeVariantAsync()
@@ -45,7 +46,8 @@ namespace Avalonia.FreeDesktop
                 if (version >= 2)
                     value = await _settings!.ReadOneAsync("org.freedesktop.appearance", "color-scheme");
                 else
-                    value = (await _settings!.ReadAsync("org.freedesktop.appearance", "color-scheme")).GetItem(0);
+                    // Variants-in-Variants are automatically collapsed by Tmds.DBus.Protocol, so need to do so here as normally necessary
+                    value = await _settings!.ReadAsync("org.freedesktop.appearance", "color-scheme");
                 return ToColorScheme(value.GetUInt32());
             }
             catch (DBusException)
@@ -63,7 +65,7 @@ namespace Avalonia.FreeDesktop
                 if (version >= 2)
                     value = await _settings!.ReadOneAsync("org.freedesktop.appearance", "accent-color");
                 else
-                    value = (await _settings!.ReadAsync("org.freedesktop.appearance", "accent-color")).GetItem(0);
+                    value = await _settings!.ReadAsync("org.freedesktop.appearance", "accent-color");
                 return ToAccentColor(value);
             }
             catch (DBusException)

@@ -23,6 +23,11 @@ internal abstract class TargetTypeConverter
 
     private class DefaultConverter : TargetTypeConverter
     {
+        // TypeDescriptor.GetConverter might require unreferenced code for some generic types.
+        // But it's normally not the case in Avalonia. Additionally, compiled bindings will preserve referenced types. 
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.TypeConversionSupressWarningMessage)]
+        [UnconditionalSuppressMessage("Trimming", "IL2067", Justification = TrimmingMessages.TypeConversionSupressWarningMessage)]
+        [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = TrimmingMessages.TypeConversionSupressWarningMessage)]
         public override bool TryConvert(object? value, Type type, CultureInfo culture, out object? result)
         {
             if (value?.GetType() == type)
@@ -66,9 +71,6 @@ internal abstract class TargetTypeConverter
                 return true;
             }
 
-#pragma warning disable IL2026
-#pragma warning disable IL2067
-#pragma warning disable IL2072
             // TODO: TypeConverters are not trimming friendly in some edge cases, we probably need
             // to make compiled bindings emit conversion code at compile-time.
             var toTypeConverter = TypeDescriptor.GetConverter(t);
@@ -76,16 +78,32 @@ internal abstract class TargetTypeConverter
 
             if (toTypeConverter.CanConvertFrom(from))
             {
-                result = toTypeConverter.ConvertFrom(null, culture, value);
-                return true;
+                try
+                {
+                    result = toTypeConverter.ConvertFrom(null, culture, value);
+                    return true;
+                }
+                catch
+                {
+                    result = null;
+                    return false;
+                }
             }
 
             var fromTypeConverter = TypeDescriptor.GetConverter(from);
 
             if (fromTypeConverter.CanConvertTo(t))
             {
-                result = fromTypeConverter.ConvertTo(null, culture, value, t);
-                return true;
+                try
+                {
+                    result = fromTypeConverter.ConvertTo(null, culture, value, t);
+                    return true;
+                }
+                catch
+                {
+                    result = null;
+                    return false;
+                }
             }
 
             // TODO: This requires reflection: we probably need to make compiled bindings emit
@@ -95,11 +113,17 @@ internal abstract class TargetTypeConverter
                 t,
                 OperatorType.Implicit | OperatorType.Explicit) is { } cast)
             {
-                result = cast.Invoke(null, new[] { value });
-                return true;
+                try
+                {
+                    result = cast.Invoke(null, new[] { value });
+                    return true;
+                }
+                catch
+                {
+                    result = null;
+                    return false;
+                }
             }
-#pragma warning restore IL2067
-#pragma warning restore IL2026
 
             if (value is IConvertible convertible)
             {

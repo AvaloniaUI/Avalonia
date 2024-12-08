@@ -158,6 +158,8 @@ public class CompositorTestServices : IDisposable
 
         }
 
+        public double DesktopScaling => 1;
+        public IPlatformHandle Handle { get; }
         public Size ClientSize { get; }
         public Size? FrameSize { get; }
         public double RenderScaling => 1;

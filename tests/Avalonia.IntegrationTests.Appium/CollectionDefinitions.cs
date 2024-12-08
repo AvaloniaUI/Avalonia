@@ -7,6 +7,11 @@ namespace Avalonia.IntegrationTests.Appium
     {
     }
 
+    [CollectionDefinition("WindowDecorations")]
+    public class WindowDecorationsCollection : ICollectionFixture<DefaultAppFixture>
+    {
+    }
+
     [CollectionDefinition("OverlayPopups")]
     public class OverlayPopupsCollection : ICollectionFixture<OverlayPopupsAppFixture>
     {

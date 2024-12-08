@@ -65,5 +65,15 @@ namespace Avalonia.Base.UnitTests.Utilities
 
             Assert.False(target.TryReadDouble(out var value));
         }
+
+        [Fact]
+        public void ReadSpan_And_ReadString_Reads_Same()
+        {
+            var target1 = new StringTokenizer("abc,def");
+            var target2 = new StringTokenizer("abc,def");
+
+            Assert.Equal(target1.ReadString(), target2.ReadSpan().ToString());
+            Assert.True(target1.ReadSpan().SequenceEqual(target2.ReadString()));
+        }
     }
 }

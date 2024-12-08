@@ -6,10 +6,12 @@ using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Diagnostics;
 using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Media;
+using Avalonia.Metadata;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
@@ -437,13 +439,47 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             Assert.Equal(RuntimeXamlDiagnosticSeverity.Info, warning.Severity);
             Assert.Contains("'PART_MainContentBorder'", warning.Title);
         }
+
+#nullable enable
+
+        [Fact]
+        public void Custom_ControlTemplate_Allows_TemplateBindings()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(
+                    """
+                    <Window xmlns="https://github.com/avaloniaui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:controls="using:Avalonia.Markup.Xaml.UnitTests.Xaml">
+                        <Button Content="Foo">
+                            <Button.Template>
+                                <controls:CustomControlTemplate>
+                                    <ContentPresenter Name="PART_ContentPresenter"
+                                                      Content="{TemplateBinding Content}"/>
+                                </controls:CustomControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </Window>
+                    """);
+                var button = Assert.IsType<Button>(window.Content);
+
+                window.ApplyTemplate();
+                button.ApplyTemplate();
+
+                var presenter = button.Presenter;
+                Assert.NotNull(presenter);
+                Assert.Equal("Foo", presenter.Content);
+            }
+        }
     }
+
     public class ListBoxHierarchyLine : Panel
     {
-        public static readonly StyledProperty<DashStyle> LineDashStyleProperty =
-        AvaloniaProperty.Register<ListBoxHierarchyLine, DashStyle>(nameof(LineDashStyle));
+        public static readonly StyledProperty<DashStyle?> LineDashStyleProperty =
+            AvaloniaProperty.Register<ListBoxHierarchyLine, DashStyle?>(nameof(LineDashStyle));
 
-        public DashStyle LineDashStyle
+        public DashStyle? LineDashStyle
         {
             get => GetValue(LineDashStyleProperty);
             set => SetValue(LineDashStyleProperty, value);
@@ -458,5 +494,16 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
     public class CustomButtonWithParts : CustomControlWithParts
     {
+    }
+
+    public class CustomControlTemplate : IControlTemplate
+    {
+        [Content]
+        [TemplateContent]
+        public object? Content { get; set; }
+
+        public Type? TargetType { get; set; }
+
+        public TemplateResult<Control>? Build(TemplatedControl control) => TemplateContent.Load(Content);
     }
 }

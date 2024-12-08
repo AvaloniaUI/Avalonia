@@ -629,10 +629,22 @@ namespace Avalonia.Controls
 
         private void DropDownButton_PointerPressed(object? sender, PointerPressedEventArgs e)
         {
-            _ignoreButtonClick = _isPopupClosing;
+            if (_isFlyoutOpen && (_dropDownButton?.IsEffectivelyEnabled == true) && e.GetCurrentPoint(_dropDownButton).Properties.IsLeftButtonPressed)
+            {
+                // When a flyout is open with OverlayDismissEventPassThrough enabled and the drop-down button
+                // is pressed, close the flyout
+                _ignoreButtonClick = true;
 
-            _isPressed = true;
-            UpdatePseudoClasses();
+                e.Handled = true;
+                TogglePopUp();
+            }
+            else
+            {
+                _ignoreButtonClick = _isPopupClosing;
+
+                _isPressed = true;
+                UpdatePseudoClasses();
+            }
         }
 
         private void DropDownButton_PointerReleased(object? sender, PointerReleasedEventArgs e)
@@ -718,7 +730,9 @@ namespace Avalonia.Controls
             // the TextParseError event
             try
             {
-                newSelectedDate = DateTime.Parse(text, DateTimeHelper.GetCurrentDateFormat());
+                newSelectedDate = SelectedDateFormat == CalendarDatePickerFormat.Custom && !string.IsNullOrEmpty(CustomDateFormatString) ?
+                    DateTime.ParseExact(text, CustomDateFormatString, DateTimeHelper.GetCurrentDateFormat()) :
+                    DateTime.Parse(text, DateTimeHelper.GetCurrentDateFormat());
 
                 if (Calendar.IsValidDateSelection(this._calendar!, newSelectedDate))
                 {
@@ -887,6 +901,11 @@ namespace Avalonia.Controls
 
                     switch (SelectedDateFormat)
                     {
+                        case CalendarDatePickerFormat.Custom:
+                            {
+                                watermarkText = string.Format(CultureInfo.CurrentCulture, watermarkFormat, CustomDateFormatString);
+                                break;
+                            }
                         case CalendarDatePickerFormat.Long:
                             {
                                 watermarkText = string.Format(CultureInfo.CurrentCulture, watermarkFormat, dtfi.LongDatePattern.ToString());
@@ -899,6 +918,7 @@ namespace Avalonia.Controls
                                 break;
                             }
                     }
+
                     _textBox.Watermark = watermarkText;
                 }
                 else

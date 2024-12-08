@@ -52,14 +52,31 @@ namespace Avalonia.OpenGL
 
         public IntPtr GetProcAddress(string proc) => _getProcAddress(proc);
 
-        [GetProcAddress("glGetError")]
-        public partial int GetError();
-
         [GetProcAddress("glClearStencil")]
         public partial void ClearStencil(int s);
 
         [GetProcAddress("glClearColor")]
         public partial void ClearColor(float r, float g, float b, float a);
+        
+        [GetProcAddress("glClearDepth", true)]
+        internal partial void ClearDepthDouble(double value);
+        
+        [GetProcAddress("glClearDepthf", true)]
+        internal partial void ClearDepthFloat(float value);
+
+        public void ClearDepth(float value)
+        {
+            if(IsClearDepthDoubleAvailable)
+                ClearDepthDouble(value);
+            else if (IsClearDepthFloatAvailable)
+                _addr_ClearDepthFloat(value);
+        }
+        
+        [GetProcAddress("glDepthFunc")]
+        public partial void DepthFunc(int value);
+        
+        [GetProcAddress("glDepthMask")]
+        public partial void DepthMask(int value);
 
         [GetProcAddress("glClear")]
         public partial void Clear(int bits);
@@ -319,6 +336,9 @@ namespace Avalonia.OpenGL
 
         [GetProcAddress("glEnable")]
         public partial void Enable(int what);
+        
+        [GetProcAddress("glDisable")]
+        public partial void Disable(int what);
 
         [GetProcAddress("glDeleteBuffers")]
         public partial void DeleteBuffers(int count, int* buffers);

@@ -46,6 +46,9 @@ internal unsafe partial class VulkanInstanceApi
     public partial VkResult CreateDevice(VkPhysicalDevice physicalDevice, ref VkDeviceCreateInfo pCreateInfo,
         IntPtr pAllocator, out VkDevice pDevice);
 
+    [GetProcAddress("vkDestroyDevice")]
+    public partial VkResult DestroyDevice(VkDevice device, IntPtr pAllocator);
+
     [GetProcAddress("vkGetDeviceQueue")]
     public partial void GetDeviceQueue(VkDevice device, uint32_t queueFamilyIndex, uint32_t queueIndex,
         out VkQueue pQueue);

@@ -4,13 +4,13 @@ using Avalonia.Automation.Peers;
 namespace Avalonia.Automation.Provider
 {
     /// <summary>
-    /// Exposure methods and properties to support UI Automation client access to the root of an
+    /// Exposes methods and properties to support UI Automation client access to the root of an
     /// automation tree hosted by another UI framework.
     /// </summary>
     /// <remarks>
-    /// This interface is implemented by the <see cref="AutomationPeer"/> class, and can be used
-    /// to embed an automation tree from a 3rd party UI framework that wishes to use Avalonia's
-    /// automation support.
+    /// This interface can be implemented by an <see cref="AutomationPeer"/>, and is used to embed
+    /// an automation tree from a 3rd party UI framework that wishes to use Avalonia's automation
+    /// support.
     /// </remarks>
     public interface IEmbeddedRootProvider
     {

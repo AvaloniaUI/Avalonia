@@ -24,6 +24,7 @@ using Avalonia.X11.NativeDialogs;
 using static Avalonia.X11.XLib;
 using Avalonia.Input.Platform;
 using System.Runtime.InteropServices;
+using Avalonia.Dialogs;
 using Avalonia.Platform.Storage.FileIO;
 
 // ReSharper disable IdentifierTypo
@@ -128,9 +129,9 @@ namespace Avalonia.X11
 
             int defaultWidth = 0, defaultHeight = 0;
 
-            if (!_popup && Screen != null)
+            if (!_popup && _platform.Screens != null)
             {
-                var monitor = Screen.AllScreens.OrderBy(x => x.Scaling)
+                var monitor = _platform.Screens.AllScreens.OrderBy(x => x.Scaling)
                    .FirstOrDefault(m => m.Bounds.Contains(_position ?? default));
 
                 if (monitor != null)
@@ -237,10 +238,15 @@ namespace Avalonia.X11
                     _x11.Atoms.XA_CARDINAL, 32, PropertyMode.Replace, ref _xSyncCounter, 1);
             }
 
-            _storageProvider = new CompositeStorageProvider(new[]
+            _storageProvider = new FallbackStorageProvider(new[]
             {
-                () => _platform.Options.UseDBusFilePicker ? DBusSystemDialog.TryCreateAsync(Handle) : Task.FromResult<IStorageProvider?>(null),
-                () => GtkSystemDialog.TryCreate(this)
+                () => _platform.Options.UseDBusFilePicker
+                    ? DBusSystemDialog.TryCreateAsync(Handle)
+                    : Task.FromResult<IStorageProvider?>(null),
+                () => GtkSystemDialog.TryCreate(this),
+                () => Task.FromResult(InputRoot is TopLevel tl
+                    ? (IStorageProvider?)new ManagedStorageProvider(tl)
+                    : null)
             });
 
             platform.X11Screens.Changed += OnScreensChanged;
@@ -453,11 +459,17 @@ namespace Avalonia.X11
             {
                 if (ActivateTransientChildIfNeeded())
                     return;
+                // See: https://github.com/fltk/fltk/issues/295
+                if ((NotifyMode)ev.FocusChangeEvent.mode is not NotifyMode.NotifyNormal)
+                    return;
                 Activated?.Invoke();
                 _imeControl?.SetWindowActive(true);
             }
             else if (ev.type == XEventName.FocusOut)
             {
+                // See: https://github.com/fltk/fltk/issues/295
+                if ((NotifyMode)ev.FocusChangeEvent.mode is not NotifyMode.NotifyNormal)
+                    return;
                 _imeControl?.SetWindowActive(false);
                 Deactivated?.Invoke();
             }
@@ -920,7 +932,14 @@ namespace Avalonia.X11
             }
 
             if (featureType == typeof(IX11OptionsToplevelImplFeature))
+            {
                 return this;
+            }
+
+            if (featureType == typeof(IScreenImpl))
+            {
+                return _platform.Screens;
+            }
 
             return null;
         }
@@ -935,6 +954,9 @@ namespace Avalonia.X11
             // Before doing anything else notify the TopLevel that ITopLevelImpl is no longer valid
             if (_handle != IntPtr.Zero)
                 Closed?.Invoke();
+            
+            if (_nativeMenuExporter is IDisposable disposable)
+                disposable.Dispose();
             
             if (_rawEventGrouper != null)
             {
@@ -1155,9 +1177,6 @@ namespace Avalonia.X11
             }
         }
 
-
-        public IScreenImpl Screen => _platform.Screens;
-
         public Size MaxAutoSizeHint => _platform.X11Screens.AllScreens.Select(s => s.Bounds.Size.ToSize(s.Scaling))
             .OrderByDescending(x => x.Width + x.Height).FirstOrDefault();
 
@@ -1306,6 +1325,15 @@ namespace Avalonia.X11
                 // so setting it again forces the update
                 UpdateMotifHints();
             }
+            else
+            {
+                // Showing a dialog should result in pointer capture being lost. We don't currently use XGrabPointer on
+                // X11 to implement pointer capture, so no we have no OS-level event to hook into. Instead, release the 
+                // pointer capture when the owner window is disabled. This behavior matches win32, which sends a
+                // WM_CANCELMODE message when EnableWindow(hWnd, false) is called from SetEnabled.
+                _mouse.PlatformCaptureLost();
+                _touch.PlatformCaptureLost();
+            }
         }
 
         private void UpdateWMHints()
@@ -1380,7 +1408,7 @@ namespace Avalonia.X11
                 var ptr = (IntPtr*)prop.ToPointer();
                 var newAtoms = new HashSet<IntPtr>();
                 for (var c = 0; c < nitems.ToInt64(); c++) 
-                    newAtoms.Add(*ptr);
+                    newAtoms.Add(*(ptr+c));
                 XFree(prop);
                 foreach(var atom in atoms)
                     if (enable)
@@ -1469,8 +1497,8 @@ namespace Avalonia.X11
 
             var indexInWindowsSpan = new Dictionary<IntPtr, int>();
             for (var i = 0; i < windows.Length; i++)
-                if (windows[i].PlatformImpl is { } platformImpl)
-                    indexInWindowsSpan[platformImpl.Handle.Handle] = i;
+                if (windows[i].PlatformImpl is { Handle: { } handle })
+                    indexInWindowsSpan[handle.Handle] = i;
 
             foreach (var window in windows)
             {
@@ -1533,6 +1561,11 @@ namespace Avalonia.X11
                     stack.Push(children[i]);
                 }
             }
+        }
+
+        public void TakeFocus()
+        {
+            // TODO: Not yet implemented: need to check if this is required on X11 or not.
         }
     }
 }

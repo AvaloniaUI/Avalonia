@@ -136,6 +136,7 @@ namespace Avalonia.Direct2D1.RenderTests.CrossUI
     class AvaloniaCrossDrawingContext : ICrossDrawingContext
     {
         private readonly DrawingContext _ctx;
+        private readonly Stack<DrawingContext.PushedState> _stack = new();
 
         public AvaloniaCrossDrawingContext(DrawingContext ctx)
         {
@@ -156,55 +157,68 @@ namespace Avalonia.Direct2D1.RenderTests.CrossUI
 
         static Geometry ConvertGeometry(CrossGeometry g)
         {
-            if (g is CrossRectangleGeometry rg)
-                return new RectangleGeometry(rg.Rect);
-            else if (g is CrossSvgGeometry svg)
-                return PathGeometry.Parse(svg.Path);
-            else if (g is CrossEllipseGeometry ellipse)
-                return new EllipseGeometry(ellipse.Rect);
-            else if(g is CrossStreamGeometry streamGeometry)
-                return (StreamGeometry)streamGeometry.GetContext().GetGeometry();
-            else if (g is CrossPathGeometry path)
-                return new PathGeometry()
-                {
-                    Figures = RetAddRange(new PathFigures(), path.Figures.Select(f =>
-                        new PathFigure()
-                        {
-                            StartPoint = f.Start,
-                            IsClosed = f.Closed,
-                            Segments = RetAddRange<PathSegments, PathSegment>(new PathSegments(), f.Segments.Select<CrossPathSegment, PathSegment>(s =>
-                                s switch
-                                {
-                                    CrossPathSegment.Line l => new LineSegment()
+            switch (g)
+            {
+                case CrossRectangleGeometry rg:
+                    return new RectangleGeometry(rg.Rect);
+                case CrossSvgGeometry svg:
+                    return PathGeometry.Parse(svg.Path);
+                case CrossEllipseGeometry ellipse:
+                    return new EllipseGeometry(ellipse.Rect);
+                case CrossStreamGeometry streamGeometry:
+                    return (StreamGeometry)streamGeometry.GetContext().GetGeometry();
+                case CrossPathGeometry path:
+                    return new PathGeometry()
+                    {
+                        Figures = RetAddRange(new PathFigures(), path.Figures.Select(f =>
+                            new PathFigure()
+                            {
+                                StartPoint = f.Start,
+                                IsClosed = f.Closed,
+                                Segments = RetAddRange<PathSegments, PathSegment>(new PathSegments(),
+                                    f.Segments.Select<CrossPathSegment, PathSegment>(s =>
+                                    s switch
                                     {
-                                        Point = l.To, IsStroked = l.IsStroked
-                                    },
-                                    CrossPathSegment.Arc a => new ArcSegment()
-                                    {
-                                        Point = a.Point,
-                                        RotationAngle = a.RotationAngle,
-                                        Size = a.Size,
-                                        IsLargeArc = a.IsLargeArc,
-                                        SweepDirection = a.SweepDirection,
-                                        IsStroked = a.IsStroked
-                                    },
-                                    CrossPathSegment.CubicBezier c => new BezierSegment()
-                                    {
-                                        Point1 = c.Point1,
-                                        Point2 = c.Point2,
-                                        Point3 = c.Point3,
-                                        IsStroked = c.IsStroked
-                                    },
-                                    CrossPathSegment.QuadraticBezier q => new QuadraticBezierSegment()
-                                    {
-                                        Point1 = q.Point1,
-                                        Point2 = q.Point2,
-                                        IsStroked = q.IsStroked
-                                    }
-                                }))
-                        }))
-                };
-            throw new NotSupportedException();
+                                        CrossPathSegment.Line l => new LineSegment()
+                                        {
+                                            Point = l.To,
+                                            IsStroked = l.IsStroked
+                                        },
+                                        CrossPathSegment.Arc a => new ArcSegment()
+                                        {
+                                            Point = a.Point,
+                                            RotationAngle = a.RotationAngle,
+                                            Size = a.Size,
+                                            IsLargeArc = a.IsLargeArc,
+                                            SweepDirection = a.SweepDirection,
+                                            IsStroked = a.IsStroked
+                                        },
+                                        CrossPathSegment.CubicBezier c => new BezierSegment()
+                                        {
+                                            Point1 = c.Point1,
+                                            Point2 = c.Point2,
+                                            Point3 = c.Point3,
+                                            IsStroked = c.IsStroked
+                                        },
+                                        CrossPathSegment.QuadraticBezier q => new QuadraticBezierSegment()
+                                        {
+                                            Point1 = q.Point1,
+                                            Point2 = q.Point2,
+                                            IsStroked = q.IsStroked
+                                        },
+                                        CrossPathSegment.PolyLine p => new PolyLineSegment()
+                                        {
+                                            Points = p.Points.ToList(),
+                                            IsStroked = p.IsStroked
+                                        },
+                                        CrossPathSegment.PolyBezierSegment p => new PolyBezierSegment(p.Points,p.IsStroked),
+                                        _ => throw new InvalidOperationException()
+                                    }))
+                            }))
+                    };
+                default:
+                    throw new NotSupportedException();
+            }
         }
 
         static TList RetAddRange<TList, T>(TList l, IEnumerable<T> en) where TList : IList<T>
@@ -290,7 +304,31 @@ namespace Avalonia.Direct2D1.RenderTests.CrossUI
                 return new DrawingImage(ConvertDrawing(di.Drawing));
             throw new NotSupportedException();
         }
-    
+
+        public void PushTransform(Matrix matrix)
+        {
+            _stack.Push(_ctx.PushTransform(matrix));
+        }
+
+        public void Pop()
+        {
+            var state = _stack.Pop();
+
+            state.Dispose();
+        }
+
+        public void DrawLine(CrossPen pen, Point p1, Point p2)
+        {
+            var avPen = ConvertPen(pen);
+
+            if (avPen == null)
+            {
+                return;
+            }
+
+            _ctx.DrawLine(avPen, p1, p2);
+        }
+
         public void DrawRectangle(CrossBrush? brush, CrossPen? pen, Rect rc) => _ctx.DrawRectangle(ConvertBrush(brush), ConvertPen(pen), rc);
         public void DrawGeometry(CrossBrush? brush, CrossPen? pen, CrossGeometry geometry) =>
             _ctx.DrawGeometry(ConvertBrush(brush), ConvertPen(pen), ConvertGeometry(geometry));
