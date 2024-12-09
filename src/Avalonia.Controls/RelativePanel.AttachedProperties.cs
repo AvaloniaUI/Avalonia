@@ -17,7 +17,7 @@ namespace Avalonia.Controls
                 AlignBottomWithPanelProperty, AlignBottomWithProperty, BelowProperty,
                 AlignHorizontalCenterWithPanelProperty, AlignHorizontalCenterWithProperty,
                 AlignVerticalCenterWithPanelProperty, AlignVerticalCenterWithProperty);
-            
+
             AffectsParentMeasure<RelativePanel>(
                 AlignLeftWithPanelProperty, AlignLeftWithProperty, LeftOfProperty,
                 AlignRightWithPanelProperty, AlignRightWithProperty, RightOfProperty,
