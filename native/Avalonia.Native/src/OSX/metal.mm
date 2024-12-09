@@ -57,14 +57,19 @@ public:
 
     ~AvnMetalRenderSession()
     {
+        START_ARP_CALL;
         auto buffer = [_queue commandBuffer];
-        [buffer presentDrawable: _drawable];
         [buffer commit];
+        [buffer waitUntilCompleted];
+        [CATransaction begin];
+        [_drawable present];
+        [CATransaction commit];
     }
 };
 
 class AvnMetalRenderTarget : public ComSingleObject<IAvnMetalRenderTarget, &IID_IAvnMetalRenderTarget>
 {
+    CALayer* _hostLayer;
     CAMetalLayer* _layer;
     double _scaling = 1;
     AvnPixelSize _size = {1,1};
@@ -73,30 +78,38 @@ public:
     double PendingScaling = 1;
     AvnPixelSize PendingSize = {1,1};
     FORWARD_IUNKNOWN()
-    AvnMetalRenderTarget(CAMetalLayer* layer, ComPtr<AvnMetalDevice> device)
+    AvnMetalRenderTarget(CALayer* hostLayer, ComPtr<AvnMetalDevice> device)
     {
-        _layer = layer;
         _device = device;
+        _hostLayer = hostLayer;
+        _layer = [CAMetalLayer new];
+        _layer.opaque = false;
+        _layer.device = _device->device;
+        _layer.presentsWithTransaction = YES;
+        _layer.framebufferOnly = YES;
+        [_hostLayer addSublayer: _layer];
     }
 
     HRESULT BeginDrawing(IAvnMetalRenderingSession **ret) override {
+        START_ARP_CALL;
         if([NSThread isMainThread])
         {
-            // Flush all existing rendering
-            auto buffer = [_device->queue commandBuffer];
-            [buffer commit];
-            [buffer waitUntilCompleted];
             _size = PendingSize;
             _scaling= PendingScaling;
             CGSize layerSize = {(CGFloat)_size.Width, (CGFloat)_size.Height};
-
+            [CATransaction begin];
+            [CATransaction setDisableActions: YES];
             [_layer setDrawableSize: layerSize];
+            [_layer setFrame: [_hostLayer frame]];
+            [CATransaction commit];
         }
+        else if(PendingSize.Width != _size.Width || PendingSize.Height != _size.Height)
+            return AvnResultCodes::E_AVN_RENDER_TARGET_NOT_READY;
         auto drawable = [_layer nextDrawable];
         if(drawable == nil)
         {
             ret = nil;
-            return E_FAIL;
+            return AvnResultCodes::E_AVN_RENDER_TARGET_NOT_READY;
         }
         *ret = new AvnMetalRenderSession(_device, _layer, drawable, _size, _scaling);
         return 0;
@@ -106,14 +119,12 @@ public:
 @implementation MetalRenderTarget
 {
     ComPtr<AvnMetalDevice> _device;
-    CAMetalLayer* _layer;
+    CALayer* _layer;
     ComPtr<AvnMetalRenderTarget> _target;
 }
 - (MetalRenderTarget *)initWithDevice:(IAvnMetalDevice *)device {
     _device = dynamic_cast<AvnMetalDevice*>(device);
-    _layer = [CAMetalLayer new];
-    _layer.opaque = false;
-    _layer.device = _device->device;
+    _layer = [CALayer new];
     _target.setNoAddRef(new AvnMetalRenderTarget(_layer, _device));
     return self;
 }
