@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Controls.Platform;
+using Avalonia.Input;
 using Avalonia.Metadata;
 
 namespace Avalonia.Platform
@@ -27,10 +28,8 @@ namespace Avalonia.Platform
         /// </summary>
         INativeMenuExporter? MenuExporter { get; }
 
-        /// <summary>
-        /// Gets or Sets the Action that is called when the TrayIcon is clicked.
-        /// </summary>
-        Action? OnClicked { get; set; }
+        event EventHandler<MouseEventArgs>? MouseLeftButtonDown;
+        event EventHandler<MouseEventArgs>? MouseRightButtonDown;
     }
 
     [Unstable]
