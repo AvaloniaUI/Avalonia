@@ -307,7 +307,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 case LineBreakClass.CombiningMark:
                 case LineBreakClass.ZWJ:
                     {
-                        state.Next(text).Ignored = true;
+                        state.IgnoreNext(text);
 
                         return RuleResult.NoBreak;
                     }
@@ -323,12 +323,14 @@ namespace Avalonia.Media.TextFormatting.Unicode
         {
             if (state.Current.LineBreakClass == LineBreakClass.CombiningMark)
             {
-                state.Current.LineBreakClass = LineBreakClass.Alphabetic;
+                state.Current = state.Current.WithLineBreakClass(LineBreakClass.Alphabetic);
             }
 
-            if (state.Next(text).LineBreakClass == LineBreakClass.CombiningMark)
+            var next = state.Next(text);
+
+            if (next.LineBreakClass == LineBreakClass.CombiningMark)
             {
-                state.Next(text).LineBreakClass = LineBreakClass.Alphabetic;
+                state.ReplaceNext(next.WithLineBreakClass(LineBreakClass.Alphabetic));
             }
             return RuleResult.Pass;
         }
@@ -492,7 +494,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
             {
                 var after = LineBreakState.After(text, state.Next(text));
 
-                if (after != null && after.EndOfText || after == null)
+                if (after.EndOfText)
                 { // Only on eot
                     return RuleResult.NoBreak;
                 }
@@ -1403,7 +1405,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
             MustBreak
         }
 
-        private class BreakUnit
+        private readonly struct BreakUnit
         {
             public BreakUnit()
             {
@@ -1432,10 +1434,19 @@ namespace Avalonia.Media.TextFormatting.Unicode
             public Codepoint Codepoint { get; }
             public bool EndOfText { get; init; }
             public bool StartOfText { get; init; }
-            public LineBreakClass LineBreakClass { get; set; }
-            public bool Ignored { get; set; }
+            public LineBreakClass LineBreakClass { get; init; }
+            public bool Ignored { get; init; }
+            public bool Inherited { get; init; }
 
-            public bool Inherited { get; set; }
+            public BreakUnit WithLineBreakClass(LineBreakClass lineBreakClass)
+            {
+                return new BreakUnit(this, lineBreakClass) { Inherited = true };
+            }
+
+            public BreakUnit Ignore()
+            {
+                return new BreakUnit(this, LineBreakClass) { Ignored = true };
+            }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private static LineBreakClass MapClass(Codepoint cp)
@@ -1549,6 +1560,16 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 return unit;
             }
 
+            public void IgnoreNext(ReadOnlySpan<char> text)
+            {
+                _next = Next(text).Ignore();
+            }
+
+            public void ReplaceNext(BreakUnit next)
+            {
+                _next = next;   
+            }
+
             public int Position { get; private set; }
 
             public int RegionalIndicator { get; set; }
@@ -1613,7 +1634,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
                 if (Current.Ignored)
                 {
-                    Current = new BreakUnit(Current, Previous.LineBreakClass) { Inherited = true };
+                    Current = Current.WithLineBreakClass(Previous.LineBreakClass);
                 }
 
                 return next;
