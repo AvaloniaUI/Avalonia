@@ -369,8 +369,10 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void FlowDirection_Of_RectangleContent_Shuold_Be_LeftToRight()
+        public void FlowDirection_Of_RectangleContent_Should_Be_LeftToRight()
         {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
             var target = new ComboBox
             {
                 FlowDirection = FlowDirection.RightToLeft,
@@ -396,6 +398,8 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void FlowDirection_Of_RectangleContent_Updated_After_InvalidateMirrorTransform()
         {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
             var parentContent = new Decorator()
             {
                 Child = new Control()

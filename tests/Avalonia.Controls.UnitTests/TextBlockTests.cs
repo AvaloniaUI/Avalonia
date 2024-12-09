@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
@@ -33,7 +34,9 @@ namespace Avalonia.Controls.UnitTests
             {
                 var textBlock = new TestTextBlock { Text = "Hello World" };
 
-                Assert.Equal(Size.Infinity, textBlock.Constraint);
+                var constraint = textBlock.Constraint;
+                Assert.True(double.IsNaN(constraint.Width));
+                Assert.True(double.IsNaN(constraint.Height));
 
                 textBlock.Measure(new Size(100, 100));
 
@@ -411,6 +414,24 @@ namespace Avalonia.Controls.UnitTests
                 int count1 = textblock.TextLayout.TextLines[0].TextRuns.Count;
                 Assert.NotEqual(count, count1);
             }
+        }
+
+        [Fact]
+        public void TextBlock_With_Infinite_Size_Should_Be_Remeasured_After_TextLayout_Created()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var target = new TextBlock { Text = "" };
+            var layout = target.TextLayout;
+
+            Assert.Equal(0.0, layout.MaxWidth);
+            Assert.Equal(0.0, layout.MaxHeight);
+
+            target.Text = "foo";
+            target.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+
+            Assert.True(target.DesiredSize.Width > 0);
+            Assert.True(target.DesiredSize.Height > 0);
         }
 
         private class TestTextBlock : TextBlock
