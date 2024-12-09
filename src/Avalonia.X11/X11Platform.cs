@@ -129,14 +129,15 @@ namespace Avalonia.X11
         
         public IWindowImpl CreateWindow()
         {
-            return new X11Window(this, null);
+            return new X11Window(this, null,
+                Options.EnableInputFocusProxy ? new X11Window.InputProxyWindowMode() : new X11Window.DefaultWindowMode());
         }
 
         public ITopLevelImpl CreateEmbeddableTopLevel() => CreateEmbeddableWindow();
 
         public IWindowImpl CreateEmbeddableWindow()
         {
-            throw new NotSupportedException();
+            throw new PlatformNotSupportedException();
         }
 
         private static bool EnableIme(X11PlatformOptions options)

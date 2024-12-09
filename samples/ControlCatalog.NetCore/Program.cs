@@ -134,6 +134,8 @@ namespace ControlCatalog.NetCore
                     EnableMultiTouch = true,
                     UseDBusMenu = true,
                     EnableIme = true,
+                    UseGLibMainLoop = true,
+                    UseDBusFilePicker = false
                 })
 
                 .With(new VulkanOptions
