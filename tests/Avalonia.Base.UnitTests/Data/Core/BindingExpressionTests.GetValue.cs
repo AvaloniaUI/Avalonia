@@ -95,13 +95,13 @@ public abstract partial class BindingExpressionTests
     }
 
     [Fact]
-    public void TargetNullValue_Should_Not_Be_Used_When_Source_Is_Data_Context_And_Null()
+    public void TargetNullValue_Should_Be_Used_When_Source_Is_Data_Context_And_Null()
     {
         var target = CreateTarget<string?, string?>(
             o => o,
             targetNullValue: "bar");
 
-        Assert.Equal(null, target.String);
+        Assert.Equal("bar", target.String);
     }
 
     [Fact]
@@ -150,5 +150,17 @@ public abstract partial class BindingExpressionTests
         target.DataContext = data;
 
         Assert.Equal("fooBar", target.String);
+    }
+
+    [Fact]
+    public void Should_Use_Converter_For_Null_DataContext_Without_Path()
+    {
+        var converter = new PrefixConverter();
+        var target = CreateTarget<string?, string?>(
+            o => o,
+            converter: converter,
+            converterParameter: "foo");
+
+        Assert.Equal("foo", target.String);
     }
 }

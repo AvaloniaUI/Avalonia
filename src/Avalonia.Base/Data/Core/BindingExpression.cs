@@ -30,6 +30,7 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
     private readonly List<ExpressionNode> _nodes;
     private readonly TargetTypeConverter? _targetTypeConverter;
     private readonly UncommonFields? _uncommon;
+    private bool _shouldUpdateOneTimeBindingTarget;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="BindingExpression"/> class.
@@ -83,6 +84,7 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
         _mode = mode;
         _nodes = nodes ?? s_emptyExpressionNodes;
         _targetTypeConverter = targetTypeConverter;
+        _shouldUpdateOneTimeBindingTarget = _mode == BindingMode.OneTime;
 
         if (converter is not null ||
             converterCulture is not null ||
@@ -231,10 +233,14 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
 
         if (nodeIndex == _nodes.Count - 1)
         {
-            // If the binding source is a data context without any path and is currently null, treat it as an invalid
-            // value. This allows bindings to DataContext and DataContext.Property to share the same behavior.
-            if (value is null && _nodes[nodeIndex] is DataContextNodeBase)
-                value = AvaloniaProperty.UnsetValue;
+            if (_mode == BindingMode.OneTime)
+            {
+                // In OneTime mode, only changing the data context updates the binding.
+                if (!_shouldUpdateOneTimeBindingTarget && _nodes[nodeIndex] is not DataContextNodeBase)
+                    return;
+
+                _shouldUpdateOneTimeBindingTarget = false;
+            }
 
             // The leaf node has changed. If the binding mode is not OneWayToSource, publish the
             // value to the target.
@@ -245,10 +251,6 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
                     null;
                 ConvertAndPublishValue(value, error);
             }
-
-            // If the binding mode is OneTime, then stop the binding if a valid value was published.
-            if (_mode == BindingMode.OneTime && GetValue() != AvaloniaProperty.UnsetValue)
-                Stop();
         }
         else if (_mode == BindingMode.OneWayToSource && nodeIndex == _nodes.Count - 2 && value is not null)
         {
@@ -260,6 +262,9 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
         }
         else
         {
+            if (_mode == BindingMode.OneTime && _nodes[nodeIndex] is DataContextNodeBase)
+                _shouldUpdateOneTimeBindingTarget = true;
+
             _nodes[nodeIndex + 1].SetSource(value, dataValidationError);
         }
     }
