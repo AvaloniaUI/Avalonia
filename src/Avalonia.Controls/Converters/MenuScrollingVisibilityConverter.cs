@@ -57,6 +57,11 @@ namespace Avalonia.Controls.Converters
                 return true;
             }
 
+            if (visibility == ScrollBarVisibility.Visible)
+            {
+                return true;
+            }
+
             return false;
         }
     }
