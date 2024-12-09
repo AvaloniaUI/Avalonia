@@ -55,7 +55,7 @@ namespace Avalonia.UnitTests
         internal ILayoutManager LayoutManager { get; set; }
         ILayoutManager ILayoutRoot.LayoutManager => LayoutManager;
 
-        public double RenderScaling => 1;
+        public double RenderScaling => LayoutScaling;
 
         internal IRenderer Renderer { get; set; }
         internal IHitTester HitTester { get; set; }
