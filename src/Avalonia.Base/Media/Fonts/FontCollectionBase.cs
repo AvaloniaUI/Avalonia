@@ -132,7 +132,7 @@ namespace Avalonia.Media.Fonts
                     glyphTypeface = typeface;
 
                     return true;
-                }            
+                }
             }
 
             return false;
@@ -297,7 +297,7 @@ namespace Avalonia.Media.Fonts
 
             var tokenizer = new StringTokenizer(familyName, ' ');
 
-            tokenizer.ReadString();
+            tokenizer.ReadSpan();
 
             while (tokenizer.TryReadString(out var weightString))
             {
@@ -325,7 +325,7 @@ namespace Avalonia.Media.Fonts
 
             var tokenizer = new StringTokenizer(familyName, ' ');
 
-            tokenizer.ReadString();
+            tokenizer.ReadSpan();
 
             while (tokenizer.TryReadString(out var styleString))
             {
@@ -354,7 +354,7 @@ namespace Avalonia.Media.Fonts
 
             var tokenizer = new StringTokenizer(familyName, ' ');
 
-            tokenizer.ReadString();
+            tokenizer.ReadSpan();
 
             while (tokenizer.TryReadString(out var stretchString))
             {

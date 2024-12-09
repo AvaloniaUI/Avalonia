@@ -4,20 +4,17 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Runtime.InteropServices;
+using System.Text;
 using Avalonia.Base.UnitTests.Media.TextFormatting;
 
 namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
 {
-    internal class GraphemeBreakTestDataGenerator : IEnumerable<GraphemeBreakData>
+    internal class GraphemeBreakTestDataGenerator : IEnumerable<object[]>
     {
-        private readonly List<GraphemeBreakData> _testData;
+        private readonly List<object[]> _testData = ReadData();
 
-        public GraphemeBreakTestDataGenerator()
-        {
-            _testData = ReadData();
-        }
-        
-        public IEnumerator<GraphemeBreakData> GetEnumerator()
+        public IEnumerator<object[]> GetEnumerator()
         {
             return _testData.GetEnumerator();
         }
@@ -27,9 +24,9 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
             return GetEnumerator();
         }
         
-        private static List<GraphemeBreakData> ReadData()
+        private static List<object[]> ReadData()
         {
-            var testData = new List<GraphemeBreakData>();
+            var testData = new List<object[]>();
 
             var url = Path.Combine(UnicodeDataGenerator.Ucd, "auxiliary/GraphemeBreakTest.txt");
 
@@ -82,13 +79,14 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
                             codepoints.AddRange(remaining);
                         }
 
-                        var data = new GraphemeBreakData
+                        var data = new object[]
                         {
-                            Line = line,
-                            LineNumber = lineNumber,
-                            Grapheme = grapheme,
-                            Codepoints = codepoints.ToArray()
+                            line, lineNumber,
+                            Encoding.UTF32.GetString(MemoryMarshal.Cast<int, byte>(grapheme.ToArray()).ToArray()),
+                            Encoding.UTF32.GetString(MemoryMarshal.Cast<int, byte>(codepoints.ToArray()).ToArray())
                         };
+
+                    
 
                         testData.Add(data);
                     }
@@ -96,13 +94,5 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
             }
             return testData;
         }       
-    }
-    
-    internal struct GraphemeBreakData
-    {
-        public string Line { get; set; }
-        public int LineNumber { get; set; }
-        public int[] Grapheme { get; set; }
-        public int[] Codepoints{ get; set; }
     }
 }

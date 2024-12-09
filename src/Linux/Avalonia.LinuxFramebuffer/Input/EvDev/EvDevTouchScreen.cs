@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 
@@ -90,14 +91,23 @@ namespace Avalonia.LinuxFramebuffer.Input.EvDev
 
     internal abstract class EvDevDeviceHandler
     {
-        public event Action<RawInputEventArgs> OnEvent;
+        private IInputRoot? _inputRoot;
+
+        public event Action<RawInputEventArgs>? OnEvent;
+
         public EvDevDeviceHandler(EvDevDevice device)
         {
             Device = device;
         }
 
         public EvDevDevice Device { get; }
-        public IInputRoot InputRoot { get; set; }
+
+        [AllowNull]
+        public IInputRoot InputRoot
+        {
+            get => _inputRoot ?? throw new InvalidOperationException($"{nameof(InputRoot)} hasn't been set");
+            set => _inputRoot = value;
+        }
 
         public void HandleEvents()
         {
