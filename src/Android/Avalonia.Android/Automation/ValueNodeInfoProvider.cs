@@ -13,13 +13,14 @@ namespace Avalonia.Android.Automation
 
         public override bool PerformNodeAction(int action, Bundle? arguments)
         {
+            IValueProvider provider = GetProvider();
             switch (action)
             {
                 case AccessibilityNodeInfoCompat.ActionSetText:
                     string? text = arguments?.GetCharSequence(
                         AccessibilityNodeInfoCompat.ActionArgumentSetTextCharsequence
                         );
-                    GetProvider().SetValue(text);
+                    provider.SetValue(text);
                     return true;
 
                 default:
@@ -29,8 +30,10 @@ namespace Avalonia.Android.Automation
 
         public override void PopulateNodeInfo(AccessibilityNodeInfoCompat nodeInfo)
         {
+            IValueProvider provider = GetProvider();
             nodeInfo.AddAction(AccessibilityNodeInfoCompat.ActionSetText);
-            nodeInfo.Editable = !GetProvider().IsReadOnly;
+            nodeInfo.Text = provider.Value;
+            nodeInfo.Editable = !provider.IsReadOnly;
         }
     }
 }

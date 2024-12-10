@@ -166,7 +166,8 @@ namespace Avalonia.Android
             // UI metadata
             nodeInfo.ClassName = peer.GetClassName();
             nodeInfo.Enabled = peer.IsEnabled();
-            nodeInfo.Focusable = peer.IsContentElement() && !peer.IsOffscreen();
+            nodeInfo.Focusable = labeledBy is null && 
+                peer.IsContentElement() && !peer.IsOffscreen();
 
             // On-screen bounds
             Rect bounds = peer.GetBoundingRectangle();
