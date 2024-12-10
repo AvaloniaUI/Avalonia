@@ -1,4 +1,5 @@
 ﻿using Avalonia.Controls.Primitives;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Primitives
@@ -139,6 +140,76 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             // 2 * 2 grid
             Assert.Equal(new Size(2 * 50, 2 * 70), target.Bounds.Size);
+        }
+
+        [Fact]
+        public void Children_Do_Not_Overlap_With_125_Percent_Scaling_1()
+        {
+            // Issue #17699
+            var target = new UniformGrid
+            {
+                Columns = 2,
+                Children =
+                {
+                    new Border(),
+                    new Border(),
+                    new Border(),
+                    new Border(),
+                }
+            };
+
+            var root = new TestRoot
+            {
+                LayoutScaling = 1.25,
+                Child = new Border
+                {
+                    Width = 100,
+                    Height = 100,
+                    Child = target,
+                }
+            };
+
+            root.ExecuteInitialLayoutPass();
+
+            Assert.Equal(new(0, 0, 50.4, 50.4), target.Children[0].Bounds);
+            Assert.Equal(new(50.4, 0, 49.6, 50.4), target.Children[1].Bounds);
+            Assert.Equal(new(0, 50.4, 50.4, 49.6), target.Children[2].Bounds);
+            Assert.Equal(new(50.4, 50.4, 49.6, 49.6), target.Children[3].Bounds);
+        }
+
+        [Fact]
+        public void Children_Do_Not_Overlap_With_125_Percent_Scaling_2()
+        {
+            // Issue #17699
+            var target = new UniformGrid
+            {
+                Columns = 4,
+                Children =
+                {
+                    new Border(),
+                    new Border(),
+                    new Border(),
+                    new Border(),
+                }
+            };
+
+            var root = new TestRoot
+            {
+                LayoutScaling = 1.25,
+                Child = new Border
+                {
+                    Width = 100,
+                    Height = 100,
+                    Child = target,
+                }
+            };
+
+            root.ExecuteInitialLayoutPass();
+
+            Assert.Equal(new(0, 0, 25.6, 100), target.Children[0].Bounds);
+            Assert.Equal(new(25.6, 0, 24.8, 100), target.Children[1].Bounds);
+            Assert.Equal(new(50.4, 0, 24.8, 100), target.Children[2].Bounds);
+            Assert.Equal(new(75.2, 0, 24.8, 100), target.Children[3].Bounds);
         }
     }
 }

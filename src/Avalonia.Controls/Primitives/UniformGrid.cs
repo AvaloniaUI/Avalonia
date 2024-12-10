@@ -89,27 +89,45 @@ namespace Avalonia.Controls.Primitives
 
         protected override Size ArrangeOverride(Size finalSize)
         {
-            var x = FirstColumn;
-            var y = 0;
-
-            var width = finalSize.Width / _columns;
-            var height = finalSize.Height / _rows;
+            var columnIndex = FirstColumn;
+            var columnWidth = finalSize.Width / _columns;
+            var rowIndex = 0;
+            var rowHeight = finalSize.Height / _rows;
+            var x = 0.0;
+            var y = 0.0;
+            var nextY = 0.0;
 
             foreach (var child in Children)
             {
-                if (!child.IsVisible)
+                if (child.IsVisible)
                 {
-                    continue;
+                    // Layout scaling may cause the child to take a different size than the one
+                    // requested. Layout each each child with it's top-left aligned against the
+                    // previous column/row bounds and request the bottom-right to be placed in
+                    // the ideal position.
+                    var topLeft = new Point(x, y);
+                    var bottomRight = new Point((columnIndex + 1) * columnWidth, (rowIndex + 1) * rowHeight);
+
+                    child.Arrange(new Rect(topLeft, bottomRight));
+
+                    x = child.Bounds.Right;
+                    nextY = Math.Max(nextY, child.Bounds.Bottom);
+                }
+                else
+                {
+                    x += columnWidth;
+                    nextY = Math.Max(nextY, rowHeight);
                 }
 
-                child.Arrange(new Rect(x * width, y * height, width, height));
+                columnIndex++;
 
-                x++;
-
-                if (x >= _columns)
+                if (columnIndex >= _columns)
                 {
                     x = 0;
-                    y++;
+                    y = nextY;
+                    nextY = 0;
+                    columnIndex = 0;
+                    rowIndex++;
                 }
             }
 
