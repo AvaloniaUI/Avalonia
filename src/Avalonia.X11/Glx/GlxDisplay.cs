@@ -18,6 +18,8 @@ namespace Avalonia.X11.Glx
         public XVisualInfo* VisualInfo => _visual;
         public GlxContext DeferredContext { get; }
         public GlxInterface Glx { get; } = new GlxInterface();
+        public X11Info X11Info => _x11;
+        public IntPtr FbConfig => _fbconfig;
         public GlxDisplay(X11Info x11, IList<GlVersion> probeProfiles) 
         {
             _x11 = x11;

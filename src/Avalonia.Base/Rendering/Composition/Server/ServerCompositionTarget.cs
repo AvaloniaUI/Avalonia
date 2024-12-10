@@ -141,7 +141,7 @@ namespace Avalonia.Rendering.Composition.Server
             if (!_redrawRequested)
                 return;
 
-            var renderTargetWithProperties = _renderTarget as IRenderTargetWithProperties;
+            var renderTargetWithProperties = _renderTarget as IRenderTarget2;
 
             
             var needLayer = _overlays.RequireLayer // Check if we don't need overlays
@@ -149,7 +149,8 @@ namespace Avalonia.Rendering.Composition.Server
                             || !(renderTargetWithProperties?.Properties.RetainsPreviousFrameContents == true
                                 && renderTargetWithProperties?.Properties.IsSuitableForDirectRendering == true);
             
-            using (var renderTargetContext = _renderTarget.CreateDrawingContextWithProperties(false, out var properties))
+            using (var renderTargetContext = _renderTarget.CreateDrawingContextWithProperties(
+                       this.PixelSize, out var properties))
             {
                 if(needLayer && (PixelSize != _layerSize || _layer == null || _layer.IsCorrupted))
                 {
