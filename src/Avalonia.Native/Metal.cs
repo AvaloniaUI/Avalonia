@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.InteropServices;
 using Avalonia.Metal;
 using Avalonia.Native.Interop;
 using Avalonia.Platform;
@@ -84,8 +85,15 @@ internal class MetalRenderTarget : IMetalPlatformSurfaceRenderTarget
 
     public IMetalPlatformSurfaceRenderingSession BeginRendering()
     {
-        var session = _native.BeginDrawing();
-        return new MetalDrawingSession(session);
+        try
+        {
+            var session = _native.BeginDrawing();
+            return new MetalDrawingSession(session);
+        }
+        catch (COMException com) when (com.HResult == (int)AvnResultCodes.E_AVN_RENDER_TARGET_NOT_READY)
+        {
+            throw new RenderTargetNotReadyException();
+        }
     }
 }
 
