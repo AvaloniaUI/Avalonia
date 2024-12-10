@@ -217,13 +217,17 @@ namespace Avalonia.Controls
         /// <returns>The <see cref="GridLength"/>.</returns>
         public static IEnumerable<GridLength> ParseLengths(string s)
         {
+            var result = new List<GridLength>();
+
             using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture))
             {
                 while (tokenizer.TryReadString(out var item))
                 {
-                    yield return Parse(item);
+                    result.Add(Parse(item));
                 }
             }
+
+            return result;
         }
     }
 }

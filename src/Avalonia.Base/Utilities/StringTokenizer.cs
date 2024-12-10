@@ -8,11 +8,11 @@ namespace Avalonia.Utilities
 #if !BUILDTASK
     public
 #endif
-    record struct StringTokenizer : IDisposable
+    ref struct StringTokenizer
     {
         private const char DefaultSeparatorChar = ',';
 
-        private readonly string _s;
+        private readonly ReadOnlySpan<char> _s;
         private readonly int _length;
         private readonly char _separator;
         private readonly string? _exceptionMessage;
@@ -22,15 +22,25 @@ namespace Avalonia.Utilities
         private int _tokenLength;
 
         public StringTokenizer(string s, IFormatProvider formatProvider, string? exceptionMessage = null)
+            : this(s.AsSpan(), formatProvider, exceptionMessage)
+        {
+        }
+
+        public StringTokenizer(string s, char separator = DefaultSeparatorChar, string? exceptionMessage = null)
+            : this(s.AsSpan(), separator, exceptionMessage)
+        {
+        }
+
+        public StringTokenizer(ReadOnlySpan<char> s, IFormatProvider formatProvider, string? exceptionMessage = null)
             : this(s, GetSeparatorFromFormatProvider(formatProvider), exceptionMessage)
         {
             _formatProvider = formatProvider;
         }
 
-        public StringTokenizer(string s, char separator = DefaultSeparatorChar, string? exceptionMessage = null)
+        public StringTokenizer(ReadOnlySpan<char> s, char separator = DefaultSeparatorChar, string? exceptionMessage = null)
         {
-            _s = s ?? throw new ArgumentNullException(nameof(s));
-            _length = s?.Length ?? 0;
+            _s = s;
+            _length = s.Length;
             _separator = separator;
             _exceptionMessage = exceptionMessage;
             _formatProvider = CultureInfo.InvariantCulture;
@@ -38,15 +48,17 @@ namespace Avalonia.Utilities
             _tokenIndex = -1;
             _tokenLength = 0;
 
-            while (_index < _length && IsWhiteSpace(_s, _index))
+            while (_index < _length && IsWhiteSpace(_s[_index]))
             {
                 _index++;
             }
         }
 
-        public string? CurrentToken => _tokenIndex < 0 ? null : _s.Substring(_tokenIndex, _tokenLength);
+        public int CurrentTokenIndex => _tokenIndex;
 
-        public ReadOnlySpan<char> CurrentTokenSpan => _tokenIndex < 0 ? ReadOnlySpan<char>.Empty : _s.AsSpan().Slice(_tokenIndex, _tokenLength);
+        public string? CurrentToken => _tokenIndex < 0 ? null : _s.Slice(_tokenIndex, _tokenLength).ToString();
+
+        public ReadOnlySpan<char> CurrentTokenSpan => _tokenIndex < 0 ? ReadOnlySpan<char>.Empty : _s.Slice(_tokenIndex, _tokenLength);
 
         public void Dispose()
         {

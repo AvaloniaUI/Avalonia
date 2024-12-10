@@ -6,6 +6,27 @@ namespace Avalonia.Base.UnitTests.Utilities
 {
     public class StringTokenizerTests
     {
+        // Explicit delegate because C# generics do not allow ref structs.
+        private delegate void TokenizerAction(StringTokenizer tokenizer);
+
+        private static TException AssertThrows<TException>(StringTokenizer tokenizer, TokenizerAction action)
+            where TException : Exception
+        {
+            try
+            {
+                action(tokenizer);
+            }
+            catch (Exception ex)
+            {
+                if (ex.GetType() == typeof(TException))
+                    return (TException)ex;
+
+                throw Xunit.Sdk.ThrowsException.ForIncorrectExceptionType(typeof(TException), ex);
+            }
+
+            throw Xunit.Sdk.ThrowsException.ForNoException(typeof(TException));
+        }
+
         [Fact]
         public void ReadInt32_Reads_Values()
         {
@@ -13,7 +34,7 @@ namespace Avalonia.Base.UnitTests.Utilities
 
             Assert.Equal(123, target.ReadInt32());
             Assert.Equal(456, target.ReadInt32());
-            Assert.Throws<FormatException>(() => target.ReadInt32());
+            AssertThrows<FormatException>(target, t => t.ReadInt32());
         }
 
         [Fact]
@@ -23,7 +44,7 @@ namespace Avalonia.Base.UnitTests.Utilities
 
             Assert.Equal(12.3, target.ReadDouble());
             Assert.Equal(45.6, target.ReadDouble());
-            Assert.Throws<FormatException>(() => target.ReadDouble());
+            AssertThrows<FormatException>(target, t => t.ReadDouble());
         }
 
         [Fact]
