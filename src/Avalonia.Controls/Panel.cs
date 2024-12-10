@@ -2,6 +2,8 @@ using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using Avalonia.Automation.Peers;
+using Avalonia.Controls.Automation.Peers;
 using Avalonia.Controls.Presenters;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
@@ -217,6 +219,11 @@ namespace Avalonia.Controls
         {
             count = Children.Count;
             return true;
+        }
+
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new PanelAutomationPeer(this);
         }
     }
 }

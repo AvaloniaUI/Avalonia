@@ -488,6 +488,7 @@ namespace Avalonia.Automation.Peers
                 AutomationControlType.SplitButton => "split button",
                 AutomationControlType.HeaderItem => "header item",
                 AutomationControlType.TitleBar => "title bar",
+                AutomationControlType.Pane => "panel",
                 _ => controlType.ToString().ToLowerInvariant(),
             };
         }
