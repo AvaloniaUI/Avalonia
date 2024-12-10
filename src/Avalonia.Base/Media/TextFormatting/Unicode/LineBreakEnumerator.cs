@@ -323,14 +323,14 @@ namespace Avalonia.Media.TextFormatting.Unicode
         {
             if (state.Current.LineBreakClass == LineBreakClass.CombiningMark)
             {
-                state.Current = state.Current.WithLineBreakClass(LineBreakClass.Alphabetic);
+                state.Current = state.Current with { LineBreakClass = LineBreakClass.Alphabetic, Inherited = true };
             }
 
             var next = state.Next(text);
 
             if (next.LineBreakClass == LineBreakClass.CombiningMark)
             {
-                state.ReplaceNext(next.WithLineBreakClass(LineBreakClass.Alphabetic));
+                state.ReplaceNext(next with { LineBreakClass = LineBreakClass.Alphabetic, Inherited = true });
             }
             return RuleResult.Pass;
         }
@@ -1438,16 +1438,6 @@ namespace Avalonia.Media.TextFormatting.Unicode
             public bool Ignored { get; init; }
             public bool Inherited { get; init; }
 
-            public BreakUnit WithLineBreakClass(LineBreakClass lineBreakClass)
-            {
-                return new BreakUnit(this, lineBreakClass) { Inherited = true };
-            }
-
-            public BreakUnit Ignore()
-            {
-                return new BreakUnit(this, LineBreakClass) { Ignored = true };
-            }
-
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private static LineBreakClass MapClass(Codepoint cp)
             {
@@ -1562,7 +1552,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
             public void IgnoreNext(ReadOnlySpan<char> text)
             {
-                _next = Next(text).Ignore();
+                _next = Next(text) with { Ignored = true };
             }
 
             public void ReplaceNext(BreakUnit next)
@@ -1634,7 +1624,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
                 if (Current.Ignored)
                 {
-                    Current = Current.WithLineBreakClass(Previous.LineBreakClass);
+                    Current = Current with { LineBreakClass = Previous.LineBreakClass, Inherited = true };
                 }
 
                 return next;
