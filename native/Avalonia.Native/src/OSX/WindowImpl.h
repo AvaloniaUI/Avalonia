@@ -101,6 +101,7 @@ private:
     bool _transitioningWindowState;
     bool _isClientAreaExtended;
     AvnExtendClientAreaChromeHints _extendClientHints;
+    bool _isModal;
 };
 
 #endif //AVALONIA_NATIVE_OSX_WINDOWIMPL_H

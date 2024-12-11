@@ -18,6 +18,9 @@ namespace Avalonia.Media.TextFormatting
         private TextLineBreak? _textLineBreak;
         private readonly FlowDirection _resolvedFlowDirection;
 
+        private Rect _inkBounds;
+        private Rect _bounds;
+
         public TextLineImpl(TextRun[] textRuns, int firstTextSourceIndex, int length, double paragraphWidth,
             TextParagraphProperties paragraphProperties, FlowDirection resolvedFlowDirection = FlowDirection.LeftToRight,
             TextLineBreak? lineBreak = null, bool hasCollapsed = false)
@@ -85,10 +88,20 @@ namespace Avalonia.Media.TextFormatting
         /// <inheritdoc/>
         public override double WidthIncludingTrailingWhitespace => _textLineMetrics.WidthIncludingTrailingWhitespace;
 
+        /// <summary>
+        /// Get the logical text bounds.
+        /// </summary>
+        internal Rect Bounds => _bounds;
+
+        /// <summary>
+        /// Get the bounding box that is covered with black pixels.
+        /// </summary>
+        internal Rect InkBounds => _inkBounds;
+
         /// <inheritdoc/>
         public override void Draw(DrawingContext drawingContext, Point lineOrigin)
         {
-            var (currentX, currentY) = lineOrigin + new Point(Start, 0);
+            var (currentX, currentY) = lineOrigin + new Point(Start, 0);           
 
             foreach (var textRun in _textRuns)
             {
@@ -1376,6 +1389,10 @@ namespace Avalonia.Media.TextFormatting
             }
 
             var start = GetParagraphOffsetX(width, widthIncludingWhitespace);
+
+            _inkBounds = new Rect(bounds.Position + new Point(start, 0), bounds.Size);
+
+            _bounds = new Rect(start, 0, widthIncludingWhitespace, height);
 
             return new TextLineMetrics
             {
