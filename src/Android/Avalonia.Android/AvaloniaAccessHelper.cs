@@ -13,16 +13,16 @@ namespace Avalonia.Android
 {
     internal class AvaloniaAccessHelper : ExploreByTouchHelper
     {
-        private static readonly IReadOnlyDictionary<Type, NodeInfoProviderInitializer>
-            s_providerTypeInitializers = new Dictionary<Type, NodeInfoProviderInitializer>()
+        private static readonly IReadOnlyDictionary<string, NodeInfoProviderInitializer>
+            s_providerTypeInitializers = new Dictionary<string, NodeInfoProviderInitializer>()
             {
-                { typeof(IExpandCollapseProvider), (peer, id) => new ExpandCollapseNodeInfoProvider(peer, id) },
-                { typeof(IInvokeProvider), (peer, id) => new InvokeNodeInfoProvider(peer, id) },
-                { typeof(IRangeValueProvider), (peer, id) => new RangeValueNodeInfoProvider(peer, id) },
-                { typeof(IScrollProvider), (peer, id) => new ScrollNodeInfoProvider(peer, id) },
-                { typeof(ISelectionItemProvider), (peer, id) => new SelectionItemNodeInfoProvider(peer, id) },
-                { typeof(IToggleProvider), (peer, id) => new ToggleNodeInfoProvider(peer, id) },
-                { typeof(IValueProvider), (peer, id) => new ValueNodeInfoProvider(peer, id) },
+                { typeof(IExpandCollapseProvider).FullName!, (peer, id) => new ExpandCollapseNodeInfoProvider(peer, id) },
+                { typeof(IInvokeProvider).FullName!, (peer, id) => new InvokeNodeInfoProvider(peer, id) },
+                { typeof(IRangeValueProvider).FullName!, (peer, id) => new RangeValueNodeInfoProvider(peer, id) },
+                { typeof(IScrollProvider).FullName!, (peer, id) => new ScrollNodeInfoProvider(peer, id) },
+                { typeof(ISelectionItemProvider).FullName!, (peer, id) => new SelectionItemNodeInfoProvider(peer, id) },
+                { typeof(IToggleProvider).FullName!, (peer, id) => new ToggleNodeInfoProvider(peer, id) },
+                { typeof(IValueProvider).FullName!, (peer, id) => new ValueNodeInfoProvider(peer, id) },
             };
 
         private readonly Dictionary<int, AutomationPeer> _peers;
@@ -84,10 +84,10 @@ namespace Avalonia.Android
 
                 Type peerType = peer.GetType();
                 IEnumerable<Type> providerTypes = peerType.GetInterfaces()
-                    .Where(x => x.Namespace == nameof(Avalonia.Automation.Provider));
+                    .Where(x => x.Namespace == "Avalonia.Automation.Provider");
                 foreach (Type providerType in providerTypes)
                 {
-                    if (s_providerTypeInitializers.TryGetValue(providerType, out NodeInfoProviderInitializer? ctor))
+                    if (s_providerTypeInitializers.TryGetValue(providerType.FullName!, out NodeInfoProviderInitializer? ctor))
                     {
                         INodeInfoProvider nodeInfoProvider = ctor(peer, peerViewId);
                         nodeInfoProviders.Add(nodeInfoProvider);
@@ -159,14 +159,19 @@ namespace Avalonia.Android
                 nodeInfo.SetLabeledBy(_view, labeledById);
             }
 
-            // UI text contents
-            nodeInfo.Text = peer.GetName();
-            nodeInfo.ContentDescription = peer.GetHelpText();
-
-            // UI metadata
+            // UI debug metadata
             nodeInfo.ClassName = peer.GetClassName();
+
+            // Common control state
             nodeInfo.Enabled = peer.IsEnabled();
-            nodeInfo.Focusable = peer.IsContentElement() && !peer.IsOffscreen();
+
+            // Control focus state
+            bool canFocusAtAll = peer.IsContentElement() && !peer.IsOffscreen();
+            nodeInfo.ScreenReaderFocusable = canFocusAtAll;
+
+            nodeInfo.Focusable = canFocusAtAll && peer.IsKeyboardFocusable();
+            nodeInfo.Focused = peer.HasKeyboardFocus();
+            
 
             // On-screen bounds
             Rect bounds = peer.GetBoundingRectangle();
@@ -183,6 +188,15 @@ namespace Avalonia.Android
             foreach (INodeInfoProvider nodeInfoProvider in _peerNodeInfoProviders[peer])
             {
                 nodeInfoProvider.PopulateNodeInfo(nodeInfo);
+            }
+
+            // Control text contents
+            nodeInfo.Text = nodeInfo.Text ?? peer.GetName();
+
+            string helpText = peer.GetHelpText();
+            if (helpText.Length > 0)
+            {
+                nodeInfo.ContentDescription = peer.GetHelpText();
             }
         }
     }
