@@ -1,4 +1,6 @@
 ﻿using Android.OS;
+using Android.Text;
+using AndroidX.Core.View;
 using AndroidX.Core.View.Accessibility;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
@@ -32,8 +34,11 @@ namespace Avalonia.Android.Automation
         {
             IValueProvider provider = GetProvider();
             nodeInfo.AddAction(AccessibilityNodeInfoCompat.ActionSetText);
-            nodeInfo.Text = provider.Value;
+
             nodeInfo.Editable = !provider.IsReadOnly;
+            nodeInfo.TextSelectable = true;
+            nodeInfo.InputType = (int)InputTypes.ClassText;
+            nodeInfo.LiveRegion = ViewCompat.AccessibilityLiveRegionPolite;
         }
     }
 }

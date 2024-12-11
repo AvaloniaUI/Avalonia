@@ -5,9 +5,19 @@ namespace Avalonia.Automation.Peers
 {
     public class TextBoxAutomationPeer : ControlAutomationPeer, IValueProvider
     {
+        private string? ownerText;
+
         public TextBoxAutomationPeer(TextBox owner)
             : base(owner)
         {
+            owner.TextChanged += TextChanged;
+            ownerText = owner.Text;
+        }
+
+        private void TextChanged(object? sender, TextChangedEventArgs e)
+        {
+            RaisePropertyChangedEvent(AutomationElementIdentifiers.NameProperty, ownerText, Owner.Text);
+            ownerText = Owner.Text;
         }
 
         public new TextBox Owner => (TextBox)base.Owner;
@@ -18,6 +28,11 @@ namespace Avalonia.Automation.Peers
         protected override AutomationControlType GetAutomationControlTypeCore()
         {
             return AutomationControlType.Edit;
+        }
+
+        protected override string? GetNameCore()
+        {
+            return Owner.Text;
         }
     }
 }
