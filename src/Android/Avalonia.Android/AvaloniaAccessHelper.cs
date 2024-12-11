@@ -42,11 +42,8 @@ namespace Avalonia.Android
             GetOrCreateNodeInfoProvidersFromPeer(rootPeer, out int rootId);
             rootPeer.ChildrenChanged += (s, ev) => InvalidateVirtualView(rootId,
                 AccessibilityEventCompat.ContentChangeTypeSubtree);
-            rootPeer.PropertyChanged += (s, ev) => InvalidateVirtualView(rootId,
-                    AccessibilityEventCompat.ContentChangeTypeText |
-                    AccessibilityEventCompat.ContentChangeTypeStateDescription |
-                    AccessibilityEventCompat.ContentChangeTypeContentDescription |
-                    AccessibilityEventCompat.ContentChangeTypeEnabled);
+            rootPeer.PropertyChanged += (s, ev) => InvalidateVirtualView(rootId, 
+                AccessibilityEventCompat.ContentChangeTypeUndefined);
 
             _view = view;
         }
@@ -83,10 +80,7 @@ namespace Avalonia.Android
                 peer.ChildrenChanged += (s, ev) => InvalidateVirtualView(peerViewId,
                     AccessibilityEventCompat.ContentChangeTypeSubtree);
                 peer.PropertyChanged += (s, ev) => InvalidateVirtualView(peerViewId,
-                    AccessibilityEventCompat.ContentChangeTypeText |
-                    AccessibilityEventCompat.ContentChangeTypeStateDescription |
-                    AccessibilityEventCompat.ContentChangeTypeContentDescription |
-                    AccessibilityEventCompat.ContentChangeTypeEnabled);
+                    AccessibilityEventCompat.ContentChangeTypeUndefined);
 
                 Type peerType = peer.GetType();
                 IEnumerable<Type> providerTypes = peerType.GetInterfaces()

@@ -16,7 +16,7 @@ namespace Avalonia.Automation.Peers
 
         private void TextChanged(object? sender, TextChangedEventArgs e)
         {
-            RaisePropertyChangedEvent(AutomationElementIdentifiers.NameProperty, ownerText, Owner.Text);
+            RaisePropertyChangedEvent(AutomationElementIdentifiers.HelpTextProperty, ownerText, Owner.Text);
             ownerText = Owner.Text;
         }
 
@@ -30,7 +30,7 @@ namespace Avalonia.Automation.Peers
             return AutomationControlType.Edit;
         }
 
-        protected override string? GetNameCore()
+        protected override string? GetHelpTextCore()
         {
             return Owner.Text;
         }
