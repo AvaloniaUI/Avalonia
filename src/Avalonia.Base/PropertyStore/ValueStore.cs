@@ -664,13 +664,23 @@ namespace Avalonia.PropertyStore
                 {
                     return;
                 }
-                if (BindingOperations.GetBindingExpressionBase(Owner, property) is not null)
+                var bindingExpression = BindingOperations.GetBindingExpressionBase(Owner, property) as BindingExpression;
+                if (bindingExpression is null)
                 {
                     return;
                 }
                 // Both of these checks returning false means the affected property is the Data-Context, and it is bound. 
                 // So, continue, because the data-context changing from an inherited context changes the meaning 
                 // of what the property should be after binding. 
+
+                // But now we need to handle cases where the DataContext is intending to change (that is, the path is not `.` )
+                // easiest way is to just get the value of the binding expression and check whether it isn't the same as the newValue
+
+                var bindingValue = bindingExpression.GetValue();
+                if (bindingValue is T tInst && !EqualityComparer<T>.Default.Equals(tInst, newValue))
+                {
+                    return;
+                }
             }
 
             using var notifying = PropertyNotifying.Start(Owner, property);
