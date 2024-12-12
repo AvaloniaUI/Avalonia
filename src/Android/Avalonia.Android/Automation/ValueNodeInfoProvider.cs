@@ -1,5 +1,4 @@
 ﻿using Android.OS;
-using Android.Text;
 using AndroidX.Core.View;
 using AndroidX.Core.View.Accessibility;
 using Avalonia.Automation.Peers;
@@ -34,12 +33,15 @@ namespace Avalonia.Android.Automation
         {
             nodeInfo.AddAction(AccessibilityNodeInfoCompat.ActionSetText);
 
-            nodeInfo.TextSelectable = true;
-            nodeInfo.InputType = (int)InputTypes.ClassText;
+            nodeInfo.ClassName = "android.widget.EditText";
             nodeInfo.LiveRegion = ViewCompat.AccessibilityLiveRegionPolite;
 
             IValueProvider provider = GetProvider();
             nodeInfo.Editable = !provider.IsReadOnly;
+            nodeInfo.SetTextSelection(
+                provider.Value?.Length ?? 0, 
+                provider.Value?.Length ?? 0
+                );
         }
     }
 }
