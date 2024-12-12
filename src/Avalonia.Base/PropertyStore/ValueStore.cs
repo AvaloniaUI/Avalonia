@@ -656,7 +656,22 @@ namespace Avalonia.PropertyStore
 
             // If the inherited value is set locally, propagation stops here.
             if (_effectiveValues.ContainsKey(property))
-                return;
+            {
+                // BUT, we also need to double-check whether the affected property is the Data-Context AND whether the Data-Context is bound. 
+                // That is, a bound data-context needs re-evaluating even if it's bound locally 
+                // Because a change in the data-context changes what it means for the data-context to be bound 
+                if (property != StyledElement.DataContextProperty)
+                {
+                    return;
+                }
+                if (BindingOperations.GetBindingExpressionBase(Owner, property) is null)
+                {
+                    return;
+                }
+                // Both of these checks returning false means the affected property is the Data-Context, and it is bound. 
+                // So, continue, because the data-context changing from an inherited context changes the meaning 
+                // of what the property should be after binding. 
+            }
 
             using var notifying = PropertyNotifying.Start(Owner, property);
 
