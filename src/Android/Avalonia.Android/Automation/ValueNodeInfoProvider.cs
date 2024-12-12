@@ -22,7 +22,7 @@ namespace Avalonia.Android.Automation
                     string? text = arguments?.GetCharSequence(
                         AccessibilityNodeInfoCompat.ActionArgumentSetTextCharsequence
                         );
-                    provider.SetValue(text);
+                    provider.SetValue(provider.Value + text);
                     return true;
 
                 default:
