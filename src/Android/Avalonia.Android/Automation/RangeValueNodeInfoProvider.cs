@@ -18,11 +18,11 @@ namespace Avalonia.Android.Automation
 
         public override void PopulateNodeInfo(AccessibilityNodeInfoCompat nodeInfo)
         {
-            IRangeValueProvider rangeValueProvider = GetProvider();
+            IRangeValueProvider provider = GetProvider();
             nodeInfo.RangeInfo = new AccessibilityNodeInfoCompat.RangeInfoCompat(
                 AccessibilityNodeInfoCompat.RangeInfoCompat.RangeTypeFloat, 
-                (float)rangeValueProvider.Minimum, (float)rangeValueProvider.Maximum, 
-                (float)rangeValueProvider.Value
+                (float)provider.Minimum, (float)provider.Maximum, 
+                (float)provider.Value
                 );
         }
     }

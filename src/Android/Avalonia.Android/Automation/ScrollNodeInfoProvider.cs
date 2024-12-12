@@ -13,27 +13,27 @@ namespace Avalonia.Android.Automation
 
         public override bool PerformNodeAction(int action, Bundle? arguments)
         {
-            IScrollProvider scrollProvider = GetProvider();
+            IScrollProvider provider = GetProvider();
             switch (action)
             {
                 case AccessibilityNodeInfoCompat.ActionScrollForward:
-                    if (scrollProvider.VerticallyScrollable)
+                    if (provider.VerticallyScrollable)
                     {
-                        scrollProvider.Scroll(ScrollAmount.NoAmount, ScrollAmount.SmallIncrement);
+                        provider.Scroll(ScrollAmount.NoAmount, ScrollAmount.SmallIncrement);
                     }
-                    else if(scrollProvider.HorizontallyScrollable)
+                    else if(provider.HorizontallyScrollable)
                     {
-                        scrollProvider.Scroll(ScrollAmount.SmallIncrement, ScrollAmount.NoAmount);
+                        provider.Scroll(ScrollAmount.SmallIncrement, ScrollAmount.NoAmount);
                     }
                     return true;
                 case AccessibilityNodeInfoCompat.ActionScrollBackward:
-                    if (scrollProvider.VerticallyScrollable)
+                    if (provider.VerticallyScrollable)
                     {
-                        scrollProvider.Scroll(ScrollAmount.NoAmount, ScrollAmount.SmallDecrement);
+                        provider.Scroll(ScrollAmount.NoAmount, ScrollAmount.SmallDecrement);
                     }
-                    else if (scrollProvider.HorizontallyScrollable)
+                    else if (provider.HorizontallyScrollable)
                     {
-                        scrollProvider.Scroll(ScrollAmount.SmallDecrement, ScrollAmount.NoAmount);
+                        provider.Scroll(ScrollAmount.SmallDecrement, ScrollAmount.NoAmount);
                     }
                     return true;
                 default:

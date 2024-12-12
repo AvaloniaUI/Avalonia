@@ -13,10 +13,11 @@ namespace Avalonia.Android.Automation
 
         public override bool PerformNodeAction(int action, Bundle? arguments)
         {
+            ISelectionItemProvider provider = GetProvider();
             switch (action)
             {
                 case AccessibilityNodeInfoCompat.ActionSelect:
-                    GetProvider().Select();
+                    provider.Select();
                     return true;
                 default:
                     return false;
@@ -26,7 +27,9 @@ namespace Avalonia.Android.Automation
         public override void PopulateNodeInfo(AccessibilityNodeInfoCompat nodeInfo)
         {
             nodeInfo.AddAction(AccessibilityNodeInfoCompat.ActionSelect);
-            nodeInfo.Selected = GetProvider().IsSelected;
+
+            ISelectionItemProvider provider = GetProvider();
+            nodeInfo.Selected = provider.IsSelected;
         }
     }
 }

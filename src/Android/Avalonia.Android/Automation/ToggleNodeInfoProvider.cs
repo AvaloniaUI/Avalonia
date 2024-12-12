@@ -1,4 +1,5 @@
 ﻿using Android.OS;
+using AndroidX.Core.View;
 using AndroidX.Core.View.Accessibility;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
@@ -13,10 +14,11 @@ namespace Avalonia.Android.Automation
 
         public override bool PerformNodeAction(int action, Bundle? arguments)
         {
+            IToggleProvider provider = GetProvider();
             switch (action)
             {
                 case AccessibilityNodeInfoCompat.ActionClick:
-                    GetProvider().Toggle();
+                    provider.Toggle();
                     return true;
                 default:
                     return false;
@@ -28,7 +30,8 @@ namespace Avalonia.Android.Automation
             nodeInfo.AddAction(AccessibilityNodeInfoCompat.ActionClick);
             nodeInfo.Clickable = true;
 
-            nodeInfo.Checked = GetProvider().ToggleState == ToggleState.On;
+            IToggleProvider provider = GetProvider();
+            nodeInfo.Checked = provider.ToggleState == ToggleState.On;
             nodeInfo.Checkable = true;
         }
     }

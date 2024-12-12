@@ -13,10 +13,11 @@ namespace Avalonia.Android.Automation
 
         public override bool PerformNodeAction(int action, Bundle? arguments)
         {
+            IInvokeProvider provider = GetProvider();
             switch (action)
             {
                 case AccessibilityNodeInfoCompat.ActionClick:
-                    GetProvider().Invoke();
+                    provider.Invoke();
                     return true;
                 default:
                     return false;

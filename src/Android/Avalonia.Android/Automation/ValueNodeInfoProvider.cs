@@ -32,13 +32,14 @@ namespace Avalonia.Android.Automation
 
         public override void PopulateNodeInfo(AccessibilityNodeInfoCompat nodeInfo)
         {
-            IValueProvider provider = GetProvider();
             nodeInfo.AddAction(AccessibilityNodeInfoCompat.ActionSetText);
 
-            nodeInfo.Editable = !provider.IsReadOnly;
             nodeInfo.TextSelectable = true;
             nodeInfo.InputType = (int)InputTypes.ClassText;
             nodeInfo.LiveRegion = ViewCompat.AccessibilityLiveRegionPolite;
+
+            IValueProvider provider = GetProvider();
+            nodeInfo.Editable = !provider.IsReadOnly;
         }
     }
 }
