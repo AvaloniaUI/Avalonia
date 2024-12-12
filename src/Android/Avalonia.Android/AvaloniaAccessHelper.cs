@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Android.Content.PM;
 using Android.OS;
 using AndroidX.Core.View.Accessibility;
 using AndroidX.CustomView.Widget;
 using Avalonia.Android.Automation;
+using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
 using Java.Lang;
@@ -13,6 +15,8 @@ namespace Avalonia.Android
 {
     internal class AvaloniaAccessHelper : ExploreByTouchHelper
     {
+        private const string AUTOMATION_PROVIDER_NAMESPACE = "Avalonia.Automation.Provider";
+
         private static readonly IReadOnlyDictionary<string, NodeInfoProviderInitializer>
             s_providerTypeInitializers = new Dictionary<string, NodeInfoProviderInitializer>()
             {
@@ -39,11 +43,7 @@ namespace Avalonia.Android
             _peerNodeInfoProviders = [];
 
             AutomationPeer rootPeer = ControlAutomationPeer.CreatePeerForElement(view.TopLevel!);
-            GetOrCreateNodeInfoProvidersFromPeer(rootPeer, out int rootId);
-            rootPeer.ChildrenChanged += (s, ev) => InvalidateVirtualView(rootId,
-                AccessibilityEventCompat.ContentChangeTypeSubtree);
-            rootPeer.PropertyChanged += (s, ev) => InvalidateVirtualView(rootId, 
-                AccessibilityEventCompat.ContentChangeTypeUndefined);
+            GetOrCreateNodeInfoProvidersFromPeer(rootPeer, out int _);
 
             _view = view;
         }
@@ -79,12 +79,29 @@ namespace Avalonia.Android
 
                 peer.ChildrenChanged += (s, ev) => InvalidateVirtualView(peerViewId,
                     AccessibilityEventCompat.ContentChangeTypeSubtree);
-                peer.PropertyChanged += (s, ev) => InvalidateVirtualView(peerViewId,
-                    AccessibilityEventCompat.ContentChangeTypeUndefined);
+                peer.PropertyChanged += (s, ev) =>
+                {
+                    int contentChangeType;
+                    if (ev.Property == AutomationElementIdentifiers.NameProperty)
+                    {
+                        contentChangeType = AccessibilityEventCompat.ContentChangeTypeText;
+                    }
+                    else if (ev.Property == AutomationElementIdentifiers.HelpTextProperty)
+                    {
+                        contentChangeType = peer.GetAutomationControlType() == AutomationControlType.Edit ?
+                            AccessibilityEventCompat.ContentChangeTypeText :
+                            AccessibilityEventCompat.ContentChangeTypeContentDescription;
+                    }
+                    else
+                    {
+                        contentChangeType = AccessibilityEventCompat.ContentChangeTypeUndefined;
+                    }
+                    InvalidateVirtualView(peerViewId, contentChangeType);
+                };
 
                 Type peerType = peer.GetType();
                 IEnumerable<Type> providerTypes = peerType.GetInterfaces()
-                    .Where(x => x.Namespace == "Avalonia.Automation.Provider");
+                    .Where(x => x.Namespace!.StartsWith(AUTOMATION_PROVIDER_NAMESPACE));
                 foreach (Type providerType in providerTypes)
                 {
                     if (s_providerTypeInitializers.TryGetValue(providerType.FullName!, out NodeInfoProviderInitializer? ctor))
@@ -151,22 +168,39 @@ namespace Avalonia.Android
                 nodeInfo.AddChild(_view, childId);
             }
 
+            // UI labels
+            AutomationPeer? labeledBy = peer.GetLabeledBy();
+            if (labeledBy is not null)
+            {
+                GetOrCreateNodeInfoProvidersFromPeer(labeledBy, out int labeledById);
+                nodeInfo.SetLabeledBy(_view, labeledById);
+            }
+
             // UI debug metadata
             nodeInfo.ClassName = peer.GetClassName();
+            nodeInfo.UniqueId = peer.GetAutomationId();
 
             // Common control state
             nodeInfo.Enabled = peer.IsEnabled();
 
+            // Control text contents
+            if (peer.GetAutomationControlType() == AutomationControlType.Edit)
+            {
+                nodeInfo.Text = peer.GetHelpText();
+            }
+            else
+            {
+                nodeInfo.Text = peer.GetName();
+                nodeInfo.ContentDescription = peer.GetHelpText();
+            }
+
             // Control focus state
             bool canFocusAtAll = peer.IsContentElement() && !peer.IsOffscreen();
             nodeInfo.ScreenReaderFocusable = canFocusAtAll;
-
             nodeInfo.Focusable = canFocusAtAll && peer.IsKeyboardFocusable();
-            nodeInfo.Focused = peer.HasKeyboardFocus();
 
-            // Control text contents
-            nodeInfo.Text = peer.GetName();
-            nodeInfo.ContentDescription = peer.GetHelpText();
+            nodeInfo.AccessibilityFocused = peer.HasKeyboardFocus();
+            nodeInfo.Focused = peer.HasKeyboardFocus();
 
             // On-screen bounds
             Rect bounds = peer.GetBoundingRectangle();
