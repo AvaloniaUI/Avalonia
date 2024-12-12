@@ -664,7 +664,7 @@ namespace Avalonia.PropertyStore
                 {
                     return;
                 }
-                if (BindingOperations.GetBindingExpressionBase(Owner, property) is null)
+                if (BindingOperations.GetBindingExpressionBase(Owner, property) is not null)
                 {
                     return;
                 }
