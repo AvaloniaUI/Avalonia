@@ -161,7 +161,7 @@ namespace Avalonia
         /// <returns>The <see cref="Size"/>.</returns>
         public static Size Parse(string s)
         {
-            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Size."))
+            using (var tokenizer = new SpanStringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Size."))
             {
                 return new Size(
                     tokenizer.ReadDouble(),
