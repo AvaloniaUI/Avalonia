@@ -20,13 +20,13 @@ namespace Avalonia.Android
         private static readonly IReadOnlyDictionary<string, NodeInfoProviderInitializer>
             s_providerTypeInitializers = new Dictionary<string, NodeInfoProviderInitializer>()
             {
-                { typeof(IExpandCollapseProvider).FullName!, (peer, id) => new ExpandCollapseNodeInfoProvider(peer, id) },
-                { typeof(IInvokeProvider).FullName!, (peer, id) => new InvokeNodeInfoProvider(peer, id) },
-                { typeof(IRangeValueProvider).FullName!, (peer, id) => new RangeValueNodeInfoProvider(peer, id) },
-                { typeof(IScrollProvider).FullName!, (peer, id) => new ScrollNodeInfoProvider(peer, id) },
-                { typeof(ISelectionItemProvider).FullName!, (peer, id) => new SelectionItemNodeInfoProvider(peer, id) },
-                { typeof(IToggleProvider).FullName!, (peer, id) => new ToggleNodeInfoProvider(peer, id) },
-                { typeof(IValueProvider).FullName!, (peer, id) => new ValueNodeInfoProvider(peer, id) },
+                { typeof(IExpandCollapseProvider).FullName!, (owner, peer, id) => new ExpandCollapseNodeInfoProvider(owner, peer, id) },
+                { typeof(IInvokeProvider).FullName!, (owner, peer, id) => new InvokeNodeInfoProvider(owner, peer, id) },
+                { typeof(IRangeValueProvider).FullName!, (owner, peer, id) => new RangeValueNodeInfoProvider(owner, peer, id) },
+                { typeof(IScrollProvider).FullName!, (owner, peer, id) => new ScrollNodeInfoProvider(owner, peer, id) },
+                { typeof(ISelectionItemProvider).FullName!, (owner, peer, id) => new SelectionItemNodeInfoProvider(owner, peer, id) },
+                { typeof(IToggleProvider).FullName!, (owner, peer, id) => new ToggleNodeInfoProvider(owner, peer, id) },
+                { typeof(IValueProvider).FullName!, (owner, peer, id) => new ValueNodeInfoProvider(owner, peer, id) },
             };
 
         private readonly Dictionary<int, AutomationPeer> _peers;
@@ -81,22 +81,19 @@ namespace Avalonia.Android
                     AccessibilityEventCompat.ContentChangeTypeSubtree);
                 peer.PropertyChanged += (s, ev) =>
                 {
-                    int contentChangeType;
                     if (ev.Property == AutomationElementIdentifiers.NameProperty)
                     {
-                        contentChangeType = AccessibilityEventCompat.ContentChangeTypeText;
+                        InvalidateVirtualView(peerViewId, AccessibilityEventCompat.ContentChangeTypeText);
                     }
                     else if (ev.Property == AutomationElementIdentifiers.HelpTextProperty)
                     {
-                        contentChangeType = peer.GetAutomationControlType() == AutomationControlType.Edit ?
-                            AccessibilityEventCompat.ContentChangeTypeText :
-                            AccessibilityEventCompat.ContentChangeTypeContentDescription;
+                        InvalidateVirtualView(peerViewId, AccessibilityEventCompat.ContentChangeTypeContentDescription);
                     }
-                    else
+                    else if (ev.Property == AutomationElementIdentifiers.BoundingRectangleProperty || 
+                        ev.Property == AutomationElementIdentifiers.ClassNameProperty)
                     {
-                        contentChangeType = AccessibilityEventCompat.ContentChangeTypeUndefined;
+                        InvalidateVirtualView(peerViewId);
                     }
-                    InvalidateVirtualView(peerViewId, contentChangeType);
                 };
 
                 Type peerType = peer.GetType();
@@ -106,7 +103,7 @@ namespace Avalonia.Android
                 {
                     if (s_providerTypeInitializers.TryGetValue(providerType.FullName!, out NodeInfoProviderInitializer? ctor))
                     {
-                        INodeInfoProvider nodeInfoProvider = ctor(peer, peerViewId);
+                        INodeInfoProvider nodeInfoProvider = ctor(this, peer, peerViewId);
                         nodeInfoProviders.Add(nodeInfoProvider);
                     }
                 }
@@ -183,17 +180,6 @@ namespace Avalonia.Android
             // Common control state
             nodeInfo.Enabled = peer.IsEnabled();
 
-            // Control text contents
-            if (peer.GetAutomationControlType() == AutomationControlType.Edit)
-            {
-                nodeInfo.Text = peer.GetHelpText();
-            }
-            else
-            {
-                nodeInfo.Text = peer.GetName();
-                nodeInfo.ContentDescription = peer.GetHelpText();
-            }
-
             // Control focus state
             bool canFocusAtAll = peer.IsContentElement() && !peer.IsOffscreen();
             nodeInfo.ScreenReaderFocusable = canFocusAtAll;
@@ -218,6 +204,10 @@ namespace Avalonia.Android
             {
                 nodeInfoProvider.PopulateNodeInfo(nodeInfo);
             }
+
+            // Control text contents
+            nodeInfo.Text ??= peer.GetName();
+            nodeInfo.ContentDescription ??= peer.GetHelpText();
         }
     }
 }

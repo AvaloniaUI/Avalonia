@@ -1,5 +1,6 @@
 ﻿using Android.OS;
 using AndroidX.Core.View.Accessibility;
+using AndroidX.CustomView.Widget;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
 
@@ -7,7 +8,8 @@ namespace Avalonia.Android.Automation
 {
     internal class RangeValueNodeInfoProvider : NodeInfoProvider<IRangeValueProvider>
     {
-        public RangeValueNodeInfoProvider(AutomationPeer peer, int virtualViewId) : base(peer, virtualViewId)
+        public RangeValueNodeInfoProvider(ExploreByTouchHelper owner, AutomationPeer peer, int virtualViewId) : 
+            base(owner, peer, virtualViewId)
         {
         }
 

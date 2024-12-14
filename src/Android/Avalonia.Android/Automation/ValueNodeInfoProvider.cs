@@ -1,6 +1,8 @@
 ﻿using Android.OS;
 using AndroidX.Core.View;
 using AndroidX.Core.View.Accessibility;
+using AndroidX.CustomView.Widget;
+using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
 
@@ -8,8 +10,18 @@ namespace Avalonia.Android.Automation
 {
     internal class ValueNodeInfoProvider : NodeInfoProvider<IValueProvider>
     {
-        public ValueNodeInfoProvider(AutomationPeer peer, int virtualViewId) : base(peer, virtualViewId)
+        public ValueNodeInfoProvider(ExploreByTouchHelper owner, AutomationPeer peer, int virtualViewId) : 
+            base(owner, peer, virtualViewId)
         {
+        }
+
+        protected override void PeerPropertyChanged(object? sender, AutomationPropertyChangedEventArgs e)
+        {
+            base.PeerPropertyChanged(sender, e);
+            if (e.Property == ValuePatternIdentifiers.ValueProperty)
+            {
+                InvalidateSelf(AccessibilityEventCompat.ContentChangeTypeText);
+            }
         }
 
         public override bool PerformNodeAction(int action, Bundle? arguments)
@@ -33,15 +45,15 @@ namespace Avalonia.Android.Automation
         {
             nodeInfo.AddAction(AccessibilityNodeInfoCompat.ActionSetText);
 
-            nodeInfo.ClassName = "android.widget.EditText";
-            nodeInfo.LiveRegion = ViewCompat.AccessibilityLiveRegionPolite;
-
             IValueProvider provider = GetProvider();
+            nodeInfo.Text = provider.Value;
             nodeInfo.Editable = !provider.IsReadOnly;
+
             nodeInfo.SetTextSelection(
                 provider.Value?.Length ?? 0, 
                 provider.Value?.Length ?? 0
                 );
+            nodeInfo.LiveRegion = ViewCompat.AccessibilityLiveRegionPolite;
         }
     }
 }

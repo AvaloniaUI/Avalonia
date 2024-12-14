@@ -1,6 +1,6 @@
 ﻿using Android.OS;
-using AndroidX.Core.View;
 using AndroidX.Core.View.Accessibility;
+using AndroidX.CustomView.Widget;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
 
@@ -8,7 +8,8 @@ namespace Avalonia.Android.Automation
 {
     internal class ToggleNodeInfoProvider : NodeInfoProvider<IToggleProvider>
     {
-        public ToggleNodeInfoProvider(AutomationPeer peer, int virtualViewId) : base(peer, virtualViewId)
+        public ToggleNodeInfoProvider(ExploreByTouchHelper owner, AutomationPeer peer, int virtualViewId) : 
+            base(owner, peer, virtualViewId)
         {
         }
 

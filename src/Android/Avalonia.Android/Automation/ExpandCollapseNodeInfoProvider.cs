@@ -1,7 +1,6 @@
 ﻿using Android.OS;
-using AndroidX.Core.View;
 using AndroidX.Core.View.Accessibility;
-using Avalonia.Automation;
+using AndroidX.CustomView.Widget;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
 
@@ -9,7 +8,8 @@ namespace Avalonia.Android.Automation
 {
     internal class ExpandCollapseNodeInfoProvider : NodeInfoProvider<IExpandCollapseProvider>
     {
-        public ExpandCollapseNodeInfoProvider(AutomationPeer peer, int virtualViewId) : base(peer, virtualViewId)
+        public ExpandCollapseNodeInfoProvider(ExploreByTouchHelper owner, AutomationPeer peer, int virtualViewId) : 
+            base(owner, peer, virtualViewId)
         {
         }
 
