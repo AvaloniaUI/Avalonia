@@ -12,49 +12,6 @@ namespace Avalonia.Media.Fonts
 {
     public abstract class FontCollectionBase : IFontCollection
     {
-        // Compile-time mappings to avoid string allocations while parsing font names with modifiers.
-        private static readonly (string, FontStyle)[] s_fontStyles =
-        [
-            ("Normal", FontStyle.Normal),
-            ("Italic", FontStyle.Italic),
-            ("Oblique", FontStyle.Oblique)
-        ];
-
-        private static readonly (string, FontWeight)[] s_fontWeights =
-        [
-            ("Thin", FontWeight.Thin),
-            ("ExtraLight", FontWeight.ExtraLight),
-            ("UltraLight", FontWeight.UltraLight),
-            ("Light", FontWeight.Light),
-            ("SemiLight", FontWeight.SemiLight),
-            ("Normal", FontWeight.Normal),
-            ("Regular", FontWeight.Regular),
-            ("Medium", FontWeight.Medium),
-            ("DemiBold", FontWeight.DemiBold),
-            ("SemiBold", FontWeight.SemiBold),
-            ("Bold", FontWeight.Bold),
-            ("ExtraBold", FontWeight.ExtraBold),
-            ("UltraBold", FontWeight.UltraBold),
-            ("Black", FontWeight.Black),
-            ("Heavy", FontWeight.Heavy),
-            ("Solid", FontWeight.Solid),
-            ("ExtraBlack", FontWeight.ExtraBlack),
-            ("UltraBlack", FontWeight.UltraBlack),
-        ];
-
-        private static readonly (string, FontStretch)[] s_fontStretches =
-        [
-            ("Normal", FontStretch.Normal),
-            ("UltraCondensed", FontStretch.UltraCondensed),
-            ("ExtraCondensed", FontStretch.ExtraCondensed),
-            ("Condensed", FontStretch.Condensed),
-            ("SemiCondensed", FontStretch.SemiCondensed),
-            ("SemiExpanded", FontStretch.SemiExpanded),
-            ("Expanded", FontStretch.Expanded),
-            ("ExtraExpanded", FontStretch.ExtraExpanded),
-            ("UltraExpanded", FontStretch.UltraExpanded),
-        ];
-
         protected readonly ConcurrentDictionary<string, ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>> _glyphTypefaceCache = new();
 
         public abstract Uri Key { get; }
@@ -333,17 +290,17 @@ namespace Avalonia.Media.Fonts
 
                 // Try match with font style, weight or stretch and update accordingly.
                 var match = false;
-                if (TryParseEnumItem(s_fontStyles, token, out var newStyle))
+                if (EnumHelper.TryParse<FontStyle>(token, true, out var newStyle))
                 {
                     style = newStyle;
                     match = true;
                 }
-                else if (TryParseEnumItem(s_fontWeights, token, out var newWeight))
+                else if (EnumHelper.TryParse<FontWeight>(token, true, out var newWeight))
                 {
                     weight = newWeight;
                     match = true;
                 }
-                else if (TryParseEnumItem(s_fontStretches, token, out var newStretch))
+                else if (EnumHelper.TryParse<FontStretch>(token, true, out var newStretch))
                 {
                     stretch = newStretch;
                     match = true;
@@ -363,22 +320,6 @@ namespace Avalonia.Media.Fonts
 
             //Preserve old font source
             return new Typeface(typeface.FontFamily, style, weight, stretch);
-        }
-
-        private static bool TryParseEnumItem<T>((string, T)[] mapping, ReadOnlySpan<char> token, out T value)
-            where T : struct, Enum
-        {
-            foreach (var (key, candidate) in mapping)
-            {
-                if (token.Equals(key.AsSpan(), StringComparison.OrdinalIgnoreCase))
-                {
-                    value = candidate;
-                    return true;
-                }
-            }
-
-            value = default;
-            return false;
         }
     }
 }
