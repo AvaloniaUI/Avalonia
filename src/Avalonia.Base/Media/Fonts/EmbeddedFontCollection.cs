@@ -76,6 +76,9 @@ namespace Avalonia.Media.Fonts
                         glyphTypeface = syntheticGlyphTypeface;
                     }
 
+                    //Make sure we cache the found match
+                    glyphTypefaces.TryAdd(key, glyphTypeface);
+
                     return true;
                 }
             }

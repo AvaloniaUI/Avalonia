@@ -59,6 +59,16 @@ ComPtr<IAvnApplicationEvents> _events;
     _events->OnUnhide();
 }
 
+- (void) applicationDidBecomeActive:(NSNotification *) notification
+{
+    _events->OnActivate();
+}
+
+- (void) applicationDidResignActive:(NSNotification *) notification
+{
+    _events->OnDeactivate();
+}
+
 - (void)application:(NSApplication *)sender openFiles:(NSArray<NSString *> *)filenames
 {
     auto array = CreateAvnStringArray(filenames);

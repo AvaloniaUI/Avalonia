@@ -143,6 +143,7 @@ namespace Avalonia.Controls
             ClickEvent.AddClassHandler<MenuItem>((x, e) => x.OnClick(e));
             SubmenuOpenedEvent.AddClassHandler<MenuItem>((x, e) => x.OnSubmenuOpened(e));
             AutomationProperties.IsOffscreenBehaviorProperty.OverrideDefaultValue<MenuItem>(IsOffscreenBehavior.FromClip);
+            AccessKeyHandler.AccessKeyPressedEvent.AddClassHandler<MenuItem>(OnAccessKeyPressed);
         }
 
         public MenuItem()
@@ -565,7 +566,7 @@ namespace Avalonia.Controls
                 }
             }
         }
-
+        
         /// <summary>
         /// Closes all submenus of the menu item.
         /// </summary>
@@ -602,6 +603,15 @@ namespace Avalonia.Controls
                 menuItem.TryUpdateCanExecute(newCommand, menuItem.CommandParameter);
             }
 
+        }
+        
+        private static void OnAccessKeyPressed(MenuItem sender, AccessKeyPressedEventArgs e)
+        {
+            if (e is not { Handled: false, Target: null }) 
+                return;
+            
+            e.Target = sender;
+            e.Handled = true;
         }
 
         /// <summary>

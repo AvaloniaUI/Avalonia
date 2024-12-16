@@ -224,12 +224,14 @@ namespace Avalonia.Controls
                 textSource = new FormattedTextSource(text ?? "", defaultProperties, textStyleOverrides);
             }
 
+            var maxSize = GetMaxSizeFromConstraint();
+
             return new TextLayout(
                 textSource,
                 paragraphProperties,
                 TextTrimming,
-                _constraint.Width,
-                _constraint.Height,
+                maxSize.Width,
+                maxSize.Height,
                 MaxLines);
         }
 
