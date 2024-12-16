@@ -67,6 +67,7 @@ namespace Avalonia.X11
         private TransparencyHelper? _transparencyHelper;
         private RawEventGrouper? _rawEventGrouper;
         private bool _useRenderWindow = false;
+        private bool _useCompositorDrivenRenderWindowResize = false;
         private bool _usePositioningFlags = false;
         private X11FocusProxy? _focusProxy;
 
@@ -111,7 +112,12 @@ namespace Avalonia.X11
             
             var glx = glfeature as GlxPlatformGraphics;
             if (glx != null)
+            {
                 visualInfo = *glx.Display.VisualInfo;
+                // TODO: We should query this from the active render surface, however we don't actually track what
+                // the target sufrace currently is
+                _useCompositorDrivenRenderWindowResize = true;
+            }
             else if (glfeature == null)
                 visualInfo = _x11.TransparentVisualInfo;
 
@@ -569,7 +575,8 @@ namespace Avalonia.X11
                             Resized?.Invoke(ClientSize, WindowResizeReason.Unspecified);
 
                     }, DispatcherPriority.AsyncRenderTargetResize);
-                if (_useRenderWindow)
+                
+                if (_useRenderWindow && !_useCompositorDrivenRenderWindowResize)
                     XConfigureResizeWindow(_x11.Display, _renderHandle, ev.ConfigureEvent.width,
                         ev.ConfigureEvent.height);
                 if (_xSyncState == XSyncState.WaitConfigure)
@@ -1081,7 +1088,7 @@ namespace Avalonia.X11
             var pixelSize = ToPixelSize(clientSize);
             UpdateSizeHints(pixelSize);
             XConfigureResizeWindow(_x11.Display, _handle, pixelSize);
-            if (_useRenderWindow)
+            if (_useRenderWindow && !_useCompositorDrivenRenderWindowResize)
                 XConfigureResizeWindow(_x11.Display, _renderHandle, pixelSize);
             XFlush(_x11.Display);
 
