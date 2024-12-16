@@ -469,6 +469,15 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new Vector(0, 0), target.Offset);
         }
 
+        [Fact]
+        public void MenuScrollBar_Should_Be_Visible_When_Specified_Visible()
+        {
+            Converters.MenuScrollingVisibilityConverter converter = Converters.MenuScrollingVisibilityConverter.Instance;
+            IList<object> args = new List<object> {ScrollBarVisibility.Visible,400d,1800d,500d};
+            var result = converter.Convert(args, typeof(ScrollBarVisibility), "0", System.Globalization.CultureInfo.CurrentCulture);
+            Assert.Equal(true, result);
+        }
+        
         private Point GetRootPoint(Visual control, Point p)
         {
             if (control.GetVisualRoot() is Visual root &&
