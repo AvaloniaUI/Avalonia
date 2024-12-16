@@ -17,7 +17,7 @@ internal class BitmapMemory : IDisposable
 
         var bytesPerPixel = (format.BitsPerPixel + 7) / 8;
         
-        RowBytes =  4 * (size.Width * bytesPerPixel + 3);
+        RowBytes =  4 * ((size.Width * bytesPerPixel + 3) / 4);
         
         _memorySize = RowBytes * size.Height;
         Address = Marshal.AllocHGlobal(_memorySize);
