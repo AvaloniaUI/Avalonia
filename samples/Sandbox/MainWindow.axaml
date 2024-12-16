@@ -8,18 +8,13 @@
   </Window.DataContext>
   <StackPanel>
 
-    <TextBlock Margin="0,0,0,10" TextWrapping="Wrap">
-      Select an item from the ComboBox then resize the form to see the strange behaviour of the text alignment.
-      TextAlignment set to Right
-    </TextBlock>
-
     <ComboBox MinWidth="100" ItemsSource="{Binding Items}" SelectedItem="{Binding SelectedItem}"/>
-    <Button Content="Set Property1 manually" Command="{Binding ButtonClick}"/>
+    <!--<Button Content="Set Property1 manually" Command="{Binding ButtonClick}"/>-->
 
-    <TextBlock Text="TextBlock bound to the ComboBox SelectedItem" Margin="0,10,0,0"/>
+    <!--<TextBlock Text="TextBlock bound to the ComboBox SelectedItem" Margin="0,10,0,0"/>-->
     <TextBlock Foreground="Black" TextAlignment="Right" Background="LightBlue" Margin="1" Text="{Binding SelectedItem, StringFormat='({0})'}"/>
 
-    <TextBlock Margin="0,10,0,0" TextWrapping="Wrap" Foreground="WhiteSmoke">
+    <!--<TextBlock Margin="0,10,0,0" TextWrapping="Wrap" Foreground="WhiteSmoke">
       TextBlock bound to the Property1 which get set: <LineBreak/>
       -> To the <Span Foreground="Blue">value</Span> in the SelectedItem property Setter <LineBreak/>
       -> To a string on ButtonClick
@@ -29,7 +24,7 @@
     <TextBlock TextAlignment="Right" Background="LightBlue" Margin="1" Foreground="Black">
       SelectedItem = <Run Text="{Binding SelectedItem}" />
       Property1 = <Run Text="{Binding Property1}" />
-    </TextBlock>
+    </TextBlock>-->
 
   </StackPanel>
 </Window>
