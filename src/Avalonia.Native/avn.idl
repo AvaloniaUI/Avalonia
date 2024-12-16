@@ -7,6 +7,7 @@
 #pragma once
 #include "com.h"
 #include "stddef.h"
+#define unchecked(x) x
 @@
 
 enum AvnKey
@@ -1262,4 +1263,10 @@ interface IAvnPlatformRenderTimer : IUnknown
     void Start();
     void Stop();
     bool RunsInBackground();
+}
+
+enum AvnResultCodes
+{
+    // Codes are 0x80040200-based because vbObjectError is 0x80040000 but codes <0x200 still somehow got reserved
+    E_AVN_RENDER_TARGET_NOT_READY = unchecked((int)0x80040201)
 }
