@@ -5,6 +5,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Platform.Internal;
 using Avalonia.Skia.Helpers;
+using Avalonia.Utilities;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -16,6 +17,8 @@ namespace Avalonia.Skia
     {
         private static readonly SKBitmapReleaseDelegate s_releaseDelegate = ReleaseProc;
         private readonly SKBitmap _bitmap;
+        private readonly SKImage _image;
+        private readonly SKPixmap _pixmap;
         private readonly object _lock = new();
         
         /// <summary>
@@ -34,7 +37,10 @@ namespace Avalonia.Skia
                     throw new ArgumentException("Unable to load bitmap from provided data");
                 }
 
-                PixelSize = new PixelSize(_bitmap.Width, _bitmap.Height);
+                var info = _bitmap.Info;
+                _pixmap = new SKPixmap(info, _bitmap.GetPixels(), info.RowBytes);
+                _image = SKImage.FromPixels(_pixmap, null);
+                PixelSize = new PixelSize(info.Width, info.Height);
                 Dpi = SkiaPlatform.DefaultDpi;
             }
         }
@@ -77,6 +83,8 @@ namespace Avalonia.Skia
                 }
 
                 _bitmap = bmp;
+                _pixmap = new SKPixmap(info, _bitmap.GetPixels(), info.RowBytes);
+                _image = SKImage.FromPixels(_pixmap, null);
 
                 PixelSize = new PixelSize(bmp.Width, bmp.Height);
                 Dpi = SkiaPlatform.DefaultDpi;
@@ -102,10 +110,13 @@ namespace Avalonia.Skia
 
             var nfo = new SKImageInfo(size.Width, size.Height, colorType, alphaType);
             var blob = new UnmanagedBlob(nfo.BytesSize);
+            var addr = blob.Address;
 
-            _bitmap.InstallPixels(nfo, blob.Address, nfo.RowBytes, s_releaseDelegate, blob);
-
+            _bitmap.InstallPixels(nfo, addr, nfo.RowBytes, s_releaseDelegate, blob);
             _bitmap.Erase(SKColor.Empty);
+            
+            _pixmap = new SKPixmap(nfo, addr, nfo.RowBytes);
+            _image = SKImage.FromPixels(_pixmap);
         }
 
         public Vector Dpi { get; }
@@ -119,13 +130,30 @@ namespace Avalonia.Skia
         public void Draw(DrawingContextImpl context, SKRect sourceRect, SKRect destRect, SKPaint paint)
         {
             lock (_lock)
-                context.Canvas.DrawBitmap(_bitmap, sourceRect, destRect, paint);
+            {
+                if (sourceRect == destRect &&
+                    MathUtilities.IsZero(sourceRect.Left) && 
+                    MathUtilities.IsZero(sourceRect.Top) && 
+                    // I'm using Right and Bottom since they are effectively the Width
+                    // and Height since Left and Top will be zero at this point
+                    MathUtilities.AreClose(sourceRect.Right, PixelSize.Width) && 
+                    MathUtilities.AreClose(sourceRect.Bottom, PixelSize.Height))
+                {
+                    context.Canvas.DrawImage(_image, 0, 0, paint);
+                }
+                else
+                {
+                    context.Canvas.DrawImage(_image, sourceRect, destRect, paint);
+                }
+            }
         }
-
+        
         /// <inheritdoc />
         public virtual void Dispose()
         {
             _bitmap.Dispose();
+            _pixmap.Dispose();
+            _image.Dispose();
         }
 
         /// <inheritdoc />
