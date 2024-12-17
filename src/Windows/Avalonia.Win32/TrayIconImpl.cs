@@ -5,6 +5,7 @@ using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives.PopupPositioning;
+using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Media.Imaging;
 using Avalonia.Metadata;
@@ -48,8 +49,9 @@ namespace Avalonia.Win32
 
             s_trayIcons.Add(_uniqueId, this);
         }
-
-        public Action? OnClicked { get; set; }
+        
+        public event EventHandler<MouseEventArgs>? MouseLeftButtonDown;
+        public event EventHandler<MouseEventArgs>? MouseRightButtonDown;
 
         public INativeMenuExporter MenuExporter => _exporter;
 
@@ -192,14 +194,22 @@ namespace Avalonia.Win32
         {
             if (msg == (uint)CustomWindowsMessage.WM_TRAYMOUSE)
             {
+                if (!GetCursorPos(out var cursorPoint))
+                {
+                    return IntPtr.Zero;
+                }
+
+                var position = new Point(cursorPoint.X, cursorPoint.Y);
+                
                 // Determine the type of message and call the matching event handlers
                 switch (lParam.ToInt32())
                 {
                     case (int)WindowsMessage.WM_LBUTTONUP:
-                        OnClicked?.Invoke();
+                        MouseLeftButtonDown?.Invoke(null, new MouseEventArgs(position, MouseButton.Left));
                         break;
 
                     case (int)WindowsMessage.WM_RBUTTONUP:
+                        MouseRightButtonDown?.Invoke(null, new MouseEventArgs(position, MouseButton.Right));
                         OnRightClicked();
                         break;
                 }
