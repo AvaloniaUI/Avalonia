@@ -68,9 +68,9 @@ internal static partial class StorageHelper
     [JSImport("StorageProvider.createFolder", AvaloniaModule.StorageModuleName)]
     public static partial Task<JSObject?> CreateFolder(JSObject folderHandle, string name);
 
-    [JSImport("StorageProvider.getFile", AvaloniaModule.StorageModuleName)]
+    [JSImport("StorageItem.getFile", AvaloniaModule.StorageModuleName)]
     public static partial Task<JSObject?> GetFile(JSObject folderHandle, string name);
 
-    [JSImport("StorageProvider.getFolder", AvaloniaModule.StorageModuleName)]
+    [JSImport("StorageItem.getFolder", AvaloniaModule.StorageModuleName)]
     public static partial Task<JSObject?> GetFolder(JSObject folderHandle, string name);
 }
