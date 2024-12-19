@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Avalonia.Controls.Platform;
+using Avalonia.Input;
 using Avalonia.Native.Interop;
 using Avalonia.Platform;
 
@@ -18,8 +19,6 @@ namespace Avalonia.Native
 
             MenuExporter = new AvaloniaNativeMenuExporter(_native, factory);
         }
-
-        public Action? OnClicked { get; set; }
 
         public void Dispose()
         {
@@ -64,5 +63,7 @@ namespace Avalonia.Native
         }
 
         public INativeMenuExporter? MenuExporter { get; }
+        public event EventHandler<MouseEventArgs>? MouseLeftButtonDown;
+        public event EventHandler<MouseEventArgs>? MouseRightButtonDown;
     }
 }
