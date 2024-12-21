@@ -214,17 +214,17 @@
 - (void)windowWillClose:(NSNotification *_Nonnull)notification
 {
     _closed = true;
-    auto window = _parent.tryGetWithCast<WindowImpl>();
-    if(window)
+    auto parent = _parent.tryGetWithCast<WindowBaseImpl>();
+    if (parent)
     {
-        
-        if(window != nullptr)
+        auto window = parent.dynamicCast<WindowImpl>();
+        if (window)
         {
             window->SetParent(nullptr);
         }
         
-        window->BaseEvents->Closed();
-        [window->View onClosed];
+        parent->BaseEvents->Closed();
+        [parent->View onClosed];
     }
 }
 

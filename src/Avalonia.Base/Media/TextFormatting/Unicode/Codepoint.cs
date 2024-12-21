@@ -59,6 +59,37 @@ namespace Avalonia.Media.TextFormatting.Unicode
         public GraphemeBreakClass GraphemeBreakClass => UnicodeData.GetGraphemeClusterBreak(_value);
 
         /// <summary>
+        /// Gets the <see cref="EastAsianWidthClass"/>.
+        /// </summary>
+        public EastAsianWidthClass EastAsianWidthClass => UnicodeData.GetEastAsianWidthClass(_value);
+
+        /// <summary>
+        /// Determines whether this <see cref="Codepoint"/> is an east asian char.
+        /// </summary>
+        /// <returns>
+        /// <c>true</c> if [is an east asian character]; otherwise, <c>false</c>.
+        /// </returns>
+        public bool IsEastAsian
+        {
+            get
+            {
+                var eastAsianWidth = EastAsianWidthClass;
+
+                switch (eastAsianWidth)
+                {
+                    case EastAsianWidthClass.Fullwidth:
+                    case EastAsianWidthClass.Halfwidth:
+                    case EastAsianWidthClass.Wide:
+                        {
+                            return true;
+                        }
+                }
+
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Determines whether this <see cref="Codepoint"/> is a break char.
         /// </summary>
         /// <returns>

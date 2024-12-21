@@ -25,7 +25,7 @@ body:
     id: avalonia-version
     attributes:
       label: Avalonia version
-      placeholder: e.g. 11.0.9, 11.1.0
+      placeholder: e.g. 11.2.0, 11.1.0
     validations:
       required: true
   - type: dropdown

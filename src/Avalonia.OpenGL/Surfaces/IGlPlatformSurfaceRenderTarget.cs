@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Metadata;
 
 namespace Avalonia.OpenGL.Surfaces
 {
@@ -11,4 +12,11 @@ namespace Avalonia.OpenGL.Surfaces
     {
         bool IsCorrupted { get; }
     }
+
+    [PrivateApi]
+    public interface IGlPlatformSurfaceRenderTarget2 : IGlPlatformSurfaceRenderTargetWithCorruptionInfo
+    {
+        IGlPlatformSurfaceRenderingSession BeginDraw(PixelSize expectedPixelSize);
+    }
+
 }

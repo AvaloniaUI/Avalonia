@@ -176,7 +176,7 @@ namespace Avalonia
         /// <returns>The parsed <see cref="RelativeRect"/>.</returns>
         public static RelativeRect Parse(string s)
         {
-            using (var tokenizer = new StringTokenizer(s, exceptionMessage: "Invalid RelativeRect."))
+            using (var tokenizer = new SpanStringTokenizer(s, exceptionMessage: "Invalid RelativeRect."))
             {
                 var x = tokenizer.ReadSpan();
                 var y = tokenizer.ReadSpan();

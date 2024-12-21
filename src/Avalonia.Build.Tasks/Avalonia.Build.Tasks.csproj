@@ -20,6 +20,9 @@
       <Compile Include="../Avalonia.Base/Utilities/AvaloniaResourcesIndex.cs">
         <Link>Shared/AvaloniaResourcesIndex.cs</Link>
       </Compile>
+      <Compile Include="../Avalonia.Base/Utilities/SpanStringTokenizer.cs">
+        <Link>Shared/SpanStringTokenizer.cs</Link>
+      </Compile>
       <Compile Include="../Avalonia.Base/Platform/Internal/Constants.cs">
         <Link>Shared/Constants.cs</Link>
       </Compile>

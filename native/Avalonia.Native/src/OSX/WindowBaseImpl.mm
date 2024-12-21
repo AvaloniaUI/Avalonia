@@ -498,9 +498,7 @@ HRESULT WindowBaseImpl::SetParent(IAvnWindowBase *parent) {
         auto cparent = dynamic_cast<WindowImpl *>(parent);
         
         Parent = cparent;
-
-        _isModal = Parent != nullptr;
-        
+       
         if(Parent != nullptr && Window != nullptr){
             // If one tries to show a child window with a minimized parent window, then the parent window will be
             // restored but macOS isn't kind enough to *tell* us that, so the window will be left in a non-interactive

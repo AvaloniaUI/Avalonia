@@ -14,7 +14,11 @@ internal class BitmapMemory : IDisposable
         Format = format;
         AlphaFormat = alphaFormat;
         Size = size;
-        RowBytes = (size.Width * format.BitsPerPixel + 7) / 8;
+
+        var bytesPerPixel = (format.BitsPerPixel + 7) / 8;
+        
+        RowBytes =  4 * ((size.Width * bytesPerPixel + 3) / 4);
+        
         _memorySize = RowBytes * size.Height;
         Address = Marshal.AllocHGlobal(_memorySize);
         GC.AddMemoryPressure(_memorySize);

@@ -504,7 +504,7 @@ namespace Avalonia
             double v8 = 0;
             double v9 = 0;
 
-            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Matrix."))
+            using (var tokenizer = new SpanStringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Matrix."))
             {
                 var v1 = tokenizer.ReadDouble();
                 var v2 = tokenizer.ReadDouble();

@@ -106,7 +106,6 @@ protected:
     AvnPoint lastPositionSet;
     bool _shown;
     std::list<WindowBaseImpl*> _children;
-    bool _isModal;
 
 public:
     WindowBaseImpl* Parent = nullptr;

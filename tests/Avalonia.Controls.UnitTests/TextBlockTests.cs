@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
@@ -6,6 +6,7 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.UnitTests;
 using Xunit;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Avalonia.Controls.UnitTests
 {
@@ -45,6 +46,29 @@ namespace Avalonia.Controls.UnitTests
                 textBlock.Measure(new Size(50, 100));
 
                 Assert.NotEqual(textLayout, textBlock.TextLayout);
+            }
+        }
+
+        [Fact]
+        public void Should_Measure_MinTextWith()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var textBlock = new TextBlock
+                {
+                    Text = "Hello&#10;שלום&#10;Really really really really long line",
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    TextAlignment = TextAlignment.DetectFromContent,
+                    TextWrapping = TextWrapping.Wrap
+                };
+
+                textBlock.Measure(new Size(1920, 1080));
+
+                var textLayout = textBlock.TextLayout;
+
+                var constraint = LayoutHelper.RoundLayoutSizeUp(new Size(textLayout.MinTextWidth, textLayout.Height), 1, 1);
+
+                Assert.Equal(textBlock.DesiredSize, constraint);
             }
         }
 

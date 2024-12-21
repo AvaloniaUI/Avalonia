@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Runtime.InteropServices;
-using System.Text;
-using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Visuals.UnitTests.Media.TextFormatting;
 using Xunit;
@@ -22,22 +19,10 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
             _outputHelper = outputHelper;
         }
 
-        [Fact(Skip = "Only run when we update the trie.")]
-        public void Should_Enumerate()
+        [ClassData(typeof(GraphemeBreakTestDataGenerator))]
+        [Theory(Skip = "Only run when we update the trie.")]
+        public void Should_Enumerate(string line, int lineNumber, string grapheme, string text)
         {
-            var generator = new GraphemeBreakTestDataGenerator();
-
-            foreach (var testData in generator)
-            {
-                Assert.True(Run(testData));
-            }
-        }
-
-        private bool Run(GraphemeBreakData t)
-        {
-            var text = Encoding.UTF32.GetString(MemoryMarshal.Cast<int, byte>(t.Codepoints).ToArray());
-            var grapheme = Encoding.UTF32.GetString(MemoryMarshal.Cast<int, byte>(t.Grapheme).ToArray()).AsSpan();
-
             var enumerator = new GraphemeEnumerator(text);
 
             enumerator.MoveNext(out var g);
@@ -52,7 +37,7 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
                 {
                     var a = grapheme[i];
                     var b = actual[i];
-                
+
                     if (a != b)
                     {
                         pass = false;
@@ -60,21 +45,17 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
                         break;
                     }
                 }
-            }      
+            }
 
             if (!pass)
             {
-                _outputHelper.WriteLine($"Failed line {t.LineNumber}");
+                _outputHelper.WriteLine($"Failed line {lineNumber}");
                 _outputHelper.WriteLine($"       Text: {text}");
-                _outputHelper.WriteLine($" Codepoints: {string.Join(" ", t.Codepoints)}");
-                _outputHelper.WriteLine($"   Grapheme: {string.Join(" ", t.Grapheme)}");
-                _outputHelper.WriteLine($"       Line: {t.Line}");
+                _outputHelper.WriteLine($"   Grapheme: {grapheme}");
+                _outputHelper.WriteLine($"       Line: {line}");
 
-                return false;
+                Assert.True(false);
             }
-
-          
-            return true;
         }
 
         [Fact(Skip = "Only run when we update the trie.")]

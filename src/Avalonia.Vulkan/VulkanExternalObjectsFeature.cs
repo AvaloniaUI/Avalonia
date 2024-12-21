@@ -92,7 +92,7 @@ internal unsafe class VulkanExternalObjectsFeature : IVulkanContextExternalObjec
         var uuid = new Span<byte>(physicalDeviceIDProperties.deviceUUID, 16).ToArray();
         if (uuid.Any(b => b != 0))
             DeviceUuid = uuid;
-        _pool = new VulkanCommandBufferPool(_context);
+        _pool = new VulkanCommandBufferPool(_context, true);
     }
     
     public IReadOnlyList<string> SupportedImageHandleTypes { get; }
@@ -111,10 +111,8 @@ internal unsafe class VulkanExternalObjectsFeature : IVulkanContextExternalObjec
 
     public IVulkanExternalImage ImportImage(IPlatformHandle handle, PlatformGraphicsExternalImageProperties properties)
     {
-        _pool.FreeFinishedCommandBuffers();
         if (!SupportedImageHandleTypes.Contains(handle.HandleDescriptor))
             throw new NotSupportedException();
-        
 
         return new ImportedImage(_context, _pool, handle, properties);
     }

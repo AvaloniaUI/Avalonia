@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Text;
 using Avalonia.Platform;
 using Avalonia.Utilities;
 
@@ -181,7 +182,7 @@ namespace Avalonia.Media.Fonts
             glyphTypeface = null;
             var weight = (int)key.Weight;
 
-            //If the target weight given is between 400 and 500 inclusive          
+            //If the target weight given is between 400 and 500 inclusive
             if (weight >= 400 && weight <= 500)
             {
                 //Look for available weights between the target and 500, in ascending order.
@@ -212,7 +213,7 @@ namespace Avalonia.Media.Fonts
                 }
             }
 
-            //If a weight less than 400 is given, look for available weights less than the target, in descending order.           
+            //If a weight less than 400 is given, look for available weights less than the target, in descending order.
             if (weight < 400)
             {
                 for (var i = 0; weight - i >= 100; i += 50)
@@ -271,109 +272,54 @@ namespace Avalonia.Media.Fonts
             var weight = typeface.Weight;
             var stretch = typeface.Stretch;
 
-            if(TryGetStyle(ref normalizedFamilyName, out var foundStyle))
+            StringBuilder? normalizedFamilyNameBuilder = null;
+            var totalCharsRemoved = 0;
+
+            var tokenizer = new SpanStringTokenizer(normalizedFamilyName, ' ');
+
+            // Skip initial family name.
+            tokenizer.ReadSpan();
+
+            while (tokenizer.TryReadSpan(out var token))
             {
-                style = foundStyle;
+                // Don't try to match numbers.
+                if (new SpanStringTokenizer(token).TryReadInt32(out _))
+                {
+                    continue;
+                }
+
+                // Try match with font style, weight or stretch and update accordingly.
+                var match = false;
+                if (EnumHelper.TryParse<FontStyle>(token, true, out var newStyle))
+                {
+                    style = newStyle;
+                    match = true;
+                }
+                else if (EnumHelper.TryParse<FontWeight>(token, true, out var newWeight))
+                {
+                    weight = newWeight;
+                    match = true;
+                }
+                else if (EnumHelper.TryParse<FontStretch>(token, true, out var newStretch))
+                {
+                    stretch = newStretch;
+                    match = true;
+                }
+
+                if (match)
+                {
+                    // Carve out matched word from the normalized name.
+                    normalizedFamilyNameBuilder ??= new StringBuilder(normalizedFamilyName);
+                    normalizedFamilyNameBuilder.Remove(tokenizer.CurrentTokenIndex - totalCharsRemoved, token.Length);
+                    totalCharsRemoved += token.Length;
+                }
             }
 
-            if(TryGetWeight(ref normalizedFamilyName, out var foundWeight))
-            {
-                weight = foundWeight;
-            }
-
-            if(TryGetStretch(ref normalizedFamilyName, out var foundStretch))
-            {
-                stretch = foundStretch;
-            }
+            // Get rid of any trailing spaces.
+            normalizedFamilyName = (normalizedFamilyNameBuilder?.ToString() ?? normalizedFamilyName).TrimEnd();
 
             //Preserve old font source
             return new Typeface(typeface.FontFamily, style, weight, stretch);
-
-        }
-
-        internal static bool TryGetWeight(ref string familyName, out FontWeight weight)
-        {
-            weight = FontWeight.Normal;
-
-            var tokenizer = new StringTokenizer(familyName, ' ');
-
-            tokenizer.ReadSpan();
-
-            while (tokenizer.TryReadString(out var weightString))
-            {
-                if (new StringTokenizer(weightString).TryReadInt32(out _))
-                {
-                    continue;
-                }
-
-                if (!Enum.TryParse(weightString, true, out weight))
-                {
-                    continue;
-                }
-
-                familyName = familyName.Replace(" " + weightString, "").TrimEnd();
-
-                return true;
-            }
-
-            return false;
-        }
-
-        internal static bool TryGetStyle(ref string familyName, out FontStyle style)
-        {
-            style = FontStyle.Normal;
-
-            var tokenizer = new StringTokenizer(familyName, ' ');
-
-            tokenizer.ReadSpan();
-
-            while (tokenizer.TryReadString(out var styleString))
-            {
-                //Do not try to parse an integer
-                if (new StringTokenizer(styleString).TryReadInt32(out _))
-                {
-                    continue;
-                }
-
-                if (!Enum.TryParse(styleString, true, out style))
-                {
-                    continue;
-                }
-
-                familyName = familyName.Replace(" " + styleString, "").TrimEnd();
-
-                return true;
-            }
-
-            return false;
-        }
-
-        internal static bool TryGetStretch(ref string familyName, out FontStretch stretch)
-        {
-            stretch = FontStretch.Normal;
-
-            var tokenizer = new StringTokenizer(familyName, ' ');
-
-            tokenizer.ReadSpan();
-
-            while (tokenizer.TryReadString(out var stretchString))
-            {
-                if (new StringTokenizer(stretchString).TryReadInt32(out _))
-                {
-                    continue;
-                }
-
-                if (!Enum.TryParse(stretchString, true, out stretch))
-                {
-                    continue;
-                }
-
-                familyName = familyName.Replace(" " + stretchString, "").TrimEnd();
-
-                return true;
-            }
-
-            return false;
         }
     }
 }

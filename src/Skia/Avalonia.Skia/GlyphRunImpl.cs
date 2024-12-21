@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Buffers;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Platform;
@@ -15,7 +15,13 @@ namespace Avalonia.Skia
         private readonly ushort[] _glyphIndices;
         private readonly SKPoint[] _glyphPositions;
 
-        private readonly ConcurrentDictionary<SKFontEdging, SKTextBlob> _textBlobCache = new();
+        // We use an array as opposed to a ConcurrentDictionary to prevent a large amount of lock object allocations.
+        // This is possible because the SKFontEdging enum has consecutive integer elements 0, 1, 2, etc. and thus
+        // can be mapped directly to array indices.
+        //
+        // Should Skia update the enum with more elements, then the size of this array should be updated appropriately.
+        private const int FontEdgingsCount = (int)SKFontEdging.SubpixelAntialias + 1;
+        private readonly SKTextBlob?[] _textBlobCache = new SKTextBlob?[FontEdgingsCount];
 
         public GlyphRunImpl(IGlyphTypeface glyphTypeface, double fontRenderingEmSize,
             IReadOnlyList<GlyphInfo> glyphInfos, Point baselineOrigin)
@@ -111,7 +117,7 @@ namespace Avalonia.Skia
                     break;
             }
 
-            return _textBlobCache.GetOrAdd(edging, (_) =>
+            if (_textBlobCache[(int)edging] is null)
             {
                 using var font = CreateFont(edging);
 
@@ -126,8 +132,10 @@ namespace Avalonia.Skia
 
                 SKTextBlobBuilderCache.Shared.Return(builder);
 
-                return textBlob;
-            });
+                Interlocked.CompareExchange(ref _textBlobCache[(int)edging], textBlob, null);
+            }
+
+            return _textBlobCache[(int)edging]!;
         }
 
         private SKFont CreateFont(SKFontEdging edging)
@@ -143,9 +151,9 @@ namespace Avalonia.Skia
 
         public void Dispose()
         {
-            foreach (var pair in _textBlobCache)
+            foreach (var textBlob in _textBlobCache)
             {
-                pair.Value.Dispose();
+                textBlob?.Dispose();
             }
         }
 

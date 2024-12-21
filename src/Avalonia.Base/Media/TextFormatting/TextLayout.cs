@@ -274,6 +274,11 @@ namespace Avalonia.Media.TextFormatting
         }
 
         /// <summary>
+        /// Get minimum width of all text lines that can be layouted horizontally without trimming or wrapping.
+        /// </summary>
+        internal double MinTextWidth => _metrics.MinTextWidth;
+
+        /// <summary>
         /// Draws the text layout.
         /// </summary>
         /// <param name="context">The drawing context.</param>
@@ -544,21 +549,13 @@ namespace Avalonia.Media.TextFormatting
         {
             var objectPool = FormattingObjectPool.Instance;
 
-            var lineStartOfLongestLine = double.MaxValue;
-            var origin = new Point();
             var first = true;
-
-            double accBlackBoxLeft, accBlackBoxTop, accBlackBoxRight, accBlackBoxBottom;
-
-            accBlackBoxLeft = accBlackBoxTop = double.MaxValue;
-            accBlackBoxRight = accBlackBoxBottom = double.MinValue;
 
             if (MathUtilities.IsZero(MaxWidth) || MathUtilities.IsZero(MaxHeight))
             {
                 var textLine = TextFormatterImpl.CreateEmptyTextLine(0, double.PositiveInfinity, _paragraphProperties);
 
-                UpdateMetrics(textLine, ref lineStartOfLongestLine, ref origin, ref first,
-                    ref accBlackBoxLeft, ref accBlackBoxTop, ref accBlackBoxRight, ref accBlackBoxBottom);
+                UpdateMetrics(textLine, ref first);
 
                 return new TextLine[] { textLine };
             }
@@ -576,7 +573,7 @@ namespace Avalonia.Media.TextFormatting
                 while (true)
                 {
                     var textLine = textFormatter.FormatLine(_textSource, _textSourceLength, MaxWidth,
-                        _paragraphProperties, previousLine?.TextLineBreak);
+                        _paragraphProperties, previousLine?.TextLineBreak) as TextLineImpl;
 
                     if (textLine is null)
                     {
@@ -587,8 +584,7 @@ namespace Avalonia.Media.TextFormatting
 
                             textLines.Add(emptyTextLine);
 
-                            UpdateMetrics(emptyTextLine, ref lineStartOfLongestLine, ref origin, ref first,
-                                ref accBlackBoxLeft, ref accBlackBoxTop, ref accBlackBoxRight, ref accBlackBoxBottom);
+                            UpdateMetrics(emptyTextLine, ref first);
                         }
 
                         break;
@@ -615,13 +611,12 @@ namespace Avalonia.Media.TextFormatting
 
                     if (hasOverflowed && _textTrimming != TextTrimming.None)
                     {
-                        textLine = textLine.Collapse(GetCollapsingProperties(MaxWidth));
+                        textLine = (TextLineImpl)textLine.Collapse(GetCollapsingProperties(MaxWidth));
                     }
 
                     textLines.Add(textLine);
 
-                    UpdateMetrics(textLine, ref lineStartOfLongestLine, ref origin, ref first,
-                        ref accBlackBoxLeft, ref accBlackBoxTop, ref accBlackBoxRight, ref accBlackBoxBottom);
+                    UpdateMetrics(textLine, ref first);
 
                     previousLine = textLine;
 
@@ -648,8 +643,7 @@ namespace Avalonia.Media.TextFormatting
 
                     textLines.Add(textLine);
 
-                    UpdateMetrics(textLine, ref lineStartOfLongestLine, ref origin, ref first,
-                        ref accBlackBoxLeft, ref accBlackBoxTop, ref accBlackBoxRight, ref accBlackBoxBottom);
+                    UpdateMetrics(textLine, ref first);
                 }
 
                 if (_paragraphProperties.TextAlignment == TextAlignment.Justify)
@@ -683,44 +677,27 @@ namespace Avalonia.Media.TextFormatting
             }
         }
 
-        private void UpdateMetrics(
-            TextLine currentLine,
-            ref double lineStartOfLongestLine,
-            ref Point origin,
-            ref bool first,
-            ref double accBlackBoxLeft,
-            ref double accBlackBoxTop,
-            ref double accBlackBoxRight,
-            ref double accBlackBoxBottom)
+        private void UpdateMetrics(TextLineImpl currentLine, ref bool first)
         {
-            var blackBoxLeft = origin.X + currentLine.Start + currentLine.OverhangLeading;
-            var blackBoxRight = origin.X + currentLine.Start + currentLine.Width - currentLine.OverhangTrailing;
-            var blackBoxBottom = origin.Y + currentLine.Height + currentLine.OverhangAfter;
-            var blackBoxTop = blackBoxBottom - currentLine.Extent;
+            _metrics.InkBounds = _metrics.InkBounds.Union(new Rect(new Point(0, _metrics.Bounds.Bottom) + currentLine.InkBounds.Position, currentLine.InkBounds.Size));
+            _metrics.Bounds = _metrics.Bounds.Union(new Rect(new Point(0, _metrics.Bounds.Bottom) + currentLine.Bounds.Position, currentLine.Bounds.Size));
 
-            accBlackBoxLeft = Math.Min(accBlackBoxLeft, blackBoxLeft);
-            accBlackBoxRight = Math.Max(accBlackBoxRight, blackBoxRight);
-            accBlackBoxBottom = Math.Max(accBlackBoxBottom, blackBoxBottom);
-            accBlackBoxTop = Math.Min(accBlackBoxTop, blackBoxTop);
+            _metrics.MinTextWidth = Math.Max(_metrics.MinTextWidth, currentLine.Bounds.Width);
+            _metrics.MinTextWidth = Math.Max(_metrics.MinTextWidth, currentLine.InkBounds.Width);
 
-            _metrics.OverhangAfter = currentLine.OverhangAfter;
-
-            _metrics.Height += currentLine.Height;
-            _metrics.Width = Math.Max(_metrics.Width, currentLine.Width);
-            _metrics.WidthIncludingTrailingWhitespace = Math.Max(_metrics.WidthIncludingTrailingWhitespace, currentLine.WidthIncludingTrailingWhitespace);
-            lineStartOfLongestLine = Math.Min(lineStartOfLongestLine, currentLine.Start);
-
-            _metrics.Extent = accBlackBoxBottom - accBlackBoxTop;
-            _metrics.OverhangLeading = accBlackBoxLeft - lineStartOfLongestLine;
-            _metrics.OverhangTrailing = _metrics.Width - (accBlackBoxRight - lineStartOfLongestLine);
+            _metrics.Height = _metrics.Bounds.Height;
+            _metrics.Width = _metrics.InkBounds.Width;
+            _metrics.WidthIncludingTrailingWhitespace = _metrics.Bounds.Width;
+            _metrics.Extent = _metrics.InkBounds.Height;
+            _metrics.OverhangLeading = Math.Max(0, _metrics.Bounds.Left - _metrics.InkBounds.Left);
+            _metrics.OverhangTrailing = Math.Max(0, _metrics.InkBounds.Right - _metrics.Bounds.Right);
+            _metrics.OverhangAfter = Math.Max(0, _metrics.InkBounds.Bottom - _metrics.Bounds.Bottom);
 
             if (first)
             {
                 _metrics.Baseline = currentLine.Baseline;
                 first = false;
             }
-
-            origin = origin.WithY(origin.Y + currentLine.Height);
         }
 
         /// <summary>
@@ -764,6 +741,11 @@ namespace Avalonia.Media.TextFormatting
             // horizontal bounding box metrics
             public double OverhangLeading;
             public double OverhangTrailing;
+
+            public Rect Bounds;
+            public Rect InkBounds;
+
+            public double MinTextWidth;
         }
     }
 }

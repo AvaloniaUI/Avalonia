@@ -42,6 +42,15 @@ public:
         
         return WindowBaseImpl::Show(activate, true);
     }
+    
+    virtual bool ShouldTakeFocusOnShow() override
+    {
+        // Don't steal the focus from another windows if our parent is inactive
+        if (Parent != nullptr && Parent->Window != nullptr && ![Parent->Window isKeyWindow])
+            return false;
+
+        return WindowBaseImpl::ShouldTakeFocusOnShow();
+    }
 };
 
 

@@ -78,8 +78,7 @@ namespace Avalonia.Native
         public override void Dispose()
         {
             Native?.Close();
-            Native?.Dispose();
-            _handle = null;
+            base.Dispose();
         }
 
         public virtual void Show(bool activate, bool isDialog)

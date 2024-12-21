@@ -29,7 +29,7 @@ namespace Avalonia.Media
         {
             var locations = new List<TextDecorationLocation>();
 
-            using (var tokenizer = new StringTokenizer(s, ',', "Invalid text decoration."))
+            using (var tokenizer = new SpanStringTokenizer(s, ',', "Invalid text decoration."))
             {
                 while (tokenizer.TryReadSpan(out var name))
                 {

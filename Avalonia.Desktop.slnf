@@ -15,6 +15,7 @@
       "samples\\Sandbox\\Sandbox.csproj",
       "samples\\UnloadableAssemblyLoadContext\\UnloadableAssemblyLoadContextPlug\\UnloadableAssemblyLoadContextPlug.csproj",
       "samples\\UnloadableAssemblyLoadContext\\UnloadableAssemblyLoadContext\\UnloadableAssemblyLoadContext.csproj",
+      "samples\\XEmbedSample\\XEmbedSample.csproj",
       "src\\Avalonia.Base\\Avalonia.Base.csproj",
       "src\\Avalonia.Build.Tasks\\Avalonia.Build.Tasks.csproj",
       "src\\Avalonia.Controls.ColorPicker\\Avalonia.Controls.ColorPicker.csproj",

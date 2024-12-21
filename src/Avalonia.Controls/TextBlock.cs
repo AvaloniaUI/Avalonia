@@ -740,9 +740,7 @@ namespace Avalonia.Controls
             //This implicitly recreated the TextLayout with a new constraint if we previously reset it.
             var textLayout = TextLayout;
 
-            var width = textLayout.OverhangLeading + textLayout.WidthIncludingTrailingWhitespace + textLayout.OverhangTrailing;
-
-            var size = LayoutHelper.RoundLayoutSizeUp(new Size(width, textLayout.Height).Inflate(padding), 1, 1);
+            var size = LayoutHelper.RoundLayoutSizeUp(new Size(textLayout.MinTextWidth, textLayout.Height).Inflate(padding), 1, 1);
 
             return size;
         }

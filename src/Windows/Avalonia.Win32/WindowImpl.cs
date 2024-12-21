@@ -807,10 +807,7 @@ namespace Avalonia.Win32
             var hCursor = impl?.Handle ?? s_defaultCursor;
             SetClassLong(_hwnd, ClassLongIndex.GCLP_HCURSOR, hCursor);
 
-            if (Owner.IsPointerOver)
-            {
-                UnmanagedMethods.SetCursor(hCursor);
-            }
+            UnmanagedMethods.SetCursor(hCursor);    
         }
 
         public void SetIcon(IWindowIconImpl? icon)

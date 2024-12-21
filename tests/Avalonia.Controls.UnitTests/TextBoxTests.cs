@@ -130,6 +130,27 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void TextBox_Ignore_Word_Move_In_Password_Field()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    PasswordChar = '*',
+                    Text = "passw0rd"
+                };
+
+                target.ApplyTemplate();
+                target.Measure(Size.Infinity);
+                target.CaretIndex = 8;
+                RaiseKeyEvent(target, Key.Left, KeyModifiers.Control);
+
+                Assert.Equal(7, target.CaretIndex);
+            }
+        }
+
+        [Fact]
         public void CaretIndex_Can_Moved_To_Position_After_The_End_Of_Text_With_Arrow_Key()
         {
             using (UnitTestApplication.Start(Services))
