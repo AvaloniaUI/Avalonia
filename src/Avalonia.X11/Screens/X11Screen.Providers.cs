@@ -1,10 +1,9 @@
-
-#nullable enable
 using System;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Avalonia.Platform;
 using static Avalonia.X11.XLib;
+
 namespace Avalonia.X11.Screens;
 
 internal partial class X11Screens
@@ -44,7 +43,7 @@ internal partial class X11Screens
 
         private unsafe Size? GetPhysicalMonitorSizeFromEDID(IntPtr rrOutput)
         {
-            if (rrOutput == IntPtr.Zero || x11 == null)
+            if (rrOutput == IntPtr.Zero)
                 return null;
             var properties = XRRListOutputProperties(x11.Display, rrOutput, out int propertyCount);
             var hasEDID = false;
@@ -130,7 +129,7 @@ internal partial class X11Screens
     {
         nint[] ScreenKeys { get; }
         event Action? Changed;
-        X11Screen? CreateScreenFromKey(nint key);
+        X11Screen CreateScreenFromKey(nint key);
     }
 
     internal unsafe struct MonitorInfo
@@ -211,20 +210,18 @@ internal partial class X11Screens
             }
         }
 
-        public X11Screen? CreateScreenFromKey(nint key)
+        public X11Screen CreateScreenFromKey(nint key)
         {
-            var info = MonitorInfos.Where(x => x.Name == key).FirstOrDefault();
-
             var infos = MonitorInfos;
             for (var i = 0; i < infos.Length; i++)
             {
                 if (infos[i].Name == key)
                 {
-                    return new X11Screen(info, _x11, _scalingProvider, i);
+                    return new X11Screen(infos[i], _x11, _scalingProvider, i);
                 }
             }
 
-            return null;
+            return new FallBackScreen(default, _x11);
         }
     }
 
@@ -248,7 +245,7 @@ internal partial class X11Screens
 
         private bool UpdateRootWindowGeometry() => XGetGeometry(_info.Display, _info.RootWindow, out _geo);
 
-        public X11Screen? CreateScreenFromKey(nint key)
+        public X11Screen CreateScreenFromKey(nint key)
         {
             return new FallBackScreen(new PixelRect(0, 0, _geo.width, _geo.height), _info);
         }
