@@ -16,6 +16,9 @@
     <Compile Update="..\Avalonia.RenderTests\Media\EffectTests.cs">
       <Link>Media\EffectTests.cs</Link>
     </Compile>
+    <Compile Update="..\Avalonia.RenderTests\Media\BitmapMemoryTests.cs">
+      <Link>Media\BitmapMemoryTests.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="..\Avalonia.RenderTests\*\*.ttf" />
