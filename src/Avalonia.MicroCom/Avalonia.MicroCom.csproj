@@ -5,12 +5,9 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="MicroCom.Runtime" Version="0.11.0" />
-    <ProjectReference Include="..\Avalonia.Build.Tasks\Avalonia.Build.Tasks.csproj">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <ExcludeAssets>all</ExcludeAssets>
-      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
-      <SetTargetFramework>TargetFramework=netstandard2.0</SetTargetFramework>
-    </ProjectReference>
+    <ProjectReference Include="..\Avalonia.Build.Tasks\Avalonia.Build.Tasks.csproj"
+                      ReferenceOutputAssembly="false"
+                      PrivateAssets="all" />
   </ItemGroup>
   <Import Project="..\..\build\BuildTargets.targets" />
   <Import Project="..\..\build\TrimmingEnable.props" />
