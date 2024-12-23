@@ -42,6 +42,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml.CompiledBindingsTests
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 Assert.NotNull(window);
+                window.Show();
+
                 var listBox = window.Get<ListBox>("testingListBox");
                 Assert.NotNull(listBox);
                 Assert.NotNull(listBox.DataContext);
@@ -57,6 +59,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml.CompiledBindingsTests
             using (testApp.StartInstance())
             {
                 TestWindow testWindow = new();
+                testWindow.Show();
                 Assert.IsType<TestingViewModel>(testWindow.DataContext);
                 var rootControl = testWindow.TestRootControlInstance;
                 Assert.NotNull(rootControl);
