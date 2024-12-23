@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Avalonia.Platform;
@@ -221,7 +222,7 @@ internal partial class X11Screens
                 }
             }
 
-            return new FallBackScreen(default, _x11);
+            throw new ArgumentOutOfRangeException(nameof(key));
         }
     }
 

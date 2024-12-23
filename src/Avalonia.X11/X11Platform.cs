@@ -28,18 +28,18 @@ namespace Avalonia.X11
         private Lazy<KeyboardDevice> _keyboardDevice = new Lazy<KeyboardDevice>(() => new KeyboardDevice());
         public KeyboardDevice KeyboardDevice => _keyboardDevice.Value;
         public Dictionary<IntPtr, X11EventDispatcher.EventHandler> Windows { get; } = new ();
-        public XI2Manager? XI2 { get; }
-        public X11Info Info { get; }
-        public X11Screens X11Screens { get; }
-        public Compositor Compositor { get; }
-        public IScreenImpl Screens { get; }
-        public X11PlatformOptions Options { get; }
-        public IntPtr OrphanedWindow { get; }
-        public X11Globals Globals { get; }
-        public XResources Resources { get; }
+        public XI2Manager? XI2 { get; private set; }
+        public X11Info Info { get; private set; } = null!;
+        public X11Screens X11Screens { get; private set; } = null!;
+        public Compositor Compositor { get; private set; } = null!;
+        public IScreenImpl Screens { get; private set; } = null!;
+        public X11PlatformOptions Options { get; private set; } = null!;
+        public IntPtr OrphanedWindow { get; private set; }
+        public X11Globals Globals { get; private set; } = null!;
+        public XResources Resources { get; private set; } = null!;
         public ManualRawEventGrouperDispatchQueue EventGrouperDispatchQueue { get; } = new();
 
-        public AvaloniaX11Platform(X11PlatformOptions options)
+        public void Initialize(X11PlatformOptions options)
         {
             Options = options;
 
@@ -405,15 +405,13 @@ namespace Avalonia
             builder
                 .UseStandardRuntimePlatformSubsystem()
                 .UseWindowingSubsystem(() =>
-                {
-                    var options = AvaloniaLocator.Current.GetService<X11PlatformOptions>() ?? new X11PlatformOptions();
-                    _ = new AvaloniaX11Platform(options);
-                });
+                new AvaloniaX11Platform().Initialize(AvaloniaLocator.Current.GetService<X11PlatformOptions>() ??
+                                                     new X11PlatformOptions()));
             return builder;
         }
 
         public static void InitializeX11Platform(X11PlatformOptions? options = null) =>
-            _ = new AvaloniaX11Platform(options ?? new X11PlatformOptions());
+            new AvaloniaX11Platform().Initialize(options ?? new X11PlatformOptions());
     }
 
 }
