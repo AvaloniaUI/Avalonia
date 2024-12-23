@@ -33,6 +33,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 Mode = Mode,
                 Path = Path,
                 Priority = Priority,
+                Delay = Delay,
                 Source = Source,
                 StringFormat = StringFormat,
                 RelativeSource = RelativeSource,
@@ -42,6 +43,9 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 UpdateSourceTrigger = UpdateSourceTrigger,
             };
         }
+
+        /// <inheritdoc cref="BindingBase.Delay"/>
+        public int Delay { get; set; }
 
         public IValueConverter? Converter { get; set; }
 
