@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Avalonia.Controls.Platform;
+using Avalonia.Input;
 using Avalonia.Logging;
 using Avalonia.Platform;
 using Avalonia.Threading;
@@ -32,7 +33,8 @@ namespace Avalonia.FreeDesktop
 
         public bool IsActive { get; private set; }
         public INativeMenuExporter? MenuExporter { get; }
-        public Action? OnClicked { get; set; }
+        public event EventHandler<MouseEventArgs>? MouseLeftButtonDown;
+        public event EventHandler<MouseEventArgs>? MouseRightButtonDown;
         public Func<IWindowIconImpl?, uint[]>? IconConverterDelegate { get; set; }
 
         public DBusTrayIconImpl()
@@ -118,7 +120,8 @@ namespace Avalonia.FreeDesktop
 
             _statusNotifierItemDbusObj!.SetTitleAndTooltip(_tooltipText);
             _statusNotifierItemDbusObj.SetIcon(_icon);
-            _statusNotifierItemDbusObj.ActivationDelegate += OnClicked;
+            _statusNotifierItemDbusObj.ActivationDelegate += () => MouseLeftButtonDown?.Invoke(null, new MouseEventArgs(new Point(), MouseButton.Left));
+            _statusNotifierItemDbusObj.ContextMenuDelegate += () => MouseRightButtonDown?.Invoke(null, new MouseEventArgs(new Point(), MouseButton.Right));
         }
 
         private void DestroyTrayIcon()
@@ -224,8 +227,13 @@ namespace Avalonia.FreeDesktop
         public override Connection Connection { get; }
 
         public event Action? ActivationDelegate;
+        public event Action? ContextMenuDelegate;
 
-        protected override ValueTask OnContextMenuAsync(int x, int y) => new();
+        protected override ValueTask OnContextMenuAsync(int x, int y)
+        {
+            ContextMenuDelegate?.Invoke();
+            return new ValueTask();
+        }
 
         protected override ValueTask OnActivateAsync(int x, int y)
         {

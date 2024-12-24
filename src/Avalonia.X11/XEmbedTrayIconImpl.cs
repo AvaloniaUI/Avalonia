@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Controls.Platform;
+using Avalonia.Input;
 using Avalonia.Logging;
 using Avalonia.Platform;
 
@@ -42,6 +43,7 @@ namespace Avalonia.X11
         }
 
         public INativeMenuExporter MenuExporter { get; }
-        public Action OnClicked { get; set; }
+        public event EventHandler<MouseEventArgs>? MouseLeftButtonDown;
+        public event EventHandler<MouseEventArgs>? MouseRightButtonDown;
     }
 }
