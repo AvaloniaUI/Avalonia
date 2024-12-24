@@ -33,7 +33,7 @@ namespace Avalonia.X11
     {
         private int _width;
         private int _height;
-        private uint[] _bdata;
+        private uint[]? _bdata;
         public UIntPtr[]  Data { get; }
         
         public X11IconData(Bitmap bitmap)

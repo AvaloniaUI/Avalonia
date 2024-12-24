@@ -1,10 +1,10 @@
+#nullable enable
+
 using System;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Platform.Interop;
-using Avalonia.Threading;
-using Avalonia.X11.Dispatching;
 using Avalonia.X11.Interop;
 
 // ReSharper disable IdentifierTypo
@@ -142,7 +142,7 @@ namespace Avalonia.X11.NativeDialogs
         public static IntPtr GetForeignWindow(IntPtr xid) => gdk_x11_window_foreign_new_for_display(s_display, xid);
 
         static object s_startGtkLock = new();
-        static Task<bool> s_startGtkTask;
+        static Task<bool>? s_startGtkTask;
 
         public static Task<bool> StartGtk()
         {

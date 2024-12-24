@@ -1,8 +1,8 @@
-#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using static Avalonia.X11.XLib;
+
 namespace Avalonia.X11;
 
 internal class XResources

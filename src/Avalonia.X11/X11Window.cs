@@ -30,8 +30,6 @@ using Avalonia.Platform.Storage.FileIO;
 // ReSharper disable IdentifierTypo
 // ReSharper disable StringLiteralTypo
 
-#nullable enable
-
 namespace Avalonia.X11
 {
     internal unsafe partial class X11Window : IWindowImpl, IPopupImpl, IXI2Client,
@@ -95,7 +93,7 @@ namespace Avalonia.X11
             _mode = mode;
             _mode.Init(this);
             _popup = popupParent != null;
-			_overrideRedirect = _popup || overrideRedirect;
+            _overrideRedirect = _popup || overrideRedirect;
             _x11 = platform.Info;
             _mouse = new MouseDevice();
             _touch = new TouchDevice();
@@ -1256,7 +1254,7 @@ namespace Avalonia.X11
             }
         }
 
-        public void SetWmClass(IntPtr handle, string wmClass)
+        public void SetWmClass(IntPtr handle, string? wmClass)
         {
             // See https://tronche.com/gui/x/icccm/sec-4.html#WM_CLASS
             // We don't actually parse the application's command line, so we only use RESOURCE_NAME and argv[0]

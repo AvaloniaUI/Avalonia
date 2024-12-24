@@ -96,7 +96,7 @@ namespace Avalonia.X11.Glx
 
                 public PixelSize Size => _size ?? _info.Size;
                 public double Scaling => _info.Scaling;
-                public bool IsYFlipped { get; }
+                public bool IsYFlipped => false;
             }
         }
     }
