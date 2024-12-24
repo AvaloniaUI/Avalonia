@@ -545,4 +545,18 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
     }
+
+    static partial class EnumerableExtensions
+    {
+        public static IEnumerable<TSource> Do<TSource>(this IEnumerable<TSource> source, Action<TSource> predicate)
+        {
+            var enumerable = source as IList<TSource> ?? source.ToList();
+            foreach (var item in enumerable)
+            {
+                predicate.Invoke(item);
+            }
+
+            return enumerable;
+        }
+    }
 }
