@@ -154,11 +154,7 @@ namespace Avalonia.Controls.Primitives
             UpdatePosition();
         }
 
-        public void SetChild(Control? control)
-        {
-            PlatformImpl?.SetTopmost(Topmost);
-            Content = control;
-        }
+        public void SetChild(Control? control) => Content = control;
 
         public void TakeFocus() => PlatformImpl?.TakeFocus();
 
@@ -228,6 +224,10 @@ namespace Avalonia.Controls.Primitives
             if (change.Property == WindowManagerAddShadowHintProperty)
             {
                 PlatformImpl?.SetWindowManagerAddShadowHint(change.GetNewValue<bool>());
+            }
+            else if (change.Property == TopmostProperty)
+            {
+                PlatformImpl?.SetTopmost(Topmost);
             }
         }
     }
