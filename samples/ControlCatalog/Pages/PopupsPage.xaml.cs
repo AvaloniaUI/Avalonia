@@ -1,8 +1,11 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
+using Avalonia.Media;
 
 namespace ControlCatalog.Pages;
 
@@ -43,6 +46,8 @@ public class PopupsPage : UserControl
         {
             if (_popup is null)
                 return;
+            
+            LogicalChildren.Remove(_popup);
             _popup.IsOpen = false;
             _popup = null;
         };
@@ -50,13 +55,31 @@ public class PopupsPage : UserControl
         {
             Placement = PlacementMode.Bottom,
             PlacementTarget = sender as Button,
-            Child = new Panel
+            Child = new StackPanel
             {
-                Margin = new Thickness(10), Children = { closeButton }
+                Spacing = 10,
+                Margin = new Thickness(10),
+                Orientation = Orientation.Vertical,
+                Children =
+                {
+                    new TextBox
+                    {
+                        Width = 100,
+                        Text = "Some text", 
+                    }, 
+                    new TextBox
+                    {
+                        Width = 100,
+                        Text = "Some other text", 
+                    }, 
+                    closeButton
+                }
             },
             IsLightDismissEnabled = false,
-            IsOpen = true
         };
+
+        LogicalChildren.Add(_popup);
+        _popup.IsOpen = true;
     }
 
     private void ButtonTopMostPopupStaysOpen(object sender, RoutedEventArgs e)
