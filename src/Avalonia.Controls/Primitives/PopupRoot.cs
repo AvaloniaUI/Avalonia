@@ -154,7 +154,11 @@ namespace Avalonia.Controls.Primitives
             UpdatePosition();
         }
 
-        public void SetChild(Control? control) => Content = control;
+        public void SetChild(Control? control)
+        {
+            PlatformImpl?.SetTopmost(Topmost);
+            Content = control;
+        }
 
         public void TakeFocus() => PlatformImpl?.TakeFocus();
 

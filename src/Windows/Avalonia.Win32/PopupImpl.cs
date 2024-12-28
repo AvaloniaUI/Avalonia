@@ -53,8 +53,7 @@ namespace Avalonia.Win32
                 UnmanagedMethods.WindowStyles.WS_CLIPCHILDREN;
 
             UnmanagedMethods.WindowStyles exStyle =
-                UnmanagedMethods.WindowStyles.WS_EX_TOOLWINDOW |
-                UnmanagedMethods.WindowStyles.WS_EX_TOPMOST;
+                UnmanagedMethods.WindowStyles.WS_EX_TOOLWINDOW;
 
             var result = UnmanagedMethods.CreateWindowEx(
                 (int)exStyle,
