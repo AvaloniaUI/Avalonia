@@ -13,9 +13,6 @@ internal sealed class ParentDataContextNode : DataContextNodeBase
 
     protected override void OnSourceChanged(object? source, Exception? dataValidationError)
     {
-        if (!ValidateNonNullSource(source))
-            return;
-
         if (source is AvaloniaObject newElement)
             newElement.PropertyChanged += OnPropertyChanged;
 

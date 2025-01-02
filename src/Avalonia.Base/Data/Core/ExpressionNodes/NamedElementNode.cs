@@ -32,9 +32,6 @@ internal sealed class NamedElementNode : SourceNode
 
     protected override void OnSourceChanged(object? source, Exception? dataValidationError)
     {
-        if (!ValidateNonNullSource(source))
-            return;
-
         if (_nameScope.TryGetTarget(out var scope))
             _subscription = NameScopeLocator.Track(scope, _name).Subscribe(SetValue);
         else
@@ -45,5 +42,10 @@ internal sealed class NamedElementNode : SourceNode
     {
         _subscription?.Dispose();
         _subscription = null;
+    }
+
+    private void SetValue(object? value)
+    {
+        SetValue(value, canBeNull: false);
     }
 }

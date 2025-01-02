@@ -165,7 +165,11 @@ internal abstract class ExpressionNode
     /// <param name="valueOrNotification">
     /// The new value. May be a <see cref="BindingNotification"/>.
     /// </param>
-    protected void SetValue(object? valueOrNotification)
+    /// <param name="canBeNull">
+    /// Specifies whether a null value is supported by the expression node. If false, a null
+    /// value will be treated as an error and the <see cref="Owner"/> will be notified.
+    /// </param>
+    protected void SetValue(object? valueOrNotification, bool canBeNull = false)
     {
         if (valueOrNotification is BindingNotification notification)
         {
@@ -178,9 +182,9 @@ internal abstract class ExpressionNode
                 if (notification.HasValue)
                 {
                     if (notification.Value is BindingNotification n)
-                        SetValue(n);
+                        SetValue(n, canBeNull);
                     else
-                        SetValue(notification.Value, notification.Error);
+                        SetValue(notification.Value, notification.Error, canBeNull);
                 }
                 else
                 {
@@ -189,12 +193,12 @@ internal abstract class ExpressionNode
             }
             else
             {
-                SetValue(notification.Value);
+                SetValue(notification.Value, canBeNull);
             }
         }
         else
         {
-            SetValue(valueOrNotification, null);
+            SetValue(valueOrNotification, null, canBeNull);
         }
     }
 
@@ -208,31 +212,18 @@ internal abstract class ExpressionNode
     /// <param name="dataValidationError">
     /// The data validation error associated with the new value, if any.
     /// </param>
-    protected void SetValue(object? value, Exception? dataValidationError = null)
+    /// <param name="canBeNull">
+    /// Specifies whether a null value is supported by the expression node. If false, a null
+    /// value will be treated as an error and the <see cref="Owner"/> will be notified.
+    /// </param>
+    protected void SetValue(
+        object? value,
+        Exception? dataValidationError,
+        bool canBeNull = false)
     {
         Debug.Assert(value is not BindingNotification);
         _value = value;
         Owner?.OnNodeValueChanged(Index, value, dataValidationError);
-    }
-
-    /// <summary>
-    /// Called from <see cref="OnSourceChanged(object?, Exception?)"/> to validate that the source
-    /// is non-null and raise a node error if it is not.
-    /// </summary>
-    /// <param name="source">The expression node source.</param>
-    /// <returns>
-    /// True if the source is non-null; otherwise, false.
-    /// </returns>
-    protected bool ValidateNonNullSource([NotNullWhen(true)] object? source)
-    {
-        if (source is null)
-        {
-            Owner?.OnNodeError(Index - 1, "Value is null.");
-            _value = null;
-            return false;
-        }
-
-        return true;
     }
 
     /// <summary>

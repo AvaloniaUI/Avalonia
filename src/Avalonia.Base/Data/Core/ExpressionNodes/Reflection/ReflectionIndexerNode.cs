@@ -54,12 +54,13 @@ internal sealed class ReflectionIndexerNode : CollectionNodeBase, ISettableNode
 
     protected override void OnSourceChanged(object? source, Exception? dataValidationError)
     {
-        if (!ValidateNonNullSource(source))
-            return;
-
         _indexes = null;
 
-        if (GetIndexer(source.GetType(), out _getter, out _setter))
+        if (source is null)
+        {
+            ClearValue();
+        }
+        else if (GetIndexer(source.GetType(), out _getter, out _setter))
         {
             var parameters = _getter.GetParameters();
             

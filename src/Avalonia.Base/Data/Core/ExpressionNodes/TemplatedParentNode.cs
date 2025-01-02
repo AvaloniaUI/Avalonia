@@ -24,10 +24,11 @@ internal sealed class TemplatedParentNode : SourceNode
 
     protected override void OnSourceChanged(object? source, Exception? dataValidationError)
     {
-        if (!ValidateNonNullSource(source))
-            return;
-
-        if (source is StyledElement newElement)
+        if (source is null)
+        {
+            ClearValue();
+        }
+        else if (source is StyledElement newElement)
         {
             newElement.PropertyChanged += OnPropertyChanged;
             SetValue(newElement.TemplatedParent);

@@ -40,9 +40,6 @@ internal sealed class AvaloniaPropertyAccessorNode :
 
     protected override void OnSourceChanged(object? source, Exception? dataValidationError)
     {
-        if (!ValidateNonNullSource(source))
-            return;
-
         if (source is AvaloniaObject newObject)
         {
             WeakEvents.AvaloniaPropertyChanged.Subscribe(newObject, this);

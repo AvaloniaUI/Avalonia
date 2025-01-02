@@ -46,8 +46,11 @@ internal sealed class DynamicPluginPropertyAccessorNode : ExpressionNode, IPrope
 
     protected override void OnSourceChanged(object? source, Exception? dataValidationError)
     {
-        if (!ValidateNonNullSource(source))
+        if (source is null)
+        {
+            ClearValue();
             return;
+        }
 
         var reference = new WeakReference<object?>(source);
 

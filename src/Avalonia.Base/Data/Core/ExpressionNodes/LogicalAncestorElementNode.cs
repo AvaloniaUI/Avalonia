@@ -58,9 +58,6 @@ internal sealed class LogicalAncestorElementNode : SourceNode
 
     protected override void OnSourceChanged(object? source, Exception? dataValidationError)
     {
-        if (!ValidateNonNullSource(source))
-            return;
-
         if (source is ILogical logical)
         {
             var locator = ControlLocator.Track(logical, _ancestorLevel, _ancestorType);

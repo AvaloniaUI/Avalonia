@@ -18,8 +18,11 @@ internal sealed class DynamicPluginStreamNode : ExpressionNode
 
     protected override void OnSourceChanged(object? source, Exception? dataValidationError)
     {
-        if (!ValidateNonNullSource(source))
+        if (source is null)
+        {
+            ClearValue();
             return;
+        }
 
         var reference = new WeakReference<object?>(source);
 
@@ -38,6 +41,11 @@ internal sealed class DynamicPluginStreamNode : ExpressionNode
     {
         _subscription?.Dispose();
         _subscription = null;
+    }
+
+    private void SetValue(object? value)
+    {
+        SetValue(value, canBeNull: false);
     }
 
     private static IStreamPlugin? GetPlugin(WeakReference<object?> source)

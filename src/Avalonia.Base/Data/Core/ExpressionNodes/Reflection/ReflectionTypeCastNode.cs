@@ -21,9 +21,6 @@ internal sealed class ReflectionTypeCastNode : ExpressionNode
 
     protected override void OnSourceChanged(object? source, Exception? dataValidationError)
     {
-        if (!ValidateNonNullSource(source))
-            return;
-
         if (_targetType.IsInstanceOfType(source))
             SetValue(source);
         else

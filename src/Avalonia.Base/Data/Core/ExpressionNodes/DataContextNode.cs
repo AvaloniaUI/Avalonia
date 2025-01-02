@@ -6,10 +6,11 @@ internal sealed class DataContextNode : DataContextNodeBase
 {
     protected override void OnSourceChanged(object? source, Exception? dataValidationError)
     {
-        if (!ValidateNonNullSource(source))
-            return;
-
-        if (source is IDataContextProvider && source is AvaloniaObject ao)
+        if (source is null)
+        {
+            ClearValue();
+        }
+        else if (source is IDataContextProvider && source is AvaloniaObject ao)
         {
             ao.PropertyChanged += OnPropertyChanged;
             SetValue(ao.GetValue(StyledElement.DataContextProperty));
