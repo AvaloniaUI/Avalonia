@@ -889,7 +889,7 @@ namespace Avalonia.Controls
 
         void IInlineHost.Invalidate()
         {
-            InvalidateTextLayout();
+            InvalidateMeasure();
         }
 
         IAvaloniaList<Visual> IInlineHost.VisualChildren => VisualChildren;
