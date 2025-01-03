@@ -213,8 +213,10 @@ internal abstract class ExpressionNode
     /// The data validation error associated with the new value, if any.
     /// </param>
     /// <param name="canBeNull">
-    /// Specifies whether a null value is supported by the expression node. If false, a null
-    /// value will be treated as an error and the <see cref="Owner"/> will be notified.
+    /// Specifies whether a null value is supported by the non-leaf expression node. If false,
+    /// a null value will be treated as an error and the <see cref="Owner"/> will be notified.
+    /// This value is ignored for the leaf node of an expression as as a null value is always
+    /// allowed here.
     /// </param>
     protected void SetValue(
         object? value,
@@ -223,7 +225,13 @@ internal abstract class ExpressionNode
     {
         Debug.Assert(value is not BindingNotification);
         _value = value;
-        Owner?.OnNodeValueChanged(Index, value, dataValidationError);
+
+        if (Owner is null)
+            return;
+        else if (value is null && !canBeNull && this != Owner.LeafNode)
+            Owner.OnNodeError(Index, "Value is null.");
+        else
+            Owner.OnNodeValueChanged(Index, value, dataValidationError);
     }
 
     /// <summary>
