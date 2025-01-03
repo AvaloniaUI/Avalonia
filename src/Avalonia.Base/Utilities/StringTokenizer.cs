@@ -5,6 +5,9 @@ using static System.Char;
 
 namespace Avalonia.Utilities
 {
+    // TODO12: Remove this struct in 12.0 (breaking change)
+
+    [Obsolete("This type has been superseded by SpanStringTokenizer.")]
 #if !BUILDTASK
     public
 #endif
