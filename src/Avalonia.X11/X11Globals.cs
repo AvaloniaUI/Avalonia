@@ -1,8 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
 using static Avalonia.X11.XLib;
+
 namespace Avalonia.X11
 {
     internal unsafe class X11Globals
@@ -13,14 +12,14 @@ namespace Avalonia.X11
         private readonly IntPtr _rootWindow;
         private readonly IntPtr _compositingAtom;
         
-        private string _wmName;
+        private string? _wmName;
         private IntPtr _compositionAtomOwner;
         private bool _isCompositionEnabled;
 
-        public event Action WindowManagerChanged;
-        public event Action CompositionChanged;
-        public event Action<IntPtr> RootPropertyChanged;
-        public event Action RootGeometryChangedChanged;
+        public event Action? WindowManagerChanged;
+        public event Action? CompositionChanged;
+        public event Action<IntPtr>? RootPropertyChanged;
+        public event Action? RootGeometryChangedChanged;
 
         public X11Globals(AvaloniaX11Platform plat)
         {
@@ -36,7 +35,7 @@ namespace Avalonia.X11
             UpdateCompositingAtomOwner();
         }
         
-        public string WmName
+        public string? WmName
         {
             get => _wmName;
             private set
@@ -131,7 +130,7 @@ namespace Avalonia.X11
 
         private void UpdateWmName() => WmName = GetWmName();
 
-        private string GetWmName()
+        private string? GetWmName()
         {
             var wm = GetSupportingWmCheck(_rootWindow);
             if (wm == IntPtr.Zero || wm != GetSupportingWmCheck(wm))

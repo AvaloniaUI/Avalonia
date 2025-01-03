@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using System.Text;
 using System.Collections.Concurrent;
@@ -232,7 +231,7 @@ namespace Avalonia.X11
             {
                 var e = new ShutdownRequestedEventArgs();
 
-                if (_platform.Options?.EnableSessionManagement ?? false)
+                if (_platform.Options.EnableSessionManagement)
                 {
                     ShutdownRequested?.Invoke(this, e);
                 }

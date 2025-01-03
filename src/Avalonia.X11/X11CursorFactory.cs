@@ -6,8 +6,6 @@ using Avalonia.Input;
 using Avalonia.Platform;
 using Avalonia.Platform.Internal;
 
-#nullable enable
-
 namespace Avalonia.X11
 {
     internal partial class X11CursorFactory : ICursorFactory

@@ -1,6 +1,4 @@
-#nullable enable
 using System;
-using System.ComponentModel;
 using Avalonia.Controls;
 using Avalonia.Controls.Embedding;
 using Avalonia.Input;
@@ -73,7 +71,10 @@ partial class X11Window
         
         static XEmbedClientWindowMode()
         {
-            KeyboardDevice.Instance.PropertyChanged += (_, args) =>
+            if (KeyboardDevice.Instance is not { } keyboardDevice)
+                return;
+
+            keyboardDevice.PropertyChanged += (_, args) =>
             {
                 if (args.PropertyName == nameof(KeyboardDevice.Instance.FocusedElement))
                 {

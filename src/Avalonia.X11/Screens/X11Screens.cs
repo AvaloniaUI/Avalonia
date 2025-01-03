@@ -1,12 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using Avalonia.Platform;
 using static Avalonia.X11.Screens.X11Screens;
-using static Avalonia.X11.XLib;
 
 namespace Avalonia.X11.Screens
 {
