@@ -170,7 +170,7 @@ namespace Avalonia.Media.TextFormatting
                 return this;
             }
 
-            var collapsedRuns = collapsingProperties.Collapse(this);
+            var collapsedRuns = collapsingProperties.Collapse(this, _resolvedFlowDirection);
 
             if (collapsedRuns is null)
             {
@@ -1167,7 +1167,7 @@ namespace Avalonia.Media.TextFormatting
 
         public void FinalizeLine()
         {
-            _indexedTextRuns = BidiReorderer.Instance.BidiReorder(_textRuns, _paragraphProperties.FlowDirection, FirstTextSourceIndex);
+            _indexedTextRuns = BidiReorderer.Instance.BidiReorder(_textRuns, _resolvedFlowDirection, FirstTextSourceIndex);
 
             _textLineMetrics = CreateLineMetrics();
 

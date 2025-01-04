@@ -26,7 +26,8 @@ namespace Avalonia.Media.TextFormatting
         /// Collapses given text line.
         /// </summary>
         /// <param name="textLine">Text line to collapse.</param>
-        public abstract TextRun[]? Collapse(TextLine textLine);
+        /// <param name="resolvedFlowDirection">The resolved flow direction</param>
+        public abstract TextRun[]? Collapse(TextLine textLine, FlowDirection resolvedFlowDirection);
 
         /// <summary>
         /// Creates a list of runs for given collapsed length which includes specified symbol at the end.

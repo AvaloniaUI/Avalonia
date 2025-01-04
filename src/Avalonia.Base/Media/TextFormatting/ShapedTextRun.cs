@@ -94,17 +94,21 @@ namespace Avalonia.Media.TextFormatting
         /// Measures the number of characters that fit into available width.
         /// </summary>
         /// <param name="availableWidth">The available width.</param>
+        /// <param name="flowDirection">The flow direction of the text.</param>
         /// <param name="length">The count of fitting characters.</param>
         /// <returns>
         /// <c>true</c> if characters fit into the available width; otherwise, <c>false</c>.
         /// </returns>
-        public bool TryMeasureCharacters(double availableWidth, out int length)
+        public bool TryMeasureCharacters(double availableWidth, FlowDirection flowDirection, out int length)
         {
             length = 0;
             var currentWidth = 0.0;
             var charactersSpan = GlyphRun.Characters.Span;
 
-            for (var i = 0; i < ShapedBuffer.Length; i++)
+            int i = flowDirection == FlowDirection.LeftToRight ? 0 : charactersSpan.Length - 1;
+            int end = flowDirection == FlowDirection.LeftToRight ? charactersSpan.Length : -1;
+            int offset = flowDirection == FlowDirection.LeftToRight ? 1 : -1;
+            while (i != end)
             {
                 var advance = ShapedBuffer[i].GlyphAdvance;
                 var currentCluster = ShapedBuffer[i].GlyphCluster;
@@ -114,9 +118,9 @@ namespace Avalonia.Media.TextFormatting
                     break;
                 }
 
-                if(i + 1 < ShapedBuffer.Length)
+                if (i + offset != end)
                 {
-                    var nextCluster = ShapedBuffer[i + 1].GlyphCluster;
+                    var nextCluster = ShapedBuffer[i + offset].GlyphCluster;
 
                     var count = nextCluster - currentCluster;
 
@@ -129,8 +133,9 @@ namespace Avalonia.Media.TextFormatting
                     length += count;
                 }
 
-             
+
                 currentWidth += advance;
+                i += offset;
             }
 
             return length > 0;

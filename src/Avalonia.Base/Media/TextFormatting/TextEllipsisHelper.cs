@@ -4,7 +4,8 @@ namespace Avalonia.Media.TextFormatting
 {
     internal static class TextEllipsisHelper
     {
-        public static TextRun[]? Collapse(TextLine textLine, TextCollapsingProperties properties, bool isWordEllipsis)
+        public static TextRun[]? Collapse(TextLine textLine, TextCollapsingProperties properties, bool isWordEllipsis,
+            FlowDirection resolvedFlowDirection)
         {
             var textRuns = textLine.TextRuns;
 
@@ -26,7 +27,7 @@ namespace Avalonia.Media.TextFormatting
 
             var availableWidth = properties.Width - shapedSymbol.Size.Width;
 
-            if(properties.FlowDirection== FlowDirection.LeftToRight)
+            if (resolvedFlowDirection == FlowDirection.LeftToRight)
             {
                 while (runIndex < textRuns.Count)
                 {
@@ -40,7 +41,7 @@ namespace Avalonia.Media.TextFormatting
 
                                 if (currentWidth > availableWidth)
                                 {
-                                    if (shapedRun.TryMeasureCharacters(availableWidth, out var measuredLength))
+                                    if (shapedRun.TryMeasureCharacters(availableWidth, resolvedFlowDirection, out var measuredLength))
                                     {
                                         if (isWordEllipsis && measuredLength < textLine.Length)
                                         {
@@ -71,7 +72,7 @@ namespace Avalonia.Media.TextFormatting
 
                                     collapsedLength += measuredLength;
 
-                                    return TextCollapsingProperties.CreateCollapsedRuns(textLine, collapsedLength, FlowDirection.LeftToRight, shapedSymbol);
+                                    return TextCollapsingProperties.CreateCollapsedRuns(textLine, collapsedLength, resolvedFlowDirection, shapedSymbol);
                                 }
 
                                 availableWidth -= shapedRun.Size.Width;
@@ -84,7 +85,7 @@ namespace Avalonia.Media.TextFormatting
                                 //The whole run needs to fit into available space
                                 if (currentWidth + drawableRun.Size.Width > availableWidth)
                                 {
-                                    return TextCollapsingProperties.CreateCollapsedRuns(textLine, collapsedLength, FlowDirection.LeftToRight, shapedSymbol);
+                                    return TextCollapsingProperties.CreateCollapsedRuns(textLine, collapsedLength, resolvedFlowDirection, shapedSymbol);
                                 }
 
                                 availableWidth -= drawableRun.Size.Width;
@@ -114,7 +115,7 @@ namespace Avalonia.Media.TextFormatting
 
                                 if (currentWidth > availableWidth)
                                 {
-                                    if (shapedRun.TryMeasureCharacters(availableWidth, out var measuredLength))
+                                    if (shapedRun.TryMeasureCharacters(availableWidth, resolvedFlowDirection, out var measuredLength))
                                     {
                                         if (isWordEllipsis && measuredLength < textLine.Length)
                                         {
@@ -145,7 +146,7 @@ namespace Avalonia.Media.TextFormatting
 
                                     collapsedLength += measuredLength;
 
-                                    return TextCollapsingProperties.CreateCollapsedRuns(textLine, collapsedLength, FlowDirection.RightToLeft, shapedSymbol);
+                                    return TextCollapsingProperties.CreateCollapsedRuns(textLine, collapsedLength, resolvedFlowDirection, shapedSymbol);
                                 }
 
                                 availableWidth -= shapedRun.Size.Width;
@@ -158,7 +159,7 @@ namespace Avalonia.Media.TextFormatting
                                 //The whole run needs to fit into available space
                                 if (currentWidth + drawableRun.Size.Width > availableWidth)
                                 {
-                                    return TextCollapsingProperties.CreateCollapsedRuns(textLine, collapsedLength, FlowDirection.RightToLeft, shapedSymbol);
+                                    return TextCollapsingProperties.CreateCollapsedRuns(textLine, collapsedLength, resolvedFlowDirection, shapedSymbol);
                                 }
 
                                 availableWidth -= drawableRun.Size.Width;

@@ -47,7 +47,7 @@ namespace Avalonia.Media.TextFormatting
         public override FlowDirection FlowDirection { get; }
 
         /// <inheritdoc />
-        public override TextRun[]? Collapse(TextLine textLine)
+        public override TextRun[]? Collapse(TextLine textLine, FlowDirection resolvedFlowDirection)
         {
             var textRuns = textLine.TextRuns;
 
@@ -81,7 +81,7 @@ namespace Avalonia.Media.TextFormatting
 
                             if (currentWidth > availableWidth)
                             {
-                                shapedRun.TryMeasureCharacters(availableWidth, out var measuredLength);
+                                shapedRun.TryMeasureCharacters(availableWidth, resolvedFlowDirection, out var measuredLength);
 
                                 if (measuredLength > 0)
                                 {

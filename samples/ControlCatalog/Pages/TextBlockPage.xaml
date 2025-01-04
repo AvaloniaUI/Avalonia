@@ -23,6 +23,22 @@
           <TextBlock Margin="0,0,10,0"
                      Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit."
                      TextTrimming="WordEllipsis" />
+          <TextBlock Margin="0,0,10,0"
+                     Text="טקסט בשפה עברית אמור להיות מוצג מימין לשמאל"
+                     FontFamily="Arial"
+                     TextTrimming="CharacterEllipsis" />
+          <TextBlock Margin="0,0,10,0"
+                     Text="טקסט בשפה עברית אמור להיות מוצג מימין לשמאל"
+                     FontFamily="Arial"
+                     TextTrimming="WordEllipsis" />
+          <TextBlock Margin="0,0,10,0"
+                     Text="אחד שתיים שלוש Four חמש Six שבע Eight"
+                     FontFamily="Arial"
+                     TextTrimming="CharacterEllipsis" />
+          <TextBlock Margin="0,0,10,0"
+                     Text="אחד שתיים שלוש Four חמש Six שבע Eight"
+                     FontFamily="Arial"
+                     TextTrimming="WordEllipsis" />
           <TextBlock Text="Left aligned text" TextAlignment="Left" />
           <TextBlock Text="Center aligned text" TextAlignment="Center" />
           <TextBlock Text="Right aligned text" TextAlignment="Right" />
