@@ -912,6 +912,11 @@ namespace Avalonia.Media.TextFormatting
                     paragraphWidth, paragraphProperties, resolvedFlowDirection,
                     textLineBreak);
 
+                if (postSplitRuns?.Count > 0)
+                {
+                    CompressReversedTrailingWhitespace(preSplitRuns);
+                }
+
                 textLine.FinalizeLine();
 
                 return textLine;
@@ -921,6 +926,69 @@ namespace Avalonia.Media.TextFormatting
                 objectPool.TextRunLists.Return(ref preSplitRuns);
                 objectPool.TextRunLists.Return(ref postSplitRuns);
             }
+        }
+
+        private static void CompressReversedTrailingWhitespace(RentedList<TextRun> textRuns)
+        {
+            if (textRuns.Count == 0)
+            {
+                return;
+            }
+
+            var lastTextRun = textRuns[textRuns.Count - 1];
+
+            if (lastTextRun is not ShapedTextRun shapedText)
+            {
+                return;
+            }
+
+            if (shapedText.BidiLevel == 0)
+            {
+                return;
+            }
+
+            var textSpan = shapedText.Text.Span;
+
+            if (textSpan.IsEmpty)
+            {
+                return;
+            }
+
+            var whitespaceCharactersCount = 0;
+
+            for (var i = textSpan.Length - 1; i >= 0; i--)
+            {
+                if (char.IsWhiteSpace(textSpan[i]))
+                {
+                    whitespaceCharactersCount++;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            if (whitespaceCharactersCount == 0)
+            {
+                return;
+            }
+
+            var shapedBuffer = shapedText.ShapedBuffer;
+
+            while (whitespaceCharactersCount > 0)
+            {
+                var glyphIndex = shapedText.IsReversed
+                                 ? whitespaceCharactersCount - 1
+                                 : shapedBuffer.Length - whitespaceCharactersCount;
+
+                var glyphInfo = shapedBuffer[glyphIndex];
+
+                shapedBuffer[glyphIndex] = new GlyphInfo(glyphInfo.GlyphIndex, glyphInfo.GlyphCluster, 0);
+
+                whitespaceCharactersCount--;
+            }
+
+            shapedText.GlyphRun.GlyphInfos = shapedBuffer;
         }
 
         private struct TextRunEnumerator
