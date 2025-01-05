@@ -169,6 +169,60 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         }
 
         [Fact]
+        public void Should_Compress_Reversed_Trailing_Whitespace()
+        {
+            using (Start())
+            {
+                const string text = "אאאאא בבבבב";
+
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default, 12, foregroundBrush: Brushes.Black);
+
+                var paragraphProperties = new GenericTextParagraphProperties(defaultProperties, textWrap: TextWrapping.Wrap);
+
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine = formatter.FormatLine(textSource, 0, 50, paragraphProperties);
+
+                var textRun = textLine?.TextRuns[0] as ShapedTextRun;
+
+                Assert.NotNull(textRun);
+
+                var whitespaceGlyphInfo = textRun.ShapedBuffer[0];
+
+                Assert.Equal(0, whitespaceGlyphInfo.GlyphAdvance);
+            }
+        }
+
+        [Fact]
+        public void Should_Compress_Reversed_Trailing_Whitespace_2()
+        {
+            using (Start())
+            {
+                const string text = "aaaaa bbbbb";
+
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default, 12, foregroundBrush: Brushes.Black);
+
+                var paragraphProperties = new GenericTextParagraphProperties(FlowDirection.RightToLeft, TextAlignment.Start, true, 
+                                                                             true, defaultProperties, TextWrapping.Wrap, 0, 0, 0);
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine = formatter.FormatLine(textSource, 0, 50, paragraphProperties);
+
+                var textRun = textLine?.TextRuns[0] as ShapedTextRun;
+
+                Assert.NotNull(textRun);
+
+                var whitespaceGlyphInfo = textRun.ShapedBuffer[5];
+
+                Assert.Equal(0, whitespaceGlyphInfo.GlyphAdvance);
+            }
+        }
+
+        [Fact]
         public void Should_Format_TextRuns_With_TextRunStyles()
         {
             using (Start())
