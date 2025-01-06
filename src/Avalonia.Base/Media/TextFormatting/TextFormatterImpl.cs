@@ -958,7 +958,9 @@ namespace Avalonia.Media.TextFormatting
 
             for (var i = textSpan.Length - 1; i >= 0; i--)
             {
-                if (char.IsWhiteSpace(textSpan[i]))
+                var isWhitespace = Codepoint.ReadAt(textSpan, i, out _).IsWhiteSpace;
+
+                if (isWhitespace)
                 {
                     whitespaceCharactersCount++;
                 }
