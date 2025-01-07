@@ -22,9 +22,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="BlendMode"/> property.
         /// </summary>
         public static readonly StyledProperty<BitmapBlendingMode> BlendModeProperty =
-            AvaloniaProperty.Register<Image, BitmapBlendingMode>(
-                nameof(BlendMode), 
-                BitmapBlendingMode.Unspecified);
+            AvaloniaProperty.Register<Image, BitmapBlendingMode>(nameof(BlendMode));
 
         /// <summary>
         /// Defines the <see cref="Stretch"/> property.
@@ -42,7 +40,7 @@ namespace Avalonia.Controls
 
         static Image()
         {
-            AffectsRender<Image>(SourceProperty, StretchProperty, StretchDirectionProperty);
+            AffectsRender<Image>(SourceProperty, StretchProperty, StretchDirectionProperty, BlendModeProperty);
             AffectsMeasure<Image>(SourceProperty, StretchProperty, StretchDirectionProperty);
             AutomationProperties.ControlTypeOverrideProperty.OverrideDefaultValue<Image>(AutomationControlType.Image);
         }
@@ -107,11 +105,11 @@ namespace Avalonia.Controls
                     .Intersect(viewPort);
                 Rect sourceRect = new Rect(sourceSize)
                     .CenterRect(new Rect(destRect.Size / scale));
-                context.PushRenderOptions(new()
+
+                using (context.PushRenderOptions(RenderOptions with { BitmapBlendingMode = BlendMode }))
                 {
-                    BitmapBlendingMode = BlendMode
-                });
-                context.DrawImage(source, sourceRect, destRect);
+                    context.DrawImage(source, sourceRect, destRect);
+                }
             }
         }
 
