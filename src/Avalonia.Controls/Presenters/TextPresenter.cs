@@ -634,6 +634,8 @@ namespace Avalonia.Controls.Presenters
 
         protected override Size ArrangeOverride(Size finalSize)
         {
+            var finalWidth = finalSize.Width;
+
             var textWidth = Math.Ceiling(TextLayout.OverhangLeading + TextLayout.WidthIncludingTrailingWhitespace + TextLayout.OverhangTrailing);
 
             if (finalSize.Width < textWidth)
@@ -641,15 +643,13 @@ namespace Avalonia.Controls.Presenters
                 finalSize = finalSize.WithWidth(textWidth);
             }
 
-            if (MathUtilities.AreClose(_constraint.Width, finalSize.Width))
+            if (MathUtilities.AreClose(_constraint.Width, finalWidth) == false)
             {
-                return finalSize;
+                _constraint = new Size(Math.Ceiling(finalWidth), double.PositiveInfinity);
+
+                _textLayout?.Dispose();
+                _textLayout = null;
             }
-
-            _constraint = new Size(Math.Ceiling(finalSize.Width), double.PositiveInfinity);
-
-            _textLayout?.Dispose();
-            _textLayout = null;
 
             return finalSize;
         }
