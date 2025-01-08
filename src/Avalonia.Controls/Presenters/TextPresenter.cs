@@ -643,6 +643,10 @@ namespace Avalonia.Controls.Presenters
                 finalSize = finalSize.WithWidth(textWidth);
             }
 
+            // Check if the '_constraint' has changed since the last measure,
+            // if so recalculate the TextLayout according to the new size
+            // NOTE: It is important to check this against the actual final size
+            // (excluding the trailing whitespace) to avoid TextLayout overflow.
             if (MathUtilities.AreClose(_constraint.Width, finalWidth) == false)
             {
                 _constraint = new Size(Math.Ceiling(finalWidth), double.PositiveInfinity);
