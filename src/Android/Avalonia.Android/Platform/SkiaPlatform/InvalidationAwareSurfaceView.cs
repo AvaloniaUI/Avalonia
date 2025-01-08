@@ -14,12 +14,13 @@ namespace Avalonia.Android
     {
         bool _invalidateQueued;
         private bool _isDisposed;
+        private bool _isSurfaceValid;
         readonly object _lock = new object();
         private readonly Handler _handler;
 
         internal event EventHandler? SurfaceWindowCreated;
 
-        IntPtr IPlatformHandle.Handle => Holder?.Surface?.Handle is { } handle ?
+        IntPtr IPlatformHandle.Handle => _isSurfaceValid && Holder?.Surface?.Handle is { } handle ?
             AndroidFramebuffer.ANativeWindow_fromSurface(JNIEnv.Handle, handle) :
             default;
 
@@ -63,12 +64,14 @@ namespace Avalonia.Android
 
         public void SurfaceChanged(ISurfaceHolder holder, Format format, int width, int height)
         {
+            _isSurfaceValid = true;
             Log.Info("AVALONIA", "Surface Changed");
             DoDraw();
         }
 
         public void SurfaceCreated(ISurfaceHolder holder)
         {
+            _isSurfaceValid = true;
             Log.Info("AVALONIA", "Surface Created");
             SurfaceWindowCreated?.Invoke(this, EventArgs.Empty);
             DoDraw();
@@ -76,6 +79,7 @@ namespace Avalonia.Android
 
         public void SurfaceDestroyed(ISurfaceHolder holder)
         {
+            _isSurfaceValid = false;
             Log.Info("AVALONIA", "Surface Destroyed");
 
         }
