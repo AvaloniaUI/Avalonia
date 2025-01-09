@@ -627,14 +627,14 @@ namespace Avalonia.Controls.Presenters
 
             InvalidateArrange();
 
-            var textWidth = TextLayout.OverhangLeading + TextLayout.WidthIncludingTrailingWhitespace + TextLayout.OverhangTrailing;
+            var textWidth = Math.Ceiling(TextLayout.MinTextWidth);
 
             return new Size(textWidth, TextLayout.Height);
         }
 
         protected override Size ArrangeOverride(Size finalSize)
         {
-            var textWidth = Math.Ceiling(TextLayout.OverhangLeading + TextLayout.WidthIncludingTrailingWhitespace + TextLayout.OverhangTrailing);
+            var textWidth = Math.Ceiling(TextLayout.MinTextWidth);
 
             if (finalSize.Width < textWidth)
             {
