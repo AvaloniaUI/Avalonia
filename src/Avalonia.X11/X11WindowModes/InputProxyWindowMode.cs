@@ -8,7 +8,7 @@ partial class X11Window
 {
     public class InputProxyWindowMode : DefaultTopLevelWindowMode
     {
-        private X11FocusProxy _focusProxy;
+        private X11FocusProxy? _focusProxy;
 
         public override void OnHandleCreated(IntPtr handle)
         {
