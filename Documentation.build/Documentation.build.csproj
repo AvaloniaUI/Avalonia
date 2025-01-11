@@ -2,7 +2,6 @@
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
-    <ProjectGuid>{45C2507A-D756-4383-AA29-145416FEF56C}</ProjectGuid>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
   </PropertyGroup>
