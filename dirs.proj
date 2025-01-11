@@ -32,4 +32,9 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.SlnGen" Version="8.5.17" PrivateAssets="all" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <!-- Create API-Docs --> 
+    <PackageReference Include="Documentation/Api-Reference/Documentation.build.csproj" />
+  </ItemGroup>
 </Project>
