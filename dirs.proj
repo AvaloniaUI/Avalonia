@@ -35,6 +35,6 @@
   
   <ItemGroup>
     <!-- Create API-Docs --> 
-    <PackageReference Include="Documentation/Api-Reference/Documentation.build.csproj" />
+    <ProjectReference Include="Documentation/Api-Reference/Documentation.build.csproj" />
   </ItemGroup>
 </Project>
