@@ -9,7 +9,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="EWSoftware.SHFB" Version="2024.12.21" />
-    <PackageReference Include="EWSoftware.SHFB.NETFramework" Version="4.8.0.3" />
+    <PackageReference Include="EWSoftware.SHFB.NET" Version="8.0.0" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition="'$(MSBuildRestoreSessionId)' != ''"/>
   <Import Project="Test.shfbproj"  Condition="'$(MSBuildRestoreSessionId)' == ''"/>
