@@ -311,11 +311,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Api-Reference", "Api-Refere
 	ProjectSection(SolutionItems) = preProject
 		Documentation\Api-Reference\icons\avalonia_logo_box_white.png = Documentation\Api-Reference\icons\avalonia_logo_box_white.png
 		Documentation\Api-Reference\css\presentationStyle.css = Documentation\Api-Reference\css\presentationStyle.css
-		Documentation\Api-Reference\Test.shfbproj = Documentation\Api-Reference\Test.shfbproj
 		Documentation\Api-Reference\.gitignore = Documentation\Api-Reference\.gitignore
 	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Documentation.build", "Documentation\Api-Reference\Documentation.build.csproj", "{6CD668AC-F418-4EB9-9C31-202E83EA5A27}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -725,10 +722,6 @@ Global
 		{255614F5-CB64-4ECA-A026-E0B1AF6A2EF4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{255614F5-CB64-4ECA-A026-E0B1AF6A2EF4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{255614F5-CB64-4ECA-A026-E0B1AF6A2EF4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6CD668AC-F418-4EB9-9C31-202E83EA5A27}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6CD668AC-F418-4EB9-9C31-202E83EA5A27}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6CD668AC-F418-4EB9-9C31-202E83EA5A27}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6CD668AC-F418-4EB9-9C31-202E83EA5A27}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -819,7 +812,6 @@ Global
 		{0097673D-DBCE-476E-82FE-E78A56E58AA2} = {B39A8919-9F95-48FE-AD7B-76E08B509888}
 		{255614F5-CB64-4ECA-A026-E0B1AF6A2EF4} = {9B9E3891-2366-4253-A952-D08BCEB71098}
 		{8580EDB7-58BE-4DCB-B84C-8B9A271969A4} = {92E28C9F-BA80-42D0-90E2-1EEBA9A398B2}
-		{6CD668AC-F418-4EB9-9C31-202E83EA5A27} = {8580EDB7-58BE-4DCB-B84C-8B9A271969A4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {87366D66-1391-4D90-8999-95A620AD786A}
