@@ -40,7 +40,7 @@
     <BuildAssemblerVerbosity>OnlyWarningsAndErrors</BuildAssemblerVerbosity>
     <SaveComponentCacheCapacity>100</SaveComponentCacheCapacity>
     <DocumentationSources>
-      <DocumentationSource sourceFile="..\..\..\src\Avalonia.Controls\Avalonia.Controls.csproj" targetFramework="net8.0" />
+      <DocumentationSource sourceFile="../../../src/Avalonia.Controls/Avalonia.Controls.csproj" />
     </DocumentationSources>
   </PropertyGroup>
   <!-- There are no properties for these groups.  AnyCPU needs to appear in order for Visual Studio to perform
