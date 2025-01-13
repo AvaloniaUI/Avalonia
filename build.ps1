@@ -14,6 +14,7 @@ $PSScriptRoot = Split-Path $MyInvocation.MyCommand.Path -Parent
 ###########################################################################
 
 $BuildProjectFile = "$PSScriptRoot\nukebuild\_build.csproj"
+$BuildDocumentationFile = "$PSScriptRoot\Documentation\Api-Reference\ApiDocumentation\ApiDocumentation.shfbproj"
 $TempDirectory = "$PSScriptRoot\\.nuke\temp"
 
 $DotNetGlobalFile = "$PSScriptRoot\\global.json"
@@ -66,4 +67,5 @@ else {
 Write-Output "Microsoft (R) .NET SDK version $(& $env:DOTNET_EXE --version)"
 
 ExecSafe { & $env:DOTNET_EXE build $BuildProjectFile /nodeReuse:false /p:UseSharedCompilation=false -nologo -clp:NoSummary --verbosity quiet }
+ExecSafe { & $env:DOTNET_EXE build $BuildDocumentationFile /nodeReuse:false /p:UseSharedCompilation=false -nologo -clp:NoSummary --verbosity quiet }
 ExecSafe { & $env:DOTNET_EXE run --project $BuildProjectFile --no-build -- $BuildArguments }
