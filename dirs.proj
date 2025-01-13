@@ -32,9 +32,5 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.SlnGen" Version="8.5.17" PrivateAssets="all" />
   </ItemGroup>
-  
-  <ItemGroup>
-    <!-- Create API-Docs --> 
-    <ProjectReference Include="Documentation\Api-Reference\ApiDocumentation\ApiDocumentation.shfbproj" />
-  </ItemGroup>
+ 
 </Project>

@@ -40,7 +40,7 @@
     <BuildAssemblerVerbosity>OnlyWarningsAndErrors</BuildAssemblerVerbosity>
     <SaveComponentCacheCapacity>100</SaveComponentCacheCapacity>
     <DocumentationSources>
-      <DocumentationSource sourceFile="..\..\..\src\Avalonia.Controls\Release\net8.0\Avalonia.Controls.dll" />
+      <DocumentationSource sourceFile="..\..\..\src\Avalonia.Controls\bin\Release\net8.0\Avalonia.Controls.dll" />
     </DocumentationSources>
   </PropertyGroup>
   <!-- There are no properties for these groups.  AnyCPU needs to appear in order for Visual Studio to perform
@@ -78,12 +78,10 @@
   <ItemGroup>
     <Content Include="icons\Help.png" />
   </ItemGroup>
-  
   <ItemGroup>
-	  <PackageReference Include="EWSoftware.SHFB" Version="2024.12.21" />
-	  <PackageReference Include="EWSoftware.SHFB.NET" Version="9.0.0" />
+    <PackageReference Include="EWSoftware.SHFB" Version="2024.12.21" />
+    <PackageReference Include="EWSoftware.SHFB.NET" Version="9.0.0" />
   </ItemGroup>
-  
   <!-- Import the common build targets during NuGet restore because before the packages are being installed, $(SHFBROOT) is not set yet -->
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition="'$(MSBuildRestoreSessionId)' != ''" />
   <!-- Import the SHFB build targets during build -->
