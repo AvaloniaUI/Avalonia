@@ -28,15 +28,15 @@ namespace Avalonia.X11
         private Lazy<KeyboardDevice> _keyboardDevice = new Lazy<KeyboardDevice>(() => new KeyboardDevice());
         public KeyboardDevice KeyboardDevice => _keyboardDevice.Value;
         public Dictionary<IntPtr, X11EventDispatcher.EventHandler> Windows { get; } = new ();
-        public XI2Manager XI2 { get; private set; }
-        public X11Info Info { get; private set; }
-        public X11Screens X11Screens { get; private set; }
-        public Compositor Compositor { get; private set; }
-        public IScreenImpl Screens { get; private set; }
-        public X11PlatformOptions Options { get; private set; }
+        public XI2Manager? XI2 { get; private set; }
+        public X11Info Info { get; private set; } = null!;
+        public X11Screens X11Screens { get; private set; } = null!;
+        public Compositor Compositor { get; private set; } = null!;
+        public IScreenImpl Screens { get; private set; } = null!;
+        public X11PlatformOptions Options { get; private set; } = null!;
         public IntPtr OrphanedWindow { get; private set; }
-        public X11Globals Globals { get; private set; }
-        public XResources Resources { get; private set; }
+        public X11Globals Globals { get; private set; } = null!;
+        public XResources Resources { get; private set; } = null!;
         public ManualRawEventGrouperDispatchQueue EventGrouperDispatchQueue { get; } = new();
 
         public void Initialize(X11PlatformOptions options)
@@ -90,9 +90,7 @@ namespace Avalonia.X11
             Screens = X11Screens = new X11Screens(this);
             if (Info.XInputVersion != null)
             {
-                var xi2 = new XI2Manager();
-                if (xi2.Init(this))
-                    XI2 = xi2;
+                XI2 = XI2Manager.TryCreate(this);
             }
 
             var graphics = InitializeGraphics(options, Info);
@@ -108,7 +106,7 @@ namespace Avalonia.X11
         public IntPtr DeferredDisplay { get; set; }
         public IntPtr Display { get; set; }
 
-        private static uint[] X11IconConverter(IWindowIconImpl icon)
+        private static uint[] X11IconConverter(IWindowIconImpl? icon)
         {
             if (!(icon is X11IconData x11icon))
                 return Array.Empty<uint>();
@@ -187,7 +185,7 @@ namespace Avalonia.X11
             return false;
         }
         
-        private static IPlatformGraphics InitializeGraphics(X11PlatformOptions opts, X11Info info)
+        private static IPlatformGraphics? InitializeGraphics(X11PlatformOptions opts, X11Info info)
         {
             if (opts.RenderingMode is null || !opts.RenderingMode.Any())
             {
@@ -354,7 +352,7 @@ namespace Avalonia
         };
 
         
-        public string WmClass { get; set; }
+        public string? WmClass { get; set; }
 
         /// <summary>
         /// Enables multitouch support. The default value is true.
@@ -392,7 +390,7 @@ namespace Avalonia
         {
             try
             {
-                WmClass = Assembly.GetEntryAssembly()?.GetName()?.Name;
+                WmClass = Assembly.GetEntryAssembly()?.GetName().Name;
             }
             catch
             {
@@ -412,7 +410,7 @@ namespace Avalonia
             return builder;
         }
 
-        public static void InitializeX11Platform(X11PlatformOptions options = null) =>
+        public static void InitializeX11Platform(X11PlatformOptions? options = null) =>
             new AvaloniaX11Platform().Initialize(options ?? new X11PlatformOptions());
     }
 

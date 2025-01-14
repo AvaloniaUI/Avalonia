@@ -162,7 +162,7 @@ namespace Avalonia.Controls
                 nameof(Inlines), t => t.Inlines, (t, v) => t.Inlines = v);
 
         private TextLayout? _textLayout;
-        protected Size _constraint = Size.Infinity;
+        protected Size _constraint = new(double.NaN, double.NaN);
         protected IReadOnlyList<TextRun>? _textRuns;
         private InlineCollection? _inlines;
 
@@ -365,6 +365,13 @@ namespace Avalonia.Controls
         protected override bool BypassFlowDirectionPolicies => true;
 
         internal bool HasComplexContent => Inlines != null && Inlines.Count > 0;
+
+        private protected Size GetMaxSizeFromConstraint()
+        {
+            var maxWidth = double.IsNaN(_constraint.Width) ? 0.0 : _constraint.Width;
+            var maxHeight = double.IsNaN(_constraint.Height) ? 0.0 : _constraint.Height;
+            return new Size(maxWidth, maxHeight);
+        }
 
         /// <summary>
         /// The BaselineOffset property provides an adjustment to baseline offset
@@ -670,12 +677,14 @@ namespace Avalonia.Controls
                 textSource = new SimpleTextSource(text ?? "", defaultProperties);
             }
 
+            var maxSize = GetMaxSizeFromConstraint();
+
             return new TextLayout(
                 textSource,
                 paragraphProperties,
                 TextTrimming,
-                _constraint.Width,
-                _constraint.Height,
+                maxSize.Width,
+                maxSize.Height,
                 MaxLines);
         }
 
@@ -731,9 +740,7 @@ namespace Avalonia.Controls
             //This implicitly recreated the TextLayout with a new constraint if we previously reset it.
             var textLayout = TextLayout;
 
-            var width = textLayout.OverhangLeading + textLayout.WidthIncludingTrailingWhitespace + textLayout.OverhangTrailing;
-
-            var size = LayoutHelper.RoundLayoutSizeUp(new Size(width, textLayout.Height).Inflate(padding), 1, 1);
+            var size = LayoutHelper.RoundLayoutSizeUp(new Size(textLayout.MinTextWidth, textLayout.Height).Inflate(padding), 1, 1);
 
             return size;
         }

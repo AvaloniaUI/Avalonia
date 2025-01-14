@@ -1,3 +1,4 @@
+﻿using System;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
@@ -5,6 +6,7 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.UnitTests;
 using Xunit;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Avalonia.Controls.UnitTests
 {
@@ -33,7 +35,9 @@ namespace Avalonia.Controls.UnitTests
             {
                 var textBlock = new TestTextBlock { Text = "Hello World" };
 
-                Assert.Equal(Size.Infinity, textBlock.Constraint);
+                var constraint = textBlock.Constraint;
+                Assert.True(double.IsNaN(constraint.Width));
+                Assert.True(double.IsNaN(constraint.Height));
 
                 textBlock.Measure(new Size(100, 100));
 
@@ -42,6 +46,29 @@ namespace Avalonia.Controls.UnitTests
                 textBlock.Measure(new Size(50, 100));
 
                 Assert.NotEqual(textLayout, textBlock.TextLayout);
+            }
+        }
+
+        [Fact]
+        public void Should_Measure_MinTextWith()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var textBlock = new TextBlock
+                {
+                    Text = "Hello&#10;שלום&#10;Really really really really long line",
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    TextAlignment = TextAlignment.DetectFromContent,
+                    TextWrapping = TextWrapping.Wrap
+                };
+
+                textBlock.Measure(new Size(1920, 1080));
+
+                var textLayout = textBlock.TextLayout;
+
+                var constraint = LayoutHelper.RoundLayoutSizeUp(new Size(textLayout.MinTextWidth, textLayout.Height), 1, 1);
+
+                Assert.Equal(textBlock.DesiredSize, constraint);
             }
         }
 
@@ -411,6 +438,24 @@ namespace Avalonia.Controls.UnitTests
                 int count1 = textblock.TextLayout.TextLines[0].TextRuns.Count;
                 Assert.NotEqual(count, count1);
             }
+        }
+
+        [Fact]
+        public void TextBlock_With_Infinite_Size_Should_Be_Remeasured_After_TextLayout_Created()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var target = new TextBlock { Text = "" };
+            var layout = target.TextLayout;
+
+            Assert.Equal(0.0, layout.MaxWidth);
+            Assert.Equal(0.0, layout.MaxHeight);
+
+            target.Text = "foo";
+            target.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+
+            Assert.True(target.DesiredSize.Width > 0);
+            Assert.True(target.DesiredSize.Height > 0);
         }
 
         private class TestTextBlock : TextBlock

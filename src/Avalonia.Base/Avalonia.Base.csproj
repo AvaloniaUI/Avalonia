@@ -64,6 +64,8 @@
   </ItemGroup>
   
   <ItemGroup Label="Build dependency">
-    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\Avalonia.Build.Tasks\Avalonia.Build.Tasks.csproj" SetTargetFramework="TargetFramework=netstandard2.0" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\Avalonia.Build.Tasks\Avalonia.Build.Tasks.csproj"
+                      ReferenceOutputAssembly="false"
+                      PrivateAssets="all" />
   </ItemGroup>
 </Project>
