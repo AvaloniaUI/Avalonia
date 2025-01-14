@@ -5,6 +5,7 @@ using Avalonia.Platform;
 using Avalonia.Rendering.Composition;
 using Avalonia.Rendering.Composition.Transport;
 using Avalonia.Threading;
+using Avalonia.Utilities;
 
 namespace Avalonia.Media;
 
@@ -97,6 +98,7 @@ partial class MediaContext
         if (AvaloniaLocator.Current.GetService<IPlatformRenderInterface>() == null)
             return;
 
+        using var _ = NonPumpingLockHelper.Use();
         if (compositor is
             {
                 UseUiThreadForSynchronousCommits: false,

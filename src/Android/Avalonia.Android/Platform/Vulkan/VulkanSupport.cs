@@ -53,6 +53,8 @@ namespace Avalonia.Android.Platform.Vulkan
 
         private static ulong CreateAndroidSurface(nint handle, IVulkanInstance instance)
         {
+            if(handle == IntPtr.Zero)
+                throw new ArgumentException("Surface handle can't be 0x0", nameof(handle));
             var vulkanAndroid = new AndroidVulkanInterface(instance);
             var createInfo = new VkAndroidSurfaceCreateInfoKHR()
             {

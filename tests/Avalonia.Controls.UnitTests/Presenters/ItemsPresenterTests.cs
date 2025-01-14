@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.UnitTests;
@@ -86,6 +87,20 @@ namespace Avalonia.Controls.UnitTests.Presenters
                 var panel = Assert.IsType<StackPanel>(target.Panel);
 
                 items.Move(0, 2);
+                root.LayoutManager.ExecuteLayoutPass();
+
+                AssertContainers(panel, items);
+            }
+
+            [Fact]
+            public void Updates_Container_For_Moved_Range_Of_Items()
+            {
+                using var app = Start();
+                AvaloniaList<string> items = ["foo", "bar", "baz"];
+                var (target, _, root) = CreateTarget(items);
+                var panel = Assert.IsType<StackPanel>(target.Panel);
+
+                items.MoveRange(0, 2, 2);
                 root.LayoutManager.ExecuteLayoutPass();
 
                 AssertContainers(panel, items);

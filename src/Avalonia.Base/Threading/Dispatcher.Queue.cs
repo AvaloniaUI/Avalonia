@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 
@@ -269,5 +270,26 @@ public partial class Dispatcher
     {
         lock (InstanceLock)
             return _queue.MaxPriority >= priority;
+    }
+
+    /// <summary>
+    /// Gets all pending jobs, unordered, without removing them.
+    /// </summary>
+    /// <remarks>Only use between unit tests!</remarks>
+    /// <returns>A list of jobs.</returns>
+    internal List<DispatcherOperation> GetJobs()
+    {
+        lock (InstanceLock)
+            return _queue.PeekAll();
+    }
+
+    /// <summary>
+    /// Clears all pending jobs.
+    /// </summary>
+    /// <remarks>Only use between unit tests!</remarks>
+    internal void ClearJobs()
+    {
+        lock (InstanceLock)
+            _queue.Clear();
     }
 }

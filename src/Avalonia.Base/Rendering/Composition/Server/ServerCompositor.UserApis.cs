@@ -49,7 +49,7 @@ internal partial class ServerCompositor
     }
 
     public IBitmapImpl CreateCompositionVisualSnapshot(ServerCompositionVisual visual,
-        double scaling)
+        double scaling, bool renderChildren)
     {
         using (RenderInterface.EnsureCurrent())
         {
@@ -69,11 +69,12 @@ internal partial class ServerCompositor
                         PostTransform = invertRootTransform * scaleTransform,
                         Transform = Matrix.Identity
                     };
-                    var ctx = new ServerVisualRenderContext(proxy, null, true);
+                    var ctx = new ServerVisualRenderContext(proxy, null, true, renderChildren);
                     visual.Render(ctx, null);
                 }
 
-                if (target is IDrawingContextLayerWithRenderContextAffinityImpl affined)
+                if (target is IDrawingContextLayerWithRenderContextAffinityImpl affined
+                    && affined.HasRenderContextAffinity)
                     return affined.CreateNonAffinedSnapshot();
                 
                 // We are returning the original target, so prevent it from being disposed

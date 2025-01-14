@@ -14,7 +14,7 @@ using Moq;
 
 namespace Avalonia.Base.UnitTests.Input;
 
-public abstract class PointerTestsBase
+public abstract class PointerTestsBase : ScopedTestBase
 {
     private protected static void SetHit(Mock<IHitTester> renderer, Control? hit)
     {
