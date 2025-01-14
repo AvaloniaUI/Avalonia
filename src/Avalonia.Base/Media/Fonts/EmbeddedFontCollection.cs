@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -72,34 +71,13 @@ namespace Avalonia.Media.Fonts
 
                 if (TryGetNearestMatch(glyphTypefaces, key, out glyphTypeface))
                 {
-                    if (glyphTypeface is IGlyphTypeface2 glyphTypeface2)
+                    if(_fontManager != null && FontManager.TryCreateSyntheticGlyphTypeface(_fontManager, glyphTypeface, style, weight, out var syntheticGlyphTypeface))
                     {
-                        var fontSimulations = FontSimulations.None;
-
-                        if (style != FontStyle.Normal && glyphTypeface2.Style != style)
-                        {
-                            fontSimulations |= FontSimulations.Oblique;
-                        }
-
-                        if ((int)weight >= 600 && glyphTypeface2.Weight < weight)
-                        {
-                            fontSimulations |= FontSimulations.Bold;
-                        }
-
-                        if (fontSimulations != FontSimulations.None && glyphTypeface2.TryGetStream(out var stream))
-                        {
-                            using (stream)
-                            {
-                                if(_fontManager is not null && _fontManager.TryCreateGlyphTypeface(stream, fontSimulations, out glyphTypeface) && 
-                                    glyphTypefaces.TryAdd(key, glyphTypeface))
-                                {
-                                    return true;
-                                }
-
-                                return false;
-                            }
-                        }
+                        glyphTypeface = syntheticGlyphTypeface;
                     }
+
+                    //Make sure we cache the found match
+                    glyphTypefaces.TryAdd(key, glyphTypeface);
 
                     return true;
                 }

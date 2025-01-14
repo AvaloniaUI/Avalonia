@@ -17,7 +17,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 DataContext = vm,
                 [!Button.CommandProperty] = new Binding("MyMethod"),
             };
-            target.RaiseEvent(new RoutedEventArgs(AccessKeyHandler.AccessKeyPressedEvent));
+            target.RaiseEvent(new AccessKeyEventArgs("b", false));
 
             Assert.False(vm.IsSet);
         }

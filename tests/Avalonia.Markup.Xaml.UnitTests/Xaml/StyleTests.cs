@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
+using System.Threading;
 using System.Xml;
 using Avalonia.Controls;
 using Avalonia.Data;
@@ -711,6 +713,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void Fails_Use_Classes_In_Setter_When_Selector_Is_Complex()
         {
+            // XmlException contains culture specific position message
+            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
+            
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
                 var xaml = $"""

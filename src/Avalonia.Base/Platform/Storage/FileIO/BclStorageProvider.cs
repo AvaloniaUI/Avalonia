@@ -150,29 +150,24 @@ internal abstract class BclStorageProvider : IStorageProvider
 
     private static unsafe string? TryGetWindowsKnownFolder(Guid guid)
     {
-        nint path = IntPtr.Zero;
+        char* path = null;
         string? result = null;
 
-        try
+        var hr = SHGetKnownFolderPath(&guid, 0, null, &path);
+        if (hr == 0)
         {
-            var hr = SHGetKnownFolderPath(guid, 0, 0, &path);
-            if (hr == 0)
-            {
-                result = Marshal.PtrToStringUni(path);
-            }
+            result = Marshal.PtrToStringUni((IntPtr)path);
         }
-        finally
+
+        if (path != null)
         {
-            if (path != IntPtr.Zero)
-            {
-                Marshal.FreeCoTaskMem(path);
-            }
+            Marshal.FreeCoTaskMem((IntPtr)path);
         }
 
         return result;
     }
 
     private static readonly Guid s_folderDownloads = new Guid("374DE290-123F-4565-9164-39C4925E467B");
-    [DllImport("shell32.dll")]
-    private static unsafe extern int SHGetKnownFolderPath([MarshalAs(UnmanagedType.LPStruct)] Guid id, int flags, nint token, nint* ppszPath);
+    [DllImport("shell32.dll", ExactSpelling = true)]
+    private static unsafe extern int SHGetKnownFolderPath(Guid* rfid, uint dwFlags, void* hToken, char** ppszPath);
 }

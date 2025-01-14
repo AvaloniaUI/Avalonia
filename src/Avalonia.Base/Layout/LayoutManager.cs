@@ -213,9 +213,7 @@ namespace Avalonia.Layout
         void ILayoutManager.RegisterEffectiveViewportListener(Layoutable control)
         {
             _effectiveViewportChangedListeners ??= new List<EffectiveViewportChangedListener>();
-            _effectiveViewportChangedListeners.Add(new EffectiveViewportChangedListener(
-                control,
-                CalculateEffectiveViewport(control)));
+            _effectiveViewportChangedListeners.Add(new EffectiveViewportChangedListener(control));
         }
 
         void ILayoutManager.UnregisterEffectiveViewportListener(Layoutable control)
@@ -438,14 +436,13 @@ namespace Avalonia.Layout
 
         private class EffectiveViewportChangedListener
         {
-            public EffectiveViewportChangedListener(Layoutable listener, Rect viewport)
+            public EffectiveViewportChangedListener(Layoutable listener)
             {
                 Listener = listener;
-                Viewport = viewport;
             }
 
             public Layoutable Listener { get; }
-            public Rect Viewport { get; set; }
+            public Rect? Viewport { get; set; }
         }
 
         private enum ArrangeResult

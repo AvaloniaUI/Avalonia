@@ -15,7 +15,7 @@ namespace Avalonia.Controls.Platform
         bool? IsSystemBarVisible { get; set; }
 
         /// <summary>
-        /// Gets or sets whether the window draws edge to edge. behind any visibile system bars.
+        /// Gets or sets whether the window draws edge to edge. behind any visible system bars.
         /// </summary>
         bool DisplayEdgeToEdge { get; set; }
 

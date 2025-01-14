@@ -62,7 +62,8 @@
           </Button>
           <Button x:Name="PART_MinimizeButton"
                   Theme="{StaticResource FluentCaptionButton}"
-                  AutomationProperties.Name="Minimize">
+                  AutomationProperties.Name="Minimize"
+                  Win32Properties.NonClientHitTestResult="MinButton">
             <Viewbox Width="11" Margin="2">
               <Path Stretch="UniformToFill"
                     Fill="{TemplateBinding Foreground}"
@@ -71,7 +72,8 @@
           </Button>
           <Button x:Name="PART_RestoreButton"
                   Theme="{StaticResource FluentCaptionButton}"
-                  AutomationProperties.Name="Maximize">
+                  AutomationProperties.Name="Maximize"
+                  Win32Properties.NonClientHitTestResult="MaxButton">
             <Viewbox Width="11" Margin="2">
               <Viewbox.RenderTransform>
                 <RotateTransform Angle="-90" />
@@ -86,7 +88,8 @@
                   Background="#ffe81123"
                   BorderBrush="#fff1707a"
                   Theme="{StaticResource FluentCaptionButton}"
-                  AutomationProperties.Name="Close">
+                  AutomationProperties.Name="Close"
+                  Win32Properties.NonClientHitTestResult="Close">
             <Viewbox Width="11" Margin="2">
               <Path Stretch="UniformToFill"
                     Fill="{TemplateBinding Foreground}"

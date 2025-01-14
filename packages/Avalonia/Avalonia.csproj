@@ -7,11 +7,8 @@
   <ItemGroup>
       <PackageReference Include="Avalonia.BuildServices" Version="0.0.29" />
       <ProjectReference Include="../../src/Avalonia.Remote.Protocol/Avalonia.Remote.Protocol.csproj" />
-      <ProjectReference Include="../../src/Avalonia.Build.Tasks/Avalonia.Build.Tasks.csproj">
-        <PrivateAssets>all</PrivateAssets>
-        <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
-        <SetTargetFramework>TargetFramework=netstandard2.0</SetTargetFramework>
-      </ProjectReference>
+      <ProjectReference Include="../../src/Avalonia.Build.Tasks/Avalonia.Build.Tasks.csproj"
+                        PrivateAssets="all" />
       <ProjectReference Include="..\..\src\tools\Avalonia.Generators\Avalonia.Generators.csproj"
                         ReferenceOutputAssembly="false"
                         PrivateAssets="all"

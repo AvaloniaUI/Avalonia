@@ -8,15 +8,17 @@ internal class ServerVisualRenderContext
 {
     public IDirtyRectTracker? DirtyRects { get; }
     public bool DetachedRendering { get; }
+    public bool RenderChildren { get; }
     public CompositorDrawingContextProxy Canvas { get; }
     private readonly Stack<Matrix>? _transformStack;
 
     public ServerVisualRenderContext(CompositorDrawingContextProxy canvas, IDirtyRectTracker? dirtyRects,
-        bool detachedRendering)
+        bool detachedRendering, bool renderChildren)
     {
         Canvas = canvas;
         DirtyRects = dirtyRects;
         DetachedRendering = detachedRendering;
+        RenderChildren = renderChildren;
         if (detachedRendering)
         {
             _transformStack = new();

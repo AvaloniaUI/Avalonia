@@ -130,6 +130,27 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void TextBox_Ignore_Word_Move_In_Password_Field()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    PasswordChar = '*',
+                    Text = "passw0rd"
+                };
+
+                target.ApplyTemplate();
+                target.Measure(Size.Infinity);
+                target.CaretIndex = 8;
+                RaiseKeyEvent(target, Key.Left, KeyModifiers.Control);
+
+                Assert.Equal(7, target.CaretIndex);
+            }
+        }
+
+        [Fact]
         public void CaretIndex_Can_Moved_To_Position_After_The_End_Of_Text_With_Arrow_Key()
         {
             using (UnitTestApplication.Start(Services))
@@ -1550,6 +1571,48 @@ namespace Avalonia.Controls.UnitTests
 
             var caretY = textPresenter.GetCursorRectangle().Top;
             Assert.Equal(oldCaretY, caretY);
+        }
+
+        [Fact]
+        public void Losing_Focus_Should_Not_Reset_Selection()
+        {
+            using (UnitTestApplication.Start(FocusServices))
+            {
+                var target1 = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "1234",
+                    ClearSelectionOnLostFocus = false
+                };
+
+                target1.ApplyTemplate();
+
+                var target2 = new TextBox
+                {
+                    Template = CreateTemplate(),
+                };
+
+                target2.ApplyTemplate();
+
+                var sp = new StackPanel();
+                sp.Children.Add(target1);
+                sp.Children.Add(target2);
+
+                var root = new TestRoot() { Child = sp };
+
+                target1.SelectionStart = 0;
+                target1.SelectionEnd = 4;
+
+                target1.Focus();
+
+                Assert.True(target1.IsFocused);
+
+                Assert.Equal("1234", target1.SelectedText);            
+
+                target2.Focus();
+
+                Assert.Equal("1234", target1.SelectedText);
+            }
         }
 
         private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
