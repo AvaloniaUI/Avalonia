@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Avalonia.ReactiveUI.UnitTests
 {
-    public class ReactiveUserControlTest
+    public class ReactiveUserControlTest : ScopedTestBase
     {
         public class ExampleViewModel : ReactiveObject, IActivatableViewModel
         {

@@ -24,5 +24,11 @@ namespace Avalonia.Automation
         /// by the <see cref="AutomationPeer.GetName"/> method.
         /// </summary>
         public static AutomationProperty NameProperty { get; } = new AutomationProperty();
+
+        /// <summary>
+        /// Identifies the helpText automation property. The class name property value is returned
+        /// by the <see cref="AutomationPeer.GetHelpText"/> method.
+        /// </summary>
+        public static AutomationProperty HelpTextProperty { get; } = new AutomationProperty();
     }
 }

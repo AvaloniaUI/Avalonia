@@ -29,7 +29,7 @@
 
 @implementation CLASS_NAME
 {
-    ComPtr<WindowBaseImpl> _parent;
+    ComObjectWeakPtr<WindowBaseImpl> _parent;
     bool _closed;
     bool _isEnabled;
     bool _canBecomeKeyWindow;
@@ -42,7 +42,8 @@
 
 -(AvnView* _Nullable) view
 {
-    return _parent->View;
+    auto parent = _parent.tryGet();
+    return parent ? parent->View : nullptr;
 }
 
 -(void) setIsExtended:(bool)value;
@@ -52,7 +53,8 @@
 
 -(bool) isDialog
 {
-    return _parent->IsModal();
+    auto parent = _parent.tryGet();
+    return parent ? parent->IsModal() : false;
 }
 
 -(double) getExtendedTitleBarHeight
@@ -194,7 +196,7 @@
 
 - (BOOL)windowShouldClose:(NSWindow *_Nonnull)sender
 {
-    auto window = dynamic_cast<WindowImpl*>(_parent.getRaw());
+    auto window = _parent.tryGet().dynamicCast<WindowImpl>();
 
     if(window != nullptr)
     {
@@ -212,14 +214,11 @@
 - (void)windowWillClose:(NSNotification *_Nonnull)notification
 {
     _closed = true;
-    if(_parent)
+    auto parent = _parent.tryGetWithCast<WindowBaseImpl>();
+    if (parent)
     {
-        ComPtr<WindowBaseImpl> parent = _parent;
-        _parent = NULL;
-        
-            auto window = dynamic_cast<WindowImpl*>(parent.getRaw());
-        
-        if(window != nullptr)
+        auto window = parent.dynamicCast<WindowImpl>();
+        if (window)
         {
             window->SetParent(nullptr);
         }
@@ -247,7 +246,7 @@
     if(_canBecomeKeyWindow && !_closed)
     {
         // If the window has a child window being shown as a dialog then don't allow it to become the key window.
-        auto parent = dynamic_cast<WindowImpl*>(_parent.getRaw());
+        auto parent = _parent.tryGet().dynamicCast<WindowImpl>();
         
         if(parent != nullptr)
         {
@@ -286,9 +285,10 @@
 {
     [self showWindowMenuWithAppMenu];
 
-    if(_parent != nullptr)
+    auto parent = _parent.tryGet();
+    if(parent != nullptr)
     {
-        _parent->BaseEvents->Activated();
+        parent->BaseEvents->Activated();
     }
 
     [super becomeKeyWindow];
@@ -296,16 +296,21 @@
 
 - (void)windowDidBecomeKey:(NSNotification *_Nonnull)notification
 {
-    if (_parent == nullptr)
+    auto parent = _parent.tryGet();
+    if (parent == nullptr)
         return;
-    
-    _parent->BringToFront();
+
+    if (parent->View != nullptr)
+        [parent->View setModifiers:NSEvent.modifierFlags];
+
+    parent->BringToFront();
     
     dispatch_async(dispatch_get_main_queue(), ^{
         @try {
             [self invalidateShadow];
-            if (self->_parent != nullptr)
-                self->_parent->BringToFront();
+            auto parent = self->_parent.tryGet();
+            if (parent != nullptr)
+                parent->BringToFront();
         }
         @finally{
         }
@@ -314,7 +319,7 @@
 
 - (void)windowDidMiniaturize:(NSNotification *_Nonnull)notification
 {
-    auto parent = dynamic_cast<IWindowStateChanged*>(_parent.operator->());
+    auto parent = _parent.tryGetWithCast<IWindowStateChanged>();
 
     if(parent != nullptr)
     {
@@ -324,7 +329,7 @@
 
 - (void)windowDidDeminiaturize:(NSNotification *_Nonnull)notification
 {
-    auto parent = dynamic_cast<IWindowStateChanged*>(_parent.operator->());
+    auto parent = _parent.tryGetWithCast<IWindowStateChanged>();
 
     if(parent != nullptr)
     {
@@ -334,7 +339,7 @@
 
 - (void)windowDidResize:(NSNotification *_Nonnull)notification
 {
-    auto parent = dynamic_cast<IWindowStateChanged*>(_parent.operator->());
+    auto parent = _parent.tryGetWithCast<IWindowStateChanged>();
 
     if(parent != nullptr)
     {
@@ -344,7 +349,7 @@
 
 - (void)windowWillExitFullScreen:(NSNotification *_Nonnull)notification
 {
-    auto parent = dynamic_cast<IWindowStateChanged*>(_parent.operator->());
+    auto parent = _parent.tryGetWithCast<IWindowStateChanged>();
 
     if(parent != nullptr)
     {
@@ -354,7 +359,7 @@
 
 - (void)windowDidExitFullScreen:(NSNotification *_Nonnull)notification
 {
-    auto parent = dynamic_cast<IWindowStateChanged*>(_parent.operator->());
+    auto parent = _parent.tryGetWithCast<IWindowStateChanged>();
 
     if(parent != nullptr)
     {
@@ -378,7 +383,7 @@
 - (void)windowWillEnterFullScreen:(NSNotification *_Nonnull)notification
 {
     _isTransitioningToFullScreen = true;
-    auto parent = dynamic_cast<IWindowStateChanged*>(_parent.operator->());
+    auto parent = _parent.tryGetWithCast<IWindowStateChanged>();
 
     if(parent != nullptr)
     {
@@ -389,7 +394,7 @@
 - (void)windowDidEnterFullScreen:(NSNotification *_Nonnull)notification
 {
     _isTransitioningToFullScreen = false;
-    auto parent = dynamic_cast<IWindowStateChanged*>(_parent.operator->());
+    auto parent = _parent.tryGetWithCast<IWindowStateChanged>();
 
     if(parent != nullptr)
     {
@@ -400,13 +405,15 @@
 
 - (BOOL)windowShouldZoom:(NSWindow *_Nonnull)window toFrame:(NSRect)newFrame
 {
-    return _parent->CanZoom();
+    auto parent = _parent.tryGet();
+    return parent ? parent->CanZoom() : false;
 }
 
 -(void)windowDidResignKey:(NSNotification* _Nonnull)notification
 {
-    if(_parent)
-        _parent->BaseEvents->Deactivated();
+    auto parent = _parent.tryGet();
+    if(parent)
+        parent->BaseEvents->Deactivated();
 
     [self showAppMenuOnly];
     
@@ -417,25 +424,25 @@
 {
     AvnPoint position;
 
-    if(_parent != nullptr)
+    auto parent = _parent.tryGet();
+    if(parent != nullptr)
     {
-        auto cparent = dynamic_cast<WindowImpl*>(_parent.getRaw());
-
-        if(cparent != nullptr)
+        auto window = parent.dynamicCast<WindowImpl>();
+        if(window != nullptr)
         {
-            if(!cparent->IsShown())
+            if(!window->IsShown())
             {
                 return;
             }
 
-            if(cparent->WindowState() == Maximized)
+            if(window->WindowState() == Maximized)
             {
-                cparent->SetWindowState(Normal);
+                window->SetWindowState(Normal);
             }
         }
 
-        _parent->GetPosition(&position);
-        _parent->BaseEvents->PositionChanged(position);
+        parent->GetPosition(&position);
+        parent->BaseEvents->PositionChanged(position);
     }
 }
 
@@ -445,40 +452,59 @@
     return pt;
 }
 
+- (NSView*) findRootView:(NSView*)view
+{
+    while (true) {
+        auto parent = [view superview];
+        if(parent == nil)
+            return view;
+        view = parent;
+    }
+}
+
 - (void)sendEvent:(NSEvent *_Nonnull)event
 {
     [super sendEvent:event];
 
+    auto parent = _parent.tryGetWithCast<WindowImpl>();
     /// This is to detect non-client clicks. This can only be done on Windows... not popups, hence the dynamic_cast.
-    if(_parent != nullptr && dynamic_cast<WindowImpl*>(_parent.getRaw()) != nullptr)
+    if(parent)
     {
         switch(event.type)
         {
             case NSEventTypeLeftMouseDown:
             {
-                AvnView* view = _parent->View;
+                AvnView* view = parent->View;
                 NSPoint windowPoint = [event locationInWindow];
                 NSPoint viewPoint = [view convertPoint:windowPoint fromView:nil];
-
+                
+                auto targetView = [[self findRootView:view] hitTest: windowPoint];
+                if(targetView)
+                {
+                    auto targetViewClass = [targetView className];
+                    if([targetViewClass containsString: @"_NSThemeWidget"])
+                        return;
+                }
+                
                 if (!NSPointInRect(viewPoint, view.bounds))
                 {
                     auto avnPoint = ToAvnPoint(windowPoint);
                     auto point = [self translateLocalPoint:avnPoint];
                     AvnVector delta = { 0, 0 };
 
-                    _parent->BaseEvents->RawMouseEvent(NonClientLeftButtonDown, static_cast<uint64>([event timestamp] * 1000), AvnInputModifiersNone, point, delta);
+                    parent->BaseEvents->RawMouseEvent(NonClientLeftButtonDown, static_cast<uint64>([event timestamp] * 1000), AvnInputModifiersNone, point, delta);
                 }
                 
                 if(!_isTransitioningToFullScreen)
                 {
-                    _parent->BringToFront();
+                    parent->BringToFront();
                 }
             }
             break;
 
             case NSEventTypeMouseEntered:
             {
-                _parent->UpdateCursor();
+                parent->UpdateCursor();
             }
                 break;
 
@@ -513,9 +539,10 @@
 
 - (IAvnAutomationPeer* _Nonnull) automationPeer
 {
+    auto parent = _parent.tryGet();
     if (_automationPeer == nullptr)
     {
-        _automationPeer = _parent->BaseEvents->GetAutomationPeer();
+        _automationPeer = parent->BaseEvents->GetAutomationPeer();
         _automationNode = new AvnAutomationNode(self);
         _automationPeer->SetNode(_automationNode);
     }
@@ -525,7 +552,8 @@
 
 - (void)raiseChildrenChanged
 {
-    [_parent->View raiseAccessibilityChildrenChanged];
+    auto parent = _parent.tryGet();
+    [parent->View raiseAccessibilityChildrenChanged];
 }
 
 - (void)raiseFocusChanged

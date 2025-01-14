@@ -1,16 +1,13 @@
-﻿#nullable enable
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Avalonia.Controls.Platform;
 using Avalonia.Platform;
 using Avalonia.Platform.Interop;
 using Avalonia.Platform.Storage;
 using Avalonia.Platform.Storage.FileIO;
-using static Avalonia.X11.NativeDialogs.Glib;
+using static Avalonia.X11.Interop.Glib;
 using static Avalonia.X11.NativeDialogs.Gtk;
 
 namespace Avalonia.X11.NativeDialogs
@@ -45,7 +42,7 @@ namespace Avalonia.X11.NativeDialogs
                 var res = await ShowDialog(options.Title, _window, GtkFileChooserAction.Open,
                     options.AllowMultiple, options.SuggestedStartLocation, null, options.FileTypeFilter, null, false)
                     .ConfigureAwait(false);
-                return res?.Select(f => new BclStorageFile(new FileInfo(f))).ToArray() ?? Array.Empty<IStorageFile>();
+                return res?.Where(f => File.Exists(f)).Select(f => new BclStorageFile(new FileInfo(f))).ToArray() ?? Array.Empty<IStorageFile>();
             });
         }
 
@@ -228,7 +225,10 @@ namespace Avalonia.X11.NativeDialogs
 
         private static void UpdateParent(IntPtr chooser, IWindowImpl parentWindow)
         {
-            var xid = parentWindow.Handle.Handle;
+            if (parentWindow.Handle is not { } handle)
+                return;
+
+            var xid = handle.Handle;
             gtk_widget_realize(chooser);
             var window = gtk_widget_get_window(chooser);
             var parent = GetForeignWindow(xid);

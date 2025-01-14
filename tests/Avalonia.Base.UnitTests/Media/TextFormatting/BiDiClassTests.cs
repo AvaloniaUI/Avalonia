@@ -15,30 +15,28 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
         {
             _outputHelper = outputHelper;
         }
-    
-        [Fact(Skip = "Only run when the Unicode spec changes.")]
-        public void Should_Resolve()
-        {
-            var generator = new BiDiClassTestDataGenerator();
 
-            foreach (var testData in generator)
-            {
-                Assert.True(Run(testData));
-            }
-        }
-
-        private bool Run(BiDiClassData t)
+        [Theory(Skip = "Only run when the Unicode spec changes.")]
+        [ClassData(typeof(BiDiClassTestDataGenerator))]
+        public void Should_Resolve(
+            int lineNumber,
+            int[] codePoints,
+            sbyte paragraphLevel,
+            sbyte resolvedParagraphLevel,
+            sbyte[] resolvedLevels,
+            int[] resolvedOrder)
         {
+
             var bidi = new BidiAlgorithm();
-            var bidiData = new BidiData { ParagraphEmbeddingLevel = t.ParagraphLevel };
-        
-            var text = Encoding.UTF32.GetString(MemoryMarshal.Cast<int, byte>(t.CodePoints).ToArray());
+            var bidiData = new BidiData { ParagraphEmbeddingLevel = paragraphLevel };
+
+            var text = Encoding.UTF32.GetString(MemoryMarshal.Cast<int, byte>(codePoints).ToArray());
 
             // Append
             bidiData.Append(text);
 
             // Act
-            for (int i = 0; i < 10; i++)
+            for (var i = 0; i < 10; i++)
             {
                 bidi.Process(bidiData);
             }
@@ -46,51 +44,20 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
             var resultLevels = bidi.ResolvedLevels;
             var resultParagraphLevel = bidi.ResolvedParagraphEmbeddingLevel;
 
-            // Assert
-            var passed = true;
+            Assert.Equal(resolvedParagraphLevel, resultParagraphLevel);
 
-            if (t.ResolvedParagraphLevel != resultParagraphLevel)
+            for (var i = 0; i < resolvedLevels.Length; i++)
             {
-                return false;
-            }
-
-            for (var i = 0; i < t.ResolvedLevels.Length; i++)
-            {
-                if (t.ResolvedLevels[i] == -1)
+                if (resolvedLevels[i] == -1)
                 {
                     continue;
                 }
 
-                if (t.ResolvedLevels[i] != resultLevels[i])
-                {
-                    passed = false;
-                    break;
-                }
+                var expectedLevel = resolvedLevels[i];
+                var actualLevel = resultLevels[i];
+
+                Assert.Equal(expectedLevel, actualLevel);
             }
-
-            if (passed)
-            {
-                return true;
-            }
-        
-            _outputHelper.WriteLine($"Failed line {t.LineNumber}");
-
-            _outputHelper.WriteLine(
-                $"             Code Points: {string.Join(" ", t.CodePoints.Select(x => x.ToString("X4")))}");
-
-            _outputHelper.WriteLine(
-                $"      Pair Bracket Types: {string.Join(" ", bidiData.PairedBracketTypes.Select(x => " " + x.ToString()))}");
-
-            _outputHelper.WriteLine(
-                $"     Pair Bracket Values: {string.Join(" ", bidiData.PairedBracketValues.Select(x => x.ToString("X4")))}");
-            _outputHelper.WriteLine($"             Embed Level: {t.ParagraphLevel}");
-            _outputHelper.WriteLine($"    Expected Embed Level: {t.ResolvedParagraphLevel}");
-            _outputHelper.WriteLine($"      Actual Embed Level: {resultParagraphLevel}");
-            _outputHelper.WriteLine($"          Directionality: {string.Join(" ", bidiData.Classes)}");
-            _outputHelper.WriteLine($"         Expected Levels: {string.Join(" ", t.ResolvedLevels)}");
-            _outputHelper.WriteLine($"           Actual Levels: {string.Join(" ", resultLevels)}");
-        
-            return false;
         }
     }
 }

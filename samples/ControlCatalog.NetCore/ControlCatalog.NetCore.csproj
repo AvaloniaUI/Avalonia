@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <Compile Include="..\..\src\Avalonia.X11\NativeDialogs\Gtk.cs" Link="NativeControls\Gtk\Gtk.cs" />
+    <Compile Include="..\..\src\Avalonia.X11\Interop\Glib.cs" Link="NativeControls\Gtk\Glib.cs" />
     <Compile Include="..\..\src\Avalonia.Base\Platform\Interop\Utf8Buffer.cs" Link="NativeControls\Utf8Buffer.cs" />
   </ItemGroup>
 

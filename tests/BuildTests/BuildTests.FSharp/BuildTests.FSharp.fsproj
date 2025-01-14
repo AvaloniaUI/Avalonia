@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="MainView.axaml.fs" />
+    <Compile Include="MainViewModel.fs" />
+    <Compile Include="MainWindow.axaml.fs" />
+    <Compile Include="App.axaml.fs"/>
+    <Compile Include="Program.fs"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Win32" />
+    <PackageReference Include="Avalonia.X11" />
+    <PackageReference Include="FSharp.Core" />
+  </ItemGroup>
+
+  <Import Project="../IncludeBuildTestsAvaloniaItems.props" />
+
+</Project>

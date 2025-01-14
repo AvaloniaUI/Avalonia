@@ -1142,6 +1142,8 @@ interface IAvnApplicationEvents : IUnknown
      void OnReopen ();
      void OnHide ();
      void OnUnhide ();
+     void OnActivate();
+     void OnDeactivate();
 }
 
 [uuid(b4284791-055b-4313-8c2e-50f0a8c72ce9)]
@@ -1219,6 +1221,8 @@ interface IAvnAutomationPeer : IUnknown
      bool IsValueProvider();
      IAvnString* ValueProvider_GetValue();
      void ValueProvider_SetValue(char* value);
+
+     IAvnString* GetHelpText();
 }
 
 [uuid(b00af5da-78af-4b33-bfff-4ce13a6239a9)]

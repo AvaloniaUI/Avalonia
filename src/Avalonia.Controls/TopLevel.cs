@@ -23,7 +23,6 @@ using Avalonia.Utilities;
 using Avalonia.Input.Platform;
 using System.Linq;
 using System.Threading.Tasks;
-using Avalonia.Metadata;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 
@@ -220,7 +219,7 @@ namespace Avalonia.Controls
             _globalStyles = TryGetService<IGlobalStyles>(dependencyResolver);
             _applicationThemeHost = TryGetService<IThemeVariantHost>(dependencyResolver);
 
-            Renderer = new CompositingRenderer(this, impl.Compositor, () => impl.Surfaces);
+            Renderer = new CompositingRenderer(this, impl.Compositor, () => PlatformImpl.Surfaces ?? []);
             Renderer.SceneInvalidated += SceneInvalidated;
 
             impl.SetInputRoot(this);
@@ -472,12 +471,12 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the access key handler for the window.
         /// </summary>
-        internal IAccessKeyHandler AccessKeyHandler => _accessKeyHandler!;
+        internal IAccessKeyHandler? AccessKeyHandler => _accessKeyHandler;
 
         /// <summary>
         /// Gets or sets the keyboard navigation handler for the window.
         /// </summary>
-        IKeyboardNavigationHandler IInputRoot.KeyboardNavigationHandler => _keyboardNavigationHandler!;
+        IKeyboardNavigationHandler? IInputRoot.KeyboardNavigationHandler => _keyboardNavigationHandler;
 
         /// <inheritdoc/>
         IInputElement? IInputRoot.PointerOverElement

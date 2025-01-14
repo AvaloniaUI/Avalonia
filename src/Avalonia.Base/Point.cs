@@ -184,7 +184,7 @@ namespace Avalonia
         /// <returns>The <see cref="Point"/>.</returns>
         public static Point Parse(string s)
         {
-            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Point."))
+            using (var tokenizer = new SpanStringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Point."))
             {
                 return new Point(
                     tokenizer.ReadDouble(),

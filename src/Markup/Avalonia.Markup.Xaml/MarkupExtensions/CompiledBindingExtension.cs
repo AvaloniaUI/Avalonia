@@ -26,6 +26,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             return new CompiledBindingExtension
             {
                 Path = Path,
+                Delay = Delay,
                 Converter = Converter,
                 ConverterCulture = ConverterCulture,
                 ConverterParameter = ConverterParameter,
@@ -92,6 +93,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 source,
                 nodes,
                 FallbackValue,
+                delay: TimeSpan.FromMilliseconds(Delay),
                 converter: Converter,
                 converterParameter: ConverterParameter,
                 targetNullValue: TargetNullValue);
@@ -125,6 +127,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 source,
                 nodes,
                 FallbackValue,
+                delay: TimeSpan.FromMilliseconds(Delay),
                 converter: Converter,
                 converterCulture: ConverterCulture,
                 converterParameter: ConverterParameter,

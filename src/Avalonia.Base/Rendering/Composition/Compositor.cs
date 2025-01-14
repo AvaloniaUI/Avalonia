@@ -108,6 +108,7 @@ namespace Avalonia.Rendering.Composition
             Dispatcher.VerifyAccess();
             if (_nextCommit == null)
             {
+                using var _ = NonPumpingLockHelper.Use();
                 _nextCommit = new ();
                 var pending = _pendingBatch;
                 if (pending != null)
@@ -293,7 +294,7 @@ namespace Avalonia.Rendering.Composition
                 throw new InvalidOperationException();
             if (visual.Root == null)
                 throw new InvalidOperationException();
-            var impl = await InvokeServerJobAsync(() => _server.CreateCompositionVisualSnapshot(visual.Server, scaling), true);
+            var impl = await InvokeServerJobAsync(() => _server.CreateCompositionVisualSnapshot(visual.Server, scaling, true), true);
             return new Bitmap(RefCountable.Create(impl));
         }
         

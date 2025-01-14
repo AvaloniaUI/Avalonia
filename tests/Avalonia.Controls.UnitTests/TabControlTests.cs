@@ -406,6 +406,43 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Previous_ContentTemplate_Is_Not_Reused_When_TabItem_Changes()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            int templatesBuilt = 0;
+
+            var target = new TabControl
+            {
+                Template = TabControlTemplate(),
+                Items =
+                {
+                    TabItemFactory("First tab content"),
+                    TabItemFactory("Second tab content"),
+                },
+            };
+
+            var root = new TestRoot(target);
+            ApplyTemplate(target);
+
+            target.SelectedIndex = 0;
+            target.SelectedIndex = 1;
+
+            Assert.Equal(2, templatesBuilt);
+
+            TabItem TabItemFactory(object content) => new()
+            {
+                Content = content,
+                ContentTemplate = new FuncDataTemplate<object>((actual, ns) =>
+                {
+                    Assert.Equal(content, actual);
+                    templatesBuilt++;
+                    return new Border();
+                })
+            };
+        }
+
+        [Fact]
         public void Should_Not_Propagate_DataContext_To_TabItem_Content()
         {
             var dataContext = "DataContext";
@@ -689,7 +726,12 @@ namespace Avalonia.Controls.UnitTests
         public void Should_TabControl_Recognizes_AccessKey(Key accessKey, int selectedTabIndex)
         {
             var ah = new AccessKeyHandler();
-            using (UnitTestApplication.Start(TestServices.StyledWindow.With(accessKeyHandler: ah)))
+            var kd = new KeyboardDevice();
+            using (UnitTestApplication.Start(TestServices.StyledWindow
+                       .With(
+                           accessKeyHandler: ah,
+                           keyboardDevice: () => kd)
+                   ))
             {
                 var impl = CreateMockTopLevelImpl();
 
@@ -707,7 +749,8 @@ namespace Avalonia.Controls.UnitTests
                         new TabItem { Header = "_Disabled", IsEnabled = false },
                     }
                 };
-
+                kd.SetFocusedElement((TabItem)tabControl.Items[selectedTabIndex], NavigationMethod.Unspecified, KeyModifiers.None);
+                
                 var root = new TestTopLevel(impl.Object)
                 {
                     Template = CreateTemplate(),

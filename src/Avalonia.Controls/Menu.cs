@@ -40,8 +40,9 @@ namespace Avalonia.Controls
                 KeyboardNavigationMode.Once);
             AutomationProperties.AccessibilityViewProperty.OverrideDefaultValue<Menu>(AccessibilityView.Control);
             AutomationProperties.ControlTypeOverrideProperty.OverrideDefaultValue<Menu>(AutomationControlType.Menu);
+            AccessKeyHandler.AccessKeyPressedEvent.AddClassHandler<Menu>(OnAccessKeyPressed);
         }
-
+        
         /// <inheritdoc/>
         public override void Close()
         {
@@ -103,6 +104,15 @@ namespace Avalonia.Controls
             // for top-level menu items.
             if ((element as MenuItem)?.ItemContainerTheme == ItemContainerTheme)
                 element.ClearValue(ItemContainerThemeProperty);
+        }
+        
+        private static void OnAccessKeyPressed(Menu sender, AccessKeyPressedEventArgs e)
+        {
+            if (e.Handled || e.Source is not StyledElement target) 
+                return;
+            
+            e.Target = DefaultMenuInteractionHandler.GetMenuItemCore(target);
+            e.Handled = true;
         }
     }
 }

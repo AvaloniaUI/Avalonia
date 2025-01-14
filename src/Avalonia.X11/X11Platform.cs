@@ -15,6 +15,7 @@ using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.Vulkan;
 using Avalonia.X11;
+using Avalonia.X11.Dispatching;
 using Avalonia.X11.Glx;
 using Avalonia.X11.Vulkan;
 using Avalonia.X11.Screens;
@@ -26,17 +27,16 @@ namespace Avalonia.X11
     {
         private Lazy<KeyboardDevice> _keyboardDevice = new Lazy<KeyboardDevice>(() => new KeyboardDevice());
         public KeyboardDevice KeyboardDevice => _keyboardDevice.Value;
-        public Dictionary<IntPtr, X11PlatformThreading.EventHandler> Windows =
-            new Dictionary<IntPtr, X11PlatformThreading.EventHandler>();
-        public XI2Manager XI2;
-        public X11Info Info { get; private set; }
-        public X11Screens X11Screens { get; private set; }
-        public Compositor Compositor { get; private set; }
-        public IScreenImpl Screens { get; private set; }
-        public X11PlatformOptions Options { get; private set; }
+        public Dictionary<IntPtr, X11EventDispatcher.EventHandler> Windows { get; } = new ();
+        public XI2Manager? XI2 { get; private set; }
+        public X11Info Info { get; private set; } = null!;
+        public X11Screens X11Screens { get; private set; } = null!;
+        public Compositor Compositor { get; private set; } = null!;
+        public IScreenImpl Screens { get; private set; } = null!;
+        public X11PlatformOptions Options { get; private set; } = null!;
         public IntPtr OrphanedWindow { get; private set; }
-        public X11Globals Globals { get; private set; }
-        public XResources Resources { get; private set; }
+        public X11Globals Globals { get; private set; } = null!;
+        public XResources Resources { get; private set; } = null!;
         public ManualRawEventGrouperDispatchQueue EventGrouperDispatchQueue { get; } = new();
 
         public void Initialize(X11PlatformOptions options)
@@ -73,7 +73,9 @@ namespace Avalonia.X11
 
             AvaloniaLocator.CurrentMutable.BindToSelf(this)
                 .Bind<IWindowingPlatform>().ToConstant(this)
-                .Bind<IDispatcherImpl>().ToConstant(new X11PlatformThreading(this))
+                .Bind<IDispatcherImpl>().ToConstant<IDispatcherImpl>(options.UseGLibMainLoop
+                    ? new GlibDispatcherImpl(this)
+                    : new X11PlatformThreading(this))
                 .Bind<IRenderTimer>().ToConstant(timer)
                 .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Control))
                 .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>() { }, meta: "Super"))
@@ -88,9 +90,7 @@ namespace Avalonia.X11
             Screens = X11Screens = new X11Screens(this);
             if (Info.XInputVersion != null)
             {
-                var xi2 = new XI2Manager();
-                if (xi2.Init(this))
-                    XI2 = xi2;
+                XI2 = XI2Manager.TryCreate(this);
             }
 
             var graphics = InitializeGraphics(options, Info);
@@ -106,7 +106,7 @@ namespace Avalonia.X11
         public IntPtr DeferredDisplay { get; set; }
         public IntPtr Display { get; set; }
 
-        private static uint[] X11IconConverter(IWindowIconImpl icon)
+        private static uint[] X11IconConverter(IWindowIconImpl? icon)
         {
             if (!(icon is X11IconData x11icon))
                 return Array.Empty<uint>();
@@ -185,7 +185,7 @@ namespace Avalonia.X11
             return false;
         }
         
-        private static IPlatformGraphics InitializeGraphics(X11PlatformOptions opts, X11Info info)
+        private static IPlatformGraphics? InitializeGraphics(X11PlatformOptions opts, X11Info info)
         {
             if (opts.RenderingMode is null || !opts.RenderingMode.Any())
             {
@@ -352,7 +352,7 @@ namespace Avalonia
         };
 
         
-        public string WmClass { get; set; }
+        public string? WmClass { get; set; }
 
         /// <summary>
         /// Enables multitouch support. The default value is true.
@@ -370,11 +370,27 @@ namespace Avalonia
         /// </summary>
         public bool? UseRetainedFramebuffer { get; set; }
 
+        /// <summary>
+        /// If this option is set to true, GMainLoop and GSource based dispatcher implementation will be used instead
+        /// of epoll-based one.
+        /// Use this if you need to use GLib-based libraries on the main thread
+        /// </summary>
+        public bool UseGLibMainLoop { get; set; }
+        
+        /// <summary>
+        /// If Avalonia is in control of a run loop, we propagate exceptions by stopping the run loop frame
+        /// and rethrowing an exception. However, if there is no Avalonia-controlled run loop frame,
+        /// there is no way to report such exceptions, since allowing those to escape native->managed call boundary
+        /// will likely brick GLib machinery since it's not aware of managed Exceptions
+        /// This property allows to inspect such exceptions before they will be ignored
+        /// </summary>
+        public Action<Exception>? ExterinalGLibMainLoopExceptionLogger { get; set; }
+        
         public X11PlatformOptions()
         {
             try
             {
-                WmClass = Assembly.GetEntryAssembly()?.GetName()?.Name;
+                WmClass = Assembly.GetEntryAssembly()?.GetName().Name;
             }
             catch
             {
@@ -394,7 +410,7 @@ namespace Avalonia
             return builder;
         }
 
-        public static void InitializeX11Platform(X11PlatformOptions options = null) =>
+        public static void InitializeX11Platform(X11PlatformOptions? options = null) =>
             new AvaloniaX11Platform().Initialize(options ?? new X11PlatformOptions());
     }
 

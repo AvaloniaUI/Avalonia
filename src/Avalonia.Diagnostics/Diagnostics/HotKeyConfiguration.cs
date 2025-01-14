@@ -2,7 +2,7 @@
 
 namespace Avalonia.Diagnostics
 {
-    internal class HotKeyConfiguration
+    public class HotKeyConfiguration
     {
         /// <summary>
         /// Freezes refreshing the Value Frames inspector for the selected Control

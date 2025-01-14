@@ -11,6 +11,7 @@ using Avalonia.Controls.Selection;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Threading;
 
@@ -43,6 +44,18 @@ namespace Avalonia.Controls
         public static readonly DirectProperty<TreeViewItem, int> LevelProperty =
             AvaloniaProperty.RegisterDirect<TreeViewItem, int>(
                 nameof(Level), o => o.Level);
+        
+        /// <summary>
+        /// Defines the <see cref="Expanded"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<RoutedEventArgs> ExpandedEvent =
+            RoutedEvent.Register<TreeViewItem, RoutedEventArgs>(nameof(Expanded), RoutingStrategies.Bubble | RoutingStrategies.Tunnel);
+        
+        /// <summary>
+        /// Defines the <see cref="Collapsed"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<RoutedEventArgs> CollapsedEvent =
+            RoutedEvent.Register<TreeViewItem, RoutedEventArgs>(nameof(Collapsed), RoutingStrategies.Bubble | RoutingStrategies.Tunnel);
 
         private static readonly FuncTemplate<Panel?> DefaultPanel =
             new(() => new StackPanel());
@@ -65,6 +78,14 @@ namespace Avalonia.Controls
             ItemsPanelProperty.OverrideDefaultValue<TreeViewItem>(DefaultPanel);
             AutomationProperties.IsOffscreenBehaviorProperty.OverrideDefaultValue<TreeViewItem>(IsOffscreenBehavior.FromClip);
             RequestBringIntoViewEvent.AddClassHandler<TreeViewItem>((x, e) => x.OnRequestBringIntoView(e));
+            IsExpandedProperty.Changed.AddClassHandler<TreeViewItem, bool>((x, e) => x.OnIsExpandedChanged(e));
+        }
+
+        private void OnIsExpandedChanged(AvaloniaPropertyChangedEventArgs<bool> args)
+        {
+            var routedEvent = args.NewValue.Value ? ExpandedEvent : CollapsedEvent;
+            var eventArgs = new RoutedEventArgs() { RoutedEvent = routedEvent, Source = this };
+            RaiseEvent(eventArgs);
         }
 
         /// <summary>
@@ -92,6 +113,24 @@ namespace Avalonia.Controls
         {
             get => _level;
             private set => SetAndRaise(LevelProperty, ref _level, value);
+        }
+        
+        /// <summary>
+        /// Occurs after the <see cref="TreeViewItem"/> has expanded to show its children.
+        /// </summary>
+        public event EventHandler<RoutedEventArgs>? Expanded
+        {
+            add => AddHandler(ExpandedEvent, value);
+            remove => RemoveHandler(ExpandedEvent, value);
+        }
+        
+        /// <summary>
+        /// Occurs after the <see cref="TreeViewItem"/> has collapsed to hide its children.
+        /// </summary>
+        public event EventHandler<RoutedEventArgs>? Collapsed
+        {
+            add => AddHandler(CollapsedEvent, value);
+            remove => RemoveHandler(CollapsedEvent, value);
         }
 
         internal TreeView? TreeViewOwner => _treeView;

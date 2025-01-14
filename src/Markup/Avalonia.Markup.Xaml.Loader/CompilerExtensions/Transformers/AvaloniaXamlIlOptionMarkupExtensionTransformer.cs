@@ -334,13 +334,17 @@ internal class AvaloniaXamlIlOptionMarkupExtensionTransformer : IXamlAstTransfor
         public bool IsPrivate => false;
         public bool IsFamily => false;
         public bool IsStatic => false;
+        public bool ContainsGenericParameters => false;
+        public bool IsGenericMethod => false;
+        public bool IsGenericMethodDefinition => false;
         public IXamlType ReturnType => ExtensionNodeContainer.GetReturnType();
         public IReadOnlyList<IXamlType> Parameters { get; }
         public IXamlType DeclaringType { get; }
         public IXamlMethod MakeGenericMethod(IReadOnlyList<IXamlType> typeArguments) => throw new NotImplementedException();
-        public IReadOnlyList<IXamlCustomAttribute> CustomAttributes => Array.Empty<IXamlCustomAttribute>();
-
+        public IReadOnlyList<IXamlCustomAttribute> CustomAttributes => [];
         public IXamlParameterInfo GetParameterInfo(int index) => new AnonymousParameterInfo(Parameters[index], index);
+        public IReadOnlyList<IXamlType> GenericParameters => [];
+        public IReadOnlyList<IXamlType> GenericArguments => [];
 
         public void EmitCall(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
         {
