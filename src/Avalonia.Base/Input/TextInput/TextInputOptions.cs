@@ -12,7 +12,8 @@ public class TextInputOptions
             AutoCapitalization = GetAutoCapitalization(avaloniaObject),
             IsSensitive = GetIsSensitive(avaloniaObject),
             Lowercase = GetLowercase(avaloniaObject),
-            Uppercase = GetUppercase(avaloniaObject)
+            Uppercase = GetUppercase(avaloniaObject),
+            HideSuggestions = GetHideSuggestions(avaloniaObject),
         };
 
         return result;
