@@ -4,6 +4,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia.Compatibility;
+using Avalonia.Logging;
 
 namespace Avalonia.Platform.Storage.FileIO;
 
@@ -20,18 +21,12 @@ internal abstract class BclStorageProvider : IStorageProvider
 
     public virtual Task<IStorageBookmarkFile?> OpenFileBookmarkAsync(string bookmark)
     {
-        var file = new FileInfo(bookmark);
-        return file.Exists
-            ? Task.FromResult<IStorageBookmarkFile?>(new BclStorageFile(file))
-            : Task.FromResult<IStorageBookmarkFile?>(null);
+        return Task.FromResult(OpenBookmark(bookmark) as IStorageBookmarkFile);
     }
 
     public virtual Task<IStorageBookmarkFolder?> OpenFolderBookmarkAsync(string bookmark)
     {
-        var folder = new DirectoryInfo(bookmark);
-        return folder.Exists
-            ? Task.FromResult<IStorageBookmarkFolder?>(new BclStorageFolder(folder))
-            : Task.FromResult<IStorageBookmarkFolder?>(null);
+        return Task.FromResult(OpenBookmark(bookmark) as IStorageBookmarkFolder);
     }
 
     public virtual Task<IStorageFile?> TryGetFileFromPathAsync(Uri filePath)
@@ -64,6 +59,16 @@ internal abstract class BclStorageProvider : IStorageProvider
 
     public virtual Task<IStorageFolder?> TryGetWellKnownFolderAsync(WellKnownFolder wellKnownFolder)
     {
+        if (TryGetWellKnownFolderCore(wellKnownFolder) is { } directoryInfo)
+        {
+            return Task.FromResult<IStorageFolder?>(new BclStorageFolder(directoryInfo));
+        }
+
+        return Task.FromResult<IStorageFolder?>(null);
+    }
+
+    internal static DirectoryInfo? TryGetWellKnownFolderCore(WellKnownFolder wellKnownFolder)
+    {
         // Note, this BCL API returns different values depending on the .NET version.
         // We should also document it. 
         // https://github.com/dotnet/docs/issues/31423
@@ -82,16 +87,16 @@ internal abstract class BclStorageProvider : IStorageProvider
 
         if (folderPath is null)
         {
-            return Task.FromResult<IStorageFolder?>(null);
+            return null;
         }
 
         var directory = new DirectoryInfo(folderPath);
         if (!directory.Exists)
         {
-            return Task.FromResult<IStorageFolder?>(null);
+            return null;
         }
-        
-        return Task.FromResult<IStorageFolder?>(new BclStorageFolder(directory));
+
+        return directory;
 
         string GetFromSpecialFolder(Environment.SpecialFolder folder) =>
             Environment.GetFolderPath(folder, Environment.SpecialFolderOption.Create);
@@ -104,7 +109,7 @@ internal abstract class BclStorageProvider : IStorageProvider
         if (OperatingSystemEx.IsWindows())
         {
             return Environment.OSVersion.Version.Major < 6 ? null :
-                SHGetKnownFolderPath(s_folderDownloads, 0, IntPtr.Zero);
+                TryGetWindowsKnownFolder(s_folderDownloads);
         }
 
         if (OperatingSystemEx.IsLinux())
@@ -123,8 +128,46 @@ internal abstract class BclStorageProvider : IStorageProvider
 
         return null;
     }
-    
+
+    private IStorageBookmarkItem? OpenBookmark(string bookmark)
+    {
+        try
+        {
+            if (StorageBookmarkHelper.TryDecodeBclBookmark(bookmark, out var localPath))
+            {
+                return StorageProviderHelpers.TryCreateBclStorageItem(localPath);   
+            }
+
+            return null;
+        }
+        catch (Exception ex)
+        {
+            Logger.TryGet(LogEventLevel.Information, LogArea.Platform)?
+                .Log(this, "Unable to read file bookmark: {Exception}", ex);
+            return null;
+        }
+    }
+
+    private static unsafe string? TryGetWindowsKnownFolder(Guid guid)
+    {
+        char* path = null;
+        string? result = null;
+
+        var hr = SHGetKnownFolderPath(&guid, 0, null, &path);
+        if (hr == 0)
+        {
+            result = Marshal.PtrToStringUni((IntPtr)path);
+        }
+
+        if (path != null)
+        {
+            Marshal.FreeCoTaskMem((IntPtr)path);
+        }
+
+        return result;
+    }
+
     private static readonly Guid s_folderDownloads = new Guid("374DE290-123F-4565-9164-39C4925E467B");
-    [DllImport("shell32.dll", CharSet = CharSet.Unicode, ExactSpelling = true, PreserveSig = false)]
-    private static extern string SHGetKnownFolderPath([MarshalAs(UnmanagedType.LPStruct)] Guid id, int flags, IntPtr token);
+    [DllImport("shell32.dll", ExactSpelling = true)]
+    private static unsafe extern int SHGetKnownFolderPath(Guid* rfid, uint dwFlags, void* hToken, char** ppszPath);
 }

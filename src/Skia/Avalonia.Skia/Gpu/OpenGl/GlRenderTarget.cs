@@ -9,7 +9,7 @@ using static Avalonia.OpenGL.GlConsts;
 
 namespace Avalonia.Skia
 {
-    internal class GlRenderTarget : ISkiaGpuRenderTarget
+    internal class GlRenderTarget : ISkiaGpuRenderTarget2
     {
         private readonly GRContext _grContext;
         private IGlPlatformSurfaceRenderTarget _surface;
@@ -59,9 +59,16 @@ namespace Avalonia.Skia
             public double ScaleFactor => _glSession.Scaling;
         }
 
-        public ISkiaGpuRenderSession BeginRenderingSession()
+        public ISkiaGpuRenderSession BeginRenderingSession(PixelSize size) => BeginRenderingSessionCore(size);
+        public ISkiaGpuRenderSession BeginRenderingSession() => BeginRenderingSessionCore(null);
+        
+        ISkiaGpuRenderSession BeginRenderingSessionCore(PixelSize? expectedSize)
         {
-            var glSession = _surface.BeginDraw();
+            var glSession =
+                expectedSize != null && _surface is IGlPlatformSurfaceRenderTarget2 surface2
+                    ? surface2.BeginDraw(expectedSize.Value)
+                    : _surface.BeginDraw();
+            
             bool success = false;
             try
             {

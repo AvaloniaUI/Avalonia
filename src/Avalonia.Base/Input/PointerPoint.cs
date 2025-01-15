@@ -36,6 +36,11 @@ namespace Avalonia.Input
     public record struct PointerPointProperties
     {
         /// <summary>
+        /// Gets the bounding rectangle of the contact area (typically from touch input).
+        /// </summary>
+        public Rect ContactRect { get; }
+
+        /// <summary>
         /// Gets a value that indicates whether the pointer input was triggered by the primary action mode of an input device.
         /// </summary>
         public bool IsLeftButtonPressed { get; } = false;
@@ -155,17 +160,22 @@ namespace Avalonia.Input
         }
 
         public PointerPointProperties(RawInputModifiers modifiers, PointerUpdateKind kind,
-            float twist, float pressure, float xTilt, float yTilt
-            ) : this (modifiers, kind)
+            float twist, float pressure, float xTilt, float yTilt) : this(modifiers, kind, twist, pressure, xTilt, yTilt, default)
+        {
+        }
+
+        public PointerPointProperties(RawInputModifiers modifiers, PointerUpdateKind kind,
+            float twist, float pressure, float xTilt, float yTilt, Rect contactRect) : this(modifiers, kind)
         {
             Twist = twist;
             Pressure = pressure;
             XTilt = xTilt;
             YTilt = yTilt;
+            ContactRect = contactRect;
         }
 
         internal PointerPointProperties(RawInputModifiers modifiers, PointerUpdateKind kind, RawPointerPoint rawPoint)
-            : this(modifiers, kind, rawPoint.Twist, rawPoint.Pressure, rawPoint.XTilt, rawPoint.YTilt)
+            : this(modifiers, kind, rawPoint.Twist, rawPoint.Pressure, rawPoint.XTilt, rawPoint.YTilt, rawPoint.ContactRect)
         {
         }
 

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Drawing.Drawing2D;
 using System.Linq;
 using Avalonia.Media;
 using CrossUI;
@@ -109,7 +110,67 @@ public class CrossGeometryTests : CrossTestBase
             Background = brush
         });
     }
-    
+
+
+    [CrossFact]
+    public void Should_Render_PolyLineSegment_With_Strokeless_Lines()
+    {
+        var brush = new CrossSolidColorBrush(Colors.Blue);
+        var pen = new CrossPen()
+        {
+            Brush = new CrossSolidColorBrush(Colors.Red),
+            Thickness = 8
+        };
+        var figure = new CrossPathFigure()
+        {
+            Closed = true,
+            Segments =
+            {
+                new CrossPathSegment.PolyLine([new(0, 0), new(100, 0), new(100, 100), new(0, 100), new(0, 0)], false)
+            }
+        };
+        var geometry = new CrossPathGeometry { Figures = { figure } };
+
+        var control = new CrossFuncControl(ctx => ctx.DrawGeometry(brush, pen, geometry))
+        { 
+            Width = 100, 
+            Height = 100,
+        };
+
+        RenderAndCompare(control,
+            $"{nameof(Should_Render_PolyLineSegment_With_Strokeless_Lines)}");
+    }
+
+    [CrossFact]
+    public void Should_Render_PolyBezierSegment_With_Strokeless_Lines()
+    {
+        var brush = new CrossSolidColorBrush(Colors.Blue);
+        var pen = new CrossPen()
+        {
+            Brush = new CrossSolidColorBrush(Colors.Red),
+            Thickness = 8
+        };
+        var figure = new CrossPathFigure()
+        {
+            Start = new Point(10, 100),
+            Closed = false,
+            Segments =
+            {
+                new CrossPathSegment.PolyBezierSegment([new(0, 0), new(200, 0), new(300, 100), new(300, 0), new(500, 0), new(600,100)], false)
+            }
+        };
+        var geometry = new CrossPathGeometry { Figures = { figure } };
+
+        var control = new CrossFuncControl(ctx => ctx.DrawGeometry(brush, pen, geometry))
+        {
+            Width = 700,
+            Height = 400,
+        };
+
+        RenderAndCompare(control,
+            $"{nameof(Should_Render_PolyBezierSegment_With_Strokeless_Lines)}");
+    }
+
     // Skip the test for now
 #if !AVALONIA_SKIA
     [CrossTheory,
@@ -120,7 +181,6 @@ public class CrossGeometryTests : CrossTestBase
         InlineData(PenLineCap.Round, PenLineJoin.Bevel),
         InlineData(PenLineCap.Round, PenLineJoin.Miter),
     ]
-#endif
     public void Should_Properly_CloseFigure(PenLineCap lineCap, PenLineJoin lineJoin)
     {
         var geometry = new CrossPathGeometry();
@@ -156,4 +216,5 @@ public class CrossGeometryTests : CrossTestBase
         RenderAndCompare(control,
             $"{nameof(Should_Properly_CloseFigure)}_{lineCap}_{lineJoin}");
     }
+#endif
 }

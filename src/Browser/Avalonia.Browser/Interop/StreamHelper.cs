@@ -16,7 +16,7 @@ internal static partial class StreamHelper
     public static partial void Truncate(JSObject stream, [JSMarshalAs<JSType.Number>] long size);
 
     [JSImport("StreamHelper.write", AvaloniaModule.MainModuleName)]
-    public static partial Task WriteAsync(JSObject stream, [JSMarshalAs<JSType.MemoryView>] ArraySegment<byte> data);
+    public static partial Task WriteAsync(JSObject stream, [JSMarshalAs<JSType.MemoryView>] ArraySegment<byte> data, int offset, int count);
 
     [JSImport("StreamHelper.close", AvaloniaModule.MainModuleName)]
     public static partial Task CloseAsync(JSObject stream);

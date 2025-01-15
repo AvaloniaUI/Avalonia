@@ -9,11 +9,10 @@ using Avalonia.Data;
 using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.Input.TextInput;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
-using Avalonia.Rendering;
-using Avalonia.Rendering.Composition;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Moq;
@@ -128,6 +127,27 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(
                 BindingMode.TwoWay,
                 TextBox.TextProperty.GetMetadata(typeof(TextBox)).DefaultBindingMode);
+        }
+
+        [Fact]
+        public void TextBox_Ignore_Word_Move_In_Password_Field()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    PasswordChar = '*',
+                    Text = "passw0rd"
+                };
+
+                target.ApplyTemplate();
+                target.Measure(Size.Infinity);
+                target.CaretIndex = 8;
+                RaiseKeyEvent(target, Key.Left, KeyModifiers.Control);
+
+                Assert.Equal(7, target.CaretIndex);
+            }
         }
 
         [Fact]
@@ -1489,6 +1509,109 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.Throws<ArgumentOutOfRangeException>(() => tb.ScrollToLine(-1));
                 Assert.Throws<ArgumentOutOfRangeException>(() => tb.ScrollToLine(1));
+            }
+        }
+
+        [Fact]
+        public void InputMethodClient_SurroundingText_Returns_Empty_For_Empty_Line()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox
+            {
+                Template = CreateTemplate(),
+                Text = "",
+                CaretIndex = 0
+            };
+            textBox.ApplyTemplate();
+
+            var eventArgs = new TextInputMethodClientRequestedEventArgs
+            {
+                RoutedEvent = InputElement.TextInputMethodClientRequestedEvent
+            };
+            textBox.RaiseEvent(eventArgs);
+
+            var client = eventArgs.Client;
+            Assert.NotNull(client);
+            Assert.Equal(string.Empty, client.SurroundingText);
+        }
+  
+        [Fact]
+        public void Backspace_Should_Delete_Last_Character_In_Line_And_Keep_Caret_On_Same_Line()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox
+            {
+                Template = CreateTemplate(),
+                Text = "a\nb",
+                CaretIndex = 3
+            };
+            textBox.ApplyTemplate();
+
+            var topLevel = new TestTopLevel(CreateMockTopLevelImpl().Object)
+            {
+                Template = CreateTopLevelTemplate(),
+                Content = textBox
+            };
+            topLevel.ApplyTemplate();
+            topLevel.LayoutManager.ExecuteInitialLayoutPass();
+
+            var textPresenter = textBox.FindDescendantOfType<TextPresenter>();
+            Assert.NotNull(textPresenter);
+
+            var oldCaretY = textPresenter.GetCursorRectangle().Top;
+            Assert.NotEqual(0, oldCaretY);
+
+            RaiseKeyEvent(textBox, Key.Back, KeyModifiers.None);
+
+            Assert.Equal("a\n", textBox.Text);
+            Assert.Equal(2, textBox.CaretIndex);
+            Assert.Equal(2, textPresenter.CaretIndex);
+
+            var caretY = textPresenter.GetCursorRectangle().Top;
+            Assert.Equal(oldCaretY, caretY);
+        }
+
+        [Fact]
+        public void Losing_Focus_Should_Not_Reset_Selection()
+        {
+            using (UnitTestApplication.Start(FocusServices))
+            {
+                var target1 = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "1234",
+                    ClearSelectionOnLostFocus = false
+                };
+
+                target1.ApplyTemplate();
+
+                var target2 = new TextBox
+                {
+                    Template = CreateTemplate(),
+                };
+
+                target2.ApplyTemplate();
+
+                var sp = new StackPanel();
+                sp.Children.Add(target1);
+                sp.Children.Add(target2);
+
+                var root = new TestRoot() { Child = sp };
+
+                target1.SelectionStart = 0;
+                target1.SelectionEnd = 4;
+
+                target1.Focus();
+
+                Assert.True(target1.IsFocused);
+
+                Assert.Equal("1234", target1.SelectedText);            
+
+                target2.Focus();
+
+                Assert.Equal("1234", target1.SelectedText);
             }
         }
 

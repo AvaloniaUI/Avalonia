@@ -26,6 +26,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             return new CompiledBindingExtension
             {
                 Path = Path,
+                Delay = Delay,
                 Converter = Converter,
                 ConverterCulture = ConverterCulture,
                 ConverterParameter = ConverterParameter,
@@ -59,11 +60,11 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
         }
 
         private protected override BindingExpressionBase Instance(
-            AvaloniaProperty targetProperty,
             AvaloniaObject target,
+            AvaloniaProperty? targetProperty,
             object? anchor)
         {
-            var enableDataValidation = targetProperty.GetMetadata(target).EnableDataValidation ?? false;
+            var enableDataValidation = targetProperty?.GetMetadata(target).EnableDataValidation ?? false;
             return InstanceCore(target, targetProperty, anchor, enableDataValidation);
         }
 
@@ -92,6 +93,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 source,
                 nodes,
                 FallbackValue,
+                delay: TimeSpan.FromMilliseconds(Delay),
                 converter: Converter,
                 converterParameter: ConverterParameter,
                 targetNullValue: TargetNullValue);
@@ -125,6 +127,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 source,
                 nodes,
                 FallbackValue,
+                delay: TimeSpan.FromMilliseconds(Delay),
                 converter: Converter,
                 converterCulture: ConverterCulture,
                 converterParameter: ConverterParameter,
@@ -133,6 +136,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 priority: Priority,
                 stringFormat: StringFormat,
                 targetNullValue: TargetNullValue,
+                targetProperty: targetProperty,
                 targetTypeConverter: TargetTypeConverter.GetDefaultConverter(),
                 updateSourceTrigger: trigger);
         }

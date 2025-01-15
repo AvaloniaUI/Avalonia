@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia.Controls.Platform;
 using Avalonia.Logging;
 using Avalonia.Platform;
+using Avalonia.Threading;
 using Tmds.DBus.Protocol;
 using Tmds.DBus.SourceGenerator;
 
@@ -14,14 +13,14 @@ namespace Avalonia.FreeDesktop
     internal class DBusTrayIconImpl : ITrayIconImpl
     {
         private static int s_trayIconInstanceId;
-        public static readonly (int, int, byte[]) EmptyPixmap = (1, 1, new byte[] { 255, 0, 0, 0 });
+        public static readonly (int, int, byte[]) EmptyPixmap = (1, 1, [255, 0, 0, 0]);
 
-        private readonly ObjectPath _dbusMenuPath;
         private readonly Connection? _connection;
         private readonly OrgFreedesktopDBus? _dBus;
 
         private IDisposable? _serviceWatchDisposable;
-        private StatusNotifierItemDbusObj? _statusNotifierItemDbusObj;
+        private readonly PathHandler _pathHandler = new("/StatusNotifierItem");
+        private readonly StatusNotifierItemDbusObj? _statusNotifierItemDbusObj;
         private OrgKdeStatusNotifierWatcher? _statusNotifierWatcher;
         private (int, int, byte[]) _icon;
 
@@ -38,6 +37,7 @@ namespace Avalonia.FreeDesktop
 
         public DBusTrayIconImpl()
         {
+            using var restoreContext = AvaloniaSynchronizationContext.Ensure(DispatcherPriority.Input);
             _connection = DBusHelper.TryCreateNewConnection();
 
             if (_connection is null)
@@ -51,13 +51,14 @@ namespace Avalonia.FreeDesktop
             IsActive = true;
 
             _dBus = new OrgFreedesktopDBus(_connection, "org.freedesktop.DBus", "/org/freedesktop/DBus");
-            _dbusMenuPath = DBusMenuExporter.GenerateDBusMenuObjPath;
+            var dbusMenuPath = DBusMenuExporter.GenerateDBusMenuObjPath;
 
-            MenuExporter = DBusMenuExporter.TryCreateDetachedNativeMenu(_dbusMenuPath, _connection);
-           
-            _statusNotifierItemDbusObj = new StatusNotifierItemDbusObj(_connection, _dbusMenuPath);
-            _connection.AddMethodHandler(_statusNotifierItemDbusObj);
-            
+            MenuExporter = DBusMenuExporter.TryCreateDetachedNativeMenu(dbusMenuPath, _connection);
+
+            _statusNotifierItemDbusObj = new StatusNotifierItemDbusObj(_connection, dbusMenuPath);
+            _pathHandler.Add(_statusNotifierItemDbusObj);
+            _connection.AddMethodHandler(_pathHandler);
+
             WatchAsync();
         }
 
@@ -69,11 +70,11 @@ namespace Avalonia.FreeDesktop
                 var nameOwner = await _dBus.GetNameOwnerAsync("org.kde.StatusNotifierWatcher");
                 OnNameChange("org.kde.StatusNotifierWatcher", nameOwner);
             }
-            catch
+            catch (Exception e)
             {
                 _serviceWatchDisposable = null;
                 Logger.TryGet(LogEventLevel.Error, "DBUS")
-                    ?.Log(this, "Interface 'org.kde.StatusNotifierWatcher' is unavailable.");
+                    ?.Log(this, "Interface 'org.kde.StatusNotifierWatcher' is unavailable.\n{Exception}", e);
             }
         }
 
@@ -115,7 +116,7 @@ namespace Avalonia.FreeDesktop
             await _dBus!.RequestNameAsync(_sysTrayServiceName, 0);
             await _statusNotifierWatcher.RegisterStatusNotifierItemAsync(_sysTrayServiceName);
 
-            _statusNotifierItemDbusObj.SetTitleAndTooltip(_tooltipText);
+            _statusNotifierItemDbusObj!.SetTitleAndTooltip(_tooltipText);
             _statusNotifierItemDbusObj.SetIcon(_icon);
             _statusNotifierItemDbusObj.ActivationDelegate += OnClicked;
         }
@@ -126,14 +127,17 @@ namespace Avalonia.FreeDesktop
                 return;
 
             _dBus!.ReleaseNameAsync(_sysTrayServiceName);
+            _pathHandler.Remove(_statusNotifierItemDbusObj);
+            _connection.RemoveMethodHandler(_pathHandler.Path);
         }
 
         public void Dispose()
         {
             IsActive = false;
-            _isDisposed = true;
             DestroyTrayIcon();
+            (MenuExporter as IDisposable)?.Dispose();
             _serviceWatchDisposable?.Dispose();
+            _isDisposed = true;
         }
 
         public void SetIcon(IWindowIconImpl? icon)
@@ -215,12 +219,9 @@ namespace Avalonia.FreeDesktop
         {
             Connection = connection;
             Menu = dbusMenuPath;
-            InvalidateAll();
         }
 
-        protected override Connection Connection { get; }
-
-        public override string Path => "/StatusNotifierItem";
+        public override Connection Connection { get; }
 
         public event Action? ActivationDelegate;
 
@@ -248,7 +249,7 @@ namespace Avalonia.FreeDesktop
 
         public void SetIcon((int, int, byte[]) dbusPixmap)
         {
-            IconPixmap = new[] { dbusPixmap };
+            IconPixmap = [dbusPixmap];
             InvalidateAll();
         }
 

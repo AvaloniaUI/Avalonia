@@ -6,6 +6,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
+using Windows.Win32;
+using Windows.Win32.Graphics.Gdi;
 using MicroCom.Runtime;
 
 // ReSharper disable InconsistentNaming
@@ -110,7 +112,7 @@ namespace Avalonia.Win32.Interop
             /// </summary>
             Hide = 0,
             /// <summary>
-            /// Activates and displays a window. If the window is minimized, maximized, or arranged, the system restores it to its original 
+            /// Activates and displays a window. If the window is minimized, maximized, or arranged, the system restores it to its original
             /// size and position. An application should specify this flag when displaying the window for the first time.
             /// </summary>
             Normal = 1,
@@ -145,12 +147,12 @@ namespace Avalonia.Win32.Interop
             /// </summary>
             ShowNA = 8,
             /// <summary>
-            /// Activates and displays the window. If the window is minimized, maximized, or arranged, the system restores it to its original size and position. 
+            /// Activates and displays the window. If the window is minimized, maximized, or arranged, the system restores it to its original size and position.
             /// An application should specify this flag when restoring a minimized window.
             /// </summary>
             Restore = 9,
             /// <summary>
-            /// Sets the show state based on the <see cref="ShowWindowCommand"/> value specified in the STARTUPINFO structure passed to the CreateProcess function 
+            /// Sets the show state based on the <see cref="ShowWindowCommand"/> value specified in the STARTUPINFO structure passed to the CreateProcess function
             /// by the program that started the application.
             /// </summary>
             ShowDefault = 10,
@@ -1172,13 +1174,10 @@ namespace Avalonia.Win32.Interop
         public static extern bool GetPointerTouchInfo(uint pointerId, out POINTER_TOUCH_INFO touchInfo);
 
         [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool GetPointerDeviceRects(IntPtr device, out RECT pointerDeviceRect, out RECT displayRect);
+
+        [DllImport("user32.dll", SetLastError = true)]
         public static extern bool GetPointerTouchInfoHistory(uint pointerId, ref int entriesCount, [MarshalAs(UnmanagedType.LPArray), In, Out] POINTER_TOUCH_INFO[] touchInfos);
-
-        [DllImport("user32.dll")]
-        public static extern bool EnumDisplayMonitors(IntPtr hdc, IntPtr lprcClip,
-                                                      MonitorEnumDelegate lpfnEnum, IntPtr dwData);
-
-        public delegate bool MonitorEnumDelegate(IntPtr hMonitor, IntPtr hdcMonitor, ref Rect lprcMonitor, IntPtr dwData);
 
         [DllImport("user32.dll", SetLastError = true)]
         public static extern IntPtr GetDC(IntPtr hWnd);
@@ -1225,12 +1224,12 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("user32.dll", EntryPoint = "DefWindowProcW")]
         public static extern IntPtr DefWindowProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
-        
+
         public const int SC_MOUSEMOVE = 0xf012;
- 
+
         [DllImport("user32.dll", CharSet = CharSet.Unicode, EntryPoint = "SendMessageW")]
         public static extern IntPtr SendMessage(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam);
-        
+
         [DllImport("user32.dll", EntryPoint = "DispatchMessageW")]
         public static extern IntPtr DispatchMessage(ref MSG lpmsg);
 
@@ -1415,7 +1414,7 @@ namespace Avalonia.Win32.Interop
         public static extern IntPtr SetCapture(IntPtr hWnd);
 
         [DllImport("user32.dll")]
-        public static extern IntPtr SetTimer(IntPtr hWnd, IntPtr nIDEvent, uint uElapse, TimerProc lpTimerFunc);
+        public static extern IntPtr SetTimer(IntPtr hWnd, IntPtr nIDEvent, uint uElapse, TimerProc? lpTimerFunc);
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
         [DllImport("user32.dll")]
@@ -1538,7 +1537,7 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("user32.dll", EntryPoint = "SetCursor")]
         internal static extern IntPtr SetCursor(IntPtr hCursor);
-        
+
         [DllImport("ole32.dll", PreserveSig = true)]
         internal static extern int CoCreateInstance(in Guid clsid,
             IntPtr ignore1, int ignore2, in Guid iid, [Out] out IntPtr pUnkOuter);
@@ -1636,10 +1635,6 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("user32.dll")]
         public static extern IntPtr MonitorFromWindow(IntPtr hwnd, MONITOR dwFlags);
-
-        [DllImport("user32", EntryPoint = "GetMonitorInfoW", ExactSpelling = true, CharSet = CharSet.Unicode)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool GetMonitorInfo([In] IntPtr hMonitor, ref MONITORINFO lpmi);
 
         [DllImport("user32")]
         public static extern bool GetTouchInputInfo(
@@ -2128,23 +2123,17 @@ namespace Avalonia.Win32.Interop
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        internal struct MONITORINFO
+        internal struct MONITORINFOEX
         {
-            public int cbSize;
-            public RECT rcMonitor;
-            public RECT rcWork;
-            public int dwFlags;
+            internal MONITORINFO Base;
 
-            public static MONITORINFO Create()
-            {
-                return new MONITORINFO() { cbSize = Marshal.SizeOf<MONITORINFO>() };
-            }
+            internal __char_32 szDevice;
 
-            public enum MonitorOptions : uint
+            public static MONITORINFOEX Create()
             {
-                MONITOR_DEFAULTTONULL = 0x00000000,
-                MONITOR_DEFAULTTOPRIMARY = 0x00000001,
-                MONITOR_DEFAULTTONEAREST = 0x00000002
+                var info = new MONITORINFO();
+                info.cbSize = (uint)Marshal.SizeOf<MONITORINFOEX>();
+                return new MONITORINFOEX() { Base = info };
             }
         }
 
@@ -2190,7 +2179,7 @@ namespace Avalonia.Win32.Interop
             /// </summary>
             CF_UNICODETEXT = 13,
             /// <summary>
-            /// A handle to type HDROP that identifies a list of files. 
+            /// A handle to type HDROP that identifies a list of files.
             /// </summary>
             CF_HDROP = 15,
         }

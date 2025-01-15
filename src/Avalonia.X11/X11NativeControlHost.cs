@@ -1,8 +1,9 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls.Platform;
 using Avalonia.Platform;
-using Avalonia.VisualTree;
 using static Avalonia.X11.XLib;
+
 namespace Avalonia.X11
 {
     // TODO: Actually implement XEmbed instead of simply using XReparentWindow
@@ -19,15 +20,13 @@ namespace Avalonia.X11
 
         public INativeControlHostDestroyableControlHandle CreateDefaultChild(IPlatformHandle parent)
         {
-            var ch = new DumbWindow(_platform.Info);
-            XSync(_platform.Display, false);
-            return ch;
+            return new DumbWindow(_platform.Info, true);
         }
 
         public INativeControlHostControlTopLevelAttachment CreateNewAttachment(Func<IPlatformHandle, IPlatformHandle> create)
         {
-            var holder = new DumbWindow(_platform.Info, Window.Handle.Handle);
-            Attachment attachment = null;
+            var holder = new DumbWindow(_platform.Info, true, Window.Handle.Handle);
+            Attachment? attachment = null;
             try
             {
                 var child = create(holder);
@@ -40,7 +39,7 @@ namespace Avalonia.X11
             catch
             {
                 attachment?.Dispose();
-                holder?.Destroy();
+                holder.Destroy();
                 throw;
             }
         }
@@ -50,7 +49,7 @@ namespace Avalonia.X11
             if (!IsCompatibleWith(handle))
                 throw new ArgumentException(handle.HandleDescriptor + " is not compatible with the current window",
                     nameof(handle));
-            var attachment = new Attachment(_platform.Display, new DumbWindow(_platform.Info, Window.Handle.Handle),
+            var attachment = new Attachment(_platform.Display, new DumbWindow(_platform.Info, false, Window.Handle.Handle),
                 _platform.OrphanedWindow, handle) { AttachedTo = this };
             return attachment;
         }
@@ -61,7 +60,7 @@ namespace Avalonia.X11
         {
             private readonly IntPtr _display;
 
-            public DumbWindow(X11Info x11, IntPtr? parent = null)
+            public DumbWindow(X11Info x11, bool sync, IntPtr? parent = null)
             {
                 _display = x11.Display;
                 /*Handle = XCreateSimpleWindow(x11.Display, XLib.XDefaultRootWindow(_display),
@@ -83,6 +82,8 @@ namespace Avalonia.X11
                     new UIntPtr((uint)(SetWindowValuemask.BorderPixel | SetWindowValuemask.BitGravity |
                                        SetWindowValuemask.BackPixel |
                                        SetWindowValuemask.WinGravity | SetWindowValuemask.BackingStore)), ref attr);
+                if(sync)
+                    XSync(x11.Display, false);
             }
 
             public IntPtr Handle { get; private set; }
@@ -101,9 +102,9 @@ namespace Avalonia.X11
         {
             private readonly IntPtr _display;
             private readonly IntPtr _orphanedWindow;
-            private DumbWindow _holder;
-            private IPlatformHandle _child;
-            private X11NativeControlHost _attachedTo;
+            private DumbWindow? _holder;
+            private IPlatformHandle? _child;
+            private X11NativeControlHost? _attachedTo;
             private bool _mapped;
             
             public Attachment(IntPtr display, DumbWindow holder, IntPtr orphanedWindow, IPlatformHandle child)
@@ -129,20 +130,22 @@ namespace Avalonia.X11
                 _attachedTo = null;
             }
 
+            [MemberNotNull(nameof(_child))]
+            [MemberNotNull(nameof(_holder))]
             private void CheckDisposed()
             {
-                if (_child == null)
+                if (_child is null || _holder is null)
                     throw new ObjectDisposedException("X11 INativeControlHostControlTopLevelAttachment");
             }
 
-            public INativeControlHostImpl AttachedTo
+            public INativeControlHostImpl? AttachedTo
             {
                 get => _attachedTo;
                 set
                 {
                     CheckDisposed();
-                    _attachedTo = (X11NativeControlHost)value;
-                    if (value == null)
+                    _attachedTo = (X11NativeControlHost?)value;
+                    if (_attachedTo is null)
                     {
                         _mapped = false;
                         XUnmapWindow(_display, _holder.Handle);
@@ -164,7 +167,8 @@ namespace Avalonia.X11
                 if (_mapped)
                 {
                     _mapped = false;
-                    XUnmapWindow(_display, _holder.Handle);
+                    if (_holder is not null)
+                        XUnmapWindow(_display, _holder.Handle);
                 }
 
                 size *= _attachedTo.Window.RenderScaling;

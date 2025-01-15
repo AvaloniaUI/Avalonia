@@ -64,23 +64,23 @@ namespace Avalonia.Input
         
         public static readonly RoutedEvent<PointerDeltaEventArgs> PointerTouchPadGestureMagnifyEvent =
             RoutedEvent.Register<PointerDeltaEventArgs>(
-                "PointerMagnifyGesture", RoutingStrategies.Bubble, typeof(Gestures));
+                "PointerTouchPadGestureMagnify", RoutingStrategies.Bubble, typeof(Gestures));
         
         public static readonly RoutedEvent<PointerDeltaEventArgs> PointerTouchPadGestureRotateEvent =
             RoutedEvent.Register<PointerDeltaEventArgs>(
-                "PointerRotateGesture", RoutingStrategies.Bubble, typeof(Gestures));
+                "PointerTouchPadGestureRotate", RoutingStrategies.Bubble, typeof(Gestures));
         
         public static readonly RoutedEvent<PointerDeltaEventArgs> PointerTouchPadGestureSwipeEvent =
             RoutedEvent.Register<PointerDeltaEventArgs>(
-                "PointerSwipeGesture", RoutingStrategies.Bubble, typeof(Gestures));
+                "PointerTouchPadGestureSwipe", RoutingStrategies.Bubble, typeof(Gestures));
 
         public static readonly RoutedEvent<PinchEventArgs> PinchEvent =
             RoutedEvent.Register<PinchEventArgs>(
-                "PinchEvent", RoutingStrategies.Bubble, typeof(Gestures));
+                "Pinch", RoutingStrategies.Bubble, typeof(Gestures));
 
         public static readonly RoutedEvent<PinchEndedEventArgs> PinchEndedEvent =
             RoutedEvent.Register<PinchEndedEventArgs>(
-                "PinchEndedEvent", RoutingStrategies.Bubble, typeof(Gestures));
+                "PinchEnded", RoutingStrategies.Bubble, typeof(Gestures));
 
         public static readonly RoutedEvent<PullGestureEventArgs> PullGestureEvent =
             RoutedEvent.Register<PullGestureEventArgs>(

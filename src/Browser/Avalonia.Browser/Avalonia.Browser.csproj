@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>$(AvsCurrentBrowserTargetFramework)</TargetFramework>
+    <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsCurrentBrowserTargetFramework)</TargetFrameworks>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
@@ -46,12 +46,18 @@
     <!-- Write the stamp file, so incremental builds work -->
     <Touch Files="webapp/node_modules/.install-stamp" AlwaysCreate="true" />
   </Target>
-  <Target Name="NpmRunBuild" DependsOnTargets="NpmInstall" BeforeTargets="BeforeBuild">
+  <Target Name="NpmRunBuild" DependsOnTargets="NpmInstall" BeforeTargets="DispatchToInnerBuilds">
     <Exec Command="npm run build" WorkingDirectory="webapp" />
   </Target>
 
   <ItemGroup Label="InternalsVisibleTo">
     <InternalsVisibleTo Include="Avalonia.Browser.Blazor, PublicKey=$(AvaloniaPublicKey)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\Shared\RawEventGrouping.cs">
+      <Link>RawEventGrouping.cs</Link>
+    </Compile>
   </ItemGroup>
 
 </Project>

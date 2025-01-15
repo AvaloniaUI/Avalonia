@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Reactive.Subjects;
 using Avalonia.Controls;
@@ -426,11 +428,120 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             }
         }
 
+        [Theory]
+        [MemberData(nameof(NegationData))]
+        public void Negating_Object_Returns_Correct_Value(object value, bool? expected)
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        Tag='{Binding !Object}'>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var viewModel = new WindowViewModel { Object = value };
+
+                window.DataContext = viewModel;
+                window.ApplyTemplate();
+
+                Assert.Equal(expected, window.Tag);
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(NegationData))]
+        public void Double_Negating_Object_Returns_Correct_Value(object value, bool? negated)
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        Tag='{Binding !!Object}'>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var viewModel = new WindowViewModel { Object = value };
+
+                window.DataContext = viewModel;
+                window.ApplyTemplate();
+
+                var expected = negated.HasValue ? !negated : null;
+                Assert.Equal(expected, window.Tag);
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(NegationData))]
+        public void Negating_Object_Returns_Correct_Value_When_Bound_To_Bool(object value, bool? expected)
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        IsVisible='{Binding !Object}'>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var viewModel = new WindowViewModel { Object = value };
+
+                window.DataContext = viewModel;
+                window.ApplyTemplate();
+
+                Assert.Equal(expected ?? false, window.IsVisible);
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(NegationData))]
+        public void Double_Negating_Object_Returns_Correct_Value_When_Bound_To_Bool(object value, bool? negated)
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        IsVisible='{Binding !!Object}'>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var viewModel = new WindowViewModel { Object = value };
+
+                window.DataContext = viewModel;
+                window.ApplyTemplate();
+
+                var expected = negated.HasValue ? !negated : false;
+                Assert.Equal(expected, window.IsVisible);
+            }
+        }
+
+        public static IEnumerable<object[]> NegationData()
+        {
+            yield return new object[] { true, false };
+            yield return new object[] { false, true };
+            yield return new object[] { null, true };
+            yield return new object[] { new object(), null };
+            yield return new object[] { "foo", null };
+            yield return new object[] { "true", false };
+            yield return new object[] { "false", true };
+            yield return new object[] { 0, true };
+            yield return new object[] { 1, false };
+            yield return new object[] { 2, false };
+            yield return new object[] { -1, false };
+            yield return new object[] { 0.0, true };
+            yield return new object[] { 1.0, false };
+            yield return new object[] { 2.0, false };
+            yield return new object[] { -1.0, false };
+            yield return new object[] { double.NaN, false };
+            yield return new object[] { double.PositiveInfinity, false };
+            yield return new object[] { double.NegativeInfinity, false };
+        }
+
         private class WindowViewModel
         {
             public bool ShowInTaskbar { get; set; }
             public string Greeting1 { get; set; } = "Hello";
             public string Greeting2 { get; set; } = "World";
+            public object Object { get; set; }
         }
 
         public class CultureAppender : IValueConverter

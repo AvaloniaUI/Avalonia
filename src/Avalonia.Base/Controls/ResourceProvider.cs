@@ -7,7 +7,7 @@ namespace Avalonia.Controls;
 /// Base implementation for IResourceProvider interface.
 /// Includes Owner property management.
 /// </summary>
-public abstract class ResourceProvider : IResourceProvider
+public abstract class ResourceProvider : AvaloniaObject, IResourceProvider
 {
     private IResourceHost? _owner;
 

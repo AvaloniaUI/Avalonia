@@ -52,7 +52,7 @@ namespace Avalonia.Input
             }
             
             var props = new PointerPointProperties(e.InputModifiers, e.Type.ToUpdateKind(),
-                e.Point.Twist, e.Point.Pressure, e.Point.XTilt, e.Point.YTilt);
+                e.Point.Twist, e.Point.Pressure, e.Point.XTilt, e.Point.YTilt, e.Point.ContactRect);
             var keyModifiers = e.InputModifiers.ToKeyModifiers();
 
             bool shouldReleasePointer = false;
@@ -64,9 +64,17 @@ namespace Avalonia.Input
                         shouldReleasePointer = true;
                         break;
                     case RawPointerEventType.LeftButtonDown:
+                    case RawPointerEventType.RightButtonDown:
+                    case RawPointerEventType.MiddleButtonDown:
+                    case RawPointerEventType.XButton1Down:
+                    case RawPointerEventType.XButton2Down:
                         e.Handled = PenDown(pointer, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.InputHitTestResult.firstEnabledAncestor);
                         break;
                     case RawPointerEventType.LeftButtonUp:
+                    case RawPointerEventType.RightButtonUp:
+                    case RawPointerEventType.MiddleButtonUp:
+                    case RawPointerEventType.XButton1Up:
+                    case RawPointerEventType.XButton2Up:
                         if (_releasePointerOnPenUp)
                         {
                             shouldReleasePointer = true;

@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Avalonia.Compatibility;
 using Avalonia.Platform.Interop;
@@ -77,13 +78,18 @@ internal unsafe class SkiaMetalApi
     {
         options ??= new();
         var nativeOptions = _contextOptionsToNative.Invoke(options, null)!;
-        var pOptions = Marshal.AllocHGlobal(Marshal.SizeOf(nativeOptions));
-        Marshal.StructureToPtr(nativeOptions, pOptions, false);
-        var context = _gr_direct_context_make_metal_with_options(device, queue, pOptions);
-        Marshal.FreeHGlobal(pOptions);
-        if (context == IntPtr.Zero)
-            throw new InvalidOperationException("Unable to create GRContext from Metal device.");
-        return (GRContext)_contextCtor.Invoke(new object[] { context, true });
+        var gcHandle = GCHandle.Alloc(nativeOptions, GCHandleType.Pinned);
+        try
+        {
+            var context = _gr_direct_context_make_metal_with_options(device, queue, gcHandle.AddrOfPinnedObject());
+            if (context == IntPtr.Zero)
+                throw new InvalidOperationException("Unable to create GRContext from Metal device.");
+            return (GRContext)_contextCtor.Invoke(new object[] { context, true });
+        }
+        finally
+        {
+            gcHandle.Free();   
+        }
     }
 
     internal struct GRMtlTextureInfoNative

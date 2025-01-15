@@ -6,11 +6,11 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Avalonia.Automation.Peers;
 using Avalonia.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
-using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Threading;
@@ -296,6 +296,12 @@ namespace Avalonia.Controls
             }
 
             return TreeItemFromContainer(this, container);
+        }
+
+        /// <inheritdoc />
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new TreeViewAutomationPeer(this);
         }
 
         private protected override void OnItemsViewCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -959,20 +965,43 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="items">The items collection.</param>
         /// <param name="desired">The desired items.</param>
-        private static void SynchronizeItems(IList items, IEnumerable<object> desired)
+        private static void SynchronizeItems(IList items, List<object> desired)
         {
-            var list = items.Cast<object>();
-            var toRemove = list.Except(desired).ToList();
-            var toAdd = desired.Except(list).ToList();
-
-            foreach (var i in toRemove)
+            var itemsCount = items.Count;
+            if (desired is not null)
             {
-                items.Remove(i);
-            }
+                var desiredCount = desired.Count;
+                if (itemsCount == 0 && desiredCount > 0)
+                {
+                    // Add all desired
+                    foreach (var item in desired)
+                    {
+                        items.Add(item);
+                    }
+                }
+                else if (itemsCount > 0 && desiredCount == 0)
+                {
+                    // Remove all
+                    items.Clear();
+                }
+                // Intersect
+                else
+                {
+                    var list = new object[items.Count];
+                    items.CopyTo(list, 0);
+                    var toRemove = list.Except(desired).ToArray();
+                    var toAdd = desired.Except(list).ToArray();
 
-            foreach (var i in toAdd)
-            {
-                items.Add(i);
+                    foreach (var i in toRemove)
+                    {
+                        items.Remove(i);
+                    }
+
+                    foreach (var i in toAdd)
+                    {
+                        items.Add(i);
+                    }
+                }
             }
         }
     }

@@ -228,7 +228,7 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(0, viewModel.SetterInvokedCount);
 
-            // In Issue #855, a Stackoverflow occured here.
+            // In Issue #855, a Stackoverflow occurred here.
             target.SelectedItem = viewModel.Items[2];
 
             Assert.Equal(viewModel.Items[1], target.SelectedItem);
@@ -307,7 +307,7 @@ namespace Avalonia.Controls.UnitTests
             // Then make the ScrollViewer create its child.
             scrollViewer.Presenter.UpdateChild();
 
-            // Now the ItemsPresenter should be reigstered, so apply its template.
+            // Now the ItemsPresenter should be registered, so apply its template.
             target.Presenter.ApplyTemplate();
         }
     }

@@ -5,6 +5,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Logging;
 using Avalonia.Platform.Storage;
+using Avalonia.Platform.Storage.FileIO;
+using Avalonia.Reactive;
 using Foundation;
 
 using UIKit;
@@ -132,7 +134,7 @@ internal abstract class IOSStorageItem : IStorageBookmarkItem
         return Task.CompletedTask;
     }
 
-    public Task<string?> SaveBookmarkAsync()
+    public unsafe Task<string?> SaveBookmarkAsync()
     {
         try
         {
@@ -141,7 +143,7 @@ internal abstract class IOSStorageItem : IStorageBookmarkItem
                 return Task.FromResult<string?>(null);
             }
 
-            var newBookmark = Url.CreateBookmarkData(NSUrlBookmarkCreationOptions.SuitableForBookmarkFile, Array.Empty<string>(), null, out var bookmarkError);
+            using var newBookmark = Url.CreateBookmarkData(NSUrlBookmarkCreationOptions.SuitableForBookmarkFile, [], null, out var bookmarkError);
             if (bookmarkError is not null)
             {
                 Logger.TryGet(LogEventLevel.Error, LogArea.IOSPlatform)?.
@@ -149,8 +151,9 @@ internal abstract class IOSStorageItem : IStorageBookmarkItem
                 return Task.FromResult<string?>(null);
             }
 
+            var bytes = new Span<byte>((void*)newBookmark.Bytes, (int)newBookmark.Length);
             return Task.FromResult<string?>(
-                newBookmark.GetBase64EncodedString(NSDataBase64EncodingOptions.None));
+                StorageBookmarkHelper.EncodeBookmark(IOSStorageProvider.PlatformKey, bytes));
         }
         finally
         {
@@ -171,12 +174,28 @@ internal sealed class IOSStorageFile : IOSStorageItem, IStorageBookmarkFile
 
     public Task<Stream> OpenReadAsync()
     {
-        return Task.FromResult<Stream>(new IOSSecurityScopedStream(Url, SecurityScopedAncestorUrl, FileAccess.Read));
+        return Task.FromResult(CreateStream(FileAccess.Read));
     }
 
     public Task<Stream> OpenWriteAsync()
     {
-        return Task.FromResult<Stream>(new IOSSecurityScopedStream(Url, SecurityScopedAncestorUrl, FileAccess.Write));
+        return Task.FromResult(CreateStream(FileAccess.Write));
+    }
+
+    private Stream CreateStream(FileAccess fileAccess)
+    {
+        var document = new UIDocument(Url);
+        var path = document.FileUrl.Path!;
+        var scopeCreated = SecurityScopedAncestorUrl.StartAccessingSecurityScopedResource();
+        var stream = File.Open(path, FileMode.Open, fileAccess);
+
+        return scopeCreated ?
+            new SecurityScopedStream(stream, Disposable.Create(() =>
+            {
+                document.Dispose();
+                SecurityScopedAncestorUrl.StopAccessingSecurityScopedResource();
+            })) :
+            stream;
     }
 }
 
