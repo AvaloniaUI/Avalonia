@@ -49,7 +49,7 @@ namespace Avalonia.Media.TextFormatting
         /// <summary>
         /// The buffer's bidi level.
         /// </summary>
-        public sbyte BidiLevel { get; }
+        public sbyte BidiLevel { get; private set; }
 
         /// <summary>
         /// The buffer's reading direction.
@@ -168,6 +168,8 @@ namespace Avalonia.Media.TextFormatting
 
             return new SplitResult<ShapedBuffer>(first, second);
         }
+
+        internal void ResetBidiLevel(sbyte paragraphEmbeddingLevel) => BidiLevel = paragraphEmbeddingLevel;
 
         int IReadOnlyCollection<GlyphInfo>.Count => _glyphInfos.Length;
 

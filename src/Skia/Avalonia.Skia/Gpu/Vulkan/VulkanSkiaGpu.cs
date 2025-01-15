@@ -7,7 +7,7 @@ using SkiaSharp;
 
 namespace Avalonia.Skia.Vulkan;
 
-internal class VulkanSkiaGpu : ISkiaGpu
+internal class VulkanSkiaGpu : ISkiaGpuWithPlatformGraphicsContext
 {
     private readonly VulkanSkiaExternalObjectsFeature? _externalObjects;
     public IVulkanPlatformGraphicsContext Vulkan { get; private set; }
@@ -72,6 +72,9 @@ internal class VulkanSkiaGpu : ISkiaGpu
     }
 
     public bool IsLost => Vulkan.IsLost;
+
+    public IPlatformGraphicsContext? PlatformGraphicsContext => Vulkan;
+
     public IDisposable EnsureCurrent() => Vulkan.EnsureCurrent();
     
     
@@ -83,4 +86,7 @@ internal class VulkanSkiaGpu : ISkiaGpu
 
     
     public ISkiaSurface? TryCreateSurface(PixelSize size, ISkiaGpuRenderSession? session) => null;
+
+    public IScopedResource<GRContext> TryGetGrContext() =>
+        ScopedResource<GRContext>.Create(GrContext, EnsureCurrent().Dispose);
 }

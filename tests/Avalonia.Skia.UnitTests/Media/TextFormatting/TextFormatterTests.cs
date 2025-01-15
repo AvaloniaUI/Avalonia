@@ -169,6 +169,87 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         }
 
         [Fact]
+        public void Should_Reset_Bidi_Levels_Of_Trailing_Whitespaces_After_TextWrapping()
+        {
+            using (Start())
+            {
+                const string text = "aaa bbb";
+
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+
+                var paragraphProperties = new GenericTextParagraphProperties(FlowDirection.RightToLeft, TextAlignment.Right, true,
+                                                                             true, defaultProperties, TextWrapping.Wrap, 0, 0, 0);
+
+                var textSource = new SimpleTextSource(text, defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var firstLine = formatter.FormatLine(textSource, 0, 50, paragraphProperties);
+
+                Assert.NotNull(firstLine);
+
+                Assert.Equal(2, firstLine.TextRuns.Count);
+
+                var first = firstLine.TextRuns[0] as ShapedTextRun;
+
+                var second = firstLine.TextRuns[1] as ShapedTextRun;
+
+                Assert.NotNull(first);
+
+                Assert.NotNull(second);
+
+                Assert.Equal(" ", first.Text.ToString());
+
+                Assert.Equal("aaa", second.Text.ToString());
+
+                Assert.Equal(1, first.BidiLevel);
+
+                Assert.Equal(2, second.BidiLevel);
+            }
+        }
+
+
+        [Fact]
+        public void Should_Reset_Bidi_Levels_Of_Trailing_Whitespaces_After_TextWrapping_2()
+        {
+            using (Start())
+            {
+                const string text = "אאא בבב";
+
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+
+                var paragraphProperties = new GenericTextParagraphProperties(FlowDirection.LeftToRight, TextAlignment.Left, true,
+                                                                             true, defaultProperties, TextWrapping.Wrap, 0, 0, 0);
+
+                var textSource = new SimpleTextSource(text, defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var firstLine = formatter.FormatLine(textSource, 0, 40, paragraphProperties);
+
+                Assert.NotNull(firstLine);
+
+                Assert.Equal(2, firstLine.TextRuns.Count);
+
+                var first = firstLine.TextRuns[0] as ShapedTextRun;
+
+                var second = firstLine.TextRuns[1] as ShapedTextRun;
+
+                Assert.NotNull(first);
+
+                Assert.NotNull(second);
+
+                Assert.Equal("אאא", first.Text.ToString());
+
+                Assert.Equal(" ", second.Text.ToString());
+
+                Assert.Equal(1, first.BidiLevel);
+
+                Assert.Equal(0, second.BidiLevel);
+            }
+        }
+
+        [Fact]
         public void Should_Format_TextRuns_With_TextRunStyles()
         {
             using (Start())
