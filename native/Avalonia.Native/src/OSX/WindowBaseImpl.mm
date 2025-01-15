@@ -143,6 +143,19 @@ HRESULT WindowBaseImpl::Hide() {
 
     @autoreleasepool {
         if (Window != nullptr) {
+            
+            // If window is hidden without ending attached sheet first, it will stuck in "order out" state,
+            // and block any new sheets from being attached.
+            // Additionaly, we don't know if user would define any custom panels, so we only end/close file dialog sheets.
+            auto attachedSheet = Window.attachedSheet;
+            if (attachedSheet
+                && ([attachedSheet isKindOfClass: [NSOpenPanel class]]
+                    || [attachedSheet isKindOfClass: [NSSavePanel class]]))
+            {
+                [Window endSheet:attachedSheet];
+                [attachedSheet close];
+            }
+
             auto frame = [Window frame];
 
             AvnPoint point;
