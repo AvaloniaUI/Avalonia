@@ -5,11 +5,12 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using Avalonia.Platform;
 using Avalonia.Threading;
+using Avalonia.X11.Dispatching;
 using static Avalonia.X11.XLib;
 
 namespace Avalonia.X11
 {
-    internal unsafe class X11PlatformThreading : IControlledDispatcherImpl
+    internal unsafe class X11PlatformThreading : IControlledDispatcherImpl, IX11PlatformDispatcher
     {
         private readonly AvaloniaX11Platform _platform;
         private Thread _mainThread = Thread.CurrentThread;
@@ -185,8 +186,8 @@ namespace Avalonia.X11
 
         public bool CurrentThreadIsLoopThread => Thread.CurrentThread == _mainThread;
         
-        public event Action Signaled;
-        public event Action Timer;
+        public event Action? Signaled;
+        public event Action? Timer;
 
         public void UpdateTimer(long? dueTimeInMs)
         {
@@ -200,5 +201,6 @@ namespace Avalonia.X11
         public bool CanQueryPendingInput => true;
 
         public bool HasPendingInput => _platform.EventGrouperDispatchQueue.HasJobs || _x11Events.IsPending;
+        public X11EventDispatcher EventDispatcher => _x11Events;
     }
 }

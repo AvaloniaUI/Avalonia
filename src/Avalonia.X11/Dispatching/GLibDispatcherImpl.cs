@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,7 +11,8 @@ namespace Avalonia.X11.Dispatching;
 
 internal class GlibDispatcherImpl : 
     IDispatcherImplWithExplicitBackgroundProcessing,
-    IControlledDispatcherImpl
+    IControlledDispatcherImpl,
+    IX11PlatformDispatcher
 {
     /*
         GLib priorities and Avalonia priorities are a bit different. Avalonia follows the WPF model when there
@@ -309,5 +309,6 @@ internal class GlibDispatcherImpl :
             }
         }
     }
-    
+
+    public X11EventDispatcher EventDispatcher => _x11Events;
 }

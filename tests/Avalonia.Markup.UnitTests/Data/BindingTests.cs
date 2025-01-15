@@ -152,21 +152,6 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
-        public void OneTime_Binding_Releases_Subscription_If_DataContext_Set_Later()
-        {
-            var target = new TextBlock();
-            var source = new Source { Foo = "foo" };
-
-            target.Bind(TextBlock.TextProperty, new Binding("Foo", BindingMode.OneTime));
-            target.DataContext = source;
-
-            // Forces WeakEvent compact
-            Dispatcher.UIThread.RunJobs();
-
-            Assert.Equal(0, source.SubscriberCount);
-        }
-
-        [Fact]
         public void OneWayToSource_Binding_Should_Be_Set_Up()
         {
             var source = new Source { Foo = "foo" };

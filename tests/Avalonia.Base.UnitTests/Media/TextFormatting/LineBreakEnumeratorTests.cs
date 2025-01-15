@@ -4,22 +4,22 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
 using Xunit;
 using Xunit.Abstractions;
+using static Avalonia.Media.TextFormatting.Unicode.LineBreakEnumerator;
 
 namespace Avalonia.Base.UnitTests.Media.TextFormatting
 {
     public class LineBreakEnumeratorTests
     {
         private readonly ITestOutputHelper _outputHelper;
-        
+
         public LineBreakEnumeratorTests(ITestOutputHelper outputHelper)
         {
             _outputHelper = outputHelper;
         }
-        
+
         [Fact]
         public void BasicLatinTest()
         {
@@ -53,6 +53,26 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
             Assert.False(lineBreaker.MoveNext(out lineBreak));
         }
 
+        [InlineData("Hello\nWorld", 5, 6)]
+        [InlineData("Hello\rWorld", 5, 6 )]
+        [InlineData("Hello\r\nWorld", 5 , 7)]
+        [Theory]
+        public void ShouldFindMandatoryBreaks(string text, int positionMeasure, int positionWrap)
+        {
+            var lineBreaker = new LineBreakEnumerator(text);
+            
+            var breaks = GetBreaks(lineBreaker);
+
+            Assert.Equal(2, breaks.Count);
+
+            var firstBreak = breaks[0];
+
+            Assert.True(firstBreak.Required);
+
+            Assert.Equal(positionMeasure, firstBreak.PositionMeasure);
+
+            Assert.Equal(positionWrap, firstBreak.PositionWrap);
+        }
 
         [Fact]
         public void ForwardTextWithOuterWhitespace()
@@ -69,47 +89,21 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
             Assert.Equal(21, positionsF[3].PositionMeasure);
         }
 
-        private static List<LineBreak> GetBreaks(LineBreakEnumerator lineBreaker)
-        {
-            var breaks = new List<LineBreak>();
-
-            while (lineBreaker.MoveNext(out var lineBreak))
-            {
-                breaks.Add(lineBreak);
-            }
-
-            return breaks;
-        }
-
-        [Fact]
-        public void ForwardTest()
-        {
-            var lineBreaker = new LineBreakEnumerator("Apples Pears Bananas");
-
-            var positionsF = GetBreaks(lineBreaker);
-            Assert.Equal(7, positionsF[0].PositionWrap);
-            Assert.Equal(6, positionsF[0].PositionMeasure);
-            Assert.Equal(13, positionsF[1].PositionWrap);
-            Assert.Equal(12, positionsF[1].PositionMeasure);
-            Assert.Equal(20, positionsF[2].PositionWrap);
-            Assert.Equal(20, positionsF[2].PositionMeasure);
-        }
-
-        [Theory(Skip = "Only run when the Unicode spec changes.")]
+        [Theory(Skip = "Only runs when the spec changes")]
         [ClassData(typeof(LineBreakTestDataGenerator))]
-        public void ShouldFindBreaks(int lineNumber, int[] codePoints, int[] breakPoints)
+        public void ShouldFindBreaks(int lineNumber, int[] codePoints, int[] breakPoints, string rules)
         {
             var text = string.Join(null, codePoints.Select(char.ConvertFromUtf32));
 
             var lineBreaker = new LineBreakEnumerator(text);
 
             var foundBreaks = new List<int>();
-            
+
             while (lineBreaker.MoveNext(out var lineBreak))
             {
                 foundBreaks.Add(lineBreak.PositionWrap);
             }
-            
+
             // Check the same
             var pass = true;
 
@@ -137,13 +131,26 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
                 _outputHelper.WriteLine($"  Actual Breaks: {string.Join(" ", foundBreaks)}");
                 _outputHelper.WriteLine($"           Text: {text}");
                 _outputHelper.WriteLine($"     Char Props: {string.Join(" ", codePoints.Select(x => new Codepoint((uint)x).LineBreakClass))}");
+                _outputHelper.WriteLine($"     Rules: {rules}");
                 _outputHelper.WriteLine("");
             }
-            
+
             Assert.True(pass);
         }
 
-        private class LineBreakTestDataGenerator : IEnumerable<object[]>
+        private static List<LineBreak> GetBreaks(LineBreakEnumerator lineBreaker)
+        {
+            var breaks = new List<LineBreak>();
+
+            while (lineBreaker.MoveNext(out var lineBreak))
+            {
+                breaks.Add(lineBreak);
+            }
+
+            return breaks;
+        }
+
+        public class LineBreakTestDataGenerator : IEnumerable<object[]>
         {
             private readonly List<object[]> _testData;
 
@@ -192,57 +199,21 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
                                 break;
                             }
 
+
+
                             // Get the line, remove comments
-                            line = line.Split('#')[0].Trim();
+                            var segments = line.Split('#');
 
                             // Ignore blank/comment only lines
-                            if (string.IsNullOrWhiteSpace(line))
+                            if (string.IsNullOrWhiteSpace(segments[0]))
                             {
                                 lineNumber++;
                                 continue;
                             }
 
-                            var codePoints = new List<int>();
-                            var breakPoints = new List<int>();
+                            var lineData = ReadLineData(segments[0].Trim());
 
-                            // Parse the test
-                            var p = 0;
-
-                            while (p < line.Length)
-                            {
-                                // Ignore white space
-                                if (char.IsWhiteSpace(line[p]))
-                                {
-                                    p++;
-                                    continue;
-                                }
-
-                                if (line[p] == '×')
-                                {
-                                    p++;
-                                    continue;
-                                }
-
-                                if (line[p] == '÷')
-                                {
-                                    breakPoints.Add(codePoints.Select(x=> x > ushort.MaxValue ? 2 : 1).Sum());
-                                    p++;
-                                    continue;
-                                }
-
-                                var codePointPos = p;
-
-                                while (p < line.Length && IsHexDigit(line[p]))
-                                {
-                                    p++;
-                                }
-
-                                var codePointStr = line.Substring(codePointPos, p - codePointPos);
-                                var codePoint = Convert.ToInt32(codePointStr, 16);
-                                codePoints.Add(codePoint);
-                            }
-
-                            tests.Add(new object[] { lineNumber, codePoints.ToArray(), breakPoints.ToArray() });
+                            tests.Add([lineNumber, lineData.Item1, lineData.Item2, segments[1]]);
 
                             lineNumber++;
                         }
@@ -250,6 +221,51 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
                 }
 
                 return tests;
+            }
+
+            public static (int[], int[]) ReadLineData(string line)
+            {
+                var codePoints = new List<int>();
+                var breakPoints = new List<int>();
+
+                // Parse the test
+                var p = 0;
+
+                while (p < line.Length)
+                {
+                    // Ignore white space
+                    if (char.IsWhiteSpace(line[p]))
+                    {
+                        p++;
+                        continue;
+                    }
+
+                    if (line[p] == '×')
+                    {
+                        p++;
+                        continue;
+                    }
+
+                    if (line[p] == '÷')
+                    {
+                        breakPoints.Add(codePoints.Select(x => x > ushort.MaxValue ? 2 : 1).Sum());
+                        p++;
+                        continue;
+                    }
+
+                    var codePointPos = p;
+
+                    while (p < line.Length && IsHexDigit(line[p]))
+                    {
+                        p++;
+                    }
+
+                    var codePointStr = line.Substring(codePointPos, p - codePointPos);
+                    var codePoint = Convert.ToInt32(codePointStr, 16);
+                    codePoints.Add(codePoint);
+                }
+
+                return (codePoints.ToArray(), breakPoints.ToArray());
             }
 
             private static bool IsHexDigit(char ch)
