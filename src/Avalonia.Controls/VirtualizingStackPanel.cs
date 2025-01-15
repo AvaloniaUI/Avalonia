@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
-using System.Drawing;
 using System.Linq;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Utils;
@@ -163,6 +162,9 @@ namespace Avalonia.Controls
                 _realizedElements?.ValidateStartU(Orientation);
                 _realizedElements ??= new();
                 _measureElements ??= new();
+
+                // We need to set the lastEstimatedElementSizeU before calling CalculateDesiredSize()
+                _ = EstimateElementSizeU();
 
                 // We handle horizontal and vertical layouts here so X and Y are abstracted to:
                 // - Horizontal layouts: U = horizontal, V = vertical
