@@ -918,7 +918,7 @@ namespace Avalonia.Controls.Presenters
                 else
                 {
                     _horizontalSnapPoints = new List<double>();
-                    _horizontalSnapPoint = scrollSnapPointsInfo.GetRegularSnapPoints(Layout.Orientation.Vertical, VerticalSnapPointsAlignment, out _horizontalSnapPointOffset);
+                    _horizontalSnapPoint = scrollSnapPointsInfo.GetRegularSnapPoints(Layout.Orientation.Horizontal, HorizontalSnapPointsAlignment, out _horizontalSnapPointOffset);
                 }
             }
             else
