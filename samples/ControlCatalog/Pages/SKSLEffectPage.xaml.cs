@@ -45,9 +45,9 @@ namespace ControlCatalog.Pages
             var rectangle2 = this.FindControl<Rectangle>("Rectangle2")!;
             try
             {
-                var effect = new NoiseSKSLEffect();
+                var effect = new DissolveSKSLEffect();
                 effect.Progress = 0.5f;
-                effect[!NoiseSKSLEffect.ResolutionProperty] = new Binding
+                effect[!DissolveSKSLEffect.ResolutionProperty] = new Binding
                 {
                     Source = rectangle2,
                     Path = "Bounds.Size",
@@ -64,7 +64,7 @@ namespace ControlCatalog.Pages
                         {
                             Setters =
                             {
-                                new Setter(NoiseSKSLEffect.ProgressProperty, 0f),
+                                new Setter(DissolveSKSLEffect.ProgressProperty, 0f),
                             },
                             KeyTime = TimeSpan.FromSeconds(0),
                         },
@@ -72,7 +72,7 @@ namespace ControlCatalog.Pages
                         {
                             Setters =
                             {
-                                new Setter(NoiseSKSLEffect.ProgressProperty, 1f),
+                                new Setter(DissolveSKSLEffect.ProgressProperty, 1f),
                             },
                             KeyTime = TimeSpan.FromSeconds(2),
                         }
@@ -108,9 +108,9 @@ namespace ControlCatalog.Pages
         }
     }
 
-    public class NoiseSKSLEffect : SKSLEffect
+    public class DissolveSKSLEffect : SKSLEffect
     {
-        public static readonly StyledProperty<float> ProgressProperty = AvaloniaProperty.Register<NoiseSKSLEffect, float>(nameof(Progress), default);
+        public static readonly StyledProperty<float> ProgressProperty = AvaloniaProperty.Register<DissolveSKSLEffect, float>(nameof(Progress), default);
 
         public float Progress
         {
@@ -118,7 +118,7 @@ namespace ControlCatalog.Pages
             set => SetValue(ProgressProperty, value);
         }
 
-        public static readonly StyledProperty<Size> ResolutionProperty = AvaloniaProperty.Register<NoiseSKSLEffect, Size>(nameof(Resolution), default);
+        public static readonly StyledProperty<Size> ResolutionProperty = AvaloniaProperty.Register<DissolveSKSLEffect, Size>(nameof(Resolution), default);
 
         public Size Resolution
         {
@@ -126,7 +126,7 @@ namespace ControlCatalog.Pages
             set => SetValue(ResolutionProperty, value);
         }
 
-        public NoiseSKSLEffect() : base(CreateShaderBuilder())
+        public DissolveSKSLEffect() : base(CreateShaderBuilder())
         {
             ChildShaderNames = ["src"];
             Inputs = [null];
