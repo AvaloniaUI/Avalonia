@@ -6,6 +6,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using System.Xml.Linq;
 
 namespace Avalonia.Controls
 {
@@ -14,7 +15,7 @@ namespace Avalonia.Controls
     /// </summary>
     [TemplatePart("PART_HorizontalScrollBar", typeof(ScrollBar))]
     [TemplatePart("PART_VerticalScrollBar",   typeof(ScrollBar))]
-    public class ScrollViewer : ContentControl, IScrollable, IScrollAnchorProvider, IInternalScroller
+    public class ScrollViewer : ContentControl, IScrollable, IScrollAnchorProvider, IInternalScroller, IScrollSnapPointAnchorProvider
     {
         /// <summary>
         /// Defines the <see cref="BringIntoViewOnFocusChange "/> property.
@@ -872,6 +873,16 @@ namespace Avalonia.Controls
                 _oldOffset = Offset;
                 _oldViewport = Viewport;
             }
+        }
+
+        public void RegisterScrollSnapPointsInfoSource(IScrollSnapPointsInfo scrollSnapPointsInfo)
+        {
+            (Presenter as IScrollSnapPointAnchorProvider)?.RegisterScrollSnapPointsInfoSource(scrollSnapPointsInfo);
+        }
+
+        public void UnregisterScrollSnapPointsInfoSource(IScrollSnapPointsInfo scrollSnapPointsInfo)
+        {
+            (Presenter as IScrollSnapPointAnchorProvider)?.UnregisterScrollSnapPointsInfoSource(scrollSnapPointsInfo);
         }
     }
 }

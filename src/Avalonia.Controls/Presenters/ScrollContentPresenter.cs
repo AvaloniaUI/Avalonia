@@ -8,13 +8,14 @@ using Avalonia.Utilities;
 using Avalonia.VisualTree;
 using System.Linq;
 using Avalonia.Layout;
+using System.Xml.Linq;
 
 namespace Avalonia.Controls.Presenters
 {
     /// <summary>
     /// Presents a scrolling view of content inside a <see cref="ScrollViewer"/>.
     /// </summary>
-    public class ScrollContentPresenter : ContentPresenter, IScrollable, IScrollAnchorProvider
+    public class ScrollContentPresenter : ContentPresenter, IScrollable, IScrollAnchorProvider, IScrollSnapPointAnchorProvider
     {
         private const double EdgeDetectionTolerance = 0.1;
 
@@ -87,6 +88,7 @@ namespace Avalonia.Controls.Presenters
         private Dictionary<int, Vector>? _activeLogicalGestureScrolls;
         private Dictionary<int, Vector>? _scrollGestureSnapPoints;
         private HashSet<Control>? _anchorCandidates;
+        private HashSet<IScrollSnapPointsInfo>? _scrollSnapPointsCandidates;
         private Control? _anchorElement;
         private Rect _anchorElementBounds;
         private bool _isAnchorElementDirty;
@@ -606,7 +608,7 @@ namespace Avalonia.Controls.Presenters
             if (Content is ItemsControl itemsControl)
                 scrollable = itemsControl.Presenter?.Panel;
 
-            if (scrollable is not IScrollSnapPointsInfo)
+            if (scrollable is not IScrollSnapPointsInfo && _scrollSnapPointsCandidates?.Any() == false)
                 return;
 
             if (_scrollGestureSnapPoints == null)
@@ -921,6 +923,58 @@ namespace Avalonia.Controls.Presenters
                     _horizontalSnapPoint = scrollSnapPointsInfo.GetRegularSnapPoints(Layout.Orientation.Horizontal, HorizontalSnapPointsAlignment, out _horizontalSnapPointOffset);
                 }
             }
+            else if (_scrollSnapPointsCandidates is { } candidates && candidates.Count > 0 && this.GetVisualChildren().FirstOrDefault() is { } contentVisual)
+            {
+                var sources = candidates.Select(x => x as Visual).ToList();
+                var horizontalSnapPoints = new List<double>();
+                var verticalSnapPoints = new List<double>();
+
+                _horizontalSnapPoints = horizontalSnapPoints;
+                _verticalSnapPoints = verticalSnapPoints;
+                foreach (var source in sources)
+                {
+                    if (source is not IScrollSnapPointsInfo info)
+                        continue;
+                    var transform = source.TransformToVisual(contentVisual) ?? Matrix.Identity;
+
+                    var visualEdge = transform.Transform(source.Bounds.BottomRight);
+                    if (!info.AreVerticalSnapPointsRegular)
+                    {
+                        verticalSnapPoints.AddRange(info.GetIrregularSnapPoints(Layout.Orientation.Vertical, VerticalSnapPointsAlignment).Select(y => transform.Transform(new Point(0, y)).Y).ToList());
+                    }
+                    else
+                    {
+                        var interval = info.GetRegularSnapPoints(Layout.Orientation.Vertical, VerticalSnapPointsAlignment, out var offset);
+                        if (interval == 0)
+                            continue;
+                        var snapPoint = transform.Transform(new Point(0, offset)).Y;
+                        while (snapPoint < visualEdge.Y)
+                        {
+                            verticalSnapPoints.Add(snapPoint);
+                            offset += interval;
+                            snapPoint = transform.Transform(new Point(0, offset)).Y;
+                        }
+                    }
+
+                    if (!info.AreHorizontalSnapPointsRegular)
+                    {
+                        horizontalSnapPoints.AddRange(info.GetIrregularSnapPoints(Layout.Orientation.Horizontal, HorizontalSnapPointsAlignment).Select(x => transform.Transform(new Point(x, 0)).X).ToList());
+                    }
+                    else
+                    {
+                        var interval = info.GetRegularSnapPoints(Layout.Orientation.Horizontal, HorizontalSnapPointsAlignment, out var offset);
+                        if (interval == 0)
+                            continue;
+                        var snapPoint = transform.Transform(new Point(offset, 0)).X;
+                        while (snapPoint < visualEdge.Y)
+                        {
+                            horizontalSnapPoints.Add(snapPoint);
+                            offset += interval;
+                            snapPoint = transform.Transform(new Point(offset, 0)).X;
+                        }
+                    }
+                }
+            }
             else
             {
                 _horizontalSnapPoints = new List<double>();
@@ -932,7 +986,7 @@ namespace Avalonia.Controls.Presenters
         {
             var scrollable = GetScrollSnapPointsInfo(Content);
 
-            if (scrollable is null || (VerticalSnapPointsType == SnapPointsType.None && HorizontalSnapPointsType == SnapPointsType.None))
+            if ((scrollable is null && _scrollSnapPointsCandidates?.Count == 0) || (VerticalSnapPointsType == SnapPointsType.None && HorizontalSnapPointsType == SnapPointsType.None))
                 return offset;
 
             var diff = GetAlignmentDiff();
@@ -1064,6 +1118,35 @@ namespace Avalonia.Controls.Presenters
             }
 
             return snapPointsInfo;
+        }
+
+        public void RegisterScrollSnapPointsInfoSource(IScrollSnapPointsInfo scrollSnapPointsInfo)
+        {
+            if(scrollSnapPointsInfo is not Visual visual)
+            {
+                throw new InvalidOperationException("ScrollSnapPointsInfo must be a visual");
+            }
+
+            if (!this.IsVisualAncestorOf(visual))
+            {
+                throw new InvalidOperationException(
+                    "A ScrollSnapPointsInfo source must be a visual descendent of the ScrollContentPresenter.");
+            }
+
+            _scrollSnapPointsCandidates ??= new();
+            _scrollSnapPointsCandidates.Add(scrollSnapPointsInfo);
+            scrollSnapPointsInfo.HorizontalSnapPointsChanged += ScrollSnapPointsInfoSnapPointsChanged;
+            scrollSnapPointsInfo.VerticalSnapPointsChanged += ScrollSnapPointsInfoSnapPointsChanged;
+        }
+
+        public void UnregisterScrollSnapPointsInfoSource(IScrollSnapPointsInfo scrollSnapPointsInfo)
+        {
+            if (_scrollSnapPointsCandidates?.Contains(scrollSnapPointsInfo) == true)
+            {
+                scrollSnapPointsInfo.HorizontalSnapPointsChanged -= ScrollSnapPointsInfoSnapPointsChanged;
+                scrollSnapPointsInfo.VerticalSnapPointsChanged -= ScrollSnapPointsInfoSnapPointsChanged;
+                _scrollSnapPointsCandidates?.Remove(scrollSnapPointsInfo);
+            }
         }
     }
 }
