@@ -170,7 +170,30 @@ namespace Avalonia.Media.TextFormatting
                 return this;
             }
 
-            var collapsedRuns = collapsingProperties.Collapse(this);
+            TextRun[] textRuns;
+
+            if (_indexedTextRuns == null || _indexedTextRuns.Count == 0)
+            {
+                textRuns = _textRuns;
+            }
+            else
+            {
+                textRuns = new TextRun[_indexedTextRuns.Count];
+
+                for (var i = 0; i < textRuns.Length; i++)
+                {
+                    var textRun = _indexedTextRuns[i].TextRun;
+
+                    if (textRun is ShapedTextRun { IsReversed: true } shapedTextRun)
+                    {
+                        shapedTextRun.Reverse();
+                    }
+
+                    textRuns[i] = textRun!;
+                }
+            }
+
+            var collapsedRuns = collapsingProperties.Collapse(textRuns);
 
             if (collapsedRuns is null)
             {

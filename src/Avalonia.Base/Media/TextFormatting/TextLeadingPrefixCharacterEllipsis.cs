@@ -47,18 +47,16 @@ namespace Avalonia.Media.TextFormatting
         public override FlowDirection FlowDirection { get; }
 
         /// <inheritdoc />
-        public override TextRun[]? Collapse(TextLine textLine)
+        public override TextRun[]? Collapse(TextRun[] textRuns)
         {
-            var textRuns = textLine.TextRuns;
-
-            if (textRuns.Count == 0)
+            if (textRuns.Length == 0)
             {
                 return null;
             }
 
             var runIndex = 0;
             var currentWidth = 0.0;
-            var shapedSymbol = TextFormatterImpl.CreateSymbol(Symbol, FlowDirection.LeftToRight);
+            var shapedSymbol = TextFormatter.CreateSymbol(Symbol, FlowDirection);
 
             if (Width < shapedSymbol.GlyphRun.Bounds.Width)
             {
@@ -69,7 +67,7 @@ namespace Avalonia.Media.TextFormatting
             // Prefix length run | Ellipsis symbol | Post split run growing from the end |
             var availableWidth = Width - shapedSymbol.Size.Width;
 
-            while (runIndex < textRuns.Count)
+            while (runIndex < textRuns.Length)
             {
                 var currentRun = textRuns[runIndex];
 

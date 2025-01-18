@@ -30,9 +30,9 @@
         public override FlowDirection FlowDirection { get; }
 
         /// <inheritdoc />
-        public override TextRun[]? Collapse(TextLine textLine)
+        public override TextRun[]? Collapse(TextRun[] textRuns)
         {
-            return TextEllipsisHelper.Collapse(textLine, this, false);
+            return TextEllipsisHelper.Collapse(textRuns, this, false);
         }
     }
 }
