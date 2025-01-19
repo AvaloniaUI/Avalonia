@@ -78,8 +78,8 @@ html, body {
 }
 
 .pageHeader {
-    background-color: #171b2d;
-    color: #FFFFFF;
+    background-color: rgb(26, 144, 255);
+    color: white;
 }
 
 .is-active-quickLink {
@@ -391,7 +391,7 @@ sup.citation a:link a:visited a:active {
 
         .toc-menu a:hover {
             background-color: whitesmoke;
-            color: #363636;
+            color: rgb(26, 144, 255);
         }
 
         .toc-menu a.is-active {

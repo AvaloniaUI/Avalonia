@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Topics>
-  <Topic id="9d5e6c91-4ff0-4044-afb7-cd85faad1986" visible="True" isDefault="true" isSelected="true" title="Welcome to the [TODO: Add project name]">
+  <Topic id="9d5e6c91-4ff0-4044-afb7-cd85faad1986" visible="True" isDefault="true" isSelected="true" apiParentMode="InsertAfter" title="Welcome to the Avalonia API-Reference" tocTitle="Avalonia API-Reference" linkText="Avalonia API-Reference">
     <HelpKeywords>
       <HelpKeyword index="K" term="Welcome" />
     </HelpKeywords>
