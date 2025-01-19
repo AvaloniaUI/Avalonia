@@ -21,21 +21,24 @@
         public abstract FlowDirection FlowDirection { get; }
 
         /// <summary>
-        /// Collapses given text runs.
+        /// Collapses given text line.
         /// </summary>
-        /// <param name="textRuns">The text runs to collapse.</param>
-        public abstract TextRun[]? Collapse(TextRun[] textRuns);
+        /// <param name="textLine">Text line to collapse.</param>
+        public abstract TextRun[]? Collapse(TextLine textLine);
 
         /// <summary>
         /// Creates a list of runs for given collapsed length which includes specified symbol at the end.
         /// </summary>
-        /// <param name="textRuns">The text runs</param>
+        /// <param name="textLine">The text line.</param>
         /// <param name="collapsedLength">The collapsed length.</param>
+        /// <param name="flowDirection">The flow direction.</param>
         /// <param name="shapedSymbol">The symbol.</param>
         /// <returns>List of remaining runs.</returns>
-        public static TextRun[] CreateCollapsedRuns(TextRun[] textRuns, int collapsedLength, TextRun shapedSymbol)
+        public static TextRun[] CreateCollapsedRuns(TextLine textLine, int collapsedLength, FlowDirection flowDirection, TextRun shapedSymbol)
         {
-            if (collapsedLength <= 0 || textRuns.Length == 0)
+            var textRuns = textLine is TextLineImpl line ? line.LogicalTextRuns : textLine.TextRuns;
+
+            if (collapsedLength <= 0 || textRuns.Count == 0)
             {
                 return [shapedSymbol];
             }
