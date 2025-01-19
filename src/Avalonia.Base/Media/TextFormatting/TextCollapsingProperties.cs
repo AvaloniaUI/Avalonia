@@ -26,6 +26,7 @@
         /// <param name="textLine">Text line to collapse.</param>
         public abstract TextRun[]? Collapse(TextLine textLine);
 
+        // TODO12: Remove the flowDirection parameter
         /// <summary>
         /// Creates a list of runs for given collapsed length which includes specified symbol at the end.
         /// </summary>
