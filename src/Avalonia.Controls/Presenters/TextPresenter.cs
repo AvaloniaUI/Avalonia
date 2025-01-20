@@ -635,21 +635,25 @@ namespace Avalonia.Controls.Presenters
         protected override Size ArrangeOverride(Size finalSize)
         {
             var textWidth = Math.Ceiling(TextLayout.MinTextWidth);
+            
+            var finalWidth = finalSize.Width;
 
             if (finalSize.Width < textWidth)
             {
                 finalSize = finalSize.WithWidth(textWidth);
             }
 
-            if (MathUtilities.AreClose(_constraint.Width, finalSize.Width))
+            // Check if the '_constraint' has changed since the last measure,
+            // if so recalculate the TextLayout according to the new size
+            // NOTE: It is important to check this against the actual final size
+            // (excluding the trailing whitespace) to avoid TextLayout overflow.
+            if (MathUtilities.AreClose(_constraint.Width, finalWidth) == false)
             {
-                return finalSize;
+                _constraint = new Size(Math.Ceiling(finalWidth), double.PositiveInfinity);
+
+                _textLayout?.Dispose();
+                _textLayout = null;
             }
-
-            _constraint = new Size(Math.Ceiling(finalSize.Width), double.PositiveInfinity);
-
-            _textLayout?.Dispose();
-            _textLayout = null;
 
             return finalSize;
         }

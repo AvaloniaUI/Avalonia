@@ -908,6 +908,11 @@ namespace Avalonia.Media.TextFormatting
                     textLineBreak = null;
                 }
 
+                if (postSplitRuns?.Count > 0)
+                {
+                    ResetTrailingWhitespaceBidiLevels(preSplitRuns, paragraphProperties.FlowDirection, objectPool);
+                }
+
                 var textLine = new TextLineImpl(preSplitRuns.ToArray(), firstTextSourceIndex, measuredLength,
                     paragraphWidth, paragraphProperties, resolvedFlowDirection,
                     textLineBreak);
@@ -920,6 +925,86 @@ namespace Avalonia.Media.TextFormatting
             {
                 objectPool.TextRunLists.Return(ref preSplitRuns);
                 objectPool.TextRunLists.Return(ref postSplitRuns);
+            }
+        }
+
+        private static void ResetTrailingWhitespaceBidiLevels(RentedList<TextRun> lineTextRuns, FlowDirection paragraphFlowDirection, FormattingObjectPool objectPool)
+        {
+            if (lineTextRuns.Count == 0)
+            {
+                return;
+            }
+
+            var lastTextRunIndex = lineTextRuns.Count - 1;
+
+            var lastTextRun = lineTextRuns[lastTextRunIndex];
+
+            if (lastTextRun is not ShapedTextRun shapedText)
+            {
+                return;
+            }
+
+            var paragraphEmbeddingLevel = (sbyte)paragraphFlowDirection;
+
+            if (shapedText.BidiLevel == paragraphEmbeddingLevel)
+            {
+                return;
+            }
+
+            var textSpan = shapedText.Text.Span;
+
+            if (textSpan.IsEmpty)
+            {
+                return;
+            }
+
+            var whitespaceCharactersCount = 0;
+
+            for (var i = textSpan.Length - 1; i >= 0; i--)
+            {
+                var isWhitespace = Codepoint.ReadAt(textSpan, i, out _).IsWhiteSpace;
+
+                if (isWhitespace)
+                {
+                    whitespaceCharactersCount++;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            if (whitespaceCharactersCount == 0)
+            {
+                return;
+            }
+
+            var splitIndex = shapedText.Length - whitespaceCharactersCount;
+
+            var (textRuns, trailingWhitespaceRuns) = SplitTextRuns([shapedText], splitIndex, objectPool);
+
+            try
+            {
+                if (trailingWhitespaceRuns != null)
+                {
+                    for (var i = 0; i < trailingWhitespaceRuns.Count; i++)
+                    {
+                        if (trailingWhitespaceRuns[i] is ShapedTextRun shapedTextRun)
+                        {
+                            shapedTextRun.ShapedBuffer.ResetBidiLevel(paragraphEmbeddingLevel);
+                        }
+                    }
+
+                    lineTextRuns.RemoveAt(lastTextRunIndex);
+
+                    lineTextRuns.AddRange(textRuns);
+                    lineTextRuns.AddRange(trailingWhitespaceRuns);
+                }
+            }
+            finally
+            {
+                objectPool.TextRunLists.Return(ref textRuns);
+                objectPool.TextRunLists.Return(ref trailingWhitespaceRuns);
             }
         }
 

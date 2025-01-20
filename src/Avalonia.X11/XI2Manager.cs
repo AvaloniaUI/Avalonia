@@ -1,12 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Runtime.InteropServices;
-
 using Avalonia.Input;
 using Avalonia.Input.Raw;
-using Avalonia.Platform;
 using static Avalonia.X11.XLib;
 
 namespace Avalonia.X11
@@ -37,8 +33,8 @@ namespace Avalonia.X11
         private class DeviceInfo
         {
             public int Id { get; }
-            public XIValuatorClassInfo[] Valuators { get; private set; }
-            public XIScrollClassInfo[] Scrollers { get; private set; } 
+            public XIValuatorClassInfo[] Valuators { get; private set; } = [];
+            public XIScrollClassInfo[] Scrollers { get; private set; } = [];
             public DeviceInfo(XIDeviceInfo info)
             {
                 Id = info.Deviceid;
@@ -146,48 +142,47 @@ namespace Avalonia.X11
             public XIValuatorClassInfo? TouchMinorXIValuatorClassInfo { get; private set; }
         }
         
-        private PointerDeviceInfo _pointerDevice;
-        private AvaloniaX11Platform _platform;
+        private readonly PointerDeviceInfo _pointerDevice;
+        private readonly AvaloniaX11Platform _platform;
 
-        public bool Init(AvaloniaX11Platform platform)
+        private XI2Manager(AvaloniaX11Platform platform, PointerDeviceInfo pointerDevice)
         {
             _platform = platform;
             _x11 = platform.Info;
-            _multitouch = platform.Options?.EnableMultiTouch ?? true;
-            var devices = (XIDeviceInfo*) XIQueryDevice(_x11.Display,
+            _multitouch = platform.Options.EnableMultiTouch ?? true;
+            _pointerDevice = pointerDevice;
+        }
+
+        public static XI2Manager? TryCreate(AvaloniaX11Platform platform)
+        {
+            var x11 = platform.Info;
+
+            var devices = (XIDeviceInfo*) XIQueryDevice(x11.Display,
                 (int)XiPredefinedDeviceId.XIAllMasterDevices, out int num);
+
+            PointerDeviceInfo? pointerDevice = null;
+
             for (var c = 0; c < num; c++)
             {
                 if (devices[c].Use == XiDeviceType.XIMasterPointer)
                 {
-                    _pointerDevice = new PointerDeviceInfo(devices[c], _x11);
+                    pointerDevice = new PointerDeviceInfo(devices[c], x11);
                     break;
                 }
             }
-            if(_pointerDevice == null)
-                return false;
-            /*
-            int mask = 0;
-            
-            XISetMask(ref mask, XiEventType.XI_DeviceChanged);
-            var emask = new XIEventMask
-            {
-                Mask = &mask,
-                Deviceid = _pointerDevice.Id,
-                MaskLen = XiEventMaskLen
-            };
-            
-            if (XISelectEvents(_x11.Display, _x11.RootWindow, &emask, 1) != Status.Success)
-                return false;
-            return true;
-            */
-            return XiSelectEvents(_x11.Display, _x11.RootWindow, new Dictionary<int, List<XiEventType>>
-            {
-                [_pointerDevice.Id] = new List<XiEventType>
-                {
-                    XiEventType.XI_DeviceChanged
-                }
-            }) == Status.Success;
+
+            if (pointerDevice is null)
+                return null;
+
+            var status = XiSelectEvents(
+                x11.Display,
+                x11.RootWindow,
+                new Dictionary<int, List<XiEventType>> { [pointerDevice.Id] = [XiEventType.XI_DeviceChanged] });
+
+            if (status != Status.Success)
+                return null;
+
+            return new XI2Manager(platform, pointerDevice);
         }
 
         public XEventMask AddWindow(IntPtr xid, IXI2Client window)
@@ -309,11 +304,9 @@ namespace Avalonia.X11
                     {
                         var pixelPoint = new PixelPoint((int)ev.RootPosition.X, (int)ev.RootPosition.Y);
                         var screen = _platform.Screens.ScreenFromPoint(pixelPoint);
-                        var screenBoundsFromPoint = screen?.Bounds;
-                        Debug.Assert(screenBoundsFromPoint != null);
-                        if (screenBoundsFromPoint != null)
+                        if (screen?.Bounds is { } screenBoundsFromPoint)
                         {
-                            screenBounds = screenBoundsFromPoint.Value;
+                            screenBounds = screenBoundsFromPoint;
 
                             // As https://www.kernel.org/doc/html/latest/input/multi-touch-protocol.html says, using `screenBounds.Width` is not accurate enough.
                             touchMajor = (touchMajorValue - touchMajorXIValuatorClassInfo.Min) /
