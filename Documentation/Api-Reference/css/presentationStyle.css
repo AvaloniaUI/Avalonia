@@ -80,6 +80,7 @@ html, body {
 .pageHeader {
     background-color: rgb(26, 144, 255);
     color: white;
+	font-size: x-large;
 }
 
 .is-active-quickLink {
@@ -108,6 +109,11 @@ div.is-centered {
     display: flex;
     justify-content: center;
     padding: 0 0.75em;
+}
+
+/* define link color  */
+a {
+	color: rgb(26, 144, 255);
 }
 
 /* Underline content, footer, and breadcrumb anchors when hovered */
@@ -396,6 +402,7 @@ sup.citation a:link a:visited a:active {
 
         .toc-menu a.is-active {
             font-weight: bold;
+			color: rgb(26, 144, 255);
         }
 
     .toc-menu li ul {
@@ -422,4 +429,10 @@ sup.citation a:link a:visited a:active {
 
 .toc-resizable-content {
     flex-grow: 1;
+}
+
+/* Remove bottom margin from search input, otherwise it is rendered too heigh. */
+form#SearchForm 
+{
+    margin-bottom:0;
 }

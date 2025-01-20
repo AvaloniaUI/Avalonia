@@ -57,34 +57,34 @@
     <SaveComponentCacheCapacity>100</SaveComponentCacheCapacity>
     <DocumentationSources>
       <DocumentationSource sourceFile="..\..\src\Avalonia.Controls\Avalonia.Controls.csproj" TargetFramework="$(AvsCurrentTargetFramework)" />
-      <!-- <DocumentationSource sourceFile="..\..\packages\Avalonia\Avalonia.csproj" TargetFramework="$(AvsCurrentTargetFramework)" /> -->
-      <!-- <DocumentationSource sourceFile="..\..\src\Android\Avalonia.Android\Avalonia.Android.csproj" TargetFramework="$(AvsCurrentAndroidTargetFramework)" /> -->
-      <!-- <DocumentationSource sourceFile="..\..\src\Avalonia.Base\Avalonia.Base.csproj" TargetFramework="$(AvsCurrentTargetFramework)" /> -->
-      <!-- <DocumentationSource sourceFile="..\..\src\Avalonia.Controls.ColorPicker\Avalonia.Controls.ColorPicker.csproj" TargetFramework="$(AvsCurrentTargetFramework)" /> -->
-      <!-- <DocumentationSource sourceFile="..\..\src\Avalonia.Controls.DataGrid\Avalonia.Controls.DataGrid.csproj" TargetFramework="$(AvsCurrentTargetFramework)" /> -->
-      <!-- <DocumentationSource sourceFile="..\..\src\Avalonia.Controls\Avalonia.Controls.csproj" TargetFramework="$(AvsCurrentTargetFramework)" /> -->
-      <!-- <DocumentationSource sourceFile="..\..\src\Avalonia.DesignerSupport\Avalonia.DesignerSupport.csproj" TargetFramework="$(AvsCurrentTargetFramework)" /> -->
-      <!-- <DocumentationSource sourceFile="..\..\src\Avalonia.Desktop\Avalonia.Desktop.csproj" TargetFramework="$(AvsCurrentTargetFramework)" /> -->
-      <!-- <DocumentationSource sourceFile="..\..\src\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj" TargetFramework="$(AvsCurrentTargetFramework)" /> -->
-      <!-- <DocumentationSource sourceFile="..\..\src\Avalonia.Dialogs\Avalonia.Dialogs.csproj" TargetFramework="$(AvsCurrentTargetFramework)" /> -->
-      <!-- <DocumentationSource sourceFile="..\..\src\Avalonia.Fonts.Inter\Avalonia.Fonts.Inter.csproj" TargetFramework="$(AvsCurrentTargetFramework)" /> -->
-      <!-- <DocumentationSource sourceFile="..\..\src\Avalonia.FreeDesktop\Avalonia.FreeDesktop.csproj" TargetFramework="$(AvsCurrentTargetFramework)" /> -->
-      <!-- <DocumentationSource sourceFile="..\..\src\Avalonia.Metal\Avalonia.Metal.csproj" TargetFramework="$(AvsCurrentTargetFramework)" /> -->
-      <!-- <DocumentationSource sourceFile="..\..\src\Avalonia.Native\Avalonia.Native.csproj" TargetFramework="$(AvsCurrentTargetFramework)" /> -->
-      <!-- <DocumentationSource sourceFile="..\..\src\Avalonia.OpenGL\Avalonia.OpenGL.csproj" TargetFramework="$(AvsCurrentTargetFramework)" /> -->
-      <!-- <DocumentationSource sourceFile="..\..\src\Avalonia.ReactiveUI\Avalonia.ReactiveUI.csproj" TargetFramework="$(AvsCurrentTargetFramework)" /> -->
-      <!-- <DocumentationSource sourceFile="..\..\src\Avalonia.Remote.Protocol\Avalonia.Remote.Protocol.csproj" TargetFramework="$(AvsCurrentTargetFramework)" /> -->
-      <!-- <DocumentationSource sourceFile="..\..\src\Avalonia.Themes.Fluent\Avalonia.Themes.Fluent.csproj" TargetFramework="$(AvsCurrentTargetFramework)" /> -->
-      <!-- <DocumentationSource sourceFile="..\..\src\Avalonia.Themes.Simple\Avalonia.Themes.Simple.csproj" TargetFramework="$(AvsCurrentTargetFramework)" /> -->
-      <!-- <DocumentationSource sourceFile="..\..\src\Avalonia.Vulkan\Avalonia.Vulkan.csproj" TargetFramework="$(AvsCurrentTargetFramework)" /> -->
-      <!-- <DocumentationSource sourceFile="..\..\src\Avalonia.X11\Avalonia.X11.csproj" TargetFramework="$(AvsCurrentTargetFramework)" /> -->
-      <!-- <DocumentationSource sourceFile="..\..\src\Browser\Avalonia.Browser.Blazor\Avalonia.Browser.Blazor.csproj" TargetFramework="$(AvsCurrentBrowserTargetFramework)" /> -->
-      <!-- <DocumentationSource sourceFile="..\..\src\iOS\Avalonia.iOS\Avalonia.iOS.csproj" TargetFramework="$(AvsCurrentIOSTargetFramework)" /> -->
-      <!-- <DocumentationSource sourceFile="..\..\src\Linux\Avalonia.LinuxFramebuffer\Avalonia.LinuxFramebuffer.csproj" TargetFramework="$(AvsCurrentTargetFramework)" /> -->
-      <!-- <DocumentationSource sourceFile="..\..\src\Skia\Avalonia.Skia\Avalonia.Skia.csproj" TargetFramework="$(AvsCurrentTargetFramework)" /> -->
-      <!-- <DocumentationSource sourceFile="..\..\src\Windows\Avalonia.Direct2D1\Avalonia.Direct2D1.csproj" TargetFramework="$(AvsCurrentTargetFramework)" /> -->
-      <!-- <DocumentationSource sourceFile="..\..\src\Windows\Avalonia.Win32.Automation\Avalonia.Win32.Automation.csproj" TargetFramework="$(AvsCurrentTargetFramework)" /> -->
-      <!-- <DocumentationSource sourceFile="..\..\src\Windows\Avalonia.Win32\Avalonia.Win32.csproj" TargetFramework="$(AvsCurrentTargetFramework)" /> -->
+      <DocumentationSource sourceFile="..\..\packages\Avalonia\Avalonia.csproj" TargetFramework="$(AvsCurrentTargetFramework)" />
+      <DocumentationSource sourceFile="..\..\src\Android\Avalonia.Android\Avalonia.Android.csproj" TargetFramework="$(AvsCurrentAndroidTargetFramework)" />
+      <DocumentationSource sourceFile="..\..\src\Avalonia.Base\Avalonia.Base.csproj" TargetFramework="$(AvsCurrentTargetFramework)" />
+      <DocumentationSource sourceFile="..\..\src\Avalonia.Controls.ColorPicker\Avalonia.Controls.ColorPicker.csproj" TargetFramework="$(AvsCurrentTargetFramework)" />
+      <DocumentationSource sourceFile="..\..\src\Avalonia.Controls.DataGrid\Avalonia.Controls.DataGrid.csproj" TargetFramework="$(AvsCurrentTargetFramework)" />
+      <DocumentationSource sourceFile="..\..\src\Avalonia.Controls\Avalonia.Controls.csproj" TargetFramework="$(AvsCurrentTargetFramework)" />
+      <DocumentationSource sourceFile="..\..\src\Avalonia.DesignerSupport\Avalonia.DesignerSupport.csproj" TargetFramework="$(AvsCurrentTargetFramework)" />
+      <DocumentationSource sourceFile="..\..\src\Avalonia.Desktop\Avalonia.Desktop.csproj" TargetFramework="$(AvsCurrentTargetFramework)" />
+      <DocumentationSource sourceFile="..\..\src\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj" TargetFramework="$(AvsCurrentTargetFramework)" />
+      <DocumentationSource sourceFile="..\..\src\Avalonia.Dialogs\Avalonia.Dialogs.csproj" TargetFramework="$(AvsCurrentTargetFramework)" />
+      <DocumentationSource sourceFile="..\..\src\Avalonia.Fonts.Inter\Avalonia.Fonts.Inter.csproj" TargetFramework="$(AvsCurrentTargetFramework)" />
+      <DocumentationSource sourceFile="..\..\src\Avalonia.FreeDesktop\Avalonia.FreeDesktop.csproj" TargetFramework="$(AvsCurrentTargetFramework)" />
+      <DocumentationSource sourceFile="..\..\src\Avalonia.Metal\Avalonia.Metal.csproj" TargetFramework="$(AvsCurrentTargetFramework)" />
+      <DocumentationSource sourceFile="..\..\src\Avalonia.Native\Avalonia.Native.csproj" TargetFramework="$(AvsCurrentTargetFramework)" />
+      <DocumentationSource sourceFile="..\..\src\Avalonia.OpenGL\Avalonia.OpenGL.csproj" TargetFramework="$(AvsCurrentTargetFramework)" />
+      <DocumentationSource sourceFile="..\..\src\Avalonia.ReactiveUI\Avalonia.ReactiveUI.csproj" TargetFramework="$(AvsCurrentTargetFramework)" />
+      <DocumentationSource sourceFile="..\..\src\Avalonia.Remote.Protocol\Avalonia.Remote.Protocol.csproj" TargetFramework="$(AvsCurrentTargetFramework)" />
+      <DocumentationSource sourceFile="..\..\src\Avalonia.Themes.Fluent\Avalonia.Themes.Fluent.csproj" TargetFramework="$(AvsCurrentTargetFramework)" />
+      <DocumentationSource sourceFile="..\..\src\Avalonia.Themes.Simple\Avalonia.Themes.Simple.csproj" TargetFramework="$(AvsCurrentTargetFramework)" />
+      <DocumentationSource sourceFile="..\..\src\Avalonia.Vulkan\Avalonia.Vulkan.csproj" TargetFramework="$(AvsCurrentTargetFramework)" />
+      <DocumentationSource sourceFile="..\..\src\Avalonia.X11\Avalonia.X11.csproj" TargetFramework="$(AvsCurrentTargetFramework)" />
+      <DocumentationSource sourceFile="..\..\src\Browser\Avalonia.Browser.Blazor\Avalonia.Browser.Blazor.csproj" TargetFramework="$(AvsCurrentBrowserTargetFramework)" />
+      <DocumentationSource sourceFile="..\..\src\iOS\Avalonia.iOS\Avalonia.iOS.csproj" TargetFramework="$(AvsCurrentIOSTargetFramework)" />
+      <DocumentationSource sourceFile="..\..\src\Linux\Avalonia.LinuxFramebuffer\Avalonia.LinuxFramebuffer.csproj" TargetFramework="$(AvsCurrentTargetFramework)" />
+      <DocumentationSource sourceFile="..\..\src\Skia\Avalonia.Skia\Avalonia.Skia.csproj" TargetFramework="$(AvsCurrentTargetFramework)" />
+      <DocumentationSource sourceFile="..\..\src\Windows\Avalonia.Direct2D1\Avalonia.Direct2D1.csproj" TargetFramework="$(AvsCurrentTargetFramework)" />
+      <DocumentationSource sourceFile="..\..\src\Windows\Avalonia.Win32.Automation\Avalonia.Win32.Automation.csproj" TargetFramework="$(AvsCurrentTargetFramework)" />
+      <DocumentationSource sourceFile="..\..\src\Windows\Avalonia.Win32\Avalonia.Win32.csproj" TargetFramework="$(AvsCurrentTargetFramework)" />
       <!-- TODO: These two don't work as intended.  -->
       <!-- <DocumentationSource sourceFile="..\..\src\Windows\Avalonia.Win32.Interoperability\Avalonia.Win32.Interoperability.csproj" TargetFramework="$(AvsCurrentTargetFramework)" /> -->
       <!-- <DocumentationSource sourceFile="..\..\src\Tizen\Avalonia.Tizen\Avalonia.Tizen.csproj" TargetFramework="$(AvsCurrentTizenTargetFramework)" /> -->
@@ -109,7 +109,42 @@
     <SourceCodeBasePath>
     </SourceCodeBasePath>
     <WarnOnMissingSourceContext>False</WarnOnMissingSourceContext>
-    <PlugInConfigurations />
+    <PlugInConfigurations>
+      <PlugInConfig id="Output Deployment" enabled="True">
+        <configuration deleteAfterDeploy="false" verboseLogging="false">
+  <deploymentLocation id="help1x" location="">
+    <userCredentials useDefault="true" userName="" password="" />
+    <proxyCredentials useProxy="false" proxyServer="">
+      <userCredentials useDefault="true" userName="" password="" />
+    </proxyCredentials>
+  </deploymentLocation>
+  <deploymentLocation id="helpViewer" location="" renameMSHA="false">
+    <userCredentials useDefault="true" userName="" password="" />
+    <proxyCredentials useProxy="false" proxyServer="">
+      <userCredentials useDefault="true" userName="" password="" />
+    </proxyCredentials>
+  </deploymentLocation>
+  <deploymentLocation id="website" location="..\..\..\Ava-ApiTests\Help\">
+    <userCredentials useDefault="true" userName="" password="" />
+    <proxyCredentials useProxy="false" proxyServer="">
+      <userCredentials useDefault="true" userName="" password="" />
+    </proxyCredentials>
+  </deploymentLocation>
+  <deploymentLocation id="openXml" location="">
+    <userCredentials useDefault="true" userName="" password="" />
+    <proxyCredentials useProxy="false" proxyServer="">
+      <userCredentials useDefault="true" userName="" password="" />
+    </proxyCredentials>
+  </deploymentLocation>
+  <deploymentLocation id="markdown" location="">
+    <userCredentials useDefault="true" userName="" password="" />
+    <proxyCredentials useProxy="false" proxyServer="">
+      <userCredentials useDefault="true" userName="" password="" />
+    </proxyCredentials>
+  </deploymentLocation>
+</configuration>
+      </PlugInConfig>
+    </PlugInConfigurations>
   </PropertyGroup>
   <!-- There are no properties for these groups.  AnyCPU needs to appear in order for Visual Studio to perform
 			 the build.  The others are optional common platform types that may appear. -->
@@ -137,7 +172,7 @@
     <Folder Include="media" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="icons\favicon.ico" />
+    <Content Include="icons\favicon.ico" />
     <None Include="Content\VersionHistory\v1.0.0.0.aml" />
     <None Include="Content\VersionHistory\VersionHistory.aml" />
     <None Include="Content\Welcome.aml" />
@@ -155,10 +190,10 @@
     <PackageReference Include="EWSoftware.SHFB.NET" Version="9.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="icons\avalonia_logo_box_white.png">
+    <Content Include="icons\avalonia_logo_box_white.png">
       <ImageId>avalonia_logo_box_white</ImageId>
       <AlternateText>avalonia logo box white</AlternateText>
-    </Image>
+    </Content>
   </ItemGroup>
   <!-- Import the common build targets during NuGet restore because before the packages are being installed, $(SHFBROOT) is not set yet -->
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition="'$(MSBuildRestoreSessionId)' != ''" />
