@@ -961,10 +961,13 @@ namespace Avalonia.Skia
                                 // Adjust the origin point for radiusX/Y transformation by reversing it
                                 originPoint = originPoint.WithY(
                                     (originPoint.Y - centerPoint.Y) * radiusX / radiusY + centerPoint.Y);
+
                             var origin = originPoint.ToSKPoint();
                             var endOffset = 0.0;
+
                             // and then reverse the reference point of the stops
                             var reversedStops = new float[stopOffsets.Length];
+
                             for (var i = 0; i < stopOffsets.Length; i++)
                             {
                                 var offset = stopOffsets[i];
@@ -978,14 +981,17 @@ namespace Avalonia.Skia
                                     reversedStops[i] = Math.Abs(1 - offset);
                                 }
                             }
+
                             var start = origin;
                             var radiusStart = 0f;
                             var end = center;
                             var radiusEnd = (float)radiusX;
                             var reverse = MathUtilities.AreClose(1, endOffset);
+
                             if (reverse)
                             {
                                 (start, radiusStart, end, radiusEnd) = (end, radiusEnd, start, radiusStart);
+
                                 // reverse the order of the stops to match D2D
                                 var reversedColors = new SKColor[stopColors.Length];
                                 Array.Copy(stopColors, reversedColors, stopColors.Length);
@@ -993,6 +999,7 @@ namespace Avalonia.Skia
                                 stopColors = reversedColors;
                                 stopOffsets = reversedStops;
                             }
+
                             // compose with a background colour of the final stop to match D2D's behaviour of filling with the final color
                             using (var shader = SKShader.CreateCompose(
                                        SKShader.CreateColor(stopColors[0]),
