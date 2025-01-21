@@ -41,7 +41,7 @@
       <Argument Key="FlagsEnumValueFormat" Value="IntegerValue" />
       <Argument Key="FlagsEnumSeparatorSize" Value="0" />
       <Argument Key="IncludeIntegerEnumSeparators" Value="true" />
-      <Argument Key="BaseSourceCodeUrl" Value="https://github.com/AvaloniaUI/Avalonia/tree/master/src" />
+      <Argument Key="BaseSourceCodeUrl" Value="https://github.com/AvaloniaUI/Avalonia/tree/master/src/" />
       <Argument Key="RequestExampleUrl" Value="https://github.com/AvaloniaUI/Avalonia/discussions/new" />
       <Argument Key="ShowParametersOnAllMethods" Value="True" />
       <Argument Key="AlwaysShowTopLevelAutoOutline" Value="False" />
@@ -94,7 +94,7 @@
     <NamingMethod>MemberName</NamingMethod>
     <ContentPlacement>AboveNamespaces</ContentPlacement>
     <RootNamespaceContainer>False</RootNamespaceContainer>
-    <NamespaceGrouping>True</NamespaceGrouping>
+    <NamespaceGrouping>False</NamespaceGrouping>
     <MaximumGroupParts>2</MaximumGroupParts>
     <Preliminary>False</Preliminary>
     <SdkLinkTarget>Blank</SdkLinkTarget>
@@ -106,11 +106,10 @@
     <CopyrightHref>https://avaloniaui.net</CopyrightHref>
     <CopyrightText>&amp;#169%3b AvaloniaUI O&amp;#220%3b</CopyrightText>
     <ComponentPath>$(MSBuildThisFileDirectory)..\tools\</ComponentPath>
-    <SourceCodeBasePath>
-    </SourceCodeBasePath>
+    <SourceCodeBasePath>..\..\src</SourceCodeBasePath>
     <WarnOnMissingSourceContext>False</WarnOnMissingSourceContext>
     <PlugInConfigurations>
-      <PlugInConfig id="Output Deployment" enabled="False">
+      <PlugInConfig id="Output Deployment" enabled="True">
         <configuration deleteAfterDeploy="false" verboseLogging="false">
           <deploymentLocation id="help1x" location="">
             <userCredentials useDefault="true" userName="" password="" />
@@ -124,7 +123,7 @@
               <userCredentials useDefault="true" userName="" password="" />
             </proxyCredentials>
           </deploymentLocation>
-          <deploymentLocation id="website" location="..\..\..\Ava-ApiTests\Help\">
+          <deploymentLocation id="website" location="..\..\..\Ava-ApiTests\docs\">
             <userCredentials useDefault="true" userName="" password="" />
             <proxyCredentials useProxy="false" proxyServer="">
               <userCredentials useDefault="true" userName="" password="" />
