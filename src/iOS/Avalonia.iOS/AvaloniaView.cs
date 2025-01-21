@@ -91,6 +91,9 @@ namespace Avalonia.iOS
                 }
 #endif
             }
+
+            IsAccessibilityElement = true;
+            AccessibilityContainerType = UIAccessibilityContainerType.SemanticGroup;
         }
 
         [SuppressMessage("Interoperability", "CA1422:Validate platform compatibility")]
