@@ -38,14 +38,6 @@ namespace Avalonia.Controls
                 defaultValue: true);
 
         /// <summary>
-        /// Identifies the Padding dependency property.
-        /// </summary>
-        /// <returns>The identifier for the <see cref="Padding"/> dependency property.</returns>
-        public static readonly StyledProperty<Thickness> PaddingProperty =
-            AvaloniaProperty.Register<DockPanel, Thickness>(
-                nameof(Padding));
-
-        /// <summary>
         /// Identifies the HorizontalSpacing dependency property.
         /// </summary>
         /// <returns>The identifier for the <see cref="HorizontalSpacing"/> dependency property.</returns>
@@ -67,7 +59,7 @@ namespace Avalonia.Controls
         static DockPanel()
         {
             AffectsParentMeasure<DockPanel>(DockProperty);
-            AffectsMeasure<DockPanel>(LastChildFillProperty, PaddingProperty, HorizontalSpacingProperty, VerticalSpacingProperty);
+            AffectsMeasure<DockPanel>(LastChildFillProperty, HorizontalSpacingProperty, VerticalSpacingProperty);
         }
 
         /// <summary>
@@ -98,19 +90,6 @@ namespace Avalonia.Controls
         {
             get => GetValue(LastChildFillProperty);
             set => SetValue(LastChildFillProperty, value);
-        }
-
-        /// <summary>
-        /// Gets or sets the distance between the border and its child object.
-        /// </summary>
-        /// <returns>
-        /// The dimensions of the space between the border and its child as a Thickness value.
-        /// Thickness is a structure that stores dimension values using pixel measures.
-        /// </returns>
-        public Thickness Padding
-        {
-            get => GetValue(PaddingProperty);
-            set => SetValue(PaddingProperty, value);
         }
 
         /// <summary>
@@ -147,8 +126,8 @@ namespace Avalonia.Controls
         {
             var parentWidth = 0.0;
             var parentHeight = 0.0;
-            var accumulatedWidth = Padding.Left + Padding.Right;
-            var accumulatedHeight = Padding.Top + Padding.Bottom;
+            var accumulatedWidth = 0d;
+            var accumulatedHeight = 0d;
 
             var leftSpacing = false;
             var topSpacing = false;
@@ -239,11 +218,7 @@ namespace Avalonia.Controls
             if (Children.Count is 0)
                 return finalSize;
 
-            var currentBounds = new Rect(
-                Padding.Left,
-                Padding.Top,
-                GetPositiveOrZero(finalSize.Width - Padding.Left - Padding.Right),
-                GetPositiveOrZero(finalSize.Height - Padding.Top - Padding.Bottom));
+            var currentBounds = new Rect(finalSize);
             var childrenCount = LastChildFill ? Children.Count - 1 : Children.Count;
 
             for (var index = 0; index < childrenCount; ++index)
