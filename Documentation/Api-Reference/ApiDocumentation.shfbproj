@@ -41,7 +41,7 @@
       <Argument Key="FlagsEnumValueFormat" Value="IntegerValue" />
       <Argument Key="FlagsEnumSeparatorSize" Value="0" />
       <Argument Key="IncludeIntegerEnumSeparators" Value="true" />
-      <Argument Key="BaseSourceCodeUrl" Value="https://github.com/AvaloniaUI/Avalonia/blob/master/" />
+      <Argument Key="BaseSourceCodeUrl" Value="https://github.com/AvaloniaUI/Avalonia/tree/master/src" />
       <Argument Key="RequestExampleUrl" Value="https://github.com/AvaloniaUI/Avalonia/discussions/new" />
       <Argument Key="ShowParametersOnAllMethods" Value="True" />
       <Argument Key="AlwaysShowTopLevelAutoOutline" Value="False" />
@@ -94,7 +94,7 @@
     <NamingMethod>MemberName</NamingMethod>
     <ContentPlacement>AboveNamespaces</ContentPlacement>
     <RootNamespaceContainer>False</RootNamespaceContainer>
-    <NamespaceGrouping>False</NamespaceGrouping>
+    <NamespaceGrouping>True</NamespaceGrouping>
     <MaximumGroupParts>2</MaximumGroupParts>
     <Preliminary>False</Preliminary>
     <SdkLinkTarget>Blank</SdkLinkTarget>
@@ -110,41 +110,42 @@
     </SourceCodeBasePath>
     <WarnOnMissingSourceContext>False</WarnOnMissingSourceContext>
     <PlugInConfigurations>
-      <PlugInConfig id="Output Deployment" enabled="True">
+      <PlugInConfig id="Output Deployment" enabled="False">
         <configuration deleteAfterDeploy="false" verboseLogging="false">
-  <deploymentLocation id="help1x" location="">
-    <userCredentials useDefault="true" userName="" password="" />
-    <proxyCredentials useProxy="false" proxyServer="">
-      <userCredentials useDefault="true" userName="" password="" />
-    </proxyCredentials>
-  </deploymentLocation>
-  <deploymentLocation id="helpViewer" location="" renameMSHA="false">
-    <userCredentials useDefault="true" userName="" password="" />
-    <proxyCredentials useProxy="false" proxyServer="">
-      <userCredentials useDefault="true" userName="" password="" />
-    </proxyCredentials>
-  </deploymentLocation>
-  <deploymentLocation id="website" location="..\..\..\Ava-ApiTests\Help\">
-    <userCredentials useDefault="true" userName="" password="" />
-    <proxyCredentials useProxy="false" proxyServer="">
-      <userCredentials useDefault="true" userName="" password="" />
-    </proxyCredentials>
-  </deploymentLocation>
-  <deploymentLocation id="openXml" location="">
-    <userCredentials useDefault="true" userName="" password="" />
-    <proxyCredentials useProxy="false" proxyServer="">
-      <userCredentials useDefault="true" userName="" password="" />
-    </proxyCredentials>
-  </deploymentLocation>
-  <deploymentLocation id="markdown" location="">
-    <userCredentials useDefault="true" userName="" password="" />
-    <proxyCredentials useProxy="false" proxyServer="">
-      <userCredentials useDefault="true" userName="" password="" />
-    </proxyCredentials>
-  </deploymentLocation>
-</configuration>
+          <deploymentLocation id="help1x" location="">
+            <userCredentials useDefault="true" userName="" password="" />
+            <proxyCredentials useProxy="false" proxyServer="">
+              <userCredentials useDefault="true" userName="" password="" />
+            </proxyCredentials>
+          </deploymentLocation>
+          <deploymentLocation id="helpViewer" location="" renameMSHA="false">
+            <userCredentials useDefault="true" userName="" password="" />
+            <proxyCredentials useProxy="false" proxyServer="">
+              <userCredentials useDefault="true" userName="" password="" />
+            </proxyCredentials>
+          </deploymentLocation>
+          <deploymentLocation id="website" location="..\..\..\Ava-ApiTests\Help\">
+            <userCredentials useDefault="true" userName="" password="" />
+            <proxyCredentials useProxy="false" proxyServer="">
+              <userCredentials useDefault="true" userName="" password="" />
+            </proxyCredentials>
+          </deploymentLocation>
+          <deploymentLocation id="openXml" location="">
+            <userCredentials useDefault="true" userName="" password="" />
+            <proxyCredentials useProxy="false" proxyServer="">
+              <userCredentials useDefault="true" userName="" password="" />
+            </proxyCredentials>
+          </deploymentLocation>
+          <deploymentLocation id="markdown" location="">
+            <userCredentials useDefault="true" userName="" password="" />
+            <proxyCredentials useProxy="false" proxyServer="">
+              <userCredentials useDefault="true" userName="" password="" />
+            </proxyCredentials>
+          </deploymentLocation>
+        </configuration>
       </PlugInConfig>
     </PlugInConfigurations>
+    <MissingTags>AutoDocumentCtors, AutoDocumentDispose</MissingTags>
   </PropertyGroup>
   <!-- There are no properties for these groups.  AnyCPU needs to appear in order for Visual Studio to perform
 			 the build.  The others are optional common platform types that may appear. -->
@@ -172,7 +173,6 @@
     <Folder Include="media" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="icons\favicon.ico" />
     <None Include="Content\VersionHistory\v1.0.0.0.aml" />
     <None Include="Content\VersionHistory\VersionHistory.aml" />
     <None Include="Content\Welcome.aml" />
@@ -181,19 +181,20 @@
     <ContentLayout Include="ContentLayout.content" />
   </ItemGroup>
   <ItemGroup>
-    <!-- <Content Include="icons\*.*" /> -->
-    <!-- <Content Include="css\*.*" /> -->
-    <Content Include="css\presentationStyle.css" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="EWSoftware.SHFB" Version="2024.12.21" />
     <PackageReference Include="EWSoftware.SHFB.NET" Version="9.0.0" />
   </ItemGroup>
+  <!-- Icons -->
   <ItemGroup>
+    <Content Include="icons\favicon.ico" />
     <Content Include="icons\avalonia_logo_box_white.png">
       <ImageId>avalonia_logo_box_white</ImageId>
       <AlternateText>avalonia logo box white</AlternateText>
     </Content>
+  </ItemGroup>
+  <!-- CSS -->
+  <ItemGroup>
+    <Content Include="css\presentationStyle.css" />
   </ItemGroup>
   <!-- Import the common build targets during NuGet restore because before the packages are being installed, $(SHFBROOT) is not set yet -->
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition="'$(MSBuildRestoreSessionId)' != ''" />
