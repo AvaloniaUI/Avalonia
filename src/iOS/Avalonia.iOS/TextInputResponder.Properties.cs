@@ -15,7 +15,7 @@ partial class AvaloniaView
         public UITextAutocorrectionType AutocorrectionType =>
             _view._options == null ?
                 UITextAutocorrectionType.Yes :
-                _view._options.HideSuggestions ?
+                _view._options.ShowSuggestions == false ?
                     UITextAutocorrectionType.No :
                     UITextAutocorrectionType.Yes;
 
@@ -73,7 +73,7 @@ partial class AvaloniaView
         public UITextSpellCheckingType SpellCheckingType =>
             _view._options == null ?
                 UITextSpellCheckingType.Yes :
-                _view._options.HideSuggestions ?
+                _view._options.ShowSuggestions == false ?
                     UITextSpellCheckingType.No :
                     UITextSpellCheckingType.Yes;
 

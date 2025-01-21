@@ -172,7 +172,7 @@ namespace Avalonia.Android.Platform.Input
                 if (options.Multiline)
                     outAttrs.InputType |= InputTypes.TextFlagMultiLine;
 
-                if (outAttrs.InputType is InputTypes.ClassText && options.HideSuggestions)
+                if (outAttrs.InputType is InputTypes.ClassText && options.ShowSuggestions == false)
                     outAttrs.InputType |= InputTypes.TextVariationPassword | InputTypes.TextFlagNoSuggestions;
                     
                 outAttrs.ImeOptions = options.ReturnKeyType switch

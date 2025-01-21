@@ -13,7 +13,7 @@ public class TextInputOptions
             IsSensitive = GetIsSensitive(avaloniaObject),
             Lowercase = GetLowercase(avaloniaObject),
             Uppercase = GetUppercase(avaloniaObject),
-            HideSuggestions = GetHideSuggestions(avaloniaObject),
+            ShowSuggestions = GetShowSuggestions(avaloniaObject),
         };
 
         return result;
@@ -256,35 +256,35 @@ public class TextInputOptions
     public bool IsSensitive { get; set; }
     
     /// <summary>
-    /// Defines the <see cref="HideSuggestions"/> property.
+    /// Defines the <see cref="ShowSuggestions"/> property.
     /// </summary>
-    public static readonly AttachedProperty<bool> HideSuggestionsProperty =
-        AvaloniaProperty.RegisterAttached<TextInputOptions, StyledElement, bool>(
-            "HideSuggestions",
+    public static readonly AttachedProperty<bool?> ShowSuggestionsProperty =
+        AvaloniaProperty.RegisterAttached<TextInputOptions, StyledElement, bool?>(
+            "ShowSuggestions",
             inherits: true);
     
     /// <summary>
-    /// Sets the value of the attached <see cref="HideSuggestionsProperty"/> on a control.
+    /// Sets the value of the attached <see cref="ShowSuggestionsProperty"/> on a control.
     /// </summary>
     /// <param name="avaloniaObject">The control.</param>
     /// <param name="value">The property value to set.</param>
-    public static void SetHideSuggestions(StyledElement avaloniaObject, bool value)
+    public static void SetShowSuggestions(StyledElement avaloniaObject, bool? value)
     {
-        avaloniaObject.SetValue(HideSuggestionsProperty, value);
+        avaloniaObject.SetValue(ShowSuggestionsProperty, value);
     }
 
     /// <summary>
-    /// Gets the value of the attached <see cref="HideSuggestionsProperty"/>.
+    /// Gets the value of the attached <see cref="ShowSuggestionsProperty"/>.
     /// </summary>
     /// <param name="avaloniaObject">The target.</param>
-    /// <returns>true if HideSuggestions</returns>
-    public static bool GetHideSuggestions(StyledElement avaloniaObject)
+    /// <returns>true if ShowSuggestions</returns>
+    public static bool? GetShowSuggestions(StyledElement avaloniaObject)
     {
-        return avaloniaObject.GetValue(HideSuggestionsProperty);
+        return avaloniaObject.GetValue(ShowSuggestionsProperty);
     }
     
     /// <summary>
     /// Hide virtual keyboard suggestions
     /// </summary>
-    public bool HideSuggestions { get; set; }
+    public bool? ShowSuggestions { get; set; }
 }
