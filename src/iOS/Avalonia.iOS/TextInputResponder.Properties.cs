@@ -13,11 +13,9 @@ partial class AvaloniaView
 
         [Export("autocorrectionType")]
         public UITextAutocorrectionType AutocorrectionType =>
-            _view._options == null ?
-                UITextAutocorrectionType.Yes :
-                _view._options.ShowSuggestions == false ?
-                    UITextAutocorrectionType.No :
-                    UITextAutocorrectionType.Yes;
+            _view._options?.ShowSuggestions == false ?
+                UITextAutocorrectionType.No :
+                UITextAutocorrectionType.Yes;
 
         [Export("keyboardType")]
         public UIKeyboardType KeyboardType =>
@@ -70,12 +68,10 @@ partial class AvaloniaView
             || (_view._options?.IsSensitive ?? false);
 
         [Export("spellCheckingType")]
-        public UITextSpellCheckingType SpellCheckingType =>
-            _view._options == null ?
-                UITextSpellCheckingType.Yes :
-                _view._options.ShowSuggestions == false ?
-                    UITextSpellCheckingType.No :
-                    UITextSpellCheckingType.Yes;
+        public UITextSpellCheckingType SpellCheckingType => 
+            _view._options?.ShowSuggestions == false ?
+                UITextSpellCheckingType.No :
+                UITextSpellCheckingType.Yes;
 
         [Export("textContentType")] public NSString TextContentType { get; set; } = new NSString("text/plain");
 

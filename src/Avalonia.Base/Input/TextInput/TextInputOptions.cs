@@ -284,7 +284,7 @@ public class TextInputOptions
     }
     
     /// <summary>
-    /// Hide virtual keyboard suggestions
+    /// Show virtual keyboard suggestions
     /// </summary>
     public bool? ShowSuggestions { get; set; }
 }
