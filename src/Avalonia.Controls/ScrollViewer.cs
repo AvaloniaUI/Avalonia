@@ -15,7 +15,7 @@ namespace Avalonia.Controls
     /// </summary>
     [TemplatePart("PART_HorizontalScrollBar", typeof(ScrollBar))]
     [TemplatePart("PART_VerticalScrollBar",   typeof(ScrollBar))]
-    public class ScrollViewer : ContentControl, IScrollable, IScrollAnchorProvider, IInternalScroller, IScrollSnapPointAnchorProvider
+    public class ScrollViewer : ContentControl, IScrollable, IScrollAnchorProvider, IInternalScroller, IScrollSnapPointsSourceHost
     {
         /// <summary>
         /// Defines the <see cref="BringIntoViewOnFocusChange "/> property.
@@ -877,12 +877,12 @@ namespace Avalonia.Controls
 
         public void RegisterScrollSnapPointsInfoSource(IScrollSnapPointsInfo scrollSnapPointsInfo)
         {
-            (Presenter as IScrollSnapPointAnchorProvider)?.RegisterScrollSnapPointsInfoSource(scrollSnapPointsInfo);
+            (Presenter as IScrollSnapPointsSourceHost)?.RegisterScrollSnapPointsInfoSource(scrollSnapPointsInfo);
         }
 
         public void UnregisterScrollSnapPointsInfoSource(IScrollSnapPointsInfo scrollSnapPointsInfo)
         {
-            (Presenter as IScrollSnapPointAnchorProvider)?.UnregisterScrollSnapPointsInfoSource(scrollSnapPointsInfo);
+            (Presenter as IScrollSnapPointsSourceHost)?.UnregisterScrollSnapPointsInfoSource(scrollSnapPointsInfo);
         }
     }
 }

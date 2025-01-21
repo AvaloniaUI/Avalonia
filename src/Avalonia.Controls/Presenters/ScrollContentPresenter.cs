@@ -15,7 +15,7 @@ namespace Avalonia.Controls.Presenters
     /// <summary>
     /// Presents a scrolling view of content inside a <see cref="ScrollViewer"/>.
     /// </summary>
-    public class ScrollContentPresenter : ContentPresenter, IScrollable, IScrollAnchorProvider, IScrollSnapPointAnchorProvider
+    public class ScrollContentPresenter : ContentPresenter, IScrollable, IScrollAnchorProvider, IScrollSnapPointsSourceHost
     {
         private const double EdgeDetectionTolerance = 0.1;
 

@@ -73,7 +73,7 @@ namespace Avalonia.Controls
         private int _focusedIndex = -1;
         private Control? _realizingElement;
         private int _realizingIndex = -1;
-        private IScrollSnapPointAnchorProvider? _attachedSnapPointProvider;
+        private IScrollSnapPointsSourceHost? _attachedSnapPointProvider;
 
         public VirtualizingStackPanel()
         {
@@ -248,7 +248,7 @@ namespace Avalonia.Controls
         {
             base.OnAttachedToVisualTree(e);
             _scrollAnchorProvider = this.FindAncestorOfType<IScrollAnchorProvider>();
-            if (this.FindAncestorOfType<IScrollSnapPointAnchorProvider>() is { } scrollSnapPointsAnchor)
+            if (this.FindAncestorOfType<IScrollSnapPointsSourceHost>() is { } scrollSnapPointsAnchor)
             {
                 _attachedSnapPointProvider = scrollSnapPointsAnchor;
                 scrollSnapPointsAnchor.RegisterScrollSnapPointsInfoSource(this);
