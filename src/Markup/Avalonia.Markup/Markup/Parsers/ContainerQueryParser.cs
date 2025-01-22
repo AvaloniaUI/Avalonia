@@ -24,17 +24,17 @@ namespace Avalonia.Markup.Parsers
         /// <param name="s">The string.</param>
         /// <returns>The parsed selector.</returns>
         [RequiresUnreferencedCode(TrimmingMessages.SelectorsParseRequiresUnreferencedCodeMessage)]
-        public StyleQuery? Parse(string s)
+        public Query? Parse(string s)
         {
             var syntax = ContainerQueryGrammar.Parse(s);
             return Create(syntax);
         }
 
         [RequiresUnreferencedCode(TrimmingMessages.SelectorsParseRequiresUnreferencedCodeMessage)]
-        private StyleQuery? Create(IEnumerable<ISyntax> syntax)
+        private Query? Create(IEnumerable<ISyntax> syntax)
         {
-            var result = default(StyleQuery);
-            var results = default(List<StyleQuery>);
+            var result = default(Query);
+            var results = default(List<Query>);
 
             foreach (var i in syntax)
             {
@@ -50,7 +50,7 @@ namespace Avalonia.Markup.Parsers
                     case ContainerQueryGrammar.AndSyntax and:
                         if (results == null)
                         {
-                            results = new List<StyleQuery>();
+                            results = new List<Query>();
                         }
 
                         results.Add(result ?? throw new NotSupportedException("Invalid query!"));

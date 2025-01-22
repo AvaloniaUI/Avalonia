@@ -326,7 +326,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             UriKind = cfg.TypeSystem.GetType("System.UriKind");
             UriConstructor = Uri.GetConstructor(new List<IXamlType>() { cfg.WellKnownTypes.String, UriKind });
             Style = cfg.TypeSystem.GetType("Avalonia.Styling.Style");
-            Container = cfg.TypeSystem.GetType("Avalonia.Styling.Container");
+            Container = cfg.TypeSystem.GetType("Avalonia.Styling.ContainerQuery");
             ControlTheme = cfg.TypeSystem.GetType("Avalonia.Styling.ControlTheme");
             ControlTemplate = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.Templates.ControlTemplate");
             IReadOnlyListOfT = cfg.TypeSystem.GetType("System.Collections.Generic.IReadOnlyList`1");

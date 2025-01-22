@@ -169,9 +169,9 @@ namespace Avalonia.Styling
             SelectorMatch match = SelectorMatch.NeverThisInstance;
             bool containerMatchesSometimes = false;
             // Match any parent Container query
-            if (parent is Container container)
+            if (parent is ContainerQuery container)
             {
-                match = container.Query?.Evaluate(control, container.Parent, subscribe, container.ContainerName) ?? SelectorMatch.NeverThisInstance;
+                match = container.Query?.Evaluate(control, container.Parent, subscribe, container.Name) ?? SelectorMatch.NeverThisInstance;
 
                 if (!match.IsMatch)
                     return match.Result;

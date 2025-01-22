@@ -46,7 +46,7 @@ namespace Avalonia.Utilities
             }
         }
 
-        public static ReadOnlySpan<char> ParseNumber(this ref CharacterReader r)
+        internal static ReadOnlySpan<char> ParseNumber(this ref CharacterReader r)
         {
             return r.TakeWhile(c => IsValidNumberChar(c));
         }

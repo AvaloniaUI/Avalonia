@@ -1,31 +1,90 @@
-﻿using System;
-using System.Linq;
-using Avalonia.VisualTree;
+using System;
+using Avalonia.Controls;
+using Avalonia.PropertyStore;
 
 namespace Avalonia.Styling
 {
-    public abstract class ContainerQuery<T> : StyleQuery
+    /// <summary>
+    /// Defines a container.
+    /// </summary>
+    public class ContainerQuery
+        : StyleBase
     {
-        private readonly StyleQuery? _previous;
-        private T _argument;
+        private Query? _query;
+        private string? _name;
 
-        public ContainerQuery(StyleQuery? previous, T argument)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ContainerQuery"/> class.
+        /// </summary>
+        public ContainerQuery()
         {
-            _previous = previous;
-            _argument = argument;
         }
 
-        protected T Argument => _argument;
-
-        internal override bool IsCombinator => false;
-
-        public override string ToString(Container? owner)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ContainerQuery"/> class.
+        /// </summary>
+        /// <param name="query">The container selector.</param>
+        /// <param name="containerName"></param>
+        public ContainerQuery(Func<Query?, Query> query, string? containerName = null)
         {
-            throw new NotImplementedException();
+            Query = query(null);
+            _name = containerName;
         }
 
-        private protected override StyleQuery? MovePrevious() => _previous;
+        /// <summary>
+        /// Gets or sets the container's query.
+        /// </summary>
+        public Query? Query 
+        {
+            get => _query;
+            set => _query = value;
+        }
 
-        private protected override StyleQuery? MovePreviousOrParent() => _previous;
+        /// <summary>
+        /// Gets or sets the container's name.
+        /// </summary>
+        public string? Name
+        {
+            get => _name;
+            set => _name = value;
+        }
+
+        /// <summary>
+        /// Returns a string representation of the container.
+        /// </summary>
+        /// <returns>A string representation of the container.</returns>
+        public override string ToString() => Query?.ToString(this) ?? "ContainerQuery";
+
+        internal override void SetParent(StyleBase? parent)
+        {
+            if (parent is ControlTheme)
+                base.SetParent(parent);
+            else
+                throw new InvalidOperationException("Container cannot be added as a nested style.");
+        }
+
+        internal SelectorMatchResult TryAttach(StyledElement target, object? host, FrameType type)
+        {
+            _ = target ?? throw new ArgumentNullException(nameof(target));
+
+            var result = SelectorMatchResult.NeverThisType;
+
+            if (HasChildren)
+            {
+                var match = Query?.Match(target, Parent, true, Name) ??
+                    (target == host ?
+                        SelectorMatch.AlwaysThisInstance :
+                        SelectorMatch.NeverThisInstance);
+
+                if (match.IsMatch)
+                {
+                    Attach(target, match.Activator, type, true);
+                }
+
+                result = match.Result;
+            }
+
+            return result;
+        }
     }
 }

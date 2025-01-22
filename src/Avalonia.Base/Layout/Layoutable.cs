@@ -549,13 +549,13 @@ namespace Avalonia.Layout
                     availableSize.Deflate(margin));
 
                 var isContainer = false;
-                ContainerType containerType = ContainerType.Normal;
+                ContainerSizing containerSizing = ContainerSizing.Normal;
 
-                if(this is IContainer container && container.ContainerType != ContainerType.Normal)
+                if (Container.GetQueryProvider(this) is { } queryProvider && Container.GetSizing(this) is { } sizing && sizing != ContainerSizing.Normal)
                 {
                     isContainer = true;
-                    containerType = container.ContainerType;
-                    container.QueryProvider.SetSize(constrainedSize.Width, constrainedSize.Height, containerType);
+                    containerSizing = sizing;
+                    queryProvider.SetSize(constrainedSize.Width, constrainedSize.Height, containerSizing);
                 }
 
                 var measured = MeasureOverride(constrainedSize);
@@ -564,17 +564,17 @@ namespace Avalonia.Layout
 
                 if (isContainer)
                 {
-                    switch (containerType)
+                    switch (containerSizing)
                     {
-                        case ContainerType.Width:
+                        case ContainerSizing.Width:
                             width = double.IsInfinity(constrainedSize.Width) ? measured.Width : constrainedSize.Width;
                             height = measured.Height;
                             break;
-                        case ContainerType.Height:
+                        case ContainerSizing.Height:
                             width = measured.Width;
                             height = double.IsInfinity(constrainedSize.Height) ? measured.Height : constrainedSize.Height;
                             break;
-                        case ContainerType.WidthAndHeight:
+                        case ContainerSizing.WidthAndHeight:
                             width = double.IsInfinity(constrainedSize.Width) ? measured.Width : constrainedSize.Width;
                             height = double.IsInfinity(constrainedSize.Height) ? measured.Height : constrainedSize.Height;
                             break;

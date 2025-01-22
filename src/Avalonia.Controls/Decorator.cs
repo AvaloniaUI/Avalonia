@@ -8,7 +8,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// Base class for controls which decorate a single child control.
     /// </summary>
-    public class Decorator : Control, IContainer
+    public class Decorator : Control
     {
         /// <summary>
         /// Defines the <see cref="Child"/> property.
@@ -21,22 +21,6 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<Thickness> PaddingProperty =
             AvaloniaProperty.Register<Decorator, Thickness>(nameof(Padding));
-
-        /// <summary>
-        /// Defines the <see cref="ContainerName"/> property
-        /// </summary>
-        public static readonly StyledProperty<string?> ContainerNameProperty =
-            AvaloniaProperty.Register<Decorator, string?>(nameof(ContainerName),
-            defaultValue: null);
-
-        /// <summary>
-        /// Defines the <see cref="ContainerType"/> property
-        /// </summary>
-        public static readonly StyledProperty<ContainerType> ContainerTypeProperty =
-            AvaloniaProperty.Register<Decorator, ContainerType>(nameof(ContainerType),
-            defaultValue: ContainerType.Normal);
-
-        private VisualQueryProvider? _queryProvider;
 
         /// <summary>
         /// Initializes static members of the <see cref="Decorator"/> class.
@@ -65,23 +49,6 @@ namespace Avalonia.Controls
             get => GetValue(PaddingProperty);
             set => SetValue(PaddingProperty, value);
         }
-
-        /// <inheritdoc/>
-        public string? ContainerName
-        {
-            get => GetValue(ContainerNameProperty);
-            set => SetValue(ContainerNameProperty, value);
-        }
-
-        /// <inheritdoc/>
-        public ContainerType ContainerType
-        {
-            get => GetValue(ContainerTypeProperty);
-            set => SetValue(ContainerTypeProperty, value);
-        }
-
-        /// <inheritdoc/>
-        VisualQueryProvider IContainer.QueryProvider => _queryProvider ??= new VisualQueryProvider(this);
 
         /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize)

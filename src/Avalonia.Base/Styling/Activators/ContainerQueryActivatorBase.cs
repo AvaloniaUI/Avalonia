@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Avalonia.Layout;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Styling.Activators
@@ -8,7 +9,7 @@ namespace Avalonia.Styling.Activators
     {
         private readonly Visual _visual;
         private readonly string? _containerName;
-        private IContainer? _currentScreenSizeProvider;
+        private Layoutable? _currentScreenSizeProvider;
 
         public ContainerQueryActivatorBase(
             Visual visual, string? containerName = null)
@@ -24,7 +25,7 @@ namespace Avalonia.Styling.Activators
             InitializeScreenSizeProvider();
         }
 
-        protected IContainer? CurrentContainer => _currentScreenSizeProvider;
+        protected Layoutable? CurrentContainer => _currentScreenSizeProvider;
 
         void IStyleActivatorSink.OnNext(bool value) => ReevaluateIsActive();
 
@@ -37,30 +38,32 @@ namespace Avalonia.Styling.Activators
         {
             _visual.AttachedToVisualTree -= Visual_AttachedToVisualTree;
 
-            if (_currentScreenSizeProvider is { })
+            if (_currentScreenSizeProvider is { } && Container.GetQueryProvider(_currentScreenSizeProvider) is { } provider)
             {
-                _currentScreenSizeProvider.QueryProvider.WidthChanged -= WidthChanged;
-                _currentScreenSizeProvider.QueryProvider.HeightChanged -= HeightChanged;
+                provider.WidthChanged -= WidthChanged;
+                provider.HeightChanged -= HeightChanged;
                 _currentScreenSizeProvider = null;
             }
         }
 
         private void InitializeScreenSizeProvider()
         {
-            if (GetContainer(_visual, _containerName) is { } container)
+            if (GetContainer(_visual, _containerName) is { } container && Container.GetQueryProvider(container) is { } provider)
             {
                 _currentScreenSizeProvider = container;
 
-                _currentScreenSizeProvider.QueryProvider.WidthChanged += WidthChanged;
-                _currentScreenSizeProvider.QueryProvider.HeightChanged += HeightChanged;
+                provider.WidthChanged += WidthChanged;
+                provider.HeightChanged += HeightChanged;
             }
 
             ReevaluateIsActive();
         }
 
-        internal static IContainer? GetContainer(Visual visual, string? containerName)
+        internal static Layoutable? GetContainer(Visual visual, string? containerName)
         {
-            return visual.GetVisualAncestors().Where(x => x != visual && x is IContainer container && (containerName == null || container.ContainerName == containerName)).FirstOrDefault() as IContainer;
+            return visual.GetVisualAncestors().Where(x => x != visual
+            && x is Layoutable layoutable
+            && (Container.GetName(layoutable) == containerName)).FirstOrDefault() as Layoutable;
         }
 
         private void HeightChanged(object? sender, EventArgs e)

@@ -1,12 +1,13 @@
 using System;
+using Avalonia.Layout;
 using Avalonia.Platform;
 using Avalonia.Styling.Activators;
 
 namespace Avalonia.Styling
 {
-    internal sealed class WidthQuery : ContainerQuery<(QueryComparisonOperator @operator, double value)>
+    internal sealed class WidthQuery : ValueQuery<(QueryComparisonOperator @operator, double value)>
     {
-        public WidthQuery(StyleQuery? previous, QueryComparisonOperator @operator, double value) : base(previous, (@operator, value))
+        public WidthQuery(Query? previous, QueryComparisonOperator @operator, double value) : base(previous, (@operator, value))
         {
         }
 
@@ -22,9 +23,12 @@ namespace Avalonia.Styling
                 return new SelectorMatch(new WidthActivator(visual, Argument, containerName));
             }
 
-            if (ContainerQueryActivatorBase.GetContainer(visual, containerName) is { } container && container.ContainerType == Layout.ContainerType.WidthAndHeight)
+            if (ContainerQueryActivatorBase.GetContainer(visual, containerName) is { } container
+                && container is Layoutable layoutable
+                && Container.GetQueryProvider(layoutable) is { } queryProvider
+                && Container.GetSizing(layoutable) == Layout.ContainerSizing.WidthAndHeight)
             {
-                return Evaluate(container.QueryProvider, Argument);
+                return Evaluate(queryProvider, Argument);
             }
 
             return SelectorMatch.NeverThisInstance;
@@ -59,21 +63,21 @@ namespace Avalonia.Styling
                 return false;
             }
 
-            return IsTrue(argument.@operator, argument.value)  ? 
+            return IsTrue(argument.@operator, argument.value) ?
                 new SelectorMatch(SelectorMatchResult.AlwaysThisInstance) : SelectorMatch.NeverThisInstance;
         }
 
         public override string ToString() => "width";
 
-        public override string ToString(Container? owner)
+        public override string ToString(ContainerQuery? owner)
         {
             throw new NotImplementedException();
         }
     }
 
-    internal sealed class HeightQuery : ContainerQuery<(QueryComparisonOperator @operator, double value)>
+    internal sealed class HeightQuery : ValueQuery<(QueryComparisonOperator @operator, double value)>
     {
-        public HeightQuery(StyleQuery? previous, QueryComparisonOperator @operator, double value) : base(previous, (@operator, value))
+        public HeightQuery(Query? previous, QueryComparisonOperator @operator, double value) : base(previous, (@operator, value))
         {
         }
 
@@ -89,9 +93,12 @@ namespace Avalonia.Styling
                 return new SelectorMatch(new HeightActivator(visual, Argument));
             }
 
-            if (ContainerQueryActivatorBase.GetContainer(visual, containerName) is { } container && container.ContainerType == Layout.ContainerType.WidthAndHeight)
+            if (ContainerQueryActivatorBase.GetContainer(visual, containerName) is { } container
+                && container is Layoutable layoutable
+                && Container.GetQueryProvider(layoutable) is { } queryProvider
+                && Container.GetSizing(layoutable) == Layout.ContainerSizing.WidthAndHeight)
             {
-                return Evaluate(container.QueryProvider, Argument);
+                return Evaluate(queryProvider, Argument);
             }
 
             return SelectorMatch.NeverThisInstance;
@@ -134,7 +141,7 @@ namespace Avalonia.Styling
 
         public override string ToString() => "height";
 
-        public override string ToString(Container? owner)
+        public override string ToString(ContainerQuery? owner)
         {
             throw new NotImplementedException();
         }

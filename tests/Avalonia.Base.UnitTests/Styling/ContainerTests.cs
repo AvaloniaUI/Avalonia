@@ -12,7 +12,7 @@ namespace Avalonia.Base.UnitTests.Styling
         [Fact]
         public void Container_Cannot_Be_Added_To_Style_Children()
         {
-            var target = new Container();
+            var target = new ContainerQuery();
             var style = new Style();
 
             Assert.Throws<InvalidOperationException>(() => style.Children.Add(target));
@@ -26,12 +26,12 @@ namespace Avalonia.Base.UnitTests.Styling
             {
                 ClientSize = new Size(400, 400)
             };
-            var containerQuery1 = new Container(x => new WidthQuery(x, QueryComparisonOperator.LessThanOrEquals, 500));
+            var containerQuery1 = new ContainerQuery(x => new WidthQuery(x, QueryComparisonOperator.LessThanOrEquals, 500));
             containerQuery1.Children.Add(new Style(x => x.Is<Border>())
             {
                 Setters = { new Setter(Control.WidthProperty, 200.0) }
             });            
-            var containerQuery2 = new Container(x => new WidthQuery(x, QueryComparisonOperator.GreaterThan, 500));
+            var containerQuery2 = new ContainerQuery(x => new WidthQuery(x, QueryComparisonOperator.GreaterThan, 500));
             containerQuery2.Children.Add(new Style(x => x.Is<Border>())
             {
                 Setters = { new Setter(Control.WidthProperty, 500.0) }
@@ -45,7 +45,7 @@ namespace Avalonia.Base.UnitTests.Styling
             };
             var border = new Border()
             {
-                ContainerType = Avalonia.Layout.ContainerType.Width,
+                Sizing = Avalonia.Layout.ContainerSizing.Width,
                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
                 VerticalAlignment = Avalonia.Layout.VerticalAlignment.Stretch,
                 Child = child,
@@ -72,12 +72,12 @@ namespace Avalonia.Base.UnitTests.Styling
             {
                 ClientSize = new Size(400, 400)
             };
-            var containerQuery1 = new Container(x => new HeightQuery(x, QueryComparisonOperator.LessThanOrEquals, 500));
+            var containerQuery1 = new ContainerQuery(x => new HeightQuery(x, QueryComparisonOperator.LessThanOrEquals, 500));
             containerQuery1.Children.Add(new Style(x => x.Is<Border>())
             {
                 Setters = { new Setter(Control.HeightProperty, 200.0) }
             });
-            var containerQuery2 = new Container(x => new HeightQuery(x, QueryComparisonOperator.GreaterThan, 500));
+            var containerQuery2 = new ContainerQuery(x => new HeightQuery(x, QueryComparisonOperator.GreaterThan, 500));
             containerQuery2.Children.Add(new Style(x => x.Is<Border>())
             {
                 Setters = { new Setter(Control.HeightProperty, 500.0) }
@@ -91,7 +91,7 @@ namespace Avalonia.Base.UnitTests.Styling
             };
             var border = new Border()
             {
-                ContainerType = Avalonia.Layout.ContainerType.Height,
+                Sizing = Avalonia.Layout.ContainerSizing.Height,
                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
                 VerticalAlignment = Avalonia.Layout.VerticalAlignment.Stretch,
                 Child = child,
@@ -118,12 +118,12 @@ namespace Avalonia.Base.UnitTests.Styling
             {
                 ClientSize = new Size(600, 600)
             };
-            var containerQuery1 = new Container(x => new WidthQuery(x, QueryComparisonOperator.LessThanOrEquals, 500));
+            var containerQuery1 = new ContainerQuery(x => new WidthQuery(x, QueryComparisonOperator.LessThanOrEquals, 500));
             containerQuery1.Children.Add(new Style(x => x.Is<Border>())
             {
                 Setters = { new Setter(Control.WidthProperty, 200.0) }
             });
-            var containerQuery2 = new Container(x => new WidthQuery(x, QueryComparisonOperator.LessThanOrEquals, 500), "TEST");
+            var containerQuery2 = new ContainerQuery(x => new WidthQuery(x, QueryComparisonOperator.LessThanOrEquals, 500), "TEST");
             containerQuery2.Children.Add(new Style(x => x.Is<Border>())
             {
                 Setters = { new Setter(Control.WidthProperty, 300.0) }
@@ -137,7 +137,7 @@ namespace Avalonia.Base.UnitTests.Styling
             };
             var controlInner = new ContentControl()
             {
-                ContainerType = Avalonia.Layout.ContainerType.Width,
+                Sizing = Avalonia.Layout.ContainerSizing.Width,
                 ContainerName = "TEST",
                 Width = 400,
                 Height = 400,
@@ -147,7 +147,7 @@ namespace Avalonia.Base.UnitTests.Styling
             };
             var border = new Border()
             {
-                ContainerType = Avalonia.Layout.ContainerType.Width,
+                Sizing = Avalonia.Layout.ContainerSizing.Width,
                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
                 VerticalAlignment = Avalonia.Layout.VerticalAlignment.Stretch,
                 Child = controlInner,

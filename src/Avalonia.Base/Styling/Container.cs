@@ -1,89 +1,65 @@
-using System;
-using Avalonia.Controls;
-using Avalonia.PropertyStore;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Avalonia.Layout;
+using Avalonia.Platform;
 
 namespace Avalonia.Styling
 {
-    /// <summary>
-    /// Defines a container.
-    /// </summary>
-    public class Container : StyleBase
+    public class Container
     {
-        private StyleQuery? _query;
-        private string? _containerName;
+        public static readonly AttachedProperty<string?> NameProperty =
+            AvaloniaProperty.RegisterAttached<Container, Layoutable, string?>("Name");
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Container"/> class.
-        /// </summary>
-        public Container()
+        public static readonly AttachedProperty<ContainerSizing> SizingProperty =
+            AvaloniaProperty.RegisterAttached<Container, Layoutable, ContainerSizing>("Sizing", coerce:UpdateQueryProvider);
+
+        private static ContainerSizing UpdateQueryProvider(AvaloniaObject obj, ContainerSizing sizing)
         {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Container"/> class.
-        /// </summary>
-        /// <param name="query">The container selector.</param>
-        /// <param name="containerName"></param>
-        public Container(Func<StyleQuery?, StyleQuery> query, string? containerName = null)
-        {
-            Query = query(null);
-            _containerName = containerName;
-        }
-
-        /// <summary>
-        /// Gets or sets the container's query.
-        /// </summary>
-        public StyleQuery? Query 
-        {
-            get => _query;
-            set => _query = value;
-        }
-
-        /// <summary>
-        /// Gets or sets the container's name.
-        /// </summary>
-        public string? ContainerName
-        {
-            get => _containerName;
-            set => _containerName = value;
-        }
-
-        /// <summary>
-        /// Returns a string representation of the container.
-        /// </summary>
-        /// <returns>A string representation of the container.</returns>
-        public override string ToString() => Query?.ToString(this) ?? "Container";
-
-        internal override void SetParent(StyleBase? parent)
-        {
-            if (parent is ControlTheme)
-                base.SetParent(parent);
-            else
-                throw new InvalidOperationException("Container cannot be added as a nested style.");
-        }
-
-        internal SelectorMatchResult TryAttach(StyledElement target, object? host, FrameType type)
-        {
-            _ = target ?? throw new ArgumentNullException(nameof(target));
-
-            var result = SelectorMatchResult.NeverThisType;
-
-            if (HasChildren)
+            if (obj is Layoutable layoutable)
             {
-                var match = Query?.Match(target, Parent, true, ContainerName) ??
-                    (target == host ?
-                        SelectorMatch.AlwaysThisInstance :
-                        SelectorMatch.NeverThisInstance);
-
-                if (match.IsMatch)
+                if (sizing != ContainerSizing.Normal)
                 {
-                    Attach(target, match.Activator, type, true);
+                    if (GetQueryProvider(layoutable) == null)
+                        layoutable.SetValue(QueryProviderProperty, new VisualQueryProvider(layoutable));
                 }
-
-                result = match.Result;
+                else
+                {
+                    layoutable.SetValue(QueryProviderProperty, null);
+                }
             }
 
-            return result;
+            return sizing;
+        }
+
+        internal static readonly AttachedProperty<VisualQueryProvider?> QueryProviderProperty =
+            AvaloniaProperty.RegisterAttached<Container, Layoutable, VisualQueryProvider?>("QueryProvider");
+
+        public static string? GetName(Layoutable layoutable)
+        {
+            return layoutable.GetValue(NameProperty);
+        }
+
+        public static void SetName(Layoutable layoutable, string? name)
+        {
+            layoutable.SetValue(NameProperty, name);
+        }
+
+        public static ContainerSizing GetSizing(Layoutable layoutable)
+        {
+            return layoutable.GetValue(SizingProperty);
+        }
+
+        public static void SetSizing(Layoutable layoutable, ContainerSizing sizing)
+        {
+            layoutable.SetValue(SizingProperty, sizing);
+        }
+
+        internal static VisualQueryProvider? GetQueryProvider(Layoutable layoutable)
+        {
+            return layoutable.GetValue(QueryProviderProperty);
         }
     }
 }

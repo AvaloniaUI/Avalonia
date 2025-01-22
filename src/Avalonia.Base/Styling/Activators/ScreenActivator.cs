@@ -1,3 +1,5 @@
+using Avalonia.Layout;
+
 namespace Avalonia.Styling.Activators
 {
     internal sealed class WidthActivator : ContainerQueryActivatorBase
@@ -9,8 +11,11 @@ namespace Avalonia.Styling.Activators
             _argument = argument;
         }
 
-        protected override bool EvaluateIsActive() => (CurrentContainer?.ContainerType == Layout.ContainerType.Width || CurrentContainer?.ContainerType == Layout.ContainerType.WidthAndHeight) 
-            && WidthQuery.Evaluate(CurrentContainer.QueryProvider, _argument).IsMatch;
+        protected override bool EvaluateIsActive() => (CurrentContainer is Layoutable layoutable
+            && Container.GetSizing(layoutable) is { } sizing
+            && Container.GetQueryProvider(layoutable) is { } queryProvider
+            && (sizing is Layout.ContainerSizing.Width or Layout.ContainerSizing.WidthAndHeight))
+            && WidthQuery.Evaluate(queryProvider, _argument).IsMatch;
     }
 
     internal sealed class HeightActivator : ContainerQueryActivatorBase
@@ -22,7 +27,10 @@ namespace Avalonia.Styling.Activators
             _argument = argument;
         }
 
-        protected override bool EvaluateIsActive() => (CurrentContainer?.ContainerType == Layout.ContainerType.Height || CurrentContainer?.ContainerType == Layout.ContainerType.WidthAndHeight)
-            && HeightQuery.Evaluate(CurrentContainer.QueryProvider, _argument).IsMatch;
+        protected override bool EvaluateIsActive() => (CurrentContainer is Layoutable layoutable
+            && Container.GetSizing(layoutable) is { } sizing
+            && Container.GetQueryProvider(layoutable) is { } queryProvider
+            && (sizing is Layout.ContainerSizing.Height or Layout.ContainerSizing.WidthAndHeight))
+            && HeightQuery.Evaluate(queryProvider, _argument).IsMatch;
     }
 }

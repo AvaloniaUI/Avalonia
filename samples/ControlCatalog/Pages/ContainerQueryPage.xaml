@@ -9,40 +9,40 @@
              mc:Ignorable="d">
   <StackPanel Spacing="10">
     <StackPanel.Styles>
-      <Container ContainerName="UniformGrid"
+      <ContainerQuery Name="UniformGrid"
                  Query="max-width:400">
         <Style Selector="UniformGrid#ContentGrid">
           <Setter Property="Columns"
                   Value="1"/>
         </Style>
-      </Container>
-      <Container ContainerName="UniformGrid"
+      </ContainerQuery>
+      <ContainerQuery Name="UniformGrid"
                  Query="min-width:400">
         <Style Selector="UniformGrid#ContentGrid">
           <Setter Property="Columns"
                   Value="2"/>
         </Style>
-      </Container>
-      <Container ContainerName="UniformGrid"
+      </ContainerQuery>
+      <ContainerQuery Name="UniformGrid"
                  Query="min-width:800">
         <Style Selector="UniformGrid#ContentGrid">
           <Setter Property="Columns"
                   Value="3"/>
         </Style>
-      </Container>
-      <Container ContainerName="UniformGrid"
+      </ContainerQuery>
+      <ContainerQuery Name="UniformGrid"
                  Query="min-width:1200">
         <Style Selector="UniformGrid#ContentGrid">
           <Setter Property="Columns"
                   Value="4"/>
         </Style>
-      </Container>
+      </ContainerQuery>
     </StackPanel.Styles>
     <TextBlock Text="Dynamically change properties of controls based on the size of a parent container."/>
-    <Border ContainerName="UniformGrid"
+    <Border Container.Name="UniformGrid"
             VerticalAlignment="Stretch"
             HorizontalAlignment="Stretch"
-            ContainerType="Width">
+            Container.Sizing="Width">
       <ScrollViewer VerticalScrollBarVisibility="Auto"
                     HorizontalScrollBarVisibility="Disabled">
         <Grid RowDefinitions="Auto,*">

@@ -10,16 +10,16 @@ namespace Avalonia.Styling
     /// <summary>
     /// The AND style query.
     /// </summary>
-    internal sealed class AndQuery : StyleQuery
+    internal sealed class AndQuery : Query
     {
-        private readonly IReadOnlyList<StyleQuery> _queries;
+        private readonly IReadOnlyList<Query> _queries;
         private string? _queryString;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AndQuery"/> class.
         /// </summary>
         /// <param name="queries">The queries to AND.</param>
-        public AndQuery(IReadOnlyList<StyleQuery> queries)
+        public AndQuery(IReadOnlyList<Query> queries)
         {
             if (queries is null)
             {
@@ -38,7 +38,7 @@ namespace Avalonia.Styling
         internal override bool IsCombinator => false;
 
         /// <inheritdoc/>
-        public override string ToString(Container? owner)
+        public override string ToString(ContainerQuery? owner)
         {
             if (_queryString == null)
             {
@@ -92,8 +92,8 @@ namespace Avalonia.Styling
             }
         }
 
-        private protected override StyleQuery? MovePrevious() => null;
-        private protected override StyleQuery? MovePreviousOrParent() => null;
+        private protected override Query? MovePrevious() => null;
+        private protected override Query? MovePreviousOrParent() => null;
     }
 }
 

@@ -3,7 +3,7 @@
     /// <summary>
     /// Defines how a container is queried.
     /// </summary>
-    public enum ContainerType
+    public enum ContainerSizing
     {
         /// <summary>
         /// The container is not included in any size queries.

@@ -6,9 +6,9 @@ using Avalonia.Styling.Activators;
 namespace Avalonia.Styling
 {
     /// <summary>
-    /// A query in a <see cref="Container"/>.
+    /// A query in a <see cref="ContainerQuery"/>.
     /// </summary>
-    public abstract class StyleQuery
+    public abstract class Query
     {
         /// <summary>
         /// Gets a value indicating whether this query is a combinator.
@@ -66,7 +66,7 @@ namespace Avalonia.Styling
         /// the parent query.
         /// </summary>
         /// <param name="owner">The owner container.</param>
-        public abstract string ToString(Container? owner);
+        public abstract string ToString(ContainerQuery? owner);
 
         /// <summary>
         /// Evaluates the query for a match.
@@ -88,19 +88,19 @@ namespace Avalonia.Styling
         /// <summary>
         /// Moves to the previous query.
         /// </summary>
-        private protected abstract StyleQuery? MovePrevious();
+        private protected abstract Query? MovePrevious();
 
         /// <summary>
         /// Moves to the previous query or the parent query.
         /// </summary>
-        private protected abstract StyleQuery? MovePreviousOrParent();
+        private protected abstract Query? MovePreviousOrParent();
 
         private static SelectorMatch MatchUntilCombinator(
             StyledElement control,
-            StyleQuery start,
+            Query start,
             IStyle? parent,
             bool subscribe,
-            out StyleQuery? combinator,
+            out Query? combinator,
             string? containerName = null)
         {
             combinator = null;
@@ -115,11 +115,11 @@ namespace Avalonia.Styling
 
         private static SelectorMatchResult Match(
             StyledElement control,
-            StyleQuery query,
+            Query query,
             IStyle? parent,
             bool subscribe,
             ref AndActivatorBuilder activators,
-            ref StyleQuery? combinator, 
+            ref Query? combinator, 
             string? containerName)
         {
             var previous = query.MovePrevious();
