@@ -1243,7 +1243,7 @@ namespace Avalonia.Controls.UnitTests
                 target.ApplyTemplate();
                 target.Measure(Size.Infinity);
 
-                Assert.Equal(lineCount, target.LineCount);
+                Assert.Equal(lineCount, target.GetLineCount());
             }
         }
 
@@ -1251,7 +1251,7 @@ namespace Avalonia.Controls.UnitTests
         public void Unmeasured_TextBox_Has_Negative_LineCount()
         {
             var b = new TextBox();
-            Assert.Equal(-1, b.LineCount);
+            Assert.Equal(-1, b.GetLineCount());
         }
         
         [Fact]
@@ -1278,11 +1278,11 @@ namespace Avalonia.Controls.UnitTests
                 target.ApplyTemplate();
                 target.Measure(Size.Infinity);
                 
-                Assert.Equal(1, target.LineCount);
+                Assert.Equal(1, target.GetLineCount());
 
                 target.Text = "Hello\r\nWorld";
 
-                Assert.Equal(2, target.LineCount);
+                Assert.Equal(2, target.GetLineCount());
             }
         }
 
@@ -1311,7 +1311,7 @@ namespace Avalonia.Controls.UnitTests
                 target.ApplyTemplate();
                 target.Measure(Size.Infinity);
 
-                Assert.Equal(4, target.LineCount);
+                Assert.Equal(4, target.GetLineCount());
             }
         }
 

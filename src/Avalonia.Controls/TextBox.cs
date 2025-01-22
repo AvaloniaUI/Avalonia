@@ -824,7 +824,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Number of lines in the TextBox.
+        /// Get the number of lines in the TextBox.
         /// </summary>
         /// <value>number of lines in the TextBox, or -1 if no layout information is available</value>
         /// <remarks>
@@ -832,9 +832,9 @@ namespace Avalonia.Controls
         /// The value returned is the number of lines in the entire TextBox, regardless of how many are
         /// currently in view.
         /// </remarks>
-        public int LineCount
+        public int GetLineCount()
         {
-            get => this._presenter?.TextLayout.TextLines.Count ?? -1;
+            return this._presenter?.TextLayout.TextLines.Count ?? -1;
         }
 
         /// <summary>
