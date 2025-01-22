@@ -42,7 +42,7 @@
       <Argument Key="FlagsEnumSeparatorSize" Value="0" />
       <Argument Key="IncludeIntegerEnumSeparators" Value="true" />
       <Argument Key="BaseSourceCodeUrl" Value="https://github.com/AvaloniaUI/Avalonia/tree/master/src/" />
-      <Argument Key="RequestExampleUrl" Value="https://github.com/AvaloniaUI/Avalonia/discussions/new" />
+      <Argument Key="RequestExampleUrl" Value="" />
       <Argument Key="ShowParametersOnAllMethods" Value="True" />
       <Argument Key="AlwaysShowTopLevelAutoOutline" Value="False" />
     </TransformComponentArguments>

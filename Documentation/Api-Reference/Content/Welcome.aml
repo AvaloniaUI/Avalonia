@@ -46,5 +46,47 @@ If you are new to Avalonia, please explore these locations first:</para>
 				</list>
 			</content>
 		</section>
+		
+		<section>
+			<title>Getting Support</title>
+			<content><para>If you hit a bug or have a question, you can reach out to us on GitHub</para>
+
+				<list class="bullet">
+					<listItem>
+						<para>If you have a question or an idea, please open a 
+							<externalLink>
+<linkText>Discussion</linkText>
+<linkAlternateText>GitHub Discussions</linkAlternateText>
+<linkUri>https://github.com/AvaloniaUI/Avalonia/discussions/new</linkUri>
+<linkTarget>_blank</linkTarget>
+</externalLink>.
+						</para>
+					</listItem>
+
+					<listItem>
+						<para>If you hit a bug, please check for any open issue. If none is found, open a new   
+							<externalLink>
+<linkText>Issue</linkText>
+<linkAlternateText>GitHub Issues</linkAlternateText>
+<linkUri>https://github.com/AvaloniaUI/Avalonia/issues</linkUri>
+<linkTarget>_blank</linkTarget>
+</externalLink>.
+						</para>
+					</listItem>
+					
+					<listItem>
+						<para>If you need enhanced or priority support, please visit the 
+							<externalLink>
+<linkText>Avalonia Homepage</linkText>
+<linkAlternateText>Avalonia Homepage - Support</linkAlternateText>
+<linkUri>https://avaloniaui.net/support</linkUri>
+<linkTarget>_blank</linkTarget>
+</externalLink>
+						</para>
+					</listItem>
+					
+				</list>
+			</content>
+		</section>
 	</developerConceptualDocument>
 </topic>
