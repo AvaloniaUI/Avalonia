@@ -11,5 +11,10 @@ internal static partial class Diagnostic
         public const string CompositorRenderPassDescription = "Duration of the compositor render pass on render thread";
         public const string CompositorUpdatePassName = "avalonia.comp.update.time";
         public const string CompositorUpdatePassDescription = "Duration of the compositor update pass on render thread";
+
+        public const string LayoutMeasurePassName = "avalonia.ui.measure.time";
+        public const string LayoutMeasurePassDescription = "Duration of layout measurement pass on UI thread";
+        public const string LayoutArrangePassName = "avalonia.ui.arrange.time";
+        public const string LayoutArrangePassDescription = "Duration of layout arrangement pass on UI thread";
     }
 }

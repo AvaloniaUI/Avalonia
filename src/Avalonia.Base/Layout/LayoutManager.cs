@@ -2,6 +2,7 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Avalonia.Diagnostics;
 using Avalonia.Logging;
 using Avalonia.Media;
 using Avalonia.Metadata;
@@ -246,6 +247,7 @@ namespace Avalonia.Layout
 
         private void ExecuteMeasurePass()
         {
+            using var _ = Diagnostic.BeginVisualMeasurePass();
             while (_toMeasure.Count > 0)
             {
                 var control = _toMeasure.Dequeue();
@@ -261,6 +263,7 @@ namespace Avalonia.Layout
 
         private void ExecuteArrangePass()
         {
+            using var _ = Diagnostic.BeginVisualArrangePass();
             while (_toArrange.Count > 0)
             {
                 var control = _toArrange.Dequeue();
