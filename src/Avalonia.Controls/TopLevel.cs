@@ -837,6 +837,8 @@ namespace Avalonia.Controls
             {
                 Dispatcher.UIThread.Send(static state =>
                 {
+                    using var _ = Diagnostic.BeginLayoutInputPass();
+
                     var (topLevel, e) = (ValueTuple<TopLevel, RawInputEventArgs>)state!;
                     if (e is RawPointerEventArgs pointerArgs)
                     {

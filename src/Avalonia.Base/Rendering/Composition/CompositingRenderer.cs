@@ -198,7 +198,8 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
         _updating = true;
         try
         {
-            UpdateCore();
+            using (Diagnostic.BeginLayoutRenderPass())
+                UpdateCore();
         }
         finally
         {

@@ -16,5 +16,9 @@ internal static partial class Diagnostic
         public const string LayoutMeasurePassDescription = "Duration of layout measurement pass on UI thread";
         public const string LayoutArrangePassName = "avalonia.ui.arrange.time";
         public const string LayoutArrangePassDescription = "Duration of layout arrangement pass on UI thread";
+        public const string LayoutRenderPassName = "avalonia.ui.render.time";
+        public const string LayoutRenderPassDescription = "Duration of render recording pass on UI thread";
+        public const string LayoutInputPassName = "avalonia.ui.input.time";
+        public const string LayoutInputPassDescription = "Duration of input processing on UI thread";
     }
 }

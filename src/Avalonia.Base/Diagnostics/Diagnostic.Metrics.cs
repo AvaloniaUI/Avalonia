@@ -17,6 +17,9 @@ internal static partial class Diagnostic
 
     private static readonly Histogram<double> s_layoutMeasure;
     private static readonly Histogram<double> s_layoutArrange;
+    private static readonly Histogram<double> s_layoutRender;
+    private static readonly Histogram<double> s_layoutInput;
+
     static Diagnostic()
     {
         s_meter = new Meter("Avalonia.Diagnostic.Meter");
@@ -37,12 +40,22 @@ internal static partial class Diagnostic
             Meters.LayoutArrangePassName,
             Meters.MillisecondsUnit,
             Meters.LayoutArrangePassDescription);
+        s_layoutRender = s_meter.CreateHistogram<double>(
+            Meters.LayoutRenderPassName,
+            Meters.MillisecondsUnit,
+            Meters.LayoutRenderPassDescription);
+        s_layoutInput = s_meter.CreateHistogram<double>(
+            Meters.LayoutInputPassName,
+            Meters.MillisecondsUnit,
+            Meters.LayoutInputPassDescription);
     }
 
     public static HistogramReportDisposable BeginCompositorRenderPass() => new(s_compositorRender);
     public static HistogramReportDisposable BeginCompositorUpdatePass() => new(s_compositorUpdate);
     public static HistogramReportDisposable BeginLayoutMeasurePass() => new(s_layoutMeasure);
     public static HistogramReportDisposable BeginLayoutArrangePass() => new(s_layoutArrange);
+    public static HistogramReportDisposable BeginLayoutInputPass() => new(s_layoutInput);
+    public static HistogramReportDisposable BeginLayoutRenderPass() => new(s_layoutRender);
 
     internal readonly ref struct HistogramReportDisposable
     {
