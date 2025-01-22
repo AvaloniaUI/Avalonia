@@ -16,6 +16,8 @@ internal class BrowserStorageProvider : IStorageProvider
     internal static ReadOnlySpan<byte> BrowserBookmarkKey => "browser"u8;
     internal const string PickerCancelMessage = "The user aborted a request";
     internal const string NoPermissionsMessage = "Permissions denied";
+    internal const string FileFolderNotFoundMessage = "A requested file or directory could not be found";
+    internal const string TypeMissmatchMessage = "The path supplied exists, but was not an entry of requested type";
 
     public bool CanOpen => true;
     public bool CanSave => true;
@@ -398,9 +400,9 @@ internal class JSStorageFolder : JSStorageItem, IStorageBookmarkFolder
 
             return new JSStorageFolder(storageFile);
         }
-        catch (JSException ex) when (ex.Message == BrowserStorageProvider.NoPermissionsMessage)
+        catch (JSException ex) when (ShouldSupressErrorOnFileAccess(ex))
         {
-            throw new UnauthorizedAccessException("User denied permissions to open the folder", ex);
+            return null;
         }
     }
 
@@ -416,9 +418,14 @@ internal class JSStorageFolder : JSStorageItem, IStorageBookmarkFolder
 
             return new JSStorageFile(storageFile);
         }
-        catch (JSException ex) when (ex.Message == BrowserStorageProvider.NoPermissionsMessage)
+        catch (JSException ex) when (ShouldSupressErrorOnFileAccess(ex))
         {
-            throw new UnauthorizedAccessException("User denied permissions to open the file", ex);
+            return null;
         }
     }
+
+    private static bool ShouldSupressErrorOnFileAccess(JSException ex) =>
+        ex.Message == BrowserStorageProvider.NoPermissionsMessage ||
+        ex.Message.Contains(BrowserStorageProvider.TypeMissmatchMessage, StringComparison.Ordinal) ||
+        ex.Message.Contains(BrowserStorageProvider.FileFolderNotFoundMessage, StringComparison.Ordinal);
 }
