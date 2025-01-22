@@ -752,13 +752,13 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 <Window xmlns="https://github.com/avaloniaui">
                     <Window.Styles>
                         {styleStart}
-                            <Setter Property="WindowStartupLocation" Value="CenterScreen" />
+                            <Setter Property="Title" Value="title set via style!" />
                         {styleEnd}
                     </Window.Styles>
                 </Window>
                 """);
 
-            Assert.Equal(WindowStartupLocation.CenterScreen, window.WindowStartupLocation);
+            Assert.Equal("title set via style!", window.Title);
         }
     }
 }
