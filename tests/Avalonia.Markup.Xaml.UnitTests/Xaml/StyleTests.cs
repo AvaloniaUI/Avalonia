@@ -15,6 +15,7 @@ using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 {
+    [InvariantCulture]
     public class StyleTests : XamlTestBase
     {
         [Fact]
@@ -713,9 +714,6 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void Fails_Use_Classes_In_Setter_When_Selector_Is_Complex()
         {
-            // XmlException contains culture specific position message
-            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
-            
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
                 var xaml = $"""
@@ -738,6 +736,29 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 var exception = Assert.ThrowsAny<XmlException>(() => AvaloniaRuntimeXamlLoader.Load(xaml));
                 Assert.Equal ("Cannot set Classes Binding property '(Classes.Banned)' because the style has an activator. Line 6, position 14.", exception.Message);
             }
+        }
+
+        [Theory]
+        [InlineData("<Style>", "</Style>")]
+        [InlineData("<Style Selector=''>", "</Style>")]
+        [InlineData("<Styles><Style>", "</Style></Styles>")]
+        [InlineData("<Styles><Style Selector=''>", "</Style></Styles>")]
+        public void No_Selector_Should_Target_Parent_Type(string styleStart, string styleEnd)
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var window = (Window)AvaloniaRuntimeXamlLoader.Load(
+                $"""
+                <Window xmlns="https://github.com/avaloniaui">
+                    <Window.Styles>
+                        {styleStart}
+                            <Setter Property="WindowStartupLocation" Value="CenterScreen" />
+                        {styleEnd}
+                    </Window.Styles>
+                </Window>
+                """);
+
+            Assert.Equal(WindowStartupLocation.CenterScreen, window.WindowStartupLocation);
         }
     }
 }
