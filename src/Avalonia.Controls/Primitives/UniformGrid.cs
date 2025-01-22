@@ -103,9 +103,6 @@ namespace Avalonia.Controls.Primitives
 
             foreach (var child in Children)
             {
-                if (!child.IsVisible)
-                    continue;
-
                 child.Measure(childAvailableSize);
 
                 if (child.DesiredSize.Width > maxWidth)
@@ -122,6 +119,9 @@ namespace Avalonia.Controls.Primitives
             var totalWidth = maxWidth * _columns + ColumnSpacing * (_columns - 1);
             var totalHeight = maxHeight * _rows + RowSpacing * (_rows - 1);
 
+            totalWidth = Math.Max(totalWidth, 0);
+            totalHeight = Math.Max(totalHeight, 0);
+
             return new Size(totalWidth, totalHeight);
         }
 
@@ -130,8 +130,11 @@ namespace Avalonia.Controls.Primitives
             var x = FirstColumn;
             var y = 0;
 
-            var width = (finalSize.Width - (_columns - 1) * ColumnSpacing) / _columns;
-            var height = (finalSize.Height - (_rows - 1) * RowSpacing) / _rows;
+            var columnSpacing = ColumnSpacing;
+            var rowSpacing = RowSpacing;
+
+            var width = (finalSize.Width - (_columns - 1) * columnSpacing) / _columns;
+            var height = (finalSize.Height - (_rows - 1) * rowSpacing) / _rows;
 
             foreach (var child in Children)
             {
@@ -141,8 +144,8 @@ namespace Avalonia.Controls.Primitives
                 }
 
                 var rect = new Rect(
-                    x * (width + ColumnSpacing),
-                    y * (height + RowSpacing),
+                    x * (width + columnSpacing),
+                    y * (height + rowSpacing),
                     width,
                     height);
 
@@ -165,7 +168,7 @@ namespace Avalonia.Controls.Primitives
             _rows = Rows;
             _columns = Columns;
 
-            if (FirstColumn >= Columns)
+            if (FirstColumn >= _columns)
             {
                 SetCurrentValue(FirstColumnProperty, 0);
             }

@@ -266,5 +266,43 @@ namespace Avalonia.Controls.UnitTests.Primitives
             //  - total height = (2 * 70) + (1 * 5) = 140 + 5 = 145
             Assert.Equal(new Size(105, 145), target.Bounds.Size);
         }
+
+        /// <summary>
+        ///  Exposes MeasureOverride for testing inherited classes
+        /// </summary>
+        public class UniformGridExposeMeasureOverride : UniformGrid
+        {
+            public new Size MeasureOverride(Size availableSize)
+            {
+                return base.MeasureOverride(availableSize);
+            }
+        }
+
+        [Fact]
+        public void Measure_WithRowsAndColumnsZeroAndNonZeroSpacing_ProducesZeroDesiredSize()
+        {
+            // MeasureOverride() is called by Layoutable.MeasureCore() and it ensures that
+            // the desired size is never negative. but in case of inherited classes MeasureOverride() may return negative values.
+            var target = new UniformGridExposeMeasureOverride
+            {
+                Rows = 0,
+                Columns = 0,
+                RowSpacing = 10,
+                ColumnSpacing = 20
+            };
+
+            var availableSize = new Size(100, 100);
+
+            var desiredSize = target.MeasureOverride(availableSize);
+
+            // Fail case:
+            // Because _rows and _columns are 0, the calculation becomes:
+            //   totalWidth = maxWidth * 0 + ColumnSpacing * (0 - 1) = -ColumnSpacing
+            //   totalHeight = maxHeight * 0 + RowSpacing * (0 - 1) = -RowSpacing
+            // Expected: (0, 0)
+            Assert.Equal(0, desiredSize.Width);
+            Assert.Equal(0, desiredSize.Height);
+        
+        }
     }
 }
