@@ -6,9 +6,9 @@ namespace Avalonia.Media.TextFormatting
     {
         public static TextRun[]? Collapse(TextLine textLine, TextCollapsingProperties properties, bool isWordEllipsis)
         {
-            var textRuns = textLine is TextLineImpl line ? line.LogicalTextRuns : textLine.TextRuns;
+            var textRunsEnumerator = new LogicalTextRunEnumerator(textLine);
 
-            if (textRuns.Count == 0)
+            if (textRunsEnumerator.Count == 0)
             {
                 return null;
             }
@@ -25,10 +25,8 @@ namespace Avalonia.Media.TextFormatting
 
             var collapsedLength = 0;
 
-            for (var i = 0; i < textRuns.Count; i++)
+            while (textRunsEnumerator.MoveNext(out var currentRun))
             {
-                var currentRun = textRuns[i];
-
                 switch (currentRun)
                 {
                     case ShapedTextRun shapedRun:

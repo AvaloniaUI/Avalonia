@@ -37,19 +37,38 @@
         /// <returns>List of remaining runs.</returns>
         public static TextRun[] CreateCollapsedRuns(TextLine textLine, int collapsedLength, FlowDirection flowDirection, TextRun shapedSymbol)
         {
-            var textRuns = textLine is TextLineImpl line ? line.LogicalTextRuns : textLine.TextRuns;
-
-            if (collapsedLength <= 0 || textRuns.Count == 0)
+            if (collapsedLength <= 0)
             {
                 return [shapedSymbol];
             }
 
             var objectPool = FormattingObjectPool.Instance;
 
-            var (preSplitRuns, postSplitRuns) = TextFormatterImpl.SplitTextRuns(textRuns, collapsedLength, objectPool);
+            FormattingObjectPool.RentedList<TextRun>? preSplitRuns = null;
+            FormattingObjectPool.RentedList<TextRun>? postSplitRuns = null;
+
+            var textRuns = objectPool.TextRunLists.Rent();
 
             try
             {
+                var textRunEnumerator = new LogicalTextRunEnumerator(textLine);
+
+                var textRunsLength = 0;
+
+                while (textRunEnumerator.MoveNext(out var textRun))
+                {
+                    if (textRunsLength >= collapsedLength)
+                    {
+                        break;
+                    }
+
+                    textRunsLength += textRun.Length;
+
+                    textRuns.Add(textRun);
+                }
+
+                (preSplitRuns, postSplitRuns) = TextFormatterImpl.SplitTextRuns(textRuns, collapsedLength, objectPool);
+
                 var collapsedRuns = new TextRun[preSplitRuns!.Count + 1];
 
                 preSplitRuns.CopyTo(collapsedRuns);
@@ -59,6 +78,7 @@
             }
             finally
             {
+                objectPool.TextRunLists.Return(ref textRuns);
                 objectPool.TextRunLists.Return(ref preSplitRuns);
                 objectPool.TextRunLists.Return(ref postSplitRuns);
             }

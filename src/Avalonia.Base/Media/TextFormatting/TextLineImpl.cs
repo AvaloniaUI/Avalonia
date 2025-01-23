@@ -11,7 +11,6 @@ namespace Avalonia.Media.TextFormatting
             Comparer<TextBounds>.Create((x, y) => x.Rectangle.Left.CompareTo(y.Rectangle.Left));
 
         internal IReadOnlyList<IndexedTextRun>? _indexedTextRuns;
-        internal IReadOnlyList<TextRun>? _logicalTextRuns;
         private readonly TextRun[] _textRuns;
         private readonly double _paragraphWidth;
         private readonly TextParagraphProperties _paragraphProperties;
@@ -98,11 +97,6 @@ namespace Avalonia.Media.TextFormatting
         /// Get the bounding box that is covered with black pixels.
         /// </summary>
         internal Rect InkBounds => _inkBounds;
-
-        /// <summary>
-        /// Get the line text-runs in logical order
-        /// </summary>
-        internal IReadOnlyList<TextRun> LogicalTextRuns => GetLogicalTextRuns();
 
         /// <inheritdoc/>
         public override void Draw(DrawingContext drawingContext, Point lineOrigin)
@@ -192,28 +186,6 @@ namespace Avalonia.Media.TextFormatting
             }
 
             return collapsedLine;
-        }
-
-        private IReadOnlyList<TextRun> GetLogicalTextRuns()
-        {
-            if (_logicalTextRuns != null)
-            {
-                return _logicalTextRuns;
-            }
-
-            if (_indexedTextRuns == null || _indexedTextRuns.Count == 0)
-            {
-                return _textRuns;
-            }
-
-            var textRuns = new TextRun[_indexedTextRuns.Count];
-
-            for (var i = 0; i < _indexedTextRuns.Count; i++)
-            {
-                textRuns[i] = _indexedTextRuns[i].TextRun!;
-            }
-
-            return _logicalTextRuns = textRuns;
         }
 
         /// <inheritdoc/>
