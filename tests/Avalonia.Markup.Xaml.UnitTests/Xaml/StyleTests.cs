@@ -760,5 +760,30 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
             Assert.Equal("title set via style!", window.Title);
         }
+
+
+        [Theory]
+        [InlineData("<Style>", "</Style>")]
+        [InlineData("<Style Selector=''>", "</Style>")]
+        public void No_Selector_Should_Fail_In_Control_Theme(string styleStart, string styleEnd)
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var exception = Assert.ThrowsAny<XmlException>(() => (Window)AvaloniaRuntimeXamlLoader.Load(
+                $$"""
+                  <Window xmlns="https://github.com/avaloniaui"
+                          xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                     <Window.Resources>
+                          <ControlTheme x:Key="{x:Type Window}" TargetType="Window">
+                              {{styleStart}}
+                                  <Setter Property="Title" Value="title set via style!" />
+                              {{styleEnd}}
+                          </ControlTheme>
+                      </Window.Resources>
+                  </Window>
+                  """));
+
+            Assert.Equal("Cannot add a Style without selector to a ControlTheme. Line 5, position 14.", exception.Message);
+        }
     }
 }

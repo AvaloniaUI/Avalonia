@@ -42,7 +42,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     return node;
                 }
 
-                if (FindStyleParentObject(context) is { } parentObjectNode)
+                if (FindStyleParentObject(on, context) is { } parentObjectNode)
                 {
                     return new AvaloniaXamlIlTargetTypeMetadataNode(
                         on,
@@ -217,7 +217,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             // Empty selector, use the object's target type if available
             if (selector == initialNode)
             {
-                if (FindStyleParentObject(context) is { } parentObjectNode)
+                if (FindStyleParentObject(on, context) is { } parentObjectNode)
                 {
                     return new AvaloniaXamlIlTargetTypeMetadataNode(
                         on,
@@ -241,14 +241,27 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             };
         }
 
-        private static XamlAstObjectNode? FindStyleParentObject(AstTransformationContext context)
+        private static XamlAstObjectNode? FindStyleParentObject(XamlAstNode styleNode, AstTransformationContext context)
         {
-            var styles = context.GetAvaloniaTypes().Styles;
+            var avaloniaTypes = context.GetAvaloniaTypes();
 
-            return context
+            var parentNode = context
                 .ParentNodes()
                 .OfType<XamlAstObjectNode>()
-                .FirstOrDefault(node => !Equals(node.Type.GetClrType(), styles));
+                .FirstOrDefault(n => !avaloniaTypes.Styles.IsAssignableFrom(n.Type.GetClrType()));
+
+            if (parentNode is not null)
+            {
+                var parentType = parentNode.Type.GetClrType();
+
+                if (avaloniaTypes.StyledElement.IsAssignableFrom(parentType))
+                    return parentNode;
+
+                if (avaloniaTypes.ControlTheme.IsAssignableFrom(parentType))
+                    throw new XamlTransformException("Cannot add a Style without selector to a ControlTheme.", styleNode);
+            }
+
+            return null;
         }
 
         private static IXamlType? GetLastTemplateTypeFromSelector(XamlIlSelectorNode? node)
