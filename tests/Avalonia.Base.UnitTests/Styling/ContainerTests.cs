@@ -45,12 +45,12 @@ namespace Avalonia.Base.UnitTests.Styling
             };
             var border = new Border()
             {
-                Sizing = Avalonia.Layout.ContainerSizing.Width,
                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
                 VerticalAlignment = Avalonia.Layout.VerticalAlignment.Stretch,
                 Child = child,
                 Name = "Parent"
             };
+            Container.SetSizing(border, Avalonia.Layout.ContainerSizing.Width);
 
             root.Child = border;
 
@@ -91,12 +91,12 @@ namespace Avalonia.Base.UnitTests.Styling
             };
             var border = new Border()
             {
-                Sizing = Avalonia.Layout.ContainerSizing.Height,
                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
                 VerticalAlignment = Avalonia.Layout.VerticalAlignment.Stretch,
                 Child = child,
                 Name = "Parent"
             };
+            Container.SetSizing(border, Avalonia.Layout.ContainerSizing.Height);
 
             root.Child = border;
 
@@ -137,22 +137,21 @@ namespace Avalonia.Base.UnitTests.Styling
             };
             var controlInner = new ContentControl()
             {
-                Sizing = Avalonia.Layout.ContainerSizing.Width,
-                ContainerName = "TEST",
                 Width = 400,
                 Height = 400,
                 Content = child,
                 Name = "Inner"
-
             };
+            Container.SetSizing(controlInner, Avalonia.Layout.ContainerSizing.Width);
+            Container.SetName(controlInner, "TEST");
             var border = new Border()
             {
-                Sizing = Avalonia.Layout.ContainerSizing.Width,
                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
                 VerticalAlignment = Avalonia.Layout.VerticalAlignment.Stretch,
                 Child = controlInner,
                 Name = "Parent"
             };
+            Container.SetSizing(border, Avalonia.Layout.ContainerSizing.Width);
 
             root.Child = border;
 
