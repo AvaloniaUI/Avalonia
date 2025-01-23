@@ -90,6 +90,7 @@ partial class AvaloniaView
         private int _inSurroundingTextUpdateEvent;
         private readonly UITextPosition _beginningOfDocument = new AvaloniaTextPosition(0);
         private readonly UITextInputStringTokenizer _tokenizer;
+        private bool _isInUpdate;
 
         public TextInputMethodClient? Client => _client;
 
@@ -142,15 +143,15 @@ partial class AvaloniaView
         private void SurroundingTextChanged(object? sender, EventArgs e)
         {
             Logger.TryGet(LogEventLevel.Debug, ImeLog)?.Log(null, "SurroundingTextChanged");
-            if (WeakInputDelegate == null)
+            if (WeakInputDelegate == null || _isInUpdate)
                 return;
             _inSurroundingTextUpdateEvent++;
             try
             {
                 objc_msgSend(WeakInputDelegate.Handle.Handle, TextWillChange, Handle.Handle);
                 objc_msgSend(WeakInputDelegate.Handle.Handle, TextDidChange, Handle.Handle);
-                objc_msgSend(WeakInputDelegate.Handle.Handle, SelectionWillChange, this.Handle.Handle);
-                objc_msgSend(WeakInputDelegate.Handle.Handle, SelectionDidChange, this.Handle.Handle);
+                objc_msgSend(WeakInputDelegate.Handle.Handle, SelectionWillChange, Handle.Handle);
+                objc_msgSend(WeakInputDelegate.Handle.Handle, SelectionDidChange, Handle.Handle);
             }
             finally
             {
@@ -160,6 +161,7 @@ partial class AvaloniaView
 
         private void KeyPress(Key key, PhysicalKey physicalKey, string? keySymbol)
         {
+            _isInUpdate = true;
             Logger.TryGet(LogEventLevel.Debug, ImeLog)?.Log(null, "Triggering key press {key}", key);
 
             if (_view._topLevelImpl.Input is { } input)
@@ -170,12 +172,15 @@ partial class AvaloniaView
                 input.Invoke(new RawKeyEventArgs(KeyboardDevice.Instance!, 0, _view.InputRoot,
                     RawKeyEventType.KeyUp, key, RawInputModifiers.None, physicalKey, keySymbol));
             }
+            _isInUpdate = false;
         }
 
         private void TextInput(string text)
         {
+            _isInUpdate = true;
             Logger.TryGet(LogEventLevel.Debug, ImeLog)?.Log(null, "Triggering text input {text}", text);
             _view._topLevelImpl.Input?.Invoke(new RawTextInputEventArgs(KeyboardDevice.Instance!, 0, _view.InputRoot, text));
+            _isInUpdate = false;
         }
 
         void IUIKeyInput.InsertText(string text)
@@ -203,6 +208,7 @@ partial class AvaloniaView
             }
 
             TextInput(text);
+            _isInUpdate = false;
         }
 
         void IUIKeyInput.DeleteBackward() => KeyPress(Key.Back, PhysicalKey.Backspace, "\b");
@@ -221,7 +227,7 @@ partial class AvaloniaView
             string result = "";
             if (string.IsNullOrEmpty(_markedText))
             {
-                if(surroundingText != null && r.EndIndex < surroundingText.Length)
+                if (surroundingText != null && r.EndIndex < surroundingText.Length)
                 {
                     result = surroundingText[r.StartIndex..r.EndIndex];
                 }
