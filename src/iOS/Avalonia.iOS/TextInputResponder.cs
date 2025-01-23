@@ -208,7 +208,6 @@ partial class AvaloniaView
             }
 
             TextInput(text);
-            _isInUpdate = false;
         }
 
         void IUIKeyInput.DeleteBackward() => KeyPress(Key.Back, PhysicalKey.Backspace, "\b");
@@ -227,7 +226,7 @@ partial class AvaloniaView
             string result = "";
             if (string.IsNullOrEmpty(_markedText))
             {
-                if (surroundingText != null && r.EndIndex < surroundingText.Length)
+                if (surroundingText != null && r.EndIndex <= surroundingText.Length)
                 {
                     result = surroundingText[r.StartIndex..r.EndIndex];
                 }
