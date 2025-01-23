@@ -219,8 +219,6 @@ partial class AvaloniaView
             var r = (AvaloniaTextRange)range;
             var surroundingText = _client.SurroundingText;
 
-            var currentSelection = _client.Selection;
-
             Logger.TryGet(LogEventLevel.Debug, ImeLog)?.Log(null, "IUIKeyInput.TextInRange {start} {end}", r.StartIndex, r.EndIndex);
 
             string result = "";
@@ -233,9 +231,10 @@ partial class AvaloniaView
             }
             else
             {
-                var span = new CombinedSpan3<char>(surroundingText.AsSpan().Slice(0, currentSelection.Start),
+                var currentSelection = _client.Selection;
+                var span = new CombinedSpan3<char>(surroundingText.AsSpan(0, currentSelection.Start),
                     _markedText,
-                    surroundingText.AsSpan().Slice(currentSelection.Start, currentSelection.End - currentSelection.Start));
+                    surroundingText.AsSpan(currentSelection.Start, currentSelection.End - currentSelection.Start));
                 var buf = new char[r.EndIndex - r.StartIndex];
                 span.CopyTo(buf, r.StartIndex);
                 result = new string(buf);
