@@ -15,6 +15,7 @@ using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 {
+    [InvariantCulture]
     public class StyleTests : XamlTestBase
     {
         [Fact]
