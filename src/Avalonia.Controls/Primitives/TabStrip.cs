@@ -11,7 +11,6 @@ namespace Avalonia.Controls.Primitives
 
         static TabStrip()
         {
-            SelectionModeProperty.OverrideDefaultValue<TabStrip>(SelectionMode.AlwaysSelected);
             FocusableProperty.OverrideDefaultValue(typeof(TabStrip), false);
             ItemsPanelProperty.OverrideDefaultValue<TabStrip>(DefaultPanel);
         }
