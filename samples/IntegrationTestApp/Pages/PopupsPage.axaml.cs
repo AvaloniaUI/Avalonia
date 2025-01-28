@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Primitives.PopupPositioning;
@@ -11,9 +12,6 @@ namespace IntegrationTestApp.Pages;
 
 public partial class PopupsPage : UserControl
 {
-    private Popup? _popup;
-    private Popup? _topMostPopup;
-
     public PopupsPage()
     {
         InitializeComponent();
@@ -21,86 +19,30 @@ public partial class PopupsPage : UserControl
 
     private void ButtonLightDismiss_OnClick(object sender, RoutedEventArgs e)
     {
-        new Popup
-        {
-            Placement = PlacementMode.Bottom,
-            PlacementTarget = sender as Button,
-            Child = new Panel { Margin = new Thickness(10) ,Children = { new TextBlock { Text = "Popup Content" } }},
-            IsLightDismissEnabled = true,
-            IsOpen = true
-        };
+        LightDismissPopup.Open();
     }
 
     private void ButtonPopupStaysOpen_OnClick(object sender, RoutedEventArgs e)
     {
-        if (_popup is not null)
-            return;
-        
-        var closeButton = new Button { Content = "Click to Close" };
-        closeButton.Click += (o, args) =>
-        {
-            if (_popup is null)
-                return;
-            
-            LogicalChildren.Remove(_popup);
-            _popup.IsOpen = false;
-            _popup = null;
-        };
-        _popup = new Popup
-        {
-            Placement = PlacementMode.Bottom,
-            PlacementTarget = sender as Button,
-            Child = new StackPanel
-            {
-                Spacing = 10,
-                Margin = new Thickness(10),
-                Orientation = Orientation.Vertical,
-                Children =
-                {
-                    new TextBox
-                    {
-                        Width = 100,
-                        Text = "Some text", 
-                    }, 
-                    new TextBox
-                    {
-                        Width = 100,
-                        Text = "Some other text", 
-                    }, 
-                    closeButton
-                }
-            },
-            IsLightDismissEnabled = false,
-        };
-
-        LogicalChildren.Add(_popup);
-        _popup.IsOpen = true;
+        StaysOpenPopup.Open();
+    }
+    private void StaysOpenPopupCloseButton_OnClick(object? sender, RoutedEventArgs e)
+    {
+        StaysOpenPopup.Close();
     }
 
     private void ButtonTopMostPopupStaysOpen(object sender, RoutedEventArgs e)
     {
-        if (_topMostPopup is not null)
-            return;
-        
-        var closeButton = new Button { Content = "Click to Close" };
-        closeButton.Click += (o, args) =>
-        {
-            if (_topMostPopup is null)
-                return;
-            _topMostPopup.IsOpen = false;
-            _topMostPopup = null;
-        };
-        _topMostPopup = new Popup
-        {
-            Placement = PlacementMode.Bottom,
-            PlacementTarget = sender as Button,
-            Child = new Panel
-            {
-                Margin = new Thickness(10), Children = { closeButton }
-            },
-            IsLightDismissEnabled = false,
-            Topmost = true,
-            IsOpen = true
-        };
+        TopMostPopup.Open();
+    }
+    private void TopMostPopupCloseButton_OnClick(object? sender, RoutedEventArgs e)
+    {
+        TopMostPopup.Close();
+    }
+
+    private void OpenRegularNewWindow_Click(object? sender, RoutedEventArgs e)
+    {
+        var newWindow = new ShowWindowTest();
+        newWindow.Show((Window)TopLevel.GetTopLevel(this)!);
     }
 }
