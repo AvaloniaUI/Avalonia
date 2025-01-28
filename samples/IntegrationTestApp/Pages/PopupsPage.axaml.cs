@@ -7,21 +7,16 @@ using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 
-namespace ControlCatalog.Pages;
+namespace IntegrationTestApp.Pages;
 
-public class PopupsPage : UserControl
+public partial class PopupsPage : UserControl
 {
     private Popup? _popup;
     private Popup? _topMostPopup;
+
     public PopupsPage()
     {
         InitializeComponent();
-
-    }
-
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
     }
 
     private void ButtonLightDismiss_OnClick(object sender, RoutedEventArgs e)
