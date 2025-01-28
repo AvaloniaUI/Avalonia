@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <!-- Import the common properties to support NuGet restore -->
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -48,8 +48,8 @@
     </TransformComponentArguments>
     <HelpFileFormat>Website</HelpFileFormat>
     <SyntaxFilters>C#, Visual Basic, F#</SyntaxFilters>
-    <PresentationStyle>Default2022</PresentationStyle>
-    <CleanIntermediates>True</CleanIntermediates>
+    <PresentationStyle>AvaloniaHtml</PresentationStyle>
+    <CleanIntermediates>False</CleanIntermediates>
     <KeepLogFile>True</KeepLogFile>
     <DisableCodeBlockComponent>False</DisableCodeBlockComponent>
     <IndentHtml>False</IndentHtml>
@@ -73,7 +73,7 @@
       <DocumentationSource sourceFile="..\..\src\Avalonia.Native\Avalonia.Native.csproj" TargetFramework="$(AvsCurrentTargetFramework)" />
       <DocumentationSource sourceFile="..\..\src\Avalonia.OpenGL\Avalonia.OpenGL.csproj" TargetFramework="$(AvsCurrentTargetFramework)" />
       <DocumentationSource sourceFile="..\..\src\Avalonia.ReactiveUI\Avalonia.ReactiveUI.csproj" TargetFramework="$(AvsCurrentTargetFramework)" />
-      <DocumentationSource sourceFile="..\..\src\Avalonia.Remote.Protocol\Avalonia.Remote.Protocol.csproj" TargetFramework="$(AvsCurrentTargetFramework)" />
+      <!-- <DocumentationSource sourceFile="..\..\src\Avalonia.Themes.Fluent\Avalonia.Themes.Fluent.csproj" TargetFramework="$(AvsCurrentTargetFramework)" /> -->
       <DocumentationSource sourceFile="..\..\src\Avalonia.Themes.Fluent\Avalonia.Themes.Fluent.csproj" TargetFramework="$(AvsCurrentTargetFramework)" />
       <DocumentationSource sourceFile="..\..\src\Avalonia.Themes.Simple\Avalonia.Themes.Simple.csproj" TargetFramework="$(AvsCurrentTargetFramework)" />
       <DocumentationSource sourceFile="..\..\src\Avalonia.Vulkan\Avalonia.Vulkan.csproj" TargetFramework="$(AvsCurrentTargetFramework)" />
@@ -94,8 +94,8 @@
     <NamingMethod>MemberName</NamingMethod>
     <ContentPlacement>AboveNamespaces</ContentPlacement>
     <RootNamespaceContainer>False</RootNamespaceContainer>
-    <NamespaceGrouping>False</NamespaceGrouping>
-    <MaximumGroupParts>2</MaximumGroupParts>
+    <NamespaceGrouping>True</NamespaceGrouping>
+    <MaximumGroupParts>3</MaximumGroupParts>
     <Preliminary>False</Preliminary>
     <SdkLinkTarget>Blank</SdkLinkTarget>
     <HtmlSdkLinkType>Msdn</HtmlSdkLinkType>
@@ -105,8 +105,8 @@
     <AppendMarkdownFileExtensionsToUrls>False</AppendMarkdownFileExtensionsToUrls>
     <CopyrightHref>https://avaloniaui.net</CopyrightHref>
     <CopyrightText>&amp;#169%3b AvaloniaUI O&amp;#220%3b</CopyrightText>
-    <ComponentPath>$(MSBuildThisFileDirectory)..\tools\</ComponentPath>
-    <SourceCodeBasePath>..\..\src</SourceCodeBasePath>
+    <ComponentPath>$(MSBuildThisFileDirectory)..\</ComponentPath>
+    <SourceCodeBasePath>..\..\src\</SourceCodeBasePath>
     <WarnOnMissingSourceContext>False</WarnOnMissingSourceContext>
     <PlugInConfigurations>
       <PlugInConfig id="Output Deployment" enabled="True">
@@ -143,8 +143,10 @@
           </deploymentLocation>
         </configuration>
       </PlugInConfig>
-    </PlugInConfigurations>
+<PlugInConfig id="XPath Reflection File Filter" enabled="True"><configuration><expressions><expression>/reflection/apis/api/attributes/attribute[type/@api="T:Avalonia.Metadata.PrivateApiAttribute"]</expression></expressions></configuration></PlugInConfig></PlugInConfigurations>
     <MissingTags>AutoDocumentCtors, AutoDocumentDispose</MissingTags>
+    <ComponentConfigurations />
+    <VisibleItems>Attributes, InheritedMembers, InheritedFrameworkMembers, Protected, ProtectedInternalAsProtected, NonBrowsable</VisibleItems>
   </PropertyGroup>
   <!-- There are no properties for these groups.  AnyCPU needs to appear in order for Visual Studio to perform
 			 the build.  The others are optional common platform types that may appear. -->
@@ -181,7 +183,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="EWSoftware.SHFB" Version="2024.12.21" />
-    <PackageReference Include="EWSoftware.SHFB.NET" Version="9.0.0" />
+    <PackageReference Include="EWSoftware.SHFB.NET" Version="8.0.0" />
   </ItemGroup>
   <!-- Icons -->
   <ItemGroup>
