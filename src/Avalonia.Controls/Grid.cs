@@ -25,6 +25,8 @@ namespace Avalonia.Controls
         static Grid()
         {
             ShowGridLinesProperty.Changed.AddClassHandler<Grid>(OnShowGridLinesPropertyChanged);
+            ColumnSpacingProperty.Changed.AddClassHandler<Control>(OnSpacingPropertyChanged);
+            RowSpacingProperty.Changed.AddClassHandler<Control>(OnSpacingPropertyChanged);
 
             IsSharedSizeScopeProperty.Changed.AddClassHandler<Control>(DefinitionBase.OnIsSharedSizeScopePropertyChanged);
             ColumnProperty.Changed.AddClassHandler<Control>(OnCellAttachedPropertyChanged);
@@ -32,7 +34,7 @@ namespace Avalonia.Controls
             RowProperty.Changed.AddClassHandler<Control>(OnCellAttachedPropertyChanged);
             RowSpanProperty.Changed.AddClassHandler<Control>(OnCellAttachedPropertyChanged);
 
-            AffectsParentMeasure<Grid>(ColumnProperty, ColumnSpanProperty, RowProperty, RowSpanProperty);
+            AffectsParentMeasure<Grid>(ColumnProperty, ColumnSpanProperty, ColumnSpacingProperty, RowProperty, RowSpanProperty, RowSpacingProperty);
         }
 
         /// <summary>
@@ -2380,6 +2382,17 @@ namespace Avalonia.Controls
             }
 
             grid.SetFlags((bool)e.NewValue!, Flags.ShowGridLinesPropertyValue);
+        }
+
+        private static void OnSpacingPropertyChanged(AvaloniaObject d, AvaloniaPropertyChangedEventArgs e)
+        {
+            Grid grid = (Grid)d;
+
+            if (grid._extData != null
+                && grid.ListenToNotifications)
+            {
+                grid.CellsStructureDirty = true;
+            }
         }
 
         private static void OnCellAttachedPropertyChanged(AvaloniaObject d, AvaloniaPropertyChangedEventArgs e)
