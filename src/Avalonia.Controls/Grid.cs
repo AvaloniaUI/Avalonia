@@ -34,7 +34,7 @@ namespace Avalonia.Controls
             RowProperty.Changed.AddClassHandler<Control>(OnCellAttachedPropertyChanged);
             RowSpanProperty.Changed.AddClassHandler<Control>(OnCellAttachedPropertyChanged);
 
-            AffectsParentMeasure<Grid>(ColumnProperty, ColumnSpanProperty, ColumnSpacingProperty, RowProperty, RowSpanProperty, RowSpacingProperty);
+            AffectsMeasure<Grid>(ColumnProperty, ColumnSpanProperty, ColumnSpacingProperty, RowProperty, RowSpanProperty, RowSpacingProperty);
         }
 
         /// <summary>
@@ -444,17 +444,19 @@ namespace Avalonia.Controls
                     //
 
                     MeasureCellsGroup(extData.CellGroup1, constraint, false, false);
-
+                    double combinedRowSpacing = RowSpacing * (RowDefinitions.Count - 1);
+                    double combinedColumnSpacing = ColumnSpacing * (ColumnDefinitions.Count - 1);
+                    Size innerAvailableSize = new Size(constraint.Width - combinedRowSpacing, constraint.Height - combinedColumnSpacing);
                     {
                         //  after Group1 is measured,  only Group3 may have cells belonging to Auto rows.
                         bool canResolveStarsV = !HasGroup3CellsInAutoRows;
 
                         if (canResolveStarsV)
                         {
-                            if (HasStarCellsV) { ResolveStar(DefinitionsV, constraint.Height); }
-                            MeasureCellsGroup(extData.CellGroup2, constraint, false, false);
-                            if (HasStarCellsU) { ResolveStar(DefinitionsU, constraint.Width); }
-                            MeasureCellsGroup(extData.CellGroup3, constraint, false, false);
+                            if (HasStarCellsV) { ResolveStar(DefinitionsV, innerAvailableSize.Height); }
+                            MeasureCellsGroup(extData.CellGroup2, innerAvailableSize, false, false);
+                            if (HasStarCellsU) { ResolveStar(DefinitionsU, innerAvailableSize.Width); }
+                            MeasureCellsGroup(extData.CellGroup3, innerAvailableSize, false, false);
                         }
                         else
                         {
@@ -463,9 +465,9 @@ namespace Avalonia.Controls
                             bool canResolveStarsU = extData.CellGroup2 > PrivateCells.Length;
                             if (canResolveStarsU)
                             {
-                                if (HasStarCellsU) { ResolveStar(DefinitionsU, constraint.Width); }
-                                MeasureCellsGroup(extData.CellGroup3, constraint, false, false);
-                                if (HasStarCellsV) { ResolveStar(DefinitionsV, constraint.Height); }
+                                if (HasStarCellsU) { ResolveStar(DefinitionsU, innerAvailableSize.Width); }
+                                MeasureCellsGroup(extData.CellGroup3, innerAvailableSize, false, false);
+                                if (HasStarCellsV) { ResolveStar(DefinitionsV, innerAvailableSize.Height); }
                             }
                             else
                             {
@@ -481,7 +483,7 @@ namespace Avalonia.Controls
                                 double[] group2MinSizes = CacheMinSizes(extData.CellGroup2, false);
                                 double[] group3MinSizes = CacheMinSizes(extData.CellGroup3, true);
 
-                                MeasureCellsGroup(extData.CellGroup2, constraint, false, true);
+                                MeasureCellsGroup(extData.CellGroup2, innerAvailableSize, false, true);
 
                                 do
                                 {
@@ -491,14 +493,14 @@ namespace Avalonia.Controls
                                         ApplyCachedMinSizes(group3MinSizes, true);
                                     }
 
-                                    if (HasStarCellsU) { ResolveStar(DefinitionsU, constraint.Width); }
-                                    MeasureCellsGroup(extData.CellGroup3, constraint, false, false);
+                                    if (HasStarCellsU) { ResolveStar(DefinitionsU, innerAvailableSize.Width); }
+                                    MeasureCellsGroup(extData.CellGroup3, innerAvailableSize, false, false);
 
                                     // Reset cached Group2Widths
                                     ApplyCachedMinSizes(group2MinSizes, false);
 
-                                    if (HasStarCellsV) { ResolveStar(DefinitionsV, constraint.Height); }
-                                    MeasureCellsGroup(extData.CellGroup2, constraint, cnt == c_layoutLoopMaxCount, false, out hasDesiredSizeUChanged);
+                                    if (HasStarCellsV) { ResolveStar(DefinitionsV, innerAvailableSize.Height); }
+                                    MeasureCellsGroup(extData.CellGroup2, innerAvailableSize, cnt == c_layoutLoopMaxCount, false, out hasDesiredSizeUChanged);
                                 }
                                 while (hasDesiredSizeUChanged && ++cnt <= c_layoutLoopMaxCount);
                             }
@@ -543,9 +545,12 @@ namespace Avalonia.Controls
                 else
                 {
                     Debug.Assert(DefinitionsU.Count > 0 && DefinitionsV.Count > 0);
-
-                    SetFinalSize(DefinitionsU, arrangeSize.Width, true);
-                    SetFinalSize(DefinitionsV, arrangeSize.Height, false);
+                    double columnSpacing = ColumnSpacing;
+                    double rowSpacing = RowSpacing;
+                    double combinedRowSpacing = rowSpacing * (RowDefinitions.Count - 1);
+                    double combinedColumnSpacing = columnSpacing * (ColumnDefinitions.Count - 1);
+                    SetFinalSize(DefinitionsU, arrangeSize.Width - combinedColumnSpacing, true);
+                    SetFinalSize(DefinitionsV, arrangeSize.Height - combinedRowSpacing, false);
 
                     var children = Children;
 
@@ -559,8 +564,8 @@ namespace Avalonia.Controls
                         int rowSpan = PrivateCells[currentCell].RowSpan;
 
                         Rect cellRect = new Rect(
-                            columnIndex == 0 ? 0.0 : DefinitionsU[columnIndex].FinalOffset,
-                            rowIndex == 0 ? 0.0 : DefinitionsV[rowIndex].FinalOffset,
+                            columnIndex == 0 ? 0.0 : DefinitionsU[columnIndex].FinalOffset + (columnSpacing * columnIndex),
+                            rowIndex == 0 ? 0.0 : DefinitionsV[rowIndex].FinalOffset + (rowSpacing * rowIndex),
                             GetFinalSizeForRange(DefinitionsU, columnIndex, columnSpan),
                             GetFinalSizeForRange(DefinitionsV, rowIndex, rowSpan));
 
@@ -2109,7 +2114,7 @@ namespace Avalonia.Controls
                 // double dpi = columns ? dpiScale.DpiScaleX : dpiScale.DpiScaleY;
                 var dpi = (VisualRoot as ILayoutRoot)?.LayoutScaling ?? 1.0;
                 double[] roundingErrors = RoundingErrors;
-                double roundedTakenSize = spacing * (definitions.Count - 1);
+                double roundedTakenSize = 0;
 
                 // round each of the allocated sizes, keeping track of the deltas
                 for (int i = 0; i < definitions.Count; ++i)
@@ -2216,7 +2221,7 @@ namespace Avalonia.Controls
             definitions[0].FinalOffset = 0.0;
             for (int i = 0; i < definitions.Count; ++i)
             {
-                definitions[(i + 1) % definitions.Count].FinalOffset = definitions[i].FinalOffset + definitions[i].SizeCache + spacing;
+                definitions[(i + 1) % definitions.Count].FinalOffset = definitions[i].FinalOffset + definitions[i].SizeCache ;
             }
         }
 
