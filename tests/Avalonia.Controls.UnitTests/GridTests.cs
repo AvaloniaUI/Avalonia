@@ -1665,19 +1665,14 @@ namespace Avalonia.Controls.UnitTests
                 ColumnSpacing = 10,
                 RowDefinitions = RowDefinitions.Parse("100,100"),
                 ColumnDefinitions = ColumnDefinitions.Parse("100,100"),
+                Children =
+                {
+                    new Border(),
+                    new Border { [Grid.ColumnProperty] = 1 },
+                    new Border { [Grid.RowProperty] = 1 },
+                    new Border { [Grid.RowProperty] = 1, [Grid.ColumnProperty] = 1 }
+                }
             };
-            var child1 = new Border();
-            var child2 = new Border();
-            var child3 = new Border();
-            var child4 = new Border();
-            target.Children.Add(child1);
-            target.Children.Add(child2);
-            target.Children.Add(child3);
-            target.Children.Add(child4);
-            Grid.SetColumn(child2, 1);
-            Grid.SetRow(child3, 1);
-            Grid.SetColumn(child4, 1);
-            Grid.SetRow(child4, 1);
             target.Measure(Size.Infinity);
             target.Arrange(new Rect(target.DesiredSize));
 
@@ -1686,6 +1681,35 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new Rect(110, 0, 100, 100), target.Children[1].Bounds);
             Assert.Equal(new Rect(0, 110, 100, 100), target.Children[2].Bounds);
             Assert.Equal(new Rect(110, 110, 100, 100), target.Children[3].Bounds);
+        }
+
+        [Fact]
+        public void Should_Grid_Controls_With_Spacing_Complicated()
+        {
+            var target = new Grid
+            {
+                Width = 200,
+                Height = 200,
+                RowSpacing = 10,
+                ColumnSpacing = 10,
+                RowDefinitions = RowDefinitions.Parse("50,*,2*,Auto"),
+                ColumnDefinitions = ColumnDefinitions.Parse("50,*,2*,Auto"),
+                Children =
+                {
+                    new Border(),
+                    new Border { [Grid.RowProperty] = 1, [Grid.ColumnProperty] = 1 },
+                    new Border { [Grid.RowProperty] = 2, [Grid.ColumnProperty] = 2 },
+                    new Border { [Grid.RowProperty] = 3, [Grid.ColumnProperty] = 3, Width = 30, Height = 30 },
+                },
+            };
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(target.DesiredSize));
+
+            Assert.Equal(new Rect(0, 0, 200, 200), target.Bounds);
+            Assert.Equal(new Rect(0, 0, 50, 50), target.Children[0].Bounds);
+            Assert.Equal(new Rect(60, 60, 30, 30), target.Children[1].Bounds);
+            Assert.Equal(new Rect(100, 100, 60, 60), target.Children[2].Bounds);
+            Assert.Equal(new Rect(170, 170, 30, 30), target.Children[3].Bounds);
         }
 
         private class TestControl : Control
