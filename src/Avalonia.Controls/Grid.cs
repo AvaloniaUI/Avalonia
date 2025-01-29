@@ -2210,9 +2210,18 @@ namespace Avalonia.Controls
 
             // Phase 6.  Compute final offsets
             definitions[0].FinalOffset = 0.0;
+            double spacing;
+            if (columns)
+            {
+                spacing = ColumnSpacing;
+            }
+            else
+            {
+                spacing = RowSpacing;
+            }
             for (int i = 0; i < definitions.Count; ++i)
             {
-                definitions[(i + 1) % definitions.Count].FinalOffset = definitions[i].FinalOffset + definitions[i].SizeCache;
+                definitions[(i + 1) % definitions.Count].FinalOffset = definitions[i].FinalOffset + definitions[i].SizeCache + spacing;
             }
         }
 
