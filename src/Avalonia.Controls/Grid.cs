@@ -1780,6 +1780,8 @@ namespace Avalonia.Controls
             double totalStarWeight = 0.0;
             int starCount = 0;      // number of unresolved *-definitions
             double scale = 1.0;   // scale factor applied to each *-weight;  negative means "Infinity is present"
+            double spacing;
+            spacing = columns ? ColumnSpacing : RowSpacing;
 
             // Phase 1.  Determine the maximum *-weight and prepare to adjust *-weights
             double maxStar = 0.0;
@@ -2105,7 +2107,7 @@ namespace Avalonia.Controls
                 // double dpi = columns ? dpiScale.DpiScaleX : dpiScale.DpiScaleY;
                 var dpi = (VisualRoot as ILayoutRoot)?.LayoutScaling ?? 1.0;
                 double[] roundingErrors = RoundingErrors;
-                double roundedTakenSize = 0.0;
+                double roundedTakenSize = spacing * (definitions.Count - 1);
 
                 // round each of the allocated sizes, keeping track of the deltas
                 for (int i = 0; i < definitions.Count; ++i)
@@ -2210,15 +2212,6 @@ namespace Avalonia.Controls
 
             // Phase 6.  Compute final offsets
             definitions[0].FinalOffset = 0.0;
-            double spacing;
-            if (columns)
-            {
-                spacing = ColumnSpacing;
-            }
-            else
-            {
-                spacing = RowSpacing;
-            }
             for (int i = 0; i < definitions.Count; ++i)
             {
                 definitions[(i + 1) % definitions.Count].FinalOffset = definitions[i].FinalOffset + definitions[i].SizeCache + spacing;
