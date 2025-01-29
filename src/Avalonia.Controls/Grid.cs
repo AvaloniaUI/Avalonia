@@ -34,7 +34,8 @@ namespace Avalonia.Controls
             RowProperty.Changed.AddClassHandler<Control>(OnCellAttachedPropertyChanged);
             RowSpanProperty.Changed.AddClassHandler<Control>(OnCellAttachedPropertyChanged);
 
-            AffectsMeasure<Grid>(ColumnProperty, ColumnSpanProperty, ColumnSpacingProperty, RowProperty, RowSpanProperty, RowSpacingProperty);
+            AffectsMeasure<Grid>(ColumnSpacingProperty, RowSpacingProperty);
+            AffectsParentMeasure<Grid>(ColumnProperty, ColumnSpanProperty, RowProperty, RowSpanProperty);
         }
 
         /// <summary>
