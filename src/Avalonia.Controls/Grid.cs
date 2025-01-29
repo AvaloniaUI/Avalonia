@@ -3300,6 +3300,14 @@ namespace Avalonia.Controls
                         drawingContext,
                         grid.ColumnDefinitions[i].FinalOffset, 0.0,
                         grid.ColumnDefinitions[i].FinalOffset, _lastArrangeSize.Height);
+
+                    if (grid.ColumnSpacing != 0)
+                    {
+                        DrawGridLine(
+                            drawingContext,
+                            grid.ColumnDefinitions[i].FinalOffset - grid.ColumnSpacing, 0.0,
+                            grid.ColumnDefinitions[i].FinalOffset - grid.ColumnSpacing, _lastArrangeSize.Height);
+                    }
                 }
 
                 for (int i = 1; i < grid.RowDefinitions.Count; ++i)
@@ -3308,6 +3316,14 @@ namespace Avalonia.Controls
                         drawingContext,
                         0.0, grid.RowDefinitions[i].FinalOffset,
                         _lastArrangeSize.Width, grid.RowDefinitions[i].FinalOffset);
+
+                    if (grid.RowSpacing != 0)
+                    {
+                        DrawGridLine(
+                            drawingContext,
+                            0.0, grid.RowDefinitions[i].FinalOffset - grid.RowSpacing,
+                            _lastArrangeSize.Width, grid.RowDefinitions[i].FinalOffset - grid.RowSpacing);
+                    }
                 }
             }
 
