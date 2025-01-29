@@ -506,8 +506,8 @@ namespace Avalonia.Controls
                     MeasureCellsGroup(extData.CellGroup4, constraint, false, false);
 
                     gridDesiredSize = new Size(
-                            CalculateDesiredSize(DefinitionsU),
-                            CalculateDesiredSize(DefinitionsV));
+                            CalculateDesiredSize(DefinitionsU) + ColumnSpacing * (DefinitionsU.Count - 1),
+                            CalculateDesiredSize(DefinitionsV) + RowSpacing * (DefinitionsU.Count - 1));
                 }
             }
             finally
