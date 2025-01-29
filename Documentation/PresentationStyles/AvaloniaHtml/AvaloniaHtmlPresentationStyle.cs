@@ -31,12 +31,13 @@ namespace Avalonia.Sandcastle.PresentationStyles.AvaloniaHtml
     /// This contains the definition for the Avalonia Html presentation style
     /// </summary>
     [PresentationStyleExport("AvaloniaHtml", "Avalonia Html", Version = AssemblyInfo.ProductVersion,
-      Copyright = AssemblyInfo.Copyright, Description = "This is the default presentation style.  It generates " +
-        "website output with a responsive layout.")]
+      Copyright = AssemblyInfo.Copyright, Description = "This is the Avalonia-Html presentation style.  It generates " +
+        "website output with a responsive layout similar to the 'Default 2022'-style.")]
     public sealed class AvaloniaHtmlPresentationStyle : PresentationStyleSettings
     {
         /// <inheritdoc />
-        public override string Location => ComponentUtilities.AssemblyFolder(Assembly.GetExecutingAssembly());
+        public override string Location =>
+            @"C:\Users\timun\source\repos\#OSS\Avalonia\Documentation\Api-Reference\DeployPresentationStyle\Components\"; // TODO: ComponentUtilities.AssemblyFolder(Assembly.GetExecutingAssembly());
 
         /// <summary>
         /// Constructor

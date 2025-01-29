@@ -34,8 +34,8 @@ using Avalonia.Sandcastle.PresentationStyles.Properties;
 [assembly: CLSCompliant(true)]
 
 // General assembly information
-[assembly: AssemblyProduct("Sandcastle Help File Builder and Tools")]
-[assembly: AssemblyCompany("Microsoft Corporation/EWSoftware")]
+[assembly: AssemblyProduct("Avalonia Sandcastle Help File Builder and Tools")]
+[assembly: AssemblyCompany("AvaloniaUI Microsoft Corporation/EWSoftware")]
 [assembly: AssemblyCopyright(AssemblyInfo.Copyright)]
 [assembly: AssemblyCulture("")]
 

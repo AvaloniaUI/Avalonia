@@ -134,7 +134,7 @@
 	<item id="topicTitle_method">{0}{1} Method</item>
 	<item id="topicTitle_methods">{0} Methods</item>
 	<item id="topicTitle_namespace">{0} Namespace</item>
-	<item id="topicTitle_namespaceGroup">{0} Namespaces</item>
+	<item id="topicTitle_namespaceGroup">📂 {0} Namespaces</item>
 	<item id="topicTitle_properties">{0} Properties</item>
 	<item id="topicTitle_property">{0}{1} Property</item>
 	<item id="topicTitle_structure">{0} Structure</item>
@@ -249,7 +249,15 @@
 	<!-- Obsolete API text -->
   <item id="boilerplate_obsoleteShort">Obsolete.</item>
   <item id="boilerplate_obsoleteLong">Note: This API is now obsolete.</item>
-	
+
+  <!-- Unstable API text -->
+  <item id="boilerplate_unstableShort">Unstable.</item>
+  <item id="boilerplate_unstableLong">Note: This API is unstable and may change in a future release.</item>
+
+  <!--  NotClientImplementable API text-->
+  <item id="boilerplate_unstableShort">Not client implementable.</item>
+  <item id="boilerplate_unstableLong">Note: This interface is not client implementable. You need to enable PrivateApi if you want to implement this interface.</item>
+  
 	<!-- See Also section text-->
   <item id="boilerplate_seeAlsoNamespaceLink">{0} Namespace</item>
   <item id="boilerplate_seeAlsoOverloadLink">{0} Overload</item>

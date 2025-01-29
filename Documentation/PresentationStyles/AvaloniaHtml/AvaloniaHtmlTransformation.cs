@@ -22,6 +22,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -44,6 +45,8 @@ namespace Avalonia.Sandcastle.PresentationStyles.AvaloniaHtml
 
         private XDocument pageTemplate;
         private readonly AvaloniaHtmlPresentationStyle presentationStyle;
+        private static readonly Dictionary<string, XNode> shortAttributeRepresentation = new Dictionary<string, XNode>();
+        private static readonly Dictionary<string, XNode> longAttributeRepresentation = new Dictionary<string, XNode>();
 
         #endregion
 
@@ -59,6 +62,36 @@ namespace Avalonia.Sandcastle.PresentationStyles.AvaloniaHtml
         {
             this.presentationStyle = presentationStyle;
             this.TopicTemplatePath = this.ResolvePath(@"Templates\TopicTemplate.html");
+            
+            // obsolete attribute
+            shortAttributeRepresentation.Add("T:System.ObsoleteAttribute", new XElement("span",
+                new XAttribute("class", "tag is-danger"),
+                new XElement("include",
+                    new XAttribute("item", "boilerplate_obsoleteShort"))));
+            
+            longAttributeRepresentation.Add("T:System.ObsoleteAttribute", new XElement("span",
+                new XAttribute("class", "tag is-danger is-medium"),
+                new XElement("include", new XAttribute("item", "boilerplate_obsoleteLong"))));
+            
+            // unstable attribute
+            shortAttributeRepresentation.Add("T:Avalonia.Metadata.UnstableAttribute", new XElement("span",
+                new XAttribute("class", "tag is-info"),
+                new XElement("include",
+                    new XAttribute("item", "boilerplate_unstableShort"))));
+            
+            longAttributeRepresentation.Add("T:Avalonia.Metadata.UnstableAttribute", new XElement("span",
+                new XAttribute("class", "tag is-info is-medium"),
+                new XElement("include", new XAttribute("item", "boilerplate_unstableLong"))));
+            
+            // not client implementable attribute
+            shortAttributeRepresentation.Add("T:Avalonia.Metadata.NotClientImplementableAttribute", new XElement("span",
+                new XAttribute("class", "tag is-info"),
+                new XElement("include",
+                    new XAttribute("item", "boilerplate_notClientImplementableShort"))));
+            
+            longAttributeRepresentation.Add("T:Avalonia.Metadata.NotClientImplementableAttribute", new XElement("span",
+                new XAttribute("class", "tag is-info is-medium"),
+                new XElement("include", new XAttribute("item", "boilerplate_notClientImplementableLong"))));
         }
         #endregion
 
@@ -1136,15 +1169,24 @@ $("".toggleSection"").keypress(function () {
         //=====================================================================
 
         /// <summary>
-        /// This is used to render the preliminary and obsolete API notices
+        /// This is used to render the preliminary and defined Attribute (such as <see cref="ObsoleteAttribute"/>) API notices
         /// </summary>
         /// <param name="transformation">The topic transformation to use</param>
         private static void RenderNotices(TopicTransformationCore transformation)
         {
             var preliminary = transformation.CommentsNode.Element("preliminary");
-            var obsolete = transformation.ReferenceNode.AttributeOfType("T:System.ObsoleteAttribute");
 
-            if(preliminary != null || obsolete != null)
+            Collection<XNode> attributesFound = new();
+
+            foreach (var key in longAttributeRepresentation.Keys)  
+            {
+                if (transformation.ReferenceNode.AttributeOfType(key) is not null)
+                {
+                    attributesFound.Add(longAttributeRepresentation[key]);
+                }
+            }
+            
+            if(preliminary != null || attributesFound.Count > 0)
             {
                 var currentElement = transformation.CurrentElement;
                 var notes = new XElement("span", new XAttribute("class", "tags"));
@@ -1156,11 +1198,9 @@ $("".toggleSection"").keypress(function () {
                 if(preliminary != null)
                     transformation.RenderNode(preliminary);
 
-                if(obsolete != null)
+                foreach (var attr in attributesFound)
                 {
-                    notes.Add(new XElement("span",
-                        new XAttribute("class", "tag is-danger is-medium"),
-                        new XElement("include", new XAttribute("item", "boilerplate_obsoleteLong"))));
+                    notes.Add(attr);
                 }
 
                 transformation.CurrentElement = currentElement;
@@ -1603,20 +1643,26 @@ $("".toggleSection"").keypress(function () {
                         if(summary != null)
                             transformation.RenderChildElements(summaryCell, summary.Nodes());
 
-                        var obsoleteAttr = e.AttributeOfType("T:System.ObsoleteAttribute");
                         var prelimComment = e.Element("preliminary");
 
-                        if(obsoleteAttr != null || prelimComment != null)
+                        var attrFound = new Collection<XNode>();
+
+                        foreach (var key2 in shortAttributeRepresentation.Keys)
+                        {
+                            if (e.AttributeOfType(key2) is not null)
+                            {
+                                attrFound.Add(shortAttributeRepresentation[key2]);
+                            }
+                        }
+                        
+                        if(attrFound.Any() || prelimComment != null)
                         {
                             if(!summaryCell.IsEmpty)
                                 summaryCell.Add(new XElement("br"));
 
-                            if(obsoleteAttr != null)
+                            foreach (var attr in attrFound)
                             {
-                                summaryCell.Add(new XElement("span",
-                                        new XAttribute("class", "tag is-danger"),
-                                    new XElement("include",
-                                        new XAttribute("item", "boilerplate_obsoleteShort"))));
+                                summaryCell.Add(attr);
                             }
 
                             if(prelimComment != null)
@@ -1778,15 +1824,25 @@ $("".toggleSection"").keypress(function () {
                             thisTransform.RenderChildElements(summaryCell, remarks.Nodes());
                     }
 
-                    if(e.AttributeOfType("T:System.ObsoleteAttribute") != null)
+                    var attributesFound = new Collection<XNode>();
+
+                    foreach (var key in shortAttributeRepresentation.Keys)
+                    {
+                        if (e.AttributeOfType(key) != null)
+                        {
+                            attributesFound.Add(shortAttributeRepresentation[key]);
+                        }
+                    }
+                    
+                    if(attributesFound.Count > 0)
                     {
                         if(!summaryCell.IsEmpty)
                             summaryCell.Add(new XElement("br"));
 
-                        summaryCell.Add(new XElement("span",
-                                new XAttribute("class", "tag is-danger"),
-                            new XElement("include",
-                                new XAttribute("item", "boilerplate_obsoleteShort"))));
+                        foreach (var attr in attributesFound)
+                        {
+                            summaryCell.Add(attr);
+                        }
                     }
 
                     if(summaryCell.IsEmpty)
@@ -2035,20 +2091,25 @@ $("".toggleSection"").keypress(function () {
                         }
                     }
 
-                    var obsoleteAttr = e.AttributeOfType("T:System.ObsoleteAttribute");
+                    var attributesFound = new Collection<XNode>();
+
+                    foreach (var key in shortAttributeRepresentation.Keys)
+                    {
+                        if (e.AttributeOfType(key) is not null)
+                        {
+                            attributesFound.Add(shortAttributeRepresentation[key]);
+                        }
+                    }
                     var prelimComment = e.Element("preliminary");
 
-                    if(obsoleteAttr != null || prelimComment != null)
+                    if(attributesFound.Count > 0 || prelimComment != null)
                     {
                         if(!summaryCell.IsEmpty)
                             summaryCell.Add(new XElement("br"));
 
-                        if(obsoleteAttr != null)
+                        foreach (var attr in attributesFound)
                         {
-                            summaryCell.Add(new XElement("span",
-                                    new XAttribute("class", "tag is-danger"),
-                                new XElement("include",
-                                    new XAttribute("item", "boilerplate_obsoleteShort"))));
+                            summaryCell.Add(attr);
                         }
 
                         if(prelimComment != null)
