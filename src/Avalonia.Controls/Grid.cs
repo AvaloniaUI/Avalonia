@@ -160,6 +160,23 @@ namespace Avalonia.Controls
             get => GetValue(ShowGridLinesProperty);
             set => SetValue(ShowGridLinesProperty, value);
         }
+        /// <summary>
+        /// Gets or sets the size of the spacing to place between row definitions.
+        /// </summary>
+        public double RowSpacing
+        {
+            get => GetValue(RowSpacingProperty);
+            set => SetValue(RowSpacingProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the size of the spacing to place between column definitions.
+        /// </summary>
+        public double ColumnSpacing
+        {
+            get => GetValue(ColumnSpacingProperty);
+            set => SetValue(ColumnSpacingProperty, value);
+        }
 
         /// <summary>
         /// Returns a ColumnDefinitions of column definitions.
@@ -2673,6 +2690,18 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<bool> ShowGridLinesProperty =
             AvaloniaProperty.Register<Grid, bool>(nameof(ShowGridLines));
+
+        /// <summary>
+        /// Defines the <see cref="RowSpacing"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> RowSpacingProperty =
+            AvaloniaProperty.Register<Grid, double>(nameof(RowSpacing));
+
+        /// <summary>
+        /// Defines the <see cref="ColumnSpacing"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> ColumnSpacingProperty =
+            AvaloniaProperty.Register<Grid, double>(nameof(ColumnSpacingProperty));
 
         /// <summary>
         /// Column property. This is an attached property.
