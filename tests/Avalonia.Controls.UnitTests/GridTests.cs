@@ -1712,6 +1712,35 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new Rect(170, 170, 30, 30), target.Children[3].Bounds);
         }
 
+        [Fact]
+        public void Should_Grid_Controls_With_Spacing_Overflow()
+        {
+            var target = new Grid
+            {
+                Width = 100,
+                Height = 100,
+                ColumnSpacing = 20,
+                RowSpacing = 20,
+                ColumnDefinitions = ColumnDefinitions.Parse("30,*,*,Auto"),
+                RowDefinitions = RowDefinitions.Parse("30,*,*,Auto"),
+                Children =
+                {
+                    new Border(),
+                    new Border { [Grid.RowProperty] = 1, [Grid.ColumnProperty] = 1 },
+                    new Border { [Grid.RowProperty] = 2, [Grid.ColumnProperty] = 2 },
+                    new Border { [Grid.RowProperty] = 3, [Grid.ColumnProperty] = 3, Width = 30, Height = 30 },
+                },
+            };
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(target.DesiredSize));
+
+            Assert.Equal(new Rect(0, 0, 100, 100), target.Bounds);
+            Assert.Equal(new Rect(0, 0, 30, 30), target.Children[0].Bounds);
+            Assert.Equal(new Rect(50, 50, 0, 0), target.Children[1].Bounds);
+            Assert.Equal(new Rect(70, 70, 0, 0), target.Children[2].Bounds);
+            Assert.Equal(new Rect(90, 90, 30, 30), target.Children[3].Bounds);
+        }
+
         private class TestControl : Control
         {
             public Size MeasureSize { get; set; }

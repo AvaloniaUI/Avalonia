@@ -319,7 +319,7 @@ namespace Avalonia.Controls
                     //  the cells belonging to them.
                     //
                     //  However, there are cases when topology of a grid causes cyclical
-                    //  size dependences. For example:
+                    //  size dependencies. For example:
                     //
                     //
                     //                         column width="Auto"      column width="*"
@@ -572,7 +572,6 @@ namespace Avalonia.Controls
 
 
                         cell.Arrange(cellRect);
-
                     }
 
                     //  update render bound on grid lines renderer visual
