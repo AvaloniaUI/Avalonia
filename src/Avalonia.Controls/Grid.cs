@@ -163,8 +163,9 @@ namespace Avalonia.Controls
             get => GetValue(ShowGridLinesProperty);
             set => SetValue(ShowGridLinesProperty, value);
         }
+
         /// <summary>
-        /// Gets or sets the size of the spacing to place between row definitions.
+        /// Gets or sets the size of the spacing to place between grid rows.
         /// </summary>
         public double RowSpacing
         {
@@ -173,7 +174,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the size of the spacing to place between column definitions.
+        /// Gets or sets the size of the spacing to place between grid columns.
         /// </summary>
         public double ColumnSpacing
         {
@@ -1787,8 +1788,6 @@ namespace Avalonia.Controls
             double totalStarWeight = 0.0;
             int starCount = 0;      // number of unresolved *-definitions
             double scale = 1.0;   // scale factor applied to each *-weight;  negative means "Infinity is present"
-            double spacing;
-            spacing = columns ? ColumnSpacing : RowSpacing;
 
             // Phase 1.  Determine the maximum *-weight and prepare to adjust *-weights
             double maxStar = 0.0;
@@ -2221,7 +2220,7 @@ namespace Avalonia.Controls
             definitions[0].FinalOffset = 0.0;
             for (int i = 0; i < definitions.Count; ++i)
             {
-                definitions[(i + 1) % definitions.Count].FinalOffset = definitions[i].FinalOffset + definitions[i].SizeCache ;
+                definitions[(i + 1) % definitions.Count].FinalOffset = definitions[i].FinalOffset + definitions[i].SizeCache;
             }
         }
 
