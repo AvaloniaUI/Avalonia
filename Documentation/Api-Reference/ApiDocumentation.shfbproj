@@ -94,7 +94,7 @@
     <ContentPlacement>AboveNamespaces</ContentPlacement>
     <RootNamespaceContainer>False</RootNamespaceContainer>
     <NamespaceGrouping>True</NamespaceGrouping>
-    <MaximumGroupParts>3</MaximumGroupParts>
+    <MaximumGroupParts>2</MaximumGroupParts>
     <Preliminary>False</Preliminary>
     <SdkLinkTarget>Blank</SdkLinkTarget>
     <HtmlSdkLinkType>Msdn</HtmlSdkLinkType>
