@@ -30,6 +30,7 @@
       <StackPanel Background="Gray"
                   MinWidth="100"
                   MinHeight="30"
+                  Spacing="20"
                   Orientation="Vertical">
         <TextBox Name="StaysOpenTextBox"
                  Width="100"

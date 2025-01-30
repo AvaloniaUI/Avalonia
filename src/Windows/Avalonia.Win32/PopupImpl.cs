@@ -1,7 +1,10 @@
 using System;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Primitives.PopupPositioning;
+using Avalonia.Input;
 using Avalonia.Platform;
+using Avalonia.Threading;
 using Avalonia.Win32.Interop;
 
 namespace Avalonia.Win32
@@ -83,10 +86,10 @@ namespace Avalonia.Win32
                     _maxAutoSize = null;
                     goto default;
                 case UnmanagedMethods.WindowsMessage.WM_MOUSEACTIVATE:
-                    if (_parent?.Handle is not null)
+                    Dispatcher.UIThread.Invoke(() =>
                     {
-                        UnmanagedMethods.SetFocus(_parent.Handle.Handle);
-                    }
+                        _parent?.Activate();
+                    }, DispatcherPriority.Background);
                     return (IntPtr)UnmanagedMethods.MouseActivate.MA_NOACTIVATE;
                 default:
                     return base.WndProc(hWnd, msg, wParam, lParam);

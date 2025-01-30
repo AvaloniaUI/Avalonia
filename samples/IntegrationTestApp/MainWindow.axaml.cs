@@ -87,13 +87,13 @@ namespace IntegrationTestApp
                 new("ListBox", () => new ListBoxPage()),
                 new("Menu", () => new MenuPage()),
                 new("Pointer", () => new PointerPage()),
+                new("Popups", () => new PopupsPage()),
                 new("RadioButton", () => new RadioButtonPage()),
                 new("Screens", () => new ScreensPage()),
                 new("ScrollBar", () => new ScrollBarPage()),
                 new("Slider", () => new SliderPage()),
                 new("Window Decorations", () => new WindowDecorationsPage()),
                 new("Window", () => new WindowPage()),
-                new("Popups", () => new PopupsPage()),
             ];
         }
     }
