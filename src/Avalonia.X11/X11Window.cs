@@ -30,8 +30,6 @@ using Avalonia.Platform.Storage.FileIO;
 // ReSharper disable IdentifierTypo
 // ReSharper disable StringLiteralTypo
 
-#nullable enable
-
 namespace Avalonia.X11
 {
     internal unsafe partial class X11Window : IWindowImpl, IPopupImpl, IXI2Client,
@@ -95,7 +93,7 @@ namespace Avalonia.X11
             _mode = mode;
             _mode.Init(this);
             _popup = popupParent != null;
-			_overrideRedirect = _popup || overrideRedirect;
+            _overrideRedirect = _popup || overrideRedirect;
             _x11 = platform.Info;
             _mouse = new MouseDevice();
             _touch = new TouchDevice();
@@ -170,15 +168,20 @@ namespace Avalonia.X11
                 (int)CreateWindowArgs.InputOutput, 
                 visual,
                 new UIntPtr((uint)valueMask), ref attr);
+            AppendPid(_handle);
 
             if (_useRenderWindow)
+            {
                 _renderHandle = XCreateWindow(_x11.Display, _handle, 0, 0, defaultWidth, defaultHeight, 0, depth,
                     (int)CreateWindowArgs.InputOutput,
                     visual,
                     new UIntPtr((uint)(SetWindowValuemask.BorderPixel | SetWindowValuemask.BitGravity |
                                        SetWindowValuemask.WinGravity | SetWindowValuemask.BackingStore)), ref attr);
+            }
             else
+            {
                 _renderHandle = _handle;
+            }
 
             Handle = new PlatformHandle(_handle, "XID");
 
@@ -335,6 +338,55 @@ namespace Avalonia.X11
             XChangeProperty(_x11.Display, _handle,
                 _x11.Atoms._MOTIF_WM_HINTS, _x11.Atoms._MOTIF_WM_HINTS, 32,
                 PropertyMode.Replace, ref hints, 5);
+        }
+
+        /// <summary>
+        /// Append `_NET_WM_PID` atom to X11 window
+        /// </summary>
+        /// <param name="windowXId"></param>
+        private void AppendPid(IntPtr windowXId)
+        {
+            // See https://github.com/AvaloniaUI/Avalonia/issues/17444
+            var pid = (uint)s_pid;
+            // The type of `_NET_WM_PID` is `CARDINAL` which is 32-bit unsigned integer, see https://specifications.freedesktop.org/wm-spec/1.3/ar01s05.html
+            XChangeProperty(_x11.Display, windowXId,
+                _x11.Atoms._NET_WM_PID, _x11.Atoms.XA_CARDINAL, 32,
+                PropertyMode.Replace, ref pid, 1);
+
+            const int maxLength = 1024;
+            var name = stackalloc byte[maxLength];
+            var result = gethostname(name, maxLength);
+            if (result != 0)
+            {
+                // Fail
+                return;
+            }
+
+            var length = 0;
+            while (length < maxLength && name[length] != 0)
+            {
+                length++;
+            }
+
+            XChangeProperty(_x11.Display, windowXId,
+                _x11.Atoms.XA_WM_CLIENT_MACHINE, _x11.Atoms.XA_STRING, 8,
+                PropertyMode.Replace, name, length);
+        }
+
+        [DllImport("libc")]
+        private static extern int gethostname(byte* name, int len);
+
+        private static readonly int s_pid = GetProcessId();
+
+        private static int GetProcessId()
+        {
+#if NET6_0_OR_GREATER
+            var pid = Environment.ProcessId;
+#else
+            using var currentProcess = Process.GetCurrentProcess();
+            var pid = currentProcess.Id;
+#endif
+            return pid;
         }
 
         private void UpdateSizeHints(PixelSize? preResize, bool forceDisableResize = false)
@@ -1256,7 +1308,7 @@ namespace Avalonia.X11
             }
         }
 
-        public void SetWmClass(IntPtr handle, string wmClass)
+        public void SetWmClass(IntPtr handle, string? wmClass)
         {
             // See https://tronche.com/gui/x/icccm/sec-4.html#WM_CLASS
             // We don't actually parse the application's command line, so we only use RESOURCE_NAME and argv[0]
