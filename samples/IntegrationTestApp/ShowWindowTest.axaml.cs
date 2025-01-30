@@ -72,7 +72,7 @@ namespace IntegrationTestApp
             _orderTextBox!.Text = MacOSIntegration.GetOrderedIndex(this).ToString();
         }
 
-        private void AddToWidth_Click(object? sender, RoutedEventArgs e) => Width += 10;
-        private void AddToHeight_Click(object? sender, RoutedEventArgs e) => Height += 10;
+        private void AddToWidth_Click(object? sender, RoutedEventArgs e) => Width = Bounds.Width + 10;
+        private void AddToHeight_Click(object? sender, RoutedEventArgs e) => Height = Bounds.Height + 10;
     }
 }
