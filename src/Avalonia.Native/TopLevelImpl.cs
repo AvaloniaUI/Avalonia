@@ -95,7 +95,7 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
     {
         _handle = handle;
         _savedLogicalSize = ClientSize;
-        _savedScaling = RenderScaling;
+        _savedScaling = Native?.Scaling ?? 1;;
         _nativeControlHost = new NativeControlHostImpl(Native!.CreateNativeControlHost());
         _platformBehaviorInhibition = new PlatformBehaviorInhibition(Factory.CreatePlatformBehaviorInhibition());
         _surfaces = new object[] { new GlPlatformSurface(Native), new MetalPlatformSurface(Native), this };
@@ -121,7 +121,8 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
 
         }
     }
-    public double RenderScaling => Native?.Scaling ?? 1;
+
+    public double RenderScaling => _savedScaling;
     public IEnumerable<object> Surfaces => _surfaces ?? Array.Empty<object>();
     public Action<RawInputEventArgs>? Input { get; set; }
     public Action<Rect>? Paint { get; set; }

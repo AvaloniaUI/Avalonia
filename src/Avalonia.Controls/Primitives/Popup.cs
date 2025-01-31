@@ -141,8 +141,21 @@ namespace Avalonia.Controls.Primitives
         public static readonly AttachedProperty<bool> TakesFocusFromNativeControlProperty =
             AvaloniaProperty.RegisterAttached<Popup, Control, bool>(nameof(TakesFocusFromNativeControl), true);
 
+        /// <summary>
+        /// Defines the <see cref="ShouldUseOverlayLayer"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> ShouldUseOverlayLayerProperty =
+            AvaloniaProperty.Register<Popup, bool>(nameof(ShouldUseOverlayLayer));
+
+        /// <summary>
+        /// Defines the <see cref="IsUsingOverlayLayer"/> property.
+        /// </summary>
+        public static readonly DirectProperty<Popup, bool> IsUsingOverlayLayerProperty = AvaloniaProperty.RegisterDirect<Popup, bool>(
+            nameof(IsUsingOverlayLayer), o => o.IsUsingOverlayLayer);
+
         private bool _isOpenRequested;
         private bool _ignoreIsOpenChanged;
+        private bool _isUsingOverlayLayer;
         private PopupOpenState? _openState;
         private Action<IPopupHost?>? _popupHostChangedHandler;
 
@@ -386,6 +399,29 @@ namespace Avalonia.Controls.Primitives
             set => SetValue(TakesFocusFromNativeControlProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets a value that indicates whether the popup should be shown in the overlay layer of the parent window.
+        /// </summary>
+        /// <remarks>
+        /// When <see cref="ShouldUseOverlayLayer"/> is "false" implementation depends on the platform.
+        /// Use <see cref="IsUsingOverlayLayer"/> to get actual popup behavior.
+        /// This is an equvalent of `OverlayPopups` property of the platform options, but settable independently per each popup. 
+        /// </remarks>
+        public bool ShouldUseOverlayLayer
+        {
+            get => GetValue(ShouldUseOverlayLayerProperty);
+            set => SetValue(ShouldUseOverlayLayerProperty, value);
+        }
+
+        /// <summary>
+        /// Gets a value that indicates whether the popup is shown in the overlay layer of the parent window.
+        /// </summary>
+        public bool IsUsingOverlayLayer
+        {
+            get => _isUsingOverlayLayer;
+            private set => SetAndRaise(IsUsingOverlayLayerProperty, ref _isUsingOverlayLayer, value);
+        }
+
         IPopupHost? IPopupHostProvider.PopupHost => Host;
 
         event Action<IPopupHost?>? IPopupHostProvider.PopupHostChanged 
@@ -423,7 +459,7 @@ namespace Avalonia.Controls.Primitives
 
             _isOpenRequested = false;
 
-            var popupHost = OverlayPopupHost.CreatePopupHost(placementTarget, DependencyResolver);
+            var popupHost = OverlayPopupHost.CreatePopupHost(placementTarget, DependencyResolver, ShouldUseOverlayLayer);
             var handlerCleanup = new CompositeDisposable(7);
 
             UpdateHostSizing(popupHost, topLevel, placementTarget);
@@ -541,6 +577,7 @@ namespace Avalonia.Controls.Primitives
             WindowManagerAddShadowHintChanged(popupHost, WindowManagerAddShadowHint);
 
             popupHost.Show();
+            IsUsingOverlayLayer = popupHost is OverlayPopupHost;
 
             if (TakesFocusFromNativeControl)
                 popupHost.TakeFocus();
