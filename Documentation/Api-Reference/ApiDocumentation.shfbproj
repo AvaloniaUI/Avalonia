@@ -84,6 +84,7 @@
       <DocumentationSource sourceFile="..\..\src\Windows\Avalonia.Direct2D1\Avalonia.Direct2D1.csproj" TargetFramework="$(AvsCurrentTargetFramework)" />
       <DocumentationSource sourceFile="..\..\src\Windows\Avalonia.Win32.Automation\Avalonia.Win32.Automation.csproj" TargetFramework="$(AvsCurrentTargetFramework)" />
       <DocumentationSource sourceFile="..\..\src\Windows\Avalonia.Win32\Avalonia.Win32.csproj" TargetFramework="$(AvsCurrentTargetFramework)" />
+	  
       <!-- TODO: These two don't work as intended.  -->
       <!-- <DocumentationSource sourceFile="..\..\src\Windows\Avalonia.Win32.Interoperability\Avalonia.Win32.Interoperability.csproj" TargetFramework="$(AvsCurrentTargetFramework)" /> -->
       <!-- <DocumentationSource sourceFile="..\..\src\Tizen\Avalonia.Tizen\Avalonia.Tizen.csproj" TargetFramework="$(AvsCurrentTizenTargetFramework)" /> -->

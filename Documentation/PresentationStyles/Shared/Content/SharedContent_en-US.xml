@@ -255,8 +255,8 @@
   <item id="boilerplate_unstableLong">Note: This API is unstable and may change in a future release.</item>
 
   <!--  NotClientImplementable API text-->
-  <item id="boilerplate_unstableShort">Not client implementable.</item>
-  <item id="boilerplate_unstableLong">Note: This interface is not client implementable. You need to enable PrivateApi if you want to implement this interface.</item>
+  <item id="boilerplate_notClientImplementableShort">Not client implementable.</item>
+  <item id="boilerplate_notClientImplementableLong">Note: This interface is not client implementable. You need to enable PrivateApi if you want to implement this interface.</item>
   
 	<!-- See Also section text-->
   <item id="boilerplate_seeAlsoNamespaceLink">{0} Namespace</item>

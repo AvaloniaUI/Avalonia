@@ -19,6 +19,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using Avalonia.Sandcastle.PresentationStyles.Properties;
@@ -36,14 +37,15 @@ namespace Avalonia.Sandcastle.PresentationStyles.AvaloniaHtml
     public sealed class AvaloniaHtmlPresentationStyle : PresentationStyleSettings
     {
         /// <inheritdoc />
-        public override string Location =>
-            @"C:\Users\timun\source\repos\#OSS\Avalonia\Documentation\Api-Reference\DeployPresentationStyle\Components\"; // TODO: ComponentUtilities.AssemblyFolder(Assembly.GetExecutingAssembly());
+        public override string Location => ComponentUtilities.AssemblyFolder(Assembly.GetExecutingAssembly()); 
 
         /// <summary>
         /// Constructor
         /// </summary>
         public AvaloniaHtmlPresentationStyle()
         {
+            Trace.WriteLine(Location);
+            
             // The base path of the presentation style files relative to the assembly's location
             this.BasePath = "AvaloniaHtml";
 
