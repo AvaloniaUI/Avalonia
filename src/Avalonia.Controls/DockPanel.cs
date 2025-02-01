@@ -143,6 +143,16 @@ namespace Avalonia.Controls
                 child.Measure(childConstraint);
                 var childDesiredSize = child.DesiredSize;
 
+                // Now, we adjust:
+                // 1. Size consumed by children (accumulatedSize).  This will be used when computing subsequent
+                //    children to determine how much space is remaining for them.
+                // 2. Parent size implied by this child (parentSize) when added to the current children (accumulatedSize).
+                //    This is different from the size above in one respect: A Dock.Left child implies a height, but does
+                //    not actually consume any height for subsequent children.
+                // If we accumulate size in a given dimension, the next child (or the end conditions after the child loop)
+                // will deal with computing our minimum size (parentSize) due to that accumulation.
+                // Therefore, we only need to compute our minimum size (parentSize) in dimensions that this child does
+                //   not accumulate: Width for Top/Bottom, Height for Left/Right.
                 switch (child.GetValue(DockProperty))
                 {
                     case Dock.Left:
