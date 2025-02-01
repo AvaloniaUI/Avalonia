@@ -1,5 +1,6 @@
 namespace Avalonia.Media.Imaging
 {
+    // TODO12 split the enum into two: composite mode and blend mode. (And rename Blending to Blend at the same time).
     /// <summary>
     /// Controls the way the bitmaps are drawn together.
     /// </summary>
@@ -55,10 +56,6 @@ namespace Avalonia.Media.Imaging
         /// Display the sum of the source image and destination image.
         /// </summary>
         Plus,
-        /// <summary>
-        /// Multiplies all components (alpha and color).
-        /// </summary>
-        Modulate,
         /// <summary>
         /// Multiplies the complements of the backdrop and source color values, then complements the result.
         /// </summary>

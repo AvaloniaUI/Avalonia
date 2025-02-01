@@ -29,8 +29,6 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
         [Fact]
         public async Task Image_Blend_Plus() => await TestBlendMode(BitmapBlendingMode.Plus);
         [Fact]
-        public async Task Image_Blend_Modulate() => await TestBlendMode(BitmapBlendingMode.Modulate);
-        [Fact]
         public async Task Image_Blend_Screen() => await TestBlendMode(BitmapBlendingMode.Screen);
         [Fact]
         public async Task Image_Blend_Overlay() => await TestBlendMode(BitmapBlendingMode.Overlay);

@@ -44,7 +44,6 @@ namespace Avalonia.Skia
                 BitmapBlendingMode.DestinationAtop => SKBlendMode.DstATop,
                 BitmapBlendingMode.Xor => SKBlendMode.Xor,
                 BitmapBlendingMode.Plus => SKBlendMode.Plus,
-                BitmapBlendingMode.Modulate => SKBlendMode.Modulate,
                 BitmapBlendingMode.Screen => SKBlendMode.Screen,
                 BitmapBlendingMode.Overlay => SKBlendMode.Overlay,
                 BitmapBlendingMode.Darken => SKBlendMode.Darken,
