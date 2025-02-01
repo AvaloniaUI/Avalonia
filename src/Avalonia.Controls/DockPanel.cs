@@ -139,8 +139,8 @@ namespace Avalonia.Controls
             {
                 var child = Children[index];
                 var childConstraint = new Size(
-                    GetPositiveOrZero(availableSize.Width - accumulatedWidth),
-                    GetPositiveOrZero(availableSize.Height - accumulatedHeight));
+                    Math.Max(0, availableSize.Width - accumulatedWidth),
+                    Math.Max(0, availableSize.Height - accumulatedHeight));
 
                 child.Measure(childConstraint);
                 var childDesiredSize = child.DesiredSize;
@@ -185,8 +185,8 @@ namespace Avalonia.Controls
             {
                 var child = Children[Children.Count - 1];
                 var childConstraint = new Size(
-                    GetPositiveOrZero(availableSize.Width - accumulatedWidth),
-                    GetPositiveOrZero(availableSize.Height - accumulatedHeight));
+                    Math.Max(0, availableSize.Width - accumulatedWidth),
+                    Math.Max(0, availableSize.Height - accumulatedHeight));
 
                 child.Measure(childConstraint);
                 var childDesiredSize = child.DesiredSize;
@@ -233,7 +233,7 @@ namespace Avalonia.Controls
                         width = Math.Min(child.DesiredSize.Width, currentBounds.Width);
                         child.Arrange(currentBounds.WithWidth(width));
                         width += HorizontalSpacing;
-                        currentBounds = new Rect(currentBounds.X + width, currentBounds.Y, GetPositiveOrZero(currentBounds.Width - width), currentBounds.Height);
+                        currentBounds = new Rect(currentBounds.X + width, currentBounds.Y, Math.Max(0, currentBounds.Width - width), currentBounds.Height);
 
                         break;
                     case Dock.Top:
@@ -241,7 +241,7 @@ namespace Avalonia.Controls
                         height = Math.Min(child.DesiredSize.Height, currentBounds.Height);
                         child.Arrange(currentBounds.WithHeight(height));
                         height += VerticalSpacing;
-                        currentBounds = new Rect(currentBounds.X, currentBounds.Y + height, currentBounds.Width, GetPositiveOrZero(currentBounds.Height - height));
+                        currentBounds = new Rect(currentBounds.X, currentBounds.Y + height, currentBounds.Width, Math.Max(0, currentBounds.Height - height));
 
                         break;
                     case Dock.Right:
@@ -249,7 +249,7 @@ namespace Avalonia.Controls
                         width = Math.Min(child.DesiredSize.Width, currentBounds.Width);
                         child.Arrange(new Rect(currentBounds.X + currentBounds.Width - width, currentBounds.Y, width, currentBounds.Height));
                         width += HorizontalSpacing;
-                        currentBounds = currentBounds.WithWidth(GetPositiveOrZero(currentBounds.Width - width));
+                        currentBounds = currentBounds.WithWidth(Math.Max(0, currentBounds.Width - width));
 
                         break;
                     case Dock.Bottom:
@@ -257,7 +257,7 @@ namespace Avalonia.Controls
                         height = Math.Min(child.DesiredSize.Height, currentBounds.Height);
                         child.Arrange(new Rect(currentBounds.X, currentBounds.Y + currentBounds.Height - height, currentBounds.Width, height));
                         height += VerticalSpacing;
-                        currentBounds = currentBounds.WithHeight(GetPositiveOrZero(currentBounds.Height - height));
+                        currentBounds = currentBounds.WithHeight(Math.Max(0, currentBounds.Height - height));
 
                         break;
                 }
@@ -271,7 +271,5 @@ namespace Avalonia.Controls
 
             return finalSize;
         }
-
-        private static double GetPositiveOrZero(double value) => Math.Max(value, 0);
     }
 }
