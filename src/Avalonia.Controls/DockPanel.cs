@@ -124,8 +124,8 @@ namespace Avalonia.Controls
         /// <returns>The Panel's desired size.</returns>
         protected override Size MeasureOverride(Size availableSize)
         {
-            var parentWidth = 0.0;
-            var parentHeight = 0.0;
+            var parentWidth = 0d;
+            var parentHeight = 0d;
             var accumulatedWidth = 0d;
             var accumulatedHeight = 0d;
 
@@ -187,8 +187,9 @@ namespace Avalonia.Controls
                     accumulatedHeight -= VerticalSpacing;
             }
 
-            parentWidth = Math.Min(availableSize.Width, Math.Max(parentWidth, accumulatedWidth));
-            parentHeight = Math.Min(availableSize.Height, Math.Max(parentHeight, accumulatedHeight));
+            // Make sure the final accumulated size is reflected in parentSize.
+            parentWidth = Math.Max(parentWidth, accumulatedWidth);
+            parentHeight = Math.Max(parentHeight, accumulatedHeight);
             return new Size(parentWidth, parentHeight);
         }
 
