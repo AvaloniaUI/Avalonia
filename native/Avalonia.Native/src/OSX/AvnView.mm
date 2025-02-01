@@ -290,7 +290,7 @@
         delta.Y = [event deltaY];
     }
 
-    float pressure = 0.0f;
+    float pressure = 0.5f;
     float xTilt = 0.0f;
     float yTilt = 0.0f;
     AvnPointerDeviceType pointerType = AvnPointerDeviceType::Mouse;
@@ -317,6 +317,7 @@
             pointerType = AvnPointerDeviceType::Pen;
             break;
         case NSEventSubtypeTabletProximity:
+            pressure = 0.0f;
             pointerType = AvnPointerDeviceType::Pen;
             break;
         default:
