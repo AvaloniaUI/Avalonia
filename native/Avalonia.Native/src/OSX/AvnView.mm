@@ -314,6 +314,8 @@
             }
             xTilt =  event.tilt.x * 90;
             yTilt = -event.tilt.y * 90;
+            pointerType = AvnPointerDeviceType::Pen;
+            break;
         case NSEventSubtypeTabletProximity:
             pointerType = AvnPointerDeviceType::Pen;
             break;
