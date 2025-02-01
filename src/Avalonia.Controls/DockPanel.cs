@@ -129,10 +129,8 @@ namespace Avalonia.Controls
             var accumulatedWidth = 0d;
             var accumulatedHeight = 0d;
 
-            var leftSpacing = false;
-            var topSpacing = false;
-            var rightSpacing = false;
-            var bottomSpacing = false;
+            var horizontalSpacing = false;
+            var verticalSpacing = false;
             var childrenCount = LastChildFill ? Children.Count - 1 : Children.Count;
 
             for (var index = 0; index < childrenCount; ++index)
@@ -148,15 +146,8 @@ namespace Avalonia.Controls
                 switch (child.GetValue(DockProperty))
                 {
                     case Dock.Left:
-                        leftSpacing = true;
-                        parentHeight = Math.Max(parentHeight, accumulatedHeight + childDesiredSize.Height);
-                        if (childConstraint.Width is not 0)
-                            accumulatedWidth += HorizontalSpacing;
-                        accumulatedWidth += childDesiredSize.Width;
-                        break;
-
                     case Dock.Right:
-                        rightSpacing = true;
+                        horizontalSpacing = true;
                         parentHeight = Math.Max(parentHeight, accumulatedHeight + childDesiredSize.Height);
                         if (childConstraint.Width is not 0)
                             accumulatedWidth += HorizontalSpacing;
@@ -164,15 +155,8 @@ namespace Avalonia.Controls
                         break;
 
                     case Dock.Top:
-                        topSpacing = true;
-                        parentWidth = Math.Max(parentWidth, accumulatedWidth + childDesiredSize.Width);
-                        if (childConstraint.Height is not 0)
-                            accumulatedHeight += VerticalSpacing;
-                        accumulatedHeight += childDesiredSize.Height;
-                        break;
-
                     case Dock.Bottom:
-                        bottomSpacing = true;
+                        verticalSpacing = true;
                         parentWidth = Math.Max(parentWidth, accumulatedWidth + childDesiredSize.Width);
                         if (childConstraint.Height is not 0)
                             accumulatedHeight += VerticalSpacing;
@@ -197,9 +181,9 @@ namespace Avalonia.Controls
             }
             else
             {
-                if (leftSpacing || rightSpacing)
+                if (horizontalSpacing)
                     accumulatedWidth -= HorizontalSpacing;
-                if (bottomSpacing || topSpacing)
+                if (verticalSpacing)
                     accumulatedHeight -= VerticalSpacing;
             }
 
