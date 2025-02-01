@@ -159,8 +159,7 @@ namespace Avalonia.Controls
                     case Dock.Right:
                         horizontalSpacing = true;
                         parentHeight = Math.Max(parentHeight, accumulatedHeight + childDesiredSize.Height);
-                        if (childConstraint.Width is not 0)
-                            accumulatedWidth += HorizontalSpacing;
+                        accumulatedWidth += HorizontalSpacing;
                         accumulatedWidth += childDesiredSize.Width;
                         break;
 
@@ -168,8 +167,7 @@ namespace Avalonia.Controls
                     case Dock.Bottom:
                         verticalSpacing = true;
                         parentWidth = Math.Max(parentWidth, accumulatedWidth + childDesiredSize.Width);
-                        if (childConstraint.Height is not 0)
-                            accumulatedHeight += VerticalSpacing;
+                        accumulatedHeight += VerticalSpacing;
                         accumulatedHeight += childDesiredSize.Height;
                         break;
                 }
