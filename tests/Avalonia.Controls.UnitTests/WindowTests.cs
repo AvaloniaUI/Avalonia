@@ -1060,7 +1060,7 @@ namespace Avalonia.Controls.UnitTests
             }
             
             [Fact]
-            public void IsVisible_Should_Close_DialogWindow()
+            public async Task IsVisible_Should_Close_DialogWindow()
             {
                 using (UnitTestApplication.Start(TestServices.StyledWindow))
                 {
@@ -1078,8 +1078,9 @@ namespace Avalonia.Controls.UnitTests
                     target.IsVisible = false;
 
                     Assert.True(raised);
-                    
-                    Assert.False(task.Result);
+
+                    var result = await task;
+                    Assert.False(result);
                 }
             }
             
