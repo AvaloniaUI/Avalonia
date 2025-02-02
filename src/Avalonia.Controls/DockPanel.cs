@@ -157,17 +157,23 @@ namespace Avalonia.Controls
                 {
                     case Dock.Left:
                     case Dock.Right:
-                        horizontalSpacing = true;
                         parentHeight = Math.Max(parentHeight, accumulatedHeight + childDesiredSize.Height);
-                        accumulatedWidth += HorizontalSpacing;
+                        if (child.IsVisible)
+                        {
+                            accumulatedWidth += HorizontalSpacing;
+                            horizontalSpacing = true;
+                        }
                         accumulatedWidth += childDesiredSize.Width;
                         break;
 
                     case Dock.Top:
                     case Dock.Bottom:
-                        verticalSpacing = true;
                         parentWidth = Math.Max(parentWidth, accumulatedWidth + childDesiredSize.Width);
-                        accumulatedHeight += VerticalSpacing;
+                        if (child.IsVisible)
+                        {
+                            accumulatedHeight += VerticalSpacing;
+                            verticalSpacing = true;
+                        }
                         accumulatedHeight += childDesiredSize.Height;
                         break;
                 }
@@ -217,6 +223,9 @@ namespace Avalonia.Controls
             for (var index = 0; index < childrenCount; ++index)
             {
                 var child = Children[index];
+                if (!child.IsVisible)
+                    continue;
+
                 var dock = child.GetValue(DockProperty);
                 double width, height;
                 switch (dock)
