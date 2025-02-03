@@ -648,14 +648,7 @@ namespace Avalonia.Controls
                     }
                     else
                     {
-                        if (_showingAsDialog)
-                        {
-                            Close(false);
-                        }
-                        else
-                        {
-                            Hide();
-                        }
+                        Hide();
                     }
                 }
             }
