@@ -204,6 +204,36 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Identifies the CanUserAddRows dependency property.
+        /// </summary>
+        public static readonly StyledProperty<bool> CanUserAddRowsProperty =
+            AvaloniaProperty.Register<DataGrid, bool>(nameof(CanUserAddRows));
+
+        /// <summary>
+        /// Gets or sets a value that indicates whether the user can add rows.
+        /// </summary>
+        public bool CanUserAddRows
+        {
+            get { return GetValue(CanUserAddRowsProperty); }
+            set { SetValue(CanUserAddRowsProperty, value); }
+        }
+
+        /// <summary>
+        /// Identifies the CanUserDeleteRows dependency property.
+        /// </summary>
+        public static readonly StyledProperty<bool> CanUserDeleteRowsProperty =
+            AvaloniaProperty.Register<DataGrid, bool>(nameof(CanUserDeleteRows));
+
+        /// <summary>
+        /// Gets or sets a value that indicates whether the user can delete rows.
+        /// </summary>
+        public bool CanUserDeleteRows
+        {
+            get { return GetValue(CanUserDeleteRowsProperty); }
+            set { SetValue(CanUserDeleteRowsProperty, value); }
+        }
+
+        /// <summary>
         /// Identifies the ColumnHeaderHeight dependency property.
         /// </summary>
         public static readonly StyledProperty<double> ColumnHeaderHeightProperty =
@@ -3395,7 +3425,7 @@ namespace Avalonia.Controls
                 return false;
             }
             Debug.Assert(EditingRow != null);
-            Debug.Assert(EditingRow.Slot == CurrentSlot);
+            Debug.Assert(EditingRow.DataContext == DataGridCollectionView.NewItemPlaceholder || EditingRow.Slot == CurrentSlot);
 
             // Finally, we can prepare the cell for editing
             _editingColumnIndex = CurrentColumnIndex;
@@ -4120,7 +4150,7 @@ namespace Avalonia.Controls
                     return true;
                 }
                 Debug.Assert(EditingRow != null);
-                Debug.Assert(EditingRow.Slot == currentSlot);
+                Debug.Assert(EditingRow != null && (EditingRow.DataContext == DataGridCollectionView.NewItemPlaceholder || EditingRow.Slot == CurrentSlot));
                 Debug.Assert(_editingColumnIndex != -1);
                 Debug.Assert(_editingColumnIndex == CurrentColumnIndex);
             }
@@ -4138,7 +4168,7 @@ namespace Avalonia.Controls
                     return true;
                 }
                 Debug.Assert(EditingRow != null);
-                Debug.Assert(EditingRow.Slot == currentSlot);
+                Debug.Assert(EditingRow != null && (EditingRow.DataContext == DataGridCollectionView.NewItemPlaceholder || EditingRow.Slot == CurrentSlot));
                 Debug.Assert(_editingColumnIndex != -1);
                 Debug.Assert(_editingColumnIndex == CurrentColumnIndex);
             }
@@ -4182,14 +4212,22 @@ namespace Avalonia.Controls
                 }
 
                 var editBinding = CurrentColumn?.CellEditBinding;
-                if (editBinding != null && !editBinding.CommitEdit())
+                if (editBinding != null)
                 {
-                    SetValidationStatus(editBinding);
-                    _validationSubscription?.Dispose();
-                    _validationSubscription = editBinding.ValidationChanged.Subscribe(v => SetValidationStatus(editBinding));
+                    //there's a chance that commiting this edit will cause a focus loss which triggers a commit cycle of its own
+                    //so if that happens we can safely bail out here
+                    bool commitOk = editBinding.CommitEdit();
+                    if (commitOk && EditingRow == null)
+                        return false;
+                    else if (!commitOk)
+                    {
+                        SetValidationStatus(editBinding);
+                        _validationSubscription?.Dispose();
+                        _validationSubscription = editBinding.ValidationChanged.Subscribe(v => SetValidationStatus(editBinding));
 
-                    ScrollSlotIntoView(CurrentColumnIndex, CurrentSlot, forCurrentCellChange: false, forceHorizontalScroll: true);
-                    return false;
+                        ScrollSlotIntoView(CurrentColumnIndex, CurrentSlot, forCurrentCellChange: false, forceHorizontalScroll: true);
+                        return false;
+                    }
                 }
             }
 
@@ -4240,8 +4278,14 @@ namespace Avalonia.Controls
             {
                 return true;
             }
-            if (_editingColumnIndex != -1 || (editAction == DataGridEditAction.Cancel && raiseEvents &&
-                !((DataConnection.EditableCollectionView != null && DataConnection.EditableCollectionView.CanCancelEdit) || (EditingRow.DataContext is IEditableObject))))
+            if (_editingColumnIndex != -1 
+                || (editAction == DataGridEditAction.Cancel && raiseEvents &&
+                    !(
+                        (DataConnection.EditableCollectionView != null 
+                        && (DataConnection.EditableCollectionView.CanCancelEdit || DataConnection.EditableCollectionView.IsAddingNew))
+                    || (EditingRow.DataContext is IEditableObject)
+                    )
+                ))
             {
                 // Ending the row edit will fail immediately under the following conditions:
                 // 1. We haven't ended the cell edit yet.
@@ -4449,7 +4493,7 @@ namespace Avalonia.Controls
             Debug.Assert(CurrentColumnIndex < ColumnsItemsInternal.Count);
             Debug.Assert(CurrentSlot >= -1);
             Debug.Assert(CurrentSlot < SlotCount);
-            Debug.Assert(EditingRow != null && EditingRow.Slot == CurrentSlot);
+            Debug.Assert(EditingRow != null && (EditingRow.DataContext == DataGridCollectionView.NewItemPlaceholder || EditingRow.Slot == CurrentSlot));
             Debug.Assert(_editingColumnIndex != -1);
 
             //IsTabStop = false;
@@ -4677,7 +4721,7 @@ namespace Avalonia.Controls
             Debug.Assert(_editingColumnIndex >= 0);
             Debug.Assert(_editingColumnIndex < ColumnsItemsInternal.Count);
             Debug.Assert(_editingColumnIndex == CurrentColumnIndex);
-            Debug.Assert(EditingRow != null && EditingRow.Slot == CurrentSlot);
+            Debug.Assert(EditingRow != null && (EditingRow.DataContext == DataGridCollectionView.NewItemPlaceholder || EditingRow.Slot == CurrentSlot));
 
             FocusEditingCell(setFocus: ContainsFocus || _focusEditingControl);
 
@@ -4759,6 +4803,9 @@ namespace Avalonia.Controls
 
                 case Key.Insert:
                     return ProcessCopyKey(e.KeyModifiers);
+
+                case Key.Delete:
+                    return ProcessDeleteKey();
             }
             if (focusDataGrid)
             {
@@ -5505,6 +5552,28 @@ namespace Avalonia.Controls
                 NoSelectionChangeCount--;
             }
             return _successfullyUpdatedSelection;
+        }
+
+        private bool ProcessDeleteKey()
+        {
+            if (!DataConnection.CanRemove)
+                return false;
+
+            object[] toRemove = _selectedItems.OfType<object>()
+                .Where(context => context != DataGridCollectionView.NewItemPlaceholder)
+                .ToArray();
+
+            if (toRemove.Length == 0)
+                return false;
+
+            //make sure to commit any edits since rows are going to move (this should be covered by the CanRemove check anyway)
+            if (!EndRowEdit(DataGridEditAction.Commit, true, true))
+                return false;
+
+            foreach (object item in toRemove)
+                DataConnection.Remove(item);
+
+            return true;
         }
 
         private void RemoveDisplayedColumnHeader(DataGridColumn dataGridColumn)
