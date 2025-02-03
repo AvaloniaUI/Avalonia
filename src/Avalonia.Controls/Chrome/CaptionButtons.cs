@@ -21,6 +21,7 @@ namespace Avalonia.Controls.Chrome
         internal const string PART_FullScreenButton = "PART_FullScreenButton";
 
         private Button? _restoreButton;
+        private Button? _minimizeButton;
         private IDisposable? _disposables;
 
         /// <summary>
@@ -36,11 +37,17 @@ namespace Avalonia.Controls.Chrome
 
                 _disposables = new CompositeDisposable
                 {
-                    HostWindow.GetObservable(Window.CanResizeProperty)
+                    HostWindow.GetObservable(Window.CanMaximizeProperty)
                         .Subscribe(x =>
                         {
                             if (_restoreButton is not null)
                                 _restoreButton.IsEnabled = x;
+                        }),
+                    HostWindow.GetObservable(Window.CanMinimizeProperty)
+                        .Subscribe(x =>
+                        {
+                            if (_minimizeButton is not null)
+                                _minimizeButton.IsEnabled = x;
                         }),
                     HostWindow.GetObservable(Window.WindowStateProperty)
                         .Subscribe(x =>
@@ -116,7 +123,7 @@ namespace Avalonia.Controls.Chrome
                     OnRestore();
                     args.Handled = true;
                 };
-                restoreButton.IsEnabled = HostWindow?.CanResize ?? true;
+                restoreButton.IsEnabled = HostWindow?.CanMaximize ?? true;
                 _restoreButton = restoreButton;
             }
             
@@ -127,6 +134,8 @@ namespace Avalonia.Controls.Chrome
                     OnMinimize();
                     args.Handled = true;
                 };
+                minimizeButton.IsEnabled = HostWindow?.CanMinimize ?? true;
+                _minimizeButton = minimizeButton;
             }
             
             if (e.NameScope.Find<Button>(PART_FullScreenButton) is { } fullScreenButton)

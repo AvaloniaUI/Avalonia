@@ -137,6 +137,8 @@ namespace Avalonia.Win32
             {
                 ShowInTaskbar = false,
                 IsResizable = true,
+                IsMinimizable = true,
+                IsMaximizable = true,
                 Decorations = SystemDecorations.Full
             };
 
@@ -873,6 +875,24 @@ namespace Avalonia.Win32
             UpdateWindowProperties(newWindowProperties);
         }
 
+        public void SetCanMinimize(bool value)
+        {
+            var newWindowProperties = _windowProperties;
+
+            newWindowProperties.IsMinimizable = value;
+
+            UpdateWindowProperties(newWindowProperties);
+        }
+
+        public void SetCanMaximize(bool value)
+        {
+            var newWindowProperties = _windowProperties;
+
+            newWindowProperties.IsMaximizable = value;
+
+            UpdateWindowProperties(newWindowProperties);
+        }
+
         public void SetSystemDecorations(SystemDecorations value)
         {
             var newWindowProperties = _windowProperties;
@@ -1440,15 +1460,19 @@ namespace Avalonia.Win32
                     style |= WindowStyles.WS_VISIBLE;
 
                 if (newProperties.IsResizable || newProperties.WindowState == WindowState.Maximized)
-                {
                     style |= WindowStyles.WS_THICKFRAME;
-                    style |= WindowStyles.WS_MAXIMIZEBOX;
-                }
                 else
-                {
                     style &= ~WindowStyles.WS_THICKFRAME;
+
+                if (newProperties.IsMinimizable)
+                    style |= WindowStyles.WS_MINIMIZEBOX;
+                else
+                    style &= ~WindowStyles.WS_MINIMIZEBOX;
+
+                if (newProperties.IsMaximizable || newProperties.WindowState == WindowState.Maximized)
+                    style |= WindowStyles.WS_MAXIMIZEBOX;
+                else
                     style &= ~WindowStyles.WS_MAXIMIZEBOX;
-                }
 
                 const WindowStyles fullDecorationFlags = WindowStyles.WS_CAPTION | WindowStyles.WS_SYSMENU | WindowStyles.WS_BORDER;
 
@@ -1671,6 +1695,8 @@ namespace Avalonia.Win32
         {
             public bool ShowInTaskbar;
             public bool IsResizable;
+            public bool IsMinimizable;
+            public bool IsMaximizable;
             public SystemDecorations Decorations;
             public bool IsFullScreen;
             public WindowState WindowState;

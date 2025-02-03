@@ -77,6 +77,16 @@ namespace Avalonia.Native
             _native.SetCanResize(value.AsComBool());
         }
 
+        public void SetCanMinimize(bool value)
+        {
+            // TODO: implement
+        }
+
+        public void SetCanMaximize(bool value)
+        {
+            // TODO: implement
+        }
+
         public void SetSystemDecorations(Controls.SystemDecorations enabled)
         {
             _native.SetDecorations((Interop.SystemDecorations)enabled);

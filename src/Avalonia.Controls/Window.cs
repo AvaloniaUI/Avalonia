@@ -250,6 +250,8 @@ namespace Avalonia.Controls
             CreatePlatformImplBinding(TitleProperty, title => PlatformImpl!.SetTitle(title));
             CreatePlatformImplBinding(IconProperty, icon => PlatformImpl!.SetIcon((icon ?? s_defaultIcon.Value)?.PlatformImpl));
             CreatePlatformImplBinding(CanResizeProperty, canResize => PlatformImpl!.CanResize(canResize));
+            CreatePlatformImplBinding(CanMinimizeProperty, canMinimize => PlatformImpl!.SetCanMinimize(canMinimize));
+            CreatePlatformImplBinding(CanMaximizeProperty, canMaximize => PlatformImpl!.SetCanMaximize(canMaximize));
             CreatePlatformImplBinding(ShowInTaskbarProperty, show => PlatformImpl!.ShowTaskbarIcon(show));
 
             CreatePlatformImplBinding(WindowStateProperty, state => PlatformImpl!.WindowState = state);

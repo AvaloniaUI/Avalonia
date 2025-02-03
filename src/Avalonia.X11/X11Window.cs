@@ -1159,6 +1159,16 @@ namespace Avalonia.X11
             UpdateSizeHints(null);
         }
 
+        public void SetCanMinimize(bool value)
+        {
+            // TODO: implement
+        }
+
+        public void SetCanMaximize(bool value)
+        {
+            // TODO: implement
+        }
+
         public void SetCursor(ICursorImpl? cursor)
         {
             if (cursor == null)
