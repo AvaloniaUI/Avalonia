@@ -613,13 +613,12 @@ namespace Avalonia.Controls
                     }
                 }
 
+                Owner = null;
                 PlatformImpl?.Hide();
                 IsVisible = false;
 
                 _modalSubscription?.Dispose();
                 _shown = false;
-
-                Owner = null;
             }
         }
 
