@@ -9,6 +9,29 @@ namespace Avalonia.Controls.Primitives
         private static readonly FuncTemplate<Panel?> DefaultPanel =
             new(() => new WrapPanel { Orientation = Orientation.Horizontal });
 
+        /// <summary>
+        /// Defines the <see cref="SelectionMode"/> property.
+        /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1010",
+            Justification = "This property is owned by SelectingItemsControl, but protected there. TabStrip changes its visibility.")]
+        public static readonly new StyledProperty<SelectionMode> SelectionModeProperty =
+            SelectingItemsControl.SelectionModeProperty;
+
+        /// <summary>
+        /// Gets or sets the selection mode.
+        /// </summary>
+        /// <remarks>
+        /// Note that the selection mode only applies to selections made via user interaction.
+        /// Multiple selections can be made programmatically regardless of the value of this property.
+        /// </remarks>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012",
+            Justification = "This property is owned by SelectingItemsControl, but protected there. TabStrip changes its visibility.")]
+        public new SelectionMode SelectionMode
+        {
+            get => base.SelectionMode;
+            set => base.SelectionMode = value;
+        }
+
         static TabStrip()
         {
             FocusableProperty.OverrideDefaultValue(typeof(TabStrip), false);
