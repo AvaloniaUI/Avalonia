@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using Avalonia.Collections;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
@@ -177,7 +178,7 @@ public class DataGridComboBoxColumn : DataGridBoundColumn
 
         SyncProperties(comboBox);
 
-        //if (Binding != null && dataItem != DataGridCollectionView.NewItemPlaceholder)
+        if (Binding != null && dataItem != DataGridCollectionView.NewItemPlaceholder)
             comboBox.Bind(BindingTarget, Binding);
 
         return comboBox;
