@@ -377,37 +377,24 @@ namespace Avalonia.Controls
             return null;
         }
 
+        /// <summary>
+        /// Check if a property is readonly only (has a setter, isn't <see cref="EditableAttribute.AllowEdit"/>
+        /// and that the property is an editable basic type)
+        /// </summary>
+        /// <param name="propertyName">The name or a path to the property</param>
+        /// <remarks>
+        /// To check if the property can be written too and not check it's type use <see cref="GetPropertyIsReadOnly(string, out Type)"/>
+        /// </remarks>
         public bool GetPropertyIsReadOnly(string propertyName)
         {
             if (DataType != null)
             {
                 if (!String.IsNullOrEmpty(propertyName))
                 {
-                    Type propertyType = DataType;
-                    PropertyInfo propertyInfo = null;
-                    List<string> propertyNames = TypeHelper.SplitPropertyPath(propertyName);
-                    for (int i = 0; i < propertyNames.Count; i++)
-                    {
-                        propertyInfo = propertyType.GetPropertyOrIndexer(propertyNames[i], out _);
-                        if (propertyInfo == null || propertyType.GetIsReadOnly() || propertyInfo.GetIsReadOnly())
-                        {
-                            // Either the data type is read-only, the property doesn't exist, or it does exist but is read-only
-                            return true;
-                        }
+                    if (GetPropertyIsReadOnly(propertyName, out Type propertyType))
+                        return true;
 
-                        // Check if EditableAttribute is defined on the property and if it indicates uneditable
-                        var attributes = propertyInfo.GetCustomAttributes(typeof(EditableAttribute), true);
-                        if (attributes != null && attributes.Length > 0)
-                        {
-                            var editableAttribute = (EditableAttribute)attributes[0];
-                            if (!editableAttribute.AllowEdit)
-                            {
-                                return true;
-                            }
-                        }
-                        propertyType = propertyInfo.PropertyType.GetNonNullableType();
-                    }
-                    return propertyInfo == null || !propertyInfo.CanWrite || !AllowEdit || !CanEdit(propertyType);
+                    return !AllowEdit || !CanEdit(propertyType);
                 }
                 else if (DataType.GetIsReadOnly())
                 {
@@ -415,6 +402,47 @@ namespace Avalonia.Controls
                 }
             }
             return !AllowEdit;
+        }
+
+        /// <summary>
+        /// Check if a property is readonly based on if it has a setter
+        /// </summary>
+        /// <param name="propertyName">The name or a path to the property</param>
+        /// <param name="propertyType">The property type found via the path</param>
+        public bool GetPropertyIsReadOnly(string propertyName, out Type propertyType)
+        {
+            propertyType = null;
+            if (DataType == null)
+                return true;
+
+            if (string.IsNullOrEmpty(propertyName))
+                return true;
+
+            propertyType = DataType;
+            PropertyInfo propertyInfo = null;
+            List<string> propertyNames = TypeHelper.SplitPropertyPath(propertyName);
+            for (int i = 0; i < propertyNames.Count; i++)
+            {
+                propertyInfo = propertyType.GetPropertyOrIndexer(propertyNames[i], out _);
+                if (propertyInfo == null || propertyType.GetIsReadOnly() || propertyInfo.GetIsReadOnly())
+                {
+                    // Either the data type is read-only, the property doesn't exist, or it does exist but is read-only
+                    return true;
+                }
+
+                // Check if EditableAttribute is defined on the property and if it indicates uneditable
+                var attributes = propertyInfo.GetCustomAttributes(typeof(EditableAttribute), true);
+                if (attributes != null && attributes.Length > 0)
+                {
+                    var editableAttribute = (EditableAttribute)attributes[0];
+                    if (!editableAttribute.AllowEdit)
+                    {
+                        return true;
+                    }
+                }
+                propertyType = propertyInfo.PropertyType.GetNonNullableType();
+            }
+            return propertyInfo == null || !propertyInfo.CanWrite;
         }
 
         public int IndexOf(object dataItem)
