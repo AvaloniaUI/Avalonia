@@ -18,6 +18,7 @@ namespace Avalonia.Native
         private DoubleClickHelper _doubleClickHelper;
         private readonly ITopLevelNativeMenuExporter _nativeMenuExporter;
         private bool _canResize = true;
+        private bool _canMaximize = true;
 
         internal WindowImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts) : base(factory)
         {
@@ -79,12 +80,13 @@ namespace Avalonia.Native
 
         public void SetCanMinimize(bool value)
         {
-            // TODO: implement
+            _native.SetCanMinimize(value.AsComBool());
         }
 
         public void SetCanMaximize(bool value)
         {
-            // TODO: implement
+            _canMaximize = value;
+            _native.SetCanMaximize(value.AsComBool());
         }
 
         public void SetSystemDecorations(Controls.SystemDecorations enabled)
@@ -148,10 +150,17 @@ namespace Avalonia.Native
                     {
                         if (_doubleClickHelper.IsDoubleClick(e.Timestamp, e.Position))
                         {
-                            if (_canResize)
+                            switch (WindowState)
                             {
-                                WindowState = WindowState is WindowState.Maximized or WindowState.FullScreen ?
-                                    WindowState.Normal : WindowState.Maximized;
+                                case WindowState.Maximized or WindowState.FullScreen
+                                when _canResize:
+                                    WindowState = WindowState.Normal;
+                                    break;
+
+                                case WindowState.Normal
+                                when _canMaximize:
+                                    WindowState = WindowState.Maximized;
+                                    break;
                             }
                         }
                         else
