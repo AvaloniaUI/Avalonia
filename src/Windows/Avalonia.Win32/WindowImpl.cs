@@ -1469,7 +1469,7 @@ namespace Avalonia.Win32
                 else
                     style &= ~WindowStyles.WS_MINIMIZEBOX;
 
-                if (newProperties.IsMaximizable || newProperties.WindowState == WindowState.Maximized)
+                if (newProperties.IsMaximizable || (newProperties.WindowState == WindowState.Maximized && newProperties.IsResizable))
                     style |= WindowStyles.WS_MAXIMIZEBOX;
                 else
                     style &= ~WindowStyles.WS_MAXIMIZEBOX;
