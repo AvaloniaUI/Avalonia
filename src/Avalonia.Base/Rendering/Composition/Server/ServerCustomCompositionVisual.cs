@@ -18,19 +18,24 @@ internal sealed class ServerCompositionCustomVisual : ServerCompositionContainer
         _handler.Attach(this);
     }
 
+    public void DispatchMessage(object message)
+    {
+        try
+        {
+            _handler.OnMessage(message);
+        }
+        catch (Exception e)
+        {
+            Logger.TryGet(LogEventLevel.Error, LogArea.Visual)
+                ?.Log(_handler, $"Exception in {_handler.GetType().Name}.{nameof(CompositionCustomVisualHandler.OnMessage)} {{0}}", e);
+        }
+    }
+    
     public void DispatchMessages(List<object> messages)
     {
         foreach(var message in messages)
         {
-            try
-            {
-                _handler.OnMessage(message);
-            }
-            catch (Exception e)
-            {
-                Logger.TryGet(LogEventLevel.Error, LogArea.Visual)
-                    ?.Log(_handler, $"Exception in {_handler.GetType().Name}.{nameof(CompositionCustomVisualHandler.OnMessage)} {{0}}", e);
-            }
+            DispatchMessage(message);
         }
     }
 

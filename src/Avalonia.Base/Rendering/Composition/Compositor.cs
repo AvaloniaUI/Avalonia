@@ -233,6 +233,26 @@ namespace Avalonia.Rendering.Composition
             _server.EnqueueBatch(batch);
             return batch;
         }
+        
+                
+        internal void PostOobServerJob(Action job, bool postTarget = false)
+        {
+            using var _ = NonPumpingLockHelper.Use();
+            var batch = new CompositionBatch();
+            using (var writer = new BatchStreamWriter(batch.Changes, _batchMemoryPool, _batchObjectPool))
+            {
+                writer.WriteObject(postTarget
+                    ? ServerCompositor.RenderThreadPostTargetJobsStartMarker
+                    : ServerCompositor.RenderThreadJobsStartMarker);
+                writer.WriteObject(job);
+                writer.WriteObject(postTarget
+                    ? ServerCompositor.RenderThreadPostTargetJobsEndMarker
+                    : ServerCompositor.RenderThreadJobsEndMarker);
+            }
+
+            batch.CommittedAt = Server.Clock.Elapsed;
+            _server.EnqueueBatch(batch);
+        }
 
         internal void RegisterForSerialization(ICompositorSerializable compositionObject)
         {

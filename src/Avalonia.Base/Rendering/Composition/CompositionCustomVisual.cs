@@ -18,8 +18,12 @@ public sealed class CompositionCustomVisual : CompositionContainerVisual
 
     }
 
+    /// <summary>
+    /// Sends a message to be delivered to the custom visual handler as a part of the next composition batch
+    /// </summary>
     public void SendHandlerMessage(object message)
     {
+        Compositor.Dispatcher.VerifyAccess();
         if (_messages == null)
         {
             _messages = s_messageListPool.Get();
@@ -27,6 +31,13 @@ public sealed class CompositionCustomVisual : CompositionContainerVisual
         }
         _messages.Add(message);
     }
+
+    /// <summary>
+    /// Sends a message to be delivered to the custom visual handler as soon as possible.
+    /// This method can be called from any thread.
+    /// </summary>
+    public void SendOobHandlerMessage(object message) =>
+        Compositor.PostOobServerJob(() => ((ServerCompositionCustomVisual)Server).DispatchMessage(message));
 
     private void OnCompositionUpdate()
     {
