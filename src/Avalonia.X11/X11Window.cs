@@ -312,21 +312,27 @@ namespace Avalonia.X11
                 || _systemDecorations == SystemDecorations.None) 
                 decorations = 0;
 
-            if (!_canResize || !IsEnabled)
-            {
-                functions &= ~(MotifFunctions.Resize | MotifFunctions.Maximize);
-                decorations &= ~(MotifDecorations.Maximize | MotifDecorations.ResizeH);
-            }
-            if (!IsEnabled)
-            {
-                functions &= ~(MotifFunctions.Resize | MotifFunctions.Minimize);
+            var isDisabled = !IsEnabled;
 
-                UpdateSizeHints(null, true);
-            }
-            else
+            if (!_canResize || isDisabled)
             {
-                UpdateSizeHints(null);
+                functions &= ~MotifFunctions.Resize;
+                decorations &= ~MotifDecorations.ResizeH;
             }
+
+            if (!_canMinimize || isDisabled)
+            {
+                functions &= ~MotifFunctions.Minimize;
+                decorations &= ~MotifDecorations.Minimize;
+            }
+
+            if (!_canMaximize || isDisabled)
+            {
+                functions &= ~MotifFunctions.Maximize;
+                decorations &= ~MotifDecorations.Maximize;
+            }
+
+            UpdateSizeHints(null, isDisabled);
 
             var hints = new MotifWmHints
             {
@@ -855,6 +861,8 @@ namespace Avalonia.X11
         
         private SystemDecorations _systemDecorations = SystemDecorations.Full;
         private bool _canResize = true;
+        private bool _canMinimize = true;
+        private bool _canMaximize = true;
         private const int MaxWindowDimension = 100000;
 
         private (Size minSize, Size maxSize) _scaledMinMaxSize =
@@ -1161,12 +1169,14 @@ namespace Avalonia.X11
 
         public void SetCanMinimize(bool value)
         {
-            // TODO: implement
+            _canMinimize = value;
+            UpdateMotifHints();
         }
 
         public void SetCanMaximize(bool value)
         {
-            // TODO: implement
+            _canMaximize = value;
+            UpdateMotifHints();
         }
 
         public void SetCursor(ICursorImpl? cursor)
