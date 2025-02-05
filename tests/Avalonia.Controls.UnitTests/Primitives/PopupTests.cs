@@ -1260,6 +1260,38 @@ namespace Avalonia.Controls.UnitTests.Primitives
             return result;
         }
 
+        [Fact]
+        public void Popup_Open_With_Correct_IsUsingOverlayLayer_And_Disabled_OverlayLayer()
+        {
+            using (CreateServices())
+            {
+                var target = new Popup();
+                target.IsOpen = true;
+                target.ShouldUseOverlayLayer = false;
+
+                var window = PreparedWindow(target);
+                window.Show();
+
+                Assert.Equal(UsePopupHost, target.IsUsingOverlayLayer);
+            }
+        }
+
+        [Fact]
+        public void Popup_Open_With_Correct_IsUsingOverlayLayer_And_Enabled_OverlayLayer()
+        {
+            using (CreateServices())
+            {
+                var target = new Popup();
+                target.IsOpen = true;
+                target.ShouldUseOverlayLayer = true;
+
+                var window = PreparedWindow(target);
+                window.Show();
+
+                Assert.Equal(true, target.IsUsingOverlayLayer);
+            }
+        }
+
         private IDisposable CreateServices()
         {
             return UnitTestApplication.Start(TestServices.StyledWindow.With(
