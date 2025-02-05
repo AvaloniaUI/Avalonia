@@ -126,6 +126,7 @@
               <Grid ColumnDefinitions="Auto,*,Auto" >
                 <ContentPresenter Grid.Column="0"
                                   Grid.ColumnSpan="1"
+                                  VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                                   Content="{TemplateBinding InnerLeftContent}"/>
                 <DockPanel x:Name="PART_InnerDockPanel"
                            Grid.Column="1"
@@ -182,7 +183,10 @@
                     </ScrollViewer.Styles>
                   </ScrollViewer>
                 </DockPanel>
-                <ContentPresenter Grid.Column="2" Grid.ColumnSpan="1" Content="{TemplateBinding InnerRightContent}"/>
+                <ContentPresenter Grid.Column="2"
+                                  Grid.ColumnSpan="1"
+                                  VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                  Content="{TemplateBinding InnerRightContent}"/>
               </Grid>
             </Border>
           </Panel>
