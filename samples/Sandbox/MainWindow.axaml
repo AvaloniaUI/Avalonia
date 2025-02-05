@@ -1,4 +1,23 @@
 <Window xmlns="https://github.com/avaloniaui"
-        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-        x:Class="Sandbox.MainWindow">
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.microsoft.com/markup-compatibility/2006"
+        x:Class="Sandbox.MainWindow"
+        Title="MyFirstTest">
+
+  <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+    <Border Background="LightGray"
+            Width="200"
+            Height="200"
+            DragDrop.AllowDrop="True"
+            DragDrop.Drop="OnDrop"
+            DragDrop.DragOver="OnDragOver">
+      <TextBlock Text="Drag Me"
+                 VerticalAlignment="Center"
+                 HorizontalAlignment="Center"
+                 Cursor="Hand"
+                 PointerPressed="OnTextPointerPressed"/>
+    </Border>
+    <Button>Hello World!</Button>
+  </StackPanel>
 </Window>

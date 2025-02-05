@@ -1,9 +1,11 @@
-﻿using Avalonia;
+﻿using System;
+using Avalonia;
 
 namespace Sandbox
 {
     public class Program
     {
+        [STAThread]
         static void Main(string[] args) => BuildAvaloniaApp()
             .StartWithClassicDesktopLifetime(args);
 
