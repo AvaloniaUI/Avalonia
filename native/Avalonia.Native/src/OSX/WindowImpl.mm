@@ -212,23 +212,19 @@ HRESULT WindowImpl::SetCanResize(bool value) {
 }
 
 HRESULT WindowImpl::SetCanMinimize(bool value) {
-    START_COM_CALL;
+    START_COM_ARP_CALL;
 
-    @autoreleasepool {
-        _canMinimize = value;
-        UpdateAppearance();
-        return S_OK;
-    }
+    _canMinimize = value;
+    UpdateAppearance();
+    return S_OK;
 }
 
 HRESULT WindowImpl::SetCanMaximize(bool value) {
-    START_COM_CALL;
+    START_COM_ARP_CALL;
 
-    @autoreleasepool {
-        _canMaximize = value;
-        UpdateAppearance();
-        return S_OK;
-    }
+    _canMaximize = value;
+    UpdateAppearance();
+    return S_OK;
 }
 
 HRESULT WindowImpl::SetDecorations(SystemDecorations value) {
