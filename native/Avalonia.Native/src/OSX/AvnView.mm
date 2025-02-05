@@ -290,6 +290,40 @@
         delta.Y = [event deltaY];
     }
 
+    float pressure = 0.5f;
+    float xTilt = 0.0f;
+    float yTilt = 0.0f;
+    AvnPointerDeviceType pointerType = AvnPointerDeviceType::Mouse;
+
+    switch(event.subtype)
+    {
+        case NSEventSubtypeTabletPoint:
+            switch(event.type)
+            {
+                case NSEventTypeLeftMouseDown:
+                case NSEventTypeLeftMouseDragged:
+                case NSEventTypeRightMouseDown:
+                case NSEventTypeRightMouseDragged:
+                case NSEventTypeOtherMouseDown:
+                case NSEventTypeOtherMouseDragged:
+                    pressure = event.pressure;
+                    break;
+                default:
+                    pressure = 0.0f;
+                    break;
+            }
+            xTilt =  event.tilt.x * 90;
+            yTilt = -event.tilt.y * 90;
+            pointerType = AvnPointerDeviceType::Pen;
+            break;
+        case NSEventSubtypeTabletProximity:
+            pressure = 0.0f;
+            pointerType = AvnPointerDeviceType::Pen;
+            break;
+        default:
+            break;
+    }
+
     uint64_t timestamp = static_cast<uint64_t>([event timestamp] * 1000);
     auto modifiers = [self getModifiers:[event modifierFlags]];
 
@@ -322,7 +356,7 @@
     auto parent = _parent.tryGet();
     if(parent != nullptr)
     {
-        parent->TopLevelEvents->RawMouseEvent(type, timestamp, modifiers, point, delta);
+        parent->TopLevelEvents->RawMouseEvent(type, pointerType, timestamp, modifiers, point, delta, pressure, xTilt, yTilt);
     }
 
     [super mouseMoved:event];

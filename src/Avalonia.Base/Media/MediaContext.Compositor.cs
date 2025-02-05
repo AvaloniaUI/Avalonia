@@ -98,12 +98,14 @@ partial class MediaContext
         if (AvaloniaLocator.Current.GetService<IPlatformRenderInterface>() == null)
             return;
 
+        using var _ = NonPumpingLockHelper.Use();
         SyncWaitCompositorBatch(compositor, CommitCompositor(compositor), waitFullRender, catchExceptions);
     }
 
     private void SyncWaitCompositorBatch(Compositor compositor, CompositionBatch batch,
         bool waitFullRender, bool catchExceptions)
     {
+        using var _ = NonPumpingLockHelper.Use();
         if (compositor is
             {
                 UseUiThreadForSynchronousCommits: false,

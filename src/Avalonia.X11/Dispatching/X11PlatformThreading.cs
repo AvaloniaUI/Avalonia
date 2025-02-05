@@ -186,8 +186,8 @@ namespace Avalonia.X11
 
         public bool CurrentThreadIsLoopThread => Thread.CurrentThread == _mainThread;
         
-        public event Action Signaled;
-        public event Action Timer;
+        public event Action? Signaled;
+        public event Action? Timer;
 
         public void UpdateTimer(long? dueTimeInMs)
         {
