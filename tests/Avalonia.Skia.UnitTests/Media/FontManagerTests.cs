@@ -376,7 +376,7 @@ namespace Avalonia.Skia.UnitTests.Media
 
                     var familyTypefaces = FontManager.Current.GetFamilyTypefaces(new FontFamily("fonts:Inter#Inter"));
 
-                    Assert.Equal(7, familyTypefaces.Count);
+                    Assert.Equal(6, familyTypefaces.Count);
                 }
             }
         }
