@@ -364,5 +364,21 @@ namespace Avalonia.Skia.UnitTests.Media
                 }
             }
         }
+
+        [Fact]
+        public void Should_Get_FamilyTypefaces()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                using (AvaloniaLocator.EnterScope())
+                {
+                    FontManager.Current.AddFontCollection(new InterFontCollection());
+
+                    var familyTypefaces = FontManager.Current.GetFamilyTypefaces(new FontFamily("fonts:Inter#Inter"));
+
+                    Assert.Equal(7, familyTypefaces.Count);
+                }
+            }
+        }
     }
 }
