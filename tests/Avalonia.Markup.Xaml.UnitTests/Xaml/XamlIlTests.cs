@@ -392,6 +392,72 @@ namespace Avalonia.Markup.Xaml.UnitTests
             Assert.Equal(RuntimeXamlDiagnosticSeverity.Warning, warning.Severity);
             Assert.StartsWith("Duplicate setter encountered for property 'Height'", warning.Title);
         }
+
+        [Fact]
+        public void Item_Container_Inside_Of_ItemTemplate_Should_Be_Warned()
+        {
+            using var _ = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var xaml = new RuntimeXamlLoaderDocument(@"
+<ListBox xmlns='https://github.com/avaloniaui'
+         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <ListBox.ItemTemplate>
+        <DataTemplate>
+            <ListBoxItem />
+        </DataTemplate>
+    </ListBox.ItemTemplate>
+</ListBox>");
+            var diagnostics = new List<RuntimeXamlDiagnostic>();
+            // We still have a runtime check in the StyleInstance class, but in this test we only care about compile warnings.
+            var listBox = (ListBox)AvaloniaRuntimeXamlLoader.Load(xaml, new RuntimeXamlLoaderConfiguration
+            {
+                DiagnosticHandler = diagnostic =>
+                {
+                    diagnostics.Add(diagnostic);
+                    return diagnostic.Severity;
+                }
+            });
+            // ItemTemplate should still work as before, creating whatever object user put inside
+            Assert.IsType<ListBoxItem>(listBox.ItemTemplate!.Build(null));
+
+            // But invalid usage should be warned:
+            var warning = Assert.Single(diagnostics);
+            Assert.Equal(RuntimeXamlDiagnosticSeverity.Warning, warning.Severity);
+            Assert.Equal("AVLN2208", warning.Id);
+        }
+
+        [Fact]
+        public void Item_Container_Inside_Of_DataTemplates_Should_Be_Warned()
+        {
+            using var _ = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var xaml = new RuntimeXamlLoaderDocument(@"
+<TabControl xmlns='https://github.com/avaloniaui'
+         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <TabControl.DataTemplates>
+        <DataTemplate x:DataType='x:Object'>
+            <TabItem />
+        </DataTemplate>
+    </TabControl.DataTemplates>
+</TabControl>");
+            var diagnostics = new List<RuntimeXamlDiagnostic>();
+            // We still have a runtime check in the StyleInstance class, but in this test we only care about compile warnings.
+            var tabControl = (TabControl)AvaloniaRuntimeXamlLoader.Load(xaml, new RuntimeXamlLoaderConfiguration
+            {
+                DiagnosticHandler = diagnostic =>
+                {
+                    diagnostics.Add(diagnostic);
+                    return diagnostic.Severity;
+                }
+            });
+            // ItemTemplate should still work as before, creating whatever object user put inside
+            Assert.IsType<TabItem>(tabControl.DataTemplates[0]!.Build(null));
+
+            // But invalid usage should be warned:
+            var warning = Assert.Single(diagnostics);
+            Assert.Equal(RuntimeXamlDiagnosticSeverity.Warning, warning.Severity);
+            Assert.Equal("AVLN2208", warning.Id);
+        }
     }
 
     public class XamlIlBugTestsEventHandlerCodeBehind : Window
