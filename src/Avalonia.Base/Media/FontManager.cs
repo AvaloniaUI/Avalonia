@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Linq;
 using Avalonia.Logging;
 using Avalonia.Media.Fonts;
 using Avalonia.Platform;
@@ -337,6 +336,36 @@ namespace Avalonia.Media
             syntheticGlyphTypeface = null;
 
             return false;
+        }
+
+        internal IReadOnlyList<Typeface> GetFamilyTypefaces(FontFamily fontFamily)
+        {
+            var key = fontFamily.Key;
+
+            if (key == null)
+            {
+                if(SystemFonts is IFontCollection2 fontCollection2)
+                {
+                    if (fontCollection2.TryGetFamilyTypefaces(fontFamily.Name, out var familyTypefaces))
+                    {
+                        return familyTypefaces;
+                    }
+                }
+            }
+            else
+            {
+                var source = key.Source.EnsureAbsolute(key.BaseUri);
+
+                if (TryGetFontCollection(source, out var fontCollection) && fontCollection is IFontCollection2 fontCollection2)
+                {
+                    if (fontCollection2.TryGetFamilyTypefaces(fontFamily.Name, out var familyTypefaces))
+                    {
+                        return familyTypefaces;
+                    }
+                }
+            }
+
+            return [];
         }
 
         private bool TryGetFontCollection(Uri source, [NotNullWhen(true)] out IFontCollection? fontCollection)
