@@ -917,7 +917,7 @@ namespace Avalonia.Controls
             while (focused.VisualParent != null)
                 focused = focused.VisualParent;
 
-            if (focused == this)
+            if (focused == this || GetTopLevel(focused) == focused)
                 KeyboardDevice.Instance?.SetFocusedElement(null, NavigationMethod.Unspecified, KeyModifiers.None);
         }
 
