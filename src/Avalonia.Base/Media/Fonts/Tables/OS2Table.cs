@@ -11,8 +11,7 @@ namespace Avalonia.Media.Fonts.Tables
     {
         internal const string TableName = "OS/2";
         internal static OpenTypeTag Tag = OpenTypeTag.Parse(TableName);
-
-        private readonly ushort styleType;
+  
         private readonly byte[] panose;
         private readonly short capHeight;
         private readonly short familyClass;
@@ -31,8 +30,6 @@ namespace Avalonia.Media.Fonts.Tables
         private readonly ushort lowerOpticalPointSize;
         private readonly ushort maxContext;
         private readonly ushort upperOpticalPointSize;
-        private readonly ushort weightClass;
-        private readonly ushort widthClass;
         private readonly short averageCharWidth;
 
         public OS2Table(
@@ -67,9 +64,9 @@ namespace Avalonia.Media.Fonts.Tables
             ushort winDescent)
         {
             this.averageCharWidth = averageCharWidth;
-            this.weightClass = weightClass;
-            this.widthClass = widthClass;
-            this.styleType = styleType;
+            WeightClass = weightClass;
+            WidthClass = widthClass;
+            StyleType = styleType;
             SubscriptXSize = subscriptXSize;
             SubscriptYSize = subscriptYSize;
             SubscriptXOffset = subscriptXOffset;
@@ -108,9 +105,9 @@ namespace Avalonia.Media.Fonts.Tables
             ushort maxContext)
             : this(
                 version0Table.averageCharWidth,
-                version0Table.weightClass,
-                version0Table.widthClass,
-                version0Table.styleType,
+                version0Table.WeightClass,
+                version0Table.WidthClass,
+                version0Table.StyleType,
                 version0Table.SubscriptXSize,
                 version0Table.SubscriptYSize,
                 version0Table.SubscriptXOffset,
@@ -248,6 +245,12 @@ namespace Avalonia.Media.Fonts.Tables
         public short SuperscriptYOffset { get; }
 
         public short SuperscriptYSize { get; }
+
+        public ushort StyleType { get; }
+
+        public ushort WeightClass { get; }
+
+        public ushort WidthClass { get; }
 
         public static OS2Table? Load(IGlyphTypeface glyphTypeface)
         {
