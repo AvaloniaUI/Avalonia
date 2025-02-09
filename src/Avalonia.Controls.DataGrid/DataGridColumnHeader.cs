@@ -12,6 +12,8 @@ using Avalonia.Collections;
 using Avalonia.Controls.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
+using Avalonia.Controls.Shapes;
+using Avalonia.Controls.Templates;
 using Avalonia.Controls.Utils;
 using Avalonia.Data;
 using Avalonia.Input;
@@ -678,8 +680,7 @@ namespace Avalonia.Controls
             {
                 OwningColumn = OwningColumn,
                 IsEnabled = false,
-                Content = Content,
-                ContentTemplate = ContentTemplate
+                Content = GetDragIndicatorContent(Content, ContentTemplate)
             };
             if (OwningGrid.ColumnHeaderTheme is { } columnHeaderTheme)
             {
@@ -723,6 +724,36 @@ namespace Avalonia.Controls
             {
                 dragIndicator.Width = Bounds.Width;
             }
+        }
+
+        private object GetDragIndicatorContent(object content, IDataTemplate? dataTemplate)
+        {
+            if (content is ContentControl icc)
+            {
+                content = icc.Content;
+            }
+
+            if (content is Control control)
+            {
+                if (VisualRoot == null) return content;
+                control.Measure(Size.Infinity);
+                var rect = new Rectangle()
+                {
+                    Width = control.DesiredSize.Width,
+                    Height = control.DesiredSize.Height,
+                    Fill = new VisualBrush
+                    {
+                        Visual = control, Stretch = Stretch.None, AlignmentX = AlignmentX.Left,
+                    }
+                };
+                return rect;
+            }
+
+            if (dataTemplate is not null)
+            {
+                return dataTemplate.Build(content);
+            }
+            return content;
         }
 
         //TODO DragEvents
