@@ -7,6 +7,11 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Avalonia.Analyzers;
 
+/// <summary>
+/// Analyzes object creation expressions to detect instances where a Bitmap is initialized
+/// from the "avares" scheme directly, which is not allowed. Instead, the AssetLoader should be used
+/// to open assets as a stream first.
+/// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public class BitmapAnalyzer: DiagnosticAnalyzer
 {
@@ -25,13 +30,15 @@ public class BitmapAnalyzer: DiagnosticAnalyzer
         isEnabledByDefault: true, 
         description: Description);
     
+    /// <inheritdoc />
     public override void Initialize(AnalysisContext context)
     {
         context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
         context.EnableConcurrentExecution();
         context.RegisterSyntaxNodeAction(AnalyzeNode, SyntaxKind.ObjectCreationExpression);
     }
-
+    
+    /// <inheritdoc />
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get { return ImmutableArray.Create(_rule); } }
 
     private static void AnalyzeNode(SyntaxNodeAnalysisContext context)

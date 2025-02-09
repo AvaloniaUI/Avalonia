@@ -12,20 +12,27 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Avalonia.Analyzers;
 
+/// <summary>
+/// Provides a code fix for the BitmapAnalyzer diagnostic, which replaces "avares://" string arguments
+/// with a call to AssetLoader.Open(new Uri("avares://...")).
+/// </summary>
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(BitmapAnalyzerCSCodeFixProvider))]
 [Shared]
 public class BitmapAnalyzerCSCodeFixProvider : CodeFixProvider
 {
     private const string _title = "Use AssetLoader to open assets as stream first";
 
+    /// <inheritdoc />
     public override ImmutableArray<string> FixableDiagnosticIds { get; } =
         ImmutableArray.Create(BitmapAnalyzer.DiagnosticId);
 
+    /// <inheritdoc />
     public override FixAllProvider? GetFixAllProvider()
     {
         return WellKnownFixAllProviders.BatchFixer;
     }
-
+    
+    /// <inheritdoc />
     public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
         var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
@@ -41,12 +48,12 @@ public class BitmapAnalyzerCSCodeFixProvider : CodeFixProvider
         context.RegisterCodeFix(
             CodeAction.Create(
                 _title,
-                c => MakeConstAsync(context.Document, declaration, c),
+                c => ReplaceArgumentAsync(context.Document, declaration, c),
                 _title),
             diagnostic);
     }
 
-    private async Task<Document> MakeConstAsync(Document contextDocument, LocalDeclarationStatementSyntax declaration,
+    private async Task<Document> ReplaceArgumentAsync(Document contextDocument, LocalDeclarationStatementSyntax declaration,
         CancellationToken cancellationToken)
     {
         var root = await contextDocument.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
