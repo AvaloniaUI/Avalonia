@@ -84,7 +84,7 @@ namespace Avalonia
         private string? _name;
         private Classes? _classes;
         private ILogicalRoot? _logicalRoot;
-        private IAvaloniaList<ILogical>? _logicalChildren;
+        private AvaloniaList<ILogical>? _logicalChildren;
         private IResourceDictionary? _resources;
         private Styles? _styles;
         private bool _stylesApplied;
