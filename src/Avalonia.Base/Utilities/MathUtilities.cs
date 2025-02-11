@@ -208,6 +208,7 @@ namespace Avalonia.Utilities
         /// <param name="min">The minimum value.</param>
         /// <param name="max">The maximum value.</param>
         /// <returns>The clamped value.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static double Clamp(double val, double min, double max)
         {
             if (min > max)
@@ -363,6 +364,28 @@ namespace Avalonia.Utilities
         {
             return GetMinMax(initialValue, initialValue + delta);
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static bool IsNegativeOrNonFinite(double d)
+        {
+#if NET6_0_OR_GREATER
+            ulong bits = BitConverter.DoubleToUInt64Bits(d);
+            return bits >= 0x7FF0_0000_0000_0000;
+#else
+            return d < 0 || !IsFinite(d);
+#endif
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static bool IsFinite(double d)
+        {
+#if NET6_0_OR_GREATER
+            return double.IsFinite(d);
+#else
+            long bits = BitConverter.DoubleToInt64Bits(d);
+            return (bits & 0x7FFF_FFFF_FFFF_FFFF) < 0x7FF0_0000_0000_0000;
+#endif
+        }
         
 #if !BUILDTASK
         internal static int WhichPolygonSideIntersects(
@@ -451,7 +474,7 @@ namespace Avalonia.Utilities
             return true;
         }
 #endif
-        
+
         private static void ThrowCannotBeGreaterThanException<T>(T min, T max)
         {
             throw new ArgumentException($"{min} cannot be greater than {max}.");
