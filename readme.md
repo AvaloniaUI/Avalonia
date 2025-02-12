@@ -1,6 +1,5 @@
 [![Star_Banner@3x](https://github.com/user-attachments/assets/99f4a267-79d2-432b-8f8c-bd3745a98a60)](https://github.com/sponsors/AvaloniaUI)
 [![Star_Banner@3x](https://github.com/user-attachments/assets/14a6e1cb-180d-4bfd-884a-835c8b5083d0)](https://avaloniaui.net?utm_source=github&utm_medium=referral&utm_content=readme_link)
-
 [![Telegram](https://raw.githubusercontent.com/Patrolavia/telegram-badge/master/chat.svg)](https://t.me/Avalonia)
  [![Build Status](https://dev.azure.com/AvaloniaUI/AvaloniaUI/_apis/build/status/AvaloniaUI.Avalonia)](https://dev.azure.com/AvaloniaUI/AvaloniaUI/_build/latest?definitionId=4) [![Backers on Open Collective](https://img.shields.io/opencollective/backers/Avalonia?logo=opencollective)](#backers) [![Sponsors on Open Collective](https://img.shields.io/opencollective/sponsors/Avalonia?logo=opencollective)](#sponsors) [![GitHub Sponsors](https://img.shields.io/github/sponsors/AvaloniaUI?logo=github)](https://github.com/sponsors/AvaloniaUI) ![License](https://img.shields.io/github/license/avaloniaui/avalonia.svg)
 <br />
