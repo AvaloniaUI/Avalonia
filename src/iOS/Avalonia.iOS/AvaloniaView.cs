@@ -47,6 +47,8 @@ namespace Avalonia.iOS
             _topLevelImpl = new TopLevelImpl(this);
             _input = new InputHandler(this, _topLevelImpl);
             _topLevel = new EmbeddableControlRoot(_topLevelImpl);
+
+            // Init accessibility tree root
             _accessWrapper = new AutomationPeerWrapper(this);
 
             _topLevel.Prepare();
