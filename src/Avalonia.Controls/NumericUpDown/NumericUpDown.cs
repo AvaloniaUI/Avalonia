@@ -639,8 +639,7 @@ namespace Avalonia.Controls
                 DoDecrement();
             }
 
-            var handler = Spinned;
-            handler?.Invoke(this, e);
+            Spinned?.Invoke(this, e);
         }
 
         /// <summary>
