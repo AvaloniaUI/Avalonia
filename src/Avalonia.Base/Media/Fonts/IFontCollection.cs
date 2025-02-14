@@ -47,4 +47,17 @@ namespace Avalonia.Media.Fonts
         bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight,
             FontStretch fontStretch, string? familyName, CultureInfo? culture, out Typeface typeface);
     }
+
+    internal interface IFontCollection2 : IFontCollection
+    {
+        /// <summary>
+        /// Tries to get a list of typefaces for the specified family name.
+        /// </summary>
+        /// <param name="familyName">The family name.</param>
+        /// <param name="familyTypefaces">The list of typefaces.</param>
+        /// <returns>
+        ///     <c>True</c>, if the <see cref="IFontCollection2"/> could get the list of typefaces, <c>False</c> otherwise.
+        /// </returns>
+        bool TryGetFamilyTypefaces(string familyName, [NotNullWhen(true)] out IReadOnlyList<Typeface>? familyTypefaces);
+    }
 }

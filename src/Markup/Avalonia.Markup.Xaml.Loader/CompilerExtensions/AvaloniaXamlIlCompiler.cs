@@ -67,7 +67,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 new AvaloniaXamlIlConstructorServiceProviderTransformer(),
                 new AvaloniaXamlIlTransitionsTypeMetadataTransformer(),
                 new AvaloniaXamlIlResolveByNameMarkupExtensionReplacer(),
-                new AvaloniaXamlIlThemeVariantProviderTransformer()
+                new AvaloniaXamlIlThemeVariantProviderTransformer(),
+                new AvaloniaXamlIlDataTemplateWarningsTransformer()
             );
             InsertBefore<ConvertPropertyValuesToAssignmentsTransformer>(
                 new AvaloniaXamlIlOptionMarkupExtensionTransformer());

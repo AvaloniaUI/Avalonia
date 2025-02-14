@@ -77,7 +77,7 @@ namespace Avalonia.Diagnostics.Views
         private void ListBoxItem_PointerEntered(object? sender, PointerEventArgs e)
         {
             if (DataContext is EventsPageViewModel vm 
-                && sender is ListBoxItem control 
+                && sender is Control control 
                 && control.DataContext is EventChainLink chainLink
                 && chainLink.Handler is Visual visual)
             {
