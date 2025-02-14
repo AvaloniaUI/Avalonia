@@ -38,7 +38,12 @@ namespace Avalonia.Controls.Documents
             AvaloniaProperty.RegisterAttached<TextElement, TextElement, double>(
                 nameof(FontSize),
                 defaultValue: 12,
-                inherits: true);
+                inherits: true,
+                validate: fontSize => fontSize switch
+                {
+                    double.NaN or < 0 => false,
+                    _ => true
+                });
 
         /// <summary>
         /// Defines the <see cref="FontStyle"/> property.
