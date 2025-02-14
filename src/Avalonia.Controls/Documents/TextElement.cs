@@ -41,7 +41,7 @@ namespace Avalonia.Controls.Documents
                 inherits: true,
                 validate: fontSize => fontSize switch
                 {
-                    double.NaN or < 0 => false,
+                    double.NaN or <= 0 => false,
                     _ => true
                 });
 
