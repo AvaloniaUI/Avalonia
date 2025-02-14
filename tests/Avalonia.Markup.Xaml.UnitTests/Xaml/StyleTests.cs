@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
+using System.Threading;
 using System.Xml;
 using Avalonia.Controls;
 using Avalonia.Data;
@@ -13,6 +15,7 @@ using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 {
+    [InvariantCulture]
     public class StyleTests : XamlTestBase
     {
         [Fact]
@@ -733,6 +736,54 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 var exception = Assert.ThrowsAny<XmlException>(() => AvaloniaRuntimeXamlLoader.Load(xaml));
                 Assert.Equal ("Cannot set Classes Binding property '(Classes.Banned)' because the style has an activator. Line 6, position 14.", exception.Message);
             }
+        }
+
+        [Theory]
+        [InlineData("<Style>", "</Style>")]
+        [InlineData("<Style Selector=''>", "</Style>")]
+        [InlineData("<Styles><Style>", "</Style></Styles>")]
+        [InlineData("<Styles><Style Selector=''>", "</Style></Styles>")]
+        public void No_Selector_Should_Target_Parent_Type(string styleStart, string styleEnd)
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var window = (Window)AvaloniaRuntimeXamlLoader.Load(
+                $"""
+                <Window xmlns="https://github.com/avaloniaui">
+                    <Window.Styles>
+                        {styleStart}
+                            <Setter Property="Title" Value="title set via style!" />
+                        {styleEnd}
+                    </Window.Styles>
+                </Window>
+                """);
+
+            Assert.Equal("title set via style!", window.Title);
+        }
+
+
+        [Theory]
+        [InlineData("<Style>", "</Style>")]
+        [InlineData("<Style Selector=''>", "</Style>")]
+        public void No_Selector_Should_Fail_In_Control_Theme(string styleStart, string styleEnd)
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var exception = Assert.ThrowsAny<XmlException>(() => (Window)AvaloniaRuntimeXamlLoader.Load(
+                $$"""
+                  <Window xmlns="https://github.com/avaloniaui"
+                          xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                     <Window.Resources>
+                          <ControlTheme x:Key="{x:Type Window}" TargetType="Window">
+                              {{styleStart}}
+                                  <Setter Property="Title" Value="title set via style!" />
+                              {{styleEnd}}
+                          </ControlTheme>
+                      </Window.Resources>
+                  </Window>
+                  """));
+
+            Assert.Equal("Cannot add a Style without selector to a ControlTheme. Line 5, position 14.", exception.Message);
         }
     }
 }

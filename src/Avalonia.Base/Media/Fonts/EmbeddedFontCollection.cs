@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -8,7 +7,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.Media.Fonts
 {
-    public class EmbeddedFontCollection : FontCollectionBase
+    public class EmbeddedFontCollection : FontCollectionBase, IFontCollection2
     {
         private readonly List<FontFamily> _fontFamilies = new List<FontFamily>(1);
 
@@ -72,34 +71,13 @@ namespace Avalonia.Media.Fonts
 
                 if (TryGetNearestMatch(glyphTypefaces, key, out glyphTypeface))
                 {
-                    if (glyphTypeface is IGlyphTypeface2 glyphTypeface2)
+                    if(_fontManager != null && FontManager.TryCreateSyntheticGlyphTypeface(_fontManager, glyphTypeface, style, weight, out var syntheticGlyphTypeface))
                     {
-                        var fontSimulations = FontSimulations.None;
-
-                        if (style != FontStyle.Normal && glyphTypeface2.Style != style)
-                        {
-                            fontSimulations |= FontSimulations.Oblique;
-                        }
-
-                        if ((int)weight >= 600 && glyphTypeface2.Weight < weight)
-                        {
-                            fontSimulations |= FontSimulations.Bold;
-                        }
-
-                        if (fontSimulations != FontSimulations.None && glyphTypeface2.TryGetStream(out var stream))
-                        {
-                            using (stream)
-                            {
-                                if(_fontManager is not null && _fontManager.TryCreateGlyphTypeface(stream, fontSimulations, out glyphTypeface) && 
-                                    glyphTypefaces.TryAdd(key, glyphTypeface))
-                                {
-                                    return true;
-                                }
-
-                                return false;
-                            }
-                        }
+                        glyphTypeface = syntheticGlyphTypeface;
                     }
+
+                    //Make sure we cache the found match
+                    glyphTypefaces.TryAdd(key, glyphTypeface);
 
                     return true;
                 }
@@ -163,6 +141,27 @@ namespace Avalonia.Media.Fonts
                     new FontCollectionKey(glyphTypeface.Style, glyphTypeface.Weight, glyphTypeface.Stretch),
                     glyphTypeface);
             }
+        }
+
+        bool IFontCollection2.TryGetFamilyTypefaces(string familyName, [NotNullWhen(true)] out IReadOnlyList<Typeface>? familyTypefaces)
+        {
+            familyTypefaces = null;
+
+            if (_glyphTypefaceCache.TryGetValue(familyName, out var glyphTypefaces))
+            {
+                var typefaces = new List<Typeface>(glyphTypefaces.Count);
+
+                foreach (var key in glyphTypefaces.Keys)
+                {
+                    typefaces.Add(new Typeface(new FontFamily(_key, familyName), key.Style, key.Weight, key.Stretch));
+                }
+
+                familyTypefaces = typefaces;
+
+                return true;
+            }
+
+            return false;
         }
     }
 }

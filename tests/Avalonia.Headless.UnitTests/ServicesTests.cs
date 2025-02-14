@@ -13,7 +13,7 @@ public class ServicesTests
 #if NUNIT
     [AvaloniaTest, Timeout(10000)]
 #elif XUNIT
-    [AvaloniaFact(Timeout = 10000)]
+    [AvaloniaFact]
 #endif
     public void Can_Access_Screens()
     {

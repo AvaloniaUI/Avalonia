@@ -8,6 +8,7 @@
     <AvsCurrentTvOSTargetFramework>$(AvsCurrentTargetFramework)-tvos17.0</AvsCurrentTvOSTargetFramework>
     <AvsCurrentBrowserTargetFramework>$(AvsCurrentTargetFramework)-browser</AvsCurrentBrowserTargetFramework>
     <AvsCurrentTizenTargetFramework>$(AvsCurrentTargetFramework)-tizen</AvsCurrentTizenTargetFramework>
+    <AvsCurrentTizenTargetSdk>8.0.155</AvsCurrentTizenTargetSdk>
   </PropertyGroup>
   <PropertyGroup Condition="'$(AvsSkipBuildingLegacyTargetFrameworks)' != 'True'">
     <AvsLegacyTargetFrameworks>net6.0</AvsLegacyTargetFrameworks>

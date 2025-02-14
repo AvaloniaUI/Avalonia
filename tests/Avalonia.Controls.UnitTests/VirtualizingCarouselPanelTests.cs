@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Animation;
+using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
@@ -108,6 +110,28 @@ namespace Avalonia.Controls.UnitTests
             Assert.Single(target.Children);
             Assert.Same(container, target.Children[0]);
             Assert.Equal("bar", container.Content);
+        }
+
+        [Fact]
+        public void Handles_Moved_Item_Range()
+        {
+            using var app = Start();
+            AvaloniaList<string> items = ["foo", "bar", "baz", "qux", "quux"];
+            var (target, carousel) = CreateTarget(items);
+            var container = Assert.IsType<ContentPresenter>(target.Children[0]);
+
+            carousel.SelectedIndex = 3;
+            Layout(target);
+            items.MoveRange(0, 2, 4);
+            Layout(target);
+
+            Assert.Multiple(() =>
+            {
+                Assert.Single(target.Children);
+                Assert.Same(container, target.Children[0]);
+                Assert.Equal("qux", container.Content);
+                Assert.Equal(1, carousel.SelectedIndex);
+            });
         }
 
         public class Transitions

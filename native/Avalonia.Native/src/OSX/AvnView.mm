@@ -241,6 +241,12 @@
     return FALSE;
 }
 
+static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
+{
+    *xTilt =  tilt.x * 90;
+    *yTilt = -tilt.y * 90;
+}
+
 - (void)mouseEvent:(NSEvent *)event withType:(AvnRawMouseEventType) type
 {
     bool triggerInputWhenDisabled = type != Move && type != LeaveWindow;
@@ -290,6 +296,57 @@
         delta.Y = [event deltaY];
     }
 
+    float pressure = 0.5f;
+    float xTilt = 0.0f;
+    float yTilt = 0.0f;
+    AvnPointerDeviceType pointerType = AvnPointerDeviceType::Mouse;
+
+    switch (event.type)
+    {
+        case NSEventTypeLeftMouseDown:
+        case NSEventTypeLeftMouseDragged:
+        case NSEventTypeRightMouseDown:
+        case NSEventTypeRightMouseDragged:
+        case NSEventTypeOtherMouseDown:
+        case NSEventTypeOtherMouseDragged:
+            switch (event.subtype)
+            {
+                case NSEventSubtypeTabletPoint:
+                    pointerType = AvnPointerDeviceType::Pen;
+                    pressure = event.pressure;
+                    ConvertTilt(event.tilt, &xTilt, &yTilt);
+                    break;
+                case NSEventSubtypeTabletProximity:
+                    pointerType = AvnPointerDeviceType::Pen;
+                    pressure = 0.0f;
+                    break;
+                default:
+                    break;
+            }
+            break;
+        case NSEventTypeLeftMouseUp:
+        case NSEventTypeRightMouseUp:
+        case NSEventTypeOtherMouseUp:
+        case NSEventTypeMouseMoved:
+            switch (event.subtype)
+            {
+                case NSEventSubtypeTabletPoint:
+                    pointerType = AvnPointerDeviceType::Pen;
+                    pressure = 0.0f;
+                    ConvertTilt(event.tilt, &xTilt, &yTilt);
+                    break;
+                case NSEventSubtypeTabletProximity:
+                    pointerType = AvnPointerDeviceType::Pen;
+                    pressure = 0.0f;
+                    break;
+                default:
+                    break;
+            }
+            break;
+        default:
+            break;
+    }
+
     uint64_t timestamp = static_cast<uint64_t>([event timestamp] * 1000);
     auto modifiers = [self getModifiers:[event modifierFlags]];
 
@@ -311,7 +368,8 @@
             if(parent != nullptr){
                 auto parentWindow = parent->Window;
                 
-                [parentWindow makeFirstResponder:parent->View];
+                if(parentWindow != nullptr)
+                    [parentWindow makeFirstResponder:parent->View];
             }
         } else{
             [self becomeFirstResponder];
@@ -321,7 +379,7 @@
     auto parent = _parent.tryGet();
     if(parent != nullptr)
     {
-        parent->TopLevelEvents->RawMouseEvent(type, timestamp, modifiers, point, delta);
+        parent->TopLevelEvents->RawMouseEvent(type, pointerType, timestamp, modifiers, point, delta, pressure, xTilt, yTilt);
     }
 
     [super mouseMoved:event];

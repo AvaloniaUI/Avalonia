@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Android.Content;
+using Android.OS;
 using Avalonia.Android.Platform.Storage;
 using Avalonia.Platform.Storage;
 using AndroidUri = Android.Net.Uri;
@@ -15,20 +16,23 @@ internal class AndroidLauncher : ILauncher
     {
         _context = context;
     }
-    
+
     public Task<bool> LaunchUriAsync(Uri uri)
     {
         _ = uri ?? throw new ArgumentNullException(nameof(uri));
         if (uri.IsAbsoluteUri && _context.PackageManager is { } packageManager)
         {
             var intent = new Intent(Intent.ActionView, AndroidUri.Parse(uri.OriginalString));
-            if (intent.ResolveActivity(packageManager) is not null)
+
+            try
             {
                 var flags = ActivityFlags.ClearTop | ActivityFlags.NewTask;
                 intent.SetFlags(flags);
                 _context.StartActivity(intent);
                 return Task.FromResult(true);
             }
+            catch (ActivityNotFoundException) { }
+            catch (FileUriExposedException) { }
         }
         return Task.FromResult(false);
     }

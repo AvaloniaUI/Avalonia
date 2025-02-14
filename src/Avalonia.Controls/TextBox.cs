@@ -45,6 +45,18 @@ namespace Avalonia.Controls
         public static KeyGesture? PasteGesture => Application.Current?.PlatformSettings?.HotkeyConfiguration.Paste.FirstOrDefault();
 
         /// <summary>
+        /// Defines the <see cref="IsInactiveSelectionHighlightEnabled"/> property
+        /// </summary>
+        public static readonly StyledProperty<bool> IsInactiveSelectionHighlightEnabledProperty = 
+            AvaloniaProperty.Register<TextBox, bool>(nameof(IsInactiveSelectionHighlightEnabled), defaultValue: true);
+
+        /// <summary>
+        /// Defines the <see cref="ClearSelectionOnLostFocus"/> property
+        /// </summary>
+        public static readonly StyledProperty<bool> ClearSelectionOnLostFocusProperty = 
+            AvaloniaProperty.Register<TextBox, bool>(nameof(ClearSelectionOnLostFocus), defaultValue: true);
+
+        /// <summary>
         /// Defines the <see cref="AcceptsReturn"/> property
         /// </summary>
         public static readonly StyledProperty<bool> AcceptsReturnProperty =
@@ -371,6 +383,24 @@ namespace Avalonia.Controls
             _selectedTextChangesMadeSinceLastUndoSnapshot = 0;
             _hasDoneSnapshotOnce = false;
             UpdatePseudoclasses();
+        }
+
+        /// <summary>
+        /// Gets or sets a value that determines whether the TextBox shows a selection highlight when it is not focused.
+        /// </summary>
+        public bool IsInactiveSelectionHighlightEnabled
+        {
+            get => GetValue(IsInactiveSelectionHighlightEnabledProperty);
+            set => SetValue(IsInactiveSelectionHighlightEnabledProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets a value that determines whether the TextBox clears its selection after it loses focus.
+        /// </summary>
+        public bool ClearSelectionOnLostFocus
+        {
+            get=> GetValue(ClearSelectionOnLostFocusProperty);
+            set=> SetValue(ClearSelectionOnLostFocusProperty, value);
         }
 
         /// <summary>
@@ -794,6 +824,20 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Get the number of lines in the TextBox.
+        /// </summary>
+        /// <value>number of lines in the TextBox, or -1 if no layout information is available</value>
+        /// <remarks>
+        /// If Wrap == true, changing the width of the TextBox may change this value.
+        /// The value returned is the number of lines in the entire TextBox, regardless of how many are
+        /// currently in view.
+        /// </remarks>
+        public int GetLineCount()
+        {
+            return this._presenter?.TextLayout.TextLines.Count ?? -1;
+        }
+
+        /// <summary>
         /// Raised when content is being copied to the clipboard
         /// </summary>
         public event EventHandler<RoutedEventArgs>? CopyingToClipboard
@@ -879,6 +923,13 @@ namespace Avalonia.Controls
                 if (IsFocused)
                 {
                     _presenter.ShowCaret();
+                }
+                else
+                {
+                    if (IsInactiveSelectionHighlightEnabled)
+                    {
+                        _presenter.ShowSelectionHighlight = true;
+                    }
                 }
 
                 _presenter.PropertyChanged += PresenterPropertyChanged;
@@ -977,6 +1028,11 @@ namespace Avalonia.Controls
         {
             base.OnGotFocus(e);
 
+            if(_presenter != null)
+            {
+                _presenter.ShowSelectionHighlight = true;
+            }           
+
             // when navigating to a textbox via the tab key, select all text if
             //   1) this textbox is *not* a multiline textbox
             //   2) this textbox has any text to select
@@ -1001,7 +1057,11 @@ namespace Avalonia.Controls
             if ((ContextFlyout == null || !ContextFlyout.IsOpen) &&
                 (ContextMenu == null || !ContextMenu.IsOpen))
             {
-                ClearSelection();
+                if (ClearSelectionOnLostFocus)
+                {
+                    ClearSelection();
+                }
+
                 SetCurrentValue(RevealPasswordProperty, false);
             }
 
@@ -1010,6 +1070,11 @@ namespace Avalonia.Controls
             _presenter?.HideCaret();
 
             _imClient.SetPresenter(null, null);
+
+            if (_presenter != null && !IsInactiveSelectionHighlightEnabled)
+            {
+                _presenter.ShowSelectionHighlight = false;
+            }
         }
 
         protected override void OnTextInput(TextInputEventArgs e)
@@ -1374,7 +1439,8 @@ namespace Avalonia.Controls
             }
             else
             {
-                bool hasWholeWordModifiers = modifiers.HasAllFlags(keymap.WholeWordTextActionModifiers);
+                // It's not secure to rely on password field content when moving.
+                bool hasWholeWordModifiers = modifiers.HasAllFlags(keymap.WholeWordTextActionModifiers) && !IsPasswordBox;
                 switch (e.Key)
                 {
                     case Key.Left:
