@@ -241,6 +241,12 @@
     return FALSE;
 }
 
+static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
+{
+    *xTilt =  tilt.x * 90;
+    *yTilt = -tilt.y * 90;
+}
+
 - (void)mouseEvent:(NSEvent *)event withType:(AvnRawMouseEventType) type
 {
     bool triggerInputWhenDisabled = type != Move && type != LeaveWindow;
@@ -295,30 +301,47 @@
     float yTilt = 0.0f;
     AvnPointerDeviceType pointerType = AvnPointerDeviceType::Mouse;
 
-    switch(event.subtype)
+    switch (event.type)
     {
-        case NSEventSubtypeTabletPoint:
-            switch(event.type)
+        case NSEventTypeLeftMouseDown:
+        case NSEventTypeLeftMouseDragged:
+        case NSEventTypeRightMouseDown:
+        case NSEventTypeRightMouseDragged:
+        case NSEventTypeOtherMouseDown:
+        case NSEventTypeOtherMouseDragged:
+            switch (event.subtype)
             {
-                case NSEventTypeLeftMouseDown:
-                case NSEventTypeLeftMouseDragged:
-                case NSEventTypeRightMouseDown:
-                case NSEventTypeRightMouseDragged:
-                case NSEventTypeOtherMouseDown:
-                case NSEventTypeOtherMouseDragged:
+                case NSEventSubtypeTabletPoint:
+                    pointerType = AvnPointerDeviceType::Pen;
                     pressure = event.pressure;
+                    ConvertTilt(event.tilt, &xTilt, &yTilt);
                     break;
-                default:
+                case NSEventSubtypeTabletProximity:
+                    pointerType = AvnPointerDeviceType::Pen;
                     pressure = 0.0f;
                     break;
+                default:
+                    break;
             }
-            xTilt =  event.tilt.x * 90;
-            yTilt = -event.tilt.y * 90;
-            pointerType = AvnPointerDeviceType::Pen;
             break;
-        case NSEventSubtypeTabletProximity:
-            pressure = 0.0f;
-            pointerType = AvnPointerDeviceType::Pen;
+        case NSEventTypeLeftMouseUp:
+        case NSEventTypeRightMouseUp:
+        case NSEventTypeOtherMouseUp:
+        case NSEventTypeMouseMoved:
+            switch (event.subtype)
+            {
+                case NSEventSubtypeTabletPoint:
+                    pointerType = AvnPointerDeviceType::Pen;
+                    pressure = 0.0f;
+                    ConvertTilt(event.tilt, &xTilt, &yTilt);
+                    break;
+                case NSEventSubtypeTabletProximity:
+                    pointerType = AvnPointerDeviceType::Pen;
+                    pressure = 0.0f;
+                    break;
+                default:
+                    break;
+            }
             break;
         default:
             break;
