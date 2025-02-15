@@ -102,7 +102,7 @@ public class ScreensTests : ScopedTestBase
     }
 
     [Fact]
-    public void Should_Raise_Event_When_Screen_Changed_From_Another_Thread()
+    public async Task Should_Raise_Event_When_Screen_Changed_From_Another_Thread()
     {
         using var _ = UnitTestApplication.Start(TestServices.MockThreadingInterface);
 
@@ -114,7 +114,7 @@ public class ScreensTests : ScopedTestBase
             hasChangedTimes += 1;
         };
 
-        Task.Run(() => screens.PushNewScreens([1, 2])).Wait();
+        await Task.Run(() => screens.PushNewScreens([1, 2]));
         Dispatcher.UIThread.RunJobs();
 
         Assert.Equal(1, hasChangedTimes);

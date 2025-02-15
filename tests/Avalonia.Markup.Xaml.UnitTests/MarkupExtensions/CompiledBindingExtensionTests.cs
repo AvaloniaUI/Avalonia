@@ -244,7 +244,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
                 window.DataContext = dataContext;
 
-                Assert.Equal(dataContext.TaskProperty.Result, textBlock.Text);
+                Assert.Equal("foobar", textBlock.Text);
             }
         }
 
@@ -1958,7 +1958,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         [Theory]
         [InlineData(null, "Not called")]
         [InlineData("A", "Do A")]
-        public void Binding_Method_With_Parameter_To_Command_CanExecute(object commandParameter, string result)
+        public void Binding_Method_With_Parameter_To_Command_CanExecute(object? commandParameter, string result)
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {

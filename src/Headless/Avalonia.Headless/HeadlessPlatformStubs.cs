@@ -73,7 +73,11 @@ namespace Avalonia.Headless
                 if (format == DataFormats.Files && _data is not null)
                     return _data.GetFiles();
                 if (format == DataFormats.FileNames && _data is not null)
+                {
+#pragma warning disable CS0618 // Type or member is obsolete
                     return _data.GetFileNames();
+#pragma warning restore CS0618 // Type or member is obsolete
+                }
                 else
                     return (object?)_data;
             });
