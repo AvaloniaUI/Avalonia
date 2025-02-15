@@ -608,7 +608,45 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 Assert.Equal(dataContext.ListProperty[0], (string?)((ContentPresenter)target.Presenter.Panel!.Children[0]).Content);
             }
         }
-        
+
+        [Fact]
+        public void InfersDataTypeFromParentDataGridItemsTypeInCaseOfControlInheritance()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestItemsCollectionDataContext'>
+    <local:DataGridLikeControlInheritor Items='{CompiledBinding Items}' Name='target'>
+        <local:DataGridLikeControlInheritor.Columns>
+            <local:DataGridLikeColumn Binding='{CompiledBinding StringProperty}'>
+            </local:DataGridLikeColumn>
+        </local:DataGridLikeControlInheritor.Columns>
+    </local:DataGridLikeControlInheritor>
+</Window>");
+                var target = window.GetControl<DataGridLikeControl>("target");
+                var column = target.Columns.Single();
+
+                var dataContext = new TestItemsCollectionDataContext();
+
+                dataContext.Items.Add(new TestData() { StringProperty = "Test" });
+
+                window.DataContext = dataContext;
+
+                window.ApplyTemplate();
+                target.ApplyTemplate();
+
+                // Assert DataGridLikeColumn.Binding data type.
+                var compiledPath = ((CompiledBindingExtension)column.Binding!).Path;
+                var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath.Elements));
+
+                Assert.Equal(typeof(string), node.Property.PropertyType);
+                Assert.Equal(nameof(TestData.StringProperty), node.Property.Name);
+            }
+        }
+
         [Fact]
         public void InfersDataTemplateTypeFromParentDataGridItemsType()
         {
@@ -2239,6 +2277,11 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
     public class TestDataContextBaseClass {}
     
+    public class TestItemsCollectionDataContext : TestDataContextBaseClass
+    {
+        public ObservableCollection<TestData> Items { get; } = new ObservableCollection<TestData>();
+    }
+
     public class TestDataContext : TestDataContextBaseClass, IHasPropertyDerived, IHasExplicitProperty
     {
         public bool BoolProperty { get; set; }
@@ -2390,6 +2433,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         [InheritDataTypeFromItems(nameof(DataGridLikeControl.Items), AncestorType = typeof(DataGridLikeControl))]
         public IDataTemplate? Template { get; set; }
     }
+
+    public class DataGridLikeControlInheritor : DataGridLikeControl
+    { }
 
     public class ImplicitConvertible
     {
