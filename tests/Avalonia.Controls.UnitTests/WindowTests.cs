@@ -1072,7 +1072,7 @@ namespace Avalonia.Controls.UnitTests
                     var task = target.ShowDialog<bool>(parent);
 
                     target.IsVisible = false;
-                    
+
                     Assert.True(task.IsCompletedSuccessfully);
                 }
             }
