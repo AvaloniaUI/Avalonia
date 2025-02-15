@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
@@ -837,7 +839,7 @@ namespace Avalonia.Controls.UnitTests
         [InlineData("abc", "ddd", 3, 0, 2, true, "ddc")]
         [InlineData("abc", "dddd", 4, 1, 3, true, "addd")]
         [InlineData("abc", "ddddd", 5, 3, 3, true, "abcdd")]
-        public void MaxLength_Works_Properly(
+        public async Task MaxLength_Works_Properly(
             string initalText,
             string textInput,
             int maxLength,
@@ -870,10 +872,10 @@ namespace Avalonia.Controls.UnitTests
                 
                 if (fromClipboard)
                 {
-                    topLevel.Clipboard?.SetTextAsync(textInput).GetAwaiter().GetResult();
+                    await topLevel.Clipboard!.SetTextAsync(textInput);
 
                     RaiseKeyEvent(target, Key.V, KeyModifiers.Control);
-                    topLevel.Clipboard?.ClearAsync().GetAwaiter().GetResult();
+                    await topLevel.Clipboard!.ClearAsync();
                 }
                 else
                 {
@@ -936,7 +938,7 @@ namespace Avalonia.Controls.UnitTests
                     SelectionEnd = 3,
                 };
 
-                var values = new List<string>();
+                var values = new List<string?>();
                 target.GetObservable(TextBox.TextProperty).Subscribe(x => values.Add(x));
 
                 target.SelectedText = "A";
@@ -960,7 +962,7 @@ namespace Avalonia.Controls.UnitTests
                     SelectionEnd = 3,
                 };
 
-                var values = new List<string>();
+                var values = new List<string?>();
                 target.GetObservable(TextBox.TextProperty).Subscribe(x => values.Add(x));
 
                 RaiseTextEvent(target, "A");
@@ -1008,7 +1010,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Should_Fullfill_MaxLines_Contraint()
+        public async Task Should_Fullfill_MaxLines_Contraint()
         {
             using (UnitTestApplication.Start(Services))
             {
@@ -1034,10 +1036,10 @@ namespace Avalonia.Controls.UnitTests
 
                 var initialHeight = target.DesiredSize.Height;
 
-                topLevel.Clipboard?.SetTextAsync(Environment.NewLine).GetAwaiter().GetResult();
+                await topLevel.Clipboard!.SetTextAsync(Environment.NewLine);
 
                 RaiseKeyEvent(target, Key.V, KeyModifiers.Control);
-                topLevel.Clipboard?.ClearAsync().GetAwaiter().GetResult();
+                await topLevel.Clipboard!.ClearAsync();
 
                 RaiseTextEvent(target, Environment.NewLine);
 
@@ -1075,10 +1077,12 @@ namespace Avalonia.Controls.UnitTests
                 topLevel.LayoutManager.ExecuteInitialLayoutPass();
 
                 var textPresenter = target.FindDescendantOfType<TextPresenter>();
+                Assert.NotNull(textPresenter);
                 Assert.Equal("PART_TextPresenter", textPresenter.Name);
                 Assert.Equal(new Thickness(0), textPresenter.Margin); // Test assumes no margin on TextPresenter
 
                 var scrollViewer = target.FindDescendantOfType<ScrollViewer>();
+                Assert.NotNull(scrollViewer);
                 Assert.Equal("PART_ScrollViewer", scrollViewer.Name);
                 Assert.Equal(maxLines * target.LineHeight, scrollViewer.MaxHeight);
             }
@@ -1111,6 +1115,7 @@ namespace Avalonia.Controls.UnitTests
                 topLevel.LayoutManager.ExecuteInitialLayoutPass();
 
                 var textPresenter = target.FindDescendantOfType<TextPresenter>();
+                Assert.NotNull(textPresenter);
                 Assert.Equal("PART_TextPresenter", textPresenter.Name);
                 var textPresenterMargin = new Thickness(horizontal: 0, vertical: 3);
                 textPresenter.Margin = textPresenterMargin;
@@ -1119,6 +1124,7 @@ namespace Avalonia.Controls.UnitTests
                 target.Measure(Size.Infinity);
 
                 var scrollViewer = target.FindDescendantOfType<ScrollViewer>();
+                Assert.NotNull(scrollViewer);
                 Assert.Equal("PART_ScrollViewer", scrollViewer.Name);
                 Assert.Equal((maxLines * target.LineHeight) + textPresenterMargin.Top + textPresenterMargin.Bottom, scrollViewer.MaxHeight);
             }
@@ -1187,10 +1193,12 @@ namespace Avalonia.Controls.UnitTests
                 topLevel.LayoutManager.ExecuteInitialLayoutPass();
 
                 var textPresenter = target.FindDescendantOfType<TextPresenter>();
+                Assert.NotNull(textPresenter);
                 Assert.Equal("PART_TextPresenter", textPresenter.Name);
                 Assert.Equal(new Thickness(0), textPresenter.Margin); // Test assumes no margin on TextPresenter
 
                 var scrollViewer = target.FindDescendantOfType<ScrollViewer>();
+                Assert.NotNull(scrollViewer);
                 Assert.Equal("PART_ScrollViewer", scrollViewer.Name);
                 Assert.Equal(minLines * target.LineHeight, scrollViewer.MinHeight);
             }
@@ -1223,6 +1231,7 @@ namespace Avalonia.Controls.UnitTests
                 topLevel.LayoutManager.ExecuteInitialLayoutPass();
 
                 var textPresenter = target.FindDescendantOfType<TextPresenter>();
+                Assert.NotNull(textPresenter);
                 Assert.Equal("PART_TextPresenter", textPresenter.Name);
                 var textPresenterMargin = new Thickness(horizontal: 0, vertical: 3);
                 textPresenter.Margin = textPresenterMargin;
@@ -1231,6 +1240,7 @@ namespace Avalonia.Controls.UnitTests
                 target.Measure(Size.Infinity);
 
                 var scrollViewer = target.FindDescendantOfType<ScrollViewer>();
+                Assert.NotNull(scrollViewer);
                 Assert.Equal("PART_ScrollViewer", scrollViewer.Name);
                 Assert.Equal((minLines * target.LineHeight) + textPresenterMargin.Top + textPresenterMargin.Bottom, scrollViewer.MinHeight);
             }
@@ -1541,6 +1551,7 @@ namespace Avalonia.Controls.UnitTests
                 var adorner = new TextBox { Template = CreateTemplate(), Text = "a" };
 
                 var adornerLayer = AdornerLayer.GetAdornerLayer(button);
+                Assert.NotNull(adornerLayer);
                 adornerLayer.Children.Add(adorner);
                 AdornerLayer.SetAdornedElement(adorner, button);
 
@@ -1561,6 +1572,7 @@ namespace Avalonia.Controls.UnitTests
                 };
                 var adorner = new TextBox { Template = CreateTemplate(), Text = "a" };
                 var adornerLayer = AdornerLayer.GetAdornerLayer(button);
+                Assert.NotNull(adornerLayer);
 
                 root.Measure(new Size(10, 10));
 
@@ -1780,7 +1792,7 @@ namespace Avalonia.Controls.UnitTests
         private class Class1 : NotifyingBase
         {
             private int _foo;
-            private string _bar;
+            private string? _bar;
 
             public int Foo
             {
@@ -1788,7 +1800,7 @@ namespace Avalonia.Controls.UnitTests
                 set { _foo = value; RaisePropertyChanged(); }
             }
 
-            public string Bar
+            public string? Bar
             {
                 get { return _bar; }
                 set { _bar = value; RaisePropertyChanged(); }
@@ -1797,11 +1809,11 @@ namespace Avalonia.Controls.UnitTests
 
         private class ClipboardStub : IClipboard // in order to get tests working that use the clipboard
         {
-            private string _text;
+            private string? _text;
 
-            public Task<string> GetTextAsync() => Task.FromResult(_text);
+            public Task<string?> GetTextAsync() => Task.FromResult(_text);
 
-            public Task SetTextAsync(string text)
+            public Task SetTextAsync(string? text)
             {
                 _text = text;
                 return Task.CompletedTask;
@@ -1817,14 +1829,14 @@ namespace Avalonia.Controls.UnitTests
 
             public Task<string[]> GetFormatsAsync() => Task.FromResult(Array.Empty<string>());
 
-            public Task<object> GetDataAsync(string format) => Task.FromResult((object)null);
+            public Task<object?> GetDataAsync(string format) => Task.FromResult((object?)null);
         }
 
         private class TestTopLevel : TopLevel
         {
             private readonly ILayoutManager _layoutManager;
 
-            public TestTopLevel(ITopLevelImpl impl, ILayoutManager layoutManager = null)
+            public TestTopLevel(ITopLevelImpl impl, ILayoutManager? layoutManager = null)
                 : base(impl)
             {
                 _layoutManager = layoutManager ?? new LayoutManager(this);

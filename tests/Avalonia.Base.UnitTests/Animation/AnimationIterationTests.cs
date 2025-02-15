@@ -317,7 +317,7 @@ namespace Avalonia.Base.UnitTests.Animation
         }
 
         [Fact]
-        public void Cancellation_Should_Stop_Animation()
+        public async Task Cancellation_Should_Stop_Animation()
         {
             var keyframe1 = new KeyFrame()
             {
@@ -364,7 +364,7 @@ namespace Avalonia.Base.UnitTests.Animation
             clock.Step(TimeSpan.FromSeconds(2));
             clock.Step(TimeSpan.FromSeconds(3));
 
-            animationRun.Wait();
+            await animationRun;
 
             clock.Step(TimeSpan.FromSeconds(6));
             Assert.True(animationRun.IsCompleted);
@@ -404,7 +404,7 @@ namespace Avalonia.Base.UnitTests.Animation
         }
 
         [Fact]
-        public void Cancellation_Of_Completed_Animation_Does_Not_Fail()
+        public async Task Cancellation_Of_Completed_Animation_Does_Not_Fail()
         {
             var keyframe1 = new KeyFrame()
             {
@@ -450,12 +450,12 @@ namespace Avalonia.Base.UnitTests.Animation
             Assert.Equal(2, propertyChangedCount);
 
             cancellationTokenSource.Cancel();
-            animationRun.Wait();
+            await animationRun;
         }
 
         // https://github.com/AvaloniaUI/Avalonia/issues/12582
         [Fact]
-        public void Interpolator_Is_Not_Called_After_Last_Iteration()
+        public async Task Interpolator_Is_Not_Called_After_Last_Iteration()
         {
             var animator = new FakeAnimator();
 
@@ -511,7 +511,7 @@ namespace Avalonia.Base.UnitTests.Animation
             Assert.Equal(3, animator.CallCount);
             Assert.Equal(1.0d, animator.LastProgress);
 
-            animationRun.Wait();
+            await animationRun;
         }
 
         [Theory]
