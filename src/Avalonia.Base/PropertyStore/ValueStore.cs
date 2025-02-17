@@ -592,11 +592,12 @@ namespace Avalonia.PropertyStore
 
             var count = children.Count;
             
-            var args = GetPropertyChangedEventArgs(Owner, property, oldValue, value.Value);
+            var apArgs = new AvaloniaPropertyChangedEventArgs<T>(Owner, property, oldValue, value.Value, BindingPriority.Inherited, true);
+            var incpArgs = new PropertyChangedEventArgs(property.Name);
 
             for (var i = 0; i < count; ++i)
             {
-                children[i].GetValueStore().OnAncestorInheritedValueChanged(args.apArgs, args.incpArgs);
+                children[i].GetValueStore().OnAncestorInheritedValueChanged(apArgs, incpArgs);
             }
         }
 
@@ -616,12 +617,13 @@ namespace Avalonia.PropertyStore
             if (children is not null)
             {
                 var count = children.Count;
-                
-                var args = GetPropertyChangedEventArgs(Owner, property, oldValue, newValue);
+
+                var apArgs = new AvaloniaPropertyChangedEventArgs<T>(Owner, property, oldValue, newValue, BindingPriority.Inherited, true);
+                var incpArgs = new PropertyChangedEventArgs(property.Name);
 
                 for (var i = 0; i < count; ++i)
                 {
-                    children[i].GetValueStore().OnAncestorInheritedValueChanged(args.apArgs, args.incpArgs);
+                    children[i].GetValueStore().OnAncestorInheritedValueChanged(apArgs, incpArgs);
                 }
             }
         }
@@ -644,25 +646,13 @@ namespace Avalonia.PropertyStore
                 }
             }
         }
-
-        private (AvaloniaPropertyChangedEventArgs<T> apArgs, PropertyChangedEventArgs? incpArgs)
-            GetPropertyChangedEventArgs<T>(AvaloniaObject sender,
-                StyledProperty<T> property,
-                T oldValue,
-                T newValue)
-        {
-            Debug.Assert(property.Inherits);
-            
-            return new (new AvaloniaPropertyChangedEventArgs<T>(sender, property, oldValue, newValue, BindingPriority.Inherited, true), new PropertyChangedEventArgs(property.Name));
-        }
         
         /// <summary>
         /// Called when an inherited property changes on the value store of the inheritance ancestor.
         /// </summary>
         /// <typeparam name="T">The property type.</typeparam>
-        /// <param name="property">The property.</param>
-        /// <param name="oldValue">The old value of the property.</param>
-        /// <param name="newValue">The new value of the property.</param>
+        /// <param name="apArgs">Avalonia Property EventArgs to reuse.</param>
+        /// <param name="args">PropertyChangedEventArgs to reuse</param>
         public void OnAncestorInheritedValueChanged<T>(AvaloniaPropertyChangedEventArgs<T> apArgs, PropertyChangedEventArgs? args)
         {
             
