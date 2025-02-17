@@ -27,11 +27,6 @@ namespace Avalonia
             IsEffectiveValueChange = isEffectiveValueChange;
         }
 
-        internal void SetSender(AvaloniaObject sender)
-        {
-            Sender = sender;
-        }
-
         /// <summary>
         /// Gets the <see cref="AvaloniaObject"/> that the property changed on.
         /// </summary>
@@ -65,6 +60,16 @@ namespace Avalonia
         public BindingPriority Priority { get; private set; }
 
         internal bool IsEffectiveValueChange { get; private set; }
+        
+        /// <summary>
+        /// Sets the Sender property.
+        /// This is purely for reuse in some code paths where multiple allocations may occur.
+        /// </summary>
+        /// <param name="sender">The sender object.</param>
+        internal void SetSender(AvaloniaObject sender)
+        {
+            Sender = sender;
+        }
 
         protected abstract AvaloniaProperty GetProperty();
         protected abstract object? GetOldValue();
