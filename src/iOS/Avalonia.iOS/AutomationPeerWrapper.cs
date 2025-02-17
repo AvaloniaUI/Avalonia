@@ -61,10 +61,15 @@ namespace Avalonia.iOS
                 self._view.TopLevel.PointToScreen(bounds.TopLeft),
                 self._view.TopLevel.PointToScreen(bounds.BottomRight)
                 );
-            self.AccessibilityFrame = new CGRect(
+            CGRect nativeRect = new CGRect(
                 screenRect.X, screenRect.Y,
                 screenRect.Width, screenRect.Height
                 );
+            if (self.AccessibilityFrame != nativeRect)
+            {
+                self.AccessibilityFrame = nativeRect;
+                UIAccessibility.PostNotification(UIAccessibilityPostNotification.LayoutChanged, null);
+            }
         }
 
         private static void UpdateIsReadOnly(AutomationPeerWrapper self)
@@ -85,23 +90,29 @@ namespace Avalonia.iOS
             if (self.AccessibilityValue != newValue)
             {
                 self.AccessibilityValue = newValue;
-                UIAccessibility.PostNotification(UIAccessibilityPostNotification.Announcement, self);
+                UIAccessibility.PostNotification(UIAccessibilityPostNotification.Announcement, null);
             }
         }
 
-        private void PeerChildrenChanged(object? sender, EventArgs e) => _view.UpdateChildren(_peer);
+        private void PeerChildrenChanged(object? sender, EventArgs e) =>
+            UIAccessibility.PostNotification(UIAccessibilityPostNotification.ScreenChanged, null);
 
-        private void PeerPropertyChanged(object? sender, AutomationPropertyChangedEventArgs e) => UpdateProperties(e.Property);
+        private void PeerPropertyChanged(object? sender, AutomationPropertyChangedEventArgs e) =>
+            UpdateProperties(e.Property);
 
         private void UpdateProperties(params AutomationProperty[] properties)
         {
-            Action<AutomationPeerWrapper>? setter =
-                Delegate.Combine(properties
-                .Where(s_propertySetters.ContainsKey)
-                .Select(x => s_propertySetters[x])
-                .Distinct()
-                .ToArray()) as Action<AutomationPeerWrapper>;
-            setter?.Invoke(this);
+            HashSet<Action<AutomationPeerWrapper>> calledSetters = new();
+            foreach (AutomationProperty property in properties)
+            {
+                if (s_propertySetters.TryGetValue(property,
+                    out Action<AutomationPeerWrapper>? setter) &&
+                    !calledSetters.Contains(setter))
+                {
+                    calledSetters.Add(setter);
+                    setter.Invoke(this);
+                }
+            }
         }
 
         public bool UpdatePropertiesIfValid()
@@ -255,7 +266,7 @@ namespace Avalonia.iOS
                 scrollProvider.Scroll(verticalAmount, horizontalAmount);
                 if (didScroll)
                 {
-                    UIAccessibility.PostNotification(UIAccessibilityPostNotification.PageScrolled, this);
+                    UIAccessibility.PostNotification(UIAccessibilityPostNotification.PageScrolled, null);
                     return true;
                 }
             }
