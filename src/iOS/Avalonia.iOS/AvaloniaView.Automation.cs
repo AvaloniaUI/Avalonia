@@ -57,10 +57,12 @@ namespace Avalonia.iOS
             {
                 AutomationPeerWrapper? wrapper;
                 if (!_childrenMap.TryGetValue(child, out wrapper) && 
+                    child.IsContentElement() && !child.IsOffscreen() &&
                     (child.GetName().Length > 0 || child.IsKeyboardFocusable()))
                 {
+                    wrapper = new(this, child);
                     _childrenList.Add(child);
-                    _childrenMap.Add(child, new(this, child));
+                    _childrenMap.Add(child, wrapper);
                 }
 
                 wrapper?.UpdatePropertiesIfValid();
