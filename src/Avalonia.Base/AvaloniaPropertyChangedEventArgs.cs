@@ -27,11 +27,16 @@ namespace Avalonia
             IsEffectiveValueChange = isEffectiveValueChange;
         }
 
+        internal void SetSender(AvaloniaObject sender)
+        {
+            Sender = sender;
+        }
+
         /// <summary>
         /// Gets the <see cref="AvaloniaObject"/> that the property changed on.
         /// </summary>
         /// <value>The sender object.</value>
-        public AvaloniaObject Sender { get; }
+        public AvaloniaObject Sender { get; private set; }
 
         /// <summary>
         /// Gets the property that changed.

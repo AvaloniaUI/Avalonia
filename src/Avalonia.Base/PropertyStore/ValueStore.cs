@@ -672,6 +672,7 @@ namespace Avalonia.PropertyStore
 
             using var notifying = PropertyNotifying.Start(Owner, apArgs.Property);
 
+            apArgs.SetSender(Owner);
             Owner.RaisePropertyChanged(apArgs, args);
 
             var children = Owner.GetInheritanceChildren();
