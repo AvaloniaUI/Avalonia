@@ -513,7 +513,6 @@ namespace Avalonia.Controls.Presenters
 
                 if (oldChild != null)
                 {
-                    oldChild.IsVisible = false;
                     VisualChildren.Remove(oldChild);
                     logicalChildren.Remove(oldChild);
                     ((ISetInheritanceParent)oldChild).SetParent(oldChild.Parent);
@@ -556,7 +555,6 @@ namespace Avalonia.Controls.Presenters
                     logicalChildren.Add(newChild);
                 }
 
-                newChild.IsVisible = true;
                 VisualChildren.Add(newChild);
             }
 
