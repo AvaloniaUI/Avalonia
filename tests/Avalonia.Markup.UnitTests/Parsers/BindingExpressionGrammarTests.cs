@@ -95,6 +95,38 @@ namespace Avalonia.Markup.UnitTests.Parsers
         }
 
         [Fact]
+        public void Should_Parse_Null_Conditional_In_Property_Chain_1()
+        {
+            var result = Parse("Foo?.Bar.Baz");
+
+            Assert.Equal(3, result.Count);
+            AssertIsProperty(result[0], "Foo");
+            AssertIsProperty(result[1], "Bar", acceptsNull: true);
+            AssertIsProperty(result[2], "Baz");
+        }
+
+        [Fact]
+        public void Should_Parse_Null_Conditional_In_Property_Chain_2()
+        {
+            var result = Parse("Foo.Bar?.Baz");
+
+            Assert.Equal(3, result.Count);
+            AssertIsProperty(result[0], "Foo");
+            AssertIsProperty(result[1], "Bar");
+            AssertIsProperty(result[2], "Baz", acceptsNull: true);
+        }
+
+        [Fact]
+        public void Should_Parse_Null_Conditional_In_Property_Chain_3()
+        {
+            var result = Parse("Foo?.(Bar.Baz)");
+
+            Assert.Equal(2, result.Count);
+            AssertIsProperty(result[0], "Foo");
+            AssertIsAttachedProperty(result[1], "Bar", "Baz", acceptsNull: true);
+        }
+
+        [Fact]
         public void Should_Parse_Negated_Property_Chain()
         {
             var result = Parse("!Foo.Bar.Baz");
@@ -191,19 +223,27 @@ namespace Avalonia.Markup.UnitTests.Parsers
             Assert.IsType<BindingExpressionGrammar.StreamNode>(result[1]);
         }
 
-        private static void AssertIsProperty(BindingExpressionGrammar.INode node, string name)
+        private static void AssertIsProperty(
+            BindingExpressionGrammar.INode node,
+            string name,
+            bool acceptsNull = false)
         {
             var p = Assert.IsType<BindingExpressionGrammar.PropertyNameNode>(node);
             Assert.Equal(name, p.PropertyName);
+            Assert.Equal(acceptsNull, p.AcceptsNull);
         }
 
-        private static void AssertIsAttachedProperty(BindingExpressionGrammar.INode node, string typeName, string name)
+        private static void AssertIsAttachedProperty(
+            BindingExpressionGrammar.INode node,
+            string typeName,
+            string name,
+            bool acceptsNull = false)
         {
             var p = Assert.IsType<BindingExpressionGrammar.AttachedPropertyNameNode>(node);
             Assert.Equal(typeName, p.TypeName);
             Assert.Equal(name, p.PropertyName);
+            Assert.Equal(acceptsNull, p.AcceptsNull);
         }
-
 
         private static void AssertIsIndexer(BindingExpressionGrammar.INode node, params string[] args)
         {

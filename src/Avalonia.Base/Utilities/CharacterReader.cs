@@ -46,6 +46,20 @@ namespace Avalonia.Utilities
             }
         }
 
+        public bool TakeIf(string s)
+        {
+            var p = TryPeek(s.Length);
+
+            if (SpanEquals(p, s.AsSpan()))
+            {
+                _s = _s.Slice(s.Length);
+                Position += s.Length;
+                return true;
+            }
+
+            return false;
+        }
+
         public bool TakeIf(Func<char, bool> condition)
         {
             if (condition(Peek))
@@ -98,6 +112,18 @@ namespace Avalonia.Utilities
             if (_s.Length < count)
                 throw new IndexOutOfRangeException();
             _s = _s.Slice(count);
+        }
+
+        private static bool SpanEquals(ReadOnlySpan<char> left, ReadOnlySpan<char> right)
+        {
+            if (left.Length != right.Length)
+                return false;
+            for (var c = 0; c < left.Length; c++)
+            {
+                if (left[c] != right[c])
+                    return false;
+            }
+            return true;
         }
     }
 }

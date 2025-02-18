@@ -20,10 +20,38 @@ namespace Avalonia.Markup.UnitTests.Parsers
         }
 
         [Fact]
+        public void Identifier_Cannot_Start_With_QuestionMark()
+        {
+            Assert.Throws<ExpressionParseException>(
+                () => Parse("?Foo"));
+        }
+
+        [Fact]
+        public void Identifier_Cannot_Start_With_NullConditional()
+        {
+            Assert.Throws<ExpressionParseException>(
+                () => Parse("?.Foo"));
+        }
+
+        [Fact]
         public void Expression_Cannot_End_With_Period()
         {
             Assert.Throws<ExpressionParseException>(
                 () => Parse("Foo.Bar."));
+        }
+        
+        [Fact]
+        public void Expression_Cannot_End_With_QuestionMark()
+        {
+            Assert.Throws<ExpressionParseException>(
+                () => Parse("Foo.Bar?"));
+        }
+
+        [Fact]
+        public void Expression_Cannot_End_With_Null_Conditional()
+        {
+            Assert.Throws<ExpressionParseException>(
+                () => Parse("Foo.Bar?."));
         }
 
         [Fact]
