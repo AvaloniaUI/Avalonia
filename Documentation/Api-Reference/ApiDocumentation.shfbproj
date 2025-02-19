@@ -154,7 +154,7 @@
     <MissingTags>AutoDocumentCtors, AutoDocumentDispose</MissingTags>
     <ComponentConfigurations />
     <VisibleItems>Attributes, InheritedMembers, InheritedFrameworkMembers, Protected, ProtectedInternalAsProtected, NonBrowsable</VisibleItems>
-    <PresentationStyle>AvaloniaHtml</PresentationStyle>
+    <PresentationStyle>AvaloniaMarkdown</PresentationStyle>
   </PropertyGroup>
   <!-- There are no properties for these groups.  AnyCPU needs to appear in order for Visual Studio to perform
 			 the build.  The others are optional common platform types that may appear. -->
