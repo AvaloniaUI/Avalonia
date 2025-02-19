@@ -191,7 +191,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="EWSoftware.SHFB" Version="2024.12.21" />
-    <PackageReference Include="EWSoftware.SHFB.NET" Version="8.0.0" />
+    <PackageReference Include="EWSoftware.SHFB.NET" Version="9.0.0" />
   </ItemGroup>
   <!-- Icons -->
   <ItemGroup>

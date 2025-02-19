@@ -85,12 +85,12 @@ namespace Avalonia.Sandcastle.PresentationStyles.AvaloniaHtml
             
             // not client implementable attribute
             shortAttributeRepresentation.Add("T:Avalonia.Metadata.NotClientImplementableAttribute", new XElement("span",
-                new XAttribute("class", "tag is-info"),
+                new XAttribute("class", "tag is-warning"),
                 new XElement("include",
                     new XAttribute("item", "boilerplate_notClientImplementableShort"))));
             
             longAttributeRepresentation.Add("T:Avalonia.Metadata.NotClientImplementableAttribute", new XElement("span",
-                new XAttribute("class", "tag is-info is-medium"),
+                new XAttribute("class", "tag is-warning is-medium"),
                 new XElement("include", new XAttribute("item", "boilerplate_notClientImplementableLong"))));
         }
         #endregion
@@ -1374,7 +1374,7 @@ $("".toggleSection"").keypress(function () {
             }
 
             var containers = transformation.ReferenceNode.Element("containers");
-            var libraries = containers.Elements("library");
+            var libraries = containers?.Elements("library").ToArray() ?? [];
 
             content.Add(new XElement("strong",
                 new XElement("include", new XAttribute("item", "boilerplate_requirementsNamespace"))),
@@ -1386,7 +1386,7 @@ $("".toggleSection"").keypress(function () {
             int separatorSize = 1;
             bool first = true;
 
-            if(libraries.Count() > 1)
+            if(libraries.Length > 1)
             {
                 content.Add(new XElement("strong",
                     new XElement("include", new XAttribute("item", "boilerplate_requirementsAssemblies"))));
@@ -1431,11 +1431,12 @@ $("".toggleSection"").keypress(function () {
             // syntax get an "XMLNS for XAML" line in the Requirements section.  Topics with boilerplate XAML
             // syntax, e.g. "Not applicable", do NOT get this line.
             var xamlCode = transformation.SyntaxNode.Elements("div").Where(d => d.Attribute("codeLanguage")?.Value.Equals(
-                "XAML", StringComparison.Ordinal) ?? false);
+                "XAML", StringComparison.Ordinal) ?? false).ToArray();
 
             if(xamlCode.Any())
             {
-                var xamlXmlNS = xamlCode.Elements("div").Where(d => d.Attribute("class")?.Value == "xamlXmlnsUri");
+                var xamlXmlNS = xamlCode.Elements("div")
+                    .Where(d => d.Attribute("class")?.Value == "xamlXmlnsUri").ToArray();
 
                 content.Add(new XElement("br"),
                     new XElement("strong",
@@ -2136,6 +2137,7 @@ $("".toggleSection"").keypress(function () {
         private static void RenderApiSectionTable(TopicTransformationCore transformation, string sectionTitleItem,
           IEnumerable<XElement> sectionElements)
         {
+            sectionElements = sectionElements.ToArray();
             if(sectionElements.Any())
             {
                 var (title, content) = transformation.CreateSection(sectionElements.First().GenerateUniqueId(), true,
@@ -2231,7 +2233,7 @@ $("".toggleSection"").keypress(function () {
                 return;
 
             var revisions = revisionHistory.Elements("revision").Where(
-                h => h.Attribute("visible")?.Value != "false");
+                h => h.Attribute("visible")?.Value != "false").ToArray();
 
             if(revisions.Any())
             {
