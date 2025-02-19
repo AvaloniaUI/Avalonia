@@ -1983,6 +1983,14 @@ namespace Avalonia.Controls
                 {
                     if (selectionStart != selectionEnd)
                     {
+                        if (CaretIndex == SelectionStart)
+                        {
+                            // setting same value of SelectionEnd and SelectionStart will clear the selection first
+                            // allowing to move the caret horizontally also in direction "away" from selection
+                            SetCurrentValue(SelectionEndProperty, SelectionStart);
+                            selectionEnd = SelectionEnd;
+                        }
+
                         _presenter.MoveCaretToTextPosition(direction > 0 ?
                             Math.Max(selectionStart, selectionEnd) :
                             Math.Min(selectionStart, selectionEnd));
