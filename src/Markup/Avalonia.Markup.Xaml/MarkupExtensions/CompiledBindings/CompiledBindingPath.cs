@@ -45,7 +45,10 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
                             methodAsCommand.DependsOnProperties);
                         break;
                     case MethodAsDelegateElement methodAsDelegate:
-                        node = new PropertyAccessorNode(methodAsDelegate.Method.Name, new MethodAccessorPlugin(methodAsDelegate.Method, methodAsDelegate.DelegateType), false);
+                        node = new PropertyAccessorNode(
+                            methodAsDelegate.Method.Name,
+                            new MethodAccessorPlugin(methodAsDelegate.Method, methodAsDelegate.DelegateType),
+                            methodAsDelegate.AcceptsNull);
                         break;
                     case ArrayElementPathElement arr:
                         node = new ArrayIndexerNode(arr.Indices);
@@ -149,7 +152,16 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
         public CompiledBindingPathBuilder Method(RuntimeMethodHandle handle, RuntimeTypeHandle delegateType)
         {
-            _elements.Add(new MethodAsDelegateElement(handle, delegateType));
+            Method(handle, delegateType, acceptsNull: false);
+            return this;
+        }
+
+        public CompiledBindingPathBuilder Method(
+            RuntimeMethodHandle handle,
+            RuntimeTypeHandle delegateType,
+            bool acceptsNull)
+        {
+            _elements.Add(new MethodAsDelegateElement(handle, delegateType, acceptsNull));
             return this;
         }
 
@@ -261,17 +273,23 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
     internal class MethodAsDelegateElement : ICompiledBindingPathElement
     {
-        public MethodAsDelegateElement(RuntimeMethodHandle method, RuntimeTypeHandle delegateType)
+        public MethodAsDelegateElement(
+            RuntimeMethodHandle method,
+            RuntimeTypeHandle delegateType,
+            bool acceptsNull)
         {
             Method = MethodBase.GetMethodFromHandle(method) as MethodInfo
                 ?? throw new ArgumentException("Invalid method handle", nameof(method));
             DelegateType = Type.GetTypeFromHandle(delegateType)
                 ?? throw new ArgumentException("Unexpected null returned from Type.GetTypeFromHandle in MethodAsDelegateElement");
+            AcceptsNull = acceptsNull;
         }
 
         public MethodInfo Method { get; }
 
         public Type DelegateType { get; }
+        
+        public bool AcceptsNull { get; }
     }
 
     internal class MethodAsCommandElement : ICompiledBindingPathElement

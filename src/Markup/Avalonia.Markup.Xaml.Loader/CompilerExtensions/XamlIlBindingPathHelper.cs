@@ -211,7 +211,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                             }
                             else if (GetAllDefinedMethods(targetType).FirstOrDefault(m => m.Name == propName.PropertyName) is IXamlMethod method)
                             {
-                                nodes.Add(new XamlIlClrMethodPathElementNode(method, context.Configuration.WellKnownTypes.Delegate));
+                                nodes.Add(new XamlIlClrMethodPathElementNode(method, context.Configuration.WellKnownTypes.Delegate, propName.AcceptsNull));
                             }
                             else
                             {
@@ -723,11 +723,13 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
         class XamlIlClrMethodPathElementNode : IXamlIlBindingPathElementNode
         {
+            private readonly bool _acceptsNull;
 
-            public XamlIlClrMethodPathElementNode(IXamlMethod method, IXamlType systemDelegateType)
+            public XamlIlClrMethodPathElementNode(IXamlMethod method, IXamlType systemDelegateType, bool acceptsNull)
             {
                 Method = method;
                 Type = systemDelegateType;
+                _acceptsNull = acceptsNull;
             }
             public IXamlMethod Method { get; }
 
@@ -770,9 +772,25 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
                 codeGen
                     .Ldtoken(Method)
-                    .Ldtoken(specificDelegateType)
-                    .EmitCall(context.GetAvaloniaTypes()
-                        .CompiledBindingPathBuilder.GetMethod(m => m.Name == "Method"));
+                    .Ldtoken(specificDelegateType);
+
+                // By default use the 2-argument overload of CompiledBindingPathBuilder.Method,
+                // unless a "?." null conditional operator appears in the path, in which case use
+                // the 3-parameter version with the `acceptsNull` parameter. This ensures we don't
+                // get a missing method exception if we run against an old version of Avalonia.
+                var methodArgumentCount = 2;
+
+                if (_acceptsNull)
+                {
+                    methodArgumentCount = 3;
+                    codeGen.Ldc_I4(1);
+                }
+
+                codeGen.EmitCall(context.GetAvaloniaTypes()
+                    .CompiledBindingPathBuilder.GetMethod(m => 
+                        m.Name == "Method" &&
+                        m.Parameters.Count == methodArgumentCount));
+
 
                 newDelegateTypeBuilder?.CreateType();
             }

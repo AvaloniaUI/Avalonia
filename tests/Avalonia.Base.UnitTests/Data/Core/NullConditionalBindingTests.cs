@@ -82,6 +82,32 @@ public class NullConditionalBindingTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public void Should_Not_Report_Error_With_Null_Conditional_Operator_Before_Method(bool compileBindings)
+    {
+        using var app = Start();
+        using var log = TestLogger.Create();
+        var xaml = $$$"""
+            <Window xmlns='https://github.com/avaloniaui'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                    xmlns:local='using:Avalonia.Base.UnitTests.Data.Core'
+                    x:DataType='local:NullConditionalBindingTests+First'
+                    x:CompileBindings='{{{compileBindings}}}'>
+                <local:ErrorCollectingTextBox Text='{Binding Second.Third?.Greeting}'/>
+            </Window>
+            """;
+        var data = new First(new Second(null));
+        var window = CreateTarget(xaml, data);
+        var textBox = Assert.IsType<ErrorCollectingTextBox>(window.Content);
+
+        Assert.Null(textBox.Text);
+        Assert.Null(textBox.Error);
+        Assert.Equal(BindingValueType.Value, textBox.ErrorState);
+        Assert.Empty(log.Messages);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public void Should_Use_TargetNullValue_With_Null_Conditional_Operator(bool compileBindings)
     {
         using var app = Start();
@@ -120,7 +146,10 @@ public class NullConditionalBindingTests
 
     public record First(Second? Second);
     public record Second(Third? Third);
-    public record Third(string Final);
+    public record Third(string Final)
+    {
+        public string Greeting() => "Hello!";
+    }
 
     private class TestLogger : ILogSink, IDisposable
     {
