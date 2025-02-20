@@ -2,6 +2,8 @@
 using Avalonia.Utilities;
 using Xunit;
 
+#pragma warning disable CS0618 // Type or member is obsolete
+
 namespace Avalonia.Base.UnitTests.Utilities
 {
     public class StringTokenizerTests
@@ -64,6 +66,16 @@ namespace Avalonia.Base.UnitTests.Utilities
             var target = new StringTokenizer("abc");
 
             Assert.False(target.TryReadDouble(out var value));
+        }
+
+        [Fact]
+        public void ReadSpan_And_ReadString_Reads_Same()
+        {
+            var target1 = new StringTokenizer("abc,def");
+            var target2 = new StringTokenizer("abc,def");
+
+            Assert.Equal(target1.ReadString(), target2.ReadSpan().ToString());
+            Assert.True(target1.ReadSpan().SequenceEqual(target2.ReadString()));
         }
     }
 }

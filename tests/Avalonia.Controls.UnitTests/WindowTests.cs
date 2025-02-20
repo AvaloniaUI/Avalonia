@@ -100,11 +100,9 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void IsVisible_Should_Be_False_After_Impl_Signals_Close()
         {
-            var windowImpl = new Mock<IWindowImpl>();
-            windowImpl.Setup(r => r.Compositor).Returns(RendererMocks.CreateDummyCompositor());
+            var windowImpl = CreateImpl();
             windowImpl.SetupProperty(x => x.Closed);
             windowImpl.Setup(x => x.DesktopScaling).Returns(1);
-            windowImpl.Setup(x => x.RenderScaling).Returns(1);
 
             var services = TestServices.StyledWindow.With(
                 windowingPlatform: new MockWindowingPlatform(() => windowImpl.Object));
@@ -114,6 +112,8 @@ namespace Avalonia.Controls.UnitTests
                 var window = new Window();
 
                 window.Show();
+                Assert.True(window.IsVisible);
+
                 windowImpl.Object.Closed();
 
                 Assert.False(window.IsVisible);
@@ -273,7 +273,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var target = new Window(CreateImpl());
+                var target = new Window(CreateImpl().Object);
 
                 target.Show();
                 Assert.True(MediaContext.Instance.IsTopLevelActive(target));
@@ -286,7 +286,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
                 var parent = new Window();
-                var target = new Window(CreateImpl());
+                var target = new Window(CreateImpl().Object);
 
                 parent.Show();
                 target.ShowDialog<object>(parent);
@@ -318,7 +318,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var target = new Window(CreateImpl());
+                var target = new Window(CreateImpl().Object);
 
                 target.Show();
                 target.Hide();
@@ -332,7 +332,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
                 var parent = new Window();
-                var windowImpl = new Mock<IWindowImpl>();
+                var windowImpl = CreateImpl();
                 windowImpl.Setup(x => x.Compositor).Returns(RendererMocks.CreateDummyCompositor());
                 windowImpl.SetupProperty(x => x.Closed);
                 windowImpl.Setup(x => x.DesktopScaling).Returns(1);
@@ -374,7 +374,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
                 var parent = new Window();
-                var windowImpl = new Mock<IWindowImpl>();
+                var windowImpl = CreateImpl();
                 windowImpl.Setup(x => x.Compositor).Returns(RendererMocks.CreateDummyCompositor());
                 windowImpl.SetupProperty(x => x.Closed);
                 windowImpl.Setup(x => x.DesktopScaling).Returns(1);
@@ -1060,7 +1060,7 @@ namespace Avalonia.Controls.UnitTests
             }
             
             [Fact]
-            public void IsVisible_Should_Close_DialogWindow()
+            public void Hiding_DialogWindow_Should_Complete_Task()
             {
                 using (UnitTestApplication.Start(TestServices.StyledWindow))
                 {
@@ -1068,18 +1068,12 @@ namespace Avalonia.Controls.UnitTests
                     parent.Show();
                     
                     var target = new Window();
-                    
-                    var raised = false;
 
                     var task = target.ShowDialog<bool>(parent);
-                    
-                    target.Closed += (sender, args) => raised = true;
 
                     target.IsVisible = false;
 
-                    Assert.True(raised);
-                    
-                    Assert.False(task.Result);
+                    Assert.True(task.IsCompletedSuccessfully);
                 }
             }
             
@@ -1099,11 +1093,18 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        private static IWindowImpl CreateImpl()
+        private static Mock<IWindowImpl> CreateImpl()
         {
-            var compositor = RendererMocks.CreateDummyCompositor();
-            return Mock.Of<IWindowImpl>(x => x.RenderScaling == 1 &&
-                                             x.Compositor == compositor);
+            var screen1 = new Mock<Screen>(1.75, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 966)), true);
+            var screens = new Mock<IScreenImpl>();
+            screens.Setup(x => x.ScreenFromWindow(It.IsAny<IWindowBaseImpl>())).Returns(screen1.Object);
+
+            var windowImpl = new Mock<IWindowImpl>();
+            windowImpl.Setup(r => r.Compositor).Returns(RendererMocks.CreateDummyCompositor());
+            windowImpl.Setup(x => x.RenderScaling).Returns(1);
+            windowImpl.Setup(x => x.TryGetFeature(It.Is<Type>(t => t == typeof(IScreenImpl)))).Returns(screens.Object);
+
+            return windowImpl;
         }
 
         private class ChildControl : Control

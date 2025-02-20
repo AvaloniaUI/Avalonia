@@ -172,7 +172,7 @@ static class TestRenderHelper
 
             if (immediateError > 0.022)
             {
-                Assert.True(false, actualPath + ": Error = " + immediateError);
+                Assert.Fail(actualPath + ": Error = " + immediateError);
             }
         }
     }

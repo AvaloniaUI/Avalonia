@@ -122,7 +122,7 @@ namespace Avalonia.Android.Platform.Input
 
         private void _client_SurroundingTextChanged(object? sender, EventArgs e)
         {
-            if (_inputConnection is null || _inputConnection.IsInBatchEdit)
+            if (_inputConnection is null || _inputConnection.IsInBatchEdit || _inputConnection.IsInUpdate)
                 return;
             OnSurroundingTextChanged();
         }
@@ -172,6 +172,9 @@ namespace Avalonia.Android.Platform.Input
                 if (options.Multiline)
                     outAttrs.InputType |= InputTypes.TextFlagMultiLine;
 
+                if (outAttrs.InputType is InputTypes.ClassText && options.ShowSuggestions == false)
+                    outAttrs.InputType |= InputTypes.TextVariationPassword | InputTypes.TextFlagNoSuggestions;
+                    
                 outAttrs.ImeOptions = options.ReturnKeyType switch
                 {
                     TextInputReturnKeyType.Return => ImeFlags.NoEnterAction,

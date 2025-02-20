@@ -68,6 +68,8 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
     private PlatformBehaviorInhibition? _platformBehaviorInhibition;
 
     private readonly MouseDevice? _mouse;
+    private readonly PenDevice? _pen;
+
     private readonly IKeyboardDevice? _keyboard;
     private readonly ICursorFactory? _cursorFactory;
 
@@ -88,6 +90,7 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
 
         _keyboard = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
         _mouse = new MouseDevice();
+        _pen = new PenDevice();
         _cursorFactory = AvaloniaLocator.Current.GetService<ICursorFactory>();
     }
 
@@ -95,7 +98,7 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
     {
         _handle = handle;
         _savedLogicalSize = ClientSize;
-        _savedScaling = RenderScaling;
+        _savedScaling = Native?.Scaling ?? 1;;
         _nativeControlHost = new NativeControlHostImpl(Native!.CreateNativeControlHost());
         _platformBehaviorInhibition = new PlatformBehaviorInhibition(Factory.CreatePlatformBehaviorInhibition());
         _surfaces = new object[] { new GlPlatformSurface(Native), new MetalPlatformSurface(Native), this };
@@ -121,7 +124,8 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
 
         }
     }
-    public double RenderScaling => Native?.Scaling ?? 1;
+
+    public double RenderScaling => _savedScaling;
     public IEnumerable<object> Surfaces => _surfaces ?? Array.Empty<object>();
     public Action<RawInputEventArgs>? Input { get; set; }
     public Action<Rect>? Paint { get; set; }
@@ -212,7 +216,7 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
         return args.Handled;
     }
 
-    public void RawMouseEvent(AvnRawMouseEventType type, ulong timeStamp, AvnInputModifiers modifiers, AvnPoint point, AvnVector delta)
+    public void RawMouseEvent(AvnRawMouseEventType type, AvnPointerDeviceType deviceType, ulong timeStamp, AvnInputModifiers modifiers, AvnPoint point, AvnVector delta, float pressure, float xTilt, float yTilt)
     {
         if (_inputRoot is null)
             return;
@@ -247,8 +251,15 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
                 break;
 
             default:
-                var e = new RawPointerEventArgs(_mouse, timeStamp, _inputRoot, (RawPointerEventType)type,
-                    point.ToAvaloniaPoint(), (RawInputModifiers)modifiers);
+                IInputDevice device = deviceType == AvnPointerDeviceType.Pen && _pen != null ? _pen : _mouse;
+                var e = new RawPointerEventArgs(device, timeStamp, _inputRoot, (RawPointerEventType)type,
+                    new RawPointerPoint
+                    {
+                        Position = point.ToAvaloniaPoint(),
+                        Pressure = pressure,
+                        XTilt = xTilt,
+                        YTilt = yTilt
+                    }, (RawInputModifiers)modifiers);
 
                 if (!ChromeHitTest(e))
                 {
@@ -434,9 +445,9 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
             _parent.Resized?.Invoke(s, (WindowResizeReason)reason);
         }
 
-        void IAvnTopLevelEvents.RawMouseEvent(AvnRawMouseEventType type, ulong timeStamp, AvnInputModifiers modifiers, AvnPoint point, AvnVector delta)
+        void IAvnTopLevelEvents.RawMouseEvent(AvnRawMouseEventType type, AvnPointerDeviceType pointerDeviceType, ulong timeStamp, AvnInputModifiers modifiers, AvnPoint point, AvnVector delta, float pressure, float xTilt, float yTilt)
         {
-            _parent.RawMouseEvent(type, timeStamp, modifiers, point, delta);
+            _parent.RawMouseEvent(type, pointerDeviceType, timeStamp, modifiers, point, delta, pressure, xTilt, yTilt);
         }
 
         int IAvnTopLevelEvents.RawKeyEvent(AvnRawKeyEventType type, ulong timeStamp, AvnInputModifiers modifiers, AvnKey key, AvnPhysicalKey physicalKey, string keySymbol)
@@ -494,7 +505,7 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
                 var args = new RawDragEvent(device, (RawDragEventType)type,
                     _parent._inputRoot, position.ToAvaloniaPoint(), dataObject, (DragDropEffects)effects,
                     (RawInputModifiers)modifiers);
-                _parent.Input(args);
+                _parent.Input?.Invoke(args);
                 return (AvnDragDropEffects)args.Effects;
             }
         }

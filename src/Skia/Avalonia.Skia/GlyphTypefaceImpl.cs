@@ -17,7 +17,7 @@ namespace Avalonia.Skia
     {
         private bool _isDisposed;
         private readonly SKTypeface _typeface;
-        private readonly NameTable _nameTable;
+        private readonly NameTable? _nameTable;
         private readonly OS2Table? _os2Table;
         private readonly HorizontalHeadTable? _hhTable;
         private IReadOnlyList<OpenTypeTag>? _supportedFeatures;
@@ -90,28 +90,40 @@ namespace Avalonia.Skia
 
             FontSimulations = fontSimulations;
 
-            Weight = (fontSimulations & FontSimulations.Bold) != 0 ? FontWeight.Bold : (FontWeight)typeface.FontWeight;
+            var fontWeight = _os2Table != null ? (FontWeight)_os2Table.WeightClass : FontWeight.Normal;
 
-            Style = (fontSimulations & FontSimulations.Oblique) != 0 ?
-                FontStyle.Italic :
-                typeface.FontSlant.ToAvalonia();
+            Weight = (fontSimulations & FontSimulations.Bold) != 0 ? FontWeight.Bold : fontWeight;
 
-            Stretch = (FontStretch)typeface.FontStyle.Width;
+            var style = _os2Table != null ? GetFontStyle(_os2Table.FontStyle) : FontStyle.Normal;
+
+            Style = (fontSimulations & FontSimulations.Oblique) != 0 ? FontStyle.Italic : style;
+
+            var stretch = _os2Table != null ? (FontStretch)_os2Table.WidthClass : FontStretch.Normal;
+
+            Stretch = stretch;
 
             _nameTable = NameTable.Load(this);
 
-            TypographicFamilyName = _nameTable.GetNameById((ushort)CultureInfo.InvariantCulture.LCID, KnownNameIds.TypographicFamilyName);
+            //Rely on Skia if no name table is present
+            FamilyName = _nameTable?.FontFamilyName((ushort)CultureInfo.InvariantCulture.LCID) ?? typeface.FamilyName;
 
-            FamilyName = _nameTable.FontFamilyName((ushort)CultureInfo.InvariantCulture.LCID);
+            TypographicFamilyName = _nameTable?.GetNameById((ushort)CultureInfo.InvariantCulture.LCID, KnownNameIds.TypographicFamilyName) ?? FamilyName;
 
-            var familyNames = new Dictionary<ushort, string>(_nameTable.Languages.Count);
-
-            foreach (var language in _nameTable.Languages)
+            if(_nameTable != null)
             {
-                familyNames.Add(language, _nameTable.FontFamilyName(language));
-            }
+                var familyNames = new Dictionary<ushort, string>(_nameTable.Languages.Count);
 
-            FamilyNames = familyNames;
+                foreach (var language in _nameTable.Languages)
+                {
+                    familyNames.Add(language, _nameTable.FontFamilyName(language));
+                }
+
+                FamilyNames = familyNames;
+            }
+            else
+            {
+                FamilyNames = new Dictionary<ushort, string> { { (ushort)CultureInfo.InvariantCulture.LCID, FamilyName } };
+            }
         }
 
         public string TypographicFamilyName { get; }
@@ -255,6 +267,21 @@ namespace Avalonia.Skia
             }
 
             return Font.GetHorizontalGlyphAdvances(glyphIndices);
+        }
+
+        private static FontStyle GetFontStyle(OS2Table.FontStyleSelection styleSelection)
+        {
+            if((styleSelection & OS2Table.FontStyleSelection.ITALIC) != 0)
+            {
+                return FontStyle.Italic;
+            }
+
+            if((styleSelection & OS2Table.FontStyleSelection.OBLIQUE) != 0)
+            {
+                return FontStyle.Oblique;
+            }
+
+            return FontStyle.Normal;
         }
 
         private Blob? GetTable(Face face, Tag tag)

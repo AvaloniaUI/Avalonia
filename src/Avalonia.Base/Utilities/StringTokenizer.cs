@@ -5,6 +5,9 @@ using static System.Char;
 
 namespace Avalonia.Utilities
 {
+    // TODO12: Remove this struct in 12.0 (breaking change)
+
+    [Obsolete("This type has been superseded by SpanStringTokenizer.")]
 #if !BUILDTASK
     public
 #endif
@@ -46,6 +49,8 @@ namespace Avalonia.Utilities
 
         public string? CurrentToken => _tokenIndex < 0 ? null : _s.Substring(_tokenIndex, _tokenLength);
 
+        public ReadOnlySpan<char> CurrentTokenSpan => _tokenIndex < 0 ? ReadOnlySpan<char>.Empty : _s.AsSpan().Slice(_tokenIndex, _tokenLength);
+
         public void Dispose()
         {
             if (_index != _length)
@@ -56,8 +61,8 @@ namespace Avalonia.Utilities
 
         public bool TryReadInt32(out Int32 result, char? separator = null)
         {
-            if (TryReadString(out var stringResult, separator) &&
-                int.TryParse(stringResult, NumberStyles.Integer, _formatProvider, out result))
+            if (TryReadSpan(out var stringResult, separator) &&
+                SpanHelpers.TryParseInt(stringResult, NumberStyles.Integer, _formatProvider, out result))
             {
                 return true;
             }
@@ -80,8 +85,8 @@ namespace Avalonia.Utilities
 
         public bool TryReadDouble(out double result, char? separator = null)
         {
-            if (TryReadString(out var stringResult, separator) &&
-                double.TryParse(stringResult, NumberStyles.Float, _formatProvider, out result))
+            if (TryReadSpan(out var stringResult, separator) &&
+                SpanHelpers.TryParseDouble(stringResult, NumberStyles.Float, _formatProvider, out result))
             {
                 return true;
             }
@@ -102,16 +107,33 @@ namespace Avalonia.Utilities
             return result;
         }
 
-        public bool TryReadString([MaybeNullWhen(false)] out string result, char? separator = null)
+        public bool TryReadString([NotNull] out string result, char? separator = null)
         {
             var success = TryReadToken(separator ?? _separator);
-            result = CurrentToken;
+            result = CurrentTokenSpan.ToString();
             return success;
         }
 
         public string ReadString(char? separator = null)
         {
             if (!TryReadString(out var result, separator))
+            {
+                throw GetFormatException();
+            }
+
+            return result;
+        }
+
+        public bool TryReadSpan(out ReadOnlySpan<char> result, char? separator = null)
+        {
+            var success = TryReadToken(separator ?? _separator);
+            result = CurrentTokenSpan;
+            return success;
+        }
+
+        public ReadOnlySpan<char> ReadSpan(char? separator = null)
+        {
+            if (!TryReadSpan(out var result, separator))
             {
                 throw GetFormatException();
             }

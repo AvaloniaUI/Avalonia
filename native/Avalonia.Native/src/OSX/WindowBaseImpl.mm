@@ -106,6 +106,13 @@ HRESULT WindowBaseImpl::Show(bool activate, bool isDialog) {
 
         _shown = true;
         [Window setCollectionBehavior:collectionBehavior];
+        
+        // Ensure that we call needsDisplay = YES so that AvnView.updateLayer is called after the
+        // window is shown: if the client is pumping messages during the window creation/show
+        // process, it's possible that updateLayer gets called after the window is created but
+        // before it's is shown.
+        [View.layer setNeedsDisplay];
+        
         return S_OK;
     }
 }
@@ -136,6 +143,19 @@ HRESULT WindowBaseImpl::Hide() {
 
     @autoreleasepool {
         if (Window != nullptr) {
+            
+            // If window is hidden without ending attached sheet first, it will stuck in "order out" state,
+            // and block any new sheets from being attached.
+            // Additionaly, we don't know if user would define any custom panels, so we only end/close file dialog sheets.
+            auto attachedSheet = Window.attachedSheet;
+            if (attachedSheet
+                && ([attachedSheet isKindOfClass: [NSOpenPanel class]]
+                    || [attachedSheet isKindOfClass: [NSSavePanel class]]))
+            {
+                [Window endSheet:attachedSheet];
+                [attachedSheet close];
+            }
+
             auto frame = [Window frame];
 
             AvnPoint point;
@@ -430,6 +450,7 @@ HRESULT WindowBaseImpl::BeginDragAndDropOperation(AvnDragDropEffects effects, Av
         op |= NSDragOperationLink;
     if ((ieffects & (int) AvnDragDropEffects::Move) != 0)
         op |= NSDragOperationMove;
+    [View resetPressedMouseButtons];
     [View beginDraggingSessionWithItems:@[dragItem] event:nsevent
                                  source:CreateDraggingSource((NSDragOperation) op, cb, sourceHandle)];
     return S_OK;
@@ -490,9 +511,7 @@ HRESULT WindowBaseImpl::SetParent(IAvnWindowBase *parent) {
         auto cparent = dynamic_cast<WindowImpl *>(parent);
         
         Parent = cparent;
-
-        _isModal = Parent != nullptr;
-        
+       
         if(Parent != nullptr && Window != nullptr){
             // If one tries to show a child window with a minimized parent window, then the parent window will be
             // restored but macOS isn't kind enough to *tell* us that, so the window will be left in a non-interactive

@@ -91,7 +91,7 @@ public sealed record ThemeVariant
 
     public bool Equals(ThemeVariant? other)
     {
-        return Key == other?.Key;
+        return other is not null && Equals(Key, other.Key);
     }
 
     public static explicit operator ThemeVariant(PlatformThemeVariant themeVariant)

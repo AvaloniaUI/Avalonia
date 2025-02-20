@@ -51,18 +51,25 @@ namespace Avalonia.Build.Tasks
 
         private static void CopyAndTouch(string source, string destination, bool shouldExist = true)
         {
-            if (!File.Exists(source))
+            var normalizedSource = Path.GetFullPath(source);
+            var normalizedDestination = Path.GetFullPath(destination);
+
+            if (!File.Exists(normalizedSource))
             {
                 if (shouldExist)
                 {
-                    throw new FileNotFoundException($"Could not copy file '{source}'. File does not exist.");
+                    throw new FileNotFoundException($"Could not copy file '{normalizedSource}'. File does not exist.");
                 }
 
                 return;
             }
 
-            File.Copy(source, destination, overwrite: true);
-            File.SetLastWriteTimeUtc(destination, DateTime.UtcNow);
+            if (normalizedSource != normalizedDestination)
+            {
+                File.Copy(normalizedSource, normalizedDestination, overwrite: true);
+            }
+
+            File.SetLastWriteTimeUtc(normalizedDestination, DateTime.UtcNow);
         }
 
         [Required]

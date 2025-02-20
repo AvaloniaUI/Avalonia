@@ -349,6 +349,24 @@ namespace Avalonia.IntegrationTests.Appium
             }
         }
 
+        [PlatformFact(TestPlatforms.Windows)]
+        public void Changing_Size_Should_Not_Change_Position()
+        {
+            using (OpenWindow())
+            {
+                var info = GetWindowInfo();
+
+                Session.FindElementByAccessibilityId("AddToWidth").SendClick();
+                Session.FindElementByAccessibilityId("AddToHeight").SendClick();
+
+                var updatedInfo = GetWindowInfo();
+                Assert.Equal(info.Position, updatedInfo.Position);
+                Assert.Equal(info.FrameSize
+                    .WithWidth(info.FrameSize.Width + 10)
+                    .WithHeight(info.FrameSize.Height + 10), updatedInfo.FrameSize);
+            }
+        }
+
         public static TheoryData<Size?, ShowWindowMode, WindowStartupLocation, bool> StartupLocationData()
         {
             var sizes = new Size?[] { null, new Size(400, 300) };
@@ -411,16 +429,16 @@ namespace Avalonia.IntegrationTests.Appium
                 // the position of a centered window can be off by a bit. From initial testing, looks
                 // like this shouldn't be more than 10 pixels.
                 if (Math.Abs(expected.X - actual.X) > 10)
-                    throw new EqualException(expected, actual);
+                    throw EqualException.ForMismatchedValues(expected, actual);
                 if (Math.Abs(expected.Y - actual.Y) > 10)
-                    throw new EqualException(expected, actual);
+                    throw EqualException.ForMismatchedValues(expected, actual);
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
                 if (Math.Abs(expected.X - actual.X) > 15)
-                    throw new EqualException(expected, actual);
+                    throw EqualException.ForMismatchedValues(expected, actual);
                 if (Math.Abs(expected.Y - actual.Y) > 15)
-                    throw new EqualException(expected, actual);
+                    throw EqualException.ForMismatchedValues(expected, actual);
             }
             else
             {

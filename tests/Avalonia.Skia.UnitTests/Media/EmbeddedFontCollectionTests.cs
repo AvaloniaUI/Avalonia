@@ -1,4 +1,9 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
+using System.Collections;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Media.Fonts;
 using Avalonia.UnitTests;
@@ -29,7 +34,7 @@ namespace Avalonia.Skia.UnitTests.Media
 
                 Assert.True(fontCollection.TryGetGlyphTypeface("Noto Mono", fontStyle, fontWeight, FontStretch.Normal, out var glyphTypeface));
 
-                var actual = glyphTypeface?.FamilyName;
+                var actual = glyphTypeface.FamilyName;
 
                 Assert.Equal("Noto Mono", actual);
             }
@@ -46,7 +51,7 @@ namespace Avalonia.Skia.UnitTests.Media
 
                 fontCollection.Initialize(new CustomFontManagerImpl());
 
-                Assert.False(fontCollection.TryGetGlyphTypeface("ABC", FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, out var glyphTypeface));
+                Assert.False(fontCollection.TryGetGlyphTypeface("ABC", FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, out _));
             }
         }
 
@@ -88,6 +93,38 @@ namespace Avalonia.Skia.UnitTests.Media
 
                 Assert.Equal("Manrope", glyphTypeface2.TypographicFamilyName);
             }
+        }
+
+        [Fact]
+        public void Should_Cache_Synthetic_GlyphTypeface()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var source = new Uri(s_manrope, UriKind.Absolute);
+
+                var fontCollection = new TestEmbeddedFontCollection(source, source);
+
+                fontCollection.Initialize(new CustomFontManagerImpl());
+
+                Assert.True(fontCollection.TryGetGlyphTypeface("Manrope", FontStyle.Normal, FontWeight.ExtraBlack, FontStretch.Normal, out var glyphTypeface));
+
+                Assert.True(fontCollection.GlyphTypefaceCache.TryGetValue("Manrope", out var glyphTypefaces));
+
+                Assert.Equal(2, glyphTypefaces.Count);
+
+                fontCollection.TryGetGlyphTypeface("Manrope", FontStyle.Normal, FontWeight.ExtraBlack, FontStretch.Normal, out var otherGlyphTypeface);
+
+                Assert.Equal(glyphTypeface, otherGlyphTypeface);
+            }
+        }
+
+        private class TestEmbeddedFontCollection : EmbeddedFontCollection
+        {
+            public TestEmbeddedFontCollection(Uri key, Uri source) : base(key, source)
+            {
+            }
+
+            public IDictionary<string, ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>> GlyphTypefaceCache => _glyphTypefaceCache;
         }
     }
 }

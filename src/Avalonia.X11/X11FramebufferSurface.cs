@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Platform;

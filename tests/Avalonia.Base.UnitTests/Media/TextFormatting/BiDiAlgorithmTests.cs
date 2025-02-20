@@ -13,30 +13,21 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
         {
             _outputHelper = outputHelper;
         }
-        
-        [Fact(Skip = "Only run when the Unicode spec changes.")]
-        public void Should_Process()
-        {
-            var generator = new BiDiTestDataGenerator();
-            
-            foreach(var testData in generator)
-            {
-                Assert.True(Run(testData));
-            }
-        }
-        
-        private bool Run(BiDiTestData testData)
+
+        [ClassData(typeof(BiDiTestDataGenerator))]
+        [Theory(Skip = "Only run when the Unicode spec changes.")]
+        public void Should_Process(int lineNumber, BidiClass[] classes, sbyte paragraphEmbeddingLevel, int[] levels)
         {
             var bidi = new BidiAlgorithm();
-            
+
             // Run the algorithm...
             ArraySlice<sbyte> resultLevels;
 
             bidi.Process(
-                testData.Classes,
+                classes,
                 ArraySlice<BidiPairedBracketType>.Empty,
                 ArraySlice<int>.Empty,
-                testData.ParagraphEmbeddingLevel,
+                paragraphEmbeddingLevel,
                 false,
                 null,
                 null,
@@ -46,17 +37,17 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
 
             // Check the results match
             var pass = true;
-            
-            if (resultLevels.Length == testData.Levels.Length)
+
+            if (resultLevels.Length == levels.Length)
             {
-                for (var i = 0; i < testData.Levels.Length; i++)
+                for (var i = 0; i < levels.Length; i++)
                 {
-                    if (testData.Levels[i] == -1)
+                    if (levels[i] == -1)
                     {
                         continue;
                     }
 
-                    if (resultLevels[i] != testData.Levels[i])
+                    if (resultLevels[i] != levels[i])
                     {
                         pass = false;
                         break;
@@ -70,16 +61,14 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
 
             if (!pass)
             {
-                _outputHelper.WriteLine($"Failed line {testData.LineNumber}");
-                _outputHelper.WriteLine($"        Data: {string.Join(" ", testData.Classes)}");
-                _outputHelper.WriteLine($" Embed Level: {testData.ParagraphEmbeddingLevel}");
-                _outputHelper.WriteLine($"    Expected: {string.Join(" ", testData.Levels)}");
+                _outputHelper.WriteLine($"Failed line {lineNumber}");
+                _outputHelper.WriteLine($"        Data: {string.Join(" ", classes)}");
+                _outputHelper.WriteLine($" Embed Level: {paragraphEmbeddingLevel}");
+                _outputHelper.WriteLine($"    Expected: {string.Join(" ", levels)}");
                 _outputHelper.WriteLine($"      Actual: {string.Join(" ", resultLevels)}");
-
-                return false;
             }
 
-            return true;
+            Assert.True(pass);
         }
     }
 }

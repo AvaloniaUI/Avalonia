@@ -11,7 +11,7 @@
 
 @implementation AvnView
 {
-    ComPtr<TopLevelImpl> _parent;
+    ComObjectWeakPtr<TopLevelImpl> _parent;
     NSTrackingArea* _area;
     bool _isLeftPressed, _isMiddlePressed, _isRightPressed, _isXButton1Pressed, _isXButton2Pressed;
     AvnInputModifiers _modifierState;
@@ -132,7 +132,8 @@
         _area = nullptr;
     }
 
-    if (_parent == nullptr)
+    auto parent = _parent.tryGet();
+    if (parent == nullptr)
     {
         return;
     }
@@ -144,7 +145,7 @@
     _area = [[NSTrackingArea alloc] initWithRect:rect options:options owner:self userInfo:nullptr];
     [self addTrackingArea:_area];
 
-    _parent->UpdateCursor();
+    parent->UpdateCursor();
 
     auto fsize = [self convertSizeToBacking: [self frame].size];
 
@@ -156,26 +157,28 @@
 
         auto reason = [self inLiveResize] ? ResizeUser : _resizeReason;
 
-        _parent->TopLevelEvents->Resized(FromNSSize(newSize), reason);
+        parent->TopLevelEvents->Resized(FromNSSize(newSize), reason);
     }
 }
 
 - (void)updateLayer
 {
     AvnInsidePotentialDeadlock deadlock;
-    if (_parent == nullptr)
+    auto parent = _parent.tryGet();
+    if (parent == nullptr)
     {
         return;
     }
 
-    _parent->TopLevelEvents->RunRenderPriorityJobs();
+    parent->TopLevelEvents->RunRenderPriorityJobs();
 
-    if (_parent == nullptr)
+    parent = _parent.tryGet();
+    if (parent == nullptr)
     {
         return;
     }
 
-    _parent->TopLevelEvents->Paint();
+    parent->TopLevelEvents->Paint();
 }
 
 - (void)drawRect:(NSRect)dirtyRect
@@ -196,9 +199,10 @@
     _lastPixelSize.Height = (int)fsize.height;
     [self updateRenderTarget];
 
-    if(_parent != nullptr)
+    auto parent = _parent.tryGet();
+    if(parent != nullptr)
     {
-        _parent->TopLevelEvents->ScalingChanged([[self window] backingScaleFactor]);
+        parent->TopLevelEvents->ScalingChanged([[self window] backingScaleFactor]);
     }
 
     [super viewDidChangeBackingProperties];
@@ -206,7 +210,8 @@
 
 - (bool) ignoreUserInput:(bool)trigerInputWhenDisabled
 {
-    if(_parent == nullptr)
+    auto parent = _parent.tryGet();
+    if(parent == nullptr)
     {
         return TRUE;
     }
@@ -221,7 +226,7 @@
     {
         if(trigerInputWhenDisabled)
         {
-            WindowImpl* windowImpl = dynamic_cast<WindowImpl*>(_parent.getRaw());
+            auto windowImpl = _parent.tryGetWithCast<WindowImpl>();
             
             if(windowImpl == nullptr){
                 return FALSE;
@@ -234,6 +239,12 @@
     }
 
     return FALSE;
+}
+
+static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
+{
+    *xTilt =  tilt.x * 90;
+    *yTilt = -tilt.y * 90;
 }
 
 - (void)mouseEvent:(NSEvent *)event withType:(AvnRawMouseEventType) type
@@ -285,6 +296,57 @@
         delta.Y = [event deltaY];
     }
 
+    float pressure = 0.5f;
+    float xTilt = 0.0f;
+    float yTilt = 0.0f;
+    AvnPointerDeviceType pointerType = AvnPointerDeviceType::Mouse;
+
+    switch (event.type)
+    {
+        case NSEventTypeLeftMouseDown:
+        case NSEventTypeLeftMouseDragged:
+        case NSEventTypeRightMouseDown:
+        case NSEventTypeRightMouseDragged:
+        case NSEventTypeOtherMouseDown:
+        case NSEventTypeOtherMouseDragged:
+            switch (event.subtype)
+            {
+                case NSEventSubtypeTabletPoint:
+                    pointerType = AvnPointerDeviceType::Pen;
+                    pressure = event.pressure;
+                    ConvertTilt(event.tilt, &xTilt, &yTilt);
+                    break;
+                case NSEventSubtypeTabletProximity:
+                    pointerType = AvnPointerDeviceType::Pen;
+                    pressure = 0.0f;
+                    break;
+                default:
+                    break;
+            }
+            break;
+        case NSEventTypeLeftMouseUp:
+        case NSEventTypeRightMouseUp:
+        case NSEventTypeOtherMouseUp:
+        case NSEventTypeMouseMoved:
+            switch (event.subtype)
+            {
+                case NSEventSubtypeTabletPoint:
+                    pointerType = AvnPointerDeviceType::Pen;
+                    pressure = 0.0f;
+                    ConvertTilt(event.tilt, &xTilt, &yTilt);
+                    break;
+                case NSEventSubtypeTabletProximity:
+                    pointerType = AvnPointerDeviceType::Pen;
+                    pressure = 0.0f;
+                    break;
+                default:
+                    break;
+            }
+            break;
+        default:
+            break;
+    }
+
     uint64_t timestamp = static_cast<uint64_t>([event timestamp] * 1000);
     auto modifiers = [self getModifiers:[event modifierFlags]];
 
@@ -298,25 +360,26 @@
             )
             )
     {
-        WindowBaseImpl* windowBase = dynamic_cast<WindowBaseImpl*>(_parent.getRaw());
+        auto windowBase = _parent.tryGetWithCast<WindowBaseImpl>();
         
         if(windowBase != nullptr){
-            WindowBaseImpl* parent = windowBase->Parent;
+            auto parent = windowBase->Parent;
             
             if(parent != nullptr){
                 auto parentWindow = parent->Window;
                 
-                [parentWindow makeFirstResponder:parent->View];
+                if(parentWindow != nullptr)
+                    [parentWindow makeFirstResponder:parent->View];
             }
         } else{
             [self becomeFirstResponder];
         }
     }
        
-
-    if(_parent != nullptr)
+    auto parent = _parent.tryGet();
+    if(parent != nullptr)
     {
-        _parent->TopLevelEvents->RawMouseEvent(type, timestamp, modifiers, point, delta);
+        parent->TopLevelEvents->RawMouseEvent(type, pointerType, timestamp, modifiers, point, delta, pressure, xTilt, yTilt);
     }
 
     [super mouseMoved:event];
@@ -324,7 +387,9 @@
 
 - (BOOL) resignFirstResponder
 {
-    _parent->TopLevelEvents->LostFocus();
+    auto parent = _parent.tryGet();
+    if(parent)
+        parent->TopLevelEvents->LostFocus();
     return YES;
 }
 
@@ -463,7 +528,8 @@
 
 - (void) keyboardEvent: (NSEvent *) event withType: (AvnRawKeyEventType)type
 {
-    if([self ignoreUserInput: false] || _parent == nullptr)
+    auto parent = _parent.tryGet();
+    if([self ignoreUserInput: false] || parent == nullptr)
     {
         return;
     }
@@ -477,7 +543,21 @@
     auto timestamp = static_cast<uint64_t>([event timestamp] * 1000);
     auto modifiers = [self getModifiers:[event modifierFlags]];
 
-    _parent->TopLevelEvents->RawKeyEvent(type, timestamp, modifiers, key, physicalKey, keySymbolUtf8);
+    parent->TopLevelEvents->RawKeyEvent(type, timestamp, modifiers, key, physicalKey, keySymbolUtf8);
+}
+
+- (void)setModifiers:(NSEventModifierFlags)modifierFlags
+{
+    _modifierState = [self getModifiers:modifierFlags];
+}
+
+- (void)resetPressedMouseButtons
+{
+    _isLeftPressed = false;
+    _isRightPressed = false;
+    _isMiddlePressed = false;
+    _isXButton1Pressed = false;
+    _isXButton2Pressed = false;
 }
 
 - (void)flagsChanged:(NSEvent *)event
@@ -537,12 +617,14 @@
 }
 
 - (bool) handleKeyDown: (NSTimeInterval) timestamp withKey:(AvnKey)key withPhysicalKey:(AvnPhysicalKey)physicalKey withModifiers:(AvnInputModifiers)modifiers withKeySymbol:(NSString*)keySymbol {
-    return _parent->TopLevelEvents->RawKeyEvent(KeyDown, timestamp, modifiers, key, physicalKey, [keySymbol UTF8String]);
+    auto parent = _parent.tryGet();
+    return parent->TopLevelEvents->RawKeyEvent(KeyDown, timestamp, modifiers, key, physicalKey, [keySymbol UTF8String]);
 }
 
 - (void)keyDown:(NSEvent *)event
 {
-    if([self ignoreUserInput: false] || _parent == nullptr)
+    auto parent = _parent.tryGet();
+    if([self ignoreUserInput: false] || parent == nullptr)
     {
         return;
     }
@@ -559,7 +641,7 @@
     auto modifiers = [self getModifiers:[event modifierFlags]];
     
     //InputMethod is active
-    if(_parent->InputMethod->IsActive()){
+    if(parent->InputMethod->IsActive()){
         auto hasInputModifier = modifiers != AvnInputModifiersNone;
         
         //Handle keyDown first if an input modifier is present
@@ -591,7 +673,7 @@
             if(keySymbol != nullptr && key != AvnKeyEnter){
                 auto timestamp = static_cast<uint64_t>([event timestamp] * 1000);
                 
-                _parent->TopLevelEvents->RawTextInputEvent(timestamp, [keySymbol UTF8String]);
+                parent->TopLevelEvents->RawTextInputEvent(timestamp, [keySymbol UTF8String]);
             }
         }
     }
@@ -667,16 +749,18 @@
     }
     
     _markedRange = NSMakeRange(_selectedRange.location, [markedText length]);
-        
-    if(_parent->InputMethod->IsActive()){
-        _parent->InputMethod->Client->SetPreeditText((char*)[markedText UTF8String]);
+    auto parent = _parent.tryGet();
+
+    if(parent->InputMethod->IsActive()){
+        parent->InputMethod->Client->SetPreeditText((char*)[markedText UTF8String]);
     }
 }
 
 - (void)unmarkText
 {
-    if(_parent->InputMethod->IsActive()){
-        _parent->InputMethod->Client->SetPreeditText(nullptr);
+    auto parent = _parent.tryGet();
+    if(parent->InputMethod->IsActive()){
+        parent->InputMethod->Client->SetPreeditText(nullptr);
     }
     
     _markedRange = NSMakeRange(_selectedRange.location, 0);
@@ -704,7 +788,8 @@
 
 - (void)insertText:(id)string replacementRange:(NSRange)replacementRange
 {
-    if(_parent == nullptr){
+    auto parent = _parent.tryGet();
+    if(parent == nullptr){
         return;
     }
     
@@ -723,7 +808,7 @@
         
     uint64_t timestamp = static_cast<uint64_t>([NSDate timeIntervalSinceReferenceDate] * 1000);
         
-    _parent->TopLevelEvents->RawTextInputEvent(timestamp, [text UTF8String]);
+    parent->TopLevelEvents->RawTextInputEvent(timestamp, [text UTF8String]);
 }
 
 - (NSUInteger)characterIndexForPoint:(NSPoint)point
@@ -733,7 +818,8 @@
 
 - (NSRect)firstRectForCharacterRange:(NSRange)range actualRange:(NSRangePointer)actualRange
 {
-    if(!_parent->InputMethod->IsActive()){
+    auto parent = _parent.tryGet();
+    if(!parent->InputMethod->IsActive()){
         return NSZeroRect;
     }
     
@@ -749,7 +835,8 @@
     NSDragOperation nsop = [info draggingSourceOperationMask];
 
     auto effects = ConvertDragDropEffects(nsop);
-    int reffects = (int)_parent->TopLevelEvents
+    auto parent = _parent.tryGet();
+    int reffects = (int)parent->TopLevelEvents
             ->DragEvent(type, point, modifiers, effects,
                     CreateClipboard([info draggingPasteboard], nil),
                     GetAvnDataObjectHandleFromDraggingInfo(info));
