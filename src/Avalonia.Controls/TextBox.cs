@@ -1983,9 +1983,13 @@ namespace Avalonia.Controls
                 {
                     if (selectionStart != selectionEnd)
                     {
-                        _presenter.MoveCaretToTextPosition(direction > 0 ?
+                        // clear the selection and move to the appropriate side of previous selection
+                        var newPosition = direction > 0 ?
                             Math.Max(selectionStart, selectionEnd) :
-                            Math.Min(selectionStart, selectionEnd));
+                            Math.Min(selectionStart, selectionEnd);
+                        SetCurrentValue(SelectionStartProperty, newPosition);
+                        SetCurrentValue(SelectionEndProperty, newPosition);
+                        _presenter.MoveCaretToTextPosition(newPosition);
                     }
                     else
                     {
