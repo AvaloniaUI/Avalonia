@@ -57,6 +57,11 @@ namespace Avalonia.Collections
     public sealed class DataGridCollectionView : IDataGridCollectionView, IDataGridEditableCollectionView, IList, INotifyPropertyChanged 
     {
         /// <summary>
+        /// Gets the object that is in the collection to represent a new item.
+        /// </summary>
+        public static object NewItemPlaceholder { get; } = new();
+
+        /// <summary>
         /// Since there's nothing in the un-cancelable event args that is mutable,
         /// just create one instance to be used universally.
         /// </summary>
@@ -378,9 +383,16 @@ namespace Avalonia.Collections
         {
             get
             {
-                return !IsEditingItem &&
-                    (SourceList != null && !SourceList.IsFixedSize && CanConstructItem);
+                return !IsEditingItem && SourceCanAddNew;
             }
+        }
+
+        /// <summary>
+        /// Gets a value indicating if the souce list can add items
+        /// </summary>
+        public bool SourceCanAddNew
+        {
+            get => SourceList != null && !SourceList.IsFixedSize && CanConstructItem;
         }
 
         /// <summary>
