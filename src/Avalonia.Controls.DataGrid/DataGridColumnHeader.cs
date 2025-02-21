@@ -578,7 +578,7 @@ namespace Avalonia.Controls
                 mousePositionHeaders = mousePositionHeaders.WithX(rightEdge - 1);
             }
 
-            foreach (DataGridColumn column in OwningGrid.ColumnsInternal.GetDisplayedColumns())
+            foreach (DataGridColumn column in OwningGrid.ColumnsInternal.GetVisibleColumns())
             {
                 Point mousePosition = OwningGrid.ColumnHeaders.Translate(column.HeaderCell, mousePositionHeaders);
                 double columnMiddle = column.HeaderCell.Bounds.Width / 2;
