@@ -195,13 +195,19 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> WindowOpenedEvent =
             RoutedEvent.Register<Window, RoutedEventArgs>("WindowOpened", RoutingStrategies.Direct);
-        private object? _dialogResult;
+
         private readonly Size _maxPlatformClientSize;
         private bool _shown;
         private bool _showingAsDialog;
         private bool _positionWasSet;
         private bool _wasShownBefore;
         private IDisposable? _modalSubscription;
+        
+        /// <summary>
+        /// Get or set the dialog result. This is the value that will be returned by the dialog.
+        /// If User call <see cref="Close(object?)"/> to close a dialog, this property will be set to the parameter first.
+        /// </summary>
+        public object? DialogResult { get; set; }
 
         /// <summary>
         /// Initializes static members of the <see cref="Window"/> class.
@@ -477,7 +483,7 @@ namespace Avalonia.Controls
         /// </remarks>
         public void Close(object? dialogResult)
         {
-            _dialogResult = dialogResult;
+            DialogResult = dialogResult;
             CloseCore(WindowCloseReason.WindowClosing, true, false);
         }
 
@@ -807,7 +813,7 @@ namespace Avalonia.Controls
                         {
                             _modalSubscription = null;
                             owner!.Activate();
-                            tcs.SetResult((TResult)(_dialogResult ?? default(TResult)!));
+                            tcs.SetResult((TResult)(DialogResult ?? default(TResult)!));
                         })
                     ]);
 
