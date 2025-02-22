@@ -74,6 +74,15 @@ namespace Avalonia.Markup.Xaml.XamlIl
         [MemberNotNull(nameof(_ignoresAccessChecksFromAttribute))]
         static void InitializeSre()
         {
+            // SRE backend doesn't load assemblies, unless they are already in the memory.
+            // At the very least, we should make sure that assemblies necessary for `AvaloniaXamlIlWellKnownTypes` are loaded.
+            // Root `Avalonia.Controls`.
+            GC.KeepAlive(typeof(Avalonia.Controls.Control));
+            // Root `Avalonia.Markup`.
+            GC.KeepAlive(typeof(Avalonia.Data.Binding));
+            // Root `System.ObjectModel`
+            GC.KeepAlive(typeof(System.ComponentModel.TypeConverterAttribute));
+
             if (_sreTypeSystem == null)
                 _sreTypeSystem = new SreTypeSystem();
             if (_sreBuilder == null)
