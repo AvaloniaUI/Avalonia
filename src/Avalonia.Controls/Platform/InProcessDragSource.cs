@@ -202,11 +202,11 @@ namespace Avalonia.Platform
                 case RawPointerEventType.RightButtonUp:
                     CheckDraggingAccepted(RawInputModifiers.RightMouseButton); break;
                 case RawPointerEventType.Move:
+                    e.Handled = true;
                     var mods = e.InputModifiers & MOUSE_INPUTMODIFIERS;
                     if (_initialInputModifiers.Value != mods)
                     {
                         CancelDragging();
-                        e.Handled = true;
                         return;
                     }
 
