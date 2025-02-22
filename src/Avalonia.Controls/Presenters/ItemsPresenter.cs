@@ -1,12 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using Avalonia.Controls.Primitives;
-using Avalonia.Controls.Utils;
 using Avalonia.Input;
-using Avalonia.Interactivity;
-using Avalonia.Layout;
 
 namespace Avalonia.Controls.Presenters
 {
