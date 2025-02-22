@@ -329,6 +329,9 @@ namespace Avalonia.X11
         [DllImport(libX11)]
         public static extern IntPtr XCreateFontCursor(IntPtr display, CursorFontShape shape);
 
+        [DllImport(libXCursor)]
+        public static extern IntPtr XcursorLibraryLoadCursor(IntPtr display, string name); 
+
         [DllImport(libX11)]
         public static extern IntPtr XCreatePixmapCursor(IntPtr display, IntPtr source, IntPtr mask,
             ref XColor foreground_color, ref XColor background_color, int x_hot, int y_hot);
