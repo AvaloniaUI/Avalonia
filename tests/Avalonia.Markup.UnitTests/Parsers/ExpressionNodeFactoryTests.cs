@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Avalonia.Markup.UnitTests.Parsers
 {
-    public class ExpressionObserverBuilderTests
+    public class ExpressionNodeFactoryTests
     {
         [Fact]
         public void Should_Build_Single_Property()
