@@ -105,6 +105,11 @@ namespace Avalonia.Media
         public FontFamilyKey? Key { get; }
 
         /// <summary>
+        /// Gets the typefaces for this font family.
+        /// </summary>
+        public IReadOnlyList<Typeface> FamilyTypefaces => FontManager.Current.GetFamilyTypefaces(this);
+
+        /// <summary>
         /// Implicit conversion of string to FontFamily
         /// </summary>
         /// <param name="s"></param>
