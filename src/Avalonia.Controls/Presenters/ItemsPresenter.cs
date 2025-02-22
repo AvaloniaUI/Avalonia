@@ -220,9 +220,23 @@ namespace Avalonia.Controls.Presenters
         {
             if (Panel is VirtualizingPanel v)
                 return v.GetIndexFromTextSearch(textSearch);
+            return GetIndexFromTextSearch(ItemsControl?.Items, textSearch);
+        }
+
+        internal static int GetIndexFromTextSearch(IReadOnlyList<object?>? items, string textSearchTerm)
+        {
+            if (items is null)
+                return -1;
             
-            var matchingControl = Panel?.Children.FirstOrDefault(c => ControlMatchesTextSearch(c, textSearch));
-            return matchingControl != null ? Panel!.Children.IndexOf(matchingControl) : -1;
+            for (var i = 0; i < items.Count; i++)
+            {
+                if (items[i] is Control c && ControlMatchesTextSearch(c, textSearchTerm)
+                    || items[i]?.ToString()?.StartsWith(textSearchTerm, StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    return i;
+                }
+            }
+            return -1;
         }
 
         internal int IndexFromContainer(Control container)

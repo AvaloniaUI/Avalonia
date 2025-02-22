@@ -199,17 +199,9 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="textSearchTerm">The beginning of a string (case-insensitive) to search for in the panel</param>
         /// <returns>The index of the first IContentControl item contained in the panel</returns>
-        protected internal int GetIndexFromTextSearch(string textSearchTerm)
+        internal int GetIndexFromTextSearch(string textSearchTerm)
         {
-            var matchingControl = Items.FirstOrDefault(i => i is Control c && ItemsPresenter.ControlMatchesTextSearch(c, textSearchTerm));
-            if (matchingControl != null)
-            {
-                return Items.IndexOf(matchingControl);
-            }
-
-            var matchingObject = Items.FirstOrDefault(i =>
-                i?.ToString()?.StartsWith(textSearchTerm, StringComparison.OrdinalIgnoreCase) == true);
-            return matchingObject != null ? Items.IndexOf(matchingObject) : -1;
+            return ItemsPresenter.GetIndexFromTextSearch(Items, textSearchTerm);
         }
 
         private protected override void InvalidateMeasureOnChildrenChanged()
