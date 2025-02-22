@@ -194,11 +194,6 @@ namespace Avalonia.Controls
             Children.RemoveRange(index, count);
         }
 
-        /// <summary>
-        /// Gets the index of a content control item contained within this panel that matches the given text search
-        /// </summary>
-        /// <param name="textSearchTerm">The beginning of a string (case-insensitive) to search for in the panel</param>
-        /// <returns>The index of the first IContentControl item contained in the panel</returns>
         internal int GetIndexFromTextSearch(string textSearchTerm)
         {
             return ItemsPresenter.GetIndexFromTextSearch(Items, textSearchTerm);
