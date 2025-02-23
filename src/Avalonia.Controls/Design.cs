@@ -1,5 +1,6 @@
 
 using System.Collections.Generic;
+using Avalonia.Controls.Templates;
 using Avalonia.Layout;
 using Avalonia.Styling;
 
@@ -64,12 +65,23 @@ namespace Avalonia.Controls
             _previewWith[target] = control;
         }
 
+        public static void SetPreviewWith(IDataTemplate target, Control? control)
+        {
+            _previewWith ??= new();
+            _previewWith[target] = control;
+        }
+
         public static Control? GetPreviewWith(AvaloniaObject target)
         {
             return target.GetValue(PreviewWithProperty);
         }
 
         public static Control? GetPreviewWith(ResourceDictionary target)
+        {
+            return _previewWith?[target];
+        }
+
+        public static Control? GetPreviewWith(IDataTemplate target)
         {
             return _previewWith?[target];
         }

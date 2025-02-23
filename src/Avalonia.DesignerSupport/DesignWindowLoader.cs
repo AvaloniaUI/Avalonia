@@ -6,6 +6,7 @@ using System.Text;
 using Avalonia.Controls;
 using Avalonia.Controls.Embedding.Offscreen;
 using Avalonia.Controls.Platform;
+using Avalonia.Controls.Templates;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
 
@@ -61,7 +62,7 @@ namespace Avalonia.DesignerSupport
                             {
                                 new TextBlock {Text = "Styles can't be previewed without Design.PreviewWith. Add"},
                                 new TextBlock {Text = "<Design.PreviewWith>"},
-                                new TextBlock {Text = "    <Border Padding=20><!-- YOUR CONTROL FOR PREVIEW HERE --></Border>"},
+                                new TextBlock {Text = "    <Border Padding=\"20\"><!-- YOUR CONTROL FOR PREVIEW HERE --></Border>"},
                                 new TextBlock {Text = "</Design.PreviewWith>"},
                                 new TextBlock {Text = "before setters in your first Style"}
                             }
@@ -82,9 +83,29 @@ namespace Avalonia.DesignerSupport
                             {
                                 new TextBlock {Text = "ResourceDictionaries can't be previewed without Design.PreviewWith. Add"},
                                 new TextBlock {Text = "<Design.PreviewWith>"},
-                                new TextBlock {Text = "    <Border Padding=20><!-- YOUR CONTROL FOR PREVIEW HERE --></Border>"},
+                                new TextBlock {Text = "    <Border Padding=\"20\"><!-- YOUR CONTROL FOR PREVIEW HERE --></Border>"},
                                 new TextBlock {Text = "</Design.PreviewWith>"},
                                 new TextBlock {Text = "in your resource dictionary"}
+                            }
+                        };
+                }
+                else if (loaded is IDataTemplate template)
+                {
+                    if (Design.GetPreviewWith(template) is ContentControl substitute)
+                    {
+                        substitute.ContentTemplate = template;
+                        control = substitute;
+                    }
+                    else
+                        control = new StackPanel
+                        {
+                            Children =
+                            {
+                                new TextBlock {Text = "IDataTemplate can't be previewed without Design.PreviewWith."},
+                                new TextBlock {Text = "Provide ContentControl with your design data as Content. Previewer will set ContentTemplate from this file."},
+                                new TextBlock {Text = "<Design.PreviewWith>"},
+                                new TextBlock {Text = "    <ContentControl Content=\"{x:Static YOUR DATA OBJECT HERE}\" ></Border>"},
+                                new TextBlock {Text = "</Design.PreviewWith>"}
                             }
                         };
                 }
