@@ -45,9 +45,8 @@ namespace Avalonia.DesignerSupport
                     DesignMode = true,
                     UseCompiledBindingsByDefault = bool.TryParse(useCompiledBindings, out var parsedValue) && parsedValue
                 });
-                var style = loaded as IStyle;
-                var resources = loaded as ResourceDictionary;
-                if (style != null)
+
+                if (loaded is IStyle style)
                 {
                     var substitute = Design.GetPreviewWith((AvaloniaObject)style);
                     if (substitute != null)
@@ -68,7 +67,7 @@ namespace Avalonia.DesignerSupport
                             }
                         };
                 }
-                else if (resources != null)
+                else if (loaded is ResourceDictionary resources)
                 {
                     var substitute = Design.GetPreviewWith(resources);
                     if (substitute != null)
@@ -90,15 +89,20 @@ namespace Avalonia.DesignerSupport
                         };
                 }
                 else if (loaded is Application)
-                    control = new TextBlock { Text = "This file cannot be previewed in design view" };
-                else
-                    control = (Control)loaded;
-
-                window = control as Window;
-                if (window == null)
                 {
-                    window = new Window() { Content = (Control)control };
+                    control = new TextBlock { Text = "This file cannot be previewed in design view" };
                 }
+                else if (loaded is AvaloniaObject avObject and not Window
+                         && Design.GetPreviewWith(avObject) is { } previewWith)
+                {
+                    control = previewWith;
+                }
+                else
+                {
+                    control = (Control)loaded;
+                }
+
+                window = control as Window ?? new Window { Content = control };
 
                 if (window.PlatformImpl is OffscreenTopLevelImplBase offscreenImpl)
                     offscreenImpl.RenderScaling = renderScaling;
