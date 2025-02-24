@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
-using Avalonia.Interactivity;
-using Avalonia.Layout;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -197,6 +195,44 @@ namespace Avalonia.Controls.Presenters
             if (Panel is VirtualizingPanel v)
                 return v.GetRealizedContainers();
             return Panel?.Children;
+        }
+        
+        internal static bool ControlMatchesTextSearch(Control control, string textSearchTerm)
+        {
+            if (control is AvaloniaObject ao && ao.IsSet(TextSearch.TextProperty))
+            {
+                var searchText = ao.GetValue(TextSearch.TextProperty);
+                
+                if (searchText?.StartsWith(textSearchTerm, StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    return true;
+                }
+            }
+            return control is IContentControl cc && 
+                   cc.Content?.ToString()?.StartsWith(textSearchTerm, StringComparison.OrdinalIgnoreCase) == true;
+        }
+        
+        internal int GetIndexFromTextSearch(string textSearch)
+        {
+            if (Panel is VirtualizingPanel v)
+                return v.GetIndexFromTextSearch(textSearch);
+            return GetIndexFromTextSearch(ItemsControl?.Items, textSearch);
+        }
+
+        internal static int GetIndexFromTextSearch(IReadOnlyList<object?>? items, string textSearchTerm)
+        {
+            if (items is null)
+                return -1;
+            
+            for (var i = 0; i < items.Count; i++)
+            {
+                if (items[i] is Control c && ControlMatchesTextSearch(c, textSearchTerm)
+                    || items[i]?.ToString()?.StartsWith(textSearchTerm, StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    return i;
+                }
+            }
+            return -1;
         }
 
         internal int IndexFromContainer(Control container)
