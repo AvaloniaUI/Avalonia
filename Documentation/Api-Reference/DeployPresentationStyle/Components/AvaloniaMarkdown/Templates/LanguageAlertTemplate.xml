@@ -1,0 +1,19 @@
+<template xml:space="preserve">
+<!-- IMPORTANT: The substitution tag and ID names must remain the same -->
+
+<table>
+	<tr>
+		<th>
+			<img src="{@IconPath}AlertLanguage.png">
+				<includeAttribute name="alt" item="{@AlertAltTextItemId}" />
+			</img>&#160;&#160;<include item="{@AlertTitleItemId}"/>
+		</th>
+	</tr>
+	<tr>
+		<!-- This ID is just used to locate the content element.  It will be removed when the template is rendered. -->
+		<td id="content">
+		</td>
+	</tr>
+</table>
+
+</template>
