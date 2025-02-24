@@ -89,7 +89,7 @@ internal class AvaloniaTestMethodCommand : TestCommand
             }
             
             // Experimentally, after test methods are called after the ExecuteTestMethod has run
-            // So rather than add them to a list of actions to execute, we just have the commands execute them
+            // So we handle them differently than the before methods
             if (s_afterTest.GetValue(beforeAndAfterTestCommand) is Action<TestExecutionContext> afterTest)
             {
                 var setUpTearDownInfo = afterTest.Target?.GetType()
