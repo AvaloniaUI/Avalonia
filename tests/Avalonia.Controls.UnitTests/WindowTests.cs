@@ -670,6 +670,23 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void CanMaximize_Should_Be_False_If_CanResize_Is_False()
+        {
+            var windowImpl = MockWindowingPlatform.CreateWindowMock();
+
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow.With(
+                windowingPlatform: new MockWindowingPlatform(() => windowImpl.Object)));
+
+            var window = new Window();
+
+            Assert.True(window.CanMaximize);
+
+            window.CanResize = false;
+
+            Assert.False(window.CanMaximize);
+        }
+
         public class SizingTests
         {
             [Fact]
