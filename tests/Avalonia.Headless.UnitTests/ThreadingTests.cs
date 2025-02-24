@@ -10,6 +10,24 @@ namespace Avalonia.Headless.UnitTests;
 public class ThreadingTests
 {
 #if NUNIT
+    [SetUp]
+    public async Task SetUp()
+    {
+        Console.WriteLine(nameof(SetUp));
+        await Task.Delay(500);
+    }
+#endif
+    
+#if NUNIT
+    [TearDown]
+    public async Task TearDown()
+    {
+        Console.WriteLine(nameof(TearDown));
+        await Task.Delay(500);
+    }
+#endif
+    
+#if NUNIT
     [AvaloniaTest, Timeout(10000)]
 #elif XUNIT
     [AvaloniaFact]

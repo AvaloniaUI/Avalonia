@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia.Threading;
@@ -29,6 +30,10 @@ internal class AvaloniaTestMethodCommand : TestCommand
         .GetField("BeforeTest", BindingFlags.Instance | BindingFlags.NonPublic)!;
     private static FieldInfo s_afterTest = typeof(BeforeAndAfterTestCommand)
         .GetField("AfterTest", BindingFlags.Instance | BindingFlags.NonPublic)!;
+    private static FieldInfo s_setUpMethods = typeof(SetUpTearDownItem)
+        .GetField("_setUpMethods", BindingFlags.Instance | BindingFlags.NonPublic)!;
+    private static FieldInfo s_tearDownMethods = typeof(SetUpTearDownItem)
+        .GetField("_tearDownMethods", BindingFlags.Instance | BindingFlags.NonPublic)!;
 
     private AvaloniaTestMethodCommand(
         HeadlessUnitTestSession session,
@@ -54,13 +59,64 @@ internal class AvaloniaTestMethodCommand : TestCommand
         {
             if (s_beforeTest.GetValue(beforeAndAfterTestCommand) is Action<TestExecutionContext> beforeTest)
             {
-                Action<TestExecutionContext> beforeAction = c => before.Add(() => beforeTest(c));
-                s_beforeTest.SetValue(beforeAndAfterTestCommand, beforeAction);
+                var setUpTearDownInfo = beforeTest.Target!.GetType()
+                    .GetField("setUpTearDown", BindingFlags.Instance | BindingFlags.Public)!;
+                if (setUpTearDownInfo.GetValue(beforeTest.Target) is SetUpTearDownItem setUpTearDown
+                    && s_setUpMethods.GetValue(setUpTearDown) is List<IMethodInfo> setUpMethods)
+                {
+                    Action<TestExecutionContext> beforeAction = c =>
+                    {
+                        before.AddRange(setUpMethods.Select<IMethodInfo, Action>(m => async void () =>
+                        {
+                            var result = m.Invoke(c.TestObject, []);
+                            if (result is Task task)
+                            {
+                                await task;
+                            }
+                            else if (result is ValueTask valueTask)
+                            {
+                                await valueTask;
+                            }
+                        }));
+                    };
+                    s_beforeTest.SetValue(beforeAndAfterTestCommand, beforeAction);
+                }
+                else
+                {
+                    Action<TestExecutionContext> beforeAction = c => before.Add(() => beforeTest(c));
+                    s_beforeTest.SetValue(beforeAndAfterTestCommand, beforeAction);
+                }
             }
+            
             if (s_afterTest.GetValue(beforeAndAfterTestCommand) is Action<TestExecutionContext> afterTest)
             {
-                Action<TestExecutionContext> afterAction = c => after.Add(() => afterTest(c));
-                s_afterTest.SetValue(beforeAndAfterTestCommand, afterAction);
+                var setUpTearDownInfo = afterTest.Target!.GetType()
+                    .GetField("setUpTearDown", BindingFlags.Instance | BindingFlags.Public)!;
+                if (setUpTearDownInfo.GetValue(afterTest.Target) is SetUpTearDownItem setUpTearDown
+                    && s_tearDownMethods.GetValue(setUpTearDown) is List<IMethodInfo> tearDownMethods)
+                {
+                    Action<TestExecutionContext> afterAction = c =>
+                    {
+                        after.AddRange(tearDownMethods.Select<IMethodInfo, Action>(m => async void () =>
+                        {
+                            var result = m.Invoke(c.TestObject, []);
+                            if (result is Task task)
+                            {
+                                await task;
+                            }
+                            else if (result is ValueTask valueTask)
+                            {
+                                await valueTask;
+                            }
+                        }));
+                    };
+                    s_afterTest.SetValue(beforeAndAfterTestCommand, afterAction);
+                }
+                else
+                {
+                    Action<TestExecutionContext> afterAction = c => after.Add(() => afterTest(c));
+                    s_afterTest.SetValue(beforeAndAfterTestCommand, afterAction);
+                }
             }
         }
         
