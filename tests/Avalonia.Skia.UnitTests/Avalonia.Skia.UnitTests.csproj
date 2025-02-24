@@ -12,6 +12,7 @@
     <EmbeddedResource Include="..\Avalonia.RenderTests\*\*.ttf" />
     <None Remove="Fonts\DejaVuSans.ttf" />
     <None Remove="Fonts\Manrope-Light.ttf" />
+    <EmbeddedResource Include="Fonts\FluentAvalonia.ttf"/>
     <EmbeddedResource Include="Fonts\DejaVuSans.ttf" />
     <EmbeddedResource Include="Fonts\Manrope-Light.ttf" />
   </ItemGroup>
