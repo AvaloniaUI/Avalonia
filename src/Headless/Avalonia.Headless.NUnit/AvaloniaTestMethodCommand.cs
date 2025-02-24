@@ -59,9 +59,9 @@ internal class AvaloniaTestMethodCommand : TestCommand
         {
             if (s_beforeTest.GetValue(beforeAndAfterTestCommand) is Action<TestExecutionContext> beforeTest)
             {
-                var setUpTearDownInfo = beforeTest.Target!.GetType()
-                    .GetField("setUpTearDown", BindingFlags.Instance | BindingFlags.Public)!;
-                if (setUpTearDownInfo.GetValue(beforeTest.Target) is SetUpTearDownItem setUpTearDown
+                var setUpTearDownInfo = beforeTest.Target?.GetType()
+                    .GetField("setUpTearDown", BindingFlags.Instance | BindingFlags.Public);
+                if (setUpTearDownInfo != null && setUpTearDownInfo.GetValue(beforeTest.Target) is SetUpTearDownItem setUpTearDown
                     && s_setUpMethods.GetValue(setUpTearDown) is List<IMethodInfo> setUpMethods)
                 {
                     Action<TestExecutionContext> beforeAction = c =>
@@ -92,9 +92,9 @@ internal class AvaloniaTestMethodCommand : TestCommand
             // So rather than add them to a list of actions to execute, we just have the commands execute them
             if (s_afterTest.GetValue(beforeAndAfterTestCommand) is Action<TestExecutionContext> afterTest)
             {
-                var setUpTearDownInfo = afterTest.Target!.GetType()
-                    .GetField("setUpTearDown", BindingFlags.Instance | BindingFlags.Public)!;
-                if (setUpTearDownInfo.GetValue(afterTest.Target) is SetUpTearDownItem setUpTearDown
+                var setUpTearDownInfo = afterTest.Target?.GetType()
+                    .GetField("setUpTearDown", BindingFlags.Instance | BindingFlags.Public);
+                if (setUpTearDownInfo != null && setUpTearDownInfo.GetValue(afterTest.Target) is SetUpTearDownItem setUpTearDown
                     && s_tearDownMethods.GetValue(setUpTearDown) is List<IMethodInfo> tearDownMethods)
                 {
                     after.Add(c =>
