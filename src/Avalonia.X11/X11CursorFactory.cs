@@ -17,7 +17,7 @@ namespace Avalonia.X11
         private static IntPtr _nullCursor;
 
         private readonly IntPtr _display;
-        private Dictionary<CursorFontShape, IntPtr> _cursors;
+        private Dictionary<StandardCursorType, IntPtr> _cursors;
 
         private static readonly Dictionary<StandardCursorType, CursorFontShape> s_mapping =
             new Dictionary<StandardCursorType, CursorFontShape>
@@ -47,29 +47,29 @@ namespace Avalonia.X11
                 {StandardCursorType.TopRightCorner, CursorFontShape.XC_top_right_corner},
             };
 
+        private static readonly Dictionary<StandardCursorType, string> s_libraryCursors = new()
+        {
+            {StandardCursorType.DragCopy, "dnd-copy"},
+            {StandardCursorType.DragLink, "dnd-link"},
+            {StandardCursorType.DragMove, "dnd-move"},
+            // TODO: Check if other platforms have dnd-none, dnd-no-drop and dnd-ask
+        };
+
         public X11CursorFactory(IntPtr display)
         {
             _display = display;
             _nullCursor = GetNullCursor(display);
             
-            // 78 = number of items in CursorFontShape enum
-            // Unlikely to change, but, do we have a Src Gen for this?
-            _cursors = new Dictionary<CursorFontShape, IntPtr>(78);
+            _cursors = new Dictionary<StandardCursorType, IntPtr>();
         }
 
         public ICursorImpl GetCursor(StandardCursorType cursorType)
         {
             IntPtr handle;
             if (cursorType == StandardCursorType.None)
-            {
                 handle = _nullCursor;
-            }
             else
-            {
-                handle = s_mapping.TryGetValue(cursorType, out var shape)
-                ? GetCursorHandleLazy(shape)
-                : GetCursorHandleLazy(CursorFontShape.XC_left_ptr);
-            }
+                handle = GetCursorHandleCached(cursorType);
             return new CursorImpl(handle);
         }
 
@@ -141,10 +141,25 @@ namespace Avalonia.X11
             public IFramebufferRenderTarget CreateFramebufferRenderTarget() => new FuncFramebufferRenderTarget(Lock);
         }
         
-        private nint GetCursorHandleLazy(CursorFontShape shape)
+        private nint GetCursorHandleCached(StandardCursorType type)
         {
-            if (!_cursors.TryGetValue(shape, out var handle))
-                _cursors[shape] = handle = XLib.XCreateFontCursor(_display, shape);
+            if (!_cursors.TryGetValue(type, out var handle))
+            {
+                if(s_libraryCursors.TryGetValue(type, out var cursorName))
+                    handle = XLib.XcursorLibraryLoadCursor(_display, cursorName);
+                else if(s_mapping.TryGetValue(type, out var cursorShape))
+                    handle = XLib.XCreateFontCursor(_display, cursorShape);
+
+                if (handle == IntPtr.Zero)
+                {
+                    if (type != StandardCursorType.Arrow)
+                        handle = GetCursorHandleCached(StandardCursorType.Arrow);
+                    else
+                        handle = _nullCursor;
+                }
+                
+                _cursors[type] = handle;
+            }
 
             return handle;
         }
