@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 
 using Avalonia.Controls;
+using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Rendering;
@@ -22,7 +23,8 @@ namespace Avalonia.Base.UnitTests.Input
         {
             using var app = UnitTestApplication.Start(new TestServices(
                 inputManager: new InputManager(),
-                focusManager: new FocusManager()));
+                focusManager: new FocusManager(),
+                renderInterface: new HeadlessPlatformRenderInterface()));
 
             var renderer = new Mock<IHitTester>();
             var device = CreatePointerDeviceMock().Object;
