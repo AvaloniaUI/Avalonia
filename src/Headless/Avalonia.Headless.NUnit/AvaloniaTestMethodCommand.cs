@@ -15,6 +15,7 @@ internal class AvaloniaTestMethodCommand : TestCommand
     private readonly HeadlessUnitTestSession _session;
     private readonly TestCommand _innerCommand;
     private readonly List<Action> _beforeTest;
+    private readonly List<Action<TestExecutionContext>> _afterTest;
 
     // There are multiple problems with NUnit integration at the moment when we wrote this integration.
     // NUnit doesn't have extensibility API for running on custom dispatcher/sync-context.
@@ -37,20 +38,22 @@ internal class AvaloniaTestMethodCommand : TestCommand
     private AvaloniaTestMethodCommand(
         HeadlessUnitTestSession session,
         TestCommand innerCommand,
-        List<Action> beforeTest)
+        List<Action> beforeTest,
+        List<Action<TestExecutionContext>> afterTest)
         : base(innerCommand.Test)
     {
         _session = session;
         _innerCommand = innerCommand;
         _beforeTest = beforeTest;
+        _afterTest = afterTest;
     }
 
     public static TestCommand ProcessCommand(HeadlessUnitTestSession session, TestCommand command)
     {
-        return ProcessCommand(session, command, new List<Action>());
+        return ProcessCommand(session, command, [], []);
     }
 
-    private static TestCommand ProcessCommand(HeadlessUnitTestSession session, TestCommand command, List<Action> before)
+    private static TestCommand ProcessCommand(HeadlessUnitTestSession session, TestCommand command, List<Action> before, List<Action<TestExecutionContext>> after)
     {
         if (command is BeforeAndAfterTestCommand beforeAndAfterTestCommand)
         {
@@ -94,7 +97,7 @@ internal class AvaloniaTestMethodCommand : TestCommand
                 if (setUpTearDownInfo.GetValue(afterTest.Target) is SetUpTearDownItem setUpTearDown
                     && s_tearDownMethods.GetValue(setUpTearDown) is List<IMethodInfo> tearDownMethods)
                 {
-                    Action<TestExecutionContext> afterAction = c =>
+                    after.Add(c =>
                     {
                         tearDownMethods.ForEach(async void (m) =>
                         {
@@ -108,13 +111,13 @@ internal class AvaloniaTestMethodCommand : TestCommand
                                 await valueTask;
                             }
                         });
-                    };
-                    s_afterTest.SetValue(beforeAndAfterTestCommand, afterAction);
+                    });
+                    s_afterTest.SetValue(beforeAndAfterTestCommand, (TestExecutionContext _) => { });
                 }
                 else
                 {
-                    Action<TestExecutionContext> afterAction = c => afterTest(c);
-                    s_afterTest.SetValue(beforeAndAfterTestCommand, afterAction);
+                    after.Add(c => afterTest(c));
+                    s_afterTest.SetValue(beforeAndAfterTestCommand, (TestExecutionContext _) => { });
                 }
             }
         }
@@ -122,11 +125,11 @@ internal class AvaloniaTestMethodCommand : TestCommand
         if (command is DelegatingTestCommand delegatingTestCommand
             && s_innerCommand.GetValue(delegatingTestCommand) is TestCommand inner)
         {
-            s_innerCommand.SetValue(delegatingTestCommand, ProcessCommand(session, inner, before));
+            s_innerCommand.SetValue(delegatingTestCommand, ProcessCommand(session, inner, before, after));
         }
         else if (command is TestMethodCommand methodCommand)
         {
-            return new AvaloniaTestMethodCommand(session, methodCommand, before);
+            return new AvaloniaTestMethodCommand(session, methodCommand, before, after);
         }
 
         return command;
@@ -163,6 +166,7 @@ internal class AvaloniaTestMethodCommand : TestCommand
 
         if (context.ExecutionStatus != TestExecutionStatus.AbortRequested)
         {
+            _afterTest.ForEach(a => a(context));
             Dispatcher.UIThread.RunJobs();
         }
         
