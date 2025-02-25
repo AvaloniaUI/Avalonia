@@ -134,7 +134,8 @@ namespace Avalonia.Reactive
                     // Uncomment LightweightObservableBaseCounters after this class and the following line to track observer counts
                     //LightweightObservableBaseCounters.Add(_observers.GetType().FullName!, _observers.Count);
 
-                    switch (_observers.Count)
+                    count = _observers.Count;
+                    switch (count)
                     {
                         case 3:
                             observer0 = _observers[0];
@@ -148,15 +149,12 @@ namespace Avalonia.Reactive
                         case 1:
                             observer0 = _observers[0];
                             break;
+                        case 0:
+                            return;
                         default:
                         {
-                            count = _observers.Count;
-                            if (count != 0)
-                            {
-                                observers = ArrayPool<IObserver<T>>.Shared.Rent(count);
-                                _observers.CopyTo(observers);
-                            }
-
+                            observers = ArrayPool<IObserver<T>>.Shared.Rent(count);
+                            _observers.CopyTo(observers);
                             break;
                         }
                     }
