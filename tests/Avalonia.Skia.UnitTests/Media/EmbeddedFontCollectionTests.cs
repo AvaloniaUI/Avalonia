@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -32,7 +34,7 @@ namespace Avalonia.Skia.UnitTests.Media
 
                 Assert.True(fontCollection.TryGetGlyphTypeface("Noto Mono", fontStyle, fontWeight, FontStretch.Normal, out var glyphTypeface));
 
-                var actual = glyphTypeface?.FamilyName;
+                var actual = glyphTypeface.FamilyName;
 
                 Assert.Equal("Noto Mono", actual);
             }
@@ -49,7 +51,7 @@ namespace Avalonia.Skia.UnitTests.Media
 
                 fontCollection.Initialize(new CustomFontManagerImpl());
 
-                Assert.False(fontCollection.TryGetGlyphTypeface("ABC", FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, out var glyphTypeface));
+                Assert.False(fontCollection.TryGetGlyphTypeface("ABC", FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, out _));
             }
         }
 

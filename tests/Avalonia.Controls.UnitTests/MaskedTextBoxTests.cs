@@ -804,7 +804,7 @@ namespace Avalonia.Controls.UnitTests
         [InlineData("abc", "ddd", 3, 0, 2, true, "ddc")]
         [InlineData("abc", "dddd", 4, 1, 3, true, "addd")]
         [InlineData("abc", "ddddd", 5, 3, 3, true, "abcdd")]
-        public void MaxLength_Works_Properly(
+        public async Task MaxLength_Works_Properly(
             string initalText,
             string textInput,
             int maxLength,
@@ -838,10 +838,10 @@ namespace Avalonia.Controls.UnitTests
 
                 if (fromClipboard)
                 {
-                    topLevel.Clipboard?.SetTextAsync(textInput).GetAwaiter().GetResult();
+                    await topLevel.Clipboard!.SetTextAsync(textInput);
 
                     RaiseKeyEvent(target, Key.V, KeyModifiers.Control);
-                    topLevel.Clipboard?.ClearAsync().GetAwaiter().GetResult();
+                    await topLevel.Clipboard!.ClearAsync();
                 }
                 else
                 {

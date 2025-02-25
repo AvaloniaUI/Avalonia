@@ -107,7 +107,7 @@ namespace Avalonia.Controls.UnitTests
         [InlineData(1.2d, GridUnitType.Pixel, "1.2")]
         [InlineData(1.2d, GridUnitType.Star, "1.2*")]
         [InlineData(1.2d, GridUnitType.Auto, "Auto")]
-        public async void ToString_AllCulture_Should_Pass(double d, GridUnitType type, string result)
+        public async Task ToString_AllCulture_Should_Pass(double d, GridUnitType type, string result)
         {
             List<CultureInfo> cultureInfos = CultureInfo.GetCultures(CultureTypes.AllCultures).ToList();
             GridLength length = new GridLength(d, type);
