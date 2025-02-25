@@ -18,4 +18,7 @@ internal static partial class Diagnostic
     public static Activity? EvaluatingStyleActivator() => s_diagnostic
         .StartActivity("Avalonia.Styling.Activators.StyleActivatorBase.EvaluateIsActive");
 
+
+    public static Activity? PerformingHitTest() => s_diagnostic
+        .StartActivity("Avalonia.Rendering.HitTest");
 }

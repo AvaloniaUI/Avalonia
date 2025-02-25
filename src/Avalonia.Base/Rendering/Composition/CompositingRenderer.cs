@@ -96,6 +96,8 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
     /// <inheritdoc/>
     public IEnumerable<Visual> HitTest(Point p, Visual? root, Func<Visual, bool>? filter)
     {
+        using var _ = Diagnostic.PerformingHitTest();
+
         CompositionVisual? rootVisual = null;
         if (root != null)
         {
