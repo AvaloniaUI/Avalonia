@@ -247,7 +247,7 @@ namespace Avalonia.Layout
 
         private void ExecuteMeasurePass()
         {
-            using var _ = Diagnostic.BeginVisualMeasurePass();
+            using var _ = Diagnostic.BeginLayoutMeasurePass();
             while (_toMeasure.Count > 0)
             {
                 var control = _toMeasure.Dequeue();
@@ -263,7 +263,7 @@ namespace Avalonia.Layout
 
         private void ExecuteArrangePass()
         {
-            using var _ = Diagnostic.BeginVisualArrangePass();
+            using var _ = Diagnostic.BeginLayoutArrangePass();
             while (_toArrange.Count > 0)
             {
                 var control = _toArrange.Dequeue();

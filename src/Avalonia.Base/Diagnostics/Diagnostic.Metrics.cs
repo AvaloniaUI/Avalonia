@@ -48,6 +48,21 @@ internal static partial class Diagnostic
             Meters.LayoutInputPassName,
             Meters.MillisecondsUnit,
             Meters.LayoutInputPassDescription);
+        s_meter.CreateObservableUpDownCounter(
+            Meters.TotalEventHandleCountName,
+            () => Interactive.TotalHandlersCount,
+            Meters.TotalEventHandleCountUnit,
+            Meters.TotalEventHandleCountDescription);
+        s_meter.CreateObservableUpDownCounter(
+            Meters.TotalVisualCountName,
+            () => Visual.RootedVisualChildrenCount,
+            Meters.TotalVisualCountUnit,
+            Meters.TotalVisualCountDescription);
+        s_meter.CreateObservableUpDownCounter(
+            Meters.TotalDispatcherTimerCountName,
+            () => DispatcherTimer.ActiveTimersCount,
+            Meters.TotalDispatcherTimerCountUnit,
+            Meters.TotalDispatcherTimerCountDescription);
     }
 
     public static HistogramReportDisposable BeginCompositorRenderPass() => new(s_compositorRender);
