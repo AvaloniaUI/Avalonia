@@ -26,4 +26,8 @@ internal static partial class Diagnostic
 
     public static Activity? PerformingHitTest() => s_diagnostic
         .StartActivity("Avalonia.Rendering.HitTest");
+
+
+    public static Activity? RaisingRoutedEvent() => s_diagnostic
+        .StartActivity("Avalonia.Input.RoutedEvent");
 }
