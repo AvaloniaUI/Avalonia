@@ -101,7 +101,7 @@ namespace Avalonia.Styling
                 _animationTrigger?.OnNext(_activator.GetIsActive());
             }
 
-            using var activity = _activator is null ? null : Diagnostic.EvaluatingStyleActivator()?
+            using var activity = _activator is null ? null : Diagnostic.EvaluatingStyle()?
                 .AddTag(Diagnostic.Tags.Activator, _activator)
                 .AddTag(Diagnostic.Tags.Selector, (Source as Style)?.Selector)
                 .AddTag(Diagnostic.Tags.Style, Source as StyleBase);

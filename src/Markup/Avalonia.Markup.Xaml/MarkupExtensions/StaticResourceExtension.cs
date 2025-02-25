@@ -65,7 +65,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             // which might be able to give us the resource.
             if (stack is not null)
             {
-                using var activity = Diagnostic.FindingResourceActivity()?
+                using var activity = Diagnostic.FindingResource()?
                     .AddTag(Diagnostic.Tags.Key, resourceKey)
                     .AddTag(Diagnostic.Tags.ThemeVariant, themeVariant);
 

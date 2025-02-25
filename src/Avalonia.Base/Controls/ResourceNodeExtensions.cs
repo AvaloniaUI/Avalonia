@@ -76,7 +76,7 @@ namespace Avalonia.Controls
             control = control ?? throw new ArgumentNullException(nameof(control));
             key = key ?? throw new ArgumentNullException(nameof(key));
 
-            using var activity = Diagnostic.FindingResourceActivity()?
+            using var activity = Diagnostic.FindingResource()?
                 .AddTag(Diagnostic.Tags.Key, key)
                 .AddTag(Diagnostic.Tags.ThemeVariant, theme);
 

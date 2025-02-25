@@ -68,7 +68,7 @@ namespace Avalonia.Styling
 
             if (HasSettersOrAnimations)
             {
-                using var activity = Diagnostic.AttachingStyleActivity()?
+                using var activity = Diagnostic.AttachingStyle()?
                     .AddTag(Diagnostic.Tags.Style, this);
 
                 var match = Selector?.Match(target, Parent, true) ??

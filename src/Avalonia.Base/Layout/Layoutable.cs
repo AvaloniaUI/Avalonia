@@ -368,7 +368,7 @@ namespace Avalonia.Layout
 
             if (!IsMeasureValid || _previousMeasure != availableSize)
             {
-                using var activity = Diagnostic.MeasuingLayoutable()?
+                using var activity = Diagnostic.MeasuringLayoutable()?
                     .AddTag(Diagnostic.Tags.Control, this);
 
                 var previousDesiredSize = DesiredSize;

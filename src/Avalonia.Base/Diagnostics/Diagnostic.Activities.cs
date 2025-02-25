@@ -9,25 +9,24 @@ internal static partial class Diagnostic
 {
     private static readonly ActivitySource s_diagnostic = new("Avalonia.Diagnostic.Source");
 
-    public static Activity? AttachingStyleActivity() => s_diagnostic
-        .StartActivity("Avalonia.Styling.Style.Attach");
+    public static Activity? AttachingStyle() => s_diagnostic
+        .StartActivity("Avalonia.AttachingStyle");
 
-    public static Activity? FindingResourceActivity() => s_diagnostic
-        .StartActivity("Avalonia.Controls.ResourceNode.FindResource");
+    public static Activity? FindingResource() => s_diagnostic
+        .StartActivity("Avalonia.FindingResource");
 
-    public static Activity? EvaluatingStyleActivator() => s_diagnostic
-        .StartActivity("Avalonia.Styling.Activators.StyleActivatorBase.EvaluateIsActive");
+    public static Activity? EvaluatingStyle() => s_diagnostic
+        .StartActivity("Avalonia.EvaluatingStyle");
 
-    public static Activity? MeasuingLayoutable() => s_diagnostic
-        .StartActivity("Avalonia.Layout.Layoutable.Measure");
+    public static Activity? MeasuringLayoutable() => s_diagnostic
+        .StartActivity("Avalonia.MeasuringLayoutable");
 
     public static Activity? ArrangingLayoutable() => s_diagnostic
-        .StartActivity("Avalonia.Layout.Layoutable.Arrange");
+        .StartActivity("Avalonia.ArrangingLayoutable");
 
     public static Activity? PerformingHitTest() => s_diagnostic
-        .StartActivity("Avalonia.Rendering.HitTest");
-
+        .StartActivity("Avalonia.PerformingHitTest");
 
     public static Activity? RaisingRoutedEvent() => s_diagnostic
-        .StartActivity("Avalonia.Input.RoutedEvent");
+        .StartActivity("Avalonia.RaisingRoutedEvent");
 }
