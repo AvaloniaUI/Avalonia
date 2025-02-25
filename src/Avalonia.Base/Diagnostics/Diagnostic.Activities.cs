@@ -18,6 +18,11 @@ internal static partial class Diagnostic
     public static Activity? EvaluatingStyleActivator() => s_diagnostic
         .StartActivity("Avalonia.Styling.Activators.StyleActivatorBase.EvaluateIsActive");
 
+    public static Activity? MeasuingLayoutable() => s_diagnostic
+        .StartActivity("Avalonia.Layout.Layoutable.Measure");
+
+    public static Activity? ArrangingLayoutable() => s_diagnostic
+        .StartActivity("Avalonia.Layout.Layoutable.Arrange");
 
     public static Activity? PerformingHitTest() => s_diagnostic
         .StartActivity("Avalonia.Rendering.HitTest");
