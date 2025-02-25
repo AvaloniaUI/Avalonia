@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Threading;
-using Avalonia.Threading;
 
 namespace Avalonia.Reactive
 {
@@ -118,36 +118,68 @@ namespace Avalonia.Reactive
             if (Volatile.Read(ref _observers) != null)
             {
                 IObserver<T>[]? observers = null;
-                IObserver<T>? singleObserver = null;
+                int count = 0;
+
+                // Optimize for the common case of 1/2/3 observers.
+                IObserver<T>? observer0 = null;
+                IObserver<T>? observer1 = null;
+                IObserver<T>? observer2 = null;
                 lock (this)
                 {
                     if (_observers == null)
                     {
                         return;
                     }
-                    if (_observers.Count == 1)
+
+                    // Uncomment LightweightObservableBaseCounters after this class and the following line to track observer counts
+                    //LightweightObservableBaseCounters.Add(_observers.GetType().FullName!, _observers.Count);
+
+                    switch (_observers.Count)
                     {
-                        singleObserver = _observers[0];
-                    }
-                    else
-                    {
-                        observers = _observers.ToArray();
+                        case 3:
+                            observer0 = _observers[0];
+                            observer1 = _observers[1];
+                            observer2 = _observers[2];
+                            break;
+                        case 2:
+                            observer0 = _observers[0];
+                            observer1 = _observers[1];
+                            break;
+                        case 1:
+                            observer0 = _observers[0];
+                            break;
+                        default:
+                        {
+                            count = _observers.Count;
+                            if (count != 0)
+                            {
+                                observers = ArrayPool<IObserver<T>>.Shared.Rent(count);
+                                _observers.CopyTo(observers);
+                            }
+
+                            break;
+                        }
                     }
                 }
-                if (singleObserver != null)
+
+                if (observer0 != null)
                 {
-                    singleObserver.OnNext(value);
+                    observer0.OnNext(value);
+                    observer1?.OnNext(value);
+                    observer2?.OnNext(value);
                 }
-                else
+                else if (observers != null)
                 {
-                    foreach (var observer in observers!)
+                    for(int i = 0; i < count; i++)
                     {
-                        observer.OnNext(value);
+                        observers[i].OnNext(value);
                     }
+
+                    ArrayPool<IObserver<T>>.Shared.Return(observers);
                 }
             }
         }
-
+        
         protected void PublishCompleted()
         {
             if (Volatile.Read(ref _observers) != null)
@@ -205,4 +237,59 @@ namespace Avalonia.Reactive
         {
         }
     }
+
+    // Uncomment this class to track observer counts
+    // --------------------------------------------------------------------
+    //internal class LightweightObservableBaseCounters
+    //{
+    //    private static readonly List<(string, int)> _allocated = new();
+
+    //    static LightweightObservableBaseCounters()
+    //    {
+    //        AppDomain.CurrentDomain.ProcessExit += PrintStatistics;
+    //    }
+
+    //    private static void PrintStatistics(object? sender, EventArgs e)
+    //    {
+    //        var totalAllocation = _allocated.Count;
+    //        int arraySize = 0;
+    //        foreach (var pair in _allocated)
+    //        {
+    //            arraySize += pair.Item2 * IntPtr.Size + IntPtr.Size * 3; // Array size + object header + sync block index + type handle
+    //        }
+
+    //        // Print statistics per count
+    //        var mapArraySizeToCount = new Dictionary<int, int>();
+    //        foreach (var pair in _allocated)
+    //        {
+    //            var count = pair.Item2;
+    //            if (mapArraySizeToCount.ContainsKey(count))
+    //            {
+    //                mapArraySizeToCount[count]++;
+    //            }
+    //            else
+    //            {
+    //                mapArraySizeToCount[count] = 1;
+    //            }
+    //        }
+
+    //        Console.WriteLine("Array size to count:");
+    //        foreach (var pair in mapArraySizeToCount)
+    //        {
+    //            var size = pair.Key;
+    //            var count = pair.Value;
+    //            Console.WriteLine($"Array size: {size} bytes, Count: {count}");
+    //        }
+    //        Console.WriteLine($"Total array count: {totalAllocation}");
+    //        Console.WriteLine($"Total array size in bytes: {arraySize} bytes");
+    //    }
+
+    //    public static void Add(string name, int count)
+    //    {
+    //        lock (_allocated)
+    //        {
+    //            _allocated.Add((name, count));
+    //        }
+    //    }
+    //}
 }
