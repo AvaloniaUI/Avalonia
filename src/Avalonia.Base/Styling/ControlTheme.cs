@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using Avalonia.Diagnostics;
 using Avalonia.PropertyStore;
 
 namespace Avalonia.Styling
@@ -46,12 +47,18 @@ namespace Avalonia.Styling
             if (TargetType is null)
                 throw new InvalidOperationException("ControlTheme has no TargetType.");
 
+            using var activity = Diagnostic.AttachingStyleActivity()?
+                .AddTag(Diagnostic.Tags.Style, this);
+            
             if (HasSettersOrAnimations && TargetType.IsAssignableFrom(StyledElement.GetStyleKey(target)))
             {
                 Attach(target, null, type, true);
+                activity?.AddTag(Diagnostic.Tags.SelectorResult, SelectorMatchResult.AlwaysThisType);
+
                 return SelectorMatchResult.AlwaysThisType;
             }
 
+            activity?.AddTag(Diagnostic.Tags.SelectorResult, SelectorMatchResult.NeverThisType);
             return SelectorMatchResult.NeverThisType;
         }
     }

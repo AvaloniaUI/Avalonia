@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Avalonia.Animation;
 using Avalonia.Data;
+using Avalonia.Diagnostics;
 using Avalonia.PropertyStore;
 using Avalonia.Reactive;
 using Avalonia.Styling.Activators;
@@ -100,8 +101,15 @@ namespace Avalonia.Styling
                 _animationTrigger?.OnNext(_activator.GetIsActive());
             }
 
+            using var activity = _activator is null ? null : Diagnostic.EvaluatingStyleActivator()?
+                .AddTag(Diagnostic.Tags.Activator, _activator)
+                .AddTag(Diagnostic.Tags.Selector, (Source as Style)?.Selector)
+                .AddTag(Diagnostic.Tags.Style, Source as StyleBase);
+
             _isActive = _activator?.GetIsActive() ?? true;
             hasChanged = _isActive != previous;
+
+            activity?.AddTag(Diagnostic.Tags.IsActive, _isActive);
             return _isActive;
         }
 
