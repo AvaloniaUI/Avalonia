@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Avalonia.Controls;
+using Avalonia.Diagnostics;
 using Avalonia.Markup.Data;
 using Avalonia.Markup.Xaml.Converters;
 using Avalonia.Markup.Xaml.XamlIl.Runtime;
@@ -64,6 +65,10 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             // which might be able to give us the resource.
             if (stack is not null)
             {
+                using var activity = Diagnostic.FindingResourceActivity()?
+                    .AddTag(Diagnostic.Tags.Key, resourceKey)
+                    .AddTag(Diagnostic.Tags.ThemeVariant, themeVariant);
+
                 // avoid allocations iterating the parents when possible
                 if (stack is IAvaloniaXamlIlEagerParentStackProvider eagerStack)
                 {
