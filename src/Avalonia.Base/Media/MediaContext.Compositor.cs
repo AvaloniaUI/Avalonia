@@ -116,7 +116,6 @@ partial class MediaContext
         }
         else
         {
-            CommitCompositor(compositor);
             compositor.Server.Render(catchExceptions);
         }
     }
