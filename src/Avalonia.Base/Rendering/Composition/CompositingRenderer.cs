@@ -6,6 +6,7 @@ using System.Numerics;
 using System.Threading.Tasks;
 using Avalonia.Collections;
 using Avalonia.Collections.Pooled;
+using Avalonia.Diagnostics;
 using Avalonia.Media;
 using Avalonia.Rendering.Composition.Drawing;
 using Avalonia.Threading;

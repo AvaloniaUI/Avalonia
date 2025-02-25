@@ -23,6 +23,7 @@ using Avalonia.Utilities;
 using Avalonia.Input.Platform;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Diagnostics;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 
