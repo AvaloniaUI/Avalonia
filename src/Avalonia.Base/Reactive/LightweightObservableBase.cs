@@ -174,7 +174,7 @@ namespace Avalonia.Reactive
                 }
             }
         }
-        
+
         protected void PublishCompleted()
         {
             if (Volatile.Read(ref _observers) != null)
