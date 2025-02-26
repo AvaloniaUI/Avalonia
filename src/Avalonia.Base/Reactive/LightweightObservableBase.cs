@@ -131,9 +131,6 @@ namespace Avalonia.Reactive
                         return;
                     }
 
-                    // Uncomment LightweightObservableBaseCounters after this class and the following line to track observer counts
-                    //LightweightObservableBaseCounters.Add(_observers.GetType().FullName!, _observers.Count);
-
                     count = _observers.Count;
                     switch (count)
                     {
@@ -235,59 +232,4 @@ namespace Avalonia.Reactive
         {
         }
     }
-
-    // Uncomment this class to track observer counts
-    // --------------------------------------------------------------------
-    //internal class LightweightObservableBaseCounters
-    //{
-    //    private static readonly List<(string, int)> _allocated = new();
-
-    //    static LightweightObservableBaseCounters()
-    //    {
-    //        AppDomain.CurrentDomain.ProcessExit += PrintStatistics;
-    //    }
-
-    //    private static void PrintStatistics(object? sender, EventArgs e)
-    //    {
-    //        var totalAllocation = _allocated.Count;
-    //        int arraySize = 0;
-    //        foreach (var pair in _allocated)
-    //        {
-    //            arraySize += pair.Item2 * IntPtr.Size + IntPtr.Size * 3; // Array size + object header + sync block index + type handle
-    //        }
-
-    //        // Print statistics per count
-    //        var mapArraySizeToCount = new Dictionary<int, int>();
-    //        foreach (var pair in _allocated)
-    //        {
-    //            var count = pair.Item2;
-    //            if (mapArraySizeToCount.ContainsKey(count))
-    //            {
-    //                mapArraySizeToCount[count]++;
-    //            }
-    //            else
-    //            {
-    //                mapArraySizeToCount[count] = 1;
-    //            }
-    //        }
-
-    //        Console.WriteLine("Array size to count:");
-    //        foreach (var pair in mapArraySizeToCount)
-    //        {
-    //            var size = pair.Key;
-    //            var count = pair.Value;
-    //            Console.WriteLine($"Array size: {size} bytes, Count: {count}");
-    //        }
-    //        Console.WriteLine($"Total array count: {totalAllocation}");
-    //        Console.WriteLine($"Total array size in bytes: {arraySize} bytes");
-    //    }
-
-    //    public static void Add(string name, int count)
-    //    {
-    //        lock (_allocated)
-    //        {
-    //            _allocated.Add((name, count));
-    //        }
-    //    }
-    //}
 }
