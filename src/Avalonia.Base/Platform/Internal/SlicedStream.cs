@@ -29,7 +29,7 @@ internal class SlicedStream : Stream
         if (origin == SeekOrigin.Begin)
             Position = offset;
         if (origin == SeekOrigin.End)
-            Position = _from + Length + offset;
+            Position = Length + offset;
         if (origin == SeekOrigin.Current)
             Position = Position + offset;
         return Position;
