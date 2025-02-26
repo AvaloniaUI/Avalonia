@@ -630,9 +630,6 @@ namespace Avalonia.Controls
                 throw new ArgumentNullException(nameof(e));
             }
 
-            var handler = Spinned;
-            handler?.Invoke(this, e);
-
             if (e.Direction == SpinDirection.Increase)
             {
                 DoIncrement();
@@ -641,6 +638,8 @@ namespace Avalonia.Controls
             {
                 DoDecrement();
             }
+
+            Spinned?.Invoke(this, e);
         }
 
         /// <summary>

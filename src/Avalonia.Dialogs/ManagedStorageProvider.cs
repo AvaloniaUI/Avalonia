@@ -116,6 +116,7 @@ internal class ManagedStorageProvider : BclStorageProvider
         {
             if (await ShowOverwritePrompt(filename, window))
             {
+                result = [filename];
                 window.Close();
             }
         };
@@ -165,6 +166,7 @@ internal class ManagedStorageProvider : BclStorageProvider
         {
             if (await ShowOverwritePrompt(filename, root))
             {
+                result = [filename];
                 popup.Close();
             }
         };

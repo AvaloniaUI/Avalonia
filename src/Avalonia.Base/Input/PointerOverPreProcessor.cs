@@ -29,9 +29,21 @@ namespace Avalonia.Input
 
         public void OnNext(RawInputEventArgs value)
         {
-            if (value is RawPointerEventArgs args
-                && args.Root == _inputRoot
-                && value.Device is IPointerDevice pointerDevice)
+            if (value is RawDragEvent dragArgs)
+            {
+                // When a platform drag operation is in progress, the application does not receive
+                // pointer move events until after the drop event. This is a problem because if a
+                // popup is shown at the pointer position in the drop event, it will be shown at
+                // the position at which the drag was initiated, not the position at which the drop
+                // occurred.
+                //
+                // Solve this by updating the last known pointer position when a drag event occurs.
+                _lastKnownPosition = ((Visual)_inputRoot).PointToScreen(dragArgs.Location);
+            }
+
+            else if (value is RawPointerEventArgs args
+                     && args.Root == _inputRoot
+                     && value.Device is IPointerDevice pointerDevice)
             {
                 if (pointerDevice != _lastActivePointerDevice)
                 {

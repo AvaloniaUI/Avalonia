@@ -35,6 +35,7 @@ namespace Avalonia.Input.Platform
         /// Permanently adds the data that is on the Clipboard so that it is available after the data's original application closes.
         /// </summary>
         /// <returns></returns>
+        /// <remarks>This method works only on Windows platform, on other platforms it does nothing.</remarks>
         Task FlushAsync();
 
         /// <summary>

@@ -1633,7 +1633,7 @@ namespace Avalonia.Win32.Interop
         public static extern IntPtr MonitorFromPoint(POINT pt, MONITOR dwFlags);
 
         [DllImport("user32.dll")]
-        public static extern IntPtr MonitorFromRect(RECT rect, MONITOR dwFlags);
+        public static extern IntPtr MonitorFromRect(RECT* rect, MONITOR dwFlags);
 
         [DllImport("user32.dll")]
         public static extern IntPtr MonitorFromWindow(IntPtr hwnd, MONITOR dwFlags);
