@@ -7,7 +7,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.Media.Fonts
 {
-    internal class SystemFontCollection : FontCollectionBase
+    internal class SystemFontCollection : FontCollectionBase, IFontCollection2
     {
         private readonly FontManager _fontManager;
         private readonly List<string> _familyNames;
@@ -157,6 +157,18 @@ namespace Avalonia.Media.Fonts
                     new FontCollectionKey(glyphTypeface.Style, glyphTypeface.Weight, glyphTypeface.Stretch),
                     glyphTypeface);
             }
+        }
+
+        bool IFontCollection2.TryGetFamilyTypefaces(string familyName, [NotNullWhen(true)] out IReadOnlyList<Typeface>? familyTypefaces)
+        {
+            familyTypefaces = null;
+
+            if (_fontManager.PlatformImpl is IFontManagerImpl2 fontManagerImpl2)
+            {
+                return fontManagerImpl2.TryGetFamilyTypefaces(familyName, out familyTypefaces);
+            }
+
+            return false;
         }
     }
 }

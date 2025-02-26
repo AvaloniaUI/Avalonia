@@ -1,6 +1,7 @@
 using Avalonia.Input.Platform;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Reactive;
 using Avalonia.Controls.Presenters;
@@ -629,6 +630,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the text selected in the TextBox
         /// </summary>
+        [AllowNull]
         public string SelectedText
         {
             get => GetSelection();
@@ -1981,9 +1983,13 @@ namespace Avalonia.Controls
                 {
                     if (selectionStart != selectionEnd)
                     {
-                        _presenter.MoveCaretToTextPosition(direction > 0 ?
+                        // clear the selection and move to the appropriate side of previous selection
+                        var newPosition = direction > 0 ?
                             Math.Max(selectionStart, selectionEnd) :
-                            Math.Min(selectionStart, selectionEnd));
+                            Math.Min(selectionStart, selectionEnd);
+                        SetCurrentValue(SelectionStartProperty, newPosition);
+                        SetCurrentValue(SelectionEndProperty, newPosition);
+                        _presenter.MoveCaretToTextPosition(newPosition);
                     }
                     else
                     {

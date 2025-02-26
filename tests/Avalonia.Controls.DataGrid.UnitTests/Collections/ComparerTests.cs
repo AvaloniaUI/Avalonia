@@ -219,5 +219,8 @@ public class NoStringTypeComparerTests
             }
             return false;
         }
+
+        public override int GetHashCode()
+            => Prop;
     }
 }
