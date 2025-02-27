@@ -136,6 +136,9 @@ namespace Avalonia.Collections
             }
         }
 
+        internal abstract DataGridCollectionViewGroupInternal Parent { get; }
+        internal abstract DataGridGroupDescription GroupBy { get; set; }
+
         protected DataGridCollectionViewGroup(object key)
         {
             Key = key;
@@ -189,7 +192,7 @@ namespace Avalonia.Collections
 
         internal int FullCount { get; set; }
 
-        internal DataGridGroupDescription GroupBy
+        internal override DataGridGroupDescription GroupBy
         {
             get { return _groupBy; }
             set
@@ -269,7 +272,7 @@ namespace Avalonia.Collections
             }
         }
 
-        private DataGridCollectionViewGroupInternal Parent => _parentGroup;
+        internal override DataGridCollectionViewGroupInternal Parent => _parentGroup;
 
         /// <summary>
         /// Adds the specified item to the collection
