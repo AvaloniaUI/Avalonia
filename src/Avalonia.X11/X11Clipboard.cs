@@ -9,7 +9,7 @@ using Avalonia.Input.Platform;
 using static Avalonia.X11.XLib;
 namespace Avalonia.X11
 {
-    internal class X11Clipboard : IClipboard
+    internal class X11Clipboard : IClipboard, IClipboard2
     {
         private readonly X11Info _x11;
         private IDataObject? _storedDataObject;
@@ -312,6 +312,13 @@ namespace Avalonia.X11
             _storedDataObject = data;
             XSetSelectionOwner(_x11.Display, _x11.Atoms.CLIPBOARD, _handle, IntPtr.Zero);            
             return StoreAtomsInClipboardManager(data);
+        }
+
+        public Task<IDataObject?> TryGetInProcessDataObjectAsync()
+        {
+            if (XGetSelectionOwner(_x11.Display, _x11.Atoms.CLIPBOARD) == _handle)
+                return Task.FromResult(_storedDataObject);
+            return Task.FromResult<IDataObject?>(null);
         }
 
         public async Task<string[]> GetFormatsAsync()

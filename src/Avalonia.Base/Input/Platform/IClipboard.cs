@@ -18,4 +18,9 @@ namespace Avalonia.Input.Platform
         
         Task<object?> GetDataAsync(string format);
     }
+    
+    public interface IClipboard2 : IClipboard
+    {
+        Task<IDataObject?> TryGetInProcessDataObjectAsync();
+    }
 }

@@ -3,13 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Documents;
 using Avalonia.Controls.Notifications;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using Avalonia.Platform.Storage.FileIO;
+using Avalonia.Threading;
 
 namespace ControlCatalog.Pages
 {
@@ -18,8 +22,13 @@ namespace ControlCatalog.Pages
         private INotificationManager? _notificationManager;
         private INotificationManager NotificationManager => _notificationManager
             ??= new WindowNotificationManager(TopLevel.GetTopLevel(this)!);
+
+        private readonly DispatcherTimer _clipboardLastDataObjectChecker;
+        private DataObject? _storedDataObject;
         public ClipboardPage()
         {
+            _clipboardLastDataObjectChecker =
+                new DispatcherTimer(TimeSpan.FromSeconds(0.5), default, CheckLastDataObject);
             InitializeComponent();
         }
 
@@ -48,7 +57,7 @@ namespace ControlCatalog.Pages
         {
             if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
             {
-                var dataObject = new DataObject();
+                var dataObject =  _storedDataObject = new DataObject();
                 dataObject.Set(DataFormats.Text, ClipboardContent.Text ?? string.Empty);
                 await clipboard.SetDataObjectAsync(dataObject);
             }
@@ -96,7 +105,7 @@ namespace ControlCatalog.Pages
 
                 if (files.Count > 0)
                 {
-                    var dataObject = new DataObject();
+                    var dataObject = _storedDataObject = new DataObject();
                     dataObject.Set(DataFormats.Files, files);
                     await clipboard.SetDataObjectAsync(dataObject);
                     NotificationManager.Show(new Notification("Success", "Copy completated.", NotificationType.Success));
@@ -134,6 +143,39 @@ namespace ControlCatalog.Pages
                 await clipboard.ClearAsync();
             }
 
+        }
+
+
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            _clipboardLastDataObjectChecker.Start();
+            base.OnAttachedToVisualTree(e);
+        }
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            _clipboardLastDataObjectChecker.Stop();
+            base.OnDetachedFromVisualTree(e);
+        }
+
+        private Run OwnsClipboardDataObject => this.Get<Run>("OwnsClipboardDataObject");
+        private bool _checkingClipboardDataObject;
+        private async void CheckLastDataObject(object? sender, EventArgs e)
+        {
+            if(_checkingClipboardDataObject)
+                return;
+            try
+            {
+                _checkingClipboardDataObject = true;
+                var task = (TopLevel.GetTopLevel(this)?.Clipboard as IClipboard2)?.TryGetInProcessDataObjectAsync();
+                var owns = task != null && (await task) == _storedDataObject && _storedDataObject != null;
+                OwnsClipboardDataObject.Text = owns ? "Yes" : "No";
+                OwnsClipboardDataObject.Foreground = owns ? Brushes.Green : Brushes.Red;
+            }
+            finally
+            {
+                _checkingClipboardDataObject = false;
+            }
         }
     }
 }
