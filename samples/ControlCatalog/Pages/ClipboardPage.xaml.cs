@@ -167,7 +167,7 @@ namespace ControlCatalog.Pages
             try
             {
                 _checkingClipboardDataObject = true;
-                var task = (TopLevel.GetTopLevel(this)?.Clipboard as IClipboard2)?.TryGetInProcessDataObjectAsync();
+                var task = TopLevel.GetTopLevel(this)?.Clipboard?.TryGetInProcessDataObjectAsync();
                 var owns = task != null && (await task) == _storedDataObject && _storedDataObject != null;
                 OwnsClipboardDataObject.Text = owns ? "Yes" : "No";
                 OwnsClipboardDataObject.Foreground = owns ? Brushes.Green : Brushes.Red;

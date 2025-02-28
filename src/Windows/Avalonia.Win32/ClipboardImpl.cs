@@ -11,7 +11,7 @@ using MicroCom.Runtime;
 
 namespace Avalonia.Win32
 {
-    internal class ClipboardImpl : IClipboard2
+    internal class ClipboardImpl : IClipboard
     {
         private const int OleRetryCount = 10;
         private const int OleRetryDelay = 100;

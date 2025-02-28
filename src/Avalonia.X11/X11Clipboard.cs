@@ -9,7 +9,7 @@ using Avalonia.Input.Platform;
 using static Avalonia.X11.XLib;
 namespace Avalonia.X11
 {
-    internal class X11Clipboard : IClipboard, IClipboard2
+    internal class X11Clipboard : IClipboard
     {
         private readonly X11Info _x11;
         private IDataObject? _storedDataObject;

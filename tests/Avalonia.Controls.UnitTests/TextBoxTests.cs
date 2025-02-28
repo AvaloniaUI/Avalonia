@@ -1973,31 +1973,6 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        private class ClipboardStub : IClipboard // in order to get tests working that use the clipboard
-        {
-            private string? _text;
-
-            public Task<string?> GetTextAsync() => Task.FromResult(_text);
-
-            public Task SetTextAsync(string? text)
-            {
-                _text = text;
-                return Task.CompletedTask;
-            }
-
-            public Task ClearAsync()
-            {
-                _text = null;
-                return Task.CompletedTask;
-            }
-            
-            public Task SetDataObjectAsync(IDataObject data) => Task.CompletedTask;
-
-            public Task<string[]> GetFormatsAsync() => Task.FromResult(Array.Empty<string>());
-
-            public Task<object?> GetDataAsync(string format) => Task.FromResult((object?)null);
-        }
-
         private class TestTopLevel : TopLevel
         {
             private readonly ILayoutManager _layoutManager;
@@ -2016,7 +1991,7 @@ namespace Avalonia.Controls.UnitTests
             var clipboard = new Mock<ITopLevelImpl>();
             clipboard.Setup(x => x.Compositor).Returns(RendererMocks.CreateDummyCompositor());
             clipboard.Setup(r => r.TryGetFeature(typeof(IClipboard)))
-                .Returns(new ClipboardStub());
+                .Returns(new HeadlessClipboardStub());
             clipboard.SetupGet(x => x.RenderScaling).Returns(1);
             return clipboard;
         }
