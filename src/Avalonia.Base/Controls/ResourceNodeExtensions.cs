@@ -1,4 +1,5 @@
 ﻿using System;
+using Avalonia.Diagnostics;
 using Avalonia.Reactive;
 using Avalonia.Styling;
 
@@ -75,12 +76,17 @@ namespace Avalonia.Controls
             control = control ?? throw new ArgumentNullException(nameof(control));
             key = key ?? throw new ArgumentNullException(nameof(key));
 
-            IResourceHost? current = control;
+            using var activity = Diagnostic.FindingResource()?
+                .AddTag(Diagnostic.Tags.Key, key)
+                .AddTag(Diagnostic.Tags.ThemeVariant, theme);
+
+            var current = control;
 
             while (current != null)
             {
                 if (current.TryGetResource(key, theme, out value))
                 {
+                    activity?.AddTag(Diagnostic.Tags.Result, true);
                     return true;
                 }
 

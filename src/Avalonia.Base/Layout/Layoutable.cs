@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Diagnostics;
 using Avalonia.Logging;
 using Avalonia.Reactive;
 using Avalonia.VisualTree;
@@ -367,6 +368,9 @@ namespace Avalonia.Layout
 
             if (!IsMeasureValid || _previousMeasure != availableSize)
             {
+                using var activity = Diagnostic.MeasuringLayoutable()?
+                    .AddTag(Diagnostic.Tags.Control, this);
+
                 var previousDesiredSize = DesiredSize;
                 var desiredSize = default(Size);
 
@@ -417,6 +421,9 @@ namespace Avalonia.Layout
 
             if (!IsArrangeValid || _previousArrange != rect)
             {
+                using var activity = Diagnostic.ArrangingLayoutable()?
+                    .AddTag(Diagnostic.Tags.Control, this);
+
                 Logger.TryGet(LogEventLevel.Verbose, LogArea.Layout)?.Log(this, "Arrange to {Rect} ", rect);
 
                 IsArrangeValid = true;
