@@ -179,6 +179,14 @@ namespace Avalonia.Headless
 
         }
 
+        public void SetCanMinimize(bool value)
+        {
+        }
+
+        public void SetCanMaximize(bool value)
+        {
+        }
+
         public Func<WindowCloseReason, bool>? Closing { get; set; }
 
         private class FramebufferProxy : ILockedFramebuffer
