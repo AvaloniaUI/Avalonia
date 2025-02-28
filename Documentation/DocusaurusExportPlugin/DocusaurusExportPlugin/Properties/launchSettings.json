@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "DocusaurusExportPlugin": {
+      "commandName": "Executable",
+      "executablePath": "$(SHFBROOT)\\Tools\\SandcastleBuilderGUI.exe"
+    }
+  }
+}
