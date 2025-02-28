@@ -1,4 +1,6 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
 
@@ -25,21 +27,20 @@ namespace Avalonia.Layout
         /// <param name="constraints">The space available for the control.</param>
         /// <returns>The control's size.</returns>
         public static Size ApplyLayoutConstraints(Layoutable control, Size constraints)
-        {
-            var minmax = new MinMax(control);
+            => ApplyLayoutConstraints(new MinMax(control), constraints);
 
-            return new Size(
-                MathUtilities.Clamp(constraints.Width, minmax.MinWidth, minmax.MaxWidth),
-                MathUtilities.Clamp(constraints.Height, minmax.MinHeight, minmax.MaxHeight));
-        }
+        internal static Size ApplyLayoutConstraints(MinMax minMax, Size constraints)
+            => new(
+                MathUtilities.Clamp(constraints.Width, minMax.MinWidth, minMax.MaxWidth),
+                MathUtilities.Clamp(constraints.Height, minMax.MinHeight, minMax.MaxHeight));
 
         public static Size MeasureChild(Layoutable? control, Size availableSize, Thickness padding,
             Thickness borderThickness)
         {
             if (IsParentLayoutRounded(control, out double scale))
             {
-                padding = RoundLayoutThickness(padding, scale, scale);
-                borderThickness = RoundLayoutThickness(borderThickness, scale, scale);
+                padding = RoundLayoutThickness(padding, scale);
+                borderThickness = RoundLayoutThickness(borderThickness, scale);
             }
 
             if (control != null)
@@ -55,7 +56,7 @@ namespace Avalonia.Layout
         {
             if (IsParentLayoutRounded(control, out double scale))
             {
-                padding = RoundLayoutThickness(padding, scale, scale);
+                padding = RoundLayoutThickness(padding, scale);
             }
 
             if (control != null)
@@ -71,8 +72,8 @@ namespace Avalonia.Layout
         {
             if (IsParentLayoutRounded(child, out double scale))
             {
-                padding = RoundLayoutThickness(padding, scale, scale);
-                borderThickness = RoundLayoutThickness(borderThickness, scale, scale);
+                padding = RoundLayoutThickness(padding, scale);
+                borderThickness = RoundLayoutThickness(borderThickness, scale);
             }
 
             return ArrangeChildInternal(child, availableSize, padding + borderThickness);
@@ -81,7 +82,7 @@ namespace Avalonia.Layout
         public static Size ArrangeChild(Layoutable? child, Size availableSize, Thickness padding)
         {
             if(IsParentLayoutRounded(child, out double scale))
-                padding = RoundLayoutThickness(padding, scale, scale);
+                padding = RoundLayoutThickness(padding, scale);
 
             return ArrangeChildInternal(child, availableSize, padding);
         }
@@ -140,18 +141,7 @@ namespace Avalonia.Layout
         /// <param name="control">The control.</param>
         /// <exception cref="Exception">Thrown when control has no root or returned layout scaling is invalid.</exception>
         public static double GetLayoutScale(Layoutable control)
-        {
-            var visualRoot = (control as Visual)?.VisualRoot;
-            
-            var result = (visualRoot as ILayoutRoot)?.LayoutScaling ?? 1.0;
-
-            if (result == 0 || double.IsNaN(result) || double.IsInfinity(result))
-            {
-                throw new Exception($"Invalid LayoutScaling returned from {visualRoot!.GetType()}");
-            }
-
-            return result;
-        }
+            => control.VisualRoot is ILayoutRoot layoutRoot ? layoutRoot.LayoutScaling : 1.0;
 
         /// <summary>
         /// Rounds a size to integer values for layout purposes, compensating for high DPI screen
@@ -170,6 +160,20 @@ namespace Avalonia.Layout
         public static Size RoundLayoutSizeUp(Size size, double dpiScaleX, double dpiScaleY)
         {
             return new Size(RoundLayoutValueUp(size.Width, dpiScaleX), RoundLayoutValueUp(size.Height, dpiScaleY));
+        }
+
+        [SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator", Justification = "The DPI scale should have been normalized.")]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Size RoundLayoutSizeUp(Size size, double dpiScale)
+        {
+            // If DPI == 1, don't use DPI-aware rounding.
+            return dpiScale == 1.0 ?
+                new Size(
+                    Math.Ceiling(size.Width),
+                    Math.Ceiling(size.Height)) :
+                new Size(
+                    Math.Ceiling(RoundTo8Digits(size.Width) * dpiScale) / dpiScale,
+                    Math.Ceiling(RoundTo8Digits(size.Height) * dpiScale) / dpiScale);
         }
 
         /// <summary>
@@ -196,6 +200,38 @@ namespace Avalonia.Layout
             );
         }
 
+        [SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator", Justification = "The DPI scale should have been normalized.")]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Thickness RoundLayoutThickness(Thickness thickness, double dpiScale)
+        {
+            // If DPI == 1, don't use DPI-aware rounding.
+            return dpiScale == 1.0 ?
+                new Thickness(
+                    Math.Round(thickness.Left),
+                    Math.Round(thickness.Top),
+                    Math.Round(thickness.Right),
+                    Math.Round(thickness.Bottom)) :
+                new Thickness(
+                    Math.Round(thickness.Left * dpiScale) / dpiScale,
+                    Math.Round(thickness.Top * dpiScale) / dpiScale,
+                    Math.Round(thickness.Right * dpiScale) / dpiScale,
+                    Math.Round(thickness.Bottom * dpiScale) / dpiScale);
+        }
+
+        [SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator", Justification = "The DPI scale should have been normalized.")]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Point RoundLayoutPoint(Point point, double dpiScale)
+        {
+            // If DPI == 1, don't use DPI-aware rounding.
+            return dpiScale == 1.0 ?
+                new Point(
+                    Math.Round(point.X),
+                    Math.Round(point.Y)) :
+                new Point(
+                    Math.Round(point.X * dpiScale) / dpiScale,
+                    Math.Round(point.Y * dpiScale) / dpiScale);
+        }
+
         /// <summary>
         /// Calculates the value to be used for layout rounding at high DPI by rounding the value
         /// up or down to the nearest pixel.
@@ -211,28 +247,10 @@ namespace Avalonia.Layout
         /// </remarks>
         public static double RoundLayoutValue(double value, double dpiScale)
         {
-            double newValue;
-
             // If DPI == 1, don't use DPI-aware rounding.
-            if (!MathUtilities.IsOne(dpiScale))
-            {
-                newValue = Math.Round(value * dpiScale) / dpiScale;
-
-                // If rounding produces a value unacceptable to layout (NaN, Infinity or MaxValue),
-                // use the original value.
-                if (double.IsNaN(newValue) ||
-                    double.IsInfinity(newValue) ||
-                    MathUtilities.AreClose(newValue, double.MaxValue))
-                {
-                    newValue = value;
-                }
-            }
-            else
-            {
-                newValue = Math.Round(value);
-            }
-
-            return newValue;
+            return MathUtilities.IsOne(dpiScale) ?
+                Math.Round(value) :
+                Math.Round(value * dpiScale) / dpiScale;
         }
 
         /// <summary>
@@ -250,73 +268,25 @@ namespace Avalonia.Layout
         /// </remarks>
         public static double RoundLayoutValueUp(double value, double dpiScale)
         {
-            double newValue;
+            // If DPI == 1, don't use DPI-aware rounding.
+            return MathUtilities.IsOne(dpiScale) ?
+                Math.Ceiling(value) :
+                Math.Ceiling(RoundTo8Digits(value) * dpiScale) / dpiScale;
+        }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static double RoundTo8Digits(double value)
+        {
             // Round the value to avoid FP errors. This is needed because if `value` has a floating
             // point precision error (e.g. 79.333333333333343) then when it's multiplied by
             // `dpiScale` and rounded up, it will be rounded up to a value one greater than it
             // should be.
 #if NET6_0_OR_GREATER
-            value = Math.Round(value, 8, MidpointRounding.ToZero);
+            return Math.Round(value, 8, MidpointRounding.ToZero);
 #else
             // MidpointRounding.ToZero isn't available in netstandard2.0.
-            value = Math.Truncate(value * 1e8) / 1e8;
+            return Math.Truncate(value * 1e8) / 1e8;
 #endif
-
-            // If DPI == 1, don't use DPI-aware rounding.
-            if (!MathUtilities.IsOne(dpiScale))
-            {
-                newValue = Math.Ceiling(value * dpiScale) / dpiScale;
-
-                // If rounding produces a value unacceptable to layout (NaN, Infinity or MaxValue),
-                // use the original value.
-                if (double.IsNaN(newValue) ||
-                    double.IsInfinity(newValue) ||
-                    MathUtilities.AreClose(newValue, double.MaxValue))
-                {
-                    newValue = value;
-                }
-            }
-            else
-            {
-                newValue = Math.Ceiling(value);
-            }
-
-            return newValue;
-        }
-
-        /// <summary>
-        /// Calculates the min and max height for a control. Ported from WPF.
-        /// </summary>
-        private readonly struct MinMax
-        {
-            public MinMax(Layoutable e)
-            {
-                MaxHeight = e.MaxHeight;
-                MinHeight = e.MinHeight;
-                double l = e.Height;
-
-                double height = (double.IsNaN(l) ? double.PositiveInfinity : l);
-                MaxHeight = Math.Max(Math.Min(height, MaxHeight), MinHeight);
-
-                height = (double.IsNaN(l) ? 0 : l);
-                MinHeight = Math.Max(Math.Min(MaxHeight, height), MinHeight);
-
-                MaxWidth = e.MaxWidth;
-                MinWidth = e.MinWidth;
-                l = e.Width;
-
-                double width = (double.IsNaN(l) ? double.PositiveInfinity : l);
-                MaxWidth = Math.Max(Math.Min(width, MaxWidth), MinWidth);
-
-                width = (double.IsNaN(l) ? 0 : l);
-                MinWidth = Math.Max(Math.Min(MaxWidth, width), MinWidth);
-            }
-
-            public double MinWidth { get; }
-            public double MaxWidth { get; }
-            public double MinHeight { get; }
-            public double MaxHeight { get; }
         }
     }
 }
