@@ -13,16 +13,23 @@ internal static partial class InputHelper
         return Task.CompletedTask;
     }
 
+    public static Task<T> RedirectInputRetunAsync<T>(int topLevelId, Func<BrowserTopLevelImpl,T> handler, T @default)
+    {
+        if (BrowserTopLevelImpl.TryGetTopLevel(topLevelId) is { } topLevelImpl)
+            return Task.FromResult(handler(topLevelImpl));
+        return Task.FromResult(@default);
+    }
+
     [JSImport("InputHelper.subscribeInputEvents", AvaloniaModule.MainModuleName)]
     public static partial void SubscribeInputEvents(JSObject htmlElement, int topLevelId);
 
     [JSExport]
-    public static Task OnKeyDown(int topLevelId, string code, string key, int modifier) =>
-        RedirectInputAsync(topLevelId, t => t.InputHandler.OnKeyDown(code, key, modifier));
+    public static Task<bool> OnKeyDown(int topLevelId, string code, string key, int modifier) =>
+        RedirectInputRetunAsync(topLevelId, t => t.InputHandler.OnKeyDown(code, key, modifier), false);
 
     [JSExport]
-    public static Task OnKeyUp(int topLevelId, string code, string key, int modifier) =>
-        RedirectInputAsync(topLevelId, t => t.InputHandler.OnKeyUp(code, key, modifier));
+    public static Task<bool> OnKeyUp(int topLevelId, string code, string key, int modifier) =>
+        RedirectInputRetunAsync(topLevelId, t => t.InputHandler.OnKeyUp(code, key, modifier), false);
 
     [JSExport]
     public static Task OnBeforeInput(int topLevelId, string inputType, int start, int end) =>
