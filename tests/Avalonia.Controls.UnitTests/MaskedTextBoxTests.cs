@@ -903,7 +903,7 @@ namespace Avalonia.Controls.UnitTests
                 topLevel.ApplyTemplate();
                 topLevel.LayoutManager.ExecuteInitialLayoutPass();
 
-                var texts = new List<string>();
+                var texts = new System.Collections.Generic.List<string>();
 
                 target.PropertyChanged += (_, e) =>
                 {
