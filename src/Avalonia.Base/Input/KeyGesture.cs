@@ -151,8 +151,11 @@ namespace Avalonia.Input
                 s.Append(formatInfo.Meta);
             }
 
-            Plus(s);
-            s.Append(formatInfo.FormatKey(Key));
+            if ((Key != Key.None) || (KeyModifiers == KeyModifiers.None))
+            {
+                Plus(s);
+                s.Append(formatInfo.FormatKey(Key));
+            }
 
             return StringBuilderCache.GetStringAndRelease(s);
         }
