@@ -7,15 +7,15 @@ namespace Avalonia.FreeDesktop.DBusIme.Fcitx
 {
     internal class FcitxICWrapper
     {
-        private readonly OrgFcitxFcitxInputContext1? _modern;
-        private readonly OrgFcitxFcitxInputContext? _old;
+        private readonly OrgFcitxFcitxInputContext1Proxy? _modern;
+        private readonly OrgFcitxFcitxInputContextProxy? _old;
 
-        public FcitxICWrapper(OrgFcitxFcitxInputContext old)
+        public FcitxICWrapper(OrgFcitxFcitxInputContextProxy old)
         {
             _old = old;
         }
 
-        public FcitxICWrapper(OrgFcitxFcitxInputContext1 modern)
+        public FcitxICWrapper(OrgFcitxFcitxInputContext1Proxy modern)
         {
             _modern = modern;
         }

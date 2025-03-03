@@ -153,7 +153,7 @@ namespace Avalonia.ReactiveUI.UnitTests
         [Fact]
         public void Activation_For_View_Fetcher_Should_Support_Windows() 
         {
-            using (UnitTestApplication.Start(TestServices.MockWindowingPlatform)) 
+            using (UnitTestApplication.Start(TestServices.StyledWindow)) 
             {
                 var window = new TestWindowWithWhenActivated();
                 Assert.False(window.Active);
@@ -171,7 +171,7 @@ namespace Avalonia.ReactiveUI.UnitTests
         [Fact]
         public void Activatable_Window_View_Model_Is_Activated_And_Deactivated() 
         {
-            using (UnitTestApplication.Start(TestServices.MockWindowingPlatform)) 
+            using (UnitTestApplication.Start(TestServices.StyledWindow)) 
             {
                 var viewModel = new ActivatableViewModel();
                 var window = new ActivatableWindow { ViewModel = viewModel };
