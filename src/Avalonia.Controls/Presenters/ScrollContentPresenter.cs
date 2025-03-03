@@ -257,7 +257,7 @@ namespace Avalonia.Controls.Presenters
                 return false;
             }
 
-            var rectangle = targetRect.TransformToAABB(transform.Value).Inflate(new Thickness(Child.Margin.Left, Child.Margin.Top, 0, 0));
+            var rectangle = targetRect.TransformToAABB(transform.Value).Deflate(new Thickness(Child.Margin.Left, Child.Margin.Top, 0, 0));
             Rect viewport = new Rect(Offset.X, Offset.Y, Viewport.Width, Viewport.Height);
 
             double minX = ComputeScrollOffsetWithMinimalScroll(viewport.Left, viewport.Right, rectangle.Left, rectangle.Right);
@@ -277,27 +277,42 @@ namespace Avalonia.Controls.Presenters
             return !Offset.NearlyEquals(oldOffset);
         }
 
+        /// <summary>
+        /// Computes the closest offset to ensure most of the child is visible in the viewport along an axis.
+        /// </summary>
+        /// <param name="viewportStart">The left or top of the viewport</param>
+        /// <param name="viewportEnd">The right or bottom of the viewport</param>
+        /// <param name="childStart">The left or top of the child</param>
+        /// <param name="childEnd">The right or bottom of the child</param>
+        /// <returns></returns>
         internal static double ComputeScrollOffsetWithMinimalScroll(
-            double topView,
-            double bottomView,
-            double topChild,
-            double bottomChild)
+            double viewportStart,
+            double viewportEnd,
+            double childStart,
+            double childEnd)
         {
-            bool fAbove = MathUtilities.LessThan(topChild, topView) && MathUtilities.LessThan(bottomChild, bottomView);
-            bool fBelow = MathUtilities.GreaterThan(bottomChild, bottomView) && MathUtilities.GreaterThan(topChild, topView);
-            bool fLarger = (bottomChild - topChild) > (bottomView - topView);
+            // If child is above viewport, i.e. top of child is above viewport top and bottom of child is above viewport bottom.
+            bool isChildAbove = MathUtilities.LessThan(childStart, viewportStart) && MathUtilities.LessThan(childEnd, viewportEnd);
 
-            var res = topView;
+            // If child is below viewport, i.e. top of child is below viewport top and bottom of child is below viewport bottom.
+            bool isChildBelow = MathUtilities.GreaterThan(childEnd, viewportEnd) && MathUtilities.GreaterThan(childStart, viewportStart);
+            bool isChildLarger = (childEnd - childStart) > (viewportEnd - viewportStart);
 
-            if ((fAbove && !fLarger)
-               || (fBelow && fLarger))
+            // Value if no updates is needed. The child is fully visible in the viewport, or the viewport is completely within the child's bounds
+            var res = viewportStart;
+
+            // The child is above the viewport and is smaller than the viewport, or if the child's top is below the viewport top
+            // and is larger than the viewport, we align the child top to the top of the viewport
+            if ((isChildAbove && !isChildLarger)
+               || (isChildBelow && isChildLarger))
             {
-                res = topChild;
+                res = childStart;
             }
-
-            else if (fAbove || fBelow)
+            // The child is above the viewport and is larger than the viewport, or if the child's smaller but is below the viewport,
+            // we align the child's bottom to the bottom of the viewport
+            else if (isChildAbove || isChildBelow)
             {
-                res = (bottomChild - (bottomView - topView));
+                res = (childEnd - (viewportEnd - viewportStart));
             }
 
             return res;
