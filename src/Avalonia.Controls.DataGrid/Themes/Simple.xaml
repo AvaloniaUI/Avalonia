@@ -14,6 +14,9 @@
       <Setter Property="VerticalAlignment" Value="Stretch" />
       <Setter Property="Background" Value="Transparent" />
     </ControlTheme>
+    <ControlTheme x:Key="DataGridCellComboBoxTheme" TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
+      <Setter Property="HorizontalAlignment" Value="Stretch"/>
+    </ControlTheme>
 
     <ControlTheme x:Key="{x:Type DataGridCell}"
                   TargetType="DataGridCell">
