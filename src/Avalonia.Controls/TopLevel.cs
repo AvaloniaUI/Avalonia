@@ -23,6 +23,7 @@ using Avalonia.Utilities;
 using Avalonia.Input.Platform;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Diagnostics;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 
@@ -839,6 +840,8 @@ namespace Avalonia.Controls
             {
                 Dispatcher.UIThread.Send(static state =>
                 {
+                    using var _ = Diagnostic.BeginLayoutInputPass();
+
                     var (topLevel, e) = (ValueTuple<TopLevel, RawInputEventArgs>)state!;
                     if (e is RawPointerEventArgs pointerArgs)
                     {

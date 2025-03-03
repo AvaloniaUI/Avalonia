@@ -12,6 +12,7 @@ namespace Avalonia.Interactivity
     /// </summary>
     public class Interactive : Layoutable
     {
+        internal static int TotalHandlersCount { get; private set; }
         private Dictionary<RoutedEvent, List<EventSubscription>>? _eventHandlers;
 
         /// <summary>
@@ -90,6 +91,7 @@ namespace Avalonia.Interactivity
                     if (subscriptions[i].Handler == handler)
                     {
                         subscriptions.RemoveAt(i);
+                        TotalHandlersCount--;
                     }
                 }
             }
@@ -185,6 +187,7 @@ namespace Avalonia.Interactivity
             }
 
             subscriptions.Add(subscription);
+            TotalHandlersCount++;
         }
 
         private void AddToEventRoute(RoutedEvent routedEvent, EventRoute route)

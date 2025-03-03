@@ -12,7 +12,6 @@
   </ItemGroup>
   <Import Project="..\..\build\Base.props" />
   <Import Project="..\..\build\Binding.props" />
-  <Import Project="..\..\build\System.Memory.props" />
   <Import Project="..\..\build\NullableEnable.props" />
   <Import Project="..\..\build\TrimmingEnable.props" />
   <Import Project="..\..\build\DevAnalyzers.props" />
