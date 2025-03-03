@@ -79,15 +79,10 @@ namespace Avalonia.Input
                 {
                     var partSpan = gesture.AsSpan(cstart, c - cstart).Trim();
 
-                    if (isLast)
-                    {
-                        key = ParseKey(partSpan.ToString());
-                    }
-                    else
+                    if (!TryParseKey(partSpan.ToString(), out key))
                     {
                         keyModifiers |= ParseModifier(partSpan);
                     }
-
                     cstart = c + 1;
                 }
             }
@@ -151,8 +146,11 @@ namespace Avalonia.Input
                 s.Append(formatInfo.Meta);
             }
 
-            Plus(s);
-            s.Append(formatInfo.FormatKey(Key));
+            if ((Key != Key.None) || (KeyModifiers == KeyModifiers.None))
+            {
+                Plus(s);
+                s.Append(formatInfo.FormatKey(Key));
+            }
 
             return StringBuilderCache.GetStringAndRelease(s);
         }
@@ -163,12 +161,16 @@ namespace Avalonia.Input
             ResolveNumPadOperationKey(keyEvent.Key) == ResolveNumPadOperationKey(Key);
 
         // TODO: Move that to external key parser
-        private static Key ParseKey(string key)
+        private static bool TryParseKey(string keyStr, out Key key)
         {
-            if (s_keySynonyms.TryGetValue(key.ToLower(CultureInfo.InvariantCulture), out Key rv))
-                return rv;
+            key = Key.None;
+            if (s_keySynonyms.TryGetValue(keyStr.ToLower(CultureInfo.InvariantCulture), out key))
+                return true;
 
-            return EnumHelper.Parse<Key>(key, true);
+            if (EnumHelper.TryParse(keyStr, true, out key))
+                return true;
+
+            return false;
         }
 
         private static KeyModifiers ParseModifier(ReadOnlySpan<char> modifier)
