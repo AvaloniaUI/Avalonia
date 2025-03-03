@@ -95,16 +95,23 @@ export class InputHelper {
 
     public static subscribeKeyEvents(element: HTMLInputElement, topLevelId: number) {
         const keyDownHandler = (args: KeyboardEvent) => {
-            JsExports.InputHelper.OnKeyDown(topLevelId, args.code, args.key, this.getModifiers(args));
-            if (this.clipboardState !== ClipboardState.Pending) {
-                args.preventDefault();
-            }
+            JsExports.InputHelper.OnKeyDown(topLevelId, args.code, args.key, this.getModifiers(args))
+                .then((handled: boolean) => {
+                    if (!handled || this.clipboardState !== ClipboardState.Pending) {
+                        args.preventDefault();
+                    }
+                });
         };
         element.addEventListener("keydown", keyDownHandler);
 
         const keyUpHandler = (args: KeyboardEvent) => {
-            JsExports.InputHelper.OnKeyUp(topLevelId, args.code, args.key, this.getModifiers(args));
-            args.preventDefault();
+            JsExports.InputHelper.OnKeyUp(topLevelId, args.code, args.key, this.getModifiers(args))
+                .then((handled: boolean) => {
+                    if (!handled) {
+                        args.preventDefault();
+                    }
+                });
+
             if (this.rejectClipboard) {
                 this.rejectClipboard();
             }
