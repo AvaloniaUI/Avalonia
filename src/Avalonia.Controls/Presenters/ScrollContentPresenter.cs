@@ -257,28 +257,12 @@ namespace Avalonia.Controls.Presenters
                 return false;
             }
 
-            var rect = targetRect.TransformToAABB(transform.Value);
-            var offset = Offset;
+            var rectangle = targetRect.TransformToAABB(transform.Value).Inflate(new Thickness(Child.Margin.Left, Child.Margin.Top, 0, 0));
+            Rect viewport = new Rect(Offset.X, Offset.Y, Viewport.Width, Viewport.Height);
 
-            if (rect.Bottom > offset.Y + Viewport.Height)
-            {
-                offset = offset.WithY((rect.Bottom - Viewport.Height) + Child.Margin.Top);
-            }
-
-            if (rect.Y < offset.Y)
-            {
-                offset = offset.WithY(rect.Y);
-            }
-
-            if (rect.Right > offset.X + Viewport.Width)
-            {
-                offset = offset.WithX((rect.Right - Viewport.Width) + Child.Margin.Left);
-            }
-
-            if (rect.X < offset.X)
-            {
-                offset = offset.WithX(rect.X);
-            }
+            double minX = ComputeScrollOffsetWithMinimalScroll(viewport.Left, viewport.Right, rectangle.Left, rectangle.Right);
+            double minY = ComputeScrollOffsetWithMinimalScroll(viewport.Top, viewport.Bottom, rectangle.Top, rectangle.Bottom);
+            var offset = new Vector(minX, minY);
 
             if (Offset.NearlyEquals(offset))
             {
@@ -291,6 +275,32 @@ namespace Avalonia.Controls.Presenters
             // It's possible that the Offset coercion has changed the offset back to its previous value,
             // this is common for floating point rounding errors.
             return !Offset.NearlyEquals(oldOffset);
+        }
+
+        internal static double ComputeScrollOffsetWithMinimalScroll(
+            double topView,
+            double bottomView,
+            double topChild,
+            double bottomChild)
+        {
+            bool fAbove = MathUtilities.LessThan(topChild, topView) && MathUtilities.LessThan(bottomChild, bottomView);
+            bool fBelow = MathUtilities.GreaterThan(bottomChild, bottomView) && MathUtilities.GreaterThan(topChild, topView);
+            bool fLarger = (bottomChild - topChild) > (bottomView - topView);
+
+            var res = topView;
+
+            if ((fAbove && !fLarger)
+               || (fBelow && fLarger))
+            {
+                res = topChild;
+            }
+
+            else if (fAbove || fBelow)
+            {
+                res = (bottomChild - (bottomView - topView));
+            }
+
+            return res;
         }
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
