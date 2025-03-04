@@ -129,7 +129,7 @@ namespace Avalonia.Input
         }
 
         public void SetFocusedElement(
-            IInputElement? element, 
+            IInputElement? element,
             NavigationMethod method,
             KeyModifiers keyModifiers)
         {
@@ -137,33 +137,67 @@ namespace Avalonia.Input
             {
                 var interactive = FocusedElement as Interactive;
 
-                if (FocusedElement != null && 
-                    (!((Visual)FocusedElement).IsAttachedToVisualTree ||
-                     _focusedRoot != ((Visual?)element)?.VisualRoot as IInputRoot) &&
-                    _focusedRoot != null)
-                {
-                    ClearChildrenFocusWithin(_focusedRoot, true);
-                }
-                
-                SetIsFocusWithin(FocusedElement, element);
-                _focusedElement = element;
-                _focusedRoot = ((Visual?)_focusedElement)?.VisualRoot as IInputRoot;
+                bool changeFocus = true;
 
-                interactive?.RaiseEvent(new RoutedEventArgs
+                var losingFocus = new FocusChangingEventArgs(InputElement.LosingFocusEvent)
                 {
-                    RoutedEvent = InputElement.LostFocusEvent,
-                });
-
-                interactive = element as Interactive;
-
-                interactive?.RaiseEvent(new GotFocusEventArgs
-                {
+                    OldFocus = FocusedElement,
+                    NewFocus = element,
                     NavigationMethod = method,
-                    KeyModifiers = keyModifiers,
-                });
+                    KeyModifiers = keyModifiers
+                };
 
-                _textInputManager.SetFocusedElement(element);
-                RaisePropertyChanged(nameof(FocusedElement));
+                interactive?.RaiseEvent(losingFocus);
+
+                if (losingFocus.Handled)
+                {
+                    changeFocus = false;
+                }
+
+                if (changeFocus && element is Interactive newFocus)
+                {
+                    var gettingFocus = new FocusChangingEventArgs(InputElement.GettingFocusEvent)
+                    {
+                        OldFocus = FocusedElement,
+                        NewFocus = element,
+                        NavigationMethod = method,
+                        KeyModifiers = keyModifiers
+                    };
+
+                    newFocus.RaiseEvent(gettingFocus);
+
+                    if (gettingFocus.Handled)
+                    {
+                        changeFocus = false;
+                    }
+                }
+
+                if (changeFocus)
+                {
+                    // Clear keyboard focus from currently focused element
+                    if (FocusedElement != null &&
+                        (!((Visual)FocusedElement).IsAttachedToVisualTree ||
+                         _focusedRoot != ((Visual?)element)?.VisualRoot as IInputRoot) &&
+                        _focusedRoot != null)
+                    {
+                        ClearChildrenFocusWithin(_focusedRoot, true);
+                    }
+
+                    SetIsFocusWithin(FocusedElement, element);
+                    _focusedElement = element;
+                    _focusedRoot = ((Visual?)_focusedElement)?.VisualRoot as IInputRoot;
+
+                    interactive?.RaiseEvent(new RoutedEventArgs(InputElement.LostFocusEvent));
+
+                    (element as Interactive)?.RaiseEvent(new GotFocusEventArgs
+                    {
+                        NavigationMethod = method,
+                        KeyModifiers = keyModifiers,
+                    });
+
+                    _textInputManager.SetFocusedElement(element);
+                    RaisePropertyChanged(nameof(FocusedElement));
+                }
             }
         }
 
