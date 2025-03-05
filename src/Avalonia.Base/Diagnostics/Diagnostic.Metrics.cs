@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using Avalonia.Interactivity;
@@ -23,7 +21,6 @@ internal static partial class Diagnostic
     static Diagnostic()
     {
         s_meter = new Meter("Avalonia.Diagnostic.Meter");
-
         s_compositorRender = s_meter.CreateHistogram<double>(
             Meters.CompositorRenderPassName,
             Meters.MillisecondsUnit,
@@ -65,13 +62,15 @@ internal static partial class Diagnostic
             Meters.TotalDispatcherTimerCountDescription);
     }
 
-    public static HistogramReportDisposable BeginCompositorRenderPass() => new(s_compositorRender);
-    public static HistogramReportDisposable BeginCompositorUpdatePass() => new(s_compositorUpdate);
-    public static HistogramReportDisposable BeginLayoutMeasurePass() => new(s_layoutMeasure);
-    public static HistogramReportDisposable BeginLayoutArrangePass() => new(s_layoutArrange);
-    public static HistogramReportDisposable BeginLayoutInputPass() => new(s_layoutInput);
-    public static HistogramReportDisposable BeginLayoutRenderPass() => new(s_layoutRender);
+    public static HistogramReportDisposable BeginCompositorRenderPass() => Begin(s_compositorRender);
+    public static HistogramReportDisposable BeginCompositorUpdatePass() => Begin(s_compositorUpdate);
+    public static HistogramReportDisposable BeginLayoutMeasurePass() => Begin(s_layoutMeasure);
+    public static HistogramReportDisposable BeginLayoutArrangePass() => Begin(s_layoutArrange);
+    public static HistogramReportDisposable BeginLayoutInputPass() => Begin(s_layoutInput);
+    public static HistogramReportDisposable BeginLayoutRenderPass() => Begin(s_layoutRender);
 
+    private static HistogramReportDisposable Begin(Histogram<double> histogram) => IsEnabled ? new(histogram) : default;
+    
     internal readonly ref struct HistogramReportDisposable
     {
         private readonly Histogram<double> _histogram;

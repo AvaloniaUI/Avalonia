@@ -1,5 +1,4 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 // ReSharper disable ExplicitCallerInfoArgument
 
@@ -9,24 +8,13 @@ internal static partial class Diagnostic
 {
     private static readonly ActivitySource s_diagnostic = new("Avalonia.Diagnostic.Source");
 
-    public static Activity? AttachingStyle() => s_diagnostic
-        .StartActivity("Avalonia.AttachingStyle");
+    private static Activity? StartActivity(string name) => !IsEnabled ? null : s_diagnostic.StartActivity(name);
 
-    public static Activity? FindingResource() => s_diagnostic
-        .StartActivity("Avalonia.FindingResource");
-
-    public static Activity? EvaluatingStyle() => s_diagnostic
-        .StartActivity("Avalonia.EvaluatingStyle");
-
-    public static Activity? MeasuringLayoutable() => s_diagnostic
-        .StartActivity("Avalonia.MeasuringLayoutable");
-
-    public static Activity? ArrangingLayoutable() => s_diagnostic
-        .StartActivity("Avalonia.ArrangingLayoutable");
-
-    public static Activity? PerformingHitTest() => s_diagnostic
-        .StartActivity("Avalonia.PerformingHitTest");
-
-    public static Activity? RaisingRoutedEvent() => s_diagnostic
-        .StartActivity("Avalonia.RaisingRoutedEvent");
+    public static Activity? AttachingStyle() => StartActivity("Avalonia.AttachingStyle");
+    public static Activity? FindingResource() => StartActivity("Avalonia.FindingResource");
+    public static Activity? EvaluatingStyle() => StartActivity("Avalonia.EvaluatingStyle");
+    public static Activity? MeasuringLayoutable() => StartActivity("Avalonia.MeasuringLayoutable");
+    public static Activity? ArrangingLayoutable() => StartActivity("Avalonia.ArrangingLayoutable");
+    public static Activity? PerformingHitTest() => StartActivity("Avalonia.PerformingHitTest");
+    public static Activity? RaisingRoutedEvent() => StartActivity("Avalonia.RaisingRoutedEvent");
 }
