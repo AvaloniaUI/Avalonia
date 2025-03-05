@@ -92,7 +92,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                             && type is IXamlType xamlType)
                         {
                             parentObject = context.ParentNodes().OfType<XamlAstConstructableObjectNode>()
-                                .FirstOrDefault(n => n.Type.GetClrType().FullName == xamlType.FullName);
+                                .FirstOrDefault(n => xamlType.IsAssignableFrom(n.Type.GetClrType()));
                         }
                         else
                         {

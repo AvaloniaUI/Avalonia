@@ -14,8 +14,8 @@ public class AvaloniaXEmbedGtkSocket : Gtk.Socket
         _backgroundColor = backgroundColor;
     }
     
-    private object _content;
-    public object Content
+    private object? _content;
+    public object? Content
     {
         get => _content;
         set
