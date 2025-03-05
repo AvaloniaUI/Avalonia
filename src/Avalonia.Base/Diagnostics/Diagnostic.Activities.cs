@@ -6,9 +6,14 @@ namespace Avalonia.Diagnostics;
 
 internal static partial class Diagnostic
 {
-    private static readonly ActivitySource s_diagnostic = new("Avalonia.Diagnostic.Source");
+    private static ActivitySource? s_activitySource;
 
-    private static Activity? StartActivity(string name) => !IsEnabled ? null : s_diagnostic.StartActivity(name);
+    public static void InitActivitySource()
+    {
+        s_activitySource = new("Avalonia.Diagnostic.Source");
+    }
+
+    private static Activity? StartActivity(string name) => s_activitySource?.StartActivity(name);
 
     public static Activity? AttachingStyle() => StartActivity("Avalonia.AttachingStyle");
     public static Activity? FindingResource() => StartActivity("Avalonia.FindingResource");
