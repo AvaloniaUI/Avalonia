@@ -12,7 +12,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Provides data for focus changing.
         /// </summary>
-        public FocusChangingEventArgs(RoutedEvent routedEvent) : base(routedEvent)
+        internal FocusChangingEventArgs(RoutedEvent routedEvent) : base(routedEvent)
         {
         }
 
@@ -35,5 +35,23 @@ namespace Avalonia.Input
         /// Gets or sets any key modifiers active at the time of focus.
         /// </summary>
         public KeyModifiers KeyModifiers { get; init; }
+
+        /// <summary>
+        /// Gets whether focus change is canceled.
+        /// </summary>
+        public bool Cancelled { get; private set; }
+
+        internal bool IsCancellable { get; init; }
+
+        /// <summary>
+        /// Attempts to cancel the current focus change
+        /// </summary>
+        /// <returns>true if focus change was cancelled; otherwise, false</returns>
+        public bool TryCancel()
+        {
+            Cancelled = IsCancellable;
+
+            return Cancelled;
+        }
     }
 }

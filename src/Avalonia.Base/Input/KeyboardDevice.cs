@@ -131,7 +131,8 @@ namespace Avalonia.Input
         public void SetFocusedElement(
             IInputElement? element,
             NavigationMethod method,
-            KeyModifiers keyModifiers)
+            KeyModifiers keyModifiers,
+            bool isFocusChangeCancellable = true)
         {
             if (element != FocusedElement)
             {
@@ -144,12 +145,13 @@ namespace Avalonia.Input
                     OldFocus = FocusedElement,
                     NewFocus = element,
                     NavigationMethod = method,
-                    KeyModifiers = keyModifiers
+                    KeyModifiers = keyModifiers,
+                    IsCancellable = isFocusChangeCancellable
                 };
 
                 interactive?.RaiseEvent(losingFocus);
 
-                if (losingFocus.Handled)
+                if (losingFocus.Cancelled)
                 {
                     changeFocus = false;
                 }
@@ -161,12 +163,13 @@ namespace Avalonia.Input
                         OldFocus = FocusedElement,
                         NewFocus = element,
                         NavigationMethod = method,
-                        KeyModifiers = keyModifiers
+                        KeyModifiers = keyModifiers,
+                        IsCancellable = isFocusChangeCancellable
                     };
 
                     newFocus.RaiseEvent(gettingFocus);
 
-                    if (gettingFocus.Handled)
+                    if (gettingFocus.Cancelled)
                     {
                         changeFocus = false;
                     }

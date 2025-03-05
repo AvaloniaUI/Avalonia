@@ -159,5 +159,31 @@ namespace Avalonia.Base.UnitTests.Input
 
             Assert.Equal(1, propertyChangedRaised);
         }
+
+        [Fact]
+        public void Cancelled_Focus_Change_Should_Not_Send_Got_Focus_Event()
+        {
+            var target = new KeyboardDevice();
+            var focused = new Control();
+            var root = new TestRoot();
+            bool focusCancelled = false;
+
+            focused.GettingFocus += (s, e) =>
+            {
+                focusCancelled = e.TryCancel();
+            };
+
+            focused.GotFocus += (s, e) =>
+            {
+                focusCancelled = false;
+            };
+
+            target.SetFocusedElement(
+                focused,
+                NavigationMethod.Unspecified,
+                KeyModifiers.None);
+
+            Assert.True(focusCancelled);
+        }
     }
 }
