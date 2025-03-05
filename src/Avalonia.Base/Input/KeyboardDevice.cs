@@ -131,8 +131,17 @@ namespace Avalonia.Input
         public void SetFocusedElement(
             IInputElement? element,
             NavigationMethod method,
+            KeyModifiers keyModifiers)
+        {
+            SetFocusedElement(element, method, keyModifiers, true);
+        }
+
+
+        public void SetFocusedElement(
+            IInputElement? element,
+            NavigationMethod method,
             KeyModifiers keyModifiers,
-            bool isFocusChangeCancellable = true)
+            bool isFocusChangeCancellable)
         {
             if (element != FocusedElement)
             {
