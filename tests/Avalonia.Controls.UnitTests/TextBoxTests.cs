@@ -1995,7 +1995,10 @@ namespace Avalonia.Controls.UnitTests
 
             public Task<string[]> GetFormatsAsync() => Task.FromResult(Array.Empty<string>());
 
-            public Task<object?> GetDataAsync(string format) => Task.FromResult((object?)null);
+            public Task<object> GetDataAsync(string format) => Task.FromResult((object)null);
+
+            public Task FlushAsync() =>
+                Task.CompletedTask;
         }
 
         private class TestTopLevel : TopLevel
