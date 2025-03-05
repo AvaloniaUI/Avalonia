@@ -151,11 +151,11 @@ namespace Avalonia.Input
 
                 var losingFocus = new FocusChangingEventArgs(InputElement.LosingFocusEvent)
                 {
-                    OldFocus = FocusedElement,
-                    NewFocus = element,
+                    OldFocusedElement = FocusedElement,
+                    NewFocusedElement = element,
                     NavigationMethod = method,
                     KeyModifiers = keyModifiers,
-                    IsCancellable = isFocusChangeCancellable
+                    CanCancelOrRedirectFocus = isFocusChangeCancellable
                 };
 
                 interactive?.RaiseEvent(losingFocus);
@@ -165,15 +165,15 @@ namespace Avalonia.Input
                     changeFocus = false;
                 }
 
-                if (changeFocus && element is Interactive newFocus)
+                if (changeFocus && losingFocus.NewFocusedElement is Interactive newFocus)
                 {
                     var gettingFocus = new FocusChangingEventArgs(InputElement.GettingFocusEvent)
                     {
-                        OldFocus = FocusedElement,
-                        NewFocus = element,
+                        OldFocusedElement = FocusedElement,
+                        NewFocusedElement = losingFocus.NewFocusedElement,
                         NavigationMethod = method,
                         KeyModifiers = keyModifiers,
-                        IsCancellable = isFocusChangeCancellable
+                        CanCancelOrRedirectFocus = isFocusChangeCancellable
                     };
 
                     newFocus.RaiseEvent(gettingFocus);
@@ -182,6 +182,8 @@ namespace Avalonia.Input
                     {
                         changeFocus = false;
                     }
+
+                    element = gettingFocus.NewFocusedElement;
                 }
 
                 if (changeFocus)

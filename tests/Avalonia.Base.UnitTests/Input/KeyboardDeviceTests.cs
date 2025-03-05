@@ -185,5 +185,28 @@ namespace Avalonia.Base.UnitTests.Input
 
             Assert.True(focusCancelled);
         }
+
+        [Fact]
+        public void Redirected_Focus_Should_Change_Focused_Element()
+        {
+            var target = new KeyboardDevice();
+            var first = new Control();
+            var second = new Control();
+            var stack = new StackPanel();
+            stack.Children.AddRange(new[] { first, second });
+            var root = new TestRoot(stack);
+
+            first.GettingFocus += (s, e) =>
+            {
+                e.TrySetNewFocusedElement(second);
+            };
+
+            target.SetFocusedElement(
+                first,
+                NavigationMethod.Unspecified,
+                KeyModifiers.None);
+
+            Assert.True(second.IsFocused);
+        }
     }
 }

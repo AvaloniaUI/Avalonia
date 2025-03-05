@@ -19,12 +19,12 @@ namespace Avalonia.Input
         /// <summary>
         /// Gets or sets the element that focus has moved to.
         /// </summary>
-        public IInputElement? NewFocus { get; init; }
+        public IInputElement? NewFocusedElement { get; internal set; }
 
         /// <summary>
         /// Gets or sets the element that previously had focus.
         /// </summary>
-        public IInputElement? OldFocus { get; init; }
+        public IInputElement? OldFocusedElement { get; init; }
 
         /// <summary>
         /// Gets or sets a value indicating how the change in focus occurred.
@@ -41,7 +41,7 @@ namespace Avalonia.Input
         /// </summary>
         public bool Cancelled { get; private set; }
 
-        internal bool IsCancellable { get; init; }
+        internal bool CanCancelOrRedirectFocus { get; init; }
 
         /// <summary>
         /// Attempts to cancel the current focus change
@@ -49,9 +49,22 @@ namespace Avalonia.Input
         /// <returns>true if focus change was cancelled; otherwise, false</returns>
         public bool TryCancel()
         {
-            Cancelled = IsCancellable;
+            Cancelled = CanCancelOrRedirectFocus;
 
             return Cancelled;
+        }
+
+        /// <summary>
+        /// Attempts to redirect focus from the targeted element to the specified element.
+        /// </summary>
+        public bool TrySetNewFocusedElement(IInputElement? inputElement)
+        {
+            if(CanCancelOrRedirectFocus)
+            {
+                NewFocusedElement = inputElement;
+            }
+
+            return inputElement == NewFocusedElement;
         }
     }
 }
