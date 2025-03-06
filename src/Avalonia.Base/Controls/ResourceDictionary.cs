@@ -13,7 +13,6 @@ namespace Avalonia.Controls
     /// </summary>
     public class ResourceDictionary : ResourceProvider, IResourceDictionary, IThemeVariantProvider
     {
-        private bool _suspendNotifications;
         private object? _lastDeferredItemKey;
         private Dictionary<object, object?>? _inner;
         private AvaloniaList<IResourceProvider>? _mergedDictionaries;
@@ -41,7 +40,8 @@ namespace Avalonia.Controls
             set
             {
                 Inner[key] = value;
-                NotifyHostedResourcesChanged(Owner);
+                Owner?.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);            
+
             }
         }
 
@@ -151,9 +151,8 @@ namespace Avalonia.Controls
         public void AddNotSharedDeferred(object key, IDeferredContent deferredContent)
             => Add(key, new NotSharedDeferredItem(deferredContent));
 
-        public void AddOrUpdateRange(IEnumerable<KeyValuePair<object, object?>> values)
+        public void SetItems(IEnumerable<KeyValuePair<object, object?>> values)
         {
-            _suspendNotifications = true;
             try
             {
                 foreach (var value in values)
@@ -161,8 +160,7 @@ namespace Avalonia.Controls
             }
             finally
             {
-                _suspendNotifications = false;
-                NotifyHostedResourcesChanged(Owner);
+                Owner?.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);            
             }
         }
         
@@ -392,13 +390,6 @@ namespace Avalonia.Controls
             }
         }
 
-        private void NotifyHostedResourcesChanged(IResourceHost? owner)
-        {
-            if (_suspendNotifications)
-                return;
-            owner?.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);            
-        }
-        
         private sealed class DeferredItem : IDeferredContent
         {
             private readonly Func<IServiceProvider?,object?> _factory;
