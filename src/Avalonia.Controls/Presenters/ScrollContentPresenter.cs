@@ -291,10 +291,10 @@ namespace Avalonia.Controls.Presenters
             double childStart,
             double childEnd)
         {
-            // If child is above viewport, i.e. top of child is above viewport top and bottom of child is above viewport bottom.
+            // If child is at least partially above viewport, i.e. top of child is above viewport top and bottom of child is above viewport bottom.
             bool isChildAbove = MathUtilities.LessThan(childStart, viewportStart) && MathUtilities.LessThan(childEnd, viewportEnd);
 
-            // If child is below viewport, i.e. top of child is below viewport top and bottom of child is below viewport bottom.
+            // If child is at least partially below viewport, i.e. top of child is below viewport top and bottom of child is below viewport bottom.
             bool isChildBelow = MathUtilities.GreaterThan(childEnd, viewportEnd) && MathUtilities.GreaterThan(childStart, viewportStart);
             bool isChildLarger = (childEnd - childStart) > (viewportEnd - viewportStart);
 
