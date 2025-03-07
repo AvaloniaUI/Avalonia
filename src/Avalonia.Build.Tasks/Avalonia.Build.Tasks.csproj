@@ -85,7 +85,7 @@
       <Compile Include="../Avalonia.Base/Thickness.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
-      <Compile Include="../Avalonia.Base/Styling/QueryComparisonOperator.cs">
+      <Compile Include="../Avalonia.Base/Styling/StyleQueryComparisonOperator.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
       <Compile Include="../Avalonia.Base/Size.cs">

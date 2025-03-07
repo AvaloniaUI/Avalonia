@@ -5,9 +5,9 @@ using Avalonia.Styling.Activators;
 
 namespace Avalonia.Styling
 {
-    internal sealed class WidthQuery : ValueQuery<(QueryComparisonOperator @operator, double value)>
+    internal sealed class WidthQuery : ValueStyleQuery<(StyleQueryComparisonOperator @operator, double value)>
     {
-        public WidthQuery(Query? previous, QueryComparisonOperator @operator, double value) : base(previous, (@operator, value))
+        public WidthQuery(StyleQuery? previous, StyleQueryComparisonOperator @operator, double value) : base(previous, (@operator, value))
         {
         }
 
@@ -26,7 +26,16 @@ namespace Avalonia.Styling
             if (ContainerQueryActivatorBase.GetContainer(visual, containerName) is { } container
                 && container is Layoutable layoutable
                 && Container.GetQueryProvider(layoutable) is { } queryProvider
+
+/* Unmerged change from project 'Avalonia.Base (netstandard2.0)'
+Before:
                 && Container.GetSizing(layoutable) == Layout.ContainerSizing.WidthAndHeight)
+            {
+After:
+                && Container.GetSizing(layoutable) == ContainerSizing.WidthAndHeight)
+            {
+*/
+                && Container.GetSizing(layoutable) == Styling.ContainerSizing.WidthAndHeight)
             {
                 return Evaluate(queryProvider, Argument);
             }
@@ -34,7 +43,7 @@ namespace Avalonia.Styling
             return SelectorMatch.NeverThisInstance;
         }
 
-        internal static SelectorMatch Evaluate(VisualQueryProvider queryProvider, (QueryComparisonOperator @operator, double value) argument)
+        internal static SelectorMatch Evaluate(VisualQueryProvider queryProvider, (StyleQueryComparisonOperator @operator, double value) argument)
         {
             var width = queryProvider.Width;
             if (double.IsNaN(width))
@@ -42,21 +51,21 @@ namespace Avalonia.Styling
                 return SelectorMatch.NeverThisInstance;
             }
 
-            bool IsTrue(QueryComparisonOperator comparisonOperator, double value)
+            bool IsTrue(StyleQueryComparisonOperator comparisonOperator, double value)
             {
                 switch (comparisonOperator)
                 {
-                    case QueryComparisonOperator.None:
+                    case StyleQueryComparisonOperator.None:
                         return true;
-                    case QueryComparisonOperator.Equals:
+                    case StyleQueryComparisonOperator.Equals:
                         return width == value;
-                    case QueryComparisonOperator.LessThan:
+                    case StyleQueryComparisonOperator.LessThan:
                         return width < value;
-                    case QueryComparisonOperator.GreaterThan:
+                    case StyleQueryComparisonOperator.GreaterThan:
                         return width > value;
-                    case QueryComparisonOperator.LessThanOrEquals:
+                    case StyleQueryComparisonOperator.LessThanOrEquals:
                         return width <= value;
-                    case QueryComparisonOperator.GreaterThanOrEquals:
+                    case StyleQueryComparisonOperator.GreaterThanOrEquals:
                         return width >= value;
                 }
 
@@ -75,9 +84,9 @@ namespace Avalonia.Styling
         }
     }
 
-    internal sealed class HeightQuery : ValueQuery<(QueryComparisonOperator @operator, double value)>
+    internal sealed class HeightQuery : ValueStyleQuery<(StyleQueryComparisonOperator @operator, double value)>
     {
-        public HeightQuery(Query? previous, QueryComparisonOperator @operator, double value) : base(previous, (@operator, value))
+        public HeightQuery(StyleQuery? previous, StyleQueryComparisonOperator @operator, double value) : base(previous, (@operator, value))
         {
         }
 
@@ -96,7 +105,16 @@ namespace Avalonia.Styling
             if (ContainerQueryActivatorBase.GetContainer(visual, containerName) is { } container
                 && container is Layoutable layoutable
                 && Container.GetQueryProvider(layoutable) is { } queryProvider
+
+/* Unmerged change from project 'Avalonia.Base (netstandard2.0)'
+Before:
                 && Container.GetSizing(layoutable) == Layout.ContainerSizing.WidthAndHeight)
+            {
+After:
+                && Container.GetSizing(layoutable) == ContainerSizing.WidthAndHeight)
+            {
+*/
+                && Container.GetSizing(layoutable) == Styling.ContainerSizing.WidthAndHeight)
             {
                 return Evaluate(queryProvider, Argument);
             }
@@ -104,7 +122,7 @@ namespace Avalonia.Styling
             return SelectorMatch.NeverThisInstance;
         }
 
-        internal static SelectorMatch Evaluate(VisualQueryProvider screenSizeProvider, (QueryComparisonOperator @operator, double value) argument)
+        internal static SelectorMatch Evaluate(VisualQueryProvider screenSizeProvider, (StyleQueryComparisonOperator @operator, double value) argument)
         {
             var height = screenSizeProvider.Height;
             if (double.IsNaN(height))
@@ -114,21 +132,21 @@ namespace Avalonia.Styling
 
             var isvalueTrue = IsTrue(argument.@operator, argument.value);
 
-            bool IsTrue(QueryComparisonOperator comparisonOperator, double value)
+            bool IsTrue(StyleQueryComparisonOperator comparisonOperator, double value)
             {
                 switch (comparisonOperator)
                 {
-                    case QueryComparisonOperator.None:
+                    case StyleQueryComparisonOperator.None:
                         return true;
-                    case QueryComparisonOperator.Equals:
+                    case StyleQueryComparisonOperator.Equals:
                         return height == value;
-                    case QueryComparisonOperator.LessThan:
+                    case StyleQueryComparisonOperator.LessThan:
                         return height < value;
-                    case QueryComparisonOperator.GreaterThan:
+                    case StyleQueryComparisonOperator.GreaterThan:
                         return height > value;
-                    case QueryComparisonOperator.LessThanOrEquals:
+                    case StyleQueryComparisonOperator.LessThanOrEquals:
                         return height <= value;
-                    case QueryComparisonOperator.GreaterThanOrEquals:
+                    case StyleQueryComparisonOperator.GreaterThanOrEquals:
                         return height >= value;
                 }
 

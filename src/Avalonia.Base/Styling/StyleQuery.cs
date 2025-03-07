@@ -8,7 +8,7 @@ namespace Avalonia.Styling
     /// <summary>
     /// A query in a <see cref="ContainerQuery"/>.
     /// </summary>
-    public abstract class Query
+    public abstract class StyleQuery
     {
         /// <summary>
         /// Gets a value indicating whether this query is a combinator.
@@ -17,6 +17,8 @@ namespace Avalonia.Styling
         /// A combinator is a query such as Child or Descendent which links simple querys.
         /// </remarks>
         internal abstract bool IsCombinator { get; }
+
+        internal StyleQuery() { }
 
         /// <summary>
         /// Tries to match the query with a control.
@@ -88,19 +90,19 @@ namespace Avalonia.Styling
         /// <summary>
         /// Moves to the previous query.
         /// </summary>
-        private protected abstract Query? MovePrevious();
+        private protected abstract StyleQuery? MovePrevious();
 
         /// <summary>
         /// Moves to the previous query or the parent query.
         /// </summary>
-        private protected abstract Query? MovePreviousOrParent();
+        private protected abstract StyleQuery? MovePreviousOrParent();
 
         private static SelectorMatch MatchUntilCombinator(
             StyledElement control,
-            Query start,
+            StyleQuery start,
             IStyle? parent,
             bool subscribe,
-            out Query? combinator,
+            out StyleQuery? combinator,
             string? containerName = null)
         {
             combinator = null;
@@ -115,11 +117,11 @@ namespace Avalonia.Styling
 
         private static SelectorMatchResult Match(
             StyledElement control,
-            Query query,
+            StyleQuery query,
             IStyle? parent,
             bool subscribe,
             ref AndActivatorBuilder activators,
-            ref Query? combinator, 
+            ref StyleQuery? combinator, 
             string? containerName)
         {
             var previous = query.MovePrevious();

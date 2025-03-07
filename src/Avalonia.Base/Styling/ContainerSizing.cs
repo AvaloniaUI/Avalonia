@@ -1,4 +1,4 @@
-﻿namespace Avalonia.Layout
+﻿namespace Avalonia.Styling
 {
     /// <summary>
     /// Defines how a container is queried.

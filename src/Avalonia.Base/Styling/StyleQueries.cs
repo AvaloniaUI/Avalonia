@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Avalonia.Styling
 {
     /// <summary>
-    /// Extension methods for <see cref="Query"/>.
+    /// Extension methods for <see cref="StyleQuery"/>.
     /// </summary>
     public static class StyleQueries
     {
@@ -15,7 +15,7 @@ namespace Avalonia.Styling
         /// <param name="operator">The operator to match the device width</param>
         /// <param name="value">The width to match</param>
         /// <returns>The query.</returns>
-        public static Query Width(this Query? previous, QueryComparisonOperator @operator, double value)
+        public static StyleQuery Width(this StyleQuery? previous, StyleQueryComparisonOperator @operator, double value)
         {
             return new WidthQuery(previous, @operator, value);
         }
@@ -29,7 +29,7 @@ namespace Avalonia.Styling
         /// <param name="operator">The operator to match the device height</param>
         /// <param name="value">The height to match</param>
         /// <returns>The query.</returns>
-        public static Query Height(this Query? previous, QueryComparisonOperator @operator, double value)
+        public static StyleQuery Height(this StyleQuery? previous, StyleQueryComparisonOperator @operator, double value)
         {
             return new HeightQuery(previous, @operator, value);
         }
@@ -39,7 +39,7 @@ namespace Avalonia.Styling
         /// </summary>
         /// <param name="queries">The queries to be OR'd.</param>
         /// <returns>The query.</returns>
-        public static Query Or(params Query[] queries)
+        public static StyleQuery Or(params StyleQuery[] queries)
         {
             return new OrQuery(queries);
         }
@@ -49,7 +49,7 @@ namespace Avalonia.Styling
         /// </summary>
         /// <param name="query">The queries to be OR'd.</param>
         /// <returns>The query.</returns>
-        public static Query Or(IReadOnlyList<Query> query)
+        public static StyleQuery Or(IReadOnlyList<StyleQuery> query)
         {
             return new OrQuery(query);
         }
@@ -59,7 +59,7 @@ namespace Avalonia.Styling
         /// </summary>
         /// <param name="queries">The queries to be AND'd.</param>
         /// <returns>The query.</returns>
-        public static Query And(params Query[] queries)
+        public static StyleQuery And(params StyleQuery[] queries)
         {
             return new AndQuery(queries);
         }
@@ -69,7 +69,7 @@ namespace Avalonia.Styling
         /// </summary>
         /// <param name="query">The queries to be AND'd.</param>
         /// <returns>The query.</returns>
-        public static Query And(IReadOnlyList<Query> query)
+        public static StyleQuery And(IReadOnlyList<StyleQuery> query)
         {
             return new AndQuery(query);
         }

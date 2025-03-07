@@ -90,9 +90,9 @@ namespace Avalonia.Markup.Parsers
                 var syntax = new WidthSyntax()
                 {
                     Value = val,
-                    Operator = identifier.SequenceEqual(WidthKeyword.AsSpan()) ? QueryComparisonOperator.Equals 
-                    : identifier.SequenceEqual(MinWidthKeyword.AsSpan()) ? QueryComparisonOperator.GreaterThanOrEquals 
-                    : QueryComparisonOperator.LessThanOrEquals
+                    Operator = identifier.SequenceEqual(WidthKeyword.AsSpan()) ? StyleQueryComparisonOperator.Equals 
+                    : identifier.SequenceEqual(MinWidthKeyword.AsSpan()) ? StyleQueryComparisonOperator.GreaterThanOrEquals 
+                    : StyleQueryComparisonOperator.LessThanOrEquals
                 };
 
                 return syntax;
@@ -107,9 +107,9 @@ namespace Avalonia.Markup.Parsers
                 var syntax = new HeightSyntax()
                 {
                     Value = val,
-                    Operator = identifier.SequenceEqual(WidthKeyword.AsSpan()) ? QueryComparisonOperator.Equals 
-                    : identifier.SequenceEqual(MinHeightKeyword.AsSpan()) ? QueryComparisonOperator.GreaterThanOrEquals 
-                    : QueryComparisonOperator.LessThanOrEquals
+                    Operator = identifier.SequenceEqual(WidthKeyword.AsSpan()) ? StyleQueryComparisonOperator.Equals 
+                    : identifier.SequenceEqual(MinHeightKeyword.AsSpan()) ? StyleQueryComparisonOperator.GreaterThanOrEquals 
+                    : StyleQueryComparisonOperator.LessThanOrEquals
                 };
 
                 return syntax;
@@ -170,19 +170,19 @@ namespace Avalonia.Markup.Parsers
             return double.Parse(number.ToString());
         }
         
-        private static QueryComparisonOperator ParseOperator(ref CharacterReader r)
+        private static StyleQueryComparisonOperator ParseOperator(ref CharacterReader r)
         {
             r.SkipWhitespace();
             var queryOperator = r.TakeWhile(x => !char.IsWhiteSpace(x));
 
             return queryOperator.ToString() switch
             {
-                "=" => QueryComparisonOperator.Equals,
-                "<" => QueryComparisonOperator.LessThan,
-                ">" => QueryComparisonOperator.GreaterThan,
-                "<=" => QueryComparisonOperator.LessThanOrEquals,
-                ">=" => QueryComparisonOperator.GreaterThanOrEquals,
-                "" => QueryComparisonOperator.None,
+                "=" => StyleQueryComparisonOperator.Equals,
+                "<" => StyleQueryComparisonOperator.LessThan,
+                ">" => StyleQueryComparisonOperator.GreaterThan,
+                "<=" => StyleQueryComparisonOperator.LessThanOrEquals,
+                ">=" => StyleQueryComparisonOperator.GreaterThanOrEquals,
+                "" => StyleQueryComparisonOperator.None,
                 _ => throw new ExpressionParseException(r.Position, $"Expected a comparison operator after.")
             };
         }
@@ -233,7 +233,7 @@ namespace Avalonia.Markup.Parsers
         public abstract class QuerySyntax<T> : ISyntax
         {
             public T? Value { get; set; }
-            public QueryComparisonOperator Operator { get; set; }
+            public StyleQueryComparisonOperator Operator { get; set; }
         }
 
         public abstract class RangeSyntax : QuerySyntax<double>

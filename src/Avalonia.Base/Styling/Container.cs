@@ -8,19 +8,19 @@ using Avalonia.Platform;
 
 namespace Avalonia.Styling
 {
-    public class Container
+    public static class Container
     {
         /// <summary>
         /// Defines the Name attached property.
         /// </summary>
         public static readonly AttachedProperty<string?> NameProperty =
-            AvaloniaProperty.RegisterAttached<Container, Layoutable, string?>("Name");
+            AvaloniaProperty.RegisterAttached<Layoutable, string?>("Name", typeof(Container));
 
         /// <summary>
         /// Defines the Sizing attached property.
         /// </summary>
         public static readonly AttachedProperty<ContainerSizing> SizingProperty =
-            AvaloniaProperty.RegisterAttached<Container, Layoutable, ContainerSizing>("Sizing", coerce:UpdateQueryProvider);
+            AvaloniaProperty.RegisterAttached<Layoutable, ContainerSizing>("Sizing", typeof(Container), coerce:UpdateQueryProvider);
 
         private static ContainerSizing UpdateQueryProvider(AvaloniaObject obj, ContainerSizing sizing)
         {
@@ -41,7 +41,7 @@ namespace Avalonia.Styling
         }
 
         internal static readonly AttachedProperty<VisualQueryProvider?> QueryProviderProperty =
-            AvaloniaProperty.RegisterAttached<Container, Layoutable, VisualQueryProvider?>("QueryProvider");
+            AvaloniaProperty.RegisterAttached<Layoutable, VisualQueryProvider?>("QueryProvider", typeof(Container));
 
         /// <summary>
         /// Gets the value of the Container.Name attached property.

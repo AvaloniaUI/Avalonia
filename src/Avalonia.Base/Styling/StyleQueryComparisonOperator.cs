@@ -1,6 +1,6 @@
 ﻿namespace Avalonia.Styling
 {
-    public enum QueryComparisonOperator
+    public enum StyleQueryComparisonOperator
     {
         None,
         Equals,
