@@ -103,6 +103,11 @@ namespace Avalonia.Interactivity
         {
             _routeFinished.OnNext(e);
         }
+
+        public override string ToString()
+        {
+            return FormattableString.Invariant($"{OwnerType.Name}.{Name}");
+        }
     }
 
     public class RoutedEvent<TEventArgs> : RoutedEvent

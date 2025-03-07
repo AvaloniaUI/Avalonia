@@ -11,7 +11,6 @@
   <Import Project="..\..\build\XUnit.props" />
   <Import Project="..\..\build\Rx.props" />
   <Import Project="..\..\build\Microsoft.Reactive.Testing.props" />
-  <Import Project="..\..\build\Base.props" />
   <Import Project="..\..\build\SharedVersion.props" />
   <ItemGroup>
     <ProjectReference Include="..\..\src\Avalonia.Controls.DataGrid\Avalonia.Controls.DataGrid.csproj" />
