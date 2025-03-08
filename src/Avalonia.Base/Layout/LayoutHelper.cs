@@ -189,10 +189,10 @@ namespace Avalonia.Layout
         public static Thickness RoundLayoutThickness(Thickness thickness, double dpiScaleX, double dpiScaleY)
         {
             return new Thickness(
-                RoundLayoutValue(thickness.Left, dpiScaleX),
-                RoundLayoutValue(thickness.Top, dpiScaleY),
-                RoundLayoutValue(thickness.Right, dpiScaleX),
-                RoundLayoutValue(thickness.Bottom, dpiScaleY)
+                RoundLayoutValueUp(thickness.Left, dpiScaleX),
+                RoundLayoutValueUp(thickness.Top, dpiScaleY),
+                RoundLayoutValueUp(thickness.Right, dpiScaleX),
+                RoundLayoutValueUp(thickness.Bottom, dpiScaleY)
             );
         }
 
