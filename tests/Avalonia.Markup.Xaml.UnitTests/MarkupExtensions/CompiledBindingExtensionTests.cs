@@ -244,7 +244,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
                 window.DataContext = dataContext;
 
-                Assert.Equal(dataContext.TaskProperty.Result, textBlock.Text);
+                Assert.Equal("foobar", textBlock.Text);
             }
         }
 
@@ -1321,6 +1321,28 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         }
 
         [Fact]
+        public void SupportsParentInPathWithTypeAndLevelFilter()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Border x:Name='p2'>
+        <Border x:Name='p1'>
+            <Button x:Name='p0'>
+                <TextBlock x:Name='textBlock' Text='{CompiledBinding $parent[Control;1].Name}' />
+            </Button>
+        </Border>
+    </Border>
+</Window>");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
+
+                Assert.Equal("p1", textBlock.Text);
+            }
+        }
+
+        [Fact]
         public void SupportConverterWithParameter()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
@@ -1936,7 +1958,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         [Theory]
         [InlineData(null, "Not called")]
         [InlineData("A", "Do A")]
-        public void Binding_Method_With_Parameter_To_Command_CanExecute(object commandParameter, string result)
+        public void Binding_Method_With_Parameter_To_Command_CanExecute(object? commandParameter, string result)
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
@@ -2213,6 +2235,37 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             }
         }
 
+        [Fact]
+        public void Resolves_Nested_Generic_DataTypes()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='{x:Type local:TestDataContext+NestedGeneric, x:TypeArguments=x:String}'
+        x:Name='MyWindow'>
+    <Panel>
+        <TextBlock Text='{CompiledBinding Value}' Name='textBlock' />
+    </Panel>
+</Window>");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
+
+                var dataContext = new TestDataContext
+                {
+                    NestedGenericString = new TestDataContext.NestedGeneric<string>
+                    {
+                        Value = "10"
+                    }
+                };
+
+                window.DataContext = dataContext.NestedGenericString;
+
+                Assert.Equal(dataContext.NestedGenericString.Value, textBlock.Text);
+            }
+        }
+
         static void Throws(string type, Action cb)
         {
             try
@@ -2303,7 +2356,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
         public INonIntegerIndexerDerived NonIntegerIndexerInterfaceProperty => NonIntegerIndexerProperty;
 
-        string IHasExplicitProperty.ExplicitProperty => "Hello"; 
+        public NestedGeneric<string>? NestedGenericString { get; init; }
+
+        string IHasExplicitProperty.ExplicitProperty => "Hello";
 
         public string ExplicitProperty => "Bye";
 
@@ -2327,6 +2382,11 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                     RaisePropertyChanged(CommonPropertyNames.IndexerName);
                 }
             }
+        }
+
+        public class NestedGeneric<T>
+        {
+            public T Value { get; set; }
         }
     }
 
