@@ -2369,6 +2369,37 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             }
         }
 
+        [Fact]
+        public void Resolves_Nested_Generic_DataTypes()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='{x:Type local:TestDataContext+NestedGeneric, x:TypeArguments=x:String}'
+        x:Name='MyWindow'>
+    <Panel>
+        <TextBlock Text='{CompiledBinding Value}' Name='textBlock' />
+    </Panel>
+</Window>");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
+
+                var dataContext = new TestDataContext
+                {
+                    NestedGenericString = new TestDataContext.NestedGeneric<string>
+                    {
+                        Value = "10"
+                    }
+                };
+
+                window.DataContext = dataContext.NestedGenericString;
+
+                Assert.Equal(dataContext.NestedGenericString.Value, textBlock.Text);
+            }
+        }
+
         static void Throws(string type, Action cb)
         {
             try
@@ -2459,6 +2490,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
         public INonIntegerIndexerDerived NonIntegerIndexerInterfaceProperty => NonIntegerIndexerProperty;
 
+        public NestedGeneric<string>? NestedGenericString { get; init; }
+        
         string IHasExplicitProperty.ExplicitProperty => "Hello"; 
 
         public string ExplicitProperty => "Bye";
@@ -2483,6 +2516,11 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                     RaisePropertyChanged(CommonPropertyNames.IndexerName);
                 }
             }
+        }
+
+        public class NestedGeneric<T>
+        {
+            public T Value { get; set; }
         }
     }
 
