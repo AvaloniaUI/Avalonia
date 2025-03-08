@@ -229,7 +229,7 @@ namespace Avalonia.Layout
             }
             else
             {
-                newValue = Math.Round(value);
+                newValue = Math.Ceiling(value);
             }
 
             return newValue;
