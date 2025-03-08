@@ -5,6 +5,21 @@ namespace Avalonia.Controls.UnitTests
     public class DockPanelTests
     {
         [Fact]
+        public void DockPanel_Without_Child()
+        {
+            var target = new DockPanel
+            {
+                Width = 10,
+                Height = 10
+            };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(target.DesiredSize));
+
+            Assert.Equal(new Rect(0, 0, 10, 10), target.Bounds);
+        }
+        
+        [Fact]
         public void Should_Dock_Controls_Horizontal_First()
         {
             var target = new DockPanel

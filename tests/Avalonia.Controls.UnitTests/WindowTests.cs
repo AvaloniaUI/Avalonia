@@ -5,6 +5,7 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
@@ -686,10 +687,23 @@ namespace Avalonia.Controls.UnitTests
                         Content = child
                     };
 
+                    // Verify that the child is initially measured with our Width/Height.
                     Show(target);
 
                     Assert.Equal(1, child.MeasureSizes.Count);
                     Assert.Equal(new Size(100, 50), child.MeasureSizes[0]);
+
+                    // Now change the bounds: verify that we are using the new Width/Height, and not the old ClientSize.
+                    child.MeasureSizes.Clear();
+                    child.InvalidateMeasure();
+
+                    target.Width = 120;
+                    target.Height = 70;
+
+                    Dispatcher.UIThread.RunJobs();
+
+                    Assert.Equal(1, child.MeasureSizes.Count);
+                    Assert.Equal(new Size(120, 70), child.MeasureSizes[0]);
                 }
             }
 
@@ -1072,7 +1086,7 @@ namespace Avalonia.Controls.UnitTests
                     var task = target.ShowDialog<bool>(parent);
 
                     target.IsVisible = false;
-                    
+
                     Assert.True(task.IsCompletedSuccessfully);
                 }
             }
