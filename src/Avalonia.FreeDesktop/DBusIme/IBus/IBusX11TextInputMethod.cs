@@ -13,21 +13,21 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
 {
     internal class IBusX11TextInputMethod : DBusTextInputMethodBase
     {
-        private OrgFreedesktopIBusService? _service;
-        private OrgFreedesktopIBusInputContext? _context;
+        private OrgFreedesktopIBusServiceProxy? _service;
+        private OrgFreedesktopIBusInputContextProxy? _context;
         private string? _preeditText;
         private int _preeditCursor;
         private bool _preeditShown = true;
-        private int _insideReset = 0;
+        private int _insideReset;
 
         public IBusX11TextInputMethod(Connection connection) : base(connection, "org.freedesktop.portal.IBus") { }
 
         protected override async Task<bool> Connect(string name)
         {
-            var portal = new OrgFreedesktopIBusPortal(Connection, name, "/org/freedesktop/IBus");
+            var portal = new OrgFreedesktopIBusPortalProxy(Connection, name, "/org/freedesktop/IBus");
             var path = await portal.CreateInputContextAsync(GetAppName());
-            _service = new OrgFreedesktopIBusService(Connection, name, path);
-            _context = new OrgFreedesktopIBusInputContext(Connection, name, path);
+            _service = new OrgFreedesktopIBusServiceProxy(Connection, name, path);
+            _context = new OrgFreedesktopIBusInputContextProxy(Connection, name, path);
             AddDisposable(await _context.WatchCommitTextAsync(OnCommitText));
             AddDisposable(await _context.WatchForwardKeyEventAsync(OnForwardKey));
             AddDisposable(await _context.WatchUpdatePreeditTextAsync(OnUpdatePreedit));
