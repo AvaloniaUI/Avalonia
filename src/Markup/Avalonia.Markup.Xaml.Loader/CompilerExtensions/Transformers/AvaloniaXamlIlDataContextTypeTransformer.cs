@@ -44,7 +44,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                         {
                             on.Children.RemoveAt(i);
                             i--;
-                            if (directive.Values[0] is XamlAstTextNode text)
+                            if (directive.Values[0] is XamlTypeExtensionNode typeNode)
+                            {
+                                directiveDataContextTypeNode = new AvaloniaXamlIlDataContextTypeMetadataNode(on, typeNode.Value.GetClrType());
+                            }
+                            else if (directive.Values[0] is XamlAstTextNode text)
                             {
                                 directiveDataContextTypeNode = new AvaloniaXamlIlDataContextTypeMetadataNode(on,
                                     TypeReferenceResolver.ResolveType(context, text.Text, isMarkupExtension: false, text, strict: true).Type);
