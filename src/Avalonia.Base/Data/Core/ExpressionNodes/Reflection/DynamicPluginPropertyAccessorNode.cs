@@ -14,12 +14,14 @@ namespace Avalonia.Data.Core.ExpressionNodes.Reflection;
 [RequiresUnreferencedCode(TrimmingMessages.ExpressionNodeRequiresUnreferencedCodeMessage)]
 internal sealed class DynamicPluginPropertyAccessorNode : ExpressionNode, IPropertyAccessorNode, ISettableNode
 {
+    private readonly bool _acceptsNull;
     private readonly Action<object?> _onValueChanged;
     private IPropertyAccessor? _accessor;
     private bool _enableDataValidation;
 
-    public DynamicPluginPropertyAccessorNode(string propertyName)
+    public DynamicPluginPropertyAccessorNode(string propertyName, bool acceptsNull)
     {
+        _acceptsNull = acceptsNull;
         _onValueChanged = OnValueChanged;
         PropertyName = propertyName;
     }
@@ -44,8 +46,14 @@ internal sealed class DynamicPluginPropertyAccessorNode : ExpressionNode, IPrope
 
     protected override void OnSourceChanged(object? source, Exception? dataValidationError)
     {
-        if (!ValidateNonNullSource(source))
+        if (source is null)
+        {
+            if (_acceptsNull)
+                SetValue(null);
+            else
+                ValidateNonNullSource(source);
             return;
+        }
 
         var reference = new WeakReference<object?>(source);
 
