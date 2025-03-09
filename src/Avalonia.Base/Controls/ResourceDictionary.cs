@@ -40,7 +40,8 @@ namespace Avalonia.Controls
             set
             {
                 Inner[key] = value;
-                Owner?.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
+                Owner?.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);            
+
             }
         }
 
@@ -150,6 +151,19 @@ namespace Avalonia.Controls
         public void AddNotSharedDeferred(object key, IDeferredContent deferredContent)
             => Add(key, new NotSharedDeferredItem(deferredContent));
 
+        public void SetItems(IEnumerable<KeyValuePair<object, object?>> values)
+        {
+            try
+            {
+                foreach (var value in values)
+                    Inner[value.Key] = value.Value;
+            }
+            finally
+            {
+                Owner?.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);            
+            }
+        }
+        
         public void Clear()
         {
             if (_inner?.Count > 0)
