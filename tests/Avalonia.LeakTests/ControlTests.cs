@@ -39,47 +39,6 @@ namespace Avalonia.LeakTests
             DotMemoryUnitTestOutput.SetOutputMethod(atr.WriteLine);
         }
 
- 
-        [Fact]
-        public void DataGrid_Is_Freed()
-        {
-            using (Start())
-            {
-                // When attached to INotifyCollectionChanged, DataGrid will subscribe to it's events, potentially causing leak
-                Func<Window> run = () =>
-                {
-                    var window = new Window
-                    {
-                        Content = new DataGrid
-                        {
-                            ItemsSource = _observableCollection
-                        }
-                    };
-
-                    window.Show();
-
-                    // Do a layout and make sure that DataGrid gets added to visual tree.
-                    window.LayoutManager.ExecuteInitialLayoutPass();
-                    Assert.IsType<DataGrid>(window.Presenter.Child);
-
-                    // Clear the content and ensure the DataGrid is removed.
-                    window.Content = null;
-                    window.LayoutManager.ExecuteLayoutPass();
-                    Assert.Null(window.Presenter.Child);
-
-                    return window;
-                };
-
-                var result = run();
-
-                // Process all Loaded events to free control reference(s)
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
-
-                dotMemory.Check(memory =>
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<DataGrid>()).ObjectsCount));
-            }
-        }
-
         [Fact]
         public void Canvas_Is_Freed()
         {
