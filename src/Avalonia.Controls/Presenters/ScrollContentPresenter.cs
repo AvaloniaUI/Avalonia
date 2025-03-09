@@ -511,7 +511,7 @@ namespace Avalonia.Controls.Presenters
             if (Child.UseLayoutRounding)
             {
                 var scale = LayoutHelper.GetLayoutScale(Child);
-                childMargin = LayoutHelper.RoundLayoutThickness(childMargin, scale, scale);
+                childMargin = LayoutHelper.RoundLayoutThickness(childMargin, scale);
             }
 
             var extent = Child!.Bounds.Size.Inflate(childMargin);
