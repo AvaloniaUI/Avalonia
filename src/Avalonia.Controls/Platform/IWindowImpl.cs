@@ -65,6 +65,16 @@ namespace Avalonia.Platform
         void CanResize(bool value);
 
         /// <summary>
+        /// Enables or disables minimizing the window.
+        /// </summary>
+        void SetCanMinimize(bool value);
+
+        /// <summary>
+        /// Enables or disables maximizing the window.
+        /// </summary>
+        void SetCanMaximize(bool value);
+
+        /// <summary>
         /// Gets or sets a method called before the underlying implementation is destroyed.
         /// Return true to prevent the underlying implementation from closing.
         /// </summary>
@@ -124,7 +134,6 @@ namespace Avalonia.Platform
         /// <summary>
         /// Minimum width of the window.
         /// </summary>
-        /// 
         void SetMinMaxSize(Size minSize, Size maxSize);
 
         /// <summary>
