@@ -26,15 +26,6 @@ namespace Avalonia.Styling
             if (ContainerQueryActivatorBase.GetContainer(visual, containerName) is { } container
                 && container is Layoutable layoutable
                 && Container.GetQueryProvider(layoutable) is { } queryProvider
-
-/* Unmerged change from project 'Avalonia.Base (netstandard2.0)'
-Before:
-                && Container.GetSizing(layoutable) == Layout.ContainerSizing.WidthAndHeight)
-            {
-After:
-                && Container.GetSizing(layoutable) == ContainerSizing.WidthAndHeight)
-            {
-*/
                 && Container.GetSizing(layoutable) == Styling.ContainerSizing.WidthAndHeight)
             {
                 return Evaluate(queryProvider, Argument);
@@ -105,15 +96,6 @@ After:
             if (ContainerQueryActivatorBase.GetContainer(visual, containerName) is { } container
                 && container is Layoutable layoutable
                 && Container.GetQueryProvider(layoutable) is { } queryProvider
-
-/* Unmerged change from project 'Avalonia.Base (netstandard2.0)'
-Before:
-                && Container.GetSizing(layoutable) == Layout.ContainerSizing.WidthAndHeight)
-            {
-After:
-                && Container.GetSizing(layoutable) == ContainerSizing.WidthAndHeight)
-            {
-*/
                 && Container.GetSizing(layoutable) == Styling.ContainerSizing.WidthAndHeight)
             {
                 return Evaluate(queryProvider, Argument);

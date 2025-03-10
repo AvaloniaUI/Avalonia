@@ -4,7 +4,7 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Styling
 {
-    public abstract class ValueStyleQuery<T> : StyleQuery
+    internal abstract class ValueStyleQuery<T> : StyleQuery
     {
         private readonly StyleQuery? _previous;
         private T _argument;
