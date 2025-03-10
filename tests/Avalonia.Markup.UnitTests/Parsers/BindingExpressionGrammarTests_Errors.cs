@@ -1,12 +1,9 @@
-using System.Collections.Generic;
 using Avalonia.Data.Core;
-using Avalonia.Markup.Parsers;
-using Avalonia.Utilities;
 using Xunit;
 
 namespace Avalonia.Markup.UnitTests.Parsers
 {
-    public class ExpressionObserverBuilderTests_Errors
+    public partial class BindingExpressionGrammarTests
     {
         [Fact]
         public void Identifier_Cannot_Start_With_Digit()
@@ -23,10 +20,38 @@ namespace Avalonia.Markup.UnitTests.Parsers
         }
 
         [Fact]
+        public void Identifier_Cannot_Start_With_QuestionMark()
+        {
+            Assert.Throws<ExpressionParseException>(
+                () => Parse("?Foo"));
+        }
+
+        [Fact]
+        public void Identifier_Cannot_Start_With_NullConditional()
+        {
+            Assert.Throws<ExpressionParseException>(
+                () => Parse("?.Foo"));
+        }
+
+        [Fact]
         public void Expression_Cannot_End_With_Period()
         {
             Assert.Throws<ExpressionParseException>(
                 () => Parse("Foo.Bar."));
+        }
+        
+        [Fact]
+        public void Expression_Cannot_End_With_QuestionMark()
+        {
+            Assert.Throws<ExpressionParseException>(
+                () => Parse("Foo.Bar?"));
+        }
+
+        [Fact]
+        public void Expression_Cannot_End_With_Null_Conditional()
+        {
+            Assert.Throws<ExpressionParseException>(
+                () => Parse("Foo.Bar?."));
         }
 
         [Fact]
@@ -76,12 +101,6 @@ namespace Avalonia.Markup.UnitTests.Parsers
         {
             Assert.Throws<ExpressionParseException>(
                 () => Parse("Foo.Bar[3,4]A"));
-        }
-
-        private static List<BindingExpressionGrammar.INode> Parse(string s)
-        {
-            var r = new CharacterReader(s);
-            return BindingExpressionGrammar.Parse(ref r).Nodes;
         }
     }
 }
