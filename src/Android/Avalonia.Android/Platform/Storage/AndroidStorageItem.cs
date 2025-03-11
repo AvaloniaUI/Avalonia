@@ -8,9 +8,9 @@ using Android.App;
 using Android.Content;
 using Android.Provider;
 using Android.Webkit;
-using AndroidX.DocumentFile.Provider;
 using Avalonia.Logging;
 using Avalonia.Platform.Storage;
+using Avalonia.Platform.Storage.FileIO;
 using Java.Lang;
 using AndroidUri = Android.Net.Uri;
 using Exception = System.Exception;
@@ -38,8 +38,8 @@ internal abstract class AndroidStorageItem : IStorageBookmarkItem
     
     protected Activity Activity => _activity ?? throw new ObjectDisposedException(nameof(AndroidStorageItem));
 
-    public virtual string Name => GetColumnValue(Activity, Uri, MediaStore.IMediaColumns.DisplayName)
-                          ?? Document?.Name
+    public virtual string Name => GetColumnValue(Activity, Uri, DocumentsContract.Document.ColumnDisplayName)
+                          ?? GetColumnValue(Activity, Uri, MediaStore.IMediaColumns.DisplayName)
                           ?? Uri.PathSegments?.LastOrDefault()?.Split("/", StringSplitOptions.RemoveEmptyEntries).LastOrDefault() ?? string.Empty;
 
     public Uri Path => new(Uri.ToString()!);
@@ -54,7 +54,8 @@ internal abstract class AndroidStorageItem : IStorageBookmarkItem
         }
 
         Activity.ContentResolver?.TakePersistableUriPermission(Uri, ActivityFlags.GrantWriteUriPermission | ActivityFlags.GrantReadUriPermission);
-        return Uri.ToString();
+
+        return StorageBookmarkHelper.EncodeBookmark(AndroidStorageProvider.AndroidKey, Uri.ToString()!);
     }
 
     public async Task ReleaseBookmarkAsync()
@@ -69,7 +70,7 @@ internal abstract class AndroidStorageItem : IStorageBookmarkItem
     
     public abstract Task<StorageItemProperties> GetBasicPropertiesAsync();
 
-    protected string? GetColumnValue(Context context, AndroidUri contentUri, string column, string? selection = null, string[]? selectionArgs = null)
+    protected static string? GetColumnValue(Context context, AndroidUri contentUri, string column, string? selection = null, string[]? selectionArgs = null)
     {
         try
         {
@@ -84,7 +85,7 @@ internal abstract class AndroidStorageItem : IStorageBookmarkItem
         }
         catch (Exception ex)
         {
-            Logger.TryGet(LogEventLevel.Verbose, LogArea.AndroidPlatform)?.Log(this, "File metadata reader failed: '{Exception}'", ex);
+            Logger.TryGet(LogEventLevel.Verbose, LogArea.AndroidPlatform)?.Log(null, "File metadata reader failed: '{Exception}'", ex);
         }
 
         return null;
@@ -100,18 +101,6 @@ internal abstract class AndroidStorageItem : IStorageBookmarkItem
         if(_parent != null)
         {
             return _parent;
-        }
-
-        var document = Document;
-
-        if (document == null)
-        {
-            return null;
-        }
-
-        if(document.ParentFile != null)
-        {
-            return new AndroidStorageFolder(Activity, document.ParentFile.Uri, true);
         }
 
         using var javaFile = new JavaFile(Uri.Path!);
@@ -140,27 +129,25 @@ internal abstract class AndroidStorageItem : IStorageBookmarkItem
     {
         _activity = null;
     }
-
-    internal DocumentFile? Document
-    {
-        get
-        {
-            if (this is AndroidStorageFile)
-            {
-                return DocumentFile.FromSingleUri(Activity, Uri);
-            }
-            else
-            {
-                return DocumentFile.FromTreeUri(Activity, Uri);
-            }
-        }
-    }
-
+    
     internal AndroidUri? PermissionRoot => _permissionRoot;
 
     public abstract Task DeleteAsync();
 
     public abstract Task<IStorageItem?> MoveAsync(IStorageFolder destination);
+
+    public static IStorageItem CreateItem(Activity activity, AndroidUri uri)
+    {
+        var mimeType = GetColumnValue(activity, uri, DocumentsContract.Document.ColumnMimeType);
+        if (mimeType == DocumentsContract.Document.MimeTypeDir)
+        {
+            return new AndroidStorageFolder(activity, uri, false);
+        }
+        else
+        {
+            return new AndroidStorageFile(activity, uri);
+        }
+    }
 }
 
 internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
@@ -172,26 +159,24 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
     public Task<IStorageFile?> CreateFileAsync(string name)
     {
         var mimeType = MimeTypeMap.Singleton?.GetMimeTypeFromExtension(MimeTypeMap.GetFileExtensionFromUrl(name)) ?? "application/octet-stream";
-        var newFile = Document?.CreateFile(mimeType, name);
-
+        var newFile = DocumentsContract.CreateDocument(Activity.ContentResolver!, Uri, mimeType, name);
         if(newFile == null)
         {
             return Task.FromResult<IStorageFile?>(null);
         }
 
-        return Task.FromResult<IStorageFile?>(new AndroidStorageFile(Activity, newFile.Uri, this));
+        return Task.FromResult<IStorageFile?>(new AndroidStorageFile(Activity, newFile, this));
     }
 
     public Task<IStorageFolder?> CreateFolderAsync(string name)
     {
-        var newFolder = Document?.CreateDirectory(name);
-
+        var newFolder = DocumentsContract.CreateDocument(Activity.ContentResolver!, Uri, DocumentsContract.Document.MimeTypeDir, name);
         if (newFolder == null)
         {
             return Task.FromResult<IStorageFolder?>(null);
         }
 
-        return Task.FromResult<IStorageFolder?>(new AndroidStorageFolder(Activity, newFolder.Uri, false, this, PermissionRoot));
+        return Task.FromResult<IStorageFolder?>(new AndroidStorageFolder(Activity, newFolder, false, this, PermissionRoot));
     }
 
     public override async Task DeleteAsync()
@@ -220,7 +205,7 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
                 }
             }
 
-            DocumentFile.FromTreeUri(Activity, storageFolder.Uri)?.Delete();
+            DocumentsContract.DeleteDocument(Activity.ContentResolver!, storageFolder.Uri);
         }
     }
 
@@ -308,6 +293,79 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
 
             return destination;
         }
+    }
+
+    private async Task<IStorageItem?> GetItemAsync(string name, bool isDirectory)
+    {
+        if (!await EnsureExternalFilesPermission(false))
+        {
+            return null;
+        }
+
+        var contentResolver = Activity.ContentResolver;
+        if (contentResolver == null)
+        {
+            return null;
+        }
+
+        var root = PermissionRoot ?? Uri;
+        var folderId = root != Uri ? DocumentsContract.GetDocumentId(Uri) : DocumentsContract.GetTreeDocumentId(Uri);
+        var childrenUri = DocumentsContract.BuildChildDocumentsUriUsingTree(root, folderId);
+
+        var projection = new[]
+        {
+            DocumentsContract.Document.ColumnDocumentId,
+            DocumentsContract.Document.ColumnMimeType,
+            DocumentsContract.Document.ColumnDisplayName
+        };
+
+        if (childrenUri != null)
+        {
+            using var cursor = contentResolver.Query(childrenUri, projection, null, null, null);
+            if (cursor != null)
+            {
+                while (cursor.MoveToNext())
+                {
+                    var id = cursor.GetString(0);
+                    var mime = cursor.GetString(1);
+
+                    var fileName = cursor.GetString(2);
+                    if (fileName != name)
+                    {
+                        continue;
+                    }                   
+
+                    bool mineDirectory = mime == DocumentsContract.Document.MimeTypeDir;
+                    if (isDirectory != mineDirectory)
+                    {
+                        return null;
+                    }
+
+                    var uri = DocumentsContract.BuildDocumentUriUsingTree(root, id);
+                    if (uri == null)
+                    {
+                        return null;
+                    }
+
+                    return isDirectory ? new AndroidStorageFolder(Activity, uri, false, this, root) :
+                        new AndroidStorageFile(Activity, uri, this, root);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public async Task<IStorageFolder?> GetFolderAsync(string name)
+    {
+        var folder = await GetItemAsync(name, true);
+        return (IStorageFolder?)folder;
+    }
+
+    public async Task<IStorageFile?> GetFileAsync(string name)
+    {
+        var file = await GetItemAsync(name, false);
+        return (IStorageFile?)file;
     }
 }
 
@@ -484,7 +542,7 @@ internal sealed class AndroidStorageFile : AndroidStorageItem, IStorageBookmarkF
                 try
                 {
                     if (Activity.ContentResolver is { } contentResolver &&
-                        storageFolder.Document?.Uri is { } targetParentUri &&
+                        storageFolder.Uri is { } targetParentUri &&
                         await GetParentAsync() is AndroidStorageFolder parentFolder)
                     {
                         movedUri = DocumentsContract.MoveDocument(contentResolver, Uri, parentFolder.Uri, targetParentUri);
@@ -492,8 +550,7 @@ internal sealed class AndroidStorageFile : AndroidStorageItem, IStorageBookmarkF
                 }
                 catch (Exception)
                 {
-                    // There are many reason why DocumentContract will fail to move a file. We fallback to copying.
-                    return await MoveFileByCopy();
+                    // There are many reason why DocumentContract will fail to move a file. We fallback to copying below.
                 }
             }
 

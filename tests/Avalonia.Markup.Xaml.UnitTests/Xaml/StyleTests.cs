@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
-using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Xml;
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml.Styling;
+using Avalonia.Data;
 using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Media;
 using Avalonia.Styling;
@@ -14,6 +15,7 @@ using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 {
+    [InvariantCulture]
     public class StyleTests : XamlTestBase
     {
         [Fact]
@@ -602,6 +604,186 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                     inner => Assert.IsAssignableFrom<XmlException>(inner),
                     inner => Assert.IsAssignableFrom<XmlException>(inner));
             }
+        }
+
+        [Fact]
+        public void Correctly_Resolve_TemplateBinding_In_Style_With_Template_Selector()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = $@"
+<Style xmlns='https://github.com/avaloniaui'
+       xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+       xmlns:u='using:Avalonia.Markup.Xaml.UnitTests.Xaml'
+       Selector='u|TestTemplatedControl /template/ Border'>
+    <Setter Property='Tag' Value='{{TemplateBinding TestData}}'/>
+</Style>";
+
+                var style = (Style)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var setter = Assert.IsType<Setter>(Assert.Single(style.Setters));
+
+                Assert.Equal(TestTemplatedControl.TestDataProperty, (setter.Value as TemplateBinding)?.Property);
+            }
+        }
+
+        [Fact]
+        public void Fails_To_Resolve_TemplateBinding_In_Style_Without_Template_Metadata()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = $@"
+<Style xmlns='https://github.com/avaloniaui'
+       Selector='Border'>
+    <Setter Property='Tag' Value='{{TemplateBinding TestData}}'/>
+</Style>";
+
+                var exception = Assert.ThrowsAny<XmlException>(() => AvaloniaRuntimeXamlLoader.Load(xaml));
+                Assert.Contains("ControlTemplate", exception.Message);
+            }
+        }
+
+        [Fact]
+        public void Can_Use_Classes_In_Setter()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = $"""
+                            <Window xmlns='https://github.com/avaloniaui'
+                                         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                                         xmlns:u='using:Avalonia.Markup.Xaml.UnitTests.Xaml'>
+                                <Window.Styles>
+                                    <Style Selector="Border">
+                                        <Setter Property="(Classes.Banned)" Value='true'/>
+
+                                        <Style Selector="^.Banned">
+                                           <Setter Property='Background' Value='Red'/>
+                                        </Style>
+                                    </Style>
+                                </Window.Styles>
+                                <Border/>
+                            </Window>
+                            """;
+
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var border = window.Content as Border;
+                Assert.NotNull(border);
+                Assert.Equal(Brushes.Red, border.Background);
+            }
+        }
+
+        [Fact]
+        public void Can_Binding_Classes_In_Setter()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = $$"""
+                            <Window xmlns='https://github.com/avaloniaui'
+                                         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                                         xmlns:u='using:Avalonia.Markup.Xaml.UnitTests.Xaml'
+                                         xmlns:vm='using:Avalonia.Markup.Xaml.UnitTests'
+                                         >
+                                <Window.Styles>
+                                    <Style Selector="Border" x:DataType='vm:TestViewModel'>
+                                        <Setter Property="(Classes.Banned)" Value='{Binding Boolean}'/>
+
+                                        <Style Selector="^.Banned">
+                                           <Setter Property='Background' Value='Red'/>
+                                        </Style>
+                                    </Style>
+                                </Window.Styles>
+                                <Window.DataContext>
+                                   <vm:TestViewModel/>
+                                </Window.DataContext>
+                                <Border/>
+                            </Window>
+                            """;
+
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                window.ApplyTemplate();
+                var vm = window.DataContext as TestViewModel;
+                Assert.NotNull(vm);
+
+                var border = window.Content as Border;
+                Assert.NotNull(border);
+                Assert.Null(border.Background);
+                vm.Boolean = true;
+                Assert.Equal(Brushes.Red, border.Background);
+            }
+        }
+
+        [Fact]
+        public void Fails_Use_Classes_In_Setter_When_Selector_Is_Complex()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = $"""
+                            <Window xmlns='https://github.com/avaloniaui'
+                                         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                                         xmlns:u='using:Avalonia.Markup.Xaml.UnitTests.Xaml'>
+                                <Window.Styles>
+                                    <Style Selector="Border:pointover">
+                                        <Setter Property="(Classes.Banned)" Value='true'/>
+
+                                        <Style Selector="^.Banned">
+                                           <Setter Property='Background' Value='Red'/>
+                                        </Style>
+                                    </Style>
+                                </Window.Styles>
+                                <Border/>
+                            </Window>
+                            """;
+
+                var exception = Assert.ThrowsAny<XmlException>(() => AvaloniaRuntimeXamlLoader.Load(xaml));
+                Assert.Equal ("Cannot set Classes Binding property '(Classes.Banned)' because the style has an activator. Line 6, position 14.", exception.Message);
+            }
+        }
+
+        [Theory]
+        [InlineData("<Style>", "</Style>")]
+        [InlineData("<Style Selector=''>", "</Style>")]
+        [InlineData("<Styles><Style>", "</Style></Styles>")]
+        [InlineData("<Styles><Style Selector=''>", "</Style></Styles>")]
+        public void No_Selector_Should_Target_Parent_Type(string styleStart, string styleEnd)
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var window = (Window)AvaloniaRuntimeXamlLoader.Load(
+                $"""
+                <Window xmlns="https://github.com/avaloniaui">
+                    <Window.Styles>
+                        {styleStart}
+                            <Setter Property="Title" Value="title set via style!" />
+                        {styleEnd}
+                    </Window.Styles>
+                </Window>
+                """);
+
+            Assert.Equal("title set via style!", window.Title);
+        }
+
+
+        [Theory]
+        [InlineData("<Style>", "</Style>")]
+        [InlineData("<Style Selector=''>", "</Style>")]
+        public void No_Selector_Should_Fail_In_Control_Theme(string styleStart, string styleEnd)
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var exception = Assert.ThrowsAny<XmlException>(() => (Window)AvaloniaRuntimeXamlLoader.Load(
+                $$"""
+                  <Window xmlns="https://github.com/avaloniaui"
+                          xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                     <Window.Resources>
+                          <ControlTheme x:Key="{x:Type Window}" TargetType="Window">
+                              {{styleStart}}
+                                  <Setter Property="Title" Value="title set via style!" />
+                              {{styleEnd}}
+                          </ControlTheme>
+                      </Window.Resources>
+                  </Window>
+                  """));
+
+            Assert.Equal("Cannot add a Style without selector to a ControlTheme. Line 5, position 14.", exception.Message);
         }
     }
 }

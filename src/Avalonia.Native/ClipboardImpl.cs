@@ -1,7 +1,10 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Logging;
@@ -13,7 +16,8 @@ namespace Avalonia.Native
 {
     class ClipboardImpl : IClipboard, IDisposable
     {
-        private IAvnClipboard _native;
+        private IAvnClipboard? _native;
+
         // TODO hide native types behind IAvnClipboard abstraction, so managed side won't depend on macOS.
         private const string NSPasteboardTypeString = "public.utf8-plain-text";
         private const string NSFilenamesPboardType = "NSFilenamesPboardType";
@@ -23,25 +27,30 @@ namespace Avalonia.Native
             _native = native;
         }
 
+        private IAvnClipboard Native
+            => _native ?? throw new ObjectDisposedException(nameof(ClipboardImpl));
+
         public Task ClearAsync()
         {
-            _native.Clear();
+            Native.Clear();
 
             return Task.CompletedTask;
         }
 
-        public Task<string> GetTextAsync()
+        public Task<string?> GetTextAsync()
         {
-            using (var text = _native.GetText(NSPasteboardTypeString))
-                return Task.FromResult(text.String);
+            using (var text = Native.GetText(NSPasteboardTypeString))
+                return Task.FromResult<string?>(text.String);
         }
 
-        public unsafe Task SetTextAsync(string text)
+        public Task SetTextAsync(string? text)
         {
-            _native.Clear();
+            var native = Native;
+
+            native.Clear();
 
             if (text != null) 
-                _native.SetText(NSPasteboardTypeString, text);
+                native.SetText(NSPasteboardTypeString, text);
 
             return Task.CompletedTask;
         }
@@ -49,7 +58,7 @@ namespace Avalonia.Native
         public IEnumerable<string> GetFormats()
         {
             var rv = new HashSet<string>();
-            using (var formats = _native.ObtainFormats())
+            using (var formats = Native.ObtainFormats())
             {
                 var cnt = formats.Count;
                 for (uint c = 0; c < cnt; c++)
@@ -78,21 +87,31 @@ namespace Avalonia.Native
             _native = null;
         }
 
-        public IEnumerable<string> GetFileNames()
+        public IEnumerable<string>? GetFileNames()
         {
-            using (var strings = _native.GetStrings(NSFilenamesPboardType))
+            using (var strings = Native.GetStrings(NSFilenamesPboardType))
                 return strings?.ToStringArray();
         }
 
-        public IEnumerable<IStorageItem> GetFiles()
+        public IEnumerable<IStorageItem>? GetFiles()
         {
-            return GetFileNames()?.Select(f => StorageProviderHelpers.TryCreateBclStorageItem(f)!)
-                .Where(f => f is not null);
+            var storageApi = (StorageProviderApi)AvaloniaLocator.Current.GetRequiredService<IStorageProviderFactory>();
+    
+            // TODO: use non-deprecated AppKit API to get NSUri instead of file names.
+            var fileNames = GetFileNames();
+            if (fileNames is null)
+                return null;
+
+            return fileNames
+                .Select(f => StorageProviderHelpers.TryGetUriFromFilePath(f, false) is { } uri
+                    ? storageApi.TryGetStorageItem(uri)
+                    : null)
+                .Where(f => f is not null)!;
         }
 
         public unsafe Task SetDataObjectAsync(IDataObject data)
         {
-            _native.Clear();
+            Native.Clear();
 
             // If there is multiple values with the same "to" format, prefer these that were not mapped.
             var formats = data.GetDataFormats().Select(f =>
@@ -116,26 +135,26 @@ namespace Avalonia.Native
                 switch (o)
                 {
                     case string s:
-                        _native.SetText(toFormat, s);
+                        Native.SetText(toFormat, s);
                         break;
                     case IEnumerable<IStorageItem> storageItems:
                         using (var strings = new AvnStringArray(storageItems
                                    .Select(s => s.TryGetLocalPath())
                                    .Where(p => p is not null)))
                         {
-                            _native.SetStrings(toFormat, strings);
+                            Native.SetStrings(toFormat, strings);
                         }
                         break;
                     case IEnumerable<string> managedStrings:
                         using (var strings = new AvnStringArray(managedStrings))
                         {
-                            _native.SetStrings(toFormat, strings);
+                            Native.SetStrings(toFormat, strings);
                         }
                         break;
                     case byte[] bytes:
                     {
                         fixed (byte* pbytes = bytes)
-                            _native.SetBytes(toFormat, pbytes, bytes.Length);
+                            Native.SetBytes(toFormat, pbytes, bytes.Length);
                         break;
                     }
                     default:
@@ -152,7 +171,7 @@ namespace Avalonia.Native
             return Task.FromResult(GetFormats().ToArray());
         }
 
-        public async Task<object> GetDataAsync(string format)
+        public async Task<object?> GetDataAsync(string format)
         {
             if (format == DataFormats.Text || format == NSPasteboardTypeString)
                 return await GetTextAsync();
@@ -160,15 +179,19 @@ namespace Avalonia.Native
                 return GetFileNames();
             if (format == DataFormats.Files)
                 return GetFiles();
-            using (var n = _native.GetBytes(format))
+            using (var n = Native.GetBytes(format))
                 return n.Bytes;
         }
+
+        /// <inheritdoc />
+        public Task FlushAsync() =>
+            Task.CompletedTask;
     }
     
     class ClipboardDataObject : IDataObject, IDisposable
     {
-        private ClipboardImpl _clipboard;
-        private List<string> _formats;
+        private ClipboardImpl? _clipboard;
+        private List<string>? _formats;
 
         public ClipboardDataObject(IAvnClipboard clipboard)
         {
@@ -181,14 +204,17 @@ namespace Avalonia.Native
             _clipboard = null;
         }
 
-        List<string> Formats => _formats ??= _clipboard.GetFormats().ToList();
+        private ClipboardImpl Clipboard
+            => _clipboard ?? throw new ObjectDisposedException(nameof(ClipboardDataObject));
+
+        private List<string> Formats => _formats ??= Clipboard.GetFormats().ToList();
 
         public IEnumerable<string> GetDataFormats() => Formats;
 
         public bool Contains(string dataFormat) => Formats.Contains(dataFormat);
 
-        public object Get(string dataFormat) => _clipboard.GetDataAsync(dataFormat).GetAwaiter().GetResult();
+        public object? Get(string dataFormat) => Clipboard.GetDataAsync(dataFormat).GetAwaiter().GetResult();
 
-        public Task SetFromDataObjectAsync(IDataObject dataObject) => _clipboard.SetDataObjectAsync(dataObject);
+        public Task SetFromDataObjectAsync(IDataObject dataObject) => Clipboard.SetDataObjectAsync(dataObject);
     }
 }

@@ -3,19 +3,21 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reactive.Linq;
-using Moq;
-using Avalonia.Controls;
-using Xunit;
 using System.Threading.Tasks;
-using Avalonia.Data.Converters;
+using Avalonia.Controls;
 using Avalonia.Data;
+using Avalonia.Data.Converters;
+using Avalonia.UnitTests;
+using Xunit;
+
+#nullable enable
 
 namespace Avalonia.Markup.UnitTests.Data
 {
     public class MultiBindingTests
     {
         [Fact]
-        public async Task OneWay_Binding_Should_Be_Set_Up()
+        public void OneWay_Binding_Should_Be_Set_Up()
         {
             var source = new { A = 1, B = 2, C = 3 };
             var binding = new MultiBinding
@@ -30,14 +32,13 @@ namespace Avalonia.Markup.UnitTests.Data
             };
 
             var target = new Control { DataContext = source };
-            var observable = binding.Initiate(target, null).Source;
-            var result = await observable.Take(1);
+            target.Bind(Control.TagProperty, binding);
 
-            Assert.Equal("1,2,3", result);
+            Assert.Equal("1,2,3", target.Tag);
         }
 
         [Fact]
-        public async Task Nested_MultiBinding_Should_Be_Set_Up()
+        public void Nested_MultiBinding_Should_Be_Set_Up()
         {
             var source = new { A = 1, B = 2, C = 3 };
             var binding = new MultiBinding
@@ -59,10 +60,9 @@ namespace Avalonia.Markup.UnitTests.Data
             };
 
             var target = new Control { DataContext = source };
-            var observable = binding.Initiate(target, null).Source;
-            var result = await observable.Take(1);
+            target.Bind(Control.TagProperty, binding);
 
-            Assert.Equal("1,2,3", result);
+            Assert.Equal("1,2,3", target.Tag);
         }
 
         [Fact]
@@ -180,9 +180,71 @@ namespace Avalonia.Markup.UnitTests.Data
             Assert.Equal(target.ItemsView[2], source.C);
         }
 
+        [Fact]
+        public void Converter_Can_Return_BindingNotification()
+        {
+            var source = new { A = 1, B = 2, C = 3 };
+            var target = new TextBlock { DataContext = source };
+
+            var binding = new MultiBinding
+            {
+                Converter = new BindingNotificationConverter(),
+                Bindings = new[]
+                {
+                    new Binding { Path = "A" },
+                    new Binding { Path = "B" },
+                    new Binding { Path = "C" },
+                },
+            };
+
+            target.Bind(TextBlock.TextProperty, binding);
+
+            Assert.Equal("1,2,3-BindingNotification", target.Text);
+        }
+
+        [Fact]
+        public void Converter_Should_Be_Called_On_PropertyChanged_Even_If_Property_Not_Changed()
+        {
+            // Issue #16084
+            var data = new TestModel();
+            var target = new TextBlock { DataContext = data };
+
+            var binding = new MultiBinding
+            {
+                Converter = new TestModelMemberConverter(),
+                Bindings =
+                {
+                    new Binding(),
+                    new Binding(nameof(data.NotifyingValue)),
+                },
+            };
+
+            target.Bind(TextBlock.TextProperty, binding);
+            Assert.Equal("0", target.Text);
+
+            data.NonNotifyingValue = 1;
+            Assert.Equal("0", target.Text);
+
+            data.NotifyingValue = new object();
+            Assert.Equal("1", target.Text);
+        }
+
+        private partial class TestModel : NotifyingBase
+        {
+            private object? _notifyingValue;
+
+            public int? NonNotifyingValue { get; set; } = 0;
+
+            public object? NotifyingValue
+            {
+                get => _notifyingValue;
+                set => SetField(ref _notifyingValue, value);
+            }
+        }
+
         private class ConcatConverter : IMultiValueConverter
         {
-            public object Convert(IList<object> values, Type targetType, object parameter, CultureInfo culture)
+            public object? Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
             {
                 return string.Join(",", values);
             }
@@ -190,7 +252,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
         private class UnsetValueConverter : IMultiValueConverter
         {
-            public object Convert(IList<object> values, Type targetType, object parameter, CultureInfo culture)
+            public object? Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
             {
                 return AvaloniaProperty.UnsetValue;
             }
@@ -198,9 +260,33 @@ namespace Avalonia.Markup.UnitTests.Data
 
         private class NullValueConverter : IMultiValueConverter
         {
-            public object Convert(IList<object> values, Type targetType, object parameter, CultureInfo culture)
+            public object? Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
             {
                 return null;
+            }
+        }
+
+        private class BindingNotificationConverter : IMultiValueConverter
+        {
+            public object? Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
+            {
+                return new BindingNotification(
+                    new ArgumentException(),
+                    BindingErrorType.Error,
+                    string.Join(",", values) + "-BindingNotification");
+            }
+        }
+
+        private class TestModelMemberConverter : IMultiValueConverter
+        {
+            public object? Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
+            {
+                if (values[0] is not TestModel model)
+                {
+                    return string.Empty;
+                }
+
+                return model.NonNotifyingValue.ToString();
             }
         }
     }

@@ -156,11 +156,96 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(14, textLine.Length);
 
-                var second = textLine.TextRuns[1] as ShapedTextRun;
+                var first = textLine.TextRuns[0] as ShapedTextRun;
+
+                var last = textLine.TextRuns[4] as TextEndOfParagraph;
+
+                Assert.NotNull(first);
+
+                Assert.NotNull(last);
+
+                Assert.Equal("Hello".AsMemory(), first.Text);
+            }
+        }
+
+        [Fact]
+        public void Should_Reset_Bidi_Levels_Of_Trailing_Whitespaces_After_TextWrapping()
+        {
+            using (Start())
+            {
+                const string text = "aaa bbb";
+
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+
+                var paragraphProperties = new GenericTextParagraphProperties(FlowDirection.RightToLeft, TextAlignment.Right, true,
+                                                                             true, defaultProperties, TextWrapping.Wrap, 0, 0, 0);
+
+                var textSource = new SimpleTextSource(text, defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var firstLine = formatter.FormatLine(textSource, 0, 50, paragraphProperties);
+
+                Assert.NotNull(firstLine);
+
+                Assert.Equal(2, firstLine.TextRuns.Count);
+
+                var first = firstLine.TextRuns[0] as ShapedTextRun;
+
+                var second = firstLine.TextRuns[1] as ShapedTextRun;
+
+                Assert.NotNull(first);
 
                 Assert.NotNull(second);
 
-                Assert.Equal("Hello".AsMemory(), second.Text);
+                Assert.Equal(" ", first.Text.ToString());
+
+                Assert.Equal("aaa", second.Text.ToString());
+
+                Assert.Equal(1, first.BidiLevel);
+
+                Assert.Equal(2, second.BidiLevel);
+            }
+        }
+
+
+        [Fact]
+        public void Should_Reset_Bidi_Levels_Of_Trailing_Whitespaces_After_TextWrapping_2()
+        {
+            using (Start())
+            {
+                const string text = "אאא בבב";
+
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+
+                var paragraphProperties = new GenericTextParagraphProperties(FlowDirection.LeftToRight, TextAlignment.Left, true,
+                                                                             true, defaultProperties, TextWrapping.Wrap, 0, 0, 0);
+
+                var textSource = new SimpleTextSource(text, defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var firstLine = formatter.FormatLine(textSource, 0, 40, paragraphProperties);
+
+                Assert.NotNull(firstLine);
+
+                Assert.Equal(2, firstLine.TextRuns.Count);
+
+                var first = firstLine.TextRuns[0] as ShapedTextRun;
+
+                var second = firstLine.TextRuns[1] as ShapedTextRun;
+
+                Assert.NotNull(first);
+
+                Assert.NotNull(second);
+
+                Assert.Equal("אאא", first.Text.ToString());
+
+                Assert.Equal(" ", second.Text.ToString());
+
+                Assert.Equal(1, first.BidiLevel);
+
+                Assert.Equal(0, second.BidiLevel);
             }
         }
 
@@ -321,6 +406,45 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 }
 
                 Assert.Equal(expectedNumberOfLines, numberOfLines);
+            }
+        }
+
+        [Theory]
+        [InlineData("one שתיים three ארבע", "one שתיים thr…", FlowDirection.LeftToRight, false)]
+        [InlineData("one שתיים three ארבע", "…thrשתיים  one", FlowDirection.RightToLeft, false)]
+        [InlineData("one שתיים three ארבע", "one שתיים…", FlowDirection.LeftToRight, true)]
+        [InlineData("one שתיים three ארבע", "…שתיים  one", FlowDirection.RightToLeft, true)]
+        public void TextTrimming_Should_Trim_Correctly(string text, string trimmed, FlowDirection direction, bool wordEllipsis)
+        {
+            const double Width = 160.0;
+            const double EmSize = 20.0;
+
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default, EmSize);
+
+                var paragraphProperties = new GenericTextParagraphProperties(direction, TextAlignment.Start, true,
+                                                                             true, defaultProperties, TextWrapping.NoWrap, 0, 0, 0);
+
+                var textSource = new SimpleTextSource(text, defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine = formatter.FormatLine(textSource, 0, double.PositiveInfinity, paragraphProperties);
+
+                Assert.NotNull(textLine);
+
+                var textTrimming = wordEllipsis ? TextTrimming.WordEllipsis : TextTrimming.CharacterEllipsis;
+
+                var collapsingProperties = textTrimming.CreateCollapsingProperties(new TextCollapsingCreateInfo(Width, defaultProperties, direction));
+
+                var collapsedLine = textLine.Collapse(collapsingProperties);
+
+                Assert.NotNull(collapsedLine);
+
+                var trimmedResult = string.Concat(collapsedLine.TextRuns.Select(x => x.Text));
+
+                Assert.Equal(trimmed, trimmedResult);
             }
         }
 

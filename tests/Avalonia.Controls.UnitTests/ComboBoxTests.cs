@@ -53,7 +53,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.True(target.Classes.Contains(ComboBox.pcDropdownOpen));
 
             _helper.Down(target);
-            Assert.True(target.Classes.Contains(ComboBox.pcPressed));
+            Assert.True(!target.Classes.Contains(ComboBox.pcPressed));
             _helper.Up(target);
             Assert.True(!target.Classes.Contains(ComboBox.pcPressed));
 
@@ -198,9 +198,14 @@ namespace Avalonia.Controls.UnitTests
                         new Popup
                         {
                             Name = "PART_Popup",
-                            Child = new ItemsPresenter
+                            Child = new ScrollViewer
                             {
-                                Name = "PART_ItemsPresenter",
+                                Name = "PART_ScrollViewer",
+                                Content = new ItemsPresenter
+                                {
+                                    Name = "PART_ItemsPresenter",
+                                    ItemsPanel = new FuncTemplate<Panel>(() => new VirtualizingStackPanel()),
+                                }.RegisterInNameScope(scope)
                             }.RegisterInNameScope(scope)
                         }.RegisterInNameScope(scope)
                     }
@@ -243,23 +248,30 @@ namespace Avalonia.Controls.UnitTests
         [InlineData(-1, 2, "c", "A item", "B item", "C item")]
         [InlineData(0, 1, "b", "A item", "B item", "C item")]
         [InlineData(2, 2, "x", "A item", "B item", "C item")]
+        [InlineData(0, 34, "y", "0 item", "1 item", "2 item", "3 item", "4 item", "5 item", "6 item", "7 item", "8 item", "9 item", "A item", "B item", "C item", "D item", "E item", "F item", "G item", "H item", "I item", "J item", "K item", "L item", "M item", "N item", "O item", "P item", "Q item", "R item", "S item", "T item", "U item", "V item", "W item", "X item", "Y item", "Z item")]
         public void TextSearch_Should_Have_Expected_SelectedIndex(
             int initialSelectedIndex,
             int expectedSelectedIndex,
             string searchTerm,
             params string[] items)
         {
-            using (UnitTestApplication.Start(TestServices.MockThreadingInterface))
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
                 var target = new ComboBox
                 {
                     Template = GetTemplate(),                    
-                    ItemsSource = items.Select(x => new ComboBoxItem { Content = x })
+                    ItemsSource = items.Select(x => new ComboBoxItem { Content = x }),
                 };
 
+                TestRoot root = new(target)
+                {
+                    ClientSize = new(500,500),
+                };
+                
                 target.ApplyTemplate();
                 target.Presenter.ApplyTemplate();
                 target.SelectedIndex = initialSelectedIndex;
+                root.LayoutManager.ExecuteInitialLayoutPass();
 
                 var args = new TextInputEventArgs
                 {
@@ -293,7 +305,6 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.True(DataValidationErrors.GetHasErrors(target));
                 Assert.True(DataValidationErrors.GetErrors(target).SequenceEqual(new[] { exception }));
-                
             }
             
         }
@@ -358,8 +369,10 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void FlowDirection_Of_RectangleContent_Shuold_Be_LeftToRight()
+        public void FlowDirection_Of_RectangleContent_Should_Be_LeftToRight()
         {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
             var target = new ComboBox
             {
                 FlowDirection = FlowDirection.RightToLeft,
@@ -385,6 +398,8 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void FlowDirection_Of_RectangleContent_Updated_After_InvalidateMirrorTransform()
         {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
             var parentContent = new Decorator()
             {
                 Child = new Control()
@@ -452,6 +467,89 @@ namespace Avalonia.Controls.UnitTests
                 
                 Assert.Equal(FlowDirection.RightToLeft, rectangle.FlowDirection);
             }
+        }
+
+        [Fact]
+        public void SelectionBoxItemTemplate_Overrides_ItemTemplate()
+        {
+            IDataTemplate itemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Text = x + "!" });
+            IDataTemplate selectionBoxItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Text = x });
+            var target = new ComboBox
+            {
+                ItemsSource = new []{ "Foo" },
+                SelectionBoxItemTemplate = selectionBoxItemTemplate,
+                ItemTemplate = itemTemplate,
+            };
+            
+            Assert.Equal(selectionBoxItemTemplate, target.SelectionBoxItemTemplate);
+        }
+        
+        [Fact]
+        public void SelectionBoxItemTemplate_Inherits_From_ItemTemplate_When_NotSet()
+        {
+            IDataTemplate itemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Text = x + "!" });
+            var target = new ComboBox
+            {
+                ItemsSource = new []{ "Foo" },
+                ItemTemplate = itemTemplate,
+            };
+            
+            Assert.Equal(itemTemplate, target.SelectionBoxItemTemplate);
+        }
+
+        [Fact]
+        public void SelectionBoxItemTemplate_Overrides_ItemTemplate_After_ItemTemplate_Changed()
+        {
+            IDataTemplate itemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Text = x + "!" });
+            IDataTemplate selectionBoxItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Text = x });
+            IDataTemplate itemTemplate2 = new FuncDataTemplate<string>((x, _) => new TextBlock { Text = x + "?" });
+            var target = new ComboBox
+            {
+                ItemsSource = new[] { "Foo" },
+                SelectionBoxItemTemplate = selectionBoxItemTemplate,
+                ItemTemplate = itemTemplate,
+            };
+
+            Assert.Equal(selectionBoxItemTemplate, target.SelectionBoxItemTemplate);
+            
+            target.ItemTemplate = itemTemplate2;
+            
+            Assert.Equal(selectionBoxItemTemplate, target.SelectionBoxItemTemplate);
+        }
+
+        [Fact]
+        public void SelectionBoxItemTemplate_Inherits_From_ItemTemplate_When_ItemTemplate_Changed()
+        {
+            IDataTemplate itemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Text = x + "!" });
+            IDataTemplate selectionBoxItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Text = x });
+            IDataTemplate itemTemplate2 = new FuncDataTemplate<string>((x, _) => new TextBlock { Text = x + "?" });
+            var target = new ComboBox { ItemsSource = new[] { "Foo" }, ItemTemplate = itemTemplate, };
+
+            Assert.Equal(itemTemplate, target.SelectionBoxItemTemplate);
+
+            target.ItemTemplate = itemTemplate2;
+            target.SelectionBoxItemTemplate = null;
+
+            Assert.Equal(itemTemplate2, target.SelectionBoxItemTemplate);
+        }
+
+        [Fact]
+        public void DisplayMemberBinding_Is_Not_Applied_To_SelectionBoxItem_Without_Selection()
+        {
+            var target = new ComboBox
+            {
+                DisplayMemberBinding = new Binding(),
+                ItemsSource = new[] { "foo", "bar" }
+            };
+
+            target.SelectedItem = null;
+            Assert.Null(target.SelectionBoxItem);
+
+            target.SelectedItem = "foo";
+            Assert.NotNull(target.SelectionBoxItem);
+
+            target.SelectedItem = null;
+            Assert.Null(target.SelectionBoxItem);
         }
     }
 }

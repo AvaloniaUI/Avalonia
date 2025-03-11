@@ -7,6 +7,7 @@
     <EnableDefaultCompileItems>False</EnableDefaultCompileItems>
     <EnableDefaultItems>false</EnableDefaultItems>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AvaloniaXamlLoader.cs" />
@@ -15,6 +16,7 @@
     <Compile Include="Converters\FontFamilyTypeConverter.cs" />
     <Compile Include="Converters\TimeSpanTypeConverter.cs" />
     <Compile Include="Data\DynamicResourceExpression.cs" />
+    <Compile Include="EagerParentStackEnumerator.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="MarkupExtension.cs" />
     <Compile Include="MarkupExtensions\CompiledBindingExtension.cs" />
@@ -50,6 +52,7 @@
     <Compile Include="XamlIl\Runtime\IAvaloniaXamlIlControlTemplateProvider.cs" />
     <Compile Include="XamlIl\Runtime\IAvaloniaXamlIlParentStackProvider.cs" />
     <Compile Include="XamlIl\Runtime\IAvaloniaXamlIlXmlNamespaceInfoProviderV1.cs" />
+    <Compile Include="XamlIl\Runtime\XamlIlParentStackProviderWrapper.cs" />
     <Compile Include="XamlIl\Runtime\XamlIlRuntimeHelpers.cs" />
     <Compile Include="XamlLoadException.cs" />
     <Compile Include="XamlTypes.cs" />

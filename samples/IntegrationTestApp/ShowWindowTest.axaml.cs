@@ -2,7 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
+using Avalonia.Interactivity;
 using Avalonia.Threading;
 
 namespace IntegrationTestApp
@@ -26,44 +26,38 @@ namespace IntegrationTestApp
         }
     }
     
-    public class ShowWindowTest : Window
+    public partial class ShowWindowTest : Window
     {
         private readonly DispatcherTimer? _timer;
         private readonly TextBox? _orderTextBox;
-        
+
         public ShowWindowTest()
         {
             InitializeComponent();
             DataContext = this;
-            PositionChanged += (s, e) => this.GetControl<TextBox>("CurrentPosition").Text = $"{Position}";
+            PositionChanged += (s, e) => CurrentPosition.Text = $"{Position}";
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                _orderTextBox = this.GetControl<TextBox>("CurrentOrder");
+                _orderTextBox = CurrentOrder;
                 _timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
                 _timer.Tick += TimerOnTick;
                 _timer.Start();
             }
-        }
-        
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
         }
 
         protected override void OnOpened(EventArgs e)
         {
             base.OnOpened(e);
             var scaling = PlatformImpl!.DesktopScaling;
-            this.GetControl<TextBox>("CurrentPosition").Text = $"{Position}";
-            this.GetControl<TextBox>("CurrentScreenRect").Text = $"{Screens.ScreenFromVisual(this)?.WorkingArea}";
-            this.GetControl<TextBox>("CurrentScaling").Text = $"{scaling}";
+            CurrentPosition.Text = $"{Position}";
+            CurrentScreenRect.Text = $"{Screens.ScreenFromVisual(this)?.WorkingArea}";
+            CurrentScaling.Text = $"{scaling}";
 
             if (Owner is not null)
             {
-                var ownerRect = this.GetControl<TextBox>("CurrentOwnerRect");
                 var owner = (Window)Owner;
-                ownerRect.Text = $"{owner.Position}, {PixelSize.FromSize(owner.FrameSize!.Value, scaling)}";
+                CurrentOwnerRect.Text = $"{owner.Position}, {PixelSize.FromSize(owner.FrameSize!.Value, scaling)}";
             }
         }
 
@@ -77,5 +71,8 @@ namespace IntegrationTestApp
         {
             _orderTextBox!.Text = MacOSIntegration.GetOrderedIndex(this).ToString();
         }
+
+        private void AddToWidth_Click(object? sender, RoutedEventArgs e) => Width = Bounds.Width + 10;
+        private void AddToHeight_Click(object? sender, RoutedEventArgs e) => Height = Bounds.Height + 10;
     }
 }

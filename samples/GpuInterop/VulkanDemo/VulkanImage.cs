@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Platform;
@@ -44,7 +46,7 @@ public unsafe class VulkanImage : IDisposable
         public uint CurrentLayout => (uint) _currentLayout;
 
         public VulkanImage(VulkanContext vk, uint format, PixelSize size,
-            bool exportable, uint mipLevels = 0)
+            bool exportable, IReadOnlyList<string> supportedHandleTypes)
         {
             _vk = vk;
             _instance = vk.Instance;
@@ -62,8 +64,12 @@ public unsafe class VulkanImage : IDisposable
             //MipLevels = MipLevels != 0 ? MipLevels : (uint)Math.Floor(Math.Log(Math.Max(Size.Width, Size.Height), 2));
 
             var handleType = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
-                ExternalMemoryHandleTypeFlags.D3D11TextureBit :
+                (supportedHandleTypes.Contains(KnownPlatformGraphicsExternalImageHandleTypes.D3D11TextureNtHandle)
+                 && !supportedHandleTypes.Contains(KnownPlatformGraphicsExternalImageHandleTypes.VulkanOpaqueNtHandle) ?
+                    ExternalMemoryHandleTypeFlags.D3D11TextureBit :
+                    ExternalMemoryHandleTypeFlags.OpaqueWin32Bit) :
                 ExternalMemoryHandleTypeFlags.OpaqueFDBit;
+            
             var externalMemoryCreateInfo = new ExternalMemoryImageCreateInfo
             {
                 SType = StructureType.ExternalMemoryImageCreateInfo,
@@ -96,35 +102,38 @@ public unsafe class VulkanImage : IDisposable
             Api.GetImageMemoryRequirements(_device, InternalHandle,
                 out var memoryRequirements);
 
-
-            var fdExport = new ExportMemoryAllocateInfo
-            {
-                HandleTypes = handleType, SType = StructureType.ExportMemoryAllocateInfo
-            };
             var dedicatedAllocation = new MemoryDedicatedAllocateInfoKHR
             {
                 SType = StructureType.MemoryDedicatedAllocateInfoKhr,
                 Image = image
             };
-            ImportMemoryWin32HandleInfoKHR handleImport = default;
-            if (exportable && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            
+            var fdExport = new ExportMemoryAllocateInfo
             {
-                 _d3dTexture2D = D3DMemoryHelper.CreateMemoryHandle(vk.D3DDevice!, size, Format);
-                 using var dxgi = _d3dTexture2D.QueryInterface<SharpDX.DXGI.Resource1>();
-                 
-                 handleImport = new ImportMemoryWin32HandleInfoKHR
-                 {
-                     PNext = &dedicatedAllocation,
-                     SType = StructureType.ImportMemoryWin32HandleInfoKhr,
-                     HandleType = ExternalMemoryHandleTypeFlags.D3D11TextureBit,
-                     Handle = dxgi.CreateSharedHandle(null, SharedResourceFlags.Read | SharedResourceFlags.Write),
-                 };
+                HandleTypes = handleType, SType = StructureType.ExportMemoryAllocateInfo,
+                PNext = &dedicatedAllocation
+            };
+
+            ImportMemoryWin32HandleInfoKHR handleImport = default;
+            if (handleType == ExternalMemoryHandleTypeFlags.D3D11TextureBit && exportable)
+            {
+                var d3dDevice = vk.D3DDevice ?? throw new NotSupportedException("Vulkan D3DDevice wasn't created");
+                _d3dTexture2D = D3DMemoryHelper.CreateMemoryHandle(d3dDevice, size, Format);
+                using var dxgi = _d3dTexture2D.QueryInterface<SharpDX.DXGI.Resource1>();
+
+                handleImport = new ImportMemoryWin32HandleInfoKHR
+                {
+                    PNext = &dedicatedAllocation,
+                    SType = StructureType.ImportMemoryWin32HandleInfoKhr,
+                    HandleType = ExternalMemoryHandleTypeFlags.D3D11TextureBit,
+                    Handle = dxgi.CreateSharedHandle(null, SharedResourceFlags.Read | SharedResourceFlags.Write),
+                };
             }
 
             var memoryAllocateInfo = new MemoryAllocateInfo
             {
                 PNext =
-                    exportable ? RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? &handleImport : &fdExport : null,
+                    exportable ? handleImport.Handle != IntPtr.Zero  ? &handleImport : &fdExport : null,
                 SType = StructureType.MemoryAllocateInfo,
                 AllocationSize = memoryRequirements.Size,
                 MemoryTypeIndex = (uint)VulkanMemoryHelper.FindSuitableMemoryTypeIndex(
@@ -187,14 +196,34 @@ public unsafe class VulkanImage : IDisposable
             return fd;
         }
         
+        public IntPtr ExportOpaqueNtHandle()
+        {
+            if (!Api.TryGetDeviceExtension<KhrExternalMemoryWin32>(_instance, _device, out var ext))
+                throw new InvalidOperationException();
+            var info = new MemoryGetWin32HandleInfoKHR()
+            {
+                Memory = _imageMemory,
+                SType = StructureType.MemoryGetWin32HandleInfoKhr,
+                HandleType = ExternalMemoryHandleTypeFlags.OpaqueWin32Bit
+            };
+            ext.GetMemoryWin32Handle(_device, info, out var fd).ThrowOnError();
+            return fd;
+        }
+        
         public IPlatformHandle Export()
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                using var dxgi = _d3dTexture2D!.QueryInterface<Resource1>();
-                return new PlatformHandle(
-                    dxgi.CreateSharedHandle(null, SharedResourceFlags.Read | SharedResourceFlags.Write),
-                    KnownPlatformGraphicsExternalImageHandleTypes.D3D11TextureNtHandle);
+                if (_d3dTexture2D != null)
+                {
+                    using var dxgi = _d3dTexture2D!.QueryInterface<Resource1>();
+                    return new PlatformHandle(
+                        dxgi.CreateSharedHandle(null, SharedResourceFlags.Read | SharedResourceFlags.Write),
+                        KnownPlatformGraphicsExternalImageHandleTypes.D3D11TextureNtHandle);
+                }
+
+                return new PlatformHandle(ExportOpaqueNtHandle(),
+                    KnownPlatformGraphicsExternalImageHandleTypes.VulkanOpaqueNtHandle);
             }
             else
                 return new PlatformHandle(new IntPtr(ExportFd()),
@@ -203,7 +232,7 @@ public unsafe class VulkanImage : IDisposable
 
         public ImageTiling Tiling => ImageTiling.Optimal;
 
-        
+        public bool IsDirectXBacked => _d3dTexture2D != null;
         
         internal void TransitionLayout(CommandBuffer commandBuffer,
             ImageLayout fromLayout, AccessFlags fromAccessFlags,

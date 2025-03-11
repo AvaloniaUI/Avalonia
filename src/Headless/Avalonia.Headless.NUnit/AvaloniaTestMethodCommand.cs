@@ -29,7 +29,7 @@ internal class AvaloniaTestMethodCommand : TestCommand
         .GetField("BeforeTest", BindingFlags.Instance | BindingFlags.NonPublic)!;
     private static FieldInfo s_afterTest = typeof(BeforeAndAfterTestCommand)
         .GetField("AfterTest", BindingFlags.Instance | BindingFlags.NonPublic)!;
-    
+
     private AvaloniaTestMethodCommand(
         HeadlessUnitTestSession session,
         TestCommand innerCommand,
@@ -47,7 +47,7 @@ internal class AvaloniaTestMethodCommand : TestCommand
     {
         return ProcessCommand(session, command, new List<Action>(), new List<Action>());
     }
-    
+
     private static TestCommand ProcessCommand(HeadlessUnitTestSession session, TestCommand command, List<Action> before, List<Action> after)
     {
         if (command is BeforeAndAfterTestCommand beforeAndAfterTestCommand)
@@ -79,7 +79,7 @@ internal class AvaloniaTestMethodCommand : TestCommand
 
     public override TestResult Execute(TestExecutionContext context)
     {
-        return _session.Dispatch(() => ExecuteTestMethod(context), default).GetAwaiter().GetResult();
+        return _session.DispatchCore(() => ExecuteTestMethod(context), true, default).GetAwaiter().GetResult();
     }
 
     // Unfortunately, NUnit has issues with custom synchronization contexts, which means we need to add some hacks to make it work.
@@ -109,6 +109,7 @@ internal class AvaloniaTestMethodCommand : TestCommand
         if (context.ExecutionStatus != TestExecutionStatus.AbortRequested)
         {
             _afterTest.ForEach(a => a());
+            Dispatcher.UIThread.RunJobs();
         }
         
         return context.CurrentResult;

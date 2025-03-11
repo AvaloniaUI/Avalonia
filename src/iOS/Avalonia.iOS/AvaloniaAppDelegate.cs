@@ -1,7 +1,6 @@
 using System;
 using Foundation;
 using Avalonia.Controls.ApplicationLifetimes;
-
 using UIKit;
 
 namespace Avalonia.iOS
@@ -74,7 +73,29 @@ namespace Avalonia.iOS
         {
             if (Uri.TryCreate(url.ToString(), UriKind.Absolute, out var uri))
             {
-                _onActivated?.Invoke(this, new ProtocolActivatedEventArgs(ActivationKind.OpenUri, uri));
+#if !TVOS
+                if (uri.Scheme == Uri.UriSchemeFile)
+                {
+                    _onActivated?.Invoke(this, new FileActivatedEventArgs(new[] { Storage.IOSStorageItem.CreateItem(url) }));
+                }
+                else
+#endif
+                {
+                    _onActivated?.Invoke(this, new ProtocolActivatedEventArgs(uri));   
+                }
+                return true;
+            }
+
+            return false;
+        }
+
+        [Export("application:continueUserActivity:restorationHandler:")]
+        public bool ContinueUserActivity(UIApplication application, NSUserActivity userActivity, UIApplicationRestorationHandler completionHandler)
+        {
+            if (userActivity.ActivityType == NSUserActivityType.BrowsingWeb && Uri.TryCreate(userActivity.WebPageUrl?.ToString(), UriKind.RelativeOrAbsolute, out var uri))
+            {
+                // Activation using a univeral link or web browser-to-native app Handoff
+                _onActivated?.Invoke(this, new ProtocolActivatedEventArgs(uri));
                 return true;
             }
 

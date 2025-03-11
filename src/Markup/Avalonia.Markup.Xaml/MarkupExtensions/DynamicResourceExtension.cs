@@ -2,6 +2,7 @@
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Data.Core;
+using Avalonia.Markup.Xaml.XamlIl.Runtime;
 using Avalonia.Styling;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions
@@ -37,7 +38,8 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                     (object?)serviceProvider.GetFirstParent<IResourceHost>();
             }
 
-            _themeVariant = StaticResourceExtension.GetDictionaryVariant(serviceProvider);
+            _themeVariant = StaticResourceExtension.GetDictionaryVariant(
+                serviceProvider.GetService<IAvaloniaXamlIlParentStackProvider>());
 
             return this;
         }
@@ -54,7 +56,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             return new InstancedBinding(target, expression, BindingMode.OneWay, _priority);
         }
 
-        BindingExpressionBase IBinding2.Instance(AvaloniaObject target, AvaloniaProperty targetProperty, object? anchor)
+        BindingExpressionBase IBinding2.Instance(AvaloniaObject target, AvaloniaProperty? targetProperty, object? anchor)
         {
             if (ResourceKey is null)
                 throw new InvalidOperationException("DynamicResource must have a ResourceKey.");

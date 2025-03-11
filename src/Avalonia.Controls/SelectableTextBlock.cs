@@ -146,7 +146,7 @@ namespace Avalonia.Controls
         /// </summary>
         public void SelectAll()
         {
-            var text = Text;
+            var text = HasComplexContent ? Inlines?.Text : Text;
 
             SetCurrentValue(SelectionStartProperty, 0);
             SetCurrentValue(SelectionEndProperty, text?.Length ?? 0);
@@ -224,12 +224,14 @@ namespace Avalonia.Controls
                 textSource = new FormattedTextSource(text ?? "", defaultProperties, textStyleOverrides);
             }
 
+            var maxSize = GetMaxSizeFromConstraint();
+
             return new TextLayout(
                 textSource,
                 paragraphProperties,
                 TextTrimming,
-                _constraint.Width,
-                _constraint.Height,
+                maxSize.Width,
+                maxSize.Height,
                 MaxLines);
         }
 
@@ -347,13 +349,9 @@ namespace Avalonia.Controls
                         }
                         else
                         {
-                            if (_wordSelectionStart == -1 || index < SelectionStart || index > SelectionEnd)
-                            {
-                                SetCurrentValue(SelectionStartProperty, index);
-                                SetCurrentValue(SelectionEndProperty, index);
-
-                                _wordSelectionStart = -1;
-                            }
+                            SetCurrentValue(SelectionStartProperty, index);
+                            SetCurrentValue(SelectionEndProperty, index);
+                            _wordSelectionStart = -1;
                         }
 
                         break;

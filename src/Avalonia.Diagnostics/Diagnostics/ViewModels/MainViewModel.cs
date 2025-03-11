@@ -18,6 +18,7 @@ namespace Avalonia.Diagnostics.ViewModels
         private readonly TreePageViewModel _logicalTree;
         private readonly TreePageViewModel _visualTree;
         private readonly EventsPageViewModel _events;
+        private readonly HotKeyPageViewModel _hotKeys;
         private readonly IDisposable _pointerOverSubscription;
         private ViewModelBase? _content;
         private int _selectedTab;
@@ -40,6 +41,7 @@ namespace Avalonia.Diagnostics.ViewModels
             _logicalTree = new TreePageViewModel(this, LogicalTreeNode.Create(root), _pinnedProperties);
             _visualTree = new TreePageViewModel(this, VisualTreeNode.Create(root), _pinnedProperties);
             _events = new EventsPageViewModel(this);
+            _hotKeys = new HotKeyPageViewModel();
 
             UpdateFocusedControl();
 
@@ -194,6 +196,9 @@ namespace Avalonia.Diagnostics.ViewModels
                     case 2:
                         Content = _events;
                         break;
+                    case 3:
+                        Content = _hotKeys;
+                        break;
                     default:
                         Content = _logicalTree;
                         break;
@@ -231,6 +236,11 @@ namespace Avalonia.Diagnostics.ViewModels
             private set => RaiseAndSetIfChanged(ref _pointerOverElementName, value);
         }
 
+        public void ShowHotKeys()
+        {
+            SelectedTab = 3;
+        }
+
         public void SelectControl(Control control)
         {
             var tree = Content as TreePageViewModel;
@@ -242,7 +252,7 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             if (Content is TreePageViewModel treeVm && treeVm.Details != null)
             {
-                treeVm.Details.SnapshotStyles = enable;
+                treeVm.Details.SnapshotFrames = enable;
             }
         }
 
@@ -333,6 +343,8 @@ namespace Avalonia.Diagnostics.ViewModels
             ShowImplementedInterfaces = options.ShowImplementedInterfaces;
             FocusHighlighter = options.FocusHighlighterBrush;
             SelectedTab = (int)options.LaunchView;
+
+            _hotKeys.SetOptions(options);
         }
 
         public bool ShowImplementedInterfaces

@@ -1,49 +1,88 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using Avalonia.Media;
+using Avalonia.Media.Fonts;
+using Avalonia.Media.Fonts.Tables;
+using Avalonia.Media.Fonts.Tables.Name;
 using HarfBuzzSharp;
 using SkiaSharp;
 
 namespace Avalonia.Skia
 {
-    internal class GlyphTypefaceImpl : IGlyphTypeface, IGlyphTypeface2
+    internal class GlyphTypefaceImpl : IGlyphTypeface2
     {
         private bool _isDisposed;
         private readonly SKTypeface _typeface;
+        private readonly NameTable? _nameTable;
+        private readonly OS2Table? _os2Table;
+        private readonly HorizontalHeadTable? _hhTable;
+        private IReadOnlyList<OpenTypeTag>? _supportedFeatures;
 
         public GlyphTypefaceImpl(SKTypeface typeface, FontSimulations fontSimulations)
         {
             _typeface = typeface ?? throw new ArgumentNullException(nameof(typeface));
 
-            Face = new Face(GetTable)
-            {
-                UnitsPerEm = typeface.UnitsPerEm
-            };
+            Face = new Face(GetTable) { UnitsPerEm = typeface.UnitsPerEm };
 
             Font = new Font(Face);
 
             Font.SetFunctionsOpenType();
 
-            Font.OpenTypeMetrics.TryGetPosition(OpenTypeMetricsTag.HorizontalAscender, out var ascent);
-            Font.OpenTypeMetrics.TryGetPosition(OpenTypeMetricsTag.HorizontalDescender, out var descent);
-            Font.OpenTypeMetrics.TryGetPosition(OpenTypeMetricsTag.HorizontalLineGap, out var lineGap);
-            Font.OpenTypeMetrics.TryGetPosition(OpenTypeMetricsTag.StrikeoutOffset, out var strikethroughOffset);
-            Font.OpenTypeMetrics.TryGetPosition(OpenTypeMetricsTag.StrikeoutSize, out var strikethroughSize);
             Font.OpenTypeMetrics.TryGetPosition(OpenTypeMetricsTag.UnderlineOffset, out var underlineOffset);
             Font.OpenTypeMetrics.TryGetPosition(OpenTypeMetricsTag.UnderlineSize, out var underlineSize);
+
+            _os2Table = OS2Table.Load(this);
+            _hhTable = HorizontalHeadTable.Load(this);
+
+            var ascent = 0;
+            var descent = 0;
+            var lineGap = 0;
+
+            if (_os2Table != null && (_os2Table.FontStyle & OS2Table.FontStyleSelection.USE_TYPO_METRICS) != 0)
+            {
+                ascent = -_os2Table.TypoAscender;
+                descent = -_os2Table.TypoDescender;
+                lineGap = _os2Table.TypoLineGap;
+            }
+            else
+            {
+                if (_hhTable != null)
+                {
+                    ascent = -_hhTable.Ascender;
+                    descent = -_hhTable.Descender;
+                    lineGap = _hhTable.LineGap;
+                }
+            }
+
+            if (_os2Table != null && (ascent == 0 || descent == 0))
+            {
+                if (_os2Table.TypoAscender != 0 || _os2Table.TypoDescender != 0)
+                {
+                    ascent = -_os2Table.TypoAscender;
+                    descent = -_os2Table.TypoDescender;
+                    lineGap = _os2Table.TypoLineGap;
+                }
+                else
+                {
+                    ascent = -_os2Table.WinAscent;
+                    descent = _os2Table.WinDescent;
+                }
+            }
 
             Metrics = new FontMetrics
             {
                 DesignEmHeight = (short)Face.UnitsPerEm,
-                Ascent = -ascent,
-                Descent = -descent,
+                Ascent = ascent,
+                Descent = descent,
                 LineGap = lineGap,
                 UnderlinePosition = -underlineOffset,
                 UnderlineThickness = underlineSize,
-                StrikethroughPosition = -strikethroughOffset,
-                StrikethroughThickness = strikethroughSize,
+                StrikethroughPosition = -_os2Table?.StrikeoutPosition ?? 0,
+                StrikethroughThickness = _os2Table?.StrikeoutSize ?? 0,
                 IsFixedPitch = typeface.IsFixedPitch
             };
 
@@ -51,11 +90,119 @@ namespace Avalonia.Skia
 
             FontSimulations = fontSimulations;
 
-            Weight = (FontWeight)typeface.FontWeight;
+            var fontWeight = _os2Table != null ? (FontWeight)_os2Table.WeightClass : FontWeight.Normal;
 
-            Style = typeface.FontSlant.ToAvalonia();
+            Weight = (fontSimulations & FontSimulations.Bold) != 0 ? FontWeight.Bold : fontWeight;
 
-            Stretch = (FontStretch)typeface.FontStyle.Width;
+            var style = _os2Table != null ? GetFontStyle(_os2Table.FontStyle) : FontStyle.Normal;
+
+            Style = (fontSimulations & FontSimulations.Oblique) != 0 ? FontStyle.Italic : style;
+
+            var stretch = _os2Table != null ? (FontStretch)_os2Table.WidthClass : FontStretch.Normal;
+
+            Stretch = stretch;
+
+            _nameTable = NameTable.Load(this);
+
+            //Rely on Skia if no name table is present
+            FamilyName = _nameTable?.FontFamilyName((ushort)CultureInfo.InvariantCulture.LCID) ?? typeface.FamilyName;
+
+            TypographicFamilyName = _nameTable?.GetNameById((ushort)CultureInfo.InvariantCulture.LCID, KnownNameIds.TypographicFamilyName) ?? FamilyName;
+
+            if(_nameTable != null)
+            {
+                var familyNames = new Dictionary<ushort, string>(1);
+                var faceNames = new Dictionary<ushort, string>(1);
+
+                foreach (var nameRecord in _nameTable)
+                {
+                    if(nameRecord.NameID == KnownNameIds.FontFamilyName)
+                    {
+                        if (nameRecord.Platform != PlatformIDs.Windows || nameRecord.LanguageID == 0)
+                        {
+                            continue;
+                        }
+
+                        if (!familyNames.ContainsKey(nameRecord.LanguageID))
+                        {
+                            familyNames[nameRecord.LanguageID] = nameRecord.Value;
+                        }
+                    }
+
+                    if(nameRecord.NameID == KnownNameIds.FontSubfamilyName)
+                    {
+                        if (nameRecord.Platform != PlatformIDs.Windows || nameRecord.LanguageID == 0)
+                        {
+                            continue;
+                        }
+
+                        if (!faceNames.ContainsKey(nameRecord.LanguageID))
+                        {
+                            faceNames[nameRecord.LanguageID] = nameRecord.Value;
+                        }
+                    }
+                }
+
+                FamilyNames = familyNames;
+                FaceNames = faceNames;
+            }
+            else
+            {
+                FamilyNames = new Dictionary<ushort, string> { { (ushort)CultureInfo.InvariantCulture.LCID, FamilyName } };
+                FaceNames = new Dictionary<ushort, string> { { (ushort)CultureInfo.InvariantCulture.LCID, Weight.ToString() } };
+            }
+        }
+
+        public string TypographicFamilyName { get; }
+
+        public IReadOnlyDictionary<ushort, string> FamilyNames { get; }
+
+        public IReadOnlyDictionary<ushort, string> FaceNames { get; }
+
+        public IReadOnlyList<OpenTypeTag> SupportedFeatures
+        {
+            get
+            {
+                if (_supportedFeatures != null)
+                {
+                    return _supportedFeatures;
+                }
+
+                var gPosFeatures = FeatureListTable.LoadGPos(this);
+                var gSubFeatures = FeatureListTable.LoadGSub(this);
+
+                var supportedFeatures = new List<OpenTypeTag>(gPosFeatures?.Features.Count ?? 0 + gSubFeatures?.Features.Count ?? 0);
+
+                if (gPosFeatures != null)
+                {
+                    foreach (var gPosFeature in gPosFeatures.Features)
+                    {
+                        if (supportedFeatures.Contains(gPosFeature))
+                        {
+                            continue;
+                        }
+
+                        supportedFeatures.Add(gPosFeature);
+                    }
+                }
+
+                if (gSubFeatures != null)
+                {
+                    foreach (var gSubFeature in gSubFeatures.Features)
+                    {
+                        if (supportedFeatures.Contains(gSubFeature))
+                        {
+                            continue;
+                        }
+
+                        supportedFeatures.Add(gSubFeature);
+                    }
+                }
+
+                _supportedFeatures = supportedFeatures;
+
+                return supportedFeatures;
+            }
         }
 
         public Face Face { get; }
@@ -70,7 +217,7 @@ namespace Avalonia.Skia
 
         public int GlyphCount { get; }
 
-        public string FamilyName => _typeface.FamilyName;
+        public string FamilyName { get; }
 
         public FontWeight Weight { get; }
 
@@ -151,6 +298,21 @@ namespace Avalonia.Skia
             return Font.GetHorizontalGlyphAdvances(glyphIndices);
         }
 
+        private static FontStyle GetFontStyle(OS2Table.FontStyleSelection styleSelection)
+        {
+            if((styleSelection & OS2Table.FontStyleSelection.ITALIC) != 0)
+            {
+                return FontStyle.Italic;
+            }
+
+            if((styleSelection & OS2Table.FontStyleSelection.OBLIQUE) != 0)
+            {
+                return FontStyle.Oblique;
+            }
+
+            return FontStyle.Normal;
+        }
+
         private Blob? GetTable(Face face, Tag tag)
         {
             var size = _typeface.GetTableSize(tag);
@@ -186,6 +348,7 @@ namespace Avalonia.Skia
 
             Font.Dispose();
             Face.Dispose();
+            _typeface.Dispose();
         }
 
         public void Dispose()

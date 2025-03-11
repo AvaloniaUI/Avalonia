@@ -148,7 +148,7 @@ namespace Avalonia.X11
         [DllImport(libX11)]
         public static extern IntPtr XGetAtomName(IntPtr display, IntPtr atom);
 
-        public static string GetAtomName(IntPtr display, IntPtr atom)
+        public static string? GetAtomName(IntPtr display, IntPtr atom)
         {
             var ptr = XGetAtomName(display, atom);
             if (ptr == IntPtr.Zero)
@@ -328,6 +328,9 @@ namespace Avalonia.X11
 
         [DllImport(libX11)]
         public static extern IntPtr XCreateFontCursor(IntPtr display, CursorFontShape shape);
+
+        [DllImport(libXCursor)]
+        public static extern IntPtr XcursorLibraryLoadCursor(IntPtr display, string name); 
 
         [DllImport(libX11)]
         public static extern IntPtr XCreatePixmapCursor(IntPtr display, IntPtr source, IntPtr mask,
@@ -511,8 +514,8 @@ namespace Avalonia.X11
         
         [DllImport(libX11)]
         public static extern IntPtr XCreateIC(IntPtr xim, string xnClientWindow, IntPtr handle, string xnFocusWindow,
-            IntPtr value2, string xnInputStyle, IntPtr value3, string xnResourceName, string optionsWmClass,
-            string xnResourceClass, string wmClass, string xnPreeditAttributes, IntPtr list, IntPtr zero);
+            IntPtr value2, string xnInputStyle, IntPtr value3, string xnResourceName, string? optionsWmClass,
+            string xnResourceClass, string? wmClass, string xnPreeditAttributes, IntPtr list, IntPtr zero);
 
         [DllImport(libX11)]
         public static extern void XSetICFocus(IntPtr xic);
@@ -733,7 +736,7 @@ namespace Avalonia.X11
             }
         }
 
-        public static IntPtr CreateEventWindow(AvaloniaX11Platform plat, X11PlatformThreading.EventHandler handler)
+        public static IntPtr CreateEventWindow(AvaloniaX11Platform plat, X11EventDispatcher.EventHandler handler)
         {
             var win = XCreateSimpleWindow(plat.Display, plat.Info.DefaultRootWindow, 
                 0, 0, 1, 1, 0, IntPtr.Zero, IntPtr.Zero);

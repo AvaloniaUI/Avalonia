@@ -34,6 +34,7 @@ public class XamlXClassResolverTests
             MiniCompiler.CreateDefault(types, MiniCompiler.AvaloniaXmlnsDefinitionAttribute));
 
         var resolvedClass = resolver.ResolveView(xaml);
+        Assert.NotNull(resolvedClass);
         Assert.Equal(className, resolvedClass.ClassName);
         Assert.Equal(nameSpace, resolvedClass.Namespace);
     }

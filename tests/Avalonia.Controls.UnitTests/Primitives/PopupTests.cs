@@ -222,6 +222,23 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void Should_Close_When_Control_Detaches()
+        {
+            using (CreateServices())
+            {
+                var button = new Button();
+                var target = new Popup() {Placement = PlacementMode.Pointer, PlacementTarget = button};
+                var root = PreparedWindow(button);
+
+                target.Open();
+
+                Assert.True(target.IsOpen);
+                root.Content = null;
+                Assert.False(target.IsOpen);
+            }
+        }
+
+        [Fact]
         public void Popup_Open_Should_Raise_Single_Opened_Event()
         {
             using (CreateServices())
@@ -616,46 +633,39 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             using (CreateServicesWithFocus())
             {
-                var window = PreparedWindow();
+                var window = PreparedWindow(new Panel { Children = { new Slider() }});
 
-                var tb = new TextBox();
-                var b = new Button();
-                var p = new Popup
+                var textBox = new TextBox();
+                var button = new Button();
+                var popup = new Popup
                 {
                     PlacementTarget = window,
                     Child = new StackPanel
                     {
                         Children =
                         {
-                            tb,
-                            b
+                            textBox,
+                            button
                         }
                     }
                 };
-                ((ISetLogicalParent)p).SetParent(p.PlacementTarget);
+
+                ((ISetLogicalParent)popup).SetParent(popup.PlacementTarget);
                 window.Show();
+                popup.Open();
 
-                p.Open();
+                button.Focus();
 
-                if(p.Host is OverlayPopupHost host)
-                {
-                    //Need to measure/arrange for visual children to show up
-                    //in OverlayPopupHost
-                    host.Measure(Size.Infinity);
-                    host.Arrange(new Rect(host.DesiredSize));
-                }
+                var inputRoot = Assert.IsAssignableFrom<IInputRoot>(popup.Host);
 
-                tb.Focus();
-
-                var focusManager = TopLevel.GetTopLevel(tb)!.FocusManager;
-                tb = Assert.IsType<TextBox>(focusManager.GetFocusedElement());
+                var focusManager = inputRoot.FocusManager!;
+                Assert.Same(button, focusManager.GetFocusedElement());
 
                 //Ensure focus remains in the popup
-                var nextFocus = KeyboardNavigationHandler.GetNext(tb, NavigationDirection.Next);
+                inputRoot.KeyboardNavigationHandler!.Move(focusManager.GetFocusedElement()!, NavigationDirection.Next);
+                Assert.Same(textBox, focusManager.GetFocusedElement());
 
-                Assert.True(nextFocus == b);
-
-                p.Close();
+                popup.Close();
             }
         }
 
@@ -1189,6 +1199,47 @@ namespace Avalonia.Controls.UnitTests.Primitives
             }
         }
 
+        [Fact]
+        public void Custom_Placement_Callback_Is_Executed()
+        {
+            using (CreateServices())
+            {
+                var callbackExecuted = 0;
+                var popupContent = new Border { Width = 100, Height = 100 };
+                var popup = new Popup
+                {
+                    Child = popupContent,
+                    Placement = PlacementMode.Custom,
+                    HorizontalOffset = 42,
+                    VerticalOffset = 21
+                };
+                var popupParent = new Border { Child = popup };
+                var root = PreparedWindow(popupParent);
+
+                popup.CustomPopupPlacementCallback = (parameters) =>
+                {
+                    Assert.Equal(popupContent.Width, parameters.PopupSize.Width);
+                    Assert.Equal(popupContent.Height, parameters.PopupSize.Height);
+
+                    Assert.Equal(root.Width, parameters.AnchorRectangle.Width);
+                    Assert.Equal(root.Height, parameters.AnchorRectangle.Height);
+
+                    Assert.Equal(popup.HorizontalOffset, parameters.Offset.X);
+                    Assert.Equal(popup.VerticalOffset, parameters.Offset.Y);
+
+                    callbackExecuted++;
+
+                    parameters.Anchor = PopupAnchor.Top;
+                    parameters.Gravity = PopupGravity.Bottom;
+                };
+
+                root.LayoutManager.ExecuteInitialLayoutPass();
+                popup.Open();
+                root.LayoutManager.ExecuteLayoutPass();
+
+                Assert.Equal(1, callbackExecuted);
+            }
+        }
 
         private static PopupRoot CreateRoot(TopLevel popupParent, IPopupImpl impl = null)
         {
@@ -1209,6 +1260,38 @@ namespace Avalonia.Controls.UnitTests.Primitives
             return result;
         }
 
+        [Fact]
+        public void Popup_Open_With_Correct_IsUsingOverlayLayer_And_Disabled_OverlayLayer()
+        {
+            using (CreateServices())
+            {
+                var target = new Popup();
+                target.IsOpen = true;
+                target.ShouldUseOverlayLayer = false;
+
+                var window = PreparedWindow(target);
+                window.Show();
+
+                Assert.Equal(UsePopupHost, target.IsUsingOverlayLayer);
+            }
+        }
+
+        [Fact]
+        public void Popup_Open_With_Correct_IsUsingOverlayLayer_And_Enabled_OverlayLayer()
+        {
+            using (CreateServices())
+            {
+                var target = new Popup();
+                target.IsOpen = true;
+                target.ShouldUseOverlayLayer = true;
+
+                var window = PreparedWindow(target);
+                window.Show();
+
+                Assert.Equal(true, target.IsUsingOverlayLayer);
+            }
+        }
+
         private IDisposable CreateServices()
         {
             return UnitTestApplication.Start(TestServices.StyledWindow.With(
@@ -1220,7 +1303,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
             return UnitTestApplication.Start(TestServices.StyledWindow.With(
                 windowingPlatform: CreateMockWindowingPlatform(),
                 focusManager: new FocusManager(),
-                keyboardDevice: () => new KeyboardDevice()));
+                keyboardDevice: () => new KeyboardDevice(),
+                keyboardNavigation: () => new KeyboardNavigationHandler()));
         }
 
        

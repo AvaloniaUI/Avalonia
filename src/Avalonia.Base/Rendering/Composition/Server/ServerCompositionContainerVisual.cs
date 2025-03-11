@@ -16,14 +16,16 @@ namespace Avalonia.Rendering.Composition.Server
         private LtrbRect? _transformedContentBounds;
         private IImmutableEffect? _oldEffect;
         
-        protected override void RenderCore(CompositorDrawingContextProxy canvas, LtrbRect currentTransformedClip,
-            IDirtyRectTracker dirtyRects)
+        protected override void RenderCore(ServerVisualRenderContext context, LtrbRect currentTransformedClip)
         {
-            base.RenderCore(canvas, currentTransformedClip, dirtyRects);
+            base.RenderCore(context, currentTransformedClip);
 
-            foreach (var ch in Children)
+            if (context.RenderChildren)
             {
-                ch.Render(canvas, currentTransformedClip, dirtyRects);
+                foreach (var ch in Children)
+                {
+                    ch.Render(context, currentTransformedClip);
+                }
             }
         }
 

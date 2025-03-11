@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -13,8 +12,6 @@ using Avalonia.Input.Platform;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
-using Avalonia.Rendering;
-using Avalonia.Rendering.Composition;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
@@ -804,7 +801,7 @@ namespace Avalonia.Controls.UnitTests
         [InlineData("abc", "ddd", 3, 0, 2, true, "ddc")]
         [InlineData("abc", "dddd", 4, 1, 3, true, "addd")]
         [InlineData("abc", "ddddd", 5, 3, 3, true, "abcdd")]
-        public void MaxLength_Works_Properly(
+        public async Task MaxLength_Works_Properly(
             string initalText,
             string textInput,
             int maxLength,
@@ -838,10 +835,10 @@ namespace Avalonia.Controls.UnitTests
 
                 if (fromClipboard)
                 {
-                    topLevel.Clipboard?.SetTextAsync(textInput).GetAwaiter().GetResult();
+                    await topLevel.Clipboard!.SetTextAsync(textInput);
 
                     RaiseKeyEvent(target, Key.V, KeyModifiers.Control);
-                    topLevel.Clipboard?.ClearAsync().GetAwaiter().GetResult();
+                    await topLevel.Clipboard!.ClearAsync();
                 }
                 else
                 {
@@ -884,7 +881,42 @@ namespace Avalonia.Controls.UnitTests
 
                 RaiseKeyEvent(target, key, modifiers);
                 RaiseKeyEvent(target, Key.Z, KeyModifiers.Control); // undo
-                Assert.True(target.Text == "0123");
+                Assert.Equal("0123", target.Text);
+            }
+        }
+
+        [Fact]
+        public void Invalid_Text_Is_Coerced_Without_Raising_Intermediate_Change()
+        {
+            using (Start())
+            {
+                var target = new MaskedTextBox
+                {
+                    Template = CreateTemplate()
+                };
+
+                var impl = CreateMockTopLevelImpl();
+                var topLevel = new TestTopLevel(impl.Object) {
+                    Template = CreateTopLevelTemplate(),
+                    Content = target
+                };
+                topLevel.ApplyTemplate();
+                topLevel.LayoutManager.ExecuteInitialLayoutPass();
+
+                var texts = new System.Collections.Generic.List<string>();
+
+                target.PropertyChanged += (_, e) =>
+                {
+                    if (e.Property == TextBox.TextProperty)
+                        texts.Add(e.GetNewValue<string>());
+                };
+
+                target.Mask = "000";
+
+                target.Text = "123";
+                target.Text = "abc";
+
+                Assert.Equal(["___", "123"], texts);
             }
         }
 
@@ -993,6 +1025,9 @@ namespace Avalonia.Controls.UnitTests
             public Task<string[]> GetFormatsAsync() => Task.FromResult(Array.Empty<string>());
 
             public Task<object> GetDataAsync(string format) => Task.FromResult((object)null);
+
+            public Task FlushAsync() =>
+                Task.CompletedTask;
         }
 
         private class TestTopLevel : TopLevel

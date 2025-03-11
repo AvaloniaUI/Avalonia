@@ -29,7 +29,7 @@
 
   <PropertyGroup Condition=" '$(_AvaloniaWindowsTarget)' == 'true' ">
     <OutputType Condition="'$(OutputType)' == 'Exe'">WinExe</OutputType>
-    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <BuiltInComInteropSupport Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">true</BuiltInComInteropSupport>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
   </PropertyGroup>
 

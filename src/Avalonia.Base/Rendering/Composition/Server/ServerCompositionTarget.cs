@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using Avalonia.Collections.Pooled;
+using Avalonia.Diagnostics;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Media.Immutable;
@@ -122,27 +123,28 @@ namespace Avalonia.Rendering.Composition.Server
             Revision++;
 
             _overlays.MarkUpdateCallStart();
-
-            var transform = Matrix.CreateScale(Scaling, Scaling);
-            // Update happens in a separate phase to extend dirty rect if needed
-            Root.Update(this, transform);
-
-            while (_adornerUpdateQueue.Count > 0)
+            using (Diagnostic.BeginCompositorUpdatePass())
             {
-                var adorner = _adornerUpdateQueue.Dequeue();
-                adorner.Update(this, transform);
+                var transform = Matrix.CreateScale(Scaling, Scaling);
+                // Update happens in a separate phase to extend dirty rect if needed
+                Root.Update(this, transform);
+
+                while (_adornerUpdateQueue.Count > 0)
+                {
+                    var adorner = _adornerUpdateQueue.Dequeue();
+                    adorner.Update(this, transform);
+                }
+
+                _updateRequested = false;
+                Readback.CompleteWrite(Revision);
+
+                _overlays.MarkUpdateCallEnd();
             }
 
-            _updateRequested = false;
-            Readback.CompleteWrite(Revision);
-
-            _overlays.MarkUpdateCallEnd();
-            
             if (!_redrawRequested)
                 return;
-            _redrawRequested = false;
 
-            var renderTargetWithProperties = _renderTarget as IRenderTargetWithProperties;
+            var renderTargetWithProperties = _renderTarget as IRenderTarget2;
 
             
             var needLayer = _overlays.RequireLayer // Check if we don't need overlays
@@ -150,7 +152,9 @@ namespace Avalonia.Rendering.Composition.Server
                             || !(renderTargetWithProperties?.Properties.RetainsPreviousFrameContents == true
                                 && renderTargetWithProperties?.Properties.IsSuitableForDirectRendering == true);
             
-            using (var renderTargetContext = _renderTarget.CreateDrawingContextWithProperties(false, out var properties))
+            using (var renderTargetContext = _renderTarget.CreateDrawingContextWithProperties(
+                       this.PixelSize, out var properties))
+            using (var renderTiming = Diagnostic.BeginCompositorRenderPass())
             {
                 if(needLayer && (PixelSize != _layerSize || _layer == null || _layer.IsCorrupted))
                 {
@@ -199,14 +203,14 @@ namespace Avalonia.Rendering.Composition.Server
 
                 RenderedVisuals = 0;
 
+                _redrawRequested = false;
                 DirtyRects.Reset();
             }
         }
 
         void RenderRootToContextWithClip(IDrawingContextImpl context, ServerCompositionVisual root)
         {
-            var useLayerClip = Compositor.Options.UseSaveLayerRootClip ??
-                               Compositor.RenderInterface.GpuContext != null;
+            var useLayerClip = Compositor.Options.UseSaveLayerRootClip ?? false;
             
             using (DirtyRects.BeginDraw(context))
             {
@@ -215,7 +219,10 @@ namespace Avalonia.Rendering.Composition.Server
                     context.PushLayer(DirtyRects.CombinedRect.ToRectUnscaled());
 
                 using (var proxy = new CompositorDrawingContextProxy(context))
-                    root.Render(proxy, null, DirtyRects);
+                {
+                    var ctx = new ServerVisualRenderContext(proxy, DirtyRects, false, true);
+                    root.Render(ctx, null);
+                }
 
                 if (useLayerClip)
                     context.PopLayer();

@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Templates;
-using Avalonia.Media;
 using Avalonia.Styling;
 
 namespace Avalonia.Controls
@@ -16,7 +13,7 @@ namespace Avalonia.Controls
     /// </summary>
     public class ResourceDictionary : ResourceProvider, IResourceDictionary, IThemeVariantProvider
     {
-        private object? lastDeferredItemKey;
+        private object? _lastDeferredItemKey;
         private Dictionary<object, object?>? _inner;
         private AvaloniaList<IResourceProvider>? _mergedDictionaries;
         private AvaloniaDictionary<ThemeVariant, IThemeVariantProvider>? _themeDictionary;
@@ -43,7 +40,8 @@ namespace Avalonia.Controls
             set
             {
                 Inner[key] = value;
-                Owner?.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
+                Owner?.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);            
+
             }
         }
 
@@ -145,11 +143,27 @@ namespace Avalonia.Controls
         }
 
         public void AddDeferred(object key, Func<IServiceProvider?, object?> factory)
-        {
-            Inner.Add(key, new DeferredItem(factory));
-            Owner?.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
-        }
+            => Add(key, new DeferredItem(factory));
 
+        public void AddDeferred(object key, IDeferredContent deferredContent)
+            => Add(key, deferredContent);
+
+        public void AddNotSharedDeferred(object key, IDeferredContent deferredContent)
+            => Add(key, new NotSharedDeferredItem(deferredContent));
+
+        public void SetItems(IEnumerable<KeyValuePair<object, object?>> values)
+        {
+            try
+            {
+                foreach (var value in values)
+                    Inner[value.Key] = value.Value;
+            }
+            finally
+            {
+                Owner?.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);            
+            }
+        }
+        
         public void Clear()
         {
             if (_inner?.Count > 0)
@@ -227,10 +241,10 @@ namespace Avalonia.Controls
         {
             if (_inner is not null && _inner.TryGetValue(key, out value))
             {
-                if (value is DeferredItem deffered)
+                if (value is IDeferredContent deferred)
                 {
                     // Avoid simple reentrancy, which could commonly occur on redefining the resource.
-                    if (lastDeferredItemKey == key)
+                    if (_lastDeferredItemKey == key)
                     {
                         value = null;
                         return false;
@@ -238,22 +252,25 @@ namespace Avalonia.Controls
 
                     try
                     {
-                        lastDeferredItemKey = key;
-                        _inner[key] = value = deffered.Factory(null) switch
+                        _lastDeferredItemKey = key;
+                        value = deferred.Build(null) switch
                         {
                             ITemplateResult t => t.Result,
                             { } v => v,
                             _ => null,
                         };
+                        if (deferred is not NotSharedDeferredItem)
+                        {
+                            _inner[key] = value;
+                        }
                     }
                     finally
                     {
-                        lastDeferredItemKey = null;
+                        _lastDeferredItemKey = null;
                     }
                 }
                 return true;
             }
-
             value = null;
             return false;
         }
@@ -313,7 +330,7 @@ namespace Avalonia.Controls
         {
             if (_inner is not null && _inner.TryGetValue(key, out var result))
             {
-                return result is DeferredItem;
+                return result is IDeferredContent;
             }
 
             return false;
@@ -373,10 +390,17 @@ namespace Avalonia.Controls
             }
         }
 
-        private class DeferredItem
+        private sealed class DeferredItem : IDeferredContent
         {
-            public DeferredItem(Func<IServiceProvider?, object?> factory) => Factory = factory;
-            public Func<IServiceProvider?, object?> Factory { get; }
+            private readonly Func<IServiceProvider?,object?> _factory;
+            public DeferredItem(Func<IServiceProvider?, object?> factory) => _factory = factory;
+            public object? Build(IServiceProvider? serviceProvider) => _factory(serviceProvider);
+        }
+
+        private sealed class NotSharedDeferredItem(IDeferredContent deferredContent) : IDeferredContent
+        {
+            private readonly IDeferredContent _deferredContent = deferredContent ;
+            public object? Build(IServiceProvider? serviceProvider) => _deferredContent.Build(serviceProvider);
         }
     }
 }

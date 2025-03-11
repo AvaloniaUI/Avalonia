@@ -19,6 +19,7 @@ using static Nuke.Common.Tools.Xunit.XunitTasks;
 using static Nuke.Common.Tools.VSWhere.VSWhereTasks;
 using static Serilog.Log;
 using MicroCom.CodeGenerator;
+using NuGet.Configuration;
 using Nuke.Common.IO;
 
 /*
@@ -39,7 +40,8 @@ partial class Build : NukeBuild
     [PackageExecutable("Microsoft.DotNet.GenAPI.Tool", "Microsoft.DotNet.GenAPI.Tool.dll", Framework = "net8.0")]
     Tool ApiGenTool;
 
-
+    [PackageExecutable("dotnet-ilrepack", "ILRepackTool.dll", Framework = "net8.0")]
+    Tool IlRepackTool;
     
     protected override void OnBuildInitialized()
     {
@@ -106,7 +108,6 @@ partial class Build : NukeBuild
     Target Clean => _ => _.Executes(() =>
     {
         Parameters.BuildDirs.ForEach(DeleteDirectory);
-        Parameters.BuildDirs.ForEach(EnsureCleanDirectory);
         EnsureCleanDirectory(Parameters.ArtifactsDir);
         EnsureCleanDirectory(Parameters.NugetIntermediateRoot);
         EnsureCleanDirectory(Parameters.NugetRoot);
@@ -306,7 +307,8 @@ partial class Build : NukeBuild
         .Executes(() =>
         {
             BuildTasksPatcher.PatchBuildTasksInPackage(Parameters.NugetIntermediateRoot / "Avalonia.Build.Tasks." +
-                                                       Parameters.Version + ".nupkg");
+                                                       Parameters.Version + ".nupkg",
+                                                       IlRepackTool);
             var config = Numerge.MergeConfiguration.LoadFile(RootDirectory / "nukebuild" / "numerge.config");
             EnsureCleanDirectory(Parameters.NugetRoot);
             if(!Numerge.NugetPackageMerger.Merge(Parameters.NugetIntermediateRoot, Parameters.NugetRoot, config,
@@ -358,6 +360,7 @@ partial class Build : NukeBuild
 
     Target CiAzureWindows => _ => _
         .DependsOn(Package)
+        .DependsOn(VerifyXamlCompilation)
         .DependsOn(ZipFiles);
 
     Target BuildToNuGetCache => _ => _
@@ -366,6 +369,9 @@ partial class Build : NukeBuild
         {
             if (!Parameters.IsPackingToLocalCache)
                 throw new InvalidOperationException();
+
+            var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(
+                Settings.LoadDefaultSettings(RootDirectory));
             
             foreach (var path in Parameters.NugetRoot.GlobFiles("*.nupkg"))
             {
@@ -376,11 +382,11 @@ partial class Build : NukeBuild
                     .Elements().First(x => x.Name.LocalName == "metadata")
                     .Elements().First(x => x.Name.LocalName == "id").Value;
 
-                var packagePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                    ".nuget",
-                    "packages",
+                var packagePath = Path.Combine(
+                    globalPackagesFolder,
                     packageId.ToLowerInvariant(),
                     BuildParameters.LocalBuildVersion);
+
                 if (Directory.Exists(packagePath))
                     Directory.Delete(packagePath, true);
                 Directory.CreateDirectory(packagePath);
@@ -401,6 +407,67 @@ partial class Build : NukeBuild
             file.GenerateCppHeader());
     });
 
+    Target VerifyXamlCompilation => _ => _
+        .DependsOn(CreateNugetPackages)
+        .Executes(() =>
+        {
+            var buildTestsDirectory = RootDirectory / "tests" / "BuildTests";
+            var artifactsDirectory = buildTestsDirectory / "artifacts";
+            var nugetCacheDirectory = artifactsDirectory / "nuget-cache";
+
+            DeleteDirectory(artifactsDirectory);
+            BuildTestsAndVerify("Debug");
+            BuildTestsAndVerify("Release");
+
+            void BuildTestsAndVerify(string configuration)
+            {
+                var configName = configuration.ToLowerInvariant();
+
+                DotNetBuild(settings => settings
+                    .SetConfiguration(configuration)
+                    .SetProperty("AvaloniaVersion", Parameters.Version)
+                    .SetProperty("NuGetPackageRoot", nugetCacheDirectory)
+                    .SetPackageDirectory(nugetCacheDirectory)
+                    .SetProjectFile(buildTestsDirectory / "BuildTests.sln")
+                    .SetProcessArgumentConfigurator(arguments => arguments.Add("--nodeReuse:false")));
+
+                // Standard compilation - should have compiled XAML
+                VerifyBuildTestAssembly("bin", "BuildTests");
+                VerifyBuildTestAssembly("bin", "BuildTests.Android");
+                VerifyBuildTestAssembly("bin", "BuildTests.Browser");
+                VerifyBuildTestAssembly("bin", "BuildTests.Desktop");
+                VerifyBuildTestAssembly("bin", "BuildTests.FSharp");
+                VerifyBuildTestAssembly("bin", "BuildTests.iOS");
+                VerifyBuildTestAssembly("bin", "BuildTests.WpfHybrid");
+
+                // Publish previously built project without rebuilding - should have compiled XAML
+                PublishBuildTestProject("BuildTests.Desktop", noBuild: true);
+                VerifyBuildTestAssembly("publish", "BuildTests.Desktop");
+
+                // Publish NativeAOT build, then run it - should not crash and have the expected output
+                PublishBuildTestProject("BuildTests.NativeAot");
+                var exeExtension = OperatingSystem.IsWindows() ? ".exe" : null;
+                XamlCompilationVerifier.VerifyNativeAot(
+                    GetBuildTestOutputPath("publish", "BuildTests.NativeAot", exeExtension));
+
+                void PublishBuildTestProject(string projectName, bool? noBuild = null)
+                    => DotNetPublish(settings => settings
+                        .SetConfiguration(configuration)
+                        .SetProperty("AvaloniaVersion", Parameters.Version)
+                        .SetProperty("NuGetPackageRoot", nugetCacheDirectory)
+                        .SetPackageDirectory(nugetCacheDirectory)
+                        .SetNoBuild(noBuild)
+                        .SetProject(buildTestsDirectory / projectName / (projectName + ".csproj"))
+                        .SetProcessArgumentConfigurator(arguments => arguments.Add("--nodeReuse:false")));
+
+                void VerifyBuildTestAssembly(string folder, string projectName)
+                    => XamlCompilationVerifier.VerifyAssemblyCompiledXaml(
+                        GetBuildTestOutputPath(folder, projectName, ".dll"));
+
+                AbsolutePath GetBuildTestOutputPath(string folder, string projectName, string extension)
+                    => artifactsDirectory / folder / projectName / configName / (projectName + extension);
+            }
+        });
 
     public static int Main() =>
         RuntimeInformation.IsOSPlatform(OSPlatform.Windows)

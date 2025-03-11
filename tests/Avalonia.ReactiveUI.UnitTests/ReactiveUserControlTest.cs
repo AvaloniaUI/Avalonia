@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Avalonia.ReactiveUI.UnitTests
 {
-    public class ReactiveUserControlTest
+    public class ReactiveUserControlTest : ScopedTestBase
     {
         public class ExampleViewModel : ReactiveObject, IActivatableViewModel
         {
@@ -132,6 +132,22 @@ namespace Avalonia.ReactiveUI.UnitTests
             
             Assert.Same(vm2, view.DataContext);
             Assert.Same(vm2, view.ViewModel);
+        }
+
+        // https://github.com/AvaloniaUI/Avalonia/issues/15060
+        [Fact]
+        public void Should_Not_Inherit_DataContext_Of_Wrong_Type()
+        {
+            var view = new ExampleView();
+            var root = new TestRoot(view);
+            
+            Assert.Null(view.DataContext);
+            Assert.Null(view.ViewModel);
+
+            root.DataContext = this;
+
+            Assert.Same(this, view.DataContext);
+            Assert.Null(view.ViewModel);
         }
 
         [Fact]

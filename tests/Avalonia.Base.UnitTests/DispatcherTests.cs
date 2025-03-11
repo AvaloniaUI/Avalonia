@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -462,6 +463,7 @@ public partial class DispatcherTests
     }
 
     [Fact]
+    [SuppressMessage("Usage", "xUnit1031:Do not use blocking task operations in test method", Justification = "Tests the dispatcher itself")]
     public void DispatcherInvokeAsyncUnwrapsTasks()
     {
         int asyncMethodStage = 0;

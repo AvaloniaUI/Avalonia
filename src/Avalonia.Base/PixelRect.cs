@@ -150,7 +150,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Determines whether a point in in the bounds of the rectangle.
+        /// Determines whether a point in the bounds of the rectangle.
         /// </summary>
         /// <param name="p">The point.</param>
         /// <returns>true if the point is in the bounds of the rectangle; otherwise false.</returns>
@@ -433,7 +433,7 @@ namespace Avalonia
         /// <returns>The parsed <see cref="PixelRect"/>.</returns>
         public static PixelRect Parse(string s)
         {
-            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid PixelRect."))
+            using (var tokenizer = new SpanStringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid PixelRect."))
             {
                 return new PixelRect(
                     tokenizer.ReadInt32(),

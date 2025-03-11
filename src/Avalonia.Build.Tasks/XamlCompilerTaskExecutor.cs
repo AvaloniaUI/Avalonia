@@ -115,22 +115,22 @@ namespace Avalonia.Build.Tasks
                 // documentation, on not windows platform Debugger.Launch() always return true without running a debugger.
                 if (System.Diagnostics.Debugger.Launch())
                 {
-                    // Set timeout at 1 minut.
+                    // Set timeout at 1 minute.
                     var time = new System.Diagnostics.Stopwatch();
                     var timeout = TimeSpan.FromMinutes(1);
                     time.Start();
 
-                    // wait for the debugger to be attacked or timeout.
+                    // wait for the debugger to be attached or timeout.
                     while (!System.Diagnostics.Debugger.IsAttached && time.Elapsed < timeout)
                     {
-                        engine.LogMessage($"[PID:{System.Diagnostics.Process.GetCurrentProcess().Id}] Wating attach debugger. Elapsed {time.Elapsed}...", MessageImportance.High);
+                        engine.LogMessage($"[PID:{System.Diagnostics.Process.GetCurrentProcess().Id}] Waiting to attach debugger. Elapsed {time.Elapsed}...", MessageImportance.High);
                         System.Threading.Thread.Sleep(100);
                     }
 
                     time.Stop();
                     if (time.Elapsed >= timeout)
                     {
-                        engine.LogMessage("Wating attach debugger timeout.", MessageImportance.Normal);
+                        engine.LogMessage("Waiting to attach debugger has timed out.", MessageImportance.Normal);
                     }
                 }
                 else
@@ -265,6 +265,7 @@ namespace Avalonia.Build.Tasks
             };
             loaderDispatcherDef.Methods.Add(loaderDispatcherMethod);
             loaderDispatcherDef.Methods.Add(loaderDispatcherMethodOld);
+            typeSystem.AddCompilerGeneratedAttribute(loaderDispatcherDef);
 
 
             var stringEquals = asm.MainModule.ImportReference(asm.MainModule.TypeSystem.String.Resolve().Methods.First(
@@ -371,7 +372,7 @@ namespace Avalonia.Build.Tasks
 
                         var populateBuilder = classTypeDefinition == null ?
                             builder :
-                            typeSystem.CreateTypeBuilder(classTypeDefinition);
+                            typeSystem.CreateTypeBuilder(classTypeDefinition, compilerGeneratedType: false); // don't add CompilerGeneratedAttribute to the user's type
 
                         ((List<XamlDocumentResource>)parsedXamlDocuments).Add(new XamlDocumentResource(
                             parsed, res.Uri, res, classType,
@@ -474,6 +475,7 @@ namespace Avalonia.Build.Tasks
                             var designLoaderField = new FieldDefinition("!XamlIlPopulateOverride",
                                 FieldAttributes.Static | FieldAttributes.Private, designLoaderFieldTypeReference);
                             classTypeDefinition.Fields.Add(designLoaderField);
+                            typeSystem.AddCompilerGeneratedAttribute(designLoaderField);
 
                             const string TrampolineName = "!XamlIlPopulateTrampoline";
                             var trampolineMethodWithoutSP = new Lazy<MethodDefinition>(() => CreateTrampolineMethod(false));
@@ -489,6 +491,7 @@ namespace Avalonia.Build.Tasks
                                 trampoline.Parameters.Add(new ParameterDefinition(classTypeDefinition));
 
                                 classTypeDefinition.Methods.Add(trampoline);
+                                typeSystem.AddCompilerGeneratedAttribute(trampoline);
 
                                 var regularStart = Instruction.Create(OpCodes.Nop);
                             

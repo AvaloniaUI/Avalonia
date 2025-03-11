@@ -1,0 +1,21 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="IntegrationTestApp.Pages.WindowDecorationsPage">
+  <StackPanel Spacing="4">
+    <CheckBox Name="WindowExtendClientAreaToDecorationsHint" Content="Extend Client Area to Decorations" />
+    <CheckBox Name="WindowForceSystemChrome" Content="Force SystemChrome" />
+    <CheckBox Name="WindowPreferSystemChrome" Content="Prefer SystemChrome" />
+    <CheckBox Name="WindowMacThickSystemChrome" Content="Mac Thick SystemChrome" />
+    <TextBox Name="WindowTitleBarHeightHint" Text="-1" Watermark="In dips" />
+    <Button Name="ApplyWindowDecorations"
+            Content="Apply decorations on this Window"
+            Click="ApplyWindowDecorations_Click"/>
+    <Button Name="ShowNewWindowDecorations"
+            Content="Show new Window with decorations"
+            Click="ShowNewWindowDecorations_Click"/>
+    <TextBox Name="WindowDecorationProperties" AcceptsReturn="True" />
+  </StackPanel>
+</UserControl>

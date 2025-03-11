@@ -9,16 +9,11 @@ using Avalonia.Media.TextFormatting.Unicode;
 
 namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
 {
-    internal class BiDiTestDataGenerator : IEnumerable<BiDiTestData>
+    internal class BiDiTestDataGenerator : IEnumerable<object[]>
     {
-        private readonly List<BiDiTestData> _testData;
+        private readonly List<object[]> _testData = ReadTestData();
 
-        public BiDiTestDataGenerator()
-        {
-            _testData = ReadTestData();
-        }
-
-        public IEnumerator<BiDiTestData> GetEnumerator()
+        public IEnumerator<object[]> GetEnumerator()
         {
             return _testData.GetEnumerator();
         }
@@ -28,9 +23,9 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
             return GetEnumerator();
         }
 
-        private static List<BiDiTestData> ReadTestData()
+        private static List<object[]> ReadTestData()
         {
-            var testData = new List<BiDiTestData>();
+            var testData = new List<object[]>();
 
             using (var client = new HttpClient())
             {
@@ -122,13 +117,12 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
                                         throw new NotSupportedException();
                                 }
 
-                                testData.Add(new BiDiTestData
-                                {
-                                    LineNumber = lineNumber,
-                                    Classes = directions,
-                                    ParagraphEmbeddingLevel = paragraphEmbeddingLevel,
-                                    Levels = levels
-                                });
+                                testData.Add([
+                                    lineNumber,
+                                    directions,
+                                    paragraphEmbeddingLevel,
+                                    levels
+                                ]);
 
                                 break;
                             }
@@ -139,13 +133,5 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
 
             return testData;
         }
-    }
-
-    internal class BiDiTestData
-    {
-        public int LineNumber { get; set; }
-        public BidiClass[] Classes { get; set; }
-        public sbyte ParagraphEmbeddingLevel { get; set; }
-        public int[] Levels { get; set; }
     }
 }

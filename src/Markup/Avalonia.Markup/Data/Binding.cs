@@ -73,11 +73,11 @@ namespace Avalonia.Data
         }
 
         private protected override BindingExpressionBase Instance(
-            AvaloniaProperty targetProperty,
             AvaloniaObject target,
+            AvaloniaProperty? targetProperty,
             object? anchor)
         {
-            var enableDataValidation = targetProperty.GetMetadata(target.GetType()).EnableDataValidation ?? false;
+            var enableDataValidation = targetProperty?.GetMetadata(target).EnableDataValidation ?? false;
             return InstanceCore(targetProperty, target, anchor, enableDataValidation);
         }
 
@@ -120,6 +120,7 @@ namespace Avalonia.Data
                 source,
                 nodes,
                 FallbackValue,
+                delay: TimeSpan.FromMilliseconds(Delay),
                 converter: Converter,
                 converterParameter: ConverterParameter,
                 targetNullValue: TargetNullValue);
@@ -168,6 +169,7 @@ namespace Avalonia.Data
                 source,
                 nodes,
                 FallbackValue,
+                delay: TimeSpan.FromMilliseconds(Delay),
                 converter: Converter,
                 converterCulture: ConverterCulture,
                 converterParameter: ConverterParameter,
@@ -175,6 +177,7 @@ namespace Avalonia.Data
                 mode: mode,
                 priority: Priority,
                 stringFormat: StringFormat,
+                targetProperty: targetProperty,
                 targetNullValue: TargetNullValue,
                 targetTypeConverter: TargetTypeConverter.GetReflectionConverter(),
                 updateSourceTrigger: trigger);

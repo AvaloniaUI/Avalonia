@@ -116,9 +116,10 @@ public partial class Build
             IsNuGetRelease = IsMainRepo && IsReleasable && IsReleaseBranch;
 
             // VERSION
-            Version = b.ForceNugetVersion ?? GetVersion();
+            var (propsVersion, propsApiCompatVersion) = GetVersion();
+            Version = b.ForceNugetVersion ?? propsVersion;
 
-            ApiValidationBaseline = b.ApiValidationBaseline ?? new Version(new Version(Version.Split('-', StringSplitOptions.None).First()).Major, 0).ToString();
+            ApiValidationBaseline = b.ApiValidationBaseline ?? propsApiCompatVersion;
             UpdateApiValidationSuppression = b.UpdateApiValidationSuppression ?? IsLocalBuild;
             
             if (IsRunningOnAzure)
@@ -144,7 +145,11 @@ public partial class Build
             NugetIntermediateRoot = RootDirectory / "build-intermediate" / "nuget";
             ZipRoot = ArtifactsDir / "zip";
             TestResultsRoot = ArtifactsDir / "test-results";
-            BuildDirs = GlobDirectories(RootDirectory, "**bin").Concat(GlobDirectories(RootDirectory, "**obj")).ToList();
+            BuildDirs = GlobDirectories(RootDirectory, "**/bin")
+                .Concat(GlobDirectories(RootDirectory, "**/obj"))
+                .Where(dir => !dir.Contains("nukebuild"))
+                .Concat(GlobDirectories(RootDirectory, "**/node_modules"))
+                .ToList();
             DirSuffix = Configuration;
             FileZipSuffix = Version + ".zip";
             ZipCoreArtifacts = ZipRoot / ("Avalonia-" + FileZipSuffix);
@@ -153,10 +158,13 @@ public partial class Build
             VersionOutputDir = b.VersionOutputDir;
         }
 
-        string GetVersion()
+        (string Version, string ApiCompatVersion) GetVersion()
         {
             var xdoc = XDocument.Load(RootDirectory / "build/SharedVersion.props");
-            return xdoc.Descendants().First(x => x.Name.LocalName == "Version").Value;
+            return (
+                xdoc.Descendants().First(x => x.Name.LocalName == "Version").Value,
+                xdoc.Descendants().First(x => x.Name.LocalName == "ApiCompatVersion").Value
+            );
         }
     }
 

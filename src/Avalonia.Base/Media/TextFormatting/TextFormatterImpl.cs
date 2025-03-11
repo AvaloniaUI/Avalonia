@@ -908,6 +908,11 @@ namespace Avalonia.Media.TextFormatting
                     textLineBreak = null;
                 }
 
+                if (postSplitRuns?.Count > 0)
+                {
+                    ResetTrailingWhitespaceBidiLevels(preSplitRuns, paragraphProperties.FlowDirection, objectPool);
+                }
+
                 var textLine = new TextLineImpl(preSplitRuns.ToArray(), firstTextSourceIndex, measuredLength,
                     paragraphWidth, paragraphProperties, resolvedFlowDirection,
                     textLineBreak);
@@ -920,6 +925,65 @@ namespace Avalonia.Media.TextFormatting
             {
                 objectPool.TextRunLists.Return(ref preSplitRuns);
                 objectPool.TextRunLists.Return(ref postSplitRuns);
+            }
+        }
+
+        private static void ResetTrailingWhitespaceBidiLevels(RentedList<TextRun> lineTextRuns, FlowDirection paragraphFlowDirection, FormattingObjectPool objectPool)
+        {
+            if (lineTextRuns.Count == 0)
+            {
+                return;
+            }
+
+            var lastTextRunIndex = lineTextRuns.Count - 1;
+
+            var lastTextRun = lineTextRuns[lastTextRunIndex];
+
+            if (lastTextRun is not ShapedTextRun shapedText)
+            {
+                return;
+            }
+
+            var paragraphEmbeddingLevel = (sbyte)paragraphFlowDirection;
+
+            if (shapedText.BidiLevel == paragraphEmbeddingLevel)
+            {
+                return;
+            }
+
+            var trailingWhitespaceLength = shapedText.GlyphRun.Metrics.TrailingWhitespaceLength;
+
+            if (trailingWhitespaceLength == 0)
+            {
+                return;
+            }
+
+            var splitIndex = shapedText.Length - trailingWhitespaceLength;
+
+            var (textRuns, trailingWhitespaceRuns) = SplitTextRuns([shapedText], splitIndex, objectPool);
+
+            try
+            {
+                if (trailingWhitespaceRuns != null)
+                {
+                    for (var i = 0; i < trailingWhitespaceRuns.Count; i++)
+                    {
+                        if (trailingWhitespaceRuns[i] is ShapedTextRun shapedTextRun)
+                        {
+                            shapedTextRun.ShapedBuffer.ResetBidiLevel(paragraphEmbeddingLevel);
+                        }
+                    }
+
+                    lineTextRuns.RemoveAt(lastTextRunIndex);
+
+                    lineTextRuns.AddRange(textRuns);
+                    lineTextRuns.AddRange(trailingWhitespaceRuns);
+                }
+            }
+            finally
+            {
+                objectPool.TextRunLists.Return(ref textRuns);
+                objectPool.TextRunLists.Return(ref trailingWhitespaceRuns);
             }
         }
 
@@ -956,32 +1020,6 @@ namespace Avalonia.Media.TextFormatting
 
                 return true;
             }
-        }
-
-        /// <summary>
-        /// Creates a shaped symbol.
-        /// </summary>
-        /// <param name="textRun">The symbol run to shape.</param>
-        /// <param name="flowDirection">The flow direction.</param>
-        /// <returns>
-        /// The shaped symbol.
-        /// </returns>
-        internal static ShapedTextRun CreateSymbol(TextRun textRun, FlowDirection flowDirection)
-        {
-            var textShaper = TextShaper.Current;
-
-            var glyphTypeface = textRun.Properties!.CachedGlyphTypeface;
-
-            var fontRenderingEmSize = textRun.Properties.FontRenderingEmSize;
-
-            var cultureInfo = textRun.Properties.CultureInfo;
-
-            var shaperOptions = new TextShaperOptions(glyphTypeface, textRun.Properties.FontFeatures, 
-                fontRenderingEmSize, (sbyte)flowDirection, cultureInfo);
-
-            var shapedBuffer = textShaper.ShapeText(textRun.Text, shaperOptions);
-
-            return new ShapedTextRun(shapedBuffer, textRun.Properties);
         }
     }
 }

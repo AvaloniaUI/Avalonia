@@ -6,18 +6,12 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Avalonia.Controls;
-using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Media;
-using Avalonia.Media.Fonts;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Platform;
-using Avalonia.Platform.Storage;
-using Avalonia.Platform.Storage.FileIO;
-using Avalonia.Utilities;
 
 namespace Avalonia.Headless
 {
@@ -66,8 +60,26 @@ namespace Avalonia.Headless
 
         public async Task<object?> GetDataAsync(string format)
         {
-            return await Task.Run(() => _data);
+            return await Task.Run(() =>
+            {
+                if (format == DataFormats.Text)
+                    return _text;
+                if (format == DataFormats.Files && _data is not null)
+                    return _data.GetFiles();
+                if (format == DataFormats.FileNames && _data is not null)
+                {
+#pragma warning disable CS0618 // Type or member is obsolete
+                    return _data.GetFileNames();
+#pragma warning restore CS0618 // Type or member is obsolete
+                }
+                else
+                    return (object?)_data;
+            });
         }
+
+        /// <inheritdoc />
+        public Task FlushAsync() =>
+            Task.CompletedTask;
     }
 
     internal class HeadlessCursorFactoryStub : ICursorFactory
@@ -83,6 +95,14 @@ namespace Avalonia.Headless
 
     internal class HeadlessGlyphTypefaceImpl : IGlyphTypeface
     {
+        public HeadlessGlyphTypefaceImpl(string familyName, FontStyle style, FontWeight weight, FontStretch stretch)
+        {
+            FamilyName = familyName;
+            Style = style;
+            Weight = weight;
+            Stretch = stretch;
+        }
+
         public FontMetrics Metrics => new FontMetrics
         {
             DesignEmHeight = 10,
@@ -100,13 +120,13 @@ namespace Avalonia.Headless
 
         public FontSimulations FontSimulations => FontSimulations.None;
 
-        public string FamilyName => "$Default";
+        public string FamilyName { get; }
 
-        public FontWeight Weight => FontWeight.Normal;
+        public FontWeight Weight { get; }
 
-        public FontStyle Style => FontStyle.Normal;
+        public FontStyle Style { get; }
 
-        public FontStretch Stretch => FontStretch.Normal;
+        public FontStretch Stretch { get; }
 
         public void Dispose()
         {
@@ -237,14 +257,14 @@ namespace Avalonia.Headless
                 return false;
             }
 
-            glyphTypeface = new HeadlessGlyphTypefaceImpl();
+            glyphTypeface = new HeadlessGlyphTypefaceImpl(familyName, style, weight, stretch);
 
             return true;
         }
 
         public virtual bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, out IGlyphTypeface glyphTypeface)
         {
-            glyphTypeface = new HeadlessGlyphTypefaceImpl();
+            glyphTypeface = new HeadlessGlyphTypefaceImpl(FontFamily.DefaultFontFamilyName, FontStyle.Normal, FontWeight.Normal, FontStretch.Normal);
 
             TryCreateGlyphTypefaceCount++;
 
@@ -298,14 +318,14 @@ namespace Avalonia.Headless
                 return false;
             }
 
-            glyphTypeface = new HeadlessGlyphTypefaceImpl();
+            glyphTypeface = new HeadlessGlyphTypefaceImpl(familyName, style, weight, stretch);
 
             return true;
         }
 
         public virtual bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, out IGlyphTypeface glyphTypeface)
         {
-            glyphTypeface = new HeadlessGlyphTypefaceImpl();
+            glyphTypeface = new HeadlessGlyphTypefaceImpl(FontFamily.DefaultFontFamilyName, FontStyle.Normal, FontWeight.Normal, FontStretch.Normal);
 
             return true;
         }
@@ -336,32 +356,23 @@ namespace Avalonia.Headless
         }
     }
 
-    internal class HeadlessScreensStub : IScreenImpl
+    internal class HeadlessScreensStub : ScreensBase<int, PlatformScreen>
     {
-        public int ScreenCount { get; } = 1;
+        protected override IReadOnlyList<int> GetAllScreenKeys() => new[] { 1 };
 
-        public IReadOnlyList<Screen> AllScreens { get; } = new[]
-        {
-            new Screen(1, new PixelRect(0, 0, 1920, 1280),
-                new PixelRect(0, 0, 1920, 1280), true),
-        };
+        protected override PlatformScreen CreateScreenFromKey(int key) => new PlatformScreenStub(key);
 
-        public Screen? ScreenFromPoint(PixelPoint point)
+        private class PlatformScreenStub : PlatformScreen
         {
-            return ScreenHelper.ScreenFromPoint(point, AllScreens);
-        }
-
-        public Screen? ScreenFromRect(PixelRect rect)
-        {
-            return ScreenHelper.ScreenFromRect(rect, AllScreens);
-        }
-
-        public Screen? ScreenFromWindow(IWindowBaseImpl window)
-        {
-            return ScreenHelper.ScreenFromWindow(window, AllScreens);
+            public PlatformScreenStub(int key) : base(new PlatformHandle((nint)key, nameof(HeadlessScreensStub)))
+            {
+                Scaling = 1;
+                Bounds = WorkingArea = new PixelRect(0, 0, 1920, 1280);
+                IsPrimary = true;
+            }
         }
     }
-    
+
     internal static class TextTestHelper
     {
         public static int GetStartCharIndex(ReadOnlyMemory<char> text)

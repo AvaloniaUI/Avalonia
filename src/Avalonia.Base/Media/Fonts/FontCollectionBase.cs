@@ -4,7 +4,9 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Text;
 using Avalonia.Platform;
+using Avalonia.Utilities;
 
 namespace Avalonia.Media.Fonts
 {
@@ -131,7 +133,7 @@ namespace Avalonia.Media.Fonts
                     glyphTypeface = typeface;
 
                     return true;
-                }            
+                }
             }
 
             return false;
@@ -180,7 +182,7 @@ namespace Avalonia.Media.Fonts
             glyphTypeface = null;
             var weight = (int)key.Weight;
 
-            //If the target weight given is between 400 and 500 inclusive          
+            //If the target weight given is between 400 and 500 inclusive
             if (weight >= 400 && weight <= 500)
             {
                 //Look for available weights between the target and 500, in ascending order.
@@ -211,7 +213,7 @@ namespace Avalonia.Media.Fonts
                 }
             }
 
-            //If a weight less than 400 is given, look for available weights less than the target, in descending order.           
+            //If a weight less than 400 is given, look for available weights less than the target, in descending order.
             if (weight < 400)
             {
                 for (var i = 0; weight - i >= 100; i += 50)
@@ -254,6 +256,70 @@ namespace Avalonia.Media.Fonts
             }
 
             return false;
+        }
+
+        internal static Typeface GetImplicitTypeface(Typeface typeface, out string normalizedFamilyName)
+        {
+            normalizedFamilyName = typeface.FontFamily.FamilyNames.PrimaryFamilyName;
+
+            //Return early if no separator is present.
+            if (!normalizedFamilyName.Contains(' '))
+            {
+                return typeface;
+            }
+
+            var style = typeface.Style;
+            var weight = typeface.Weight;
+            var stretch = typeface.Stretch;
+
+            StringBuilder? normalizedFamilyNameBuilder = null;
+            var totalCharsRemoved = 0;
+
+            var tokenizer = new SpanStringTokenizer(normalizedFamilyName, ' ');
+
+            // Skip initial family name.
+            tokenizer.ReadSpan();
+
+            while (tokenizer.TryReadSpan(out var token))
+            {
+                // Don't try to match numbers.
+                if (new SpanStringTokenizer(token).TryReadInt32(out _))
+                {
+                    continue;
+                }
+
+                // Try match with font style, weight or stretch and update accordingly.
+                var match = false;
+                if (EnumHelper.TryParse<FontStyle>(token, true, out var newStyle))
+                {
+                    style = newStyle;
+                    match = true;
+                }
+                else if (EnumHelper.TryParse<FontWeight>(token, true, out var newWeight))
+                {
+                    weight = newWeight;
+                    match = true;
+                }
+                else if (EnumHelper.TryParse<FontStretch>(token, true, out var newStretch))
+                {
+                    stretch = newStretch;
+                    match = true;
+                }
+
+                if (match)
+                {
+                    // Carve out matched word from the normalized name.
+                    normalizedFamilyNameBuilder ??= new StringBuilder(normalizedFamilyName);
+                    normalizedFamilyNameBuilder.Remove(tokenizer.CurrentTokenIndex - totalCharsRemoved, token.Length);
+                    totalCharsRemoved += token.Length;
+                }
+            }
+
+            // Get rid of any trailing spaces.
+            normalizedFamilyName = (normalizedFamilyNameBuilder?.ToString() ?? normalizedFamilyName).TrimEnd();
+
+            //Preserve old font source
+            return new Typeface(typeface.FontFamily, style, weight, stretch);
         }
     }
 }

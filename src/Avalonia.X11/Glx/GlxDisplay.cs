@@ -18,6 +18,8 @@ namespace Avalonia.X11.Glx
         public XVisualInfo* VisualInfo => _visual;
         public GlxContext DeferredContext { get; }
         public GlxInterface Glx { get; } = new GlxInterface();
+        public X11Info X11Info => _x11;
+        public IntPtr FbConfig => _fbconfig;
         public GlxDisplay(X11Info x11, IList<GlVersion> probeProfiles) 
         {
             _x11 = x11;
@@ -117,16 +119,20 @@ namespace Avalonia.X11.Glx
         public GlxContext CreateContext(IGlContext share) => CreateContext(CreatePBuffer(), share,
             share.SampleCount, share.StencilSize, true);
 
-        private GlxContext CreateContext(IntPtr defaultXid, IGlContext share,
+        private GlxContext CreateContext(IntPtr defaultXid, IGlContext? share,
             int sampleCount, int stencilSize, bool ownsPBuffer)
         {
-            var sharelist = ((GlxContext)share)?.Handle ?? IntPtr.Zero;
+            var sharelist = ((GlxContext?)share)?.Handle ?? IntPtr.Zero;
             IntPtr handle = default;
             
-            GlxContext Create(GlVersion profile)
+            GlxContext? Create(GlVersion profile)
             {
                 var profileMask = GLX_CONTEXT_CORE_PROFILE_BIT_ARB;
-                if (profile.Type == GlProfileType.OpenGLES) 
+                if (profile.Type == GlProfileType.OpenGL && 
+                    profile.IsCompatibilityProfile &&
+                    (profile.Major > 3 || profile.Major == 3 && profile.Minor >= 2))
+                    profileMask = GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
+                else if (profile.Type == GlProfileType.OpenGLES) 
                     profileMask = GLX_CONTEXT_ES2_PROFILE_BIT_EXT;
 
                 var attrs = new int[]
@@ -143,7 +149,7 @@ namespace Avalonia.X11.Glx
                     if (handle != IntPtr.Zero)
                     {
                         _version = profile;
-                        return new GlxContext(new GlxInterface(), handle, this, (GlxContext)share, profile,
+                        return new GlxContext(new GlxInterface(), handle, this, (GlxContext?)share, profile,
                             sampleCount, stencilSize, _x11, defaultXid, ownsPBuffer);
                         
                     }
@@ -156,22 +162,25 @@ namespace Avalonia.X11.Glx
                 return null;
             }
 
-            GlxContext rv = null;
+            GlxContext? rv = null;
             if (_version.HasValue)
             {
                 rv = Create(_version.Value);
             }
             
-            foreach (var v in _probeProfiles)
+            if (rv == null)
             {
-                if (v.Type == GlProfileType.OpenGLES
-                    && !_displayExtensions.Contains("GLX_EXT_create_context_es2_profile"))
-                    continue;
-                rv = Create(v);
-                if (rv != null)
+                foreach (var v in _probeProfiles)
                 {
-                    _version = v;
-                    break;
+                    if (v.Type == GlProfileType.OpenGLES
+                        && !_displayExtensions.Contains("GLX_EXT_create_context_es2_profile"))
+                        continue;
+                    rv = Create(v);
+                    if (rv != null)
+                    {
+                        _version = v;
+                        break;
+                    }
                 }
             }
 

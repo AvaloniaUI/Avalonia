@@ -1,5 +1,4 @@
 using System;
-using Avalonia.Automation.Peers;
 using Avalonia.Metadata;
 
 namespace Avalonia.Platform
@@ -7,6 +6,11 @@ namespace Avalonia.Platform
     [Unstable]
     public interface IWindowBaseImpl : ITopLevelImpl
     {
+        /// <summary>
+        /// Gets the total size of the toplevel, excluding shadows.
+        /// </summary>
+        Size? FrameSize { get; }
+        
         /// <summary>
         /// Shows the window.
         /// </summary>
@@ -18,11 +22,6 @@ namespace Avalonia.Platform
         /// Hides the window.
         /// </summary>
         void Hide();
-        
-        /// <summary>
-        /// Gets the scaling factor for Window positioning and sizing.
-        /// </summary>
-        double DesktopScaling { get; }
 
         /// <summary>
         /// Gets the position of the window in device pixels.
@@ -48,11 +47,6 @@ namespace Avalonia.Platform
         /// Gets or sets a method called when the window is activated (receives focus).
         /// </summary>
         Action? Activated { get; set; }
-
-        /// <summary>
-        /// Gets the platform window handle.
-        /// </summary>
-        IPlatformHandle Handle { get; }
        
         /// <summary>
         /// Gets a maximum client size hint for an auto-sizing window, in device-independent pixels.
@@ -63,10 +57,5 @@ namespace Avalonia.Platform
         /// Sets whether this window appears on top of all other windows
         /// </summary>
         void SetTopmost(bool value);
-
-        /// <summary>
-        /// Gets platform specific display information
-        /// </summary>
-        IScreenImpl Screen { get; }
     }
 }

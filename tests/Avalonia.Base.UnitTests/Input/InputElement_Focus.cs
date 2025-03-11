@@ -1,7 +1,5 @@
-using System;
 using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Interactivity;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -177,10 +175,10 @@ namespace Avalonia.Base.UnitTests.Input
                 };
 
                 target.Focus();
-                target.RaiseEvent(new RoutedEventArgs(AccessKeyHandler.AccessKeyPressedEvent));
+                target.RaiseEvent(new AccessKeyEventArgs("b1", false));
                 Assert.False(target.IsEnabled);
                 Assert.False(target.IsFocused);
-                target1.RaiseEvent(new RoutedEventArgs(AccessKeyHandler.AccessKeyPressedEvent));
+                target1.RaiseEvent(new AccessKeyEventArgs("b2", false));
                 Assert.True(target.IsEnabled);
                 Assert.False(target.IsFocused);
             }

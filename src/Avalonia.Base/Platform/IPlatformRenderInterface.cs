@@ -215,6 +215,14 @@ namespace Avalonia.Platform
         /// </param>
         /// <returns>An <see cref="IRenderTarget"/>.</returns>
         IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces);
+
+        /// <summary>
+        /// Creates an offscreen render target 
+        /// </summary>
+        /// <param name="pixelSize">The size, in pixels, of the render target</param>
+        /// <param name="scaling">The scaling which will be reported by IBitmap.Dpi</param>
+        /// <returns></returns>
+        IDrawingContextLayerImpl CreateOffscreenRenderTarget(PixelSize pixelSize, double scaling);
         
         /// <summary>
         /// Indicates that the context is no longer usable. This method should be thread-safe

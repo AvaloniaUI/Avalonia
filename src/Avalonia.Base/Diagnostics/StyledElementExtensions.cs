@@ -1,17 +1,24 @@
-﻿namespace Avalonia.Diagnostics
+﻿using System;
+using System.Linq;
+using Avalonia.Metadata;
+using Avalonia.Styling;
+
+namespace Avalonia.Diagnostics;
+
+/// <summary>
+/// Defines diagnostic extensions on <see cref="StyledElement"/>s.
+/// </summary>
+[PrivateApi]
+public static class StyledElementExtensions
 {
-    /// <summary>
-    /// Defines diagnostic extensions on <see cref="StyledElement"/>s.
-    /// </summary>
-    public static class StyledElementExtensions
+    [Obsolete("Use AvaloniaObjectExtensions.GetValueStoreDiagnostic instead", true)]
+    public static StyleDiagnostics GetStyleDiagnostics(this StyledElement styledElement)
     {
-        /// <summary>
-        /// Gets a style diagnostics for a <see cref="StyledElement"/>.
-        /// </summary>
-        /// <param name="styledElement">The element.</param>
-        public static StyleDiagnostics GetStyleDiagnostics(this StyledElement styledElement)
-        {
-            return styledElement.GetStyleDiagnosticsInternal();
-        }
+        var diagnostics = styledElement.GetValueStore().GetStoreDiagnostic();
+        return new StyleDiagnostics(diagnostics.AppliedFrames
+            .OfType<StyleValueFrameDiagnostic>()
+            .Select(f => f.AsAppliedStyle())
+            .ToArray());
     }
 }
+

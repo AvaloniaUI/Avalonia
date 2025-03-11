@@ -45,6 +45,9 @@ Copyright © 2019 Nikita Tsukanov
 */
 
 using System;
+using System.ComponentModel;
+using System.Diagnostics;
+using Avalonia.Diagnostics;
 using Avalonia.Input;
 using Avalonia.Metadata;
 using Avalonia.VisualTree;
@@ -56,14 +59,14 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
     /// Provides positioning parameters to <see cref="IPopupPositioner"/>.
     /// </summary>
     /// <remarks>
-    /// The IPopupPositioner provides a collection of rules for the placement of a a popup relative
+    /// The IPopupPositioner provides a collection of rules for the placement of a popup relative
     /// to its parent. Rules can be defined to ensure the popup remains within the visible area's
     /// borders, and to specify how the popup changes its position, such as sliding along an axis,
     /// or flipping around a rectangle. These positioner-created rules are constrained by the
     /// requirement that a popup must intersect with or be at least partially adjacent to its parent
     /// surface.
     /// </remarks>
-    [Unstable]
+    [Unstable(ObsoletionMessages.MayBeRemovedInAvalonia12)]
     public record struct PopupPositionerParameters
     {
         private PopupGravity _gravity;
@@ -443,19 +446,35 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
         void Update(PopupPositionerParameters parameters);
     }
 
-    [Unstable]
-    static class PopupPositionerExtensions
+    internal static class PopupPositionerExtensions
     {
-        public static void ConfigurePosition(ref this PopupPositionerParameters positionerParameters,
+        public static void Update(
+            this IPopupPositioner positioner,
             TopLevel topLevel,
-            Visual target, PlacementMode placement, Point offset,
-            PopupAnchor anchor, PopupGravity gravity,
-            PopupPositionerConstraintAdjustment constraintAdjustment, Rect? rect,
+            PopupPositionRequest positionRequest,
+            Size popupSize,
             FlowDirection flowDirection)
         {
-            positionerParameters.Offset = offset;
-            positionerParameters.ConstraintAdjustment = constraintAdjustment;
-            if (placement == PlacementMode.Pointer)
+            if (popupSize == default)
+            {
+                return;
+            }
+
+            var parameters = BuildParameters(topLevel, positionRequest, popupSize, flowDirection);
+            positioner.Update(parameters);
+        }
+
+        private static PopupPositionerParameters BuildParameters(
+            TopLevel topLevel,
+            PopupPositionRequest positionRequest,
+            Size popupSize,
+            FlowDirection flowDirection)
+        {
+            PopupPositionerParameters positionerParameters = default;
+            positionerParameters.Offset = positionRequest.Offset;
+            positionerParameters.Size = popupSize;
+            positionerParameters.ConstraintAdjustment = positionRequest.ConstraintAdjustment;
+            if (positionRequest.Placement == PlacementMode.Pointer)
             {
                 // We need a better way for tracking the last pointer position
                 var position = topLevel.PointToClient(topLevel.LastPointerPosition ?? default);
@@ -464,39 +483,45 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
                 positionerParameters.Anchor = PopupAnchor.TopLeft;
                 positionerParameters.Gravity = PopupGravity.BottomRight;
             }
+            else if (positionRequest.Placement == PlacementMode.Custom)
+            {
+                if (positionRequest.PlacementCallback is null)
+                    throw new InvalidOperationException(
+                        "CustomPopupPlacementCallback property must be set, when Placement=PlacementMode.Custom");
+
+                positionerParameters.AnchorRectangle = CalculateAnchorRect(topLevel, positionRequest);
+
+                var customPlacementParameters = new CustomPopupPlacement(
+                    popupSize,
+                    positionRequest.Target)
+                {
+                    AnchorRectangle = positionerParameters.AnchorRectangle,
+                    Anchor = positionerParameters.Anchor,
+                    Gravity = positionerParameters.Gravity,
+                    ConstraintAdjustment = positionerParameters.ConstraintAdjustment,
+                    Offset = positionerParameters.Offset
+                };
+
+                positionRequest.PlacementCallback.Invoke(customPlacementParameters);
+
+                positionerParameters.AnchorRectangle = customPlacementParameters.AnchorRectangle;
+                positionerParameters.Anchor = customPlacementParameters.Anchor;
+                positionerParameters.Gravity = customPlacementParameters.Gravity;
+                positionerParameters.ConstraintAdjustment = customPlacementParameters.ConstraintAdjustment;
+                positionerParameters.Offset = customPlacementParameters.Offset;
+            }
             else
             {
-                if (target == null)
-                    throw new InvalidOperationException("Placement mode is not Pointer and PlacementTarget is null");
-                Matrix? matrix;
-                if (TryGetAdorner(target, out var adorned, out var adornerLayer))
-                {
-                    matrix = adorned!.TransformToVisual(topLevel) * target.TransformToVisual(adornerLayer!);
-                }
-                else
-                {
-                    matrix = target.TransformToVisual(topLevel);
-                }
+                positionerParameters.AnchorRectangle = CalculateAnchorRect(topLevel, positionRequest);
 
-                if (matrix == null)
-                {
-                    if (target.GetVisualRoot() == null)
-                        throw new InvalidOperationException("Target control is not attached to the visual tree");
-                    throw new InvalidOperationException("Target control is not in the same tree as the popup parent");
-                }
-
-                var bounds = new Rect(default, target.Bounds.Size);
-                var anchorRect = rect ?? bounds;
-                positionerParameters.AnchorRectangle =  anchorRect.Intersect(bounds).TransformToAABB(matrix.Value);
-
-                var parameters = placement switch
+                var parameters = positionRequest.Placement switch
                 {
                     PlacementMode.Bottom => (PopupAnchor.Bottom, PopupGravity.Bottom),
                     PlacementMode.Right => (PopupAnchor.Right, PopupGravity.Right),
                     PlacementMode.Left => (PopupAnchor.Left, PopupGravity.Left),
                     PlacementMode.Top => (PopupAnchor.Top, PopupGravity.Top),
                     PlacementMode.Center => (PopupAnchor.None, PopupGravity.None),
-                    PlacementMode.AnchorAndGravity => (anchor, gravity),
+                    PlacementMode.AnchorAndGravity => (positionRequest.Anchor, positionRequest.Gravity),
                     PlacementMode.TopEdgeAlignedRight => (PopupAnchor.TopRight, PopupGravity.TopLeft),
                     PlacementMode.TopEdgeAlignedLeft => (PopupAnchor.TopLeft, PopupGravity.TopRight),
                     PlacementMode.BottomEdgeAlignedLeft => (PopupAnchor.BottomLeft, PopupGravity.BottomRight),
@@ -505,7 +530,7 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
                     PlacementMode.LeftEdgeAlignedBottom => (PopupAnchor.BottomLeft, PopupGravity.TopLeft),
                     PlacementMode.RightEdgeAlignedTop => (PopupAnchor.TopRight, PopupGravity.BottomRight),
                     PlacementMode.RightEdgeAlignedBottom => (PopupAnchor.BottomRight, PopupGravity.TopRight),
-                    _ => throw new ArgumentOutOfRangeException(nameof(placement), placement,
+                    _ => throw new ArgumentOutOfRangeException(nameof(positionRequest.Placement), positionRequest.Placement,
                         "Invalid value for Popup.PlacementMode")
                 };
                 positionerParameters.Anchor = parameters.Item1;
@@ -537,6 +562,35 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
                     positionerParameters.Gravity |= PopupGravity.Right;
                 }
             }
+
+            return positionerParameters;
+        }
+
+        private static Rect CalculateAnchorRect(TopLevel topLevel, PopupPositionRequest positionRequest)
+        {
+            var target = positionRequest.Target;
+            if (target == null)
+                throw new InvalidOperationException("Placement mode is not Pointer and PlacementTarget is null");
+            Matrix? matrix;
+            if (TryGetAdorner(target, out var adorned, out var adornerLayer))
+            {
+                matrix = adorned!.TransformToVisual(topLevel) * target.TransformToVisual(adornerLayer!);
+            }
+            else
+            {
+                matrix = target.TransformToVisual(topLevel);
+            }
+
+            if (matrix == null)
+            {
+                if (target.GetVisualRoot() == null)
+                    throw new InvalidOperationException("Target control is not attached to the visual tree");
+                throw new InvalidOperationException("Target control is not in the same tree as the popup parent");
+            }
+
+            var bounds = new Rect(default, target.Bounds.Size);
+            var anchorRect = positionRequest.AnchorRect ?? bounds;
+            return anchorRect.Intersect(bounds).TransformToAABB(matrix.Value);
         }
 
         private static bool TryGetAdorner(Visual target, out Visual? adorned, out Visual? adornerLayer)

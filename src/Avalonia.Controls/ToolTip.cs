@@ -1,7 +1,10 @@
 using System;
+using System.ComponentModel;
 using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
+using Avalonia.Interactivity;
+using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Reactive;
 using Avalonia.Styling;
 
@@ -49,6 +52,10 @@ namespace Avalonia.Controls
         public static readonly AttachedProperty<double> VerticalOffsetProperty =
             AvaloniaProperty.RegisterAttached<ToolTip, Control, double>("VerticalOffset", 20);
 
+        /// <inheritdoc cref="Popup.CustomPopupPlacementCallbackProperty"/>
+        public static readonly AttachedProperty<CustomPopupPlacementCallback?> CustomPopupPlacementCallbackProperty =
+            AvaloniaProperty.RegisterAttached<ToolTip, Control, CustomPopupPlacementCallback?>("CustomPopupPlacementCallback");
+
         /// <summary>
         /// Defines the ToolTip.ShowDelay property.
         /// </summary>
@@ -79,8 +86,31 @@ namespace Avalonia.Controls
         internal static readonly AttachedProperty<ToolTip?> ToolTipProperty =
             AvaloniaProperty.RegisterAttached<ToolTip, Control, ToolTip?>("ToolTip");
 
-        private IPopupHost? _popupHost;
+        /// <summary>
+        /// The event raised when a ToolTip is going to be shown on an element.
+        /// </summary>
+        /// <remarks>
+        /// To prevent a tooltip from appearing in the UI, your handler for ToolTipOpening can mark the event data handled.
+        /// Otherwise, the tooltip is displayed, using the value of the ToolTip property as the tooltip content.
+        /// Another possible scenario is that you could write a handler that resets the value of the ToolTip property for the element that is the event source, just before the tooltip is displayed.
+        /// ToolTipOpening will not be raised if the value of ToolTip is null or otherwise unset. Do not deliberately set ToolTip to null while a tooltip is open or opening; this will not have the effect of closing the tooltip, and will instead create an undesirable visual artifact in the UI.
+        /// </remarks>
+        public static readonly RoutedEvent<CancelRoutedEventArgs> ToolTipOpeningEvent =
+            RoutedEvent.Register<ToolTip, CancelRoutedEventArgs>("ToolTipOpening", RoutingStrategies.Direct);
+
+        /// <summary>
+        /// The event raised when a ToolTip on an element that was shown should now be hidden.
+        /// </summary>
+        /// <remarks>
+        /// Marking the ToolTipClosing event as handled does not cancel closing the tooltip.
+        /// Once the tooltip is displayed, closing the tooltip is done only in response to user interaction with the UI.
+        /// </remarks>
+        public static readonly RoutedEvent ToolTipClosingEvent =
+            RoutedEvent.Register<ToolTip, RoutedEventArgs>("ToolTipClosing", RoutingStrategies.Direct);
+    
+        private Popup? _popup;
         private Action<IPopupHost?>? _popupHostChangedHandler;
+        private CompositeDisposable? _subscriptions;
 
         /// <summary>
         /// Initializes static members of the <see cref="ToolTip"/> class.
@@ -88,14 +118,7 @@ namespace Avalonia.Controls
         static ToolTip()
         {
             IsOpenProperty.Changed.Subscribe(IsOpenChanged);
-
-            HorizontalOffsetProperty.Changed.Subscribe(RecalculatePositionOnPropertyChanged);
-            VerticalOffsetProperty.Changed.Subscribe(RecalculatePositionOnPropertyChanged);
-            PlacementProperty.Changed.Subscribe(RecalculatePositionOnPropertyChanged);
         }
-
-        internal Control? AdornedControl { get; private set; }
-        internal event EventHandler? Closed;
 
         /// <summary>
         /// Gets the value of the ToolTip.Tip attached property.
@@ -277,6 +300,54 @@ namespace Avalonia.Controls
         public static void SetServiceEnabled(Control element, bool value) => 
             element.SetValue(ServiceEnabledProperty, value);
 
+        /// <summary>
+        /// Adds a handler for the <see cref="ToolTipOpeningEvent"/> attached event.
+        /// </summary>
+        /// <param name="element"><see cref="Control"/> that listens to this event.</param>
+        /// <param name="handler">Event Handler to be added.</param>
+        public static void AddToolTipOpeningHandler(Control element, EventHandler<CancelRoutedEventArgs> handler) =>
+            element.AddHandler(ToolTipOpeningEvent, handler);
+
+        /// <summary>
+        /// Removes a handler for the <see cref="ToolTipOpeningEvent"/> attached event.
+        /// </summary>
+        /// <param name="element"><see cref="Control"/> that listens to this event.</param>
+        /// <param name="handler">Event Handler to be removed.</param>
+        public static void RemoveToolTipOpeningHandler(Control element, EventHandler<CancelRoutedEventArgs> handler) =>
+            element.RemoveHandler(ToolTipOpeningEvent, handler);
+
+        /// <summary>
+        /// Adds a handler for the <see cref="ToolTipClosingEvent"/> attached event.
+        /// </summary>
+        /// <param name="element"><see cref="Control"/> that listens to this event.</param>
+        /// <param name="handler">Event Handler to be removed.</param>
+        public static void AddToolTipClosingHandler(Control element, EventHandler<RoutedEventArgs> handler) =>
+            element.AddHandler(ToolTipClosingEvent, handler);
+
+        /// <summary>
+        /// Removes a handler for the <see cref="ToolTipClosingEvent"/> attached event.
+        /// </summary>
+        /// <param name="element"><see cref="Control"/> that listens to this event.</param>
+        /// <param name="handler">Event Handler to be removed.</param>
+        public static void RemoveToolTipClosingHandler(Control element, EventHandler<RoutedEventArgs> handler) =>
+            element.RemoveHandler(ToolTipClosingEvent, handler);
+
+        /// <summary>
+        /// Gets the value of the ToolTip.CustomPopupPlacementCallback attached property.
+        /// </summary>
+        public static CustomPopupPlacementCallback? GetCustomPopupPlacementCallback(Control element)
+        {
+            return element.GetValue(CustomPopupPlacementCallbackProperty);
+        }
+
+        /// <summary>
+        /// Sets the value of the ToolTip.CustomPopupPlacementCallback attached property.
+        /// </summary>
+        public static void SetCustomPopupPlacementCallback(Control element, CustomPopupPlacementCallback? value)
+        {
+            element.SetValue(CustomPopupPlacementCallbackProperty, value);
+        }
+
         private static void IsOpenChanged(AvaloniaPropertyChangedEventArgs e)
         {
             var control = (Control)e.Sender;
@@ -284,8 +355,20 @@ namespace Avalonia.Controls
 
             if (newValue)
             {
+                var args = new CancelRoutedEventArgs(ToolTipOpeningEvent);
+                control.RaiseEvent(args);
+                if (args.Cancel)
+                {
+                    control.SetCurrentValue(IsOpenProperty, false);
+                    return;
+                }
+
                 var tip = GetTip(control);
-                if (tip == null) return;
+                if (tip == null)
+                {
+                    control.SetCurrentValue(IsOpenProperty, false);
+                    return;
+                }
 
                 var toolTip = control.GetValue(ToolTipProperty);
                 if (toolTip == null || (tip != toolTip && tip != toolTip.Content))
@@ -294,84 +377,95 @@ namespace Avalonia.Controls
 
                     toolTip = tip as ToolTip ?? new ToolTip { Content = tip };
                     control.SetValue(ToolTipProperty, toolTip);
-                    toolTip.SetValue(ThemeVariant.RequestedThemeVariantProperty, control.ActualThemeVariant);
                 }
 
                 toolTip.AdornedControl = control;
                 toolTip.Open(control);
-                toolTip?.UpdatePseudoClasses(newValue);
             }
             else if (control.GetValue(ToolTipProperty) is { } toolTip)
             {
                 toolTip.AdornedControl = null;
                 toolTip.Close();
-                toolTip?.UpdatePseudoClasses(newValue);
             }
         }
 
-        private static void RecalculatePositionOnPropertyChanged(AvaloniaPropertyChangedEventArgs args)
-        {
-            var control = (Control)args.Sender;
-            var tooltip = control.GetValue(ToolTipProperty);
-            if (tooltip == null)
-            {
-                return;
-            }
+        internal Control? AdornedControl { get; private set; }
+        internal event EventHandler? Closed;
+        internal IPopupHost? PopupHost => _popup?.Host;
 
-            tooltip.RecalculatePosition(control);
-        }
-        
-        IPopupHost? IPopupHostProvider.PopupHost => _popupHost;
-
-        internal IPopupHost? PopupHost => _popupHost;
-
+        IPopupHost? IPopupHostProvider.PopupHost => _popup?.Host;
         event Action<IPopupHost?>? IPopupHostProvider.PopupHostChanged 
         { 
             add => _popupHostChangedHandler += value; 
             remove => _popupHostChangedHandler -= value;
         }
 
-        internal void RecalculatePosition(Control control)
-        {
-            _popupHost?.ConfigurePosition(control, GetPlacement(control), new Point(GetHorizontalOffset(control), GetVerticalOffset(control)));
-        }
-
         private void Open(Control control)
         {
             Close();
+            
+            if (_popup is null)
+            {
+                _popup = new Popup();
+                _popup.Child = this;
+                _popup.TakesFocusFromNativeControl = false;
+                _popup.WindowManagerAddShadowHint = false;
 
-            _popupHost = OverlayPopupHost.CreatePopupHost(control, null);
-            _popupHost.SetChild(this);
-            ((ISetLogicalParent)_popupHost).SetParent(control);
-            ApplyTemplatedParent(this, control.TemplatedParent);
+                _popup.Opened += OnPopupOpened;
+                _popup.Closed += OnPopupClosed;
+            }
 
-            _popupHost.ConfigurePosition(control, GetPlacement(control),
-                new Point(GetHorizontalOffset(control), GetVerticalOffset(control)));
+            _subscriptions = new CompositeDisposable(new[]
+            {
+                _popup.Bind(Popup.HorizontalOffsetProperty, control.GetBindingObservable(HorizontalOffsetProperty)),
+                _popup.Bind(Popup.VerticalOffsetProperty, control.GetBindingObservable(VerticalOffsetProperty)),
+                _popup.Bind(Popup.PlacementProperty, control.GetBindingObservable(PlacementProperty)),
+                _popup.Bind(Popup.CustomPopupPlacementCallbackProperty, control.GetBindingObservable(CustomPopupPlacementCallbackProperty))
+            });
 
-            WindowManagerAddShadowHintChanged(_popupHost, false);
+            _popup.PlacementTarget = control;
+            _popup.SetPopupParent(control);
 
-            _popupHost.Show();
-            _popupHostChangedHandler?.Invoke(_popupHost);
+            _popup.IsOpen = true;
         }
 
         private void Close()
         {
-            if (_popupHost != null)
+            if (AdornedControl is { } adornedControl
+                && GetIsOpen(adornedControl))
             {
-                _popupHost.SetChild(null);
-                _popupHost.Dispose();
-                _popupHost = null;
-                _popupHostChangedHandler?.Invoke(null);
-                Closed?.Invoke(this, EventArgs.Empty);
+                var args = new RoutedEventArgs(ToolTipClosingEvent);
+                adornedControl.RaiseEvent(args);
             }
+
+            if (_popup is not null)
+            {
+                _popup.IsOpen = false;
+                _popup.SetPopupParent(null);
+                _popup.PlacementTarget = null;
+            }
+
+            _subscriptions?.Dispose();
         }
 
-        private void WindowManagerAddShadowHintChanged(IPopupHost host, bool hint)
+        private void OnPopupClosed(object? sender, EventArgs e)
         {
-            if (host is PopupRoot pr)
+            // This condition is true, when Popup was closed by any other reason outside of ToolTipService/ToolTip, keeping IsOpen=true.
+            if (AdornedControl is { } adornedControl
+                && GetIsOpen(adornedControl))
             {
-                pr.WindowManagerAddShadowHint = hint;
+                adornedControl.SetCurrentValue(IsOpenProperty, false);
             }
+
+            _popupHostChangedHandler?.Invoke(null);
+            UpdatePseudoClasses(false);
+            Closed?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void OnPopupOpened(object? sender, EventArgs e)
+        {
+            _popupHostChangedHandler?.Invoke(((Popup)sender!).Host);
+            UpdatePseudoClasses(true);
         }
 
         private void UpdatePseudoClasses(bool newValue)

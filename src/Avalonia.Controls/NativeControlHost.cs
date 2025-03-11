@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Avalonia.Automation.Peers;
+using Avalonia.Controls.Automation.Peers;
 using Avalonia.Controls.Platform;
-using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -23,6 +24,21 @@ namespace Avalonia.Controls
         {
             FlowDirectionProperty.Changed.AddClassHandler<NativeControlHost>(OnFlowDirectionChanged);
         }
+
+        internal IPlatformHandle? NativeControlHandle
+        {
+            get => _nativeControlHandle;
+            set
+            {
+                if (_nativeControlHandle != value)
+                {
+                    _nativeControlHandle = value;
+                    NativeControlHandleChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+        }
+
+        internal event EventHandler? NativeControlHandleChanged;
 
         /// <inheritdoc />
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -88,20 +104,20 @@ namespace Avalonia.Controls
                 }
 
                 // If there is no attachment, but the control exists,
-                // attempt to attach to to the current toplevel or destroy the control if it's incompatible
-                if (_attachment == null && _nativeControlHandle != null)
+                // attempt to attach to the current toplevel or destroy the control if it's incompatible
+                if (_attachment == null && NativeControlHandle != null)
                 {
-                    if (_currentHost.IsCompatibleWith(_nativeControlHandle))
-                        _attachment = _currentHost.CreateNewAttachment(_nativeControlHandle);
+                    if (_currentHost.IsCompatibleWith(NativeControlHandle))
+                        _attachment = _currentHost.CreateNewAttachment(NativeControlHandle);
                     else
                         DestroyNativeControl();
                 }
 
                 // There is no control handle an no attachment, create both
-                if (_nativeControlHandle == null)
+                if (NativeControlHandle == null)
                 {
                     _attachment = _currentHost.CreateNewAttachment(parent =>
-                        _nativeControlHandle = CreateNativeControlCore(parent));
+                        NativeControlHandle = CreateNativeControlCore(parent));
                 }
             }
             else
@@ -111,7 +127,7 @@ namespace Avalonia.Controls
                     _attachment.AttachedTo = null;
                 
                 // Don't destroy the control immediately, it might be just being reparented to another TopLevel
-                if (_nativeControlHandle != null && !_queuedForDestruction)
+                if (NativeControlHandle != null && !_queuedForDestruction)
                 {
                     _queuedForDestruction = true;
                     Dispatcher.UIThread.Post(CheckDestruction, DispatcherPriority.Background);
@@ -180,13 +196,13 @@ namespace Avalonia.Controls
 
         private void DestroyNativeControl()
         {
-            if (_nativeControlHandle != null)
+            if (NativeControlHandle != null)
             {
                 _attachment?.Dispose();
                 _attachment = null;
                 
-                DestroyNativeControlCore(_nativeControlHandle);
-                _nativeControlHandle = null;
+                DestroyNativeControlCore(NativeControlHandle);
+                NativeControlHandle = null;
             }
         }
 
@@ -197,6 +213,7 @@ namespace Avalonia.Controls
                 nativeControlHostDestroyableControlHandle.Destroy();
             }
         }
-        
+
+        protected override AutomationPeer OnCreateAutomationPeer() => new NativeControlHostPeer(this);
     }
 }

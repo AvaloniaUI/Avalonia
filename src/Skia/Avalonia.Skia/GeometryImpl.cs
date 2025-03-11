@@ -13,6 +13,7 @@ namespace Avalonia.Skia
     /// </summary>
     internal abstract class GeometryImpl : IGeometryImpl
     {
+        private readonly object _lock = new();
         private PathCache _pathCache;
         private SKPathMeasure? _cachedPathMeasure;
 
@@ -45,9 +46,12 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public bool StrokeContains(IPen? pen, Point point)
         {
-            _pathCache.UpdateIfNeeded(StrokePath, pen);
+            lock (_lock)
+            {
+                _pathCache.UpdateIfNeeded(StrokePath, pen);
 
-            return PathContainsCore(_pathCache.ExpandedPath, point);
+                return PathContainsCore(_pathCache.ExpandedPath, point);
+            }
         }
         
         /// <summary>
@@ -73,8 +77,14 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public Rect GetRenderBounds(IPen? pen)
         {
-            _pathCache.UpdateIfNeeded(StrokePath, pen);
-            return _pathCache.RenderBounds;
+            lock (_lock)
+            {
+                _pathCache.UpdateIfNeeded(StrokePath, pen);
+                var bounds = _pathCache.RenderBounds;
+                if (StrokePath != FillPath && FillPath != null)
+                    bounds = bounds.Union(FillPath.TightBounds.ToAvaloniaRect());
+                return bounds;
+            }
         }
 
         public IGeometryImpl GetWidenedGeometry(IPen pen)
@@ -154,8 +164,11 @@ namespace Avalonia.Skia
         /// </summary>
         protected void InvalidateCaches()
         {
-            _pathCache.Dispose();
-            _pathCache = default;
+            lock (_lock)
+            {
+                _pathCache.Dispose();
+                _pathCache = default;
+            }
         }
 
         private struct PathCache : IDisposable
@@ -165,7 +178,7 @@ namespace Avalonia.Skia
             private Rect? _renderBounds;
             private static readonly SKPath s_emptyPath = new();
             
-            public Rect RenderBounds => _renderBounds ??= (_path ?? _cachedFor ?? s_emptyPath).Bounds.ToAvaloniaRect();
+            public Rect RenderBounds => _renderBounds ??= (_path ?? _cachedFor ?? s_emptyPath).TightBounds.ToAvaloniaRect();
             public SKPath ExpandedPath => _path ?? s_emptyPath;
 
             public void UpdateIfNeeded(SKPath? strokePath, IPen? pen)

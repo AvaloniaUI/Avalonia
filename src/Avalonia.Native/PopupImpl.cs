@@ -1,5 +1,4 @@
-﻿using System;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Native.Interop;
 using Avalonia.Platform;
@@ -8,17 +7,47 @@ namespace Avalonia.Native
 {
     class PopupImpl : WindowBaseImpl, IPopupImpl
     {
-        private readonly IWindowBaseImpl _parent;
+        private readonly ITopLevelImpl _parent;
 
         public PopupImpl(IAvaloniaNativeFactory factory,
-            IWindowBaseImpl parent) : base(factory)
+            ITopLevelImpl parent) : base(factory)
         {
             _parent = parent;
+            
             using (var e = new PopupEvents(this))
             {
-                Init(factory.CreatePopup(e), factory.CreateScreens());
+                Init(new MacOSTopLevelHandle(factory.CreatePopup(e)));
             }
+            
             PopupPositioner = new ManagedPopupPositioner(new ManagedPopupPositionerPopupImplHelper(parent, MoveResize));
+
+            while (parent is PopupImpl popupImpl)
+            {
+                parent = popupImpl._parent;
+            }
+
+            if (parent is WindowBaseImpl windowBaseImpl)
+            {
+                Native!.SetParent(windowBaseImpl.Native);
+            }
+            
+            //Use the parent's input context to process events
+            if (parent is TopLevelImpl topLevelImpl)
+            {
+                InputMethod = topLevelImpl.InputMethod;
+            }
+        }
+
+        public override void Dispose()
+        {
+            Native!.SetParent(null);
+            
+            base.Dispose();
+        }
+
+        internal sealed override void Init(MacOSTopLevelHandle handle)
+        {
+            base.Init(handle);
         }
 
         private void MoveResize(PixelPoint position, Size size, double scaling)
@@ -52,20 +81,26 @@ namespace Avalonia.Native
             }
         }
 
-        public override void Show(bool activate, bool isDialog)
-        {
-            var parent = _parent;
-            while (parent is PopupImpl p) 
-                parent = p._parent;
-            if (parent is WindowImpl w)
-                w.Native.TakeFocusFromChildren();
-            base.Show(false, isDialog);
-        }
-
-        public override IPopupImpl CreatePopup() => new PopupImpl(_factory, this);
+        public override IPopupImpl CreatePopup() => new PopupImpl(Factory, this);
 
         public void SetWindowManagerAddShadowHint(bool enabled)
         {
+        }
+
+        public void TakeFocus()
+        {
+            var parent = _parent;
+
+            while (parent != null)
+            {
+                if (parent is PopupImpl popup)
+                    parent = popup._parent;
+                else
+                    break;
+            }
+            
+            if (parent is WindowImpl w)
+                w.Native.TakeFocusFromChildren();
         }
 
         public IPopupPositioner PopupPositioner { get; }

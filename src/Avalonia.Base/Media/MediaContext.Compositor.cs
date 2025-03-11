@@ -5,6 +5,7 @@ using Avalonia.Platform;
 using Avalonia.Rendering.Composition;
 using Avalonia.Rendering.Composition.Transport;
 using Avalonia.Threading;
+using Avalonia.Utilities;
 
 namespace Avalonia.Media;
 
@@ -97,18 +98,24 @@ partial class MediaContext
         if (AvaloniaLocator.Current.GetService<IPlatformRenderInterface>() == null)
             return;
 
+        using var _ = NonPumpingLockHelper.Use();
+        SyncWaitCompositorBatch(compositor, CommitCompositor(compositor), waitFullRender, catchExceptions);
+    }
+
+    private void SyncWaitCompositorBatch(Compositor compositor, CompositionBatch batch,
+        bool waitFullRender, bool catchExceptions)
+    {
+        using var _ = NonPumpingLockHelper.Use();
         if (compositor is
             {
                 UseUiThreadForSynchronousCommits: false,
                 Loop.RunsInBackground: true
             })
         {
-            var batch = CommitCompositor(compositor);
             (waitFullRender ? batch.Rendered : batch.Processed).Wait();
         }
         else
         {
-            CommitCompositor(compositor);
             compositor.Server.Render(catchExceptions);
         }
     }
@@ -130,10 +137,15 @@ partial class MediaContext
     /// </summary>
     public void SyncDisposeCompositionTarget(CompositionTarget compositionTarget)
     {
-        compositionTarget.Dispose();
+        using var _ = NonPumpingLockHelper.Use();
         
-        // TODO: introduce a way to skip any actual rendering for other targets and only do a dispose?
-        SyncCommit(compositionTarget.Compositor, false, true);
+        // TODO: We are sending a dispose command outside of the normal commit cycle and we might
+        // want to ask the compositor to skip any actual rendering and return the control ASAP
+        // Not sure if we should do that for background thread rendering since it might affect the animation
+        // smoothness of other windows
+        
+        var oobBatch = compositionTarget.Compositor.OobDispose(compositionTarget);
+        SyncWaitCompositorBatch(compositionTarget.Compositor, oobBatch, false, true);
     }
     
     /// <summary>
@@ -146,6 +158,6 @@ partial class MediaContext
             return;
 
         // TODO: maybe skip the full render here?
-        ScheduleRender(true);
+        ScheduleRender(false);
     }
 }

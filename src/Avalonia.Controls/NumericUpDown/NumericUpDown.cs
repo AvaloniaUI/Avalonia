@@ -479,7 +479,7 @@ namespace Avalonia.Controls
         {
             if (IsInitialized)
             {
-                SyncTextAndValueProperties(false, null);
+                SyncTextAndValueProperties(false, null, true);
             }
         }
 
@@ -630,9 +630,6 @@ namespace Avalonia.Controls
                 throw new ArgumentNullException(nameof(e));
             }
 
-            var handler = Spinned;
-            handler?.Invoke(this, e);
-
             if (e.Direction == SpinDirection.Increase)
             {
                 DoIncrement();
@@ -641,6 +638,8 @@ namespace Avalonia.Controls
             {
                 DoDecrement();
             }
+
+            Spinned?.Invoke(this, e);
         }
 
         /// <summary>
@@ -1137,7 +1136,7 @@ namespace Avalonia.Controls
                     {
                         // extract non-digit characters
                         var currentValueTextSpecialCharacters = currentValueText.Where(c => !char.IsDigit(c));
-                        var textSpecialCharacters = text.Where(c => !char.IsDigit(c));
+                        var textSpecialCharacters = text.Where(c => !char.IsDigit(c)).ToArray();
                         // same non-digit characters on currentValueText and new text => remove them on new Text to parse it again.
                         if (!currentValueTextSpecialCharacters.Except(textSpecialCharacters).Any())
                         {

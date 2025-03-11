@@ -10,12 +10,12 @@ namespace Avalonia.Browser
     {
         public Task<string?> GetTextAsync()
         {
-            return InputHelper.ReadClipboardTextAsync()!;
+            return InputHelper.ReadClipboardTextAsync(BrowserWindowingPlatform.GlobalThis)!;
         }
 
         public Task SetTextAsync(string? text)
         {
-            return InputHelper.WriteClipboardTextAsync(text ?? string.Empty);
+            return InputHelper.WriteClipboardTextAsync(BrowserWindowingPlatform.GlobalThis, text ?? string.Empty);
         }
 
         public async Task ClearAsync() => await SetTextAsync("");
@@ -25,5 +25,9 @@ namespace Avalonia.Browser
         public Task<string[]> GetFormatsAsync() => Task.FromResult(Array.Empty<string>());
 
         public Task<object?> GetDataAsync(string format) => Task.FromResult<object?>(null);
+
+        /// <inheritdoc />
+        public Task FlushAsync() =>
+            Task.CompletedTask;
     }
 }
