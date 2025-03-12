@@ -49,5 +49,14 @@ namespace Avalonia.Input.Platform
         /// <param name="format">A string that specifies the format of the data to retrieve. For a set of predefined data formats, see the <see cref="DataFormats"/> class.</param>
         /// <returns></returns>
         Task<object?> GetDataAsync(string format);
+        
+        /// <summary>
+        /// If clipboard contains the IDataObject that was set by a previous call to <see cref="SetDataObjectAsync"/>,
+        /// return said IDataObject instance. Otherwise, return null.
+        /// Note that not every platform supports that method, on unsupported platforms this method will always return
+        /// null
+        /// </summary>
+        /// <returns></returns>
+        Task<IDataObject?> TryGetInProcessDataObjectAsync();
     }
 }

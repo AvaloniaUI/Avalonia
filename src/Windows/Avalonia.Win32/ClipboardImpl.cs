@@ -15,6 +15,11 @@ namespace Avalonia.Win32
     {
         private const int OleRetryCount = 10;
         private const int OleRetryDelay = 100;
+
+        private DataObject? _lastStoredDataObject;
+        // We can't currently rely on GetNativeIntPtr due to a bug in MicroCom 0.11, so we store the raw CCW reference instead
+        private IntPtr _lastStoredDataObjectIntPtr;
+
         /// <summary>
         /// The amount of time in milliseconds to sleep before flushing the clipboard after a set.
         /// </summary>
@@ -93,7 +98,18 @@ namespace Avalonia.Win32
                 var hr = UnmanagedMethods.OleSetClipboard(ptr);
 
                 if (hr == 0)
+                {
+                    _lastStoredDataObject = wrapper;
+                    // TODO: Replace with GetNativeIntPtr in TryGetInProcessDataObjectAsync
+                    // once MicroCom is fixed
+                    _lastStoredDataObjectIntPtr = ptr;
+                    wrapper.OnDestroyed += delegate
+                    {
+                        if (_lastStoredDataObjectIntPtr == ptr)
+                            _lastStoredDataObjectIntPtr = IntPtr.Zero;
+                    };
                     break;
+                }
 
                 if (--i == 0)
                     Marshal.ThrowExceptionForHR(hr);
@@ -150,6 +166,16 @@ namespace Avalonia.Win32
             }
         }
 
+
+        public Task<IDataObject?> TryGetInProcessDataObjectAsync()
+        {
+            if (_lastStoredDataObject?.IsDisposed != false
+                || _lastStoredDataObjectIntPtr == IntPtr.Zero
+                || UnmanagedMethods.OleIsCurrentClipboard(_lastStoredDataObjectIntPtr) != 0)
+                return Task.FromResult<IDataObject?>(null);
+            
+            return Task.FromResult<IDataObject?>(_lastStoredDataObject.Wrapped);
+        }
         /// <summary>
         /// Permanently renders the contents of the last IDataObject that was set onto the clipboard.
         /// </summary>
