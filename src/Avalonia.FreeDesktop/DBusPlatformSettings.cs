@@ -10,7 +10,7 @@ namespace Avalonia.FreeDesktop
 {
     internal class DBusPlatformSettings : DefaultPlatformSettings
     {
-        private readonly OrgFreedesktopPortalSettingsProxy? _settings;
+        private readonly OrgFreedesktopPortalSettings? _settings;
 
         private PlatformColorValues? _lastColorValues;
         private PlatformThemeVariant? _themeVariant;
@@ -21,7 +21,7 @@ namespace Avalonia.FreeDesktop
             if (DBusHelper.DefaultConnection is not { } conn)
                 return;
 
-            _settings = new OrgFreedesktopPortalSettingsProxy(conn, "org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop");
+            _settings = new OrgFreedesktopPortalSettings(conn, "org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop");
             _ = _settings.WatchSettingChangedAsync(SettingsChangedHandler);
             _ = TryGetInitialValuesAsync();
         }
@@ -46,8 +46,8 @@ namespace Avalonia.FreeDesktop
                 if (version >= 2)
                     value = await _settings!.ReadOneAsync("org.freedesktop.appearance", "color-scheme");
                 else
-                    // Unpack nested Variant
-                    value = (await _settings!.ReadAsync("org.freedesktop.appearance", "color-scheme")).GetVariantValue();
+                    // Variants-in-Variants are automatically collapsed by Tmds.DBus.Protocol, so need to do so here as normally necessary
+                    value = await _settings!.ReadAsync("org.freedesktop.appearance", "color-scheme");
                 return ToColorScheme(value.GetUInt32());
             }
             catch (DBusException)
