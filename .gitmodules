@@ -1,5 +1,5 @@
-[submodule "nukebuild/Numerge"]
-	path = nukebuild/Numerge
+[submodule "Numerge"]
+	path = external/Numerge
 	url = https://github.com/kekekeks/Numerge.git
 [submodule "src/Markup/Avalonia.Markup.Xaml/XamlIl/xamlil.github"]
 	path = src/Markup/Avalonia.Markup.Xaml.Loader/xamlil.github
