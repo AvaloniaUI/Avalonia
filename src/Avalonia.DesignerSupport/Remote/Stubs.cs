@@ -226,6 +226,8 @@ namespace Avalonia.DesignerSupport.Remote
 
         public Task<object> GetDataAsync(string format) => Task.FromResult((object)null);
 
+        public Task<IDataObject> TryGetInProcessDataObjectAsync() => Task.FromResult<IDataObject>(null);
+
         public Task FlushAsync() =>
             Task.CompletedTask;
     }
