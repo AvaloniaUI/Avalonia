@@ -17,12 +17,21 @@ internal class EventStreamWindow : IDisposable
     // in the same event loop iteration and potentially processing an event that was not meant for them.
     private readonly List<(Func<XEvent, bool> filter, TaskCompletionSource<XEvent?> tcs, TimeSpan timeout)> _addedListeners = new();
     private readonly DispatcherTimer _timeoutTimer;
+    private readonly bool _isForeign;
     private static readonly Stopwatch _time = Stopwatch.StartNew();
 
-    public EventStreamWindow(AvaloniaX11Platform platform)
+    public EventStreamWindow(AvaloniaX11Platform platform, IntPtr? foreignWindow = null)
     {
         _platform = platform;
-        _handle = XLib.CreateEventWindow(platform, OnEvent);
+        if (foreignWindow.HasValue)
+        {
+            _isForeign = true;
+            _handle = foreignWindow.Value;
+            _platform.Windows[_handle] = OnEvent;
+        }
+        else
+            _handle = XLib.CreateEventWindow(platform, OnEvent);
+
         _timeoutTimer = new(TimeSpan.FromSeconds(1), DispatcherPriority.Background, OnTimer);
     }
 
@@ -51,7 +60,6 @@ internal class EventStreamWindow : IDisposable
 
     private void OnEvent(ref XEvent xev)
     {
-        Console.WriteLine(xev.type + " " + xev.SelectionEvent.property);
         MergeListeners();
         for (var i = 0; i < _listeners.Count; i++)
         {
@@ -83,7 +91,12 @@ internal class EventStreamWindow : IDisposable
     
     public void Dispose()
     {
-        XLib.XDestroyWindow(_platform.Display, _handle);
+        _platform.Windows.Remove(_handle);
+        if (_isForeign)
+            XLib.XSelectInput(_platform.Display, _handle, IntPtr.Zero);
+        else
+            XLib.XDestroyWindow(_platform.Display, _handle);
+        
         _handle = IntPtr.Zero;
         var toDispose = _listeners.ToList();
         toDispose.AddRange(_addedListeners);
