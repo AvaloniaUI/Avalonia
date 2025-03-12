@@ -199,6 +199,11 @@ namespace Avalonia.Native
                 _savedDataObject = null;
             return Task.FromResult(_savedDataObject);
         }
+
+        /// <inheritdoc />
+        public Task FlushAsync() =>
+            Task.CompletedTask;
+
     }
     
     class ClipboardDataObject : IDataObject, IDisposable

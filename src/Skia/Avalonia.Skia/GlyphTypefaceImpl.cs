@@ -111,24 +111,53 @@ namespace Avalonia.Skia
 
             if(_nameTable != null)
             {
-                var familyNames = new Dictionary<ushort, string>(_nameTable.Languages.Count);
+                var familyNames = new Dictionary<ushort, string>(1);
+                var faceNames = new Dictionary<ushort, string>(1);
 
-                foreach (var language in _nameTable.Languages)
+                foreach (var nameRecord in _nameTable)
                 {
-                    familyNames.Add(language, _nameTable.FontFamilyName(language));
+                    if(nameRecord.NameID == KnownNameIds.FontFamilyName)
+                    {
+                        if (nameRecord.Platform != PlatformIDs.Windows || nameRecord.LanguageID == 0)
+                        {
+                            continue;
+                        }
+
+                        if (!familyNames.ContainsKey(nameRecord.LanguageID))
+                        {
+                            familyNames[nameRecord.LanguageID] = nameRecord.Value;
+                        }
+                    }
+
+                    if(nameRecord.NameID == KnownNameIds.FontSubfamilyName)
+                    {
+                        if (nameRecord.Platform != PlatformIDs.Windows || nameRecord.LanguageID == 0)
+                        {
+                            continue;
+                        }
+
+                        if (!faceNames.ContainsKey(nameRecord.LanguageID))
+                        {
+                            faceNames[nameRecord.LanguageID] = nameRecord.Value;
+                        }
+                    }
                 }
 
                 FamilyNames = familyNames;
+                FaceNames = faceNames;
             }
             else
             {
                 FamilyNames = new Dictionary<ushort, string> { { (ushort)CultureInfo.InvariantCulture.LCID, FamilyName } };
+                FaceNames = new Dictionary<ushort, string> { { (ushort)CultureInfo.InvariantCulture.LCID, Weight.ToString() } };
             }
         }
 
         public string TypographicFamilyName { get; }
 
         public IReadOnlyDictionary<ushort, string> FamilyNames { get; }
+
+        public IReadOnlyDictionary<ushort, string> FaceNames { get; }
 
         public IReadOnlyList<OpenTypeTag> SupportedFeatures
         {

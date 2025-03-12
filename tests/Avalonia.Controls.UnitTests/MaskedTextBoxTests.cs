@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -13,8 +12,6 @@ using Avalonia.Input.Platform;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
-using Avalonia.Rendering;
-using Avalonia.Rendering.Composition;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
@@ -906,7 +903,7 @@ namespace Avalonia.Controls.UnitTests
                 topLevel.ApplyTemplate();
                 topLevel.LayoutManager.ExecuteInitialLayoutPass();
 
-                var texts = new List<string>();
+                var texts = new System.Collections.Generic.List<string>();
 
                 target.PropertyChanged += (_, e) =>
                 {

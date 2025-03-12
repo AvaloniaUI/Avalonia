@@ -33,7 +33,11 @@ public abstract class DrawingSurfaceDemoBase : Control, IGpuDemo
     protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
         if (_initialized)
+        {
+            Surface?.Dispose();
             FreeGraphicsResources();
+        }
+
         _initialized = false;
         base.OnDetachedFromLogicalTree(e);
     }

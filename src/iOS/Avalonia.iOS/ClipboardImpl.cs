@@ -59,5 +59,9 @@ namespace Avalonia.iOS
         }
         
         public Task<IDataObject?> TryGetInProcessDataObjectAsync() => Task.FromResult<IDataObject?>(null);
+
+        /// <inheritdoc />
+        public Task FlushAsync() =>
+            Task.CompletedTask;
     }
 }

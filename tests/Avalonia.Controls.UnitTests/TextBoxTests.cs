@@ -1540,6 +1540,7 @@ namespace Avalonia.Controls.UnitTests
         [InlineData(0,4)]
         [InlineData(2,6)]
         [InlineData(0,6)]
+        [InlineData(3,4)]
         public void When_Selection_From_Left_To_Right_Pressing_Right_Should_Remove_Selection_Moving_Caret_To_End_Of_Previous_Selection(int selectionStart, int selectionEnd)
         {
             using (UnitTestApplication.Start(Services))
@@ -1568,6 +1569,7 @@ namespace Avalonia.Controls.UnitTests
         [InlineData(0,4)]
         [InlineData(2,6)]
         [InlineData(0,6)]
+        [InlineData(3,4)]
         public void When_Selection_From_Left_To_Right_Pressing_Left_Should_Remove_Selection_Moving_Caret_To_Start_Of_Previous_Selection(int selectionStart, int selectionEnd)
         {
             using (UnitTestApplication.Start(Services))
@@ -1596,6 +1598,7 @@ namespace Avalonia.Controls.UnitTests
         [InlineData(4,0)]
         [InlineData(6,2)]
         [InlineData(6,0)]
+        [InlineData(4,3)]
         public void When_Selection_From_Right_To_Left_Pressing_Right_Should_Remove_Selection_Moving_Caret_To_Start_Of_Previous_Selection(int selectionStart, int selectionEnd)
         {
             using (UnitTestApplication.Start(Services))
@@ -1624,6 +1627,7 @@ namespace Avalonia.Controls.UnitTests
         [InlineData(4,0)]
         [InlineData(6,2)]
         [InlineData(6,0)]
+        [InlineData(4,3)]
         public void When_Selection_From_Right_To_Left_Pressing_Left_Should_Remove_Selection_Moving_Caret_To_End_Of_Previous_Selection(int selectionStart, int selectionEnd)
         {
             using (UnitTestApplication.Start(Services))
@@ -1694,6 +1698,176 @@ namespace Avalonia.Controls.UnitTests
 
                 RaiseKeyEvent(tb, Key.A, KeyModifiers.Control);
                 RaiseKeyEvent(tb, Key.Right, KeyModifiers.None);
+
+                Assert.Equal(tb.Text.Length, tb.SelectionStart);
+                Assert.Equal(tb.Text.Length, tb.SelectionEnd);
+                Assert.Equal(tb.Text.Length, tb.CaretIndex);
+            }
+        }
+
+        [Theory]
+        [InlineData(2,4)]
+        [InlineData(0,4)]
+        [InlineData(2,6)]
+        [InlineData(0,6)]
+        [InlineData(3,4)]
+        public void When_Selection_From_Left_To_Right_Pressing_Up_Should_Remove_Selection_Moving_Caret_To_Start_Of_Previous_Selection(int selectionStart, int selectionEnd)
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "ABCDEF"
+                };
+
+                tb.Measure(Size.Infinity);
+                tb.CaretIndex = selectionStart;
+                tb.SelectionStart = selectionStart;
+                tb.SelectionEnd = selectionEnd;
+
+                RaiseKeyEvent(tb, Key.Up, KeyModifiers.None);
+
+                Assert.Equal(selectionStart, tb.SelectionStart);
+                Assert.Equal(selectionStart, tb.SelectionEnd);
+                Assert.Equal(selectionStart, tb.CaretIndex);
+            }
+        }
+
+        [Theory]
+        [InlineData(4,2)]
+        [InlineData(4,0)]
+        [InlineData(6,2)]
+        [InlineData(6,0)]
+        [InlineData(4,3)]
+        public void When_Selection_From_Right_To_Left_Pressing_Up_Should_Remove_Selection_Moving_Caret_To_End_Of_Previous_Selection(int selectionStart, int selectionEnd)
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "ABCDEF"
+                };
+
+                tb.Measure(Size.Infinity);
+                tb.CaretIndex = selectionStart;
+                tb.SelectionStart = selectionStart;
+                tb.SelectionEnd = selectionEnd;
+
+                RaiseKeyEvent(tb, Key.Up, KeyModifiers.None);
+
+                Assert.Equal(selectionEnd, tb.SelectionStart);
+                Assert.Equal(selectionEnd, tb.SelectionEnd);
+                Assert.Equal(selectionEnd, tb.CaretIndex);
+            }
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(2)]
+        [InlineData(4)]
+        [InlineData(6)]
+        public void When_Select_All_From_Position_Up_Should_Remove_Selection_Moving_Caret_To_Start(int caretIndex)
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "ABCDEF"
+                };
+
+                tb.Measure(Size.Infinity);
+                tb.CaretIndex = caretIndex;
+
+                RaiseKeyEvent(tb, Key.A, KeyModifiers.Control);
+                RaiseKeyEvent(tb, Key.Up, KeyModifiers.None);
+
+                Assert.Equal(0, tb.SelectionStart);
+                Assert.Equal(0, tb.SelectionEnd);
+                Assert.Equal(0, tb.CaretIndex);
+            }
+        }
+
+        [Theory]
+        [InlineData(2,4)]
+        [InlineData(0,4)]
+        [InlineData(2,6)]
+        [InlineData(0,6)]
+        [InlineData(3,4)]
+        public void When_Selection_From_Left_To_Right_Pressing_Down_Should_Remove_Selection_Moving_Caret_To_End_Of_Previous_Selection(int selectionStart, int selectionEnd)
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "ABCDEF"
+                };
+
+                tb.Measure(Size.Infinity);
+                tb.CaretIndex = selectionStart;
+                tb.SelectionStart = selectionStart;
+                tb.SelectionEnd = selectionEnd;
+
+                RaiseKeyEvent(tb, Key.Down, KeyModifiers.None);
+
+                Assert.Equal(selectionEnd, tb.SelectionStart);
+                Assert.Equal(selectionEnd, tb.SelectionEnd);
+                Assert.Equal(selectionEnd, tb.CaretIndex);
+            }
+        }
+
+        [Theory]
+        [InlineData(4,2)]
+        [InlineData(4,0)]
+        [InlineData(6,2)]
+        [InlineData(6,0)]
+        [InlineData(4,3)]
+        public void When_Selection_From_Right_To_Left_Pressing_Down_Should_Remove_Selection_Moving_Caret_To_Start_Of_Previous_Selection(int selectionStart, int selectionEnd)
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "ABCDEF"
+                };
+
+                tb.Measure(Size.Infinity);
+                tb.CaretIndex = selectionStart;
+                tb.SelectionStart = selectionStart;
+                tb.SelectionEnd = selectionEnd;
+
+                RaiseKeyEvent(tb, Key.Down, KeyModifiers.None);
+
+                Assert.Equal(selectionStart, tb.SelectionStart);
+                Assert.Equal(selectionStart, tb.SelectionEnd);
+                Assert.Equal(selectionStart, tb.CaretIndex);
+            }
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(2)]
+        [InlineData(4)]
+        [InlineData(6)]
+        public void When_Select_All_From_Position_Down_Should_Remove_Selection_Moving_Caret_To_End(int caretIndex)
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "ABCDEF"
+                };
+
+                tb.Measure(Size.Infinity);
+                tb.CaretIndex = caretIndex;
+
+                RaiseKeyEvent(tb, Key.A, KeyModifiers.Control);
+                RaiseKeyEvent(tb, Key.Down, KeyModifiers.None);
 
                 Assert.Equal(tb.Text.Length, tb.SelectionStart);
                 Assert.Equal(tb.Text.Length, tb.SelectionEnd);

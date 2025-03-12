@@ -1147,6 +1147,19 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Fact]
+        public void Should_Measure_TextLayoutSymbolWithAndWidthIncludingTrailingWhitespace()
+        {
+            const string symbolsFont = "resm:Avalonia.Skia.UnitTests.Fonts?assembly=Avalonia.Skia.UnitTests#Symbols";
+            using (Start())
+            {
+                var textLayout = new TextLayout("\ue971", new Typeface(symbolsFont), 12.0, Brushes.White);
+
+                Assert.Equal(new Size(12.0, 12.0), new Size(textLayout.Width, textLayout.Height));
+                Assert.Equal(12.0, textLayout.WidthIncludingTrailingWhitespace);
+            }
+        }
+
         private static IDisposable Start()
         {
             var disposable = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface
