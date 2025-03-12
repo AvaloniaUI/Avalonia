@@ -1,5 +1,7 @@
 using System;
+using System.Buffers;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -101,10 +103,8 @@ namespace Avalonia.X11
                     if (text == null)
                         return IntPtr.Zero;
                     var data = textEnc.GetBytes(text);
-                    fixed (void* pdata = data)
-                        XChangeProperty(_x11.Display, window, property, target, 8,
-                            PropertyMode.Replace,
-                            pdata, data.Length);
+                    SendDataToClient(window, property, target, data);
+
                     return property;
                 }
                 else if (target == _x11.Atoms.MULTIPLE && _x11.Atoms.MULTIPLE != IntPtr.Zero)
@@ -145,15 +145,53 @@ namespace Avalonia.X11
                             return IntPtr.Zero;
                     }
 
-                    XChangeProperty(_x11.Display, window, property, target, 8,
-                        PropertyMode.Replace,
-                        bytes, bytes.Length);
+                    SendDataToClient(window, property, target, bytes);
                     return property;
                 }
                 else
                     return IntPtr.Zero;
             }
 
+        }
+
+        private const int IncrChunkSize = 0x10;//0000; // Change to 0x10 or smth for debugging
+        private const int IncrThreshold = 0x20;//0000; // Change to 0x10 or smth for debugging
+
+        async void SendIncrDataToClient(IntPtr window, IntPtr property, IntPtr target, Stream data)
+        {
+            data.Position = 0;
+            using var events = new EventStreamWindow(_platform, window);
+            using var _ = data;
+            XSelectInput(_x11.Display, window, new IntPtr((int)XEventMask.PropertyChangeMask));
+            var size = new IntPtr(data.Length);
+            XChangeProperty(_x11.Display, window, property, _x11.Atoms.INCR, 32, PropertyMode.Replace, ref size, 1);
+            var buffer = ArrayPool<byte>.Shared.Rent((int)Math.Min(IncrChunkSize, data.Length));
+            while (true)
+            {
+                if (null == await events.WaitForEventAsync(x =>
+                        x.type == XEventName.PropertyNotify && x.PropertyEvent.atom == property
+                                                            && x.PropertyEvent.state == 1, TimeSpan.FromMinutes(1)))
+                    break;
+                var read = await data.ReadAsync(buffer, 0, buffer.Length);
+                if(read == 0)
+                    break;
+                XChangeProperty(_x11.Display, window, property, target, 8, PropertyMode.Replace, buffer, read);
+            }
+            ArrayPool<byte>.Shared.Return(buffer);
+
+            // Finish the transfer
+            XChangeProperty(_x11.Display, window, property, target, 8, PropertyMode.Replace, IntPtr.Zero, 0);
+        }
+
+        void SendDataToClient(IntPtr window, IntPtr property, IntPtr target, byte[] bytes)
+        {
+            if (bytes.Length < IncrThreshold) // change to 0 to debug INCR
+            {
+                XChangeProperty(_x11.Display, window, property, target, 8,
+                    PropertyMode.Replace,
+                    bytes, bytes.Length);
+            }
+            SendIncrDataToClient(window, property, target, new MemoryStream(bytes));
         }
 
         private bool HasOwner => XGetSelectionOwner(_x11.Display, _x11.Atoms.CLIPBOARD) != IntPtr.Zero;
@@ -164,6 +202,9 @@ namespace Avalonia.X11
         {
             if (!HasOwner)
                 return null;
+            if (TryGetInProcessDataObject() is { } inProc)
+                return inProc.GetText();
+            
             using var session = OpenReadSession();
             var res = await session.SendFormatRequest();
             var target = _x11.Atoms.UTF8_STRING;
@@ -255,18 +296,22 @@ namespace Avalonia.X11
             return StoreAtomsInClipboardManager(data);
         }
 
-        public Task<IDataObject?> TryGetInProcessDataObjectAsync()
+        private IDataObject? TryGetInProcessDataObject()
         {
             if (XGetSelectionOwner(_x11.Display, _x11.Atoms.CLIPBOARD) == _handle)
-                return Task.FromResult(_storedDataObject);
-            return Task.FromResult<IDataObject?>(null);
+                return _storedDataObject;
+            return null;
         }
+
+        public Task<IDataObject?> TryGetInProcessDataObjectAsync() => Task.FromResult(TryGetInProcessDataObject());
 
         public async Task<string[]> GetFormatsAsync()
         {
             if (!HasOwner)
                 return [];
-
+            if (TryGetInProcessDataObject() is { } inProc)
+                inProc.GetDataFormats();
+            
             using var session = OpenReadSession();
             var res = await session.SendFormatRequest();
             if (res == null)
@@ -289,6 +334,10 @@ namespace Avalonia.X11
         {
             if (!HasOwner)
                 return null;
+            
+            if(TryGetInProcessDataObject() is {} inProc)
+                return inProc.Get(format);
+            
             if (format == DataFormats.Text)
                 return await GetTextAsync();
 
