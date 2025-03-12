@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls.Generators;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Utils;
 using Avalonia.Input;
@@ -190,6 +191,11 @@ namespace Avalonia.Controls
             }
 
             Children.RemoveRange(index, count);
+        }
+
+        internal int GetIndexFromTextSearch(string textSearchTerm)
+        {
+            return ItemsPresenter.GetIndexFromTextSearch(Items, textSearchTerm);
         }
 
         private protected override void InvalidateMeasureOnChildrenChanged()

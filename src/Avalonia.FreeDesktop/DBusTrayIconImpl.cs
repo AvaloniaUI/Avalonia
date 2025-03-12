@@ -16,12 +16,12 @@ namespace Avalonia.FreeDesktop
         public static readonly (int, int, byte[]) EmptyPixmap = (1, 1, [255, 0, 0, 0]);
 
         private readonly Connection? _connection;
-        private readonly OrgFreedesktopDBus? _dBus;
+        private readonly OrgFreedesktopDBusProxy? _dBus;
 
         private IDisposable? _serviceWatchDisposable;
         private readonly PathHandler _pathHandler = new("/StatusNotifierItem");
         private readonly StatusNotifierItemDbusObj? _statusNotifierItemDbusObj;
-        private OrgKdeStatusNotifierWatcher? _statusNotifierWatcher;
+        private OrgKdeStatusNotifierWatcherProxy? _statusNotifierWatcher;
         private (int, int, byte[]) _icon;
 
         private string? _sysTrayServiceName;
@@ -50,7 +50,7 @@ namespace Avalonia.FreeDesktop
 
             IsActive = true;
 
-            _dBus = new OrgFreedesktopDBus(_connection, "org.freedesktop.DBus", "/org/freedesktop/DBus");
+            _dBus = new OrgFreedesktopDBusProxy(_connection, "org.freedesktop.DBus", "/org/freedesktop/DBus");
             var dbusMenuPath = DBusMenuExporter.GenerateDBusMenuObjPath;
 
             MenuExporter = DBusMenuExporter.TryCreateDetachedNativeMenu(dbusMenuPath, _connection);
@@ -86,7 +86,7 @@ namespace Avalonia.FreeDesktop
             if (!_serviceConnected && newOwner is not null)
             {
                 _serviceConnected = true;
-                _statusNotifierWatcher = new OrgKdeStatusNotifierWatcher(_connection, "org.kde.StatusNotifierWatcher", "/StatusNotifierWatcher");
+                _statusNotifierWatcher = new OrgKdeStatusNotifierWatcherProxy(_connection, "org.kde.StatusNotifierWatcher", "/StatusNotifierWatcher");
 
                 DestroyTrayIcon();
 
@@ -213,7 +213,7 @@ namespace Avalonia.FreeDesktop
     /// <remarks>
     /// Useful guide: https://web.archive.org/web/20210818173850/https://www.notmart.org/misc/statusnotifieritem/statusnotifieritem.html
     /// </remarks>
-    internal class StatusNotifierItemDbusObj : OrgKdeStatusNotifierItem
+    internal class StatusNotifierItemDbusObj : OrgKdeStatusNotifierItemHandler
     {
         public StatusNotifierItemDbusObj(Connection connection, ObjectPath dbusMenuPath)
         {
@@ -225,17 +225,17 @@ namespace Avalonia.FreeDesktop
 
         public event Action? ActivationDelegate;
 
-        protected override ValueTask OnContextMenuAsync(int x, int y) => new();
+        protected override ValueTask OnContextMenuAsync(Message message, int x, int y) => new();
 
-        protected override ValueTask OnActivateAsync(int x, int y)
+        protected override ValueTask OnActivateAsync(Message message, int x, int y)
         {
             ActivationDelegate?.Invoke();
             return new ValueTask();
         }
 
-        protected override ValueTask OnSecondaryActivateAsync(int x, int y) => new();
+        protected override ValueTask OnSecondaryActivateAsync(Message message, int x, int y) => new();
 
-        protected override ValueTask OnScrollAsync(int delta, string orientation) => new();
+        protected override ValueTask OnScrollAsync(Message message, int delta, string orientation) => new();
 
         public void InvalidateAll()
         {

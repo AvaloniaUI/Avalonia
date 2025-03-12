@@ -25,18 +25,18 @@ namespace Avalonia.FreeDesktop.DBusIme.Fcitx
         {
             if (name == "org.fcitx.Fcitx")
             {
-                var method = new OrgFcitxFcitxInputMethod(Connection, name, "/inputmethod");
+                var method = new OrgFcitxFcitxInputMethodProxy(Connection, name, "/inputmethod");
                 var resp = await method.CreateICv3Async(GetAppName(),
                     Process.GetCurrentProcess().Id);
 
-                var proxy = new OrgFcitxFcitxInputContext(Connection, name, $"/inputcontext_{resp.Icid}");
+                var proxy = new OrgFcitxFcitxInputContextProxy(Connection, name, $"/inputcontext_{resp.Icid}");
                 _context = new FcitxICWrapper(proxy);
             }
             else
             {
-                var method = new OrgFcitxFcitxInputMethod1(Connection, name, "/inputmethod");
+                var method = new OrgFcitxFcitxInputMethod1Proxy(Connection, name, "/inputmethod");
                 var resp = await method.CreateInputContextAsync(new[] { ("appName", GetAppName()) });
-                var proxy = new OrgFcitxFcitxInputContext1(Connection, name, resp.Item1);
+                var proxy = new OrgFcitxFcitxInputContext1Proxy(Connection, name, resp.Item1);
                 _context = new FcitxICWrapper(proxy);
             }
 
