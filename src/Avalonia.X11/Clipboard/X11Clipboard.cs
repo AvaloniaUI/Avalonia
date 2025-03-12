@@ -321,7 +321,7 @@ namespace Avalonia.X11
             if (!HasOwner)
                 return [];
             if (TryGetInProcessDataObject() is { } inProc)
-                inProc.GetDataFormats();
+                return inProc.GetDataFormats().ToArray();
             
             using var session = OpenReadSession();
             var res = await session.SendFormatRequest();
