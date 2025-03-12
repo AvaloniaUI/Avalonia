@@ -1,8 +1,8 @@
 [submodule "Numerge"]
 	path = external/Numerge
 	url = https://github.com/kekekeks/Numerge.git
-[submodule "src/Markup/Avalonia.Markup.Xaml/XamlIl/xamlil.github"]
-	path = src/Markup/Avalonia.Markup.Xaml.Loader/xamlil.github
+[submodule "XamlX"]
+	path = external/XamlX
 	url = https://github.com/kekekeks/XamlX.git
 [submodule "Avalonia.Controls.DataGrid"]
 	path = external/Avalonia.Controls.DataGrid
