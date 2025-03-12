@@ -9,9 +9,9 @@
   <ItemGroup>
     <Compile Update="**/*.xaml.cs"
              DependentUpon="%(Filename)" />
-    <Compile Include="../Avalonia.Controls.DataGrid/src/Avalonia.Controls.DataGrid/**/*.cs"
+    <Compile Include="../../external/Avalonia.Controls.DataGrid/src/Avalonia.Controls.DataGrid/**/*.cs"
              LinkBase="Diagnostics/Controls/DataGrid" />
-    <AvaloniaXaml Include="../Avalonia.Controls.DataGrid/src/Avalonia.Controls.DataGrid/Themes/Simple.xaml"
+    <AvaloniaXaml Include="../../external/Avalonia.Controls.DataGrid/src/Avalonia.Controls.DataGrid/Themes/Simple.xaml"
                   Link="Diagnostics/Controls/DataGrid/Themes/Simple.xaml" />
   </ItemGroup>
 
