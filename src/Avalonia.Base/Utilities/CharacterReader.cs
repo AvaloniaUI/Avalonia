@@ -51,7 +51,7 @@ namespace Avalonia.Utilities
         {
             var p = TryPeek(s.Length);
 
-            if (SpanEquals(p, s.AsSpan()))
+            if (p.SequenceEqual(s.AsSpan()))
             {
                 _s = _s.Slice(s.Length);
                 Position += s.Length;
@@ -113,18 +113,6 @@ namespace Avalonia.Utilities
             if (_s.Length < count)
                 throw new IndexOutOfRangeException();
             _s = _s.Slice(count);
-        }
-
-        private static bool SpanEquals(ReadOnlySpan<char> left, ReadOnlySpan<char> right)
-        {
-            if (left.Length != right.Length)
-                return false;
-            for (var c = 0; c < left.Length; c++)
-            {
-                if (left[c] != right[c])
-                    return false;
-            }
-            return true;
         }
     }
 }
