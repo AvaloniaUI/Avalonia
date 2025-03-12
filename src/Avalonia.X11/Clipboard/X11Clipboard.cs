@@ -21,6 +21,7 @@ namespace Avalonia.X11
         private TaskCompletionSource<bool>? _storeAtomTcs;
         private readonly IntPtr[] _textAtoms;
         private readonly IntPtr _avaloniaSaveTargetsAtom;
+        private int _maximumPropertySize;
 
         public X11Clipboard(AvaloniaX11Platform platform)
         {
@@ -35,6 +36,13 @@ namespace Avalonia.X11
                 _x11.Atoms.UTF8_STRING,
                 _x11.Atoms.UTF16_STRING
             }.Where(a => a != IntPtr.Zero).ToArray();
+
+            var extendedMaxRequestSize = XExtendedMaxRequestSize(_platform.Display);
+            var maxRequestSize = XMaxRequestSize(_platform.Display);
+            _maximumPropertySize =
+                (int)Math.Min(0x100000, (extendedMaxRequestSize == IntPtr.Zero
+                    ? maxRequestSize
+                    : extendedMaxRequestSize).ToInt64() - 0x100);
         }
         
         private Encoding? GetStringEncoding(IntPtr atom)
@@ -154,9 +162,6 @@ namespace Avalonia.X11
 
         }
 
-        private const int IncrChunkSize = 0x10;//0000; // Change to 0x10 or smth for debugging
-        private const int IncrThreshold = 0x20;//0000; // Change to 0x10 or smth for debugging
-
         async void SendIncrDataToClient(IntPtr window, IntPtr property, IntPtr target, Stream data)
         {
             data.Position = 0;
@@ -165,7 +170,7 @@ namespace Avalonia.X11
             XSelectInput(_x11.Display, window, new IntPtr((int)XEventMask.PropertyChangeMask));
             var size = new IntPtr(data.Length);
             XChangeProperty(_x11.Display, window, property, _x11.Atoms.INCR, 32, PropertyMode.Replace, ref size, 1);
-            var buffer = ArrayPool<byte>.Shared.Rent((int)Math.Min(IncrChunkSize, data.Length));
+            var buffer = ArrayPool<byte>.Shared.Rent((int)Math.Min(_maximumPropertySize, data.Length));
             while (true)
             {
                 if (null == await events.WaitForEventAsync(x =>
@@ -185,7 +190,7 @@ namespace Avalonia.X11
 
         void SendDataToClient(IntPtr window, IntPtr property, IntPtr target, byte[] bytes)
         {
-            if (bytes.Length < IncrThreshold) // change to 0 to debug INCR
+            if (bytes.Length < _maximumPropertySize)
             {
                 XChangeProperty(_x11.Display, window, property, target, 8,
                     PropertyMode.Replace,
@@ -254,6 +259,12 @@ namespace Avalonia.X11
 
         private Task StoreAtomsInClipboardManager(IDataObject data)
         {
+            // Skip storing atoms if the data object contains any non-trivial formats or trivial formats are too big
+            if (data.GetDataFormats().Any(f => f != DataFormats.Text)
+                || data.GetText()?.Length * 2 > 64 * 1024
+               )
+                return Task.CompletedTask;
+            
             if (_x11.Atoms.CLIPBOARD_MANAGER != IntPtr.Zero && _x11.Atoms.SAVE_TARGETS != IntPtr.Zero)
             {
                 var clipboardManager = XGetSelectionOwner(_x11.Display, _x11.Atoms.CLIPBOARD_MANAGER);
