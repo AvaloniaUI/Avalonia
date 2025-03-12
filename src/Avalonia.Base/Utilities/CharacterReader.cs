@@ -2,6 +2,7 @@ using System;
 
 namespace Avalonia.Utilities
 {
+    // TODO12: This should not be public
 #if !BUILDTASK
     public
 #endif
@@ -46,7 +47,7 @@ namespace Avalonia.Utilities
             }
         }
 
-        public bool TakeIf(string s)
+        internal bool TakeIf(string s)
         {
             var p = TryPeek(s.Length);
 
