@@ -12,10 +12,10 @@ internal class EventStreamWindow : IDisposable
     private readonly AvaloniaX11Platform _platform;
     private IntPtr _handle;
     public IntPtr Handle => _handle;
-    private readonly List<(Func<XEvent, bool> filter, TaskCompletionSource<XEvent?> tcs, TimeSpan? timeout)> _listeners = new();
+    private readonly List<(Func<XEvent, bool> filter, TaskCompletionSource<XEvent?> tcs, TimeSpan timeout)> _listeners = new();
     // We are adding listeners to an intermediate collection to avoid freshly added listeners to be called
     // in the same event loop iteration and potentially processing an event that was not meant for them.
-    private readonly List<(Func<XEvent, bool> filter, TaskCompletionSource<XEvent?> tcs, TimeSpan? timeout)> _addedListeners = new();
+    private readonly List<(Func<XEvent, bool> filter, TaskCompletionSource<XEvent?> tcs, TimeSpan timeout)> _addedListeners = new();
     private readonly DispatcherTimer _timeoutTimer;
     private static readonly Stopwatch _time = Stopwatch.StartNew();
 
@@ -51,6 +51,7 @@ internal class EventStreamWindow : IDisposable
 
     private void OnEvent(ref XEvent xev)
     {
+        Console.WriteLine(xev.type + " " + xev.SelectionEvent.property);
         MergeListeners();
         for (var i = 0; i < _listeners.Count; i++)
         {
@@ -66,18 +67,17 @@ internal class EventStreamWindow : IDisposable
 
     public Task<XEvent?> WaitForEventAsync(Func<XEvent, bool> predicate, TimeSpan? timeout = null)
     {
-        if (timeout.HasValue)
-        {
-            if (timeout < TimeSpan.Zero)
-                throw new TimeoutException();
-            if(timeout > TimeSpan.FromDays(1))
-                throw new ArgumentOutOfRangeException(nameof(timeout));
-        }
+        timeout ??= TimeSpan.FromSeconds(5);
+        
+        if (timeout < TimeSpan.Zero)
+            throw new TimeoutException();
+        if(timeout > TimeSpan.FromDays(1))
+            throw new ArgumentOutOfRangeException(nameof(timeout));
         
         var tcs = new TaskCompletionSource<XEvent?>();
-        _addedListeners.Add((predicate, tcs, _time.Elapsed + timeout));
-        if(timeout.HasValue)
-            _timeoutTimer.Start();
+        _addedListeners.Add((predicate, tcs, _time.Elapsed + timeout.Value));
+
+        _timeoutTimer.Start();
         return tcs.Task;
     }
     

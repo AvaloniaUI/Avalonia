@@ -297,8 +297,8 @@ namespace Avalonia.X11
             var res = await session.SendFormatRequest();
             if (res is null || !res.Contains(formatAtom))
                 return null;
-            
-            return await session.SendDataRequest(formatAtom);
+
+            return ConvertData(await session.SendDataRequest(formatAtom));
         }
 
         /// <inheritdoc />
