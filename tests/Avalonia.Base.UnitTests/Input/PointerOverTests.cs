@@ -120,7 +120,7 @@ namespace Avalonia.Base.UnitTests.Input
         }
 
         [Fact]
-        public void HitTest_Should_Be_Ignored_If_Element_Captured()
+        public void HitTest_Should_Ignore_Non_Captured_Elements()
         {
             using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
 
@@ -145,8 +145,19 @@ namespace Avalonia.Base.UnitTests.Input
                 }
             }, renderer.Object);
 
-            SetHit(renderer, canvas);
             pointer.SetupGet(p => p.Captured).Returns(decorator);
+
+            // Move the pointer over the canvas: the captured decorator should lose the pointer over state.
+            SetHit(renderer, canvas);
+            impl.Object.Input!(CreateRawPointerMovedArgs(device, root));
+
+            Assert.False(decorator.IsPointerOver);
+            Assert.False(border.IsPointerOver);
+            Assert.False(canvas.IsPointerOver);
+            Assert.False(root.IsPointerOver);
+
+            // Move back the pointer over the decorator: raise events normally for it since it's captured.
+            SetHit(renderer, decorator);
             impl.Object.Input!(CreateRawPointerMovedArgs(device, root));
 
             Assert.True(decorator.IsPointerOver);
