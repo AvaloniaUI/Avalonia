@@ -713,7 +713,7 @@ namespace Avalonia.Media.TextFormatting
             _metrics.Extent = Math.Max(_metrics.Extent, currentLine.Extent);
 
             // 5) We can track min-text-width or overhangs similarly if needed.
-            _metrics.MinTextWidth = Math.Max(_metrics.MinTextWidth, currentLine.Width);
+            _metrics.MinTextWidth = Math.Max(_metrics.MinTextWidth, currentLine.WidthIncludingTrailingWhitespace);
 
             _metrics.OverhangLeading = Math.Max(_metrics.OverhangLeading, currentLine.OverhangLeading);
             _metrics.OverhangTrailing = Math.Max(_metrics.OverhangTrailing, currentLine.OverhangTrailing);
