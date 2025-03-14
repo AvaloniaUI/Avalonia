@@ -66,6 +66,7 @@ namespace Avalonia.Direct2D1.Media
 
                 if (_glyphTypefaceImpl.TryGetGlyphMetrics(glyphInfos[i].GlyphIndex, out var metrics))
                 {
+                    // Found metrics with negative height, prefer to adjust it to positive.
                     var ybearing = metrics.YBearing;
                     var height = metrics.Height;
                     if (height < 0)
@@ -74,7 +75,6 @@ namespace Avalonia.Direct2D1.Media
                         height = -height;
                     }
 
-                    // It is unclear why dividing xBeaering by 2 make it closer to Skia rendering
                     runBounds = runBounds.Union(new Rect(currentX + metrics.XBearing * scale, baselineOrigin.Y + ybearing * scale, metrics.Width * scale, height * scale));
                 }
 
