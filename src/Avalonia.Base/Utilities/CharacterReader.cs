@@ -2,6 +2,7 @@ using System;
 
 namespace Avalonia.Utilities
 {
+    // TODO12: This should not be public
 #if !BUILDTASK
     public
 #endif
@@ -44,6 +45,20 @@ namespace Avalonia.Utilities
             {
                 return false;
             }
+        }
+
+        internal bool TakeIf(string s)
+        {
+            var p = TryPeek(s.Length);
+
+            if (p.SequenceEqual(s.AsSpan()))
+            {
+                _s = _s.Slice(s.Length);
+                Position += s.Length;
+                return true;
+            }
+
+            return false;
         }
 
         public bool TakeIf(Func<char, bool> condition)
