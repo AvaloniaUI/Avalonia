@@ -1,6 +1,7 @@
 
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
+using Avalonia.Controls.Templates;
+using Avalonia.Layout;
 using Avalonia.Styling;
 
 namespace Avalonia.Controls
@@ -37,15 +38,15 @@ namespace Avalonia.Controls
             return control.GetValue(WidthProperty);
         }
 
-        public static readonly AttachedProperty<object> DataContextProperty = AvaloniaProperty
-            .RegisterAttached<Control, object>("DataContext", typeof (Design));
+        public static readonly AttachedProperty<object?> DataContextProperty = AvaloniaProperty
+            .RegisterAttached<Control, object?>("DataContext", typeof (Design));
 
-        public static void SetDataContext(Control control, object value)
+        public static void SetDataContext(Control control, object? value)
         {
             control.SetValue(DataContextProperty, value);
         }
 
-        public static object GetDataContext(Control control)
+        public static object? GetDataContext(Control control)
         {
             return control.GetValue(DataContextProperty);
         }
@@ -64,12 +65,23 @@ namespace Avalonia.Controls
             _previewWith[target] = control;
         }
 
+        public static void SetPreviewWith(IDataTemplate target, Control? control)
+        {
+            _previewWith ??= new();
+            _previewWith[target] = control;
+        }
+
         public static Control? GetPreviewWith(AvaloniaObject target)
         {
             return target.GetValue(PreviewWithProperty);
         }
 
         public static Control? GetPreviewWith(ResourceDictionary target)
+        {
+            return _previewWith?[target];
+        }
+
+        public static Control? GetPreviewWith(IDataTemplate target)
         {
             return _previewWith?[target];
         }
@@ -90,11 +102,11 @@ namespace Avalonia.Controls
         public static void ApplyDesignModeProperties(Control target, Control source)
         {
             if (source.IsSet(WidthProperty))
-                target.Width = source.GetValue(WidthProperty);
+                target.Bind(Layoutable.WidthProperty, target.GetBindingObservable(WidthProperty));
             if (source.IsSet(HeightProperty))
-                target.Height = source.GetValue(HeightProperty);
+                target.Bind(Layoutable.HeightProperty, target.GetBindingObservable(HeightProperty));
             if (source.IsSet(DataContextProperty))
-                target.DataContext = source.GetValue(DataContextProperty);
+                target.Bind(StyledElement.DataContextProperty, target.GetBindingObservable(DataContextProperty));
             if (source.IsSet(DesignStyleProperty))
                 target.Styles.Add(source.GetValue(DesignStyleProperty));
         }
