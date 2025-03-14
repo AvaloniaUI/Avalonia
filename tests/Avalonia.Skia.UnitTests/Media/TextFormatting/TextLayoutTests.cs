@@ -1170,20 +1170,21 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 Assert.Equal(textLayout0.WidthIncludingTrailingWhitespace, textLayout0.Width);
                 Assert.Equal(textLayout0.MinTextWidth, textLayout0.Width);
 
+                var textLayout01 = new TextLayout("a a", typeFace, 12.0, Brushes.White);
                 var textLayout1 = new TextLayout("a a ", typeFace, 12.0, Brushes.White);
                 Assert.Equal(new Size(textLayout0.Width, textLayout0.Height), new Size(textLayout1.WidthIncludingTrailingWhitespace, textLayout1.Height));
                 Assert.Equal(textLayout0.WidthIncludingTrailingWhitespace, textLayout1.WidthIncludingTrailingWhitespace);
-                Assert.Equal(textLayout0.MinTextWidth, textLayout1.MinTextWidth);
+                Assert.Equal(textLayout01.Width, textLayout1.MinTextWidth);
 
                 var textLayout2 = new TextLayout(" aa ", typeFace, 12.0, Brushes.White);
                 Assert.Equal(new Size(textLayout1.Width, textLayout1.Height), new Size(textLayout2.Width, textLayout2.Height));
                 Assert.Equal(textLayout0.WidthIncludingTrailingWhitespace, textLayout2.WidthIncludingTrailingWhitespace);
-                Assert.Equal(textLayout0.MinTextWidth, textLayout2.MinTextWidth);
+                Assert.Equal(textLayout01.Width, textLayout2.MinTextWidth);
                 
                 var textLayout3 = new TextLayout("    ", typeFace, 12.0, Brushes.White);
                 Assert.Equal(new Size(0, textLayout0.Height), new Size(textLayout3.Width, textLayout3.Height));
                 Assert.Equal(textLayout0.WidthIncludingTrailingWhitespace, textLayout3.WidthIncludingTrailingWhitespace);
-                Assert.Equal(textLayout0.MinTextWidth, textLayout3.MinTextWidth);
+                Assert.Equal(0, textLayout3.MinTextWidth);
             }
         }
 
