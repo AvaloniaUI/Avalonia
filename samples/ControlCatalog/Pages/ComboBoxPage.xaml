@@ -102,9 +102,8 @@
                 <ComboBox 
                     WrapSelection="{Binding WrapSelection}" 
                     ItemsSource="{Binding Values}" 
-                    DisplayMemberBinding="{Binding Name}">
-                
-                </ComboBox>
+                    DisplayMemberBinding="{Binding Name}"
+                    TextSearch.TextBinding="{Binding SearchText, DataType=viewModels:IdAndName}" />
               
                 <ComboBox 
                     WrapSelection="{Binding WrapSelection}" 
