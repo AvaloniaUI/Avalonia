@@ -50,7 +50,10 @@ namespace Avalonia.Direct2D1.Media
             }
 
             _glyphOffsets = new GlyphOffset[glyphCount];
-
+            
+            var runBounds = new Rect();
+            var currentX = 0.0;
+            var scale = fontRenderingEmSize / glyphTypeface.Metrics.DesignEmHeight;
             for (var i = 0; i < glyphCount; i++)
             {
                 var (x, y) = glyphInfos[i].GlyphOffset;
@@ -60,13 +63,25 @@ namespace Avalonia.Direct2D1.Media
                     AdvanceOffset = (float)x,
                     AscenderOffset = (float)y
                 };
+
+                if (_glyphTypefaceImpl.TryGetGlyphMetrics(glyphInfos[i].GlyphIndex, out var metrics))
+                {
+                    var ybearing = metrics.YBearing;
+                    var height = metrics.Height;
+                    if (height < 0)
+                    {
+                        ybearing += height;
+                        height = -height;
+                    }
+
+                    // It is unclear why dividing xBeaering by 2 make it closer to Skia rendering
+                    runBounds = runBounds.Union(new Rect(currentX + metrics.XBearing * scale, baselineOrigin.Y + ybearing * scale, metrics.Width * scale, height * scale));
+                }
+
+                currentX += glyphInfos[i].GlyphAdvance;
             }
 
-            var scale = fontRenderingEmSize / glyphTypeface.Metrics.DesignEmHeight;
-
-            var height = glyphTypeface.Metrics.LineSpacing * scale;
-
-            Bounds = new Rect(baselineOrigin.X, 0, width, height);
+            Bounds = runBounds.Translate(new Vector(baselineOrigin.X, 0));
         }
 
         public SharpDX.DirectWrite.GlyphRun GlyphRun
