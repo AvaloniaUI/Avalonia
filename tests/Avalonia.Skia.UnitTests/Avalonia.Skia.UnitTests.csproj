@@ -12,9 +12,11 @@
     <EmbeddedResource Include="..\Avalonia.RenderTests\*\*.ttf" />
     <None Remove="Fonts\DejaVuSans.ttf" />
     <None Remove="Fonts\Manrope-Light.ttf" />
+    <None Remove="Fonts\SourceSerif4_36pt-Italic.ttf" />
     <None Remove="Fonts\WinSymbols3.ttf" />
     <EmbeddedResource Include="Fonts\DejaVuSans.ttf" />
     <EmbeddedResource Include="Fonts\Manrope-Light.ttf" />
+    <EmbeddedResource Include="Fonts\SourceSerif4_36pt-Italic.ttf" />
     <EmbeddedResource Include="Fonts\WinSymbols3.ttf" />
   </ItemGroup>
   <ItemGroup>

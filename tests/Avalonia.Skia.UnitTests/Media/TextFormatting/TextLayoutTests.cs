@@ -1187,6 +1187,35 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Fact]
+        public void Should_Measure_TextLayoutWithOverhangLeading()
+        {
+            using (Start())
+            {
+                const string symbolsFont = "resm:Avalonia.Skia.UnitTests.Fonts?assembly=Avalonia.Skia.UnitTests#Source Serif 4 36pt";
+                var typeFace = new Typeface(symbolsFont);
+                var textLayout0 = new TextLayout("f", typeFace, 44.0, Brushes.White);
+                Assert.Equal(8.0, textLayout0.OverhangLeading);
+                Assert.Equal(8.5040000000000013, textLayout0.OverhangTrailing);
+                Assert.Equal(12.495999999999999, textLayout0.WidthIncludingTrailingWhitespace);
+
+                var textLayout1 = new TextLayout("ff", typeFace, 44.0, Brushes.White);
+                Assert.Equal(8.0, textLayout1.OverhangLeading);
+                Assert.Equal(8.8440000000000012, textLayout1.OverhangTrailing);
+                Assert.Equal(24.155999999999999, textLayout1.WidthIncludingTrailingWhitespace);
+
+                var textLayout2 = new TextLayout("y", typeFace, 44.0, Brushes.White);
+                Assert.Equal(6.0, textLayout2.OverhangLeading);
+                Assert.Equal(0.58399999999999963, textLayout2.OverhangTrailing);
+                Assert.Equal(20.416, textLayout2.WidthIncludingTrailingWhitespace);
+
+                var textLayout3 = new TextLayout("yy", typeFace, 44.0, Brushes.White);
+                Assert.Equal(6.0, textLayout3.OverhangLeading);
+                Assert.Equal(0.58399999999999608, textLayout3.OverhangTrailing);
+                Assert.Equal(41.052, textLayout3.WidthIncludingTrailingWhitespace);
+            }
+        }
+
         private static IDisposable Start()
         {
             var disposable = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface
