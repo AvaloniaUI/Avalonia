@@ -9,6 +9,7 @@ using System.Text;
 using Windows.Win32;
 using Windows.Win32.Graphics.Gdi;
 using MicroCom.Runtime;
+using System.Runtime.CompilerServices;
 
 // ReSharper disable InconsistentNaming
 #pragma warning disable 169, 649
@@ -1782,6 +1783,80 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("user32.dll")]
         public static extern bool SetLayeredWindowAttributes(IntPtr hwnd, uint crKey, byte bAlpha, LayeredWindowFlags dwFlags);
+        [DllImport("user32", ExactSpelling = true)]
+        public static extern uint GetRawInputData(IntPtr hRawInput, uint uiCommand, IntPtr pData, uint* pcbSize, uint cbSizeHeader);
+        [DllImport("user32", ExactSpelling = true)]
+        public static extern int RegisterRawInputDevices(RAWINPUTDEVICE* pRawInputDevices, uint uiNumDevices, uint cbSize);
+        [DllImport("user32", ExactSpelling = true)]
+        public static extern uint GetRawInputDeviceInfoW(IntPtr hDevice, uint uiCommand, void* pData, uint* pcbSize);
+        [DllImport("kernel32", ExactSpelling = true)]
+        public static extern IntPtr CreateFileW(ushort* lpFileName, uint dwDesiredAccess, uint dwShareMode, SECURITY_ATTRIBUTES* lpSecurityAttributes, uint dwCreationDisposition, uint dwFlagsAndAttributes, IntPtr hTemplateFile);
+        [DllImport("hid", ExactSpelling = true)]
+        public static extern byte HidD_GetProductString(IntPtr HidDeviceObject, void* Buffer, uint BufferLength);
+
+        // XINPUT prefer v 1.4 (Ships with Windows 8, I think it was available with the SDK in Windows 7 SP1? 
+        // Fallback to 0.9.3 otherwise 
+
+        public unsafe delegate uint _XINPUT_IMPL_TYPE(uint dwUserIndex, XINPUT_STATE* state);
+
+        private static _XINPUT_IMPL_TYPE? _XINPUT_IMPL;
+        public const int ERROR_DEVICE_NOT_CONNECTED = 1167;
+        public static void XINPUT_LOADER_INIT()
+        {
+            IntPtr getState = IntPtr.Zero;
+            var xinput1_4 = LoadLibrary("xinput1_4.dll");
+            if (xinput1_4 == IntPtr.Zero)
+            {
+                var xinput_9_1 = LoadLibrary("xinput9_1_0.dll");
+                if (xinput_9_1 == IntPtr.Zero)
+                {
+                    // I am very unhappy about this. 
+                    return;
+                }
+                else
+                {
+                    getState = GetProcAddress(xinput_9_1, "XInputGetState");
+                    if (getState == IntPtr.Zero)
+                    {
+                        // I am very unhappy about this. 
+                        return;
+                    }
+                    else
+                    {
+                        _XINPUT_IMPL = Marshal.GetDelegateForFunctionPointer<_XINPUT_IMPL_TYPE>(getState);
+                    }
+                }
+            }
+            else
+            {
+                getState = GetProcAddress(xinput1_4, "XInputGetState");
+                if (getState == IntPtr.Zero)
+                {
+                    // I am very unhappy about this.
+                    return;
+                }
+                else
+                {
+                    _XINPUT_IMPL = Marshal.GetDelegateForFunctionPointer<_XINPUT_IMPL_TYPE>(getState);
+                }
+            }
+        }
+        // Used upper-case as if this were a Macro of sorts, but it's not. 
+        public static uint XINPUT_GET_STATE(uint dwUserIndex, XINPUT_STATE* pState)
+        {
+            if (_XINPUT_IMPL is null)
+            {
+                XINPUT_LOADER_INIT();
+            }
+            if (_XINPUT_IMPL is null)
+            {
+                // Okay wow there's no XInput on this computer?
+                // Theoretically possible, but Windows XP ships with XInput v 9.1 so... ????
+                // Just report all devices are not connected I suppose? 
+                return ERROR_DEVICE_NOT_CONNECTED;
+            }
+            return _XINPUT_IMPL(dwUserIndex, pState);
+        }
 
         [Flags]
         public enum DWM_BB
@@ -2661,4 +2736,111 @@ namespace Avalonia.Win32.Interop
         public string? szInfoTitle;
         public NIIF dwInfoFlags;
     }
+#pragma warning disable CA1815 // Override equals and operator equals on value types -- unneeded on internal types
+    public struct RAWINPUT
+    {
+        public RAWINPUTHEADER header;
+        public RAWINPUT__INTERNAL__UNION data;
+
+        [StructLayout(LayoutKind.Explicit)]
+        public struct RAWINPUT__INTERNAL__UNION
+        {
+            [FieldOffset(0)]
+            public RAWMOUSE mouse;
+            [FieldOffset(0)]
+            public RAWKEYBOARD keyboard;
+            [FieldOffset(0)]
+            public RAWHID hid;
+        }
+    }
+
+    public struct RAWINPUTHEADER
+    {
+        public uint dwType;
+        public uint dwSize;
+        public IntPtr hDevice;
+        public IntPtr wParam;
+    }
+
+    public struct RAWMOUSE
+    {
+        public ushort usFlags;
+        // See C:/Program Files (x86)/Windows Kits/10/include/10.0.22621.0/um/WinUser.h:14948:5
+        public RAWMOUSE_INTERNAL_UNION Anonymous;
+        public uint ulRawButtons;
+        public int lLastX;
+        public int lLastY;
+        public uint ulExtraInformation;
+        [UnscopedRef]
+        public ref uint ulButtons => ref Anonymous.ulButtons;
+        [UnscopedRef]
+        public ref ushort usButtonFlags => ref Anonymous.Anonymous.usButtonFlags;
+        [UnscopedRef]
+        public ref ushort usButtonData => ref Anonymous.Anonymous.usButtonData;
+
+        [StructLayout(LayoutKind.Explicit)]
+        public struct RAWMOUSE_INTERNAL_UNION
+        {
+            [FieldOffset(0)]
+            public uint ulButtons;
+            // See C:/Program Files (x86)/Windows Kits/10/include/10.0.22621.0/um/WinUser.h:14950:9)
+            [FieldOffset(0)]
+            public RAWMOUSE_INTERNAL_UNION_2 Anonymous;
+            public struct RAWMOUSE_INTERNAL_UNION_2
+            {
+                public ushort usButtonFlags;
+                public ushort usButtonData;
+            }
+        }
+    }
+
+    public struct RAWKEYBOARD
+    {
+        public ushort MakeCode;
+        public ushort Flags;
+        public ushort Reserved;
+        public ushort VKey;
+        public uint Message;
+        public uint ExtraInformation;
+    }
+
+    public unsafe struct RAWHID
+    {
+        public uint dwSizeHid;
+        public uint dwCount;
+        public fixed byte bRawData[1];
+    }
+
+    public struct RAWINPUTDEVICE
+    {
+        public ushort usUsagePage;
+        public ushort usUsage;
+        public uint dwFlags;
+        public IntPtr hwndTarget;
+    }
+
+    public unsafe partial struct SECURITY_ATTRIBUTES
+    {
+        public uint nLength;
+        public void* lpSecurityDescriptor;
+        public int bInheritHandle;
+    }
+
+    public struct XINPUT_STATE
+    {
+        public uint dwPacketNumber;
+        public XINPUT_GAMEPAD Gamepad;
+    }
+
+    public struct XINPUT_GAMEPAD
+    {
+        public ushort wButtons;
+        public byte bLeftTrigger;
+        public byte bRightTrigger;
+        public short sThumbLX;
+        public short sThumbLY;
+        public short sThumbRX;
+        public short sThumbRY;
+    }
+#pragma warning restore CA1815 // Override equals and operator equals on value types -- unneeded on internal types
 }
