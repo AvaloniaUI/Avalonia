@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 using Avalonia.Automation.Peers;
@@ -171,8 +171,6 @@ namespace Avalonia.Controls
         /// </summary>
         static TextBlock()
         {
-            ClipToBoundsProperty.OverrideDefaultValue<TextBlock>(true);
-
             AffectsRender<TextBlock>(BackgroundProperty, ForegroundProperty);
         }
 
@@ -628,7 +626,7 @@ namespace Avalonia.Controls
 
         protected virtual void RenderTextLayout(DrawingContext context, Point origin)
         {
-            TextLayout.Draw(context, origin + new Point(TextLayout.OverhangLeading, 0));
+            TextLayout.Draw(context, origin);
         }
 
         private bool _clearTextInternal;
@@ -740,7 +738,8 @@ namespace Avalonia.Controls
             //This implicitly recreated the TextLayout with a new constraint if we previously reset it.
             var textLayout = TextLayout;
 
-            var size = LayoutHelper.RoundLayoutSizeUp(new Size(textLayout.MinTextWidth, textLayout.Height).Inflate(padding), 1, 1);
+            // The textWidth used here is matching that TextPresenter uses to measure the text.
+            var size = LayoutHelper.RoundLayoutSizeUp(new Size(textLayout.WidthIncludingTrailingWhitespace, textLayout.Height).Inflate(padding), 1, 1);
 
             return size;
         }
