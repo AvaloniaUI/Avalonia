@@ -75,7 +75,11 @@ namespace Avalonia.Direct2D1.Media
                         height = -height;
                     }
 
-                    runBounds = runBounds.Union(new Rect(currentX + metrics.XBearing * scale, baselineOrigin.Y + ybearing * scale, metrics.Width * scale, height * scale));
+                    // Not entirely sure about why we need to do this, but it seems to work
+                    var xOffset = metrics.XBearing * scale;
+                    var xWidth = xOffset > 0 ? xOffset : 0;
+                    var xBearing = xOffset < 0 ? xOffset : 0;
+                    runBounds = runBounds.Union(new Rect(currentX + xBearing, baselineOrigin.Y + ybearing, xWidth + metrics.Width * scale, height * scale));
                 }
 
                 currentX += glyphInfos[i].GlyphAdvance;
