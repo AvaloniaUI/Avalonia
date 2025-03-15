@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 using Avalonia.Automation.Peers;
@@ -171,8 +171,6 @@ namespace Avalonia.Controls
         /// </summary>
         static TextBlock()
         {
-            ClipToBoundsProperty.OverrideDefaultValue<TextBlock>(true);
-
             AffectsRender<TextBlock>(BackgroundProperty, ForegroundProperty);
         }
 
@@ -628,7 +626,7 @@ namespace Avalonia.Controls
 
         protected virtual void RenderTextLayout(DrawingContext context, Point origin)
         {
-            TextLayout.Draw(context, origin + new Point(TextLayout.OverhangLeading, 0));
+            TextLayout.Draw(context, origin);
         }
 
         private bool _clearTextInternal;
@@ -741,8 +739,7 @@ namespace Avalonia.Controls
             var textLayout = TextLayout;
 
             // The textWidth used here is matching that TextPresenter uses to measure the text.
-            var textWidth = TextLayout.OverhangLeading + TextLayout.WidthIncludingTrailingWhitespace + TextLayout.OverhangTrailing;
-            var size = LayoutHelper.RoundLayoutSizeUp(new Size(textWidth, textLayout.Height).Inflate(padding), 1, 1);
+            var size = LayoutHelper.RoundLayoutSizeUp(new Size(textLayout.WidthIncludingTrailingWhitespace, textLayout.Height).Inflate(padding), 1, 1);
 
             return size;
         }

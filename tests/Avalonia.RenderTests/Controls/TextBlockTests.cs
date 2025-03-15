@@ -327,6 +327,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                 HorizontalAlignment = HorizontalAlignment.Center,
                 Width = 300,
                 Height = 600,
+                Background = new SolidColorBrush(Colors.White), // Required antialiasing to work for Overhang
             };
 
             target.Children.Add(CreateText("f"));
@@ -359,5 +360,42 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                 FontFamily = new FontFamily(symbolsFont)
             };
         }
+
+        [Win32Fact("Has text")]
+        public async Task Should_Draw_MultiLineText_WithOverHandLeadingTrailing()
+        {
+            var target = new StackPanel
+            {
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Width = 600,
+                Height = 200,
+                Background = new SolidColorBrush(Colors.White), // Required antialiasing to work for Overhang
+            };
+
+            target.Children.Add(CreateText("fff Why this is a\nbig text yyy\nyyy with multiple lines fff"));
+
+            var testName = $"Should_Draw_MultiLineText_WithOverHandLeadingTrailing";
+            await RenderToFile(target, testName);
+            CompareImages(testName);
+
+#if AVALONIA_SKIA
+            const string symbolsFont = "resm:Avalonia.Skia.RenderTests.Assets?assembly=Avalonia.Skia.RenderTests#Source Serif 4 36pt";
+#else
+            const string symbolsFont = "resm:Avalonia.Direct2D1.RenderTests.Assets?assembly=Avalonia.Direct2D1.RenderTests#Source Serif 4 36pt";
+#endif
+            static TextBlock CreateText(string text) => new TextBlock
+            {
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                TextAlignment = TextAlignment.Center,
+                Background = Brushes.Magenta,
+                FontStyle = FontStyle.Italic,
+                FontSize = 44,
+                Text = text,
+                FontFamily = new FontFamily(symbolsFont)
+            };
+        }
+
     }
 }

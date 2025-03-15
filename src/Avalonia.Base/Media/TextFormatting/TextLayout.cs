@@ -685,7 +685,6 @@ namespace Avalonia.Media.TextFormatting
             // 2) For the layout’s Width and WidthIncludingTrailingWhitespace,
             //    use the maximum of the line widths rather than the bounding box.
             _metrics.Width = Math.Max(_metrics.Width, currentLine.Width);
-            _metrics.WidthIncludingTrailingWhitespace = Math.Max(_metrics.WidthIncludingTrailingWhitespace, currentLine.WidthIncludingTrailingWhitespace);
 
             // 3) Extent is the max black-pixel extent among lines.
             _metrics.Extent = Math.Max(_metrics.Extent, currentLine.Extent);
@@ -693,13 +692,22 @@ namespace Avalonia.Media.TextFormatting
             // 4) Track min-text-width or overhangs similarly if needed.
             _metrics.MinTextWidth = Math.Max(_metrics.MinTextWidth, currentLine.Width);
 
-            _metrics.OverhangLeading = Math.Max(_metrics.OverhangLeading, currentLine.OverhangLeading);
-            _metrics.OverhangTrailing = Math.Max(_metrics.OverhangTrailing, currentLine.OverhangTrailing);
+            // 5) TextWidth is the max of the text width among lines.
+            // We choose to update all related metrics at once (OverhangLeading, WidthIncludingTrailingWhitespace, OverhangTrailing)
+            // if the current line has a larger text width.
+            var previousTextWidth = _metrics.OverhangLeading + _metrics.WidthIncludingTrailingWhitespace + _metrics.OverhangTrailing;
+            var textWidth = currentLine.OverhangLeading + currentLine.WidthIncludingTrailingWhitespace + currentLine.OverhangTrailing;
+            if (previousTextWidth < textWidth)
+            {
+                _metrics.WidthIncludingTrailingWhitespace = currentLine.WidthIncludingTrailingWhitespace;
+                _metrics.OverhangLeading = currentLine.OverhangLeading;
+                _metrics.OverhangTrailing = currentLine.OverhangTrailing;
+            }
 
-            // 5) OverhangAfter is the last line’s OverhangAfter.
+            // 6) OverhangAfter is the last line’s OverhangAfter.
             _metrics.OverhangAfter = currentLine.OverhangAfter;
 
-            // 6) Capture the baseline from the first line.
+            // 7) Capture the baseline from the first line.
             if (first)
             {
                 _metrics.Baseline = currentLine.Baseline;
