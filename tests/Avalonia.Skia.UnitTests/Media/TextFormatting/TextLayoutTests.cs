@@ -1187,33 +1187,6 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 Assert.Equal(0, textLayout3.MinTextWidth);
             }
         }
-
-        [Fact]
-        public void Should_Measure_TextLayoutWithOverhangLeading()
-        {
-            using (Start())
-            {
-                const string symbolsFont = "resm:Avalonia.Skia.UnitTests.Fonts?assembly=Avalonia.Skia.UnitTests#Source Serif 4 36pt";
-                var typeFace = new Typeface(symbolsFont);
-                var textLayout0 = new TextLayout("f", typeFace, 44.0, Brushes.White);
-                AssertGreaterThan(textLayout0.OverhangLeading, 1.0, "Invalid OverhandLeading");
-                AssertGreaterThan(textLayout0.OverhangTrailing, 1.0, "Invalid OverhangTrailing");
-                
-                var textLayout1 = new TextLayout("ff", typeFace, 44.0, Brushes.White);
-                AssertGreaterThan(textLayout1.OverhangLeading, 1.0, "Invalid OverhandLeading");
-                AssertGreaterThan(textLayout1.OverhangTrailing, 1.0, "Invalid OverhangTrailing");
-                AssertGreaterThan(textLayout0.WidthIncludingTrailingWhitespace * 2, textLayout1.WidthIncludingTrailingWhitespace, "Consecutive ff should take less width than 2 x single f");
-
-                var textLayout2 = new TextLayout("y", typeFace, 44.0, Brushes.White);
-                AssertGreaterThan(textLayout2.OverhangLeading, 1.0, "Invalid OverhandLeading");
-                AssertGreaterThan(textLayout2.OverhangTrailing, 0.0, "Invalid OverhangTrailing");
-
-                var textLayout3 = new TextLayout("yy", typeFace, 44.0, Brushes.White);
-                AssertGreaterThan(textLayout3.OverhangLeading, 1.0, "Invalid OverhandLeading");
-                AssertGreaterThan(textLayout3.OverhangTrailing, 0.0, "Invalid OverhangTrailing");
-                AssertGreaterThan(textLayout3.WidthIncludingTrailingWhitespace * 2, textLayout3.WidthIncludingTrailingWhitespace, "Consecutive yy should take less width than 2 x single y");
-            }
-        }
         
         private static void AssertGreaterThan(double x, double y, string message) => Assert.True(x > y, $"{message}. {x} is not > {y}");
 

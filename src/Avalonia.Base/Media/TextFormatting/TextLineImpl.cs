@@ -1371,14 +1371,12 @@ namespace Avalonia.Media.TextFormatting
                 }
             }
 
-            // The width of overhanging pixels at the bottom
-            var overhangAfter = bounds.Bottom - height;  // can be positive or negative!
-            // The width of overhanging pixels at the origin 
-            // If the total width is zero, the overhangLeading is zero.
-            var overhangLeading = MathUtilities.IsZero(width) ? 0 : - bounds.Left; // can be positive or negative!
-            // The width of overhanging pixels at the end
-            // If the total width is zero, the overhangTrailing is zero.
-            var overhangTrailing = MathUtilities.IsZero(width)  ? 0 : bounds.Right - width;  // can be positive or negative!
+            //The width of overhanging pixels at the bottom
+            var overhangAfter = Math.Max(0, bounds.Bottom - height);
+            //The width of overhanging pixels at the origin
+            var overhangLeading = Math.Abs(Math.Min(bounds.Left, 0));
+            //The width of overhanging pixels at the end
+            var overhangTrailing = Math.Max(0, bounds.Right - widthIncludingWhitespace);
             var hasOverflowed = width > _paragraphWidth;
 
             if (!double.IsNaN(lineHeight) && !MathUtilities.IsZero(lineHeight))
