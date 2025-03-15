@@ -690,11 +690,13 @@ namespace Avalonia.Media.TextFormatting
             // 3) Extent is the max black-pixel extent among lines.
             _metrics.Extent = Math.Max(_metrics.Extent, currentLine.Extent);
 
-            // 4) We can track min-text-width or overhangs similarly if needed.
+            // 4) Track min-text-width or overhangs similarly if needed.
             _metrics.MinTextWidth = Math.Max(_metrics.MinTextWidth, currentLine.Width);
 
-            _metrics.OverhangLeading = first ? currentLine.OverhangLeading : Math.Min(_metrics.OverhangLeading, currentLine.OverhangLeading);
-            _metrics.OverhangTrailing = first ? currentLine.OverhangTrailing : Math.Min(_metrics.OverhangTrailing, currentLine.OverhangTrailing);
+            _metrics.OverhangLeading = Math.Max(_metrics.OverhangLeading, currentLine.OverhangLeading);
+            _metrics.OverhangTrailing = Math.Max(_metrics.OverhangTrailing, currentLine.OverhangTrailing);
+
+            // 5) OverhangAfter is the last line’s OverhangAfter.
             _metrics.OverhangAfter = currentLine.OverhangAfter;
 
             // 6) Capture the baseline from the first line.
