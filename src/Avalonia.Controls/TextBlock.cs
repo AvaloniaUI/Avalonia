@@ -708,8 +708,16 @@ namespace Avalonia.Controls
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            var scale = LayoutHelper.GetLayoutScale(this);
-            var padding = LayoutHelper.RoundLayoutThickness(Padding, scale);
+            var padding = Padding;
+            var useLayoutRounding = UseLayoutRounding;
+            var scale = 1.0;
+
+            if (useLayoutRounding)
+            {
+                scale = LayoutHelper.GetLayoutScale(this);
+                padding = LayoutHelper.RoundLayoutThickness(Padding, scale);
+            }
+
             var deflatedSize = availableSize.Deflate(padding);
 
             if (_constraint != deflatedSize)
@@ -740,15 +748,21 @@ namespace Avalonia.Controls
             //This implicitly recreated the TextLayout with a new constraint if we previously reset it.
             var textLayout = TextLayout;
 
-            var size = LayoutHelper.RoundLayoutSizeUp(new Size(textLayout.MinTextWidth, textLayout.Height).Inflate(padding), 1);
+            var size = new Size(textLayout.MinTextWidth, textLayout.Height);
 
-            return size;
+            return size.Inflate(padding);
         }
 
         protected override Size ArrangeOverride(Size finalSize)
         {
-            var scale = LayoutHelper.GetLayoutScale(this);
-            var padding = LayoutHelper.RoundLayoutThickness(Padding, scale);
+            var padding = Padding;
+            var useLayoutRounding = UseLayoutRounding;
+
+            if (useLayoutRounding)
+            {
+                var scale = LayoutHelper.GetLayoutScale(this);
+                padding = LayoutHelper.RoundLayoutThickness(Padding, scale);
+            }
 
             var availableSize = finalSize.Deflate(padding);
 
