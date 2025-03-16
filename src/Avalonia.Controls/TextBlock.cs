@@ -750,6 +750,9 @@ namespace Avalonia.Controls
 
             var size = new Size(textLayout.MinTextWidth, textLayout.Height);
 
+            if (useLayoutRounding)
+                size = LayoutHelper.RoundLayoutSizeUp(size, scale, scale);
+
             return size.Inflate(padding);
         }
 
