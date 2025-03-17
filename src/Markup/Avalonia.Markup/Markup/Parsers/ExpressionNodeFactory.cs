@@ -52,7 +52,7 @@ namespace Avalonia.Markup.Parsers
                         ++negated;
                         break;
                     case BindingExpressionGrammar.PropertyNameNode propName:
-                        node = new DynamicPluginPropertyAccessorNode(propName.PropertyName);
+                        node = new DynamicPluginPropertyAccessorNode(propName.PropertyName, propName.AcceptsNull);
                         break;
                     case BindingExpressionGrammar.SelfNode:
                         node = null;

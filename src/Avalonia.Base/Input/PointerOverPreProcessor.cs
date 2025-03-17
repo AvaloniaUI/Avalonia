@@ -79,7 +79,9 @@ namespace Avalonia.Input
                 else if (pointerDevice.TryGetPointer(args) is { } pointer &&
                     pointer.Type != PointerType.Touch)
                 {
-                    var element = pointer.Captured ?? args.InputHitTestResult.firstEnabledAncestor;
+                    var element = GetEffectivePointerOverElement(
+                        args.InputHitTestResult.firstEnabledAncestor,
+                        pointer.Captured);
 
                     SetPointerOver(pointer, args.Root, element, args.Timestamp, args.Position,
                         new PointerPointProperties(args.InputModifiers, args.Type.ToUpdateKind()),
@@ -96,7 +98,10 @@ namespace Avalonia.Input
 
                 if (dirtyRect.Contains(clientPoint))
                 {
-                    var element = pointer.Captured ?? _inputRoot.InputHitTest(clientPoint);
+                    var element = GetEffectivePointerOverElement(
+                        _inputRoot.InputHitTest(clientPoint),
+                        pointer.Captured);
+
                     SetPointerOver(pointer, _inputRoot, element, 0, clientPoint, PointerPointProperties.None, KeyModifiers.None);
                 }
                 else if (!((Visual)_inputRoot).Bounds.Contains(clientPoint))
@@ -105,6 +110,11 @@ namespace Avalonia.Input
                 }
             }
         }
+
+        private static IInputElement? GetEffectivePointerOverElement(IInputElement? hitTestElement, IInputElement? captured)
+            => captured is not null && hitTestElement != captured ?
+                null :
+                hitTestElement;
 
         private void ClearPointerOver()
         {
