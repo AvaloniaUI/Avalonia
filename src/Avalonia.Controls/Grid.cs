@@ -448,7 +448,7 @@ namespace Avalonia.Controls
                     MeasureCellsGroup(extData.CellGroup1, constraint, false, false);
                     double combinedRowSpacing = RowSpacing * (RowDefinitions.Count - 1);
                     double combinedColumnSpacing = ColumnSpacing * (ColumnDefinitions.Count - 1);
-                    Size innerAvailableSize = new Size(constraint.Width - combinedRowSpacing, constraint.Height - combinedColumnSpacing);
+                    Size innerAvailableSize = new Size(constraint.Width - combinedColumnSpacing, constraint.Height - combinedRowSpacing);
                     {
                         //  after Group1 is measured,  only Group3 may have cells belonging to Auto rows.
                         bool canResolveStarsV = !HasGroup3CellsInAutoRows;
@@ -3322,8 +3322,8 @@ namespace Avalonia.Controls
                     {
                         DrawGridLine(
                             drawingContext,
-                            grid.ColumnDefinitions[i].FinalOffset - grid.ColumnSpacing, 0.0,
-                            grid.ColumnDefinitions[i].FinalOffset - grid.ColumnSpacing, _lastArrangeSize.Height);
+                            grid.ColumnDefinitions[i].FinalOffset + grid.ColumnSpacing, 0.0,
+                            grid.ColumnDefinitions[i].FinalOffset + grid.ColumnSpacing, _lastArrangeSize.Height);
                     }
                 }
 
@@ -3338,8 +3338,8 @@ namespace Avalonia.Controls
                     {
                         DrawGridLine(
                             drawingContext,
-                            0.0, grid.RowDefinitions[i].FinalOffset - grid.RowSpacing,
-                            _lastArrangeSize.Width, grid.RowDefinitions[i].FinalOffset - grid.RowSpacing);
+                            0.0, grid.RowDefinitions[i].FinalOffset + grid.RowSpacing,
+                            _lastArrangeSize.Width, grid.RowDefinitions[i].FinalOffset + grid.RowSpacing);
                     }
                 }
             }
