@@ -14,7 +14,7 @@ using Avalonia.Platform.Interop;
 
 namespace Avalonia.X11
 {
-    internal unsafe static class XLib
+    internal unsafe static partial class XLib
     {
         private const string libX11 = "libX11.so.6";
         private const string libX11Randr = "libXrandr.so.2";
