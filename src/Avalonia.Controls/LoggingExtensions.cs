@@ -21,7 +21,7 @@ namespace Avalonia
 
 
         /// <summary>
-        /// Logs Avalonia events a custom delegate
+        /// Logs Avalonia events to a TextWriter
         /// </summary>
         /// <param name="builder">The app builder instance.</param>
         /// <param name="writer">The TextWriter that's used for log events.</param>
@@ -34,7 +34,7 @@ namespace Avalonia
         
         
         /// <summary>
-        /// Logs Avalonia events a custom delegate
+        /// Logs Avalonia events to a custom delegate
         /// </summary>
         /// <param name="builder">The app builder instance.</param>
         /// <param name="logCallback">The callback that's used for log events.</param>
