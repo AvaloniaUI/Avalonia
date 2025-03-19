@@ -2,15 +2,12 @@
   <!--Disable Net Perf. analyzer for submodule to avoid commit issue -->
   <PropertyGroup>
     <EnableNETAnalyzers>false</EnableNETAnalyzers>
+    <XamlXSourcePath>$(MSBuildThisFileDirectory)/../../../external/XamlX/src/XamlX</XamlXSourcePath>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="$(MSBuildThisFileDirectory)\xamlil.github\**\*.*" />
-    <Content Remove="$(MSBuildThisFileDirectory)\xamlil.github\**\*.*" />
-    <Compile Remove="$(MSBuildThisFileDirectory)\xamlil.github\**\*.*" />
-    <Compile Include="$(MSBuildThisFileDirectory)\xamlil.github\src\XamlX\**\*.cs" />
-    <Compile Remove="$(MSBuildThisFileDirectory)\xamlil.github\src\XamlX\Compatibility\*.cs" />
-    <Compile Remove="$(MSBuildThisFileDirectory)\xamlil.github\**\obj\**\*.cs" />
+    <Compile Include="$(XamlXSourcePath)/**/*.cs"
+             Exclude="$(XamlXSourcePath)/obj/**/*.cs;$(XamlXSourcePath)/Compatibility/*.cs" />
   </ItemGroup>
 
   <ItemGroup Condition="!('$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '6.0')))">

@@ -148,22 +148,36 @@ public:
     }
 
 
-    virtual HRESULT Clear() override
+    virtual HRESULT Clear(int64_t* rv) override
     {
         START_COM_CALL;
         
         @autoreleasepool
         {
             if(_item != nil)
+            {
                 _item = [NSPasteboardItem new];
+                return 0;
+            }
             else
             {
-                [_pb clearContents];
+                *rv = [_pb clearContents];
                 [_pb setString:@"" forType:NSPasteboardTypeString];
             }
         
             return S_OK;
         }
+    }
+    
+    virtual HRESULT GetChangeCount(int64_t* rv) override
+    {
+        START_COM_CALL;
+        if(_item == nil)
+        {
+            *rv = [_pb changeCount];
+            return S_OK;
+        }
+        return E_NOTIMPL;
     }
     
     virtual HRESULT ObtainFormats(IAvnStringArray** ppv) override

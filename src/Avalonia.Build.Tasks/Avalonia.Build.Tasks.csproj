@@ -9,6 +9,8 @@
       <NoWarn>$(NoWarn);NU1605;CS8632</NoWarn>
       <DebugType>embedded</DebugType>
       <IncludeSymbols>false</IncludeSymbols>
+      <XamlXSourcePath>../../external/XamlX/src/XamlX</XamlXSourcePath>
+      <XamlXCecilSourcePath>../../external/XamlX/src/XamlX.IL.Cecil</XamlXCecilSourcePath>
     </PropertyGroup>
 
     <!--Disable Net Perf. analyzer for submodule to avoid commit issue -->
@@ -32,13 +34,12 @@
       <Compile Include="../Markup/Avalonia.Markup.Xaml.Loader/CompilerExtensions/**/*.cs">
         <Link>XamlIlExtensions/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
-      <Compile Remove="external/cecil/**/*.*" />
-      <Compile Include="../Markup/Avalonia.Markup.Xaml.Loader/xamlil.github\src\XamlX\**\*.cs">
-        <Link>XamlIl/%(RecursiveDir)%(FileName)%(Extension)</Link>
-      </Compile>
-      <Compile Include="../Markup/Avalonia.Markup.Xaml.Loader\xamlil.github\src\XamlX.IL.Cecil\**\*.cs">
-        <Link>XamlIl.Cecil/%(RecursiveDir)%(FileName)%(Extension)</Link>
-      </Compile>
+      <Compile Include="$(XamlXSourcePath)/**/*.cs"
+               Exclude="$(XamlXSourcePath)/obj/**/*.cs;$(XamlXSourcePath)/Compatibility/*.cs;$(XamlXSourcePath)/**/SreTypeSystem.cs"
+               LinkBase="XamlIl" />
+      <Compile Include="$(XamlXCecilSourcePath)/**/*.cs"
+               Exclude="$(XamlXCecilSourcePath)/obj/**/*.cs"
+               LinkBase="XamlIl.Cecil" />
       <Compile Include="../Markup/Avalonia.Markup\Markup\Parsers\SelectorGrammar.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
@@ -123,9 +124,6 @@
       <Compile Include="../Avalonia.Base/Utilities/SpanHelpers.cs" Link="Utilities/SpanHelpers.cs" />
       <Compile Include="../Shared/StringCompatibilityExtensions.cs" Link="Compatibility/StringCompatibilityExtensions.cs" />
       <Compile Include="../Shared/IsExternalInit.cs" Link="Compatibility/IsExternalInit.cs" />
-      <Compile Remove="../Markup/Avalonia.Markup.Xaml.Loader/xamlil.github/**/obj/**/*.cs" />
-      <Compile Remove="../Markup/Avalonia.Markup.Xaml.Loader/xamlil.github/src/XamlX/Compatibility/*.cs" />
-      <Compile Remove="../Markup/Avalonia.Markup.Xaml.Loader/xamlil.github/src/XamlX/IL/SreTypeSystem.cs" />
       <PackageReference Include="Mono.Cecil" Version="0.11.5" />
       <PackageReference Include="Microsoft.Build.Framework" Version="15.1.548" PrivateAssets="All" />
       <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
