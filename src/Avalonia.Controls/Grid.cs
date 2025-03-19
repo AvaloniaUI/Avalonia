@@ -512,8 +512,8 @@ namespace Avalonia.Controls
                     MeasureCellsGroup(extData.CellGroup4, constraint, false, false);
 
                     gridDesiredSize = new Size(
-                            CalculateDesiredSize(DefinitionsU) + ColumnSpacing * (DefinitionsU.Count - 1),
-                            CalculateDesiredSize(DefinitionsV) + RowSpacing * (DefinitionsU.Count - 1));
+                        CalculateDesiredSize(DefinitionsU) + ColumnSpacing * (DefinitionsU.Count - 1),
+                        CalculateDesiredSize(DefinitionsV) + RowSpacing * (DefinitionsU.Count - 1));
                 }
             }
             finally
@@ -566,8 +566,8 @@ namespace Avalonia.Controls
                         int rowSpan = PrivateCells[currentCell].RowSpan;
 
                         Rect cellRect = new Rect(
-                            columnIndex == 0 ? 0.0 : DefinitionsU[columnIndex].FinalOffset + (columnSpacing * columnIndex),
-                            rowIndex == 0 ? 0.0 : DefinitionsV[rowIndex].FinalOffset + (rowSpacing * rowIndex),
+                            columnIndex == 0 ? 0d : DefinitionsU[columnIndex].FinalOffset,
+                            rowIndex == 0 ? 0d : DefinitionsV[rowIndex].FinalOffset,
                             GetFinalSizeForRange(DefinitionsU, columnIndex, columnSpan),
                             GetFinalSizeForRange(DefinitionsV, rowIndex, rowSpan));
 
@@ -1132,9 +1132,9 @@ namespace Avalonia.Controls
             {
                 //  otherwise...
                 cellMeasureWidth = GetMeasureSizeForRange(
-                                        DefinitionsU,
-                                        PrivateCells[cell].ColumnIndex,
-                                        PrivateCells[cell].ColumnSpan);
+                    DefinitionsU,
+                    PrivateCells[cell].ColumnIndex,
+                    PrivateCells[cell].ColumnSpan);
             }
 
             if (forceInfinityV)
@@ -2216,11 +2216,12 @@ namespace Avalonia.Controls
                 }
             }
 
+            double spacing = columns ? ColumnSpacing : RowSpacing;
             // Phase 6.  Compute final offsets
             definitions[0].FinalOffset = 0.0;
             for (int i = 0; i < definitions.Count; ++i)
             {
-                definitions[(i + 1) % definitions.Count].FinalOffset = definitions[i].FinalOffset + definitions[i].SizeCache;
+                definitions[(i + 1) % definitions.Count].FinalOffset = definitions[i].FinalOffset + definitions[i].SizeCache + spacing;
             }
         }
 
@@ -3322,8 +3323,8 @@ namespace Avalonia.Controls
                     {
                         DrawGridLine(
                             drawingContext,
-                            grid.ColumnDefinitions[i].FinalOffset + grid.ColumnSpacing, 0.0,
-                            grid.ColumnDefinitions[i].FinalOffset + grid.ColumnSpacing, _lastArrangeSize.Height);
+                            grid.ColumnDefinitions[i].FinalOffset - grid.ColumnSpacing, 0.0,
+                            grid.ColumnDefinitions[i].FinalOffset - grid.ColumnSpacing, _lastArrangeSize.Height);
                     }
                 }
 
@@ -3338,8 +3339,8 @@ namespace Avalonia.Controls
                     {
                         DrawGridLine(
                             drawingContext,
-                            0.0, grid.RowDefinitions[i].FinalOffset + grid.RowSpacing,
-                            _lastArrangeSize.Width, grid.RowDefinitions[i].FinalOffset + grid.RowSpacing);
+                            0.0, grid.RowDefinitions[i].FinalOffset - grid.RowSpacing,
+                            _lastArrangeSize.Width, grid.RowDefinitions[i].FinalOffset - grid.RowSpacing);
                     }
                 }
             }
