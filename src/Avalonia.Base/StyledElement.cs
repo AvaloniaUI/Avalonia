@@ -180,12 +180,6 @@ namespace Avalonia
         /// Classes can be used to apply user-defined styling to styled elements, or to allow styled elements
         /// that share a common purpose to be easily selected.
         /// </para>
-        /// <para>
-        /// Even though this property can be set, the setter is only intended for use in object
-        /// initializers. Assigning to this property does not change the underlying collection,
-        /// it simply clears the existing collection and adds the contents of the assigned
-        /// collection.
-        /// </para>
         /// </remarks>
         public Classes Classes => _classes ??= new();
 

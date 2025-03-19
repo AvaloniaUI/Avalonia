@@ -314,6 +314,13 @@ namespace Avalonia.X11
             return StoreAtomsInClipboardManager(data);
         }
 
+        public Task<IDataObject?> TryGetInProcessDataObjectAsync()
+        {
+            if (XGetSelectionOwner(_x11.Display, _x11.Atoms.CLIPBOARD) == _handle)
+                return Task.FromResult(_storedDataObject);
+            return Task.FromResult<IDataObject?>(null);
+        }
+
         public async Task<string[]> GetFormatsAsync()
         {
             if (!HasOwner)

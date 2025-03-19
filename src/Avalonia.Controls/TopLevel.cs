@@ -866,7 +866,7 @@ namespace Avalonia.Controls
             var candidate = hitTestElement;
             while (candidate?.IsEffectivelyEnabled == false)
             {
-                candidate = (candidate as Visual)?.Parent as IInputElement;
+                candidate = (candidate as Visual)?.VisualParent as IInputElement;
             }
 
             return candidate;

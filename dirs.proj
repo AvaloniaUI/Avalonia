@@ -7,7 +7,6 @@
     <ProjectReference Condition="'$(SkipBuildingTests)' != 'True'" Include="tests/**/*.*proj" Exclude="tests/BuildTests/**" />
     <ProjectReference Include="packages/**/*.*proj" />
     <ProjectReference Remove="**/*.shproj" />
-    <ProjectReference Remove="src/Markup/Avalonia.Markup.Xaml.Loader/xamlil.github/**/*.*proj" />
     <!-- Exclude iOS, Android and Browser samples from build -->
     <ProjectReference Remove="samples/*.iOS/*.csproj" />
     <ProjectReference Remove="samples/*.Android/*.csproj" />
