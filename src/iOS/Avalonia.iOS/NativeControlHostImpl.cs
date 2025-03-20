@@ -11,11 +11,11 @@ namespace Avalonia.iOS
 {
     internal class NativeControlHostImpl : INativeControlHostImpl
     {
-        private readonly AvaloniaView _avaloniaView;
+        private readonly UIViewControlHandle _parent;
 
-        public NativeControlHostImpl(AvaloniaView avaloniaView)
+        public NativeControlHostImpl(UIViewControlHandle parent)
         {
-            _avaloniaView = avaloniaView;
+            _parent = parent;
         }
 
         public INativeControlHostDestroyableControlHandle CreateDefaultChild(IPlatformHandle parent)
@@ -25,11 +25,10 @@ namespace Avalonia.iOS
 
         public INativeControlHostControlTopLevelAttachment CreateNewAttachment(Func<IPlatformHandle, IPlatformHandle> create)
         {
-            var parent = new UIViewControlHandle(_avaloniaView);
             NativeControlAttachment? attachment = null;
             try
             {
-                var child = create(parent);
+                var child = create(_parent);
                 // It has to be assigned to the variable before property setter is called so we dispose it on exception
 #pragma warning disable IDE0017 // Simplify object initialization
                 attachment = new NativeControlAttachment(child);
@@ -106,7 +105,7 @@ namespace Avalonia.iOS
                     }
                     else
                     {
-                        _attachedTo._avaloniaView.AddSubview(_view);
+                        _attachedTo._parent.View.AddSubview(_view);
                     }
                 }
             }
