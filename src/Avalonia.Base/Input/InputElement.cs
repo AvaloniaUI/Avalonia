@@ -83,10 +83,22 @@ namespace Avalonia.Input
             RoutedEvent.Register<InputElement, GotFocusEventArgs>(nameof(GotFocus), RoutingStrategies.Bubble);
 
         /// <summary>
+        /// Defines the <see cref="GettingFocus"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<FocusChangingEventArgs> GettingFocusEvent =
+            RoutedEvent.Register<InputElement, FocusChangingEventArgs>(nameof(GettingFocus), RoutingStrategies.Bubble);
+
+        /// <summary>
         /// Defines the <see cref="LostFocus"/> event.
         /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> LostFocusEvent =
             RoutedEvent.Register<InputElement, RoutedEventArgs>(nameof(LostFocus), RoutingStrategies.Bubble);
+
+        /// <summary>
+        /// Defines the <see cref="LosingFocus"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<FocusChangingEventArgs> LosingFocusEvent =
+            RoutedEvent.Register<InputElement, FocusChangingEventArgs>(nameof(LosingFocus), RoutingStrategies.Bubble);
 
         /// <summary>
         /// Defines the <see cref="KeyDown"/> event.
@@ -213,6 +225,8 @@ namespace Avalonia.Input
 
             GotFocusEvent.AddClassHandler<InputElement>((x, e) => x.OnGotFocus(e));
             LostFocusEvent.AddClassHandler<InputElement>((x, e) => x.OnLostFocus(e));
+            GettingFocusEvent.AddClassHandler<InputElement>((x, e) => x.OnGettingFocus(e));
+            LosingFocusEvent.AddClassHandler<InputElement>((x, e) => x.OnLosingFocus(e));
             KeyDownEvent.AddClassHandler<InputElement>((x, e) => x.OnKeyDown(e));
             KeyUpEvent.AddClassHandler<InputElement>((x, e) => x.OnKeyUp(e));
             TextInputEvent.AddClassHandler<InputElement>((x, e) => x.OnTextInput(e));
@@ -250,12 +264,30 @@ namespace Avalonia.Input
         }
 
         /// <summary>
+        /// Occurs before the control receives focus.
+        /// </summary>
+        public event EventHandler<FocusChangingEventArgs>? GettingFocus
+        {
+            add { AddHandler(GettingFocusEvent, value); }
+            remove { RemoveHandler(GettingFocusEvent, value); }
+        }
+
+        /// <summary>
         /// Occurs when the control loses focus.
         /// </summary>
         public event EventHandler<RoutedEventArgs>? LostFocus
         {
             add { AddHandler(LostFocusEvent, value); }
             remove { RemoveHandler(LostFocusEvent, value); }
+        }
+
+        /// <summary>
+        /// Occurs before the control loses focus.
+        /// </summary>
+        public event EventHandler<FocusChangingEventArgs>? LosingFocus
+        {
+            add { AddHandler(LosingFocusEvent, value); }
+            remove { RemoveHandler(LosingFocusEvent, value); }
         }
 
         /// <summary>
@@ -544,6 +576,16 @@ namespace Avalonia.Input
             var isFocused = e.Source == this;
             _isFocusVisible = isFocused && (e.NavigationMethod == NavigationMethod.Directional || e.NavigationMethod == NavigationMethod.Tab);
             IsFocused = isFocused;
+        }
+
+        protected virtual void OnGettingFocus(FocusChangingEventArgs e)
+        {
+
+        }
+
+        protected virtual void OnLosingFocus(FocusChangingEventArgs e)
+        {
+
         }
 
         /// <summary>
