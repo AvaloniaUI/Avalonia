@@ -568,9 +568,8 @@ namespace Avalonia.Controls
                         Rect cellRect = new Rect(
                             columnIndex == 0 ? 0d : DefinitionsU[columnIndex].FinalOffset,
                             rowIndex == 0 ? 0d : DefinitionsV[rowIndex].FinalOffset,
-                            GetFinalSizeForRange(DefinitionsU, columnIndex, columnSpan),
-                            GetFinalSizeForRange(DefinitionsV, rowIndex, rowSpan));
-
+                            GetFinalSizeForRange(DefinitionsU, columnIndex, columnSpan, columnSpacing),
+                            GetFinalSizeForRange(DefinitionsV, rowIndex, rowSpan, rowSpacing));
 
                         cell.Arrange(cellRect);
                     }
@@ -1134,7 +1133,8 @@ namespace Avalonia.Controls
                 cellMeasureWidth = GetMeasureSizeForRange(
                     DefinitionsU,
                     PrivateCells[cell].ColumnIndex,
-                    PrivateCells[cell].ColumnSpan);
+                    PrivateCells[cell].ColumnSpan,
+                    ColumnSpacing);
             }
 
             if (forceInfinityV)
@@ -1152,9 +1152,10 @@ namespace Avalonia.Controls
             else
             {
                 cellMeasureHeight = GetMeasureSizeForRange(
-                                        DefinitionsV,
-                                        PrivateCells[cell].RowIndex,
-                                        PrivateCells[cell].RowSpan);
+                    DefinitionsV,
+                    PrivateCells[cell].RowIndex,
+                    PrivateCells[cell].RowSpan,
+                    RowSpacing);
             }
 
 
@@ -1169,6 +1170,7 @@ namespace Avalonia.Controls
         /// <param name="definitions">Source array of definitions to read values from.</param>
         /// <param name="start">Starting index of the range.</param>
         /// <param name="count">Number of definitions included in the range.</param>
+        /// <param name="spacing"><see cref="ColumnSpacing"/> or <see cref="RowSpacing"/></param>
         /// <returns>Calculated measure size.</returns>
         /// <remarks>
         /// For "Auto" definitions MinWidth is used in place of PreferredSize.
@@ -1176,21 +1178,24 @@ namespace Avalonia.Controls
         private static double GetMeasureSizeForRange(
             IReadOnlyList<DefinitionBase> definitions,
             int start,
-            int count)
+            int count,
+            double spacing)
         {
             Debug.Assert(0 < count && 0 <= start && (start + count) <= definitions.Count);
 
-            double measureSize = 0;
+            double measureSize = -spacing;
             int i = start + count - 1;
 
             do
             {
-                measureSize += (definitions[i].SizeType == LayoutTimeSizeType.Auto)
-                    ? definitions[i].MinSize
-                    : definitions[i].MeasureSize;
+                measureSize +=
+                    spacing +
+                    (definitions[i].SizeType == LayoutTimeSizeType.Auto ?
+                        definitions[i].MinSize :
+                        definitions[i].MeasureSize);
             } while (--i >= start);
 
-            return (measureSize);
+            return measureSize;
         }
 
         /// <summary>
@@ -2297,21 +2302,23 @@ namespace Avalonia.Controls
         /// <param name="definitions">Array of definitions to process.</param>
         /// <param name="start">Start of the range.</param>
         /// <param name="count">Number of items in the range.</param>
+        /// <param name="spacing"><see cref="ColumnSpacing"/> or <see cref="RowSpacing"/></param>
         /// <returns>Final size.</returns>
         private static double GetFinalSizeForRange(
             IReadOnlyList<DefinitionBase> definitions,
             int start,
-            int count)
+            int count,
+            double spacing)
         {
-            double size = 0;
+            double size = -spacing;
             int i = start + count - 1;
 
             do
             {
-                size += definitions[i].SizeCache;
+                size += spacing + definitions[i].SizeCache;
             } while (--i >= start);
 
-            return (size);
+            return size;
         }
 
         /// <summary>
