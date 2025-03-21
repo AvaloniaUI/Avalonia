@@ -587,10 +587,12 @@ namespace Avalonia.Layout
                     (width, height) = LayoutHelper.RoundLayoutSizeUp(new Size(width, height), scale, scale);
                 }
 
+                (width, height) = new Size(width, height).Inflate(margin);
+
                 width = Math.Min(width, availableSize.Width);
                 height = Math.Min(height, availableSize.Height);
 
-                return NonNegative(new Size(width, height).Inflate(margin));
+                return NonNegative(new Size(width, height));
             }
             else
             {
