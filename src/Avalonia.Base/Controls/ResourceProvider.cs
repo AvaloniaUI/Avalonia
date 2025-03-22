@@ -45,7 +45,7 @@ public abstract class ResourceProvider : AvaloniaObject, IResourceProvider
 
     protected void RaiseResourcesChanged()
     {
-        Owner?.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
+        Owner?.NotifyHostedResourcesChanged(ResourcesChangedToken.Create());
     }
 
     /// <summary>
@@ -57,7 +57,7 @@ public abstract class ResourceProvider : AvaloniaObject, IResourceProvider
     {
         if (HasResources)
         {
-            owner.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
+            owner.NotifyHostedResourcesChanged(ResourcesChangedToken.Create());
         }
     }
 
@@ -70,7 +70,7 @@ public abstract class ResourceProvider : AvaloniaObject, IResourceProvider
     {
         if (HasResources)
         {
-            owner.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
+            owner.NotifyHostedResourcesChanged(ResourcesChangedToken.Create());
         }
     }
 

@@ -118,12 +118,12 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <inheritdoc />
-        internal override void NotifyChildResourcesChanged(ResourcesChangedEventArgs e)
+        internal override void NotifyChildResourcesChanged(ResourcesChangedToken token)
         {
             foreach (var l in _layers)
-                ((ILogical)l).NotifyResourcesChanged(e);
+                l.NotifyResourcesChanged(token);
 
-            base.NotifyChildResourcesChanged(e);
+            base.NotifyChildResourcesChanged(token);
         }
 
         /// <inheritdoc />

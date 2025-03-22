@@ -30,7 +30,7 @@ namespace Avalonia
     /// method.
     /// - Tracks the lifetime of the application.
     /// </remarks>
-    public class Application : AvaloniaObject, IDataContextProvider, IGlobalDataTemplates, IGlobalStyles, IThemeVariantHost, IApplicationPlatformEvents, IOptionalFeatureProvider
+    public class Application : AvaloniaObject, IDataContextProvider, IGlobalDataTemplates, IGlobalStyles, IThemeVariantHost, IResourceHost2, IApplicationPlatformEvents, IOptionalFeatureProvider
     {
         /// <summary>
         /// The application-global data templates.
@@ -39,11 +39,11 @@ namespace Avalonia
 
         private Styles? _styles;
         private IResourceDictionary? _resources;
-        private bool _notifyingResourcesChanged;
         private Action<IReadOnlyList<IStyle>>? _stylesAdded;
         private Action<IReadOnlyList<IStyle>>? _stylesRemoved;
         private IApplicationLifetime? _applicationLifetime;
         private bool _setupCompleted;
+        private EventHandler<ResourcesChangedToken>? _resourcesChanged2;
 
         /// <summary>
         /// Defines the <see cref="DataContext"/> property.
@@ -61,6 +61,12 @@ namespace Avalonia
 
         /// <inheritdoc/>
         public event EventHandler<ResourcesChangedEventArgs>? ResourcesChanged;
+
+        event EventHandler<ResourcesChangedToken>? IResourceHost2.ResourcesChanged2
+        {
+            add => _resourcesChanged2 += value;
+            remove => _resourcesChanged2 -= value;
+        }
 
         [Obsolete("Use Application.Current.TryGetFeature<IActivatableLifetime>() instead.")]
         public event EventHandler<UrlOpenedEventArgs>? UrlsOpened;
@@ -233,7 +239,14 @@ namespace Avalonia
 
         void IResourceHost.NotifyHostedResourcesChanged(ResourcesChangedEventArgs e)
         {
+            _resourcesChanged2?.Invoke(this, ResourcesChangedToken.Create());
             ResourcesChanged?.Invoke(this, e);
+        }
+
+        void IResourceHost2.NotifyHostedResourcesChanged(ResourcesChangedToken token)
+        {
+            _resourcesChanged2?.Invoke(this, token);
+            ResourcesChanged?.Invoke(this, ResourcesChangedEventArgs.Empty);
         }
 
         void IStyleHost.StylesAdded(IReadOnlyList<IStyle> styles)
@@ -290,29 +303,6 @@ namespace Avalonia
         void IApplicationPlatformEvents.RaiseUrlsOpened(string[] urls)
         {
             UrlsOpened?.Invoke(this, new UrlOpenedEventArgs (urls));
-        }
-
-        private void NotifyResourcesChanged(ResourcesChangedEventArgs e)
-        {
-            if (_notifyingResourcesChanged)
-            {
-                return;
-            }
-
-            try
-            {
-                _notifyingResourcesChanged = true;
-                ResourcesChanged?.Invoke(this, ResourcesChangedEventArgs.Empty);
-            }
-            finally
-            {
-                _notifyingResourcesChanged = false;
-            }
-        }
-
-        private void ThisResourcesChanged(object sender, ResourcesChangedEventArgs e)
-        {
-            NotifyResourcesChanged(e);
         }
 
         private string? _name;

@@ -121,6 +121,12 @@ namespace Avalonia.Controls
                 (s, h) => s.ResourcesChanged -= h
             );
 
+        private static readonly WeakEvent<IResourceHost2, ResourcesChangedToken>
+            ResourcesChanged2WeakEvent = WeakEvent.Register<IResourceHost2, ResourcesChangedToken>(
+                (s, h) => s.ResourcesChanged2 += h,
+                (s, h) => s.ResourcesChanged2 -= h
+            );
+
         private readonly IInputManager? _inputManager;
         private readonly IToolTipService? _tooltipService;
         private readonly IAccessKeyHandler? _accessKeyHandler;
@@ -137,6 +143,7 @@ namespace Avalonia.Controls
         private ILayoutManager? _layoutManager;
         private Border? _transparencyFallbackBorder;
         private TargetWeakEventSubscriber<TopLevel, ResourcesChangedEventArgs>? _resourcesChangesSubscriber;
+        private TargetWeakEventSubscriber<TopLevel, ResourcesChangedToken>? _resourcesChangesSubscriber2;
         private IStorageProvider? _storageProvider;
         private Screens? _screens;
         private LayoutDiagnosticBridge? _layoutDiagnosticBridge;
@@ -257,12 +264,24 @@ namespace Avalonia.Controls
 
             ClientSize = impl.ClientSize;
 
-            if (((IStyleHost)this).StylingParent is IResourceHost applicationResources)
+            var stylingParent = ((IStyleHost)this).StylingParent;
+
+            if (stylingParent is IResourceHost2 applicationResources2)
+            {
+                _resourcesChangesSubscriber2 = new TargetWeakEventSubscriber<TopLevel, ResourcesChangedToken>(
+                    this, static (target, _, _, token) =>
+                    {
+                        target.NotifyResourcesChanged(token);
+                    });
+
+                ResourcesChanged2WeakEvent.Subscribe(applicationResources2, _resourcesChangesSubscriber2);
+            }
+            else if (stylingParent is IResourceHost applicationResources)
             {
                 _resourcesChangesSubscriber = new TargetWeakEventSubscriber<TopLevel, ResourcesChangedEventArgs>(
-                    this, static (target, _, _, e) =>
+                    this, static (target, _, _, _) =>
                     {
-                        ((ILogical)target).NotifyResourcesChanged(e);
+                        target.NotifyResourcesChanged(ResourcesChangedToken.Create());
                     });
 
                 ResourcesChangedWeakEvent.Subscribe(applicationResources, _resourcesChangesSubscriber);
