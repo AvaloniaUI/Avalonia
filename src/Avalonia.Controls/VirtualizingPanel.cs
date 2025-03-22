@@ -193,11 +193,6 @@ namespace Avalonia.Controls
             Children.RemoveRange(index, count);
         }
 
-        internal int GetIndexFromTextSearch(string textSearchTerm)
-        {
-            return ItemsPresenter.GetIndexFromTextSearch(Items, textSearchTerm);
-        }
-
         private protected override void InvalidateMeasureOnChildrenChanged()
         {
             // Don't invalidate measure when children are added or removed: the panel is responsible
