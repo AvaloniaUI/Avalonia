@@ -132,6 +132,12 @@ namespace Avalonia.Win32
             
             s_compositor = new Compositor( platformGraphics);
             AvaloniaLocator.CurrentMutable.Bind<Compositor>().ToConstant(s_compositor);
+
+            if (options.EnableGamepadSupport)
+            {
+                WindowsGamepadManager gamepadMan = new();
+                AvaloniaLocator.CurrentMutable.Bind<IGamepadManager>().ToConstant(gamepadMan);
+            }
         }
         
         public event EventHandler<ShutdownRequestedEventArgs>? ShutdownRequested;

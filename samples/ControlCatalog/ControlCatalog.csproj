@@ -34,6 +34,18 @@
     <ProjectReference Include="..\SampleControls\ControlSamples.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <AvaloniaResource Update="Pages\Gamepad\DirectionalPadControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaResource>
+    <AvaloniaResource Update="Pages\Gamepad\GamepadUserControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaResource>
+    <AvaloniaResource Update="Pages\Gamepad\GamepadPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaResource>
+  </ItemGroup>
+
   <Import Project="..\..\build\BuildTargets.targets" />
   <Import Project="..\..\build\SourceGenerators.props" />
   <Import Project="..\..\build\SkiaSharp.props" />

@@ -176,4 +176,8 @@ public class Win32PlatformOptions
     /// </summary>
     public Func<IReadOnlyList<PlatformGraphicsDeviceAdapterDescription>, int>?
         GraphicsAdapterSelectionCallback { get; set; }
+    /// <summary>
+    /// When set to true enables Gamepad Support
+    /// </summary>
+    public bool EnableGamepadSupport { get; set; } = true;
 }
