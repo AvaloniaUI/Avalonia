@@ -174,6 +174,28 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Lays_Out_Horizontally_On_Separate_Lines_With_Spacing_Invisible()
+        {
+            var target = new WrapPanel
+            {
+                ItemSpacing = 10,
+                Children =
+                {
+                    new Border { Height = 50, Width = 60 }, // line 0
+                    new Border { Height = 50, Width = 30 , IsVisible = false }, // line 0
+                    new Border { Height = 50, Width = 50 }, // line 0
+                }
+            };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(target.DesiredSize));
+
+            Assert.Equal(new Size(120, 50), target.Bounds.Size);
+            Assert.Equal(new Rect(0, 0, 60, 50), target.Children[0].Bounds);
+            Assert.Equal(new Rect(70, 0, 50, 50), target.Children[2].Bounds);
+        }
+
+        [Fact]
         public void Lays_Out_Horizontally_On_Separate_Lines_With_Spacing_Vertical()
         {
             var target = new WrapPanel

@@ -79,7 +79,7 @@ namespace Avalonia.Controls
         /// </summary>
         static WrapPanel()
         {
-            AffectsMeasure<WrapPanel>( ItemSpacingProperty, LineSpacingProperty,OrientationProperty, ItemWidthProperty, ItemHeightProperty);
+            AffectsMeasure<WrapPanel>(ItemSpacingProperty, LineSpacingProperty, OrientationProperty, ItemWidthProperty, ItemHeightProperty);
             AffectsArrange<WrapPanel>(ItemsAlignmentProperty);
         }
 
@@ -219,7 +219,7 @@ namespace Avalonia.Controls
                     itemWidthSet ? itemWidth : child.DesiredSize.Width,
                     itemHeightSet ? itemHeight : child.DesiredSize.Height);
 
-                if (MathUtilities.GreaterThan(curLineSize.U + childSize.U + (curLineSize.U == 0 ? 0 : itemSpacing), uvConstraint.U)) // Need to switch to another line
+                if (MathUtilities.GreaterThan(curLineSize.U + childSize.U + (curLineSize.U == 0 || !child.IsVisible ? 0 : itemSpacing), uvConstraint.U)) // Need to switch to another line
                 {
                     panelSize.U = Max(curLineSize.U, panelSize.U);
                     panelSize.V += curLineSize.V + (panelSize.V == 0 ? 0 : lineSpacing);
@@ -227,7 +227,7 @@ namespace Avalonia.Controls
                 }
                 else // Continue to accumulate a line
                 {
-                    curLineSize.U += childSize.U + (curLineSize.U == 0 ? 0 : itemSpacing);
+                    curLineSize.U += childSize.U + (curLineSize.U == 0 || !child.IsVisible ? 0 : itemSpacing);
                     curLineSize.V = Max(childSize.V, curLineSize.V);
                 }
             }
@@ -265,7 +265,7 @@ namespace Avalonia.Controls
                     itemWidthSet ? itemWidth : child.DesiredSize.Width,
                     itemHeightSet ? itemHeight : child.DesiredSize.Height);
 
-                if (MathUtilities.GreaterThan(curLineSize.U + childSize.U + (curLineSize.U == 0 ? 0 : itemSpacing),
+                if (MathUtilities.GreaterThan(curLineSize.U + childSize.U + (curLineSize.U == 0 || !child.IsVisible ? 0 : itemSpacing),
                         uvFinalSize.U)) // Need to switch to another line
                 {
                     accumulatedV += accumulatedV == 0 ? 0 : lineSpacing; // add spacing to arrange line first
@@ -277,7 +277,7 @@ namespace Avalonia.Controls
                 }
                 else // Continue to accumulate a line
                 {
-                    curLineSize.U += childSize.U + (curLineSize.U == 0 ? 0 : itemSpacing);
+                    curLineSize.U += childSize.U + (curLineSize.U == 0 || !child.IsVisible ? 0 : itemSpacing);
                     curLineSize.V = Max(childSize.V, curLineSize.V);
                 }
             }
@@ -300,7 +300,7 @@ namespace Avalonia.Controls
                     double totalU = -itemSpacing;
                     for (int i = start; i < end; ++i)
                     {
-                        totalU += GetChildU(i) + itemSpacing;
+                        totalU += GetChildU(i) + (!children[i].IsVisible ? 0 : itemSpacing);
                     }
 
                     u = ItemsAlignment switch
@@ -316,7 +316,7 @@ namespace Avalonia.Controls
                 {
                     double layoutSlotU = GetChildU(i);
                     children[i].Arrange(isHorizontal ? new(u, accumulatedV, layoutSlotU, lineV) : new(accumulatedV, u, lineV, layoutSlotU));
-                    u += layoutSlotU + itemSpacing;
+                    u += layoutSlotU + (!children[i].IsVisible ? 0 : itemSpacing);
                 }
 
                 return;
