@@ -291,7 +291,6 @@ namespace Avalonia.Controls.Primitives
         public sealed override void ApplyTemplate()
         {
             var template = Template;
-            var logical = (ILogical)this;
 
             // Apply the template if it is not the same as the template already applied - except
             // for in the case that the template is null and we're not attached to the logical 
@@ -299,7 +298,7 @@ namespace Avalonia.Controls.Primitives
             // the template has been detached, so we want to wait until it's re-attached to the 
             // logical tree as if it's re-attached to the same tree the template will be the same
             // and we don't need to do anything.
-            if (_appliedTemplate != template && (template != null || logical.IsAttachedToLogicalTree))
+            if (_appliedTemplate != template && (template != null || ((ILogical)this).IsAttachedToLogicalTree))
             {
                 if (VisualChildren.Count > 0)
                 {
