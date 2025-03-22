@@ -1763,6 +1763,26 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new Rect(40, 0, 60, 100), target.Children[1].Bounds);
         }
 
+        [Fact]
+        public void Grid_Controls_With_Spacing_With_Span()
+        {
+            var target = new Grid
+            {
+                Height = 100,
+                ColumnSpacing = 20,
+                ColumnDefinitions = ColumnDefinitions.Parse("20,20"),
+                Children =
+                {
+                    new Border { [Grid.ColumnSpanProperty] = 2 }
+                },
+            };
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(target.DesiredSize));
+
+            Assert.Equal(new Rect(0, 0, 60, 100), target.Bounds);
+            Assert.Equal(new Rect(0, 0, 60, 100), target.Children[0].Bounds);
+        }
+
         private class TestControl : Control
         {
             public Size MeasureSize { get; set; }
