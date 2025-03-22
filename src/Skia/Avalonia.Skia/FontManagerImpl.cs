@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
@@ -8,7 +9,7 @@ using SkiaSharp;
 
 namespace Avalonia.Skia
 {
-    internal class FontManagerImpl : IFontManagerImpl
+    internal class FontManagerImpl : IFontManagerImpl, IFontManagerImpl2
     {
         private SKFontManager _skFontManager = SKFontManager.Default;
 
@@ -118,6 +119,29 @@ namespace Avalonia.Skia
             glyphTypeface = null;
 
             return false;
+        }
+
+        public bool TryGetFamilyTypefaces(string familyName, [NotNullWhen(true)] out IReadOnlyList<Typeface>? familyTypefaces)
+        {
+            familyTypefaces = null;
+
+            var set = _skFontManager.GetFontStyles(familyName);
+
+            if(set.Count == 0)
+            {
+                return false;
+            }
+
+            var typefaces = new List<Typeface>(set.Count);
+
+            foreach (var fontStyle in set)
+            {
+                typefaces.Add(new Typeface(familyName, fontStyle.Slant.ToAvalonia(), (FontWeight)fontStyle.Weight, (FontStretch)fontStyle.Width));
+            }
+
+            familyTypefaces = typefaces;
+
+            return true;
         }
     }
 }

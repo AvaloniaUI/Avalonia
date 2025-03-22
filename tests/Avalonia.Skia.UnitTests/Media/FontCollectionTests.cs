@@ -1,4 +1,6 @@
-﻿using System.Collections.Concurrent;
+﻿#nullable enable
+
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Media.Fonts;
@@ -41,7 +43,7 @@ namespace Avalonia.Skia.UnitTests.Media
 
                 Assert.True(glyphTypeface.FontSimulations == FontSimulations.Bold);
 
-                Assert.True(fontCollection.GlyphTypfaceCache.TryGetValue("Arial", out var glyphTypefaces));
+                Assert.True(fontCollection.GlyphTypefaceCache.TryGetValue("Arial", out var glyphTypefaces));
 
                 Assert.Equal(2, glyphTypefaces.Count);
 
@@ -60,7 +62,7 @@ namespace Avalonia.Skia.UnitTests.Media
                 
             }
 
-            public IDictionary<string, ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>> GlyphTypfaceCache => _glyphTypefaceCache;
+            public IDictionary<string, ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>> GlyphTypefaceCache => _glyphTypefaceCache;
         }
     }
 }

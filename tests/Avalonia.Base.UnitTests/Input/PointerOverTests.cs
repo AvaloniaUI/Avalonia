@@ -3,8 +3,10 @@ using System;
 using System.Collections.Generic;
 
 using Avalonia.Controls;
+using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Media;
 using Avalonia.Rendering;
 using Avalonia.UnitTests;
 
@@ -22,7 +24,8 @@ namespace Avalonia.Base.UnitTests.Input
         {
             using var app = UnitTestApplication.Start(new TestServices(
                 inputManager: new InputManager(),
-                focusManager: new FocusManager()));
+                focusManager: new FocusManager(),
+                renderInterface: new HeadlessPlatformRenderInterface()));
 
             var renderer = new Mock<IHitTester>();
             var device = CreatePointerDeviceMock().Object;
@@ -117,7 +120,7 @@ namespace Avalonia.Base.UnitTests.Input
         }
 
         [Fact]
-        public void HitTest_Should_Be_Ignored_If_Element_Captured()
+        public void HitTest_Should_Ignore_Non_Captured_Elements()
         {
             using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
 
@@ -142,8 +145,19 @@ namespace Avalonia.Base.UnitTests.Input
                 }
             }, renderer.Object);
 
-            SetHit(renderer, canvas);
             pointer.SetupGet(p => p.Captured).Returns(decorator);
+
+            // Move the pointer over the canvas: the captured decorator should lose the pointer over state.
+            SetHit(renderer, canvas);
+            impl.Object.Input!(CreateRawPointerMovedArgs(device, root));
+
+            Assert.False(decorator.IsPointerOver);
+            Assert.False(border.IsPointerOver);
+            Assert.False(canvas.IsPointerOver);
+            Assert.False(root.IsPointerOver);
+
+            // Move back the pointer over the decorator: raise events normally for it since it's captured.
+            SetHit(renderer, decorator);
             impl.Object.Input!(CreateRawPointerMovedArgs(device, root));
 
             Assert.True(decorator.IsPointerOver);
@@ -490,6 +504,60 @@ namespace Avalonia.Base.UnitTests.Input
                     (root, nameof(InputElement.PointerExited), lastClientPosition),
                 },
                 result);
+        }
+
+        [Fact]
+        public void Disabled_Element_Should_Set_PointerOver_On_Visual_Parent()
+        {
+            using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
+
+            var renderer = new Mock<IHitTester>();
+            var deviceMock = CreatePointerDeviceMock();
+            var impl = CreateTopLevelImplMock();
+
+            var disabledChild = new Border
+            {
+                Background = Brushes.Red,
+                Width = 100,
+                Height = 100,
+                IsEnabled = false
+            };
+
+            var visualParent = new Border
+            {
+                Background = Brushes.Black,
+                Width = 100,
+                Height = 100,
+                Child = disabledChild
+            };
+
+            var logicalParent = new Border
+            {
+                Background = Brushes.Blue,
+                Width = 100,
+                Height = 100
+            };
+
+            // Change the logical parent and check that we're correctly hit testing on the visual tree.
+            // This scenario is made up because it's easy to test.
+            // In the real world, this happens with nested Popups from MenuItems (but that's very cumbersome to test).
+            ((ISetLogicalParent) disabledChild).SetParent(null);
+            ((ISetLogicalParent) disabledChild).SetParent(logicalParent);
+
+            var root = CreateInputRoot(
+                impl.Object,
+                new Panel
+                {
+                    Children = { visualParent }
+                },
+                renderer.Object);
+
+            Assert.False(visualParent.IsPointerOver);
+            SetHit(renderer, disabledChild);
+
+            impl.Object.Input!(CreateRawPointerMovedArgs(deviceMock.Object, root, new Point(50, 50)));
+            Assert.True(visualParent.IsPointerOver);
+            Assert.False(logicalParent.IsPointerOver);
         }
 
         private static void AddEnteredExitedHandlers(

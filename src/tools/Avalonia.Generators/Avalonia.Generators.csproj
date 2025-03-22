@@ -9,6 +9,7 @@
     <IsRoslynComponent>true</IsRoslynComponent>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
     <Nullable>enable</Nullable>
+    <XamlXSourcePath>../../../external/XamlX/src/XamlX</XamlXSourcePath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,9 +18,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Link="Compiler/XamlX/filename" Include="../../Markup/Avalonia.Markup.Xaml.Loader/xamlil.github/src/XamlX/**/*.cs" />
-    <Compile Remove="../../Markup/Avalonia.Markup.Xaml.Loader/xamlil.github/src/XamlX/obj/**/*.cs" />
-    <Compile Remove="../../Markup/Avalonia.Markup.Xaml.Loader/xamlil.github/src/XamlX/**/SreTypeSystem.cs" />
+    <Compile Include="$(XamlXSourcePath)/**/*.cs"
+             Exclude="$(XamlXSourcePath)/obj/**/*.cs;$(XamlXSourcePath)/IL/SreTypeSystem.cs"
+             LinkBase="Compiler/XamlX" />
     <Compile Include="../../Shared/IsExternalInit.cs" Link="IsExternalInit.cs" Visible="False" />
     <Compile Include="../../Avalonia.Base/Compatibility/TrimmingAttributes.cs" Link="TrimmingAttributes.cs" Visible="False" />
     <Compile Include="../../Avalonia.Base/Compatibility/NullableAttributes.cs" Link="TrimmingAttributes.cs" Visible="False" />
