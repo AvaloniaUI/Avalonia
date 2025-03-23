@@ -446,8 +446,10 @@ namespace Avalonia.Controls
                     //
 
                     MeasureCellsGroup(extData.CellGroup1, constraint, false, false);
-                    double combinedRowSpacing = RowSpacing * (RowDefinitions.Count - 1);
-                    double combinedColumnSpacing = ColumnSpacing * (ColumnDefinitions.Count - 1);
+                    double rowSpacing = RowSpacing;
+                    double columnSpacing = ColumnSpacing;
+                    double combinedRowSpacing = rowSpacing * (RowDefinitions.Count - 1);
+                    double combinedColumnSpacing = columnSpacing * (ColumnDefinitions.Count - 1);
                     Size innerAvailableSize = new Size(constraint.Width - combinedRowSpacing, constraint.Height - combinedColumnSpacing);
                     {
                         //  after Group1 is measured,  only Group3 may have cells belonging to Auto rows.
@@ -512,8 +514,8 @@ namespace Avalonia.Controls
                     MeasureCellsGroup(extData.CellGroup4, constraint, false, false);
 
                     gridDesiredSize = new Size(
-                            CalculateDesiredSize(DefinitionsU) + ColumnSpacing * (DefinitionsU.Count - 1),
-                            CalculateDesiredSize(DefinitionsV) + RowSpacing * (DefinitionsV.Count - 1));
+                            CalculateDesiredSize(DefinitionsU) + columnSpacing * (DefinitionsU.Count - 1),
+                            CalculateDesiredSize(DefinitionsV) + rowSpacing * (DefinitionsV.Count - 1));
                 }
             }
             finally
@@ -547,8 +549,8 @@ namespace Avalonia.Controls
                 else
                 {
                     Debug.Assert(DefinitionsU.Count > 0 && DefinitionsV.Count > 0);
-                    double columnSpacing = ColumnSpacing;
                     double rowSpacing = RowSpacing;
+                    double columnSpacing = ColumnSpacing;
                     double combinedRowSpacing = rowSpacing * (RowDefinitions.Count - 1);
                     double combinedColumnSpacing = columnSpacing * (ColumnDefinitions.Count - 1);
                     SetFinalSize(DefinitionsU, arrangeSize.Width - combinedColumnSpacing, true);
