@@ -73,7 +73,8 @@ namespace Avalonia.Styling
 
                 var match = Selector?.Match(target, Parent, true) ??
                     (target == host ?
-                        SelectorMatch.AlwaysThisInstance :
+                        (Parent is ContainerQuery containerQuery ? containerQuery.Query?.Match(target, containerQuery.Parent, true, containerQuery.Name) ??
+                            SelectorMatch.NeverThisInstance : SelectorMatch.AlwaysThisInstance) :
                         SelectorMatch.NeverThisInstance);
 
                 activity?.AddTag(Diagnostic.Tags.SelectorResult, match.Result);
