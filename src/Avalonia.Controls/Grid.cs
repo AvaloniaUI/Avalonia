@@ -513,7 +513,7 @@ namespace Avalonia.Controls
 
                     gridDesiredSize = new Size(
                             CalculateDesiredSize(DefinitionsU) + ColumnSpacing * (DefinitionsU.Count - 1),
-                            CalculateDesiredSize(DefinitionsV) + RowSpacing * (DefinitionsU.Count - 1));
+                            CalculateDesiredSize(DefinitionsV) + RowSpacing * (DefinitionsV.Count - 1));
                 }
             }
             finally
