@@ -448,7 +448,7 @@ namespace Avalonia.Controls
                     MeasureCellsGroup(extData.CellGroup1, constraint, false, false);
                     double combinedRowSpacing = RowSpacing * (RowDefinitions.Count - 1);
                     double combinedColumnSpacing = ColumnSpacing * (ColumnDefinitions.Count - 1);
-                    Size innerAvailableSize = new Size(constraint.Width - combinedRowSpacing, constraint.Height - combinedColumnSpacing);
+                    Size innerAvailableSize = new Size(constraint.Width - combinedColumnSpacing, constraint.Height - combinedRowSpacing);
                     {
                         //  after Group1 is measured,  only Group3 may have cells belonging to Auto rows.
                         bool canResolveStarsV = !HasGroup3CellsInAutoRows;
@@ -512,8 +512,8 @@ namespace Avalonia.Controls
                     MeasureCellsGroup(extData.CellGroup4, constraint, false, false);
 
                     gridDesiredSize = new Size(
-                            CalculateDesiredSize(DefinitionsU) + ColumnSpacing * (DefinitionsU.Count - 1),
-                            CalculateDesiredSize(DefinitionsV) + RowSpacing * (DefinitionsU.Count - 1));
+                        CalculateDesiredSize(DefinitionsU) + ColumnSpacing * (DefinitionsU.Count - 1),
+                        CalculateDesiredSize(DefinitionsV) + RowSpacing * (DefinitionsU.Count - 1));
                 }
             }
             finally
@@ -566,11 +566,10 @@ namespace Avalonia.Controls
                         int rowSpan = PrivateCells[currentCell].RowSpan;
 
                         Rect cellRect = new Rect(
-                            columnIndex == 0 ? 0.0 : DefinitionsU[columnIndex].FinalOffset + (columnSpacing * columnIndex),
-                            rowIndex == 0 ? 0.0 : DefinitionsV[rowIndex].FinalOffset + (rowSpacing * rowIndex),
-                            GetFinalSizeForRange(DefinitionsU, columnIndex, columnSpan),
-                            GetFinalSizeForRange(DefinitionsV, rowIndex, rowSpan));
-
+                            columnIndex == 0 ? 0d : DefinitionsU[columnIndex].FinalOffset,
+                            rowIndex == 0 ? 0d : DefinitionsV[rowIndex].FinalOffset,
+                            GetFinalSizeForRange(DefinitionsU, columnIndex, columnSpan, columnSpacing),
+                            GetFinalSizeForRange(DefinitionsV, rowIndex, rowSpan, rowSpacing));
 
                         cell.Arrange(cellRect);
                     }
@@ -1132,9 +1131,10 @@ namespace Avalonia.Controls
             {
                 //  otherwise...
                 cellMeasureWidth = GetMeasureSizeForRange(
-                                        DefinitionsU,
-                                        PrivateCells[cell].ColumnIndex,
-                                        PrivateCells[cell].ColumnSpan);
+                    DefinitionsU,
+                    PrivateCells[cell].ColumnIndex,
+                    PrivateCells[cell].ColumnSpan,
+                    ColumnSpacing);
             }
 
             if (forceInfinityV)
@@ -1152,9 +1152,10 @@ namespace Avalonia.Controls
             else
             {
                 cellMeasureHeight = GetMeasureSizeForRange(
-                                        DefinitionsV,
-                                        PrivateCells[cell].RowIndex,
-                                        PrivateCells[cell].RowSpan);
+                    DefinitionsV,
+                    PrivateCells[cell].RowIndex,
+                    PrivateCells[cell].RowSpan,
+                    RowSpacing);
             }
 
 
@@ -1169,6 +1170,7 @@ namespace Avalonia.Controls
         /// <param name="definitions">Source array of definitions to read values from.</param>
         /// <param name="start">Starting index of the range.</param>
         /// <param name="count">Number of definitions included in the range.</param>
+        /// <param name="spacing"><see cref="ColumnSpacing"/> or <see cref="RowSpacing"/></param>
         /// <returns>Calculated measure size.</returns>
         /// <remarks>
         /// For "Auto" definitions MinWidth is used in place of PreferredSize.
@@ -1176,21 +1178,24 @@ namespace Avalonia.Controls
         private static double GetMeasureSizeForRange(
             IReadOnlyList<DefinitionBase> definitions,
             int start,
-            int count)
+            int count,
+            double spacing)
         {
             Debug.Assert(0 < count && 0 <= start && (start + count) <= definitions.Count);
 
-            double measureSize = 0;
+            double measureSize = -spacing;
             int i = start + count - 1;
 
             do
             {
-                measureSize += (definitions[i].SizeType == LayoutTimeSizeType.Auto)
-                    ? definitions[i].MinSize
-                    : definitions[i].MeasureSize;
+                measureSize +=
+                    spacing +
+                    (definitions[i].SizeType == LayoutTimeSizeType.Auto ?
+                        definitions[i].MinSize :
+                        definitions[i].MeasureSize);
             } while (--i >= start);
 
-            return (measureSize);
+            return measureSize;
         }
 
         /// <summary>
@@ -2216,11 +2221,12 @@ namespace Avalonia.Controls
                 }
             }
 
+            double spacing = columns ? ColumnSpacing : RowSpacing;
             // Phase 6.  Compute final offsets
             definitions[0].FinalOffset = 0.0;
             for (int i = 0; i < definitions.Count; ++i)
             {
-                definitions[(i + 1) % definitions.Count].FinalOffset = definitions[i].FinalOffset + definitions[i].SizeCache;
+                definitions[(i + 1) % definitions.Count].FinalOffset = definitions[i].FinalOffset + definitions[i].SizeCache + spacing;
             }
         }
 
@@ -2296,21 +2302,23 @@ namespace Avalonia.Controls
         /// <param name="definitions">Array of definitions to process.</param>
         /// <param name="start">Start of the range.</param>
         /// <param name="count">Number of items in the range.</param>
+        /// <param name="spacing"><see cref="ColumnSpacing"/> or <see cref="RowSpacing"/></param>
         /// <returns>Final size.</returns>
         private static double GetFinalSizeForRange(
             IReadOnlyList<DefinitionBase> definitions,
             int start,
-            int count)
+            int count,
+            double spacing)
         {
-            double size = 0;
+            double size = -spacing;
             int i = start + count - 1;
 
             do
             {
-                size += definitions[i].SizeCache;
+                size += spacing + definitions[i].SizeCache;
             } while (--i >= start);
 
-            return (size);
+            return size;
         }
 
         /// <summary>
