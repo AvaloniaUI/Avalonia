@@ -1768,12 +1768,16 @@ namespace Avalonia.Controls.UnitTests
         {
             var target = new Grid
             {
-                Height = 100,
                 ColumnSpacing = 20,
+                RowDefinitions = RowDefinitions.Parse("Auto"),
                 ColumnDefinitions = ColumnDefinitions.Parse("20,20"),
                 Children =
                 {
-                    new Border { [Grid.ColumnSpanProperty] = 2 }
+                    new Border 
+                    {
+                        Height = 100,
+                        [Grid.ColumnSpanProperty] = 2
+                    }
                 },
             };
             target.Measure(new Size(100, 100));
