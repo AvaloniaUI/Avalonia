@@ -2780,7 +2780,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterAttached<Grid, Control, int>(
                 "ColumnSpan",
                 defaultValue: 1,
-                validate: v => v >= 0);
+                validate: v => v > 0);
 
         /// <summary>
         /// RowSpan property. This is an attached property.
@@ -2796,7 +2796,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterAttached<Grid, Control, int>(
                 "RowSpan",
                 defaultValue: 1,
-                validate: v => v >= 0);
+                validate: v => v > 0);
 
         /// <summary>
         /// IsSharedSizeScope property marks scoping element for shared size.
