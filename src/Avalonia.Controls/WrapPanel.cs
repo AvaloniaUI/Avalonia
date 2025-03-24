@@ -203,6 +203,8 @@ namespace Avalonia.Controls
             var uvConstraint = new UVSize(orientation, constraint.Width, constraint.Height);
             bool itemWidthSet = !double.IsNaN(itemWidth);
             bool itemHeightSet = !double.IsNaN(itemHeight);
+            bool itemExists = false;
+            bool lineExists = false;
 
             var childConstraint = new Size(
                 itemWidthSet ? itemWidth : constraint.Width,
@@ -219,22 +221,28 @@ namespace Avalonia.Controls
                     itemWidthSet ? itemWidth : child.DesiredSize.Width,
                     itemHeightSet ? itemHeight : child.DesiredSize.Height);
 
-                if (MathUtilities.GreaterThan(curLineSize.U + childSize.U + (curLineSize.U == 0 || !child.IsVisible ? 0 : itemSpacing), uvConstraint.U)) // Need to switch to another line
+                var nextSpacing = itemExists && child.IsVisible ? itemSpacing : 0;
+                if (MathUtilities.GreaterThan(curLineSize.U + childSize.U + nextSpacing, uvConstraint.U)) // Need to switch to another line
                 {
                     panelSize.U = Max(curLineSize.U, panelSize.U);
-                    panelSize.V += curLineSize.V + (panelSize.V == 0 ? 0 : lineSpacing);
+                    panelSize.V += curLineSize.V + (lineExists ? lineSpacing : 0);
                     curLineSize = childSize;
+
+                    itemExists = child.IsVisible;
+                    lineExists = true;
                 }
                 else // Continue to accumulate a line
                 {
-                    curLineSize.U += childSize.U + (curLineSize.U == 0 || !child.IsVisible ? 0 : itemSpacing);
+                    curLineSize.U += childSize.U + nextSpacing;
                     curLineSize.V = Max(childSize.V, curLineSize.V);
+                    
+                    itemExists |= child.IsVisible; // keep true
                 }
             }
 
             // The last line size, if any should be added
             panelSize.U = Max(curLineSize.U, panelSize.U);
-            panelSize.V += curLineSize.V + (panelSize.V == 0 ? 0 : lineSpacing);
+            panelSize.V += curLineSize.V + (lineExists ? lineSpacing : 0);
 
             // Go from UV space to W/H space
             return new Size(panelSize.Width, panelSize.Height);
@@ -257,6 +265,8 @@ namespace Avalonia.Controls
             var uvFinalSize = new UVSize(orientation, finalSize.Width, finalSize.Height);
             bool itemWidthSet = !double.IsNaN(itemWidth);
             bool itemHeightSet = !double.IsNaN(itemHeight);
+            bool itemExists = false;
+            bool lineExists = false;
 
             for (int i = 0; i < children.Count; ++i)
             {
@@ -265,27 +275,32 @@ namespace Avalonia.Controls
                     itemWidthSet ? itemWidth : child.DesiredSize.Width,
                     itemHeightSet ? itemHeight : child.DesiredSize.Height);
 
-                if (MathUtilities.GreaterThan(curLineSize.U + childSize.U + (curLineSize.U == 0 || !child.IsVisible ? 0 : itemSpacing),
-                        uvFinalSize.U)) // Need to switch to another line
+                var nextSpacing = itemExists && child.IsVisible ? itemSpacing : 0;
+                if (MathUtilities.GreaterThan(curLineSize.U + childSize.U + nextSpacing, uvFinalSize.U)) // Need to switch to another line
                 {
-                    accumulatedV += accumulatedV == 0 ? 0 : lineSpacing; // add spacing to arrange line first
+                    accumulatedV += lineExists ? lineSpacing : 0; // add spacing to arrange line first
                     ArrangeLine(curLineSize.V, firstInLine, i);
                     accumulatedV += curLineSize.V; // add the height of the line just arranged
                     curLineSize = childSize;
 
                     firstInLine = i;
+
+                    itemExists = child.IsVisible;
+                    lineExists = true;
                 }
                 else // Continue to accumulate a line
                 {
-                    curLineSize.U += childSize.U + (curLineSize.U == 0 || !child.IsVisible ? 0 : itemSpacing);
+                    curLineSize.U += childSize.U + nextSpacing;
                     curLineSize.V = Max(childSize.V, curLineSize.V);
+
+                    itemExists |= child.IsVisible; // keep true
                 }
             }
 
             // Arrange the last line, if any
             if (firstInLine < children.Count)
             {
-                accumulatedV += accumulatedV == 0 ? 0 : lineSpacing; // add spacing to arrange line first
+                accumulatedV += lineExists ? lineSpacing : 0; // add spacing to arrange line first
                 ArrangeLine(curLineSize.V, firstInLine, children.Count);
             }
 

@@ -248,6 +248,34 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Zero_Size_Visible_Child()
+        {
+            var target = new WrapPanel()
+            {
+                Orientation = Orientation.Horizontal,
+                Width = 50,
+                ItemSpacing = 10,
+                LineSpacing = 10,
+                Children =
+                {
+                    new Border(), // line 0
+                    new Border // line 1
+                    {
+                        Width = 50,
+                        Height = 50 
+                    },
+                }
+            };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(target.DesiredSize));
+
+            Assert.Equal(new Size(50, 60), target.Bounds.Size);
+            Assert.Equal(new Rect(0, 0, 0, 0), target.Children[0].Bounds);
+            Assert.Equal(new Rect(0, 10, 50, 50), target.Children[1].Bounds);
+        }
+
+        [Fact]
         void ItemWidth_Trigger_InvalidateMeasure()
         {
             var target = new WrapPanel();
