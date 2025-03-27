@@ -14,6 +14,7 @@ using Avalonia.Metadata;
 using Avalonia.Platform;
 using Avalonia.VisualTree;
 using Avalonia.Media;
+using Avalonia.Interactivity;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -460,13 +461,13 @@ namespace Avalonia.Controls.Primitives
             SubscribeToEventHandler<Control, EventHandler<VisualTreeAttachmentEventArgs>>(placementTarget, TargetDetached,
                 (x, handler) => x.DetachedFromVisualTree += handler,
                 (x, handler) => x.DetachedFromVisualTree -= handler).DisposeWith(handlerCleanup);
-            
+
             if (topLevel is Window window && window.PlatformImpl != null)
             {
                 SubscribeToEventHandler<Window, EventHandler>(window, WindowDeactivated,
                     (x, handler) => x.Deactivated += handler,
                     (x, handler) => x.Deactivated -= handler).DisposeWith(handlerCleanup);
-                
+
                 SubscribeToEventHandler<IWindowImpl, Action>(window.PlatformImpl, WindowLostFocus,
                     (x, handler) => x.LostFocus += handler,
                     (x, handler) => x.LostFocus -= handler).DisposeWith(handlerCleanup);
@@ -499,6 +500,12 @@ namespace Avalonia.Controls.Primitives
                         (x, handler) => x.Closed += handler,
                         (x, handler) => x.Closed -= handler).DisposeWith(handlerCleanup);
                 }
+            }
+            else if (topLevel is { } tl && tl.PlatformImpl is ITopLevelImpl pimpl)
+            {
+                SubscribeToEventHandler<ITopLevelImpl, Action>(pimpl, TopLevelLostPlatformFocus,
+                    (x, handler) => x.LostFocus += handler,
+                    (x, handler) => x.LostFocus -= handler).DisposeWith(handlerCleanup);
             }
 
             InputManager.Instance?.Process.Subscribe(ListenForNonClientClick).DisposeWith(handlerCleanup);
@@ -956,6 +963,14 @@ namespace Avalonia.Controls.Primitives
         }
 
         private void ParentClosed(object? sender, EventArgs e)
+        {
+            if (IsLightDismissEnabled)
+            {
+                Close();
+            }
+        }
+
+        private void TopLevelLostPlatformFocus()
         {
             if (IsLightDismissEnabled)
             {
