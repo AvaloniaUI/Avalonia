@@ -20,6 +20,7 @@ using static Nuke.Common.Tools.VSWhere.VSWhereTasks;
 using static Serilog.Log;
 using MicroCom.CodeGenerator;
 using NuGet.Configuration;
+using Nuke.Common.CI.AzurePipelines;
 using Nuke.Common.IO;
 
 /*
@@ -79,6 +80,9 @@ partial class Build : NukeBuild
         ExecWait("dotnet workloads:", "dotnet", "workload list");
         Information("Processor count: " + Environment.ProcessorCount);
         Information("Available RAM: " + GC.GetGCMemoryInfo().TotalAvailableMemoryBytes / 0x100000 + "MB");
+
+        if (Host is AzurePipelines azurePipelines)
+            azurePipelines.UpdateBuildNumber(Parameters.Version);
     }
 
     DotNetConfigHelper ApplySettingCore(DotNetConfigHelper c)
