@@ -54,7 +54,7 @@ namespace Avalonia.Styling
 
                     if (hadResources || _resources.HasResources)
                     {
-                        Owner.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
+                        Owner.NotifyHostedResourcesChanged(ResourcesChangedToken.Create());
                     }
                 }
             }
