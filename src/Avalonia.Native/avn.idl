@@ -772,6 +772,8 @@ interface IAvnWindow : IAvnWindowBase
 {
      HRESULT SetEnabled(bool enable);
      HRESULT SetCanResize(bool value);
+     HRESULT SetCanMinimize(bool value);
+     HRESULT SetCanMaximize(bool value);
      HRESULT SetDecorations(SystemDecorations value);
      HRESULT SetTitle(char* utf8Title);
      HRESULT SetTitleBarColor(AvnColor color);
