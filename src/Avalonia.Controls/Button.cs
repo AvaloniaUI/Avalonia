@@ -678,7 +678,7 @@ namespace Avalonia.Controls
         /// <param name="e">The event args.</param>
         private void RootDefaultKeyDown(object? sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Enter && IsVisible && IsEnabled)
+            if (e.Key == Key.Enter && IsEffectivelyVisible && IsEffectivelyEnabled)
             {
                 OnClick();
                 e.Handled = true;
@@ -692,7 +692,7 @@ namespace Avalonia.Controls
         /// <param name="e">The event args.</param>
         private void RootCancelKeyDown(object? sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Escape && IsVisible && IsEnabled)
+            if (e.Key == Key.Escape && IsEffectivelyVisible && IsEffectivelyEnabled)
             {
                 OnClick();
                 e.Handled = true;
