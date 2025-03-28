@@ -137,6 +137,7 @@ namespace Avalonia.Controls
         private readonly IDisposable? _pointerOverPreProcessorSubscription;
         private readonly IDisposable? _backGestureSubscription;
         private readonly Dictionary<AvaloniaProperty, Action> _platformImplBindings = new();
+        private double _scaling;
         private Size _clientSize;
         private Size? _frameSize;
         private WindowTransparencyLevel _actualTransparencyLevel;
@@ -218,6 +219,7 @@ namespace Avalonia.Controls
             PlatformImpl = impl ?? throw new InvalidOperationException(
                 "Could not create window implementation: maybe no windowing subsystem was initialized?");
 
+            _scaling = ValidateScaling(impl.RenderScaling);
             _actualTransparencyLevel = PlatformImpl.TransparencyLevel;
 
             dependencyResolver ??= AvaloniaLocator.Current;
@@ -555,11 +557,10 @@ namespace Avalonia.Controls
             return control.GetValue(AutoSafeAreaPaddingProperty);
         }
 
-        /// <inheritdoc/>
-        double ILayoutRoot.LayoutScaling => PlatformImpl?.RenderScaling ?? 1;
+        double ILayoutRoot.LayoutScaling => _scaling;
 
         /// <inheritdoc/>
-        public double RenderScaling => PlatformImpl?.RenderScaling ?? 1;
+        public double RenderScaling => _scaling;
 
         IStyleHost IStyleHost.StylingParent => _globalStyles!;
 
@@ -717,6 +718,7 @@ namespace Avalonia.Controls
             Debug.Assert(PlatformImpl != null);
             // The PlatformImpl is completely invalid at this point
             PlatformImpl = null;
+            _scaling = 1.0;
             
             if (_globalStyles is object)
             {
@@ -768,6 +770,7 @@ namespace Avalonia.Controls
         /// <param name="scaling">The window scaling.</param>
         private void HandleScalingChanged(double scaling)
         {
+            _scaling = ValidateScaling(scaling);
             LayoutHelper.InvalidateSelfAndChildrenMeasure(this);
             Dispatcher.UIThread.Send(_ => ScalingChanged?.Invoke(this, EventArgs.Empty));
         }
@@ -970,6 +973,24 @@ namespace Avalonia.Controls
         }
 
         ITextInputMethodImpl? ITextInputMethodRoot.InputMethod => PlatformImpl?.TryGetFeature<ITextInputMethodImpl>();
+
+        private double ValidateScaling(double scaling)
+        {
+            if (MathUtilities.IsNegativeOrNonFinite(scaling) || MathUtilities.IsZero(scaling))
+            {
+                throw new InvalidOperationException(
+                    $"Invalid {nameof(ITopLevelImpl.RenderScaling)} value {scaling} returned from {PlatformImpl?.GetType()}");
+            }
+
+            if (MathUtilities.IsOne(scaling))
+            {
+                // Ensure we've got exactly 1.0 and not an approximation,
+                // so we don't have to use MathUtilities.IsOne in various layout hot paths.
+                return 1.0;
+            }
+
+            return scaling;
+        }
 
         /// <summary>
         /// Provides layout pass timing from the layout manager to the renderer, for diagnostics purposes.
