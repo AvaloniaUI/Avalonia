@@ -101,6 +101,9 @@
       <TabItem Header="Focus">
         <pages:FocusPage />
       </TabItem>
+      <TabItem Header="Gamepad">
+        <pages:GamepadPage />
+      </TabItem>
       <TabItem Header="Gestures">
         <pages:GesturePage />
       </TabItem>

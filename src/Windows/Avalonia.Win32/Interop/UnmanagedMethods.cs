@@ -9,6 +9,7 @@ using System.Text;
 using Windows.Win32;
 using Windows.Win32.Graphics.Gdi;
 using MicroCom.Runtime;
+using System.Runtime.CompilerServices;
 
 // ReSharper disable InconsistentNaming
 #pragma warning disable 169, 649
@@ -1782,6 +1783,70 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("user32.dll")]
         public static extern bool SetLayeredWindowAttributes(IntPtr hwnd, uint crKey, byte bAlpha, LayeredWindowFlags dwFlags);
+
+        // XINPUT prefer v 1.4 (Ships with Windows 8, I think it was available with the SDK in Windows 7 SP1? 
+        // Fallback to 0.9.3 otherwise 
+
+        public unsafe delegate uint _XINPUT_IMPL_TYPE(uint dwUserIndex, Windows.Win32.UI.Input.XboxController.XINPUT_STATE* state);
+
+        private static _XINPUT_IMPL_TYPE? _XINPUT_IMPL;
+        public const int ERROR_DEVICE_NOT_CONNECTED = 1167;
+        public static void XINPUT_LOADER_INIT()
+        {
+            IntPtr getState = IntPtr.Zero;
+            var xinput1_4 = LoadLibrary("xinput1_4.dll");
+            if (xinput1_4 == IntPtr.Zero)
+            {
+                var xinput_9_1 = LoadLibrary("xinput9_1_0.dll");
+                if (xinput_9_1 == IntPtr.Zero)
+                {
+                    // I am very unhappy about this. 
+                    return;
+                }
+                else
+                {
+                    getState = GetProcAddress(xinput_9_1, "XInputGetState");
+                    if (getState == IntPtr.Zero)
+                    {
+                        // I am very unhappy about this. 
+                        return;
+                    }
+                    else
+                    {
+                        _XINPUT_IMPL = Marshal.GetDelegateForFunctionPointer<_XINPUT_IMPL_TYPE>(getState);
+                    }
+                }
+            }
+            else
+            {
+                getState = GetProcAddress(xinput1_4, "XInputGetState");
+                if (getState == IntPtr.Zero)
+                {
+                    // I am very unhappy about this.
+                    return;
+                }
+                else
+                {
+                    _XINPUT_IMPL = Marshal.GetDelegateForFunctionPointer<_XINPUT_IMPL_TYPE>(getState);
+                }
+            }
+        }
+        // Used upper-case as if this were a Macro of sorts, but it's not. 
+        public static uint XINPUT_GET_STATE(uint dwUserIndex, Windows.Win32.UI.Input.XboxController.XINPUT_STATE* pState)
+        {
+            if (_XINPUT_IMPL is null)
+            {
+                XINPUT_LOADER_INIT();
+            }
+            if (_XINPUT_IMPL is null)
+            {
+                // Okay wow there's no XInput on this computer?
+                // Theoretically possible, but Windows XP ships with XInput v 9.1 so... ????
+                // Just report all devices are not connected I suppose? 
+                return ERROR_DEVICE_NOT_CONNECTED;
+            }
+            return _XINPUT_IMPL(dwUserIndex, pState);
+        }
 
         [Flags]
         public enum DWM_BB
