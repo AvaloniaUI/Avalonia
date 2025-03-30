@@ -604,8 +604,13 @@ namespace Avalonia.Controls
                 context.FillRectangle(background, new Rect(Bounds.Size));
             }
 
-            var scale = LayoutHelper.GetLayoutScale(this);
-            var padding = LayoutHelper.RoundLayoutThickness(Padding, scale);
+            var padding = Padding;
+            if (UseLayoutRounding)
+            {
+                var scale = LayoutHelper.GetLayoutScale(this);
+                padding = LayoutHelper.RoundLayoutThickness(padding, scale);
+            }
+
             var top = padding.Top;
             var textHeight = TextLayout.Height;
 
@@ -709,12 +714,10 @@ namespace Avalonia.Controls
         protected override Size MeasureOverride(Size availableSize)
         {
             var padding = Padding;
-            var useLayoutRounding = UseLayoutRounding;
-            var scale = 1.0;
 
-            if (useLayoutRounding)
+            if (UseLayoutRounding)
             {
-                scale = LayoutHelper.GetLayoutScale(this);
+                var scale = LayoutHelper.GetLayoutScale(this);
                 padding = LayoutHelper.RoundLayoutThickness(Padding, scale);
             }
 
@@ -750,18 +753,13 @@ namespace Avalonia.Controls
 
             var size = new Size(textLayout.MinTextWidth, textLayout.Height);
 
-            if (useLayoutRounding)
-                size = LayoutHelper.RoundLayoutSizeUp(size, scale, scale);
-
             return size.Inflate(padding);
         }
 
         protected override Size ArrangeOverride(Size finalSize)
         {
             var padding = Padding;
-            var useLayoutRounding = UseLayoutRounding;
-
-            if (useLayoutRounding)
+            if (UseLayoutRounding)
             {
                 var scale = LayoutHelper.GetLayoutScale(this);
                 padding = LayoutHelper.RoundLayoutThickness(Padding, scale);
