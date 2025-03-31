@@ -454,6 +454,11 @@ namespace Avalonia.Controls
         /// </returns>
         public IPlatformHandle? TryGetPlatformHandle() => PlatformImpl?.Handle;
 
+        /// <summary>
+        /// The static entry-point to interacting with Gamepads. This is null if the current platform does not have a Gamepad implementation. 
+        /// </summary>
+        public IGamepadManager? GamepadManager { get => AvaloniaLocator.Current.GetService<IGamepadManager>(); }
+
         private protected void CreatePlatformImplBinding<TValue>(StyledProperty<TValue> property, Action<TValue> onValue)
         {
             _platformImplBindings.TryGetValue(property, out var actions);

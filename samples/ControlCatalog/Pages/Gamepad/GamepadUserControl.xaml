@@ -1,0 +1,91 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="using:ControlCatalog.Pages"
+             xmlns:converters="using:ControlCatalog.Converter"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="ControlCatalog.Pages.GamepadUserControl"
+             x:Name="GamepadUserControlRoot"
+             >
+
+  <Viewbox>
+    <Grid Width="500" Height="240">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="80"/>
+        <RowDefinition Height="80"/>
+        <RowDefinition Height="80"/>
+      </Grid.RowDefinitions>
+
+      <TextBlock x:Name="DisconnectedTextBlock" HorizontalAlignment="Center" VerticalAlignment="Top" TextAlignment="Center"/>
+      
+      <Grid ColumnDefinitions="*,*,*" Grid.Row="1">
+        <Panel Width="80" Height="80" >
+          <local:TwoAxisDrawer Width="80" Height="80" Value="{Binding #GamepadUserControlRoot.LeftStick}" />
+          <Ellipse Stroke="White" StrokeThickness="2" IsVisible="{Binding #GamepadUserControlRoot.LeftClick}"/>
+        </Panel>
+
+        <Canvas Width="100" Height="100" Grid.Column="2">
+          <Panel Width="25" Height="25" Canvas.Left="30" Canvas.Top="50" IsVisible="{Binding Path=#GamepadUserControlRoot.A}">
+            <Ellipse Fill="Green"/>
+            <TextBlock Text="A" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,3"/>
+          </Panel>
+          <Panel Width="25" Height="25" Canvas.Left="50" Canvas.Top="30" IsVisible="{Binding Path=#GamepadUserControlRoot.B}">
+            <Ellipse Fill="Red"/>
+            <TextBlock Text="B" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="2,0,1,3"/>
+          </Panel>
+          <Panel Width="25" Height="25" Canvas.Left="10" Canvas.Top="30" IsVisible="{Binding Path=#GamepadUserControlRoot.X}">
+            <Ellipse Fill="Blue"/>
+            <TextBlock Text="X" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,1,2"/>
+          </Panel>
+          <Panel Width="25" Height="25" Canvas.Left="30" Canvas.Top="10" IsVisible="{Binding Path=#GamepadUserControlRoot.Y}">
+            <Ellipse Fill="Gold"/>
+            <TextBlock Text="Y" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="1,0,2,3"/>
+          </Panel>
+        </Canvas>
+
+        <DockPanel Grid.Column="1">
+          <Border DockPanel.Dock="Left" Background="White" CornerRadius="8" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="8" IsVisible="{Binding Path=#GamepadUserControlRoot.Select}">
+            <TextBlock Text="BACK" Margin="4" FontSize="12" Foreground="Black"/>
+          </Border>
+
+          <Border DockPanel.Dock="Left" Background="White" CornerRadius="8" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="8"  IsVisible="{Binding Path=#GamepadUserControlRoot.Start}">
+            <TextBlock Text="START" Margin="4" FontSize="12" Foreground="Black"/>
+          </Border>
+        </DockPanel>
+
+      </Grid>
+
+      <DockPanel Grid.Row="2" Margin="120,0">
+        <Panel Width="80" Height="80" DockPanel.Dock="Right" HorizontalAlignment="Right" Margin="8">
+          <local:TwoAxisDrawer Width="80" Height="80" Value="{Binding Path=#GamepadUserControlRoot.RightStick}" HorizontalAlignment="Right" DockPanel.Dock="Right" />
+          <Ellipse Stroke="White" StrokeThickness="2" IsVisible="{Binding #GamepadUserControlRoot.RightClick}"/>
+        </Panel>
+        <local:DirectionalPadControl DockPanel.Dock="Left" Width="80" Height="80" HorizontalAlignment="Left" Margin="8" x:Name="DPadControl"/>
+
+
+      </DockPanel>
+
+      <Grid ColumnDefinitions="2*,*,*,2*">
+
+        <local:TwoAxisDrawer Value="{Binding Path=#GamepadUserControlRoot.LeftTrigger}" Margin="32,0,0,0">
+          <local:TwoAxisDrawer.RenderTransform>
+            <ScaleTransform ScaleX="-1"/>
+          </local:TwoAxisDrawer.RenderTransform>
+        </local:TwoAxisDrawer>
+
+        <Border Background="White" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" CornerRadius="8" IsVisible="{Binding Path=#GamepadUserControlRoot.LeftBuffer}">
+          <TextBlock Text="LB" Foreground="Black" Margin="8,4" FontSize="12"/>
+        </Border>
+
+        <Border Background="White" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" CornerRadius="8" IsVisible="{Binding Path=#GamepadUserControlRoot.RightBuffer}">
+          <TextBlock Text="RB" Foreground="Black" Margin="8,4" FontSize="12"/>
+        </Border>
+
+        <local:TwoAxisDrawer Value="{Binding Path=#GamepadUserControlRoot.RightTrigger}" Grid.Column="3" Margin="0,0,32,0"/>
+
+      </Grid>
+    </Grid>
+  </Viewbox>
+  
+</UserControl>
