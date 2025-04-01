@@ -6,7 +6,7 @@ namespace Avalonia.Controls;
 public class AdornerLayerBase
 {
     /// <summary>
-    /// Allows for getting and setting of the adorned element.
+    ///  Allows for getting and setting of the adorned element.
     /// </summary>
     public static readonly AttachedProperty<Visual?> AdornedElementProperty =
         AvaloniaProperty.RegisterAttached<AdornerLayerBase, Visual, Visual?>("AdornedElement");
