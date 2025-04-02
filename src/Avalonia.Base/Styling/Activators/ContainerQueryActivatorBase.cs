@@ -16,8 +16,11 @@ namespace Avalonia.Styling.Activators
         {
             _visual = visual;
             _containerName = containerName;
+        }
 
-            _visual.AttachedToVisualTree += Visual_AttachedToVisualTree;
+        private void Visual_DetachedFromVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
+        {
+            DeInitializeScreenSizeProvider();
         }
 
         private void Visual_AttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
@@ -32,12 +35,21 @@ namespace Avalonia.Styling.Activators
         protected override void Initialize()
         {
             InitializeScreenSizeProvider();
+
+            _visual.AttachedToVisualTree += Visual_AttachedToVisualTree;
+            _visual.DetachedFromVisualTree += Visual_DetachedFromVisualTree;
         }
 
         protected override void Deinitialize()
         {
             _visual.AttachedToVisualTree -= Visual_AttachedToVisualTree;
+            _visual.DetachedFromVisualTree -= Visual_DetachedFromVisualTree;
 
+            DeInitializeScreenSizeProvider();
+        }
+
+        private void DeInitializeScreenSizeProvider()
+        {
             if (_currentScreenSizeProvider is { } && Container.GetQueryProvider(_currentScreenSizeProvider) is { } provider)
             {
                 provider.WidthChanged -= WidthChanged;
@@ -48,7 +60,7 @@ namespace Avalonia.Styling.Activators
 
         private void InitializeScreenSizeProvider()
         {
-            if (GetContainer(_visual, _containerName) is { } container && Container.GetQueryProvider(container) is { } provider)
+            if (_currentScreenSizeProvider == null && GetContainer(_visual, _containerName) is { } container && Container.GetQueryProvider(container) is { } provider)
             {
                 _currentScreenSizeProvider = container;
 
