@@ -2,25 +2,24 @@
 // Licensed under the Apache License, Version 2.0.
 // Ported from: https://github.com/SixLabors/Fonts/blob/034a440aece357341fcc6b02db58ffbe153e54ef/src/SixLabors.Fonts
 
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using Avalonia.Utilities;
 
 namespace Avalonia.Media.Fonts.Tables.Name
 {
-    internal class NameTable
+    internal class NameTable : IEnumerable<NameRecord>
     {
         internal const string TableName = "name";
         internal static readonly OpenTypeTag Tag = OpenTypeTag.Parse(TableName);
 
         private readonly NameRecord[] _names;
 
-        internal NameTable(NameRecord[] names, IReadOnlyList<ushort> languages)
+        internal NameTable(NameRecord[] names)
         {
             _names = names;
-            Languages = languages;
         }
-
-        public IReadOnlyList<ushort> Languages { get; }
 
         /// <summary>
         /// Gets the name of the font.
@@ -133,22 +132,6 @@ namespace Avalonia.Media.Fonts.Tables.Name
                 }
             }
 
-            //var languageNames = Array.Empty<StringLoader>();
-
-            //if (format == 1)
-            //{
-            //    // Format 1 adds language data.
-            //    var langCount = reader.ReadUInt16();
-            //    languageNames = new StringLoader[langCount];
-
-            //    for (var i = 0; i < langCount; i++)
-            //    {
-            //        languageNames[i] = StringLoader.Create(reader);
-
-            //        strings.Add(languageNames[i]);
-            //    }
-            //}
-
             foreach (var readable in strings)
             {
                 var readableStartOffset = stringOffset + readable.Offset;
@@ -158,22 +141,17 @@ namespace Avalonia.Media.Fonts.Tables.Name
                 readable.LoadValue(reader);
             }
 
-            var cultures = new List<ushort>();
+            return new NameTable(names);
+        }
 
-            foreach (var nameRecord in names)
-            {
-                if (nameRecord.NameID != KnownNameIds.FontFamilyName || nameRecord.Platform != PlatformIDs.Windows || nameRecord.LanguageID == 0)
-                {
-                    continue;
-                }
+        public IEnumerator<NameRecord> GetEnumerator()
+        {
+            return new ImmutableReadOnlyListStructEnumerator<NameRecord>(_names);
+        }
 
-                if (!cultures.Contains(nameRecord.LanguageID))
-                {
-                    cultures.Add(nameRecord.LanguageID);
-                }
-            }
-
-            return new NameTable(names, cultures);
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }

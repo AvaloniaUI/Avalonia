@@ -56,6 +56,8 @@ namespace Avalonia.Android.Platform
 
         public Task<object?> GetDataAsync(string format) => throw new PlatformNotSupportedException();
 
+        public Task<IDataObject?> TryGetInProcessDataObjectAsync() => Task.FromResult<IDataObject?>(null);
+
         /// <inheritdoc />
         public Task FlushAsync() =>
             Task.CompletedTask;

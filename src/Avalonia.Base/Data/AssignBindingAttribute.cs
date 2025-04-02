@@ -10,7 +10,7 @@ namespace Avalonia.Data
     /// Applying this attribute to a property indicates that the binding should be assigned to 
     /// the property rather than bound.
     /// </remarks>
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter)]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Method)]
     public sealed class AssignBindingAttribute : Attribute
     {
     }

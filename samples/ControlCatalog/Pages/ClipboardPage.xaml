@@ -15,6 +15,9 @@
     <Button Click="GetFormats" Content="Get clipboard formats" />
     <Button Click="Clear" Content="Clear clipboard" />
 
+    <StackPanel Orientation="Horizontal">
+        <TextBlock Padding="0 0 5 0">Our DataObject is still on clipboard? <Run x:Name="OwnsClipboardDataObject"/></TextBlock>
+    </StackPanel>
     <TextBox x:Name="ClipboardContent"
              MinHeight="100"
              AcceptsReturn="True"
