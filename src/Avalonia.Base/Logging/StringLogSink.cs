@@ -6,15 +6,18 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Logging
 {
-    internal class TraceLogSink : ILogSink
+    internal class StringLogSink : ILogSink
     {
+        private readonly Action<string> _logger;
         private readonly LogEventLevel _level;
         private readonly IList<string>? _areas;
 
-        public TraceLogSink(
+        public StringLogSink(
+            Action<string> logger,
             LogEventLevel minimumLevel,
             IList<string>? areas = null)
         {
+            _logger = logger;
             _level = minimumLevel;
             _areas = areas?.Count > 0 ? areas : null;
         }
@@ -28,7 +31,7 @@ namespace Avalonia.Logging
         {
             if (IsEnabled(level, area))
             {
-                Trace.WriteLine(Format<object, object, object>(area, messageTemplate, source, null));
+                _logger(Format<object, object, object>(area, messageTemplate, source, null));
             }
         }
 
@@ -36,7 +39,7 @@ namespace Avalonia.Logging
         {
             if (IsEnabled(level, area))
             {
-                Trace.WriteLine(Format(area, messageTemplate, source, propertyValues));
+                _logger(Format(area, messageTemplate, source, propertyValues));
             }
         }
 

@@ -94,8 +94,7 @@ public partial class Build
             IsRunningOnUnix = Environment.OSVersion.Platform == PlatformID.Unix ||
                               Environment.OSVersion.Platform == PlatformID.MacOSX;
             IsRunningOnWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-            IsRunningOnAzure = Host is AzurePipelines ||
-                               Environment.GetEnvironmentVariable("LOGNAME") == "vsts";
+            IsRunningOnAzure = Host is AzurePipelines;
 
             if (IsRunningOnAzure)
             {
