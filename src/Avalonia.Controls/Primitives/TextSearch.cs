@@ -47,7 +47,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         /// <param name="interactive">The interactive element.</param>
         /// <param name="value">The search text binding to set.</param>
-        public static void SetTextBinding(Interactive interactive, [AssignBinding] IBinding? value)
+        public static void SetTextBinding(Interactive interactive, IBinding? value)
             => interactive.SetValue(TextBindingProperty, value);
 
         /// <summary>
@@ -55,6 +55,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         /// <param name="interactive">The interactive element.</param>
         /// <returns>The search text binding.</returns>
+        [AssignBinding]
         public static IBinding? GetTextBinding(Interactive interactive)
             => interactive.GetValue(TextBindingProperty);
 
