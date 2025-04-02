@@ -527,7 +527,7 @@ namespace Avalonia.Controls.Presenters
                     var borderThickness = BorderThickness;
 
                     if (UseLayoutRounding)
-                        borderThickness = LayoutHelper.RoundLayoutThickness(borderThickness, _scale, _scale);
+                        borderThickness = LayoutHelper.RoundLayoutThickness(borderThickness, _scale);
 
                     _layoutThickness = borderThickness;
                 }
@@ -620,8 +620,8 @@ namespace Avalonia.Controls.Presenters
 
             if (useLayoutRounding)
             {
-                padding = LayoutHelper.RoundLayoutThickness(padding, scale, scale);
-                borderThickness = LayoutHelper.RoundLayoutThickness(borderThickness, scale, scale);
+                padding = LayoutHelper.RoundLayoutThickness(padding, scale);
+                borderThickness = LayoutHelper.RoundLayoutThickness(borderThickness, scale);
             }
 
             padding += borderThickness;
@@ -644,8 +644,8 @@ namespace Avalonia.Controls.Presenters
 
             if (useLayoutRounding)
             {
-                sizeForChild = LayoutHelper.RoundLayoutSizeUp(sizeForChild, scale, scale);
-                availableSize = LayoutHelper.RoundLayoutSizeUp(availableSize, scale, scale);
+                sizeForChild = LayoutHelper.RoundLayoutSizeUp(sizeForChild, scale);
+                availableSize = LayoutHelper.RoundLayoutSizeUp(availableSize, scale);
             }
 
             switch (horizontalContentAlignment)
@@ -668,14 +668,14 @@ namespace Avalonia.Controls.Presenters
                     break;
             }
 
+            var origin = new Point(originX, originY);
+
             if (useLayoutRounding)
             {
-                originX = LayoutHelper.RoundLayoutValue(originX, scale);
-                originY = LayoutHelper.RoundLayoutValue(originY, scale);
+                origin = LayoutHelper.RoundLayoutPoint(origin, scale);
             }
 
-            var boundsForChild =
-                new Rect(originX, originY, sizeForChild.Width, sizeForChild.Height).Deflate(padding);
+            var boundsForChild = new Rect(origin, sizeForChild).Deflate(padding);
 
             Child.Arrange(boundsForChild);
 
