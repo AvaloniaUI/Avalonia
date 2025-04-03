@@ -25,7 +25,7 @@ public class NullConditionalBindingTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void Should_Report_Error_Without_Null_Conditional_Operator(bool compileBindings)
+    public void Should_Report_Error_Without_Null_Conditional_Operator_For_Clr_Property(bool compileBindings)
     {
         // Testing the baseline: should report a null error without null conditionals.
         using var app = Start();
@@ -40,7 +40,7 @@ public class NullConditionalBindingTests
                 <local:ErrorCollectingTextBox Text='{Binding Second.Third.Final}'/>
             </Window>
             """;
-        var data = new First(new Second(null));
+        var data = new First { Second = new Second() };
         var window = CreateTarget(xaml, data);
         var textBox = Assert.IsType<ErrorCollectingTextBox>(window.Content);
         var error = Assert.IsType<BindingChainException>(textBox.Error);
@@ -56,7 +56,38 @@ public class NullConditionalBindingTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void Should_Not_Report_Error_With_Null_Conditional_Operator(bool compileBindings)
+    public void Should_Report_Error_Without_Null_Conditional_Operator_For_Avalonia_Property(bool compileBindings)
+    {
+        // Testing the baseline: should report a null error without null conditionals.
+        using var app = Start();
+        using var log = TestLogger.Create();
+
+        var xaml = $$$"""
+                      <Window xmlns='https://github.com/avaloniaui'
+                              xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                              xmlns:local='using:Avalonia.Base.UnitTests.Data.Core'
+                              x:DataType='local:NullConditionalBindingTests+First'
+                              x:CompileBindings='{{{compileBindings}}}'>
+                          <local:ErrorCollectingTextBox Text='{Binding StyledSecond.StyledThird.StyledFinal}'/>
+                      </Window>
+                      """;
+        var data = new First { StyledSecond = new Second() };
+        var window = CreateTarget(xaml, data);
+        var textBox = Assert.IsType<ErrorCollectingTextBox>(window.Content);
+        var error = Assert.IsType<BindingChainException>(textBox.Error);
+        var message = Assert.Single(log.Messages);
+
+        Assert.Null(textBox.Text);
+        Assert.Equal("StyledSecond.StyledThird.StyledFinal", error.Expression);
+        Assert.Equal("StyledThird", error.ExpressionErrorPoint);
+        Assert.Equal(BindingValueType.BindingError, textBox.ErrorState);
+        Assert.Equal("An error occurred binding {Property} to {Expression} at {ExpressionErrorPoint}: {Message}", message);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Should_Not_Report_Error_With_Null_Conditional_Operator_For_Clr_Property(bool compileBindings)
     {
         using var app = Start();
         using var log = TestLogger.Create();
@@ -69,7 +100,7 @@ public class NullConditionalBindingTests
                 <local:ErrorCollectingTextBox Text='{Binding Second.Third?.Final}'/>
             </Window>
             """;
-        var data = new First(new Second(null));
+        var data = new First { Second = new Second() };
         var window = CreateTarget(xaml, data);
         var textBox = Assert.IsType<ErrorCollectingTextBox>(window.Content);
 
@@ -82,7 +113,33 @@ public class NullConditionalBindingTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void Should_Not_Report_Error_With_Null_Conditional_Operator_Before_Method(bool compileBindings)
+    public void Should_Not_Report_Error_With_Null_Conditional_Operator_For_Avalonia_Property(bool compileBindings)
+    {
+        using var app = Start();
+        using var log = TestLogger.Create();
+        var xaml = $$$"""
+                      <Window xmlns='https://github.com/avaloniaui'
+                              xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                              xmlns:local='using:Avalonia.Base.UnitTests.Data.Core'
+                              x:DataType='local:NullConditionalBindingTests+First'
+                              x:CompileBindings='{{{compileBindings}}}'>
+                          <local:ErrorCollectingTextBox Text='{Binding StyledSecond.StyledThird?.StyledFinal}'/>
+                      </Window>
+                      """;
+        var data = new First { StyledSecond = new Second() };
+        var window = CreateTarget(xaml, data);
+        var textBox = Assert.IsType<ErrorCollectingTextBox>(window.Content);
+
+        Assert.Null(textBox.Text);
+        Assert.Null(textBox.Error);
+        Assert.Equal(BindingValueType.Value, textBox.ErrorState);
+        Assert.Empty(log.Messages);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Should_Not_Report_Error_With_Null_Conditional_Operator_Before_Method_For_Clr_Property(bool compileBindings)
     {
         using var app = Start();
         using var log = TestLogger.Create();
@@ -95,7 +152,7 @@ public class NullConditionalBindingTests
                 <local:ErrorCollectingTextBox Text='{Binding Second.Third?.Greeting}'/>
             </Window>
             """;
-        var data = new First(new Second(null));
+        var data = new First { Second = new Second() };
         var window = CreateTarget(xaml, data);
         var textBox = Assert.IsType<ErrorCollectingTextBox>(window.Content);
 
@@ -108,7 +165,33 @@ public class NullConditionalBindingTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void Should_Use_TargetNullValue_With_Null_Conditional_Operator(bool compileBindings)
+    public void Should_Not_Report_Error_With_Null_Conditional_Operator_Before_Method_For_Avalonia_Property(bool compileBindings)
+    {
+        using var app = Start();
+        using var log = TestLogger.Create();
+        var xaml = $$$"""
+                      <Window xmlns='https://github.com/avaloniaui'
+                              xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                              xmlns:local='using:Avalonia.Base.UnitTests.Data.Core'
+                              x:DataType='local:NullConditionalBindingTests+First'
+                              x:CompileBindings='{{{compileBindings}}}'>
+                          <local:ErrorCollectingTextBox Text='{Binding StyledSecond.StyledThird?.Greeting}'/>
+                      </Window>
+                      """;
+        var data = new First { StyledSecond = new Second() };
+        var window = CreateTarget(xaml, data);
+        var textBox = Assert.IsType<ErrorCollectingTextBox>(window.Content);
+
+        Assert.Null(textBox.Text);
+        Assert.Null(textBox.Error);
+        Assert.Equal(BindingValueType.Value, textBox.ErrorState);
+        Assert.Empty(log.Messages);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Should_Use_TargetNullValue_With_Null_Conditional_Operator_For_Clr_Property(bool compileBindings)
     {
         using var app = Start();
         using var log = TestLogger.Create();
@@ -121,7 +204,33 @@ public class NullConditionalBindingTests
                 <local:ErrorCollectingTextBox Text='{Binding Second.Third?.Final, TargetNullValue=ItsNull}'/>
             </Window>
             """;
-        var data = new First(new Second(null));
+        var data = new First { Second = new Second() };
+        var window = CreateTarget(xaml, data);
+        var textBox = Assert.IsType<ErrorCollectingTextBox>(window.Content);
+
+        Assert.Equal("ItsNull", textBox.Text);
+        Assert.Null(textBox.Error);
+        Assert.Equal(BindingValueType.Value, textBox.ErrorState);
+        Assert.Empty(log.Messages);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Should_Use_TargetNullValue_With_Null_Conditional_Operator_For_Avalonia_Property(bool compileBindings)
+    {
+        using var app = Start();
+        using var log = TestLogger.Create();
+        var xaml = $$$"""
+                      <Window xmlns='https://github.com/avaloniaui'
+                              xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                              xmlns:local='using:Avalonia.Base.UnitTests.Data.Core'
+                              x:DataType='local:NullConditionalBindingTests+First'
+                              x:CompileBindings='{{{compileBindings}}}'>
+                          <local:ErrorCollectingTextBox Text='{Binding StyledSecond.StyledThird?.StyledFinal, TargetNullValue=ItsNull}'/>
+                      </Window>
+                      """;
+        var data = new First { StyledSecond = new Second() };
         var window = CreateTarget(xaml, data);
         var textBox = Assert.IsType<ErrorCollectingTextBox>(window.Content);
 
@@ -144,10 +253,47 @@ public class NullConditionalBindingTests
         return UnitTestApplication.Start(TestServices.StyledWindow);
     }
 
-    public record First(Second? Second);
-    public record Second(Third? Third);
-    public record Third(string Final)
+    public class First : StyledElement
     {
+        public static readonly StyledProperty<Second?> StyledSecondProperty =
+            AvaloniaProperty.Register<First, Second?>(nameof(StyledSecond));
+
+        public Second? Second { get; set; }
+
+        public Second? StyledSecond
+        {
+            get => GetValue(StyledSecondProperty);
+            set => SetValue(StyledSecondProperty, value);
+        }
+    }
+
+    public class Second : StyledElement
+    {
+        public static readonly StyledProperty<Third?> StyledThirdProperty =
+            AvaloniaProperty.Register<Second, Third?>(nameof(StyledThird));
+
+        public Third? Third { get; set; }
+
+        public Third? StyledThird
+        {
+            get => GetValue(StyledThirdProperty);
+            set => SetValue(StyledThirdProperty, value);
+        }
+    }
+
+    public class Third : StyledElement
+    {
+        public static readonly StyledProperty<string?> StyledFinalProperty =
+            AvaloniaProperty.Register<Third, string?>(nameof(StyledFinal));
+
+        public string? Final { get; set; }
+
+        public string? StyledFinal
+        {
+            get => GetValue(StyledFinalProperty);
+            set => SetValue(StyledFinalProperty, value);
+        }
+
         public string Greeting() => "Hello!";
     }
 
