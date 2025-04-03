@@ -203,7 +203,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                                     : null;
                                 propertyType ??= XamlIlAvaloniaPropertyHelper.GetAvaloniaPropertyType(avaloniaPropertyFieldMaybe, context.GetAvaloniaTypes(), lineInfo);
 
-                                nodes.Add(new XamlIlAvaloniaPropertyPropertyPathElementNode(avaloniaPropertyFieldMaybe, propertyType));
+                                nodes.Add(new XamlIlAvaloniaPropertyPropertyPathElementNode(avaloniaPropertyFieldMaybe, propertyType, propName.AcceptsNull));
                             }
                             else if (GetAllDefinedProperties(targetType).FirstOrDefault(p => p.Name == propName.PropertyName) is IXamlProperty clrProperty)
                             {
@@ -279,7 +279,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         }
 
                         nodes.Add(new XamlIlAvaloniaPropertyPropertyPathElementNode(avaloniaPropertyField,
-                            XamlIlAvaloniaPropertyHelper.GetAvaloniaPropertyType(avaloniaPropertyField, context.GetAvaloniaTypes(), lineInfo)));
+                            XamlIlAvaloniaPropertyHelper.GetAvaloniaPropertyType(avaloniaPropertyField, context.GetAvaloniaTypes(), lineInfo),
+                            attachedProp.AcceptsNull));
                         break;
                     case BindingExpressionGrammar.SelfNode _:
                         nodes.Add(new SelfPathElementNode(selfType));
@@ -431,6 +432,27 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     }
                 }
             }
+        }
+
+        private static void EmitPropertyCall(XamlIlEmitContext context, IXamlILEmitter codeGen, bool acceptsNull)
+        {
+            // By default use the 2-argument overload of CompiledBindingPathBuilder.Property,
+            // unless a "?." null conditional operator appears in the path, in which case use
+            // the 3-parameter version with the `acceptsNull` parameter. This ensures we don't
+            // get a missing method exception if we run against an old version of Avalonia.
+            var methodArgumentCount = 2;
+
+            if (acceptsNull)
+            {
+                methodArgumentCount = 3;
+                codeGen.Ldc_I4(1);
+            }
+
+            codeGen
+                .EmitCall(context.GetAvaloniaTypes()
+                    .CompiledBindingPathBuilder.GetMethod(m =>
+                        m.Name == "Property" &&
+                        m.Parameters.Count == methodArgumentCount));
         }
 
         class ScopeRegistrationFinder : IXamlAstVisitor
@@ -661,11 +683,13 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
         class XamlIlAvaloniaPropertyPropertyPathElementNode : IXamlIlBindingPathElementNode
         {
             private readonly IXamlField _field;
+            private readonly bool _acceptsNull;
 
-            public XamlIlAvaloniaPropertyPropertyPathElementNode(IXamlField field, IXamlType propertyType)
+            public XamlIlAvaloniaPropertyPropertyPathElementNode(IXamlField field, IXamlType propertyType, bool acceptsNull)
             {
                 _field = field;
                 Type = propertyType;
+                _acceptsNull = acceptsNull;
             }
 
             public void Emit(XamlIlEmitContext context, IXamlILEmitter codeGen)
@@ -673,8 +697,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 codeGen.Ldsfld(_field);
                 context.Configuration.GetExtra<XamlIlPropertyInfoAccessorFactoryEmitter>()
                     .EmitLoadAvaloniaPropertyAccessorFactory(context, codeGen);
-                codeGen.EmitCall(context.GetAvaloniaTypes()
-                    .CompiledBindingPathBuilder.GetMethod(m => m.Name == "Property"));
+
+                EmitPropertyCall(context, codeGen, _acceptsNull);
             }
 
             public IXamlType Type { get; }
@@ -699,23 +723,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 context.Configuration.GetExtra<XamlIlPropertyInfoAccessorFactoryEmitter>()
                     .EmitLoadInpcPropertyAccessorFactory(context, codeGen);
 
-                // By default use the 2-argument overload of CompiledBindingPathBuilder.Property,
-                // unless a "?." null conditional operator appears in the path, in which case use
-                // the 3-parameter version with the `acceptsNull` parameter. This ensures we don't
-                // get a missing method exception if we run against an old version of Avalonia.
-                var methodArgumentCount = 2;
-
-                if (_acceptsNull)
-                {
-                    methodArgumentCount = 3;
-                    codeGen.Ldc_I4(1);
-                }
-
-                codeGen
-                    .EmitCall(context.GetAvaloniaTypes()
-                        .CompiledBindingPathBuilder.GetMethod(m => 
-                            m.Name == "Property" &&
-                            m.Parameters.Count == methodArgumentCount));
+                EmitPropertyCall(context, codeGen, _acceptsNull);
             }
 
             public IXamlType Type => _property.PropertyType;
