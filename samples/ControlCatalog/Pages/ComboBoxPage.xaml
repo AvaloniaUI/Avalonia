@@ -135,12 +135,14 @@
                     </ComboBox.ItemTemplate>
                 </ComboBox>
 
-              <StackPanel Spacing="10">
+              <StackPanel Spacing="5">
                 <ComboBox WrapSelection="{Binding WrapSelection}" PlaceholderText="Editable" 
                           ItemsSource="{Binding Values}" DisplayMemberBinding="{Binding Name}"
-                          IsEditable="True" Text="{Binding TextValue}" ItemTextBinding="{Binding Name}"
+                          IsEditable="True" Text="{Binding TextValue}"
+                          TextSearch.TextBinding="{Binding SearchText, DataType=viewModels:IdAndName}"
                           SelectedItem="{Binding SelectedItem}" />
 
+                <TextBlock Text="Editable text is bound to SearchText. Display is bound to Name" />
                 <TextBlock Text="{Binding TextValue, StringFormat=Text Value: {0}}" />
                 <TextBlock Text="{Binding SelectedItem.Name, StringFormat=Selected Item: {0}}" />
               </StackPanel>

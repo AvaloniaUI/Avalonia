@@ -5,15 +5,14 @@ using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
+using Avalonia.Controls.Utils;
 using Avalonia.Data;
 using Avalonia.Input;
-using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.Reactive;
 using Avalonia.VisualTree;
-using static Avalonia.Controls.AutoCompleteBox;
 
 namespace Avalonia.Controls
 {
@@ -90,12 +89,6 @@ namespace Avalonia.Controls
             TextBlock.TextProperty.AddOwner<ComboBox>(new(string.Empty, BindingMode.TwoWay));
 
         /// <summary>
-        /// Defines the <see cref="ItemTextBinding"/> property.
-        /// </summary>
-        public static readonly StyledProperty<IBinding?> ItemTextBindingProperty =
-            AvaloniaProperty.Register<ComboBox, IBinding?>(nameof(ItemTextBinding));
-
-        /// <summary>
         /// Defines the <see cref="SelectionBoxItemTemplate"/> property.
         /// </summary>
         public static readonly StyledProperty<IDataTemplate?> SelectionBoxItemTemplateProperty =
@@ -118,7 +111,7 @@ namespace Avalonia.Controls
 
         private bool _isEditable;
         private TextBox? _inputText;
-        private BindingEvaluator<string>? _textValueBindingEvaluator = null;
+        private BindingEvaluator<string?>? _textValueBindingEvaluator = null;
 
         /// <summary>
         /// Initializes static members of the <see cref="ComboBox"/> class.
@@ -129,7 +122,8 @@ namespace Avalonia.Controls
             FocusableProperty.OverrideDefaultValue<ComboBox>(true);
             IsTextSearchEnabledProperty.OverrideDefaultValue<ComboBox>(true);
             TextProperty.Changed.AddClassHandler<ComboBox>((x, e) => x.TextChanged(e));
-            ItemTextBindingProperty.Changed.AddClassHandler<ComboBox>((x, e) => x.ItemTextBindingChanged(e));
+            DisplayMemberBindingProperty.Changed.AddClassHandler<ComboBox>((x, e) => x.DisplayMemberBindingChanged(e));
+            TextSearch.TextBindingProperty.Changed.AddClassHandler<ComboBox>((x, e) => x.ItemTextBindingChanged(e));
             //when the items change we need to simulate a text change to validate the text being an item or not and selecting it
             ItemsSourceProperty.Changed.AddClassHandler<ComboBox>((x, e) => x.TextChanged(
                 new AvaloniaPropertyChangedEventArgs<string?>(e.Sender, TextProperty, x.Text, x.Text, e.Priority)));
@@ -234,19 +228,6 @@ namespace Avalonia.Controls
         {
             get => GetValue(TextProperty);
             set => SetValue(TextProperty, value);
-        }
-
-        /// <summary>
-        /// Gets or sets the <see cref="T:Avalonia.Data.Binding" /> that
-        /// is used to get the text for editing of an item.
-        /// </summary>
-        /// <value>The <see cref="T:Avalonia.Data.IBinding" /> object used
-        /// when binding to a collection property.</value>
-        [AssignBinding, InheritDataTypeFromItems(nameof(ItemsSource), AncestorType = typeof(ComboBox))]
-        public IBinding? ItemTextBinding
-        {
-            get => GetValue(ItemTextBindingProperty);
-            set => SetValue(ItemTextBindingProperty, value);
         }
 
         protected override void OnInitialized()
@@ -592,6 +573,9 @@ namespace Avalonia.Controls
 
         private void UpdateInputTextFromSelection(object? item)
         {
+            //if we are modifying the text box which has deselected a value we don't want to update the textbox value
+            if (_skipNextTextChanged)
+                return;
             SetCurrentValue(TextProperty, GetItemTextValue(item));
         }
 
@@ -655,22 +639,43 @@ namespace Avalonia.Controls
             SelectedIndex = -1;
         }
 
-        private void ItemTextBindingChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-            _textValueBindingEvaluator = e.NewValue is IBinding binding
-                ? new(binding) : null;
+        private void ItemTextBindingChanged(AvaloniaPropertyChangedEventArgs e) 
+            => HandleTextValueBindingValueChanged(e, null);
 
-            if(IsInitialized)
+        private void DisplayMemberBindingChanged(AvaloniaPropertyChangedEventArgs e)
+            => HandleTextValueBindingValueChanged(null, e);
+
+        private void HandleTextValueBindingValueChanged(AvaloniaPropertyChangedEventArgs? textSearchPropChange,
+            AvaloniaPropertyChangedEventArgs? displayMemberPropChange)
+        {
+            IBinding? textValueBinding;
+            //prioritise using the TextSearch.TextBindingProperty if possible
+            if (textSearchPropChange == null && TextSearch.GetTextBinding(this) is IBinding textSearchBinding)
+                textValueBinding = textSearchBinding;
+
+            else if (textSearchPropChange != null && textSearchPropChange.NewValue is IBinding eventTextSearchBinding)
+                textValueBinding = eventTextSearchBinding;
+
+            else if (displayMemberPropChange != null && displayMemberPropChange.NewValue is IBinding eventDisplayMemberBinding)
+                textValueBinding = eventDisplayMemberBinding;
+
+            else
+                textValueBinding = null;
+
+            _textValueBindingEvaluator = BindingEvaluator<string?>.TryCreate(textValueBinding);
+            
+            if (IsInitialized)
                 EnsureTextValueBinderOrThrow();
 
-            if(_textValueBindingEvaluator != null)
+            //if the binding is set we want to set the initial value for the selected item so the text box has the correct value
+            if (_textValueBindingEvaluator != null)
                 _textValueBindingEvaluator.Value = GetItemTextValue(SelectedValue);
         }
 
         private void EnsureTextValueBinderOrThrow()
         {
             if (IsEditable && _textValueBindingEvaluator == null)
-                throw new InvalidOperationException($"When {nameof(ComboBox)}.{nameof(IsEditable)} is true you must set the text value binding using {nameof(ItemTextBinding)}");
+                throw new InvalidOperationException($"When {nameof(ComboBox)}.{nameof(IsEditable)} is true you must either set {nameof(ComboBox)}.{nameof(DisplayMemberBinding)} or set the text value binding using attached property {nameof(TextSearch)}.{nameof(TextSearch.TextBindingProperty)}");
         }
 
         private bool _skipNextTextChanged = false;
@@ -706,7 +711,7 @@ namespace Avalonia.Controls
             if (_textValueBindingEvaluator == null)
                 return string.Empty;
 
-            return _textValueBindingEvaluator.GetDynamicValue(item) ?? item?.ToString() ?? string.Empty;
+            return TextSearch.GetEffectiveText(item, _textValueBindingEvaluator);
         }
     }
 }
