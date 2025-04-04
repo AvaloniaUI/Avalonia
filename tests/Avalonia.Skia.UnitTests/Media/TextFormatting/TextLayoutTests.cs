@@ -1161,6 +1161,30 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         }
 
         [Fact]
+        public void Should_Wrap_With_LineEnd()
+        {
+            using (Start())
+            {
+                var defaultProperties =
+                   new GenericTextRunProperties(Typeface.Default, 72, foregroundBrush: Brushes.Black);
+
+                var paragraphProperties = new GenericTextParagraphProperties(defaultProperties, textWrap: TextWrapping.Wrap);
+
+                var textLayout = new TextLayout(new SingleBufferTextSource("01", defaultProperties, true), paragraphProperties, maxWidth: 36);
+
+                Assert.Equal(2, textLayout.TextLines.Count);
+
+                var lastLine = textLayout.TextLines.Last();
+
+                Assert.Equal(2, lastLine.TextRuns.Count);
+
+                var lastRun = lastLine.TextRuns.Last();
+
+                Assert.IsAssignableFrom<TextEndOfLine>(lastRun);
+            }
+        }
+
+        [Fact]
         public void Should_Measure_TextLayoutSymbolWithAndWidthIncludingTrailingWhitespaceAndMinTextWidth()
         {
             using (Start())

@@ -156,6 +156,8 @@ namespace Avalonia.iOS
             public TopLevelImpl(AvaloniaView view)
             {
                 _view = view;
+                Handle = new UIViewControlHandle(_view);
+
                 _nativeControlHost = new NativeControlHostImpl(view);
 #if TVOS
                 _storageProvider = null;

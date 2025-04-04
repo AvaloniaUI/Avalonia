@@ -527,8 +527,7 @@ namespace Avalonia.Win32
                 
                 if (ShCoreAvailable && Win32Platform.WindowsVersion >= PlatformConstants.Windows8_1)
                 {
-                    var monitor = MonitorFromPoint(new POINT() { X = value.X, Y = value.Y },
-                        MONITOR.MONITOR_DEFAULTTONEAREST);
+                    var monitor = MonitorFromWindow(Handle.Handle, MONITOR.MONITOR_DEFAULTTONEAREST);
 
                     if (GetDpiForMonitor(
                             monitor,
