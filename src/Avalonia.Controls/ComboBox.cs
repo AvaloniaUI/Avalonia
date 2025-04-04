@@ -230,12 +230,6 @@ namespace Avalonia.Controls
             set => SetValue(TextProperty, value);
         }
 
-        protected override void OnInitialized()
-        {
-            EnsureTextValueBinderOrThrow();
-            base.OnInitialized();
-        }
-
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
@@ -663,19 +657,10 @@ namespace Avalonia.Controls
                 textValueBinding = null;
 
             _textValueBindingEvaluator = BindingEvaluator<string?>.TryCreate(textValueBinding);
-            
-            if (IsInitialized)
-                EnsureTextValueBinderOrThrow();
 
             //if the binding is set we want to set the initial value for the selected item so the text box has the correct value
             if (_textValueBindingEvaluator != null)
                 _textValueBindingEvaluator.Value = GetItemTextValue(SelectedValue);
-        }
-
-        private void EnsureTextValueBinderOrThrow()
-        {
-            if (IsEditable && _textValueBindingEvaluator == null)
-                throw new InvalidOperationException($"When {nameof(ComboBox)}.{nameof(IsEditable)} is true you must either set {nameof(ComboBox)}.{nameof(DisplayMemberBinding)} or set the text value binding using attached property {nameof(TextSearch)}.{nameof(TextSearch.TextBindingProperty)}");
         }
 
         private bool _skipNextTextChanged = false;
@@ -706,12 +691,7 @@ namespace Avalonia.Controls
             _skipNextTextChanged = false;
         }
 
-        private string GetItemTextValue(object? item)
-        {
-            if (_textValueBindingEvaluator == null)
-                return string.Empty;
-
-            return TextSearch.GetEffectiveText(item, _textValueBindingEvaluator);
-        }
+        private string GetItemTextValue(object? item) 
+            => TextSearch.GetEffectiveText(item, _textValueBindingEvaluator);
     }
 }
