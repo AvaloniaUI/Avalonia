@@ -19,6 +19,15 @@ internal sealed class BindingEvaluator<T> : StyledElement, IDisposable
     public static readonly StyledProperty<T> ValueProperty =
         AvaloniaProperty.Register<BindingEvaluator<T>, T>("Value");
 
+    /// <summary>
+    /// Gets or sets the data item value.
+    /// </summary>
+    public T Value
+    {
+        get => GetValue(ValueProperty);
+        set => SetValue(ValueProperty, value);
+    }
+
     public T Evaluate(object? dataContext)
     {
         // Only update the DataContext if necessary
@@ -49,6 +58,7 @@ internal sealed class BindingEvaluator<T> : StyledElement, IDisposable
         DataContext = null;
     }
 
+    [return: NotNullIfNotNull(nameof(binding))]
     public static BindingEvaluator<T>? TryCreate(IBinding? binding)
     {
         if (binding is null)
