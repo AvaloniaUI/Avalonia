@@ -66,7 +66,7 @@ namespace Avalonia.Controls.UnitTests
 
                 var textLayout = textBlock.TextLayout;
 
-                var constraint = LayoutHelper.RoundLayoutSizeUp(new Size(textLayout.MinTextWidth, textLayout.Height), 1);
+                var constraint = LayoutHelper.RoundLayoutSizeUp(new Size(textLayout.Width, textLayout.Height), 1);
 
                 Assert.Equal(textBlock.DesiredSize, constraint);
             }
