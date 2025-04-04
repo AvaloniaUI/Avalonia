@@ -606,8 +606,8 @@ namespace Avalonia.Media.TextFormatting
 
                     if (hasOverflowed && _textTrimming != TextTrimming.None)
                     {
-                            textLine = (TextLineImpl)textLine.Collapse(GetCollapsingProperties(MaxWidth));
-                        }
+                        textLine = (TextLineImpl)textLine.Collapse(GetCollapsingProperties(MaxWidth));
+                    }
 
                     textLines.Add(textLine);
 
