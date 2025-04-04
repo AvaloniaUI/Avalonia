@@ -350,6 +350,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
 #endif
             static TextBlock CreateText(string text) => new TextBlock
             {
+                ClipToBounds = false,
                 Margin = new Thickness(4),
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,

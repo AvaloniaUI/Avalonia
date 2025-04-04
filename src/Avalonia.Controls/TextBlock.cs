@@ -171,6 +171,8 @@ namespace Avalonia.Controls
         /// </summary>
         static TextBlock()
         {
+            ClipToBoundsProperty.OverrideDefaultValue<TextBlock>(true);
+
             AffectsRender<TextBlock>(BackgroundProperty, ForegroundProperty);
         }
 
@@ -739,7 +741,7 @@ namespace Avalonia.Controls
             var textLayout = TextLayout;
 
             // The textWidth used here is matching that TextPresenter uses to measure the text.
-            var size = LayoutHelper.RoundLayoutSizeUp(new Size(textLayout.WidthIncludingTrailingWhitespace, textLayout.Height).Inflate(padding), 1, 1);
+            var size = LayoutHelper.RoundLayoutSizeUp(new Size(textLayout.WidthIncludingTrailingWhitespace, textLayout.Height).Inflate(padding), 1);
 
             return size;
         }

@@ -274,11 +274,6 @@ namespace Avalonia.Media.TextFormatting
         }
 
         /// <summary>
-        /// Get minimum width of all text lines that can be layouted horizontally without trimming or wrapping.
-        /// </summary>
-        internal double MinTextWidth => _metrics.MinTextWidth;
-
-        /// <summary>
         /// Draws the text layout.
         /// </summary>
         /// <param name="context">The drawing context.</param>
@@ -611,8 +606,8 @@ namespace Avalonia.Media.TextFormatting
 
                     if (hasOverflowed && _textTrimming != TextTrimming.None)
                     {
-                        textLine = (TextLineImpl)textLine.Collapse(GetCollapsingProperties(MaxWidth));
-                    }
+                            textLine = (TextLineImpl)textLine.Collapse(GetCollapsingProperties(MaxWidth));
+                        }
 
                     textLines.Add(textLine);
 
@@ -689,10 +684,7 @@ namespace Avalonia.Media.TextFormatting
             // 3) Extent is the max black-pixel extent among lines.
             _metrics.Extent = Math.Max(_metrics.Extent, currentLine.Extent);
 
-            // 4) Track min-text-width or overhangs similarly if needed.
-            _metrics.MinTextWidth = Math.Max(_metrics.MinTextWidth, currentLine.Width);
-
-            // 5) TextWidth is the max of the text width among lines.
+            // 4) TextWidth is the max of the text width among lines.
             // We choose to update all related metrics at once (OverhangLeading, WidthIncludingTrailingWhitespace, OverhangTrailing)
             // if the current line has a larger text width.
             var previousTextWidth = _metrics.OverhangLeading + _metrics.WidthIncludingTrailingWhitespace + _metrics.OverhangTrailing;
@@ -704,10 +696,10 @@ namespace Avalonia.Media.TextFormatting
                 _metrics.OverhangTrailing = currentLine.OverhangTrailing;
             }
 
-            // 6) OverhangAfter is the last line’s OverhangAfter.
+            // 5) OverhangAfter is the last line’s OverhangAfter.
             _metrics.OverhangAfter = currentLine.OverhangAfter;
 
-            // 7) Capture the baseline from the first line.
+            // 6) Capture the baseline from the first line.
             if (first)
             {
                 _metrics.Baseline = currentLine.Baseline;
@@ -756,8 +748,6 @@ namespace Avalonia.Media.TextFormatting
             // horizontal bounding box metrics
             public double OverhangLeading;
             public double OverhangTrailing;
-
-            public double MinTextWidth;
         }
     }
 }
