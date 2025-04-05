@@ -19,7 +19,8 @@ namespace ControlCatalog.Pages.Gamepad
         {
             ClipToBounds = true;
             // TODO: Register systems here
-            _world.RegisterSystem(new TestSystem());
+            GameWorld.ActiveWorld = _world;
+            _world.Add(new TestPlayerEntity());
         }
 
         public void OnCompleted() { }

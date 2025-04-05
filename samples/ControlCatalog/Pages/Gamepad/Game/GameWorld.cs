@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Avalonia;
 using Avalonia.Input;
 using Avalonia.Media;
 
@@ -8,82 +9,76 @@ namespace ControlCatalog.Pages.Gamepad.Game
 {
     public class GameWorld : IWorld
     {
-        private List<IExecutionSystem> _systems = new(); 
-        private List<IRenderSystem> _renderSystems = new();
-        private HashSet<IEntity> _entities = new();
-        private List<IEntity> _entitiesWithDeferredDeletion = new();
-        private List<IEntity> _entitiesWithDeferredAddition = new();
-        private List<IGamepadSystem> _gamepadSystems = new();
-
-        public void DeregisterSystem(IExecutionSystem system)
+        private static GameWorld? s_activeWorld;
+        public static GameWorld ActiveWorld
         {
-            _systems.Add(system);
-            if (system is IRenderSystem irs)
-            {
-                _renderSystems.Remove(irs);
-            }
-            if (system is IGamepadSystem igs)
-            {
-                _gamepadSystems.Remove(igs);
-            }
+            get => s_activeWorld ?? throw new Exception("NO ACTIVE WORLD"); set => s_activeWorld = value;
         }
+
+        private HashSet<GameObjectBase> _objects = new();
+        private List<GameObjectBase> _entitiesWithDeferredDeletion = new();
+        private List<GameObjectBase> _entitiesWithDeferredAddition = new();
+        private QuadTreeNode _quadTree = new(new Rect(-524288, -524288, 1048576, 1048576), 50, 50, 0);
+
+        public event Action<GamepadUpdateArgs>? GamepadUpdate;
 
         public void DispatchGamepadInput(GamepadUpdateArgs args)
         {
-            foreach (var igs in _gamepadSystems)
+            GamepadUpdate?.Invoke(args);
+        }
+
+        public void IssueMoveRequest(GameObjectBase obj, Vector newPosition)
+        {
+            foreach(var other in _quadTree.Retrieve(obj.Hitbox.Translate(newPosition)))
             {
-                igs.GamepadInput(args);
+                obj.ResolveCollision(other);
             }
+        }
+
+        public void FinalizeMovement(GameObjectBase obj)
+        {
+            _quadTree.Upsert(obj);
         }
 
         public void DispatchRender(DrawingContext context)
         {
-            foreach(var system in _renderSystems)
+            foreach (var obj in _objects)
             {
-                system.Render(context);
+                obj.OnRender(context);
             }
         }
 
         public void DispatchTick(TimeSpan elapsed)
         {
-            foreach (var system in _systems)
+            foreach (var obj in _objects)
             {
-                system.Tick(elapsed);
+                obj.Update(elapsed);
             }
 
             foreach (var entity in _entitiesWithDeferredDeletion)
             {
-                _entities.Remove(entity);
-            } 
+                _objects.Remove(entity);
+                _quadTree.Remove(entity);
+                entity.OnDestroy();
+            }
+            _entitiesWithDeferredDeletion.Clear();
             foreach (var entity in _entitiesWithDeferredAddition)
             {
-                _entities.Add(entity);
+                _objects.Add(entity);
+                _quadTree.Insert(entity);
+                entity.OnCreate();
             }
+            _entitiesWithDeferredAddition.Clear();
         }
 
-
-
-        public void OnAdd(IEntity entity)
+        public void Add(GameObjectBase obj)
         {
-            _entitiesWithDeferredAddition.Add(entity);
+            _entitiesWithDeferredAddition.Add(obj);
         }
 
-        public void OnRemove(IEntity entity)
+        public void Destroy(GameObjectBase obj)
         {
-            _entitiesWithDeferredDeletion.Add(entity);
-        }
-
-        public void RegisterSystem(IExecutionSystem system)
-        {
-            _systems.Add(system);
-            if (system is IRenderSystem irs)
-            {
-                _renderSystems.Add(irs);
-            }
-            if (system is IGamepadSystem igs)
-            {
-                _gamepadSystems.Add(igs);
-            }
+            _entitiesWithDeferredDeletion.Add(obj);
         }
     }
 }

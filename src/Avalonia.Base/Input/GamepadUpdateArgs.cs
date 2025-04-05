@@ -99,67 +99,67 @@ namespace Avalonia.Input
         /// <summary>
         /// X (PS5), A (Xbox), B (Switch)
         /// </summary>
-        Button0,
+        FaceButtonSouth,
         /// <summary>
         /// Circle (PS5), B (Xbox), A (Switch)
         /// </summary>
-        Button1,
+        FaceButtonEast,
         /// <summary>
         /// Square (PS5), X (Xbox), Y (Switch)
         /// </summary>
-        Button2,
+        FaceButtonWest,
         /// <summary>
         /// Triangle (PS5), Y (Xbox), X (Switch)
         /// </summary>
-        Button3,
+        FaceButtonNorth,
         /// <summary>
         /// L1 (PS5), LB (Xbox), L (Switch)
         /// </summary>
-        Button4,
+        LeftShoulder,
         /// <summary>
         /// R1 (PS5), RB (Xbox), R (Switch)
         /// </summary>
-        Button5,
+        RightShoulder,
         /// <summary>
         /// L2 (PS5), LT (Xbox), ZL (Switch)
         /// </summary>
-        Button6,
+        LeftTrigger,
         /// <summary>
         /// R2 (PS5), RT (Xbox), ZR (Switch)
         /// </summary>
-        Button7,
+        RightTrigger,
         /// <summary>
         /// Share (PS5), Back (Xbox), Minus (Switch)
         /// </summary>
-        Button8,
+        MiddleButtonLeft,
         /// <summary>
         /// Options (PS5), Start (Xbox), Plus (Switch)
         /// </summary>
-        Button9,
+        MiddleButtonRight,
         /// <summary>
         /// Left Analog Stick Depressed
         /// </summary>
-        Button10,
+        LeftStickButton,
         /// <summary>
         /// Right Analog Stick Depressed
         /// </summary>
-        Button11,
+        RightStickButton,
         /// <summary>
         /// Dpad Up
         /// </summary>
-        Button12,
+        DPadUp,
         /// <summary>
         /// Dpad Down
         /// </summary>
-        Button13,
+        DPadDown,
         /// <summary>
         /// Dpad Left
         /// </summary>
-        Button14,
+        DPadLeft,
         /// <summary>
         /// Dpad Right
         /// </summary>
-        Button15,
+        DPadRight,
     }
 
 #pragma warning disable CA1823 // Avoid unused private fields

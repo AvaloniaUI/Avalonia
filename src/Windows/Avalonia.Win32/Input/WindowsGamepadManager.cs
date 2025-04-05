@@ -173,7 +173,7 @@ namespace Avalonia.Win32.Input
                     return;
                 }
                 string humanName = new string(pwstrProductString);
-                // okay this looks weird, but apparently that's just how it's done. 🤷‍
+                // okay this looks weird, but apparently that's just how it's done. 
 #if NETSTANDARD2_0
                 bool isXInputDevice = deviceName.IndexOf("IG_", StringComparison.OrdinalIgnoreCase) != -1;
 #else
@@ -276,23 +276,23 @@ namespace Avalonia.Win32.Input
                                 gamepadState.RightAnalogStick = DualAxisHandle(state.Gamepad.sThumbRX, state.Gamepad.sThumbRY, GamepadAnalogStickDeadZone);
                                 var buttons = state.Gamepad.wButtons;
 
-                                SetButtonFromXInput(ref gamepadState, GamepadButton.Button0, buttons);
-                                SetButtonFromXInput(ref gamepadState, GamepadButton.Button1, buttons);
-                                SetButtonFromXInput(ref gamepadState, GamepadButton.Button2, buttons);
-                                SetButtonFromXInput(ref gamepadState, GamepadButton.Button3, buttons);
-                                SetButtonFromXInput(ref gamepadState, GamepadButton.Button4, buttons);
-                                SetButtonFromXInput(ref gamepadState, GamepadButton.Button5, buttons);
+                                SetButtonFromXInput(ref gamepadState, GamepadButton.FaceButtonSouth, buttons);
+                                SetButtonFromXInput(ref gamepadState, GamepadButton.FaceButtonEast, buttons);
+                                SetButtonFromXInput(ref gamepadState, GamepadButton.FaceButtonWest, buttons);
+                                SetButtonFromXInput(ref gamepadState, GamepadButton.FaceButtonNorth, buttons);
+                                SetButtonFromXInput(ref gamepadState, GamepadButton.LeftShoulder, buttons);
+                                SetButtonFromXInput(ref gamepadState, GamepadButton.RightShoulder, buttons);
                                 // NOTE - Buttons 6 and 7 are left-trigger and right-trigger, and are analog on XInput 
-                                gamepadState.SetButtonState(GamepadButton.Button6, GetNewButtonState(gamepadState.GetButtonState(GamepadButton.Button6), state.Gamepad.bLeftTrigger / 255f));
-                                gamepadState.SetButtonState(GamepadButton.Button7, GetNewButtonState(gamepadState.GetButtonState(GamepadButton.Button7), state.Gamepad.bRightTrigger / 255f));
-                                SetButtonFromXInput(ref gamepadState, GamepadButton.Button8, buttons);
-                                SetButtonFromXInput(ref gamepadState, GamepadButton.Button9, buttons);
-                                SetButtonFromXInput(ref gamepadState, GamepadButton.Button10, buttons);
-                                SetButtonFromXInput(ref gamepadState, GamepadButton.Button11, buttons);
-                                SetButtonFromXInput(ref gamepadState, GamepadButton.Button12, buttons);
-                                SetButtonFromXInput(ref gamepadState, GamepadButton.Button13, buttons);
-                                SetButtonFromXInput(ref gamepadState, GamepadButton.Button14, buttons);
-                                SetButtonFromXInput(ref gamepadState, GamepadButton.Button15, buttons);
+                                gamepadState.SetButtonState(GamepadButton.LeftTrigger, GetNewButtonState(gamepadState.GetButtonState(GamepadButton.LeftTrigger), state.Gamepad.bLeftTrigger / 255f));
+                                gamepadState.SetButtonState(GamepadButton.RightTrigger, GetNewButtonState(gamepadState.GetButtonState(GamepadButton.RightTrigger), state.Gamepad.bRightTrigger / 255f));
+                                SetButtonFromXInput(ref gamepadState, GamepadButton.MiddleButtonLeft, buttons);
+                                SetButtonFromXInput(ref gamepadState, GamepadButton.MiddleButtonRight, buttons);
+                                SetButtonFromXInput(ref gamepadState, GamepadButton.LeftStickButton, buttons);
+                                SetButtonFromXInput(ref gamepadState, GamepadButton.RightStickButton, buttons);
+                                SetButtonFromXInput(ref gamepadState, GamepadButton.DPadUp, buttons);
+                                SetButtonFromXInput(ref gamepadState, GamepadButton.DPadDown, buttons);
+                                SetButtonFromXInput(ref gamepadState, GamepadButton.DPadLeft, buttons);
+                                SetButtonFromXInput(ref gamepadState, GamepadButton.DPadRight, buttons);
                                 data.LastState = gamepadState;
                                 PushUpdate(data);
                             }
@@ -344,20 +344,20 @@ namespace Avalonia.Win32.Input
         {
             return button switch
             {
-                GamepadButton.Button0 => XINPUT_GAMEPAD_BUTTON_FLAGS.XINPUT_GAMEPAD_A,
-                GamepadButton.Button1 => XINPUT_GAMEPAD_BUTTON_FLAGS.XINPUT_GAMEPAD_B,
-                GamepadButton.Button2 => XINPUT_GAMEPAD_BUTTON_FLAGS.XINPUT_GAMEPAD_X,
-                GamepadButton.Button3 => XINPUT_GAMEPAD_BUTTON_FLAGS.XINPUT_GAMEPAD_Y,
-                GamepadButton.Button4 => XINPUT_GAMEPAD_BUTTON_FLAGS.XINPUT_GAMEPAD_LEFT_SHOULDER,
-                GamepadButton.Button5 => XINPUT_GAMEPAD_BUTTON_FLAGS.XINPUT_GAMEPAD_RIGHT_SHOULDER,
-                GamepadButton.Button8 => XINPUT_GAMEPAD_BUTTON_FLAGS.XINPUT_GAMEPAD_BACK,
-                GamepadButton.Button9 => XINPUT_GAMEPAD_BUTTON_FLAGS.XINPUT_GAMEPAD_START,
-                GamepadButton.Button10 => XINPUT_GAMEPAD_BUTTON_FLAGS.XINPUT_GAMEPAD_LEFT_THUMB,
-                GamepadButton.Button11 => XINPUT_GAMEPAD_BUTTON_FLAGS.XINPUT_GAMEPAD_RIGHT_THUMB,
-                GamepadButton.Button12 => XINPUT_GAMEPAD_BUTTON_FLAGS.XINPUT_GAMEPAD_DPAD_UP,
-                GamepadButton.Button13 => XINPUT_GAMEPAD_BUTTON_FLAGS.XINPUT_GAMEPAD_DPAD_DOWN,
-                GamepadButton.Button14 => XINPUT_GAMEPAD_BUTTON_FLAGS.XINPUT_GAMEPAD_DPAD_LEFT,
-                GamepadButton.Button15 => XINPUT_GAMEPAD_BUTTON_FLAGS.XINPUT_GAMEPAD_DPAD_RIGHT,
+                GamepadButton.FaceButtonSouth => XINPUT_GAMEPAD_BUTTON_FLAGS.XINPUT_GAMEPAD_A,
+                GamepadButton.FaceButtonEast => XINPUT_GAMEPAD_BUTTON_FLAGS.XINPUT_GAMEPAD_B,
+                GamepadButton.FaceButtonWest => XINPUT_GAMEPAD_BUTTON_FLAGS.XINPUT_GAMEPAD_X,
+                GamepadButton.FaceButtonNorth => XINPUT_GAMEPAD_BUTTON_FLAGS.XINPUT_GAMEPAD_Y,
+                GamepadButton.LeftShoulder => XINPUT_GAMEPAD_BUTTON_FLAGS.XINPUT_GAMEPAD_LEFT_SHOULDER,
+                GamepadButton.RightShoulder => XINPUT_GAMEPAD_BUTTON_FLAGS.XINPUT_GAMEPAD_RIGHT_SHOULDER,
+                GamepadButton.MiddleButtonLeft => XINPUT_GAMEPAD_BUTTON_FLAGS.XINPUT_GAMEPAD_BACK,
+                GamepadButton.MiddleButtonRight => XINPUT_GAMEPAD_BUTTON_FLAGS.XINPUT_GAMEPAD_START,
+                GamepadButton.LeftStickButton => XINPUT_GAMEPAD_BUTTON_FLAGS.XINPUT_GAMEPAD_LEFT_THUMB,
+                GamepadButton.RightStickButton => XINPUT_GAMEPAD_BUTTON_FLAGS.XINPUT_GAMEPAD_RIGHT_THUMB,
+                GamepadButton.DPadUp => XINPUT_GAMEPAD_BUTTON_FLAGS.XINPUT_GAMEPAD_DPAD_UP,
+                GamepadButton.DPadDown => XINPUT_GAMEPAD_BUTTON_FLAGS.XINPUT_GAMEPAD_DPAD_DOWN,
+                GamepadButton.DPadLeft => XINPUT_GAMEPAD_BUTTON_FLAGS.XINPUT_GAMEPAD_DPAD_LEFT,
+                GamepadButton.DPadRight => XINPUT_GAMEPAD_BUTTON_FLAGS.XINPUT_GAMEPAD_DPAD_RIGHT,
                 _ => throw new Exception("Okay, these aren't XInput buttons, sorry! Programmer error!"),
             };
         }

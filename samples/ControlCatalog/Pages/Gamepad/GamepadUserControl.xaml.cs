@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -117,6 +118,8 @@ namespace ControlCatalog.Pages
         public GamepadUserControl()
         {
             InitializeComponent();
+            DPadControl ??= new();
+            DisconnectedTextBlock ??= new();
         }
 
         private void InitializeComponent()
@@ -131,18 +134,18 @@ namespace ControlCatalog.Pages
             var state = args.State;
             LeftStick = state.LeftAnalogStick;
             RightStick = state.RightAnalogStick;
-            A = state.GetButtonState(GamepadButton.Button0).Pressed;
-            B = state.GetButtonState(GamepadButton.Button1).Pressed;
-            X = state.GetButtonState(GamepadButton.Button2).Pressed;
-            Y = state.GetButtonState(GamepadButton.Button3).Pressed;
-            LeftBuffer = state.GetButtonState(GamepadButton.Button4).Pressed;
-            RightBuffer = state.GetButtonState(GamepadButton.Button5).Pressed;
-            LeftTrigger = new Vector(state.GetButtonState(GamepadButton.Button6).Value, 0);
-            RightTrigger = new Vector(state.GetButtonState(GamepadButton.Button7).Value, 0);
-            Select = state.GetButtonState(GamepadButton.Button8).Pressed;
-            Start = state.GetButtonState(GamepadButton.Button9).Pressed;
-            LeftClick = state.GetButtonState(GamepadButton.Button10).Pressed;
-            RightClick = state.GetButtonState(GamepadButton.Button11).Pressed;
+            A = state.GetButtonState(GamepadButton.FaceButtonSouth).Pressed;
+            B = state.GetButtonState(GamepadButton.FaceButtonEast).Pressed;
+            X = state.GetButtonState(GamepadButton.FaceButtonWest).Pressed;
+            Y = state.GetButtonState(GamepadButton.FaceButtonNorth).Pressed;
+            LeftBuffer = state.GetButtonState(GamepadButton.LeftShoulder).Pressed;
+            RightBuffer = state.GetButtonState(GamepadButton.RightShoulder).Pressed;
+            LeftTrigger = new Vector(state.GetButtonState(GamepadButton.LeftTrigger).Value, 0);
+            RightTrigger = new Vector(state.GetButtonState(GamepadButton.RightTrigger).Value, 0);
+            Select = state.GetButtonState(GamepadButton.MiddleButtonLeft).Pressed;
+            Start = state.GetButtonState(GamepadButton.MiddleButtonRight).Pressed;
+            LeftClick = state.GetButtonState(GamepadButton.LeftStickButton).Pressed;
+            RightClick = state.GetButtonState(GamepadButton.RightStickButton).Pressed;
             DPadControl.ReceiveUpdate(args);
 
             if (args.Connected)
