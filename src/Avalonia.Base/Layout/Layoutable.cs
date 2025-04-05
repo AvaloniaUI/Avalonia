@@ -2,6 +2,7 @@ using System;
 using Avalonia.Diagnostics;
 using Avalonia.Logging;
 using Avalonia.Reactive;
+using Avalonia.Styling;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
 
@@ -553,13 +554,42 @@ namespace Avalonia.Layout
 
                 var minMax = new MinMax(this);
 
-                var constrained = LayoutHelper.ApplyLayoutConstraints(
+                var constrainedSize = LayoutHelper.ApplyLayoutConstraints(
                     minMax,
                     availableSize.Deflate(margin));
-                var measured = MeasureOverride(constrained);
+
+                var isContainer = false;
+                ContainerSizing containerSizing = ContainerSizing.Normal;
+
+                if (Container.GetQueryProvider(this) is { } queryProvider && Container.GetSizing(this) is { } sizing && sizing != ContainerSizing.Normal)
+                {
+                    isContainer = true;
+                    containerSizing = sizing;
+                    queryProvider.SetSize(constrainedSize.Width, constrainedSize.Height, containerSizing);
+                }
+
+                var measured = MeasureOverride(constrainedSize);
 
                 var width = MathUtilities.Clamp(measured.Width, minMax.MinWidth, minMax.MaxWidth);
                 var height = MathUtilities.Clamp(measured.Height, minMax.MinHeight, minMax.MaxHeight);
+
+                if (isContainer)
+                {
+                    switch (containerSizing)
+                    {
+                        case ContainerSizing.Width:
+                            width = double.IsInfinity(constrainedSize.Width) ? width : constrainedSize.Width;
+                            break;
+                        case ContainerSizing.Height:
+                            width = measured.Width;
+                            height = double.IsInfinity(constrainedSize.Height) ? height : constrainedSize.Height;
+                            break;
+                        case ContainerSizing.WidthAndHeight:
+                            width = double.IsInfinity(constrainedSize.Width) ? width : constrainedSize.Width;
+                            height = double.IsInfinity(constrainedSize.Height) ? height : constrainedSize.Height;
+                            break;
+                    }
+                }
 
                 if (useLayoutRounding)
                 {
