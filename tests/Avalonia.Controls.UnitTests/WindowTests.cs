@@ -1091,6 +1091,25 @@ namespace Avalonia.Controls.UnitTests
                     Assert.True(task.IsCompletedSuccessfully);
                 }
             }
+
+            [Fact]
+            public void Show_Works_When_Min_Dimension_Greater_Than_Max()
+            {
+                using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+                var target = new Window
+                {
+                    MinWidth = 100,
+                    MaxWidth = 80,
+                    MinHeight = 200,
+                    MaxHeight = 180
+                };
+
+                Show(target);
+
+                Assert.Equal(100, target.Width);
+                Assert.Equal(200, target.Height);
+            }
             
             protected virtual void Show(Window window)
             {
