@@ -1,4 +1,4 @@
-// This source file is adapted from the Windows Presentation Foundation project. 
+﻿// This source file is adapted from the Windows Presentation Foundation project. 
 // (https://github.com/dotnet/wpf/) 
 // 
 // Licensed to The Avalonia Project under MIT License, courtesy of The .NET Foundation.
@@ -2730,7 +2730,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="ColumnSpacing"/> property.
         /// </summary>
         public static readonly StyledProperty<double> ColumnSpacingProperty =
-            AvaloniaProperty.Register<Grid, double>(nameof(ColumnSpacingProperty));
+            AvaloniaProperty.Register<Grid, double>(nameof(ColumnSpacing));
 
         /// <summary>
         /// Column property. This is an attached property.
