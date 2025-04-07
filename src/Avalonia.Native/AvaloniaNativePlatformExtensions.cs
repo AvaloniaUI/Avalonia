@@ -65,8 +65,8 @@ namespace Avalonia
         /// <exception cref="System.InvalidOperationException">Thrown if no values were matched.</exception>
         public IReadOnlyList<AvaloniaNativeRenderingMode> RenderingMode { get; set; } = new[]
         {
-            AvaloniaNativeRenderingMode.Metal,
             AvaloniaNativeRenderingMode.OpenGl,
+            AvaloniaNativeRenderingMode.Metal,
             AvaloniaNativeRenderingMode.Software
         };
 
