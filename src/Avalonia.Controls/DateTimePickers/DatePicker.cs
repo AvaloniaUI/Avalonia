@@ -293,20 +293,9 @@ namespace Avalonia.Controls
                 var (oldValue, newValue) = change.GetOldAndNewValue<DateTimeOffset?>();
                 OnSelectedDateChanged(this, new DatePickerSelectedValueChangedEventArgs(oldValue, newValue));
             }
-            else if (change.Property == MonthFormatProperty)
+            else if (change.Property == MonthFormatProperty || change.Property == YearFormatProperty || change.Property == DayFormatProperty)
             {
-                if (_monthText != null)
-                    _monthText.Text = SelectedDate?.ToString(MonthFormat) ?? string.Empty;
-            }
-            else if (change.Property == YearFormatProperty)
-            {
-                if (_yearText != null)
-                    _yearText.Text = SelectedDate?.ToString(YearFormat) ?? string.Empty;
-            }
-            else if (change.Property == DayFormatProperty)
-            {
-                if (_dayText != null)
-                    _dayText.Text = SelectedDate?.ToString(DayFormat) ?? string.Empty;
+                SetSelectedDateText();
             }
         }
 
