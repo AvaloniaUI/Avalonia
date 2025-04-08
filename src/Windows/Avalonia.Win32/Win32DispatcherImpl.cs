@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Avalonia.Threading;
-using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 namespace Avalonia.Win32;
 
@@ -107,7 +106,10 @@ internal class Win32DispatcherImpl : IControlledDispatcherImpl
         while (!cancellationToken.IsCancellationRequested 
                && (result = GetMessage(out var msg, IntPtr.Zero, 0, 0)) > 0)
         {
-            TranslateMessage(ref msg);
+            bool handled = PreTranslateMessage(msg);
+            if (!handled)
+                TranslateMessage(ref msg);
+
             DispatchMessage(ref msg);
         }
         if (result < 0)
@@ -115,6 +117,68 @@ internal class Win32DispatcherImpl : IControlledDispatcherImpl
             Logging.Logger.TryGet(Logging.LogEventLevel.Error, Logging.LogArea.Win32Platform)
                 ?.Log(this, "Unmanaged error in {0}. Error Code: {1}", nameof(RunLoop), Marshal.GetLastWin32Error());
         }
+    }
+
+    private bool _enteringAltCode;
+
+    /// <summary>
+    /// Called in the message loop before <see cref="TranslateMessage"/>.
+    /// </summary>
+    /// <param name="msg">The message received from the thread's message queue.</param>
+    /// <returns>
+    /// <c>true</c> if the message was handled and <see cref="TranslateMessage"/> should be skipped.
+    /// </returns>
+    private bool PreTranslateMessage(MSG msg)
+    {
+        bool skipTranslateMessage = false;
+        var message = (WindowsMessage)msg.message;
+        switch (message)
+        {
+            case WindowsMessage.WM_KEYDOWN:
+            {
+                _enteringAltCode = false;
+                break;
+            }
+            case WindowsMessage.WM_KEYUP:
+            {
+                var virtualKey = (VirtualKeyStates)msg.wParam;
+                if (virtualKey == VirtualKeyStates.VK_MENU)
+                {
+                    // End of ALT key combination:
+                    // - Call TranslateMessage() when ALT code (numpad keys) was entered.
+                    // - Skip TranslateMessage() when other ALT combination was entered.
+                    skipTranslateMessage = !_enteringAltCode;
+                }
+
+                _enteringAltCode = false;
+                break;
+            }
+            case WindowsMessage.WM_SYSKEYDOWN:
+            case WindowsMessage.WM_SYSKEYUP:
+            {
+                // Skip TranslateMessage() while user enters ALT combination.
+                bool isAltDown = IsAltDown();
+                skipTranslateMessage = isAltDown;
+
+                var virtualKey = (VirtualKeyStates)msg.wParam;
+                if (isAltDown && virtualKey >= VirtualKeyStates.VK_NUMPAD0 
+                              && virtualKey <= VirtualKeyStates.VK_NUMPAD9)
+                {
+                    _enteringAltCode = true;
+                }
+
+                break;
+            }
+            case WindowsMessage.WM_CHAR:
+            {
+                _enteringAltCode = false;
+                break;
+            }
+        }
+
+        return skipTranslateMessage;
+
+        static bool IsAltDown() => (GetKeyState((int)VirtualKeyStates.VK_MENU) & 0x8000) != 0;
     }
 
     public long Now => _clock.ElapsedMilliseconds;

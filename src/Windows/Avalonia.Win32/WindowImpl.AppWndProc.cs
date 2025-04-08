@@ -867,6 +867,48 @@ namespace Avalonia.Win32
             {
                 Input(e);
 
+                // Notes: Keyboard input
+                // ---------------------
+                //
+                // Standard keyboard input produces the following sequence of messages:
+                //
+                // - WM_KEYDOWN: 'A'
+                // - WM_CHAR: 'A'
+                // - WM_KEYUP: 'A'
+                //
+                // Note that the WM_CHAR message is created and posted to the thread's message queue
+                // by TranslateMessage() in the message loop.
+                //
+                // Keyboard navigation (e.g. using arrow keys) produces the following sequence of
+                // messages:
+                //
+                // - WM_KEYDOWN: VK_RIGHT
+                // - WM_KEYUP: VK_RIGHT
+                //
+                // Entering an ALT code produces the following sequence of messages:
+                //
+                // - WM_SYSKEYDOWN: VK_MENU ... ALT key is pressed.
+                // - WM_SYSKEYDOWN: VK_NUMPAD1
+                // - WM_SYSKEYUP: VK_NUMPAD1
+                // - WM_KEYUP: VK_MENU ........ ALT key is released.
+                // - WM_CHAR: '☺'
+                //
+                // With an Input Method Editor (IME), users can enter complex scripts, such as 
+                // Japanese characters. Examples messages:
+                //
+                // - WM_KEYDOWN: VK_PROCESSKEY
+                // - WM_KEYUP: 'K'
+                // - WM_KEYUP: 'A'
+                // - WM_KEYDOWN: VK_PROCESSKEY
+                // - WM_CHAR: 'カ'
+                // - WM_KEYUP VK_RETURN
+                //
+                // References:
+                // - Microsoft: Win32 Keyboard Input
+                //   https://learn.microsoft.com/en-us/windows/win32/learnwin32/keyboard-input
+                // - Wikipedia: ALT codes
+                //   https://en.wikipedia.org/wiki/Alt_code
+
                 if (message == WindowsMessage.WM_KEYDOWN)
                 {
                     if(e is RawKeyEventArgs args && args.Key == Key.ImeProcessed)
@@ -881,7 +923,11 @@ namespace Avalonia.Win32
                         // is handled.
                         _ignoreWmChar = e.Handled;
                     }
-                 }
+                } 
+                else if (message == WindowsMessage.WM_KEYUP)
+                {
+                    _ignoreWmChar = false;
+                }
 
                 if (s_intermediatePointsPooledList.Count > 0)
                 {
