@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:viewModels="using:ControlCatalog.ViewModels"
              xmlns:generic="clr-namespace:System.Collections.Generic;assembly=netstandard"
+             xmlns:pages="clr-namespace:ControlCatalog.Pages"
              mc:Ignorable="d"
              d:DesignWidth="800"
              d:DesignHeight="450"
@@ -35,9 +36,35 @@
                       PullDirection="{Binding #PullDirections.SelectedItem}"
                       RefreshRequested="RefreshContainerPage_RefreshRequested"
                       Margin="5">
-      <ListBox HorizontalAlignment="Stretch"
+      <ItemsControl HorizontalAlignment="Stretch"
                VerticalAlignment="Top"
-               ItemsSource="{Binding Items}"/>
+               ItemsSource="{Binding Items}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <Border Padding="10" HorizontalAlignment="Stretch"
+                    Background="Transparent">
+              <ContentControl Content="{Binding}" />
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+        <ItemsControl.Template>
+          <ControlTemplate>
+            <Border Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="{TemplateBinding CornerRadius}"
+                    Padding="{TemplateBinding Padding}">
+              <ScrollViewer VerticalScrollBarVisibility="Auto"
+                            HorizontalScrollBarVisibility="Disabled"
+                            IsScrollInertiaEnabled="True">
+                <ItemsPresenter Name="PART_ItemsPresenter"
+                                ItemsPanel="{TemplateBinding ItemsPanel}"
+                                Margin="{TemplateBinding Padding}"/>
+              </ScrollViewer>
+            </Border>
+          </ControlTemplate>
+        </ItemsControl.Template>
+      </ItemsControl>
     </RefreshContainer>
   </DockPanel>
 </UserControl>
