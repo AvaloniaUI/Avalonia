@@ -63,6 +63,58 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void MenuItem_With_Styled_Command_Binding_Should_Be_Enabled_With_Child_Missing_Command()
+        {
+            var childViewModel = new TestMenuElement("Child");
+            var parentViewModel = new TestMenuElement("Parent", new[] { childViewModel });
+
+            var contextMenu = new ContextMenu
+            {
+                ItemsSource = new[] { parentViewModel },
+                Styles =
+                {
+                    new Style(x => x.OfType<MenuItem>())
+                    {
+                        Setters =
+                        {
+                            new Setter(MenuItem.HeaderProperty, new Binding("Header")),
+                            new Setter(MenuItem.ItemsSourceProperty, new Binding("Elements")),
+                            new Setter(MenuItem.CommandProperty, new Binding("Command"))
+                        }
+                    }
+                }
+            };
+
+            using (Application())
+            {
+                var window = new Window { Content = new Panel { ContextMenu = contextMenu } };
+                window.ApplyStyling();
+                window.ApplyTemplate();
+                window.Presenter.ApplyTemplate();
+
+                contextMenu.Open();
+
+                var parentMenuItem = contextMenu.Presenter.Panel.Children[0] as MenuItem;
+
+                Assert.NotNull(parentMenuItem);
+                Assert.True(parentMenuItem.IsEnabled);
+                Assert.True(parentMenuItem.IsEffectivelyEnabled);
+            }
+        }
+
+        public class TestMenuElement
+        {
+            public string Header { get; }
+            public IList<TestMenuElement> Elements { get; }
+
+            public TestMenuElement(string header, IList<TestMenuElement> elements = null)
+            {
+                Header = header;
+                Elements = elements ?? new List<TestMenuElement>();
+            }
+        }
+
+        [Fact]
         public void MenuItem_Is_Disabled_When_Bound_Command_Is_Removed()
         {
             var viewModel = new
