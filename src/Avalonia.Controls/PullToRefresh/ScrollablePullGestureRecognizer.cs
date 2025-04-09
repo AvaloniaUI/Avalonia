@@ -44,7 +44,7 @@ namespace Avalonia.Controls.PullToRefresh
 
         protected override void PointerPressed(PointerPressedEventArgs e)
         {
-            if (Target != null && Target is Visual visual && (e.Pointer.Type == PointerType.Touch || e.Pointer.Type == PointerType.Pen))
+            if (Target != null && Target is Visual visual) //&& (e.Pointer.Type == PointerType.Touch || e.Pointer.Type == PointerType.Pen))
             {
                 _tracking = e.Pointer;
                 _initialPosition = e.GetPosition(visual);
@@ -78,6 +78,7 @@ namespace Avalonia.Controls.PullToRefresh
             if (_pullInProgress == true)
             {
                 EndPull();
+                e.Pointer.Capture(null);
             }
 
             _tracking = null;
