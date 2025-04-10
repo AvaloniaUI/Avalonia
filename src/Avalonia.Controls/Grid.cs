@@ -1185,16 +1185,14 @@ namespace Avalonia.Controls
         {
             Debug.Assert(0 < count && 0 <= start && (start + count) <= definitions.Count);
 
-            double measureSize = -spacing;
+            double measureSize = 0;
             int i = start + count - 1;
 
             do
             {
-                measureSize +=
-                    spacing +
-                    (definitions[i].SizeType == LayoutTimeSizeType.Auto ?
-                        definitions[i].MinSize :
-                        definitions[i].MeasureSize);
+                measureSize += (definitions[i].SizeType == LayoutTimeSizeType.Auto
+                    ? definitions[i].MinSize
+                    : definitions[i].MeasureSize);
             } while (--i >= start);
 
             return measureSize;
