@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.UnitTests;
@@ -1773,7 +1773,7 @@ namespace Avalonia.Controls.UnitTests
                 ColumnDefinitions = ColumnDefinitions.Parse("20,20"),
                 Children =
                 {
-                    new Border 
+                    new Border
                     {
                         Height = 100,
                         [Grid.ColumnSpanProperty] = 2
@@ -1785,6 +1785,119 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(new Rect(0, 0, 60, 100), target.Bounds);
             Assert.Equal(new Rect(0, 0, 60, 100), target.Children[0].Bounds);
+        }
+
+        [Fact]
+        public void Grid_Controls_With_Spacing_With_Span_And_SharedSize()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var grid1 = new Grid()
+            {
+                [Grid.RowProperty] = 0,
+                RowDefinitions = RowDefinitions.Parse("Auto,*,Auto,Auto"),
+                ColumnDefinitions =
+                [
+                    new ColumnDefinition(GridLength.Auto),
+                    new ColumnDefinition(GridLength.Star),
+                    new ColumnDefinition(GridLength.Auto),
+                    new ColumnDefinition(GridLength.Auto)
+                    {
+                        SharedSizeGroup = "C3"
+                    }
+                ],
+                RowSpacing = 10,
+                ColumnSpacing = 10,
+                Children =
+                {
+                    new ScrollViewer()
+                    {
+                        [Grid.RowProperty] = 0,
+                        [Grid.ColumnProperty] = 0,
+                        [Grid.RowSpanProperty] = 3,
+                        [Grid.ColumnSpanProperty] = 3,
+                        Content = new TextBlock()
+                        {
+                            Text = @"0: 1234567890 1234567890 1234567890 1234567890 1234567890 1234567890
+1: 1234567890 1234567890 1234567890 1234567890 1234567890 1234567890
+2: 1234567890 1234567890 1234567890 1234567890 1234567890 1234567890
+3: 1234567890 1234567890 1234567890 1234567890 1234567890 1234567890
+4: 1234567890 1234567890 1234567890 1234567890 1234567890 1234567890
+5: 1234567890 1234567890 1234567890 1234567890 1234567890 1234567890
+6: 1234567890 1234567890 1234567890 1234567890 1234567890 1234567890
+7: 1234567890 1234567890 1234567890 1234567890 1234567890 1234567890
+8: 1234567890 1234567890 1234567890 1234567890 1234567890 1234567890
+9: 1234567890 1234567890 1234567890 1234567890 1234567890 1234567890"
+                        }
+                    },
+                    new Button()
+                    {
+                        [Grid.RowProperty] = 3,
+                        [Grid.ColumnProperty] = 0,
+                        Width = 100,
+                        Height = 40
+                    },
+                    new Button()
+                    {
+                        [Grid.RowProperty] = 3,
+                        [Grid.ColumnProperty] = 2,
+                        Width = 100,
+                        Height = 40
+                    },
+                    new Button()
+                    {
+                        [Grid.RowProperty] = 0,
+                        [Grid.ColumnProperty] = 3,
+                        Width = 100,
+                        Height = 40
+                    },
+                    new Button()
+                    {
+                        [Grid.RowProperty] = 2,
+                        [Grid.ColumnProperty] = 3,
+                        Width = 100,
+                        Height = 40
+                    }
+                }
+            };
+
+            var grid2 = new Grid()
+            {
+                [Grid.RowProperty] = 1,
+                ColumnDefinitions =
+                [
+                    new ColumnDefinition(GridLength.Star),
+                    new ColumnDefinition(GridLength.Auto)
+                    {
+                        SharedSizeGroup = "C3"
+                    }
+                ],
+                Children =
+                {
+                    new TextBlock()
+                    {
+                        [Grid.ColumnProperty] = 1,
+                        Height = 20,
+                        Text="1234567890"
+                    }
+                }
+            };
+
+            var root = new Grid()
+            {
+                [Grid.IsSharedSizeScopeProperty] = true,
+                RowDefinitions = RowDefinitions.Parse("*,Auto"),
+                RowSpacing = 10,
+                Margin = new Thickness(10)
+            };
+            root.Children.Add(grid1);
+            root.Children.Add(grid2);
+            root.Measure(new Size(550, 240));
+            root.Arrange(new Rect(new Point(), new Point(550, 240)));
+
+            Assert.Equal(new Rect(0, 0, 420, 140), grid1.Children[0].Bounds);
+            Assert.Equal(grid1.Children[4].Bounds.Left, grid2.Children[0].Bounds.Left);
+            Assert.Equal(grid1.Children[4].Bounds.Width, grid2.Children[0].Bounds.Width);
         }
 
         private class TestControl : Control
