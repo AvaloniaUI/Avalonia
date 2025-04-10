@@ -1135,8 +1135,7 @@ namespace Avalonia.Controls
                 cellMeasureWidth = GetMeasureSizeForRange(
                     DefinitionsU,
                     PrivateCells[cell].ColumnIndex,
-                    PrivateCells[cell].ColumnSpan,
-                    ColumnSpacing);
+                    PrivateCells[cell].ColumnSpan);
             }
 
             if (forceInfinityV)
@@ -1156,8 +1155,7 @@ namespace Avalonia.Controls
                 cellMeasureHeight = GetMeasureSizeForRange(
                     DefinitionsV,
                     PrivateCells[cell].RowIndex,
-                    PrivateCells[cell].RowSpan,
-                    RowSpacing);
+                    PrivateCells[cell].RowSpan);
             }
 
 
@@ -1172,7 +1170,6 @@ namespace Avalonia.Controls
         /// <param name="definitions">Source array of definitions to read values from.</param>
         /// <param name="start">Starting index of the range.</param>
         /// <param name="count">Number of definitions included in the range.</param>
-        /// <param name="spacing"><see cref="ColumnSpacing"/> or <see cref="RowSpacing"/></param>
         /// <returns>Calculated measure size.</returns>
         /// <remarks>
         /// For "Auto" definitions MinWidth is used in place of PreferredSize.
@@ -1180,8 +1177,7 @@ namespace Avalonia.Controls
         private static double GetMeasureSizeForRange(
             IReadOnlyList<DefinitionBase> definitions,
             int start,
-            int count,
-            double spacing)
+            int count)
         {
             Debug.Assert(0 < count && 0 <= start && (start + count) <= definitions.Count);
 
