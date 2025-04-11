@@ -1066,14 +1066,14 @@ namespace Avalonia.Controls
                 foreach (DictionaryEntry e in spanStore)
                 {
                     SpanKey key = (SpanKey)e.Key;
-                    double requestedSize = (double)e.Value!;
+                    double desiredSize = (double)e.Value!;
 
                     EnsureMinSizeInDefinitionRange(
                         key.U ? DefinitionsU : DefinitionsV,
                         key.Start,
                         key.Count,
-                        requestedSize,
-                        key.U ? referenceSize.Width : referenceSize.Height);
+                        key.U ? ColumnSpacing : RowSpacing,
+                        desiredSize);
                 }
             }
         }
@@ -1135,7 +1135,8 @@ namespace Avalonia.Controls
                 cellMeasureWidth = GetMeasureSizeForRange(
                     DefinitionsU,
                     PrivateCells[cell].ColumnIndex,
-                    PrivateCells[cell].ColumnSpan);
+                    PrivateCells[cell].ColumnSpan,
+                    ColumnSpacing);
             }
 
             if (forceInfinityV)
@@ -1155,7 +1156,8 @@ namespace Avalonia.Controls
                 cellMeasureHeight = GetMeasureSizeForRange(
                     DefinitionsV,
                     PrivateCells[cell].RowIndex,
-                    PrivateCells[cell].RowSpan);
+                    PrivateCells[cell].RowSpan,
+                    RowSpacing);
             }
 
 
@@ -1170,6 +1172,7 @@ namespace Avalonia.Controls
         /// <param name="definitions">Source array of definitions to read values from.</param>
         /// <param name="start">Starting index of the range.</param>
         /// <param name="count">Number of definitions included in the range.</param>
+        /// <param name="spacing"><see cref="ColumnSpacing"/> or <see cref="RowSpacing"/></param>
         /// <returns>Calculated measure size.</returns>
         /// <remarks>
         /// For "Auto" definitions MinWidth is used in place of PreferredSize.
@@ -1177,18 +1180,21 @@ namespace Avalonia.Controls
         private static double GetMeasureSizeForRange(
             IReadOnlyList<DefinitionBase> definitions,
             int start,
-            int count)
+            int count,
+            double spacing)
         {
             Debug.Assert(0 < count && 0 <= start && (start + count) <= definitions.Count);
 
-            double measureSize = 0;
+            double measureSize = -spacing;
             int i = start + count - 1;
 
             do
             {
-                measureSize += (definitions[i].SizeType == LayoutTimeSizeType.Auto
-                    ? definitions[i].MinSize
-                    : definitions[i].MeasureSize);
+                measureSize +=
+                    spacing +
+                    (definitions[i].SizeType == LayoutTimeSizeType.Auto ?
+                    definitions[i].MinSize :
+                    definitions[i].MeasureSize);
             } while (--i >= start);
 
             return measureSize;
@@ -1222,19 +1228,22 @@ namespace Avalonia.Controls
         /// <summary>
         /// Distributes min size back to definition array's range.
         /// </summary>
+        /// <param name="definitions">Array of definitions to process.</param>
         /// <param name="start">Start of the range.</param>
         /// <param name="count">Number of items in the range.</param>
-        /// <param name="requestedSize">Minimum size that should "fit" into the definitions range.</param>
-        /// <param name="definitions">Definition array receiving distribution.</param>
-        /// <param name="percentReferenceSize">Size used to resolve percentages.</param>
+        /// <param name="spacing"><see cref="ColumnSpacing"/> or <see cref="RowSpacing"/></param>
+        /// <param name="desiredSize">Minimum size that should "fit" into the definitions range.</param>
         private void EnsureMinSizeInDefinitionRange(
             IReadOnlyList<DefinitionBase> definitions,
             int start,
             int count,
-            double requestedSize,
-            double percentReferenceSize)
+            double spacing,
+            double desiredSize)
         {
             Debug.Assert(1 < count && 0 <= start && (start + count) <= definitions.Count);
+
+            // The spacing between definitions that this element spans through must not be distributed
+            double requestedSize = Math.Max((desiredSize - spacing * (count - 1)), 0.0);
 
             //  avoid processing when asked to distribute "0"
             if (!MathUtilities.IsZero(requestedSize))
