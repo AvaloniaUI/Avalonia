@@ -445,7 +445,7 @@ namespace Avalonia.Controls
                     //      appears in Auto column.
                     //
 
-                    MeasureCellsGroup(extData.CellGroup1, constraint, false, false);
+                    MeasureCellsGroup(extData.CellGroup1, false, false);
                     double rowSpacing = RowSpacing;
                     double columnSpacing = ColumnSpacing;
                     double combinedRowSpacing = RowSpacing * (RowDefinitions.Count - 1);
@@ -458,9 +458,9 @@ namespace Avalonia.Controls
                         if (canResolveStarsV)
                         {
                             if (HasStarCellsV) { ResolveStar(DefinitionsV, innerAvailableSize.Height); }
-                            MeasureCellsGroup(extData.CellGroup2, innerAvailableSize, false, false);
+                            MeasureCellsGroup(extData.CellGroup2, false, false);
                             if (HasStarCellsU) { ResolveStar(DefinitionsU, innerAvailableSize.Width); }
-                            MeasureCellsGroup(extData.CellGroup3, innerAvailableSize, false, false);
+                            MeasureCellsGroup(extData.CellGroup3, false, false);
                         }
                         else
                         {
@@ -470,7 +470,7 @@ namespace Avalonia.Controls
                             if (canResolveStarsU)
                             {
                                 if (HasStarCellsU) { ResolveStar(DefinitionsU, innerAvailableSize.Width); }
-                                MeasureCellsGroup(extData.CellGroup3, innerAvailableSize, false, false);
+                                MeasureCellsGroup(extData.CellGroup3, false, false);
                                 if (HasStarCellsV) { ResolveStar(DefinitionsV, innerAvailableSize.Height); }
                             }
                             else
@@ -487,7 +487,7 @@ namespace Avalonia.Controls
                                 double[] group2MinSizes = CacheMinSizes(extData.CellGroup2, false);
                                 double[] group3MinSizes = CacheMinSizes(extData.CellGroup3, true);
 
-                                MeasureCellsGroup(extData.CellGroup2, innerAvailableSize, false, true);
+                                MeasureCellsGroup(extData.CellGroup2, false, true);
 
                                 do
                                 {
@@ -498,20 +498,20 @@ namespace Avalonia.Controls
                                     }
 
                                     if (HasStarCellsU) { ResolveStar(DefinitionsU, innerAvailableSize.Width); }
-                                    MeasureCellsGroup(extData.CellGroup3, innerAvailableSize, false, false);
+                                    MeasureCellsGroup(extData.CellGroup3, false, false);
 
                                     // Reset cached Group2Widths
                                     ApplyCachedMinSizes(group2MinSizes, false);
 
                                     if (HasStarCellsV) { ResolveStar(DefinitionsV, innerAvailableSize.Height); }
-                                    MeasureCellsGroup(extData.CellGroup2, innerAvailableSize, cnt == c_layoutLoopMaxCount, false, out hasDesiredSizeUChanged);
+                                    MeasureCellsGroup(extData.CellGroup2, cnt == c_layoutLoopMaxCount, false, out hasDesiredSizeUChanged);
                                 }
                                 while (hasDesiredSizeUChanged && ++cnt <= c_layoutLoopMaxCount);
                             }
                         }
                     }
 
-                    MeasureCellsGroup(extData.CellGroup4, constraint, false, false);
+                    MeasureCellsGroup(extData.CellGroup4, false, false);
 
                     gridDesiredSize = new Size(
                         CalculateDesiredSize(DefinitionsU) + ColumnSpacing * (DefinitionsU.Count - 1),
@@ -979,19 +979,16 @@ namespace Avalonia.Controls
 
         private void MeasureCellsGroup(
             int cellsHead,
-            Size referenceSize,
             bool ignoreDesiredSizeU,
             bool forceInfinityV)
         {
-            MeasureCellsGroup(cellsHead, referenceSize, ignoreDesiredSizeU, forceInfinityV, out _);
+            MeasureCellsGroup(cellsHead, ignoreDesiredSizeU, forceInfinityV, out _);
         }
 
         /// <summary>
         /// Measures one group of cells.
         /// </summary>
         /// <param name="cellsHead">Head index of the cells chain.</param>
-        /// <param name="referenceSize">Reference size for spanned cells
-        /// calculations.</param>
         /// <param name="ignoreDesiredSizeU">When "true" cells' desired
         /// width is not registered in columns.</param>
         /// <param name="forceInfinityV">Passed through to MeasureCell.
@@ -999,7 +996,6 @@ namespace Avalonia.Controls
         /// <param name="hasDesiredSizeUChanged">When the method exits, indicates whether the desired size has changed.</param>
         private void MeasureCellsGroup(
             int cellsHead,
-            Size referenceSize,
             bool ignoreDesiredSizeU,
             bool forceInfinityV,
             out bool hasDesiredSizeUChanged)
