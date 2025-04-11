@@ -18,6 +18,10 @@ namespace Avalonia.X11.Screens
             _impl.Changed += () => Changed?.Invoke();
         }
 
+        internal int MaxRefreshRate => _impl is IX11RawScreenInfoProviderWithRefreshRate refreshProvider
+            ? Math.Max(60, refreshProvider.MaxRefreshRate)
+            : 60;
+
         protected override int GetScreenCount() => _impl.ScreenKeys.Length;
 
         protected override IReadOnlyList<nint> GetAllScreenKeys() => _impl.ScreenKeys;
