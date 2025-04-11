@@ -8,18 +8,55 @@
              x:DataType="viewModels:MainWindowViewModel"
              x:CompileBindings="True">
   <StackPanel>
-    <StackPanel Spacing="10" Margin="25" IsEnabled="{OnFormFactor false, Desktop=true}">
-      <TextBlock Classes="h2" Text="Desktop properties" Margin="4" />
-      <CheckBox Content="Extend Client Area to Decorations" IsChecked="{Binding ExtendClientAreaEnabled}" />
-      <CheckBox Content="Title Bar" IsChecked="{Binding SystemTitleBarEnabled}" />
-      <CheckBox Content="Prefer System Chrome" IsChecked="{Binding PreferSystemChromeEnabled}" />
-      <Slider Minimum="-1" Maximum="200" Value="{Binding TitleBarHeight}" />
+
+    <StackPanel
+      Spacing="10"
+      Margin="25"
+      IsEnabled="{OnFormFactor false, Desktop=true}">
+
+      <TextBlock Classes="h2"
+                 Text="Desktop properties"
+                 Margin="4" />
+
+      <CheckBox Content="Extend Client Area to Decorations"
+                IsChecked="{Binding ExtendClientAreaEnabled}" />
+
+      <DockPanel IsEnabled="{Binding ExtendClientAreaEnabled}">
+
+        <CheckBox Content="Title Bar"
+                  IsChecked="{Binding SystemTitleBarEnabled}"
+                  DockPanel.Dock="Left" />
+
+        <Slider Minimum="-1"
+                Maximum="200"
+                Value="{Binding TitleBarHeight}"
+                IsEnabled="{Binding SystemTitleBarEnabled}"
+                Margin="8,-10" />
+
+      </DockPanel>
+
+      <CheckBox Content="Prefer System Chrome"
+                IsChecked="{Binding PreferSystemChromeEnabled}"
+                IsEnabled="{Binding ExtendClientAreaEnabled}" />
+
+      <CheckBox Content="Can Resize"
+                IsChecked="{Binding CanResize}" />
+
+      <CheckBox Content="Can Minimize"
+                IsChecked="{Binding CanMinimize}" />
+
+      <CheckBox Content="Can Maximize"
+                IsChecked="{Binding CanMaximize}"
+                IsEnabled="{Binding CanResize}" />
+
     </StackPanel>
+
     <StackPanel Spacing="10" Margin="25" IsEnabled="{OnFormFactor false, Mobile=true}">
       <TextBlock Classes="h2" Text="Mobile properties" Margin="4" />
       <CheckBox Content="Is System Bar Visible" IsChecked="{Binding IsSystemBarVisible}" />
       <CheckBox Content="Display Edge To Edge" IsChecked="{Binding DisplayEdgeToEdge}" />
       <TextBlock Text="{Binding SafeAreaPadding, StringFormat='Safe Area Padding: {0}'}" />
     </StackPanel>
+
   </StackPanel>
 </UserControl>
