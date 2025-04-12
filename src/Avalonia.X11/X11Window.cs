@@ -63,6 +63,7 @@ namespace Avalonia.X11
         private double? _scalingOverride;
         private bool _disabled;
         private TransparencyHelper? _transparencyHelper;
+        private WindowActivationTrackingHelper? _activationTracker;
         private RawEventGrouper? _rawEventGrouper;
         private bool _useRenderWindow = false;
         private bool _useCompositorDrivenRenderWindowResize = false;
@@ -230,6 +231,9 @@ namespace Avalonia.X11
             
             _transparencyHelper = new TransparencyHelper(_x11, _handle, platform.Globals);
             _transparencyHelper.SetTransparencyRequest(Array.Empty<WindowTransparencyLevel>());
+
+            _activationTracker = new(_platform, this);
+            _activationTracker.ActivationChanged += HandleActivation;
 
             CreateIC();
 
@@ -510,6 +514,8 @@ namespace Avalonia.X11
             if(_mode.OnEvent(ref ev))
                 return;
 
+            _activationTracker?.OnEvent(ref ev);
+
             if (ev.type == XEventName.MapNotify)
             {
                 _mapped = true;
@@ -523,24 +529,6 @@ namespace Avalonia.X11
                       ev.VisibilityEvent.state < 2))
             {
                 EnqueuePaint();
-            }
-            else if (ev.type == XEventName.FocusIn)
-            {
-                if (ActivateTransientChildIfNeeded())
-                    return;
-                // See: https://github.com/fltk/fltk/issues/295
-                if ((NotifyMode)ev.FocusChangeEvent.mode is not NotifyMode.NotifyNormal)
-                    return;
-                Activated?.Invoke();
-                _imeControl?.SetWindowActive(true);
-            }
-            else if (ev.type == XEventName.FocusOut)
-            {
-                // See: https://github.com/fltk/fltk/issues/295
-                if ((NotifyMode)ev.FocusChangeEvent.mode is not NotifyMode.NotifyNormal)
-                    return;
-                _imeControl?.SetWindowActive(false);
-                Deactivated?.Invoke();
             }
             else if (ev.type == XEventName.MotionNotify)
                 MouseEvent(RawPointerEventType.Move, ref ev, ev.MotionEvent.state);
@@ -679,6 +667,22 @@ namespace Avalonia.X11
             }
         }
 
+        private void HandleActivation(bool active)
+        {
+            if (active)
+            {
+                if (ActivateTransientChildIfNeeded())
+                    return;
+                Activated?.Invoke();
+                _imeControl?.SetWindowActive(true);
+            }
+            else
+            {
+                _imeControl?.SetWindowActive(false);
+                Deactivated?.Invoke();
+            }
+        }
+
         private Thickness? GetFrameExtents()
         {
             if (_systemDecorations != SystemDecorations.Full)
@@ -773,58 +777,56 @@ namespace Avalonia.X11
             }
         }
 
-        private void OnPropertyChange(IntPtr atom, bool hasValue)
+        private void OnPropertyChange(IntPtr property, bool hasValue)
         {
-            if (atom == _x11.Atoms._NET_FRAME_EXTENTS)
+            if (property == _x11.Atoms._NET_FRAME_EXTENTS)
             {
                 // Occurs once the window has been mapped, which is the earliest the extents
                 // can be retrieved, so invoke event to force update of TopLevel.FrameSize.
                 Resized?.Invoke(ClientSize, WindowResizeReason.Unspecified);
             }
 
-            if (atom == _x11.Atoms._NET_WM_STATE)
+            if (property == _x11.Atoms._NET_WM_STATE)
             {
                 WindowState state = WindowState.Normal;
-                if(hasValue)
+                var atoms = hasValue
+                    ? XGetWindowPropertyAsIntPtrArray(_x11.Display, _handle, _x11.Atoms._NET_WM_STATE,
+                          (IntPtr)Atom.XA_ATOM)
+                      ?? []
+                    : [];
+                int maximized = 0;
+                foreach (var atom in atoms)
                 {
-
-                    XGetWindowProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_STATE, IntPtr.Zero, new IntPtr(256),
-                        false, (IntPtr)Atom.XA_ATOM, out _, out _, out var nitems, out _,
-                        out var prop);
-                    int maximized = 0;
-                    var pitems = (IntPtr*)prop.ToPointer();
-                    for (var c = 0; c < nitems.ToInt32(); c++)
+                    if (atom == _x11.Atoms._NET_WM_STATE_HIDDEN)
                     {
-                        if (pitems[c] == _x11.Atoms._NET_WM_STATE_HIDDEN)
-                        {
-                            state = WindowState.Minimized;
-                            break;
-                        }
+                        state = WindowState.Minimized;
+                        break;
+                    }
 
-                        if(pitems[c] == _x11.Atoms._NET_WM_STATE_FULLSCREEN)
-                        {
-                            state = WindowState.FullScreen;
-                            break;
-                        }
+                    if(atom == _x11.Atoms._NET_WM_STATE_FULLSCREEN)
+                    {
+                        state = WindowState.FullScreen;
+                        break;
+                    }
 
-                        if (pitems[c] == _x11.Atoms._NET_WM_STATE_MAXIMIZED_HORZ ||
-                            pitems[c] == _x11.Atoms._NET_WM_STATE_MAXIMIZED_VERT)
+                    if (atom == _x11.Atoms._NET_WM_STATE_MAXIMIZED_HORZ ||
+                        atom == _x11.Atoms._NET_WM_STATE_MAXIMIZED_VERT)
+                    {
+                        maximized++;
+                        if (maximized == 2)
                         {
-                            maximized++;
-                            if (maximized == 2)
-                            {
-                                state = WindowState.Maximized;
-                                break;
-                            }
+                            state = WindowState.Maximized;
+                            break;
                         }
                     }
-                    XFree(prop);
                 }
                 if (_lastWindowState != state)
                 {
                     _lastWindowState = state;
                     WindowStateChanged?.Invoke(state);
                 }
+
+                _activationTracker?.OnNetWmStateChanged(atoms);
             }
 
         }
@@ -1030,6 +1032,12 @@ namespace Avalonia.X11
                 _rawEventGrouper = null;
             }
             
+            if (_activationTracker != null)
+            {
+                _activationTracker.Dispose();
+                _activationTracker = null;
+            }
+            
             if (_transparencyHelper != null)
             {
                 _transparencyHelper.Dispose();
@@ -1075,7 +1083,7 @@ namespace Avalonia.X11
             }
         }
 
-        private bool ActivateTransientChildIfNeeded()
+        internal bool ActivateTransientChildIfNeeded()
         {
             if (_disabled)
             {
@@ -1448,14 +1456,10 @@ namespace Avalonia.X11
 
             if (!_mapped)
             {
-                XGetWindowProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_STATE, IntPtr.Zero, new IntPtr(256),
-                    false, (IntPtr)Atom.XA_ATOM, out _, out _, out var nitems, out _,
-                    out var prop);
-                var ptr = (IntPtr*)prop.ToPointer();
-                var newAtoms = new HashSet<IntPtr>();
-                for (var c = 0; c < nitems.ToInt64(); c++) 
-                    newAtoms.Add(*(ptr+c));
-                XFree(prop);
+                var newAtoms = new HashSet<IntPtr>(XGetWindowPropertyAsIntPtrArray(_x11.Display, _handle,
+                    _x11.Atoms._NET_WM_STATE,
+                    (IntPtr)Atom.XA_ATOM) ?? []);
+                
                 foreach(var atom in atoms)
                     if (enable)
                         newAtoms.Add(atom);

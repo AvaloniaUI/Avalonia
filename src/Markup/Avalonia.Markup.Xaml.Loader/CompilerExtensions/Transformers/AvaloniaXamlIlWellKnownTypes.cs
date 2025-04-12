@@ -63,6 +63,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType IDataTemplate { get; }
         public IXamlType ITemplateOfControl { get; }
         public IXamlType Control { get; }
+        public IXamlType ContentControl { get; }
         public IXamlType ItemsControl { get; }
         public IXamlType ReflectionBindingExtension { get; }
 
@@ -126,6 +127,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType UriKind { get; }
         public IXamlConstructor UriConstructor { get; }
         public IXamlType Style { get; }
+        public IXamlType Container { get; }
         public IXamlType Styles { get; }
         public IXamlType ControlTheme { get; }
         public IXamlType WindowTransparencyLevel { get; }
@@ -249,6 +251,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             DataTemplate = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.Templates.DataTemplate");
             IDataTemplate = cfg.TypeSystem.GetType("Avalonia.Controls.Templates.IDataTemplate");
             Control = cfg.TypeSystem.GetType("Avalonia.Controls.Control");
+            ContentControl = cfg.TypeSystem.GetType("Avalonia.Controls.ContentControl");
             ITemplateOfControl = cfg.TypeSystem.GetType("Avalonia.Controls.ITemplate`1").MakeGenericType(Control);
             ItemsControl = cfg.TypeSystem.GetType("Avalonia.Controls.ItemsControl");
             ReflectionBindingExtension = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.MarkupExtensions.ReflectionBindingExtension");
@@ -326,6 +329,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             UriKind = cfg.TypeSystem.GetType("System.UriKind");
             UriConstructor = Uri.GetConstructor(new List<IXamlType>() { cfg.WellKnownTypes.String, UriKind });
             Style = cfg.TypeSystem.GetType("Avalonia.Styling.Style");
+            Container = cfg.TypeSystem.GetType("Avalonia.Styling.ContainerQuery");
             Styles = cfg.TypeSystem.GetType("Avalonia.Styling.Styles");
             ControlTheme = cfg.TypeSystem.GetType("Avalonia.Styling.ControlTheme");
             ControlTemplate = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.Templates.ControlTemplate");

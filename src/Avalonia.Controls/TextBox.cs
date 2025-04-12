@@ -1,6 +1,7 @@
 using Avalonia.Input.Platform;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Reactive;
 using Avalonia.Controls.Presenters;
@@ -629,6 +630,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the text selected in the TextBox
         /// </summary>
+        [AllowNull]
         public string SelectedText
         {
             get => GetSelection();
@@ -1465,6 +1467,11 @@ namespace Avalonia.Controls
                         {
                             selection = DetectSelection();
 
+                            if (!selection && SelectionStart != SelectionEnd)
+                            {
+                                ClearSelectionAndMoveCaretToTextPosition(LogicalDirection.Backward);
+                            }
+
                             _presenter.MoveCaretVertical(LogicalDirection.Backward);
 
                             if (caretIndex != _presenter.CaretIndex)
@@ -1486,6 +1493,11 @@ namespace Avalonia.Controls
                     case Key.Down:
                         {
                             selection = DetectSelection();
+
+                            if (!selection && SelectionStart != SelectionEnd)
+                            {
+                                ClearSelectionAndMoveCaretToTextPosition(LogicalDirection.Forward);
+                            }
 
                             _presenter.MoveCaretVertical();
 
@@ -1981,9 +1993,9 @@ namespace Avalonia.Controls
                 {
                     if (selectionStart != selectionEnd)
                     {
-                        _presenter.MoveCaretToTextPosition(direction > 0 ?
-                            Math.Max(selectionStart, selectionEnd) :
-                            Math.Min(selectionStart, selectionEnd));
+                        ClearSelectionAndMoveCaretToTextPosition(direction > 0 ?
+                            LogicalDirection.Forward :
+                            LogicalDirection.Backward);
                     }
                     else
                     {
@@ -2092,6 +2104,17 @@ namespace Avalonia.Controls
         private void MovePageDown()
         {
             _scrollViewer?.PageDown();
+        }
+
+        private void ClearSelectionAndMoveCaretToTextPosition(LogicalDirection direction)
+        {
+            var newPosition = direction == LogicalDirection.Forward ?
+                Math.Max(SelectionStart, SelectionEnd) :
+                Math.Min(SelectionStart, SelectionEnd);
+            SetCurrentValue(SelectionStartProperty, newPosition);
+            SetCurrentValue(SelectionEndProperty, newPosition);
+            // move caret to appropriate side of previous selection
+            _presenter?.MoveCaretToTextPosition(newPosition);
         }
 
         /// <summary>

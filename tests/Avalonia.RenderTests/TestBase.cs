@@ -99,7 +99,7 @@ namespace Avalonia.Direct2D1.RenderTests
                     var immediateError = TestRenderHelper.CompareImages(immediate!, expected);
                     if (immediateError > AllowedError)
                     {
-                        Assert.True(false, immediatePath + ": Error = " + immediateError);
+                        Assert.Fail(immediatePath + ": Error = " + immediateError);
                     }
                 }
 
@@ -108,7 +108,7 @@ namespace Avalonia.Direct2D1.RenderTests
                     var compositedError = TestRenderHelper.CompareImages(composited!, expected);
                     if (compositedError > AllowedError)
                     {
-                        Assert.True(false, compositedPath + ": Error = " + compositedError);
+                        Assert.Fail(compositedPath + ": Error = " + compositedError);
                     }
                 }
             }

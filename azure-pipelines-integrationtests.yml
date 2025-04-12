@@ -24,6 +24,7 @@ jobs:
       if [[ $(uname -m) == 'arm64' ]]; then
       arch="arm64"
       fi
+      git clean -ffdx
       sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
       pkill node
       pkill testmanagerd

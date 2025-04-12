@@ -5,8 +5,8 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Controls.Selection;
+using Avalonia.Controls.Utils;
 using Avalonia.Data;
-using Avalonia.Data.Core;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Metadata;
@@ -115,7 +115,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public static readonly StyledProperty<bool> IsTextSearchEnabledProperty =
             AvaloniaProperty.Register<SelectingItemsControl, bool>(nameof(IsTextSearchEnabled), false);
-
+        
         /// <summary>
         /// Event that should be raised by containers when their selection state changes to notify
         /// the parent <see cref="SelectingItemsControl"/> that their selection state has changed.
@@ -147,7 +147,7 @@ namespace Avalonia.Controls.Primitives
         private bool _ignoreContainerSelectionChanged;
         private UpdateState? _updateState;
         private bool _hasScrolledToSelectedItem;
-        private BindingHelper? _bindingHelper;
+        private BindingEvaluator<object?>? _selectedValueBindingEvaluator;
         private bool _isSelectionChangeActive;
 
         public SelectingItemsControl()
@@ -610,29 +610,12 @@ namespace Avalonia.Controls.Primitives
 
                 _textSearchTerm += e.Text;
 
-                bool Match(Control container)
+                var newIndex = GetIndexFromTextSearch(_textSearchTerm);
+                if (newIndex >= 0)
                 {
-                    if (container is AvaloniaObject ao && ao.IsSet(TextSearch.TextProperty))
-                    {
-                        var searchText = ao.GetValue(TextSearch.TextProperty);
-
-                        if (searchText?.StartsWith(_textSearchTerm, StringComparison.OrdinalIgnoreCase) == true)
-                        {
-                            return true;
-                        }
-                    }
-
-                    return container is IContentControl control &&
-                           control.Content?.ToString()?.StartsWith(_textSearchTerm, StringComparison.OrdinalIgnoreCase) == true;
+                    SelectedIndex = newIndex;
                 }
-
-                var container = GetRealizedContainers().FirstOrDefault(Match);
-
-                if (container != null)
-                {
-                    SelectedIndex = IndexFromContainer(container);
-                }
-
+                
                 StartTextSearchTimer();
 
                 e.Handled = true;
@@ -696,17 +679,10 @@ namespace Avalonia.Controls.Primitives
                 {
                     _isSelectionChangeActive = true;
 
-                    if (_bindingHelper is null)
-                    {
-                        _bindingHelper = new BindingHelper(value);
-                    }
-                    else
-                    {
-                        _bindingHelper.UpdateBinding(value);
-                    }
+                    var bindingEvaluator = GetSelectedValueBindingEvaluator(value);
 
                     // Re-evaluate SelectedValue with the new binding
-                    SetCurrentValue(SelectedValueProperty, _bindingHelper.Evaluate(selectedItem));
+                    SetCurrentValue(SelectedValueProperty, bindingEvaluator.Evaluate(selectedItem));
                 }
                 finally
                 {
@@ -1085,19 +1061,22 @@ namespace Avalonia.Controls.Primitives
                 }
             }
 
-            _bindingHelper ??= new BindingHelper(binding);
+            var bindingEvaluator = GetSelectedValueBindingEvaluator(binding);
 
             // Matching UWP behavior, if duplicates are present, return the first item matching
             // the SelectedValue provided
             foreach (var item in items!)
             {
-                var itemValue = _bindingHelper.Evaluate(item);
+                var itemValue = bindingEvaluator.Evaluate(item);
 
                 if (Equals(itemValue, value))
                 {
+                    bindingEvaluator.ClearDataContext();
                     return item;
                 }
             }
+
+            bindingEvaluator.ClearDataContext();
 
             return AvaloniaProperty.UnsetValue;
         }
@@ -1125,12 +1104,12 @@ namespace Avalonia.Controls.Primitives
                 return;
             }
 
-            _bindingHelper ??= new BindingHelper(binding);
+            var bindingEvaluator = GetSelectedValueBindingEvaluator(binding);
 
             try
             {
                 _isSelectionChangeActive = true;
-                SetCurrentValue(SelectedValueProperty, _bindingHelper.Evaluate(item));
+                SetCurrentValue(SelectedValueProperty, bindingEvaluator.Evaluate(item));
             }
             finally
             {
@@ -1356,6 +1335,37 @@ namespace Avalonia.Controls.Primitives
             StopTextSearchTimer();
         }
 
+        private int GetIndexFromTextSearch(string textSearchTerm)
+        {
+            if (string.IsNullOrEmpty(textSearchTerm))
+                return -1;
+
+            var count = Items.Count;
+            if (count == 0)
+                return -1;
+
+            var textBinding = TextSearch.GetTextBinding(this) ?? DisplayMemberBinding;
+            using var textBindingEvaluator = BindingEvaluator<string?>.TryCreate(textBinding);
+
+            for (var i = 0; i < count; i++)
+            {
+                var text = TextSearch.GetEffectiveText(Items[i], textBindingEvaluator);
+                if (text.StartsWith(textSearchTerm, StringComparison.OrdinalIgnoreCase))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        private BindingEvaluator<object?> GetSelectedValueBindingEvaluator(IBinding binding)
+        {
+            _selectedValueBindingEvaluator ??= new();
+            _selectedValueBindingEvaluator.UpdateBinding(binding);
+            return _selectedValueBindingEvaluator;
+        }
+
         // When in a BeginInit..EndInit block, or when the DataContext is updating, we need to
         // defer changes to the selection model because we have no idea in which order properties
         // will be set. Consider:
@@ -1384,42 +1394,6 @@ namespace Avalonia.Controls.Primitives
             public Optional<int> SelectedIndex { get; set; }
             public Optional<object?> SelectedItem { get; set; }
             public Optional<object?> SelectedValue { get; set; }
-        }
-
-        /// <summary>
-        /// Helper class for evaluating a binding from an Item and IBinding instance
-        /// </summary>
-        private class BindingHelper : StyledElement
-        {
-            private BindingExpressionBase? _expression;
-            private IBinding? _lastBinding;
-
-            public BindingHelper(IBinding binding)
-            {
-                UpdateBinding(binding);
-            }
-
-            public static readonly StyledProperty<object> ValueProperty =
-                AvaloniaProperty.Register<BindingHelper, object>("Value");
-
-            public object? Evaluate(object? dataContext)
-            {
-                // Only update the DataContext if necessary
-                if (!Equals(dataContext, DataContext))
-                    DataContext = dataContext;
-
-                return GetValue(ValueProperty);
-            }
-
-            public void UpdateBinding(IBinding binding)
-            {
-                if (binding == _lastBinding)
-                    return;
-
-                _expression?.Dispose();
-                _expression = Bind(ValueProperty, binding);
-                _lastBinding = binding;
-            }
         }
     }
 }

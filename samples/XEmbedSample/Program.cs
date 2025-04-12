@@ -4,7 +4,9 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Media;
 using ControlCatalog;
 using ControlCatalog.Models;
+using Gdk;
 using Gtk;
+using Window = Gtk.Window;
 
 namespace XEmbedSample;
 
@@ -31,7 +33,7 @@ class Program
 
 
         var w = new Gtk.Window("XEmbed Test Window");
-        var socket = new AvaloniaXEmbedGtkSocket(w.StyleContext.GetBackgroundColor(StateFlags.Normal))
+        var socket = new AvaloniaXEmbedGtkSocket(GetBackgroundColor(w))
         {
             Content = new ScrollViewer()
             {
@@ -59,5 +61,12 @@ class Program
         w.ShowAll();
         Gtk.Application.Run();
         
+    }
+
+    private static RGBA GetBackgroundColor(Window window)
+    {
+#pragma warning disable CS0612 // Type or member is obsolete; OK for a sample.
+        return window.StyleContext.GetBackgroundColor(StateFlags.Normal);
+#pragma warning restore CS0612 // Type or member is obsolete
     }
 }
