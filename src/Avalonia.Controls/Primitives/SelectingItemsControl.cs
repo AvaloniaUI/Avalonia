@@ -592,10 +592,7 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnInitialized();
 
-            if (_selection is object)
-            {
-                _selection.Source = ItemsView.Source;
-            }
+            TryInitializeSelectionSource(_selection);
         }
 
         /// <inheritdoc />
@@ -896,8 +893,8 @@ namespace Avalonia.Controls.Primitives
 
         private void OnItemsViewSourceChanged(object? sender, EventArgs e)
         {
-            if (_selection is not null && _updateState is null)
-                _selection.Source = ItemsView.Source;
+            if (_updateState is null)
+                TryInitializeSelectionSource(_selection);
         }
 
         /// <summary>
@@ -1202,7 +1199,7 @@ namespace Avalonia.Controls.Primitives
         {
             if (_updateState is null)
             {
-                model.Source = ItemsView.Source;
+                TryInitializeSelectionSource(model);
             }
 
             model.PropertyChanged += OnSelectionModelPropertyChanged;
@@ -1237,6 +1234,12 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        private void TryInitializeSelectionSource(ISelectionModel? selection)
+        {
+            if (selection is not null && ItemsView.TryGetInitializedSource() is { } source)
+                selection.Source = source;
+        }
+
         private void DeinitializeSelectionModel(ISelectionModel? model)
         {
             if (model is object)
@@ -1266,7 +1269,7 @@ namespace Avalonia.Controls.Primitives
 
                 if (_selection is InternalSelectionModel s)
                 {
-                    s.Update(ItemsView.Source, state.SelectedItems);
+                    s.Update(ItemsView.TryGetInitializedSource(), state.SelectedItems);
                 }
                 else
                 {
@@ -1275,7 +1278,7 @@ namespace Avalonia.Controls.Primitives
                         SelectedItems = state.SelectedItems.Value;
                     }
 
-                    Selection.Source = ItemsView.Source;
+                    TryInitializeSelectionSource(Selection);
                 }
 
                 if (state.SelectedValue.HasValue)
