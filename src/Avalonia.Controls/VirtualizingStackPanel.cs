@@ -713,6 +713,10 @@ namespace Avalonia.Controls
             var index = viewport.anchorIndex;
             var horizontal = Orientation == Orientation.Horizontal;
             var u = viewport.anchorU;
+                    
+            // Reset boundary flags
+            _hasReachedStart = false;
+            _hasReachedEnd = false;
 
             // If the anchor element is at the beginning of, or before, the start of the viewport
             // then we can recycle all elements before it.
@@ -738,7 +742,10 @@ namespace Avalonia.Controls
                 _realizingIndex = -1;
                 _realizingElement = null;
             } while (u < viewport.viewportUEnd && index < items.Count);
-
+            
+            // Check if we reached the end of the collection
+            _hasReachedEnd = index >= items.Count;
+            
             // Store the last index and end U position for the desired size calculation.
             viewport.lastIndex = index - 1;
             viewport.realizedEndU = u;
@@ -763,6 +770,9 @@ namespace Avalonia.Controls
                 viewport.measuredV = Math.Max(viewport.measuredV, sizeV);
                 --index;
             }
+            
+            // Check if we reached the start of the collection
+            _hasReachedStart = index < 0;
 
             // We can now recycle elements before the first element.
             _realizedElements.RecycleElementsBefore(index + 1, _recycleElement);
@@ -1025,7 +1035,10 @@ namespace Avalonia.Controls
                         if (newViewportStart < oldViewportStart && 
                             newViewportStart - newExtendedViewportStart < bufferSize * 0.5)
                         {
-                            nearingEdge = true;
+                            // Edge case: We're at item 0 with excess measurement space.
+                            // Skip re-measuring since we're at the list start and it won't change the result.
+                            // This prevents redundant Measure-Arrange cycles when at list beginning.
+                            nearingEdge = !_hasReachedStart;
                             Debug.Write(" Case 1b UP");
                         }
                         
@@ -1033,7 +1046,10 @@ namespace Avalonia.Controls
                         if (newViewportEnd > oldViewportEnd && 
                             newExtendedViewportEnd - newViewportEnd < bufferSize * 0.5)
                         {
-                            nearingEdge = true;
+                            // Edge case: We're at the last item with excess measurement space.
+                            // Skip re-measuring since we're at the list end and it won't change the result.
+                            // This prevents redundant Measure-Arrange cycles when at list beginning.
+                            nearingEdge = !_hasReachedEnd;
                             Debug.Write(" Case 1b DOWN");
                         }
                     }
