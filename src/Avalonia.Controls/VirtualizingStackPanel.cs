@@ -8,6 +8,7 @@ using Avalonia.Controls.Utils;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
+using Avalonia.Reactive;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
 
@@ -55,7 +56,8 @@ namespace Avalonia.Controls
         /// Defines the <see cref="BufferFactor"/> property.
         /// </summary>
         public static readonly StyledProperty<double> BufferFactorProperty =
-            AvaloniaProperty.Register<VirtualizingStackPanel, double>(nameof(BufferFactor), 0.5);
+            AvaloniaProperty.Register<VirtualizingStackPanel, double>(nameof(BufferFactor), 0.5, 
+                validate: v => v is >= 0 and <= 2);
 
         /// <summary>
         /// Gets or sets the factor to determine how much additional space to maintain above and below the viewport.
@@ -98,7 +100,9 @@ namespace Avalonia.Controls
         
         private bool _hasReachedStart = false;
         private bool _hasReachedEnd = false;
-        private bool _traceVirtualization = false;
+        private bool _cacheElementMeasurements = false;
+        private Size _previousSize;
+        private readonly bool _traceVirtualization = false;
 
         private Rect _extendedViewport;
 
@@ -229,7 +233,9 @@ namespace Avalonia.Controls
             }
             finally
             {
+                _cacheElementMeasurements = false;
                 _isInLayout = false;
+                _previousSize = Bounds.Size;
             }
         }
 
@@ -463,7 +469,8 @@ namespace Avalonia.Controls
             {
                 // Create and measure the element to be brought into view. Store it in a field so that
                 // it can be re-used in the layout pass.
-                var scrollToElement = GetOrCreateElement(items, index);
+                var (scrollToElement, _) = GetOrCreateElement(items, index);
+                
                 scrollToElement.Measure(Size.Infinity);
 
                 // Get the expected position of the element and put it in place.
@@ -728,9 +735,18 @@ namespace Avalonia.Controls
             do
             {
                 _realizingIndex = index;
-                var e = GetOrCreateElement(items, index);
+                var (e, existed) = GetOrCreateElement(items, index);
                 _realizingElement = e;
-                e.Measure(availableSize);
+                
+                // Skip re-measuring when an in-view element with correct item
+                // only needs measurement due to scroll-based viewport changes
+                if(!existed || !_cacheElementMeasurements)
+                    e.Measure(availableSize);
+                
+                if (_traceVirtualization && existed && _cacheElementMeasurements)
+                {
+                    Debug.WriteLine($"Skipped measuring {items[index]}");
+                }
 
                 var sizeU = horizontal ? e.DesiredSize.Width : e.DesiredSize.Height;
                 var sizeV = horizontal ? e.DesiredSize.Height : e.DesiredSize.Width;
@@ -760,8 +776,17 @@ namespace Avalonia.Controls
 
             while (u > viewport.viewportUStart && index >= 0)
             {
-                var e = GetOrCreateElement(items, index);
-                e.Measure(availableSize);
+                var (e, existed) = GetOrCreateElement(items, index);
+                
+                // Skip re-measuring when an in-view element with correct item
+                // only needs measurement due to scroll-based viewport changes
+                if(!existed || !_cacheElementMeasurements)
+                    e.Measure(availableSize);
+
+                if (_traceVirtualization && existed && _cacheElementMeasurements)
+                {
+                    Debug.WriteLine($"Skipped measuring {items[index]}");
+                }
 
                 var sizeU = horizontal ? e.DesiredSize.Width : e.DesiredSize.Height;
                 var sizeV = horizontal ? e.DesiredSize.Height : e.DesiredSize.Width;
@@ -779,26 +804,26 @@ namespace Avalonia.Controls
             _realizedElements.RecycleElementsBefore(index + 1, _recycleElement);
         }
 
-        private Control GetOrCreateElement(IReadOnlyList<object?> items, int index)
+        private (Control e, bool existed) GetOrCreateElement(IReadOnlyList<object?> items, int index)
         {
             Debug.Assert(ItemContainerGenerator is not null);
 
             if ((GetRealizedElement(index) ??
                  GetRealizedElement(index, ref _focusedIndex, ref _focusedElement) ??
                  GetRealizedElement(index, ref _scrollToIndex, ref _scrollToElement)) is { } realized)
-                return realized;
+                return (realized, true);
 
             var item = items[index];
             var generator = ItemContainerGenerator!;
 
             if (generator.NeedsContainer(item, index, out var recycleKey))
             {
-                return GetRecycledElement(item, index, recycleKey) ??
-                       CreateElement(item, index, recycleKey);
+                return (GetRecycledElement(item, index, recycleKey) ??
+                       CreateElement(item, index, recycleKey), false);
             }
             else
             {
-                return GetItemAsOwnContainer(item, index);
+                return (GetItemAsOwnContainer(item, index), false);
             }
         }
 
@@ -1062,8 +1087,6 @@ namespace Avalonia.Controls
                     needsMeasure = nearingEdge;
                 }
             }
-            
-            
 
             if (needsMeasure)
             {
@@ -1071,6 +1094,15 @@ namespace Avalonia.Controls
                 
                 // only store the new "old" extended viewport if we _did_ actually measure
                 _extendedViewport = extendedViewPort;
+                
+                // Cache element measurements when only scroll position changes
+                // Re-measure only when the cross-axis dimension changes
+                // Example: In vertical scrolling, cache if only height changes; re-measure if width changes
+                bool sizeChanged = vertical
+                    ? Math.Abs(Bounds.Width - _previousSize.Width) > 0.1               
+                    : Math.Abs(Bounds.Height - _previousSize.Height) > 0.1 ;
+                
+                _cacheElementMeasurements = !sizeChanged;
                 InvalidateMeasure();
             }
             else
