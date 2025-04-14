@@ -159,7 +159,8 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
     public Task<IStorageFile?> CreateFileAsync(string name)
     {
         var mimeType = MimeTypeMap.Singleton?.GetMimeTypeFromExtension(MimeTypeMap.GetFileExtensionFromUrl(name)) ?? "application/octet-stream";
-        var newFile = DocumentsContract.CreateDocument(Activity.ContentResolver!, Uri, mimeType, name);
+        var treeUri = DocumentsContract.BuildDocumentUriUsingTree(Uri, DocumentsContract.GetTreeDocumentId(Uri));
+        var newFile = DocumentsContract.CreateDocument(Activity.ContentResolver!, treeUri!, mimeType, name);
         if(newFile == null)
         {
             return Task.FromResult<IStorageFile?>(null);
@@ -170,7 +171,8 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
 
     public Task<IStorageFolder?> CreateFolderAsync(string name)
     {
-        var newFolder = DocumentsContract.CreateDocument(Activity.ContentResolver!, Uri, DocumentsContract.Document.MimeTypeDir, name);
+        var treeUri = DocumentsContract.BuildDocumentUriUsingTree(Uri, DocumentsContract.GetTreeDocumentId(Uri));
+        var newFolder = DocumentsContract.CreateDocument(Activity.ContentResolver!, treeUri!, DocumentsContract.Document.MimeTypeDir, name);
         if (newFolder == null)
         {
             return Task.FromResult<IStorageFolder?>(null);
