@@ -207,7 +207,8 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
                 }
             }
 
-            DocumentsContract.DeleteDocument(Activity.ContentResolver!, storageFolder.Uri);
+            var treeUri = DocumentsContract.BuildDocumentUriUsingTree(storageFolder.Uri, DocumentsContract.GetTreeDocumentId(storageFolder.Uri));
+            DocumentsContract.DeleteDocument(Activity.ContentResolver!, treeUri!);
         }
     }
 
