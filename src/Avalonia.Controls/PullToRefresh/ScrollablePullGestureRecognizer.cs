@@ -27,9 +27,12 @@ namespace Avalonia.Controls.PullToRefresh
             set => SetValue(PullDirectionProperty, value);
         }
 
-        public ScrollablePullGestureRecognizer(PullDirection pullDirection)
+        public bool IsMouseEnabled { get; set; }
+
+        public ScrollablePullGestureRecognizer(PullDirection pullDirection, bool IsMouseEnabled)
         {
             PullDirection = pullDirection;
+            IsMouseEnabled = IsMouseEnabled;
         }
 
         public ScrollablePullGestureRecognizer() { }
@@ -44,7 +47,10 @@ namespace Avalonia.Controls.PullToRefresh
 
         protected override void PointerPressed(PointerPressedEventArgs e)
         {
-            if (Target != null && Target is Visual visual && (e.Pointer.Type == PointerType.Touch || e.Pointer.Type == PointerType.Pen))
+            var isEnabledOnPlatform = (e.Pointer.Type == PointerType.Touch || e.Pointer.Type == PointerType.Pen) // either it is a touch device
+                                      || IsMouseEnabled; // or desktop is enabled
+            
+            if (Target != null && Target is Visual visual && isEnabledOnPlatform)
             {
                 _tracking = e.Pointer;
                 _initialPosition = e.GetPosition(visual);
@@ -78,6 +84,7 @@ namespace Avalonia.Controls.PullToRefresh
             if (_pullInProgress == true)
             {
                 EndPull();
+                e.Pointer.Capture(null);
             }
 
             _tracking = null;

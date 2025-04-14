@@ -12,15 +12,17 @@ namespace Avalonia.Controls.PullToRefresh
         private const int InitialOffsetThreshold = 1;
 
         private PullDirection _refreshPullDirection;
+        private bool _IsMouseEnabled;
         private ScrollViewer? _scrollViewer;
         private RefreshInfoProvider? _refreshInfoProvider;
         private ScrollablePullGestureRecognizer? _pullGestureRecognizer;
         private InputElement? _interactionSource;
         private bool _isVisualizerInteractionSourceAttached;
 
-        public ScrollViewerIRefreshInfoProviderAdapter(PullDirection pullDirection)
+        public ScrollViewerIRefreshInfoProviderAdapter(PullDirection pullDirection, bool IsMouseEnabled)
         {
             _refreshPullDirection = pullDirection;
+            _IsMouseEnabled = IsMouseEnabled;
         }
 
         public RefreshInfoProvider? AdaptFromTree(Visual root, Size? refreshVIsualizerSize)
@@ -124,7 +126,7 @@ namespace Avalonia.Controls.PullToRefresh
 
             _refreshInfoProvider = new RefreshInfoProvider(_refreshPullDirection, refreshVIsualizerSize, ElementComposition.GetElementVisual(content));
 
-            _pullGestureRecognizer = new ScrollablePullGestureRecognizer(_refreshPullDirection);
+            _pullGestureRecognizer = new ScrollablePullGestureRecognizer(_refreshPullDirection, _IsMouseEnabled);
 
             if (_interactionSource != null)
             {
@@ -273,6 +275,16 @@ namespace Avalonia.Controls.PullToRefresh
             if (_pullGestureRecognizer != null)
             {
                 _pullGestureRecognizer.PullDirection = pullDirection;
+            }
+        }
+
+        public void UpdateIsMouseEnabled(bool IsMouseEnabled)
+        {
+            _IsMouseEnabled = IsMouseEnabled;
+            
+            if (_pullGestureRecognizer != null)
+            {
+                _pullGestureRecognizer.IsMouseEnabled = IsMouseEnabled;
             }
         }
 

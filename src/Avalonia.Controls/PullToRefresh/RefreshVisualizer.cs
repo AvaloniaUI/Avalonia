@@ -313,7 +313,7 @@ namespace Avalonia.Controls
         public void RequestRefresh()
         {
             RefreshVisualizerState = RefreshVisualizerState.Refreshing;
-            RefreshInfoProvider?.OnRefreshStarted();            
+            RefreshInfoProvider?.OnRefreshStarted();
 
             RaiseRefreshRequested();
         }
