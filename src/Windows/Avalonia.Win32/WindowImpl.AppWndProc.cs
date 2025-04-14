@@ -223,8 +223,6 @@ namespace Avalonia.Win32
 
                             e = new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp, Owner, text);
                         }
-
-                        _ignoreWmChar = false;
                         break;
                     }
 
