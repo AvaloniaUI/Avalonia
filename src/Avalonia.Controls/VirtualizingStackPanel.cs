@@ -98,6 +98,7 @@ namespace Avalonia.Controls
         
         private bool _hasReachedStart = false;
         private bool _hasReachedEnd = false;
+        private bool _traceVirtualization = false;
 
         private Rect _extendedViewport;
 
@@ -948,7 +949,7 @@ namespace Avalonia.Controls
 
             ItemContainerGenerator.ItemContainerIndexChanged(element, oldIndex, newIndex);
         }
-
+        
         private void OnEffectiveViewportChanged(object? sender, EffectiveViewportChangedEventArgs e)
         {
             var vertical = Orientation == Orientation.Vertical;
@@ -1000,7 +1001,7 @@ namespace Avalonia.Controls
 
             var needsMeasure = false;
             
-            Debug.Write($"old xVP:{oldExtendedViewportStart}.-{oldExtendedViewportEnd} - new VP:{newViewportStart}-{newViewportEnd}");
+            if(_traceVirtualization) Debug.Write($"old xVP:{oldExtendedViewportStart}.-{oldExtendedViewportEnd} - new VP:{newViewportStart}-{newViewportEnd}");
 
             // Case 1: Viewport has changed significantly
             if (!MathUtilities.AreClose(oldViewportStart, newViewportStart) ||
@@ -1011,7 +1012,7 @@ namespace Avalonia.Controls
                     newViewportEnd > oldExtendedViewportEnd)
                 {
                     needsMeasure = true;
-                    Debug.Write(" Case 1a");
+                    if(_traceVirtualization) Debug.Write(" Case 1a");
                 }
                 // Case 1b: The extended viewport has changed significantly
                 else if (!MathUtilities.AreClose(oldExtendedViewportStart, newExtendedViewportStart) ||
@@ -1039,7 +1040,7 @@ namespace Avalonia.Controls
                             // Skip re-measuring since we're at the list start and it won't change the result.
                             // This prevents redundant Measure-Arrange cycles when at list beginning.
                             nearingEdge = !_hasReachedStart;
-                            Debug.Write(" Case 1b UP");
+                            if(_traceVirtualization) Debug.Write(" Case 1b UP");
                         }
                         
                         // If scrolling down/right and nearing the bottom/right edge of realized elements
@@ -1050,7 +1051,7 @@ namespace Avalonia.Controls
                             // Skip re-measuring since we're at the list end and it won't change the result.
                             // This prevents redundant Measure-Arrange cycles when at list beginning.
                             nearingEdge = !_hasReachedEnd;
-                            Debug.Write(" Case 1b DOWN");
+                            if(_traceVirtualization) Debug.Write(" Case 1b DOWN");
                         }
                     }
                     else
@@ -1066,7 +1067,7 @@ namespace Avalonia.Controls
 
             if (needsMeasure)
             {
-                Debug.WriteLine(" => InvalidateMeasure");
+                if(_traceVirtualization) Debug.WriteLine(" => InvalidateMeasure");
                 
                 // only store the new "old" extended viewport if we _did_ actually measure
                 _extendedViewport = extendedViewPort;
@@ -1074,7 +1075,7 @@ namespace Avalonia.Controls
             }
             else
             {
-                Debug.WriteLine("");
+                if(_traceVirtualization) Debug.WriteLine("");
             }
         }
 
