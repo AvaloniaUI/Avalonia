@@ -102,6 +102,7 @@ namespace Avalonia.Controls
         private bool _hasReachedEnd = false;
         private bool _cacheElementMeasurements = false;
         private Size _previousSize;
+        private readonly HashSet<Control> _unchangedElements = new();
         private readonly bool _traceVirtualization = false;
 
         private Rect _extendedViewport;
@@ -261,9 +262,13 @@ namespace Avalonia.Controls
                         var rect = orientation == Orientation.Horizontal ?
                             new Rect(u, 0, sizeU, finalSize.Height) :
                             new Rect(0, u, finalSize.Width, sizeU);
-                        
+
                         // Always arrange the element, even if it's outside the visible viewport
-                        e.Arrange(rect);
+                        // but not if it is an unchanged element
+                        if(!_unchangedElements.Contains(e))
+                            e.Arrange(rect);
+                        else if (_traceVirtualization)
+                            Debug.WriteLine($"Skipped arranging {e.DataContext}");
                 
                         // Register as anchor candidate only if it's in the actual viewport (not just the extended one)
                         var elementBounds = orientation == Orientation.Horizontal ?
@@ -284,6 +289,7 @@ namespace Avalonia.Controls
                     var rect = orientation == Orientation.Horizontal ?
                         new Rect(u, 0, _focusedElement.DesiredSize.Width, finalSize.Height) :
                         new Rect(0, u, finalSize.Width, _focusedElement.DesiredSize.Height);
+                    
                     _focusedElement.Arrange(rect);
                 }
 
@@ -293,6 +299,9 @@ namespace Avalonia.Controls
             {
                 _isInLayout = false;
 
+                // this collection is only valid for one single Measure/Arrange cycle
+                _unchangedElements.Clear();
+                
                 RaiseEvent(new RoutedEventArgs(Orientation == Orientation.Horizontal ? HorizontalSnapPointsChangedEvent : VerticalSnapPointsChangedEvent));
             }
         }
@@ -740,8 +749,10 @@ namespace Avalonia.Controls
                 
                 // Skip re-measuring when an in-view element with correct item
                 // only needs measurement due to scroll-based viewport changes
-                if(!existed || !_cacheElementMeasurements)
+                if (!existed || !_cacheElementMeasurements)
                     e.Measure(availableSize);
+                else
+                    _unchangedElements.Add(e);
                 
                 if (_traceVirtualization && existed && _cacheElementMeasurements)
                 {
@@ -782,6 +793,8 @@ namespace Avalonia.Controls
                 // only needs measurement due to scroll-based viewport changes
                 if(!existed || !_cacheElementMeasurements)
                     e.Measure(availableSize);
+                else
+                    _unchangedElements.Add(e);
 
                 if (_traceVirtualization && existed && _cacheElementMeasurements)
                 {
