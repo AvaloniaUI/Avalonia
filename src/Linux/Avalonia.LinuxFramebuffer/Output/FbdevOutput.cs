@@ -5,6 +5,7 @@ using System.Text;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.LinuxFramebuffer.Output;
 using Avalonia.Platform;
+using Avalonia.Skia;
 
 namespace Avalonia.LinuxFramebuffer
 {
@@ -19,6 +20,9 @@ namespace Avalonia.LinuxFramebuffer
         private readonly FbDevOutputOptions _options;
         private bool _lockedAtLeastOnce;
         public double Scaling { get; set; }
+
+        // implements ISurfaceOrientation
+        public SurfaceOrientation Orientation { get; set; }
 
         /// <summary>
         /// Create a Linux frame buffer device output
@@ -58,6 +62,8 @@ namespace Avalonia.LinuxFramebuffer
                 throw new Exception("Error: " + Marshal.GetLastWin32Error());
             _options = options;
             Scaling = options.Scaling;
+            Orientation = options.Orientation;
+
             try
             {
                 Init(options.PixelFormat);

@@ -1,4 +1,5 @@
 using Avalonia.Media;
+using Avalonia.Skia;
 
 namespace Avalonia.LinuxFramebuffer
 {
@@ -12,7 +13,13 @@ namespace Avalonia.LinuxFramebuffer
         /// Default: 1.0
         /// </summary>
         public double Scaling { get; set; } = 1.0;
-        
+
+        /// <summary>
+        /// The orientation of the screen relative to the frame buffer memory orientation
+        /// Default: Normal
+        /// </summary>
+        public SurfaceOrientation Orientation { get; set; } = SurfaceOrientation.Normal;
+
         /// <summary>
         /// If true an two cycle buffer swapping is processed at init.
         /// Default: True

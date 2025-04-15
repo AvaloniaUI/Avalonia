@@ -56,6 +56,9 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
         public extern static IntPtr libinput_path_remove_device(IntPtr device);
         
         [DllImport(LibInput)]
+        public extern static int libinput_device_config_calibration_set_matrix(IntPtr device, float[] matrix);
+
+        [DllImport(LibInput)]
         public extern static int libinput_get_fd(IntPtr ctx);
         
         [DllImport(LibInput)]
