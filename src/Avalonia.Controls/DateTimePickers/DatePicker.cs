@@ -293,6 +293,10 @@ namespace Avalonia.Controls
                 var (oldValue, newValue) = change.GetOldAndNewValue<DateTimeOffset?>();
                 OnSelectedDateChanged(this, new DatePickerSelectedValueChangedEventArgs(oldValue, newValue));
             }
+            else if (change.Property == MonthFormatProperty || change.Property == YearFormatProperty || change.Property == DayFormatProperty)
+            {
+                SetSelectedDateText();
+            }
         }
 
         private void OnDismissPicker(object? sender, EventArgs e)

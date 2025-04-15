@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Reactive.Subjects;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
@@ -244,6 +245,40 @@ namespace Avalonia.Controls.UnitTests
             Assert.True(handled);
         }
 
+        [Theory]
+        [InlineData("PART_DaySelector")]
+        [InlineData("PART_MonthSelector")]
+        [InlineData("PART_YearSelector")]
+        public void Selector_ScrollUp_Should_Work(string selectorName)
+            => TestSelectorScrolling(selectorName, panel => panel.ScrollUp());
+
+        [Theory]
+        [InlineData("PART_DaySelector")]
+        [InlineData("PART_MonthSelector")]
+        [InlineData("PART_YearSelector")]
+        public void Selector_ScrollDown_Should_Work(string selectorName)
+            => TestSelectorScrolling(selectorName, panel => panel.ScrollDown());
+
+        private static void TestSelectorScrolling(string selectorName, Action<DateTimePickerPanel> scroll)
+        {
+            using var app = UnitTestApplication.Start(Services);
+
+            var presenter = new DatePickerPresenter { Template = CreatePickerTemplate() };
+            presenter.ApplyTemplate();
+            presenter.Measure(new Size(1000, 1000));
+
+            var panel = presenter
+                .GetVisualDescendants()
+                .OfType<DateTimePickerPanel>()
+                .FirstOrDefault(panel => panel.Name == selectorName);
+
+            Assert.NotNull(panel);
+
+            var previousOffset = panel.Offset;
+            scroll(panel);
+            Assert.NotEqual(previousOffset, panel.Offset);
+        }
+
         private static TestServices Services => TestServices.MockThreadingInterface.With(
             fontManagerImpl: new HeadlessFontManagerStub(),
             standardCursorFactory: Mock.Of<ICursorFactory>(),
@@ -296,6 +331,75 @@ namespace Avalonia.Controls.UnitTests
                 flyoutButton.Content = contentGrid;
                 layoutRoot.Children.Add(flyoutButton);
                 return layoutRoot;
+            });
+        }
+
+        private static IControlTemplate CreatePickerTemplate()
+        {
+            return new FuncControlTemplate((_, scope) =>
+            {
+                var dayHost = new Panel
+                {
+                    Name = "PART_DayHost"
+                }.RegisterInNameScope(scope);
+
+                var daySelector = new DateTimePickerPanel
+                {
+                    Name = "PART_DaySelector",
+                    PanelType = DateTimePickerPanelType.Day,
+                    ShouldLoop = true
+                }.RegisterInNameScope(scope);
+
+                var monthHost = new Panel
+                {
+                    Name = "PART_MonthHost"
+                }.RegisterInNameScope(scope);
+
+                var monthSelector = new DateTimePickerPanel
+                {
+                    Name = "PART_MonthSelector",
+                    PanelType = DateTimePickerPanelType.Month,
+                    ShouldLoop = true
+                }.RegisterInNameScope(scope);
+
+                var yearHost = new Panel
+                {
+                    Name = "PART_YearHost"
+                }.RegisterInNameScope(scope);
+
+                var yearSelector = new DateTimePickerPanel
+                {
+                    Name = "PART_YearSelector",
+                    PanelType = DateTimePickerPanelType.Year,
+                    ShouldLoop = true
+                }.RegisterInNameScope(scope);
+
+                var acceptButton = new Button
+                {
+                    Name = "PART_AcceptButton"
+                }.RegisterInNameScope(scope);
+
+                var pickerContainer = new Grid
+                {
+                    Name = "PART_PickerContainer"
+                }.RegisterInNameScope(scope);
+
+                var firstSpacer = new Rectangle
+                {
+                    Name = "PART_FirstSpacer"
+                }.RegisterInNameScope(scope);
+
+                var secondSpacer = new Rectangle
+                {
+                    Name = "PART_SecondSpacer"
+                }.RegisterInNameScope(scope);
+
+                var contentPanel = new Panel();
+                contentPanel.Children.AddRange([
+                    dayHost, daySelector, monthHost, monthSelector, yearHost, yearSelector,
+                    acceptButton, pickerContainer, firstSpacer, secondSpacer
+                ]);
+                return contentPanel;
             });
         }
     }

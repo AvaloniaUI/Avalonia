@@ -312,6 +312,10 @@ namespace Avalonia.Controls
             {
                 OnDateRangeChanged(this, change);
             }
+            else if (change.Property == MonthFormatProperty || change.Property == YearFormatProperty || change.Property == DayFormatProperty)
+            {
+                InitPicker();
+            }
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
