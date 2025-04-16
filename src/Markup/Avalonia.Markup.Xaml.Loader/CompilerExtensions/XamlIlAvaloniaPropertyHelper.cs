@@ -204,12 +204,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
         public IXamlField AvaloniaProperty { get; }
         public XamlIlAvaloniaProperty(XamlAstClrProperty original, IXamlField field,
             AvaloniaXamlIlWellKnownTypes types)
-            :base(original, original.Name, original.DeclaringType, original.Getter, original.Setters)
+            :base(original, original.Name, original.DeclaringType, original.Getter, original.Setters, original.CustomAttributes)
         {
             var assignBinding = original.CustomAttributes.Any(ca => ca.Type.Equals(types.AssignBindingAttribute));
 
             AvaloniaProperty = field;
-            CustomAttributes = original.CustomAttributes;
             if (!assignBinding)
                 Setters.Insert(0, new BindingSetter(types, original.DeclaringType, field));
 
@@ -459,7 +458,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
         public XamlIlAvaloniaClassProperty(AvaloniaXamlIlWellKnownTypes types,
             string className,
-            IXamlLineInfo lineInfo) : base(lineInfo, className, types.Classes, null, null, null)
+            IXamlLineInfo lineInfo) : base(lineInfo, className, types.Classes, null)
         {
             Parameters = [types.XamlIlTypes.String];
             _method = types.GetClassProperty;
