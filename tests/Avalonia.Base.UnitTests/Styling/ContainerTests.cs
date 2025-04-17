@@ -111,7 +111,7 @@ namespace Avalonia.Base.UnitTests.Styling
         }
 
         [Fact]
-        public void Container_Queries_Matches_Name()
+        public void Container_Width_Queries_Matches_Name()
         {
             using var app = UnitTestApplication.Start();
             var root = new LayoutTestRoot()
@@ -159,6 +159,57 @@ namespace Avalonia.Base.UnitTests.Styling
 
             root.LayoutManager.ExecuteLayoutPass();
             Assert.Equal(child.Width, 300.0);
+        }
+
+        [Fact]
+        public void Container_Height_Queries_Matches_Name()
+        {
+            using var app = UnitTestApplication.Start();
+            var root = new LayoutTestRoot()
+            {
+                ClientSize = new Size(600, 600)
+            };
+            var containerQuery1 = new ContainerQuery(x => new HeightQuery(x, StyleQueryComparisonOperator.LessThanOrEquals, 500));
+            containerQuery1.Children.Add(new Style(x => x.Is<Border>())
+            {
+                Setters = { new Setter(Control.HeightProperty, 200.0) }
+            });
+            var containerQuery2 = new ContainerQuery(x => new HeightQuery(x, StyleQueryComparisonOperator.LessThanOrEquals, 500), "TEST");
+            containerQuery2.Children.Add(new Style(x => x.Is<Border>())
+            {
+                Setters = { new Setter(Control.HeightProperty, 300.0) }
+            });
+            root.Styles.Add(containerQuery2);
+            root.Styles.Add(containerQuery1);
+            var child = new Border()
+            {
+                Name = "Child",
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Stretch
+            };
+            var controlInner = new ContentControl()
+            {
+                Width = 400,
+                Height = 400,
+                Content = child,
+                Name = "Inner"
+            };
+            Container.SetSizing(controlInner, Avalonia.Styling.ContainerSizing.Height);
+            Container.SetName(controlInner, "TEST");
+            var border = new Border()
+            {
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Stretch,
+                Child = controlInner,
+                Name = "Parent"
+            };
+            Container.SetSizing(border, Avalonia.Styling.ContainerSizing.Height);
+
+            root.Child = border;
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            root.LayoutManager.ExecuteLayoutPass();
+            Assert.Equal(child.Height, 300.0);
         }
     }
 }
