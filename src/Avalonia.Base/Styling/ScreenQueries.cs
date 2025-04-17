@@ -64,7 +64,7 @@ namespace Avalonia.Styling
             }
 
             return IsTrue(argument.@operator, argument.value) ?
-                new SelectorMatch(SelectorMatchResult.AlwaysThisInstance) : SelectorMatch.NeverThisInstance;
+                SelectorMatch.AlwaysThisInstance : SelectorMatch.NeverThisInstance;
         }
 
         public override string ToString() => "width";
@@ -90,7 +90,7 @@ namespace Avalonia.Styling
 
             if (subscribe)
             {
-                return new SelectorMatch(new HeightActivator(visual, Argument));
+                return new SelectorMatch(new HeightActivator(visual, Argument, containerName));
             }
 
             if (ContainerQueryActivatorBase.GetContainer(visual, containerName) is { } container
@@ -104,9 +104,9 @@ namespace Avalonia.Styling
             return SelectorMatch.NeverThisInstance;
         }
 
-        internal static SelectorMatch Evaluate(VisualQueryProvider screenSizeProvider, (StyleQueryComparisonOperator @operator, double value) argument)
+        internal static SelectorMatch Evaluate(VisualQueryProvider queryProvider, (StyleQueryComparisonOperator @operator, double value) argument)
         {
-            var height = screenSizeProvider.Height;
+            var height = queryProvider.Height;
             if (double.IsNaN(height))
             {
                 return SelectorMatch.NeverThisInstance;
