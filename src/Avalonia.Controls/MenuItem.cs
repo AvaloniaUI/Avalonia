@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Windows.Input;
 using Avalonia.Automation;
@@ -341,7 +342,7 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         IMenuElement? IMenuItem.Parent => Parent as IMenuElement;
 
-        protected override bool IsEnabledCore => base.IsEnabledCore && _commandCanExecute;
+        protected override bool IsEnabledCore => base.IsEnabled && (HasSubMenu || _commandCanExecute);
 
         /// <inheritdoc/>
         bool IMenuElement.MoveSelection(NavigationDirection direction, bool wrap) => MoveSelection(direction, wrap);
@@ -709,6 +710,15 @@ namespace Avalonia.Controls
             else if (change.Property == GroupNameProperty)
             {
                 GroupNameChanged(change);
+            }
+            else if (change.Property == ItemCountProperty)
+            {
+                // A menu item with no sub-menu is effectively disabled if its command binding
+                // failed: this means that the effectively enabled state depends on whether the
+                // number of items in the menu is 0 or not.
+                var (o, n) = change.GetOldAndNewValue<int>();
+                if (o == 0 || n == 0)
+                    UpdateIsEffectivelyEnabled();
             }
         }
         /// <summary>
