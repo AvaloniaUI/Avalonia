@@ -441,7 +441,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
-        public void Setting_SelectedIndex_Out_Of_Bounds_Should_Clear_Selection()
+        public void Setting_SelectedIndex_Out_Of_Bounds_With_ItemsSource_Should_Clear_Selection()
         {
             var items = new[]
             {
@@ -462,11 +462,50 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
-        public void Setting_SelectedItem_To_Non_Existent_Item_Should_Clear_Selection()
+        public void Setting_SelectedIndex_Out_Of_Bounds_Without_ItemsSource_Should_Keep_Selection_Until_ItemsSource_Is_Set()
         {
             var target = new SelectingItemsControl
             {
-                Template = Template(),
+                Template = Template()
+            };
+
+            target.ApplyTemplate();
+            target.SelectedIndex = 2;
+
+            Assert.Equal(2, target.SelectedIndex);
+
+            target.ItemsSource = Array.Empty<Item>();
+
+            Assert.Equal(-1, target.SelectedIndex);
+        }
+
+        [Fact]
+        public void Setting_SelectedIndex_Without_ItemsSource_Should_Keep_Selection_If_Index_Exists_When_ItemsSource_IsSet()
+        {
+            var target = new SelectingItemsControl
+            {
+                Template = Template()
+            };
+
+            target.ApplyTemplate();
+            target.SelectedIndex = 2;
+
+            Assert.Equal(2, target.SelectedIndex);
+
+            var items = new Item[] { new(), new(), new(), new() };
+            target.ItemsSource = items;
+
+            Assert.Equal(2, target.SelectedIndex);
+            Assert.Same(items[2], target.SelectedItem);
+        }
+
+        [Fact]
+        public void Setting_SelectedItem_To_Non_Existent_Item_With_ItemsSource_Should_Clear_Selection()
+        {
+            var target = new SelectingItemsControl
+            {
+                ItemsSource = Array.Empty<Item>(),
+                Template = Template()
             };
 
             target.ApplyTemplate();
@@ -474,6 +513,50 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             Assert.Equal(-1, target.SelectedIndex);
             Assert.Null(target.SelectedItem);
+        }
+
+        [Fact]
+        public void Setting_SelectedItem_To_Non_Existent_Item_Without_ItemsSource_Should_Keep_Selection_Until_ItemsSource_Is_Set()
+        {
+            var item = new Item();
+
+            var target = new SelectingItemsControl
+            {
+                Template = Template()
+            };
+
+            target.ApplyTemplate();
+            target.SelectedItem = item;
+
+            Assert.Equal(-1, target.SelectedIndex);
+            Assert.Same(item, target.SelectedItem);
+
+            target.ItemsSource = Array.Empty<Item>();
+
+            Assert.Equal(-1, target.SelectedIndex);
+            Assert.Null(target.SelectedItem);
+        }
+
+        [Fact]
+        public void Setting_SelectedItem_Without_ItemsSource_Should_Keep_Selection_If_Item_Exists_When_ItemsSource_IsSet()
+        {
+            var item = new Item();
+
+            var target = new SelectingItemsControl
+            {
+                Template = Template()
+            };
+
+            target.ApplyTemplate();
+            target.SelectedItem = item;
+
+            Assert.Equal(-1, target.SelectedIndex);
+            Assert.Same(item, target.SelectedItem);
+
+            target.ItemsSource = new[] { new(), new(), item, new() };
+
+            Assert.Equal(2, target.SelectedIndex);
+            Assert.Same(item, target.SelectedItem);
         }
 
         [Fact]
