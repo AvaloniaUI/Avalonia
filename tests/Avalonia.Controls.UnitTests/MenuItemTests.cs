@@ -63,6 +63,45 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void MenuItem_With_Styled_Command_Binding_Should_Be_Enabled_With_Child_Missing_Command()
+        {
+            using var app = Application();
+
+            var viewModel = new MenuViewModel("Parent")
+            {
+                Children = [new MenuViewModel("Child")]
+            };
+
+            var contextMenu = new ContextMenu
+            {
+                ItemsSource = new[] { viewModel },
+                Styles =
+                {
+                    new Style(x => x.OfType<MenuItem>())
+                    {
+                        Setters =
+                        {
+                            new Setter(MenuItem.HeaderProperty, new Binding("Header")),
+                            new Setter(MenuItem.ItemsSourceProperty, new Binding("Children")),
+                            new Setter(MenuItem.CommandProperty, new Binding("Command"))
+                        }
+                    }
+                }
+            };
+
+            var window = new Window { ContextMenu = contextMenu };
+            window.Show();
+            contextMenu.Open();
+
+            var parentMenuItem = Assert.IsType<MenuItem>(contextMenu.ContainerFromIndex(0));
+
+            Assert.Same(parentMenuItem.DataContext, viewModel);
+            Assert.Same(parentMenuItem.ItemsSource, viewModel.Children);
+            Assert.True(parentMenuItem.IsEnabled);
+            Assert.True(parentMenuItem.IsEffectivelyEnabled);
+        }
+
+        [Fact]
         public void MenuItem_Is_Disabled_When_Bound_Command_Is_Removed()
         {
             var viewModel = new
