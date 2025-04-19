@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading;
@@ -858,7 +859,7 @@ namespace Avalonia.Base.UnitTests
         [InlineData(BindingPriority.Style)]
         public void Typed_Bind_Executes_On_UIThread(BindingPriority priority)
         {
-            AsyncContext.Run(async () =>
+            using (UnitTestApplication.Start())
             {
                 var target = new Class1();
                 var source = new Subject<string>();
@@ -871,17 +872,15 @@ namespace Avalonia.Base.UnitTests
                     ++raised;
                 };
 
-                using (UnitTestApplication.Start())
-                {
-                    target.Bind(Class1.FooProperty, source, priority);
 
-                    await Task.Run(() => source.OnNext("foobar"));
-                    Dispatcher.UIThread.RunJobs();
+                target.Bind(Class1.FooProperty, source, priority);
 
-                    Assert.Equal("foobar", target.GetValue(Class1.FooProperty));
-                    Assert.Equal(1, raised);
-                }
-            });
+                ThreadRunHelper.RunOnDedicatedThreadAndWait(() => source.OnNext("foobar"));
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+                Assert.Equal("foobar", target.GetValue(Class1.FooProperty));
+                Assert.Equal(1, raised);
+            }
         }
 
         [Theory]
@@ -889,7 +888,7 @@ namespace Avalonia.Base.UnitTests
         [InlineData(BindingPriority.Style)]
         public void Untyped_Bind_Executes_On_UIThread(BindingPriority priority)
         {
-            AsyncContext.Run(async () =>
+            using (UnitTestApplication.Start())
             {
                 var target = new Class1();
                 var source = new Subject<object>();
@@ -908,17 +907,15 @@ namespace Avalonia.Base.UnitTests
                     ++raised;
                 };
 
-                using (UnitTestApplication.Start(services))
-                {
-                    target.Bind(Class1.FooProperty, source, priority);
 
-                    await Task.Run(() => source.OnNext("foobar"));
-                    Dispatcher.UIThread.RunJobs();
+                target.Bind(Class1.FooProperty, source, priority);
 
-                    Assert.Equal("foobar", target.GetValue(Class1.FooProperty));
-                    Assert.Equal(1, raised);
-                }
-            });
+                ThreadRunHelper.RunOnDedicatedThreadAndWait(() => source.OnNext("foobar"));
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+                Assert.Equal("foobar", target.GetValue(Class1.FooProperty));
+                Assert.Equal(1, raised);
+            }
         }
 
         [Theory]
@@ -926,55 +923,41 @@ namespace Avalonia.Base.UnitTests
         [InlineData(BindingPriority.Style)]
         public void BindingValue_Bind_Executes_On_UIThread(BindingPriority priority)
         {
-            AsyncContext.Run(async () =>
+            using var _ = UnitTestApplication.Start();
+            var target = new Class1();
+            var source = new Subject<BindingValue<string>>();
+            var currentThreadId = Thread.CurrentThread.ManagedThreadId;
+            var raised = 0;
+
+            target.PropertyChanged += (s, e) =>
             {
-                var target = new Class1();
-                var source = new Subject<BindingValue<string>>();
-                var currentThreadId = Thread.CurrentThread.ManagedThreadId;
-                var raised = 0;
+                Assert.Equal(currentThreadId, Thread.CurrentThread.ManagedThreadId);
+                ++raised;
+            };
 
-                var threadingInterfaceMock = new Mock<IDispatcherImpl>();
-                threadingInterfaceMock.SetupGet(mock => mock.CurrentThreadIsLoopThread)
-                    .Returns(() => Thread.CurrentThread.ManagedThreadId == currentThreadId);
+            target.Bind(Class1.FooProperty, source, priority);
 
-                var services = new TestServices();
+            ThreadRunHelper.RunOnDedicatedThreadAndWait(() => source.OnNext("foobar"));
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
-                target.PropertyChanged += (s, e) =>
-                {
-                    Assert.Equal(currentThreadId, Thread.CurrentThread.ManagedThreadId);
-                    ++raised;
-                };
-
-                using (UnitTestApplication.Start(services))
-                {
-                    target.Bind(Class1.FooProperty, source, priority);
-
-                    await Task.Run(() => source.OnNext("foobar"));
-                    Dispatcher.UIThread.RunJobs();
-
-                    Assert.Equal("foobar", target.GetValue(Class1.FooProperty));
-                    Assert.Equal(1, raised);
-                }
-            });
+            Assert.Equal("foobar", target.GetValue(Class1.FooProperty));
+            Assert.Equal(1, raised);
         }
 
         [Fact]
+        [SuppressMessage("Usage", "xUnit1031:Do not use blocking task operations in test method", Justification = "Explicit threading test")]
         public void Bind_With_Scheduler_Executes_On_UI_Thread()
         {
+            using var _ = UnitTestApplication.Start();
+
             var target = new Class1();
             var source = new Subject<double>();
+            target.Bind(Class1.QuxProperty, source);
 
-            var services = new TestServices();
-
-            using (UnitTestApplication.Start(services))
-            {
-                target.Bind(Class1.QuxProperty, source);
-
-                ThreadRunHelper.RunOnDedicatedThread(() => source.OnNext(6.7)).GetAwaiter().GetResult();
-                Assert.NotEqual(6.7, target.GetValue(Class1.QuxProperty));
-                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
-                Assert.Equal(6.7, target.GetValue(Class1.QuxProperty));
-            }
+            ThreadRunHelper.RunOnDedicatedThread(() => source.OnNext(6.7)).GetAwaiter().GetResult();
+            Assert.NotEqual(6.7, target.GetValue(Class1.QuxProperty));
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+            Assert.Equal(6.7, target.GetValue(Class1.QuxProperty));
         }
 
         [Fact]

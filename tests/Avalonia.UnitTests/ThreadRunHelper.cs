@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -34,4 +32,3 @@ public class ThreadRunHelper
 
     public static void RunOnDedicatedThreadAndWait(Action cb) => RunOnDedicatedThread(cb).GetAwaiter().GetResult();
 }
-

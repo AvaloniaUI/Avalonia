@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls.Platform;
@@ -43,6 +44,7 @@ public partial class DispatcherTests : ScopedTestBase
     }
 
     [Fact]
+    [SuppressMessage("Usage", "xUnit1031:Do not use blocking task operations in test method", Justification = "Tests the dispatcher itself")]
     public void Different_Threads_Auto_Spawn_Dispatchers()
     {
         var dispatcher = Dispatcher.CurrentDispatcher;
