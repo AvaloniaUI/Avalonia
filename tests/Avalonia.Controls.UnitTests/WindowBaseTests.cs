@@ -17,7 +17,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class WindowBaseTests
+    public class WindowBaseTests : ScopedTestBase
     {
         [Fact]
         public void Activate_Should_Call_Impl_Activate()

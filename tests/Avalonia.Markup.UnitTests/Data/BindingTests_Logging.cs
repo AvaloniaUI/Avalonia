@@ -20,9 +20,9 @@ using Xunit;
 
 namespace Avalonia.Markup.UnitTests.Data
 {
-    public class BindingTests_Logging
+    public class BindingTests_Logging : ScopedTestBase
     {
-        public class DataContext
+        public class DataContext : ScopedTestBase
         {
             [Fact]
             public void Should_Not_Log_Missing_Member_On_Null_DataContext()
@@ -68,7 +68,7 @@ namespace Avalonia.Markup.UnitTests.Data
             }
         }
 
-        public class Source
+        public class Source : ScopedTestBase
         {
             [Fact]
             public void Should_Log_Null_Source()
@@ -96,7 +96,7 @@ namespace Avalonia.Markup.UnitTests.Data
             }
         }
 
-        public class LogicalAncestor
+        public class LogicalAncestor : ScopedTestBase
         {
             [Fact]
             public void Should_Log_Ancestor_Not_Found()
@@ -124,7 +124,7 @@ namespace Avalonia.Markup.UnitTests.Data
             }
         }
 
-        public class VisualAncestor
+        public class VisualAncestor : ScopedTestBase
         {
             [Fact]
             public void Should_Log_Ancestor_Not_Found()
@@ -187,7 +187,7 @@ namespace Avalonia.Markup.UnitTests.Data
             }
         }
 
-        public class NamedElement
+        public class NamedElement : ScopedTestBase
         {
             [Fact]
             public void Should_Log_NameScope_Not_Found()
@@ -233,7 +233,7 @@ namespace Avalonia.Markup.UnitTests.Data
             }
         }
 
-        public class Converter
+        public class Converter : ScopedTestBase
         {
             [Fact]
             public void Should_Log_Error_For_Unconvertible_Type()
@@ -275,7 +275,7 @@ namespace Avalonia.Markup.UnitTests.Data
             }
         }
 
-        public class Fallback
+        public class Fallback : ScopedTestBase
         {
             [Theory]
             [InlineData(true)]
@@ -324,7 +324,7 @@ namespace Avalonia.Markup.UnitTests.Data
             }
         }
 
-        public class NonControlDataContext
+        public class NonControlDataContext : ScopedTestBase
         {
             [Fact]
             public void Should_Not_Log_Missing_Member_On_Null_DataContext()
@@ -369,7 +369,7 @@ namespace Avalonia.Markup.UnitTests.Data
             }
         }
 
-        public class CompiledBinding
+        public class CompiledBinding : ScopedTestBase
         {
             [Fact]
             public void Should_Log_For_Invalid_DataContext_Type()

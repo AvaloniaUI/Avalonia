@@ -14,7 +14,7 @@ using Xunit;
 namespace Avalonia.Controls.UnitTests
 {
     
-    public class DesktopStyleApplicationLifetimeTests
+    public class DesktopStyleApplicationLifetimeTests : ScopedTestBase
     {
         IDispatcherImpl CreateDispatcherWithInstantMainLoop()
         {
@@ -28,7 +28,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Should_Set_ExitCode_After_Shutdown()
         {
-            using (UnitTestApplication.Start(new TestServices(dispatcherImpl: new ManagedDispatcherImpl(null))))
+            using (UnitTestApplication.Start(new TestServices()))
             using(var lifetime = new ClassicDesktopStyleApplicationLifetime())    
             {
                 lifetime.SetupCore(Array.Empty<string>());
@@ -326,7 +326,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Should_Allow_Canceling_Shutdown_Via_ShutdownRequested_Event()
         {
-            using (UnitTestApplication.Start(TestServices.StyledWindow.With(dispatcherImpl: new ManagedDispatcherImpl(null))))
+            using (UnitTestApplication.Start(TestServices.StyledWindow.With()))
             using (var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
                 var lifetimeEvents = new Mock<IPlatformLifetimeEventsImpl>();
@@ -475,7 +475,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Shutdown_NotCancellable_By_Preventing_Window_Close()
         {
-            using (UnitTestApplication.Start(TestServices.StyledWindow.With(dispatcherImpl: CreateDispatcherWithInstantMainLoop())))
+            using (UnitTestApplication.Start(TestServices.StyledWindow.With()))
             using(var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
                 lifetime.SetupCore(Array.Empty<string>());

@@ -13,7 +13,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class ContextMenuTests
+    public class ContextMenuTests : ScopedTestBase
     {
         private Mock<IPopupImpl> popupImpl;
         private MouseTestHelper _mouse = new MouseTestHelper();

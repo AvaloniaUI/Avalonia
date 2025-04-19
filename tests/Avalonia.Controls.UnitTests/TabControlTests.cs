@@ -21,7 +21,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class TabControlTests
+    public class TabControlTests : ScopedTestBase
     {
         static TabControlTests()
         {

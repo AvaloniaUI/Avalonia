@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Shapes
 {
-    public class PathTests
+    public class PathTests : ScopedTestBase
     {
         [Fact]
         public void Path_With_Null_Data_Does_Not_Throw_On_Measure()

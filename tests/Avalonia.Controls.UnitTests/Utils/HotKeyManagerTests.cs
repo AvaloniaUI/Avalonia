@@ -10,7 +10,7 @@ using Factory = System.Func<int, System.Action<object>, Avalonia.Controls.Window
 
 namespace Avalonia.Controls.UnitTests.Utils
 {
-    public class HotKeyManagerTests
+    public class HotKeyManagerTests : ScopedTestBase
     {
         [Fact]
         public void HotKeyManager_Should_Register_And_Unregister_Key_Binding()

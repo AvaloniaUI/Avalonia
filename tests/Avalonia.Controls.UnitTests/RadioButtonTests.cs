@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class RadioButtonTests
+    public class RadioButtonTests : ScopedTestBase
     {
         [Theory]
         [InlineData(false)]

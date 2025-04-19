@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls.Platform;
 using Avalonia.Threading;
+using Avalonia.UnitTests;
 using Avalonia.Utilities;
 using Xunit;
 namespace Avalonia.Base.UnitTests;
@@ -35,6 +36,7 @@ public partial class DispatcherTests
         }
 
         public long Now { get; set; }
+        public TimeSpan Time => TimeSpan.FromMilliseconds(Now);
 
         public void ExecuteSignal()
         {
@@ -120,11 +122,11 @@ public partial class DispatcherTests
     public void DispatcherExecutesJobsAccordingToPriority()
     {
         var impl = new SimpleDispatcherImpl();
-        var disp = new Dispatcher(impl);
+        Dispatcher.InitializeUIThreadDispatcher(impl);
         var actions = new List<string>();
-        disp.Post(()=>actions.Add("Background"), DispatcherPriority.Background);
-        disp.Post(()=>actions.Add("Render"), DispatcherPriority.Render);
-        disp.Post(()=>actions.Add("Input"), DispatcherPriority.Input);
+        _uiThread.Post(()=>actions.Add("Background"), DispatcherPriority.Background);
+        _uiThread.Post(()=>actions.Add("Render"), DispatcherPriority.Render);
+        _uiThread.Post(()=>actions.Add("Input"), DispatcherPriority.Input);
         Assert.True(impl.AskedForSignal);
         impl.ExecuteSignal();
         Assert.Equal(new[] { "Render", "Input", "Background" }, actions);
@@ -134,11 +136,11 @@ public partial class DispatcherTests
     public void DispatcherPreservesOrderWhenChangingPriority()
     {
         var impl = new SimpleDispatcherImpl();
-        var disp = new Dispatcher(impl);
+        Dispatcher.InitializeUIThreadDispatcher(impl);
         var actions = new List<string>();
-        var toPromote = disp.InvokeAsync(()=>actions.Add("PromotedRender"), DispatcherPriority.Background);
-        var toPromote2 = disp.InvokeAsync(()=>actions.Add("PromotedRender2"), DispatcherPriority.Input);
-        disp.Post(() => actions.Add("Render"), DispatcherPriority.Render);
+        var toPromote = _uiThread.InvokeAsync(()=>actions.Add("PromotedRender"), DispatcherPriority.Background);
+        var toPromote2 = _uiThread.InvokeAsync(()=>actions.Add("PromotedRender2"), DispatcherPriority.Input);
+        _uiThread.Post(() => actions.Add("Render"), DispatcherPriority.Render);
         
         toPromote.Priority = DispatcherPriority.Render;
         toPromote2.Priority = DispatcherPriority.Render;
@@ -153,12 +155,13 @@ public partial class DispatcherTests
     public void DispatcherStopsItemProcessingWhenInteractivityDeadlineIsReached()
     {
         var impl = new SimpleDispatcherImpl();
-        var disp = new Dispatcher(impl);
+        Dispatcher.ResetForUnitTests();
+        _uiThread = new Dispatcher(impl, () => impl.Time);
         var actions = new List<int>();
         for (var c = 0; c < 10; c++)
         {
             var itemId = c;
-            disp.Post(() =>
+            _uiThread.Post(() =>
             {
                 actions.Add(itemId);
                 impl.Now += 20;
@@ -194,14 +197,17 @@ public partial class DispatcherTests
     [Fact]
     public void DispatcherStopsItemProcessingWhenInputIsPending()
     {
+        Dispatcher.ResetForUnitTests();
+        
         var impl = new SimpleDispatcherImpl();
         impl.TestInputPending = true;
-        var disp = new Dispatcher(impl);
+        _uiThread = new Dispatcher(impl, () => impl.Time);
+        
         var actions = new List<int>();
         for (var c = 0; c < 10; c++)
         {
             var itemId = c;
-            disp.Post(() =>
+            _uiThread.Post(() =>
             {
                 actions.Add(itemId);
                 if (itemId == 0 || itemId == 3 || itemId == 7)
@@ -248,10 +254,10 @@ public partial class DispatcherTests
     public void CanWaitForDispatcherOperationFromTheSameThread(bool controlled, bool foreground)
     {
         var impl = controlled ? new SimpleControlledDispatcherImpl() : new SimpleDispatcherImpl();
-        var disp = new Dispatcher(impl);
+        Dispatcher.InitializeUIThreadDispatcher(impl);
         bool finished = false;
 
-        disp.InvokeAsync(() => finished = true,
+        _uiThread.InvokeAsync(() => finished = true,
             foreground ? DispatcherPriority.Default : DispatcherPriority.Background).Wait();
 
         Assert.True(finished);
@@ -267,7 +273,6 @@ public partial class DispatcherTests
         public DispatcherServices(IDispatcherImpl impl)
         {
             _scope = AvaloniaLocator.EnterScope();
-            AvaloniaLocator.CurrentMutable.Bind<IDispatcherImpl>().ToConstant(impl);
             Dispatcher.ResetForUnitTests();
             SynchronizationContext.SetSynchronizationContext(null);
         }

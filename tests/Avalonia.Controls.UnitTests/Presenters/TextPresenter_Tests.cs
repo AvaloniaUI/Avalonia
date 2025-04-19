@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Presenters
 {
-    public class TextPresenter_Tests
+    public class TextPresenter_Tests : ScopedTestBase
     {
         [Fact]
         public void TextPresenter_Can_Contain_Null_With_Password_Char_Set()

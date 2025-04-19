@@ -35,6 +35,7 @@
     <Compile Include="..\Avalonia.IntegrationTests.Appium\PlatformFactAttribute.cs">
       <Link>PlatformFactAttribute.cs</Link>
     </Compile>
+    <Compile Include="../Shared/ScopedSanityCheck.cs"/>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Update="xunit.runner.console" Version="2.9.2">

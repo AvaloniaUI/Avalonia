@@ -1,9 +1,10 @@
 ﻿using Avalonia.Controls.Primitives;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Primitives
 {
-    public class UniformGridTests
+    public class UniformGridTests : ScopedTestBase
     {
         [Fact]
         public void Grid_Columns_Equals_Rows_For_Auto_Columns_And_Rows()

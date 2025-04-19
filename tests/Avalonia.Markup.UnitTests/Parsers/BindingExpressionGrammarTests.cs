@@ -1,11 +1,12 @@
 using System.Collections.Generic;
 using Avalonia.Markup.Parsers;
+using Avalonia.UnitTests;
 using Avalonia.Utilities;
 using Xunit;
 
 namespace Avalonia.Markup.UnitTests.Parsers
 {
-    public partial class BindingExpressionGrammarTests
+    public partial class BindingExpressionGrammarTests : ScopedTestBase
     {
         [Fact]
         public void Should_Parse_Single_Property()

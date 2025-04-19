@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Avalonia.Markup.UnitTests.Data;
 
-public class BindingTests_Delay : IDisposable
+public class BindingTests_Delay : ScopedTestBase, IDisposable
 {
     private const int DelayMilliseconds = 10;
     private const string InitialFooValue = "foo";
@@ -24,8 +24,9 @@ public class BindingTests_Delay : IDisposable
     
     public BindingTests_Delay()
     {
+        _app = UnitTestApplication.Start(new(focusManager: new FocusManager(), keyboardDevice: () => new KeyboardDevice()));
         _dispatcher = new ManualTimerDispatcher();
-        _app = UnitTestApplication.Start(new(dispatcherImpl: _dispatcher, focusManager: new FocusManager(), keyboardDevice: () => new KeyboardDevice()));
+        _ = new Dispatcher(_dispatcher, () => TimeSpan.FromMilliseconds(_dispatcher.Now));
 
         _source = new BindingTests.Source { Foo = InitialFooValue };
         _target = new TextBox { DataContext = _source };
@@ -39,6 +40,7 @@ public class BindingTests_Delay : IDisposable
     public void Dispose()
     {
         _app.Dispose();
+        base.Dispose();
     }
 
     [Fact]

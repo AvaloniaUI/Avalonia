@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Shapes;
 
-public class PolylineTests
+public class PolylineTests : ScopedTestBase
 {
     [Fact]
     public void Polyline_Will_Update_Geometry_On_Shapes_Collection_Content_Change()

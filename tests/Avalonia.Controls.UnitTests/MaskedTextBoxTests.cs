@@ -18,7 +18,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class MaskedTextBoxTests
+    public class MaskedTextBoxTests : ScopedTestBase
     {
         [Fact]
         public void Opening_Context_Menu_Does_not_Lose_Selection()

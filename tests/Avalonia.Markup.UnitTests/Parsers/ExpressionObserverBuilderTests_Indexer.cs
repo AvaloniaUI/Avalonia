@@ -16,7 +16,7 @@ using Xunit;
 
 namespace Avalonia.Markup.UnitTests.Parsers
 {
-    public class ExpressionObserverBuilderTests_Indexer
+    public class ExpressionObserverBuilderTests_Indexer : ScopedTestBase
     {
         [Fact]
         public async Task Should_Get_Array_Value()

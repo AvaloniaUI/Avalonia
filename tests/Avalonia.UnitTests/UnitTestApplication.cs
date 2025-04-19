@@ -42,7 +42,7 @@ namespace Avalonia.UnitTests
             var scope = AvaloniaLocator.EnterScope();
             var oldContext = SynchronizationContext.Current;
             _ = new UnitTestApplication(services);
-            Dispatcher.ResetForUnitTests();
+            Dispatcher.ResetBeforeUnitTests();
             return Disposable.Create(() =>
             {
                 if (Dispatcher.UIThread.CheckAccess())
@@ -51,9 +51,10 @@ namespace Avalonia.UnitTests
                 }
 
                 ((ToolTipService)AvaloniaLocator.Current.GetService<IToolTipService>())?.Dispose();
-
-                scope.Dispose();
+                
                 Dispatcher.ResetForUnitTests();
+                scope.Dispose();
+                Dispatcher.ResetBeforeUnitTests();
                 SynchronizationContext.SetSynchronizationContext(oldContext);
             });
         }
@@ -74,7 +75,6 @@ namespace Avalonia.UnitTests
                 .Bind<IPlatformRenderInterface>().ToConstant(Services.RenderInterface)
                 .Bind<IFontManagerImpl>().ToConstant(Services.FontManagerImpl)
                 .Bind<ITextShaperImpl>().ToConstant(Services.TextShaperImpl)
-                .Bind<IDispatcherImpl>().ToConstant(Services.DispatcherImpl)
                 .Bind<ICursorFactory>().ToConstant(Services.StandardCursorFactory)
                 .Bind<IWindowingPlatform>().ToConstant(Services.WindowingPlatform)
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()

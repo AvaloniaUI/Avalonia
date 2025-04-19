@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Avalonia.Metadata;
 
 [assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia")]
@@ -11,3 +12,4 @@ using Avalonia.Metadata;
 [assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Controls.Notifications")]
 [assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Controls.Chrome")]
 [assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Controls.Documents")]
+[assembly: TypeForwardedTo(typeof(Avalonia.Controls.Platform.ManagedDispatcherImpl))]

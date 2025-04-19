@@ -35,9 +35,6 @@ namespace Avalonia.Direct2D1.RenderTests;
 
 static class TestRenderHelper
 {
-    private static readonly TestDispatcherImpl s_dispatcherImpl =
-        new TestDispatcherImpl();
-
     static TestRenderHelper()
     {
 #if AVALONIA_SKIA
@@ -45,9 +42,6 @@ static class TestRenderHelper
 #else
             Direct2D1Platform.Initialize();
 #endif
-        AvaloniaLocator.CurrentMutable
-            .Bind<IDispatcherImpl>()
-            .ToConstant(s_dispatcherImpl);
         
         AvaloniaLocator.CurrentMutable.Bind<IAssetLoader>().ToConstant(new StandardAssetLoader());
     }
@@ -118,13 +112,14 @@ static class TestRenderHelper
 
     public static void BeginTest()
     {
-        s_dispatcherImpl.MainThread = Thread.CurrentThread;
+        Dispatcher.ResetBeforeUnitTests();
     }
 
     public static void EndTest()
     {
         if (Dispatcher.UIThread.CheckAccess()) 
             Dispatcher.UIThread.RunJobs();
+        Dispatcher.ResetForUnitTests();
     }
     
     public static string GetTestsDirectory()
@@ -137,30 +132,6 @@ static class TestRenderHelper
         }
 
         return path;
-    }
-    
-    private class TestDispatcherImpl : IDispatcherImpl
-    {
-        public bool CurrentThreadIsLoopThread => MainThread.ManagedThreadId == Thread.CurrentThread.ManagedThreadId;
-
-        public Thread MainThread { get; set; }
-
-#pragma warning disable 67
-        public event Action Signaled;
-        public event Action Timer;
-#pragma warning restore 67
-
-        public void Signal()
-        {
-            // No-op
-        }
-
-        public long Now => 0;
-
-        public void UpdateTimer(long? dueTimeInMs)
-        {
-            // No-op
-        }
     }
 
     public static void AssertCompareImages(string actualPath, string expectedPath)

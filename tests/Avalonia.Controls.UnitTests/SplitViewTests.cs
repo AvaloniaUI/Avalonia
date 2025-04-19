@@ -7,7 +7,7 @@ using Xunit;
 namespace Avalonia.Controls.UnitTests
 {
     
-    public class SplitViewTests
+    public class SplitViewTests : ScopedTestBase
     {
         [Fact]
         public void SplitView_PaneOpening_Should_Fire_Before_PaneOpened()

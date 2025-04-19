@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
+using Avalonia.UnitTests;
 using Avalonia.Utilities;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Utils
 {
-    public class SafeEnumerableHashSetTests
+    public class SafeEnumerableHashSetTests : ScopedTestBase
     {
         [Fact]
         public void Set_Is_Not_Copied_Outside_Enumeration()

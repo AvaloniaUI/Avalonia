@@ -31,7 +31,7 @@ using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 {
-    public class CompiledBindingExtensionTests
+    public class CompiledBindingExtensionTests : XamlTestBase
     {
         static CompiledBindingExtensionTests()
         {

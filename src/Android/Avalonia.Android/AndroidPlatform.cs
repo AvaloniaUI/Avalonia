@@ -11,6 +11,7 @@ using Avalonia.Input.Platform;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Threading;
 using Avalonia.Rendering.Composition;
 using Avalonia.Vulkan;
 
@@ -79,12 +80,12 @@ namespace Avalonia.Android
         {
             Options = AvaloniaLocator.Current.GetService<AndroidPlatformOptions>() ?? new AndroidPlatformOptions();
 
+            Dispatcher.InitializeUIThreadDispatcher(new AndroidThreadingInterface());
             AvaloniaLocator.CurrentMutable
                 .Bind<ICursorFactory>().ToTransient<CursorFactory>()
                 .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformStub())
                 .Bind<IKeyboardDevice>().ToSingleton<AndroidKeyboardDevice>()
                 .Bind<IPlatformSettings>().ToSingleton<AndroidPlatformSettings>()
-                .Bind<IPlatformThreadingInterface>().ToConstant(new AndroidThreadingInterface())
                 .Bind<IPlatformIconLoader>().ToSingleton<PlatformIconLoaderStub>()
                 .Bind<IRenderTimer>().ToConstant(new ChoreographerTimer())
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()

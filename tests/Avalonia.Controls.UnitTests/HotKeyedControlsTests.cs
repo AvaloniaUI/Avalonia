@@ -71,7 +71,7 @@ namespace Avalonia.Controls.UnitTests
         }
     }
 
-    public class HotKeyedControlsTests
+    public class HotKeyedControlsTests : ScopedTestBase
     {
         private static Window PreparedWindow(object content = null)
         {

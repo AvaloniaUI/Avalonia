@@ -15,7 +15,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class TimePickerTests
+    public class TimePickerTests : ScopedTestBase
     {
         [Fact]
         public void SelectedTimeChanged_Should_Fire_When_SelectedTime_Set()

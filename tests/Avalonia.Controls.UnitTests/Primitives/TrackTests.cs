@@ -1,11 +1,12 @@
 using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Primitives
 {
-    public class TrackTests
+    public class TrackTests : ScopedTestBase
     {
         [Fact]
         public void Measure_Should_Return_Thumb_DesiredWidth_In_Vertical_Orientation()

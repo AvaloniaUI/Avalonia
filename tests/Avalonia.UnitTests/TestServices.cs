@@ -20,7 +20,6 @@ namespace Avalonia.UnitTests
             renderInterface: new HeadlessPlatformRenderInterface(),
             standardCursorFactory: new HeadlessCursorFactoryStub(),
             theme: () => CreateSimpleTheme(),
-            dispatcherImpl: new NullDispatcherImpl(),
             fontManagerImpl: new HeadlessFontManagerStub(),
             textShaperImpl: new HeadlessTextShaperStub(),
             windowingPlatform: new MockWindowingPlatform());
@@ -34,8 +33,7 @@ namespace Avalonia.UnitTests
         public static readonly TestServices MockPlatformWrapper = new TestServices(
             platform: Mock.Of<IRuntimePlatform>());
 
-        public static readonly TestServices MockThreadingInterface = new TestServices(
-            dispatcherImpl: new NullDispatcherImpl());
+        public static readonly TestServices MockThreadingInterface = new TestServices();
 
         public static readonly TestServices MockWindowingPlatform = new TestServices(
             windowingPlatform: new MockWindowingPlatform());
@@ -60,7 +58,6 @@ namespace Avalonia.UnitTests
             renderInterface: new HeadlessPlatformRenderInterface(),
             standardCursorFactory: new HeadlessCursorFactoryStub(),
             theme: () => CreateSimpleTheme(),
-            dispatcherImpl: new NullDispatcherImpl(),
             fontManagerImpl: new HeadlessFontManagerStub(),
             textShaperImpl: new HeadlessTextShaperStub(),
             windowingPlatform: new MockWindowingPlatform());
@@ -83,7 +80,6 @@ namespace Avalonia.UnitTests
             IRenderTimer renderLoop = null,
             ICursorFactory standardCursorFactory = null,
             Func<IStyle> theme = null,
-            IDispatcherImpl dispatcherImpl = null,
             IFontManagerImpl fontManagerImpl = null,
             ITextShaperImpl textShaperImpl = null,
             IWindowImpl windowImpl = null,
@@ -101,7 +97,6 @@ namespace Avalonia.UnitTests
             TextShaperImpl = textShaperImpl;
             StandardCursorFactory = standardCursorFactory;
             Theme = theme;
-            DispatcherImpl = dispatcherImpl;
             WindowImpl = windowImpl;
             WindowingPlatform = windowingPlatform;
         }
@@ -119,7 +114,6 @@ namespace Avalonia.UnitTests
             IRenderTimer renderLoop = null,
             ICursorFactory standardCursorFactory = null,
             Func<IStyle> theme = null,
-            IDispatcherImpl dispatcherImpl = null,
             IFontManagerImpl fontManagerImpl = null,
             ITextShaperImpl textShaperImpl = null,
             IWindowImpl windowImpl = null,
@@ -128,7 +122,7 @@ namespace Avalonia.UnitTests
             ) : this(assetLoader, focusManager, inputManager, keyboardDevice,
             keyboardNavigation,
             mouseDevice, platform, renderInterface, renderLoop, standardCursorFactory, theme,
-            dispatcherImpl, fontManagerImpl, textShaperImpl, windowImpl, windowingPlatform)
+            fontManagerImpl, textShaperImpl, windowImpl, windowingPlatform)
         {
             GlobalClock = globalClock;
             AccessKeyHandler = accessKeyHandler;
@@ -148,7 +142,6 @@ namespace Avalonia.UnitTests
         public ITextShaperImpl TextShaperImpl { get; }
         public ICursorFactory StandardCursorFactory { get; }
         public Func<IStyle> Theme { get; }
-        public IDispatcherImpl DispatcherImpl { get; }
         public IWindowImpl WindowImpl { get; }
         public IWindowingPlatform WindowingPlatform { get; }
 
@@ -165,7 +158,6 @@ namespace Avalonia.UnitTests
             IScheduler scheduler = null,
             ICursorFactory standardCursorFactory = null,
             Func<IStyle> theme = null,
-            IDispatcherImpl dispatcherImpl = null,
             IFontManagerImpl fontManagerImpl = null,
             ITextShaperImpl textShaperImpl = null,
             IWindowImpl windowImpl = null,
@@ -187,7 +179,6 @@ namespace Avalonia.UnitTests
                 textShaperImpl: textShaperImpl ?? TextShaperImpl,
                 standardCursorFactory: standardCursorFactory ?? StandardCursorFactory,
                 theme: theme ?? Theme,
-                dispatcherImpl: dispatcherImpl ?? DispatcherImpl,
                 windowingPlatform: windowingPlatform ?? WindowingPlatform,
                 windowImpl: windowImpl ?? WindowImpl,
                 accessKeyHandler: accessKeyHandler ?? AccessKeyHandler

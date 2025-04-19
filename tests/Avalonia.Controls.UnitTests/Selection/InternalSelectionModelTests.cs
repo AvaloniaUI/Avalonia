@@ -4,11 +4,12 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using Avalonia.Collections;
 using Avalonia.Controls.Selection;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Selection
 {
-    public class InternalSelectionModelTests
+    public class InternalSelectionModelTests : ScopedTestBase
     {
         [Fact]
         public void Selecting_Item_Adds_To_WritableSelectedItems()

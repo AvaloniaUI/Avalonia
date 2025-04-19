@@ -16,7 +16,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
     /// <summary>
     /// Tests for ContentControls that are hosted in a control template.
     /// </summary>
-    public class ContentPresenterTests_InTemplate
+    public class ContentPresenterTests_InTemplate : ScopedTestBase
     {
         [Fact]
         public void Should_Register_With_Host_When_TemplatedParent_Set()

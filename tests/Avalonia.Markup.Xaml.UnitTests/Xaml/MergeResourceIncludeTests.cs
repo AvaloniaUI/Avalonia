@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Xaml;
 
-public class MergeResourceIncludeTests
+public class MergeResourceIncludeTests : XamlTestBase
 {
     static MergeResourceIncludeTests()
     {

@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Xaml;
 
-public class ItemsPanelTemplateTests
+public class ItemsPanelTemplateTests : XamlTestBase
 {
     [Fact]
     public void ItemsPanelTemplate_In_Style_Allows_TemplateBinding()

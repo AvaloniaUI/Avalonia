@@ -10,6 +10,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Layout;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Moq;
@@ -19,7 +20,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class VirtualizingCarouselPanelTests
+    public class VirtualizingCarouselPanelTests : ScopedTestBase
     {
         [Fact]
         public void Initial_Item_Is_Displayed()
@@ -134,7 +135,7 @@ namespace Avalonia.Controls.UnitTests
             });
         }
 
-        public class Transitions
+        public class Transitions : ScopedTestBase
         {
             [Fact]
             public void Initial_Item_Does_Not_Start_Transition()
@@ -175,49 +176,59 @@ namespace Avalonia.Controls.UnitTests
             public void Changing_SelectedIndex_transitions_forward_cycle()
             {
                 using var app = Start();
-                var items = new Control[] { new Button(), new Canvas(), new Label() };
-                var transition = new Mock<IPageTransition>();
-                var (target, carousel) = CreateTarget(items, transition.Object);
-                var cycleindexes = new[] { 1, 2, 0};
-
-                for (int cycleIndex = 0; cycleIndex < cycleindexes.Length; cycleIndex++)
+                Dispatcher.UIThread.Invoke(() => // This sets up a proper sync context
                 {
-                    carousel.SelectedIndex = cycleindexes[cycleIndex];
-                    Layout(target);
+                    var items = new Control[] { new Button(), new Canvas(), new Label() };
+                    var transition = new Mock<IPageTransition>();
+                    var (target, carousel) = CreateTarget(items, transition.Object);
+                    var cycleindexes = new[] { 1, 2, 0 };
 
-                    var index = cycleIndex;
-                    transition.Verify(x => x.Start(
-                            index > 0 ? items[cycleindexes[index - 1]] : items[0],
-                            items[cycleindexes[index]],
-                            true,
-                            It.IsAny<CancellationToken>()),
-                        Times.Once);
-                }
+                    for (int cycleIndex = 0; cycleIndex < cycleindexes.Length; cycleIndex++)
+                    {
+                        carousel.SelectedIndex = cycleindexes[cycleIndex];
+                        Layout(target);
+                        
+                        Dispatcher.UIThread.RunJobs();
+
+                        var index = cycleIndex;
+                        transition.Verify(x => x.Start(
+                                index > 0 ? items[cycleindexes[index - 1]] : items[0],
+                                items[cycleindexes[index]],
+                                true,
+                                It.IsAny<CancellationToken>()),
+                            Times.Once);
+                    }
+                });
             }
 
             [Fact]
             public void Changing_SelectedIndex_transitions_backward_cycle()
             {
                 using var app = Start();
-                var items = new Control[] { new Button(), new Canvas(), new Label() };
-                var transition = new Mock<IPageTransition>();
-                var (target, carousel) = CreateTarget(items, transition.Object);
-
-                var cycleindexes = new[] { 2, 1, 0};
-
-                for (int cycleIndex = 0; cycleIndex < cycleindexes.Length; cycleIndex++)
+                Dispatcher.UIThread.Invoke(() => // This sets up a proper sync context
                 {
-                    carousel.SelectedIndex = cycleindexes[cycleIndex];
-                    Layout(target);
+                    var items = new Control[] { new Button(), new Canvas(), new Label() };
+                    var transition = new Mock<IPageTransition>();
+                    var (target, carousel) = CreateTarget(items, transition.Object);
 
-                    var index = cycleIndex;
-                    transition.Verify(x => x.Start(
-                            index > 0 ? items[cycleindexes[index - 1]] : items[0],
-                            items[cycleindexes[index]],
-                            false,
-                            It.IsAny<CancellationToken>()),
-                        Times.Once);
-                }
+                    var cycleindexes = new[] { 2, 1, 0 };
+
+                    for (int cycleIndex = 0; cycleIndex < cycleindexes.Length; cycleIndex++)
+                    {
+                        carousel.SelectedIndex = cycleindexes[cycleIndex];
+                        Layout(target);
+
+                        Dispatcher.UIThread.RunJobs();
+                        
+                        var index = cycleIndex;
+                        transition.Verify(x => x.Start(
+                                index > 0 ? items[cycleindexes[index - 1]] : items[0],
+                                items[cycleindexes[index]],
+                                false,
+                                It.IsAny<CancellationToken>()),
+                            Times.Once);
+                    }
+                });
             }
 
             [Fact]

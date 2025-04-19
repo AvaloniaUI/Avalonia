@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Primitives
 {
-    public class SelectingItemsControlTests_AutoSelect
+    public class SelectingItemsControlTests_AutoSelect : ScopedTestBase
     {
         [Fact]
         public void First_Item_Should_Be_Selected()

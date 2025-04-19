@@ -15,7 +15,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Primitives
 {
-    public class PopupRootTests
+    public class PopupRootTests : ScopedTestBase
     {
         [Fact]
         public void PopupRoot_IsAttachedToLogicalTree_Is_True()

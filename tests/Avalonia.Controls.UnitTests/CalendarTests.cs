@@ -3,10 +3,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class CalendarTests
+    public class CalendarTests : ScopedTestBase
     {
         private static bool CompareDates(DateTime first, DateTime second)
         {

@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class ApplicationTests
+    public class ApplicationTests : ScopedTestBase
     {
         [Fact]
         public void Throws_ArgumentNullException_On_Run_If_MainWindow_Is_Null()

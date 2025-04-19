@@ -14,7 +14,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class ListBoxTests_Multiple
+    public class ListBoxTests_Multiple : ScopedTestBase
     {
         private MouseTestHelper _helper = new MouseTestHelper();
 

@@ -14,7 +14,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class CarouselTests
+    public class CarouselTests : ScopedTestBase
     {
         [Fact]
         public void First_Item_Should_Be_Selected_By_Default()

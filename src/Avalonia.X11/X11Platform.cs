@@ -38,6 +38,7 @@ namespace Avalonia.X11
         public X11Globals Globals { get; private set; } = null!;
         public XResources Resources { get; private set; } = null!;
         public ManualRawEventGrouperDispatchQueue EventGrouperDispatchQueue { get; } = new();
+        public IX11PlatformDispatcher DispatcherImpl { get; private set; } = null!;
 
         public void Initialize(X11PlatformOptions options)
         {
@@ -72,10 +73,12 @@ namespace Avalonia.X11
                : new SleepLoopRenderTimer(60);
 
             AvaloniaLocator.CurrentMutable.BindToSelf(this)
-                .Bind<IWindowingPlatform>().ToConstant(this)
-                .Bind<IDispatcherImpl>().ToConstant<IDispatcherImpl>(options.UseGLibMainLoop
-                    ? new GlibDispatcherImpl(this)
-                    : new X11PlatformThreading(this))
+                .Bind<IWindowingPlatform>().ToConstant(this);
+            DispatcherImpl = options.UseGLibMainLoop
+                ? new GlibDispatcherImpl(this)
+                : new X11PlatformThreading(this);
+            Dispatcher.InitializeUIThreadDispatcher(DispatcherImpl);
+            AvaloniaLocator.CurrentMutable
                 .Bind<IRenderTimer>().ToConstant(timer)
                 .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Control))
                 .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>() { }, meta: "Super"))

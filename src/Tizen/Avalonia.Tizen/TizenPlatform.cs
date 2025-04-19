@@ -2,6 +2,7 @@
 using Avalonia.Input.Platform;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Threading;
 using Avalonia.Rendering.Composition;
 using Avalonia.Tizen.Platform.Input;
 using Avalonia.Tizen.Platform;
@@ -30,13 +31,13 @@ internal class TizenPlatform
     internal static TizenThreadingInterface ThreadingInterface { get; } = new();
 
     public static void Initialize()
-    {   
+    {
+        Dispatcher.InitializeUIThreadDispatcher(ThreadingInterface);
         AvaloniaLocator.CurrentMutable
             .Bind<ICursorFactory>().ToTransient<CursorFactoryStub>()
             .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformStub())
             .Bind<IKeyboardDevice>().ToSingleton<TizenKeyboardDevice>()
             .Bind<IPlatformSettings>().ToSingleton<TizenPlatformSettings>()
-            .Bind<IPlatformThreadingInterface>().ToConstant(ThreadingInterface)
             .Bind<IPlatformIconLoader>().ToSingleton<PlatformIconLoaderStub>()
             .Bind<IRenderTimer>().ToConstant(new TizenRenderTimer())
             .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()

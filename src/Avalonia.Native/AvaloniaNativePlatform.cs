@@ -106,8 +106,8 @@ namespace Avalonia.Native
                 _factory.MacOptions.SetDisableSetProcessName(macOpts.DisableSetProcessName ? 1 : 0);
             }
 
+            Dispatcher.InitializeUIThreadDispatcher(new DispatcherImpl(_factory.CreatePlatformThreadingInterface()));
             AvaloniaLocator.CurrentMutable
-                .Bind<IDispatcherImpl>().ToConstant(new DispatcherImpl(_factory.CreatePlatformThreadingInterface()))
                 .Bind<ICursorFactory>().ToConstant(new CursorFactory(_factory.CreateCursorFactory()))
                 .Bind<IScreenImpl>().ToConstant(new ScreenImpl(_factory.CreateScreens))
                 .Bind<IPlatformIconLoader>().ToSingleton<IconLoader>()

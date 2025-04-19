@@ -15,7 +15,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class DatePickerTests
+    public class DatePickerTests : ScopedTestBase
     {
         [Fact]
         public void SelectedDateChanged_Should_Fire_When_SelectedDate_Set()

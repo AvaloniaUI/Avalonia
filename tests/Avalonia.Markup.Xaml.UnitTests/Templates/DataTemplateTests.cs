@@ -3,7 +3,7 @@ using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Templates
 {
-    public class DataTemplateTests
+    public class DataTemplateTests : XamlTestBase
     {
         [Fact]
         public void DataTemplate_Should_Match_Data_Of_Type()

@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class LayoutTransformControlTests
+    public class LayoutTransformControlTests : ScopedTestBase
     {
         [Fact]
         public void Measure_On_Scale_x2_Is_Correct()

@@ -12,7 +12,7 @@ public partial class Dispatcher
     private bool _explicitBackgroundProcessingRequested;
     private const int MaximumInputStarvationTimeInFallbackMode = 50;
     private const int MaximumInputStarvationTimeInExplicitProcessingExplicitMode = 50;
-    private readonly int _maximumInputStarvationTime;
+    private int _maximumInputStarvationTime;
     
     void RequestBackgroundProcessing()
     {
@@ -101,9 +101,9 @@ public partial class Dispatcher
 
     internal static void ResetBeforeUnitTests()
     {
-        s_uiThread = null;
+        ResetGlobalState();
     }
-    
+
     internal static void ResetForUnitTests()
     {
         if (s_uiThread == null)
@@ -122,14 +122,14 @@ public partial class Dispatcher
             if (job == null || job.Priority <= DispatcherPriority.Inactive)
             {
                 s_uiThread.ShutdownImpl();
-                s_uiThread = null;
+                ResetGlobalState();
                 return;
             }
 
             s_uiThread.ExecuteJob(job);
         }
-
     }
+
     
     private void ExecuteJob(DispatcherOperation job)
     {

@@ -2,6 +2,7 @@
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
+using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
 
@@ -11,7 +12,7 @@ namespace Avalonia.Controls.UnitTests.Automation
 {
     public class ControlAutomationPeerTests
     {
-        public class Children
+        public class Children : ScopedTestBase
         {
             [Fact]
             public void Creates_Children_For_Controls_In_Visual_Tree()
@@ -149,7 +150,7 @@ namespace Avalonia.Controls.UnitTests.Automation
             }
         }
 
-        public class Parent
+        public class Parent : ScopedTestBase
         {
             [Fact]
             public void Connects_Peer_To_Tree_When_GetParent_Called()

@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class UserControlTests
+    public class UserControlTests : ScopedTestBase
     {
         [Fact]
         public void Should_Be_Styled_As_UserControl()

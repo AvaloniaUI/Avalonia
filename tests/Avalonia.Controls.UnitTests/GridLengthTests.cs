@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class GridLengthTests
+    public class GridLengthTests : ScopedTestBase
     {
         [Fact]
         public void Parse_Should_Parse_Auto()

@@ -22,7 +22,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Primitives
 {
-    public class SelectingItemsControlTests_Multiple
+    public class SelectingItemsControlTests_Multiple : ScopedTestBase
     {
         [Fact]
         public void Setting_SelectedIndex_Should_Add_To_SelectedItems()

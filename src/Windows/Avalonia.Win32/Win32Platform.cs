@@ -85,6 +85,8 @@ namespace Avalonia.Win32
 
             SetDpiAwareness();
 
+            Dispatcher.InitializeUIThreadDispatcher(s_instance._dispatcher);
+            
             var renderTimer = options.ShouldRenderOnUIThread ? new UiThreadRenderTimer(60) : new DefaultRenderTimer(60);
 
             AvaloniaLocator.CurrentMutable
@@ -93,7 +95,6 @@ namespace Avalonia.Win32
                 .Bind<IKeyboardDevice>().ToConstant(WindowsKeyboardDevice.Instance)
                 .Bind<IPlatformSettings>().ToSingleton<Win32PlatformSettings>()
                 .Bind<IScreenImpl>().ToSingleton<ScreenImpl>()
-                .Bind<IDispatcherImpl>().ToConstant(s_instance._dispatcher)
                 .Bind<IRenderTimer>().ToConstant(renderTimer)
                 .Bind<IWindowingPlatform>().ToConstant(s_instance)
                 .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Control)

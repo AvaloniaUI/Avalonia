@@ -18,7 +18,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class FlyoutTests
+    public class FlyoutTests : ScopedTestBase
     {
         protected bool UseOverlayPopups { get; set; }
 

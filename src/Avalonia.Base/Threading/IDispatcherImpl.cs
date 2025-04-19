@@ -81,32 +81,3 @@ internal class LegacyDispatcherImpl : IDispatcherImpl
         Timer?.Invoke();
     }
 }
-
-internal sealed class NullDispatcherImpl : IDispatcherImpl
-{
-    public bool CurrentThreadIsLoopThread => true;
-
-    public void Signal()
-    {
-        
-    }
-    
-    public event Action? Signaled
-    {
-        add { }
-        remove { }
-    }
-
-    public event Action? Timer
-    {
-        add { }
-        remove { }
-    }
-
-    public long Now => 0;
-
-    public void UpdateTimer(long? dueTimeInMs)
-    {
-        
-    }
-}

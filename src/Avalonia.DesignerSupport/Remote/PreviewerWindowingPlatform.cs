@@ -52,7 +52,6 @@ namespace Avalonia.DesignerSupport.Remote
                 .Bind<ICursorFactory>().ToSingleton<CursorFactoryStub>()
                 .Bind<IKeyboardDevice>().ToConstant(Keyboard)
                 .Bind<IPlatformSettings>().ToSingleton<DefaultPlatformSettings>()
-                .Bind<IDispatcherImpl>().ToConstant(new ManagedDispatcherImpl(null))
                 .Bind<IRenderTimer>().ToConstant(new UiThreadRenderTimer(60))
                 .Bind<IWindowingPlatform>().ToConstant(instance)
                 .Bind<IPlatformIconLoader>().ToSingleton<IconLoaderStub>()

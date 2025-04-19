@@ -14,7 +14,7 @@ using Avalonia.Media;
 
 namespace Avalonia.Controls.UnitTests.Primitives
 {
-    public class TemplatedControlTests
+    public class TemplatedControlTests : ScopedTestBase
     {
         [Fact]
         public void Template_Doesnt_Get_Executed_On_Set()

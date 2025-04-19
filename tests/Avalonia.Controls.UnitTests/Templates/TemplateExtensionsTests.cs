@@ -1,10 +1,11 @@
 using System.Linq;
 using Avalonia.Controls.UnitTests;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Controls.Templates.UnitTests
 {
-    public class TemplateExtensionsTests
+    public class TemplateExtensionsTests : ScopedTestBase
     {
         /// <summary>
         /// Control templates can themselves contain templated controls. Make sure that

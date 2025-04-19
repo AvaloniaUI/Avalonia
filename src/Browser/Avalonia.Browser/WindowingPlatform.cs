@@ -94,15 +94,17 @@ internal class BrowserWindowingPlatform : IWindowingPlatform
             .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
             .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>() { }))
             .Bind<IActivatableLifetime>().ToSingleton<BrowserActivatableLifetime>();
+        
         if (IsManagedDispatcherEnabled)
         {
             EventGrouperDispatchQueue = new();
-            AvaloniaLocator.CurrentMutable.Bind<IDispatcherImpl>().ToConstant(
-                new ManagedDispatcherImpl(new ManualRawEventGrouperDispatchQueueDispatcherInputProvider(EventGrouperDispatchQueue)));
+            Dispatcher.InitializeUIThreadDispatcher(
+                new ManagedDispatcherImpl(
+                    new ManualRawEventGrouperDispatchQueueDispatcherInputProvider(EventGrouperDispatchQueue)));
         }
         else
         {
-            AvaloniaLocator.CurrentMutable.Bind<IDispatcherImpl>().ToSingleton<BrowserDispatcherImpl>();
+            Dispatcher.InitializeUIThreadDispatcher(new BrowserDispatcherImpl());
         }
 
         // GC thread is the same as the main one when MT is disabled
