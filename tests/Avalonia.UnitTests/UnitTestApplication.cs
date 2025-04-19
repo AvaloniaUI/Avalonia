@@ -62,7 +62,6 @@ namespace Avalonia.UnitTests
         {
             AvaloniaLocator.CurrentMutable
                 .Bind<IAssetLoader>().ToConstant(Services.AssetLoader)
-                .Bind<IFocusManager>().ToConstant(Services.FocusManager)
                 .Bind<IGlobalClock>().ToConstant(Services.GlobalClock)
                 .BindToSelf<IGlobalStyles>(this)
                 .Bind<IInputManager>().ToConstant(Services.InputManager)
