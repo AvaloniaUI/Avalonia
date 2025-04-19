@@ -21,7 +21,6 @@ namespace Avalonia.UnitTests
             renderInterface: new HeadlessPlatformRenderInterface(),
             standardCursorFactory: new HeadlessCursorFactoryStub(),
             theme: () => CreateSimpleTheme(),
-            dispatcherImpl: new NullDispatcherImpl(),
             fontManagerImpl: new TestFontManager(),
             textShaperImpl: new HarfBuzzTextShaper(),
             windowingPlatform: new MockWindowingPlatform());
@@ -36,7 +35,6 @@ namespace Avalonia.UnitTests
             platform: Mock.Of<IRuntimePlatform>());
 
         public static readonly TestServices MockThreadingInterface = new TestServices(
-            dispatcherImpl: new NullDispatcherImpl(),
             assetLoader: new StandardAssetLoader());
 
         public static readonly TestServices MockWindowingPlatform = new TestServices(
@@ -60,7 +58,6 @@ namespace Avalonia.UnitTests
             renderInterface: new HeadlessPlatformRenderInterface(),
             standardCursorFactory: new HeadlessCursorFactoryStub(),
             theme: () => CreateSimpleTheme(),
-            dispatcherImpl: new NullDispatcherImpl(),
             fontManagerImpl: new TestFontManager(),
             textShaperImpl: new HarfBuzzTextShaper(),
             windowingPlatform: new MockWindowingPlatform());
@@ -82,7 +79,6 @@ namespace Avalonia.UnitTests
             IPlatformRenderInterface? renderInterface = null,
             ICursorFactory? standardCursorFactory = null,
             Func<IStyle>? theme = null,
-            IDispatcherImpl? dispatcherImpl = null,
             IFontManagerImpl? fontManagerImpl = null,
             ITextShaperImpl? textShaperImpl = null,
             IWindowImpl? windowImpl = null,
@@ -102,7 +98,6 @@ namespace Avalonia.UnitTests
             TextShaperImpl = textShaperImpl;
             StandardCursorFactory = standardCursorFactory;
             Theme = theme;
-            DispatcherImpl = dispatcherImpl;
             WindowImpl = windowImpl;
             WindowingPlatform = windowingPlatform;
         }
@@ -120,7 +115,6 @@ namespace Avalonia.UnitTests
         public ITextShaperImpl? TextShaperImpl { get; }
         public ICursorFactory? StandardCursorFactory { get; }
         public Func<IStyle>? Theme { get; }
-        public IDispatcherImpl? DispatcherImpl { get; }
         public IWindowImpl? WindowImpl { get; }
         public IWindowingPlatform? WindowingPlatform { get; }
 
@@ -138,7 +132,6 @@ namespace Avalonia.UnitTests
             IScheduler? scheduler = null,
             ICursorFactory? standardCursorFactory = null,
             Func<IStyle>? theme = null,
-            IDispatcherImpl? dispatcherImpl = null,
             IFontManagerImpl? fontManagerImpl = null,
             ITextShaperImpl? textShaperImpl = null,
             IWindowImpl? windowImpl = null,
@@ -158,7 +151,6 @@ namespace Avalonia.UnitTests
                 textShaperImpl: textShaperImpl ?? TextShaperImpl,
                 standardCursorFactory: standardCursorFactory ?? StandardCursorFactory,
                 theme: theme ?? Theme,
-                dispatcherImpl: dispatcherImpl ?? DispatcherImpl,
                 windowingPlatform: windowingPlatform ?? WindowingPlatform,
                 windowImpl: windowImpl ?? WindowImpl);
         }

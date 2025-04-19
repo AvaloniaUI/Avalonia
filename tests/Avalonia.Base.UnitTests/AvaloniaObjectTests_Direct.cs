@@ -499,12 +499,7 @@ namespace Avalonia.Base.UnitTests
                 var currentThreadId = Thread.CurrentThread.ManagedThreadId;
                 var raised = 0;
 
-                var dispatcherMock = new Mock<IDispatcherImpl>();
-                dispatcherMock.SetupGet(mock => mock.CurrentThreadIsLoopThread)
-                    .Returns(() => Thread.CurrentThread.ManagedThreadId == currentThreadId);
-
-                var services = new TestServices(
-                    dispatcherImpl: dispatcherMock.Object);
+                var services = new TestServices();
 
                 target.PropertyChanged += (s, e) =>
                 {

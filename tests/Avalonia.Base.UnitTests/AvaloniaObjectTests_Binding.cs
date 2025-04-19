@@ -19,7 +19,7 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests
 {
-    public class AvaloniaObjectTests_Binding
+    public class AvaloniaObjectTests_Binding : ScopedTestBase
     {
         [Fact]
         public void Bind_Sets_Current_Value()
@@ -865,20 +865,13 @@ namespace Avalonia.Base.UnitTests
                 var currentThreadId = Thread.CurrentThread.ManagedThreadId;
                 var raised = 0;
 
-                var dispatcherMock = new Mock<IDispatcherImpl>();
-                dispatcherMock.SetupGet(mock => mock.CurrentThreadIsLoopThread)
-                    .Returns(() => Thread.CurrentThread.ManagedThreadId == currentThreadId);
-
-                var services = new TestServices(
-                    dispatcherImpl: dispatcherMock.Object);
-
                 target.PropertyChanged += (s, e) =>
                 {
                     Assert.Equal(currentThreadId, Thread.CurrentThread.ManagedThreadId);
                     ++raised;
                 };
 
-                using (UnitTestApplication.Start(services))
+                using (UnitTestApplication.Start())
                 {
                     target.Bind(Class1.FooProperty, source, priority);
 
@@ -907,8 +900,7 @@ namespace Avalonia.Base.UnitTests
                 dispatcherMock.SetupGet(mock => mock.CurrentThreadIsLoopThread)
                     .Returns(() => Thread.CurrentThread.ManagedThreadId == currentThreadId);
 
-                var services = new TestServices(
-                    dispatcherImpl: dispatcherMock.Object);
+                var services = new TestServices();
 
                 target.PropertyChanged += (s, e) =>
                 {
@@ -945,8 +937,7 @@ namespace Avalonia.Base.UnitTests
                 threadingInterfaceMock.SetupGet(mock => mock.CurrentThreadIsLoopThread)
                     .Returns(() => Thread.CurrentThread.ManagedThreadId == currentThreadId);
 
-                var services = new TestServices(
-                    dispatcherImpl: threadingInterfaceMock.Object);
+                var services = new TestServices();
 
                 target.PropertyChanged += (s, e) =>
                 {
@@ -968,24 +959,21 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
-        public async Task Bind_With_Scheduler_Executes_On_UI_Thread()
+        public void Bind_With_Scheduler_Executes_On_UI_Thread()
         {
             var target = new Class1();
             var source = new Subject<double>();
-            var currentThreadId = Thread.CurrentThread.ManagedThreadId;
 
-            var threadingInterfaceMock = new Mock<IDispatcherImpl>();
-            threadingInterfaceMock.SetupGet(mock => mock.CurrentThreadIsLoopThread)
-                .Returns(() => Thread.CurrentThread.ManagedThreadId == currentThreadId);
-
-            var services = new TestServices(
-                dispatcherImpl: threadingInterfaceMock.Object);
+            var services = new TestServices();
 
             using (UnitTestApplication.Start(services))
             {
                 target.Bind(Class1.QuxProperty, source);
 
-                await Task.Run(() => source.OnNext(6.7), TestContext.Current.CancellationToken);
+                ThreadRunHelper.RunOnDedicatedThread(() => source.OnNext(6.7)).GetAwaiter().GetResult();
+                Assert.NotEqual(6.7, target.GetValue(Class1.QuxProperty));
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+                Assert.Equal(6.7, target.GetValue(Class1.QuxProperty));
             }
         }
 

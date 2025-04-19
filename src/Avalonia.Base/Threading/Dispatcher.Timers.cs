@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Avalonia.Threading;
@@ -15,7 +16,8 @@ public partial class Dispatcher
     private long? _dueTimeForBackgroundProcessing;
     private long? _osTimerSetTo;
 
-    internal long Now => _impl.Now;
+    private readonly Func<TimeSpan> _timeProvider;
+    internal long Now => (long)_timeProvider().TotalMilliseconds;
 
     private void UpdateOSTimer()
     {
@@ -26,7 +28,15 @@ public partial class Dispatcher
                 _dueTimeForTimers ?? _dueTimeForBackgroundProcessing;
         if (_osTimerSetTo == nextDueTime)
             return;
-        _impl.UpdateTimer(_osTimerSetTo = nextDueTime);
+
+        _osTimerSetTo = nextDueTime;
+        if (nextDueTime == null) 
+            _impl.UpdateTimer(null);
+        else
+        {
+            var delay = (nextDueTime.Value - Now);
+            _impl.UpdateTimer(_impl.Now + delay);
+        }
     }
 
     internal void RescheduleTimers()
@@ -114,7 +124,8 @@ public partial class Dispatcher
         bool needToProcessQueue = false;
         lock (InstanceLock)
         {
-            _impl.UpdateTimer(_osTimerSetTo = null);
+            _impl.UpdateTimer(null);
+            _osTimerSetTo = null;
             needToPromoteTimers = _dueTimeForTimers.HasValue && _dueTimeForTimers.Value <= Now;
             if (needToPromoteTimers)
                 _dueTimeForTimers = null;

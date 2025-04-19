@@ -34,3 +34,4 @@ public class ThreadRunHelper
 
     public static void RunOnDedicatedThreadAndWait(Action cb) => RunOnDedicatedThread(cb).GetAwaiter().GetResult();
 }
+

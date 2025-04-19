@@ -114,8 +114,8 @@ namespace Avalonia.Native
             var clipboardImpl = new ClipboardImpl(_factory.CreateClipboard());
             var clipboard = new Clipboard(clipboardImpl);
 
+            Dispatcher.InitializeUIThreadDispatcher(new DispatcherImpl(_factory.CreatePlatformThreadingInterface()));
             AvaloniaLocator.CurrentMutable
-                .Bind<IDispatcherImpl>().ToConstant(new DispatcherImpl(_factory.CreatePlatformThreadingInterface()))
                 .Bind<ICursorFactory>().ToConstant(new CursorFactory(_factory.CreateCursorFactory()))
                 .Bind<IScreenImpl>().ToConstant(new ScreenImpl(_factory.CreateScreens))
                 .Bind<IPlatformIconLoader>().ToSingleton<IconLoader>()

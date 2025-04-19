@@ -34,7 +34,6 @@ namespace Avalonia
         /// </summary>
         public AvaloniaObject()
         {
-            VerifyAccess();
             _values = new ValueStore(this);
         }
 
@@ -110,15 +109,21 @@ namespace Avalonia
         internal string DebugDisplay => GetDebugDisplay(true);
 
         /// <summary>
+        ///     Returns the <see cref="Dispatcher"/> that this
+        ///     <see cref="AvaloniaObject"/> is associated with.
+        /// </summary>
+        public Dispatcher Dispatcher { get; } = Dispatcher.CurrentDispatcher;
+        
+        /// <summary>
         /// Returns a value indicating whether the current thread is the UI thread.
         /// </summary>
         /// <returns>true if the current thread is the UI thread; otherwise false.</returns>
-        public bool CheckAccess() => Dispatcher.UIThread.CheckAccess();
-
+        public bool CheckAccess() => Dispatcher.CheckAccess();
+        
         /// <summary>
         /// Checks that the current thread is the UI thread and throws if not.
         /// </summary>
-        public void VerifyAccess() => Dispatcher.UIThread.VerifyAccess();
+        public void VerifyAccess() => Dispatcher.VerifyAccess();
 
         /// <summary>
         /// Clears a <see cref="AvaloniaProperty"/>'s local value.
