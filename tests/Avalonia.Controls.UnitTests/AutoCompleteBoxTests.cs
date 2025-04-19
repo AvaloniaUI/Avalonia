@@ -422,6 +422,28 @@ namespace Avalonia.Controls.UnitTests
         }
         
         [Fact]
+        public void Text_Validation_TextBox_Errors_Binding()
+        {
+            RunTest((control, textbox) =>
+            {
+                // simulate the TemplateBinding that would be used within the AutoCompleteBox control theme for the inner PART_TextBox
+                //      DataValidationErrors.Errors="{TemplateBinding (DataValidationErrors.Errors)}"
+                textbox.Bind(DataValidationErrors.ErrorsProperty, control.GetBindingObservable(DataValidationErrors.ErrorsProperty));
+                
+                var exception = new InvalidCastException("failed validation");
+                var textObservable = new BehaviorSubject<BindingNotification>(new BindingNotification(exception, BindingErrorType.DataValidationError));
+                control.Bind(AutoCompleteBox.TextProperty, textObservable);
+                Dispatcher.UIThread.RunJobs();
+                
+                Assert.Equal(DataValidationErrors.GetHasErrors(control), true);
+                Assert.Equal(DataValidationErrors.GetErrors(control).SequenceEqual(new[] { exception }), true);
+                
+                Assert.Equal(DataValidationErrors.GetHasErrors(textbox), true);
+                Assert.Equal(DataValidationErrors.GetErrors(textbox).SequenceEqual(new[] { exception }), true);
+            });
+        }
+        
+        [Fact]
         public void SelectedItem_Validation()
         {
             RunTest((control, textbox) =>
