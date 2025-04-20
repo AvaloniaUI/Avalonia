@@ -13,7 +13,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Primitives
 {
-    public class SelectingItemsControlTests_SelectedValue
+    public class SelectingItemsControlTests_SelectedValue : ScopedTestBase
     {
         [Fact]
         public void Setting_SelectedItem_Sets_SelectedValue()

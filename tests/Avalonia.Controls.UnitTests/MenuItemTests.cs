@@ -15,7 +15,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class MenuItemTests
+    public class MenuItemTests : ScopedTestBase
     {
         private Mock<IPopupImpl> popupImpl;
 

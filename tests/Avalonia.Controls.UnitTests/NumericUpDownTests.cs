@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class NumericUpDownTests
+    public class NumericUpDownTests : ScopedTestBase
     {
         private static TestServices Services => TestServices.StyledWindow;
 

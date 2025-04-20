@@ -16,7 +16,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class TransitioningContentControlTests
+    public class TransitioningContentControlTests : ScopedTestBase
     {
         [Fact]
         public void Transition_Should_Not_Be_Run_When_First_Shown()
