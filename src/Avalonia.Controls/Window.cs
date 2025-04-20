@@ -152,6 +152,12 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Window, bool>(nameof(ShowInTaskbar), true);
 
         /// <summary>
+        /// Shows or hides from the task switcher
+        /// </summary>
+        public static readonly StyledProperty<bool> ShowInTaskSwitcherProperty =
+            AvaloniaProperty.Register<Window, bool>(nameof(ShowInTaskSwitcher), true);
+
+        /// <summary>
         /// Defines the <see cref="ClosingBehavior"/> property.
         /// </summary>
         public static readonly StyledProperty<WindowClosingBehavior> ClosingBehaviorProperty =
@@ -237,7 +243,8 @@ namespace Avalonia.Controls
             CreatePlatformImplBinding(IconProperty, icon => PlatformImpl!.SetIcon((icon ?? s_defaultIcon.Value)?.PlatformImpl));
             CreatePlatformImplBinding(CanResizeProperty, canResize => PlatformImpl!.CanResize(canResize));
             CreatePlatformImplBinding(ShowInTaskbarProperty, show => PlatformImpl!.ShowTaskbarIcon(show));
-
+            CreatePlatformImplBinding(ShowInTaskSwitcherProperty, show => PlatformImpl!.ShowInTaskSwitcher(show));
+            
             CreatePlatformImplBinding(WindowStateProperty, state => PlatformImpl!.WindowState = state);
             CreatePlatformImplBinding(ExtendClientAreaToDecorationsHintProperty, hint => PlatformImpl!.SetExtendClientAreaToDecorationsHint(hint));
             CreatePlatformImplBinding(ExtendClientAreaChromeHintsProperty, hint => PlatformImpl!.SetExtendClientAreaChromeHints(hint));
@@ -377,6 +384,16 @@ namespace Avalonia.Controls
         {
             get => GetValue(ShowInTaskbarProperty);
             set => SetValue(ShowInTaskbarProperty, value);
+        }
+        
+        /// <summary>
+        /// Shows or hides from the task switcher
+        /// </summary>
+        /// 
+        public bool ShowInTaskSwitcher
+        {
+            get => GetValue(ShowInTaskSwitcherProperty);
+            set => SetValue(ShowInTaskSwitcherProperty, value);
         }
 
         /// <summary>

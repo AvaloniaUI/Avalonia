@@ -129,6 +129,10 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
+        public void ShowInTaskSwitcher(bool value)
+        {
+        }
+
         public void CanResize(bool value)
         {
         }

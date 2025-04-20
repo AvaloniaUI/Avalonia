@@ -207,6 +207,11 @@ namespace Avalonia.Native
             // NO OP On OSX
         }
 
+        public void ShowInTaskSwitcher(bool value)
+        {
+            //NO OP On OSX
+        }
+
         public void SetIcon(IWindowIconImpl icon)
         {
             // NO OP on OSX

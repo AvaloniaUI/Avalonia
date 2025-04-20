@@ -863,6 +863,18 @@ namespace Avalonia.Win32
             UpdateWindowProperties(newWindowProperties);
         }
 
+
+        public void ShowInTaskSwitcher(bool value)
+        {
+            var newWindowProperties = _windowProperties;
+
+            newWindowProperties.ShowInTaskSwitcher = value;
+
+            UpdateWindowProperties(newWindowProperties);//TODO
+            
+        }
+
+
         public void CanResize(bool value)
         {
             var newWindowProperties = _windowProperties;
@@ -1380,6 +1392,10 @@ namespace Avalonia.Win32
             // according to the new values already.
             _windowProperties = newProperties;
 
+            //TODO NOTE: Should I write ShowInTaskSwitcher here or in the if, like ShowInTaskbar?
+            //IMPORTANT: Check line 1427~1437
+            //THIS COMMENT SHOULD BE DELETED LATER
+            
             if (oldProperties.IsFullScreen == newProperties.IsFullScreen)
             {
                 var exStyle = WindowStyles.WS_EX_WINDOWEDGE | (UseRedirectionBitmap ? 0 : WindowStyles.WS_EX_NOREDIRECTIONBITMAP);
@@ -1669,6 +1685,7 @@ namespace Avalonia.Win32
         protected struct WindowProperties
         {
             public bool ShowInTaskbar;
+            public bool ShowInTaskSwitcher;//TODO
             public bool IsResizable;
             public SystemDecorations Decorations;
             public bool IsFullScreen;
