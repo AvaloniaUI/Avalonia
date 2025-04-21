@@ -1448,6 +1448,12 @@ namespace Avalonia.X11
         {
             ChangeWMAtoms(!value, _x11.Atoms._NET_WM_STATE_SKIP_TASKBAR);
         }
+        
+
+        public void ShowInTaskSwitcher(bool value)
+        {
+            ChangeWMAtoms(!value, _x11.Atoms._NET_WM_STATE_SKIP_PAGER);
+        }
 
         private void ChangeWMAtoms(bool enable, params IntPtr[] atoms)
         {

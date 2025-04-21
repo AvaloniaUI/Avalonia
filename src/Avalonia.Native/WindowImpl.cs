@@ -209,7 +209,7 @@ namespace Avalonia.Native
 
         public void ShowInTaskSwitcher(bool value)
         {
-            //NO OP On OSX
+            //TODO: where's the entry??
         }
 
         public void SetIcon(IWindowIconImpl icon)

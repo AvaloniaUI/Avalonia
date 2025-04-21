@@ -1392,9 +1392,6 @@ namespace Avalonia.Win32
             // according to the new values already.
             _windowProperties = newProperties;
 
-            //TODO NOTE: Should I write ShowInTaskSwitcher here or in the if, like ShowInTaskbar?
-            //IMPORTANT: Check line 1427~1437
-            //THIS COMMENT SHOULD BE DELETED LATER
             
             if (oldProperties.IsFullScreen == newProperties.IsFullScreen)
             {
@@ -1444,6 +1441,15 @@ namespace Avalonia.Win32
                 else
                 {
                     exStyle &= ~WindowStyles.WS_EX_APPWINDOW;
+                }
+                
+                if (newProperties.ShowInTaskSwitcher)// TODO: NEED TEST
+                {
+                    exStyle |= WindowStyles.WS_EX_TOOLWINDOW;
+                }
+                else
+                {
+                    exStyle &= ~WindowStyles.WS_EX_TOOLWINDOW;
                 }
 
                 WindowStyles style = WindowStyles.WS_CLIPCHILDREN | WindowStyles.WS_OVERLAPPEDWINDOW | WindowStyles.WS_CLIPSIBLINGS;
