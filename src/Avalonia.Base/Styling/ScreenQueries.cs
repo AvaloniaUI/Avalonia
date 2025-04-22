@@ -112,8 +112,6 @@ namespace Avalonia.Styling
                 return SelectorMatch.NeverThisInstance;
             }
 
-            var isvalueTrue = IsTrue(argument.@operator, argument.value);
-
             bool IsTrue(StyleQueryComparisonOperator comparisonOperator, double value)
             {
                 switch (comparisonOperator)
