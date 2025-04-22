@@ -870,7 +870,7 @@ namespace Avalonia.Win32
 
             newWindowProperties.ShowInTaskSwitcher = value;
 
-            UpdateWindowProperties(newWindowProperties);//TODO
+            UpdateWindowProperties(newWindowProperties);
             
         }
 
@@ -1443,13 +1443,22 @@ namespace Avalonia.Win32
                     exStyle &= ~WindowStyles.WS_EX_APPWINDOW;
                 }
                 
-                if (newProperties.ShowInTaskSwitcher)// TODO: NEED TEST
+                if (!newProperties.ShowInTaskSwitcher)
                 {
                     exStyle |= WindowStyles.WS_EX_TOOLWINDOW;
+                    exStyle &= ~WindowStyles.WS_EX_APPWINDOW;
+                    // If ShowInTaskSwitcher=false, the window will NOT show in taskbar. That is a side effect.
+                    // So if you applied ShowInTaskSwitcher=false, please also set ShowInTaskbar=false if it should be.
+                    // I cannot find a better implementation. So this will stay here as a temporary one.
+                    // If I got a better solution, I will create a PR to change it.
                 }
                 else
                 {
                     exStyle &= ~WindowStyles.WS_EX_TOOLWINDOW;
+                    if (newProperties.ShowInTaskbar)
+                    {
+                        exStyle |= WindowStyles.WS_EX_APPWINDOW;
+                    }
                 }
 
                 WindowStyles style = WindowStyles.WS_CLIPCHILDREN | WindowStyles.WS_OVERLAPPEDWINDOW | WindowStyles.WS_CLIPSIBLINGS;

@@ -209,7 +209,7 @@ namespace Avalonia.Native
 
         public void ShowInTaskSwitcher(bool value)
         {
-            //TODO: where's the entry??
+            // TODO: I cannot find a way to change NSWindow CollectionBehaviors.
         }
 
         public void SetIcon(IWindowIconImpl icon)
