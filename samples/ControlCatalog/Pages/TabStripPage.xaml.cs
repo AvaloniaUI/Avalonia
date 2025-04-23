@@ -10,7 +10,7 @@ namespace ControlCatalog.Pages
         {
             InitializeComponent();
 
-            DataContext = new TabControlPageViewModel
+            DataContext = new TabStripPageViewModel
             {
                 Tabs = new []
                 {
