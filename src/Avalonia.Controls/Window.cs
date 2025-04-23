@@ -181,8 +181,23 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<WindowStartupLocation> WindowStartupLocationProperty =
             AvaloniaProperty.Register<Window, WindowStartupLocation>(nameof(WindowStartupLocation));
 
+        /// <summary>
+        /// Defines the <see cref="CanResize"/> property.
+        /// </summary>
         public static readonly StyledProperty<bool> CanResizeProperty =
             AvaloniaProperty.Register<Window, bool>(nameof(CanResize), true);
+
+        /// <summary>
+        /// Defines the <see cref="CanMinimize"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> CanMinimizeProperty =
+            AvaloniaProperty.Register<Window, bool>(nameof(CanMinimize), true);
+
+        /// <summary>
+        /// Defines the <see cref="CanMaximize"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> CanMaximizeProperty =
+            AvaloniaProperty.Register<Window, bool>(nameof(CanMaximize), true, coerce: CoerceCanMaximize);
 
         /// <summary>
         /// Routed event that can be used for global tracking of window destruction
@@ -236,6 +251,8 @@ namespace Avalonia.Controls
             CreatePlatformImplBinding(TitleProperty, title => PlatformImpl!.SetTitle(title));
             CreatePlatformImplBinding(IconProperty, icon => PlatformImpl!.SetIcon((icon ?? s_defaultIcon.Value)?.PlatformImpl));
             CreatePlatformImplBinding(CanResizeProperty, canResize => PlatformImpl!.CanResize(canResize));
+            CreatePlatformImplBinding(CanMinimizeProperty, canMinimize => PlatformImpl!.SetCanMinimize(canMinimize));
+            CreatePlatformImplBinding(CanMaximizeProperty, canMaximize => PlatformImpl!.SetCanMaximize(canMaximize));
             CreatePlatformImplBinding(ShowInTaskbarProperty, show => PlatformImpl!.ShowTaskbarIcon(show));
 
             CreatePlatformImplBinding(WindowStateProperty, state => PlatformImpl!.WindowState = state);
@@ -405,6 +422,32 @@ namespace Avalonia.Controls
         {
             get => GetValue(CanResizeProperty);
             set => SetValue(CanResizeProperty, value);
+        }
+
+        /// <summary>
+        /// Enables or disables minimizing the window.
+        /// </summary>
+        /// <remarks>
+        /// This property might be ignored by some window managers on Linux.
+        /// </remarks>
+        public bool CanMinimize
+        {
+            get => GetValue(CanMinimizeProperty);
+            set => SetValue(CanMinimizeProperty, value);
+        }
+
+        /// <summary>
+        /// Enables or disables maximizing the window.
+        /// </summary>
+        /// <remarks>
+        /// <para>When <see cref="CanResize"/> is false, this property is always false.</para>
+        /// <para>On macOS, setting this property to false also disables the full screen mode.</para>
+        /// <para>This property might be ignored by some window managers on Linux.</para>
+        /// </remarks>
+        public bool CanMaximize
+        {
+            get => GetValue(CanMaximizeProperty);
+            set => SetValue(CanMaximizeProperty, value);
         }
 
         /// <summary>
@@ -1184,7 +1227,7 @@ namespace Avalonia.Controls
                 PlatformImpl?.SetSystemDecorations(typedNewValue);
             }
 
-            if (change.Property == OwnerProperty)
+            else if (change.Property == OwnerProperty)
             {
                 var oldParent = change.OldValue as Window;
                 var newParent = change.NewValue as Window;
@@ -1196,6 +1239,11 @@ namespace Avalonia.Controls
                 {
                     impl.SetParent(_showingAsDialog ? newParent?.PlatformImpl! : (newParent?.PlatformImpl ?? null));
                 }
+            }
+
+            else if (change.Property == CanResizeProperty)
+            {
+                CoerceValue(CanMaximizeProperty);
             }
         }
 
@@ -1217,5 +1265,8 @@ namespace Avalonia.Controls
             }
             return null;
         }
+
+        private static bool CoerceCanMaximize(AvaloniaObject target, bool value)
+            => value && target is not Window { CanResize: false };
     }
 }
