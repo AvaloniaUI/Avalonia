@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests;
 
-public class LoadedTests
+public class LoadedTests : ScopedTestBase
 {
     [Fact]
     public void Window_Loads_And_Unloads()

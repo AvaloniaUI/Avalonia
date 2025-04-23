@@ -4,12 +4,13 @@ using System.Linq;
 using Avalonia.Data.Core.ExpressionNodes;
 using Avalonia.Data.Core.ExpressionNodes.Reflection;
 using Avalonia.Markup.Parsers;
+using Avalonia.UnitTests;
 using Avalonia.Utilities;
 using Xunit;
 
 namespace Avalonia.Markup.UnitTests.Parsers
 {
-    public class ExpressionNodeFactoryTests
+    public class ExpressionNodeFactoryTests : ScopedTestBase
     {
         [Fact]
         public void Should_Build_Single_Property()

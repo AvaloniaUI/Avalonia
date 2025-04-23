@@ -7,12 +7,13 @@ using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Avalonia.Threading;
+using Avalonia.UnitTests;
 using Moq;
 using Xunit;
 
 namespace Avalonia.Markup.UnitTests.Data
 {
-    public class BindingTests
+    public class BindingTests : ScopedTestBase
     {
         [Fact]
         public void OneWay_Binding_Should_Be_Set_Up()

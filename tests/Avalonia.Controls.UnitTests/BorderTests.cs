@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class BorderTests
+    public class BorderTests : ScopedTestBase
     {
         [Fact]
         public void Measure_Should_Return_BorderThickness_Plus_Padding_When_No_Child_Present()
@@ -46,7 +46,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new Rect(6, 6, 0, 0), content.Bounds);
         }
         
-        public class UseLayoutRounding
+        public class UseLayoutRounding : ScopedTestBase
         {
             [Fact]
             public void Measure_Rounds_Padding()
