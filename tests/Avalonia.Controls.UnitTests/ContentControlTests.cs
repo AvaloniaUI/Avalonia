@@ -15,7 +15,7 @@ using System.Collections.Generic;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class ContentControlTests
+    public class ContentControlTests : ScopedTestBase
     {
         [Fact]
         public void Template_Should_Be_Instantiated()

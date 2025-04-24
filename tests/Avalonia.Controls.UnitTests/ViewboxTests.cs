@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class ViewboxTests
+    public class ViewboxTests : ScopedTestBase
     {
         [Fact]
         public void Viewbox_Stretch_Uniform_Child()

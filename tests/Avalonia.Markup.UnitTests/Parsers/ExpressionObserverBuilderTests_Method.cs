@@ -9,11 +9,12 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Markup.UnitTests.Parsers
 {
-    public class ExpressionObserverBuilderTests_Method
+    public class ExpressionObserverBuilderTests_Method : ScopedTestBase
     {
         private class TestObject
         {
