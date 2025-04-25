@@ -15,7 +15,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class MenuItemTests
+    public class MenuItemTests : ScopedTestBase
     {
         private Mock<IPopupImpl> popupImpl;
 
@@ -60,6 +60,45 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.True(target.IsEnabled);
             Assert.False(target.IsEffectivelyEnabled);
+        }
+
+        [Fact]
+        public void MenuItem_With_Styled_Command_Binding_Should_Be_Enabled_With_Child_Missing_Command()
+        {
+            using var app = Application();
+
+            var viewModel = new MenuViewModel("Parent")
+            {
+                Children = [new MenuViewModel("Child")]
+            };
+
+            var contextMenu = new ContextMenu
+            {
+                ItemsSource = new[] { viewModel },
+                Styles =
+                {
+                    new Style(x => x.OfType<MenuItem>())
+                    {
+                        Setters =
+                        {
+                            new Setter(MenuItem.HeaderProperty, new Binding("Header")),
+                            new Setter(MenuItem.ItemsSourceProperty, new Binding("Children")),
+                            new Setter(MenuItem.CommandProperty, new Binding("Command"))
+                        }
+                    }
+                }
+            };
+
+            var window = new Window { ContextMenu = contextMenu };
+            window.Show();
+            contextMenu.Open();
+
+            var parentMenuItem = Assert.IsType<MenuItem>(contextMenu.ContainerFromIndex(0));
+
+            Assert.Same(parentMenuItem.DataContext, viewModel);
+            Assert.Same(parentMenuItem.ItemsSource, viewModel.Children);
+            Assert.True(parentMenuItem.IsEnabled);
+            Assert.True(parentMenuItem.IsEffectivelyEnabled);
         }
 
         [Fact]

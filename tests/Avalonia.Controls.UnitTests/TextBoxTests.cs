@@ -22,7 +22,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class TextBoxTests
+    public class TextBoxTests : ScopedTestBase
     {
         [Fact]
         public void Opening_Context_Menu_Does_not_Lose_Selection()

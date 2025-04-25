@@ -10,7 +10,7 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class TextBlockTests
+    public class TextBlockTests : ScopedTestBase
     {
         [Fact]
         public void DefaultBindingMode_Should_Be_OneWay()

@@ -5,6 +5,7 @@ using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Selection;
 using Avalonia.Controls.Utils;
+using Avalonia.UnitTests;
 using Xunit;
 using CollectionChangedEventManager = Avalonia.Controls.Utils.CollectionChangedEventManager;
 
@@ -14,7 +15,7 @@ namespace Avalonia.Controls.UnitTests.Selection
 {
     public class SelectionModelTests_Single
     {
-        public class Source
+        public class Source : ScopedTestBase
         {
             [Fact]
             public void Can_Select_Index_Before_Source_Assigned()
@@ -324,7 +325,7 @@ namespace Avalonia.Controls.UnitTests.Selection
             }
         }
 
-        public class SelectedIndex
+        public class SelectedIndex : ScopedTestBase
         {
             [Fact]
             public void SelectedIndex_Larger_Than_Source_Clears_Selection()
@@ -454,7 +455,7 @@ namespace Avalonia.Controls.UnitTests.Selection
             }
         }
 
-        public class SelectedItem
+        public class SelectedItem : ScopedTestBase
         {
             [Fact]
             public void Setting_SelectedItem_To_Valid_Item_Updates_Selection()
@@ -496,7 +497,7 @@ namespace Avalonia.Controls.UnitTests.Selection
             }
         }
 
-        public class SelectedIndexes
+        public class SelectedIndexes : ScopedTestBase
         {
             [Fact]
             public void PropertyChanged_Is_Raised_When_SelectedIndex_Changes()
@@ -538,7 +539,7 @@ namespace Avalonia.Controls.UnitTests.Selection
             }
         }
 
-        public class SelectedItems
+        public class SelectedItems : ScopedTestBase
         {
             [Fact]
             public void PropertyChanged_Is_Raised_When_SelectedIndex_Changes()
@@ -580,7 +581,7 @@ namespace Avalonia.Controls.UnitTests.Selection
             }
         }
 
-        public class Select
+        public class Select : ScopedTestBase
         {
             [Fact]
             public void Select_Sets_SelectedIndex()
@@ -664,7 +665,7 @@ namespace Avalonia.Controls.UnitTests.Selection
             }
         }
 
-        public class SelectRange
+        public class SelectRange : ScopedTestBase
         {
             [Fact]
             public void SelectRange_Throws()
@@ -675,7 +676,7 @@ namespace Avalonia.Controls.UnitTests.Selection
             }
         }
 
-        public class Deselect
+        public class Deselect : ScopedTestBase
         {
             [Fact]
             public void Deselect_Clears_Current_Selection()
@@ -721,7 +722,7 @@ namespace Avalonia.Controls.UnitTests.Selection
             }
         }
 
-        public class DeselectRange
+        public class DeselectRange : ScopedTestBase
         {
             [Fact]
             public void DeselectRange_Clears_Current_Selection_For_Intersecting_Range()
@@ -767,7 +768,7 @@ namespace Avalonia.Controls.UnitTests.Selection
             }
         }
 
-        public class Clear
+        public class Clear : ScopedTestBase
         {
             [Fact]
             public void Clear_Raises_SelectionChanged()
@@ -792,7 +793,7 @@ namespace Avalonia.Controls.UnitTests.Selection
             }
         }
 
-        public class AnchorIndex
+        public class AnchorIndex : ScopedTestBase
         {
             [Fact]
             public void Setting_SelectedIndex_Sets_AnchorIndex()
@@ -898,7 +899,7 @@ namespace Avalonia.Controls.UnitTests.Selection
             }
         }
 
-        public class SingleSelect
+        public class SingleSelect : ScopedTestBase
         {
             [Fact]
             public void Converting_To_Multiple_Selection_Preserves_Selection()
@@ -939,7 +940,7 @@ namespace Avalonia.Controls.UnitTests.Selection
             }
         }
 
-        public class CollectionChanges
+        public class CollectionChanges : ScopedTestBase
         {
             [Fact]
             public void Adding_Item_Before_Selected_Item_Updates_Indexes()
@@ -1273,7 +1274,7 @@ namespace Avalonia.Controls.UnitTests.Selection
             }
         }
 
-        public class BatchUpdate
+        public class BatchUpdate : ScopedTestBase
         {
             [Fact]
             public void Changes_Do_Not_Take_Effect_Until_EndUpdate_Called()
@@ -1309,7 +1310,7 @@ namespace Avalonia.Controls.UnitTests.Selection
             }
         }
 
-        public class LostSelection
+        public class LostSelection : ScopedTestBase
         {
             [Fact]
             public void LostSelection_Called_On_Clear()
@@ -1421,7 +1422,7 @@ namespace Avalonia.Controls.UnitTests.Selection
             }
         }
 
-        public class UntypedInterface
+        public class UntypedInterface : ScopedTestBase
         {
             [Fact]
             public void Raises_Untyped_SelectionChanged_Event()
