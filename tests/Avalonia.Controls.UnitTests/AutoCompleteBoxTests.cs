@@ -435,11 +435,11 @@ namespace Avalonia.Controls.UnitTests
                 control.Bind(AutoCompleteBox.TextProperty, textObservable);
                 Dispatcher.UIThread.RunJobs();
                 
-                Assert.Equal(DataValidationErrors.GetHasErrors(control), true);
-                Assert.Equal(DataValidationErrors.GetErrors(control).SequenceEqual(new[] { exception }), true);
+                Assert.True(DataValidationErrors.GetHasErrors(control));
+                Assert.Equal([exception], DataValidationErrors.GetErrors(control));
                 
-                Assert.Equal(DataValidationErrors.GetHasErrors(textbox), true);
-                Assert.Equal(DataValidationErrors.GetErrors(textbox).SequenceEqual(new[] { exception }), true);
+                Assert.True(DataValidationErrors.GetHasErrors(textbox));
+                Assert.Equal([exception], DataValidationErrors.GetErrors(textbox));
             });
         }
         
