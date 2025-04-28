@@ -1123,7 +1123,6 @@ namespace Avalonia.Media.TextFormatting
             var runWidth = endX - startX;
 
             var textSourceIndex = startIndex + Math.Max(0, currentPosition - firstCluster) + clusterOffset;
-            //var textSourceIndex = offset + startHit.FirstCharacterIndex;
 
             return new TextRunBounds(new Rect(startX, 0, runWidth, Height), textSourceIndex, characterLength, currentRun);
         }
@@ -1211,7 +1210,6 @@ namespace Avalonia.Media.TextFormatting
             var runWidth = endX - startX;
 
              var textSourceIndex = startIndex + Math.Max(0, currentPosition - firstCluster) + clusterOffset;
-            //var textSourceIndex = offset + startHit.FirstCharacterIndex;
 
             return new TextRunBounds(new Rect(startX, 0, runWidth, Height), textSourceIndex, characterLength, currentRun);
         }
