@@ -1403,54 +1403,43 @@ namespace Avalonia.Win32
                     {
                         exStyle |= WindowStyles.WS_EX_APPWINDOW;
 
-                        if (_hiddenWindowIsParent)
-                        {
-                            // Can't enable the taskbar icon by clearing the parent window unless the window
-                            // is hidden. Hide the window and show it again with the same activation state
-                            // when we've finished. Interestingly it seems to work fine the other way.
-                            var shown = IsWindowVisible(_hwnd);
-                            var activated = GetActiveWindow() == _hwnd;
-
-                            if (shown)
-                                Hide();
-
-                            _hiddenWindowIsParent = false;
-                            SetParent(null);
-
-                            if (shown)
-                                Show(activated, false);
-                        }
+                        // if (_hiddenWindowIsParent)
+                        // {
+                        //     // Can't enable the taskbar icon by clearing the parent window unless the window
+                        //     // is hidden. Hide the window and show it again with the same activation state
+                        //     // when we've finished. Interestingly it seems to work fine the other way.
+                        //     _hiddenWindowIsParent = false;
+                        //     SetParent(null);
+                        // }
                     }
                     else
                     {
                         // To hide a non-owned window's taskbar icon we need to parent it to a hidden window.
-                        if (_parent is null)
-                        {
-                            SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, OffscreenParentWindow.Handle);
-                            _hiddenWindowIsParent = true;
-                        }
-
+                        // if (_parent is null)
+                        // {
+                        //     SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, OffscreenParentWindow.Handle);
+                        //     _hiddenWindowIsParent = true;
+                        // }
                         exStyle &= ~WindowStyles.WS_EX_APPWINDOW;
                     }
-                }
+                    var shown = IsWindowVisible(_hwnd);
+                    var activated = GetActiveWindow() == _hwnd;
 
-                if (newProperties.ShowInTaskbar)
-                {
-                    exStyle |= WindowStyles.WS_EX_APPWINDOW;
-                }
-                else
-                {
-                    exStyle &= ~WindowStyles.WS_EX_APPWINDOW;
+                    if (shown)
+                    {
+                        Hide();
+                        Show(activated, false);
+                    }
                 }
                 
                 if (!newProperties.ShowInTaskSwitcher)
                 {
                     exStyle |= WindowStyles.WS_EX_TOOLWINDOW;
                     exStyle &= ~WindowStyles.WS_EX_APPWINDOW;
-                    // If ShowInTaskSwitcher=false, the window will NOT show in taskbar. That is a side effect.
+                    // As a side effect, if ShowInTaskSwitcher=false, the window will NOT show in taskbar.
                     // So if you applied ShowInTaskSwitcher=false, please also set ShowInTaskbar=false if it should be.
-                    // I cannot find a better implementation. So this will stay here as a temporary one.
-                    // If I got a better solution, I will create a PR to change it.
+                    // I found a better implementation, but needs further tests. So this will stay here as a temporary one.
+                    // I will create a PR to change it when tests were done.
                 }
                 else
                 {
@@ -1458,6 +1447,7 @@ namespace Avalonia.Win32
                     if (newProperties.ShowInTaskbar)
                     {
                         exStyle |= WindowStyles.WS_EX_APPWINDOW;
+                        SetExtendedStyle(GetExtendedStyle() | WindowStyles.WS_EX_APPWINDOW, false);
                     }
                 }
 
