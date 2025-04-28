@@ -2009,39 +2009,39 @@ namespace Avalonia.Controls
                 return;
             }
 
-            if (!isSelecting && SelectionStart != SelectionEnd)
-            {
-                ClearSelectionAndMoveCaretToTextPosition(direction);
-            }
-
-            var oldCaretIndex = _presenter.CaretIndex;
-            _presenter.MoveCaretVertical(direction);
-            var newCaretIndex = _presenter.CaretIndex;
-
-            if (isSelecting && oldCaretIndex == newCaretIndex)
-            {
-                var text = Text ?? string.Empty;
-
-                // caret did not move while we are selecting so we could not move to previous/next line,
-                // but check if we are already at the 'boundary' of the text
-                if (direction == LogicalDirection.Forward && newCaretIndex < text.Length)
-                {
-                    // include selection till end of the text
-                    _presenter.MoveCaretToTextPosition(text.Length);
-                }
-                else if (direction == LogicalDirection.Backward && newCaretIndex > 0)
-                {
-                    // include selection till start of the text
-                    _presenter.MoveCaretToTextPosition(0);
-                }
-            }
-
             if (isSelecting)
             {
+                var oldCaretIndex = _presenter.CaretIndex;
+                _presenter.MoveCaretVertical(direction);
+                var newCaretIndex = _presenter.CaretIndex;
+
+                if (oldCaretIndex == newCaretIndex)
+                {
+                    var text = Text ?? string.Empty;
+
+                    // caret did not move while we are selecting so we could not move to previous/next line,
+                    // but check if we are already at the 'boundary' of the text
+                    if (direction == LogicalDirection.Forward && newCaretIndex < text.Length)
+                    {
+                        _presenter.MoveCaretToTextPosition(text.Length);
+                    }
+                    else if (direction == LogicalDirection.Backward && newCaretIndex > 0)
+                    {
+                        _presenter.MoveCaretToTextPosition(0);
+                    }
+                }
+
                 SetCurrentValue(SelectionEndProperty, _presenter.CaretIndex);
             }
             else
             {
+                if (SelectionStart != SelectionEnd)
+                {
+                    ClearSelectionAndMoveCaretToTextPosition(direction);
+                }
+
+                _presenter.MoveCaretVertical(direction);
+
                 SetCurrentValue(CaretIndexProperty, _presenter.CaretIndex);
             }
         }

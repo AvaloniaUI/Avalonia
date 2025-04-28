@@ -747,7 +747,7 @@ namespace Avalonia.Controls.Presenters
 
             CaretChanged();
         }
-
+        
         private void EnsureCaretTimer()
         {
             if (_caretTimer == null)
