@@ -1472,7 +1472,7 @@ namespace Avalonia.Controls
                                 ClearSelectionAndMoveCaretToTextPosition(LogicalDirection.Backward);
                             }
 
-                            _presenter.MoveCaretVertical(LogicalDirection.Backward);
+                            _presenter.MoveCaretVertical(LogicalDirection.Backward, selection);
 
                             if (caretIndex != _presenter.CaretIndex)
                             {
@@ -1499,7 +1499,7 @@ namespace Avalonia.Controls
                                 ClearSelectionAndMoveCaretToTextPosition(LogicalDirection.Forward);
                             }
 
-                            _presenter.MoveCaretVertical();
+                            _presenter.MoveCaretVertical(LogicalDirection.Forward, selection);
 
                             if (caretIndex != _presenter.CaretIndex)
                             {

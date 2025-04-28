@@ -705,7 +705,7 @@ namespace Avalonia.Controls.Presenters
             CaretChanged();
         }
 
-        public void MoveCaretVertical(LogicalDirection direction = LogicalDirection.Forward)
+        public void MoveCaretVertical(LogicalDirection direction = LogicalDirection.Forward, bool isSelecting = false)
         {
             var lineIndex = TextLayout.GetLineIndexFromCharacterIndex(CaretIndex, _lastCharacterHit.TrailingLength > 0);
 
@@ -720,34 +720,62 @@ namespace Avalonia.Controls.Presenters
             {
                 if (lineIndex + 1 > TextLayout.TextLines.Count - 1)
                 {
-                    return;
+                    if (!isSelecting)
+                    {
+                        return;
+                    }
+
+                    // no vertical movement down possible, but move to the end of the last line if needed
+
+                    var textLine = TextLayout.TextLines[TextLayout.TextLines.Count - 1];
+
+                    if (currentX >= textLine.Width)
+                    {
+                        return;
+                    }
+
+                    currentX = textLine.Width;
                 }
+                else
+                {
+                    var textLine = TextLayout.TextLines[lineIndex];
 
-                var textLine = TextLayout.TextLines[lineIndex];
-
-                currentY += textLine.Height;
+                    currentY += textLine.Height;
+                }
             }
             else
             {
                 if (lineIndex - 1 < 0)
                 {
-                    return;
+                    if (!isSelecting)
+                    {
+                        return;
+                    }
+
+                    // no vertical movement up possible, but move to the start of the first line if needed
+
+                    if (currentX <= 0)
+                    {
+                        return;
+                    }
+
+                    currentX = 0;
                 }
+                else
+                {
+                    var textLine = TextLayout.TextLines[--lineIndex];
 
-                var textLine = TextLayout.TextLines[--lineIndex];
-
-                currentY -= textLine.Height;
+                    currentY -= textLine.Height;
+                }
             }
-
-            var navigationPosition = _navigationPosition;
 
             MoveCaretToPoint(new Point(currentX, currentY));
 
-            _navigationPosition = navigationPosition.WithY(_caretBounds.Y);
+            _navigationPosition = new Point(_caretBounds.X, _caretBounds.Y);
 
             CaretChanged();
         }
-        
+
         private void EnsureCaretTimer()
         {
             if (_caretTimer == null)
