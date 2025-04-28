@@ -602,15 +602,31 @@ namespace Avalonia.Media.TextFormatting
 
         public override IReadOnlyList<TextBounds> GetTextBounds(int firstTextSourceIndex, int textLength)
         {
-            if (_indexedTextRuns is null || _indexedTextRuns.Count == 0)
+            if(textLength <= 0)
             {
-                return Array.Empty<TextBounds>();
+                throw new ArgumentOutOfRangeException(nameof(textLength), $"textLength ({textLength}) must be a non-zero value. Actual value was {textLength}.");
             }
 
-            var result = new List<TextBounds>();
+            if (_indexedTextRuns is null || _indexedTextRuns.Count == 0)
+            {
+                return [];
+            }
 
             var currentPosition = FirstTextSourceIndex;
             var remainingLength = textLength;
+
+            //We can return early if the requested text range is after the line's text range.
+            if(firstTextSourceIndex >= FirstTextSourceIndex + Length)
+            {
+                var lastRunIndex = _indexedTextRuns[_indexedTextRuns.Count - 1].RunIndex;
+
+                var runBounds = GetTextRunBoundsRightToLeft(lastRunIndex, lastRunIndex, Width, firstTextSourceIndex,
+                                    currentPosition, remainingLength, out _, out _);
+
+                return [runBounds];
+            }
+
+            var result = new List<TextBounds>();
 
             TextBounds? lastBounds = null;
 
@@ -754,12 +770,6 @@ namespace Avalonia.Media.TextFormatting
                         }
                 }
 
-                if (coveredLength == 0)
-                {
-                    //This should never happen
-                    break;
-                }
-
                 if (lastBounds != null && TryMergeWithLastBounds(currentBounds, lastBounds))
                 {
                     currentBounds = lastBounds;
@@ -885,7 +895,10 @@ namespace Avalonia.Media.TextFormatting
                 {
                     var runBounds = GetRunBoundsRightToLeft(shapedTextRun, startX, firstTextSourceIndex, remainingLength, currentPosition, out var offset);
 
-                    textRunBounds.Insert(0, runBounds);
+                    if (runBounds.TextSourceCharacterIndex < FirstTextSourceIndex + Length)
+                    {
+                        textRunBounds.Insert(0, runBounds);
+                    }
 
                     if (offset > 0)
                     {
@@ -908,16 +921,24 @@ namespace Avalonia.Media.TextFormatting
                     {
                         startX -= drawableTextRun.Size.Width;
 
-                        textRunBounds.Insert(0,
-                          new TextRunBounds(
-                              new Rect(startX, 0, drawableTextRun.Size.Width, Height), currentPosition, currentRun.Length, currentRun));
+                        var runBounds = new TextRunBounds(
+                              new Rect(startX, 0, drawableTextRun.Size.Width, Height), currentPosition, currentRun.Length, currentRun);
+
+                        if (runBounds.TextSourceCharacterIndex < FirstTextSourceIndex + Length)
+                        {
+                            textRunBounds.Insert(0, runBounds);
+                        }     
                     }
                     else
                     {
+                        var runBounds = new TextRunBounds(
+                               new Rect(endX, 0, 0, Height), currentPosition, currentRun.Length, currentRun);
+
                         //Add potential TextEndOfParagraph
-                        textRunBounds.Add(
-                           new TextRunBounds(
-                               new Rect(endX, 0, 0, Height), currentPosition, currentRun.Length, currentRun));
+                        if (runBounds.TextSourceCharacterIndex < FirstTextSourceIndex + Length)
+                        {
+                            textRunBounds.Add(runBounds);
+                        }
                     }
 
                     currentPosition += currentRun.Length;
@@ -946,7 +967,7 @@ namespace Avalonia.Media.TextFormatting
            int firstTextSourceIndex, int currentPosition, int remainingLength, out int coveredLength, out int newPosition)
         {
             coveredLength = 0;
-            var textRunBounds = new List<TextRunBounds>();
+            var textRunBounds = new List<TextRunBounds>(1);
             var endX = startX;
 
             for (int i = firstRunIndex; i <= lastRunIndex; i++)
@@ -957,7 +978,10 @@ namespace Avalonia.Media.TextFormatting
                 {
                     var runBounds = GetRunBoundsLeftToRight(shapedTextRun, endX, firstTextSourceIndex, remainingLength, currentPosition, out var offset);
 
-                    textRunBounds.Add(runBounds);
+                    if(runBounds.TextSourceCharacterIndex < FirstTextSourceIndex + Length)
+                    {
+                        textRunBounds.Add(runBounds);
+                    }
 
                     if (offset > 0)
                     {
@@ -978,18 +1002,26 @@ namespace Avalonia.Media.TextFormatting
                 {
                     if (currentRun is DrawableTextRun drawableTextRun)
                     {
-                        textRunBounds.Add(
-                            new TextRunBounds(
-                                new Rect(endX, 0, drawableTextRun.Size.Width, Height), currentPosition, currentRun.Length, currentRun));
+                        var runBounds = new TextRunBounds(
+                                new Rect(endX, 0, drawableTextRun.Size.Width, Height), currentPosition, currentRun.Length, currentRun);
+
+                        if (runBounds.TextSourceCharacterIndex < FirstTextSourceIndex + Length)
+                        {
+                            textRunBounds.Add(runBounds);
+                        }
 
                         endX += drawableTextRun.Size.Width;
                     }
                     else
                     {
+                        var runBounds = new TextRunBounds(
+                               new Rect(endX, 0, 0, Height), currentPosition, currentRun.Length, currentRun);
+
                         //Add potential TextEndOfParagraph
-                        textRunBounds.Add(
-                           new TextRunBounds(
-                               new Rect(endX, 0, 0, Height), currentPosition, currentRun.Length, currentRun));
+                        if (runBounds.TextSourceCharacterIndex < FirstTextSourceIndex + Length)
+                        {
+                            textRunBounds.Add(runBounds);
+                        }  
                     }
 
                     currentPosition += currentRun.Length;
@@ -1032,6 +1064,20 @@ namespace Avalonia.Media.TextFormatting
                 startIndex += offset;
             }
 
+            //Make sure we start the hit test at the start of the possible cluster.
+            var clusterStartHit = currentRun.GlyphRun.GetPreviousCaretCharacterHit(new CharacterHit(startIndex));
+            var clusterEndHit = currentRun.GlyphRun.GetNextCaretCharacterHit(clusterStartHit);
+
+            var clusterOffset = 0;
+
+            if (startIndex > clusterStartHit.FirstCharacterIndex && startIndex < clusterEndHit.FirstCharacterIndex + clusterEndHit.TrailingLength)
+            {
+                clusterOffset = clusterEndHit.FirstCharacterIndex + clusterEndHit.TrailingLength - startIndex;
+
+                //We need to move the startIndex to the start of the cluster.
+                startIndex -= clusterOffset;
+            }
+
             var startOffset = currentRun.GlyphRun.GetDistanceFromCharacterHit(new CharacterHit(startIndex));
             var endOffset = currentRun.GlyphRun.GetDistanceFromCharacterHit(new CharacterHit(startIndex + remainingLength));
 
@@ -1041,7 +1087,8 @@ namespace Avalonia.Media.TextFormatting
             var startHit = currentRun.GlyphRun.GetCharacterHitFromDistance(startOffset, out _);
             var endHit = currentRun.GlyphRun.GetCharacterHitFromDistance(endOffset, out _);
 
-            var characterLength = Math.Abs(startHit.FirstCharacterIndex + startHit.TrailingLength - endHit.FirstCharacterIndex - endHit.TrailingLength);
+            //Adjust characterLength by the cluster offset to only cover the remaining length of the cluster.
+            var characterLength = Math.Abs(startHit.FirstCharacterIndex + startHit.TrailingLength - endHit.FirstCharacterIndex - endHit.TrailingLength) - clusterOffset;
 
             if (characterLength == 0 && currentRun.Text.Length > 0 && startIndex < currentRun.Text.Length)
             {
@@ -1075,7 +1122,8 @@ namespace Avalonia.Media.TextFormatting
 
             var runWidth = endX - startX;
 
-            var textSourceIndex = offset + startHit.FirstCharacterIndex;
+            var textSourceIndex = startIndex + Math.Max(0, currentPosition - firstCluster) + clusterOffset;
+            //var textSourceIndex = offset + startHit.FirstCharacterIndex;
 
             return new TextRunBounds(new Rect(startX, 0, runWidth, Height), textSourceIndex, characterLength, currentRun);
         }
@@ -1101,7 +1149,6 @@ namespace Avalonia.Media.TextFormatting
             }
 
             var endOffset = currentRun.GlyphRun.GetDistanceFromCharacterHit(new CharacterHit(startIndex));
-
             var startOffset = currentRun.GlyphRun.GetDistanceFromCharacterHit(new CharacterHit(startIndex + remainingLength));
 
             startX -= currentRun.Size.Width - startOffset;
@@ -1110,7 +1157,21 @@ namespace Avalonia.Media.TextFormatting
             var endHit = currentRun.GlyphRun.GetCharacterHitFromDistance(endOffset, out _);
             var startHit = currentRun.GlyphRun.GetCharacterHitFromDistance(startOffset, out _);
 
-            var characterLength = Math.Abs(startHit.FirstCharacterIndex + startHit.TrailingLength - endHit.FirstCharacterIndex - endHit.TrailingLength);
+            //Make sure we start the hit test at the start of the possible cluster.
+            var clusterStartHit = currentRun.GlyphRun.GetNextCaretCharacterHit(new CharacterHit(startIndex));
+            var clusterEndHit = currentRun.GlyphRun.GetPreviousCaretCharacterHit(startHit);
+
+            var clusterOffset = 0;
+
+            if (startIndex > clusterStartHit.FirstCharacterIndex && startIndex < clusterEndHit.FirstCharacterIndex + clusterEndHit.TrailingLength)
+            {
+                clusterOffset = clusterEndHit.FirstCharacterIndex + clusterEndHit.TrailingLength - startIndex;
+
+                //We need to move the startIndex to the start of the cluster.
+                startIndex -= clusterOffset;
+            }
+
+            var characterLength = Math.Abs(startHit.FirstCharacterIndex + startHit.TrailingLength - endHit.FirstCharacterIndex - endHit.TrailingLength) - clusterOffset;
 
             if (characterLength == 0 && currentRun.Text.Length > 0 && startIndex < currentRun.Text.Length)
             {
@@ -1149,7 +1210,8 @@ namespace Avalonia.Media.TextFormatting
 
             var runWidth = endX - startX;
 
-            var textSourceIndex = offset + startHit.FirstCharacterIndex;
+             var textSourceIndex = startIndex + Math.Max(0, currentPosition - firstCluster) + clusterOffset;
+            //var textSourceIndex = offset + startHit.FirstCharacterIndex;
 
             return new TextRunBounds(new Rect(startX, 0, runWidth, Height), textSourceIndex, characterLength, currentRun);
         }

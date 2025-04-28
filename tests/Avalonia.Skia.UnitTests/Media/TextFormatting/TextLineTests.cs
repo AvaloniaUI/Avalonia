@@ -886,6 +886,235 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Fact]
+        public void Should_GetTextBounds_For_Mixed_Hidden_Runs_With_Ligature()
+        {
+            using (Start())
+            {
+                var typeface = new Typeface(FontFamily.Parse("resm:Avalonia.Skia.UnitTests.Fonts?assembly=Avalonia.Skia.UnitTests#Manrope"));
+
+                var defaultProperties = new GenericTextRunProperties(typeface);
+                var textSource = new CustomTextBufferTextSource(
+                    new TextHidden(1), 
+                    new TextCharacters("Authenti", defaultProperties), 
+                    new TextHidden(1), 
+                    new TextHidden(1),
+                    new TextCharacters("ff", defaultProperties),
+                    new TextHidden(1), 
+                    new TextHidden(1));
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
+
+                var textBounds = textLine.GetTextBounds(12, 1);
+
+                Assert.NotEmpty(textBounds);
+
+                var firstBounds = textBounds[0];
+
+                Assert.NotNull(firstBounds.TextRunBounds);
+                Assert.NotEmpty(firstBounds.TextRunBounds);
+
+                var firstRun = firstBounds.TextRunBounds[0];
+
+                Assert.NotNull(firstRun);
+
+                Assert.Equal(12, firstRun.TextSourceCharacterIndex);
+            }
+        }
+
+        [Fact]
+        public void Should_GetTextBounds_For_Mixed_Hidden_Runs()
+        {
+            using (Start())
+            {
+                var typeface = new Typeface(FontFamily.Parse("resm:Avalonia.Skia.UnitTests.Fonts?assembly=Avalonia.Skia.UnitTests#Manrope"));
+
+                var defaultProperties = new GenericTextRunProperties(typeface);
+                var textSource = new CustomTextBufferTextSource(
+                    new TextHidden(1),
+                    new TextCharacters("Authenti", defaultProperties),
+                    new TextHidden(1),
+                    new TextHidden(1),
+                    new TextEndOfParagraph(1));
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
+
+                var textBounds = textLine.GetTextBounds(8, 1);
+
+                Assert.NotEmpty(textBounds);
+
+                var firstBounds = textBounds[0];
+
+                Assert.NotNull(firstBounds.TextRunBounds);
+                Assert.NotEmpty(firstBounds.TextRunBounds);
+
+                var firstRun = firstBounds.TextRunBounds[0];
+
+                Assert.NotNull(firstRun);
+
+                Assert.Equal(8, firstRun.TextSourceCharacterIndex);
+            }
+        }
+
+        [Win32Fact("Windows font")]
+        public void Should_GetTextBounds_Within_Cluster()
+        {
+            using (Start())
+            {
+                var typeface = new Typeface("Segoe UI Emoji");
+
+                var defaultProperties = new GenericTextRunProperties(typeface);
+                var textSource = new CustomTextBufferTextSource(new TextCharacters("🙈", defaultProperties));
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
+
+                var textBounds = textLine.GetTextBounds(0, 1);
+
+                Assert.NotEmpty(textBounds);
+
+                var runBounds = textBounds[0].TextRunBounds[0];
+
+                Assert.Equal(0, runBounds.TextSourceCharacterIndex);
+
+                textBounds = textLine.GetTextBounds(1, 1);
+
+                Assert.NotEmpty(textBounds);
+
+                runBounds = textBounds[0].TextRunBounds[0];
+
+                Assert.Equal(1, runBounds.TextSourceCharacterIndex);
+
+                textBounds = textLine.GetTextBounds(2, 1);
+
+                Assert.NotEmpty(textBounds);
+
+                Assert.NotNull(textBounds[0].TextRunBounds);
+
+                Assert.Empty(textBounds[0].TextRunBounds);
+            }
+        }
+
+        [Win32Fact("Windows font")]
+        public void Should_GetTextBounds_After_Last_Index()
+        {
+            using (Start())
+            {
+                var typeface = new Typeface("Segoe UI Emoji");
+
+                var defaultProperties = new GenericTextRunProperties(typeface);
+                var textSource = new CustomTextBufferTextSource(new TextCharacters("🙈", defaultProperties));
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
+
+                var textBounds = textLine.GetTextBounds(2, 1);
+
+                Assert.NotEmpty(textBounds);
+
+                var firstBounds = textBounds[0];
+
+                Assert.Equal(textLine.Width, firstBounds.Rectangle.Right);
+
+                Assert.NotNull(firstBounds.TextRunBounds);
+
+                Assert.Empty(firstBounds.TextRunBounds);
+            }
+        }
+
+        [Fact]
+        public void Should_Get_Run_Bounds()
+        {
+            using (Start())
+            {
+                var typeface = new Typeface(FontFamily.Parse("resm:Avalonia.Skia.UnitTests.Fonts?assembly=Avalonia.Skia.UnitTests#Manrope"));
+                var defaultProperties = new GenericTextRunProperties(typeface);
+                var textSource = new CustomTextBufferTextSource(
+                    new TextCharacters("He", defaultProperties), 
+                    new TextCharacters("Wo", defaultProperties),
+                    new TextCharacters("ff", defaultProperties));
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
+
+                var textBounds = textLine.GetTextBounds(1, 1);
+
+                Assert.NotEmpty(textBounds);
+
+                textBounds = textLine.GetTextBounds(2, 1);
+
+                Assert.NotEmpty(textBounds);
+
+                textBounds = textLine.GetTextBounds(4, 1);
+
+                Assert.NotEmpty(textBounds);
+            }
+        }
+
+        private class TextHidden : TextRun
+        {
+            public TextHidden(int length)
+            {
+                Length = length;
+            }
+
+            public override int Length { get; }
+        }
+
+        private class CustomTextBufferTextSource : ITextSource
+        {
+            private IReadOnlyList<TextRun> _textRuns;
+
+            public CustomTextBufferTextSource(params TextRun[] textRuns)
+            {
+                _textRuns = textRuns;
+            }
+
+            public TextRun? GetTextRun(int textSourceIndex)
+            {
+                var pos = 0;
+
+                for(var i = 0; i < _textRuns.Count; i++)
+                {
+                    var currentRun = _textRuns[i];
+
+                    if(pos + currentRun.Length > textSourceIndex)
+                    {
+                        return currentRun;
+                    }
+
+                    pos += currentRun.Length;
+                }
+
+                return null;
+            }
+        }
+
         private class MixedTextBufferTextSource : ITextSource
         {
             public TextRun? GetTextRun(int textSourceIndex)
