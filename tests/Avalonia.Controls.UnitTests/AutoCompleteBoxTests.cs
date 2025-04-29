@@ -16,7 +16,7 @@ using Moq;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class AutoCompleteBoxTests
+    public class AutoCompleteBoxTests : ScopedTestBase
     {
         [Fact]
         public void Search_Filters()

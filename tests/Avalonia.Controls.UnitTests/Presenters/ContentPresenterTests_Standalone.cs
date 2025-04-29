@@ -18,7 +18,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
     /// <summary>
     /// Tests for ContentControls that aren't hosted in a control template.
     /// </summary>
-    public class ContentPresenterTests_Standalone
+    public class ContentPresenterTests_Standalone : ScopedTestBase
     {
         [Fact]
         public void Should_Set_Childs_Parent_To_Itself_Standalone()

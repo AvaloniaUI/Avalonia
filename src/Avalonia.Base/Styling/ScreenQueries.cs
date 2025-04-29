@@ -67,11 +67,22 @@ namespace Avalonia.Styling
                 SelectorMatch.AlwaysThisInstance : SelectorMatch.NeverThisInstance;
         }
 
-        public override string ToString() => "width";
+        public override string ToString() => ToString(null);
 
         public override string ToString(ContainerQuery? owner)
         {
-            throw new NotImplementedException();
+            var prop = Argument.@operator switch
+            {
+                StyleQueryComparisonOperator.None => "",
+                StyleQueryComparisonOperator.Equals => "width",
+                StyleQueryComparisonOperator.LessThan => "",
+                StyleQueryComparisonOperator.GreaterThan => "",
+                StyleQueryComparisonOperator.LessThanOrEquals => "max-width",
+                StyleQueryComparisonOperator.GreaterThanOrEquals => "min-width",
+                _ => throw new NotImplementedException(),
+            };
+
+            return $"{prop}:{Argument.value}";
         }
     }
 
@@ -112,8 +123,6 @@ namespace Avalonia.Styling
                 return SelectorMatch.NeverThisInstance;
             }
 
-            var isvalueTrue = IsTrue(argument.@operator, argument.value);
-
             bool IsTrue(StyleQueryComparisonOperator comparisonOperator, double value)
             {
                 switch (comparisonOperator)
@@ -139,11 +148,22 @@ namespace Avalonia.Styling
                 SelectorMatch.AlwaysThisInstance : SelectorMatch.NeverThisInstance;
         }
 
-        public override string ToString() => "height";
+        public override string ToString() => ToString(null);
 
         public override string ToString(ContainerQuery? owner)
         {
-            throw new NotImplementedException();
+            var prop = Argument.@operator switch
+            {
+                StyleQueryComparisonOperator.None => "",
+                StyleQueryComparisonOperator.Equals => "height",
+                StyleQueryComparisonOperator.LessThan => "",
+                StyleQueryComparisonOperator.GreaterThan => "",
+                StyleQueryComparisonOperator.LessThanOrEquals => "max-height",
+                StyleQueryComparisonOperator.GreaterThanOrEquals => "min-height",
+                _ => throw new NotImplementedException(),
+            };
+
+            return $"{prop}:{Argument.value}";
         }
     }
 }
