@@ -503,16 +503,19 @@ HRESULT WindowBaseImpl::SetParent(IAvnWindowBase *parent) {
     START_COM_CALL;
 
     @autoreleasepool {
-        if(Parent != nullptr)
+        
+        auto oldParent = Parent.tryGet();
+        
+        if(oldParent != nullptr)
         {
-            Parent->_children.remove(this);
+            oldParent->_children.remove(this);
         }
 
         auto cparent = dynamic_cast<WindowImpl *>(parent);
         
         Parent = cparent;
        
-        if(Parent != nullptr && Window != nullptr){
+        if(cparent != nullptr && Window != nullptr){
             // If one tries to show a child window with a minimized parent window, then the parent window will be
             // restored but macOS isn't kind enough to *tell* us that, so the window will be left in a non-interactive
             // state. Detect this and explicitly restore the parent window ourselves to avoid this situation.
