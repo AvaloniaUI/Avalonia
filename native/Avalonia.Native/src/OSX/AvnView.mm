@@ -836,6 +836,8 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
 
     auto effects = ConvertDragDropEffects(nsop);
     auto parent = _parent.tryGet();
+    if (!parent)
+      return NSDragOperationNone;
     int reffects = (int)parent->TopLevelEvents
             ->DragEvent(type, point, modifiers, effects,
                     CreateClipboard([info draggingPasteboard], nil),
