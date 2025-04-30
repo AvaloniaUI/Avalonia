@@ -363,7 +363,7 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
         auto windowBase = _parent.tryGetWithCast<WindowBaseImpl>();
         
         if(windowBase != nullptr){
-            auto parent = windowBase->Parent;
+            auto parent = windowBase->Parent.tryGet();
             
             if(parent != nullptr){
                 auto parentWindow = parent->Window;
