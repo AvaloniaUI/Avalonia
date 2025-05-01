@@ -6,6 +6,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
+using Avalonia.Input.GestureRecognizers;
 using Avalonia.Input.Platform;
 using Avalonia.LogicalTree;
 using Avalonia.Styling;
@@ -19,6 +20,7 @@ namespace Avalonia.Controls.UnitTests
     public class ListBoxTests_Single : ScopedTestBase
     {
         MouseTestHelper _mouse = new MouseTestHelper();
+        MouseTestHelper _pen = new MouseTestHelper(PointerType.Pen);
         
         [Fact]
         public void Focusing_Item_With_Tab_Should_Not_Select_It()
@@ -86,6 +88,77 @@ namespace Avalonia.Controls.UnitTests
                 Prepare(target);
                 _mouse.Click(target.Presenter.Panel.Children[0]);
 
+                Assert.Equal(0, target.SelectedIndex);
+            }
+        }
+
+        [Fact]
+        public void Pen_Right_Press_Item_Should_Select_It()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var target = new ListBox
+                {
+                    Template = new FuncControlTemplate(CreateListBoxTemplate),
+                    ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Width = 20, Height = 10 }),
+                    ItemsSource = new[] { "Foo", "Bar", "Baz " }
+                };
+                Prepare(target);
+                _pen.Down(target.Presenter.Panel.Children[0], MouseButton.Right);
+
+                Assert.Equal(0, target.SelectedIndex);
+            }
+        }
+
+        [Fact]
+        public void Pen_Left_Press_Item_Should_Not_Select_It()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var target = new ListBox
+                {
+                    Template = new FuncControlTemplate(CreateListBoxTemplate),
+                    ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Width = 20, Height = 10 }),
+                    ItemsSource = new[] { "Foo", "Bar", "Baz " }
+                };
+                Prepare(target);
+                _pen.Down(target.Presenter.Panel.Children[0]);
+
+                Assert.Equal(-1, target.SelectedIndex);
+            }
+        }
+
+
+        [Theory]
+        [InlineData(PointerType.Mouse)]
+        [InlineData(PointerType.Pen)]
+        public void Pointer_Right_Click_Should_Select_Item_And_Open_Context(PointerType type)
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var target = new ListBox
+                {
+                    Template = new FuncControlTemplate(CreateListBoxTemplate),
+                    ItemsSource = new[] { "Foo", "Bar", "Baz " },
+                    ItemTemplate = new FuncDataTemplate<string>((x, _) => new Border { Height = 10 })
+                };
+                target.GestureRecognizers.Add(new ScrollGestureRecognizer()
+                {
+                    CanVerticallyScroll = true, ScrollStartDistance = 50
+                });
+                Prepare(target);
+
+                var contextRaised = false;
+                target.AddHandler(Control.ContextRequestedEvent, (sender, args) =>
+                {
+                    contextRaised = true;
+                    args.Handled = true;
+                });
+
+                var pointer = type == PointerType.Mouse ? _mouse : _pen;
+                pointer.Click(target.Presenter.Panel.Children[0], MouseButton.Right, position: new Point(5, 5));
+
+                Assert.True(contextRaised);
                 Assert.Equal(0, target.SelectedIndex);
             }
         }
