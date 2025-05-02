@@ -546,7 +546,7 @@ bool WindowImpl::IsModal() {
 }
 
 bool WindowImpl::IsOwned() {
-    return Parent != nullptr;
+    return Parent.tryGet() != nullptr;
 }
 
 NSWindowStyleMask WindowImpl::CalculateStyleMask() {

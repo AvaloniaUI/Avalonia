@@ -375,6 +375,11 @@ namespace Avalonia.iOS
         {
             _topLevelImpl.Resized?.Invoke(_topLevelImpl.ClientSize, WindowResizeReason.Layout);
             var scaling = (double)ContentScaleFactor;
+            if (_latestLayoutProps.scaling != scaling)
+            {
+                _topLevelImpl.ScalingChanged?.Invoke(scaling);
+            }
+
             _latestLayoutProps = (new PixelSize((int)(Bounds.Width * scaling), (int)(Bounds.Height * scaling)), scaling);
             if (_currentRenderTarget is not null)
             {
