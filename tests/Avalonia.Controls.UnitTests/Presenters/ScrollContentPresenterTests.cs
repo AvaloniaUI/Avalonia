@@ -9,7 +9,7 @@ using Xunit.Sdk;
 
 namespace Avalonia.Controls.UnitTests.Presenters
 {
-    public class ScrollContentPresenterTests
+    public class ScrollContentPresenterTests : NameScopeTests
     {
         [Theory]
         [InlineData(HorizontalAlignment.Stretch, VerticalAlignment.Stretch, 10, 10, 80, 80)]

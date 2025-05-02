@@ -11,6 +11,7 @@ using Avalonia.Data.Core;
 using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings;
 using Avalonia.Threading;
+using Avalonia.UnitTests;
 using JetBrains.dotMemoryUnit;
 using Xunit;
 using Xunit.Abstractions;
@@ -18,7 +19,7 @@ using Xunit.Abstractions;
 namespace Avalonia.LeakTests
 {
     [DotMemoryUnit(FailIfRunWithoutSupport = false)]
-    public class AvaloniaObjectTests
+    public class AvaloniaObjectTests : ScopedTestBase
     {
         public AvaloniaObjectTests(ITestOutputHelper atr)
         {
@@ -159,7 +160,7 @@ namespace Avalonia.LeakTests
             }
 
             var weakTarget = SetupBinding();
-
+            
             CollectGarbage();
             Assert.False(weakTarget.IsAlive);
         }

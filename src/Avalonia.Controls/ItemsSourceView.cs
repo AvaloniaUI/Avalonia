@@ -27,6 +27,13 @@ namespace Avalonia.Controls
         /// </summary>
         public static ItemsSourceView Empty { get; } = new ItemsSourceView(Array.Empty<object?>());
 
+        /// <summary>
+        /// Gets an instance representing an uninitialized source.
+        /// </summary>
+        [SuppressMessage("Performance", "CA1825:Avoid zero-length array allocations", Justification = "This is a sentinel value and must be unique.")]
+        [SuppressMessage("ReSharper", "UseCollectionExpression", Justification = "This is a sentinel value and must be unique.")]
+        internal static object?[] UninitializedSource { get; } = new object?[0];
+
         private IList _source;
         private NotifyCollectionChangedEventHandler? _collectionChanged;
         private NotifyCollectionChangedEventHandler? _preCollectionChanged;
@@ -48,6 +55,9 @@ namespace Avalonia.Controls
         /// Gets the source collection.
         /// </summary>
         public IList Source => _source;
+
+        internal IList? TryGetInitializedSource()
+            => _source == UninitializedSource ? null : _source;
 
         /// <summary>
         /// Retrieves the item at the specified index.
