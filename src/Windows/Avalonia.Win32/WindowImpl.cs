@@ -1392,17 +1392,15 @@ namespace Avalonia.Win32
 
                 if ((oldProperties.ShowInTaskbar != newProperties.ShowInTaskbar) || forceChanges)
                 {
-                        // Can't enable the taskbar icon by clearing the parent window unless the window
-                        // is hidden. Hide the window and show it again with the same activation state
-                        // when we've finished. Interestingly it seems to work fine the other way.
-                        var shown = IsWindowVisible(_hwnd);
-                        var activated = GetActiveWindow() == _hwnd;
+                    // Refresh the window to ensure its ShowInTaskbar can be correctly applied.    
+                    var shown = IsWindowVisible(_hwnd);
+                    var activated = GetActiveWindow() == _hwnd;
 
-                        if (shown)
-                        {
-                            Hide();
-                            Show(activated, false);
-                        }
+                    if (shown)
+                    {
+                        Hide();
+                        Show(activated, false);
+                    }
                 }
 
                 WindowStyles style = WindowStyles.WS_CLIPCHILDREN | WindowStyles.WS_OVERLAPPEDWINDOW | WindowStyles.WS_CLIPSIBLINGS;
