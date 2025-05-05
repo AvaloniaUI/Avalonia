@@ -4,12 +4,13 @@ using System.Collections.Specialized;
 using System.Text;
 using Avalonia.Collections;
 using Avalonia.Controls.Utils;
+using Avalonia.UnitTests;
 using Xunit;
 using CollectionChangedEventManager = Avalonia.Controls.Utils.CollectionChangedEventManager;
 
 namespace Avalonia.Controls.UnitTests.Utils
 {
-    public class CollectionChangedEventManagerTests
+    public class CollectionChangedEventManagerTests : ScopedTestBase
     {
         [Fact]
         public void AddListener_Listens_To_Events()

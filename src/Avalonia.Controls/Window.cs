@@ -734,9 +734,11 @@ namespace Avalonia.Controls
                     double.IsNaN(Width) ? ClientSize.Width : Width,
                     double.IsNaN(Height) ? ClientSize.Height : Height);
 
+                var minMax = new MinMax(this);
+
                 initialSize = new Size(
-                MathUtilities.Clamp(initialSize.Width, MinWidth, MaxWidth),
-                MathUtilities.Clamp(initialSize.Height, MinHeight, MaxHeight));
+                    MathUtilities.Clamp(initialSize.Width, minMax.MinWidth, minMax.MaxWidth),
+                    MathUtilities.Clamp(initialSize.Height, minMax.MinHeight, minMax.MaxHeight));
 
                 var clientSizeChanged = initialSize != ClientSize;
                 ClientSize = initialSize; // ClientSize is required for Measure and Arrange
@@ -746,14 +748,14 @@ namespace Avalonia.Controls
 
                 if (SizeToContent.HasFlag(SizeToContent.Width))
                 {
-                    initialSize = initialSize.WithWidth(MathUtilities.Clamp(_arrangeBounds.Width, MinWidth, MaxWidth));
+                    initialSize = initialSize.WithWidth(MathUtilities.Clamp(_arrangeBounds.Width, minMax.MinWidth, minMax.MaxWidth));
                     clientSizeChanged |= initialSize != ClientSize;
                     ClientSize = initialSize;
                 }
 
                 if (SizeToContent.HasFlag(SizeToContent.Height))
                 {
-                    initialSize = initialSize.WithHeight(MathUtilities.Clamp(_arrangeBounds.Height, MinHeight, MaxHeight));
+                    initialSize = initialSize.WithHeight(MathUtilities.Clamp(_arrangeBounds.Height, minMax.MinHeight, minMax.MaxHeight));
                     clientSizeChanged |= initialSize != ClientSize;
                     ClientSize = initialSize;
                 }
