@@ -262,6 +262,21 @@ namespace Avalonia.Controls.Primitives
         {
             if (_presenter == textPresenter)
                 return;
+
+            if (_textBox != null)
+            {
+                _textBox.RemoveHandler(TextBox.TextChangingEvent, TextChanged);
+                _textBox.RemoveHandler(KeyDownEvent, TextBoxKeyDown);
+                _textBox.RemoveHandler(PointerReleasedEvent, TextBoxPointerReleased);
+                _textBox.RemoveHandler(Gestures.HoldingEvent, TextBoxHolding);
+
+                _textBox.PropertyChanged -= TextBoxPropertyChanged;
+                _textBox.EffectiveViewportChanged -= TextBoxEffectiveViewportChanged;
+                _textBox.SizeChanged -= TextBox_SizeChanged;
+
+                _textBox = null;
+            }
+
             _presenter = textPresenter;
             if (_presenter != null)
             {
@@ -279,21 +294,14 @@ namespace Avalonia.Controls.Primitives
                     _textBox.SizeChanged += TextBox_SizeChanged;
                 }
             }
-            else
+        }
+
+        private void Presenter_CaretBoundsChanged(object? sender, EventArgs e)
+        {
+            if (ShowHandles)
             {
-                if (_textBox != null)
-                {
-                    _textBox.RemoveHandler(TextBox.TextChangingEvent, TextChanged);
-                    _textBox.RemoveHandler(KeyDownEvent, TextBoxKeyDown);
-                    _textBox.RemoveHandler(PointerReleasedEvent, TextBoxPointerReleased);
-                    _textBox.RemoveHandler(Gestures.HoldingEvent, TextBoxHolding);
-
-                    _textBox.PropertyChanged -= TextBoxPropertyChanged;
-                    _textBox.EffectiveViewportChanged -= TextBoxEffectiveViewportChanged;
-                    _textBox.SizeChanged -= TextBox_SizeChanged;
-                }
-
-                _textBox = null;
+                MoveHandlesToSelection();
+                EnsureVisible();
             }
         }
 
