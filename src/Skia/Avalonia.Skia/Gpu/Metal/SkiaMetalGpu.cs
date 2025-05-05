@@ -12,12 +12,18 @@ internal class SkiaMetalGpu : ISkiaGpu, ISkiaGpuWithPlatformGraphicsContext
     private SkiaMetalApi _api = new();
     private GRContext? _context;
     private readonly IMetalDevice _device;
+    private readonly SkiaMetalExternalObjectsFeature? _externalObjects;
+    internal GRContext GrContext => _context ?? throw new ObjectDisposedException(nameof(SkiaMetalGpu));
+    internal SkiaMetalApi SkiaMetalApi => _api;
+    internal IMetalDevice MetalDevice => _device;
 
     public SkiaMetalGpu(IMetalDevice device, long? maxResourceBytes)
     {
         _context = _api.CreateContext(device.Device, device.CommandQueue,
             new GRContextOptions() { AvoidStencilBuffers = true });
         _device = device;
+        if (device.TryGetFeature<IMetalExternalObjectsFeature>() is { } externalObjects)
+            _externalObjects = new SkiaMetalExternalObjectsFeature(this, externalObjects);
         if (maxResourceBytes.HasValue)
             _context.SetResourceCacheLimit(maxResourceBytes.Value);
     }
@@ -28,7 +34,14 @@ internal class SkiaMetalGpu : ISkiaGpu, ISkiaGpuWithPlatformGraphicsContext
         _context = null;
     }
 
-    public object? TryGetFeature(Type featureType) => null;
+    public object? TryGetFeature(Type featureType)
+    {
+        if (featureType == typeof(IExternalObjectsHandleWrapRenderInterfaceContextFeature))
+            return _device.TryGetFeature(featureType);
+        if (featureType == typeof(IExternalObjectsRenderInterfaceContextFeature))
+            return _externalObjects;
+        return null;
+    }
 
     public bool IsLost => false;
     public IDisposable EnsureCurrent() => _device.EnsureCurrent();

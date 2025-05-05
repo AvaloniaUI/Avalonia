@@ -470,6 +470,22 @@ public:
             return S_OK;
         }
     }
+    
+    virtual HRESULT ImportMTLSharedEvent(void* event, IAvnMTLSharedEvent** ppv) override
+    {
+        START_COM_CALL;
+        *ppv = ::ImportMTLSharedEvent(event);
+        return *ppv != nullptr ? S_OK : E_FAIL;
+    }
+    
+    HRESULT CreateMemoryManagementHelper(IAvnNativeObjectsMemoryManagement **ppv) override { 
+        START_COM_CALL;
+        *ppv = ::CreateMemoryManagementHelper();
+        return S_OK;
+    }
+    
+    
+    
 };
 
 extern "C" IAvaloniaNativeFactory* CreateAvaloniaNative()
