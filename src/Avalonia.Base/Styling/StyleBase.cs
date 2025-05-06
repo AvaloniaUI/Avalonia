@@ -72,24 +72,11 @@ namespace Avalonia.Styling
         public void Add(SetterBase setter) => Setters.Add(setter);
         public void Add(IStyle style) => Children.Add(style);
 
-        void IAddChild.AddChild(object child)
-        {
-            switch (child)
-            {
-                case SetterBase setter:
-                    Setters.Add(setter);
-                    break;
-                case IStyle style:
-                    Children.Add(style);
-                    break;
-                default:
-                    throw new InvalidOperationException($"Cannot add {child.GetType()} to a style.");
-            }
-        }
+        void IAddChild.AddChild(object child) { }
 
-        void IAddChild<SetterBase>.AddChild(SetterBase setter) => Setters.Add(setter); 
+        void IAddChild<SetterBase>.AddChild(SetterBase setter) { }
 
-        void IAddChild<IStyle>.AddChild(IStyle style) => Children.Add(style);
+        void IAddChild<IStyle>.AddChild(IStyle style) { }
 
         public event EventHandler? OwnerChanged;
 
