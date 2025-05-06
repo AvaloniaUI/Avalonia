@@ -11,7 +11,7 @@ namespace Avalonia.Styling
     /// <summary>
     /// Base class for <see cref="Style"/> and <see cref="ControlTheme"/>.
     /// </summary>
-    public abstract class StyleBase : AvaloniaObject, IStyle, IResourceProvider, IAddChild, IAddChild<IStyle>, IAddChild<SetterBase>
+    public abstract class StyleBase : AvaloniaObject, IStyle, IResourceProvider, IAddChild
     {
         private IResourceHost? _owner;
         private StyleChildren? _children;
@@ -86,10 +86,6 @@ namespace Avalonia.Styling
                     throw new InvalidOperationException($"Cannot add {child.GetType()} to a style.");
             }
         }
-
-        void IAddChild<SetterBase>.AddChild(SetterBase setter) => Setters.Add(setter); 
-
-        void IAddChild<IStyle>.AddChild(IStyle style) => Children.Add(style);
 
         public event EventHandler? OwnerChanged;
 
