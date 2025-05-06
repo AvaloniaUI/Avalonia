@@ -3,6 +3,7 @@
 #import <QuartzCore/QuartzCore.h>
 #include "common.h"
 #include "rendertarget.h"
+#import "crapium.h"
 
 
 class API_AVAILABLE(macos(12.0)) AvnMTLSharedEvent : public ComSingleObject<IAvnMTLSharedEvent, &IID_IAvnMTLSharedEvent>
@@ -27,7 +28,7 @@ public:
     }
     
     bool Wait(uint64_t value, uint64_t timeoutMS) override {
-        return [_event waitUntilSignaledValue:value timeoutMS:timeoutMS];
+        return MtlSharedEventWaitUntilSignaledValueHack(_event, value, timeoutMS);
     }
     
     void SetSignaledValue(uint64_t value) override {
