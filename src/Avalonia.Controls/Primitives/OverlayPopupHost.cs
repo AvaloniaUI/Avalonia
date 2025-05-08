@@ -24,6 +24,7 @@ namespace Avalonia.Controls.Primitives
         private Point _lastRequestedPosition;
         private PopupPositionRequest? _popupPositionRequest;
         private Size _popupSize;
+        private Thickness _childMargin;
         private bool _needsUpdate;
 
         static OverlayPopupHost()
@@ -142,9 +143,23 @@ namespace Avalonia.Controls.Primitives
         /// <inheritdoc />
         protected override Size ArrangeOverride(Size finalSize)
         {
+            var reposition = false;
+
+            var newMargin = Presenter?.Child?.Margin ?? default;
+            if (newMargin != _childMargin)
+            {
+                _childMargin = newMargin;
+                reposition = true;
+            }
+
             if (_popupSize != finalSize)
             {
                 _popupSize = finalSize;
+                reposition = true;
+            }
+
+            if (reposition)
+            {
                 _needsUpdate = true;
                 UpdatePosition();
             }
@@ -156,7 +171,7 @@ namespace Avalonia.Controls.Primitives
             if (_needsUpdate && _popupPositionRequest is not null)
             {
                 _needsUpdate = false;
-                _positioner.Update(TopLevel.GetTopLevel(_overlayLayer)!, _popupPositionRequest, _popupSize, FlowDirection);
+                _positioner.Update(TopLevel.GetTopLevel(_overlayLayer)!, _popupPositionRequest, _popupSize, _childMargin, FlowDirection);
             }
         }
 
