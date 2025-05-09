@@ -296,15 +296,6 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private void Presenter_CaretBoundsChanged(object? sender, EventArgs e)
-        {
-            if (ShowHandles)
-            {
-                MoveHandlesToSelection();
-                EnsureVisible();
-            }
-        }
-
         private void TextBox_SizeChanged(object? sender, SizeChangedEventArgs e)
         {
             InvalidateMeasure();
