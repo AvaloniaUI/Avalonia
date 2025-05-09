@@ -85,9 +85,6 @@ namespace Avalonia.Win32.Input
         {
             Hwnd = hwnd;
             _parent = parent;
-            _langId = PRIMARYLANGID(LGID(HKL));
-
-            _parent = parent;
 
             var langId = PRIMARYLANGID(LGID(HKL));
 
