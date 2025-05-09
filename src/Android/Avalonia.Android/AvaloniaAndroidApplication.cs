@@ -34,7 +34,7 @@ namespace Avalonia.Android
 
             var lifetime = new SingleViewLifetime();
 
-            (this as IAndroidApplication)!.Lifetime = lifetime;
+            ((IAndroidApplication)this).Lifetime = lifetime;
 
             builder.SetupWithLifetime(lifetime);
         }
