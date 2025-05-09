@@ -2,9 +2,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:converters="using:Avalonia.Controls.Converters"
                     x:ClassModifier="internal">
-  <converters:MarginMultiplierConverter x:Key="LeftMarginConverter"
-                                        Indent="16"
-                                        Left="True" />
+  <x:Double x:Key="TreeViewItemIndent">16</x:Double>
 
   <ControlTheme x:Key="SimpleTreeViewItemToggleButtonTheme"
                 TargetType="ToggleButton">
@@ -45,10 +43,13 @@
                   Focusable="True"
                   TemplatedControl.IsTemplateFocusTarget="True">
             <Grid Name="PART_Header"
-                  Margin="{TemplateBinding Level,
-                                           Mode=OneWay,
-                                           Converter={StaticResource LeftMarginConverter}}"
                   ColumnDefinitions="16, *">
+              <Grid.Margin>
+                <MultiBinding Converter="{x:Static converters:TreeViewItemIndentConverter.Instance}">
+                  <Binding Path="Level" RelativeSource="{RelativeSource TemplatedParent}" />
+                  <DynamicResource ResourceKey="TreeViewItemIndent" />
+                </MultiBinding>
+              </Grid.Margin>
               <ToggleButton Name="PART_ExpandCollapseChevron"
                             Focusable="False"
                             Background="Transparent"
