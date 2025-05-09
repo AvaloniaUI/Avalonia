@@ -41,7 +41,6 @@ namespace Avalonia.UnitTests
             windowingPlatform: new MockWindowingPlatform());
 
         public static readonly TestServices RealFocus = new TestServices(
-            focusManager: new FocusManager(),
             keyboardDevice: () => new KeyboardDevice(),
             keyboardNavigation: () => new KeyboardNavigationHandler(),
             inputManager: new InputManager(),
@@ -51,7 +50,6 @@ namespace Avalonia.UnitTests
             textShaperImpl: new HeadlessTextShaperStub());
 
         public static readonly TestServices FocusableWindow = new TestServices(
-            focusManager: new FocusManager(),
             keyboardDevice: () => new KeyboardDevice(),
             keyboardNavigation: () => new KeyboardNavigationHandler(),
             inputManager: new InputManager(),
@@ -73,7 +71,6 @@ namespace Avalonia.UnitTests
         
         public TestServices(
             IAssetLoader assetLoader = null,
-            IFocusManager focusManager = null,
             IInputManager inputManager = null,
             Func<IKeyboardDevice> keyboardDevice = null,
             Func<IKeyboardNavigationHandler> keyboardNavigation = null,
@@ -90,7 +87,6 @@ namespace Avalonia.UnitTests
             IWindowingPlatform windowingPlatform = null)
         {
             AssetLoader = assetLoader;
-            FocusManager = focusManager;
             InputManager = inputManager;
             KeyboardDevice = keyboardDevice;
             KeyboardNavigation = keyboardNavigation;
@@ -125,7 +121,7 @@ namespace Avalonia.UnitTests
             IWindowImpl windowImpl = null,
             IWindowingPlatform windowingPlatform = null,
             IAccessKeyHandler accessKeyHandler = null
-            ) : this(assetLoader, focusManager, inputManager, keyboardDevice,
+            ) : this(assetLoader, inputManager, keyboardDevice,
             keyboardNavigation,
             mouseDevice, platform, renderInterface, renderLoop, standardCursorFactory, theme,
             dispatcherImpl, fontManagerImpl, textShaperImpl, windowImpl, windowingPlatform)
@@ -136,7 +132,6 @@ namespace Avalonia.UnitTests
 
         public IAssetLoader AssetLoader { get; }
         public IInputManager InputManager { get; }
-        public IFocusManager FocusManager { get; }
         internal IGlobalClock GlobalClock { get; set; }
         internal IAccessKeyHandler AccessKeyHandler { get; }
         public Func<IKeyboardDevice> KeyboardDevice { get; }
@@ -176,7 +171,6 @@ namespace Avalonia.UnitTests
             return new TestServices(
                 globalClock ?? GlobalClock,
                 assetLoader: assetLoader ?? AssetLoader,
-                focusManager: focusManager ?? FocusManager,
                 inputManager: inputManager ?? InputManager,
                 keyboardDevice: keyboardDevice ?? KeyboardDevice,
                 keyboardNavigation: keyboardNavigation ?? KeyboardNavigation,
