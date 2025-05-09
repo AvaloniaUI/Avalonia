@@ -291,13 +291,6 @@ namespace Avalonia.Controls.Primitives
                     }
 
                     break;
-                case NotifyCollectionChangedAction.Remove:
-                    foreach (Visual i in e.OldItems!)
-                    {
-                        i.AttachedToVisualTree -= AdornerAttachedToVisualTree;
-                    }
-
-                    break;
             }
 
             InvalidateArrange();
@@ -307,6 +300,7 @@ namespace Avalonia.Controls.Primitives
         {
             if (sender is Visual visual)
             {
+                visual.AttachedToVisualTree -= AdornerAttachedToVisualTree;
                 UpdateAdornedElement(visual, visual.GetValue(AdornedElementProperty));
             }
         }
