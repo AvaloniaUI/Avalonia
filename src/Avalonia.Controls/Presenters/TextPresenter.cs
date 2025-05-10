@@ -455,13 +455,13 @@ namespace Avalonia.Controls.Presenters
 
         internal (Point, Point) GetCaretPoints()
         {
-            var x = Math.Floor(_caretBounds.X) + 0.5;
-            var y = Math.Floor(_caretBounds.Y) + 0.5;
-            var b = Math.Ceiling(_caretBounds.Bottom) - 0.5;
-
             var caretIndex = _lastCharacterHit.FirstCharacterIndex + _lastCharacterHit.TrailingLength;
             var lineIndex = TextLayout.GetLineIndexFromCharacterIndex(caretIndex, _lastCharacterHit.TrailingLength > 0);
             var textLine = TextLayout.TextLines[lineIndex];
+
+            var x = Math.Floor(_caretBounds.X) + 0.5;
+            var y = Math.Floor(_caretBounds.Y) + 0.5;
+            var b = Math.Ceiling(_caretBounds.Bottom) - 0.5;
 
             if (_caretBounds.X > 0 && _caretBounds.X >= textLine.WidthIncludingTrailingWhitespace)
             {
