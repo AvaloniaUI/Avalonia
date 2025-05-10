@@ -133,8 +133,8 @@ namespace Avalonia.Controls.Primitives
             var columnSpacing = ColumnSpacing;
             var rowSpacing = RowSpacing;
 
-            var width = (finalSize.Width - (_columns - 1) * columnSpacing) / _columns;
-            var height = (finalSize.Height - (_rows - 1) * rowSpacing) / _rows;
+            var width = Math.Max((finalSize.Width - (_columns - 1) * columnSpacing) / _columns, 0);
+            var height = Math.Max((finalSize.Height - (_rows - 1) * rowSpacing) / _rows, 0);
 
             foreach (var child in Children)
             {

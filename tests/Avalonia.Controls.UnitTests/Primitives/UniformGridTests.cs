@@ -1,4 +1,5 @@
-﻿using Avalonia.Controls.Primitives;
+﻿using System;
+using Avalonia.Controls.Primitives;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -304,6 +305,76 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal(0, desiredSize.Width);
             Assert.Equal(0, desiredSize.Height);
         
+        }
+
+        [Fact]
+        public void Arrange_Does_Not_Throw_InvalidOperationException_When_Row_Spacing_Takes_All_Available_Height()
+        {
+            // Minimum required height = 20 (2 row gaps size 10)
+            // Provide height of 19 so that row gaps take all available space
+            // thus, available height for children may be negative.
+            // In that case, UniformGrid should arrange its children with rects of height 0.
+            var target = new UniformGrid
+            {
+                Columns = 1,
+                RowSpacing = 10,
+                Children =
+                {
+                    new Border(),
+                    new Border(),
+                    new Border()
+                }
+            };
+
+            var availableSize = new Size(100, 19);
+
+            target.Measure(Size.Infinity);
+
+            // Fail case:
+            // Invalid operation will be thrown if any child rect contains a negative dimension
+            try
+            {
+                target.Arrange(new Rect(availableSize));
+            }
+            catch (InvalidOperationException exception)
+            {
+                Assert.Fail("Arrange threw InvalidOperationException: " + exception.Message);
+            }
+        }
+
+        [Fact]
+        public void Arrange_Does_Not_Throw_InvalidOperationException_When_Column_Spacing_Takes_All_Available_Width()
+        {
+            // Minimum required width = 20 (2 row gaps size 10)
+            // Provide width of 19 so that column gaps take all available space
+            // thus, available width for children may be negative.
+            // In that case, UniformGrid should arrange its children with rects of width 0.
+            var target = new UniformGrid
+            {
+                Rows = 1,
+                ColumnSpacing = 10,
+                Children =
+                {
+                    new Border(),
+                    new Border(),
+                    new Border()
+                }
+            };
+
+            var availableSize = new Size(19, 100);
+
+            target.Measure(Size.Infinity);
+
+            // Fail case:
+            // Invalid operation will be thrown if any child rect contains a negative dimension
+            try
+            {
+                target.Arrange(new Rect(availableSize));
+            }
+            catch (InvalidOperationException exception)
+            {
+                Assert.Fail("Arrange threw InvalidOperationException: " + exception.Message);
+            }
         }
     }
 }
