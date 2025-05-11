@@ -85,9 +85,6 @@ namespace Avalonia.Win32.Input
         {
             Hwnd = hwnd;
             _parent = parent;
-            _langId = PRIMARYLANGID(LGID(HKL));
-
-            _parent = parent;
 
             var langId = PRIMARYLANGID(LGID(HKL));
 
@@ -211,27 +208,6 @@ namespace Avalonia.Win32.Input
             var s = _parent?.DesktopScaling ?? 1;
             var (x1, y1, x2, y2) = ((int) (p1.X * s), (int) (p1.Y * s), (int) (p2.X * s), (int) (p2.Y * s));
 
-            if (!ShowCompositionWindow && _langId == LANG_ZH)
-            {
-                // Chinese IMEs ignore function calls to ::ImmSetCandidateWindow()
-                // when a user disables TSF (Text Service Framework) and CUAS (Cicero
-                // Unaware Application Support).
-                // On the other hand, when a user enables TSF and CUAS, Chinese IMEs
-                // ignore the position of the current system caret and uses the
-                // parameters given to ::ImmSetCandidateWindow() with its 'dwStyle'
-                // parameter CFS_CANDIDATEPOS.
-                // Therefore, we do not only call ::ImmSetCandidateWindow() but also
-                // set the positions of the temporary system caret.
-                var candidateForm = new CANDIDATEFORM
-                {
-                    dwIndex = 0,
-                    dwStyle = CFS_CANDIDATEPOS,
-                    ptCurrentPos = new POINT {X = x2, Y = y2}
-                };
-
-                ImmSetCandidateWindow(himc, ref candidateForm);
-            }
-
             _caretManager.TryMove(x2, y2);
 
             if (ShowCompositionWindow)
@@ -250,14 +226,8 @@ namespace Avalonia.Win32.Input
                 y2 += CaretMargin;
             }
 
-            // Need to return here since some Chinese IMEs would stuck if set
-            // candidate window position with CFS_EXCLUDE style.
-            if (_langId == LANG_ZH)
-            {
-                return;
-            }
 
-            // Japanese IMEs and Korean IMEs also use the rectangle given to
+            // Chinese, Japanese, and Korean(CJK) IMEs also use the rectangle given to
             // ::ImmSetCandidateWindow() with its 'dwStyle' parameter CFS_EXCLUDE
             // to move their candidate windows when a user disables TSF and CUAS.
             // Therefore, we also set this parameter here.
