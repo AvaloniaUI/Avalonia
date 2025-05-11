@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using Avalonia.Collections.Pooled;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
@@ -711,8 +712,8 @@ namespace Avalonia.Win32
         public virtual void Show(bool activate, bool isDialog)
         {
             SetParent(_parent);
-            DispatcherTimer.RunOnce(() => { ShowWindow(_showWindowState, activate); },
-                                    new TimeSpan(0, 0, 0, 0, 50));
+            Thread.Sleep(50);
+            ShowWindow(_showWindowState, activate);
         }
 
         public Action? GotInputWhenDisabled { get; set; }
