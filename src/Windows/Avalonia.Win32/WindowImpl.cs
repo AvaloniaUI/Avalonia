@@ -711,7 +711,8 @@ namespace Avalonia.Win32
         public virtual void Show(bool activate, bool isDialog)
         {
             SetParent(_parent);
-            ShowWindow(_showWindowState, activate);
+            DispatcherTimer.RunOnce(() => { ShowWindow(_showWindowState, activate); },
+                                    new TimeSpan(0, 0, 0, 0, 50));
         }
 
         public Action? GotInputWhenDisabled { get; set; }
