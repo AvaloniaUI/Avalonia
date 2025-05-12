@@ -55,6 +55,14 @@ namespace Avalonia.Android.Platform
             get => _displayEdgeToEdge;
             set
             {
+#if NET9_0_OR_GREATER
+                // All apps targeting api 35 will display edge to edge on Android 15. This behavior can't be changed
+                if (Build.VERSION.SdkInt >= BuildVersionCodes.VanillaIceCream)
+                {
+                    _displayEdgeToEdge = true;
+                    return;
+                }
+#endif
                 _displayEdgeToEdge = value;
 
                 if (OperatingSystem.IsAndroidVersionAtLeast(28) && Window.Attributes is { } attributes)
@@ -262,7 +270,16 @@ namespace Avalonia.Android.Platform
             get => _systemBarColor;
             set
             {
+#if NET9_0_OR_GREATER
+                // System bar color can not be changed on Android 15
+                if (Build.VERSION.SdkInt >= BuildVersionCodes.VanillaIceCream)
+                {
+                    _systemBarColor = null;
+                    return;
+                }
+#endif
                 _systemBarColor = value;
+
 
                 if (_systemBarColor is { } color && !_displayEdgeToEdge && _activity.Window != null)
                 {
