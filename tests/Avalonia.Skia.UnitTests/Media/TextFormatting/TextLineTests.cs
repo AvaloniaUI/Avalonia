@@ -887,6 +887,93 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         }
 
         [Fact]
+        public void Should_Throw_ArgumentOutOfRangeException_For_Zero_TextLength()
+        {
+            using (Start())
+            {
+                var typeface = Typeface.Default;
+
+                var defaultProperties = new GenericTextRunProperties(typeface);
+                var textSource = new CustomTextBufferTextSource(new TextCharacters("1234", defaultProperties));
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
+
+                Assert.Throws<ArgumentOutOfRangeException>(() => textLine.GetTextBounds(0, 0));
+            }     
+        }
+
+        [Fact]
+        public void Should_GetTextBounds_For_Negative_TextLength()
+        {
+            using (Start())
+            {
+                var typeface = Typeface.Default;
+
+                var defaultProperties = new GenericTextRunProperties(typeface);
+                var textSource = new CustomTextBufferTextSource(new TextCharacters("1234", defaultProperties));
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
+
+                var textBounds = textLine.GetTextBounds(0, -1);
+
+                Assert.NotNull(textBounds);
+
+                Assert.NotEmpty(textBounds);
+
+                var firstBounds = textBounds[0];
+
+                Assert.Empty(firstBounds.TextRunBounds);
+
+                Assert.Equal(0, firstBounds.Rectangle.Width);
+
+                Assert.Equal(0, firstBounds.Rectangle.Left);
+            }
+        }
+
+        [Fact]
+        public void Should_GetTextBounds_For_Exceeding_TextLength()
+        {
+            using (Start())
+            {
+                var typeface = Typeface.Default;
+
+                var defaultProperties = new GenericTextRunProperties(typeface);
+                var textSource = new CustomTextBufferTextSource(new TextCharacters("1234", defaultProperties));
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
+
+                var textBounds = textLine.GetTextBounds(10, 1);
+
+                Assert.NotNull(textBounds);
+
+                Assert.NotEmpty(textBounds);
+
+                var firstBounds = textBounds[0];
+
+                Assert.Empty(firstBounds.TextRunBounds);
+
+                Assert.Equal(0, firstBounds.Rectangle.Width);
+
+                Assert.Equal(textLine.WidthIncludingTrailingWhitespace, firstBounds.Rectangle.Right);
+            }
+        }
+
+        [Fact]
         public void Should_GetTextBounds_For_Mixed_Hidden_Runs_With_Ligature()
         {
             using (Start())
