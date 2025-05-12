@@ -14,7 +14,7 @@ using Xunit;
 
 namespace Avalonia.Markup.UnitTests.Data
 {
-    public class MultiBindingTests
+    public class MultiBindingTests : ScopedTestBase
     {
         [Fact]
         public void OneWay_Binding_Should_Be_Set_Up()

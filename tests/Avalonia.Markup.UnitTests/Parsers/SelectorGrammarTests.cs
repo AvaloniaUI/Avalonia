@@ -1,11 +1,12 @@
 using System.Linq;
 using Avalonia.Data.Core;
 using Avalonia.Markup.Parsers;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Markup.UnitTests.Parsers
 {
-    public class SelectorGrammarTests
+    public class SelectorGrammarTests : ScopedTestBase
     {
         [Fact]
         public void OfType()
