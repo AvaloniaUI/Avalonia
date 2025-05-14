@@ -109,6 +109,7 @@ namespace Avalonia.Controls.Presenters
         static ScrollContentPresenter()
         {
             ClipToBoundsProperty.OverrideDefaultValue(typeof(ScrollContentPresenter), true);
+            AffectsMeasure<ScrollContentPresenter>(CanHorizontallyScrollProperty, CanVerticallyScrollProperty);
         }
 
         /// <summary>
