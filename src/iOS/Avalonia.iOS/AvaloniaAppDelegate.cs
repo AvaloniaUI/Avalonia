@@ -11,13 +11,29 @@ namespace Avalonia.iOS
         event EventHandler<ActivatedEventArgs> Deactivated;
     }
 
+    public enum AppViewControllerKind
+    {
+        /// <summary>
+        /// Requests that an <see cref="ISingleViewApplicationLifetime"/> be assigned to <see cref="Application.ApplicationLifetime"/>.
+        /// </summary>
+        Avalonia,
+        /// <summary>
+        /// Requests that an <see cref="IPlatformSingleViewApplicationLifetime"/> be assigned to <see cref="Application.ApplicationLifetime"/>.
+        /// </summary>
+        Platform,
+    }
+
     public class AvaloniaAppDelegate<TApp> : UIResponder, IUIApplicationDelegate, IAvaloniaAppDelegate
         where TApp : Application, new()
     {
+        private readonly AppViewControllerKind _appViewControllerKind;
         private EventHandler<ActivatedEventArgs>? _onActivated, _onDeactivated;
 
-        public AvaloniaAppDelegate()
+        public AvaloniaAppDelegate() : this(AppViewControllerKind.Avalonia) { }
+
+        public AvaloniaAppDelegate(AppViewControllerKind appViewControllerKind)
         {
+            _appViewControllerKind = appViewControllerKind;
             NSNotificationCenter.DefaultCenter.AddObserver(UIApplication.DidEnterBackgroundNotification, OnEnteredBackground);
             NSNotificationCenter.DefaultCenter.AddObserver(UIApplication.WillEnterForegroundNotification, OnLeavingBackground);
         }
@@ -44,26 +60,40 @@ namespace Avalonia.iOS
         {
             var builder = CreateAppBuilder();
             builder = CustomizeAppBuilder(builder);
+                
+            IApplicationLifetime lifetime;
+            
+            var window = new UIWindow();
+            builder.AfterApplicationSetup(b => Window = window);
 
-            var lifetime = new SingleViewLifetime();
-
-            builder.AfterApplicationSetup(_ =>
+            switch (_appViewControllerKind)
             {
-                Window = new UIWindow();
+                case AppViewControllerKind.Avalonia:
+                    lifetime = new SingleViewLifetime();
 
-                var view = new AvaloniaView();
-                lifetime.View = view;
-                var controller = new DefaultAvaloniaViewController
-                {
-                    View = view
-                };
-                Window.RootViewController = controller;
-                view.InitWithController(controller);
-            });
+                    builder.AfterApplicationSetup(b =>
+                    {
+                        var view = new AvaloniaView();
+                        ((SingleViewLifetime)lifetime).View = view;
+                        var controller = new DefaultAvaloniaViewController
+                        {
+                            View = view
+                        };
+                        window.RootViewController = controller;
+                        view.InitWithController(controller);
+                    });
+                    break;
+                case AppViewControllerKind.Platform:
+                    lifetime = new UIViewControllerLifetime { Window = window };
+                    break;
+
+                default:
+                    throw new NotImplementedException();
+            }
 
             builder.SetupWithLifetime(lifetime);
 
-            Window!.MakeKeyAndVisible();
+            window.MakeKeyAndVisible();
 
             return true;
         }
