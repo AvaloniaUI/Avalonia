@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>$(AvsCurrentAndroidTargetFramework)</TargetFramework>
+    <PublishAot>true</PublishAot>
     <SupportedOSPlatformVersion>$(AvsMinSupportedAndroidVersion)</SupportedOSPlatformVersion>
     <OutputType>Exe</OutputType>
     <Nullable>enable</Nullable>

@@ -3,7 +3,7 @@
     <AvsCurrentTargetFramework>net8.0</AvsCurrentTargetFramework>
     <AvsCurrentWindowsTargetFramework>$(AvsCurrentTargetFramework)-windows</AvsCurrentWindowsTargetFramework>
     <AvsCurrentMacOSTargetFramework>$(AvsCurrentTargetFramework)-macos</AvsCurrentMacOSTargetFramework>
-    <AvsCurrentAndroidTargetFramework>$(AvsCurrentTargetFramework)-android34.0</AvsCurrentAndroidTargetFramework>
+    <AvsCurrentAndroidTargetFramework>net10.0-android36</AvsCurrentAndroidTargetFramework>
     <AvsCurrentIOSTargetFramework>$(AvsCurrentTargetFramework)-ios17.0</AvsCurrentIOSTargetFramework>
     <AvsCurrentTvOSTargetFramework>$(AvsCurrentTargetFramework)-tvos17.0</AvsCurrentTvOSTargetFramework>
     <AvsCurrentBrowserTargetFramework>$(AvsCurrentTargetFramework)-browser</AvsCurrentBrowserTargetFramework>

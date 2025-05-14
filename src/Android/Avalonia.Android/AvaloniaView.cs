@@ -6,7 +6,7 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using AndroidX.Core.View;
-using AndroidX.CustomView.Widget;
+using CustomView.Widget;
 using Avalonia.Android.Platform;
 using Avalonia.Android.Platform.SkiaPlatform;
 using Avalonia.Controls;

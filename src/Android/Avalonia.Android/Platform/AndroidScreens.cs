@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Android.Content;
 using Android.Hardware.Display;
+using Android.OS;
 using Android.Runtime;
 using Android.Util;
 using Android.Views;
@@ -23,7 +24,7 @@ internal class AndroidScreen(Display display) : PlatformScreen(new PlatformHandl
         var rotation = display.Rotation;
         IsPrimary = display.DisplayId == Display.DefaultDisplay;
 
-        if (OperatingSystem.IsAndroidVersionAtLeast(30))
+        if (Build.VERSION.SdkInt >= (BuildVersionCodes)30)
         {
             var metricsCalc = WindowMetricsCalculator.Companion.OrCreate;
             // a display context is guaranteed to be created for a display on API 30 and above, but we fallback to the app context if OEM messes up
@@ -103,7 +104,7 @@ internal sealed class AndroidScreens : ScreensBase<Display, AndroidScreen>, IDis
             return displays;
         }
 
-        if (OperatingSystem.IsAndroidVersionAtLeast(30) && _context.Display is { } defaultDisplay)
+        if (Build.VERSION.SdkInt >= (BuildVersionCodes)30 && _context.Display is { } defaultDisplay)
         {
             return [defaultDisplay];
         }

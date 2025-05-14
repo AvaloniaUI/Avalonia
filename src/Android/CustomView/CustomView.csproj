@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>$(AvsCurrentAndroidTargetFramework)</TargetFramework>
+        <SupportedOSPlatformVersion>21</SupportedOSPlatformVersion>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <!--
+          Enable trim analyzers for Android class libraries.
+          To learn more, see: https://learn.microsoft.com/dotnet/core/deploying/trimming/prepare-libraries-for-trimming
+        -->
+        <IsTrimmable>true</IsTrimmable>
+        <!--
+          NOTE: you can simply add .aar or .jar files in this directory to be included in the project.
+          To learn more, see: https://learn.microsoft.com/dotnet/maui/migration/android-binding-projects
+        -->
+    </PropertyGroup>
+    <ItemGroup>
+      <AndroidMavenLibrary Include="androidx.customview:customview" Version="1.1.0"
+                           Repository="Google"  />
+      <AndroidNamespaceReplacement Include='AndroidX.CustomView.View' Replacement='CustomView.View' />
+      <AndroidNamespaceReplacement Include='AndroidX.CustomView.Widget' Replacement='CustomView.Widget' />
+    </ItemGroup>
+    <ItemGroup>
+      <PackageReference Include="Xamarin.AndroidX.Annotation" Version="1.7.0.2" />
+      <PackageReference Include="Xamarin.AndroidX.Collection" Version="1.3.0.1" />
+      <PackageReference Include="Xamarin.AndroidX.Core" Version="1.12.0.2" />
+    </ItemGroup>
+</Project>

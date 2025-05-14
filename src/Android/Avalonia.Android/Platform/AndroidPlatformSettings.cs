@@ -1,6 +1,7 @@
 ﻿using System;
 using Android.Content;
 using Android.Content.Res;
+using Android.OS;
 using Android.Provider;
 using Avalonia.Platform;
 using Color = Avalonia.Media.Color;
@@ -36,7 +37,7 @@ internal class AndroidPlatformSettings : DefaultPlatformSettings
             _ => throw new ArgumentOutOfRangeException()
         };
 
-        if (OperatingSystem.IsAndroidVersionAtLeast(31))
+        if (Build.VERSION.SdkInt >= (BuildVersionCodes)31)
         {
             // See https://developer.android.com/reference/android/R.color
             var accent1 = context.Resources.GetColor(17170494, context.Theme); // Resource.Color.SystemAccent1500
@@ -52,7 +53,7 @@ internal class AndroidPlatformSettings : DefaultPlatformSettings
                 AccentColor3 = new Color(accent3.A, accent3.R, accent3.G, accent3.B),
             };
         }
-        else if (OperatingSystem.IsAndroidVersionAtLeast(23))
+        else if (Build.VERSION.SdkInt >= (BuildVersionCodes)23)
         {
             // See https://developer.android.com/reference/android/R.attr
             var array = context.Theme?.ObtainStyledAttributes(new[] { 16843829 }); // Resource.Attribute.ColorAccent

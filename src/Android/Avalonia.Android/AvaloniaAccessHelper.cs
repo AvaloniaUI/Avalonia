@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Android.Content.PM;
 using Android.OS;
 using AndroidX.Core.View.Accessibility;
-using AndroidX.CustomView.Widget;
+using CustomView.Widget;
 using Avalonia.Android.Automation;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
@@ -13,6 +13,7 @@ using Java.Lang;
 
 namespace Avalonia.Android
 {
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)]
     internal class AvaloniaAccessHelper : ExploreByTouchHelper
     {
         private const string AUTOMATION_PROVIDER_NAMESPACE = "Avalonia.Automation.Provider";
@@ -96,9 +97,11 @@ namespace Avalonia.Android
                     }
                 };
 
-                Type peerType = peer.GetType();
-                IEnumerable<Type> providerTypes = peerType.GetInterfaces()
+#pragma warning disable IL2075
+                IEnumerable<Type> providerTypes = peer.GetType().GetInterfaces()
                     .Where(x => x.Namespace!.StartsWith(AUTOMATION_PROVIDER_NAMESPACE));
+#pragma warning restore IL2075
+
                 foreach (Type providerType in providerTypes)
                 {
                     if (s_providerTypeInitializers.TryGetValue(providerType.FullName!, out NodeInfoProviderInitializer? ctor))

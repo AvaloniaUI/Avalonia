@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.Versioning;
+using Android.OS;
 using Android.Views;
 using Avalonia.Android.Platform.Input;
 using Avalonia.Android.Platform.SkiaPlatform;
@@ -43,7 +44,7 @@ namespace Avalonia.Android.Platform.Specific.Helpers
 
         private bool? DispatchKeyEventInternal(KeyEvent e, out bool callBase)
         {
-            var unicodeTextInput = OperatingSystem.IsAndroidVersionAtLeast(29) ? null : UnicodeTextInput(e);
+            var unicodeTextInput = Build.VERSION.SdkInt >= (BuildVersionCodes)29 ? null : UnicodeTextInput(e);
             var inputRoot = _view.InputRoot;
 
             if ((e.Action == KeyEventActions.Multiple && unicodeTextInput == null)

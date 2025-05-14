@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-
+using Android.OS;
 using Android.Views;
 
 using Avalonia.Android.Platform.SkiaPlatform;
@@ -146,7 +146,7 @@ namespace Avalonia.Android.Platform.Specific.Helpers
             {
                 modifiers |= RawInputModifiers.XButton2MouseButton;
             }
-            if (OperatingSystem.IsAndroidVersionAtLeast(23) && buttonState.HasAnyFlag(MotionEventButtonState.StylusPrimary))
+            if (Build.VERSION.SdkInt >= (BuildVersionCodes)23 && buttonState.HasAnyFlag(MotionEventButtonState.StylusPrimary))
             {
                 modifiers |= RawInputModifiers.PenBarrelButton;
             }

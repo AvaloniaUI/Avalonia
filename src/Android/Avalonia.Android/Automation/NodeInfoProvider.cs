@@ -1,7 +1,7 @@
 ﻿using System;
 using Android.OS;
 using AndroidX.Core.View.Accessibility;
-using AndroidX.CustomView.Widget;
+using CustomView.Widget;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 
