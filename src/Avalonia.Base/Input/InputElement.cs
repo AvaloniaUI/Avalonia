@@ -211,8 +211,8 @@ namespace Avalonia.Input
         {
             IsEnabledProperty.Changed.Subscribe(IsEnabledChanged);
 
-            GotFocusEvent.AddClassHandler<InputElement>((x, e) => x.OnGotFocus(e));
-            LostFocusEvent.AddClassHandler<InputElement>((x, e) => x.OnLostFocus(e));
+            GotFocusEvent.AddClassHandler<InputElement>((x, e) => x.OnGotFocusCore(e));
+            LostFocusEvent.AddClassHandler<InputElement>((x, e) => x.OnLostFocusCore(e));
             KeyDownEvent.AddClassHandler<InputElement>((x, e) => x.OnKeyDown(e));
             KeyUpEvent.AddClassHandler<InputElement>((x, e) => x.OnKeyUp(e));
             TextInputEvent.AddClassHandler<InputElement>((x, e) => x.OnTextInput(e));
@@ -535,25 +535,39 @@ namespace Avalonia.Input
             UpdateIsEffectivelyEnabled();
         }
 
-        /// <summary>
-        /// Called before the <see cref="GotFocus"/> event occurs.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        protected virtual void OnGotFocus(GotFocusEventArgs e)
+        private void OnGotFocusCore(GotFocusEventArgs e)
         {
             var isFocused = e.Source == this;
             _isFocusVisible = isFocused && (e.NavigationMethod == NavigationMethod.Directional || e.NavigationMethod == NavigationMethod.Tab);
             IsFocused = isFocused;
+            OnGotFocus(e);
         }
 
         /// <summary>
-        /// Called before the <see cref="LostFocus"/> event occurs.
+        /// Invoked when an unhandled <see cref="GotFocusEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
         /// </summary>
-        /// <param name="e">The event args.</param>
-        protected virtual void OnLostFocus(RoutedEventArgs e)
+        /// <param name="e">Data about the event.</param>
+        protected virtual void OnGotFocus(GotFocusEventArgs e)
+        {
+        }
+
+        private void OnLostFocusCore(RoutedEventArgs e)
         {
             _isFocusVisible = false;
             IsFocused = false;
+            OnLostFocus(e);
+        }
+
+        /// <summary>
+        /// Invoked when an unhandled <see cref="LostFocusEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
+        /// </summary>
+        /// <param name="e">Data about the event.</param>
+        protected virtual void OnLostFocus(RoutedEventArgs e)
+        {            
         }
 
         /// <summary>
