@@ -560,62 +560,83 @@ namespace Avalonia.Input
         /// Called before the <see cref="KeyDown"/> event occurs.
         /// </summary>
         /// <param name="e">The event args.</param>
+        /// <summary>
+        /// Invoked when an unhandled <see cref="KeyDownEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
+        /// </summary>
+        /// <param name="e">Data about the event.</param>
         protected virtual void OnKeyDown(KeyEventArgs e)
         {
         }
 
         /// <summary>
-        /// Called before the <see cref="KeyUp"/> event occurs.
+        /// Invoked when an unhandled <see cref="KeyUpEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
         /// </summary>
-        /// <param name="e">The event args.</param>
+        /// <param name="e">Data about the event.</param>
         protected virtual void OnKeyUp(KeyEventArgs e)
         {
         }
 
         /// <summary>
-        /// Called before the <see cref="TextInput"/> event occurs.
+        /// Invoked when an unhandled <see cref="TextInputEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
         /// </summary>
-        /// <param name="e">The event args.</param>
+        /// <param name="e">Data about the event.</param>
         protected virtual void OnTextInput(TextInputEventArgs e)
         {
         }
 
         /// <summary>
-        /// Called before the <see cref="PointerEntered"/> event occurs.
+        /// Invoked when an unhandled <see cref="PointerEnteredEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
         /// </summary>
-        /// <param name="e">The event args.</param>
+        /// <param name="e">Data about the event.</param>
         protected virtual void OnPointerEntered(PointerEventArgs e)
         {
         }
 
         /// <summary>
-        /// Called before the <see cref="PointerExited"/> event occurs.
+        /// Invoked when an unhandled <see cref="PointerExitedEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
         /// </summary>
-        /// <param name="e">The event args.</param>
+        /// <param name="e">Data about the event.</param>
         protected virtual void OnPointerExited(PointerEventArgs e)
         {
         }
 
         /// <summary>
-        /// Called before the <see cref="PointerMoved"/> event occurs.
+        /// Invoked when an unhandled <see cref="PointerMovedEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
         /// </summary>
-        /// <param name="e">The event args.</param>
+        /// <param name="e">Data about the event.</param>
         protected virtual void OnPointerMoved(PointerEventArgs e)
         {
         }
 
+
         /// <summary>
-        /// Called before the <see cref="PointerPressed"/> event occurs.
+        /// Invoked when an unhandled <see cref="PointerPressedEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
         /// </summary>
-        /// <param name="e">The event args.</param>
+        /// <param name="e">Data about the event.</param>
         protected virtual void OnPointerPressed(PointerPressedEventArgs e)
         {
         }
 
         /// <summary>
-        /// Called before the <see cref="PointerReleased"/> event occurs.
+        /// Invoked when an unhandled <see cref="PointerReleasedEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
         /// </summary>
-        /// <param name="e">The event args.</param>
+        /// <param name="e">Data about the event.</param>
         protected virtual void OnPointerReleased(PointerReleasedEventArgs e)
         {
         }
@@ -653,18 +674,22 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-        /// Called before the <see cref="PointerCaptureLost"/> event occurs.
+        /// Invoked when an unhandled <see cref="PointerCaptureLostEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
         /// </summary>
-        /// <param name="e">The event args.</param>
+        /// <param name="e">Data about the event.</param>
         protected virtual void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
         {
 
         }
 
         /// <summary>
-        /// Called before the <see cref="PointerWheelChanged"/> event occurs.
+        /// Invoked when an unhandled <see cref="PointerWheelChangedEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
         /// </summary>
-        /// <param name="e">The event args.</param>
+        /// <param name="e">Data about the event.</param>
         protected virtual void OnPointerWheelChanged(PointerWheelEventArgs e)
         {
         }
