@@ -238,6 +238,10 @@ namespace Avalonia.Input
             PointerCaptureLostEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerCaptureLost(e));
             PointerWheelChangedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerWheelChanged(e));
 
+            TappedEvent.AddClassHandler<InputElement>((x, e) => x.OnTapped(e));
+            DoubleTappedEvent.AddClassHandler<InputElement>((x, e) => x.OnDoubleTapped(e));
+            HoldingEvent.AddClassHandler<InputElement>((x, e) => x.OnHolding(e));
+
             // Gesture only handlers
             PointerMovedEvent.AddClassHandler<InputElement>((x, e) => x.OnGesturePointerMoved(e), handledEventsToo: true);
             PointerPressedEvent.AddClassHandler<InputElement>((x, e) => x.OnGesturePointerPressed(e), handledEventsToo: true);
@@ -743,6 +747,36 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="e">Data about the event.</param>
         protected virtual void OnPointerWheelChanged(PointerWheelEventArgs e)
+        {
+        }
+
+        /// <summary>
+        /// Invoked when an unhandled <see cref="TappedEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
+        /// </summary>
+        /// <param name="e">Data about the event.</param>
+        protected virtual void OnTapped(TappedEventArgs e)
+        {
+        }
+
+        /// <summary>
+        /// Invoked when an unhandled <see cref="DoubleTappedEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
+        /// </summary>
+        /// <param name="e">Data about the event.</param>
+        protected virtual void OnDoubleTapped(TappedEventArgs e)
+        {
+        }
+
+        /// <summary>
+        /// Invoked when an unhandled <see cref="HoldingEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
+        /// </summary>
+        /// <param name="e">Data about the event.</param>
+        protected virtual void OnHolding(HoldingRoutedEventArgs e)
         {
         }
 
