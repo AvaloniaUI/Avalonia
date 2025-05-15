@@ -84,10 +84,7 @@ namespace Avalonia.Controls
         
         private bool _hasReachedStart = false;
         private bool _hasReachedEnd = false;
-        private bool _cacheElementMeasurements = false;
         private Size _previousSize;
-        private readonly HashSet<Control> _unchangedElements = new();
-
         private Rect _extendedViewport;
 
         static VirtualizingStackPanel()
@@ -240,7 +237,6 @@ namespace Avalonia.Controls
             }
             finally
             {
-                _cacheElementMeasurements = false;
                 _isInLayout = false;
                 _previousSize = Bounds.Size;
             }
@@ -270,9 +266,7 @@ namespace Avalonia.Controls
                             new Rect(0, u, finalSize.Width, sizeU);
 
                         // Always arrange the element, even if it's outside the visible viewport
-                        // but not if it is an unchanged element
-                        if(!_unchangedElements.Contains(e))
-                            ArrangeElement(e, rect);
+                        ArrangeElement(e, rect);
                 
                         // Register as anchor candidate only if it's in the actual viewport (not just the extended one)
                         var elementBounds = orientation == Orientation.Horizontal ?
@@ -302,9 +296,6 @@ namespace Avalonia.Controls
             finally
             {
                 _isInLayout = false;
-
-                // this collection is only valid for one single Measure/Arrange cycle
-                _unchangedElements.Clear();
                 
                 RaiseEvent(new RoutedEventArgs(Orientation == Orientation.Horizontal ? HorizontalSnapPointsChangedEvent : VerticalSnapPointsChangedEvent));
             }
@@ -482,7 +473,7 @@ namespace Avalonia.Controls
             {
                 // Create and measure the element to be brought into view. Store it in a field so that
                 // it can be re-used in the layout pass.
-                var (scrollToElement, _) = GetOrCreateElement(items, index);
+                var scrollToElement = GetOrCreateElement(items, index);
 
                 MeasureElement(scrollToElement, Size.Infinity);
 
@@ -748,15 +739,10 @@ namespace Avalonia.Controls
             do
             {
                 _realizingIndex = index;
-                var (e, existed) = GetOrCreateElement(items, index);
+                var e = GetOrCreateElement(items, index);
                 _realizingElement = e;
                 
-                // Skip re-measuring when an in-view element with correct item
-                // only needs measurement due to scroll-based viewport changes
-                if (!existed || !_cacheElementMeasurements)
-                    MeasureElement(e, availableSize);
-                else
-                    _unchangedElements.Add(e);
+                MeasureElement(e, availableSize);
                 
                 var sizeU = horizontal ? e.DesiredSize.Width : e.DesiredSize.Height;
                 var sizeV = horizontal ? e.DesiredSize.Height : e.DesiredSize.Width;
@@ -786,14 +772,9 @@ namespace Avalonia.Controls
 
             while (u > viewport.viewportUStart && index >= 0)
             {
-                var (e, existed) = GetOrCreateElement(items, index);
-                
-                // Skip re-measuring when an in-view element with correct item
-                // only needs measurement due to scroll-based viewport changes
-                if(!existed || !_cacheElementMeasurements)
-                    MeasureElement(e, availableSize);
-                else
-                    _unchangedElements.Add(e);
+                var e = GetOrCreateElement(items, index);
+
+                MeasureElement(e, availableSize);
 
                 var sizeU = horizontal ? e.DesiredSize.Width : e.DesiredSize.Height;
                 var sizeV = horizontal ? e.DesiredSize.Height : e.DesiredSize.Width;
@@ -811,26 +792,26 @@ namespace Avalonia.Controls
             _realizedElements.RecycleElementsBefore(index + 1, _recycleElement);
         }
 
-        private (Control e, bool existed) GetOrCreateElement(IReadOnlyList<object?> items, int index)
+        private Control GetOrCreateElement(IReadOnlyList<object?> items, int index)
         {
             Debug.Assert(ItemContainerGenerator is not null);
 
             if ((GetRealizedElement(index) ??
                  GetRealizedElement(index, ref _focusedIndex, ref _focusedElement) ??
                  GetRealizedElement(index, ref _scrollToIndex, ref _scrollToElement)) is { } realized)
-                return (realized, true);
+                return realized;
 
             var item = items[index];
             var generator = ItemContainerGenerator!;
 
             if (generator.NeedsContainer(item, index, out var recycleKey))
             {
-                return (GetRecycledElement(item, index, recycleKey) ??
-                       CreateElement(item, index, recycleKey), false);
+                return GetRecycledElement(item, index, recycleKey) ??
+                       CreateElement(item, index, recycleKey);
             }
             else
             {
-                return (GetItemAsOwnContainer(item, index), false);
+                return GetItemAsOwnContainer(item, index);
             }
         }
 
@@ -1079,7 +1060,6 @@ namespace Avalonia.Controls
                     
                     if (_realizedElements != null)
                     {
-                        var firstRealizedElementU = _realizedElements.StartU;
                         var lastRealizedElementU = _realizedElements.StartU;
                         
                         for (var i = 0; i < _realizedElements.Count; i++)
@@ -1118,18 +1098,9 @@ namespace Avalonia.Controls
 
             if (needsMeasure)
             {
-                
                 // only store the new "old" extended viewport if we _did_ actually measure
                 _extendedViewport = extendedViewPort;
                 
-                // Cache element measurements when only scroll position changes
-                // Re-measure only when the cross-axis dimension changes
-                // Example: In vertical scrolling, cache if only height changes; re-measure if width changes
-                bool sizeChanged = vertical
-                    ? Math.Abs(Bounds.Width - _previousSize.Width) > 0.1               
-                    : Math.Abs(Bounds.Height - _previousSize.Height) > 0.1 ;
-                
-                _cacheElementMeasurements = !sizeChanged;
                 InvalidateMeasure();
             }
         }
