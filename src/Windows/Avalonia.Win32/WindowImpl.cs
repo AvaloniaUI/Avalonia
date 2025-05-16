@@ -712,7 +712,6 @@ namespace Avalonia.Win32
         public virtual void Show(bool activate, bool isDialog)
         {
             SetParent(_parent);
-            Thread.Sleep(50);
             ShowWindow(_showWindowState, activate);
         }
 
@@ -1383,6 +1382,32 @@ namespace Avalonia.Win32
             {
                 var exStyle = WindowStyles.WS_EX_WINDOWEDGE | (UseRedirectionBitmap ? 0 : WindowStyles.WS_EX_NOREDIRECTIONBITMAP);
 
+                if (oldProperties.ShowInTaskbar != newProperties.ShowInTaskbar || forceChanges)
+                {
+                    if (newProperties.ShowInTaskbar)
+                    {
+                        exStyle |= WindowStyles.WS_EX_APPWINDOW;
+
+                        // Can't enable the taskbar icon by clearing the parent window unless the window
+                        // is hidden. Hide the window and show it again with the same activation state
+                        // when we've finished. Interestingly it seems to work fine the other way.
+                        var shown = IsWindowVisible(_hwnd);
+                        var activated = GetActiveWindow() == _hwnd;
+
+                        if (shown)
+                            Hide();
+
+                        SetParent(null);
+
+                        if (shown)
+                            Show(activated, false);
+                    }
+                    else
+                    {
+                        exStyle &= ~WindowStyles.WS_EX_APPWINDOW;
+                    }
+                }
+
                 if (newProperties.ShowInTaskbar)
                 {
                     exStyle |= WindowStyles.WS_EX_APPWINDOW;
@@ -1390,19 +1415,6 @@ namespace Avalonia.Win32
                 else
                 {
                     exStyle &= ~WindowStyles.WS_EX_APPWINDOW;
-                }
-
-                if ((oldProperties.ShowInTaskbar != newProperties.ShowInTaskbar) || forceChanges)
-                {
-                    // Refresh the window to ensure its ShowInTaskbar can be correctly applied.    
-                    var shown = IsWindowVisible(_hwnd);
-                    var activated = GetActiveWindow() == _hwnd;
-
-                    if (shown)
-                    {
-                        Hide();
-                        Show(activated, false);
-                    }
                 }
 
                 WindowStyles style = WindowStyles.WS_CLIPCHILDREN | WindowStyles.WS_OVERLAPPEDWINDOW | WindowStyles.WS_CLIPSIBLINGS;
