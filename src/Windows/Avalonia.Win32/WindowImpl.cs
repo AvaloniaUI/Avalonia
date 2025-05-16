@@ -1384,39 +1384,6 @@ namespace Avalonia.Win32
             {
                 var exStyle = WindowStyles.WS_EX_WINDOWEDGE | (UseRedirectionBitmap ? 0 : WindowStyles.WS_EX_NOREDIRECTIONBITMAP);
 
-                if (oldProperties.ShowInTaskbar != newProperties.ShowInTaskbar || forceChanges)
-                {
-                    if (newProperties.ShowInTaskbar)
-                    {
-                        exStyle |= WindowStyles.WS_EX_APPWINDOW;
-                    }
-                    else
-                    {
-                        // To hide a non-owned window's taskbar icon we need to parent it to a hidden window.
-                        if (_parent is null)
-                        {
-                            _hiddenWindowIsParent = true;
-                        }
-
-                        exStyle &= ~WindowStyles.WS_EX_APPWINDOW;
-                    }
-                    if (_hiddenWindowIsParent)
-                    {
-                        // Can't enable the taskbar icon by clearing the parent window unless the window
-                        // is hidden. Hide the window and show it again with the same activation state
-                        // when we've finished. Interestingly it seems to work fine the other way.
-                        var shown = IsWindowVisible(_hwnd);
-                        var activated = GetActiveWindow() == _hwnd;
-
-                        if (shown)
-                        {
-                            Hide();
-                            Show(activated, false);
-                        }
-                        _hiddenWindowIsParent = false;
-                    }
-                }
-
                 if (newProperties.ShowInTaskbar)
                 {
                     exStyle |= WindowStyles.WS_EX_APPWINDOW;
@@ -1424,6 +1391,17 @@ namespace Avalonia.Win32
                 else
                 {
                     exStyle &= ~WindowStyles.WS_EX_APPWINDOW;
+                }
+                if (_parent is null && oldProperties.ShowInTaskbar != newProperties.ShowInTaskbar || forceChanges)
+                {
+                    var shown = IsWindowVisible(_hwnd);
+                    var activated = GetActiveWindow() == _hwnd;
+
+                    if (shown)
+                    {
+                        Hide();
+                        Show(activated, false);
+                    }
                 }
 
                 WindowStyles style = WindowStyles.WS_CLIPCHILDREN | WindowStyles.WS_OVERLAPPEDWINDOW | WindowStyles.WS_CLIPSIBLINGS;
