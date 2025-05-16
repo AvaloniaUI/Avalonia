@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Threading;
 using Avalonia.Collections.Pooled;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
@@ -103,6 +102,7 @@ namespace Avalonia.Win32
         private ExtendClientAreaChromeHints _extendChromeHints = ExtendClientAreaChromeHints.Default;
         private bool _isCloseRequested;
         private bool _shown;
+        private bool _hiddenWindowIsParent;
         private uint _langid;
         private bool _ignoreDpiChanges;
         internal bool _ignoreWmChar;
@@ -727,7 +727,9 @@ namespace Avalonia.Win32
             {
                 parentHwnd = OffscreenParentWindow.Handle;
             }
-            
+
+            _hiddenWindowIsParent = parentHwnd == OffscreenParentWindow.Handle;
+
             // I can't find mention of this *anywhere* online, but it seems that setting
             // GWL_HWNDPARENT to a window which is on the non-primary monitor can cause two
             // WM_DPICHANGED messages to be sent: the first changing the DPI to the parent's DPI,
@@ -1387,7 +1389,19 @@ namespace Avalonia.Win32
                     if (newProperties.ShowInTaskbar)
                     {
                         exStyle |= WindowStyles.WS_EX_APPWINDOW;
+                    }
+                    else
+                    {
+                        // To hide a non-owned window's taskbar icon we need to parent it to a hidden window.
+                        if (_parent is null)
+                        {
+                            _hiddenWindowIsParent = true;
+                        }
 
+                        exStyle &= ~WindowStyles.WS_EX_APPWINDOW;
+                    }
+                    if (_hiddenWindowIsParent)
+                    {
                         // Can't enable the taskbar icon by clearing the parent window unless the window
                         // is hidden. Hide the window and show it again with the same activation state
                         // when we've finished. Interestingly it seems to work fine the other way.
@@ -1395,16 +1409,11 @@ namespace Avalonia.Win32
                         var activated = GetActiveWindow() == _hwnd;
 
                         if (shown)
+                        {
                             Hide();
-
-                        SetParent(null);
-
-                        if (shown)
                             Show(activated, false);
-                    }
-                    else
-                    {
-                        exStyle &= ~WindowStyles.WS_EX_APPWINDOW;
+                        }
+                        _hiddenWindowIsParent = false;
                     }
                 }
 
