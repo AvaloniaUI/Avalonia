@@ -181,7 +181,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Invoked just before the <see cref="Collapsed"/> event.
+        /// Raises the <see cref="Collapsed"/> event.
         /// </summary>
         protected virtual void OnCollapsed(RoutedEventArgs eventArgs)
         {
@@ -189,7 +189,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Invoked just before the <see cref="Collapsing"/> event.
+        /// Raises the <see cref="Collapsing"/> event.
         /// </summary>
         protected virtual void OnCollapsing(CancelRoutedEventArgs eventArgs)
         {
@@ -197,7 +197,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Invoked just before the <see cref="Expanded"/> event.
+        /// Raises the <see cref="Expanded"/> event.
         /// </summary>
         protected virtual void OnExpanded(RoutedEventArgs eventArgs)
         {
@@ -205,7 +205,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Invoked just before the <see cref="Expanding"/> event.
+        /// Raises the <see cref="Expanding"/> event.
         /// </summary>
         protected virtual void OnExpanding(CancelRoutedEventArgs eventArgs)
         {
