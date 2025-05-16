@@ -584,6 +584,27 @@ namespace Avalonia.X11
         [DllImport(libX11Randr)]
         public static extern XRRMonitorInfo*
             XRRGetMonitors(IntPtr dpy, IntPtr window, bool get_active, out int nmonitors);
+        
+        [DllImport(libX11Randr)]
+        public static extern void XRRFreeMonitors(XRRMonitorInfo* monitors);
+        
+        [DllImport(libX11Randr)]
+        public static extern XRRScreenResources * XRRGetScreenResources (IntPtr dpy, IntPtr window);
+
+        [DllImport(libX11Randr)]
+        public static extern void XRRFreeScreenResources(XRRScreenResources* resources);
+        
+        [DllImport(libX11Randr)]
+        public static extern XRROutputInfo * XRRGetOutputInfo (IntPtr dpy, XRRScreenResources *resources, IntPtr output);
+
+        [DllImport(libX11Randr)]
+        public static extern void XRRFreeOutputInfo(XRROutputInfo* outputInfo);
+
+        [DllImport(libX11Randr)]
+        public static extern XRRCrtcInfo* XRRGetCrtcInfo(IntPtr dpy, XRRScreenResources* resources, IntPtr crtc);
+
+        [DllImport(libX11Randr)]
+        public static extern void XRRFreeCrtcInfo(XRRCrtcInfo* crtcInfo);
 
         [DllImport(libX11Randr)]
         public static extern IntPtr* XRRListOutputProperties(IntPtr dpy, IntPtr output, out int count);
