@@ -1,17 +1,21 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition;
 using Avalonia.Vulkan;
 using Silk.NET.Core;
+using Silk.NET.Core.Contexts;
+using Silk.NET.Core.Loader;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.EXT;
 using Silk.NET.Vulkan.Extensions.KHR;
 using SilkNetDemo;
 using SkiaSharp;
 using D3DDevice = SharpDX.Direct3D11.Device;
+#pragma warning disable CS0162 // Unreachable code detected
 
 namespace GpuInterop.VulkanDemo;
 
@@ -24,7 +28,7 @@ public unsafe class VulkanContext : IDisposable
     public required Queue Queue { get; init; }
     public required uint QueueFamilyIndex { get; init; }
     public required VulkanCommandBufferPool Pool { get; init; }
-    public required GRContext GrContext { get; init; }
+    public required GRContext? GrContext { get; init; }
     public required DescriptorPool DescriptorPool { get; init; }
     public required D3DDevice? D3DDevice { get; init; }
 
@@ -44,14 +48,22 @@ public unsafe class VulkanContext : IDisposable
 
         var enabledExtensions = new List<string>()
         {
-            "VK_KHR_get_physical_device_properties2",
-            "VK_KHR_external_memory_capabilities",
-            "VK_KHR_external_semaphore_capabilities"
+            "VK_KHR_get_physical_device_properties2"
         };
+        if(RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            enabledExtensions.Add("VK_KHR_portability_enumeration");
+
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            enabledExtensions.AddRange([
+                "VK_KHR_external_memory_capabilities",
+                "VK_KHR_external_semaphore_capabilities"
+            ]);
+        }
 
         var enabledLayers = new List<string>();
         
-        Vk api = Vk.GetApi();
+        Vk api = GetApi();
         enabledExtensions.Add("VK_EXT_debug_utils");
         if (IsLayerAvailable(api, "VK_LAYER_KHRONOS_validation"))
             enabledLayers.Add("VK_LAYER_KHRONOS_validation");
@@ -61,8 +73,10 @@ public unsafe class VulkanContext : IDisposable
         DescriptorPool descriptorPool = default;
         VulkanCommandBufferPool? pool = null;
         GRContext? grContext = null;
+        bool success = false;
         try
         {
+            enabledLayers.Clear();
             using var pRequiredExtensions = new ByteStringList(enabledExtensions);
             using var pEnabledLayers = new ByteStringList(enabledLayers);
             api.CreateInstance(new InstanceCreateInfo
@@ -72,7 +86,8 @@ public unsafe class VulkanContext : IDisposable
                 PpEnabledExtensionNames = pRequiredExtensions,
                 EnabledExtensionCount = pRequiredExtensions.UCount,
                 PpEnabledLayerNames = pEnabledLayers,
-                EnabledLayerCount = pEnabledLayers.UCount
+                EnabledLayerCount = pEnabledLayers.UCount,
+                Flags = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? InstanceCreateFlags.EnumeratePortabilityBitKhr : default
             }, null, out var vkInstance).ThrowOnError();
 
 
@@ -93,10 +108,13 @@ public unsafe class VulkanContext : IDisposable
                 debugUtils.CreateDebugUtilsMessenger(vkInstance, debugCreateInfo, null, out _);
             }
 
-            var requireDeviceExtensions = new List<string>
+            var requireDeviceExtensions = new List<string>();
+            if(!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                "VK_KHR_external_memory",
-                "VK_KHR_external_semaphore"
+                requireDeviceExtensions.AddRange([
+                    "VK_KHR_external_memory",
+                    "VK_KHR_external_semaphore"
+                ]);
             };
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -111,6 +129,14 @@ public unsafe class VulkanContext : IDisposable
                 requireDeviceExtensions.Add(KhrExternalSemaphoreWin32.ExtensionName);
                 requireDeviceExtensions.Add("VK_KHR_dedicated_allocation");
                 requireDeviceExtensions.Add("VK_KHR_get_memory_requirements2");
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                if (!gpuInterop.SupportedImageHandleTypes.Contains(KnownPlatformGraphicsExternalImageHandleTypes
+                        .IOSurfaceRef)
+                   )
+                    return (null, "Image sharing is not supported by the current backend");
+                requireDeviceExtensions.AddRange(["VK_EXT_metal_objects", "VK_KHR_timeline_semaphore"]);
             }
             else
             {
@@ -223,26 +249,29 @@ public unsafe class VulkanContext : IDisposable
                         .ThrowOnError();
 
                     pool = new VulkanCommandBufferPool(api, device, queue, queueFamilyIndex);
-                    grContext = GRContext.CreateVulkan(new GRVkBackendContext
+                    if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                     {
-                        VkInstance = vkInstance.Handle,
-                        VkDevice = device.Handle,
-                        VkQueue = queue.Handle,
-                        GraphicsQueueIndex = queueFamilyIndex,
-                        VkPhysicalDevice = physicalDevice.Handle,
-                        GetProcedureAddress = (proc, _, _) =>
+                        grContext = GRContext.CreateVulkan(new GRVkBackendContext
                         {
-                            var rv = api.GetDeviceProcAddr(device, proc);
-                            if (rv != IntPtr.Zero)
-                                return rv;
-                            rv = api.GetInstanceProcAddr(vkInstance, proc);
-                            if (rv != IntPtr.Zero)
-                                return rv;
-                            return api.GetInstanceProcAddr(default, proc);
-                        }
-                    });
-                    
-                    
+                            VkInstance = vkInstance.Handle,
+                            VkDevice = device.Handle,
+                            VkQueue = queue.Handle,
+                            GraphicsQueueIndex = queueFamilyIndex,
+                            VkPhysicalDevice = physicalDevice.Handle,
+                            GetProcedureAddress = (proc, _, _) =>
+                            {
+                                var rv = api.GetDeviceProcAddr(device, proc);
+                                if (rv != IntPtr.Zero)
+                                    return rv;
+                                rv = api.GetInstanceProcAddr(vkInstance, proc);
+                                if (rv != IntPtr.Zero)
+                                    return rv;
+                                return api.GetInstanceProcAddr(default, proc);
+                            }
+                        });
+                        if (grContext == null)
+                            return (null, "Can't create Skia GrContext, device is likely broken");
+                    }
 
                     D3DDevice? d3dDevice = null;
                     if (physicalDeviceIDProperties.DeviceLuidvalid &&
@@ -251,7 +280,7 @@ public unsafe class VulkanContext : IDisposable
                         )
                         d3dDevice = D3DMemoryHelper.CreateDeviceByLuid(
                             new Span<byte>(physicalDeviceIDProperties.DeviceLuid, 8));
-
+                    success = true;
                     return (new VulkanContext
                     {
                         Api = api,
@@ -278,7 +307,7 @@ public unsafe class VulkanContext : IDisposable
         }
         finally
         {
-            if (grContext == null && api != null)
+            if (!success)
             {
                 pool?.Dispose();
                 if (descriptorPool.Handle != default)
@@ -322,11 +351,40 @@ public unsafe class VulkanContext : IDisposable
 
         return Vk.False;
     }
+
+
+    private const string MacVulkanSdkGlobalPath = "/usr/local/lib/libvulkan.dylib";
+    class MacLibraryNameContainer : SearchPathContainer
+    {
+        public override string Windows64 { get; }
+        public override string Windows86 { get; }
+        public override string Linux { get; }
+        public override string MacOS { get; } = MacVulkanSdkGlobalPath;
+    }
+    private static Vk GetApi()
+    {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX) || !File.Exists(MacVulkanSdkGlobalPath))
+            return Vk.GetApi();
+        var ctx = new MultiNativeContext(new INativeContext[2]
+        {
+            Vk.CreateDefaultContext(new MacLibraryNameContainer().GetLibraryName()),
+            null!
+        });
+        var ret = new Vk(ctx);
+        ctx.Contexts[1] = new LamdaNativeContext((Func<string, IntPtr>) ((x) =>
+        {
+            if (x.EndsWith("ProcAddr"))
+                return IntPtr.Zero;
+            IntPtr deviceProcAddr = (IntPtr) ret.GetDeviceProcAddr(ret.CurrentDevice.GetValueOrDefault(), x);
+            return deviceProcAddr != IntPtr.Zero ? deviceProcAddr : (IntPtr) ret.GetInstanceProcAddr(ret.CurrentInstance.GetValueOrDefault(), x);
+        }));
+        return ret;
+    }
     
     public void Dispose()
     {
         D3DDevice?.Dispose();
-        GrContext.Dispose();
+        GrContext?.Dispose();
         Pool.Dispose();
         Api.DestroyDescriptorPool(Device, DescriptorPool, null);
         Api.DestroyDevice(Device, null);
