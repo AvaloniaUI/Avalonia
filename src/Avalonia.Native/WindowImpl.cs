@@ -207,6 +207,11 @@ namespace Avalonia.Native
             // NO OP On OSX
         }
 
+        public void ShowInTaskSwitcher(bool value)
+        {
+            // TODO: I cannot find a way to change NSWindow CollectionBehaviors.
+        }
+
         public void SetIcon(IWindowIconImpl icon)
         {
             // NO OP on OSX
