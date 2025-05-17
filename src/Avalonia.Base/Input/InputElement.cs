@@ -557,10 +557,6 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-        /// Called before the <see cref="KeyDown"/> event occurs.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        /// <summary>
         /// Invoked when an unhandled <see cref="KeyDownEvent"/> reaches an element in its 
         /// route that is derived from this class. Implement this method to add class handling 
         /// for this event.
