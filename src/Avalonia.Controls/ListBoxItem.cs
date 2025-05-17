@@ -64,9 +64,11 @@ namespace Avalonia.Controls
                 if (p.Properties.PointerUpdateKind is PointerUpdateKind.LeftButtonPressed or 
                     PointerUpdateKind.RightButtonPressed)
                 {
-                    if (p.Pointer.Type == PointerType.Mouse)
+                    if (p.Pointer.Type == PointerType.Mouse
+                        || (p.Pointer.Type == PointerType.Pen && p.Properties.IsRightButtonPressed))
                     {
-                        // If the pressed point comes from a mouse, perform the selection immediately.
+                        // If the pressed point comes from a mouse or right-click pen, perform the selection immediately.
+                        // In case of pen, only right-click is accepted, as left click (a tip touch) is used for scrolling. 
                         e.Handled = owner.UpdateSelectionFromPointerEvent(this, e);
                     }
                     else

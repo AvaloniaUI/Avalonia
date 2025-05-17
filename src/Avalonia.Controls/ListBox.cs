@@ -166,6 +166,7 @@ namespace Avalonia.Controls
 
         internal bool UpdateSelectionFromPointerEvent(Control source, PointerEventArgs e)
         {
+            // TODO: use TopLevel.PlatformSettings here, but first need to update our tests to use TopLevels. 
             var hotkeys = Application.Current!.PlatformSettings?.HotkeyConfiguration;
             var toggle = hotkeys is not null && e.KeyModifiers.HasAllFlags(hotkeys.CommandModifiers);
 
