@@ -2,7 +2,7 @@ jobs:
 
 - job: GetPRNumber
   pool:
-    vmImage: 'ubuntu-20.04'
+    vmImage: 'ubuntu-22.04'
   variables:
     SolutionDir: '$(Build.SourcesDirectory)'
   steps:
@@ -23,7 +23,7 @@ jobs:
       
 - job: Linux
   pool:
-    vmImage: 'ubuntu-20.04'
+    vmImage: 'ubuntu-22.04'
   steps:
   - task: UseDotNet@2
     displayName: 'Use .NET 6.0 Runtime'
