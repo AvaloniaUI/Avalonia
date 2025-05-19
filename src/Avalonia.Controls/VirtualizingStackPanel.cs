@@ -563,27 +563,28 @@ namespace Avalonia.Controls
                 return _lastEstimatedElementSizeU;
 
             var orientation = Orientation;
-            var total = 0.0;
-            var divisor = 0.0;
+            var sizes = new List<double>();
 
-            // Average the desired size of the realized, measured elements.
             foreach (var element in _realizedElements.Elements)
             {
                 if (element is null || !element.IsMeasureValid)
                     continue;
+
                 var sizeU = orientation == Orientation.Horizontal ?
                     element.DesiredSize.Width :
                     element.DesiredSize.Height;
-                total += sizeU;
-                ++divisor;
+
+                if (!double.IsNaN(sizeU) && sizeU > 0)
+                    sizes.Add(sizeU);
             }
 
-            // Check we have enough information on which to base our estimate.
-            if (divisor == 0 || total == 0)
+            if (sizes.Count == 0)
                 return _lastEstimatedElementSizeU;
 
-            // Store and return the estimate.
-            return _lastEstimatedElementSizeU = total / divisor;
+            sizes.Sort();
+            var median = sizes[sizes.Count / 2];
+
+            return _lastEstimatedElementSizeU = median;
         }
 
         private void GetOrEstimateAnchorElementForViewport(
@@ -649,7 +650,11 @@ namespace Avalonia.Controls
             // Estimate the element size.
             var estimatedSize = EstimateElementSizeU();
 
-            // TODO: Use _startU to work this out.
+            if (_realizedElements is { } realized && !double.IsNaN(realized.StartU))
+            {
+                return realized.StartU + ((index - realized.FirstIndex) * estimatedSize);
+            }
+
             return index * estimatedSize;
         }
 
@@ -952,34 +957,55 @@ namespace Avalonia.Controls
                     if (!AreHorizontalSnapPointsRegular)
                         throw new InvalidOperationException();
 
-                    snapPoint = firstRealizedChild.Bounds.Width;
+                    var width = firstRealizedChild.Bounds.Width;
+
+                    foreach (var child in _realizedElements!.Elements)
+                    {
+                        if (child is null)
+                            continue;
+                        if (!MathUtilities.AreClose(child.Bounds.Width, width))
+                            return 0;
+                    }
+
+                    snapPoint = width;
                     switch (snapPointsAlignment)
                     {
                         case SnapPointsAlignment.Near:
                             offset = 0;
                             break;
                         case SnapPointsAlignment.Center:
-                            offset = (firstRealizedChild.Bounds.Right - firstRealizedChild.Bounds.Left) / 2;
+                            offset = width / 2;
                             break;
                         case SnapPointsAlignment.Far:
-                            offset = firstRealizedChild.Bounds.Width;
+                            offset = width;
                             break;
                     }
                     break;
                 case Orientation.Vertical:
                     if (!AreVerticalSnapPointsRegular)
                         throw new InvalidOperationException();
-                    snapPoint = firstRealizedChild.Bounds.Height;
+
+                    var height = firstRealizedChild.Bounds.Height;
+
+                    foreach (var child in _realizedElements!.Elements)
+                    {
+                        if (child is null)
+                            continue;
+                        if (!MathUtilities.AreClose(child.Bounds.Height, height))
+                            return 0;
+                    }
+
+                    snapPoint = height;
                     switch (snapPointsAlignment)
                     {
                         case SnapPointsAlignment.Near:
                             offset = 0;
                             break;
                         case SnapPointsAlignment.Center:
-                            offset = (firstRealizedChild.Bounds.Bottom - firstRealizedChild.Bounds.Top) / 2;
+                            offset = height / 2;
                             break;
                         case SnapPointsAlignment.Far:
-                            offset = firstRealizedChild.Bounds.Height;
+                            offset = height;
                             break;
                     }
                     break;

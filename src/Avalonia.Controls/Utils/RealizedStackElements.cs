@@ -421,12 +421,12 @@ namespace Avalonia.Controls.Utils
         /// </summary>
         /// <param name="orientation">The panel orientation.</param>
         /// <remarks>
-        /// If the U size of any element in the realized elements has changed, then the value of
-        /// <see cref="StartU"/> should be considered unstable.
+        /// Updates the stored element sizes so that future layout calculations can use
+        /// accurate measurements without invalidating <see cref="StartU"/>.
         /// </remarks>
         public void ValidateStartU(Orientation orientation)
         {
-            if (_elements is null || _sizes is null || _startUUnstable)
+            if (_elements is null || _sizes is null)
                 return;
 
             for (var i = 0; i < _elements.Count; ++i)
@@ -437,10 +437,9 @@ namespace Avalonia.Controls.Utils
                 var sizeU = orientation == Orientation.Horizontal ?
                     element.DesiredSize.Width : element.DesiredSize.Height;
 
-                if (sizeU != _sizes[i])
+                if (!MathUtilities.AreClose(sizeU, _sizes[i]))
                 {
-                    _startUUnstable = true;
-                    break;
+                    _sizes[i] = sizeU;
                 }
             }
         }
