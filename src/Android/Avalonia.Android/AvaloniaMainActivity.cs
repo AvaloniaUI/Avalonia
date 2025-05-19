@@ -12,10 +12,11 @@ public class AvaloniaMainActivity : AvaloniaActivity
     {
         if (Application is IAndroidApplication application && application.Lifetime is { } lifetime)
         {
-            initialContent ??= lifetime.MainView; 
+            initialContent ??= lifetime.MainViewFactory?.Invoke();
 
-            _view = new AvaloniaView(this) { Content = initialContent };
-            lifetime.Activity = this;
+            _view = new AvaloniaView(this);
+
+            Content = initialContent;
         }
 
         if (_view is null)

@@ -23,6 +23,10 @@ namespace SafeAreaDemo
             {
                 singleViewPlatform.MainView = new MainView();
             }
+            else if (ApplicationLifetime is ISingleViewFactoryApplicationLifetime singleViewFactoryApplicationLifetime)
+            {
+                singleViewFactoryApplicationLifetime.MainViewFactory = () => new MainView();
+            }
 
             base.OnFrameworkInitializationCompleted();
         }

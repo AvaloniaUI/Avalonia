@@ -25,6 +25,10 @@ public class App : Application
         {
             singleViewLifetime.MainView = new MainView();
         }
+        else if (ApplicationLifetime is ISingleViewFactoryApplicationLifetime singleViewFactoryApplicationLifetime)
+        {
+            singleViewFactoryApplicationLifetime.MainViewFactory = () => new MainView();
+        }
 
         base.OnFrameworkInitializationCompleted();
     }

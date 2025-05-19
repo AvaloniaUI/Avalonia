@@ -48,6 +48,10 @@ namespace ControlCatalog
             {
                 singleViewLifetime.MainView = new MainView { DataContext = new MainWindowViewModel() };
             }
+            else if(ApplicationLifetime is ISingleViewFactoryApplicationLifetime singleViewFactoryApplicationLifetime)
+            {
+                singleViewFactoryApplicationLifetime.MainViewFactory = () => new MainView { DataContext = new MainWindowViewModel() };
+            }
 
             if (this.TryGetFeature<IActivatableLifetime>() is {} activatableApplicationLifetime)
             {
