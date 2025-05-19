@@ -352,7 +352,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Invoked just before the <see cref="Loaded"/> event.
+        /// Raises the <see cref="Loaded"/> event.
         /// </summary>
         /// <param name="e">The event args.</param>
         protected virtual void OnLoaded(RoutedEventArgs e)
@@ -361,7 +361,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Invoked just before the <see cref="Unloaded"/> event.
+        /// Raises the <see cref="Unloaded"/> event.
         /// </summary>
         /// <param name="e">The event args.</param>
         protected virtual void OnUnloaded(RoutedEventArgs e)
@@ -370,7 +370,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Invoked just before the <see cref="SizeChanged"/> event.
+        /// Raises the <see cref="SizeChanged"/> event.
         /// </summary>
         /// <param name="e">The event args.</param>
         protected virtual void OnSizeChanged(SizeChangedEventArgs e)
