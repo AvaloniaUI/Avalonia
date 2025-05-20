@@ -84,7 +84,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the spacing between lines.
+        /// Gets or sets the spacing between items.
         /// </summary>
         public double ItemSpacing
         {
@@ -93,7 +93,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the spacing between items.
+        /// Gets or sets the spacing between lines.
         /// </summary>
         public double LineSpacing
         {

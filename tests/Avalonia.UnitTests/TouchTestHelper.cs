@@ -19,7 +19,8 @@ namespace Avalonia.UnitTests
         public void Down(Interactive target, Interactive source, Point position = default, KeyModifiers modifiers = default)
         {
             _pointer.Capture((IInputElement)target);
-            source.RaiseEvent(new PointerPressedEventArgs(source, _pointer, (Visual)source, position, Timestamp(), PointerPointProperties.None,
+            source.RaiseEvent(new PointerPressedEventArgs(source, _pointer, (Visual)source, position, Timestamp(),
+                new(RawInputModifiers.LeftMouseButton, PointerUpdateKind.LeftButtonPressed),
                 modifiers));
         }
 
@@ -28,7 +29,7 @@ namespace Avalonia.UnitTests
         public void Move(Interactive target, Interactive source, in Point position, KeyModifiers modifiers = default)
         {
             var e = new PointerEventArgs(InputElement.PointerMovedEvent, source, _pointer, (Visual)target, position,
-                Timestamp(), PointerPointProperties.None, modifiers);
+                Timestamp(), new(RawInputModifiers.LeftMouseButton, PointerUpdateKind.Other), modifiers);
             if (_pointer.CapturedGestureRecognizer != null)
                 _pointer.CapturedGestureRecognizer.PointerMovedInternal(e);
             else
@@ -41,8 +42,8 @@ namespace Avalonia.UnitTests
 
         public void Up(Interactive target, Interactive source, Point position = default, KeyModifiers modifiers = default)
         {
-            var e = new PointerReleasedEventArgs(source, _pointer, (Visual)target, position, Timestamp(), PointerPointProperties.None,
-                modifiers, MouseButton.None);
+            var e = new PointerReleasedEventArgs(source, _pointer, (Visual)target, position, Timestamp(),
+                new(RawInputModifiers.None, PointerUpdateKind.LeftButtonReleased), modifiers, MouseButton.Left);
 
             if (_pointer.CapturedGestureRecognizer != null)
                 _pointer.CapturedGestureRecognizer.PointerReleasedInternal(e);

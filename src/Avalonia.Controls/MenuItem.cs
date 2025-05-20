@@ -466,9 +466,11 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Called when the <see cref="MenuItem"/> is clicked.
+        /// Invoked when an unhandled <see cref="ClickEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
         /// </summary>
-        /// <param name="e">The click event args.</param>
+        /// <param name="e">Data about the event.</param>
         protected virtual void OnClick(RoutedEventArgs e)
         {
             (var command, var parameter) = (Command, CommandParameter);
@@ -507,9 +509,11 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Called when a submenu is opened on this MenuItem or a child MenuItem.
+        /// Invoked when an unhandled <see cref="SubmenuOpenedEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
         /// </summary>
-        /// <param name="e">The event args.</param>
+        /// <param name="e">Data about the event.</param>
         protected virtual void OnSubmenuOpened(RoutedEventArgs e)
         {
             var menuItem = e.Source as MenuItem;
