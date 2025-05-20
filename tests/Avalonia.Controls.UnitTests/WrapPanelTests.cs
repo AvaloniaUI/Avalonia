@@ -1,10 +1,11 @@
 using System;
 using Avalonia.Layout;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class WrapPanelTests
+    public class WrapPanelTests : ScopedTestBase
     {
         [Fact]
         public void Lays_Out_Horizontally_On_Separate_Lines()

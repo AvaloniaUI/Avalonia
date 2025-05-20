@@ -23,7 +23,7 @@ using Avalonia.Media;
 
 namespace Avalonia.Controls.UnitTests.Primitives
 {
-    public class PopupTests
+    public class PopupTests : ScopedTestBase
     {
         protected bool UsePopupHost;
 

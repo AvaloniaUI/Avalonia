@@ -1,8 +1,9 @@
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class DockPanelTests
+    public class DockPanelTests : ScopedTestBase
     {
         [Fact]
         public void DockPanel_Without_Child()

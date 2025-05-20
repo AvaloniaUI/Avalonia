@@ -17,7 +17,7 @@ using static Avalonia.Controls.UnitTests.MaskedTextBoxTests;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class TopLevelTests
+    public class TopLevelTests : ScopedTestBase
     {
         [Fact]
         public void IsAttachedToLogicalTree_Is_True()

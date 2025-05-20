@@ -74,7 +74,8 @@ namespace Avalonia.Styling.Activators
         internal static Layoutable? GetContainer(Visual visual, string? containerName)
         {
             return visual.GetVisualAncestors().Where(x => x is Layoutable layoutable &&
-                (Container.GetName(layoutable) == containerName)).FirstOrDefault() as Layoutable;
+                ((containerName == null && Container.GetSizing(layoutable) != ContainerSizing.Normal)
+                || (containerName != null && Container.GetName(layoutable) == containerName))).FirstOrDefault() as Layoutable;
         }
 
         private void HeightChanged(object? sender, EventArgs e)
