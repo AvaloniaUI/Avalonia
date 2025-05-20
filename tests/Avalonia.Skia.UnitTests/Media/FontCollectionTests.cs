@@ -78,7 +78,7 @@ namespace Avalonia.Skia.UnitTests.Media
 
                 var fallback = new FontFallback { FontFamily = new FontFamily("Arial"), UnicodeRange = new UnicodeRange('A', 'A') };
 
-                var fontCollection = new FallbackSystemFontCollection(source, source, new[] { fallback  });
+                var fontCollection = new CustomizableFontCollection(source, source, new[] { fallback  });
 
                 fontCollection.Initialize(new CustomFontManagerImpl());
 
@@ -99,7 +99,7 @@ namespace Avalonia.Skia.UnitTests.Media
 
                 var typeface = new Typeface(ignorable);
 
-                var fontCollection = new FallbackSystemFontCollection(source, source, null, new[] { ignorable });
+                var fontCollection = new CustomizableFontCollection(source, source, null, new[] { ignorable });
 
                 fontCollection.Initialize(new CustomFontManagerImpl());
 
@@ -112,12 +112,12 @@ namespace Avalonia.Skia.UnitTests.Media
             }
         }
 
-        private class FallbackSystemFontCollection : EmbeddedFontCollection
+        private class CustomizableFontCollection : EmbeddedFontCollection
         {
             private readonly IReadOnlyList<FontFallback>? _fallbacks;
             private readonly IReadOnlyList<FontFamily>? _ignorables;
 
-            public FallbackSystemFontCollection(Uri key, Uri source, IReadOnlyList<FontFallback>? fallbacks = null, IReadOnlyList<FontFamily>? ignorables = null) : base(key, source)
+            public CustomizableFontCollection(Uri key, Uri source, IReadOnlyList<FontFallback>? fallbacks = null, IReadOnlyList<FontFamily>? ignorables = null) : base(key, source)
             {
                 _fallbacks = fallbacks;
                 _ignorables = ignorables;
