@@ -91,9 +91,11 @@ namespace Avalonia.Media.Fonts
                 }
 
                 //Try to create a synthetic glyph typeface
-                if (FontManager.TryCreateSyntheticGlyphTypeface(_fontManager.PlatformImpl, glyphTypeface, style, weight, out var syntheticGlyphTypeface))
+                if (TryCreateSyntheticGlyphTypeface(glyphTypeface, style, weight, stretch, out var syntheticGlyphTypeface))
                 {
                     glyphTypeface = syntheticGlyphTypeface;
+
+                    return true;
                 }
             }
 
@@ -159,7 +161,7 @@ namespace Avalonia.Media.Fonts
             }
         }
 
-        bool IFontCollection2.TryGetFamilyTypefaces(string familyName, [NotNullWhen(true)] out IReadOnlyList<Typeface>? familyTypefaces)
+        public override bool TryGetFamilyTypefaces(string familyName, [NotNullWhen(true)] out IReadOnlyList<Typeface>? familyTypefaces)
         {
             familyTypefaces = null;
 

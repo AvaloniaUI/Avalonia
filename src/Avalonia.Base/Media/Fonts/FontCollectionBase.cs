@@ -10,7 +10,7 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Media.Fonts
 {
-    public abstract class FontCollectionBase : IFontCollection
+    public abstract class FontCollectionBase : IFontCollection, IFontCollection2
     {
         protected readonly ConcurrentDictionary<string, ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>> _glyphTypefaceCache = new();
 
@@ -23,7 +23,7 @@ namespace Avalonia.Media.Fonts
         public abstract bool TryGetGlyphTypeface(string familyName, FontStyle style, FontWeight weight, FontStretch stretch,
            [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface);
 
-        public bool TryMatchCharacter(int codepoint, FontStyle style, FontWeight weight, FontStretch stretch,
+        public virtual bool TryMatchCharacter(int codepoint, FontStyle style, FontWeight weight, FontStretch stretch,
             string? familyName, CultureInfo? culture, out Typeface match)
         {
             match = default;
@@ -58,6 +58,90 @@ namespace Avalonia.Media.Fonts
 
             return false;
         }
+
+        public virtual bool TryCreateSyntheticGlyphTypeface(
+            IGlyphTypeface glyphTypeface,
+            FontStyle style, 
+            FontWeight weight, 
+            FontStretch stretch, 
+            [NotNullWhen(true)] out IGlyphTypeface? syntheticGlyphTypeface)
+        {
+            syntheticGlyphTypeface = null;
+
+            //Source family should be present in the cache.
+            if (!_glyphTypefaceCache.TryGetValue(glyphTypeface.FamilyName, out var glyphTypefaces))
+            {
+                return false;
+            }
+
+            var fontManager = FontManager.Current.PlatformImpl;
+
+            var key = new FontCollectionKey(style, weight, stretch);
+
+            var currentKey =
+                new FontCollectionKey(glyphTypeface.Style, glyphTypeface.Weight, glyphTypeface.Stretch);
+
+            if (currentKey == key)
+            {
+                return false;
+            }
+
+            if (glyphTypeface is not IGlyphTypeface2 glyphTypeface2)
+            {
+                return false;
+            }
+
+            var fontSimulations = FontSimulations.None;
+
+            if (style != FontStyle.Normal && glyphTypeface2.Style != style)
+            {
+                fontSimulations |= FontSimulations.Oblique;
+            }
+
+            if ((int)weight >= 600 && glyphTypeface2.Weight < weight)
+            {
+                fontSimulations |= FontSimulations.Bold;
+            }
+
+            if (fontSimulations != FontSimulations.None && glyphTypeface2.TryGetStream(out var stream))
+            {
+                using (stream)
+                {
+                    if (fontManager.TryCreateGlyphTypeface(stream, fontSimulations, out syntheticGlyphTypeface))
+                    {
+                        //Add the TypographicFamilyName to the cache
+                        if (!string.IsNullOrEmpty(glyphTypeface2.TypographicFamilyName))
+                        {
+                            AddGlyphTypefaceByFamilyName(glyphTypeface2.TypographicFamilyName, syntheticGlyphTypeface);
+                        }
+
+                        foreach (var kvp in glyphTypeface2.FamilyNames)
+                        {
+                            AddGlyphTypefaceByFamilyName(kvp.Value, syntheticGlyphTypeface);
+                        }
+
+                        return true;
+                    }
+
+                    return false;
+                }
+            }
+
+            return false;
+
+            void AddGlyphTypefaceByFamilyName(string familyName, IGlyphTypeface glyphTypeface)
+            {
+                var typefaces = _glyphTypefaceCache.GetOrAdd(familyName,
+                    x =>
+                    {
+                        return new ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>();
+                    });
+
+                typefaces.TryAdd(key, glyphTypeface);
+            }
+        }
+
+        public abstract bool TryGetFamilyTypefaces(string familyName, [NotNullWhen(true)] out IReadOnlyList<Typeface>? familyTypefaces);
 
         public abstract void Initialize(IFontManagerImpl fontManager);
 
