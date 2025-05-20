@@ -10,7 +10,7 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Media.Fonts
 {
-    public abstract class FontCollectionBase : IFontCollection, IFontCollection2
+    public abstract class FontCollectionBase : IFontCollection
     {
         protected readonly ConcurrentDictionary<string, ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>> _glyphTypefaceCache = new();
 
@@ -140,8 +140,6 @@ namespace Avalonia.Media.Fonts
                 typefaces.TryAdd(key, glyphTypeface);
             }
         }
-
-        public abstract bool TryGetFamilyTypefaces(string familyName, [NotNullWhen(true)] out IReadOnlyList<Typeface>? familyTypefaces);
 
         public abstract void Initialize(IFontManagerImpl fontManager);
 
