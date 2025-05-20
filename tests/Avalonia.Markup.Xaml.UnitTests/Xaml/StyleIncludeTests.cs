@@ -15,7 +15,7 @@ using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Xaml;
 
-public class StyleIncludeTests
+public class StyleIncludeTests : XamlTestBase
 {
     static StyleIncludeTests()
     {

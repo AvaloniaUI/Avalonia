@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Avalonia.Markup.UnitTests.Data
 {
-    public class BindingTests_RelativeSource
+    public class BindingTests_RelativeSource : ScopedTestBase
     {
         [Fact]
         public void Should_Bind_To_First_Ancestor()

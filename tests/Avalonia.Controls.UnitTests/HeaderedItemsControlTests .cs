@@ -2,11 +2,12 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.LogicalTree;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class HeaderedItemsControlTests
+    public class HeaderedItemsControlTests : ScopedTestBase
     {
         [Fact]
         public void Control_Header_Should_Be_Logical_Child_Before_ApplyTemplate()
