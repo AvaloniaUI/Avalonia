@@ -21,11 +21,27 @@ public class AvaloniaMainActivity : AvaloniaActivity
 
         if (_view is null)
             throw new InvalidOperationException("Unknown error: AvaloniaView initialization has failed.");
+    }
+
+    protected override void OnResume()
+    {
+        base.OnResume();
 
         if (Avalonia.Application.Current?.TryGetFeature<IActivatableLifetime>()
             is AndroidActivatableLifetime activatableLifetime)
         {
             activatableLifetime.CurrentMainActivity = this;
+        }
+    }
+
+    protected override void OnDestroy()
+    {
+        base.OnDestroy();
+
+        if (Avalonia.Application.Current?.TryGetFeature<IActivatableLifetime>()
+            is AndroidActivatableLifetime activatableLifetime && activatableLifetime.CurrentMainActivity == this)
+        {
+            activatableLifetime.CurrentMainActivity = null;
         }
     }
 
