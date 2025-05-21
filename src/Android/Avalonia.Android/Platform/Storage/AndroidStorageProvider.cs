@@ -291,8 +291,12 @@ internal class AndroidStorageProvider : IStorageProvider
                 ActivityFlags.GrantReadUriPermission)
                 == global::Android.Content.PM.Permission.Granted;
 
-            // TODO: call RequestPermission or add proper permissions API, something like in Browser File API.
-            hasPerms = hasPerms || await _activity.CheckPermission(Manifest.Permission.ReadExternalStorage);
+            // https://developer.android.com/reference/android/Manifest.permission#READ_EXTERNAL_STORAGE
+            if (!OperatingSystem.IsAndroidVersionAtLeast(33))
+            {
+                // TODO: call RequestPermission or add proper permissions API, something like in Browser File API.
+                hasPerms = hasPerms || await _activity.CheckPermission(Manifest.Permission.ReadExternalStorage);
+            }
         }
         catch (Exception ex)
         {
