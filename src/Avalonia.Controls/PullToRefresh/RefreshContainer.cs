@@ -41,7 +41,7 @@ namespace Avalonia.Controls
                 s => s.Visualizer, (s, o) => s.Visualizer = o);
 
         /// <summary>
-        /// Defines the <see cref="PullDirection"/> event.
+        /// Defines the <see cref="PullDirection"/> property.
         /// </summary>
         public static readonly StyledProperty<PullDirection> PullDirectionProperty =
             AvaloniaProperty.Register<RefreshContainer, PullDirection>(nameof(PullDirection), PullDirection.TopToBottom);
@@ -53,6 +53,25 @@ namespace Avalonia.Controls
                 _hasDefaultRefreshInfoProviderAdapter = false;
                 SetAndRaise(RefreshInfoProviderAdapterProperty, ref _refreshInfoProviderAdapter, value);
             }
+        }
+        
+        /// <summary>
+        /// Defines the <see cref="IsEnabledOnDesktop"/> property.
+        /// </summary>
+        /// <remarks>
+        /// By default disabled, allows to enable the pull 2 refresh gesture for desktop devices
+        /// </remarks>
+        public static readonly StyledProperty<bool> IsEnabledOnDesktopProperty =
+            AvaloniaProperty.Register<RefreshContainer, bool>(nameof(IsEnabledOnDesktop), false);
+        
+        /// <summary>
+        /// Gets or sets a value that indicates whether the pull-to-refresh gesture is enabled for desktop devices.
+        /// By default disabled, allows to enable the pull 2 refresh gesture for desktop devices.
+        /// </summary>
+        public bool IsEnabledOnDesktop
+        {
+            get => GetValue(IsEnabledOnDesktopProperty);
+            set => SetValue(IsEnabledOnDesktopProperty, value);
         }
 
         /// <summary>
@@ -93,7 +112,7 @@ namespace Avalonia.Controls
         public RefreshContainer()
         {
             _hasDefaultRefreshInfoProviderAdapter = true;
-            _refreshInfoProviderAdapter = new ScrollViewerIRefreshInfoProviderAdapter(PullDirection);
+            _refreshInfoProviderAdapter = new ScrollViewerIRefreshInfoProviderAdapter(PullDirection, IsEnabledOnDesktop);
             RaisePropertyChanged(RefreshInfoProviderAdapterProperty, null, _refreshInfoProviderAdapter);
         }
 
@@ -119,9 +138,9 @@ namespace Avalonia.Controls
 
         private void OnVisualizerSizeChanged(Rect obj)
         {
-            if (_hasDefaultRefreshInfoProviderAdapter)
-            {
-                _refreshInfoProviderAdapter = new ScrollViewerIRefreshInfoProviderAdapter(PullDirection);
+            if (_hasDefaultRefreshInfoProviderAdapter && _refreshInfoProviderAdapter != null)
+            {                
+                _refreshInfoProviderAdapter.UpdateVisualizerSize(obj.Size);
                 RaisePropertyChanged(RefreshInfoProviderAdapterProperty, null, _refreshInfoProviderAdapter);
             }
         }
@@ -181,6 +200,10 @@ namespace Avalonia.Controls
             {
                 OnPullDirectionChanged();
             }
+            else if (change.Property == IsEnabledOnDesktopProperty)
+            {
+                OnIsEnabledOnDesktopChanged();
+            }
         }
 
         private void OnPullDirectionChanged()
@@ -231,17 +254,25 @@ namespace Avalonia.Controls
                         break;
                 }
 
-                if (_hasDefaultRefreshInfoProviderAdapter &&
-                    _hasDefaultRefreshVisualizer &&
-                    _refreshVisualizer.Bounds.Height == DefaultPullDimensionSize &&
-                    _refreshVisualizer.Bounds.Width == DefaultPullDimensionSize)
-                {
-                    _refreshInfoProviderAdapter = new ScrollViewerIRefreshInfoProviderAdapter(PullDirection);
+                if (_hasDefaultRefreshInfoProviderAdapter)
+                {                
+                    if (_hasDefaultRefreshVisualizer)
+                    {                   
+                        var size = new Size(_refreshVisualizer.Width, _refreshVisualizer.Height);
+                        _refreshInfoProviderAdapter?.UpdateVisualizerSize(size);
+                    }
+
+                    _refreshInfoProviderAdapter?.UpdatePullDirection(PullDirection);
                     RaisePropertyChanged(RefreshInfoProviderAdapterProperty, null, _refreshInfoProviderAdapter);
                 }
             }
         }
 
+        private void OnIsEnabledOnDesktopChanged()
+        {
+            _refreshInfoProviderAdapter?.UpdateIsEnabledOnDesktop(IsEnabledOnDesktop);
+        }
+        
         /// <summary>
         /// Initiates an update of the content.
         /// </summary>
