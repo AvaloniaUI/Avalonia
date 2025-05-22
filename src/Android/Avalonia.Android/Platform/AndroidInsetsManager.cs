@@ -17,9 +17,12 @@ namespace Avalonia.Android.Platform
 {
     internal sealed class AndroidInsetsManager : WindowInsetsAnimationCompat.Callback, IInsetsManager, IOnApplyWindowInsetsListener, ViewTreeObserver.IOnGlobalLayoutListener, IInputPane
     {
+        // For now, we check if running under net 9. TODO: remove runtime check when we target net 10
+        private static bool IsDisplayEdgeToEdgeForced = System.Environment.Version.Major >=9 && Build.VERSION.SdkInt >= (BuildVersionCodes)35;
+
         private readonly Activity _activity;
         private readonly TopLevelImpl _topLevel;
-        private bool _displayEdgeToEdge;
+        private bool _displaysEdgeToEdge;
         private bool? _systemUiVisibility;
         private SystemBarTheme? _statusBarTheme;
         private bool? _isDefaultSystemBarLightTheme;
@@ -27,6 +30,7 @@ namespace Avalonia.Android.Platform
         private InputPaneState _state;
         private Rect _previousRect;
         private Insets? _previousImeInset;
+        private bool _displayEdgeToEdgePreference;
         private readonly bool _usesLegacyLayouts;
 
         private AndroidWindow Window => _activity.Window ?? throw new InvalidOperationException("Activity.Window must be set."); 
@@ -50,29 +54,42 @@ namespace Avalonia.Android.Platform
             }
         }
 
-        public bool DisplayEdgeToEdge
+        public bool DisplayEdgeToEdgePreference
         {
-            get => _displayEdgeToEdge;
+            get => _displayEdgeToEdgePreference;
             set
             {
-                _displayEdgeToEdge = value;
+                _displayEdgeToEdgePreference = value;
 
-                if (OperatingSystem.IsAndroidVersionAtLeast(28) && Window.Attributes is { } attributes)
-                {
-                    attributes.LayoutInDisplayCutoutMode = value ? LayoutInDisplayCutoutMode.ShortEdges : LayoutInDisplayCutoutMode.Default;
-                }
+               UpdateDisplayEdgeToEgdeState();
+            }
+        }
 
-                WindowCompat.SetDecorFitsSystemWindows(Window, !value);
+        private void UpdateDisplayEdgeToEgdeState()
+        {
+            if (IsDisplayEdgeToEdgeForced)
+            {
+                _displaysEdgeToEdge = true;
+                return;
+            }
 
-                if (value)
-                {
-                    Window.AddFlags(WindowManagerFlags.TranslucentStatus);
-                    Window.AddFlags(WindowManagerFlags.TranslucentNavigation);
-                }
-                else
-                {
-                    SystemBarColor = _systemBarColor;
-                }
+            _displaysEdgeToEdge = _displayEdgeToEdgePreference;
+
+            if (OperatingSystem.IsAndroidVersionAtLeast(28) && Window.Attributes is { } attributes)
+            {
+                attributes.LayoutInDisplayCutoutMode = _displayEdgeToEdgePreference ? LayoutInDisplayCutoutMode.ShortEdges : LayoutInDisplayCutoutMode.Default;
+            }
+
+            WindowCompat.SetDecorFitsSystemWindows(Window, !_displayEdgeToEdgePreference);
+
+            if (_displayEdgeToEdgePreference)
+            {
+                Window.AddFlags(WindowManagerFlags.TranslucentStatus);
+                Window.AddFlags(WindowManagerFlags.TranslucentNavigation);
+            }
+            else
+            {
+                SystemBarColor = _systemBarColor;
             }
         }
 
@@ -89,7 +106,7 @@ namespace Avalonia.Android.Platform
                 _activity.Window?.DecorView.ViewTreeObserver?.AddOnGlobalLayoutListener(this);
             }
 
-            DisplayEdgeToEdge = false;
+            DisplayEdgeToEdgePreference = false;
 
             ViewCompat.SetWindowInsetsAnimationCallback(Window.DecorView, this);
         }
@@ -105,11 +122,11 @@ namespace Avalonia.Android.Platform
                     var renderScaling = _topLevel.RenderScaling;
 
                     var inset = insets.GetInsets(
-                        _displayEdgeToEdge ?
+                        DisplaysEdgeToEdge ?
                             WindowInsetsCompat.Type.StatusBars() | WindowInsetsCompat.Type.NavigationBars() |
                             WindowInsetsCompat.Type.DisplayCutout() : 0);
 
-                    return new Thickness(inset.Left / renderScaling,
+                   return new Thickness(inset.Left / renderScaling,
                         inset.Top / renderScaling,
                         inset.Right / renderScaling,
                         inset.Bottom / renderScaling);
@@ -264,7 +281,10 @@ namespace Avalonia.Android.Platform
             {
                 _systemBarColor = value;
 
-                if (_systemBarColor is { } color && !_displayEdgeToEdge && _activity.Window != null)
+                if (IsDisplayEdgeToEdgeForced)
+                    return;
+
+                if (_systemBarColor is { } color && !_displaysEdgeToEdge && _activity.Window != null)
                 {
                     _activity.Window.ClearFlags(WindowManagerFlags.TranslucentStatus);
                     _activity.Window.ClearFlags(WindowManagerFlags.TranslucentNavigation);
@@ -281,6 +301,10 @@ namespace Avalonia.Android.Platform
                 }
             }
         }
+
+        public bool DisplayEdgeToEdge { get => DisplaysEdgeToEdge; set => DisplayEdgeToEdgePreference = value; }
+
+        public bool DisplaysEdgeToEdge => _displaysEdgeToEdge;
 
         internal void ApplyStatusBarState()
         {
