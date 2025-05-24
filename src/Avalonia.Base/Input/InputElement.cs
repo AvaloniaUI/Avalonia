@@ -200,6 +200,11 @@ namespace Avalonia.Input
         public static readonly RoutedEvent<TappedEventArgs> TappedEvent = Gestures.TappedEvent;
 
         /// <summary>
+        /// Defines the <see cref="RightTapped"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<TappedEventArgs> RightTappedEvent = Gestures.RightTappedEvent;
+
+        /// <summary>
         /// Defines the <see cref="Holding"/> event.
         /// </summary>
         public static readonly RoutedEvent<HoldingRoutedEventArgs> HoldingEvent = Gestures.HoldingEvent;
@@ -239,6 +244,7 @@ namespace Avalonia.Input
             PointerWheelChangedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerWheelChanged(e));
 
             TappedEvent.AddClassHandler<InputElement>((x, e) => x.OnTapped(e));
+            RightTappedEvent.AddClassHandler<InputElement>((x, e) => x.OnRightTapped(e));
             DoubleTappedEvent.AddClassHandler<InputElement>((x, e) => x.OnDoubleTapped(e));
             HoldingEvent.AddClassHandler<InputElement>((x, e) => x.OnHolding(e));
 
@@ -401,6 +407,15 @@ namespace Avalonia.Input
         {
             add { AddHandler(TappedEvent, value); }
             remove { RemoveHandler(TappedEvent, value); }
+        }
+
+        /// <summary>
+        /// Occurs when a right tap gesture occurs on the control.
+        /// </summary>
+        public event EventHandler<TappedEventArgs>? RightTapped
+        {
+            add { AddHandler(RightTappedEvent, value); }
+            remove { RemoveHandler(RightTappedEvent, value); }
         }
 
         /// <summary>
@@ -757,6 +772,16 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="e">Data about the event.</param>
         protected virtual void OnTapped(TappedEventArgs e)
+        {
+        }
+
+        /// <summary>
+        /// Invoked when an unhandled <see cref="RightTappedEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
+        /// </summary>
+        /// <param name="e">Data about the event.</param>
+        protected virtual void OnRightTapped(TappedEventArgs e)
         {
         }
 
