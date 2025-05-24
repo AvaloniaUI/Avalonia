@@ -1,7 +1,3 @@
-// <copyright file="AverageHash.cs" company="Drastic Actions">
-// Copyright (c) Drastic Actions. All rights reserved.
-// </copyright>
-
 using System;
 using SkiaSharp;
 
