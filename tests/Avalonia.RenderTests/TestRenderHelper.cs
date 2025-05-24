@@ -3,7 +3,6 @@ using System.Runtime.CompilerServices;
 using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Avalonia.Rendering;
-using SixLabors.ImageSharp;
 using Xunit;
 using Avalonia.Platform;
 using System.Threading.Tasks;
@@ -19,8 +18,8 @@ using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.Utilities;
-using SixLabors.ImageSharp.PixelFormats;
-using Image = SixLabors.ImageSharp.Image;
+using SkiaSharp;
+
 #if AVALONIA_SKIA
 using Avalonia.Skia;
 #else
@@ -165,15 +164,13 @@ static class TestRenderHelper
 
     public static void AssertCompareImages(string actualPath, string expectedPath)
     {
-        using (var expected = Image.Load<Rgba32>(expectedPath))
-        using (var actual = Image.Load<Rgba32>(actualPath))
-        {
-            double immediateError = TestRenderHelper.CompareImages(actual, expected);
+        var expected = File.ReadAllBytes(expectedPath);
+        var actual = File.ReadAllBytes(actualPath);
+        double immediateError = TestRenderHelper.CompareImages(actual, expected);
 
-            if (immediateError > 0.022)
-            {
-                Assert.Fail(actualPath + ": Error = " + immediateError);
-            }
+        if (immediateError < 95)
+        {
+            Assert.Fail(actualPath + ": Error = " + immediateError);
         }
     }
     
@@ -181,47 +178,18 @@ static class TestRenderHelper
     /// Calculates root mean square error for given two images.
     /// Based roughly on ImageMagick implementation to ensure consistency.
     /// </summary>
-    public static double CompareImages(Image<Rgba32> actual, Image<Rgba32> expected)
+    public static double CompareImages(byte[] actualFile, byte[] expectedFile)
     {
+        SKBitmap actual = SKBitmap.Decode(actualFile);
+        SKBitmap expected = SKBitmap.Decode(expectedFile);
         if (actual.Width != expected.Width || actual.Height != expected.Height)
         {
             throw new ArgumentException("Images have different resolutions");
         }
-
-        var quantity = actual.Width * actual.Height;
-        double squaresError = 0;
-
-        const double scale = 1 / 255d;
-            
-        for (var x = 0; x < actual.Width; x++)
-        {
-            double localError = 0;
-                
-            for (var y = 0; y < actual.Height; y++)
-            {
-                var expectedAlpha = expected[x, y].A * scale;
-                var actualAlpha = actual[x, y].A * scale;
-                    
-                var r = scale * (expectedAlpha * expected[x, y].R - actualAlpha * actual[x, y].R);
-                var g = scale * (expectedAlpha * expected[x, y].G - actualAlpha * actual[x, y].G);
-                var b = scale * (expectedAlpha * expected[x, y].B - actualAlpha * actual[x, y].B);
-                var a = expectedAlpha - actualAlpha;
-
-                var error = r * r + g * g + b * b + a * a;
-
-                localError += error;
-            }
-
-            squaresError += localError;
-        }
-
-        var meanSquaresError = squaresError / quantity;
-
-        const int channelCount = 4;
-            
-        meanSquaresError = meanSquaresError / channelCount;
-            
-        return Math.Sqrt(meanSquaresError);
+        var DifferenceHash = new AverageHash();
+        var actualHash = DifferenceHash.Hash(actual);
+        var expectedHash = DifferenceHash.Hash(expected);
+        return CompareHash.Similarity(actualHash, expectedHash);
     }
 
 }

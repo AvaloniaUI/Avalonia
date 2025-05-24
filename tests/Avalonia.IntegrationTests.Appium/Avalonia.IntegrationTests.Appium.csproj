@@ -20,6 +20,6 @@
   </ItemGroup>
 
   <Import Project="..\..\build\XUnit.props" />
+  <Import Project="..\..\build\SkiaSharp.props" />
   <Import Project="..\..\build\Rx.props" />
-  <Import Project="..\..\build\ImageSharp.props" />
 </Project>

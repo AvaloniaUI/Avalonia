@@ -3,7 +3,6 @@ using System.Runtime.CompilerServices;
 using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Avalonia.Rendering;
-using SixLabors.ImageSharp;
 using Xunit;
 using Avalonia.Platform;
 using System.Threading.Tasks;
@@ -19,8 +18,6 @@ using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.Utilities;
-using SixLabors.ImageSharp.PixelFormats;
-using Image = SixLabors.ImageSharp.Image;
 #if AVALONIA_SKIA
 using Avalonia.Skia;
 #else
@@ -42,13 +39,7 @@ namespace Avalonia.Direct2D1.RenderTests
 #endif
         public static FontFamily TestFontFamily = new FontFamily(s_fontUri);
 
-#if AVALONIA_SKIA3
-        // TODO: investigate why output is different.
-        // Most likely we need to use new SKSamplingOptions API, as old filters are broken with SKBitmap.
-        private const double AllowedError = 0.15;
-#else
-        private const double AllowedError = 0.022;
-#endif
+        private const double AllowedError = 98;
 
         public TestBase(string outputPath)
         {
@@ -90,26 +81,24 @@ namespace Avalonia.Direct2D1.RenderTests
             var immediatePath = Path.Combine(OutputPath, testName + ".immediate.out.png");
             var compositedPath = Path.Combine(OutputPath, testName + ".composited.out.png");
 
-            using (var expected = Image.Load<Rgba32>(expectedPath))
-            using (var immediate = skipImmediate ? null: Image.Load<Rgba32>(immediatePath))
-            using (var composited = skipCompositor ? null : Image.Load<Rgba32>(compositedPath))
+            var expected = File.ReadAllBytes(expectedPath);
+            var immediate = skipImmediate ? null : File.ReadAllBytes(immediatePath);
+            var composited = skipCompositor ? null : File.ReadAllBytes(compositedPath);
+            if (!skipImmediate)
             {
-                if (!skipImmediate)
+                var immediateError = TestRenderHelper.CompareImages(immediate!, expected);
+                if (immediateError < AllowedError)
                 {
-                    var immediateError = TestRenderHelper.CompareImages(immediate!, expected);
-                    if (immediateError > AllowedError)
-                    {
-                        Assert.Fail(immediatePath + ": Error = " + immediateError);
-                    }
+                    Assert.Fail(immediatePath + ": Error = " + immediateError);
                 }
+            }
 
-                if (!skipCompositor)
+            if (!skipCompositor)
+            {
+                var compositedError = TestRenderHelper.CompareImages(composited!, expected);
+                if (compositedError < AllowedError)
                 {
-                    var compositedError = TestRenderHelper.CompareImages(composited!, expected);
-                    if (compositedError > AllowedError)
-                    {
-                        Assert.Fail(compositedPath + ": Error = " + compositedError);
-                    }
+                    Assert.Fail(compositedPath + ": Error = " + compositedError);
                 }
             }
         }

@@ -6,8 +6,6 @@ using System.Runtime.CompilerServices;
 using Avalonia.Skia.RenderTests;
 using Avalonia.Skia.RenderTests.CrossUI;
 using CrossUI;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
 using Xunit;
 
 #if AVALONIA_SKIA
