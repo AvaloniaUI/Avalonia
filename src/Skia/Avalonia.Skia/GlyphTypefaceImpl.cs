@@ -90,13 +90,17 @@ namespace Avalonia.Skia
 
             FontSimulations = fontSimulations;
 
-            Weight = (fontSimulations & FontSimulations.Bold) != 0 ? FontWeight.Bold : (FontWeight)typeface.FontWeight;
+            var fontWeight = _os2Table != null ? (FontWeight)_os2Table.WeightClass : FontWeight.Normal;
 
-            Style = (fontSimulations & FontSimulations.Oblique) != 0 ?
-                FontStyle.Italic :
-                typeface.FontSlant.ToAvalonia();
+            Weight = (fontSimulations & FontSimulations.Bold) != 0 ? FontWeight.Bold : fontWeight;
 
-            Stretch = (FontStretch)typeface.FontStyle.Width;
+            var style = _os2Table != null ? GetFontStyle(_os2Table.FontStyle) : FontStyle.Normal;
+
+            Style = (fontSimulations & FontSimulations.Oblique) != 0 ? FontStyle.Italic : style;
+
+            var stretch = _os2Table != null ? (FontStretch)_os2Table.WidthClass : FontStretch.Normal;
+
+            Stretch = stretch;
 
             _nameTable = NameTable.Load(this);
 
@@ -107,24 +111,53 @@ namespace Avalonia.Skia
 
             if(_nameTable != null)
             {
-                var familyNames = new Dictionary<ushort, string>(_nameTable.Languages.Count);
+                var familyNames = new Dictionary<ushort, string>(1);
+                var faceNames = new Dictionary<ushort, string>(1);
 
-                foreach (var language in _nameTable.Languages)
+                foreach (var nameRecord in _nameTable)
                 {
-                    familyNames.Add(language, _nameTable.FontFamilyName(language));
+                    if(nameRecord.NameID == KnownNameIds.FontFamilyName)
+                    {
+                        if (nameRecord.Platform != PlatformIDs.Windows || nameRecord.LanguageID == 0)
+                        {
+                            continue;
+                        }
+
+                        if (!familyNames.ContainsKey(nameRecord.LanguageID))
+                        {
+                            familyNames[nameRecord.LanguageID] = nameRecord.Value;
+                        }
+                    }
+
+                    if(nameRecord.NameID == KnownNameIds.FontSubfamilyName)
+                    {
+                        if (nameRecord.Platform != PlatformIDs.Windows || nameRecord.LanguageID == 0)
+                        {
+                            continue;
+                        }
+
+                        if (!faceNames.ContainsKey(nameRecord.LanguageID))
+                        {
+                            faceNames[nameRecord.LanguageID] = nameRecord.Value;
+                        }
+                    }
                 }
 
                 FamilyNames = familyNames;
+                FaceNames = faceNames;
             }
             else
             {
                 FamilyNames = new Dictionary<ushort, string> { { (ushort)CultureInfo.InvariantCulture.LCID, FamilyName } };
+                FaceNames = new Dictionary<ushort, string> { { (ushort)CultureInfo.InvariantCulture.LCID, Weight.ToString() } };
             }
         }
 
         public string TypographicFamilyName { get; }
 
         public IReadOnlyDictionary<ushort, string> FamilyNames { get; }
+
+        public IReadOnlyDictionary<ushort, string> FaceNames { get; }
 
         public IReadOnlyList<OpenTypeTag> SupportedFeatures
         {
@@ -263,6 +296,21 @@ namespace Avalonia.Skia
             }
 
             return Font.GetHorizontalGlyphAdvances(glyphIndices);
+        }
+
+        private static FontStyle GetFontStyle(OS2Table.FontStyleSelection styleSelection)
+        {
+            if((styleSelection & OS2Table.FontStyleSelection.ITALIC) != 0)
+            {
+                return FontStyle.Italic;
+            }
+
+            if((styleSelection & OS2Table.FontStyleSelection.OBLIQUE) != 0)
+            {
+                return FontStyle.Oblique;
+            }
+
+            return FontStyle.Normal;
         }
 
         private Blob? GetTable(Face face, Tag tag)

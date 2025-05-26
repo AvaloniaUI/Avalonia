@@ -94,8 +94,7 @@ public partial class Build
             IsRunningOnUnix = Environment.OSVersion.Platform == PlatformID.Unix ||
                               Environment.OSVersion.Platform == PlatformID.MacOSX;
             IsRunningOnWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-            IsRunningOnAzure = Host is AzurePipelines ||
-                               Environment.GetEnvironmentVariable("LOGNAME") == "vsts";
+            IsRunningOnAzure = Host is AzurePipelines;
 
             if (IsRunningOnAzure)
             {
@@ -145,7 +144,11 @@ public partial class Build
             NugetIntermediateRoot = RootDirectory / "build-intermediate" / "nuget";
             ZipRoot = ArtifactsDir / "zip";
             TestResultsRoot = ArtifactsDir / "test-results";
-            BuildDirs = GlobDirectories(RootDirectory, "**bin").Concat(GlobDirectories(RootDirectory, "**obj")).ToList();
+            BuildDirs = GlobDirectories(RootDirectory, "**/bin")
+                .Concat(GlobDirectories(RootDirectory, "**/obj"))
+                .Where(dir => !dir.Contains("nukebuild"))
+                .Concat(GlobDirectories(RootDirectory, "**/node_modules"))
+                .ToList();
             DirSuffix = Configuration;
             FileZipSuffix = Version + ".zip";
             ZipCoreArtifacts = ZipRoot / ("Avalonia-" + FileZipSuffix);

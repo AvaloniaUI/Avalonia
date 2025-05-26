@@ -7,12 +7,13 @@ using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Avalonia.Threading;
+using Avalonia.UnitTests;
 using Moq;
 using Xunit;
 
 namespace Avalonia.Markup.UnitTests.Data
 {
-    public class BindingTests
+    public class BindingTests : ScopedTestBase
     {
         [Fact]
         public void OneWay_Binding_Should_Be_Set_Up()
@@ -149,21 +150,6 @@ namespace Avalonia.Markup.UnitTests.Data
             Assert.Equal("foo", target.Text);
             target.Text = "baz";
             Assert.Equal("bar", source.Foo);
-        }
-
-        [Fact]
-        public void OneTime_Binding_Releases_Subscription_If_DataContext_Set_Later()
-        {
-            var target = new TextBlock();
-            var source = new Source { Foo = "foo" };
-
-            target.Bind(TextBlock.TextProperty, new Binding("Foo", BindingMode.OneTime));
-            target.DataContext = source;
-
-            // Forces WeakEvent compact
-            Dispatcher.UIThread.RunJobs();
-
-            Assert.Equal(0, source.SubscriberCount);
         }
 
         [Fact]

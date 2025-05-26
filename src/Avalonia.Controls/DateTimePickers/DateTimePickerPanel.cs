@@ -18,8 +18,8 @@ namespace Avalonia.Controls.Primitives
         Day,
         Hour,
         Minute,
+        TimePeriod, //AM or PM
         Second,
-        TimePeriod //AM or PM
     }
 
     public class DateTimePickerPanel : Panel, ILogicalScrollable
@@ -234,7 +234,7 @@ namespace Avalonia.Controls.Primitives
                         else
                             break;
                     }
-                    children.MoveRange(0, numCountsToMove, children.Count);
+                    children.MoveRange(0, numCountsToMove, children.Count - 1);
 
                     var scrollHeight = _extent.Height - Viewport.Height;
                     if (ShouldLoop && value.Y >= scrollHeight - _extentOne)

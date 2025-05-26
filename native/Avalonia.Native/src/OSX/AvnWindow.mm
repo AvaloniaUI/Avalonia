@@ -214,17 +214,17 @@
 - (void)windowWillClose:(NSNotification *_Nonnull)notification
 {
     _closed = true;
-    auto window = _parent.tryGetWithCast<WindowImpl>();
-    if(window)
+    auto parent = _parent.tryGetWithCast<WindowBaseImpl>();
+    if (parent)
     {
-        
-        if(window != nullptr)
+        auto window = parent.dynamicCast<WindowImpl>();
+        if (window)
         {
             window->SetParent(nullptr);
         }
         
-        window->BaseEvents->Closed();
-        [window->View onClosed];
+        parent->BaseEvents->Closed();
+        [parent->View onClosed];
     }
 }
 
@@ -492,7 +492,7 @@
                     auto point = [self translateLocalPoint:avnPoint];
                     AvnVector delta = { 0, 0 };
 
-                    parent->BaseEvents->RawMouseEvent(NonClientLeftButtonDown, static_cast<uint64>([event timestamp] * 1000), AvnInputModifiersNone, point, delta);
+                    parent->BaseEvents->RawMouseEvent(NonClientLeftButtonDown, AvnPointerDeviceType::Mouse, static_cast<uint64>([event timestamp] * 1000), AvnInputModifiersNone, point, delta, .5f, .0f, .0f);
                 }
                 
                 if(!_isTransitioningToFullScreen)

@@ -5,6 +5,13 @@
              x:DataType="viewModels:ListBoxPageViewModel">
   <DockPanel>
     <DockPanel.Styles>
+      <Style Selector="ListBox ListBoxItem:nth-child(even)">
+        <Setter Property="ContextFlyout">
+          <MenuFlyout>
+            <MenuItem Header="Hello there" />
+          </MenuFlyout>
+        </Setter>
+      </Style>
       <Style Selector="ListBox ListBoxItem:nth-child(5n+3)">
         <Setter Property="Foreground" Value="Red" />
         <Setter Property="FontWeight" Value="Bold" />

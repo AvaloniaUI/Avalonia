@@ -1,6 +1,7 @@
 using Avalonia.Input.Platform;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Reactive;
 using Avalonia.Controls.Presenters;
@@ -629,6 +630,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the text selected in the TextBox
         /// </summary>
+        [AllowNull]
         public string SelectedText
         {
             get => GetSelection();
@@ -821,6 +823,20 @@ namespace Avalonia.Controls
         {
             get => _canRedo;
             private set => SetAndRaise(CanRedoProperty, ref _canRedo, value);
+        }
+
+        /// <summary>
+        /// Get the number of lines in the TextBox.
+        /// </summary>
+        /// <value>number of lines in the TextBox, or -1 if no layout information is available</value>
+        /// <remarks>
+        /// If Wrap == true, changing the width of the TextBox may change this value.
+        /// The value returned is the number of lines in the entire TextBox, regardless of how many are
+        /// currently in view.
+        /// </remarks>
+        public int GetLineCount()
+        {
+            return this._presenter?.TextLayout.TextLines.Count ?? -1;
         }
 
         /// <summary>
@@ -1425,7 +1441,8 @@ namespace Avalonia.Controls
             }
             else
             {
-                bool hasWholeWordModifiers = modifiers.HasAllFlags(keymap.WholeWordTextActionModifiers);
+                // It's not secure to rely on password field content when moving.
+                bool hasWholeWordModifiers = modifiers.HasAllFlags(keymap.WholeWordTextActionModifiers) && !IsPasswordBox;
                 switch (e.Key)
                 {
                     case Key.Left:
@@ -1447,49 +1464,23 @@ namespace Avalonia.Controls
                         break;
 
                     case Key.Up:
+                        selection = DetectSelection();
+                        MoveVertical(LogicalDirection.Backward, selection);
+                        if (caretIndex != _presenter.CaretIndex)
                         {
-                            selection = DetectSelection();
-
-                            _presenter.MoveCaretVertical(LogicalDirection.Backward);
-
-                            if (caretIndex != _presenter.CaretIndex)
-                            {
-                                movement = true;
-                            }
-
-                            if (selection)
-                            {
-                                SetCurrentValue(SelectionEndProperty, _presenter.CaretIndex);
-                            }
-                            else
-                            {
-                                SetCurrentValue(CaretIndexProperty, _presenter.CaretIndex);
-                            }
-
-                            break;
+                            movement = true;
                         }
+                        break;
+
                     case Key.Down:
+                        selection = DetectSelection();
+                        MoveVertical(LogicalDirection.Forward, selection);
+                        if (caretIndex != _presenter.CaretIndex)
                         {
-                            selection = DetectSelection();
-
-                            _presenter.MoveCaretVertical();
-
-                            if (caretIndex != _presenter.CaretIndex)
-                            {
-                                movement = true;
-                            }
-
-                            if (selection)
-                            {
-                                SetCurrentValue(SelectionEndProperty, _presenter.CaretIndex);
-                            }
-                            else
-                            {
-                                SetCurrentValue(CaretIndexProperty, _presenter.CaretIndex);
-                            }
-
-                            break;
+                            movement = true;
                         }
+                        break;
+
                     case Key.Back:
                         {
                             SnapshotUndoRedo();
@@ -1966,9 +1957,9 @@ namespace Avalonia.Controls
                 {
                     if (selectionStart != selectionEnd)
                     {
-                        _presenter.MoveCaretToTextPosition(direction > 0 ?
-                            Math.Max(selectionStart, selectionEnd) :
-                            Math.Min(selectionStart, selectionEnd));
+                        ClearSelectionAndMoveCaretToTextPosition(direction > 0 ?
+                            LogicalDirection.Forward :
+                            LogicalDirection.Backward);
                     }
                     else
                     {
@@ -2008,6 +1999,50 @@ namespace Avalonia.Controls
                 {
                     SetCurrentValue(SelectionStartProperty, selectionStart);
                 }
+            }
+        }
+
+        private void MoveVertical(LogicalDirection direction, bool isSelecting)
+        {
+            if (_presenter is null)
+            {
+                return;
+            }
+
+            if (isSelecting)
+            {
+                var oldCaretIndex = _presenter.CaretIndex;
+                _presenter.MoveCaretVertical(direction);
+                var newCaretIndex = _presenter.CaretIndex;
+
+                if (oldCaretIndex == newCaretIndex)
+                {
+                    var text = Text ?? string.Empty;
+
+                    // caret did not move while we are selecting so we could not move to previous/next line,
+                    // but check if we are already at the 'boundary' of the text
+                    if (direction == LogicalDirection.Forward && newCaretIndex < text.Length)
+                    {
+                        _presenter.MoveCaretToTextPosition(text.Length);
+                    }
+                    else if (direction == LogicalDirection.Backward && newCaretIndex > 0)
+                    {
+                        _presenter.MoveCaretToTextPosition(0);
+                    }
+                }
+
+                SetCurrentValue(SelectionEndProperty, _presenter.CaretIndex);
+            }
+            else
+            {
+                if (SelectionStart != SelectionEnd)
+                {
+                    ClearSelectionAndMoveCaretToTextPosition(direction);
+                }
+
+                _presenter.MoveCaretVertical(direction);
+
+                SetCurrentValue(CaretIndexProperty, _presenter.CaretIndex);
             }
         }
 
@@ -2077,6 +2112,17 @@ namespace Avalonia.Controls
         private void MovePageDown()
         {
             _scrollViewer?.PageDown();
+        }
+
+        private void ClearSelectionAndMoveCaretToTextPosition(LogicalDirection direction)
+        {
+            var newPosition = direction == LogicalDirection.Forward ?
+                Math.Max(SelectionStart, SelectionEnd) :
+                Math.Min(SelectionStart, SelectionEnd);
+            SetCurrentValue(SelectionStartProperty, newPosition);
+            SetCurrentValue(SelectionEndProperty, newPosition);
+            // move caret to appropriate side of previous selection
+            _presenter?.MoveCaretToTextPosition(newPosition);
         }
 
         /// <summary>

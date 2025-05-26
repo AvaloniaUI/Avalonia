@@ -2,11 +2,12 @@
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Markup.UnitTests.Data
 {
-    public class BindingTests_Method
+    public class BindingTests_Method : ScopedTestBase
     {
         [Fact]
         public void Binding_To_Private_Methods_Shouldnt_Work()
@@ -17,7 +18,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 DataContext = vm,
                 [!Button.CommandProperty] = new Binding("MyMethod"),
             };
-            target.RaiseEvent(new RoutedEventArgs(AccessKeyHandler.AccessKeyPressedEvent));
+            target.RaiseEvent(new AccessKeyEventArgs("b", false));
 
             Assert.False(vm.IsSet);
         }

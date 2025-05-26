@@ -7,13 +7,15 @@ namespace Avalonia.Vulkan.Interop;
 internal class VulkanCommandBufferPool : IDisposable
 {
     private readonly IVulkanPlatformGraphicsContext _context;
+    private readonly bool _autoFree;
     private readonly Queue<VulkanCommandBuffer> _commandBuffers = new();
     private VkCommandPool _handle;
     public VkCommandPool Handle => _handle;
 
-    public VulkanCommandBufferPool(IVulkanPlatformGraphicsContext context)
+    public VulkanCommandBufferPool(IVulkanPlatformGraphicsContext context, bool autoFree = false)
     {
         _context = context;
+        _autoFree = autoFree;
         var createInfo = new VkCommandPoolCreateInfo
         {
             sType = VkStructureType.VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
@@ -53,6 +55,9 @@ internal class VulkanCommandBufferPool : IDisposable
 
     public unsafe VulkanCommandBuffer CreateCommandBuffer()
     {
+        if (_autoFree)
+            FreeFinishedCommandBuffers();
+        
         var commandBufferAllocateInfo = new VkCommandBufferAllocateInfo
         {
             sType = VkStructureType.VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,

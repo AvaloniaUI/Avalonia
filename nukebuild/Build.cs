@@ -20,6 +20,7 @@ using static Nuke.Common.Tools.VSWhere.VSWhereTasks;
 using static Serilog.Log;
 using MicroCom.CodeGenerator;
 using NuGet.Configuration;
+using Nuke.Common.CI.AzurePipelines;
 using Nuke.Common.IO;
 
 /*
@@ -79,6 +80,9 @@ partial class Build : NukeBuild
         ExecWait("dotnet workloads:", "dotnet", "workload list");
         Information("Processor count: " + Environment.ProcessorCount);
         Information("Available RAM: " + GC.GetGCMemoryInfo().TotalAvailableMemoryBytes / 0x100000 + "MB");
+
+        if (Host is AzurePipelines azurePipelines)
+            azurePipelines.UpdateBuildNumber(Parameters.Version);
     }
 
     DotNetConfigHelper ApplySettingCore(DotNetConfigHelper c)
@@ -108,7 +112,6 @@ partial class Build : NukeBuild
     Target Clean => _ => _.Executes(() =>
     {
         Parameters.BuildDirs.ForEach(DeleteDirectory);
-        Parameters.BuildDirs.ForEach(EnsureCleanDirectory);
         EnsureCleanDirectory(Parameters.ArtifactsDir);
         EnsureCleanDirectory(Parameters.NugetIntermediateRoot);
         EnsureCleanDirectory(Parameters.NugetRoot);
@@ -246,7 +249,6 @@ partial class Build : NukeBuild
         {
             RunCoreTest("Avalonia.Base.UnitTests");
             RunCoreTest("Avalonia.Controls.UnitTests");
-            RunCoreTest("Avalonia.Controls.DataGrid.UnitTests");
             RunCoreTest("Avalonia.Markup.UnitTests");
             RunCoreTest("Avalonia.Markup.Xaml.UnitTests");
             RunCoreTest("Avalonia.Skia.UnitTests");
@@ -361,6 +363,7 @@ partial class Build : NukeBuild
 
     Target CiAzureWindows => _ => _
         .DependsOn(Package)
+        .DependsOn(VerifyXamlCompilation)
         .DependsOn(ZipFiles);
 
     Target BuildToNuGetCache => _ => _
@@ -407,6 +410,67 @@ partial class Build : NukeBuild
             file.GenerateCppHeader());
     });
 
+    Target VerifyXamlCompilation => _ => _
+        .DependsOn(CreateNugetPackages)
+        .Executes(() =>
+        {
+            var buildTestsDirectory = RootDirectory / "tests" / "BuildTests";
+            var artifactsDirectory = buildTestsDirectory / "artifacts";
+            var nugetCacheDirectory = artifactsDirectory / "nuget-cache";
+
+            DeleteDirectory(artifactsDirectory);
+            BuildTestsAndVerify("Debug");
+            BuildTestsAndVerify("Release");
+
+            void BuildTestsAndVerify(string configuration)
+            {
+                var configName = configuration.ToLowerInvariant();
+
+                DotNetBuild(settings => settings
+                    .SetConfiguration(configuration)
+                    .SetProperty("AvaloniaVersion", Parameters.Version)
+                    .SetProperty("NuGetPackageRoot", nugetCacheDirectory)
+                    .SetPackageDirectory(nugetCacheDirectory)
+                    .SetProjectFile(buildTestsDirectory / "BuildTests.sln")
+                    .SetProcessArgumentConfigurator(arguments => arguments.Add("--nodeReuse:false")));
+
+                // Standard compilation - should have compiled XAML
+                VerifyBuildTestAssembly("bin", "BuildTests");
+                VerifyBuildTestAssembly("bin", "BuildTests.Android");
+                VerifyBuildTestAssembly("bin", "BuildTests.Browser");
+                VerifyBuildTestAssembly("bin", "BuildTests.Desktop");
+                VerifyBuildTestAssembly("bin", "BuildTests.FSharp");
+                VerifyBuildTestAssembly("bin", "BuildTests.iOS");
+                VerifyBuildTestAssembly("bin", "BuildTests.WpfHybrid");
+
+                // Publish previously built project without rebuilding - should have compiled XAML
+                PublishBuildTestProject("BuildTests.Desktop", noBuild: true);
+                VerifyBuildTestAssembly("publish", "BuildTests.Desktop");
+
+                // Publish NativeAOT build, then run it - should not crash and have the expected output
+                PublishBuildTestProject("BuildTests.NativeAot");
+                var exeExtension = OperatingSystem.IsWindows() ? ".exe" : null;
+                XamlCompilationVerifier.VerifyNativeAot(
+                    GetBuildTestOutputPath("publish", "BuildTests.NativeAot", exeExtension));
+
+                void PublishBuildTestProject(string projectName, bool? noBuild = null)
+                    => DotNetPublish(settings => settings
+                        .SetConfiguration(configuration)
+                        .SetProperty("AvaloniaVersion", Parameters.Version)
+                        .SetProperty("NuGetPackageRoot", nugetCacheDirectory)
+                        .SetPackageDirectory(nugetCacheDirectory)
+                        .SetNoBuild(noBuild)
+                        .SetProject(buildTestsDirectory / projectName / (projectName + ".csproj"))
+                        .SetProcessArgumentConfigurator(arguments => arguments.Add("--nodeReuse:false")));
+
+                void VerifyBuildTestAssembly(string folder, string projectName)
+                    => XamlCompilationVerifier.VerifyAssemblyCompiledXaml(
+                        GetBuildTestOutputPath(folder, projectName, ".dll"));
+
+                AbsolutePath GetBuildTestOutputPath(string folder, string projectName, string extension)
+                    => artifactsDirectory / folder / projectName / configName / (projectName + extension);
+            }
+        });
 
     public static int Main() =>
         RuntimeInformation.IsOSPlatform(OSPlatform.Windows)

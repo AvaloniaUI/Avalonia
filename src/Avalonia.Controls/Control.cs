@@ -103,7 +103,7 @@ namespace Avalonia.Controls
         private static readonly HashSet<Control> _loadedQueue = new HashSet<Control>();
         private static readonly HashSet<Control> _loadedProcessingQueue = new HashSet<Control>();
 
-        private bool _isLoaded = false;
+        private LoadState _loadState = LoadState.Unloaded;
         private DataTemplates? _dataTemplates;
         private Control? _focusAdorner;
         private AutomationPeer? _automationPeer;
@@ -151,7 +151,7 @@ namespace Avalonia.Controls
         /// <remarks>
         /// This is set to true while raising the <see cref="Loaded"/> event.
         /// </remarks>
-        public bool IsLoaded => _isLoaded;
+        public bool IsLoaded => _loadState == LoadState.Loaded;
 
         /// <summary>
         /// Gets or sets a user-defined object attached to the control.
@@ -293,9 +293,10 @@ namespace Avalonia.Controls
         /// </summary>
         internal void ScheduleOnLoadedCore()
         {
-            if (_isLoaded == false)
+            if (_loadState == LoadState.Unloaded)
             {
                 bool isAdded = _loadedQueue.Add(this);
+                _loadState = LoadState.LoadPending;
 
                 if (isAdded &&
                     _isLoadedProcessing == false)
@@ -312,12 +313,17 @@ namespace Avalonia.Controls
         /// </summary>
         internal void OnLoadedCore()
         {
-            if (_isLoaded == false &&
+            if (_loadState == LoadState.LoadPending &&
                 ((ILogical)this).IsAttachedToLogicalTree)
             {
-                _isLoaded = true;
+                _loadState = LoadState.Loaded;
 
                 OnLoaded(new RoutedEventArgs(LoadedEvent, this));
+            }
+            else
+            {
+                // We somehow got here while being detached?
+                _loadState = LoadState.Unloaded;
             }
         }
 
@@ -327,20 +333,26 @@ namespace Avalonia.Controls
         /// </summary>
         internal void OnUnloadedCore()
         {
-            if (_isLoaded)
+            switch (_loadState)
             {
-                // Remove from the loaded event queue here as a failsafe in case the control
-                // is detached before the dispatcher runs the Loaded jobs.
-                _loadedQueue.Remove(this);
+                case LoadState.Loaded:
+                    _loadState = LoadState.Unloaded;
 
-                _isLoaded = false;
+                    OnUnloaded(new RoutedEventArgs(UnloadedEvent, this));
+                    break;
 
-                OnUnloaded(new RoutedEventArgs(UnloadedEvent, this));
+                case LoadState.LoadPending:
+                    // Remove from the loaded event queue here as a failsafe in case the control
+                    // is detached before the dispatcher runs the Loaded jobs.
+                    _loadedQueue.Remove(this);
+
+                    _loadState = LoadState.Unloaded;
+                    break;
             }
         }
 
         /// <summary>
-        /// Invoked just before the <see cref="Loaded"/> event.
+        /// Raises the <see cref="Loaded"/> event.
         /// </summary>
         /// <param name="e">The event args.</param>
         protected virtual void OnLoaded(RoutedEventArgs e)
@@ -349,7 +361,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Invoked just before the <see cref="Unloaded"/> event.
+        /// Raises the <see cref="Unloaded"/> event.
         /// </summary>
         /// <param name="e">The event args.</param>
         protected virtual void OnUnloaded(RoutedEventArgs e)
@@ -358,7 +370,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Invoked just before the <see cref="SizeChanged"/> event.
+        /// Raises the <see cref="SizeChanged"/> event.
         /// </summary>
         /// <param name="e">The event args.</param>
         protected virtual void OnSizeChanged(SizeChangedEventArgs e)
@@ -560,6 +572,13 @@ namespace Avalonia.Controls
             _loadedQueue.Clear();
             _loadedProcessingQueue.Clear();
             _isLoadedProcessing = false;
+        }
+
+        private enum LoadState : byte
+        {
+            Unloaded,
+            Loaded,
+            LoadPending
         }
     }
 }

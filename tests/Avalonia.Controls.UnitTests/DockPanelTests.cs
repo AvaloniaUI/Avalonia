@@ -1,9 +1,25 @@
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class DockPanelTests
+    public class DockPanelTests : ScopedTestBase
     {
+        [Fact]
+        public void DockPanel_Without_Child()
+        {
+            var target = new DockPanel
+            {
+                Width = 10,
+                Height = 10
+            };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(target.DesiredSize));
+
+            Assert.Equal(new Rect(0, 0, 10, 10), target.Bounds);
+        }
+        
         [Fact]
         public void Should_Dock_Controls_Horizontal_First()
         {
@@ -54,6 +70,34 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new Rect(50, 0, 500, 50), target.Children[2].Bounds);
             Assert.Equal(new Rect(50, 350, 500, 50), target.Children[3].Bounds);
             Assert.Equal(new Rect(50, 50, 500, 300), target.Children[4].Bounds);
+        }
+
+        [Fact]
+        public void Should_Dock_Controls_With_Spacing()
+        {
+            var target = new DockPanel
+            {
+                HorizontalSpacing = 10,
+                VerticalSpacing = 10,
+                Children =
+                {
+                    new Border { Width = 500, Height = 50, [DockPanel.DockProperty] = Dock.Top },
+                    new Border { Width = 500, Height = 50, [DockPanel.DockProperty] = Dock.Bottom },
+                    new Border { Width = 50, Height = 400, [DockPanel.DockProperty] = Dock.Left },
+                    new Border { Width = 50, Height = 400, [DockPanel.DockProperty] = Dock.Right },
+                    new Border { },
+                }
+            };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(target.DesiredSize));
+
+            Assert.Equal(new Rect(0, 0, 500, 520), target.Bounds);
+            Assert.Equal(new Rect(0, 0, 500, 50), target.Children[0].Bounds);
+            Assert.Equal(new Rect(0, 470, 500, 50), target.Children[1].Bounds);
+            Assert.Equal(new Rect(0, 60, 50, 400), target.Children[2].Bounds);
+            Assert.Equal(new Rect(450, 60, 50, 400), target.Children[3].Bounds);
+            Assert.Equal(new Rect(60, 60, 380, 400), target.Children[4].Bounds);
         }
 
         [Fact]

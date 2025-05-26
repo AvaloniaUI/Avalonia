@@ -104,7 +104,6 @@ namespace Avalonia.Win32
         private bool _shown;
         private bool _hiddenWindowIsParent;
         private uint _langid;
-        private bool _ignoreDpiChanges;
         internal bool _ignoreWmChar;
         private WindowTransparencyLevel _transparencyLevel;
         private readonly WindowTransparencyLevel _defaultTransparencyLevel;
@@ -527,8 +526,7 @@ namespace Avalonia.Win32
                 
                 if (ShCoreAvailable && Win32Platform.WindowsVersion >= PlatformConstants.Windows8_1)
                 {
-                    var monitor = MonitorFromPoint(new POINT() { X = value.X, Y = value.Y },
-                        MONITOR.MONITOR_DEFAULTTONEAREST);
+                    var monitor = MonitorFromWindow(Handle.Handle, MONITOR.MONITOR_DEFAULTTONEAREST);
 
                     if (GetDpiForMonitor(
                             monitor,
@@ -596,13 +594,21 @@ namespace Avalonia.Win32
                 return;
             }
 
-            var position = Position;
-            requestedWindowRect.left = position.X;
-            requestedWindowRect.top = position.Y;
-            requestedWindowRect.right = position.X + windowWidth;
-            requestedWindowRect.bottom = position.Y + windowHeight;
+            // If the window is minimized, don't change the restore position, because this.Position is currently
+            // out of screen with values similar to -32000,-32000. Windows considers such a position invalid on restore
+            // and instead moves the window back to 0,0.
+            if (windowPlacement.ShowCmd == ShowWindowCommand.ShowMinimized)
+            {
+                // The window is minimized but will be restored to maximized: don't change our normal size,
+                // or it will incorrectly be set to the maximized size.
+                if ((windowPlacement.Flags & WindowPlacementFlags.RestoreToMaximized) != 0)
+                {
+                    return;
+                }
+            }
 
-            windowPlacement.NormalPosition = requestedWindowRect;
+            windowPlacement.NormalPosition.right = windowPlacement.NormalPosition.left + windowWidth;
+            windowPlacement.NormalPosition.bottom = windowPlacement.NormalPosition.top + windowHeight;
 
             windowPlacement.ShowCmd = !_shown ? ShowWindowCommand.Hide : _lastWindowState switch
             {
@@ -723,20 +729,7 @@ namespace Avalonia.Win32
 
             _hiddenWindowIsParent = parentHwnd == OffscreenParentWindow.Handle;
 
-            // I can't find mention of this *anywhere* online, but it seems that setting
-            // GWL_HWNDPARENT to a window which is on the non-primary monitor can cause two
-            // WM_DPICHANGED messages to be sent: the first changing the DPI to the parent's DPI,
-            // then another changing the DPI back. This then causes Windows to provide an incorrect
-            // suggested new rectangle to the WM_DPICHANGED message if the window is immediately
-            // moved to the parent window's monitor (e.g. when using
-            // WindowStartupLocation.CenterOwner) causing the window to be shown with an incorrect
-            // size.
-            //
-            // Just ignore any WM_DPICHANGED while we're setting the parent as this shouldn't
-            // change the DPI anyway.
-            _ignoreDpiChanges = true;
             SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, parentHwnd);
-            _ignoreDpiChanges = false;
 
             // Windows doesn't seem to respect the HWND_TOPMOST flag of a window when showing an owned window for the first time.
             // So we set the HWND_TOPMOST again before the owned window is shown. This only needs to be done once.
@@ -793,10 +786,7 @@ namespace Avalonia.Win32
             var hCursor = impl?.Handle ?? s_defaultCursor;
             SetClassLong(_hwnd, ClassLongIndex.GCLP_HCURSOR, hCursor);
 
-            if (Owner.IsPointerOver)
-            {
-                UnmanagedMethods.SetCursor(hCursor);
-            }
+            UnmanagedMethods.SetCursor(hCursor);    
         }
 
         public void SetIcon(IWindowIconImpl? icon)

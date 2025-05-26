@@ -194,10 +194,16 @@ namespace Avalonia.Controls.Primitives
         // TODO12: mark PrivateAPI or internal.
         [Unstable("PopupHost is considered an internal API. Use Popup or any Popup-based controls (Flyout, Tooltip) instead.")]
         public static IPopupHost CreatePopupHost(Visual target, IAvaloniaDependencyResolver? dependencyResolver)
+            => CreatePopupHost(target, dependencyResolver, false);
+
+        internal static IPopupHost CreatePopupHost(Visual target, IAvaloniaDependencyResolver? dependencyResolver, bool shouldUseOverlayLayer)
         {
-            if (TopLevel.GetTopLevel(target) is { } topLevel && topLevel.PlatformImpl?.CreatePopup() is { } popupImpl)
+            if (!shouldUseOverlayLayer)
             {
-                return new PopupRoot(topLevel, popupImpl, dependencyResolver);
+                if (TopLevel.GetTopLevel(target) is { } topLevel && topLevel.PlatformImpl?.CreatePopup() is { } popupImpl)
+                {
+                    return new PopupRoot(topLevel, popupImpl, dependencyResolver);
+                }
             }
 
             if (OverlayLayer.GetOverlayLayer(target) is { } overlayLayer)

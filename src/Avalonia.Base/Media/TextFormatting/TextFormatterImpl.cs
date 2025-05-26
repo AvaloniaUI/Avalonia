@@ -574,10 +574,11 @@ namespace Avalonia.Media.TextFormatting
         {
             var measuredLength = 0;
             var currentWidth = 0.0;
+            var runIndex = 0;
 
-            for (var i = 0; i < textRuns.Count; ++i)
+            for (; runIndex < textRuns.Count; ++runIndex)
             {
-                var currentRun = textRuns[i];
+                var currentRun = textRuns[runIndex];
 
                 switch (currentRun)
                 {
@@ -630,7 +631,14 @@ namespace Avalonia.Media.TextFormatting
                                             runLength = clusterLength;
                                         }
 
-                                        return measuredLength + runLength;
+                                        measuredLength += runLength;
+
+                                        if (runIndex < textRuns.Count - 1 && runLength == currentRun.Length && textRuns[runIndex + 1] is TextEndOfLine endOfLine)
+                                        {
+                                            measuredLength += endOfLine.Length;
+                                        }
+
+                                        return measuredLength;
                                     }
 
                                     currentWidth += clusterWidth;
@@ -908,6 +916,11 @@ namespace Avalonia.Media.TextFormatting
                     textLineBreak = null;
                 }
 
+                if (postSplitRuns?.Count > 0)
+                {
+                    ResetTrailingWhitespaceBidiLevels(preSplitRuns, paragraphProperties.FlowDirection, objectPool);
+                }
+
                 var textLine = new TextLineImpl(preSplitRuns.ToArray(), firstTextSourceIndex, measuredLength,
                     paragraphWidth, paragraphProperties, resolvedFlowDirection,
                     textLineBreak);
@@ -920,6 +933,65 @@ namespace Avalonia.Media.TextFormatting
             {
                 objectPool.TextRunLists.Return(ref preSplitRuns);
                 objectPool.TextRunLists.Return(ref postSplitRuns);
+            }
+        }
+
+        private static void ResetTrailingWhitespaceBidiLevels(RentedList<TextRun> lineTextRuns, FlowDirection paragraphFlowDirection, FormattingObjectPool objectPool)
+        {
+            if (lineTextRuns.Count == 0)
+            {
+                return;
+            }
+
+            var lastTextRunIndex = lineTextRuns.Count - 1;
+
+            var lastTextRun = lineTextRuns[lastTextRunIndex];
+
+            if (lastTextRun is not ShapedTextRun shapedText)
+            {
+                return;
+            }
+
+            var paragraphEmbeddingLevel = (sbyte)paragraphFlowDirection;
+
+            if (shapedText.BidiLevel == paragraphEmbeddingLevel)
+            {
+                return;
+            }
+
+            var trailingWhitespaceLength = shapedText.GlyphRun.Metrics.TrailingWhitespaceLength;
+
+            if (trailingWhitespaceLength == 0)
+            {
+                return;
+            }
+
+            var splitIndex = shapedText.Length - trailingWhitespaceLength;
+
+            var (textRuns, trailingWhitespaceRuns) = SplitTextRuns([shapedText], splitIndex, objectPool);
+
+            try
+            {
+                if (trailingWhitespaceRuns != null)
+                {
+                    for (var i = 0; i < trailingWhitespaceRuns.Count; i++)
+                    {
+                        if (trailingWhitespaceRuns[i] is ShapedTextRun shapedTextRun)
+                        {
+                            shapedTextRun.ShapedBuffer.ResetBidiLevel(paragraphEmbeddingLevel);
+                        }
+                    }
+
+                    lineTextRuns.RemoveAt(lastTextRunIndex);
+
+                    lineTextRuns.AddRange(textRuns);
+                    lineTextRuns.AddRange(trailingWhitespaceRuns);
+                }
+            }
+            finally
+            {
+                objectPool.TextRunLists.Return(ref textRuns);
+                objectPool.TextRunLists.Return(ref trailingWhitespaceRuns);
             }
         }
 

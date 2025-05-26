@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.UnitTests;
@@ -12,7 +13,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Presenters
 {
-    public class ItemsPresenterTests
+    public class ItemsPresenterTests : ScopedTestBase
     {
         [Fact]
         public void Should_Register_With_Host_When_TemplatedParent_Set()
@@ -36,7 +37,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             Assert.Equal(target.Panel, child);
         }
 
-        public class NonVirtualizingPanel
+        public class NonVirtualizingPanel : ScopedTestBase
         {
             [Fact]
             public void Creates_Containers_For_Initial_Items()
@@ -86,6 +87,20 @@ namespace Avalonia.Controls.UnitTests.Presenters
                 var panel = Assert.IsType<StackPanel>(target.Panel);
 
                 items.Move(0, 2);
+                root.LayoutManager.ExecuteLayoutPass();
+
+                AssertContainers(panel, items);
+            }
+
+            [Fact]
+            public void Updates_Container_For_Moved_Range_Of_Items()
+            {
+                using var app = Start();
+                AvaloniaList<string> items = ["foo", "bar", "baz"];
+                var (target, _, root) = CreateTarget(items);
+                var panel = Assert.IsType<StackPanel>(target.Panel);
+
+                items.MoveRange(0, 2, 2);
                 root.LayoutManager.ExecuteLayoutPass();
 
                 AssertContainers(panel, items);

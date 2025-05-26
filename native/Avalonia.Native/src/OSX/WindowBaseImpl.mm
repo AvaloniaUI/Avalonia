@@ -143,6 +143,19 @@ HRESULT WindowBaseImpl::Hide() {
 
     @autoreleasepool {
         if (Window != nullptr) {
+            
+            // If window is hidden without ending attached sheet first, it will stuck in "order out" state,
+            // and block any new sheets from being attached.
+            // Additionaly, we don't know if user would define any custom panels, so we only end/close file dialog sheets.
+            auto attachedSheet = Window.attachedSheet;
+            if (attachedSheet
+                && ([attachedSheet isKindOfClass: [NSOpenPanel class]]
+                    || [attachedSheet isKindOfClass: [NSSavePanel class]]))
+            {
+                [Window endSheet:attachedSheet];
+                [attachedSheet close];
+            }
+
             auto frame = [Window frame];
 
             AvnPoint point;
@@ -490,18 +503,19 @@ HRESULT WindowBaseImpl::SetParent(IAvnWindowBase *parent) {
     START_COM_CALL;
 
     @autoreleasepool {
-        if(Parent != nullptr)
+        
+        auto oldParent = Parent.tryGet();
+        
+        if(oldParent != nullptr)
         {
-            Parent->_children.remove(this);
+            oldParent->_children.remove(this);
         }
 
         auto cparent = dynamic_cast<WindowImpl *>(parent);
         
         Parent = cparent;
-
-        _isModal = Parent != nullptr;
-        
-        if(Parent != nullptr && Window != nullptr){
+       
+        if(cparent != nullptr && Window != nullptr){
             // If one tries to show a child window with a minimized parent window, then the parent window will be
             // restored but macOS isn't kind enough to *tell* us that, so the window will be left in a non-interactive
             // state. Detect this and explicitly restore the parent window ourselves to avoid this situation.

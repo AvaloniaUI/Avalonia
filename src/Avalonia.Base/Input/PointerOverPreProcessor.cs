@@ -29,9 +29,21 @@ namespace Avalonia.Input
 
         public void OnNext(RawInputEventArgs value)
         {
-            if (value is RawPointerEventArgs args
-                && args.Root == _inputRoot
-                && value.Device is IPointerDevice pointerDevice)
+            if (value is RawDragEvent dragArgs)
+            {
+                // When a platform drag operation is in progress, the application does not receive
+                // pointer move events until after the drop event. This is a problem because if a
+                // popup is shown at the pointer position in the drop event, it will be shown at
+                // the position at which the drag was initiated, not the position at which the drop
+                // occurred.
+                //
+                // Solve this by updating the last known pointer position when a drag event occurs.
+                _lastKnownPosition = ((Visual)_inputRoot).PointToScreen(dragArgs.Location);
+            }
+
+            else if (value is RawPointerEventArgs args
+                     && args.Root == _inputRoot
+                     && value.Device is IPointerDevice pointerDevice)
             {
                 if (pointerDevice != _lastActivePointerDevice)
                 {
@@ -67,7 +79,9 @@ namespace Avalonia.Input
                 else if (pointerDevice.TryGetPointer(args) is { } pointer &&
                     pointer.Type != PointerType.Touch)
                 {
-                    var element = pointer.Captured ?? args.InputHitTestResult.firstEnabledAncestor;
+                    var element = GetEffectivePointerOverElement(
+                        args.InputHitTestResult.firstEnabledAncestor,
+                        pointer.Captured);
 
                     SetPointerOver(pointer, args.Root, element, args.Timestamp, args.Position,
                         new PointerPointProperties(args.InputModifiers, args.Type.ToUpdateKind()),
@@ -84,7 +98,10 @@ namespace Avalonia.Input
 
                 if (dirtyRect.Contains(clientPoint))
                 {
-                    var element = pointer.Captured ?? _inputRoot.InputHitTest(clientPoint);
+                    var element = GetEffectivePointerOverElement(
+                        _inputRoot.InputHitTest(clientPoint),
+                        pointer.Captured);
+
                     SetPointerOver(pointer, _inputRoot, element, 0, clientPoint, PointerPointProperties.None, KeyModifiers.None);
                 }
                 else if (!((Visual)_inputRoot).Bounds.Contains(clientPoint))
@@ -93,6 +110,11 @@ namespace Avalonia.Input
                 }
             }
         }
+
+        private static IInputElement? GetEffectivePointerOverElement(IInputElement? hitTestElement, IInputElement? captured)
+            => captured is not null && hitTestElement != captured ?
+                null :
+                hitTestElement;
 
         private void ClearPointerOver()
         {

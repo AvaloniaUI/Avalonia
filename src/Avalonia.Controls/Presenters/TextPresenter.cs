@@ -455,13 +455,13 @@ namespace Avalonia.Controls.Presenters
 
         internal (Point, Point) GetCaretPoints()
         {
-            var x = Math.Floor(_caretBounds.X) + 0.5;
-            var y = Math.Floor(_caretBounds.Y) + 0.5;
-            var b = Math.Ceiling(_caretBounds.Bottom) - 0.5;
-
             var caretIndex = _lastCharacterHit.FirstCharacterIndex + _lastCharacterHit.TrailingLength;
             var lineIndex = TextLayout.GetLineIndexFromCharacterIndex(caretIndex, _lastCharacterHit.TrailingLength > 0);
             var textLine = TextLayout.TextLines[lineIndex];
+
+            var x = Math.Floor(_caretBounds.X) + 0.5;
+            var y = Math.Floor(_caretBounds.Y) + 0.5;
+            var b = Math.Ceiling(_caretBounds.Bottom) - 0.5;
 
             if (_caretBounds.X > 0 && _caretBounds.X >= textLine.WidthIncludingTrailingWhitespace)
             {
@@ -627,29 +627,34 @@ namespace Avalonia.Controls.Presenters
 
             InvalidateArrange();
 
+            // The textWidth used here is matching that TextBlock uses to measure the text.
             var textWidth = TextLayout.OverhangLeading + TextLayout.WidthIncludingTrailingWhitespace + TextLayout.OverhangTrailing;
-
             return new Size(textWidth, TextLayout.Height);
         }
 
         protected override Size ArrangeOverride(Size finalSize)
         {
-            var textWidth = Math.Ceiling(TextLayout.OverhangLeading + TextLayout.WidthIncludingTrailingWhitespace + TextLayout.OverhangTrailing);
+            var finalWidth = finalSize.Width;
+
+            var textWidth = TextLayout.OverhangLeading + TextLayout.WidthIncludingTrailingWhitespace + TextLayout.OverhangTrailing;
+            textWidth = Math.Ceiling(textWidth);
 
             if (finalSize.Width < textWidth)
             {
                 finalSize = finalSize.WithWidth(textWidth);
             }
 
-            if (MathUtilities.AreClose(_constraint.Width, finalSize.Width))
+            // Check if the '_constraint' has changed since the last measure,
+            // if so recalculate the TextLayout according to the new size
+            // NOTE: It is important to check this against the actual final size
+            // (excluding the trailing whitespace) to avoid TextLayout overflow.
+            if (MathUtilities.AreClose(_constraint.Width, finalWidth) == false)
             {
-                return finalSize;
+                _constraint = new Size(Math.Ceiling(finalWidth), double.PositiveInfinity);
+
+                _textLayout?.Dispose();
+                _textLayout = null;
             }
-
-            _constraint = new Size(Math.Ceiling(finalSize.Width), double.PositiveInfinity);
-
-            _textLayout?.Dispose();
-            _textLayout = null;
 
             return finalSize;
         }

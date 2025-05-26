@@ -6,68 +6,61 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Avalonia.Controls;
-using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Media;
-using Avalonia.Media.Fonts;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Platform;
-using Avalonia.Platform.Storage;
-using Avalonia.Platform.Storage.FileIO;
-using Avalonia.Utilities;
 
 namespace Avalonia.Headless
 {
     internal class HeadlessClipboardStub : IClipboard
     {
-        private string? _text;
         private IDataObject? _data;
 
         public Task<string?> GetTextAsync()
         {
-            return Task.Run(() => _text);
+            return Task.FromResult(_data?.GetText());
         }
 
         public Task SetTextAsync(string? text)
         {
-            return Task.Run(() => _text = text);
+            var data = new DataObject();
+            if (text != null)
+                data.Set(DataFormats.Text, text);
+            _data = data;
+            return Task.CompletedTask;
         }
 
         public Task ClearAsync()
         {
-            return Task.Run(() => _text = null);
+            _data = null;
+            return Task.CompletedTask;
         }
 
         public Task SetDataObjectAsync(IDataObject data)
         {
-            return Task.Run(() => _data = data);
+            _data = data;
+            return Task.CompletedTask;
         }
 
         public Task<string[]> GetFormatsAsync()
         {
-            return Task.Run(() =>
-            {
-                if (_data is not null)
-                {
-                    return _data.GetDataFormats().ToArray();
-                }
-
-                if (_text is not null)
-                {
-                    return new[] { DataFormats.Text };
-                }
-
-                return Array.Empty<string>();
-            });
+            return Task.FromResult<string[]>(_data?.GetDataFormats().ToArray() ?? []);
         }
 
-        public async Task<object?> GetDataAsync(string format)
+        public Task<object?> GetDataAsync(string format)
         {
-            return await Task.Run(() => _data);
+            return Task.FromResult(_data?.Get(format));
         }
+
+
+        public Task<IDataObject?> TryGetInProcessDataObjectAsync() => Task.FromResult(_data);
+
+        /// <inheritdoc />
+        public Task FlushAsync() =>
+            Task.CompletedTask;
     }
 
     internal class HeadlessCursorFactoryStub : ICursorFactory

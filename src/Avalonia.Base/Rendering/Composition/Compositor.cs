@@ -211,6 +211,28 @@ namespace Avalonia.Rendering.Composition
                 return commit;
             }
         }
+        
+        /// <summary>
+        /// This method submits a composition with a single dispose command outside the normal
+        /// commit cycle. This is currently used for disposing CompositionTargets since we need to do that ASAP
+        /// and without affecting the not yet completed composition batch
+        /// </summary>
+        internal CompositionBatch OobDispose(CompositionObject obj)
+        {
+            using var _ = NonPumpingLockHelper.Use();
+            obj.Dispose();
+            var batch = new CompositionBatch();
+            using (var writer = new BatchStreamWriter(batch.Changes, _batchMemoryPool, _batchObjectPool))
+            {
+                writer.WriteObject(ServerCompositor.RenderThreadDisposeStartMarker);
+                writer.Write(1);
+                writer.WriteObject(obj.Server);
+            }
+
+            batch.CommittedAt = Server.Clock.Elapsed;
+            _server.EnqueueBatch(batch);
+            return batch;
+        }
 
         internal void RegisterForSerialization(ICompositorSerializable compositionObject)
         {
@@ -294,7 +316,7 @@ namespace Avalonia.Rendering.Composition
                 throw new InvalidOperationException();
             if (visual.Root == null)
                 throw new InvalidOperationException();
-            var impl = await InvokeServerJobAsync(() => _server.CreateCompositionVisualSnapshot(visual.Server, scaling), true);
+            var impl = await InvokeServerJobAsync(() => _server.CreateCompositionVisualSnapshot(visual.Server, scaling, true), true);
             return new Bitmap(RefCountable.Create(impl));
         }
         

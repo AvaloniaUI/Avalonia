@@ -159,7 +159,8 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
     public Task<IStorageFile?> CreateFileAsync(string name)
     {
         var mimeType = MimeTypeMap.Singleton?.GetMimeTypeFromExtension(MimeTypeMap.GetFileExtensionFromUrl(name)) ?? "application/octet-stream";
-        var newFile = DocumentsContract.CreateDocument(Activity.ContentResolver!, Uri, mimeType, name);
+        var treeUri = DocumentsContract.BuildDocumentUriUsingTree(Uri, DocumentsContract.GetTreeDocumentId(Uri));
+        var newFile = DocumentsContract.CreateDocument(Activity.ContentResolver!, treeUri!, mimeType, name);
         if(newFile == null)
         {
             return Task.FromResult<IStorageFile?>(null);
@@ -170,7 +171,8 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
 
     public Task<IStorageFolder?> CreateFolderAsync(string name)
     {
-        var newFolder = DocumentsContract.CreateDocument(Activity.ContentResolver!, Uri, DocumentsContract.Document.MimeTypeDir, name);
+        var treeUri = DocumentsContract.BuildDocumentUriUsingTree(Uri, DocumentsContract.GetTreeDocumentId(Uri));
+        var newFolder = DocumentsContract.CreateDocument(Activity.ContentResolver!, treeUri!, DocumentsContract.Document.MimeTypeDir, name);
         if (newFolder == null)
         {
             return Task.FromResult<IStorageFolder?>(null);
@@ -205,7 +207,8 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
                 }
             }
 
-            DocumentsContract.DeleteDocument(Activity.ContentResolver!, storageFolder.Uri);
+            var treeUri = DocumentsContract.BuildDocumentUriUsingTree(storageFolder.Uri, DocumentsContract.GetTreeDocumentId(storageFolder.Uri));
+            DocumentsContract.DeleteDocument(Activity.ContentResolver!, treeUri!);
         }
     }
 
@@ -293,6 +296,79 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
 
             return destination;
         }
+    }
+
+    private async Task<IStorageItem?> GetItemAsync(string name, bool isDirectory)
+    {
+        if (!await EnsureExternalFilesPermission(false))
+        {
+            return null;
+        }
+
+        var contentResolver = Activity.ContentResolver;
+        if (contentResolver == null)
+        {
+            return null;
+        }
+
+        var root = PermissionRoot ?? Uri;
+        var folderId = root != Uri ? DocumentsContract.GetDocumentId(Uri) : DocumentsContract.GetTreeDocumentId(Uri);
+        var childrenUri = DocumentsContract.BuildChildDocumentsUriUsingTree(root, folderId);
+
+        var projection = new[]
+        {
+            DocumentsContract.Document.ColumnDocumentId,
+            DocumentsContract.Document.ColumnMimeType,
+            DocumentsContract.Document.ColumnDisplayName
+        };
+
+        if (childrenUri != null)
+        {
+            using var cursor = contentResolver.Query(childrenUri, projection, null, null, null);
+            if (cursor != null)
+            {
+                while (cursor.MoveToNext())
+                {
+                    var id = cursor.GetString(0);
+                    var mime = cursor.GetString(1);
+
+                    var fileName = cursor.GetString(2);
+                    if (fileName != name)
+                    {
+                        continue;
+                    }                   
+
+                    bool mineDirectory = mime == DocumentsContract.Document.MimeTypeDir;
+                    if (isDirectory != mineDirectory)
+                    {
+                        return null;
+                    }
+
+                    var uri = DocumentsContract.BuildDocumentUriUsingTree(root, id);
+                    if (uri == null)
+                    {
+                        return null;
+                    }
+
+                    return isDirectory ? new AndroidStorageFolder(Activity, uri, false, this, root) :
+                        new AndroidStorageFile(Activity, uri, this, root);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public async Task<IStorageFolder?> GetFolderAsync(string name)
+    {
+        var folder = await GetItemAsync(name, true);
+        return (IStorageFolder?)folder;
+    }
+
+    public async Task<IStorageFile?> GetFileAsync(string name)
+    {
+        var file = await GetItemAsync(name, false);
+        return (IStorageFile?)file;
     }
 }
 

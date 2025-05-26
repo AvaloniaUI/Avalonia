@@ -12,7 +12,6 @@
   </ItemGroup>
   <Import Project="..\..\build\Base.props" />
   <Import Project="..\..\build\Binding.props" />
-  <Import Project="..\..\build\System.Memory.props" />
   <Import Project="..\..\build\NullableEnable.props" />
   <Import Project="..\..\build\TrimmingEnable.props" />
   <Import Project="..\..\build\DevAnalyzers.props" />
@@ -64,6 +63,8 @@
   </ItemGroup>
   
   <ItemGroup Label="Build dependency">
-    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\Avalonia.Build.Tasks\Avalonia.Build.Tasks.csproj" SetTargetFramework="TargetFramework=netstandard2.0" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\Avalonia.Build.Tasks\Avalonia.Build.Tasks.csproj"
+                      ReferenceOutputAssembly="false"
+                      PrivateAssets="all" />
   </ItemGroup>
 </Project>

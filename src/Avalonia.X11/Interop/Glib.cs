@@ -1,9 +1,10 @@
 #nullable enable
+
 using System;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia.Platform.Interop;
-using static Avalonia.X11.Interop.Glib;
+
 namespace Avalonia.X11.Interop;
 
 internal static unsafe class Glib
@@ -43,10 +44,7 @@ internal static unsafe class Glib
     
     [DllImport(GlibName)]
     public static extern void g_main_loop_unref(IntPtr loop);
-
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void GOnceSourceFunc(IntPtr userData);
-
+    
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate int GSourceFunc(IntPtr userData);
     
@@ -54,30 +52,31 @@ internal static unsafe class Glib
     public delegate void GDestroyNotify(IntPtr userData);
 
     [DllImport(GlibName)]
-    private static extern int g_idle_add_once(GOnceSourceFunc cb, IntPtr userData);
+    private static extern int g_idle_add(GSourceFunc cb, IntPtr userData);
 
-    private static readonly GOnceSourceFunc s_onceSourceCb = (userData) =>
+    private static readonly GSourceFunc s_onceSourceCb = (userData) =>
     {
         var h = GCHandle.FromIntPtr(userData);
         var cb = (Action)h.Target!;
 
         h.Free();
         cb();
+        return 0;
     };
 
     public static void g_idle_add_once(Action cb) =>
-        g_idle_add_once(s_onceSourceCb, GCHandle.ToIntPtr(GCHandle.Alloc(cb)));
+        g_idle_add(s_onceSourceCb, GCHandle.ToIntPtr(GCHandle.Alloc(cb)));
     
     [DllImport(GlibName)]
-    private static extern uint g_timeout_add_once(uint interval, GOnceSourceFunc cb, IntPtr userData);
+    private static extern uint g_timeout_add(uint interval, GSourceFunc cb, IntPtr userData);
     
     public static uint g_timeout_add_once(uint interval, Action cb) =>
-        g_timeout_add_once(interval, s_onceSourceCb, GCHandle.ToIntPtr(GCHandle.Alloc(cb)));
+        g_timeout_add(interval, s_onceSourceCb, GCHandle.ToIntPtr(GCHandle.Alloc(cb)));
 
     private static readonly GDestroyNotify s_gcHandleDestroyNotify = handle => GCHandle.FromIntPtr(handle).Free();
 
     private static readonly GSourceFunc s_sourceFuncDispatchCallback =
-        handle => ((Func<bool>)GCHandle.FromIntPtr(handle).Target)() ? 1 : 0;
+        handle => ((Func<bool>)GCHandle.FromIntPtr(handle).Target!)() ? 1 : 0;
     
     [DllImport(GlibName)]
     private static extern uint g_idle_add_full (int priority, GSourceFunc function, IntPtr data, GDestroyNotify notify);
@@ -110,7 +109,7 @@ internal static unsafe class Glib
     public delegate int GUnixFDSourceFunc(int fd, GIOCondition condition, IntPtr user_data);
 
     private static readonly GUnixFDSourceFunc s_unixFdSourceCallback = (fd, cond, handle) =>
-        ((Func<int, GIOCondition, bool>)GCHandle.FromIntPtr(handle).Target)(fd, cond) ? 1 : 0;
+        ((Func<int, GIOCondition, bool>)GCHandle.FromIntPtr(handle).Target!)(fd, cond) ? 1 : 0;
     
     [DllImport(GlibName)]
     public static extern uint g_unix_fd_add_full (int priority,
@@ -154,6 +153,7 @@ internal static unsafe class Glib
     }
 
     public static IDisposable ConnectSignal<T>(IntPtr obj, string name, T handler)
+        where T : notnull
     {
         var handle = GCHandle.Alloc(handler);
         var ptr = Marshal.GetFunctionPointerForDelegate(handler);

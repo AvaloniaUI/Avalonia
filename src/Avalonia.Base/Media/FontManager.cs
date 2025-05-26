@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Linq;
 using Avalonia.Logging;
 using Avalonia.Media.Fonts;
 using Avalonia.Platform;
@@ -285,6 +284,88 @@ namespace Avalonia.Media
 
             //Try to find a match with the system font manager
             return PlatformImpl.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, culture, out typeface);
+        }
+
+        /// <summary>
+        /// Tries to create a synthetic glyph typefacefor specified source glyph typeface and font properties.
+        /// </summary>
+        /// <param name="fontManager">The font manager implementation.</param>
+        /// <param name="glyphTypeface">The source glyph typeface.</param>
+        /// <param name="style">The requested font style.</param>
+        /// <param name="weight">The requested font weight.</param>
+        /// <param name="syntheticGlyphTypeface">The created synthetic glyph typeface.</param>
+        /// <returns>
+        ///     <c>True</c>, if the <see cref="FontManager"/> could create a synthetic glyph typeface, <c>False</c> otherwise.
+        /// </returns>
+        internal static bool TryCreateSyntheticGlyphTypeface(IFontManagerImpl fontManager, IGlyphTypeface glyphTypeface, FontStyle style, FontWeight weight,
+           [NotNullWhen(true)] out IGlyphTypeface? syntheticGlyphTypeface)
+        {
+            if (fontManager == null)
+            {
+                syntheticGlyphTypeface = null;
+
+                return false;
+            }
+
+            if (glyphTypeface is IGlyphTypeface2 glyphTypeface2)
+            {
+                var fontSimulations = FontSimulations.None;
+
+                if (style != FontStyle.Normal && glyphTypeface2.Style != style)
+                {
+                    fontSimulations |= FontSimulations.Oblique;
+                }
+
+                if ((int)weight >= 600 && glyphTypeface2.Weight < weight)
+                {
+                    fontSimulations |= FontSimulations.Bold;
+                }
+
+                if (fontSimulations != FontSimulations.None && glyphTypeface2.TryGetStream(out var stream))
+                {
+                    using (stream)
+                    {
+                        fontManager.TryCreateGlyphTypeface(stream, fontSimulations,
+                            out syntheticGlyphTypeface);
+
+                        return syntheticGlyphTypeface != null;
+                    }
+                }
+            }
+
+            syntheticGlyphTypeface = null;
+
+            return false;
+        }
+
+        internal IReadOnlyList<Typeface> GetFamilyTypefaces(FontFamily fontFamily)
+        {
+            var key = fontFamily.Key;
+
+            if (key == null)
+            {
+                if(SystemFonts is IFontCollection2 fontCollection2)
+                {
+                    if (fontCollection2.TryGetFamilyTypefaces(fontFamily.Name, out var familyTypefaces))
+                    {
+                        return familyTypefaces;
+                    }
+                }
+            }
+            else
+            {
+                var source = key.Source.EnsureAbsolute(key.BaseUri);
+
+                if (TryGetFontCollection(source, out var fontCollection) && fontCollection is IFontCollection2 fontCollection2)
+                {
+                    if (fontCollection2.TryGetFamilyTypefaces(fontFamily.Name, out var familyTypefaces))
+                    {
+                        return familyTypefaces;
+                    }
+                }
+            }
+
+            return [];
         }
 
         private bool TryGetFontCollection(Uri source, [NotNullWhen(true)] out IFontCollection? fontCollection)

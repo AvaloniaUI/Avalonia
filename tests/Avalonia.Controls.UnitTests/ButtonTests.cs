@@ -293,9 +293,9 @@ namespace Avalonia.Controls.UnitTests
             var raised = 0;
 
             target.Click += (s, e) => ++raised;
-
-            target.RaiseEvent(new RoutedEventArgs(AccessKeyHandler.AccessKeyPressedEvent));
-
+            
+            target.RaiseEvent(new AccessKeyEventArgs("b", false));
+            
             Assert.Equal(1, raised);
         }
 
@@ -304,7 +304,12 @@ namespace Avalonia.Controls.UnitTests
         {
             var raised = 0;
             var ah = new AccessKeyHandler();
-            using var app = UnitTestApplication.Start(TestServices.StyledWindow.With(accessKeyHandler: ah));
+            var kd = new KeyboardDevice();
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow
+                .With(
+                    accessKeyHandler: ah, 
+                    keyboardDevice: () => kd)
+            );
 
             var impl = CreateMockTopLevelImpl();
             var command = new TestCommand(p => p is bool value && value, _ => raised++);
@@ -329,6 +334,8 @@ namespace Avalonia.Controls.UnitTests
                     })
                 },
             };
+            kd.SetFocusedElement(target, NavigationMethod.Unspecified, KeyModifiers.None);
+            
 
             root.ApplyTemplate();
             root.Presenter.UpdateChild();
@@ -349,7 +356,7 @@ namespace Avalonia.Controls.UnitTests
             RaiseAccessKey(root, accessKey);
 
             Assert.Equal(1, raised);
-
+            
             static FuncControlTemplate<TestTopLevel> CreateTemplate()
             {
                 return new FuncControlTemplate<TestTopLevel>((x, scope) =>
@@ -409,7 +416,7 @@ namespace Avalonia.Controls.UnitTests
             target.IsEnabled = false;
             target.Click += (s, e) => ++raised;
 
-            target.RaiseEvent(new RoutedEventArgs(AccessKeyHandler.AccessKeyPressedEvent));
+            target.RaiseEvent(new AccessKeyEventArgs("b", false));
 
             Assert.Equal(0, raised);
         }
@@ -448,6 +455,27 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(2, raised);
             }
         }
+        
+        [Fact]
+        public void Button_IsDefault_Should_Not_Work_When_Button_Is_Not_Effectively_Visible()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var raised = 0;
+                var panel = new Panel();
+                var target = new Button();
+                panel.Children.Add(target);
+                var window = new Window { Content = panel };
+                window.Show();
+
+                target.Click += (s, e) => ++raised;
+                
+                target.IsDefault = true;
+                panel.IsVisible = false;
+                window.RaiseEvent(CreateKeyDownEvent(Key.Enter));
+                Assert.Equal(0, raised);
+            }
+        }
 
         [Fact]
         public void Button_IsCancel_Works()
@@ -480,6 +508,27 @@ namespace Avalonia.Controls.UnitTests
                 window.Content = null;
                 window.RaiseEvent(CreateKeyDownEvent(Key.Escape, target));
                 Assert.Equal(2, raised);
+            }
+        }
+        
+        [Fact]
+        public void Button_IsCancel_Should_Not_Work_When_Button_Is_Not_Effectively_Visible()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var raised = 0;
+                var panel = new Panel();
+                var target = new Button();
+                panel.Children.Add(target);
+                var window = new Window { Content = panel };
+                window.Show();
+
+                target.Click += (s, e) => ++raised;
+                
+                target.IsCancel = true;
+                panel.IsVisible = false;
+                window.RaiseEvent(CreateKeyDownEvent(Key.Escape));
+                Assert.Equal(0, raised);
             }
         }
 

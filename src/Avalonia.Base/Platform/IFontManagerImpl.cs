@@ -1,7 +1,9 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using Avalonia.Media;
+using Avalonia.Media.Fonts;
 using Avalonia.Metadata;
 
 namespace Avalonia.Platform
@@ -59,5 +61,18 @@ namespace Avalonia.Platform
         ///     <c>True</c>, if the <see cref="IFontManagerImpl"/> could create the glyph typeface, <c>False</c> otherwise.
         /// </returns>
         bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, [NotNullWhen(returnValue: true)] out IGlyphTypeface? glyphTypeface);
+    }
+
+    internal interface IFontManagerImpl2 : IFontManagerImpl
+    {
+        /// <summary>
+        /// Tries to get a list of typefaces for the specified family name.
+        /// </summary>
+        /// <param name="familyName">The family name.</param>
+        /// <param name="familyTypefaces">The list of typefaces.</param>
+        /// <returns>
+        ///     <c>True</c>, if the <see cref="IFontManagerImpl"/> could get the list of typefaces, <c>False</c> otherwise.
+        /// </returns>
+        bool TryGetFamilyTypefaces(string familyName, [NotNullWhen(true)] out IReadOnlyList<Typeface>? familyTypefaces);
     }
 }

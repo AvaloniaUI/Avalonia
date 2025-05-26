@@ -469,6 +469,63 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new Vector(0, 0), target.Offset);
         }
 
+        [Fact]
+        public void MenuScrollBar_Should_Be_Visible_When_Specified_Visible()
+        {
+            Converters.MenuScrollingVisibilityConverter converter = Converters.MenuScrollingVisibilityConverter.Instance;
+            IList<object> args = new List<object> {ScrollBarVisibility.Visible,400d,1800d,500d};
+            var result = converter.Convert(args, typeof(ScrollBarVisibility), "0", System.Globalization.CultureInfo.CurrentCulture);
+            Assert.Equal(true, result);
+        }
+
+        [Fact]
+        public void ScrollBar_Visibility_Should_Invalidate_Measure_And_Arrange()
+        {
+            var panel = new TestPanel()
+            {
+                DesiredWidth = 100_000
+            };
+            var target = new ScrollViewer
+            {
+                Content = panel,
+                Template = new FuncControlTemplate<ScrollViewer>(CreateTemplate),
+                HorizontalScrollBarVisibility = ScrollBarVisibility.Auto
+            };
+            var root = new TestRoot(target);
+            root.LayoutManager.ExecuteInitialLayoutPass();
+            panel.Reset();
+
+            target.HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled;
+            root.LayoutManager.ExecuteLayoutPass();
+            Assert.Equal(1, panel.MeasureOverrideCalls);
+            Assert.Equal(1, panel.ArrangeOverrideCalls);
+        }
+
+        public class TestPanel : Panel
+        {
+            public int DesiredWidth { get; set; }
+            public int MeasureOverrideCalls { get; private set; }
+            public int ArrangeOverrideCalls { get; private set; }
+
+            protected override Size MeasureOverride(Size availableSize)
+            {
+                MeasureOverrideCalls++;
+                return new Size(DesiredWidth, 1);
+            }
+
+            protected override Size ArrangeOverride(Size finalSize)
+            {
+                ArrangeOverrideCalls++;
+                return base.ArrangeOverride(finalSize);
+            }
+
+            public void Reset()
+            {
+                MeasureOverrideCalls = 0;
+                ArrangeOverrideCalls = 0;
+            }
+        }
+
         private Point GetRootPoint(Visual control, Point p)
         {
             if (control.GetVisualRoot() is Visual root &&

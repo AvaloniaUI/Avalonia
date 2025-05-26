@@ -812,7 +812,11 @@ namespace Avalonia.Controls
                 }
 
                 _userCalledPopulate = false;
-                ClearTextBoxSelection();
+
+                if (ContextMenu is not { IsOpen: true })
+                {
+                    ClearTextBoxSelection();
+                }
             }
 
             _isFocused = hasFocus;
@@ -2032,6 +2036,7 @@ namespace Avalonia.Controls
             }
         }
 
+        // TODO12: Remove, this shouldn't be part of the public API. Use our internal BindingEvaluator instead.
         /// <summary>
         /// A framework element that permits a binding to be evaluated in a new data
         /// context leaf node.

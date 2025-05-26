@@ -201,6 +201,7 @@ namespace Avalonia.Controls
         private bool _showingAsDialog;
         private bool _positionWasSet;
         private bool _wasShownBefore;
+        private IDisposable? _modalSubscription;
 
         /// <summary>
         /// Initializes static members of the <see cref="Window"/> class.
@@ -612,11 +613,12 @@ namespace Avalonia.Controls
                     }
                 }
 
+                Owner = null;
                 PlatformImpl?.Hide();
                 IsVisible = false;
-                _shown = false;
 
-                Owner = null;
+                _modalSubscription?.Dispose();
+                _shown = false;
             }
         }
 
@@ -645,14 +647,7 @@ namespace Avalonia.Controls
                     }
                     else
                     {
-                        if (_showingAsDialog)
-                        {
-                            Close(false);
-                        }
-                        else
-                        {
-                            Hide();
-                        }
+                        Hide();
                     }
                 }
             }
@@ -706,7 +701,7 @@ namespace Avalonia.Controls
             using (FreezeVisibilityChangeHandling())
             {
                 EnsureStateBeforeShow();
-                
+
                 if (modal && owner == null)
                 {
                     throw new ArgumentNullException(nameof(owner));
@@ -738,45 +733,47 @@ namespace Avalonia.Controls
                 var initialSize = new Size(
                     double.IsNaN(Width) ? ClientSize.Width : Width,
                     double.IsNaN(Height) ? ClientSize.Height : Height);
-                
+
+                var minMax = new MinMax(this);
+
                 initialSize = new Size(
-                MathUtilities.Clamp(initialSize.Width, MinWidth, MaxWidth),
-                MathUtilities.Clamp(initialSize.Height, MinHeight, MaxHeight));
+                    MathUtilities.Clamp(initialSize.Width, minMax.MinWidth, minMax.MaxWidth),
+                    MathUtilities.Clamp(initialSize.Height, minMax.MinHeight, minMax.MaxHeight));
 
                 var clientSizeChanged = initialSize != ClientSize;
                 ClientSize = initialSize; // ClientSize is required for Measure and Arrange
-                
+
                 // this will call ArrangeSetBounds
                 LayoutManager.ExecuteInitialLayoutPass();
 
                 if (SizeToContent.HasFlag(SizeToContent.Width))
                 {
-                    initialSize = initialSize.WithWidth(MathUtilities.Clamp(_arrangeBounds.Width, MinWidth, MaxWidth));
+                    initialSize = initialSize.WithWidth(MathUtilities.Clamp(_arrangeBounds.Width, minMax.MinWidth, minMax.MaxWidth));
                     clientSizeChanged |= initialSize != ClientSize;
                     ClientSize = initialSize;
                 }
 
                 if (SizeToContent.HasFlag(SizeToContent.Height))
                 {
-                    initialSize = initialSize.WithHeight(MathUtilities.Clamp(_arrangeBounds.Height, MinHeight, MaxHeight));
+                    initialSize = initialSize.WithHeight(MathUtilities.Clamp(_arrangeBounds.Height, minMax.MinHeight, minMax.MaxHeight));
                     clientSizeChanged |= initialSize != ClientSize;
                     ClientSize = initialSize;
                 }
-                
+
                 Owner = owner;
 
                 SetWindowStartupLocation(owner);
-                
+
                 DesktopScalingOverride = null;
-                
+
                 if (clientSizeChanged || ClientSize != PlatformImpl?.ClientSize)
                 {
                     // Previously it was called before ExecuteInitialLayoutPass
                     PlatformImpl?.Resize(ClientSize, WindowResizeReason.Layout);
-                    
+
                     // we do not want PlatformImpl?.Resize to trigger HandleResized yet because it will set Width and Height.
                     // So perform some important actions from HandleResized
-                    
+
                     Renderer.Resized(ClientSize);
                     OnResized(new WindowResizedEventArgs(ClientSize, WindowResizeReason.Layout));
 
@@ -788,8 +785,8 @@ namespace Avalonia.Controls
 
                 FrameSize = PlatformImpl?.FrameSize;
 
-                _canHandleResized = true; 
-                
+                _canHandleResized = true;
+
                 StartRendering();
                 PlatformImpl?.Show(ShowActivated, modal);
 
@@ -798,22 +795,32 @@ namespace Avalonia.Controls
                 {
                     var tcs = new TaskCompletionSource<TResult>();
 
-                    Observable.FromEventPattern(
+                    var disposables = new CompositeDisposable(
+                    [
+                        Observable.FromEventPattern(
                             x => Closed += x,
                             x => Closed -= x)
                         .Take(1)
                         .Subscribe(_ =>
                         {
+                            _modalSubscription?.Dispose();
+                        }),
+                        Disposable.Create(() =>
+                        {
+                            _modalSubscription = null;
                             owner!.Activate();
                             tcs.SetResult((TResult)(_dialogResult ?? default(TResult)!));
-                        });
+                        })
+                    ]);
+
+                    _modalSubscription = disposables;
                     result = tcs.Task;
                 }
 
                 OnOpened(EventArgs.Empty);
                 if (!modal)
                     _wasShownBefore = true;
-                
+
                 return result;
             }
         }
@@ -1052,8 +1059,13 @@ namespace Avalonia.Controls
         {
             var sizeToContent = SizeToContent;
             var clientSize = ClientSize;
-            var constraint = clientSize;
             var maxAutoSize = PlatformImpl?.MaxAutoSizeHint ?? Size.Infinity;
+            var useAutoWidth = sizeToContent.HasAllFlags(SizeToContent.Width);
+            var useAutoHeight = sizeToContent.HasAllFlags(SizeToContent.Height);
+
+            var constraint = new Size(
+                useAutoWidth || double.IsInfinity(availableSize.Width) ? clientSize.Width : availableSize.Width,
+                useAutoHeight || double.IsInfinity(availableSize.Height) ? clientSize.Height : availableSize.Height);
 
             if (MaxWidth > 0 && MaxWidth < maxAutoSize.Width)
             {
@@ -1064,19 +1076,19 @@ namespace Avalonia.Controls
                 maxAutoSize = maxAutoSize.WithHeight(MaxHeight);
             }
 
-            if (sizeToContent.HasAllFlags(SizeToContent.Width))
+            if (useAutoWidth)
             {
                 constraint = constraint.WithWidth(maxAutoSize.Width);
             }
 
-            if (sizeToContent.HasAllFlags(SizeToContent.Height))
+            if (useAutoHeight)
             {
                 constraint = constraint.WithHeight(maxAutoSize.Height);
             }
 
             var result = base.MeasureOverride(constraint);
 
-            if (!sizeToContent.HasAllFlags(SizeToContent.Width))
+            if (!useAutoWidth)
             {
                 if (!double.IsInfinity(availableSize.Width))
                 {
@@ -1088,7 +1100,7 @@ namespace Avalonia.Controls
                 }
             }
 
-            if (!sizeToContent.HasAllFlags(SizeToContent.Height))
+            if (!useAutoHeight)
             {
                 if (!double.IsInfinity(availableSize.Height))
                 {

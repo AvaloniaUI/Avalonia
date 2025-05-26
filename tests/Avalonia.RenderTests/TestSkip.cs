@@ -17,5 +17,14 @@ namespace Avalonia.Direct2D1.RenderTests
                 Skip = message;
         }
     }
+
+    public class Win32Theory : TheoryAttribute
+    {
+        public Win32Theory(string message)
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                Skip = message;
+        }
+    }
 }
 
