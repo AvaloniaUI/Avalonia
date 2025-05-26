@@ -706,9 +706,19 @@ namespace Avalonia.Input
             {
                 PseudoClasses.Set(":focus-within", change.GetNewValue<bool>());
             }
-            else if (change.Property == IsVisibleProperty && !change.GetNewValue<bool>() && IsFocused)
+            else if (change.Property == IsVisibleProperty)
             {
-                FocusManager.GetFocusManager(this)?.ClearFocus();
+                if (!change.GetNewValue<bool>() && IsKeyboardFocusWithin && FocusManager.GetFocusManager(this) is { } focusManager)
+                {
+                    if (focusManager.GetFocusedElement() is { } focusedElement && VisualParent != null)
+                    {
+                        focusManager.ClearFocusOnElementRemoved(focusedElement, VisualParent);
+                    }
+                    else
+                    {
+                        focusManager.ClearFocus();
+                    }
+                }
             }
         }
 

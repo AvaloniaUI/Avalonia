@@ -203,7 +203,7 @@ namespace Avalonia.Base.UnitTests.Input
             }
         }
 
-        [Fact(Skip = "Need to implement IsEffectivelyVisible change notifications.")]
+        [Fact]
         public void Focus_Should_Be_Cleared_When_Control_Is_Effectively_Hidden()
         {
             Border container;
