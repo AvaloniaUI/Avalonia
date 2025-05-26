@@ -22,6 +22,7 @@
   </ItemGroup>
   <Import Project="..\..\build\Moq.props" />
   <Import Project="..\..\build\Rx.props" />
+  <Import Project="..\..\build\SkiaSharp.props" />
   <Import Project="..\..\build\XUnit.props" />
   <Import Project="..\..\build\SharedVersion.props" />
 </Project>
