@@ -963,39 +963,43 @@ namespace Avalonia.Skia
                                     (originPoint.Y - centerPoint.Y) * radiusX / radiusY + centerPoint.Y);
 
                             var origin = originPoint.ToSKPoint();
-                            var endOffset = 0.0;
 
-                            // and then reverse the reference point of the stops
-                            var reversedStops = new float[stopOffsets.Length];
-
-                            for (var i = 0; i < stopOffsets.Length; i++)
-                            {
-                                var offset = stopOffsets[i];
-                                if (endOffset < offset)
-                                {
-                                    endOffset = offset;
-                                }
-                                reversedStops[i] = offset;
-                                if (reversedStops[i] > 0 && reversedStops[i] < 1)
-                                {
-                                    reversedStops[i] = Math.Abs(1 - offset);
-                                }
-                            }
+                            var endOffset = stopOffsets[stopOffsets.Length - 1];
 
                             var start = origin;
                             var radiusStart = 0f;
                             var end = center;
                             var radiusEnd = (float)radiusX;
-                            var reverse = MathUtilities.AreClose(1, endOffset);
+                            var reverse = (centerPoint.X != originPoint.X  || centerPoint.Y != originPoint.Y) && endOffset == 1;
 
                             if (reverse)
                             {
+                                // reverse the order of the stops to match D2D
                                 (start, radiusStart, end, radiusEnd) = (end, radiusEnd, start, radiusStart);
 
-                                // reverse the order of the stops to match D2D
+                                var count = stopOffsets.Length;
+
                                 var reversedColors = new SKColor[stopColors.Length];
-                                Array.Copy(stopColors, reversedColors, stopColors.Length);
-                                Array.Reverse(reversedColors);
+                                // and then reverse the reference point of the stops
+                                var reversedStops = new float[count];
+
+                                for (var i = 0; i < count; i++)
+                                {
+                                    var offset = radialGradient.GradientStops[i].Offset;
+
+                                    offset = 1 - offset;
+
+                                    if (MathUtilities.IsZero(offset))
+                                    {
+                                        offset = 0;
+                                    }
+
+                                    var reversedIndex = count - 1 - i;
+
+                                    reversedStops[reversedIndex] = (float)offset;
+                                    reversedColors[reversedIndex] = stopColors[i];
+                                }
+                               
                                 stopColors = reversedColors;
                                 stopOffsets = reversedStops;
                             }
