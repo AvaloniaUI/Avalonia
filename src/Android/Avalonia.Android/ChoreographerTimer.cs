@@ -89,8 +89,6 @@ namespace Avalonia.Android
 
         public void DoFrame(long frameTimeNanos)
         {
-            _tick?.Invoke(TimeSpan.FromTicks(frameTimeNanos / 100));
-
             lock (_lock)
             {
                 if (_count > 0 && _views.Count > 0)
@@ -98,6 +96,8 @@ namespace Avalonia.Android
                     Choreographer.Instance!.PostFrameCallback(this);
                 }
             }
+            
+            _tick?.Invoke(TimeSpan.FromTicks(frameTimeNanos / 100));
         }
     }
 }

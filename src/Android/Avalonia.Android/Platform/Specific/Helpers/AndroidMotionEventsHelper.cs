@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
-
+using System.Linq;
 using Android.Views;
 
 using Avalonia.Android.Platform.SkiaPlatform;
 using Avalonia.Collections.Pooled;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Threading;
 
 namespace Avalonia.Android.Platform.Specific.Helpers
 {
@@ -19,7 +20,30 @@ namespace Avalonia.Android.Platform.Specific.Helpers
         private readonly PenDevice _penDevice;
         private readonly TopLevelImpl _view;
         private bool _disposed;
+        private Dictionary<int, PendingMoveInput> _pendingMoves = new();
+        private DispatcherOperation? _flushPendingInput;
 
+        record class PendingMoveMotionEvent(MotionEvent Event, int Index)
+        {
+            
+        }
+        
+        class PendingMoveInput(PendingMoveMotionEvent ev, MotionEventToolType toolType, RawInputModifiers modifiers)
+        {
+            public List<PendingMoveMotionEvent>? GroupedEvents;
+            public PendingMoveMotionEvent FirstEvent => ev;
+            
+            public PendingMoveMotionEvent LastEvent => GroupedEvents?.Last() ?? ev;
+            public MotionEventToolType ToolType => toolType;
+            public RawInputModifiers Modifiers => modifiers;
+
+            public void AddEvent(PendingMoveMotionEvent motionEvent)
+            {
+                (GroupedEvents ??= new()).Add(motionEvent);
+            }
+        }
+        
+        
         public AndroidMotionEventsHelper(TopLevelImpl view)
         {
             _touchDevice = new TouchDevice();
@@ -28,7 +52,83 @@ namespace Avalonia.Android.Platform.Specific.Helpers
             _view = view;
         }
 
+        public void FlushAllPendingInput()
+        {
+            _flushPendingInput?.Abort();
+            _flushPendingInput = null;
+            
+            while (_pendingMoves.Count > 0)
+                FlushPendingInput(_pendingMoves.First().Key);
+        }
+        
+        private void FlushPendingInput(int pointerId)
+        {
+            if (!_pendingMoves.Remove(pointerId, out var input))
+                return;
+            
+            var inputRoot = _view.InputRoot;
+            if (inputRoot is null)
+                return;
+            
+            var device = GetDevice(input.ToolType);
+            var eventType = input.ToolType == MotionEventToolType.Finger ? RawPointerEventType.TouchUpdate : RawPointerEventType.Move;
+
+            var lastEvent = input.LastEvent;
+            var eventTime = (ulong)lastEvent.Event.EventTime;
+            var point = CreatePoint(lastEvent.Event, lastEvent.Index);
+            var args = new RawTouchEventArgs(device, eventTime, inputRoot, eventType, point, input.Modifiers, pointerId)
+            {
+                IntermediatePoints = GetIntermediatePoints(null, input)
+            };
+            _view.Input?.Invoke(args);
+        }
+
+        Lazy<IReadOnlyList<RawPointerPoint>?> GetIntermediatePoints(PendingMoveMotionEvent? current,
+            PendingMoveInput? history)
+        {
+            return new Lazy<IReadOnlyList<RawPointerPoint>?>(() =>
+            {
+                s_intermediatePointsPooledList.Clear();
+                
+                void ProcessMotionEvent(PendingMoveMotionEvent e)
+                {
+                    var size = e.Event.HistorySize;
+                    for (int pos = 0; pos < size; pos++)
+                    {
+                        s_intermediatePointsPooledList.Add(CreateHistoricalPoint(e.Event, e.Index, pos));
+                    }
+                }
+
+                if (history != null)
+                {
+                    ProcessMotionEvent(history.FirstEvent);
+                    if (history.GroupedEvents != null)
+                    {
+                        foreach (var g in history.GroupedEvents)
+                            ProcessMotionEvent(g);
+                    }
+                }
+
+                if (current != null)
+                    ProcessMotionEvent(current);
+                
+                return s_intermediatePointsPooledList;
+            });
+        }
+
         public bool? DispatchMotionEvent(MotionEvent? e, out bool callBase)
+        {
+            try
+            {
+                return DispatchMotionEventCore(e, out callBase);
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine(exception);
+                throw;
+            }
+        }
+        public bool? DispatchMotionEventCore(MotionEvent? e, out bool callBase)
         {
             callBase = true;
             if (_disposed || e is null)
@@ -49,43 +149,43 @@ namespace Avalonia.Android.Platform.Specific.Helpers
                 for (int index = 0; index < e.PointerCount; index++)
                 {
                     var toolType = e.GetToolType(index);
-                    var device = GetDevice(toolType);
-                    var eventType = toolType == MotionEventToolType.Finger ? RawPointerEventType.TouchUpdate : RawPointerEventType.Move;
-                    var point = CreatePoint(e, index);
+                    
                     modifiers |= GetToolModifiers(toolType);
-
+                    
                     // ButtonState reports only mouse buttons, but not touch or stylus pointer.
                     if (toolType != MotionEventToolType.Mouse)
                     {
                         modifiers |= RawInputModifiers.LeftMouseButton;
                     }
 
-                    var args = new RawTouchEventArgs(device, eventTime, inputRoot, eventType, point, modifiers, e.GetPointerId(index))
+                    var pointerId = e.GetPointerId(index);
+                    
+                    if (_pendingMoves.TryGetValue(pointerId, out var existing))
                     {
-                        IntermediatePoints = new Lazy<IReadOnlyList<RawPointerPoint>?>(() =>
+                        if (existing.ToolType != toolType || existing.Modifiers != modifiers)
+                            FlushAllPendingInput();
+                        else
                         {
-                            var site = e.HistorySize;
-                            s_intermediatePointsPooledList.Clear();
-                            s_intermediatePointsPooledList.Capacity = site;
+                            existing.AddEvent(new PendingMoveMotionEvent(e, index));
+                            return true;
+                        }
+                    }
 
-                            for (int pos = 0; pos < site; pos++)
-                            {
-                                s_intermediatePointsPooledList.Add(CreateHistoricalPoint(e, index, pos));
-                            }
-
-                            return s_intermediatePointsPooledList;
-                        })
-                    };
-                    _view.Input?.Invoke(args);
+                    _pendingMoves.Add(pointerId,
+                        new PendingMoveInput(new PendingMoveMotionEvent(e, index), toolType, modifiers));
+                    _flushPendingInput ??=
+                        Dispatcher.UIThread.InvokeAsync(FlushAllPendingInput, DispatcherPriority.Input);
                 }
             }
             else
             {
                 var index = e.ActionIndex;
+                var pointerId = e.GetPointerId(index);
                 var toolType = e.GetToolType(index);
                 var device = GetDevice(toolType);
                 modifiers |= GetToolModifiers(toolType);
                 var point = CreatePoint(e, index);
+                _pendingMoves.Remove(pointerId, out var pendingMoveInput);
 
                 if (actionMasked == MotionEventActions.Scroll && toolType == MotionEventToolType.Mouse)
                 {
@@ -98,7 +198,12 @@ namespace Avalonia.Android.Platform.Specific.Helpers
                     var eventType = GetActionType(e, actionMasked, toolType);
                     if (eventType >= 0)
                     {
-                        var args = new RawTouchEventArgs(device, eventTime, inputRoot, eventType, point, modifiers, e.GetPointerId(index));
+                        var args = new RawTouchEventArgs(device, eventTime, inputRoot, eventType, point, modifiers, pointerId);
+                        if (eventType == RawPointerEventType.TouchEnd)
+                        {
+                            args.IntermediatePoints =
+                                GetIntermediatePoints(new PendingMoveMotionEvent(e, index), pendingMoveInput);
+                        }
                         _view.Input?.Invoke(args);
                     }
                 }
