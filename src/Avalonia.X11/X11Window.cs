@@ -615,14 +615,17 @@ namespace Avalonia.X11
                         _realSize = nsize;
                         _position = npos;
                         bool updatedSizeViaScaling = false;
+                        // Maximized or fullscreen window shouldn't be resized by us.
+                        // Window manager will do it.
+                        bool skipResize = WindowState != WindowState.Normal;
                         if (changedPos)
                         {
                             PositionChanged?.Invoke(npos);
-                            updatedSizeViaScaling = UpdateScaling();
+                            updatedSizeViaScaling = UpdateScaling(skipResize);
                         }
                         UpdateImePosition();
 
-                        if (changedSize && !updatedSizeViaScaling && !_overrideRedirect)
+                        if (changedSize && (skipResize || !updatedSizeViaScaling) && !_overrideRedirect)
                             Resized?.Invoke(ClientSize, WindowResizeReason.Unspecified);
 
                     }, DispatcherPriority.AsyncRenderTargetResize);
