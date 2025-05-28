@@ -34,6 +34,7 @@ extern IAvnPlatformBehaviorInhibition* CreatePlatformBehaviorInhibition();
 extern IAvnNativeControlHost* CreateNativeControlHost(NSView* parent);
 extern IAvnPlatformSettings* CreatePlatformSettings();
 extern IAvnPlatformRenderTimer* CreatePlatformRenderTimer();
+extern IAvnNativeObjectsMemoryManagement* CreateMemoryManagementHelper();
 extern void SetAppMenu(IAvnMenu *menu);
 extern void SetServicesMenu (IAvnMenu* menu);
 extern IAvnMenu* GetAppMenu ();
@@ -48,6 +49,7 @@ extern AvnPoint ToAvnPoint (NSPoint p);
 extern AvnPoint ConvertPointY (AvnPoint p);
 extern NSSize ToNSSize (AvnSize s);
 extern AvnSize FromNSSize (NSSize s);
+extern IAvnMTLSharedEvent* ImportMTLSharedEvent(void* object);
 #ifdef DEBUG
 #define NSDebugLog(...) NSLog(__VA_ARGS__)
 #else
