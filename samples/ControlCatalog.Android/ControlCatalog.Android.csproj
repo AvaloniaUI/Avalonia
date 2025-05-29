@@ -8,6 +8,7 @@
     <ApplicationVersion>1</ApplicationVersion>
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
     <AndroidPackageFormat>apk</AndroidPackageFormat>
+    <AndroidEnableProfiler>false</AndroidEnableProfiler>
   </PropertyGroup>
   <ItemGroup>
     <AndroidResource Include="..\..\build\Assets\Icon.png">
