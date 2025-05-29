@@ -122,7 +122,7 @@ namespace Avalonia.Android
         
         // See check in ctor
 #pragma warning disable CA1416
-        public bool HasPendingInput => _queue.IsIdle;
+        public bool HasPendingInput => !_queue.IsIdle;
 #pragma warning restore CA1416
     }
 }
