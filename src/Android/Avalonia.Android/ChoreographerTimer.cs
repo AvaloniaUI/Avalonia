@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 using Android.OS;
@@ -7,16 +8,16 @@ using Android.Views;
 
 using Avalonia.Reactive;
 using Avalonia.Rendering;
-
-using Java.Lang;
+using ThreadPriority = System.Threading.ThreadPriority;
 
 namespace Avalonia.Android
 {
     internal sealed class ChoreographerTimer : Java.Lang.Object, IRenderTimer, Choreographer.IFrameCallback
     {
         private readonly object _lock = new();
-
-        private readonly Thread _thread;
+        
+        private AutoResetEvent _event = new(false);
+        private long _lastTime;
         private readonly TaskCompletionSource<Choreographer> _choreographer = new();
 
         private readonly ISet<AvaloniaView> _views = new HashSet<AvaloniaView>();
@@ -26,10 +27,16 @@ namespace Avalonia.Android
 
         public ChoreographerTimer()
         {
-            _thread = new Thread(Loop);
-            _thread.Start();
+            new Thread(Loop)
+            {
+                Priority = ThreadPriority.AboveNormal
+            }.Start();
+            new Thread(RenderLoop)
+            {
+                Priority = ThreadPriority.AboveNormal
+            }.Start();
         }
-
+        
         public bool RunsInBackground => true;
 
         public event Action<TimeSpan> Tick
@@ -82,10 +89,27 @@ namespace Avalonia.Android
 
         private void Loop()
         {
+            Console.WriteLine("Entering Chroreographer loop");
             Looper.Prepare();
             _choreographer.SetResult(Choreographer.Instance!);
             Looper.Loop();
         }
+        
+        private void RenderLoop()
+        {
+            Console.WriteLine("Entering RenderThread loop");
+            while (true)
+            {
+                _event.WaitOne();
+                long time;
+                lock (_lock)
+                {
+                    time = _lastTime;
+                }
+                _tick?.Invoke(TimeSpan.FromTicks(time / 100));
+            }
+        }
+
 
         public void DoFrame(long frameTimeNanos)
         {
@@ -95,9 +119,9 @@ namespace Avalonia.Android
                 {
                     Choreographer.Instance!.PostFrameCallback(this);
                 }
+                _lastTime = frameTimeNanos;
+                _event.Set();
             }
-            
-            _tick?.Invoke(TimeSpan.FromTicks(frameTimeNanos / 100));
         }
     }
 }
