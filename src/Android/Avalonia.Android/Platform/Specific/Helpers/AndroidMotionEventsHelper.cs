@@ -173,8 +173,9 @@ namespace Avalonia.Android.Platform.Specific.Helpers
 
                     _pendingMoves.Add(pointerId,
                         new PendingMoveInput(new PendingMoveMotionEvent(e, index), toolType, modifiers));
-                    _flushPendingInput ??=
-                        Dispatcher.UIThread.InvokeAsync(FlushAllPendingInput, DispatcherPriority.Input);
+                    FlushAllPendingInput();
+                    /*_flushPendingInput ??=
+                        Dispatcher.UIThread.InvokeAsync(FlushAllPendingInput, DispatcherPriority.Input);*/
                 }
             }
             else
