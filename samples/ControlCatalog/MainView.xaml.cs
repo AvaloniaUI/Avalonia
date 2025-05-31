@@ -108,14 +108,14 @@ namespace ControlCatalog
                     ViewModel.SafeAreaPadding = insets.SafeAreaPadding;
                 };
 
-                ViewModel.DisplayEdgeToEdge = insets.DisplayEdgeToEdge;
+                ViewModel.DisplayEdgeToEdge = insets.DisplayEdgeToEdgePreference;
                 ViewModel.IsSystemBarVisible = insets.IsSystemBarVisible ?? true;
 
                 ViewModel.PropertyChanged += async (sender, args) =>
                 {
                     if (args.PropertyName == nameof(ViewModel.DisplayEdgeToEdge))
                     {
-                        insets.DisplayEdgeToEdge = ViewModel.DisplayEdgeToEdge;
+                        insets.DisplayEdgeToEdgePreference = ViewModel.DisplayEdgeToEdge;
                     }
                     else if (args.PropertyName == nameof(ViewModel.IsSystemBarVisible))
                     {
@@ -124,7 +124,7 @@ namespace ControlCatalog
 
                     // Give the OS some time to apply new values and refresh the view model.
                     await Task.Delay(100);
-                    ViewModel.DisplayEdgeToEdge = insets.DisplayEdgeToEdge;
+                    ViewModel.DisplayEdgeToEdge = insets.DisplayEdgeToEdgePreference;
                     ViewModel.IsSystemBarVisible = insets.IsSystemBarVisible ?? true;
                 };
             }
