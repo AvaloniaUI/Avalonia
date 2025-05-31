@@ -596,14 +596,14 @@ namespace Avalonia.Layout
                     (width, height) = LayoutHelper.RoundLayoutSizeUp(new Size(width, height), scale);
                 }
 
+                width += margin.Left + margin.Right;
+                height += margin.Top + margin.Bottom;
+
                 if (width > availableSize.Width)
                     width = availableSize.Width;
 
                 if (height > availableSize.Height)
                     height = availableSize.Height;
-
-                width += margin.Left + margin.Right;
-                height += margin.Top + margin.Bottom;
 
                 if (width < 0)
                     width = 0;
