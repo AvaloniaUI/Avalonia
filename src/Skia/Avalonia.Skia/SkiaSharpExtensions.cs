@@ -9,19 +9,18 @@ namespace Avalonia.Skia
 {
     public static class SkiaSharpExtensions
     {
-        public static SKFilterQuality ToSKFilterQuality(this BitmapInterpolationMode interpolationMode)
+        public static SKSamplingOptions ToSKSamplingOptions(this BitmapInterpolationMode interpolationMode)
         {
             switch (interpolationMode)
             {
+                case BitmapInterpolationMode.None:
                 case BitmapInterpolationMode.Unspecified:
                 case BitmapInterpolationMode.LowQuality:
-                    return SKFilterQuality.Low;
+                    return new SKSamplingOptions();
                 case BitmapInterpolationMode.MediumQuality:
-                    return SKFilterQuality.Medium;
+                    return new SKSamplingOptions(SKFilterMode.Linear);
                 case BitmapInterpolationMode.HighQuality:
-                    return SKFilterQuality.High;
-                case BitmapInterpolationMode.None:
-                    return SKFilterQuality.None;
+                    return new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear);
                 default:
                     throw new ArgumentOutOfRangeException(nameof(interpolationMode), interpolationMode, null);
             }
