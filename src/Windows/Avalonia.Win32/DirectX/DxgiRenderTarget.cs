@@ -24,6 +24,14 @@ namespace Avalonia.Win32.DirectX
         private IUnknown? _renderTexture;
         private RECT _clientRect;
 
+        [Flags]
+        enum AssociationFlags : ushort
+        {
+            DXGI_MWA_NO_WINDOW_CHANGES = 1,
+            DXGI_MWA_NO_ALT_ENTER = 2,
+            DXGI_MWA_NO_PRINT_SCREEN = 4
+        }
+
         public DxgiRenderTarget(EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo window, EglContext context, DxgiConnection connection) : base(context)
         {
             _window = window;
@@ -67,6 +75,8 @@ namespace Avalonia.Win32.DirectX
                     null,
                     null
             );
+
+            _dxgiFactory.MakeWindowAssociation(window.Handle, (ushort)(AssociationFlags.DXGI_MWA_NO_ALT_ENTER | AssociationFlags.DXGI_MWA_NO_PRINT_SCREEN));
 
             GetClientRect(_window.Handle, out var pClientRect);
             _clientRect = pClientRect;
