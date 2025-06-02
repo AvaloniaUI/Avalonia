@@ -20,10 +20,10 @@ namespace Avalonia.Controls.Platform
         bool DisplayEdgeToEdgePreference { get; set; }
 
 
-        [Obsolete("Use DisplayEdgeToEdgePreference")]
         /// <summary>
         /// Gets or sets whether the window draws edge to edge. behind any visible system bars.
         /// </summary>
+        [Obsolete("Use DisplayEdgeToEdgePreference")]
         bool DisplayEdgeToEdge { get; set; }
 
         /// <summary>
