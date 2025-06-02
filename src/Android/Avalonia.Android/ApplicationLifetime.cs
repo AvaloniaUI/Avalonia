@@ -8,9 +8,8 @@ namespace Avalonia.Android;
 internal class ApplicationLifetime : IActivityApplicationLifetime, ISingleViewApplicationLifetime
 {
     private Control? _mainView;
-    private Func<Control>? _mainViewFactory;
 
-    public Func<Control>? MainViewFactory { get => _mainViewFactory; set => _mainViewFactory = value; }
+    public Func<Control>? MainViewFactory { get; set; }
 
     public Control? MainView
     {
