@@ -387,10 +387,56 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
 
 - (BOOL) resignFirstResponder
 {
-    auto parent = _parent.tryGet();
-    if(parent)
-        parent->TopLevelEvents->LostFocus();
+    auto window = [self window];
+    if (window != nullptr && window.keyWindow)
+    {
+        [self onLostFocus];
+    }
+    
     return YES;
+}
+
+- (void)viewWillMoveToWindow:(NSWindow *)newWindow
+{
+    auto oldWindow = [self window];
+    if (oldWindow == newWindow)
+    {
+        // viewWillMoveToWindow can be called with the same window when the view hierarchy changes
+        return;
+    }
+
+    if (oldWindow != nullptr)
+    {
+        [[NSNotificationCenter defaultCenter]
+            removeObserver:self
+            name:@"NSWindowDidResignKeyNotification"
+            object: oldWindow];
+    }
+
+    if (newWindow != nullptr)
+    {
+        [[NSNotificationCenter defaultCenter]
+            addObserver:self
+            selector:@selector(windowDidResignKey:)
+            name:@"NSWindowDidResignKeyNotification"
+            object: newWindow];
+    }
+}
+
+- (void)windowDidResignKey:(NSNotification*)notification
+{
+    auto window = [self window];
+    if (window != nullptr && notification.object == window && [window firstResponder] == self)
+    {
+        [self onLostFocus];
+    }
+}
+
+- (void)onLostFocus
+{
+    auto parent = _parent.tryGet();
+    if (parent)
+        parent->TopLevelEvents->LostFocus();
 }
 
 - (void)mouseMoved:(NSEvent *)event
