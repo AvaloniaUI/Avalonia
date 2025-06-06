@@ -16,10 +16,12 @@ namespace Avalonia.Skia
         private IntPtr _currentFramebufferAddress;
         private SKSurface? _framebufferSurface;
         private PixelFormatConversionShim? _conversionShim;
-        private IDisposable? _preFramebufferCopyHandler;
+        private IFramebufferPlatformSurface _platformSurface;
         private IFramebufferRenderTarget? _renderTarget;
         private IFramebufferRenderTargetWithProperties? _renderTargetWithProperties;
         private bool _hadConversionShim;
+
+        protected SurfaceOrientation _orientation => _platformSurface is ISurfaceOrientation o ? o.Orientation : SurfaceOrientation.Normal;
 
         /// <summary>
         /// Create new framebuffer render target using a target surface.
@@ -27,6 +29,7 @@ namespace Avalonia.Skia
         /// <param name="platformSurface">Target surface.</param>
         public FramebufferRenderTarget(IFramebufferPlatformSurface platformSurface)
         {
+            _platformSurface = platformSurface;
             _renderTarget = platformSurface.CreateFramebufferRenderTarget();
             _renderTargetWithProperties = _renderTarget as IFramebufferRenderTargetWithProperties;
         }
@@ -90,7 +93,7 @@ namespace Avalonia.Skia
                 PreviousFrameIsRetained = !_hadConversionShim && lockProperties.PreviousFrameIsRetained
             };
             
-            return new DrawingContextImpl(createInfo, _preFramebufferCopyHandler, canvas, framebuffer);
+            return new DrawingContextImpl(createInfo, _conversionShim?.SurfaceCopyHandler, canvas, framebuffer);
         }
 
         public bool IsCorrupted => false;
@@ -116,7 +119,10 @@ namespace Avalonia.Skia
         [MemberNotNull(nameof(_framebufferSurface))]
         private void CreateSurface(SKImageInfo desiredImageInfo, ILockedFramebuffer framebuffer)
         {
-            if (_framebufferSurface != null && AreImageInfosCompatible(_currentImageInfo, desiredImageInfo) && _currentFramebufferAddress == framebuffer.Address)
+            var orientation = _orientation;
+
+            if (_framebufferSurface != null && AreImageInfosCompatible(_currentImageInfo, desiredImageInfo) 
+                && _currentFramebufferAddress == framebuffer.Address && _conversionShim?.Orientation == orientation)
             {
                 return;
             }
@@ -125,14 +131,18 @@ namespace Avalonia.Skia
             
             _currentFramebufferAddress = framebuffer.Address;
 
-            var surface = SKSurface.Create(desiredImageInfo, _currentFramebufferAddress, 
-                framebuffer.RowBytes, new SKSurfaceProperties(SKPixelGeometry.RgbHorizontal));
+            // Create a surface using the framebuffer address unless we need to rotate the display
+            SKSurface? surface = null;
+            if (orientation == SurfaceOrientation.Normal)
+            {
+                surface = SKSurface.Create(desiredImageInfo, _currentFramebufferAddress,
+                    framebuffer.RowBytes, new SKSurfaceProperties(SKPixelGeometry.RgbHorizontal));
+            }
 
             // If surface cannot be created - try to create a compatibility shim first
             if (surface == null)
             {
-                _conversionShim = new PixelFormatConversionShim(desiredImageInfo, framebuffer.Address);
-                _preFramebufferCopyHandler = _conversionShim.SurfaceCopyHandler;
+                _conversionShim = new PixelFormatConversionShim(desiredImageInfo, framebuffer.Address, orientation);
 
                 surface = _conversionShim.Surface;
             }
@@ -150,7 +160,6 @@ namespace Avalonia.Skia
         {
             _conversionShim?.Dispose();
             _conversionShim = null;
-            _preFramebufferCopyHandler = null;
 
             _framebufferSurface?.Dispose();
             _framebufferSurface = null;
@@ -163,16 +172,23 @@ namespace Avalonia.Skia
         private class PixelFormatConversionShim : IDisposable
         {
             private readonly SKBitmap _bitmap;
+            private readonly SurfaceOrientation _orientation;
             private readonly SKImageInfo _destinationInfo;
             private readonly IntPtr _framebufferAddress;
 
-            public PixelFormatConversionShim(SKImageInfo destinationInfo, IntPtr framebufferAddress)
+            public PixelFormatConversionShim(SKImageInfo destinationInfo, IntPtr framebufferAddress, SurfaceOrientation orientation)
             {
+                _orientation = orientation;
                 _destinationInfo = destinationInfo;
                 _framebufferAddress = framebufferAddress;
 
                 // Create bitmap using default platform settings
-                _bitmap = new SKBitmap(destinationInfo.Width, destinationInfo.Height);
+                _bitmap = orientation switch
+                {
+                    SurfaceOrientation.Rotated90 => new SKBitmap(destinationInfo.Height, destinationInfo.Width),
+                    SurfaceOrientation.Rotated270 => new SKBitmap(destinationInfo.Height, destinationInfo.Width),
+                    _ => new SKBitmap(destinationInfo.Width, destinationInfo.Height),
+                };
                 SKColorType bitmapColorType;
 
                 if (!_bitmap.CanCopyTo(destinationInfo.ColorType))
@@ -194,8 +210,6 @@ namespace Avalonia.Skia
                     throw new Exception(
                         $"Unable to create pixel format shim surface for conversion from {bitmapColorType} to {destinationInfo.ColorType}");
                 }
-
-                SurfaceCopyHandler = Disposable.Create(CopySurface);
             }
 
             /// <summary>
@@ -206,7 +220,9 @@ namespace Avalonia.Skia
             /// <summary>
             /// Handler to start conversion via surface copy.
             /// </summary>
-            public IDisposable SurfaceCopyHandler { get; }
+            public IDisposable SurfaceCopyHandler { get => Disposable.Create(CopySurface); }
+
+            public SurfaceOrientation Orientation => _orientation;
 
             /// <inheritdoc />
             public void Dispose()
@@ -214,7 +230,6 @@ namespace Avalonia.Skia
                 Surface.Dispose();
                 _bitmap.Dispose();
             }
-
             /// <summary>
             /// Convert and copy surface to a framebuffer.
             /// </summary>
@@ -222,8 +237,56 @@ namespace Avalonia.Skia
             {
                 using (var snapshot = Surface.Snapshot())
                 {
-                    snapshot.ReadPixels(_destinationInfo, _framebufferAddress, _destinationInfo.RowBytes, 0, 0,
-                        SKImageCachingHint.Disallow);
+                    if (Orientation != SurfaceOrientation.Normal)
+                    {
+                        // rotation or flipping required
+                        int width;
+                        int height;
+
+                        if (Orientation == SurfaceOrientation.Rotated180)
+                        {
+                            width = snapshot.Width;
+                            height = snapshot.Height;
+                        }
+                        else
+                        {
+                            width = snapshot.Height;
+                            height = snapshot.Width;
+                        }
+
+                        // Create a new surface with swapped width and height
+                        using var rotatedSurface = SKSurface.Create(new SKImageInfo(width, height));
+                        var rotatedCanvas = rotatedSurface.Canvas;
+
+                        // Apply transformation
+                        rotatedCanvas.RotateDegrees(Orientation switch
+                        {
+                            SurfaceOrientation.Rotated90 => 90,
+                            SurfaceOrientation.Rotated180 => 180,
+                            SurfaceOrientation.Rotated270 => -90,
+                            _ => 0
+                        });
+                        rotatedCanvas.Translate(Orientation switch
+                        {
+                            SurfaceOrientation.Rotated90 => new SKPoint(0, -width),
+                            SurfaceOrientation.Rotated180 => new SKPoint(-width, -height),
+                            SurfaceOrientation.Rotated270 => new SKPoint(-height, 0),
+                            _ => new SKPoint(0, 0)
+                        });
+
+                        // Draw the original image onto the rotated canvas
+                        rotatedCanvas.DrawImage(snapshot, 0, 0);
+
+                        // Return the rotated image
+                        using var rotateSnapshot = rotatedSurface.Snapshot();
+                        rotateSnapshot.ReadPixels(_destinationInfo, _framebufferAddress, _destinationInfo.RowBytes, 0, 0,
+                            SKImageCachingHint.Disallow);
+                    }
+                    else
+                    {
+                        snapshot.ReadPixels(_destinationInfo, _framebufferAddress, _destinationInfo.RowBytes, 0, 0,
+                            SKImageCachingHint.Disallow);
+                    }
                 }
             }
         }
