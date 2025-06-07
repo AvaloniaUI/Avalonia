@@ -166,6 +166,7 @@ namespace Avalonia.X11
         public IntPtr _XEMBED_INFO;
         public IntPtr _MOTIF_WM_HINTS;
         public IntPtr _NET_WM_STATE_SKIP_TASKBAR;
+        public IntPtr _NET_WM_STATE_SKIP_PAGER;
         public IntPtr _NET_WM_STATE_ABOVE;
         public IntPtr _NET_WM_STATE_MODAL;
         public IntPtr _NET_WM_STATE_HIDDEN;

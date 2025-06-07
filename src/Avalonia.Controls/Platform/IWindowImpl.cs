@@ -58,7 +58,12 @@ namespace Avalonia.Platform
         /// Enables or disables the taskbar icon
         /// </summary>
         void ShowTaskbarIcon(bool value);
-
+        
+        /// <summary>
+        /// Shows or hides from the task switcher
+        /// </summary>
+        void ShowInTaskSwitcher(bool value);
+        
         /// <summary>
         /// Enables or disables resizing of the window
         /// </summary>
