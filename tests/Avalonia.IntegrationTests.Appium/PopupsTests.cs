@@ -27,10 +27,8 @@ public abstract class PopupsTests : TestBase
         Assert.NotNull(Session.FindElementByAccessibilityId("LightDismissPopupContent"));
         
         // Act - Click outside to dismiss
-        new Actions(Session)
-            .MoveByOffset(0, 500) // Move far away from popup
-            .Click()
-            .Perform();
+        var dismissBorder = Session.FindElementByAccessibilityId("DismissBorder");
+        dismissBorder.Click();
 
         Thread.Sleep(500);
 
@@ -53,10 +51,8 @@ public abstract class PopupsTests : TestBase
             Assert.NotNull(Session.FindElementByAccessibilityId("StaysOpenPopupCloseButton"));
 
             // Act - Click outside
-            new Actions(Session)
-                .MoveByOffset(0, 500)
-                .Click()
-                .Perform();
+            var dismissBorder = Session.FindElementByAccessibilityId("DismissBorder");
+            dismissBorder.Click();
 
             Thread.Sleep(500);
 
