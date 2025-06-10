@@ -4,10 +4,11 @@
 
   <StackPanel Orientation="Vertical" Spacing="10">
 
-    <Border x:Name="DismissBorder">
-      <TextBlock Text="'Light Dismiss' Popup" />
-    </Border>
-    
+    <Button x:Name="DismissButton"
+            Content="Dismiss Button" />
+
+    <TextBlock Text="'Light Dismiss' Popup" />
+
     <Button x:Name="ShowLightDismissPopup"
             Content="Show Popup" Click="ButtonLightDismiss_OnClick" />
     <Popup x:Name="LightDismissPopup"
