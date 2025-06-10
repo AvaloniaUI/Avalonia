@@ -76,6 +76,7 @@ namespace Avalonia.Skia
                 var gBounds = glyphBounds[i];
                 var advance = glyphInfos[i].GlyphAdvance;
 
+                //Glyph bounds are relative to the baseline
                 runBounds = runBounds.Union(new Rect(currentX + gBounds.Left, baselineOrigin.Y + gBounds.Top, gBounds.Width, gBounds.Height));
 
                 currentX += advance;
