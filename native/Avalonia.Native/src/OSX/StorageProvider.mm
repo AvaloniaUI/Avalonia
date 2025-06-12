@@ -235,11 +235,6 @@ public:
                 panel.title = [NSString stringWithUTF8String:title];
             }
             
-            if(initialDirectory != nullptr)
-            {
-                auto directoryString = [NSString stringWithUTF8String:initialDirectory];
-                panel.directoryURL = [NSURL URLWithString:directoryString];
-            }
             
             if(initialFile != nullptr)
             {
@@ -247,6 +242,12 @@ public:
             }
             
             SetAccessoryView(panel, filters, false);
+            
+            if(initialDirectory != nullptr)
+            {
+                auto directoryString = [NSString stringWithUTF8String:initialDirectory];
+                panel.directoryURL = [NSURL URLWithString:directoryString];
+            }
             
             auto handler = ^(NSModalResponse result) {
                 if(result == NSFileHandlingPanelOKButton)
@@ -304,11 +305,6 @@ public:
                 panel.title = [NSString stringWithUTF8String:title];
             }
             
-            if(initialDirectory != nullptr)
-            {
-                auto directoryString = [NSString stringWithUTF8String:initialDirectory];
-                panel.directoryURL = [NSURL URLWithString:directoryString];
-            }
             
             if(initialFile != nullptr)
             {
@@ -316,6 +312,12 @@ public:
             }
             
             SetAccessoryView(panel, filters, true);
+            
+            if(initialDirectory != nullptr)
+            {
+                auto directoryString = [NSString stringWithUTF8String:initialDirectory];
+                panel.directoryURL = [NSURL URLWithString:directoryString];
+            }
             
             auto handler = ^(NSModalResponse result) {
                 if(result == NSFileHandlingPanelOKButton)
