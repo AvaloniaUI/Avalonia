@@ -160,7 +160,7 @@ namespace Avalonia.Input
 
                 interactive?.RaiseEvent(losingFocus);
 
-                if (losingFocus.Cancelled)
+                if (losingFocus.Canceled)
                 {
                     changeFocus = false;
                 }
@@ -178,7 +178,7 @@ namespace Avalonia.Input
 
                     newFocus.RaiseEvent(gettingFocus);
 
-                    if (gettingFocus.Cancelled)
+                    if (gettingFocus.Canceled)
                     {
                         changeFocus = false;
                     }

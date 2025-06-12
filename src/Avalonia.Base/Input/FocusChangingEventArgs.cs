@@ -39,7 +39,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Gets whether focus change is canceled.
         /// </summary>
-        public bool Cancelled { get; private set; }
+        public bool Canceled { get; private set; }
 
         internal bool CanCancelOrRedirectFocus { get; init; }
 
@@ -49,9 +49,9 @@ namespace Avalonia.Input
         /// <returns>true if focus change was cancelled; otherwise, false</returns>
         public bool TryCancel()
         {
-            Cancelled = CanCancelOrRedirectFocus;
+            Canceled = CanCancelOrRedirectFocus;
 
-            return Cancelled;
+            return Canceled;
         }
 
         /// <summary>
