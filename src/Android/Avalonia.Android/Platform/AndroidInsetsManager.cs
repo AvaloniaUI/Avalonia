@@ -289,7 +289,12 @@ namespace Avalonia.Android.Platform
                 _systemBarColor = value;
 
                 if (_isDisplayEdgeToEdgeForced)
+                {
+                    // Allow having fully transparent navbars when on api level 35
+                    if (OperatingSystem.IsAndroidVersionAtLeast(35))
+                        Window.NavigationBarContrastEnforced = _systemBarColor != Colors.Transparent;
                     return;
+                }
 
                 if (_systemBarColor is { } color && !_displaysEdgeToEdge && _activity.Window != null)
                 {
