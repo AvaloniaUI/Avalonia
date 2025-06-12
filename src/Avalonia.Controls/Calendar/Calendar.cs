@@ -6,6 +6,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Globalization;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
@@ -813,13 +814,13 @@ namespace Avalonia.Controls
                 {
                     // DisplayDateStart coerces to the value of the
                     // SelectedDateMin if SelectedDateMin < DisplayDateStart
-                    DateTime? selectedDateMin = SelectedDateMin(this);
 
-                    if (selectedDateMin.HasValue && DateTime.Compare(selectedDateMin.Value, newValue.Value) < 0)
-                    {
-                        SetCurrentValue(DisplayDateStartProperty, selectedDateMin.Value);
-                        return;
-                    }
+                    //DateTime? selectedDateMin = SelectedDateMin(this);
+                    //if (selectedDateMin.HasValue && DateTime.Compare(selectedDateMin.Value, newValue.Value) < 0)
+                    //{
+                    //    SetCurrentValue(DisplayDateStartProperty, selectedDateMin.Value);
+                    //    return;
+                    //}
 
                     // if DisplayDateStart > DisplayDateEnd,
                     // DisplayDateEnd = DisplayDateStart
@@ -921,13 +922,18 @@ namespace Avalonia.Controls
                 {
                     // DisplayDateEnd coerces to the value of the
                     // SelectedDateMax if SelectedDateMax > DisplayDateEnd
-                    DateTime? selectedDateMax = SelectedDateMax(this);
 
+                    /*
+                     *       When changing the start date, if SelectDate is greater than DisplayDateEnd, the start date range of CalendarDatePicker 
+                     *       will be inconsistent with the start date range of the calendar.
+
+                    DateTime? selectedDateMax = SelectedDateMax(this);
+              
                     if (selectedDateMax.HasValue && DateTime.Compare(selectedDateMax.Value, newValue.Value) > 0)
                     {
                         SetCurrentValue(DisplayDateEndProperty, selectedDateMax.Value);
                         return;
-                    }
+                    }*/
 
                     // if DisplayDateEnd < DisplayDateStart,
                     // DisplayDateEnd = DisplayDateStart
@@ -1120,11 +1126,16 @@ namespace Avalonia.Controls
                     cal._displayDateIsChanging = true;
                     if (DateTime.Compare(value.Value, cal.DisplayDateRangeStart) < 0)
                     {
-                        cal.DisplayDateStart = value;
+                        //cal.DisplayDateStart = value;
+                        //This assignment method will cause the Binding to be interrupted, causing the CalendarDatePicker
+                        //to set DisplayDateStart and not be passed to the calendar control through TemplateBinding.
+                        cal.SetCurrentValue(DisplayDateStartProperty, value);
+
                     }
                     else if (DateTime.Compare(value.Value, cal.DisplayDateRangeEnd) > 0)
                     {
-                        cal.DisplayDateEnd = value;
+                        //cal.DisplayDateEnd = value;
+                         cal.SetCurrentValue(DisplayDateEndProperty, value);
                     }
                     cal._displayDateIsChanging = false;
 
