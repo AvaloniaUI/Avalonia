@@ -110,7 +110,7 @@ namespace Avalonia.Media.TextFormatting
         /// <inheritdoc/>
         public override void Draw(DrawingContext drawingContext, Point lineOrigin)
         {
-            var (currentX, currentY) = lineOrigin + new Point(Start, 0);           
+            var (currentX, currentY) = lineOrigin + new Point(Start, 0);
 
             foreach (var textRun in _textRuns)
             {
@@ -1385,7 +1385,10 @@ namespace Avalonia.Media.TextFormatting
                     {
                         var textMetrics = textRun.TextMetrics;
                         var glyphRun = textRun.GlyphRun;
-                        var runBounds = glyphRun.InkBounds.WithX(widthIncludingWhitespace + glyphRun.InkBounds.X);
+
+                        var offsetY = -ascent - textRun.Baseline;
+
+                        var runBounds = glyphRun.InkBounds.Translate(new Vector(widthIncludingWhitespace, offsetY));
 
                         bounds = bounds.Union(runBounds);
 
@@ -1402,11 +1405,6 @@ namespace Avalonia.Media.TextFormatting
                         {
                             height = drawableTextRun.Size.Height;
                         }
-
-                        //Adjust current ascent so drawables and text align at the bottom edge of the line.
-                        var offset = Math.Max(0, drawableTextRun.Baseline + ascent - descent);
-
-                        ascent -= offset;
 
                         bounds = bounds.Union(new Rect(new Point(bounds.Right, 0), drawableTextRun.Size));
 
@@ -1441,6 +1439,8 @@ namespace Avalonia.Media.TextFormatting
                 }
             }
 
+            height += lineSpacing;
+
             //The width of overhanging pixels at the bottom
             var overhangAfter = Math.Max(0, bounds.Bottom - height);
             //The width of overhanging pixels at the origin
@@ -1460,14 +1460,14 @@ namespace Avalonia.Media.TextFormatting
 
             var start = GetParagraphOffsetX(width, widthIncludingWhitespace);
 
-            _inkBounds = new Rect(bounds.Position + new Point(start, 0), bounds.Size);
+            _inkBounds = bounds.Translate(new Vector(start, 0));
 
             _bounds = new Rect(start, 0, widthIncludingWhitespace, height);
 
             return new TextLineMetrics
             {
                 HasOverflowed = hasOverflowed,
-                Height = height + lineSpacing,
+                Height = height + overhangAfter,
                 Extent = bounds.Height,
                 NewlineLength = newLineLength,
                 Start = start,
