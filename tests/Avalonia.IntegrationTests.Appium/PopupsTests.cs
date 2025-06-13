@@ -15,7 +15,7 @@ public abstract class PopupsTests : TestBase
         _isOverlayPopups = isOverlayPopups;
     }
 
-    [Fact]
+    [PlatformFact(TestPlatforms.Windows)]
     public void LightDismiss_Popup_Should_Open_And_Close()
     {
         // Open popup
@@ -37,7 +37,7 @@ public abstract class PopupsTests : TestBase
             Session.FindElementByAccessibilityId("LightDismissPopupContent"));
     }
 
-    [Fact]
+    [PlatformFact(TestPlatforms.Windows)]
     public void StaysOpen_Popup_Should_Stay_Open()
     {
         // Open popup
@@ -73,7 +73,7 @@ public abstract class PopupsTests : TestBase
         }
     }
 
-    [Fact]
+    [PlatformFact(TestPlatforms.Windows)]
     public void StaysOpen_Popup_TextBox_Should_Be_Editable()
     {
         // Open popup
@@ -99,7 +99,7 @@ public abstract class PopupsTests : TestBase
         }
     }
 
-    [Fact]
+    [PlatformFact(TestPlatforms.Windows)]
     public void TopMost_Popup_Should_Stay_Above_Other_Windows()
     {
         // It's not possible to test overlay topmost with other windows.
@@ -148,7 +148,7 @@ public abstract class PopupsTests : TestBase
         }
     }
 
-    [Fact]
+    [PlatformFact(TestPlatforms.Windows)]
     public void Non_TopMost_Popup_Does_Not_Stay_Above_Other_Windows()
     {
         var topmostButton = Session.FindElementByAccessibilityId("ShowStaysOpenPopup");
