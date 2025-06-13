@@ -78,7 +78,7 @@ namespace Avalonia.Input
             else
             {
                 _focusRoot = null;
-                keyboardDevice.SetFocusedElement(null, NavigationMethod.Unspecified, KeyModifiers.None);
+                keyboardDevice.SetFocusedElement(null, NavigationMethod.Unspecified, KeyModifiers.None, false);
                 return false;
             }
         }
