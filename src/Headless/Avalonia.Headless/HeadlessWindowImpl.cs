@@ -174,6 +174,11 @@ namespace Avalonia.Headless
 
         }
 
+        public void ShowInTaskSwitcher(bool value)
+        {
+            
+        }
+
         public void CanResize(bool value)
         {
 
