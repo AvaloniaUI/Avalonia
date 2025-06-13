@@ -143,6 +143,8 @@ namespace Avalonia.Controls
             ItemsPanelProperty.OverrideDefaultValue<MenuItem>(DefaultPanel);
             ClickEvent.AddClassHandler<MenuItem>((x, e) => x.OnClick(e));
             SubmenuOpenedEvent.AddClassHandler<MenuItem>((x, e) => x.OnSubmenuOpened(e));
+            PointerEnteredItemEvent.AddClassHandler<MenuItem>((x, e) => x.OnPointerEnteredItem(e));
+            PointerExitedItemEvent.AddClassHandler<MenuItem>((x, e) => x.OnPointerExitedItem(e));
             AutomationProperties.IsOffscreenBehaviorProperty.OverrideDefaultValue<MenuItem>(IsOffscreenBehavior.FromClip);
             AccessKeyHandler.AccessKeyPressedEvent.AddClassHandler<MenuItem>(OnAccessKeyPressed);
         }
@@ -528,6 +530,26 @@ namespace Avalonia.Controls
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Invoked when an unhandled <see cref="PointerEnteredItemEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
+        /// </summary>
+        /// <param name="e">Data about the event.</param>
+        protected virtual void OnPointerEnteredItem(RoutedEventArgs e)
+        {
+        }
+
+        /// <summary>
+        /// Invoked when an unhandled <see cref="PointerExitedItemEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
+        /// </summary>
+        /// <param name="e">Data about the event.</param>
+        protected virtual void OnPointerExitedItem(RoutedEventArgs e)
+        {
         }
 
         /// <inheritdoc/>
