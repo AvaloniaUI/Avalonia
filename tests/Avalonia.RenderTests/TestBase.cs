@@ -42,13 +42,7 @@ namespace Avalonia.Direct2D1.RenderTests
 #endif
         public static FontFamily TestFontFamily = new FontFamily(s_fontUri);
 
-#if AVALONIA_SKIA3
-        // TODO: investigate why output is different.
-        // Most likely we need to use new SKSamplingOptions API, as old filters are broken with SKBitmap.
-        private const double AllowedError = 0.15;
-#else
         private const double AllowedError = 0.022;
-#endif
 
         public TestBase(string outputPath)
         {

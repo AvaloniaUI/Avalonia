@@ -14,7 +14,8 @@ namespace Avalonia.Skia
         /// <param name="context">Drawing context.</param>
         /// <param name="sourceRect">Source rect.</param>
         /// <param name="destRect">Destination rect.</param>
+        /// <param name="samplingOptions">Interpolation sampling options.</param>
         /// <param name="paint">Paint to use.</param>
-        void Draw(DrawingContextImpl context, SKRect sourceRect, SKRect destRect, SKPaint paint);
+        void Draw(DrawingContextImpl context, SKRect sourceRect, SKRect destRect, SKSamplingOptions samplingOptions, SKPaint paint);
     }
 }

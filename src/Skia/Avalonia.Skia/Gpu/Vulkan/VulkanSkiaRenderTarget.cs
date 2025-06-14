@@ -54,7 +54,7 @@ class VulkanSkiaRenderTarget : ISkiaGpuRenderTarget
                     Size = sessionImageInfo.MemorySize
                 }
             };
-            using var renderTarget = new GRBackendRenderTarget(size.Width, size.Height, 1, imageInfo);
+            using var renderTarget = new GRBackendRenderTarget(size.Width, size.Height, imageInfo);
             var surface = SKSurface.Create(_gpu.GrContext, renderTarget,
                 session.IsYFlipped ? GRSurfaceOrigin.TopLeft : GRSurfaceOrigin.BottomLeft,
                 session.IsRgba ? SKColorType.Rgba8888 : SKColorType.Bgra8888, SKColorSpace.CreateSrgb());
