@@ -124,11 +124,6 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             InputRoot = inputRoot;
         }
 
-        void Draw()
-        {
-            Paint?.Invoke(new Rect(new Point(0, 0), ClientSize));
-        }
-
         public virtual void Dispose()
         {
             _systemNavigationManager.Dispose();
@@ -146,23 +141,17 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             Resized?.Invoke(size, WindowResizeReason.Layout);
         }
 
-        class ViewImpl : InvalidationAwareSurfaceView, ISurfaceHolderCallback, IInitEditorInfo
+        sealed class ViewImpl : InvalidationAwareSurfaceView, IInitEditorInfo
         {
             private readonly TopLevelImpl _tl;
             private Size _oldSize;
+            private double _oldScaling;
 
             public ViewImpl(Context context, TopLevelImpl tl, bool placeOnTop) : base(context)
             {
                 _tl = tl;
                 if (placeOnTop)
                     SetZOrderOnTop(true);
-            }
-
-            public TopLevelImpl TopLevelImpl => _tl;
-
-            protected override void Draw()
-            {
-                _tl.Draw();
             }
 
             protected override void DispatchDraw(global::Android.Graphics.Canvas canvas)
@@ -211,17 +200,24 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 return res ?? baseResult;
             }
 
-            void ISurfaceHolderCallback.SurfaceChanged(ISurfaceHolder holder, Format format, int width, int height)
+            public override void SurfaceChanged(ISurfaceHolder holder, Format format, int width, int height)
             {
-                var newSize = new PixelSize(width, height).ToSize(_tl.RenderScaling);
+                base.SurfaceChanged(holder, format, width, height);
+
+                var newSize = Size.ToSize(Scaling);
+                var newScaling = Scaling;
 
                 if (newSize != _oldSize)
                 {
                     _oldSize = newSize;
                     _tl.OnResized(newSize);
                 }
-
-                base.SurfaceChanged(holder, format, width, height);
+                // ReSharper disable once CompareOfFloatsByEqualityOperator
+                if (newScaling != _oldScaling)
+                {
+                    _oldScaling =  newScaling;
+                    _tl.ScalingChanged?.Invoke(newScaling);
+                }
             }
 
             public sealed override bool OnCheckIsTextEditor()
@@ -236,11 +232,10 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 _initEditorInfo = init;
             }
 
-            public sealed override IInputConnection OnCreateInputConnection(EditorInfo? outAttrs)
+            public override IInputConnection OnCreateInputConnection(EditorInfo? outAttrs)
             {
                 return _initEditorInfo?.Invoke(_tl, outAttrs!)!;
             }
-
         }
 
         public IPopupImpl? CreatePopup() => null;
@@ -280,10 +275,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         IntPtr EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Handle => ((IPlatformHandle)_view).Handle;
         bool EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfoWithWaitPolicy.SkipWaits => true;
-
-        public PixelSize Size => _view.Size;
-
-        public double Scaling => RenderScaling;
+        PixelSize EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Size => _view.Size;
+        double EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Scaling => _view.Scaling;
 
         public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevels)
         {

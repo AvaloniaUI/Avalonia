@@ -1,30 +1,28 @@
 using System;
 using Android.Content;
 using Android.Graphics;
-using Android.OS;
 using Android.Runtime;
-using Android.Util;
 using Android.Views;
 using Avalonia.Android.Platform.SkiaPlatform;
+using Avalonia.Logging;
 using Avalonia.Platform;
 
 namespace Avalonia.Android
 {
     internal abstract class InvalidationAwareSurfaceView : SurfaceView, ISurfaceHolderCallback, INativePlatformHandleSurface
     {
-        bool _invalidateQueued;
-        private bool _isDisposed;
-        private bool _isSurfaceValid;
-        readonly object _lock = new object();
-        private readonly Handler _handler;
+        private IntPtr _nativeWindowHandle = IntPtr.Zero;
+        private PixelSize _size = new(1, 1);
+        private double _scaling = 1;
 
-        internal event EventHandler? SurfaceWindowCreated;
+        public event EventHandler? SurfaceWindowCreated;
+        public PixelSize Size => _size;
+        public double Scaling => _scaling;
 
-        IntPtr IPlatformHandle.Handle => _isSurfaceValid && Holder?.Surface?.Handle is { } handle ?
-            AndroidFramebuffer.ANativeWindow_fromSurface(JNIEnv.Handle, handle) :
-            default;
+        IntPtr IPlatformHandle.Handle => _nativeWindowHandle;
+        string IPlatformHandle.HandleDescriptor => "SurfaceView";
 
-        public InvalidationAwareSurfaceView(Context context) : base(context)
+        protected InvalidationAwareSurfaceView(Context context) : base(context)
         {
             if (Holder is null)
                 throw new InvalidOperationException(
@@ -32,71 +30,59 @@ namespace Avalonia.Android
 
             Holder.AddCallback(this);
             Holder.SetFormat(global::Android.Graphics.Format.Transparent);
-            _handler = new Handler(context.MainLooper!);
         }
 
-        public override void Invalidate()
+        protected override void Dispose(bool disposing)
         {
-            lock (_lock)
-            {
-                if (_invalidateQueued)
-                    return;
-                _handler.Post(() =>
-                {
-                    if (_isDisposed || Holder?.Surface?.IsValid != true)
-                        return;
-                    try
-                    {
-                        DoDraw();
-                    }
-                    catch (Exception e)
-                    {
-                        Log.WriteLine(LogPriority.Error, "Avalonia", e.ToString());
-                    }
-                });
-            }
+            ReleaseNativeWindowHandle();
+            base.Dispose(disposing);
         }
 
-        internal new void Dispose()
+        public virtual void SurfaceChanged(ISurfaceHolder holder, Format format, int width, int height)
         {
-            _isDisposed = true;
-        }
-
-        public void SurfaceChanged(ISurfaceHolder holder, Format format, int width, int height)
-        {
-            _isSurfaceValid = true;
-            Log.Info("AVALONIA", "Surface Changed");
-            DoDraw();
+            CacheSurfaceProperties(holder);
+            Logger.TryGet(LogEventLevel.Verbose, LogArea.AndroidPlatform)?
+                .Log(this, "InvalidationAwareSurfaceView Changed");
         }
 
         public void SurfaceCreated(ISurfaceHolder holder)
         {
-            _isSurfaceValid = true;
-            Log.Info("AVALONIA", "Surface Created");
+            CacheSurfaceProperties(holder);
+            Logger.TryGet(LogEventLevel.Verbose, LogArea.AndroidPlatform)?
+                .Log(this, "InvalidationAwareSurfaceView Created");
             SurfaceWindowCreated?.Invoke(this, EventArgs.Empty);
-            DoDraw();
         }
 
         public void SurfaceDestroyed(ISurfaceHolder holder)
         {
-            _isSurfaceValid = false;
-            Log.Info("AVALONIA", "Surface Destroyed");
-
+            ReleaseNativeWindowHandle();
+            _size = new PixelSize(1, 1);
+            _scaling = 1;
+            Logger.TryGet(LogEventLevel.Verbose, LogArea.AndroidPlatform)?
+                .Log(this, "InvalidationAwareSurfaceView Destroyed");
         }
 
-        protected void DoDraw()
+        private void CacheSurfaceProperties(ISurfaceHolder holder)
         {
-            lock (_lock)
-            {
-                _invalidateQueued = false;
-            }
-            Draw();
+            ReleaseNativeWindowHandle();
+            var surface = holder?.Surface;
+            if (surface?.Handle is { } handle)
+                _nativeWindowHandle = AndroidFramebuffer.ANativeWindow_fromSurface(JNIEnv.Handle, handle);
+            else
+                _nativeWindowHandle = IntPtr.Zero;
+
+            var frame = holder?.SurfaceFrame;
+            _size = frame != null ? new PixelSize(frame.Width(), frame.Height()) : new PixelSize(1, 1);
+            _scaling = Resources?.DisplayMetrics?.Density ?? 1;
         }
-        protected abstract void Draw();
-        public string HandleDescriptor => "SurfaceView";
 
-        public PixelSize Size => new(Holder?.SurfaceFrame?.Width() ?? 1, Holder?.SurfaceFrame?.Height() ?? 1);
-
-        public double Scaling => Resources?.DisplayMetrics?.Density ?? 1;
+        private void ReleaseNativeWindowHandle()
+        {
+            if (_nativeWindowHandle != IntPtr.Zero)
+            {
+                AndroidFramebuffer.ANativeWindow_release(_nativeWindowHandle);
+                _nativeWindowHandle = IntPtr.Zero;
+            }
+        }
     }
 }
