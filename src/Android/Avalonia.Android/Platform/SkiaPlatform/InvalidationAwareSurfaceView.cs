@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using Android.Content;
 using Android.Graphics;
 using Android.Runtime;
@@ -64,12 +65,18 @@ namespace Avalonia.Android
 
         private void CacheSurfaceProperties(ISurfaceHolder holder)
         {
-            ReleaseNativeWindowHandle();
             var surface = holder?.Surface;
+            var newHandle = IntPtr.Zero;
             if (surface?.Handle is { } handle)
-                _nativeWindowHandle = AndroidFramebuffer.ANativeWindow_fromSurface(JNIEnv.Handle, handle);
-            else
-                _nativeWindowHandle = IntPtr.Zero;
+            {
+                newHandle = AndroidFramebuffer.ANativeWindow_fromSurface(JNIEnv.Handle, handle);
+            }
+
+            if (Interlocked.Exchange(ref _nativeWindowHandle, newHandle) is var oldHandle
+                && oldHandle != IntPtr.Zero)
+            {
+                AndroidFramebuffer.ANativeWindow_release(oldHandle);
+            }
 
             var frame = holder?.SurfaceFrame;
             _size = frame != null ? new PixelSize(frame.Width(), frame.Height()) : new PixelSize(1, 1);
@@ -78,10 +85,10 @@ namespace Avalonia.Android
 
         private void ReleaseNativeWindowHandle()
         {
-            if (_nativeWindowHandle != IntPtr.Zero)
+            if (Interlocked.Exchange(ref _nativeWindowHandle, IntPtr.Zero) is var oldHandle
+                && oldHandle != IntPtr.Zero)
             {
-                AndroidFramebuffer.ANativeWindow_release(_nativeWindowHandle);
-                _nativeWindowHandle = IntPtr.Zero;
+                AndroidFramebuffer.ANativeWindow_release(oldHandle);
             }
         }
     }
