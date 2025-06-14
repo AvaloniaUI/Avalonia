@@ -19,7 +19,7 @@ namespace Avalonia.Android.Platform
     {
         private readonly Activity _activity;
         private readonly TopLevelImpl _topLevel;
-        private bool _displayEdgeToEdge;
+        private bool _displaysEdgeToEdge;
         private bool? _systemUiVisibility;
         private SystemBarTheme? _statusBarTheme;
         private bool? _isDefaultSystemBarLightTheme;
@@ -27,7 +27,9 @@ namespace Avalonia.Android.Platform
         private InputPaneState _state;
         private Rect _previousRect;
         private Insets? _previousImeInset;
+        private bool _displayEdgeToEdgePreference;
         private readonly bool _usesLegacyLayouts;
+        private readonly bool _isDisplayEdgeToEdgeForced;
 
         private AndroidWindow Window => _activity.Window ?? throw new InvalidOperationException("Activity.Window must be set."); 
         
@@ -50,29 +52,42 @@ namespace Avalonia.Android.Platform
             }
         }
 
-        public bool DisplayEdgeToEdge
+        public bool DisplayEdgeToEdgePreference
         {
-            get => _displayEdgeToEdge;
+            get => _displayEdgeToEdgePreference;
             set
             {
-                _displayEdgeToEdge = value;
+                _displayEdgeToEdgePreference = value;
 
-                if (OperatingSystem.IsAndroidVersionAtLeast(28) && Window.Attributes is { } attributes)
-                {
-                    attributes.LayoutInDisplayCutoutMode = value ? LayoutInDisplayCutoutMode.ShortEdges : LayoutInDisplayCutoutMode.Default;
-                }
+               UpdateDisplayEdgeToEgdeState();
+            }
+        }
 
-                WindowCompat.SetDecorFitsSystemWindows(Window, !value);
+        private void UpdateDisplayEdgeToEgdeState()
+        {
+            if (_isDisplayEdgeToEdgeForced)
+            {
+                _displaysEdgeToEdge = true;
+                return;
+            }
 
-                if (value)
-                {
-                    Window.AddFlags(WindowManagerFlags.TranslucentStatus);
-                    Window.AddFlags(WindowManagerFlags.TranslucentNavigation);
-                }
-                else
-                {
-                    SystemBarColor = _systemBarColor;
-                }
+            _displaysEdgeToEdge = _displayEdgeToEdgePreference;
+
+            if (OperatingSystem.IsAndroidVersionAtLeast(28) && Window.Attributes is { } attributes)
+            {
+                attributes.LayoutInDisplayCutoutMode = _displayEdgeToEdgePreference ? LayoutInDisplayCutoutMode.ShortEdges : LayoutInDisplayCutoutMode.Default;
+            }
+
+            WindowCompat.SetDecorFitsSystemWindows(Window, !_displayEdgeToEdgePreference);
+
+            if (_displayEdgeToEdgePreference)
+            {
+                Window.AddFlags(WindowManagerFlags.TranslucentStatus);
+                Window.AddFlags(WindowManagerFlags.TranslucentNavigation);
+            }
+            else
+            {
+                SystemBarColor = _systemBarColor;
             }
         }
 
@@ -80,6 +95,9 @@ namespace Avalonia.Android.Platform
         {
             _activity = activity;
             _topLevel = topLevel;
+
+            // Better detection for target sdk and running api level. Apps can change their target sdk and bypass dotnet's fixed target sdk level.
+            _isDisplayEdgeToEdgeForced = _activity.ApplicationContext?.ApplicationInfo?.TargetSdkVersion == (BuildVersionCodes)35 && Build.VERSION.SdkInt >= (BuildVersionCodes)35;
 
             ViewCompat.SetOnApplyWindowInsetsListener(Window.DecorView, this);
 
@@ -89,7 +107,7 @@ namespace Avalonia.Android.Platform
                 _activity.Window?.DecorView.ViewTreeObserver?.AddOnGlobalLayoutListener(this);
             }
 
-            DisplayEdgeToEdge = false;
+            DisplayEdgeToEdgePreference = false;
 
             ViewCompat.SetWindowInsetsAnimationCallback(Window.DecorView, this);
         }
@@ -105,11 +123,11 @@ namespace Avalonia.Android.Platform
                     var renderScaling = _topLevel.RenderScaling;
 
                     var inset = insets.GetInsets(
-                        _displayEdgeToEdge ?
+                        DisplaysEdgeToEdge ?
                             WindowInsetsCompat.Type.StatusBars() | WindowInsetsCompat.Type.NavigationBars() |
                             WindowInsetsCompat.Type.DisplayCutout() : 0);
 
-                    return new Thickness(inset.Left / renderScaling,
+                   return new Thickness(inset.Left / renderScaling,
                         inset.Top / renderScaling,
                         inset.Right / renderScaling,
                         inset.Bottom / renderScaling);
@@ -206,6 +224,12 @@ namespace Avalonia.Android.Platform
             {
                 _statusBarTheme = value;
 
+                // On api 35, there's no system bar theme. Updating the status bar theme has no effect, and navigation bar now has a special style that
+                // makes it invisible if you change the nav bar appearance. By default, android applies a 80% opacity filter over any color drawn on the 
+                // activity behind, forcing you to always use a light foreground, i.e. dark appearance. Thus we skip updating any colors.
+                if (_isDisplayEdgeToEdgeForced)
+                    return;
+
                 var compat = new WindowInsetsControllerCompat(Window, _topLevel.View);
 
                 if (_isDefaultSystemBarLightTheme == null)
@@ -264,7 +288,15 @@ namespace Avalonia.Android.Platform
             {
                 _systemBarColor = value;
 
-                if (_systemBarColor is { } color && !_displayEdgeToEdge && _activity.Window != null)
+                if (_isDisplayEdgeToEdgeForced)
+                {
+                    // Allow having fully transparent navbars when on api level 35
+                    if (OperatingSystem.IsAndroidVersionAtLeast(35))
+                        Window.NavigationBarContrastEnforced = _systemBarColor != Colors.Transparent;
+                    return;
+                }
+
+                if (_systemBarColor is { } color && !_displaysEdgeToEdge && _activity.Window != null)
                 {
                     _activity.Window.ClearFlags(WindowManagerFlags.TranslucentStatus);
                     _activity.Window.ClearFlags(WindowManagerFlags.TranslucentNavigation);
@@ -281,6 +313,10 @@ namespace Avalonia.Android.Platform
                 }
             }
         }
+
+        public bool DisplayEdgeToEdge { get => DisplaysEdgeToEdge; set => DisplayEdgeToEdgePreference = value; }
+
+        public bool DisplaysEdgeToEdge => _displaysEdgeToEdge;
 
         internal void ApplyStatusBarState()
         {

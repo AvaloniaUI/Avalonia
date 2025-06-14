@@ -948,5 +948,17 @@ namespace Avalonia.Layout
         {
             return new Size(Math.Max(size.Width, 0), Math.Max(size.Height, 0));
         }
+
+        internal override void SynchronizeCompositionProperties()
+        {
+            base.SynchronizeCompositionProperties();
+
+            if (CompositionVisual is { } visual)
+            {
+                // If the visual isn't using layout rounding, it's possible that antialiasing renders to pixels
+                // outside the current bounds. Extend the dirty rect by 1px in all directions in this case.
+                visual.ShouldExtendDirtyRect = !UseLayoutRounding;
+            }
+        }
     }
 }
