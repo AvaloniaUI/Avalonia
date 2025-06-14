@@ -10,7 +10,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.Android
 {
-    internal abstract class InvalidationAwareSurfaceView : SurfaceView, ISurfaceHolderCallback, INativePlatformHandleSurface
+    internal abstract class InvalidationAwareSurfaceView : SurfaceView, ISurfaceHolderCallback2, INativePlatformHandleSurface
     {
         private IntPtr _nativeWindowHandle = IntPtr.Zero;
         private PixelSize _size = new(1, 1);
@@ -61,6 +61,12 @@ namespace Avalonia.Android
             _scaling = 1;
             Logger.TryGet(LogEventLevel.Verbose, LogArea.AndroidPlatform)?
                 .Log(this, "InvalidationAwareSurfaceView Destroyed");
+        }
+
+        public virtual void SurfaceRedrawNeeded(ISurfaceHolder holder)
+        {
+            Logger.TryGet(LogEventLevel.Verbose, LogArea.AndroidPlatform)?
+                .Log(this, "InvalidationAwareSurfaceView RedrawNeeded");
         }
 
         private void CacheSurfaceProperties(ISurfaceHolder holder)

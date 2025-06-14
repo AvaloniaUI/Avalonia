@@ -220,6 +220,14 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 }
             }
 
+            public override void SurfaceRedrawNeeded(ISurfaceHolder holder)
+            {
+                // Compositor Renderer handles Paint event in-sync, which is perfect for sync SurfaceRedrawNeeded
+                // In the future we might to handle SurfaceRedrawNeededAsync as well.
+                _tl.Paint?.Invoke(new Rect(new Point(), Size.ToSize(Scaling)));
+                base.SurfaceRedrawNeeded(holder);
+            }
+
             public sealed override bool OnCheckIsTextEditor()
             {
                 return true;
