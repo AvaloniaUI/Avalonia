@@ -7,6 +7,7 @@ using Android.Views;
 using Avalonia.Android.Platform.SkiaPlatform;
 using Avalonia.Logging;
 using Avalonia.Platform;
+using Java.Lang;
 
 namespace Avalonia.Android
 {
@@ -67,6 +68,12 @@ namespace Avalonia.Android
         {
             Logger.TryGet(LogEventLevel.Verbose, LogArea.AndroidPlatform)?
                 .Log(this, "InvalidationAwareSurfaceView RedrawNeeded");
+        }
+
+        public virtual void SurfaceRedrawNeededAsync(ISurfaceHolder holder, IRunnable drawingFinished)
+        {
+            Logger.TryGet(LogEventLevel.Verbose, LogArea.AndroidPlatform)?
+                .Log(this, "InvalidationAwareSurfaceView RedrawNeededAsync");
         }
 
         private void CacheSurfaceProperties(ISurfaceHolder holder)
