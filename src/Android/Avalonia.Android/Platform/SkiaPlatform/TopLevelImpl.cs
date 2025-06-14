@@ -32,9 +32,6 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 {
     class TopLevelImpl : IAndroidView, ITopLevelImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfoWithWaitPolicy
     {
-        private readonly IGlPlatformSurface _gl;
-        private readonly IFramebufferPlatformSurface _framebuffer;
-
         private readonly AndroidKeyboardEventsHelper<TopLevelImpl> _keyboardHelper;
         private readonly AndroidMotionEventsHelper _pointerHelper;
         private readonly AndroidInputMethod<ViewImpl> _textInputMethod;
@@ -59,12 +56,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             _textInputMethod = new AndroidInputMethod<ViewImpl>(_view);
             _keyboardHelper = new AndroidKeyboardEventsHelper<TopLevelImpl>(this);
             _pointerHelper = new AndroidMotionEventsHelper(this);
-            _gl = new EglGlPlatformSurface(this);
-            _framebuffer = new FramebufferManager(this);
             _clipboard = new ClipboardImpl(avaloniaView.Context.GetSystemService(Context.ClipboardService).JavaCast<ClipboardManager>());
             _screens = new AndroidScreens(avaloniaView.Context);
-
-            RenderScaling = _view.Scaling;
 
             if (avaloniaView.Context is Activity mainActivity)
             {
@@ -78,15 +71,16 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
             _systemNavigationManager = new AndroidSystemNavigationManagerImpl(avaloniaView.Context as IActivityNavigationService);
 
-            Surfaces = new object[] { _gl, _framebuffer, _view };
+            var gl = new EglGlPlatformSurface(this);
+            var framebuffer = new FramebufferManager(this);
+            Surfaces = [gl, framebuffer, _view];
             Handle = new AndroidViewControlHandle(_view);
         }
 
         public IInputRoot? InputRoot { get; private set; }
 
-        public virtual Size ClientSize => _view.Size.ToSize(RenderScaling);
-
-        public Size? FrameSize => null;
+        public Size ClientSize => _view.Size.ToSize(RenderScaling);
+        public double RenderScaling => _view.Scaling;
 
         public Action? Closed { get; set; }
 
@@ -110,16 +104,6 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public Compositor Compositor => AndroidPlatform.Compositor ??
             throw new InvalidOperationException("Android backend wasn't initialized. Make sure .UseAndroid() was executed.");
 
-        public virtual void Hide()
-        {
-            _view.Visibility = ViewStates.Invisible;
-        }
-
-        public void Invalidate(Rect rect)
-        {
-            if (_view.Holder?.Surface?.IsValid == true) _view.Invalidate();
-        }
-
         public Point PointToClient(PixelPoint point)
         {
             return point.ToPoint(RenderScaling);
@@ -140,13 +124,6 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             InputRoot = inputRoot;
         }
 
-        public virtual void Show()
-        {
-            _view.Visibility = ViewStates.Visible;
-        }
-
-        public double RenderScaling { get; }
-
         void Draw()
         {
             Paint?.Invoke(new Rect(new Point(0, 0), ClientSize));
@@ -159,7 +136,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             _view = null!;
         }
 
-        protected virtual void OnResized(Size size)
+        protected void OnResized(Size size)
         {
             Resized?.Invoke(size, WindowResizeReason.Unspecified);
         }

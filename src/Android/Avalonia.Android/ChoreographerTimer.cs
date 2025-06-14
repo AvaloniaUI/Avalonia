@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Android.Views;
 using Avalonia.Reactive;
 using Avalonia.Rendering;
 using static Avalonia.Android.Platform.SkiaPlatform.AndroidFramebuffer;
