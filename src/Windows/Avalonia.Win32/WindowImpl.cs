@@ -849,6 +849,18 @@ namespace Avalonia.Win32
             UpdateWindowProperties(newWindowProperties);
         }
 
+
+        public void ShowInTaskSwitcher(bool value)
+        {
+            var newWindowProperties = _windowProperties;
+
+            newWindowProperties.ShowInTaskSwitcher = value;
+
+            UpdateWindowProperties(newWindowProperties);
+            
+        }
+
+
         public void CanResize(bool value)
         {
             var newWindowProperties = _windowProperties;
@@ -1366,6 +1378,7 @@ namespace Avalonia.Win32
             // according to the new values already.
             _windowProperties = newProperties;
 
+            
             if (oldProperties.IsFullScreen == newProperties.IsFullScreen)
             {
                 var exStyle = WindowStyles.WS_EX_WINDOWEDGE | (UseRedirectionBitmap ? 0 : WindowStyles.WS_EX_NOREDIRECTIONBITMAP);
@@ -1376,44 +1389,52 @@ namespace Avalonia.Win32
                     {
                         exStyle |= WindowStyles.WS_EX_APPWINDOW;
 
-                        if (_hiddenWindowIsParent)
-                        {
-                            // Can't enable the taskbar icon by clearing the parent window unless the window
-                            // is hidden. Hide the window and show it again with the same activation state
-                            // when we've finished. Interestingly it seems to work fine the other way.
-                            var shown = IsWindowVisible(_hwnd);
-                            var activated = GetActiveWindow() == _hwnd;
-
-                            if (shown)
-                                Hide();
-
-                            _hiddenWindowIsParent = false;
-                            SetParent(null);
-
-                            if (shown)
-                                Show(activated, false);
-                        }
+                        // if (_hiddenWindowIsParent)
+                        // {
+                        //     // Can't enable the taskbar icon by clearing the parent window unless the window
+                        //     // is hidden. Hide the window and show it again with the same activation state
+                        //     // when we've finished. Interestingly it seems to work fine the other way.
+                        //     _hiddenWindowIsParent = false;
+                        //     SetParent(null);
+                        // }
                     }
                     else
                     {
                         // To hide a non-owned window's taskbar icon we need to parent it to a hidden window.
-                        if (_parent is null)
-                        {
-                            SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, OffscreenParentWindow.Handle);
-                            _hiddenWindowIsParent = true;
-                        }
-
+                        // if (_parent is null)
+                        // {
+                        //     SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, OffscreenParentWindow.Handle);
+                        //     _hiddenWindowIsParent = true;
+                        // }
                         exStyle &= ~WindowStyles.WS_EX_APPWINDOW;
                     }
-                }
+                    var shown = IsWindowVisible(_hwnd);
+                    var activated = GetActiveWindow() == _hwnd;
 
-                if (newProperties.ShowInTaskbar)
+                    if (shown)
+                    {
+                        Hide();
+                        Show(activated, false);
+                    }
+                }
+                
+                if (!newProperties.ShowInTaskSwitcher)
                 {
-                    exStyle |= WindowStyles.WS_EX_APPWINDOW;
+                    exStyle |= WindowStyles.WS_EX_TOOLWINDOW;
+                    exStyle &= ~WindowStyles.WS_EX_APPWINDOW;
+                    // As a side effect, if ShowInTaskSwitcher=false, the window will NOT show in taskbar.
+                    // So if you applied ShowInTaskSwitcher=false, please also set ShowInTaskbar=false if it should be.
+                    // I found a better implementation, but needs further tests. So this will stay here as a temporary one.
+                    // I will create a PR to change it when tests were done.
                 }
                 else
                 {
-                    exStyle &= ~WindowStyles.WS_EX_APPWINDOW;
+                    exStyle &= ~WindowStyles.WS_EX_TOOLWINDOW;
+                    if (newProperties.ShowInTaskbar)
+                    {
+                        exStyle |= WindowStyles.WS_EX_APPWINDOW;
+                        SetExtendedStyle(GetExtendedStyle() | WindowStyles.WS_EX_APPWINDOW, false);
+                    }
                 }
 
                 WindowStyles style = WindowStyles.WS_CLIPCHILDREN | WindowStyles.WS_OVERLAPPEDWINDOW | WindowStyles.WS_CLIPSIBLINGS;
@@ -1655,6 +1676,7 @@ namespace Avalonia.Win32
         protected struct WindowProperties
         {
             public bool ShowInTaskbar;
+            public bool ShowInTaskSwitcher;//TODO
             public bool IsResizable;
             public SystemDecorations Decorations;
             public bool IsFullScreen;
