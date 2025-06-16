@@ -1467,7 +1467,7 @@ namespace Avalonia.Media.TextFormatting
             return new TextLineMetrics
             {
                 HasOverflowed = hasOverflowed,
-                Height = height + overhangAfter,
+                Height = height,
                 Extent = bounds.Height,
                 NewlineLength = newLineLength,
                 Start = start,
