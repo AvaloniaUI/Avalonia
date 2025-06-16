@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -188,7 +188,10 @@ namespace Avalonia.Controls.ApplicationLifetimes
                     if (w.Owner is null)
                     {
                         var ignoreCancel = force || (ShutdownMode == ShutdownMode.OnMainWindowClose && w != MainWindow);
-                        w.CloseCore(WindowCloseReason.ApplicationShutdown, isProgrammatic, ignoreCancel);
+                        var reason = e.IsOSShutdown ?
+                            WindowCloseReason.OSShutdown :
+                            WindowCloseReason.ApplicationShutdown;
+                        w.CloseCore(reason, isProgrammatic, ignoreCancel);
                     }
                 }
 
