@@ -11,7 +11,7 @@ namespace Avalonia.Controls
     /// </summary>
     public static class Design
     {
-        private static Dictionary<object, ITemplate<Control>?>? s_previewWith;
+        private static Dictionary<object, ITemplate<Control>?> s_previewWith = [];
 
         /// <summary>
         /// Gets a value indicating whether the application is running in design mode.
@@ -118,6 +118,7 @@ namespace Avalonia.Controls
         public static void SetPreviewWith(AvaloniaObject target, Control? control)
         {
             target.SetValue(PreviewWithProperty, control);
+            s_previewWith[target] = control is not null ? new FuncTemplate<Control>(() => control) : null;
         }
 
         /// <summary>
@@ -131,7 +132,6 @@ namespace Avalonia.Controls
         /// <param name="template">The preview template.</param>
         public static void SetPreviewWith(AvaloniaObject target, ITemplate<Control>? template)
         {
-            s_previewWith ??= [];
             s_previewWith[target] = template;
         }
 
@@ -146,7 +146,6 @@ namespace Avalonia.Controls
         /// <param name="control">The preview control.</param>
         public static void SetPreviewWith(ResourceDictionary target, Control? control)
         {
-            s_previewWith ??= [];
             s_previewWith[target] = control is not null ? new FuncTemplate<Control>(() => control) : null;
         }
 
@@ -161,7 +160,6 @@ namespace Avalonia.Controls
         /// <param name="template">The preview template.</param>
         public static void SetPreviewWith(ResourceDictionary target, ITemplate<Control>? template)
         {
-            s_previewWith ??= [];
             s_previewWith[target] = template;
         } 
 
@@ -176,7 +174,6 @@ namespace Avalonia.Controls
         /// <param name="template">The preview template.</param>
         public static void SetPreviewWith(IDataTemplate target, ITemplate<ContentControl>? template)
         {
-            s_previewWith ??= [];
             s_previewWith[target] = template is not null ? new FuncTemplate<Control>(template.Build) : null;
         }
 
@@ -187,7 +184,7 @@ namespace Avalonia.Controls
         /// <returns>The preview control, or null.</returns>
         public static Control? GetPreviewWith(AvaloniaObject target)
         {
-            return s_previewWith?[target]?.Build();
+            return s_previewWith.TryGetValue(target, out var template) ? template?.Build() : null;
         }
 
         /// <summary>
@@ -197,7 +194,7 @@ namespace Avalonia.Controls
         /// <returns>The preview control, or null.</returns>
         public static Control? GetPreviewWith(ResourceDictionary target)
         {
-            return s_previewWith?[target]?.Build();
+            return s_previewWith.TryGetValue(target, out var template) ? template?.Build() : null;
         }
 
         /// <summary>
@@ -207,7 +204,7 @@ namespace Avalonia.Controls
         /// <returns>The preview control, or null.</returns>
         public static Control? GetPreviewWith(IDataTemplate target)
         {
-            return s_previewWith?[target]?.Build();
+            return s_previewWith.TryGetValue(target, out var template) ? template?.Build() : null;
         }
 
         /// <summary>
@@ -254,9 +251,9 @@ namespace Avalonia.Controls
         }
 
         [PrivateApi]
-        public static Control CreatePreviewWithControl(object loaded)
+        public static Control CreatePreviewWithControl(object target)
         {
-            if (loaded is IStyle style)
+            if (target is IStyle style)
             {
                 var substitute = GetPreviewWith((AvaloniaObject)style);
                 if (substitute != null)
@@ -278,7 +275,7 @@ namespace Avalonia.Controls
                 };
             }
 
-            if (loaded is ResourceDictionary resources)
+            if (target is ResourceDictionary resources)
             {
                 var substitute = GetPreviewWith(resources);
                 if (substitute != null)
@@ -300,7 +297,7 @@ namespace Avalonia.Controls
                 };
             }
 
-            if (loaded is IDataTemplate template)
+            if (target is IDataTemplate template)
             {
                 if (GetPreviewWith(template) is ContentControl substitute)
                 {
@@ -321,18 +318,23 @@ namespace Avalonia.Controls
                 };
             }
 
-            if (loaded is Application)
+            if (target is Application)
             {
                 return new TextBlock { Text = "This file cannot be previewed in design view" };
             }
 
-            if (loaded is AvaloniaObject avObject and not Window
+            if (target is AvaloniaObject avObject and not Window
                 && GetPreviewWith(avObject) is { } previewWith)
             {
                 return previewWith;
             }
 
-            return (Control)loaded;
+            if (target is not Control control)
+            {
+                return new TextBlock { Text = "This file cannot be previewed in design view" };
+            }
+
+            return control;
         }
     }
 }
