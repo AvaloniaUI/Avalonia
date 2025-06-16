@@ -1,4 +1,5 @@
 
+using System;
 using System.Collections.Generic;
 using Avalonia.Controls.Templates;
 using Avalonia.Layout;
@@ -8,7 +9,7 @@ namespace Avalonia.Controls
 {
     public static class Design
     {
-        private static Dictionary<object, Control?>? _previewWith;
+        private static Dictionary<object, ITemplate<Control>?>? _previewWith;
 
         public static bool IsDesignMode { get; internal set; }
 
@@ -50,7 +51,7 @@ namespace Avalonia.Controls
         {
             return control.GetValue(DataContextProperty);
         }
-        
+
         public static readonly AttachedProperty<Control?> PreviewWithProperty = AvaloniaProperty
             .RegisterAttached<AvaloniaObject, Control?>("PreviewWith", typeof (Design));
 
@@ -61,29 +62,41 @@ namespace Avalonia.Controls
 
         public static void SetPreviewWith(ResourceDictionary target, Control? control)
         {
-            _previewWith ??= new();
-            _previewWith[target] = control;
+            _previewWith ??= [];
+            _previewWith[target] = control is not null ? new FuncTemplate<Control>(() => control) : null;
         }
 
-        public static void SetPreviewWith(IDataTemplate target, Control? control)
+        public static void SetPreviewWith(ResourceDictionary target, ITemplate<Control>? template)
         {
-            _previewWith ??= new();
-            _previewWith[target] = control;
+            _previewWith ??= [];
+            _previewWith[target] = template;
+        } 
+
+        public static void SetPreviewWith(IDataTemplate target, ITemplate<Control>? template)
+        {
+            _previewWith ??= [];
+            _previewWith[target] = template;
+        }
+
+        public static void SetPreviewWith(AvaloniaObject target, ITemplate<Control>? template)
+        {
+            _previewWith ??= [];
+            _previewWith[target] = template;
         }
 
         public static Control? GetPreviewWith(AvaloniaObject target)
         {
-            return target.GetValue(PreviewWithProperty);
+            return _previewWith?[target]?.Build();
         }
 
         public static Control? GetPreviewWith(ResourceDictionary target)
         {
-            return _previewWith?[target];
+            return _previewWith?[target]?.Build();
         }
 
         public static Control? GetPreviewWith(IDataTemplate target)
         {
-            return _previewWith?[target];
+            return _previewWith?[target]?.Build();
         }
 
         public static readonly AttachedProperty<IStyle> DesignStyleProperty = AvaloniaProperty
