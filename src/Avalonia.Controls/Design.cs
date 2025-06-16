@@ -112,6 +112,7 @@ namespace Avalonia.Controls
             return control.GetValue(DesignStyleProperty);
         }
 
+        [PrivateApi]
         public static void ApplyDesignModeProperties(Control target, Control source)
         {
             if (source.IsSet(WidthProperty))
