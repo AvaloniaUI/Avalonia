@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Windows.Input;
 using Avalonia.Automation;
@@ -341,7 +342,7 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         IMenuElement? IMenuItem.Parent => Parent as IMenuElement;
 
-        protected override bool IsEnabledCore => base.IsEnabledCore && _commandCanExecute;
+        protected override bool IsEnabledCore => base.IsEnabled && (HasSubMenu || _commandCanExecute);
 
         /// <inheritdoc/>
         bool IMenuElement.MoveSelection(NavigationDirection direction, bool wrap) => MoveSelection(direction, wrap);
@@ -465,9 +466,11 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Called when the <see cref="MenuItem"/> is clicked.
+        /// Invoked when an unhandled <see cref="ClickEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
         /// </summary>
-        /// <param name="e">The click event args.</param>
+        /// <param name="e">Data about the event.</param>
         protected virtual void OnClick(RoutedEventArgs e)
         {
             (var command, var parameter) = (Command, CommandParameter);
@@ -506,9 +509,11 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Called when a submenu is opened on this MenuItem or a child MenuItem.
+        /// Invoked when an unhandled <see cref="SubmenuOpenedEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
         /// </summary>
-        /// <param name="e">The event args.</param>
+        /// <param name="e">Data about the event.</param>
         protected virtual void OnSubmenuOpened(RoutedEventArgs e)
         {
             var menuItem = e.Source as MenuItem;
@@ -709,6 +714,15 @@ namespace Avalonia.Controls
             else if (change.Property == GroupNameProperty)
             {
                 GroupNameChanged(change);
+            }
+            else if (change.Property == ItemCountProperty)
+            {
+                // A menu item with no sub-menu is effectively disabled if its command binding
+                // failed: this means that the effectively enabled state depends on whether the
+                // number of items in the menu is 0 or not.
+                var (o, n) = change.GetOldAndNewValue<int>();
+                if (o == 0 || n == 0)
+                    UpdateIsEffectivelyEnabled();
             }
         }
         /// <summary>

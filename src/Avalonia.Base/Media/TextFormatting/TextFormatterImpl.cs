@@ -574,10 +574,11 @@ namespace Avalonia.Media.TextFormatting
         {
             var measuredLength = 0;
             var currentWidth = 0.0;
+            var runIndex = 0;
 
-            for (var i = 0; i < textRuns.Count; ++i)
+            for (; runIndex < textRuns.Count; ++runIndex)
             {
-                var currentRun = textRuns[i];
+                var currentRun = textRuns[runIndex];
 
                 switch (currentRun)
                 {
@@ -630,7 +631,14 @@ namespace Avalonia.Media.TextFormatting
                                             runLength = clusterLength;
                                         }
 
-                                        return measuredLength + runLength;
+                                        measuredLength += runLength;
+
+                                        if (runIndex < textRuns.Count - 1 && runLength == currentRun.Length && textRuns[runIndex + 1] is TextEndOfLine endOfLine)
+                                        {
+                                            measuredLength += endOfLine.Length;
+                                        }
+
+                                        return measuredLength;
                                     }
 
                                     currentWidth += clusterWidth;

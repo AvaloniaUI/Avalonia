@@ -83,10 +83,22 @@ namespace Avalonia.Input
             RoutedEvent.Register<InputElement, GotFocusEventArgs>(nameof(GotFocus), RoutingStrategies.Bubble);
 
         /// <summary>
+        /// Defines the <see cref="GettingFocus"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<FocusChangingEventArgs> GettingFocusEvent =
+            RoutedEvent.Register<InputElement, FocusChangingEventArgs>(nameof(GettingFocus), RoutingStrategies.Bubble);
+
+        /// <summary>
         /// Defines the <see cref="LostFocus"/> event.
         /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> LostFocusEvent =
             RoutedEvent.Register<InputElement, RoutedEventArgs>(nameof(LostFocus), RoutingStrategies.Bubble);
+
+        /// <summary>
+        /// Defines the <see cref="LosingFocus"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<FocusChangingEventArgs> LosingFocusEvent =
+            RoutedEvent.Register<InputElement, FocusChangingEventArgs>(nameof(LosingFocus), RoutingStrategies.Bubble);
 
         /// <summary>
         /// Defines the <see cref="KeyDown"/> event.
@@ -211,8 +223,10 @@ namespace Avalonia.Input
         {
             IsEnabledProperty.Changed.Subscribe(IsEnabledChanged);
 
-            GotFocusEvent.AddClassHandler<InputElement>((x, e) => x.OnGotFocus(e));
-            LostFocusEvent.AddClassHandler<InputElement>((x, e) => x.OnLostFocus(e));
+            GotFocusEvent.AddClassHandler<InputElement>((x, e) => x.OnGotFocusCore(e));
+            LostFocusEvent.AddClassHandler<InputElement>((x, e) => x.OnLostFocusCore(e));
+            GettingFocusEvent.AddClassHandler<InputElement>((x, e) => x.OnGettingFocus(e));
+            LosingFocusEvent.AddClassHandler<InputElement>((x, e) => x.OnLosingFocus(e));
             KeyDownEvent.AddClassHandler<InputElement>((x, e) => x.OnKeyDown(e));
             KeyUpEvent.AddClassHandler<InputElement>((x, e) => x.OnKeyUp(e));
             TextInputEvent.AddClassHandler<InputElement>((x, e) => x.OnTextInput(e));
@@ -250,12 +264,30 @@ namespace Avalonia.Input
         }
 
         /// <summary>
+        /// Occurs before the control receives focus.
+        /// </summary>
+        public event EventHandler<FocusChangingEventArgs>? GettingFocus
+        {
+            add { AddHandler(GettingFocusEvent, value); }
+            remove { RemoveHandler(GettingFocusEvent, value); }
+        }
+
+        /// <summary>
         /// Occurs when the control loses focus.
         /// </summary>
         public event EventHandler<RoutedEventArgs>? LostFocus
         {
             add { AddHandler(LostFocusEvent, value); }
             remove { RemoveHandler(LostFocusEvent, value); }
+        }
+
+        /// <summary>
+        /// Occurs before the control loses focus.
+        /// </summary>
+        public event EventHandler<FocusChangingEventArgs>? LosingFocus
+        {
+            add { AddHandler(LosingFocusEvent, value); }
+            remove { RemoveHandler(LosingFocusEvent, value); }
         }
 
         /// <summary>
@@ -535,87 +567,128 @@ namespace Avalonia.Input
             UpdateIsEffectivelyEnabled();
         }
 
-        /// <summary>
-        /// Called before the <see cref="GotFocus"/> event occurs.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        protected virtual void OnGotFocus(GotFocusEventArgs e)
+        private void OnGotFocusCore(GotFocusEventArgs e)
         {
             var isFocused = e.Source == this;
             _isFocusVisible = isFocused && (e.NavigationMethod == NavigationMethod.Directional || e.NavigationMethod == NavigationMethod.Tab);
             IsFocused = isFocused;
+            OnGotFocus(e);
+        }
+
+        protected virtual void OnGettingFocus(FocusChangingEventArgs e)
+        {
+
+        }
+
+        protected virtual void OnLosingFocus(FocusChangingEventArgs e)
+        {
+
         }
 
         /// <summary>
-        /// Called before the <see cref="LostFocus"/> event occurs.
+        /// Invoked when an unhandled <see cref="GotFocusEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
         /// </summary>
-        /// <param name="e">The event args.</param>
-        protected virtual void OnLostFocus(RoutedEventArgs e)
+        /// <param name="e">Data about the event.</param>
+        protected virtual void OnGotFocus(GotFocusEventArgs e)
+        {
+        }
+
+        private void OnLostFocusCore(RoutedEventArgs e)
         {
             _isFocusVisible = false;
             IsFocused = false;
+            OnLostFocus(e);
         }
 
         /// <summary>
-        /// Called before the <see cref="KeyDown"/> event occurs.
+        /// Invoked when an unhandled <see cref="LostFocusEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
         /// </summary>
-        /// <param name="e">The event args.</param>
+        /// <param name="e">Data about the event.</param>
+        protected virtual void OnLostFocus(RoutedEventArgs e)
+        {            
+        }
+
+        /// <summary>
+        /// Invoked when an unhandled <see cref="KeyDownEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
+        /// </summary>
+        /// <param name="e">Data about the event.</param>
         protected virtual void OnKeyDown(KeyEventArgs e)
         {
         }
 
         /// <summary>
-        /// Called before the <see cref="KeyUp"/> event occurs.
+        /// Invoked when an unhandled <see cref="KeyUpEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
         /// </summary>
-        /// <param name="e">The event args.</param>
+        /// <param name="e">Data about the event.</param>
         protected virtual void OnKeyUp(KeyEventArgs e)
         {
         }
 
         /// <summary>
-        /// Called before the <see cref="TextInput"/> event occurs.
+        /// Invoked when an unhandled <see cref="TextInputEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
         /// </summary>
-        /// <param name="e">The event args.</param>
+        /// <param name="e">Data about the event.</param>
         protected virtual void OnTextInput(TextInputEventArgs e)
         {
         }
 
         /// <summary>
-        /// Called before the <see cref="PointerEntered"/> event occurs.
+        /// Invoked when an unhandled <see cref="PointerEnteredEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
         /// </summary>
-        /// <param name="e">The event args.</param>
+        /// <param name="e">Data about the event.</param>
         protected virtual void OnPointerEntered(PointerEventArgs e)
         {
         }
 
         /// <summary>
-        /// Called before the <see cref="PointerExited"/> event occurs.
+        /// Invoked when an unhandled <see cref="PointerExitedEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
         /// </summary>
-        /// <param name="e">The event args.</param>
+        /// <param name="e">Data about the event.</param>
         protected virtual void OnPointerExited(PointerEventArgs e)
         {
         }
 
         /// <summary>
-        /// Called before the <see cref="PointerMoved"/> event occurs.
+        /// Invoked when an unhandled <see cref="PointerMovedEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
         /// </summary>
-        /// <param name="e">The event args.</param>
+        /// <param name="e">Data about the event.</param>
         protected virtual void OnPointerMoved(PointerEventArgs e)
         {
         }
 
+
         /// <summary>
-        /// Called before the <see cref="PointerPressed"/> event occurs.
+        /// Invoked when an unhandled <see cref="PointerPressedEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
         /// </summary>
-        /// <param name="e">The event args.</param>
+        /// <param name="e">Data about the event.</param>
         protected virtual void OnPointerPressed(PointerPressedEventArgs e)
         {
         }
 
         /// <summary>
-        /// Called before the <see cref="PointerReleased"/> event occurs.
+        /// Invoked when an unhandled <see cref="PointerReleasedEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
         /// </summary>
-        /// <param name="e">The event args.</param>
+        /// <param name="e">Data about the event.</param>
         protected virtual void OnPointerReleased(PointerReleasedEventArgs e)
         {
         }
@@ -653,18 +726,22 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-        /// Called before the <see cref="PointerCaptureLost"/> event occurs.
+        /// Invoked when an unhandled <see cref="PointerCaptureLostEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
         /// </summary>
-        /// <param name="e">The event args.</param>
+        /// <param name="e">Data about the event.</param>
         protected virtual void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
         {
 
         }
 
         /// <summary>
-        /// Called before the <see cref="PointerWheelChanged"/> event occurs.
+        /// Invoked when an unhandled <see cref="PointerWheelChangedEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
         /// </summary>
-        /// <param name="e">The event args.</param>
+        /// <param name="e">Data about the event.</param>
         protected virtual void OnPointerWheelChanged(PointerWheelEventArgs e)
         {
         }
@@ -685,9 +762,19 @@ namespace Avalonia.Input
             {
                 PseudoClasses.Set(":focus-within", change.GetNewValue<bool>());
             }
-            else if (change.Property == IsVisibleProperty && !change.GetNewValue<bool>() && IsFocused)
+            else if (change.Property == IsVisibleProperty)
             {
-                FocusManager.GetFocusManager(this)?.ClearFocus();
+                if (!change.GetNewValue<bool>() && IsKeyboardFocusWithin && FocusManager.GetFocusManager(this) is { } focusManager)
+                {
+                    if (focusManager.GetFocusedElement() is { } focusedElement && VisualParent != null)
+                    {
+                        focusManager.ClearFocusOnElementRemoved(focusedElement, VisualParent);
+                    }
+                    else
+                    {
+                        focusManager.ClearFocus();
+                    }
+                }
             }
         }
 

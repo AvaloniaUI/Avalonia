@@ -4,9 +4,9 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.UnitTests
 {
-    public class MouseTestHelper
+    public class MouseTestHelper(PointerType pointerType = PointerType.Mouse)
     {
-        private readonly Pointer _pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
+        private readonly Pointer _pointer = new Pointer(Pointer.GetNextFreeId(), pointerType, true);
         private ulong _nextStamp = 1;
         private ulong Timestamp() => _nextStamp++;
 

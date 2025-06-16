@@ -18,7 +18,6 @@ namespace ControlCatalog
         private FluentTheme? _fluentTheme;
         private SimpleTheme? _simpleTheme;
         private IStyle? _colorPickerFluent, _colorPickerSimple;
-        private IStyle? _dataGridFluent, _dataGridSimple;
         
         public App()
         {
@@ -35,8 +34,6 @@ namespace ControlCatalog
             _simpleTheme = (SimpleTheme)Resources["SimpleTheme"]!;
             _colorPickerFluent = (IStyle)Resources["ColorPickerFluent"]!;
             _colorPickerSimple = (IStyle)Resources["ColorPickerSimple"]!;
-            _dataGridFluent = (IStyle)Resources["DataGridFluent"]!;
-            _dataGridSimple = (IStyle)Resources["DataGridSimple"]!;
             
             SetCatalogThemes(CatalogTheme.Fluent);
         }
@@ -83,13 +80,11 @@ namespace ControlCatalog
             {
                 app._themeStylesContainer[0] = app._fluentTheme!;
                 app._themeStylesContainer[1] = app._colorPickerFluent!;
-                app._themeStylesContainer[2] = app._dataGridFluent!;
             }
             else if (theme == CatalogTheme.Simple)
             {
                 app._themeStylesContainer[0] = app._simpleTheme!;
                 app._themeStylesContainer[1] = app._colorPickerSimple!;
-                app._themeStylesContainer[2] = app._dataGridSimple!;
             }
 
             if (shouldReopenWindow)

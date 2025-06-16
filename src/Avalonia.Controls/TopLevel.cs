@@ -23,6 +23,7 @@ using Avalonia.Utilities;
 using Avalonia.Input.Platform;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Diagnostics;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 
@@ -120,6 +121,12 @@ namespace Avalonia.Controls
                 (s, h) => s.ResourcesChanged -= h
             );
 
+        private static readonly WeakEvent<IResourceHost2, ResourcesChangedToken>
+            ResourcesChanged2WeakEvent = WeakEvent.Register<IResourceHost2, ResourcesChangedToken>(
+                (s, h) => s.ResourcesChanged2 += h,
+                (s, h) => s.ResourcesChanged2 -= h
+            );
+
         private readonly IInputManager? _inputManager;
         private readonly IToolTipService? _tooltipService;
         private readonly IAccessKeyHandler? _accessKeyHandler;
@@ -130,15 +137,19 @@ namespace Avalonia.Controls
         private readonly IDisposable? _pointerOverPreProcessorSubscription;
         private readonly IDisposable? _backGestureSubscription;
         private readonly Dictionary<AvaloniaProperty, Action> _platformImplBindings = new();
+        private double _scaling;
         private Size _clientSize;
         private Size? _frameSize;
         private WindowTransparencyLevel _actualTransparencyLevel;
         private ILayoutManager? _layoutManager;
         private Border? _transparencyFallbackBorder;
         private TargetWeakEventSubscriber<TopLevel, ResourcesChangedEventArgs>? _resourcesChangesSubscriber;
+        private TargetWeakEventSubscriber<TopLevel, ResourcesChangedToken>? _resourcesChangesSubscriber2;
         private IStorageProvider? _storageProvider;
         private Screens? _screens;
         private LayoutDiagnosticBridge? _layoutDiagnosticBridge;
+        private Cursor? _cursor;
+        private Cursor? _cursorOverride;
         
         /// <summary>
         /// Initializes static members of the <see cref="TopLevel"/> class.
@@ -146,6 +157,8 @@ namespace Avalonia.Controls
         static TopLevel()
         {
             KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue<TopLevel>(KeyboardNavigationMode.Cycle);
+            Avalonia.Styling.Container.SizingProperty.OverrideDefaultValue<TopLevel>(ContainerSizing.WidthAndHeight);
+
             AffectsMeasure<TopLevel>(ClientSizeProperty);
 
             SystemBarColorProperty.Changed.AddClassHandler<Control>((view, e) =>
@@ -179,7 +192,7 @@ namespace Avalonia.Controls
 
                 if (e.NewValue is InputElement newInputElement)
                 {
-                    topLevel.PlatformImpl?.SetCursor(newInputElement.Cursor?.PlatformImpl);
+                    topLevel.SetCursor(newInputElement.Cursor);
                     newInputElement.PropertyChanged += topLevel.PointerOverElementOnPropertyChanged;
                 }
             });
@@ -208,6 +221,7 @@ namespace Avalonia.Controls
             PlatformImpl = impl ?? throw new InvalidOperationException(
                 "Could not create window implementation: maybe no windowing subsystem was initialized?");
 
+            _scaling = ValidateScaling(impl.RenderScaling);
             _actualTransparencyLevel = PlatformImpl.TransparencyLevel;
 
             dependencyResolver ??= AvaloniaLocator.Current;
@@ -254,12 +268,24 @@ namespace Avalonia.Controls
 
             ClientSize = impl.ClientSize;
 
-            if (((IStyleHost)this).StylingParent is IResourceHost applicationResources)
+            var stylingParent = ((IStyleHost)this).StylingParent;
+
+            if (stylingParent is IResourceHost2 applicationResources2)
+            {
+                _resourcesChangesSubscriber2 = new TargetWeakEventSubscriber<TopLevel, ResourcesChangedToken>(
+                    this, static (target, _, _, token) =>
+                    {
+                        target.NotifyResourcesChanged(token);
+                    });
+
+                ResourcesChanged2WeakEvent.Subscribe(applicationResources2, _resourcesChangesSubscriber2);
+            }
+            else if (stylingParent is IResourceHost applicationResources)
             {
                 _resourcesChangesSubscriber = new TargetWeakEventSubscriber<TopLevel, ResourcesChangedEventArgs>(
-                    this, static (target, _, _, e) =>
+                    this, static (target, _, _, _) =>
                     {
-                        ((ILogical)target).NotifyResourcesChanged(e);
+                        target.NotifyResourcesChanged(ResourcesChangedToken.Create());
                     });
 
                 ResourcesChangedWeakEvent.Subscribe(applicationResources, _resourcesChangesSubscriber);
@@ -533,11 +559,10 @@ namespace Avalonia.Controls
             return control.GetValue(AutoSafeAreaPaddingProperty);
         }
 
-        /// <inheritdoc/>
-        double ILayoutRoot.LayoutScaling => PlatformImpl?.RenderScaling ?? 1;
+        double ILayoutRoot.LayoutScaling => _scaling;
 
         /// <inheritdoc/>
-        public double RenderScaling => PlatformImpl?.RenderScaling ?? 1;
+        public double RenderScaling => _scaling;
 
         IStyleHost IStyleHost.StylingParent => _globalStyles!;
 
@@ -640,6 +665,7 @@ namespace Avalonia.Controls
         }
 
         private IDisposable? _insetsPaddings;
+
         private void InvalidateChildInsetsPadding()
         {
             if (Content is Control child
@@ -695,6 +721,7 @@ namespace Avalonia.Controls
             Debug.Assert(PlatformImpl != null);
             // The PlatformImpl is completely invalid at this point
             PlatformImpl = null;
+            _scaling = 1.0;
             
             if (_globalStyles is object)
             {
@@ -746,6 +773,7 @@ namespace Avalonia.Controls
         /// <param name="scaling">The window scaling.</param>
         private void HandleScalingChanged(double scaling)
         {
+            _scaling = ValidateScaling(scaling);
             LayoutHelper.InvalidateSelfAndChildrenMeasure(this);
             Dispatcher.UIThread.Send(_ => ScalingChanged?.Invoke(this, EventArgs.Empty));
         }
@@ -837,6 +865,8 @@ namespace Avalonia.Controls
             {
                 Dispatcher.UIThread.Send(static state =>
                 {
+                    using var _ = Diagnostic.BeginLayoutInputPass();
+
                     var (topLevel, e) = (ValueTuple<TopLevel, RawInputEventArgs>)state!;
                     if (e is RawPointerEventArgs pointerArgs)
                     {
@@ -861,17 +891,34 @@ namespace Avalonia.Controls
             var candidate = hitTestElement;
             while (candidate?.IsEffectivelyEnabled == false)
             {
-                candidate = (candidate as Visual)?.Parent as IInputElement;
+                candidate = (candidate as Visual)?.VisualParent as IInputElement;
             }
 
             return candidate;
         }
 
+        private void UpdateCursor() => PlatformImpl?.SetCursor(_cursorOverride?.PlatformImpl ?? _cursor?.PlatformImpl);
+
+        private void SetCursor(Cursor? cursor)
+        {
+            _cursor = cursor;
+            UpdateCursor();
+        }
+        
+        /// <summary>
+        /// This should only be used by InProcessDragSource
+        /// </summary>
+        internal void SetCursorOverride(Cursor? cursor)
+        {
+            _cursorOverride = cursor;
+            UpdateCursor();
+        }
+        
         private void PointerOverElementOnPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
             if (e.Property == CursorProperty && sender is InputElement inputElement)
             {
-                PlatformImpl?.SetCursor(inputElement.Cursor?.PlatformImpl);
+                SetCursor(inputElement.Cursor);
             }
         }
 
@@ -918,7 +965,7 @@ namespace Avalonia.Controls
                 focused = focused.VisualParent;
 
             if (focused == this)
-                KeyboardDevice.Instance?.SetFocusedElement(null, NavigationMethod.Unspecified, KeyModifiers.None);
+                KeyboardDevice.Instance?.SetFocusedElement(null, NavigationMethod.Unspecified, KeyModifiers.None, false);
         }
 
         protected override bool BypassFlowDirectionPolicies => true;
@@ -929,6 +976,24 @@ namespace Avalonia.Controls
         }
 
         ITextInputMethodImpl? ITextInputMethodRoot.InputMethod => PlatformImpl?.TryGetFeature<ITextInputMethodImpl>();
+
+        private double ValidateScaling(double scaling)
+        {
+            if (MathUtilities.IsNegativeOrNonFinite(scaling) || MathUtilities.IsZero(scaling))
+            {
+                throw new InvalidOperationException(
+                    $"Invalid {nameof(ITopLevelImpl.RenderScaling)} value {scaling} returned from {PlatformImpl?.GetType()}");
+            }
+
+            if (MathUtilities.IsOne(scaling))
+            {
+                // Ensure we've got exactly 1.0 and not an approximation,
+                // so we don't have to use MathUtilities.IsOne in various layout hot paths.
+                return 1.0;
+            }
+
+            return scaling;
+        }
 
         /// <summary>
         /// Provides layout pass timing from the layout manager to the renderer, for diagnostics purposes.

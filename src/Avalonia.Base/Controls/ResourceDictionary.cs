@@ -40,7 +40,7 @@ namespace Avalonia.Controls
             set
             {
                 Inner[key] = value;
-                Owner?.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
+                RaiseResourcesChanged();
             }
         }
 
@@ -138,7 +138,7 @@ namespace Avalonia.Controls
         public void Add(object key, object? value)
         {
             Inner.Add(key, value);
-            Owner?.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
+            RaiseResourcesChanged();
         }
 
         public void AddDeferred(object key, Func<IServiceProvider?, object?> factory)
@@ -150,12 +150,25 @@ namespace Avalonia.Controls
         public void AddNotSharedDeferred(object key, IDeferredContent deferredContent)
             => Add(key, new NotSharedDeferredItem(deferredContent));
 
+        public void SetItems(IEnumerable<KeyValuePair<object, object?>> values)
+        {
+            try
+            {
+                foreach (var value in values)
+                    Inner[value.Key] = value.Value;
+            }
+            finally
+            {
+                RaiseResourcesChanged();
+            }
+        }
+        
         public void Clear()
         {
             if (_inner?.Count > 0)
             {
                 _inner.Clear();
-                Owner?.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
+                RaiseResourcesChanged();
             }
         }
 
@@ -165,7 +178,7 @@ namespace Avalonia.Controls
         {
             if (_inner?.Remove(key) == true)
             {
-                Owner?.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
+                RaiseResourcesChanged();
                 return true;
             }
 
@@ -303,7 +316,7 @@ namespace Avalonia.Controls
         {
             if ((_inner as ICollection<KeyValuePair<object, object?>>)?.Remove(item) == true)
             {
-                Owner?.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
+                RaiseResourcesChanged();
                 return true;
             }
 
@@ -345,7 +358,7 @@ namespace Avalonia.Controls
 
             if (hasResources)
             {
-                owner.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
+                owner.NotifyHostedResourcesChanged(ResourcesChangedToken.Create());
             }
         }
 
@@ -372,7 +385,7 @@ namespace Avalonia.Controls
 
             if (hasResources)
             {
-                owner.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
+                owner.NotifyHostedResourcesChanged(ResourcesChangedToken.Create());
             }
         }
 

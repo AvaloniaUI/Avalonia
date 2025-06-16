@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Avalonia.Markup.UnitTests.Data;
 
-public class BindingTests_Delay : IDisposable
+public class BindingTests_Delay : ScopedTestBase, IDisposable
 {
     private const int DelayMilliseconds = 10;
     private const string InitialFooValue = "foo";
@@ -39,6 +39,7 @@ public class BindingTests_Delay : IDisposable
     public void Dispose()
     {
         _app.Dispose();
+        base.Dispose();
     }
 
     [Fact]

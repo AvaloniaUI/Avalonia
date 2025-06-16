@@ -30,7 +30,7 @@ using ClipboardManager = Android.Content.ClipboardManager;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
 {
-    class TopLevelImpl : IAndroidView, ITopLevelImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo
+    class TopLevelImpl : IAndroidView, ITopLevelImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfoWithWaitPolicy
     {
         private readonly IGlPlatformSurface _gl;
         private readonly IFramebufferPlatformSurface _framebuffer;
@@ -78,7 +78,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
             _systemNavigationManager = new AndroidSystemNavigationManagerImpl(avaloniaView.Context as IActivityNavigationService);
 
-            Surfaces = new object[] { _gl, _framebuffer, Handle };
+            Surfaces = new object[] { _gl, _framebuffer, _view };
+            Handle = new AndroidViewControlHandle(_view);
         }
 
         public IInputRoot? InputRoot { get; private set; }
@@ -102,7 +103,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         internal InvalidationAwareSurfaceView InternalView => _view;
 
         public double DesktopScaling => RenderScaling;
-        public IPlatformHandle Handle => _view;
+        public IPlatformHandle Handle { get; }
 
         public IEnumerable<object> Surfaces { get; }
 
@@ -301,6 +302,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels => new AcrylicPlatformCompensationLevels(1, 1, 1);
 
         IntPtr EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Handle => ((IPlatformHandle)_view).Handle;
+        bool EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfoWithWaitPolicy.SkipWaits => true;
 
         public PixelSize Size => _view.Size;
 

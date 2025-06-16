@@ -1573,9 +1573,14 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("ole32.dll", PreserveSig = true)]
         public static extern int OleGetClipboard(out IntPtr dataObject);
+        [DllImport("ole32.dll", PreserveSig = true)]
+        public static extern int OleFlushClipboard();
 
         [DllImport("ole32.dll", PreserveSig = true)]
         public static extern int OleSetClipboard(IntPtr dataObject);
+        
+        [DllImport("ole32.dll", PreserveSig = true)]
+        public static extern int OleIsCurrentClipboard(IntPtr dataObject);
 
         [DllImport("kernel32.dll", ExactSpelling = true)]
         public static extern IntPtr GlobalLock(IntPtr handle);

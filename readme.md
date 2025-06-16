@@ -1,5 +1,5 @@
-[![Star_Banner@3x](https://github.com/user-attachments/assets/99f4a267-79d2-432b-8f8c-bd3745a98a60)](https://github.com/sponsors/AvaloniaUI)
-[![Star_Banner@3x](https://github.com/user-attachments/assets/14a6e1cb-180d-4bfd-884a-835c8b5083d0)](https://avaloniaui.net?utm_source=github&utm_medium=referral&utm_content=readme_link)
+[![Star_Banner@3x](https://github.com/user-attachments/assets/d55eb468-fa5c-499f-858e-54618beb6f92)](https://github.com/sponsors/AvaloniaUI)
+[![Hero](https://github.com/user-attachments/assets/7436f0e7-8aea-4cff-886a-e2faef29ca37)](https://avaloniaui.net?utm_source=github&utm_medium=referral&utm_content=readme_link)
 
 [![Telegram](https://raw.githubusercontent.com/Patrolavia/telegram-badge/master/chat.svg)](https://t.me/Avalonia)
  [![Build Status](https://dev.azure.com/AvaloniaUI/AvaloniaUI/_apis/build/status/AvaloniaUI.Avalonia)](https://dev.azure.com/AvaloniaUI/AvaloniaUI/_build/latest?definitionId=4) [![Backers on Open Collective](https://img.shields.io/opencollective/backers/Avalonia?logo=opencollective)](#backers) [![Sponsors on Open Collective](https://img.shields.io/opencollective/sponsors/Avalonia?logo=opencollective)](#sponsors) [![GitHub Sponsors](https://img.shields.io/github/sponsors/AvaloniaUI?logo=github)](https://github.com/sponsors/AvaloniaUI) ![License](https://img.shields.io/github/license/avaloniaui/avalonia.svg)
@@ -45,9 +45,13 @@ Install-Package Avalonia.Desktop
 ```
 
 ## Showcase
-[![Showcase_Banner@3x](https://github.com/user-attachments/assets/99a17692-765c-4728-a3a6-f5e86f95e71c)](https://avaloniaui.net/showcase?utm_source=github&utm_medium=referral&utm_content=readme_link)
+[![Showcase_Banner@3x](https://github.com/user-attachments/assets/42d21506-3d5a-4213-a4b4-7889a48acdc8)](https://avaloniaui.net/showcase?utm_source=github&utm_medium=referral&utm_content=readme_link)
 
 See what others have built with Avalonia UI on our [Showcase](https://avaloniaui.net/showcase?utm_source=github&utm_medium=referral&utm_content=readme_link). We welcome submissions! 
+
+## Community 
+Join our community hub to get early access to upcoming features, share your thoughts, and connect directly with the Avalonia team. 
+[![communityannouncement-banner 1](https://github.com/user-attachments/assets/21950b56-cd28-4574-9a0a-73bb17b89d31)](https://avaloniaui.community) 
 
 ## Bleeding Edge Builds
 
@@ -108,4 +112,4 @@ We have a range of [support plans available](https://avaloniaui.net/support?utm_
 
 ## Avalonia XPF - Our cross-platform WPF
 Unleash the full potential of your existing WPF apps with our cross-platform UI framework, enabling WPF apps to run on macOS and Linux without requiring expensive and risky rewrites.
-[![GH_Banner](https://github.com/user-attachments/assets/91e7748c-2877-46ce-8b12-164fcf442f76)](https://avaloniaui.net/xpf?utm_source=github&utm_medium=referral&utm_content=readme_ad)
+[![GH_Banner](https://github.com/user-attachments/assets/a6176267-1187-45ff-b82b-fcc7048e54b7)](https://avaloniaui.net/xpf?utm_source=github&utm_medium=referral&utm_content=readme_ad)
