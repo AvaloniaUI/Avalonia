@@ -1123,7 +1123,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var rect = textLayout.HitTestTextPosition(text.Length);
 
-                Assert.Equal(14.0625, rect.Top);
+                Assert.Equal(16.32, rect.Top);
             }
         }
 
