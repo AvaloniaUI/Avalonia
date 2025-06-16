@@ -252,5 +252,87 @@ namespace Avalonia.Controls
             if (source.IsSet(DesignStyleProperty))
                 target.Styles.Add(source.GetValue(DesignStyleProperty));
         }
+
+        [PrivateApi]
+        public static Control CreatePreviewWithControl(object loaded)
+        {
+            if (loaded is IStyle style)
+            {
+                var substitute = GetPreviewWith((AvaloniaObject)style);
+                if (substitute != null)
+                {
+                    substitute.Styles.Add(style);
+                    return substitute;
+                }
+
+                return new StackPanel
+                {
+                    Children =
+                    {
+                        new TextBlock {Text = "Styles can't be previewed without Design.PreviewWith. Add"},
+                        new TextBlock {Text = "<Design.PreviewWith>"},
+                        new TextBlock {Text = "    <Border Padding=\"20\"><!-- YOUR CONTROL FOR PREVIEW HERE --></Border>"},
+                        new TextBlock {Text = "</Design.PreviewWith>"},
+                        new TextBlock {Text = "before setters in your first Style"}
+                    }
+                };
+            }
+
+            if (loaded is ResourceDictionary resources)
+            {
+                var substitute = GetPreviewWith(resources);
+                if (substitute != null)
+                {
+                    substitute.Resources.MergedDictionaries.Add(resources);
+                    return substitute;
+                }
+
+                return new StackPanel
+                {
+                    Children =
+                    {
+                        new TextBlock {Text = "ResourceDictionaries can't be previewed without Design.PreviewWith. Add"},
+                        new TextBlock {Text = "<Design.PreviewWith>"},
+                        new TextBlock {Text = "    <Border Padding=\"20\"><!-- YOUR CONTROL FOR PREVIEW HERE --></Border>"},
+                        new TextBlock {Text = "</Design.PreviewWith>"},
+                        new TextBlock {Text = "in your resource dictionary"}
+                    }
+                };
+            }
+
+            if (loaded is IDataTemplate template)
+            {
+                if (GetPreviewWith(template) is ContentControl substitute)
+                {
+                    substitute.ContentTemplate = template;
+                    return substitute;
+                }
+
+                return new StackPanel
+                {
+                    Children =
+                    {
+                        new TextBlock {Text = "IDataTemplate can't be previewed without Design.PreviewWith."},
+                        new TextBlock {Text = "Provide ContentControl with your design data as Content. Previewer will set ContentTemplate from this file."},
+                        new TextBlock {Text = "<Design.PreviewWith>"},
+                        new TextBlock {Text = "    <ContentControl Content=\"{x:Static YOUR DATA OBJECT HERE}\" ></Border>"},
+                        new TextBlock {Text = "</Design.PreviewWith>"}
+                    }
+                };
+            }
+
+            if (loaded is Application)
+            {
+                return new TextBlock { Text = "This file cannot be previewed in design view" };
+            }
+
+            if (loaded is AvaloniaObject avObject and not Window
+                && GetPreviewWith(avObject) is { } previewWith)
+            {
+                return previewWith;
+            }
+
+            return (Control)loaded;
+        }
     }
 }

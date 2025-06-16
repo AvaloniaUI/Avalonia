@@ -20,7 +20,6 @@ namespace Avalonia.DesignerSupport
         public static Window LoadDesignerWindow(string xaml, string assemblyPath, string xamlFileProjectPath, double renderScaling)
         {
             Window window;
-            Control control;
             using (PlatformManager.DesignerMode())
             {
                 var loader = AvaloniaLocator.Current.GetRequiredService<AvaloniaXamlLoader.IRuntimeXamlLoader>();
@@ -47,82 +46,7 @@ namespace Avalonia.DesignerSupport
                     UseCompiledBindingsByDefault = bool.TryParse(useCompiledBindings, out var parsedValue) && parsedValue
                 });
 
-                if (loaded is IStyle style)
-                {
-                    var substitute = Design.GetPreviewWith((AvaloniaObject)style);
-                    if (substitute != null)
-                    {
-                        substitute.Styles.Add(style);
-                        control = substitute;
-                    }
-                    else
-                        control = new StackPanel
-                        {
-                            Children =
-                            {
-                                new TextBlock {Text = "Styles can't be previewed without Design.PreviewWith. Add"},
-                                new TextBlock {Text = "<Design.PreviewWith>"},
-                                new TextBlock {Text = "    <Border Padding=\"20\"><!-- YOUR CONTROL FOR PREVIEW HERE --></Border>"},
-                                new TextBlock {Text = "</Design.PreviewWith>"},
-                                new TextBlock {Text = "before setters in your first Style"}
-                            }
-                        };
-                }
-                else if (loaded is ResourceDictionary resources)
-                {
-                    var substitute = Design.GetPreviewWith(resources);
-                    if (substitute != null)
-                    {
-                        substitute.Resources.MergedDictionaries.Add(resources);
-                        control = substitute;
-                    }
-                    else
-                        control = new StackPanel
-                        {
-                            Children =
-                            {
-                                new TextBlock {Text = "ResourceDictionaries can't be previewed without Design.PreviewWith. Add"},
-                                new TextBlock {Text = "<Design.PreviewWith>"},
-                                new TextBlock {Text = "    <Border Padding=\"20\"><!-- YOUR CONTROL FOR PREVIEW HERE --></Border>"},
-                                new TextBlock {Text = "</Design.PreviewWith>"},
-                                new TextBlock {Text = "in your resource dictionary"}
-                            }
-                        };
-                }
-                else if (loaded is IDataTemplate template)
-                {
-                    if (Design.GetPreviewWith(template) is ContentControl substitute)
-                    {
-                        substitute.ContentTemplate = template;
-                        control = substitute;
-                    }
-                    else
-                        control = new StackPanel
-                        {
-                            Children =
-                            {
-                                new TextBlock {Text = "IDataTemplate can't be previewed without Design.PreviewWith."},
-                                new TextBlock {Text = "Provide ContentControl with your design data as Content. Previewer will set ContentTemplate from this file."},
-                                new TextBlock {Text = "<Design.PreviewWith>"},
-                                new TextBlock {Text = "    <ContentControl Content=\"{x:Static YOUR DATA OBJECT HERE}\" ></Border>"},
-                                new TextBlock {Text = "</Design.PreviewWith>"}
-                            }
-                        };
-                }
-                else if (loaded is Application)
-                {
-                    control = new TextBlock { Text = "This file cannot be previewed in design view" };
-                }
-                else if (loaded is AvaloniaObject avObject and not Window
-                         && Design.GetPreviewWith(avObject) is { } previewWith)
-                {
-                    control = previewWith;
-                }
-                else
-                {
-                    control = (Control)loaded;
-                }
-
+                var control = Design.CreatePreviewWithControl(loaded);
                 window = control as Window ?? new Window { Content = control };
 
                 if (window.PlatformImpl is OffscreenTopLevelImplBase offscreenImpl)
