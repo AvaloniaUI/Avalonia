@@ -479,7 +479,7 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
         AvnDragDropEffects IAvnTopLevelEvents.DragEvent(AvnDragEventType type, AvnPoint position,
             AvnInputModifiers modifiers,
             AvnDragDropEffects effects,
-            IAvnClipboard clipboard, IntPtr dataObjectHandle)
+            IAvnClipboard clipboard, IntPtr dataTransferHandle)
         {
             var device = AvaloniaLocator.Current.GetService<IDragDropDevice>();
 
@@ -493,17 +493,16 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
                 return AvnDragDropEffects.None;
             }
             
-            IDataObject? dataObject = null;
-            if (dataObjectHandle != IntPtr.Zero)
-                dataObject = GCHandle.FromIntPtr(dataObjectHandle).Target as IDataObject;
+            IDataTransfer? dataTransfer = null;
+            if (dataTransferHandle != IntPtr.Zero)
+                dataTransfer = GCHandle.FromIntPtr(dataTransferHandle).Target as IDataTransfer;
 
-            using (var clipboardDataObject = new ClipboardDataObject(clipboard))
+            using (var clipboardDataTransfer = new ClipboardDataTransfer(clipboard))
             {
-                if (dataObject == null)
-                    dataObject = clipboardDataObject;
+                dataTransfer ??= clipboardDataTransfer;
 
                 var args = new RawDragEvent(device, (RawDragEventType)type,
-                    _parent._inputRoot, position.ToAvaloniaPoint(), dataObject, (DragDropEffects)effects,
+                    _parent._inputRoot, position.ToAvaloniaPoint(), dataTransfer, (DragDropEffects)effects,
                     (RawInputModifiers)modifiers);
                 _parent.Input?.Invoke(args);
                 return (AvnDragDropEffects)args.Effects;

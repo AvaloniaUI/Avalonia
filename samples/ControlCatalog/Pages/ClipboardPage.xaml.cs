@@ -24,7 +24,7 @@ namespace ControlCatalog.Pages
             ??= new WindowNotificationManager(TopLevel.GetTopLevel(this)!);
 
         private readonly DispatcherTimer _clipboardLastDataObjectChecker;
-        private DataObject? _storedDataObject;
+        private DataTransfer? _storedDataTransfer;
         public ClipboardPage()
         {
             _clipboardLastDataObjectChecker =
@@ -41,37 +41,19 @@ namespace ControlCatalog.Pages
 
         private async void CopyText(object? sender, RoutedEventArgs args)
         {
-            if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard && ClipboardContent is { } clipboardContent)
-                await clipboard.SetTextAsync(clipboardContent.Text ?? String.Empty);
+            if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
+                await clipboard.SetTextAsync(ClipboardContent.Text ?? string.Empty);
         }
 
         private async void PasteText(object? sender, RoutedEventArgs args)
         {
             if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
             {
-                ClipboardContent.Text = await clipboard.GetTextAsync();
+                ClipboardContent.Text = await clipboard.TryGetTextAsync();
             }
         }
 
-        private async void CopyTextDataObject(object? sender, RoutedEventArgs args)
-        {
-            if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
-            {
-                var dataObject =  _storedDataObject = new DataObject();
-                dataObject.Set(DataFormats.Text, ClipboardContent.Text ?? string.Empty);
-                await clipboard.SetDataObjectAsync(dataObject);
-            }
-        }
-
-        private async void PasteTextDataObject(object? sender, RoutedEventArgs args)
-        {
-            if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
-            {
-                ClipboardContent.Text = await clipboard.GetDataAsync(DataFormats.Text) as string ?? string.Empty;
-            }
-        }
-
-        private async void CopyFilesDataObject(object? sender, RoutedEventArgs args)
+        private async void CopyFiles(object? sender, RoutedEventArgs args)
         {
             if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
             {
@@ -105,9 +87,9 @@ namespace ControlCatalog.Pages
 
                 if (files.Count > 0)
                 {
-                    var dataObject = _storedDataObject = new DataObject();
-                    dataObject.Set(DataFormats.Files, files);
-                    await clipboard.SetDataObjectAsync(dataObject);
+                    var dataTransfer = _storedDataTransfer = new DataTransfer();
+                    dataTransfer.Items.Add(DataTransferItem.Create(DataFormat.Files, files));
+                    await clipboard.SetDataAsync(dataTransfer);
                     NotificationManager.Show(new Notification("Success", "Copy completated.", NotificationType.Success));
                 }
                 else
@@ -117,11 +99,11 @@ namespace ControlCatalog.Pages
             }
         }
 
-        private async void PasteFilesDataObject(object? sender, RoutedEventArgs args)
+        private async void PasteFiles(object? sender, RoutedEventArgs args)
         {
             if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
             {
-                var files = await clipboard.GetDataAsync(DataFormats.Files) as IEnumerable<Avalonia.Platform.Storage.IStorageItem>;
+                var files = await clipboard.TryGetFilesAsync();
 
                 ClipboardContent.Text = files != null ? string.Join(Environment.NewLine, files.Select(f => f.TryGetLocalPath() ?? f.Name)) : string.Empty;
             }
@@ -131,8 +113,8 @@ namespace ControlCatalog.Pages
         {
             if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
             {
-                var formats = await clipboard.GetFormatsAsync();
-                ClipboardContent.Text = string.Join(Environment.NewLine, formats);
+                var formats = await clipboard.GetDataFormatsAsync();
+                ClipboardContent.Text = string.Join<DataFormat>(Environment.NewLine, formats);
             }
         }
 
@@ -159,22 +141,28 @@ namespace ControlCatalog.Pages
         }
 
         private Run OwnsClipboardDataObject => this.Get<Run>("OwnsClipboardDataObject");
-        private bool _checkingClipboardDataObject;
+        private bool _checkingClipboardDataTransfer;
         private async void CheckLastDataObject(object? sender, EventArgs e)
         {
-            if(_checkingClipboardDataObject)
+            if(_checkingClipboardDataTransfer)
                 return;
             try
             {
-                _checkingClipboardDataObject = true;
-                var task = TopLevel.GetTopLevel(this)?.Clipboard?.TryGetInProcessDataObjectAsync();
-                var owns = task != null && (await task) == _storedDataObject && _storedDataObject != null;
+                _checkingClipboardDataTransfer = true;
+
+                var owns = false;
+                if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
+                {
+                    var dataTransfer = await clipboard.TryGetInProcessDataTransferAsync();
+                    owns = dataTransfer == _storedDataTransfer && dataTransfer is not null;
+                }
+
                 OwnsClipboardDataObject.Text = owns ? "Yes" : "No";
                 OwnsClipboardDataObject.Foreground = owns ? Brushes.Green : Brushes.Red;
             }
             finally
             {
-                _checkingClipboardDataObject = false;
+                _checkingClipboardDataTransfer = false;
             }
         }
     }

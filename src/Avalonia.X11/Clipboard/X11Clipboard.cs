@@ -12,7 +12,7 @@ using Avalonia.X11.Clipboard;
 using static Avalonia.X11.XLib;
 namespace Avalonia.X11
 {
-    internal class X11Clipboard : IClipboard
+    internal class X11ClipboardImpl : IClipboardImpl
     {
         private readonly AvaloniaX11Platform _platform;
         private readonly X11Info _x11;
@@ -23,7 +23,7 @@ namespace Avalonia.X11
         private readonly IntPtr _avaloniaSaveTargetsAtom;
         private int _maximumPropertySize;
 
-        public X11Clipboard(AvaloniaX11Platform platform)
+        public X11ClipboardImpl(AvaloniaX11Platform platform)
         {
             _platform = platform;
             _x11 = platform.Info;
@@ -365,5 +365,20 @@ namespace Avalonia.X11
         /// <inheritdoc />
         public Task FlushAsync() =>
             Task.CompletedTask;
+
+        public Task<DataFormat[]> GetDataFormatsAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IDataTransfer?> TryGetDataAsync(IEnumerable<DataFormat> formats)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task SetDataAsync(IDataTransfer dataTransfer)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

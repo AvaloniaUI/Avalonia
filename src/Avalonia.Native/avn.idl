@@ -814,7 +814,7 @@ interface IAvnTopLevelEvents : IUnknown
     
     AvnDragDropEffects DragEvent(AvnDragEventType type, AvnPoint position,
                                          AvnInputModifiers modifiers, AvnDragDropEffects effects,
-                                         IAvnClipboard* clipboard, [intptr]void* dataObjectHandle);
+                                         IAvnClipboard* clipboard, [intptr]void* dataTransferHandle);
 }
 
 [uuid(939b6599-40a8-4710-a4c8-5d72d8f174fb)]

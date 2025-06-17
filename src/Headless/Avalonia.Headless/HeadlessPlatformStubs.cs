@@ -15,52 +15,53 @@ using Avalonia.Platform;
 
 namespace Avalonia.Headless
 {
-    internal class HeadlessClipboardStub : IClipboard
+    internal sealed class HeadlessClipboardImplStub : IOwnedClipboardImpl
     {
-        private IDataObject? _data;
+        private IDataTransfer? _data;
 
-        public Task<string?> GetTextAsync()
+        public Task<DataFormat[]> GetDataFormatsAsync()
+            => Task.FromResult(_data is null ? [] : _data.GetFormats().ToArray());
+
+        public Task<IDataTransfer?> TryGetDataAsync(IEnumerable<DataFormat> formats)
         {
-            return Task.FromResult(_data?.GetText());
+            if (_data is null)
+                return Task.FromResult<IDataTransfer?>(null);
+
+            DataTransfer? result = null;
+            var formatArray = formats as DataFormat[] ?? formats.ToArray();
+
+            foreach (var item in _data.GetItems(formatArray))
+            {
+                foreach (var format in formatArray)
+                {
+                    if (item.Contains(format))
+                    {
+                        // Note: we're returning the item inside the result object, but the item's owner is still our _data field.
+                        // This _may_ cause issues in some convoluted scenarios involving custom implementations of IDataTransfer.
+                        result ??= new();
+                        result.Items.Add(item);
+                    }
+                }
+            }
+
+            return Task.FromResult<IDataTransfer?>(result);
         }
 
-        public Task SetTextAsync(string? text)
+        public Task SetDataAsync(IDataTransfer dataTransfer)
         {
-            var data = new DataObject();
-            if (text != null)
-                data.Set(DataFormats.Text, text);
-            _data = data;
+            _data = dataTransfer;
             return Task.CompletedTask;
         }
 
         public Task ClearAsync()
         {
+            _data?.Dispose();
             _data = null;
             return Task.CompletedTask;
         }
 
-        public Task SetDataObjectAsync(IDataObject data)
-        {
-            _data = data;
-            return Task.CompletedTask;
-        }
-
-        public Task<string[]> GetFormatsAsync()
-        {
-            return Task.FromResult<string[]>(_data?.GetDataFormats().ToArray() ?? []);
-        }
-
-        public Task<object?> GetDataAsync(string format)
-        {
-            return Task.FromResult(_data?.Get(format));
-        }
-
-
-        public Task<IDataObject?> TryGetInProcessDataObjectAsync() => Task.FromResult(_data);
-
-        /// <inheritdoc />
-        public Task FlushAsync() =>
-            Task.CompletedTask;
+        public Task<bool> IsCurrentOwnerAsync()
+            => Task.FromResult(_data is not null);
     }
 
     internal class HeadlessCursorFactoryStub : ICursorFactory

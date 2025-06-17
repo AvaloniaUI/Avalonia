@@ -1,11 +1,12 @@
 ﻿#nullable enable
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls.Platform;
-using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Logging;
 using Avalonia.Native.Interop;
@@ -14,10 +15,9 @@ using Avalonia.Platform.Storage.FileIO;
 
 namespace Avalonia.Native
 {
-    class ClipboardImpl : IClipboard, IDisposable
+    internal sealed class ClipboardImpl : IOwnedClipboardImpl, IDisposable
     {
         private IAvnClipboard? _native;
-        private IDataObject? _savedDataObject;
         private long _lastClearChangeCount;
 
         // TODO hide native types behind IAvnClipboard abstraction, so managed side won't depend on macOS.
@@ -34,7 +34,6 @@ namespace Avalonia.Native
 
         private void ClearCore()
         {
-            _savedDataObject = null;
             _lastClearChangeCount = Native.Clear();
         }
         
@@ -44,64 +43,58 @@ namespace Avalonia.Native
             return Task.CompletedTask;
         }
 
-        public Task<string?> GetTextAsync()
+        public Task<DataFormat[]> GetDataFormatsAsync()
+            => Task.FromResult(GetFormats());
+
+        public DataFormat[] GetFormats()
         {
-            using (var text = Native.GetText(NSPasteboardTypeString))
-                return Task.FromResult<string?>(text.String);
-        }
+            using var formats = Native.ObtainFormats();
 
-        public Task SetTextAsync(string? text)
-        {
-            var native = Native;
+            var count = formats.Count;
+            if (count == 0)
+                return [];
 
-            ClearCore();
+            var results = new HashSet<DataFormat>();
 
-            if (text != null) 
-                native.SetText(NSPasteboardTypeString, text);
-
-            return Task.CompletedTask;
-        }
-
-        public IEnumerable<string> GetFormats()
-        {
-            var rv = new HashSet<string>();
-            using (var formats = Native.ObtainFormats())
+            for (var c = 0u; c < count; c++)
             {
-                var cnt = formats.Count;
-                for (uint c = 0; c < cnt; c++)
+                using var format = formats.Get(c);
+                switch (format.String)
                 {
-                    using (var fmt = formats.Get(c))
-                    {
-                         if(fmt.String == NSPasteboardTypeString)
-                             rv.Add(DataFormats.Text);
-                         if (fmt.String == NSFilenamesPboardType)
-                         {
-                             rv.Add(DataFormats.FileNames);
-                             rv.Add(DataFormats.Files);
-                         }
-                         else
-                             rv.Add(fmt.String);
-                    }
+                    case NSPasteboardTypeString:
+                        results.Add(DataFormat.Text);
+                        break;
+                    case NSFilenamesPboardType:
+                        results.Add(DataFormat.File);
+                        break;
+                    case { } name:
+                        results.Add(DataFormat.Parse(name));
+                        break;
                 }
             }
 
-            return rv;
+            return results.ToArray();
         }
-        
+
         public void Dispose()
         {
-            _savedDataObject = null;
             _native?.Dispose();
             _native = null;
         }
 
-        public IEnumerable<string>? GetFileNames()
+        private string? GetText()
         {
-            using (var strings = Native.GetStrings(NSFilenamesPboardType))
-                return strings?.ToStringArray();
+            using var text = Native.GetText(NSPasteboardTypeString);
+            return text?.String;
         }
 
-        public IEnumerable<IStorageItem>? GetFiles()
+        private string[]? GetFileNames()
+        {
+            using var strings = Native.GetStrings(NSFilenamesPboardType);
+            return strings?.ToStringArray();
+        }
+
+        private IStorageItem[]? GetFiles()
         {
             var storageApi = (StorageProviderApi)AvaloniaLocator.Current.GetRequiredService<IStorageProviderFactory>();
     
@@ -114,125 +107,167 @@ namespace Avalonia.Native
                 .Select(f => StorageProviderHelpers.TryGetUriFromFilePath(f, false) is { } uri
                     ? storageApi.TryGetStorageItem(uri)
                     : null)
-                .Where(f => f is not null)!;
+                .Where(f => f is not null)
+                .ToArray()!;
         }
 
-        public unsafe Task SetDataObjectAsync(IDataObject data)
+        private byte[]? GetBytes(DataFormat format)
+        {
+            using var data = Native.GetBytes(format.SystemName);
+            return data?.Bytes;
+        }
+
+        public object? TryGetData(DataFormat format)
+        {
+            if (DataFormat.Text.Equals(format) || format.SystemName == NSPasteboardTypeString)
+                return GetText();
+
+            if (DataFormat.FileNames.Equals(format) || format.SystemName == NSFilenamesPboardType)
+                return GetFileNames();
+
+            if (DataFormat.Files.Equals(format))
+                return GetFiles();
+
+            return GetBytes(format);
+        }
+
+        public Task<IDataTransfer?> TryGetDataAsync(IEnumerable<DataFormat> formats)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task SetDataAsync(IDataTransfer dataTransfer)
         {
             ClearCore();
 
-            // If there is multiple values with the same "to" format, prefer these that were not mapped.
-            var formats = data.GetDataFormats().Select(f =>
-                {
-                    string from, to;
-                    bool mapped;
-                    if (f == DataFormats.Text)
-                        (from, to, mapped) = (f, NSPasteboardTypeString, true);
-                    else if (f == DataFormats.Files || f == DataFormats.FileNames)
-                        (from, to, mapped) = (f, NSFilenamesPboardType, true);
-                    else (from, to, mapped) = (f, f, false);
-                    return (from, to, mapped);
-                })
-                .GroupBy(p => p.to)
-                .Select(g => g.OrderBy(f => f.mapped).First());
-                
-            
-            foreach (var (fromFormat, toFormat, _) in formats)
+            throw new NotImplementedException();
+
+            // var formats = await dataTransfer.GetFormatsAsync();
+            //
+            // foreach (var format in formats)
+            // {
+            //     if (await dataTransfer.TryGetAsync(format) is { } value)
+            //         SetData(value, format);
+            // }
+        }
+
+        public void SetData(IDataTransfer dataTransfer)
+        {
+            ClearCore();
+
+            throw new NotImplementedException();
+
+            // var formats = dataTransfer.GetFormats();
+            //
+            // foreach (var format in formats)
+            // {
+            //     if (dataTransfer.TryGet(format) is { } value)
+            //         SetData(value, format);
+            // }
+        }
+
+        private void SetData(object data, DataFormat format)
+        {
+            if (DataFormat.Text.Equals(format))
             {
-                var o = data.Get(fromFormat);
-                switch (o)
+                SetString(NSPasteboardTypeString, Convert.ToString(data) ?? string.Empty);
+                return;
+            }
+
+            if (DataFormat.FileNames.Equals(format))
+            {
+                var fileNames = GetTypedData<IEnumerable<string>>(data, format) ?? [];
+                SetFileNames(NSFilenamesPboardType, fileNames);
+                return;
+            }
+
+            if (DataFormat.Files.Equals(format))
+            {
+                var files = GetTypedData<IEnumerable<IStorageItem>>(data, format) ?? [];
+
+                IEnumerable<string> fileNames = files
+                    .Select(StorageProviderExtensions.TryGetLocalPath)
+                    .Where(path => path is not null)!;
+
+                SetFileNames(NSFilenamesPboardType, fileNames);
+                return;
+            }
+
+            switch (data)
+            {
+                case byte[] bytes:
                 {
-                    case string s:
-                        Native.SetText(toFormat, s);
-                        break;
-                    case IEnumerable<IStorageItem> storageItems:
-                        using (var strings = new AvnStringArray(storageItems
-                                   .Select(s => s.TryGetLocalPath())
-                                   .Where(p => p is not null)))
-                        {
-                            Native.SetStrings(toFormat, strings);
-                        }
-                        break;
-                    case IEnumerable<string> managedStrings:
-                        using (var strings = new AvnStringArray(managedStrings))
-                        {
-                            Native.SetStrings(toFormat, strings);
-                        }
-                        break;
-                    case byte[] bytes:
+                    SetBytes(format.SystemName, bytes.AsSpan());
+                    return;
+                }
+
+                case Memory<byte> bytes:
+                {
+                    SetBytes(format.SystemName, bytes.Span);
+                    return;
+                }
+
+                case string str:
+                {
+                    SetString(format.SystemName, str);
+                    return;
+                }
+
+                case Stream stream:
+                {
+                    var length = (int)(stream.Length - stream.Position);
+                    var buffer = ArrayPool<byte>.Shared.Rent(length);
+
+                    try
                     {
-                        fixed (byte* pbytes = bytes)
-                            Native.SetBytes(toFormat, pbytes, bytes.Length);
-                        break;
+                        stream.ReadExactly(buffer, 0, length);
+                        SetBytes(format.SystemName, buffer);
+                        return;
                     }
-                    default:
-                        Logger.TryGet(LogEventLevel.Warning, LogArea.macOSPlatform)?.Log(this,
-                            "Unsupported IDataObject value type: {0}", o?.GetType().FullName ?? "(null)");
-                        break;
+                    finally
+                    {
+                        ArrayPool<byte>.Shared.Return(buffer);
+                    }
+                }
+
+                default:
+                {
+                    Logger.TryGet(LogEventLevel.Warning, LogArea.macOSPlatform)?.Log(
+                        this,
+                        "Unsupported value type {Type} for data format {Format}",
+                        data.GetType(),
+                        format);
+                    return;
                 }
             }
 
-            _savedDataObject = data;
-            return Task.CompletedTask;
+            static T? GetTypedData<T>(object? data, DataFormat format) where T : class
+                => data switch
+                {
+                    null => null,
+                    T value => value,
+                    _ => throw new InvalidOperationException(
+                        $"Expected a value of type {typeof(T)} for data format {format}, got {data.GetType()} instead.")
+                };
         }
 
-        public Task<string[]> GetFormatsAsync()
+        private void SetString(string type, string value)
+            => Native.SetText(type, value);
+
+        private void SetFileNames(string type, IEnumerable<string> fileNames)
         {
-            return Task.FromResult(GetFormats().ToArray());
+            using var strings = new AvnStringArray(fileNames);
+            Native.SetStrings(type, strings);
         }
 
-        public async Task<object?> GetDataAsync(string format)
+        private unsafe void SetBytes(string type, ReadOnlySpan<byte> bytes)
         {
-            if (format == DataFormats.Text || format == NSPasteboardTypeString)
-                return await GetTextAsync();
-            if (format == DataFormats.FileNames || format == NSFilenamesPboardType)
-                return GetFileNames();
-            if (format == DataFormats.Files)
-                return GetFiles();
-            using (var n = Native.GetBytes(format))
-                return n.Bytes;
+            fixed (byte* ptr = bytes)
+                Native.SetBytes(type, ptr, bytes.Length);
         }
 
-        public Task<IDataObject?> TryGetInProcessDataObjectAsync()
-        {
-            if (Native.ChangeCount != _lastClearChangeCount)
-                _savedDataObject = null;
-            return Task.FromResult(_savedDataObject);
-        }
+        public Task<bool> IsCurrentOwnerAsync()
+            => Task.FromResult(Native.ChangeCount == _lastClearChangeCount);
 
-        /// <inheritdoc />
-        public Task FlushAsync() =>
-            Task.CompletedTask;
-
-    }
-    
-    class ClipboardDataObject : IDataObject, IDisposable
-    {
-        private ClipboardImpl? _clipboard;
-        private List<string>? _formats;
-
-        public ClipboardDataObject(IAvnClipboard clipboard)
-        {
-            _clipboard = new ClipboardImpl(clipboard);
-        }
-
-        public void Dispose()
-        {
-            _clipboard?.Dispose();
-            _clipboard = null;
-        }
-
-        private ClipboardImpl Clipboard
-            => _clipboard ?? throw new ObjectDisposedException(nameof(ClipboardDataObject));
-
-        private List<string> Formats => _formats ??= Clipboard.GetFormats().ToList();
-
-        public IEnumerable<string> GetDataFormats() => Formats;
-
-        public bool Contains(string dataFormat) => Formats.Contains(dataFormat);
-
-        public object? Get(string dataFormat) => Clipboard.GetDataAsync(dataFormat).GetAwaiter().GetResult();
-
-        public Task SetFromDataObjectAsync(IDataObject dataObject) => Clipboard.SetDataObjectAsync(dataObject);
     }
 }

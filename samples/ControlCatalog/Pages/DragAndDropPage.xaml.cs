@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
 
@@ -12,7 +13,10 @@ namespace ControlCatalog.Pages
     public class DragAndDropPage : UserControl
     {
         private readonly TextBlock _dropState;
-        private const string CustomFormat = "application/xxx-avalonia-controlcatalog-custom";
+
+        private readonly DataFormat _customFormat =
+            DataFormat.CreateOperatingSystemFormat("application/xxx-avalonia-controlcatalog-custom");
+
         public DragAndDropPage()
         {
             InitializeComponent();
@@ -22,12 +26,12 @@ namespace ControlCatalog.Pages
 
             SetupDnd(
                 "Text",
-                d => d.Set(DataFormats.Text, $"Text was dragged {++textCount} times"),
+                d => d.Items.Add(DataTransferItem.Create(DataFormat.Text, $"Text was dragged {++textCount} times")),
                 DragDropEffects.Copy | DragDropEffects.Move | DragDropEffects.Link);
 
             SetupDnd(
                 "Custom",
-                d => d.Set(CustomFormat, "Test123"),
+                d => d.Items.Add(DataTransferItem.Create(_customFormat, "Test123")),
                 DragDropEffects.Move);
 
             SetupDnd(
@@ -38,13 +42,13 @@ namespace ControlCatalog.Pages
                         TopLevel.GetTopLevel(this) is { } topLevel &&
                         await topLevel.StorageProvider.TryGetFileFromPathAsync(name) is { } storageFile)
                     {
-                        d.Set(DataFormats.Files, new[] { storageFile });
+                        d.Items.Add(DataTransferItem.Create(DataFormat.Files, new[] { storageFile }));
                     }
                 },
                 DragDropEffects.Copy);
         }
 
-        private void SetupDnd(string suffix, Action<DataObject> factory, DragDropEffects effects) =>
+        private void SetupDnd(string suffix, Action<DataTransfer> factory, DragDropEffects effects) =>
             SetupDnd(
                 suffix,
                 o =>
@@ -54,17 +58,17 @@ namespace ControlCatalog.Pages
                 },
                 effects);
 
-        private void SetupDnd(string suffix, Func<DataObject, Task> factory, DragDropEffects effects)
+        private void SetupDnd(string suffix, Func<DataTransfer, Task> factory, DragDropEffects effects)
         {
             var dragMe = this.Get<Border>("DragMe" + suffix);
             var dragState = this.Get<TextBlock>("DragState" + suffix);
 
             async void DoDrag(object? sender, PointerPressedEventArgs e)
             {
-                var dragData = new DataObject();
+                var dragData = new DataTransfer();
                 await factory(dragData);
 
-                var result = await DragDrop.DoDragDrop(e, dragData, effects);
+                var result = await DragDrop.DoDragDropAsync(e, dragData, effects);
                 switch (result)
                 {
                     case DragDropEffects.Move:
@@ -97,9 +101,9 @@ namespace ControlCatalog.Pages
                 }
 
                 // Only allow if the dragged data contains text or filenames.
-                if (!e.Data.Contains(DataFormats.Text)
-                    && !e.Data.Contains(DataFormats.Files)
-                    && !e.Data.Contains(CustomFormat))
+                if (!e.DataTransfer.Contains(DataFormat.Text)
+                    && !e.DataTransfer.Contains(DataFormat.Files)
+                    && !e.DataTransfer.Contains(_customFormat))
                     e.DragEffects = DragDropEffects.None;
             }
 
@@ -114,13 +118,13 @@ namespace ControlCatalog.Pages
                     e.DragEffects = e.DragEffects & (DragDropEffects.Copy);
                 }
 
-                if (e.Data.Contains(DataFormats.Text))
+                if (e.DataTransfer.Contains(DataFormat.Text))
                 {
-                    _dropState.Text = e.Data.GetText();
+                    _dropState.Text = await e.DataTransfer.TryGetTextAsync();
                 }
-                else if (e.Data.Contains(DataFormats.Files))
+                else if (e.DataTransfer.Contains(DataFormat.Files))
                 {
-                    var files = e.Data.GetFiles() ?? Array.Empty<IStorageItem>();
+                    var files = await e.DataTransfer.TryGetFilesAsync() ?? [];
                     var contentStr = "";
 
                     foreach (var item in files)
@@ -143,16 +147,9 @@ namespace ControlCatalog.Pages
 
                     _dropState.Text = contentStr;
                 }
-#pragma warning disable CS0618 // Type or member is obsolete
-                else if (e.Data.Contains(DataFormats.FileNames))
+                else if (e.DataTransfer.Contains(_customFormat))
                 {
-                    var files = e.Data.GetFileNames();
-                    _dropState.Text = string.Join(Environment.NewLine, files ?? Array.Empty<string>());
-                }
-#pragma warning restore CS0618 // Type or member is obsolete
-                else if (e.Data.Contains(CustomFormat))
-                {
-                    _dropState.Text = "Custom: " + e.Data.Get(CustomFormat);
+                    _dropState.Text = "Custom: " + await e.DataTransfer.TryGetValueAsync<object?>(_customFormat);
                 }
             }
 

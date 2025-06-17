@@ -31,8 +31,17 @@ namespace Avalonia.Native
                 _tcs = null;
             }
         }
-        
-        public Task<DragDropEffects> DoDragDrop(PointerEventArgs triggerEvent, IDataObject data, DragDropEffects allowedEffects)
+
+        Task<DragDropEffects> IPlatformDragSource.DoDragDrop(
+            PointerEventArgs triggerEvent,
+            IDataObject data,
+            DragDropEffects allowedEffects)
+            => DoDragDropAsync(triggerEvent, new DataObjectToDataTransferWrapper(data), allowedEffects);
+
+        public Task<DragDropEffects> DoDragDropAsync(
+            PointerEventArgs triggerEvent,
+            IDataTransfer dataTransfer,
+            DragDropEffects allowedEffects)
         {
             // Sanity check
             var tl = TopLevel.GetTopLevel(triggerEvent.Source as Visual);
@@ -48,12 +57,11 @@ namespace Avalonia.Native
             using (var clipboard = new ClipboardImpl(clipboardImpl))
             using (var cb = new DndCallback(tcs))
             {
-                // Native API is synchronous, so it's OK. For now.
-                clipboard.SetDataObjectAsync(data).GetAwaiter().GetResult();
+                clipboard.SetData(dataTransfer);
 
                 view.BeginDraggingSession((AvnDragDropEffects)allowedEffects,
                     triggerEvent.GetPosition(tl).ToAvnPoint(), clipboardImpl, cb,
-                    GCHandle.ToIntPtr(GCHandle.Alloc(data)));
+                    GCHandle.ToIntPtr(GCHandle.Alloc(dataTransfer)));
             }
 
             return tcs.Task;
