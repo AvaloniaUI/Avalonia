@@ -437,7 +437,11 @@
 
             // Works around macos 15.x+ tiling and stage manager features where
             // the window size may reset during stage manager transitions
-            if(@available(macOS 15, *))
+            if (@available(macOS 15, *))
+            {
+                // No action needed for macOS 15 and later
+            }
+            else
             {
                 window->SetWindowState(Normal);
             }
