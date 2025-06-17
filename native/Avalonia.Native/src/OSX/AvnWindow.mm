@@ -437,8 +437,7 @@
 
             // Works around macos 15.x+ tiling and stage manager features where
             // the window size may reset during stage manager transitions
-            NSOperatingSystemVersion version = [[NSProcessInfo processInfo] operatingSystemVersion];
-            if(version.majorVersion < 15)
+            if(@available(macOS 15, *))
             {
                 window->SetWindowState(Normal);
             }
