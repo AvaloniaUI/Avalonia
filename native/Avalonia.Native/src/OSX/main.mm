@@ -135,8 +135,8 @@ public:
         
         @autoreleasepool
         {
-            AvnDesiredActivationPolicy = show
-                ? NSApplicationActivationPolicyRegular : NSApplicationActivationPolicyAccessory;
+            [[NSApplication sharedApplication] setActivationPolicy: show
+             ? NSApplicationActivationPolicyRegular : NSApplicationActivationPolicyAccessory];
             return S_OK;
         }
     }
