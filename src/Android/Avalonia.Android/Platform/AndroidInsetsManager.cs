@@ -17,9 +17,6 @@ namespace Avalonia.Android.Platform
 {
     internal sealed class AndroidInsetsManager : WindowInsetsAnimationCompat.Callback, IInsetsManager, IOnApplyWindowInsetsListener, ViewTreeObserver.IOnGlobalLayoutListener, IInputPane
     {
-        // For now, we check if running under net 9. TODO: remove runtime check when we target net 10
-        private static bool IsDisplayEdgeToEdgeForced = System.Environment.Version.Major >=9 && Build.VERSION.SdkInt >= (BuildVersionCodes)35;
-
         private readonly Activity _activity;
         private readonly TopLevelImpl _topLevel;
         private bool _displaysEdgeToEdge;
@@ -32,6 +29,7 @@ namespace Avalonia.Android.Platform
         private Insets? _previousImeInset;
         private bool _displayEdgeToEdgePreference;
         private readonly bool _usesLegacyLayouts;
+        private readonly bool _isDisplayEdgeToEdgeForced;
 
         private AndroidWindow Window => _activity.Window ?? throw new InvalidOperationException("Activity.Window must be set."); 
         
@@ -67,7 +65,7 @@ namespace Avalonia.Android.Platform
 
         private void UpdateDisplayEdgeToEgdeState()
         {
-            if (IsDisplayEdgeToEdgeForced)
+            if (_isDisplayEdgeToEdgeForced)
             {
                 _displaysEdgeToEdge = true;
                 return;
@@ -97,6 +95,9 @@ namespace Avalonia.Android.Platform
         {
             _activity = activity;
             _topLevel = topLevel;
+
+            // Better detection for target sdk and running api level. Apps can change their target sdk and bypass dotnet's fixed target sdk level.
+            _isDisplayEdgeToEdgeForced = _activity.ApplicationContext?.ApplicationInfo?.TargetSdkVersion >= (BuildVersionCodes)35 && Build.VERSION.SdkInt >= (BuildVersionCodes)35;
 
             ViewCompat.SetOnApplyWindowInsetsListener(Window.DecorView, this);
 
@@ -223,6 +224,12 @@ namespace Avalonia.Android.Platform
             {
                 _statusBarTheme = value;
 
+                // On api 35, there's no system bar theme. Updating the status bar theme has no effect, and navigation bar now has a special style that
+                // makes it invisible if you change the nav bar appearance. By default, android applies a 80% opacity filter over any color drawn on the 
+                // activity behind, forcing you to always use a light foreground, i.e. dark appearance. Thus we skip updating any colors.
+                if (_isDisplayEdgeToEdgeForced)
+                    return;
+
                 var compat = new WindowInsetsControllerCompat(Window, _topLevel.View);
 
                 if (_isDefaultSystemBarLightTheme == null)
@@ -281,8 +288,13 @@ namespace Avalonia.Android.Platform
             {
                 _systemBarColor = value;
 
-                if (IsDisplayEdgeToEdgeForced)
+                if (_isDisplayEdgeToEdgeForced)
+                {
+                    // Allow having fully transparent navbars when on api level 35
+                    if (OperatingSystem.IsAndroidVersionAtLeast(35))
+                        Window.NavigationBarContrastEnforced = _systemBarColor != Colors.Transparent;
                     return;
+                }
 
                 if (_systemBarColor is { } color && !_displaysEdgeToEdge && _activity.Window != null)
                 {

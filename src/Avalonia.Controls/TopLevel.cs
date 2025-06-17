@@ -964,8 +964,8 @@ namespace Avalonia.Controls
             while (focused.VisualParent != null)
                 focused = focused.VisualParent;
 
-            if (focused == this || GetTopLevel(focused) == focused)
-                KeyboardDevice.Instance?.SetFocusedElement(null, NavigationMethod.Unspecified, KeyModifiers.None);
+            if (focused == this)
+                KeyboardDevice.Instance?.SetFocusedElement(null, NavigationMethod.Unspecified, KeyModifiers.None, false);
         }
 
         protected override bool BypassFlowDirectionPolicies => true;
