@@ -97,7 +97,7 @@ namespace Avalonia.Android.Platform
             _topLevel = topLevel;
 
             // Better detection for target sdk and running api level. Apps can change their target sdk and bypass dotnet's fixed target sdk level.
-            _isDisplayEdgeToEdgeForced = _activity.ApplicationContext?.ApplicationInfo?.TargetSdkVersion == (BuildVersionCodes)35 && Build.VERSION.SdkInt >= (BuildVersionCodes)35;
+            _isDisplayEdgeToEdgeForced = _activity.ApplicationContext?.ApplicationInfo?.TargetSdkVersion >= (BuildVersionCodes)35 && Build.VERSION.SdkInt >= (BuildVersionCodes)35;
 
             ViewCompat.SetOnApplyWindowInsetsListener(Window.DecorView, this);
 
