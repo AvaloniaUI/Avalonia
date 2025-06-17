@@ -2,18 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
-using Avalonia.Markup.Parsers;
+using Avalonia.Data.Core.Parsers;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
+using XamlX;
 using XamlX.Ast;
+using XamlX.Emit;
+using XamlX.IL;
 using XamlX.Transform;
 using XamlX.Transform.Transformers;
 using XamlX.TypeSystem;
-using XamlX;
-using XamlX.Emit;
-using XamlX.IL;
-
 using XamlIlEmitContext = XamlX.Emit.XamlEmitContextWithLocals<XamlX.IL.IXamlILEmitter, XamlX.IL.XamlILNodeEmitResult>;
-using System.Xml.Linq;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 {
