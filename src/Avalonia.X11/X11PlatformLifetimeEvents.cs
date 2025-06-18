@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Text;
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
@@ -229,7 +229,10 @@ namespace Avalonia.X11
         {
             if (state is IntPtr smcConn)
             {
-                var e = new ShutdownRequestedEventArgs();
+                var e = new ShutdownRequestedEventArgs()
+                {
+                    IsOSShutdown = true,
+                };
 
                 if (_platform.Options.EnableSessionManagement)
                 {
