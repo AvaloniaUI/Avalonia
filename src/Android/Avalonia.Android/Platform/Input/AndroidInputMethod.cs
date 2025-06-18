@@ -89,6 +89,8 @@ namespace Avalonia.Android.Platform.Input
             }
             else
             {
+                _host.ClearFocus();
+                _imm.RestartInput(View);
                 _imm.HideSoftInputFromWindow(_host.WindowToken, HideSoftInputFlags.ImplicitOnly);
             }
         }
@@ -149,7 +151,10 @@ namespace Avalonia.Android.Platform.Input
             _host.InitEditorInfo((topLevel, outAttrs) =>
             {
                 if (_client == null)
+                {
+                    _inputConnection = null;
                     return null!;
+                }
 
                 _inputConnection = new AvaloniaInputConnection(topLevel, this);
 
