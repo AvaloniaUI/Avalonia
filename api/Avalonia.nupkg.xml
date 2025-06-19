@@ -45,6 +45,12 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.Design.ApplyDesignModeProperties(Avalonia.Controls.Control,Avalonia.Controls.Control)</Target>
+    <Left>baseline/netstandard2.0/Avalonia.Controls.dll</Left>
+    <Right>target/netstandard2.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Controls.Primitives.IPopupHost.ConfigurePosition(Avalonia.Visual,Avalonia.Controls.PlacementMode,Avalonia.Point,Avalonia.Controls.Primitives.PopupPositioning.PopupAnchor,Avalonia.Controls.Primitives.PopupPositioning.PopupGravity,Avalonia.Controls.Primitives.PopupPositioning.PopupPositionerConstraintAdjustment,System.Nullable{Avalonia.Rect})</Target>
     <Left>baseline/netstandard2.0/Avalonia.Controls.dll</Left>
     <Right>target/netstandard2.0/Avalonia.Controls.dll</Right>
