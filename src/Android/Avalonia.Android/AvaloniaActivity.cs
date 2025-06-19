@@ -131,7 +131,7 @@ public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity
         base.OnResume();
 
         // Android only respects LayoutInDisplayCutoutMode value if it has been set once before window becomes visible.
-        if (OperatingSystem.IsAndroidVersionAtLeast(28) && Window is { Attributes: { } attributes })
+        if (Build.VERSION.SdkInt >= (BuildVersionCodes)28 && Window is { Attributes: { } attributes })
         {
             attributes.LayoutInDisplayCutoutMode = LayoutInDisplayCutoutMode.ShortEdges;
         }

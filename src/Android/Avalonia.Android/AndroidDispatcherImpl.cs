@@ -37,7 +37,7 @@ namespace Avalonia.Android
             _wakeupSignaler = new Runnable(() => { });
             _queue = Looper.MyQueue();
             Looper.MyQueue().AddIdleHandler(new IdleHandler(this));
-            CanQueryPendingInput = OperatingSystem.IsAndroidVersionAtLeast(23);
+            CanQueryPendingInput = Build.VERSION.SdkInt >= BuildVersionCodes.M;
         }
         
         public event Action? Timer;
@@ -57,7 +57,7 @@ namespace Avalonia.Android
             {
                 if (s_isUIThread.HasValue)
                     return s_isUIThread.Value;
-                var uiThread = OperatingSystem.IsAndroidVersionAtLeast(23)
+                var uiThread = Build.VERSION.SdkInt >= BuildVersionCodes.M
                     ? _mainLooper.IsCurrentThread
                     : _mainLooper.Thread.Equals(Java.Lang.Thread.CurrentThread());
 

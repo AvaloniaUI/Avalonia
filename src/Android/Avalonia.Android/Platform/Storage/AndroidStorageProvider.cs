@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Android;
 using Android.App;
 using Android.Content;
+using Android.OS;
 using Android.Provider;
 using Avalonia.Platform.Storage;
 using Avalonia.Platform.Storage.FileIO;
@@ -25,11 +26,11 @@ internal class AndroidStorageProvider : IStorageProvider
         _activity = activity;
     }
 
-    public bool CanOpen => OperatingSystem.IsAndroidVersionAtLeast(19);
+    public bool CanOpen => Build.VERSION.SdkInt >= (BuildVersionCodes)19;
 
-    public bool CanSave => OperatingSystem.IsAndroidVersionAtLeast(19);
+    public bool CanSave => Build.VERSION.SdkInt >= (BuildVersionCodes)19;
 
-    public bool CanPickFolder => OperatingSystem.IsAndroidVersionAtLeast(21);
+    public bool CanPickFolder => Build.VERSION.SdkInt >= (BuildVersionCodes)21;
 
     public Task<IStorageBookmarkFolder?> OpenFolderBookmarkAsync(string bookmark)
     {
@@ -270,7 +271,7 @@ internal class AndroidStorageProvider : IStorageProvider
 
     private static Intent TryAddExtraInitialUri(Intent intent, IStorageFolder? folder)
     {
-        if (OperatingSystem.IsAndroidVersionAtLeast(26)
+        if (Build.VERSION.SdkInt >= (BuildVersionCodes)26
             && (folder as AndroidStorageItem)?.Uri is { } uri)
         {
             return intent.PutExtra(DocumentsContract.ExtraInitialUri, uri);

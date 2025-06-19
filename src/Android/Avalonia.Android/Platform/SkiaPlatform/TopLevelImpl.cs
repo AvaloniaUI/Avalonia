@@ -4,6 +4,7 @@ using Android.App;
 using Android.Content;
 using Android.Graphics;
 using Android.Graphics.Drawables;
+using Android.OS;
 using Android.Runtime;
 using Android.Text;
 using Android.Views;
@@ -193,7 +194,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 // Workaround issue #9230 on where screen remains gray after splash screen.
                 // base.DispatchDraw should punch a hole into the canvas so the surface
                 // can be seen below, but it does not.
-                if (OperatingSystem.IsAndroidVersionAtLeast(29))
+                if (Build.VERSION.SdkInt >= (BuildVersionCodes)29)
                 {
                     // Android 10+ does this (BlendMode was new)
                     var paint = new Paint();
@@ -327,7 +328,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
                 if (level == WindowTransparencyLevel.None)
                 {
-                    if (OperatingSystem.IsAndroidVersionAtLeast(30))
+                    if (Build.VERSION.SdkInt >= (BuildVersionCodes)30)
                     {
                         activity.SetTranslucent(false);
                     }
@@ -336,7 +337,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 }
                 else if (level == WindowTransparencyLevel.Transparent)
                 {
-                    if (OperatingSystem.IsAndroidVersionAtLeast(30))
+                    if (Build.VERSION.SdkInt >= (BuildVersionCodes)30)
                     {
                         activity.SetTranslucent(true);
                         SetBlurBehind(activity, 0);
@@ -345,7 +346,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 }
                 else if (level == WindowTransparencyLevel.Blur)
                 {
-                    if (OperatingSystem.IsAndroidVersionAtLeast(31))
+                    if (Build.VERSION.SdkInt >= (BuildVersionCodes)31)
                     {
                         activity.SetTranslucent(true);
                         SetBlurBehind(activity, 120);
@@ -358,7 +359,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             }
 
             // If we get here, we didn't find a supported level. Use the default of None.
-            if (OperatingSystem.IsAndroidVersionAtLeast(30))
+            if (Build.VERSION.SdkInt >= (BuildVersionCodes)30)
             {
                 activity.SetTranslucent(false);
             }
@@ -416,9 +417,9 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             if (level == WindowTransparencyLevel.None)
                 return true;
             if (level == WindowTransparencyLevel.Transparent)
-                return OperatingSystem.IsAndroidVersionAtLeast(30);
+                return Build.VERSION.SdkInt >= (BuildVersionCodes)30;
             if (level == WindowTransparencyLevel.Blur)
-                return OperatingSystem.IsAndroidVersionAtLeast(31);
+                return Build.VERSION.SdkInt >= (BuildVersionCodes)31;
             return false;
         }
 
@@ -429,7 +430,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             else
                 activity.Window?.AddFlags(WindowManagerFlags.BlurBehind);
 
-            if (OperatingSystem.IsAndroidVersionAtLeast(31) && activity.Window?.Attributes is { } attr)
+            if (Build.VERSION.SdkInt >= (BuildVersionCodes)31 && activity.Window?.Attributes is { } attr)
             {
                 attr.BlurBehindRadius = radius;
                 activity.Window.Attributes = attr;

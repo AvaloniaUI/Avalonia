@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Content.PM;
+using Android.OS;
 
 namespace Avalonia.Android.Platform;
 
@@ -19,7 +20,7 @@ internal static class PlatformSupport
             throw new InvalidOperationException("Main activity must implement IActivityResultHandler interface.");
         }
 
-        if (!OperatingSystem.IsAndroidVersionAtLeast(23))
+        if (Build.VERSION.SdkInt < (BuildVersionCodes)23)
         {
             return true;
         }

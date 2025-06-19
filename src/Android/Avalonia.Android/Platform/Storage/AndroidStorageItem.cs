@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Android;
 using Android.App;
 using Android.Content;
+using Android.OS;
 using Android.Provider;
 using Android.Webkit;
 using Avalonia.Logging;
@@ -411,7 +412,7 @@ internal sealed class AndroidStorageFile : AndroidStorageItem, IStorageBookmarkF
 
     private bool IsVirtualFile(Context context, AndroidUri uri)
     {
-        if (!OperatingSystem.IsAndroidVersionAtLeast(24))
+        if (Build.VERSION.SdkInt < (BuildVersionCodes)24)
             return false;
 
         if (!DocumentsContract.IsDocumentUri(context, uri))
@@ -540,7 +541,7 @@ internal sealed class AndroidStorageFile : AndroidStorageItem, IStorageBookmarkF
         {
             AndroidUri? movedUri = null;
 
-            if (OperatingSystem.IsAndroidVersionAtLeast(24))
+            if (Build.VERSION.SdkInt >= (BuildVersionCodes)24)
             {
                 try
                 {
