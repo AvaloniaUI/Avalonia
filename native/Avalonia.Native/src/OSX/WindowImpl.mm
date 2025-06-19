@@ -478,61 +478,63 @@ HRESULT WindowImpl::SetWindowState(AvnWindowState state, bool shouldResize) {
         if (_shown) {
             _actualWindowState = _lastWindowState;
 
-            switch (state) {
-                case Maximized:
-                    if (currentState == FullScreen) {
-                        ExitFullScreenMode();
-                    }
-
-                    lastPositionSet.X = 0;
-                    lastPositionSet.Y = 0;
-
-                    if ([Window isMiniaturized]) {
-                        [Window deminiaturize:Window];
-                    }
-
-                    if (!IsZoomed()) {
-                        DoZoom();
-                    }
-                    break;
-
-                case Minimized:
-                    if (currentState == FullScreen) {
-                        ExitFullScreenMode();
-                    } else {
-                        [Window miniaturize:Window];
-                    }
-                    break;
-
-                case FullScreen:
-                    if ([Window isMiniaturized]) {
-                        [Window deminiaturize:Window];
-                    }
-
-                    EnterFullScreenMode();
-                    break;
-
-                case Normal:
-                    if ([Window isMiniaturized]) {
-                        [Window deminiaturize:Window];
-                    }
-
-                    if (currentState == FullScreen) {
-                        ExitFullScreenMode();
-                    }
-
-                    if (IsZoomed() && shouldResize == true) {
-                        if (_decorations == SystemDecorationsFull) {
-                            DoZoom();
-                        } else {
-                            [Window setFrame:_preZoomSize display:true];
-                            auto newFrame = [Window contentRectForFrameRect:[Window frame]].size;
-
-                            [View setFrameSize:newFrame];
+            if (shouldResize) {
+                switch (state) {
+                    case Maximized:
+                        if (currentState == FullScreen) {
+                            ExitFullScreenMode();
                         }
 
-                    }
-                    break;
+                        lastPositionSet.X = 0;
+                        lastPositionSet.Y = 0;
+
+                        if ([Window isMiniaturized]) {
+                            [Window deminiaturize:Window];
+                        }
+
+                        if (!IsZoomed()) {
+                            DoZoom();
+                        }
+                        break;
+
+                    case Minimized:
+                        if (currentState == FullScreen) {
+                            ExitFullScreenMode();
+                        } else {
+                            [Window miniaturize:Window];
+                        }
+                        break;
+
+                    case FullScreen:
+                        if ([Window isMiniaturized]) {
+                            [Window deminiaturize:Window];
+                        }
+
+                        EnterFullScreenMode();
+                        break;
+
+                    case Normal:
+                        if ([Window isMiniaturized]) {
+                            [Window deminiaturize:Window];
+                        }
+
+                        if (currentState == FullScreen) {
+                            ExitFullScreenMode();
+                        }
+
+                        if (IsZoomed()) {
+                            if (_decorations == SystemDecorationsFull) {
+                                DoZoom();
+                            } else {
+                                [Window setFrame:_preZoomSize display:true];
+                                auto newFrame = [Window contentRectForFrameRect:[Window frame]].size;
+
+                                [View setFrameSize:newFrame];
+                            }
+
+                        }
+                        break;
+                }
             }
 
             WindowEvents->WindowStateChanged(_actualWindowState);
