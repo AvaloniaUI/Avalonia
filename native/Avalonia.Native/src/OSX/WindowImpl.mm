@@ -451,6 +451,10 @@ void WindowImpl::ExitFullScreenMode() {
 }
 
 HRESULT WindowImpl::SetWindowState(AvnWindowState state) {
+    return SetWindowState(state, true);
+}
+
+HRESULT WindowImpl::SetWindowState(AvnWindowState state, bool shouldResize) {
     START_COM_CALL;
 
     @autoreleasepool {
@@ -517,7 +521,7 @@ HRESULT WindowImpl::SetWindowState(AvnWindowState state) {
                         ExitFullScreenMode();
                     }
 
-                    if (IsZoomed()) {
+                    if (IsZoomed() && shouldResize == true) {
                         if (_decorations == SystemDecorationsFull) {
                             DoZoom();
                         } else {

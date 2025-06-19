@@ -435,9 +435,17 @@
                 return;
             }
 
-            if(window->WindowState() == Maximized)
+            // We should only return the window state to normal if
+            // the internal window state is maximized, and macOS says
+            // the window is no longer zoomed (I.E, the user has moved it)
+            // Stage Manager will "move" the window when repositioning it
+            // So if the window was "maximized" before, it should stay maximized
+            if(window->WindowState() == Maximized && !window->IsZoomed())
             {
-                window->SetWindowState(Normal);
+                // If we're moving the window while maximized,
+                // we need to let macOS handle if it should be resized
+                // And not handle it ourselves.
+                window->SetWindowState(Normal, false);
             }
         }
 
