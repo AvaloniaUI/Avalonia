@@ -110,6 +110,18 @@
     <Right>target/netstandard2.0/Avalonia.Controls.dll</Right>
   </Suppression>
   <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>P:Avalonia.Controls.Platform.IInsetsManager.DisplayEdgeToEdgePreference</Target>
+    <Left>baseline/netstandard2.0/Avalonia.Controls.dll</Left>
+    <Right>target/netstandard2.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>P:Avalonia.Controls.Platform.IInsetsManager.DisplaysEdgeToEdge</Target>
+    <Left>baseline/netstandard2.0/Avalonia.Controls.dll</Left>
+    <Right>target/netstandard2.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
     <DiagnosticId>CP0009</DiagnosticId>
     <Target>T:Avalonia.Diagnostics.StyleDiagnostics</Target>
     <Left>baseline/netstandard2.0/Avalonia.Base.dll</Left>
