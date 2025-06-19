@@ -2,6 +2,7 @@
 using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Avalonia.Utilities;
 
@@ -89,90 +90,106 @@ namespace Avalonia.Media.TextFormatting
 
         public IEnumerator<GlyphInfo> GetEnumerator() => _glyphInfos.GetEnumerator();
 
-        /// <summary>
-        /// Finds a glyph index for given character index.
-        /// </summary>
-        /// <param name="characterIndex">The character index.</param>
-        /// <returns>
-        /// The glyph index.
-        /// </returns>
-        private int FindGlyphIndex(int characterIndex)
-        {
-            if (characterIndex < _glyphInfos[0].GlyphCluster)
-            {
-                return 0;
-            }
-
-            if (characterIndex > _glyphInfos[_glyphInfos.Length - 1].GlyphCluster)
-            {
-                return _glyphInfos.Length - 1;
-            }
-
-            var comparer = GlyphInfo.ClusterAscendingComparer;
-
-            var glyphInfos = _glyphInfos.Span;
-
-            var searchValue = new GlyphInfo(default, characterIndex, default);
-
-            var start = glyphInfos.BinarySearch(searchValue, comparer);
-
-            if (start < 0)
-            {
-                while (characterIndex > 0 && start < 0)
-                {
-                    characterIndex--;
-
-                    searchValue = new GlyphInfo(default, characterIndex, default);
-
-                    start = glyphInfos.BinarySearch(searchValue, comparer);
-                }
-
-                if (start < 0)
-                {
-                    return -1;
-                }
-            }
-
-            while (start > 0 && glyphInfos[start - 1].GlyphCluster == glyphInfos[start].GlyphCluster)
-            {
-                start--;
-            }
-
-            return start;
-        }
-
-        /// <summary>
-        /// Splits the <see cref="TextRun"/> at specified length.
-        /// </summary>
-        /// <param name="length">The length.</param>
-        /// <returns>The split result.</returns>
-        internal SplitResult<ShapedBuffer> Split(int length)
-        {
-            if (Text.Length == length)
-            {
-                return new SplitResult<ShapedBuffer>(this, null);
-            }
-
-            var firstCluster = _glyphInfos[0].GlyphCluster;
-            var lastCluster = _glyphInfos[_glyphInfos.Length - 1].GlyphCluster;
-
-            var start = firstCluster < lastCluster ? firstCluster : lastCluster;
-
-            var glyphCount = FindGlyphIndex(start + length);
-
-            var first = new ShapedBuffer(Text.Slice(0, length),
-                _glyphInfos.Take(glyphCount), GlyphTypeface, FontRenderingEmSize, BidiLevel);
-
-            var second = new ShapedBuffer(Text.Slice(length),
-                _glyphInfos.Skip(glyphCount), GlyphTypeface, FontRenderingEmSize, BidiLevel);
-
-            return new SplitResult<ShapedBuffer>(first, second);
-        }
-
         internal void ResetBidiLevel(sbyte paragraphEmbeddingLevel) => BidiLevel = paragraphEmbeddingLevel;
 
         int IReadOnlyCollection<GlyphInfo>.Count => _glyphInfos.Length;
 
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();       
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        /// <summary>
+        /// Splits the <see cref="TextRun"/> at specified length.
+        /// </summary>
+        /// <param name="textLength">The text length.</param>
+        /// <returns>The split result.</returns>
+        public SplitResult<ShapedBuffer> Split(int textLength)
+        {
+            // make sure we do not overshoot
+            textLength = Math.Min(Text.Length, textLength);
+
+            if (textLength <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(textLength));
+            }
+
+            // nothing to split
+            if (textLength == Text.Length)
+            {
+                return new SplitResult<ShapedBuffer>(this, null);
+            }
+
+            var sliceStart = _glyphInfos.Start;
+            var glyphInfos = _glyphInfos.Span;
+            var glyphInfosLength = _glyphInfos.Length;
+
+            // the first glyph’s cluster is our “zero” for this sub‐buffer.
+            // we want an absolute target cluster = baseCluster + textLength
+            var baseCluster = glyphInfos[0].GlyphCluster;
+            var targetCluster = baseCluster + textLength;
+
+            // binary‐search for a dummy with cluster == targetCluster
+            var searchValue = new GlyphInfo(0, targetCluster, 0, default);
+            var foundIndex = glyphInfos.BinarySearch(searchValue, GlyphInfo.ClusterAscendingComparer);
+
+            int splitGlyphIndex;    // how many glyph‐slots go into "leading"
+            int splitCharCount;   // how many chars go into "leading" Text
+
+            if (foundIndex >= 0)
+            {
+                // found a glyph info whose cluster == targetCluster
+                // back up to the start of the cluster
+                var i = foundIndex;
+
+                while (i > 0 && glyphInfos[i - 1].GlyphCluster == targetCluster)
+                {
+                    i--;
+                }
+                    
+                splitGlyphIndex = i;
+                splitCharCount = targetCluster - baseCluster;
+            }
+            else
+            {
+                // no exact match need to invert so ~foundIndex is the insertion point
+                // the first cluster > targetCluster
+                var invertedIndex = ~foundIndex;
+
+                if (invertedIndex >= glyphInfosLength)
+                {
+                    // happens only if targetCluster ≥ lastCluster
+                    // put everything into leading
+                    splitGlyphIndex = glyphInfosLength;
+                    splitCharCount = Text.Length;
+                }
+                else
+                {
+                    // snap to the start of that next cluster
+                    splitGlyphIndex = invertedIndex;
+                    var nextCluster = glyphInfos[invertedIndex].GlyphCluster;
+                    splitCharCount = nextCluster - baseCluster;
+                }
+            }
+
+            var firstGlyphs = _glyphInfos.Slice(sliceStart, splitGlyphIndex);
+            var secondGlyphs = _glyphInfos.Slice(sliceStart + splitGlyphIndex, glyphInfosLength - splitGlyphIndex);
+
+            var firstText = Text.Slice(0, splitCharCount);
+            var secondText = Text.Slice(splitCharCount);
+
+            var leading = new ShapedBuffer(
+                firstText, firstGlyphs,
+                GlyphTypeface, FontRenderingEmSize, BidiLevel);
+
+            // this happens if we try to find a position inside a cluster and we moved to the end
+            if(secondText.Length == 0)
+            {
+                return new SplitResult<ShapedBuffer>(leading, null);
+            }
+
+            var trailing = new ShapedBuffer(
+                secondText, secondGlyphs,
+                GlyphTypeface, FontRenderingEmSize, BidiLevel);
+
+            return new SplitResult<ShapedBuffer>(leading, trailing);
+        }
     }
 }
