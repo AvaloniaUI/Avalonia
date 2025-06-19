@@ -19,7 +19,7 @@ namespace Avalonia.Controls.Automation.Peers
             if (owner.Owner is not null)
             {
                 var errors = DataValidationErrors.GetErrors(owner.Owner);
-                var errorsStringList = errors?.OfType<string>().Select(x => x);
+                var errorsStringList = errors?.Select(x => x.ToString());
                 return errorsStringList != null ? string.Join("\n", errorsStringList.ToArray()) : string.Empty;
             }
 
