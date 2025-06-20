@@ -108,7 +108,11 @@ namespace Avalonia.Media.TextFormatting
 
             if (textLength <= 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(textLength));
+                var emptyBuffer = new ShapedBuffer(
+                    Text.Slice(0, 0), _glyphInfos.Slice(_glyphInfos.Start, 0),
+                    GlyphTypeface, FontRenderingEmSize, BidiLevel);
+
+                return new SplitResult<ShapedBuffer>(emptyBuffer, this);
             }
 
             // nothing to split

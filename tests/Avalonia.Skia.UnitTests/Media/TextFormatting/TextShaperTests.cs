@@ -90,6 +90,25 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Fact]
+        public void Should_Split_Zero_Length()
+        {
+            var text = "ABC";
+
+            using (Start())
+            {
+                var buffer = TextShaper.Current.ShapeText(text, new TextShaperOptions(Typeface.Default.GlyphTypeface));
+
+                var splitResult = buffer.Split(0);
+
+                Assert.Equal(0, splitResult.First.Length);
+
+                Assert.NotNull(splitResult.Second);
+
+                Assert.Equal(text.Length, splitResult.Second.Length);
+            }
+        }
+
         private static IDisposable Start()
         {
             var disposable = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface
