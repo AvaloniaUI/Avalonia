@@ -474,7 +474,7 @@ namespace Avalonia
             VerifyAccess();
             ValidatePriority(priority);
 
-            if (source is IBinding2 b)
+            if (source is BindingBase b)
             {
                 if (b.Instance(this, property, null) is not UntypedBindingExpressionBase expression)
                     throw new NotSupportedException($"Binding returned unsupported {nameof(BindingExpressionBase)}.");
@@ -574,7 +574,7 @@ namespace Avalonia
                 throw new ArgumentException($"The property {property.Name} is readonly.");
             }
 
-            if (source is IBinding2 b)
+            if (source is BindingBase b)
             {
                 if (b.Instance(this, property, null) is not UntypedBindingExpressionBase expression)
                     throw new NotSupportedException($"Binding returned unsupported {nameof(BindingExpressionBase)}.");
@@ -658,9 +658,7 @@ namespace Avalonia
         /// </returns>
         internal BindingExpressionBase Bind(AvaloniaProperty property, BindingBase binding, object? anchor)
         {
-            if (binding is not IBinding2 b)
-                throw new NotSupportedException($"Unsupported IBinding implementation '{binding}'.");
-            if (b.Instance(this, property, anchor) is not UntypedBindingExpressionBase expression)
+            if (binding.Instance(this, property, anchor) is not UntypedBindingExpressionBase expression)
                 throw new NotSupportedException($"Binding returned unsupported {nameof(BindingExpressionBase)}.");
 
             return GetValueStore().AddBinding(property, expression);
