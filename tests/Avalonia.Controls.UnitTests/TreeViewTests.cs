@@ -1612,7 +1612,17 @@ namespace Avalonia.Controls.UnitTests
                 },
                 DataTemplates =
                 {
-                    new TestTreeDataTemplate(),
+                    new TreeDataTemplate
+                    {
+                        DataType = typeof(Node),
+                        ItemsSource = new Binding(nameof(Node.Children)),
+                        Content = (IServiceProvider? _) => new TemplateResult<Control>(
+                            new TextBlock
+                            {
+                                [!TextBlock.TextProperty] = new Binding(nameof(Node.Value)),
+                            },
+                            new NameScope())
+                    },
                 },
                 Child = child,
             };
@@ -1876,26 +1886,6 @@ namespace Avalonia.Controls.UnitTests
             }
 
             public override string ToString() => Value ?? string.Empty;
-        }
-
-        private class TestTreeDataTemplate : ITreeDataTemplate
-        {
-            public Control Build(object? param)
-            {
-                var node = (Node)param!;
-                return new TextBlock { Text = node.Value };
-            }
-
-            public InstancedBinding ItemsSelector(object item)
-            {
-                var obs = BindingExpression.Create(item, o => ((Node)o).Children);
-                return new InstancedBinding(obs, BindingMode.OneWay, BindingPriority.LocalValue);
-            }
-
-            public bool Match(object? data)
-            {
-                return data is Node;
-            }
         }
 
         private class DerivedTreeView : TreeView

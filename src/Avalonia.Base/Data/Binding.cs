@@ -73,63 +73,9 @@ namespace Avalonia.Data
             AvaloniaProperty? targetProperty,
             object? anchor)
         {
+            List<ExpressionNode>? nodes = null;
+            var isRooted = false;
             var enableDataValidation = targetProperty?.GetMetadata(target).EnableDataValidation ?? false;
-            return InstanceCore(targetProperty, target, anchor, enableDataValidation);
-        }
-
-        /// <summary>
-        /// Hack for TreeDataTemplate to create a binding expression for an item.
-        /// </summary>
-        /// <param name="source">The item.</param>
-        /// <remarks>
-        /// Ideally we'd do this in a more generic way but didn't have time to refactor
-        /// ITreeDataTemplate in time for 11.0. We should revisit this in 12.0.
-        /// </remarks>
-        // TODO12: Refactor
-        internal BindingExpression CreateObservableForTreeDataTemplate(object source)
-        {
-            if (!string.IsNullOrEmpty(ElementName))
-                throw new NotSupportedException("ElementName bindings are not supported in this context.");
-            if (RelativeSource is not null && RelativeSource.Mode != RelativeSourceMode.DataContext)
-                throw new NotSupportedException("RelativeSource bindings are not supported in this context.");
-            if (Source != AvaloniaProperty.UnsetValue)
-                throw new NotSupportedException("Source bindings are not supported in this context.");
-
-            List<ExpressionNode>? nodes = null;
-            var isRooted = false;
-
-            if (!string.IsNullOrEmpty(Path))
-            {
-                var reader = new CharacterReader(Path.AsSpan());
-                var (astNodes, sourceMode) = BindingExpressionGrammar.ParseToPooledList(ref reader);
-                nodes = ExpressionNodeFactory.CreateFromAst(
-                    astNodes,
-                    TypeResolver,
-                    GetNameScope(),
-                    out isRooted);
-            }
-
-            if (isRooted)
-                throw new NotSupportedException("Rooted binding paths are not supported in this context.");
-
-            return new BindingExpression(
-                source,
-                nodes,
-                FallbackValue,
-                delay: TimeSpan.FromMilliseconds(Delay),
-                converter: Converter,
-                converterParameter: ConverterParameter,
-                targetNullValue: TargetNullValue);
-        }
-
-        private UntypedBindingExpressionBase InstanceCore(
-            AvaloniaProperty? targetProperty, 
-            AvaloniaObject target,
-            object? anchor,
-            bool enableDataValidation)
-        {
-            List<ExpressionNode>? nodes = null;
-            var isRooted = false;
 
             // Build the expression nodes from the binding path.
             if (!string.IsNullOrEmpty(Path))
