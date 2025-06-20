@@ -9,7 +9,7 @@ using Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
-    public class CompiledBindingExtension : BindingBase
+    public class CompiledBindingExtension : StandardBindingBase
     {
         public CompiledBindingExtension()
         {

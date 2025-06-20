@@ -1,19 +1,17 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using Avalonia.Reactive;
-using Avalonia.Data.Converters;
-using Avalonia.Metadata;
-using Avalonia.Data.Core;
 using System.ComponentModel;
+using System.Globalization;
+using Avalonia.Data.Converters;
+using Avalonia.Data.Core;
+using Avalonia.Metadata;
 
 namespace Avalonia.Data
 {
     /// <summary>
     /// A XAML binding that calculates an aggregate value from multiple child <see cref="Bindings"/>.
     /// </summary>
-    public class MultiBinding : IBinding2
+    public class MultiBinding : BindingBase
     {
         /// <summary>
         /// Gets the collection of child bindings.
@@ -78,7 +76,8 @@ namespace Avalonia.Data
         }
 
         /// <inheritdoc/>
-        public InstancedBinding? Initiate(
+        [Obsolete]
+        public override InstancedBinding? Initiate(
             AvaloniaObject target,
             AvaloniaProperty? targetProperty,
             object? anchor = null,
@@ -88,7 +87,7 @@ namespace Avalonia.Data
             return new InstancedBinding(target, expression, Mode, Priority);
         }
 
-        BindingExpressionBase IBinding2.Instance(
+        private protected override BindingExpressionBase Instance(
             AvaloniaObject target,
             AvaloniaProperty? targetProperty,
             object? anchor)

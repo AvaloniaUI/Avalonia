@@ -14,7 +14,7 @@ namespace Avalonia.Data
     /// A XAML binding.
     /// </summary>
     [RequiresUnreferencedCode(TrimmingMessages.ReflectionBindingRequiresUnreferencedCodeMessage)]
-    public class Binding : BindingBase
+    public class Binding : StandardBindingBase
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Binding"/> class.
@@ -27,11 +27,20 @@ namespace Avalonia.Data
         /// Initializes a new instance of the <see cref="Binding"/> class.
         /// </summary>
         /// <param name="path">The binding path.</param>
-        /// <param name="mode">The binding mode.</param>
-        public Binding(string path, BindingMode mode = BindingMode.Default)
-            : base(mode)
+        public Binding(string path)
         {
             Path = path;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Binding"/> class.
+        /// </summary>
+        /// <param name="path">The binding path.</param>
+        /// <param name="mode">The binding mode.</param>
+        public Binding(string path, BindingMode mode = BindingMode.Default)
+        {
+            Path = path;
+            Mode = mode;
         }
 
         /// <summary>
