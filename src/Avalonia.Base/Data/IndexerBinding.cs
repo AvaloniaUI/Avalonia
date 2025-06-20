@@ -4,7 +4,7 @@ using Avalonia.Diagnostics;
 
 namespace Avalonia.Data
 {
-    internal class IndexerBinding : IBinding2
+    internal class IndexerBinding : BindingBase
     {
         public IndexerBinding(
             AvaloniaObject source,
@@ -21,7 +21,7 @@ namespace Avalonia.Data
         private BindingMode Mode { get; }
 
         [Obsolete(ObsoletionMessages.MayBeRemovedInAvalonia12)]
-        public InstancedBinding? Initiate(
+        public override InstancedBinding? Initiate(
             AvaloniaObject target,
             AvaloniaProperty? targetProperty,
             object? anchor = null,
@@ -31,7 +31,10 @@ namespace Avalonia.Data
             return new InstancedBinding(expression, Mode, BindingPriority.LocalValue);
         }
 
-        BindingExpressionBase IBinding2.Instance(AvaloniaObject target, AvaloniaProperty? targetProperty, object? anchor)
+        private protected override BindingExpressionBase Instance(
+            AvaloniaObject target,
+            AvaloniaProperty? targetProperty,
+            object? anchor)
         {
             return new IndexerBindingExpression(Source, Property, target, targetProperty, Mode);
         }
