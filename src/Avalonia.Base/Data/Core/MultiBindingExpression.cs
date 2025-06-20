@@ -63,12 +63,7 @@ internal class MultiBindingExpression : UntypedBindingExpressionBase, IBindingEx
 
         for (var i = 0; i < _bindings.Length; ++i)
         {
-            var binding = _bindings[i]; 
-
-            if (binding is not IBinding2 b)
-                throw new NotSupportedException($"Unsupported IBinding implementation '{binding}'.");
-
-            var expression = b.Instance(target, null, null);
+            var expression = _bindings[i].Instance(target, null, null);
 
             if (expression is not UntypedBindingExpressionBase e)
                 throw new NotSupportedException($"Unsupported BindingExpressionBase implementation '{expression}'.");
