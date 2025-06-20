@@ -368,17 +368,6 @@ namespace Avalonia
                 this._source = source;
             }
 
-            [Obsolete]
-            public override InstancedBinding? Initiate(
-                AvaloniaObject target,
-                AvaloniaProperty? targetProperty,
-                object? anchor = null,
-                bool enableDataValidation = false)
-            {
-                var expression = new UntypedObservableBindingExpression(_source, BindingPriority.LocalValue);
-                return new InstancedBinding(expression, BindingMode.OneWay, BindingPriority.LocalValue);
-            }
-
             internal override BindingExpressionBase Instance(
                 AvaloniaObject target,
                 AvaloniaProperty? property,

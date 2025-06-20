@@ -21,17 +21,6 @@ namespace Avalonia.Data
         private AvaloniaObject Source { get; }
         private BindingMode Mode { get; }
 
-        [Obsolete(ObsoletionMessages.MayBeRemovedInAvalonia12)]
-        public override InstancedBinding? Initiate(
-            AvaloniaObject target,
-            AvaloniaProperty? targetProperty,
-            object? anchor = null,
-            bool enableDataValidation = false)
-        {
-            var expression = new IndexerBindingExpression(Source, Property, target, targetProperty, Mode);
-            return new InstancedBinding(expression, Mode, BindingPriority.LocalValue);
-        }
-
         internal override BindingExpressionBase Instance(
             AvaloniaObject target,
             AvaloniaProperty? targetProperty,

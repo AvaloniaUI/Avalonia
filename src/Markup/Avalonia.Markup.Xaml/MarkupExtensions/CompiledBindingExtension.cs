@@ -48,17 +48,6 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 
         public Type? DataType { get; set; }
 
-        [Obsolete(ObsoletionMessages.MayBeRemovedInAvalonia12)]
-        public override InstancedBinding? Initiate(
-            AvaloniaObject target,
-            AvaloniaProperty? targetProperty,
-            object? anchor = null,
-            bool enableDataValidation = false)
-        {
-            var expression = InstanceCore(target, targetProperty, anchor, enableDataValidation);
-            return new InstancedBinding(target, expression, Mode, Priority);
-        }
-
         internal override BindingExpressionBase Instance(
             AvaloniaObject target,
             AvaloniaProperty? targetProperty,

@@ -75,18 +75,6 @@ namespace Avalonia.Data
             TargetNullValue = AvaloniaProperty.UnsetValue;
         }
 
-        /// <inheritdoc/>
-        [Obsolete]
-        public override InstancedBinding? Initiate(
-            AvaloniaObject target,
-            AvaloniaProperty? targetProperty,
-            object? anchor = null,
-            bool enableDataValidation = false)
-        {
-            var expression = InstanceCore(target, targetProperty);
-            return new InstancedBinding(target, expression, Mode, Priority);
-        }
-
         internal override BindingExpressionBase Instance(
             AvaloniaObject target,
             AvaloniaProperty? targetProperty,

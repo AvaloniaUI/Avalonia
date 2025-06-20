@@ -51,16 +51,6 @@ namespace Avalonia.Data
         [InheritDataTypeFrom(InheritDataTypeFromScopeKind.ControlTemplate)]
         public AvaloniaProperty? Property { get; set; }
 
-        [Obsolete]
-        public override InstancedBinding? Initiate(
-            AvaloniaObject target,
-            AvaloniaProperty? targetProperty,
-            object? anchor = null,
-            bool enableDataValidation = false)
-        {
-            throw new NotImplementedException();
-        }
-
         public BindingBase ProvideValue() => this;
 
         internal override BindingExpressionBase Instance(AvaloniaObject target, AvaloniaProperty? targetProperty, object? anchor)
