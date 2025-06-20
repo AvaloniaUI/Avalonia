@@ -44,19 +44,6 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             return this;
         }
 
-        [Obsolete]
-        public override InstancedBinding? Initiate(
-            AvaloniaObject target,
-            AvaloniaProperty? targetProperty,
-            object? anchor,
-            bool enableDataValidation)
-        {
-            if (ResourceKey is null)
-                return null;
-            var expression = new DynamicResourceExpression(ResourceKey, _anchor, _themeVariant, _priority);
-            return new InstancedBinding(target, expression, BindingMode.OneWay, _priority);
-        }
-
         internal override BindingExpressionBase Instance(AvaloniaObject target, AvaloniaProperty? targetProperty, object? anchor)
         {
             if (ResourceKey is null)

@@ -10,14 +10,6 @@ namespace Avalonia.Data;
 /// </summary>
 public abstract class BindingBase : IBinding2
 {
-    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.TypeConversionSupressWarningMessage)]
-    [Obsolete(ObsoletionMessages.MayBeRemovedInAvalonia12)]
-    public abstract InstancedBinding? Initiate(
-            AvaloniaObject target,
-            AvaloniaProperty? targetProperty,
-            object? anchor = null,
-            bool enableDataValidation = false);
-
     internal abstract BindingExpressionBase Instance(
         AvaloniaObject target,
         AvaloniaProperty? targetProperty,
