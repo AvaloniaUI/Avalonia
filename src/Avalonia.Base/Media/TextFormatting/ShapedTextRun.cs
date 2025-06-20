@@ -182,9 +182,9 @@ namespace Avalonia.Media.TextFormatting
 
 #if DEBUG
 
-            if (first.Length != length)
+            if (first.Length < length)
             {
-                throw new InvalidOperationException("Split length mismatch.");
+                throw new InvalidOperationException("Split length too small.");
             }
 #endif
             var second = new ShapedTextRun(splitBuffer.Second!, Properties);
