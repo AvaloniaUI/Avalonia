@@ -21,8 +21,8 @@ namespace Avalonia.Controls.Primitives
         /// Defines the TextBinding attached property.
         /// The binding will be applied to each item during text search in <see cref="SelectingItemsControl"/> (such as <see cref="ComboBox"/>).
         /// </summary>
-        public static readonly AttachedProperty<IBinding?> TextBindingProperty
-            = AvaloniaProperty.RegisterAttached<Interactive, IBinding?>("TextBinding", typeof(TextSearch));
+        public static readonly AttachedProperty<BindingBase?> TextBindingProperty
+            = AvaloniaProperty.RegisterAttached<Interactive, BindingBase?>("TextBinding", typeof(TextSearch));
 
         // TODO12: Control should be Interactive to match the property definition.
         /// <summary>
@@ -47,7 +47,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         /// <param name="interactive">The interactive element.</param>
         /// <param name="value">The search text binding to set.</param>
-        public static void SetTextBinding(Interactive interactive, IBinding? value)
+        public static void SetTextBinding(Interactive interactive, BindingBase? value)
             => interactive.SetValue(TextBindingProperty, value);
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace Avalonia.Controls.Primitives
         /// <param name="interactive">The interactive element.</param>
         /// <returns>The search text binding.</returns>
         [AssignBinding]
-        public static IBinding? GetTextBinding(Interactive interactive)
+        public static BindingBase? GetTextBinding(Interactive interactive)
             => interactive.GetValue(TextBindingProperty);
 
         /// <summary>

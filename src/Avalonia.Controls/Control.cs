@@ -4,6 +4,7 @@ using System.ComponentModel;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
@@ -161,7 +162,7 @@ namespace Avalonia.Controls
             get => GetValue(TagProperty);
             set => SetValue(TagProperty, value);
         }
-        
+
         /// <summary>
         /// Occurs when the user has completed a context input gesture, such as a right-click.
         /// </summary>

@@ -439,7 +439,7 @@ namespace Avalonia.Controls
             if (!_settingItemTemplateFromValueMemberBinding)
                 _itemTemplateIsFromValueMemberBinding = false;
         }
-        private void OnValueMemberBindingChanged(IBinding? value)
+        private void OnValueMemberBindingChanged(BindingBase? value)
         {
             if (_itemTemplateIsFromValueMemberBinding)
             {
@@ -2047,7 +2047,7 @@ namespace Avalonia.Controls
             /// <summary>
             /// Gets or sets the string value binding used by the control.
             /// </summary>
-            private IBinding? _binding;
+            private BindingBase? _binding;
 
             /// <summary>
             /// Identifies the Value dependency property.
@@ -2069,7 +2069,7 @@ namespace Avalonia.Controls
             /// <summary>
             /// Gets or sets the value binding.
             /// </summary>
-            public IBinding? ValueBinding
+            public BindingBase? ValueBinding
             {
                 get => _binding;
                 set
@@ -2091,7 +2091,7 @@ namespace Avalonia.Controls
             /// setting the initial binding to the provided parameter.
             /// </summary>
             /// <param name="binding">The initial string value binding.</param>
-            public BindingEvaluator(IBinding? binding)
+            public BindingEvaluator(BindingBase? binding)
                 : this()
             {
                 ValueBinding = binding;

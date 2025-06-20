@@ -17,7 +17,7 @@ namespace Avalonia.Data
         /// Gets the collection of child bindings.
         /// </summary>
         [Content, AssignBinding]
-        public IList<IBinding> Bindings { get; set; } = new List<IBinding>();
+        public IList<BindingBase> Bindings { get; set; } = new List<BindingBase>();
 
         /// <summary>
         /// Gets or sets the <see cref="IMultiValueConverter"/> to use.
@@ -87,7 +87,7 @@ namespace Avalonia.Data
             return new InstancedBinding(target, expression, Mode, Priority);
         }
 
-        private protected override BindingExpressionBase Instance(
+        internal override BindingExpressionBase Instance(
             AvaloniaObject target,
             AvaloniaProperty? targetProperty,
             object? anchor)

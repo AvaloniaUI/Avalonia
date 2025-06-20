@@ -286,13 +286,13 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 AvaloniaXamlIlWellKnownTypes types,
                 IXamlType declaringType,
                 IXamlField avaloniaProperty)
-                : base(types, declaringType, avaloniaProperty, false, [types.IBinding])
+                : base(types, declaringType, avaloniaProperty, false, [types.BindingBase])
             {
             }
 
             public override void Emit(IXamlILEmitter emitter)
             {
-                using (var bloc = emitter.LocalsPool.GetLocal(Types.IBinding))
+                using (var bloc = emitter.LocalsPool.GetLocal(Types.BindingBase))
                     emitter
                         .Stloc(bloc.Local)
                         .Ldsfld(AvaloniaProperty)
@@ -324,13 +324,13 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 AvaloniaXamlIlWellKnownTypes types,
                 IXamlType declaringType,
                 IXamlField avaloniaProperty)
-                : base(types, declaringType, avaloniaProperty, false, [types.BindingPriority, types.IBinding])
+                : base(types, declaringType, avaloniaProperty, false, [types.BindingPriority, types.BindingBase])
             {
             }
 
             public override void Emit(IXamlILEmitter emitter)
             {
-                using (var bloc = emitter.LocalsPool.GetLocal(Types.IBinding))
+                using (var bloc = emitter.LocalsPool.GetLocal(Types.BindingBase))
                     emitter
                         .Stloc(bloc.Local)
                         .Pop() // ignore priority

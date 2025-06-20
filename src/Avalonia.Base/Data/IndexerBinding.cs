@@ -16,8 +16,9 @@ namespace Avalonia.Data
             Mode = mode;
         }
 
-        private AvaloniaObject Source { get; }
         public AvaloniaProperty Property { get; }
+
+        private AvaloniaObject Source { get; }
         private BindingMode Mode { get; }
 
         [Obsolete(ObsoletionMessages.MayBeRemovedInAvalonia12)]
@@ -31,7 +32,7 @@ namespace Avalonia.Data
             return new InstancedBinding(expression, Mode, BindingPriority.LocalValue);
         }
 
-        private protected override BindingExpressionBase Instance(
+        internal override BindingExpressionBase Instance(
             AvaloniaObject target,
             AvaloniaProperty? targetProperty,
             object? anchor)

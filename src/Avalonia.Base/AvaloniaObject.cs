@@ -98,7 +98,7 @@ namespace Avalonia
         /// Gets or sets a binding for a <see cref="AvaloniaProperty"/>.
         /// </summary>
         /// <param name="binding">The binding information.</param>
-        public IBinding this[IndexerDescriptor binding]
+        public BindingBase this[IndexerDescriptor binding]
         {
             get { return new IndexerBinding(this, binding.Property!, binding.Mode); }
             set { this.Bind(binding.Property!, value); }
@@ -417,14 +417,14 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Binds a <see cref="AvaloniaProperty"/> to an <see cref="IBinding"/>.
+        /// Binds a <see cref="AvaloniaProperty"/> to an <see cref="BindingBase"/>.
         /// </summary>
         /// <param name="property">The property.</param>
         /// <param name="binding">The binding.</param>
         /// <returns>
         /// The binding expression which represents the binding instance on this object.
         /// </returns>
-        public BindingExpressionBase Bind(AvaloniaProperty property, IBinding binding)
+        public BindingExpressionBase Bind(AvaloniaProperty property, BindingBase binding)
         {
             return Bind(property, binding, null);
         }
@@ -643,7 +643,7 @@ namespace Avalonia
         public void CoerceValue(AvaloniaProperty property) => _values.CoerceValue(property);
 
         /// <summary>
-        /// Binds a <see cref="AvaloniaProperty"/> to an <see cref="IBinding"/>.
+        /// Binds a <see cref="AvaloniaProperty"/> to an <see cref="BindingBase"/>.
         /// </summary>
         /// <param name="property">The property.</param>
         /// <param name="binding">The binding.</param>
@@ -656,7 +656,7 @@ namespace Avalonia
         /// <returns>
         /// The binding expression which represents the binding instance on this object.
         /// </returns>
-        internal BindingExpressionBase Bind(AvaloniaProperty property, IBinding binding, object? anchor)
+        internal BindingExpressionBase Bind(AvaloniaProperty property, BindingBase binding, object? anchor)
         {
             if (binding is not IBinding2 b)
                 throw new NotSupportedException($"Unsupported IBinding implementation '{binding}'.");
