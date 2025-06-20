@@ -246,12 +246,12 @@ namespace Avalonia.Skia
             var d = destRect.ToSKRect();
 
             var paint = SKPaintCache.Shared.Get();
+            var samplingOptions = RenderOptions.BitmapInterpolationMode.ToSKSamplingOptions();
 
             paint.Color = new SKColor(255, 255, 255, (byte)(255 * opacity * _currentOpacity));
-            paint.FilterQuality = RenderOptions.BitmapInterpolationMode.ToSKFilterQuality();
             paint.BlendMode = RenderOptions.BitmapBlendingMode.ToSKBlendMode();
 
-            drawableImage.Draw(this, s, d, paint);
+            drawableImage.Draw(this, s, d, samplingOptions, paint);
             SKPaintCache.Shared.ReturnReset(paint);
         }
 
@@ -844,7 +844,9 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public Matrix Transform
         {
-            get { return _currentTransform ??= Canvas.TotalMatrix.ToAvaloniaMatrix(); }
+            // There is a Canvas.TotalMatrix (non 4x4 overload), but internally it still uses 4x4 matrix.
+            // We want to avoid SKMatrix4x4 -> SKMatrix -> Matrix conversion by directly going SKMatrix4x4 -> Matrix.
+            get { return _currentTransform ??= Canvas.TotalMatrix44.ToAvaloniaMatrix(); }
             set
             {
                 CheckLease();
@@ -860,7 +862,9 @@ namespace Avalonia.Skia
                     transform *= _postTransform.Value;
                 }
 
-                Canvas.SetMatrix(transform.ToSKMatrix());
+                // Canvas.SetMatrix internally uses 4x4 matrix, even with SKMatrix(3x3) overload.
+                // We want to avoid Matrix -> SKMatrix -> SKMatrix4x4 conversion by directly going Matrix -> SKMatrix4x4.
+                Canvas.SetMatrix(transform.ToSKMatrix44());
             }
         }
 
@@ -1257,7 +1261,6 @@ namespace Avalonia.Skia
             using(var shader = tile.ToShader(tileX, tileY, shaderTransform.ToSKMatrix(), 
                       new SKRect(0, 0, tile.CullRect.Width, tile.CullRect.Height)))
             {
-                paintWrapper.Paint.FilterQuality = SKFilterQuality.None;
                 paintWrapper.Paint.Shader = shader;
             }
         }
