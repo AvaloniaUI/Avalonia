@@ -8,13 +8,16 @@ namespace Avalonia.Media.TextFormatting
     {
         private List<TextRun>? _remainingRuns;
 
-        public WrappingTextLineBreak(TextEndOfLine? textEndOfLine, FlowDirection flowDirection,
+        public WrappingTextLineBreak(TextEndOfLine? textEndOfLine, FlowDirection flowDirection, FontMetrics fontMetrics,
             List<TextRun> remainingRuns)
             : base(textEndOfLine, flowDirection, isSplit: true)
         {
+            FontMetrics = fontMetrics;
             Debug.Assert(remainingRuns.Count > 0);
             _remainingRuns = remainingRuns;
         }
+
+        public FontMetrics FontMetrics { get; }
 
         /// <summary>
         /// Gets the remaining runs from this line break, and clears them from this line break.
