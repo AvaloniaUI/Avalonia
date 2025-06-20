@@ -11,7 +11,7 @@
 /// be renamed to something like BindingMarkupExtensionBase and a new BindingBase created with the
 /// Instance method from this interface. This interface should then be removed.
 /// </remarks>
-internal interface IBinding2 : IBinding
+internal interface IBinding2
 {
     BindingExpressionBase Instance(
         AvaloniaObject target,

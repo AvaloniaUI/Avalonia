@@ -171,7 +171,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             {
                 Getter = setterType.Methods.First(m => m.Name == "get_Value");
                 var method = setterType.Methods.First(m => m.Name == "set_Value");
-                Setters.Add(new XamlIlDirectCallPropertySetter(method, types.IBinding, false));
+                Setters.Add(new XamlIlDirectCallPropertySetter(method, types.BindingBase, false));
                 Setters.Add(new XamlIlDirectCallPropertySetter(method, types.UnsetValueType, false));
                 Setters.Add(new XamlIlDirectCallPropertySetter(method, targetType, targetType.AcceptsNull()));
             }

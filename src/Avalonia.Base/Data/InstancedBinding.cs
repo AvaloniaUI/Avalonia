@@ -7,12 +7,12 @@ using ObservableEx = Avalonia.Reactive.Observable;
 namespace Avalonia.Data
 {
     /// <summary>
-    /// Holds the result of calling <see cref="IBinding.Initiate"/>.
+    /// Holds the result of calling <see cref="BindingBase.Initiate"/>.
     /// </summary>
     /// <remarks>
-    /// Whereas an <see cref="IBinding"/> holds a description of a binding such as "Bind to the X
+    /// Whereas an <see cref="BindingBase"/> holds a description of a binding such as "Bind to the X
     /// property on a control's DataContext"; this class represents a binding that has been 
-    /// *instanced* by calling <see cref="IBinding.Initiate(AvaloniaObject, AvaloniaProperty, object, bool)"/>
+    /// *instanced* by calling <see cref="BindingBase.Initiate(AvaloniaObject, AvaloniaProperty, object, bool)"/>
     /// on a target object.
     /// </remarks>
     public sealed class InstancedBinding

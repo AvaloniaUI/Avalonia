@@ -18,7 +18,7 @@ public abstract class BindingBase : IBinding2
             object? anchor = null,
             bool enableDataValidation = false);
 
-    private protected abstract BindingExpressionBase Instance(
+    internal abstract BindingExpressionBase Instance(
         AvaloniaObject target,
         AvaloniaProperty? targetProperty,
         object? anchor);

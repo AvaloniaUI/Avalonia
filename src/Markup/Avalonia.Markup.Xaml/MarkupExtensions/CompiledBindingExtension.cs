@@ -59,7 +59,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             return new InstancedBinding(target, expression, Mode, Priority);
         }
 
-        private protected override BindingExpressionBase Instance(
+        internal override BindingExpressionBase Instance(
             AvaloniaObject target,
             AvaloniaProperty? targetProperty,
             object? anchor)
