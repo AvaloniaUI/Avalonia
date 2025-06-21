@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Utilities;
 
@@ -1408,10 +1409,11 @@ namespace Avalonia.Media.TextFormatting
             }
 
             var width = widthIncludingWhitespace;
+            var modifiedtextRuns = _paragraphProperties.FlowDirection == FlowDirection.RightToLeft ? _textRuns.Reverse().ToArray() : _textRuns;
 
-            for (var i = _textRuns.Length - 1; i >= 0; i--)
+            for (var i = modifiedtextRuns.Length - 1; i >= 0; i--)
             {
-                var currentRun = _textRuns[i];
+                var currentRun = modifiedtextRuns[i];
 
                 if (currentRun is ShapedTextRun shapedText)
                 {
