@@ -200,6 +200,11 @@ namespace Avalonia.Input
         public static readonly RoutedEvent<TappedEventArgs> TappedEvent = Gestures.TappedEvent;
 
         /// <summary>
+        /// Defines the <see cref="RightTapped"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<TappedEventArgs> RightTappedEvent = Gestures.RightTappedEvent;
+
+        /// <summary>
         /// Defines the <see cref="Holding"/> event.
         /// </summary>
         public static readonly RoutedEvent<HoldingRoutedEventArgs> HoldingEvent = Gestures.HoldingEvent;
@@ -237,6 +242,11 @@ namespace Avalonia.Input
             PointerReleasedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerReleased(e));
             PointerCaptureLostEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerCaptureLost(e));
             PointerWheelChangedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerWheelChanged(e));
+
+            TappedEvent.AddClassHandler<InputElement>((x, e) => x.OnTapped(e));
+            RightTappedEvent.AddClassHandler<InputElement>((x, e) => x.OnRightTapped(e));
+            DoubleTappedEvent.AddClassHandler<InputElement>((x, e) => x.OnDoubleTapped(e));
+            HoldingEvent.AddClassHandler<InputElement>((x, e) => x.OnHolding(e));
 
             // Gesture only handlers
             PointerMovedEvent.AddClassHandler<InputElement>((x, e) => x.OnGesturePointerMoved(e), handledEventsToo: true);
@@ -397,6 +407,15 @@ namespace Avalonia.Input
         {
             add { AddHandler(TappedEvent, value); }
             remove { RemoveHandler(TappedEvent, value); }
+        }
+
+        /// <summary>
+        /// Occurs when a right tap gesture occurs on the control.
+        /// </summary>
+        public event EventHandler<TappedEventArgs>? RightTapped
+        {
+            add { AddHandler(RightTappedEvent, value); }
+            remove { RemoveHandler(RightTappedEvent, value); }
         }
 
         /// <summary>
@@ -743,6 +762,46 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="e">Data about the event.</param>
         protected virtual void OnPointerWheelChanged(PointerWheelEventArgs e)
+        {
+        }
+
+        /// <summary>
+        /// Invoked when an unhandled <see cref="TappedEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
+        /// </summary>
+        /// <param name="e">Data about the event.</param>
+        protected virtual void OnTapped(TappedEventArgs e)
+        {
+        }
+
+        /// <summary>
+        /// Invoked when an unhandled <see cref="RightTappedEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
+        /// </summary>
+        /// <param name="e">Data about the event.</param>
+        protected virtual void OnRightTapped(TappedEventArgs e)
+        {
+        }
+
+        /// <summary>
+        /// Invoked when an unhandled <see cref="DoubleTappedEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
+        /// </summary>
+        /// <param name="e">Data about the event.</param>
+        protected virtual void OnDoubleTapped(TappedEventArgs e)
+        {
+        }
+
+        /// <summary>
+        /// Invoked when an unhandled <see cref="HoldingEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
+        /// </summary>
+        /// <param name="e">Data about the event.</param>
+        protected virtual void OnHolding(HoldingRoutedEventArgs e)
         {
         }
 
