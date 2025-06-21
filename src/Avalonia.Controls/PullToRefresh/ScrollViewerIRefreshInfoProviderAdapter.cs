@@ -12,15 +12,17 @@ namespace Avalonia.Controls.PullToRefresh
         private const int InitialOffsetThreshold = 1;
 
         private PullDirection _refreshPullDirection;
+        private bool _isEnabledOnDesktop;
         private ScrollViewer? _scrollViewer;
         private RefreshInfoProvider? _refreshInfoProvider;
-        private PullGestureRecognizer? _pullGestureRecognizer;
+        private ScrollablePullGestureRecognizer? _pullGestureRecognizer;
         private InputElement? _interactionSource;
         private bool _isVisualizerInteractionSourceAttached;
 
-        public ScrollViewerIRefreshInfoProviderAdapter(PullDirection pullDirection)
+        public ScrollViewerIRefreshInfoProviderAdapter(PullDirection pullDirection, bool isEnabledOnDesktop)
         {
             _refreshPullDirection = pullDirection;
+            _isEnabledOnDesktop = isEnabledOnDesktop;
         }
 
         public RefreshInfoProvider? AdaptFromTree(Visual root, Size? refreshVIsualizerSize)
@@ -124,7 +126,7 @@ namespace Avalonia.Controls.PullToRefresh
 
             _refreshInfoProvider = new RefreshInfoProvider(_refreshPullDirection, refreshVIsualizerSize, ElementComposition.GetElementVisual(content));
 
-            _pullGestureRecognizer = new PullGestureRecognizer(_refreshPullDirection);
+            _pullGestureRecognizer = new ScrollablePullGestureRecognizer(_refreshPullDirection, _isEnabledOnDesktop);
 
             if (_interactionSource != null)
             {
@@ -259,6 +261,39 @@ namespace Avalonia.Controls.PullToRefresh
             }
 
             return false;
+        }
+
+        public void UpdatePullDirection(PullDirection pullDirection)
+        {
+            _refreshPullDirection = pullDirection;
+
+            if (_refreshInfoProvider != null)
+            {
+                _refreshInfoProvider.PullDirection = pullDirection;
+            }
+
+            if (_pullGestureRecognizer != null)
+            {
+                _pullGestureRecognizer.PullDirection = pullDirection;
+            }
+        }
+
+        public void UpdateIsEnabledOnDesktop(bool isEnabledOnDesktop)
+        {
+            _isEnabledOnDesktop = isEnabledOnDesktop;
+            
+            if (_pullGestureRecognizer != null)
+            {
+                _pullGestureRecognizer.IsEnabledOnDesktop = isEnabledOnDesktop;
+            }
+        }
+
+        public void UpdateVisualizerSize(Size? refreshVisualizerSize)
+        {
+            if (_refreshInfoProvider != null)
+            {
+                _refreshInfoProvider.RefreshVisualizerSize = refreshVisualizerSize ?? default;
+            }
         }
 
         private void CleanUpScrollViewer()
