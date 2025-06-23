@@ -1163,6 +1163,32 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+
+        [Fact]
+        public void Should_Handle_NewLine_In_RTL_Text()
+        {
+            using (Start())
+            {
+                var typeface = Typeface.Default;
+
+                var defaultProperties = new GenericTextRunProperties(typeface);
+
+                var textSource = new SingleBufferTextSource("test\r\n", defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(FlowDirection.RightToLeft, TextAlignment.Right,
+                        true, true, defaultProperties, TextWrapping.Wrap, 0, 0, 0));
+
+                Assert.NotNull(textLine);
+
+                Assert.NotEqual(textLine.NewLineLength, 0);
+
+            }
+        }
+
         private class TextHidden : TextRun
         {
             public TextHidden(int length)
