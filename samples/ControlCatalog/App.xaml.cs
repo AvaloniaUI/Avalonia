@@ -38,16 +38,22 @@ namespace ControlCatalog
             SetCatalogThemes(CatalogTheme.Fluent);
         }
 
+        protected virtual void CreateRootControl(object viewModel)
+        {
+            switch (ApplicationLifetime)
+            {
+                case IClassicDesktopStyleApplicationLifetime desktopLifetime:
+                    desktopLifetime.MainWindow = new MainWindow { DataContext = viewModel };
+                    break;
+                case ISingleViewApplicationLifetime singleViewLifetime:
+                    singleViewLifetime.MainView = new MainView { DataContext = viewModel };
+                    break;
+            }
+        }
+
         public override void OnFrameworkInitializationCompleted()
         {
-            if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktopLifetime)
-            {
-                desktopLifetime.MainWindow = new MainWindow { DataContext = new MainWindowViewModel() };
-            }
-            else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewLifetime)
-            {
-                singleViewLifetime.MainView = new MainView { DataContext = new MainWindowViewModel() };
-            }
+            CreateRootControl(new MainWindowViewModel());
 
             if (this.TryGetFeature<IActivatableLifetime>() is {} activatableApplicationLifetime)
             {
