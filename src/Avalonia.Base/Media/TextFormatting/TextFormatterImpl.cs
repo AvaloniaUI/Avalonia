@@ -30,8 +30,16 @@ namespace Avalonia.Media.TextFormatting
                 && wrappingTextLineBreak.AcquireRemainingRuns() is { } remainingRuns
                 && paragraphProperties.TextWrapping != TextWrapping.NoWrap)
             {
-                return PerformTextWrapping(remainingRuns, true, firstTextSourceIndex, paragraphWidth,
-                    paragraphProperties, previousLineBreak.FlowDirection, previousLineBreak, objectPool);
+                return PerformTextWrapping(
+                    remainingRuns,
+                    true, 
+                    firstTextSourceIndex,
+                    paragraphWidth,
+                    paragraphProperties,
+                    wrappingTextLineBreak.FontMetrics,
+                    previousLineBreak.FlowDirection, 
+                    previousLineBreak, 
+                    objectPool);
             }
 
             RentedList<TextRun>? fetchedRuns = null;
@@ -45,6 +53,8 @@ namespace Avalonia.Media.TextFormatting
                 {
                     return null;
                 }
+
+                var fontMetrics = CreateFontMetrics(paragraphProperties, fetchedRuns);
 
                 shapedTextRuns = ShapeTextRuns(fetchedRuns, paragraphProperties, objectPool, fontManager,
                     out var resolvedFlowDirection);
@@ -60,7 +70,7 @@ namespace Avalonia.Media.TextFormatting
                         {
                             var textLine = new TextLineImpl(shapedTextRuns.ToArray(), firstTextSourceIndex,
                                 textSourceLength,
-                                paragraphWidth, paragraphProperties, resolvedFlowDirection, nextLineBreak);
+                                paragraphWidth, paragraphProperties, fontMetrics, resolvedFlowDirection, nextLineBreak);
 
                             textLine.FinalizeLine();
 
@@ -69,8 +79,16 @@ namespace Avalonia.Media.TextFormatting
                     case TextWrapping.WrapWithOverflow:
                     case TextWrapping.Wrap:
                         {
-                            return PerformTextWrapping(shapedTextRuns, false, firstTextSourceIndex, paragraphWidth,
-                                paragraphProperties, resolvedFlowDirection, nextLineBreak, objectPool);
+                            return PerformTextWrapping(
+                                shapedTextRuns, 
+                                false, 
+                                firstTextSourceIndex,
+                                paragraphWidth,
+                                paragraphProperties, 
+                                fontMetrics, 
+                                resolvedFlowDirection,
+                                nextLineBreak, 
+                                objectPool);
                         }
                     default:
                         throw new ArgumentOutOfRangeException(nameof(paragraphProperties.TextWrapping));
@@ -81,6 +99,44 @@ namespace Avalonia.Media.TextFormatting
                 objectPool.TextRunLists.Return(ref shapedTextRuns);
                 objectPool.TextRunLists.Return(ref fetchedRuns);
             }
+        }
+
+        private static FontMetrics CreateFontMetrics(TextParagraphProperties paragraphProperties, IReadOnlyList<TextRun> fetchedRuns)
+        {
+            var textMetrics = paragraphProperties.DefaultTextRunProperties.Typeface.GlyphTypeface.Metrics;
+
+            var ascent = textMetrics.Ascent;
+            var descent = textMetrics.Descent;
+            var lineGap = textMetrics.LineGap;
+
+            for (int i = 0; i < fetchedRuns.Count; i++)
+            {
+                var textRun = fetchedRuns[i];
+
+                if(textRun.Properties is null)
+                {
+                    continue;
+                }
+
+                var fontMetrics = textRun.Properties.Typeface.GlyphTypeface.Metrics;
+
+                if (ascent > fontMetrics.Ascent)
+                {
+                    ascent = fontMetrics.Ascent;
+                }
+
+                if (descent < fontMetrics.Descent)
+                {
+                    descent = fontMetrics.Descent;
+                }
+
+                if (lineGap < fontMetrics.LineGap)
+                {
+                    lineGap = fontMetrics.LineGap;
+                }
+            }
+
+            return textMetrics with { Ascent = ascent, Descent = descent, LineGap = lineGap };
         }
 
         /// <summary>
@@ -693,7 +749,9 @@ namespace Avalonia.Media.TextFormatting
 
             var textRuns = new TextRun[] { new ShapedTextRun(shapedBuffer, properties) };
 
-            var line = new TextLineImpl(textRuns, firstTextSourceIndex, 0, paragraphWidth, paragraphProperties, flowDirection);
+            var fontMetrics = CreateFontMetrics(paragraphProperties, textRuns);
+
+            var line = new TextLineImpl(textRuns, firstTextSourceIndex, 0, paragraphWidth, paragraphProperties, fontMetrics, flowDirection);
 
             line.FinalizeLine();
 
@@ -708,13 +766,21 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="firstTextSourceIndex">The first text source index.</param>
         /// <param name="paragraphWidth">The paragraph width.</param>
         /// <param name="paragraphProperties">The text paragraph properties.</param>
+        /// <param name="fontMetrics">The overall font metrics.</param>
         /// <param name="resolvedFlowDirection"></param>
         /// <param name="currentLineBreak">The current line break if the line was explicitly broken.</param>
         /// <param name="objectPool">A pool used to get reusable formatting objects.</param>
         /// <returns>The wrapped text line.</returns>
-        private static TextLineImpl PerformTextWrapping(List<TextRun> textRuns, bool canReuseTextRunList,
-            int firstTextSourceIndex, double paragraphWidth, TextParagraphProperties paragraphProperties,
-            FlowDirection resolvedFlowDirection, TextLineBreak? currentLineBreak, FormattingObjectPool objectPool)
+        private static TextLineImpl PerformTextWrapping(
+            List<TextRun> textRuns, 
+            bool canReuseTextRunList,
+            int firstTextSourceIndex,
+            double paragraphWidth, 
+            TextParagraphProperties paragraphProperties, 
+            FontMetrics fontMetrics,
+            FlowDirection resolvedFlowDirection,
+            TextLineBreak? currentLineBreak, 
+            FormattingObjectPool objectPool)
         {
             if (textRuns.Count == 0)
             {
@@ -905,7 +971,7 @@ namespace Avalonia.Media.TextFormatting
                         remainingRuns.Add(postSplitRuns[i]);
                     }
 
-                    textLineBreak = new WrappingTextLineBreak(null, resolvedFlowDirection, remainingRuns);
+                    textLineBreak = new WrappingTextLineBreak(null, resolvedFlowDirection, fontMetrics, remainingRuns);
                 }
                 else if (currentLineBreak?.TextEndOfLine is { } textEndOfLine)
                 {
@@ -921,8 +987,14 @@ namespace Avalonia.Media.TextFormatting
                     ResetTrailingWhitespaceBidiLevels(preSplitRuns, paragraphProperties.FlowDirection, objectPool);
                 }
 
-                var textLine = new TextLineImpl(preSplitRuns.ToArray(), firstTextSourceIndex, measuredLength,
-                    paragraphWidth, paragraphProperties, resolvedFlowDirection,
+                var textLine = new TextLineImpl(
+                    preSplitRuns.ToArray(), 
+                    firstTextSourceIndex, 
+                    measuredLength,
+                    paragraphWidth, 
+                    paragraphProperties, 
+                    fontMetrics, 
+                    resolvedFlowDirection,
                     textLineBreak);
 
                 textLine.FinalizeLine();
