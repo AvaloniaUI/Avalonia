@@ -7,9 +7,8 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="IsOpen"/> property
         /// </summary>
-        public static readonly DirectProperty<FlyoutBase, bool> IsOpenProperty =
-            AvaloniaProperty.RegisterDirect<FlyoutBase, bool>(nameof(IsOpen),
-                x => x.IsOpen);
+        public static readonly StyledProperty<bool> IsOpenProperty =
+            AvaloniaProperty.Register<FlyoutBase, bool>(nameof(IsOpen));
 
         /// <summary>
         /// Defines the <see cref="Target"/> property
@@ -23,7 +22,6 @@ namespace Avalonia.Controls.Primitives
         public static readonly AttachedProperty<FlyoutBase?> AttachedFlyoutProperty =
             AvaloniaProperty.RegisterAttached<FlyoutBase, Control, FlyoutBase?>("AttachedFlyout", null);
 
-        private bool _isOpen;
         private Control? _target;
 
         public event EventHandler? Opened;
@@ -34,8 +32,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public bool IsOpen
         {
-            get => _isOpen;
-            protected set => SetAndRaise(IsOpenProperty, ref _isOpen, value);
+            get => GetValue(IsOpenProperty);
+            set => SetValue(IsOpenProperty, value);
         }
 
         /// <summary>
