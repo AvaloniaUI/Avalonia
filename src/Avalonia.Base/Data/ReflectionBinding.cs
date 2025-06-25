@@ -5,39 +5,38 @@ using Avalonia.Controls;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.ExpressionNodes;
 using Avalonia.Data.Core.Parsers;
-using Avalonia.Diagnostics;
 using Avalonia.Utilities;
 
 namespace Avalonia.Data
 {
     /// <summary>
-    /// A XAML binding.
+    /// A binding that uses reflection to access members.
     /// </summary>
     [RequiresUnreferencedCode(TrimmingMessages.ReflectionBindingRequiresUnreferencedCodeMessage)]
-    public class Binding : StandardBindingBase
+    public class ReflectionBinding : StandardBindingBase
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="Binding"/> class.
+        /// Initializes a new instance of the <see cref="ReflectionBinding"/> class.
         /// </summary>
-        public Binding()
+        public ReflectionBinding()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Binding"/> class.
+        /// Initializes a new instance of the <see cref="ReflectionBinding"/> class.
         /// </summary>
         /// <param name="path">The binding path.</param>
-        public Binding(string path)
+        public ReflectionBinding(string path)
         {
             Path = path;
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Binding"/> class.
+        /// Initializes a new instance of the <see cref="ReflectionBinding"/> class.
         /// </summary>
         /// <param name="path">The binding path.</param>
         /// <param name="mode">The binding mode.</param>
-        public Binding(string path, BindingMode mode = BindingMode.Default)
+        public ReflectionBinding(string path, BindingMode mode)
         {
             Path = path;
             Mode = mode;
