@@ -1,4 +1,6 @@
 #include "common.h"
+#include "AvnOpenPanel.h"
+#include "AvnSavePanel.h"
 #include "AvnString.h"
 #include "INSWindowHolder.h"
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
@@ -157,7 +159,7 @@ public:
     {
         @autoreleasepool
         {
-            auto panel = [NSOpenPanel openPanel];
+            auto panel = [AvnOpenPanel openPanel];
             
             panel.allowsMultipleSelection = allowMultiple;
             panel.canChooseDirectories = true;
@@ -225,7 +227,7 @@ public:
     {
         @autoreleasepool
         {
-            auto panel = [NSOpenPanel openPanel];
+            auto panel = [AvnOpenPanel openPanel];
             
             panel.allowsMultipleSelection = allowMultiple;
             
@@ -297,7 +299,7 @@ public:
     {
         @autoreleasepool
         {
-            auto panel = [NSSavePanel savePanel];
+            auto panel = [AvnSavePanel savePanel];
             
             if(title != nullptr)
             {
@@ -577,3 +579,59 @@ extern IAvnStorageProvider* CreateStorageProvider()
 {
     return new StorageProvider();
 }
+
+static BOOL
+handleEventKeys (NSSavePanel *panel, NSEvent *event)
+{
+    if ([event type] != NSEventTypeKeyDown) {
+            return NO;
+    }
+    
+    NSEventModifierFlags modifierFlags = [event modifierFlags];
+    NSString *characters = [event charactersIgnoringModifiers];
+    
+    if (!(modifierFlags & NSEventModifierFlagCommand)) {
+            return NO;
+    }
+    
+    if ([characters length] == 1) {
+            unichar keyChar = [[characters lowercaseString] characterAtIndex:0];
+            switch (keyChar) {
+                case 'a': // Cmd+A - Select All
+                    [NSApp sendAction:@selector(selectAll:) to:nil from:panel];
+                    return YES;
+                default:
+                    return NO;
+            }
+        }
+        
+    return NO;
+}
+
+@interface AvnSavePanel ()
+@end
+
+@interface AvnOpenPanel ()
+@end
+
+@implementation AvnSavePanel
+- (BOOL)performKeyEquivalent:(NSEvent *)event
+{
+    BOOL handled = handleEventKeys (self, event);
+    if (!handled) {
+        handled = [super performKeyEquivalent:event];
+    }
+    return handled;
+}
+@end
+
+@implementation AvnOpenPanel
+- (BOOL)performKeyEquivalent:(NSEvent *)event
+{
+    BOOL handled = handleEventKeys (self, event);
+    if (!handled) {
+        handled = [super performKeyEquivalent:event];
+    }
+    return handled;
+}
+@end
