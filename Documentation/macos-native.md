@@ -21,7 +21,7 @@ public static AppBuilder BuildAvaloniaApp() =>
         .UsePlatformDetect()
         .With(new AvaloniaNativePlatformOptions
     { 
-        AvaloniaNativeLibraryPath = “[Path to your dylib]”, 
+        AvaloniaNativeLibraryPath = "[Path to your dylib]", 
     })
 ```
 
