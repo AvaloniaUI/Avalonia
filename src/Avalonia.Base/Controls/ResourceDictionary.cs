@@ -84,7 +84,7 @@ namespace Avalonia.Controls
                 if (_themeDictionary == null)
                 {
                     _themeDictionary = new AvaloniaDictionary<ThemeVariant, IThemeVariantProvider>(2);
-                    _themeDictionary.ForEachItem(
+                    using var disposable = _themeDictionary.ForEachItem(
                         (_, x) =>
                         {
                             if (Owner is not null)

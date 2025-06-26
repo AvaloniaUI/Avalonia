@@ -15,7 +15,7 @@ internal sealed class ColorPaletteResourcesCollection : ResourceProvider, IDicti
     public ColorPaletteResourcesCollection()
     {
         _inner = new AvaloniaDictionary<ThemeVariant, ColorPaletteResources>(2);
-        _inner.ForEachItem(
+        using var disposable = _inner.ForEachItem(
             (key, x) =>
             {
                 if (Owner is not null)
