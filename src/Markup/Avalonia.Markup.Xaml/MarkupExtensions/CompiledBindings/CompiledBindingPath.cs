@@ -46,6 +46,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
             Func<WeakReference<object?>, IPropertyInfo, IPropertyAccessor> accessorFactory,
             bool acceptsNull)
         {
+            AddDataContextNodeIfNecessary();
             _elements.Add(new PropertyAccessorNode(
                 info.Name,
                 new PropertyInfoAccessorPlugin(info, accessorFactory), 
@@ -140,5 +141,11 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
         }
 
         public CompiledBindingPath Build() => new(_elements);
+
+        private void AddDataContextNodeIfNecessary()
+        {
+            if (_elements.Count == 0)
+                _elements.Add(new DataContextNode());
+        }
     }
 }

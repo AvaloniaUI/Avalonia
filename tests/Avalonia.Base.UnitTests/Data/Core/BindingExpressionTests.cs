@@ -100,10 +100,7 @@ public abstract partial class BindingExpressionTests
             if (relativeSource is not null && relativeSource.Mode is not RelativeSourceMode.Self)
                 throw new NotImplementedException();
 
-            nodes = path.CreateExpressionNodes();
-
-            if (!source.HasValue && relativeSource is null)
-                (nodes ??= []).Insert(0, new DataContextNode());
+            nodes = path.CreateExpressionNodes(source);
 
             var bindingExpression = new BindingExpression(
                 source.HasValue ? source.Value : target,

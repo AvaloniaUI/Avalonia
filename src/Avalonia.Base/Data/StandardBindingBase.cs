@@ -7,7 +7,7 @@ using Avalonia.Data.Converters;
 namespace Avalonia.Data;
 
 /// <summary>
-/// Defines properties common to both <see cref="Binding"/> and <c>CompiledBindingExtension</c>.
+/// Defines properties common to both <see cref="CompiledBinding"/> and <see cref="ReflectionBinding"/>.
 /// </summary>
 public abstract class StandardBindingBase : BindingBase
 {

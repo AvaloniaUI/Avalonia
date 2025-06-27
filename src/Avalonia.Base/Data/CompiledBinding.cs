@@ -31,7 +31,7 @@ public class CompiledBinding : StandardBindingBase
         object? anchor)
     {
         var enableDataValidation = targetProperty?.GetMetadata(target).EnableDataValidation ?? false;
-        var nodes = Path?.CreateExpressionNodes();
+        var nodes = Path?.CreateExpressionNodes(Source);
 
         // If the first node is an ISourceNode then allow it to select the source; otherwise
         // use the binding source if specified, falling back to the target.

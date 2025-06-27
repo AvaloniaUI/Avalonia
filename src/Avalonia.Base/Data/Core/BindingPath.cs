@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using System.Reflection;
-using Avalonia.Controls;
 using Avalonia.Data.Core.ExpressionNodes;
-using Avalonia.Data.Core.Plugins;
 
 namespace Avalonia.Data.Core;
 
@@ -13,19 +10,19 @@ namespace Avalonia.Data.Core;
 /// </summary>
 public partial class BindingPath
 {
-    private readonly List<ExpressionNode>? _nodes;
+    private List<ExpressionNode>? _nodes;
     private bool _nodesNeedClone;
 
     internal BindingPath() { }
     internal BindingPath(List<ExpressionNode> nodes) => _nodes = nodes;
 
-    public static BindingPath Create<TSource, TValue>(Expression<Func<TSource, TValue>> expression)
-    {
-        throw new NotImplementedException();
-    }
+    private bool IsRooted => _nodes is not null && _nodes.Count > 0 && _nodes[0] is SourceNode;
 
-    internal List<ExpressionNode>? CreateExpressionNodes()
+    internal List<ExpressionNode>? CreateExpressionNodes(object? source)
     {
+        if (source == AvaloniaProperty.UnsetValue && !IsRooted)
+            (_nodes ??= []).Add(new DataContextNode());
+
         if (_nodesNeedClone)
         {
             throw new NotImplementedException();
