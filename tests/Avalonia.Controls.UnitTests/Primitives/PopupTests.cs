@@ -1302,7 +1302,6 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             return UnitTestApplication.Start(TestServices.StyledWindow.With(
                 windowingPlatform: CreateMockWindowingPlatform(),
-                focusManager: new FocusManager(),
                 keyboardDevice: () => new KeyboardDevice(),
                 keyboardNavigation: () => new KeyboardNavigationHandler()));
         }
