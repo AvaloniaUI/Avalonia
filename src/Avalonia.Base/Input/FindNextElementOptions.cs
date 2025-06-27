@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace Avalonia.Input
 {
-    public class FindNextElementOptions
+    public sealed class FindNextElementOptions
     {
-        public InputElement? SearchRoot { get; set; }
-        public Rect ExclusionRect { get; set; }
-        public Rect? FocusHintRectangle { get; set; }
-        public XYFocusNavigationStrategy? NavigationStrategyOverride { get; set; }
-        public bool IgnoreOcclusivity { get; set; }
+        public InputElement? SearchRoot { get; init; }
+        public Rect ExclusionRect { get; init; }
+        public Rect? FocusHintRectangle { get; init; }
+        public XYFocusNavigationStrategy? NavigationStrategyOverride { get; init; }
+        public bool IgnoreOcclusivity { get; init; }
     }
 }

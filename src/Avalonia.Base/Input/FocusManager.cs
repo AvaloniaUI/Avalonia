@@ -41,7 +41,7 @@ namespace Avalonia.Input
                 RoutingStrategies.Tunnel);
         }
 
-        public FocusManager(IInputElement? contentRoot = null)
+        internal FocusManager(IInputElement? contentRoot = null)
         {
             _contentRoot = contentRoot;
         }
@@ -171,7 +171,7 @@ namespace Avalonia.Input
             return FindAndSetNextFocus(direction, new XYFocusOptions());
         }
 
-        public bool TryMoveFocus(NavigationDirection direction, FindNextElementOptions findNextElementOptions)
+        public bool TryMoveFocus(NavigationDirection direction, FindNextElementOptions options)
         {
             if (direction is not NavigationDirection.Up
                 and not NavigationDirection.Down
@@ -185,18 +185,18 @@ namespace Avalonia.Input
             var xyOption = new XYFocusOptions()
             {
                 UpdateManifold = false,
-                SearchRoot = findNextElementOptions.SearchRoot,
+                SearchRoot = options.SearchRoot,
             };
 
 
-            if (!findNextElementOptions.ExclusionRect.IsUniform())
-                xyOption.ExclusionRect = findNextElementOptions.ExclusionRect;
+            if (!options.ExclusionRect.IsUniform())
+                xyOption.ExclusionRect = options.ExclusionRect;
 
-            if (findNextElementOptions.FocusHintRectangle is { } rect && !rect.IsUniform())
-                xyOption.FocusHintRectangle = findNextElementOptions.FocusHintRectangle;
+            if (options.FocusHintRectangle is { } rect && !rect.IsUniform())
+                xyOption.FocusHintRectangle = options.FocusHintRectangle;
 
-            xyOption.NavigationStrategyOverride = findNextElementOptions.NavigationStrategyOverride;
-            xyOption.IgnoreOcclusivity = findNextElementOptions.IgnoreOcclusivity;
+            xyOption.NavigationStrategyOverride = options.NavigationStrategyOverride;
+            xyOption.IgnoreOcclusivity = options.IgnoreOcclusivity;
 
             return FindAndSetNextFocus(direction, xyOption);
         }
@@ -328,44 +328,44 @@ namespace Avalonia.Input
                 return null;
         }
 
-        public IInputElement? FindNextElement(NavigationDirection focusNavigationDirection)
+        public IInputElement? FindNextElement(NavigationDirection direction)
         {
             var xyOption = new XYFocusOptions()
             {
                 UpdateManifold = false
             };
 
-            return FindNextFocus(focusNavigationDirection, xyOption);
+            return FindNextFocus(direction, xyOption);
         }
 
-        public IInputElement? FindNextElement(NavigationDirection focusNavigationDirection, FindNextElementOptions findNextElementOptions)
+        public IInputElement? FindNextElement(NavigationDirection direction, FindNextElementOptions options)
         {
-            if (focusNavigationDirection is not NavigationDirection.Up
+            if (direction is not NavigationDirection.Up
                 and not NavigationDirection.Down
                 and not NavigationDirection.Left
                 and not NavigationDirection.Right)
             {
                 throw new ArgumentOutOfRangeException(
-                        $"{focusNavigationDirection} is not supported with FindNextElementOptions. Only Up, Down, Left and right are supported");
+                        $"{direction} is not supported with FindNextElementOptions. Only Up, Down, Left and right are supported");
             }
 
             var xyOption = new XYFocusOptions()
             {
                 UpdateManifold = false,
-                SearchRoot = findNextElementOptions.SearchRoot,
+                SearchRoot = options.SearchRoot,
             };
 
 
-            if (!findNextElementOptions.ExclusionRect.IsUniform())
-                xyOption.ExclusionRect = findNextElementOptions.ExclusionRect;
+            if (!options.ExclusionRect.IsUniform())
+                xyOption.ExclusionRect = options.ExclusionRect;
 
-            if (findNextElementOptions.FocusHintRectangle is { } rect && !rect.IsUniform())
-                xyOption.FocusHintRectangle = findNextElementOptions.FocusHintRectangle;
+            if (options.FocusHintRectangle is { } rect && !rect.IsUniform())
+                xyOption.FocusHintRectangle = options.FocusHintRectangle;
 
-            xyOption.NavigationStrategyOverride = findNextElementOptions.NavigationStrategyOverride;
-            xyOption.IgnoreOcclusivity = findNextElementOptions.IgnoreOcclusivity;
+            xyOption.NavigationStrategyOverride = options.NavigationStrategyOverride;
+            xyOption.IgnoreOcclusivity = options.IgnoreOcclusivity;
 
-            return FindNextFocus(focusNavigationDirection, xyOption);
+            return FindNextFocus(direction, xyOption);
         }
 
         internal IInputElement? FindNextFocus(NavigationDirection direction, XYFocusOptions focusOptions, bool updateManifolds = true, bool isQueryOnly = true)
