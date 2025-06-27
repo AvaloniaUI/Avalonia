@@ -21,7 +21,7 @@ public partial class BindingPath
     internal List<ExpressionNode>? CreateExpressionNodes(object? source)
     {
         if (source == AvaloniaProperty.UnsetValue && !IsRooted)
-            (_nodes ??= []).Add(new DataContextNode());
+            (_nodes ??= []).Insert(0, new DataContextNode());
 
         if (_nodesNeedClone)
         {

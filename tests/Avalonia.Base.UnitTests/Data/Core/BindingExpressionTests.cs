@@ -102,6 +102,9 @@ public abstract partial class BindingExpressionTests
 
             nodes = path.CreateExpressionNodes(source);
 
+            if (!source.HasValue && relativeSource is null)
+                (nodes ??= []).Insert(0, new DataContextNode());
+
             var bindingExpression = new BindingExpression(
                 source.HasValue ? source.Value : target,
                 nodes,
