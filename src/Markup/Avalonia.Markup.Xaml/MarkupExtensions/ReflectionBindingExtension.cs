@@ -5,7 +5,6 @@ using Avalonia.Data;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
-    [Obsolete("Use ReflectionBinding")]
     [RequiresUnreferencedCode(TrimmingMessages.ReflectionBindingRequiresUnreferencedCodeMessage)]
     public class ReflectionBindingExtension : ReflectionBinding
     {

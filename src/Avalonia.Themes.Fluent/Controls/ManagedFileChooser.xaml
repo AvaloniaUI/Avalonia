@@ -149,12 +149,12 @@
               <ListBox.ItemTemplate>
                 <DataTemplate>
                   <StackPanel Spacing="4" Orientation="Horizontal" Background="Transparent">
-                    <Image Width="16" Height="16">
+                    <!--<Image Width="16" Height="16">
                       <Image.Source>
                         <DrawingImage Drawing="{Binding IconKey, Converter={StaticResource Icons}}"/>
                       </Image.Source>
-                    </Image>
-                    <TextBlock Text="{Binding DisplayName}"/>
+                    </Image>-->
+                    <!--<TextBlock Text="{Binding DisplayName}"/>-->
                   </StackPanel>
                 </DataTemplate>
               </ListBox.ItemTemplate>

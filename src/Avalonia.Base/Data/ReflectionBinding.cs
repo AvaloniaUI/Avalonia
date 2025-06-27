@@ -53,11 +53,6 @@ namespace Avalonia.Data
         public RelativeSource? RelativeSource { get; set; }
 
         /// <summary>
-        /// Gets or sets the source for the binding.
-        /// </summary>
-        public object? Source { get; set; } = AvaloniaProperty.UnsetValue;
-
-        /// <summary>
         /// Gets or sets the binding path.
         /// </summary>
         public string Path { get; set; } = "";

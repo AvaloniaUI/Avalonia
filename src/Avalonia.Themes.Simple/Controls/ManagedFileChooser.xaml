@@ -130,11 +130,11 @@
                   <StackPanel Background="Transparent"
                               Orientation="Horizontal"
                               Spacing="4">
-                    <Image Width="16"
+                    <!--<Image Width="16"
                            Height="16">
                       <DrawingImage Drawing="{Binding IconKey, Converter={StaticResource Icons}}" />
-                    </Image>
-                    <TextBlock Text="{Binding DisplayName}" />
+                    </Image>-->
+                    <!--<TextBlock Text="{Binding DisplayName}" />-->
                   </StackPanel>
                 </DataTemplate>
               </ListBox.ItemTemplate>
@@ -212,25 +212,25 @@
                         <ColumnDefinition SharedSizeGroup="Size" />
                         <ColumnDefinition SharedSizeGroup="Splitter" />
                       </Grid.ColumnDefinitions>
-                      <Image Grid.Column="0"
+                      <!--<Image Grid.Column="0"
                              Width="16"
                              Height="16">
                         <DrawingImage Drawing="{Binding IconKey, Converter={StaticResource Icons}}" />
-                      </Image>
-                      <TextBlock Grid.Column="1"
+                      </Image>-->
+                      <!--<TextBlock Grid.Column="1"
                                  Text="{Binding DisplayName}" />
                       <TextBlock Grid.Column="3"
                                  Text="{Binding Modified}" />
                       <TextBlock Grid.Column="5"
-                                 Text="{Binding Type}" />
+                                 Text="{Binding Type}" />-->
                       <TextBlock Grid.Column="7" HorizontalAlignment="Right">
-                        <TextBlock.Text>
+                        <!--<TextBlock.Text>
                           <Binding Path="Size">
                             <Binding.Converter>
                               <internal:FileSizeStringConverter />
                             </Binding.Converter>
                           </Binding>
-                        </TextBlock.Text>
+                        </TextBlock.Text>-->
                       </TextBlock>
                     </Grid>
                   </DataTemplate>

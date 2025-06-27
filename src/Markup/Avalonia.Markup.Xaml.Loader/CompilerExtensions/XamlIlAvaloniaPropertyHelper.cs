@@ -97,10 +97,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             var avaloniaPropertyBaseType = context.GetAvaloniaTypes().AvaloniaProperty;
 
             // PropertyReferenceResolver.Transform failed resolving property, return empty stub from here:
-            if (clrProperty.DeclaringType == XamlPseudoType.Unknown)
-            {
-                return new XamlIlAvaloniaPropertyNode(lineInfo, avaloniaPropertyBaseType, clrProperty, XamlPseudoType.Unknown);
-            }
+            //if (clrProperty.DeclaringType == XamlPseudoType.Unknown)
+            //{
+            //    return new XamlIlAvaloniaPropertyNode(lineInfo, avaloniaPropertyBaseType, clrProperty, XamlPseudoType.Unknown);
+            //}
 
             return new XamlIlAvaloniaPropertyNode(lineInfo, avaloniaPropertyBaseType, clrProperty);
         }

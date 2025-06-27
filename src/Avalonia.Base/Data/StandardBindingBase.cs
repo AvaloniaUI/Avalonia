@@ -58,6 +58,16 @@ public abstract class StandardBindingBase : BindingBase
     public BindingPriority Priority { get; set; }
 
     /// <summary>
+    /// Gets or sets the object to use as the binding source.
+    /// </summary>
+    /// <remarks>
+    /// By default, bindings bind to the value in the target element's
+    /// <see cref="StyledElement.DataContext"/> property. This can be overridden by setting
+    /// the <see cref="Source"/> property on the binding to a different object.
+    /// </remarks>
+    public object? Source { get; set; } = AvaloniaProperty.UnsetValue;
+
+    /// <summary>
     /// Gets or sets the string format.
     /// </summary>
     public string? StringFormat { get; set; }
