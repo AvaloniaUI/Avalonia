@@ -105,7 +105,6 @@ namespace Avalonia.UnitTests
         internal TestServices(
             IGlobalClock globalClock,
             IAssetLoader assetLoader = null,
-            IFocusManager focusManager = null,
             IInputManager inputManager = null,
             Func<IKeyboardDevice> keyboardDevice = null,
             Func<IKeyboardNavigationHandler> keyboardNavigation = null,
@@ -149,7 +148,6 @@ namespace Avalonia.UnitTests
 
         internal TestServices With(
             IAssetLoader assetLoader = null,
-            IFocusManager focusManager = null,
             IInputManager inputManager = null,
             Func<IKeyboardDevice> keyboardDevice = null,
             Func<IKeyboardNavigationHandler> keyboardNavigation = null,
