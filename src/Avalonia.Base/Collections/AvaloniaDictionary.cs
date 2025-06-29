@@ -167,9 +167,8 @@ namespace Avalonia.Collections
         /// <inheritdoc/>
         public bool Remove(TKey key)
         {
-            if (_inner.TryGetValue(key, out var value))
+            if (_inner.Remove(key, out var value))
             {
-                _inner.Remove(key);
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Count)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs($"{CommonPropertyNames.IndexerName}[{key}]"));
 
