@@ -7,7 +7,7 @@ using Avalonia.Interactivity;
 
 namespace Avalonia.Input
 {
-    public class FocusChangingEventArgs : RoutedEventArgs
+    public class FocusChangingEventArgs : RoutedEventArgs, IKeyModifiersEventArgs
     {
         /// <summary>
         /// Provides data for focus changing.
