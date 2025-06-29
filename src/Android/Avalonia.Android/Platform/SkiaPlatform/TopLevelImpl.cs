@@ -269,9 +269,9 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             }
         }
 
-        public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
+        public void SetFrameThemeVariant(PlatformThemeVariant? themeVariant)
         {
-            if(_insetsManager != null)
+            if (_insetsManager != null)
             {
                 _insetsManager.SystemBarTheme = themeVariant switch
                 {
@@ -281,7 +281,16 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 };
             }
 
-            AppCompatDelegate.DefaultNightMode = themeVariant == PlatformThemeVariant.Light ? AppCompatDelegate.ModeNightNo : AppCompatDelegate.ModeNightYes;
+            AppCompatDelegate.DefaultNightMode = themeVariant == null ? AppCompatDelegate.ModeNightFollowSystem :
+                themeVariant == PlatformThemeVariant.Light ? AppCompatDelegate.ModeNightNo : AppCompatDelegate.ModeNightYes;
+
+            if (AppCompatDelegate.DefaultNightMode == AppCompatDelegate.ModeNightFollowSystem && _view.Context is { } context
+                && context.Resources?.Configuration is { } config)
+            {
+                var settings =
+                    AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>() as AndroidPlatformSettings;
+                settings?.OnViewConfigurationChanged(context, config);
+            }
         }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels => new AcrylicPlatformCompensationLevels(1, 1, 1);
@@ -290,6 +299,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         bool EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfoWithWaitPolicy.SkipWaits => true;
         PixelSize EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Size => _view.Size;
         double EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Scaling => _view.Scaling;
+
+        internal AndroidInsetsManager? InsetsManager => _insetsManager;
 
         public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevels)
         {
