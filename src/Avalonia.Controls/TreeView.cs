@@ -11,6 +11,7 @@ using Avalonia.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Threading;
@@ -662,25 +663,40 @@ namespace Avalonia.Controls
             return result;
         }
 
-        /// <inheritdoc/>
-        protected override void OnPointerPressed(PointerPressedEventArgs e)
+        /// <inheritdoc cref="SelectionEventLogic.EventSelectionTrigger(InputElement, PointerEventArgs)"/>
+        /// <seealso cref="UpdateSelectionFromEvent"/>
+        protected virtual InputSelectionTrigger EventSelectionTrigger(InputElement selectable, PointerEventArgs eventArgs) => SelectionEventLogic.EventSelectionTrigger(selectable, eventArgs);
+
+        /// <inheritdoc cref="SelectionEventLogic.EventSelectionTrigger(InputElement, PointerEventArgs)"/>
+        protected virtual InputSelectionTrigger EventSelectionTrigger(InputElement selectable, KeyEventArgs eventArgs) => SelectionEventLogic.EventSelectionTrigger(selectable, eventArgs);
+
+        /// <inheritdoc cref="SelectingItemsControl.UpdateSelectionFromEvent"/>
+        /// <seealso cref="SelectingItemsControl.UpdateSelectionFromEvent"/>
+        public virtual bool UpdateSelectionFromEvent(Control container, RoutedEventArgs eventArgs)
         {
-            base.OnPointerPressed(e);
-
-            if (e.Source is Visual source)
+            if (eventArgs.Handled)
             {
-                var point = e.GetCurrentPoint(source);
+                return false;
+            }
 
-                if (point.Properties.IsLeftButtonPressed || point.Properties.IsRightButtonPressed)
-                {
-                    var keymap = Application.Current!.PlatformSettings!.HotkeyConfiguration;
-                    e.Handled = UpdateSelectionFromEventSource(
-                        e.Source,
-                        true,
-                        e.KeyModifiers.HasAllFlags(KeyModifiers.Shift),
-                        e.KeyModifiers.HasAllFlags(keymap.CommandModifiers),
-                        point.Properties.IsRightButtonPressed);
-                }
+            switch (eventArgs)
+            {
+                case PointerPressedEventArgs pointerPressedEvent when EventSelectionTrigger(container, pointerPressedEvent) == InputSelectionTrigger.Press:
+                case PointerReleasedEventArgs pointerReleasedEvent when EventSelectionTrigger(container, pointerReleasedEvent) == InputSelectionTrigger.Release:
+
+                case KeyEventArgs keyDownEvent when keyDownEvent.RoutedEvent == KeyDownEvent && EventSelectionTrigger(container, keyDownEvent) == InputSelectionTrigger.Press:
+                case KeyEventArgs keyUpEvent when keyUpEvent.RoutedEvent == KeyUpEvent && EventSelectionTrigger(container, keyUpEvent) == InputSelectionTrigger.Release:
+
+                    UpdateSelectionFromContainer(container, true,
+                        SelectionEventLogic.HasRangeSelectionModifier(container, eventArgs),
+                        SelectionEventLogic.HasToggleSelectionModifier(container, eventArgs),
+                        eventArgs is PointerEventArgs { Properties.IsRightButtonPressed: true });
+
+                    eventArgs.Handled = true;
+                    return true;
+
+                default:
+                    return false;
             }
         }
 
