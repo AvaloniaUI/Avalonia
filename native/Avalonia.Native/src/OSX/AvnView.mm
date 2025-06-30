@@ -13,7 +13,6 @@
 {
     ComObjectWeakPtr<TopLevelImpl> _parent;
     NSTrackingArea* _area;
-    bool _isLeftPressed, _isMiddlePressed, _isRightPressed, _isXButton1Pressed, _isXButton2Pressed;
     AvnInputModifiers _modifierState;
     NSEvent* _lastMouseDownEvent;
     AvnPixelSize _lastPixelSize;
@@ -446,7 +445,6 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
 
 - (void)mouseDown:(NSEvent *)event
 {
-    _isLeftPressed = true;
     _lastMouseDownEvent = event;
     [self mouseEvent:event withType:LeftButtonDown];
 }
@@ -459,15 +457,12 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
     {
         case 2:
         case 3:
-            _isMiddlePressed = true;
             [self mouseEvent:event withType:MiddleButtonDown];
             break;
         case 4:
-            _isXButton1Pressed = true;
             [self mouseEvent:event withType:XButton1Down];
             break;
         case 5:
-            _isXButton2Pressed = true;
             [self mouseEvent:event withType:XButton2Down];
             break;
 
@@ -478,14 +473,12 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
 
 - (void)rightMouseDown:(NSEvent *)event
 {
-    _isRightPressed = true;
     _lastMouseDownEvent = event;
     [self mouseEvent:event withType:RightButtonDown];
 }
 
 - (void)mouseUp:(NSEvent *)event
 {
-    _isLeftPressed = false;
     [self mouseEvent:event withType:LeftButtonUp];
 }
 
@@ -495,15 +488,12 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
     {
         case 2:
         case 3:
-            _isMiddlePressed = false;
             [self mouseEvent:event withType:MiddleButtonUp];
             break;
         case 4:
-            _isXButton1Pressed = false;
             [self mouseEvent:event withType:XButton1Up];
             break;
         case 5:
-            _isXButton2Pressed = false;
             [self mouseEvent:event withType:XButton2Up];
             break;
 
@@ -514,7 +504,6 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
 
 - (void)rightMouseUp:(NSEvent *)event
 {
-    _isRightPressed = false;
     [self mouseEvent:event withType:RightButtonUp];
 }
 
@@ -595,15 +584,6 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
 - (void)setModifiers:(NSEventModifierFlags)modifierFlags
 {
     _modifierState = [self getModifiers:modifierFlags];
-}
-
-- (void)resetPressedMouseButtons
-{
-    _isLeftPressed = false;
-    _isRightPressed = false;
-    _isMiddlePressed = false;
-    _isXButton1Pressed = false;
-    _isXButton2Pressed = false;
 }
 
 - (void)flagsChanged:(NSEvent *)event
@@ -752,15 +732,17 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
     if (mod & NSEventModifierFlagCommand)
         rv |= Windows;
 
-    if (_isLeftPressed)
+    NSUInteger pressedButtons = [NSEvent pressedMouseButtons];
+        
+    if (pressedButtons & (1 << 0))  // Left mouse button
         rv |= LeftMouseButton;
-    if (_isMiddlePressed)
-        rv |= MiddleMouseButton;
-    if (_isRightPressed)
+    if (pressedButtons & (1 << 1))  // Right mouse button
         rv |= RightMouseButton;
-    if (_isXButton1Pressed)
+    if (pressedButtons & (1 << 2))  // Middle mouse button
+        rv |= MiddleMouseButton;
+    if (pressedButtons & (1 << 3))  // X1 button
         rv |= XButton1MouseButton;
-    if (_isXButton2Pressed)
+    if (pressedButtons & (1 << 4))  // X2 button
         rv |= XButton2MouseButton;
 
     return (AvnInputModifiers)rv;

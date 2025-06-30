@@ -129,6 +129,7 @@
                         VerticalAlignment="Bottom"
                         Placement="Top" 
                         IsVisible="False"
+                        IsDirectionReversed="{TemplateBinding IsDirectionReversed}"
                         Fill="{DynamicResource SliderTickBarFill}"/>
                     <TickBar
                         Name="BottomTickBar"
@@ -144,6 +145,7 @@
                         VerticalAlignment="Top"
                         Placement="Bottom"
                         IsVisible="False"
+                        IsDirectionReversed="{TemplateBinding IsDirectionReversed}"
                         Fill="{DynamicResource SliderTickBarFill}" />
                     <Track
                         Name="PART_Track"
@@ -225,8 +227,9 @@
                         HorizontalAlignment="Right"
                         Placement="Left"
                         IsVisible="False"
+                        IsDirectionReversed="{TemplateBinding IsDirectionReversed}"
                         Fill="{DynamicResource SliderTickBarFill}"/>
-                    <TickBar
+                    <TickBar 
                         Name="RightTickBar"
                         Grid.RowSpan="3"
                         Grid.Column="2"
@@ -240,6 +243,7 @@
                         HorizontalAlignment="Left"
                         Placement="Right" 
                         IsVisible="False"
+                        IsDirectionReversed="{TemplateBinding IsDirectionReversed}"
                         Fill="{DynamicResource SliderTickBarFill}"/>
                     <Track
                         Name="PART_Track"

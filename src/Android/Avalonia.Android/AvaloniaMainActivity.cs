@@ -12,19 +12,36 @@ public class AvaloniaMainActivity : AvaloniaActivity
     {
         if (Application is IAndroidApplication application && application.Lifetime is { } lifetime)
         {
-            initialContent ??= lifetime.MainView; 
+            initialContent ??= lifetime.MainViewFactory?.Invoke();
 
-            _view = new AvaloniaView(this) { Content = initialContent };
-            lifetime.Activity = this;
+            _view = new AvaloniaView(this);
+
+            Content = initialContent;
         }
 
         if (_view is null)
             throw new InvalidOperationException("Unknown error: AvaloniaView initialization has failed.");
+    }
+
+    protected override void OnResume()
+    {
+        base.OnResume();
 
         if (Avalonia.Application.Current?.TryGetFeature<IActivatableLifetime>()
             is AndroidActivatableLifetime activatableLifetime)
         {
             activatableLifetime.CurrentMainActivity = this;
+        }
+    }
+
+    protected override void OnDestroy()
+    {
+        base.OnDestroy();
+
+        if (Avalonia.Application.Current?.TryGetFeature<IActivatableLifetime>()
+            is AndroidActivatableLifetime activatableLifetime && activatableLifetime.CurrentMainActivity == this)
+        {
+            activatableLifetime.CurrentMainActivity = null;
         }
     }
 

@@ -49,6 +49,12 @@ Install-Package Avalonia.Desktop
 
 See what others have built with Avalonia UI on our [Showcase](https://avaloniaui.net/showcase?utm_source=github&utm_medium=referral&utm_content=readme_link). We welcome submissions! 
 
+## Sponsors 
+Avalonia development is supported by the generous sponsorship of [Devolutions](https://devolutions.net/?utm_source=pr&utm_medium=partnership&utm_campaign=avalonia&utm_id=C086&member_status=responded). 
+
+<a href="https://devolutions.net/?utm_source=pr&utm_medium=partnership&utm_campaign=avalonia&utm_id=C086&member_status=responded"><img width="200" alt="devolutions-color-hr" src="https://github.com/user-attachments/assets/597e3650-0b80-496e-84b2-db51fbe7e06e"/></a>
+
+
 ## Community 
 Join our community hub to get early access to upcoming features, share your thoughts, and connect directly with the Avalonia team. 
 [![communityannouncement-banner 1](https://github.com/user-attachments/assets/21950b56-cd28-4574-9a0a-73bb17b89d31)](https://avaloniaui.community) 
