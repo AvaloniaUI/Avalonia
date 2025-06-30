@@ -30,6 +30,7 @@ namespace Avalonia.Skia
         private readonly Matrix? _postTransform;
         private double _currentOpacity = 1.0f;
         private readonly bool _disableSubpixelTextRendering;
+        private Matrix _baseTransform;  // default canvas rotation
         private Matrix? _currentTransform;
         private bool _disposed;
         private GRContext? _grContext;
@@ -187,6 +188,7 @@ namespace Avalonia.Skia
             Canvas = createInfo.Canvas ?? createInfo.Surface?.Canvas
                 ?? throw new ArgumentException("Invalid create info - no Canvas provided", nameof(createInfo));
 
+            _baseTransform = Canvas.TotalMatrix.ToAvaloniaMatrix();
             _intermediateSurfaceDpi = createInfo.Dpi;
             _disposables = disposables;
             _disableSubpixelTextRendering = createInfo.DisableSubpixelTextRendering;
@@ -374,7 +376,7 @@ namespace Avalonia.Skia
             if (rect.Rect.Height <= 0 || rect.Rect.Width <= 0)
                 return;
             CheckLease();
-            
+
             var rc = rect.Rect.ToSKRect();
             SKRoundRect? skRoundRect = null;
 
@@ -542,7 +544,7 @@ namespace Avalonia.Skia
             if(r.IsEmpty)
                 return;
             CheckLease();
-            
+
             if (brush != null)
             {
                 using (var fill = CreatePaint(_fillPaint, brush, r.Bounds.ToRectUnscaled()))
@@ -567,7 +569,7 @@ namespace Avalonia.Skia
             if (rect.Height <= 0 || rect.Width <= 0)
                 return;
             CheckLease();
-            
+
             var rc = rect.ToSKRect();
 
             if (brush != null)
@@ -677,7 +679,7 @@ namespace Avalonia.Skia
             _currentTransform = null;
             Canvas.Restore();
         }
-        
+
         /// <inheritdoc />
         public void PopClip()
         {
@@ -844,7 +846,7 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public Matrix Transform
         {
-            get { return _currentTransform ??= Canvas.TotalMatrix.ToAvaloniaMatrix(); }
+            get { return _currentTransform ??= _baseTransform.Invert() * Canvas.TotalMatrix.ToAvaloniaMatrix(); }
             set
             {
                 CheckLease();
@@ -860,7 +862,7 @@ namespace Avalonia.Skia
                     transform *= _postTransform.Value;
                 }
 
-                Canvas.SetMatrix(transform.ToSKMatrix());
+                Canvas.SetMatrix((_baseTransform * transform).ToSKMatrix());
             }
         }
 

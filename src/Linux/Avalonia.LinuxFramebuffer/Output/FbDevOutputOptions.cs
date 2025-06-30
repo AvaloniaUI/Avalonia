@@ -1,4 +1,5 @@
 using Avalonia.Platform;
+using Avalonia.Skia;
 
 namespace Avalonia.LinuxFramebuffer.Output;
 
@@ -27,6 +28,12 @@ public class FbDevOutputOptions
     /// The initial scale factor to use
     /// </summary>
     public double Scaling { get; set; } = 1;
+
+    /// <summary>
+    /// The orientation of the screen relative to the frame buffer memory orientation
+    /// Default: Normal
+    /// </summary>
+    public SurfaceOrientation Orientation { get; set; } = SurfaceOrientation.Normal;
 
     /// <summary>
     /// If set to true, FBIO_WAITFORVSYNC ioctl and following memcpy call will run on a dedicated thread
