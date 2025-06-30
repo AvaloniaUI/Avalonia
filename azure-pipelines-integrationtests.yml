@@ -1,7 +1,7 @@
 jobs:
 - job: Mac
   pool:
-    name: 'AvaloniaMacPool'
+    name: 'AvaloniaMacAppium2Pool'
 
   steps:
   - task: UseDotNet@2
@@ -26,9 +26,6 @@ jobs:
       fi
       git clean -ffdx
       sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
-      pkill node
-      pkill testmanagerd
-      appium > appium.out &
       pkill IntegrationTestApp
       ./build.sh CompileNative
       rm -rf $(osascript -e "POSIX path of (path to application id \"net.avaloniaui.avalonia.integrationtestapp\")")
@@ -43,16 +40,11 @@ jobs:
     inputs:
       command: 'test'
       projects: 'tests/Avalonia.IntegrationTests.Appium/Avalonia.IntegrationTests.Appium.csproj'
-      arguments: '-l "console;verbosity=detailed"'
+      arguments: '-l "console;verbosity=detailed" /p:IsRunningAppium2=true'
 
   - script: |
-      pkill IntegrationTestApp
-      pkill node
-    displayName: 'Stop Appium'
-
-  - publish: appium.out
-    displayName: 'Publish appium logs on failure'
-    condition: failed()
+      sudo pkill IntegrationTestApp
+    displayName: 'Stop IntegrationTestApp'
 
 - job: Windows
   pool:
