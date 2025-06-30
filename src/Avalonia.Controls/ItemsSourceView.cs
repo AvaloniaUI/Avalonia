@@ -7,8 +7,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Avalonia.Controls.Utils;
 
 namespace Avalonia.Controls
@@ -17,15 +19,16 @@ namespace Avalonia.Controls
     /// Represents a standardized view of the supported interactions between an items collection
     /// and an items control.
     /// </summary>
-    public class ItemsSourceView : IReadOnlyList<object?>,
+    public partial class ItemsSourceView : IReadOnlyList<object?>,
         IList,
         INotifyCollectionChanged,
+        INotifyPropertyChanged,
         ICollectionChangedListener
     {
         /// <summary>
         /// Gets an empty <see cref="ItemsSourceView"/>
         /// </summary>
-        public static ItemsSourceView Empty { get; } = new ItemsSourceView(Array.Empty<object?>());
+        public static ItemsSourceView Empty { get; } = new ItemsSourceView(null, Array.Empty<object?>());
 
         /// <summary>
         /// Gets an instance representing an uninitialized source.
@@ -34,22 +37,44 @@ namespace Avalonia.Controls
         [SuppressMessage("ReSharper", "UseCollectionExpression", Justification = "This is a sentinel value and must be unique.")]
         internal static object?[] UninitializedSource { get; } = new object?[0];
 
+        internal AvaloniaObject? Owner => (AvaloniaObject?)_owner.Target;
+
+        private GCHandle _owner;
         private IList _source;
         private NotifyCollectionChangedEventHandler? _collectionChanged;
         private NotifyCollectionChangedEventHandler? _preCollectionChanged;
         private NotifyCollectionChangedEventHandler? _postCollectionChanged;
+        private PropertyChangedEventHandler? _propertyChanged;
         private bool _listening;
+
+        private IList InternalSource => _layersState?.items ?? _source;
 
         /// <summary>
         /// Initializes a new instance of the ItemsSourceView class for the specified data source.
         /// </summary>
+        /// <param name="owner">The <see cref="ItemsControl"/> for which this <see cref="ItemsSourceView"/> is being created.</param>
         /// <param name="source">The data source.</param>
-        private protected ItemsSourceView(IEnumerable source) => SetSource(source);
+        private protected ItemsSourceView(AvaloniaObject? owner, IEnumerable source)
+        {
+            _owner = GCHandle.Alloc(owner, GCHandleType.Weak);
+            
+            Filters = new() { Validate = ValidateLayer };
+            Filters.CollectionChanged += OnLayersChanged;
+            Sorters = new() { Validate = ValidateLayer };
+            Sorters.CollectionChanged += OnLayersChanged;
+
+            SetSource(source);
+        }
+
+        ~ItemsSourceView()
+        {
+            _owner.Free();
+        }
 
         /// <summary>
         /// Gets the number of items in the collection.
         /// </summary>
-        public int Count => Source.Count;
+        public int Count => InternalSource.Count;
 
         /// <summary>
         /// Gets the source collection.
@@ -138,14 +163,29 @@ namespace Avalonia.Controls
             }
         }
 
+        public event PropertyChangedEventHandler? PropertyChanged
+        {
+            add
+            {
+                AddListenerIfNecessary();
+                _propertyChanged += value;
+            }
+
+            remove
+            {
+                _propertyChanged -= value;
+                RemoveListenerIfNecessary();
+            }
+        }
+
         /// <summary>
         /// Retrieves the item at the specified index.
         /// </summary>
         /// <param name="index">The index.</param>
         /// <returns>The item.</returns>
-        public object? GetAt(int index) => Source[index];
-        public bool Contains(object? item) => Source.Contains(item);
-        public int IndexOf(object? item) => Source.IndexOf(item);
+        public object? GetAt(int index) => InternalSource[index];
+        public bool Contains(object? item) => InternalSource.Contains(item);
+        public int IndexOf(object? item) => InternalSource.IndexOf(item);
 
         /// <summary>
         /// Gets or creates an <see cref="ItemsSourceView"/> for the specified enumerable.
@@ -164,7 +204,7 @@ namespace Avalonia.Controls
             {
                 ItemsSourceView isv => isv,
                 null => Empty,
-                _ => new ItemsSourceView(items)
+                _ => new ItemsSourceView(null, items)
             };
         }
 
@@ -184,9 +224,8 @@ namespace Avalonia.Controls
             return items switch
             {
                 ItemsSourceView<T> isvt => isvt,
-                ItemsSourceView isv => new ItemsSourceView<T>(isv.Source),
                 null => ItemsSourceView<T>.Empty,
-                _ => new ItemsSourceView<T>(items)
+                _ => new ItemsSourceView<T>(null, items)
             };
         }
 
@@ -207,7 +246,7 @@ namespace Avalonia.Controls
             {
                 ItemsSourceView<T> isv => isv,
                 null => ItemsSourceView<T>.Empty,
-                _ => new ItemsSourceView<T>(items)
+                _ => new ItemsSourceView<T>(null, items)
             };
         }
 
@@ -219,30 +258,77 @@ namespace Avalonia.Controls
                     yield return o;
             }
 
-            var inner = Source;
+            var inner = InternalSource;
 
             return inner switch
             {
                 IEnumerable<object> e => e.GetEnumerator(),
+                null => Enumerable.Empty<object?>().GetEnumerator(),
                 _ => EnumerateItems(inner),
             };
         }
 
-        IEnumerator IEnumerable.GetEnumerator() => Source.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => InternalSource.GetEnumerator();
 
         void ICollectionChangedListener.PreChanged(INotifyCollectionChanged sender, NotifyCollectionChangedEventArgs e)
         {
-            _preCollectionChanged?.Invoke(this, e);
+            if (DeferredRefreshActive)
+            {
+                return;
+            }
+
+            if (HasActiveLayers)
+            {
+                UpdateLayersForCollectionChangedEvent(e);
+            }
+
+            if (GetRewrittenEvent(e) is not { } rewritten)
+            {
+                return;
+            }
+            
+            _preCollectionChanged?.Invoke(this, rewritten);
         }
 
         void ICollectionChangedListener.Changed(INotifyCollectionChanged sender, NotifyCollectionChangedEventArgs e)
         {
-            _collectionChanged?.Invoke(this, e);
+            if (DeferredRefreshActive)
+            {
+                return;
+            }
+
+            if (GetRewrittenEvent(e) is not { } rewritten)
+            {
+                return;
+            }
+
+            _collectionChanged?.Invoke(this, rewritten);
+
+            if (rewritten.Action is NotifyCollectionChangedAction.Add or NotifyCollectionChangedAction.Remove or NotifyCollectionChangedAction.Reset)
+                OnPropertyChanged(nameof(Count));
         }
 
         void ICollectionChangedListener.PostChanged(INotifyCollectionChanged sender, NotifyCollectionChangedEventArgs e)
         {
-            _postCollectionChanged?.Invoke(this, e);
+            if (DeferredRefreshActive)
+            {
+                return;
+            }
+
+            if (GetRewrittenEvent(e) is not { } rewritten)
+            {
+                return;
+            }
+
+            _postCollectionChanged?.Invoke(this, rewritten);
+        }
+
+        /// <summary>
+        /// Raises <see cref="PropertyChanged"/>.
+        /// </summary>
+        protected virtual void OnPropertyChanged(string propertyName)
+        {
+            _propertyChanged?.Invoke(this, new(propertyName));
         }
 
         int IList.Add(object? value) => ThrowReadOnly();
@@ -250,7 +336,7 @@ namespace Avalonia.Controls
         void IList.Insert(int index, object? value) => ThrowReadOnly();
         void IList.Remove(object? value) => ThrowReadOnly();
         void IList.RemoveAt(int index) => ThrowReadOnly();
-        void ICollection.CopyTo(Array array, int index) => Source.CopyTo(array, index);
+        void ICollection.CopyTo(Array array, int index) => InternalSource.CopyTo(array, index);
 
         /// <summary>
         /// Not implemented in Avalonia, preserved here for ItemsRepeater's usage.
@@ -270,9 +356,10 @@ namespace Avalonia.Controls
             if (_listening && _source is INotifyCollectionChanged inccOld)
                 CollectionChangedEventManager.Instance.RemoveListener(inccOld, this);
 
+            var oldItems = this.ToArray();
+
             _source = source switch
             {
-                ItemsSourceView isv => isv.Source,
                 IList list => list,
                 INotifyCollectionChanged => throw new ArgumentException(
                     "Collection implements INotifyCollectionChanged but not IList.",
@@ -281,6 +368,15 @@ namespace Avalonia.Controls
                 null => throw new ArgumentNullException(nameof(source)),
                 _ => new List<object>(source.Cast<object>())
             };
+
+            Refresh(applyingDeferredUpdates: false, raiseEvents: false);
+
+            OnPropertyChanged(nameof(Source));
+
+            if (oldItems.Length > 0)
+                RaiseCollectionChanged(new(NotifyCollectionChangedAction.Remove, oldItems, 0));
+            if (Count > 0)
+                RaiseCollectionChanged(new(NotifyCollectionChangedAction.Add, this.ToArray(), 0));
 
             if (_listening && _source is INotifyCollectionChanged inccNew)
                 CollectionChangedEventManager.Instance.AddListener(inccNew, this);
@@ -298,12 +394,12 @@ namespace Avalonia.Controls
 
         private void RemoveListenerIfNecessary()
         {
-            if (_listening && _collectionChanged is null && _postCollectionChanged is null)
+            if (_listening && _collectionChanged is null && _postCollectionChanged is null && Filters.Count == 0)
             {
                 if (_source is INotifyCollectionChanged incc)
                     CollectionChangedEventManager.Instance.RemoveListener(incc, this);
                 _listening = false;
-            }
+        }
         }
 
         [DoesNotReturn]
@@ -315,19 +411,17 @@ namespace Avalonia.Controls
         /// <summary>
         ///  Gets an empty <see cref="ItemsSourceView"/>
         /// </summary>
-        public new static ItemsSourceView<T> Empty { get; } = new ItemsSourceView<T>(Array.Empty<T>());
+        public new static ItemsSourceView<T> Empty { get; } = new ItemsSourceView<T>(null, Array.Empty<T>());
 
-        /// <summary>
-        /// Initializes a new instance of the ItemsSourceView class for the specified data source.
-        /// </summary>
-        /// <param name="source">The data source.</param>
-        internal ItemsSourceView(IEnumerable<T> source)
-            : base(source)
+        /// <inheritdoc cref="ItemsSourceView(AvaloniaObject?, IEnumerable)"/>
+        internal ItemsSourceView(AvaloniaObject? owner, IEnumerable<T> source)
+            : base(owner, source)
         {
         }
 
-        internal ItemsSourceView(IEnumerable source)
-            : base(source)
+        /// <inheritdoc cref="ItemsSourceView(AvaloniaObject?, IEnumerable)"/>
+        internal ItemsSourceView(AvaloniaObject? owner, IEnumerable source)
+            : base(owner, source)
         {
         }
 
@@ -343,25 +437,15 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="index">The index.</param>
         /// <returns>The item.</returns>
-        public new T GetAt(int index) => (T)Source[index]!;
+        public new T GetAt(int index) => (T)base[index]!;
 
         public new IEnumerator<T> GetEnumerator()
         {
-            static IEnumerator<T> EnumerateItems(IList list)
-            {
-                foreach (var o in list)
-                    yield return (T)o;
-            }
-
-            var inner = Source;
-
-            return inner switch
-            {
-                IEnumerable<T> e => e.GetEnumerator(),
-                _ => EnumerateItems(inner),
-            };
+            using var enumerator = base.GetEnumerator();
+            while (enumerator.MoveNext())
+                yield return (T)enumerator.Current!;
         }
 
-        IEnumerator IEnumerable.GetEnumerator() => Source.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }
