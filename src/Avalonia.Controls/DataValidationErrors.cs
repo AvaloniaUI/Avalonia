@@ -202,10 +202,5 @@ namespace Avalonia.Controls
 
             return exception;
         }
-
-        protected override AutomationPeer OnCreateAutomationPeer()
-        {
-            return new ControlAutomationPeer(this);
-        }
     }
 }
