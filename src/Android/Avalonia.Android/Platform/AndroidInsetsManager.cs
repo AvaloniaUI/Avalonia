@@ -224,12 +224,6 @@ namespace Avalonia.Android.Platform
             {
                 _statusBarTheme = value;
 
-                // On api 35, there's no system bar theme. Updating the status bar theme has no effect, and navigation bar now has a special style that
-                // makes it invisible if you change the nav bar appearance. By default, android applies a 80% opacity filter over any color drawn on the 
-                // activity behind, forcing you to always use a light foreground, i.e. dark appearance. Thus we skip updating any colors.
-                if (_isDisplayEdgeToEdgeForced)
-                    return;
-
                 var compat = new WindowInsetsControllerCompat(Window, _topLevel.View);
 
                 if (_isDefaultSystemBarLightTheme == null)
