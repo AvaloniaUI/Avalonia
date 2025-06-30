@@ -205,7 +205,7 @@ namespace Avalonia.Controls
 
         protected override AutomationPeer OnCreateAutomationPeer()
         {
-            return new DataValidationErrorsAutomationPeer(this);
+            return new ControlAutomationPeer(this);
         }
     }
 }
