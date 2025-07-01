@@ -28,18 +28,19 @@ public class DispatcherOperation
 
     protected internal object? Callback;
     protected object? TaskSource;
-    
+
     internal DispatcherOperation? SequentialPrev { get; set; }
     internal DispatcherOperation? SequentialNext { get; set; }
     internal DispatcherOperation? PriorityPrev { get; set; }
     internal DispatcherOperation? PriorityNext { get; set; }
     internal PriorityChain? Chain { get; set; }
-    
+
     internal bool IsQueued => Chain != null;
 
     private EventHandler? _aborted;
     private EventHandler? _completed;
     private DispatcherPriority _priority;
+    private ExecutionContext? _executionContext;
 
     internal DispatcherOperation(Dispatcher dispatcher, DispatcherPriority priority, Action callback, bool throwOnUiThread) :
         this(dispatcher, priority, throwOnUiThread)
@@ -52,6 +53,7 @@ public class DispatcherOperation
         ThrowOnUiThread = throwOnUiThread;
         Priority = priority;
         Dispatcher = dispatcher;
+        _executionContext = ExecutionContext.Capture();
     }
 
     internal string DebugDisplay
@@ -103,7 +105,7 @@ public class DispatcherOperation
                 _completed += value;
             }
         }
-        
+
         remove
         {
             lock(Dispatcher.InstanceLock)
@@ -112,7 +114,7 @@ public class DispatcherOperation
             }
         }
     }
-    
+
     public bool Abort()
     {
         if (Dispatcher.Abort(this))
@@ -155,7 +157,7 @@ public class DispatcherOperation
                     // we throw an exception instead.
                     throw new InvalidOperationException("A thread cannot wait on operations already running on the same thread.");
                 }
-                
+
                 var cts = new CancellationTokenSource();
                 EventHandler finishedHandler = delegate
                 {
@@ -241,7 +243,7 @@ public class DispatcherOperation
     }
 
     public Task GetTask() => GetTaskCore();
-    
+
     /// <summary>
     ///     Returns an awaiter for awaiting the completion of the operation.
     /// </summary>
@@ -259,21 +261,38 @@ public class DispatcherOperation
         AbortTask();
         _aborted?.Invoke(this, EventArgs.Empty);
     }
-    
+
     internal void Execute()
     {
         Debug.Assert(Status == DispatcherOperationStatus.Executing);
         try
         {
             using (AvaloniaSynchronizationContext.Ensure(Dispatcher, Priority))
+            {
+#if NET6_0_OR_GREATER
+                if (_executionContext is { } executionContext)
+                {
+                    ExecutionContext.Restore(executionContext);
+                }
                 InvokeCore();
+#else
+                if (_executionContext is { } executionContext)
+                {
+                    ExecutionContext.Run(executionContext, _ => InvokeCore(), null);
+                }
+                else
+                {
+                    InvokeCore();
+                }
+#endif
+            }
         }
         finally
         {
             _completed?.Invoke(this, EventArgs.Empty);
         }
     }
-    
+
     protected virtual void InvokeCore()
     {
         try
@@ -305,7 +324,7 @@ public class DispatcherOperation
     }
 
     internal virtual object? GetResult() => null;
-    
+
     protected virtual void AbortTask()
     {
         object? taskSource;
@@ -401,14 +420,14 @@ internal sealed class SendOrPostCallbackDispatcherOperation : DispatcherOperatio
 {
     private readonly object? _arg;
 
-    internal SendOrPostCallbackDispatcherOperation(Dispatcher dispatcher, DispatcherPriority priority, 
-        SendOrPostCallback callback, object? arg, bool throwOnUiThread) 
+    internal SendOrPostCallbackDispatcherOperation(Dispatcher dispatcher, DispatcherPriority priority,
+        SendOrPostCallback callback, object? arg, bool throwOnUiThread)
         : base(dispatcher, priority, throwOnUiThread)
     {
         Callback = callback;
         _arg = arg;
     }
-    
+
     protected override void InvokeCore()
     {
         try
