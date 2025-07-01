@@ -40,7 +40,7 @@ public class DispatcherOperation
     private EventHandler? _aborted;
     private EventHandler? _completed;
     private DispatcherPriority _priority;
-    private ExecutionContext? _executionContext;
+    private readonly CulturePreservingExecutionContext? _executionContext;
 
     internal DispatcherOperation(Dispatcher dispatcher, DispatcherPriority priority, Action callback, bool throwOnUiThread) :
         this(dispatcher, priority, throwOnUiThread)
@@ -53,7 +53,7 @@ public class DispatcherOperation
         ThrowOnUiThread = throwOnUiThread;
         Priority = priority;
         Dispatcher = dispatcher;
-        _executionContext = ExecutionContext.Capture();
+        _executionContext = CulturePreservingExecutionContext.Capture();
     }
 
     internal string DebugDisplay
@@ -272,13 +272,13 @@ public class DispatcherOperation
 #if NET6_0_OR_GREATER
                 if (_executionContext is { } executionContext)
                 {
-                    ExecutionContext.Restore(executionContext);
+                    CulturePreservingExecutionContext.Restore(executionContext);
                 }
                 InvokeCore();
 #else
                 if (_executionContext is { } executionContext)
                 {
-                    ExecutionContext.Run(executionContext, _ => InvokeCore(), null);
+                    CulturePreservingExecutionContext.Run(executionContext, _ => InvokeCore(), null);
                 }
                 else
                 {
