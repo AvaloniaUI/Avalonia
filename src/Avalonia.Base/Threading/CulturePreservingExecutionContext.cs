@@ -31,6 +31,13 @@ internal sealed class CulturePreservingExecutionContext
     /// <returns>A new CulturePreservingExecutionContext instance, or null if no context needs to be captured.</returns>
     public static CulturePreservingExecutionContext? Capture()
     {
+        // ExecutionContext.SuppressFlow had been called.
+        // We expect ExecutionContext.Capture() to return null, so match that behavior and return null.
+        if (ExecutionContext.IsFlowSuppressed())
+        {
+            return null;
+        }
+
         var context = ExecutionContext.Capture();
         if (context == null)
             return null;
