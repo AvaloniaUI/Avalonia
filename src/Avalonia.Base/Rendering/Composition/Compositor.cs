@@ -203,7 +203,7 @@ namespace Avalonia.Rendering.Composition
                 {
                     lock (_pendingBatchLock)
                     {
-                        if (_pendingBatch.Processed == t)
+                        if (_pendingBatch?.Processed == t)
                             _pendingBatch = null;
                     }
                 }, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
