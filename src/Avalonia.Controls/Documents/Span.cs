@@ -9,7 +9,7 @@ namespace Avalonia.Controls.Documents
     /// <summary>
     /// Span element used for grouping other Inline elements.
     /// </summary>
-    public class Span : Inline
+    public class Span : Inline, IAddChild
     {
         /// <summary>
         /// Defines the <see cref="Inlines"/> property.
@@ -95,6 +95,28 @@ namespace Avalonia.Controls.Documents
 
             void OnInlinesInvalidated(object? sender, EventArgs e)
                 => InlineHost?.Invalidate();
+        }
+
+        void IAddChild.AddChild(object child)
+        {
+            switch (child)
+            {
+                case Inline inline:
+                    {
+                        Inlines?.Add(inline);
+                        break;
+                    }
+                case Control control:
+                    {
+                        Inlines?.Add(new InlineUIContainer(control));
+                        break;
+                    }
+                case string text:
+                    {
+                        Inlines.Add(new Run(text));
+                        break;
+                    }
+            }
         }
     }
 }
