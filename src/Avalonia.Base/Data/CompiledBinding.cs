@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.ExpressionNodes;
 
@@ -31,7 +32,7 @@ public class CompiledBinding : StandardBindingBase
         object? anchor)
     {
         var enableDataValidation = targetProperty?.GetMetadata(target).EnableDataValidation ?? false;
-        var nodes = Path?.CreateExpressionNodes(Source);
+        var nodes = BindingPath.BuildExpressionNodes(Path, Source, targetProperty);
 
         // If the first node is an ISourceNode then allow it to select the source; otherwise
         // use the binding source if specified, falling back to the target.

@@ -10,15 +10,17 @@ using Avalonia.Data.Core.Plugins;
 namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    [Obsolete("Use Avalonia.Data.Core.BindingPath.")]
+    [Obsolete("Use BindingPath.")]
     public class CompiledBindingPath : BindingPath
     {
-        internal CompiledBindingPath(List<ExpressionNode> nodes) : base(nodes) { }
+        internal CompiledBindingPath(bool isSelf, List<ExpressionNode> nodes) : base(isSelf, nodes) { }
     }
 
     public class CompiledBindingPathBuilder
     {
-        private readonly List<ExpressionNode> _elements = []; 
+        private readonly List<ExpressionNode> _elements = [];
+        private bool _isSelf;
+        private int _notCount;
 
         public CompiledBindingPathBuilder()
         {
@@ -32,7 +34,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
         public CompiledBindingPathBuilder Not()
         {
-            _elements.Add(new LogicalNotNode());
+            ++_notCount;
             return this;
         }
 
@@ -93,6 +95,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
         public CompiledBindingPathBuilder Self()
         {
+            _isSelf = true;
             return this;
         }
 
@@ -139,6 +142,11 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
             return this;
         }
 
-        public CompiledBindingPath Build() => new(_elements);
+        public CompiledBindingPath Build()
+        {
+            for (var i = 0; i < _notCount; ++i)
+                _elements.Add(new LogicalNotNode());
+            return new(_isSelf, _elements);
+        }
     }
 }
