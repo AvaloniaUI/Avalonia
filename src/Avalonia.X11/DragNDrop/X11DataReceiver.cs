@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-
-using WindowHandle = System.IntPtr;
-using AtomPtr = System.IntPtr;
 using System.Text;
 using Avalonia.Input;
 using System.Linq;
 using Avalonia.Platform.Storage.FileIO;
+
+using WindowHandle = System.IntPtr;
 
 namespace Avalonia.X11
 {
@@ -17,8 +16,8 @@ namespace Avalonia.X11
         private readonly WindowHandle _handle;
         private readonly X11Atoms _atoms;
 
-        private AtomPtr _uriList;
-        private AtomPtr _textPlain;
+        private IntPtr _uriList;
+        private IntPtr _textPlain;
 
         private bool _isIncremental = false;
         List<byte> _result = new List<byte>();

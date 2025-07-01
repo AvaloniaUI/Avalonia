@@ -196,6 +196,7 @@ namespace Avalonia.X11
         public IntPtr _NET_WM_STATE_FOCUSED;
 
         public IntPtr XdndAware;
+        public IntPtr XdndProxy;
         public IntPtr XdndSelection;
         public IntPtr XdndEnter;
         public IntPtr XdndPosition;

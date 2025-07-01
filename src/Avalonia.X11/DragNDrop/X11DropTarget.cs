@@ -4,7 +4,8 @@ using System.Runtime.InteropServices;
 using Avalonia.Input.Raw;
 using Avalonia.Input;
 using WindowHandle = System.IntPtr;
-using AtomPtr = System.IntPtr;
+using System.Diagnostics;
+using System.IO;
 
 namespace Avalonia.X11
 {
@@ -28,7 +29,8 @@ namespace Avalonia.X11
               
         private Action<RawInputEventArgs>? Input => _window.Input;
         private IDragDropDevice? DragDropDevice  => _dragDropDevice ??= AvaloniaLocator.Current.GetService<IDragDropDevice>();
-       
+
+       // private StreamWriter? _streamWriter;
         public X11DropTarget(X11Window window, IntPtr handle, X11Info info ) 
         { 
             _window = window;
@@ -38,6 +40,8 @@ namespace Avalonia.X11
 
             _receiver = new X11DataReceiver(handle, info);
             _receiver.DataReceived += OnDataReceived;
+
+          
 
             SetupXdndProtocol();
         }        
@@ -64,40 +68,20 @@ namespace Avalonia.X11
 
             return false;
         }
-
-        public DragDropEffects ConvertDropEffect(AtomPtr effect)
-        {
-            DragDropEffects result = DragDropEffects.None;
-            if (((uint)effect & (uint)(_atoms.XdndActionCopy)) == (uint)_atoms.XdndActionCopy)
-                result |= DragDropEffects.Copy;
-            if (((uint)effect & (uint)(_atoms.XdndActionMove)) == (uint)_atoms.XdndActionMove)
-                result |= DragDropEffects.Move;
-            if (((uint)effect & (uint)(_atoms.XdndActionLink)) == (uint)_atoms.XdndActionLink)
-                result |= DragDropEffects.Link;
-            return result;
-        }
-
-        public AtomPtr ConvertDropEffect(DragDropEffects operation)
-        {
-            uint result = (uint)AtomPtr.Zero;
-            if (operation.HasAllFlags(DragDropEffects.Copy))
-                result |= (uint)_atoms.XdndActionCopy;
-            if (operation.HasAllFlags(DragDropEffects.Move))
-                result |= (uint)_atoms.XdndActionMove;
-            if (operation.HasAllFlags(DragDropEffects.Link))
-                result |= (uint)_atoms.XdndActionLink;
-            return (AtomPtr)result;
-        }
+               
 
         private void SetupXdndProtocol()
         {
             int version = 5;
-            IntPtr ptr = Marshal.AllocHGlobal(sizeof(int));
+           /* IntPtr ptr = Marshal.AllocHGlobal(sizeof(int));
             Marshal.WriteInt32(ptr, version);
 
             XLib.XChangeProperty(
                 _display, _handle, _atoms.XdndAware, _atoms.XA_ATOM, 32, PropertyMode.Replace, ptr, 1);
-            Marshal.FreeHGlobal(ptr);
+            Marshal.FreeHGlobal(ptr);*/
+
+            XLib.XChangeProperty(_display, _handle, _atoms.XdndAware, _atoms.XA_ATOM,
+                32, PropertyMode.Replace, new[] { version }, 1);
         }
 
         private bool OnClientMessageEvent(ref XClientMessageEvent clientMsg) 
@@ -129,12 +113,23 @@ namespace Avalonia.X11
         private void HandleXdndEnter(ref XClientMessageEvent clientMsg)
         {
             _dragSource = clientMsg.ptr1;
-            AtomPtr[] sourceTypes = Array.Empty<AtomPtr>();
-            
+            IntPtr[] sourceTypes = Array.Empty<IntPtr>();
+
+            //if (!File.Exists("/tmp/debugpipe2"))
+            //{
+            //    Process.Start("mkfifo", "/tmp/debugpipe2").WaitForExit();
+            //}
+
+            ////// Process.Start("xterm", "-e 'cat /tmp/debugpipe/' &");
+
+            //_streamWriter = new StreamWriter("/tmp/debugpipe2");
+            //_streamWriter.AutoFlush = true;
+            //_streamWriter.WriteLine($"[START]{_handle}");
+
             if (((int)clientMsg.ptr2 & 1) == 0)
             {
                 // Types in message
-                sourceTypes = new AtomPtr[3] { clientMsg.ptr3, clientMsg.ptr4, clientMsg.ptr5 };
+                sourceTypes = new IntPtr[3] { clientMsg.ptr3, clientMsg.ptr4, clientMsg.ptr5 };
             }
             else
             {
@@ -145,7 +140,7 @@ namespace Avalonia.X11
             if(sourceTypes != null && sourceTypes.Length != 0)
             {
                 var sourceTypesName = sourceTypes
-                    .Where(a => a != (AtomPtr)0)
+                    .Where(a => a != (IntPtr)0)
                     .Select(a => _atoms.GetAtomName(a) ?? string.Empty)
                     .Where(n => !string.IsNullOrEmpty(n))
                     .ToArray() ;
@@ -154,15 +149,17 @@ namespace Avalonia.X11
                 {
                     _currentDrag = new X11DataObject(sourceTypesName);
 
+                 //   _streamWriter?.WriteLine($"\u001b[31m {DateTime.Now.Ticks}:HandleXdndEnter {_dragSource} | {string.Join("|", sourceTypesName)} \u001b[0m");
+
                     //We do not have locations and actions here, so we will invoke DragEnter in first DragPosition
                     _enterEventSent = false;                  
                 }
             }
         }
 
-        private AtomPtr[] GetSourceTypes(WindowHandle source)
+        private IntPtr[] GetSourceTypes(WindowHandle source)
         {
-            AtomPtr actualType;
+            IntPtr actualType;
             int actualFormat;
             IntPtr nitems, bytesAfter;
             IntPtr prop;
@@ -174,16 +171,16 @@ namespace Avalonia.X11
 
             if (status != (int)Status.Success || actualType != _atoms.XA_ATOM || actualFormat != 32)
             {
-                return Array.Empty<AtomPtr>();
+                return Array.Empty<IntPtr>();
             }
 
-            AtomPtr[] types = new AtomPtr[(ulong)nitems];
+            IntPtr[] types = new IntPtr[(ulong)nitems];
             unsafe
             {
                 var current = (IntPtr*)prop;
                 for (ulong i = 0; i < (ulong)nitems; i++)
                 {
-                    types[i] = (AtomPtr)(current[i]);
+                    types[i] = (IntPtr)(current[i]);
                 }
             }
 
@@ -216,7 +213,7 @@ namespace Avalonia.X11
                       _window.InputRoot,
                       point,
                       _currentDrag,
-                      ConvertDropEffect(serverEffect),
+                      _atoms.ConvertDropEffect(serverEffect),
                       RawInputModifiers.None  //TODO: Find a way to get it from mouse events
                   );
 
@@ -230,7 +227,7 @@ namespace Avalonia.X11
                    _window.InputRoot,
                    point,
                    _currentDrag,
-                   ConvertDropEffect(serverEffect),
+                   _atoms.ConvertDropEffect(serverEffect),
                    RawInputModifiers.None
                );
             }
@@ -239,6 +236,8 @@ namespace Avalonia.X11
             
             // Отправляем ответ
             SendXdndStatus(_dragSource, args.Effects, x, y);
+
+          //  _streamWriter?.WriteLine($"\u001b[32m {DateTime.Now.Ticks}:HandleXdndPosition {_dragSource} | {args.Effects} | {x} | {y} \u001b[0m");
         }
 
         private void SendXdndStatus(WindowHandle source, DragDropEffects effects, int x = 0, int y = 0)
@@ -258,7 +257,7 @@ namespace Avalonia.X11
                 //TODO: Get rectangle of target control and send it to server as "hot zone" 
                 ptr3 = new IntPtr((x << 16) | y), //hot zone x and y
                 ptr4 = IntPtr.Zero, //hot zone width and heights
-                ptr5 = ConvertDropEffect(effects),
+                ptr5 = _atoms.ConvertDropEffect(effects),
             };
 
             XEvent xevent = new XEvent { ClientMessageEvent = response };
@@ -274,8 +273,8 @@ namespace Avalonia.X11
             }
 
             // Select mime type to ask
-            AtomPtr bestType = string.IsNullOrEmpty(_currentDrag.GetBestType()) ? AtomPtr.Zero : _atoms.GetAtom(_currentDrag.GetBestType());
-            if (bestType == AtomPtr.Zero)
+            IntPtr bestType = string.IsNullOrEmpty(_currentDrag.GetBestType()) ? IntPtr.Zero : _atoms.GetAtom(_currentDrag.GetBestType());
+            if (bestType == IntPtr.Zero)
             {
                 SendXdndFinished(_dragSource, false);
                 return;
@@ -283,14 +282,21 @@ namespace Avalonia.X11
 
             _dragInProcess = true;
 
+          //  _streamWriter?.WriteLine($"\u001b[33m {DateTime.Now.Ticks}:HandleXdndDrop {_dragSource} | type {_currentDrag.GetBestType()} {bestType}\u001b[0m");
+
             // Request data
             XLib.XConvertSelection(_display, _atoms.XdndSelection, bestType,
                                  _atoms.XdndSelection, _handle, clientMsg.ptr3);
+
+         //   _streamWriter?.WriteLine($"\u001b[33m {DateTime.Now.Ticks}: XLib.XConvertSelection _display {_display} _atoms.XdndSelection {_atoms.XdndSelection} bestType {bestType} _atoms.XdndSelection {_atoms.XdndSelection} _handle {_handle} clientMsg.ptr3 {clientMsg.ptr3}\u001b[0m");
+
             XLib.XFlush(_display);
         }
 
         private void OnDataReceived(string type, object? data)
         {
+            //  _streamWriter?.WriteLine($"\u001b[33m {DateTime.Now.Ticks}:OnDataReceived {type} | {data}\u001b[0m");
+
             if (DragDropDevice == null || _currentDrag == null)
             {
                 return;
@@ -310,7 +316,7 @@ namespace Avalonia.X11
                       _window.InputRoot,
                       point,
                       _currentDrag,
-                      ConvertDropEffect(serverEffect),
+                      _atoms.ConvertDropEffect(serverEffect),
                       RawInputModifiers.None
                       );
 
@@ -339,7 +345,8 @@ namespace Avalonia.X11
                 }
                     
                 if (DragDropDevice != null && _currentDrag != null)
-                {                
+                {
+           //         _streamWriter?.WriteLine($"\u001b[33m {DateTime.Now.Ticks}:_receiver.HandleSelectionNotify\u001b[0m");
                     _receiver.HandleSelectionNotify(ref selectionEvent);                
                 }
                                 
@@ -392,7 +399,7 @@ namespace Avalonia.X11
                      _window.InputRoot,
                       point,
                       _currentDrag,
-                      ConvertDropEffect(serverEffect),
+                      _atoms.ConvertDropEffect(serverEffect),
                       RawInputModifiers.None
                       );
 
