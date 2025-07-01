@@ -118,8 +118,12 @@ namespace Avalonia.Automation.Peers
         }
         protected override string? GetHelpTextCore()
         {
-            var result = AutomationProperties.GetHelpText(Owner)
-                         ?? ToolTip.GetTip(Owner) as string;
+            var result = AutomationProperties.GetHelpText(Owner);
+
+            if (string.IsNullOrWhiteSpace(result))
+            {
+                result = ToolTip.GetTip(Owner) as string;
+            }
 
             if (string.IsNullOrWhiteSpace(result))
             {
