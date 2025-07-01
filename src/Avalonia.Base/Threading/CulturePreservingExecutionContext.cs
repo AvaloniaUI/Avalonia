@@ -14,16 +14,25 @@ namespace Avalonia.Threading;
 internal sealed class CulturePreservingExecutionContext
 {
     private readonly ExecutionContext _context;
+#if NET6_0_OR_GREATER
     private readonly CultureInfo _culture;
     private readonly CultureInfo _uiCulture;
+#endif
     private CultureAndContext? _cultureAndContext;
 
+#if NET6_0_OR_GREATER
     private CulturePreservingExecutionContext(ExecutionContext context, CultureInfo culture, CultureInfo uiCulture)
     {
         _context = context;
         _culture = culture;
         _uiCulture = uiCulture;
     }
+#else
+    private CulturePreservingExecutionContext(ExecutionContext context)
+    {
+        _context = context;
+    }
+#endif
 
     /// <summary>
     /// Captures the current ExecutionContext and culture information.
@@ -42,10 +51,14 @@ internal sealed class CulturePreservingExecutionContext
         if (context == null)
             return null;
 
+#if NET6_0_OR_GREATER
         var culture = Thread.CurrentThread.CurrentCulture;
         var uiCulture = Thread.CurrentThread.CurrentUICulture;
 
         return new CulturePreservingExecutionContext(context, culture, uiCulture);
+#else
+        return new CulturePreservingExecutionContext(context);
+#endif
     }
 
 #if NET6_0_OR_GREATER
