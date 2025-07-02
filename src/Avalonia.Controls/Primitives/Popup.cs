@@ -766,6 +766,8 @@ namespace Avalonia.Controls.Primitives
                 UpdateHostPosition(_openState.PopupHost, _openState.PlacementTarget);
             }
         }
+        
+        internal void UpdatePositionToPointer() => HandlePositionChange();
 
         /// <inheritdoc />
         protected override AutomationPeer OnCreateAutomationPeer()
