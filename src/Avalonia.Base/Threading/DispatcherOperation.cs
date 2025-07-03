@@ -269,13 +269,6 @@ public class DispatcherOperation
         {
             using (AvaloniaSynchronizationContext.Ensure(Dispatcher, Priority))
             {
-#if NET6_0_OR_GREATER
-                if (_executionContext is { } executionContext)
-                {
-                    CulturePreservingExecutionContext.Restore(executionContext);
-                }
-                InvokeCore();
-#else
                 if (_executionContext is { } executionContext)
                 {
                     CulturePreservingExecutionContext.Run(executionContext, _ => InvokeCore(), null);
@@ -284,7 +277,6 @@ public class DispatcherOperation
                 {
                     InvokeCore();
                 }
-#endif
             }
         }
         finally
