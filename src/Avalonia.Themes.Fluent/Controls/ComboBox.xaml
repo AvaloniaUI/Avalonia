@@ -158,7 +158,7 @@
     </Style>
 
     <!--  Focus Pressed State  -->
-    <Style Selector="^:focused:pressed">
+    <Style Selector="^:focus:pressed">
       <Style Selector="^ /template/ ContentControl#ContentPresenter">
         <Setter Property="Foreground" Value="{DynamicResource ComboBoxForegroundFocusedPressed}" />
       </Style>

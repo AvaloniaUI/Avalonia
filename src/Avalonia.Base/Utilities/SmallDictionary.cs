@@ -292,9 +292,8 @@ internal struct InlineDictionary<TKey, TValue> : IEnumerable<KeyValuePair<TKey, 
         }
         else if (_data is Dictionary<TKey, TValue?> dic)
         {
-            if (!dic.TryGetValue(key, out value))
+            if (!dic.Remove(key, out value))
                 return false;
-            dic.Remove(key);
         }
 
         value = default;
