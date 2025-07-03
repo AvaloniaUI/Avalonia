@@ -107,21 +107,6 @@ namespace Avalonia.Controls
             .RegisterAttached<AvaloniaObject, Control?>("PreviewWith", typeof (Design));
 
         /// <summary>
-        /// Sets a preview control for the specified <see cref="AvaloniaObject"/> at design-time.
-        /// </summary>
-        /// <remarks>
-        /// This method allows you to specify a substitute control to be rendered in the previewer
-        /// for a given object.
-        /// </remarks>
-        /// <param name="target">The target object.</param>
-        /// <param name="control">The preview control.</param>
-        public static void SetPreviewWith(AvaloniaObject target, Control? control)
-        {
-            target.SetValue(PreviewWithProperty, control);
-            s_previewWith[target] = control is not null ? new FuncTemplate<Control>(() => control) : null;
-        }
-
-        /// <summary>
         /// Sets a preview template for the specified <see cref="AvaloniaObject"/> at design-time.
         /// </summary>
         /// <remarks>
@@ -133,20 +118,6 @@ namespace Avalonia.Controls
         public static void SetPreviewWith(AvaloniaObject target, ITemplate<Control>? template)
         {
             s_previewWith[target] = template;
-        }
-
-        /// <summary>
-        /// Sets a preview control for the specified <see cref="ResourceDictionary"/> at design-time.
-        /// </summary>
-        /// <remarks>
-        /// This method allows you to specify a substitute control to be rendered in the previewer
-        /// for a given object. ResourceDictionary is attached to that control, displaying real time changes on the control. 
-        /// </remarks>
-        /// <param name="target">The resource dictionary.</param>
-        /// <param name="control">The preview control.</param>
-        public static void SetPreviewWith(ResourceDictionary target, Control? control)
-        {
-            s_previewWith[target] = control is not null ? new FuncTemplate<Control>(() => control) : null;
         }
 
         /// <summary>
@@ -172,7 +143,7 @@ namespace Avalonia.Controls
         /// </remarks>
         /// <param name="target">The data template.</param>
         /// <param name="template">The preview template.</param>
-        public static void SetPreviewWith(IDataTemplate target, ITemplate<ContentControl>? template)
+        public static void SetPreviewWith(IDataTemplate target, ITemplate<Control>? template)
         {
             s_previewWith[target] = template is not null ? new FuncTemplate<Control>(template.Build) : null;
         }
@@ -247,7 +218,7 @@ namespace Avalonia.Controls
             if (source.IsSet(DataContextProperty))
                 target.Bind(StyledElement.DataContextProperty, target.GetBindingObservable(DataContextProperty));
             if (source.IsSet(DesignStyleProperty))
-                target.Styles.Add(source.GetValue(DesignStyleProperty));
+                target.Styles.Add(GetDesignStyle(source));
         }
 
         [PrivateApi]
@@ -312,7 +283,7 @@ namespace Avalonia.Controls
                         new TextBlock {Text = "IDataTemplate can't be previewed without Design.PreviewWith."},
                         new TextBlock {Text = "Provide ContentControl with your design data as Content. Previewer will set ContentTemplate from this file."},
                         new TextBlock {Text = "<Design.PreviewWith>"},
-                        new TextBlock {Text = "    <ContentControl Content=\"{x:Static YOUR DATA OBJECT HERE}\" ></Border>"},
+                        new TextBlock {Text = "    <ContentControl Content=\"{x:Static YOUR_DATA_OBJECT_HERE}\" />"},
                         new TextBlock {Text = "</Design.PreviewWith>"}
                     }
                 };

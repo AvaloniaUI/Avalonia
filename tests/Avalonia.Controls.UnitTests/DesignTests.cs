@@ -30,39 +30,6 @@ public class DesignTests : ScopedTestBase
     }
 
     [Fact]
-    public void Should_Preview_Resource_Dictionary_With_Control()
-    {
-        using var _ = UnitTestApplication.Start(TestServices.StyledWindow);
-
-        var dictionary = new ResourceDictionary { ["TestColor"] = Colors.Red };
-        Design.SetPreviewWith(dictionary,
-            new Border { [!Border.BackgroundProperty] = new DynamicResourceExtension("TestColor") });
-
-        var preview = Design.CreatePreviewWithControl(dictionary);
-
-        var border = Assert.IsType<Border>(preview);
-        Assert.Equal(Colors.Red, ((ISolidColorBrush)border.Background!).Color);
-    }
-
-    [Fact]
-    public void Should_Preview_Style_With_AvaloniaObject_PreviewWith()
-    {
-        using var _ = UnitTestApplication.Start(TestServices.StyledWindow);
-
-        var style = new Style(x => x.OfType<Border>())
-        {
-            Setters = { new Setter(Border.BackgroundProperty, Brushes.Blue) }
-        };
-        Design.SetPreviewWith(style, new Border());
-
-        var preview = Design.CreatePreviewWithControl(style);
-        preview.ApplyStyling();
-
-        var border = Assert.IsType<Border>(preview);
-        Assert.Equal(Colors.Blue, ((ISolidColorBrush)border.Background!).Color);
-    }
-
-    [Fact]
     public void Should_Preview_DataTemplate_With_ContentControl()
     {
         using var _ = UnitTestApplication.Start(TestServices.StyledWindow);
