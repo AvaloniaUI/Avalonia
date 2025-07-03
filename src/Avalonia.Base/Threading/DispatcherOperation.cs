@@ -271,7 +271,7 @@ public class DispatcherOperation
             {
                 if (_executionContext is { } executionContext)
                 {
-                    CulturePreservingExecutionContext.Run(executionContext, _ => InvokeCore(), null);
+                    CulturePreservingExecutionContext.Run(executionContext, s => ((DispatcherOperation)s!).InvokeCore(), this);
                 }
                 else
                 {
