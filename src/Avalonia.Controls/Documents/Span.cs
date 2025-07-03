@@ -113,7 +113,7 @@ namespace Avalonia.Controls.Documents
                     }
                 case string text:
                     {
-                        Inlines.Add(new Run(text));
+                        Inlines?.Add(new Run(text));
                         break;
                     }
             }
