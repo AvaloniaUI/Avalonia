@@ -64,7 +64,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
         {
             XamlAstNamePropertyReference forgedReference;
 
-            var parsedPropertyName = PropertyParser.Parse(new CharacterReader(propertyName.AsSpan()));
+            var parsedPropertyName = PropertyParser.Parse(propertyName);
             if(parsedPropertyName.owner == null)
                 forgedReference = new XamlAstNamePropertyReference(lineInfo, selectorTypeReference,
                     propertyName, selectorTypeReference);
