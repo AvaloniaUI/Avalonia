@@ -23,7 +23,7 @@ namespace Avalonia.Data.Core;
 /// A <see cref="BindingExpression"/> represents a untyped binding which has been
 /// instantiated on an object.
 /// </remarks>
-internal partial class BindingExpression : UntypedBindingExpressionBase, IDescription, IDisposable
+internal class BindingExpression : UntypedBindingExpressionBase, IDescription, IDisposable
 {
     private static readonly List<ExpressionNode> s_emptyExpressionNodes = new();
     private readonly WeakReference<object?>? _source;

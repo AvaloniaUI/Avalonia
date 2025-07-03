@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using Avalonia.Data;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.ExpressionNodes;
+using Avalonia.Data.Core.Parsers;
 using Avalonia.Diagnostics;
-using Avalonia.Markup.Parsers;
 using Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
-    public class CompiledBindingExtension : BindingBase
+    public class CompiledBindingExtension : StandardBindingBase
     {
         public CompiledBindingExtension()
         {
@@ -48,18 +48,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 
         public Type? DataType { get; set; }
 
-        [Obsolete(ObsoletionMessages.MayBeRemovedInAvalonia12)]
-        public override InstancedBinding? Initiate(
-            AvaloniaObject target,
-            AvaloniaProperty? targetProperty,
-            object? anchor = null,
-            bool enableDataValidation = false)
-        {
-            var expression = InstanceCore(target, targetProperty, anchor, enableDataValidation);
-            return new InstancedBinding(target, expression, Mode, Priority);
-        }
-
-        private protected override BindingExpressionBase Instance(
+        internal override BindingExpressionBase Instance(
             AvaloniaObject target,
             AvaloniaProperty? targetProperty,
             object? anchor)

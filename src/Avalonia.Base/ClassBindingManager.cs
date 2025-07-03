@@ -12,7 +12,7 @@ namespace Avalonia
         private static readonly Dictionary<string, AvaloniaProperty> s_RegisteredProperties =
             new Dictionary<string, AvaloniaProperty>();
 
-        public static IDisposable Bind(StyledElement target, string className, IBinding source, object anchor)
+        public static IDisposable Bind(StyledElement target, string className, BindingBase source, object anchor)
         {
             var prop = GetClassProperty(className);
             return target.Bind(prop, source);

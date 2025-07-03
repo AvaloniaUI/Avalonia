@@ -64,18 +64,18 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="DisplayMemberBinding" /> property
         /// </summary>
-        public static readonly StyledProperty<IBinding?> DisplayMemberBindingProperty =
-            AvaloniaProperty.Register<ItemsControl, IBinding?>(nameof(DisplayMemberBinding));
+        public static readonly StyledProperty<BindingBase?> DisplayMemberBindingProperty =
+            AvaloniaProperty.Register<ItemsControl, BindingBase?>(nameof(DisplayMemberBinding));
 
         private static readonly AttachedProperty<ControlTheme?> AppliedItemContainerTheme =
             AvaloniaProperty.RegisterAttached<ItemsControl, Control, ControlTheme?>("AppliedItemContainerTheme");
 
         /// <summary>
-        /// Gets or sets the <see cref="IBinding"/> to use for binding to the display member of each item.
+        /// Gets or sets the <see cref="BindingBase"/> to use for binding to the display member of each item.
         /// </summary>
         [AssignBinding]
         [InheritDataTypeFromItems(nameof(ItemsSource))]
-        public IBinding? DisplayMemberBinding
+        public BindingBase? DisplayMemberBinding
         {
             get => GetValue(DisplayMemberBindingProperty);
             set => SetValue(DisplayMemberBindingProperty, value);
