@@ -913,13 +913,7 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
-        /// <summary>
-        /// Returns the current caret rectangle (in local coordinates).
-        /// </summary>
-        public Rect GetCursorRectangle()
-        {
-            return _caretBounds;
-        }
+        public Rect GetCursorRectangle() => _caretBounds;
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
