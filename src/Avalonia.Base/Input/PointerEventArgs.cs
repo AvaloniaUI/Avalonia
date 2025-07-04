@@ -143,9 +143,9 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-        /// Returns the current pointer point properties
+        /// Gets the state the pointer device had when this event occurred.
         /// </summary>
-        protected PointerPointProperties Properties => _properties;
+        public PointerPointProperties Properties => _properties;
     }
     
     public enum MouseButton
