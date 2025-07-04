@@ -526,21 +526,21 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.NotEqual(grid.ColumnDefinitions[0].Width, grid.ColumnDefinitions[2].Width);
         }
+    }
 
-        interface IGridItem
-        {
-            int Column { get; set; }
-        }
+    public interface IGridItem
+    {
+        int Column { get; set; }
+    }
 
-        class TextItem : IGridItem
-        {
-            public int Column { get; set; }
-            public string? Text { get; set; }
-        }
+    public class TextItem : IGridItem
+    {
+        public int Column { get; set; }
+        public string? Text { get; set; }
+    }
 
-        class SplitterItem : IGridItem
-        {
-            public int Column { get; set; }
-        }
+    public class SplitterItem : IGridItem
+    {
+        public int Column { get; set; }
     }
 }
