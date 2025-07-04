@@ -7,6 +7,7 @@ using System;
 using System.Diagnostics;
 using Avalonia.Collections;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Presenters;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
@@ -205,13 +206,50 @@ namespace Avalonia.Controls
             }
         }
 
+        private Grid? GetParentGrid()
+        {
+            var grid = Parent as Grid;
+            if (grid is not null)
+            {
+                return grid;
+            }
+
+            // When GridSplitter is used inside an ItemsControl with Grid as
+            // its ItemsPanel, its immediate parent is usually a ItemsControl or ContentPresenter.
+            switch (Parent)
+            {
+                case ItemsControl itemsControl:
+                {
+                    if (itemsControl.ItemsPanelRoot is Grid itemsPanelGrid)
+                    {
+                        grid = itemsPanelGrid;
+                    }
+
+                    break;
+                }
+                case ContentPresenter { Parent: ItemsControl presenterItemsControl }:
+                {
+                    if (presenterItemsControl.ItemsPanelRoot is Grid itemsPanelGrid)
+                    {
+                        grid = itemsPanelGrid;
+                    }
+
+                    break;
+                }
+            }
+
+            return grid;
+        }
+
         /// <summary>
         /// Initialize the data needed for resizing.
         /// </summary>
         private void InitializeData(bool showsPreview)
         {
             // If not in a grid or can't resize, do nothing.
-            if (Parent is Grid grid)
+            var grid = GetParentGrid();
+
+            if (grid != null)
             {
                 GridResizeDirection resizeDirection = GetEffectiveResizeDirection();
 
