@@ -282,13 +282,15 @@ namespace Avalonia.Controls
         /// </summary>
         private bool SetupDefinitionsToResize()
         {
-            int gridSpan = GetValue(_resizeData!.ResizeDirection == GridResizeDirection.Columns ?
+            // Get properties values from ContentPresenter if Grid it's used in ItemsControl as ItemsPanel otherwise directly from GridSplitter.
+            var sourceControl = Parent is ContentPresenter ? Parent : this;
+            int gridSpan = sourceControl.GetValue(_resizeData!.ResizeDirection == GridResizeDirection.Columns ?
                 Grid.ColumnSpanProperty :
                 Grid.RowSpanProperty);
 
             if (gridSpan == 1)
             {
-                var splitterIndex = GetValue(_resizeData.ResizeDirection == GridResizeDirection.Columns ?
+                var splitterIndex = sourceControl.GetValue(_resizeData.ResizeDirection == GridResizeDirection.Columns ?
                     Grid.ColumnProperty :
                     Grid.RowProperty);
 
