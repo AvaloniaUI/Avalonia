@@ -86,10 +86,7 @@ namespace Avalonia.Win32
                     _maxAutoSize = null;
                     goto default;
                 case UnmanagedMethods.WindowsMessage.WM_MOUSEACTIVATE:
-                    Dispatcher.UIThread.Invoke(() =>
-                    {
-                        _parent?.Activate();
-                    }, DispatcherPriority.Background);
+                    _parent?.Activate();
                     return (IntPtr)UnmanagedMethods.MouseActivate.MA_NOACTIVATE;
                 default:
                     return base.WndProc(hWnd, msg, wParam, lParam);
