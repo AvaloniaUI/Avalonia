@@ -117,7 +117,7 @@ namespace Avalonia.Automation.Peers
             return result;
         }
         protected override string? GetHelpTextCore()
-        {          
+        {
             var result = AutomationProperties.GetHelpText(Owner);
 
             if (string.IsNullOrWhiteSpace(result))
@@ -125,7 +125,14 @@ namespace Avalonia.Automation.Peers
                 result = ToolTip.GetTip(Owner) as string;
             }
 
-            return result;          
+            if (string.IsNullOrWhiteSpace(result))
+            {
+                var errors = DataValidationErrors.GetErrors(Owner);
+                var errorsStringList = errors?.Select(x => x.ToString());
+                result = errorsStringList != null ? string.Join("\n", errorsStringList.ToArray()) : null;
+            }
+
+            return result;
         }
         protected override AutomationPeer? GetParentCore()
         {
