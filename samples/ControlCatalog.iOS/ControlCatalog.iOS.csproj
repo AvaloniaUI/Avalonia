@@ -2,13 +2,32 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <ProvisioningType>manual</ProvisioningType>
-    <TargetFramework>$(AvsCurrentIOSTargetFramework)</TargetFramework>
-    <SupportedOSPlatformVersion>$(AvsMinSupportedIOSVersion)</SupportedOSPlatformVersion>
+    <TargetFrameworks>$(AvsCurrentIOSTargetFramework);$(AvsCurrentTvOSTargetFramework);$(AvsCurrentMacCatalystTargetFramework)</TargetFrameworks>
+    <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == '$(AvsCurrentIOSTargetFramework)'">$(AvsMinSupportedIOSVersion)</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == '$(AvsCurrentTvOSTargetFramework)'">$(AvsMinSupportedTvOSVersion)</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == '$(AvsCurrentMacCatalystTargetFramework)'">$(AvsMinSupportedMacCatalystVersion)</SupportedOSPlatformVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFramework)' == '$(AvsCurrentTvOSTargetFramework)'">
+    <!-- To run this in the simulator, you need to use the x64 architecture, 
+     since SkiaSharp only bundles native libraries for x64 for the tvOS Simulator  -->
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">tvossimulator-x64</RuntimeIdentifier>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\iOS\Avalonia.iOS\Avalonia.iOS.csproj" />
     <ProjectReference Include="..\ControlCatalog\ControlCatalog.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == '$(AvsCurrentIOSTargetFramework)'">
     <None Include="Info.iOS.plist">
+      <LogicalName>Info.plist</LogicalName>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == '$(AvsCurrentTvOSTargetFramework)'">
+    <None Include="Info.tvOS.plist">
+      <LogicalName>Info.plist</LogicalName>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == '$(AvsCurrentMacCatalystTargetFramework)'">
+    <None Include="Info.Catalyst.plist">
       <LogicalName>Info.plist</LogicalName>
     </None>
   </ItemGroup>
