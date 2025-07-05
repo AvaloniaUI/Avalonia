@@ -3,10 +3,7 @@ using System.Globalization;
 
 namespace Avalonia.Utilities
 {
-#if !BUILDTASK
-    public
-#endif
-    static class IdentifierParser
+    internal static class IdentifierParser
     {
         public static ReadOnlySpan<char> ParseIdentifier(this
 #if NET7SDK

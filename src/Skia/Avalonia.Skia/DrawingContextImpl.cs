@@ -1307,18 +1307,6 @@ namespace Avalonia.Skia
             return (byte)(r * 255);
         }
 
-        private static Color Blend(Color left, Color right)
-        {
-            var aa = left.A / 255d;
-            var ab = right.A / 255d;
-            return new Color(
-                (byte)((aa + ab * (1 - aa)) * 255),
-                Blend(left.R, left.A, right.R, right.A),
-                Blend(left.G, left.A, right.G, right.A),
-                Blend(left.B, left.A, right.B, right.A)                
-            );
-        }
-
         internal PaintWrapper CreateAcrylicPaint (SKPaint paint, IExperimentalAcrylicMaterial material)
         {
             var paintWrapper = new PaintWrapper(paint);
@@ -1536,16 +1524,6 @@ namespace Avalonia.Skia
                 _disposable1 = null;
                 _disposable2 = null;
                 _disposable3 = null;
-            }
-
-            public IDisposable ApplyTo(SKPaint paint)
-            {
-                var state = new PaintState(paint, paint.Color, paint.Shader);
-
-                paint.Color = Paint.Color;
-                paint.Shader = Paint.Shader;
-
-                return state;
             }
 
             /// <summary>

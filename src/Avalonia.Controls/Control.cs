@@ -386,12 +386,12 @@ namespace Avalonia.Controls
             InitializeIfNeeded();
 
             ScheduleOnLoadedCore();
-
-            Holding += OnHoldEvent;
         }
 
-        private void OnHoldEvent(object? sender, HoldingRoutedEventArgs e)
+        protected override void OnHolding(HoldingRoutedEventArgs e)
         {
+            base.OnHolding(e);
+
             if (e.Source == this && !e.Handled && e.HoldingState == HoldingState.Started)
             {
                 // Trigger ContentRequest when hold has started
@@ -408,8 +408,6 @@ namespace Avalonia.Controls
             base.OnDetachedFromVisualTreeCore(e);
 
             OnUnloadedCore();
-
-            Holding -= OnHoldEvent;
         }
 
         /// <inheritdoc/>
