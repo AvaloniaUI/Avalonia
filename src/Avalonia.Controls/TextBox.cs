@@ -19,6 +19,8 @@ using Avalonia.Media.TextFormatting;
 using Avalonia.Automation.Peers;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
+using Avalonia.LogicalTree;
 
 namespace Avalonia.Controls
 {
@@ -1076,6 +1078,30 @@ namespace Avalonia.Controls
             if (_presenter != null && !IsInactiveSelectionHighlightEnabled)
             {
                 _presenter.ShowSelectionHighlight = false;
+            }
+        }
+
+        protected override void OnLosingFocus(FocusChangingEventArgs e)
+        {
+            base.OnLosingFocus(e);
+
+            // Check if new focus element is a logical descendant of this textbox
+            if(!e.Canceled && e.NewFocusedElement is Visual newFocusVisual && newFocusVisual.GetSelfAndLogicalAncestors().Contains(this))
+            {
+                // check if new element is in a popup. If it is, we cancel the focus change. It is likely the focus change was caused by a
+                // context flyout or popup attached to the textbox, and we don't want focus to change if the popup is an overlay popup.
+                ILogical? currentVisual = newFocusVisual;
+                while(currentVisual != this && currentVisual != null)
+                {
+                    if(currentVisual is Popup)
+                    {
+                        e.TryCancel();
+
+                        break;
+                    }
+
+                    currentVisual = currentVisual?.GetLogicalParent();
+                }
             }
         }
 
