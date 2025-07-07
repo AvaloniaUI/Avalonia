@@ -1716,7 +1716,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         }
 
         [Fact]
-        public void Should_GetTextBounds_For_LineBreak()
+        public void Should_GetTextBounds_For_Clustered_Zero_Width_Characters()
         {
             const string text = "\r\n";
 
