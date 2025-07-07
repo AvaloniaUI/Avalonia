@@ -2,12 +2,20 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
+using Avalonia.Metadata;
 using Avalonia.Platform.Interop;
 using Avalonia.SourceGenerator;
 using static Avalonia.OpenGL.GlConsts;
 
 namespace Avalonia.OpenGL
 {
+    /// <summary>
+    /// GlInterface only includes essential members and members necessary for Avalonia itself.
+    /// It is not a general-purpose interface for OpenGL API.
+    /// </summary>
+    /// <remarks>
+    /// Use <see cref="GlInterface.GetProcAddress"/> to get GL procedures you need, or integrate it with third-party GL wrappers.
+    /// </remarks>
     public unsafe partial class GlInterface : GlBasicInfoInterface
     {
         private readonly Func<string, IntPtr> _getProcAddress;
@@ -50,6 +58,11 @@ namespace Avalonia.OpenGL
         {
         }
 
+        /// <summary>
+        /// Returns an OpenGL function by name.
+        /// </summary>
+        /// <param name="proc">Function name.</param>
+        /// <returns>Handle of function, which can be casted to unmanaged function pointer.</returns>
         public IntPtr GetProcAddress(string proc) => _getProcAddress(proc);
 
         [GetProcAddress("glClearStencil")]

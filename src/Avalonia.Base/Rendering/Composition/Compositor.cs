@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Animation;
 using Avalonia.Animation.Easings;
@@ -114,7 +115,7 @@ namespace Avalonia.Rendering.Composition
                 if (pending != null)
                     pending.Processed.ContinueWith(
                         _ => Dispatcher.Post(_triggerCommitRequested, DispatcherPriority.Send),
-                        TaskContinuationOptions.ExecuteSynchronously);
+                        CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
                 else
                     _triggerCommitRequested();
             }
@@ -202,10 +203,10 @@ namespace Avalonia.Rendering.Composition
                 {
                     lock (_pendingBatchLock)
                     {
-                        if (_pendingBatch.Processed == t)
+                        if (_pendingBatch?.Processed == t)
                             _pendingBatch = null;
                     }
-                }, TaskContinuationOptions.ExecuteSynchronously);
+                }, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
                 _nextCommit = null;
                 
                 return commit;

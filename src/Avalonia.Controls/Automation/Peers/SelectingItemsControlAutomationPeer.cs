@@ -48,8 +48,6 @@ namespace Avalonia.Automation.Peers
                         }
                     }
                 }
-
-                return result;
             }
 
             return result;

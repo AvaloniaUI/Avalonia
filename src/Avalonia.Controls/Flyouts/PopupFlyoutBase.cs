@@ -79,7 +79,7 @@ namespace Avalonia.Controls.Primitives
             _popupLazy = new Lazy<Popup>(() => CreatePopup());
         }
 
-        protected Popup Popup => _popupLazy.Value;
+        public Popup Popup => _popupLazy.Value;
 
         /// <inheritdoc cref="Popup.Placement"/>
         public PlacementMode Placement

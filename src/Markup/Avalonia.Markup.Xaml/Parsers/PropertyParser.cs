@@ -1,10 +1,17 @@
-﻿using Avalonia.Data.Core;
+﻿using System;
+using Avalonia.Data.Core;
 using Avalonia.Utilities;
 
 namespace Avalonia.Markup.Xaml.Parsers
 {
     internal class PropertyParser
     {
+        public static (string? ns, string? owner, string name) Parse(string text)
+        {
+            var r = new CharacterReader(text.AsSpan());
+            return Parse(r);
+        }
+
         public static (string? ns, string? owner, string name) Parse(CharacterReader r)
         {
             if (r.End)

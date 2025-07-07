@@ -21,6 +21,15 @@
                 IsSnapToTickEnabled="True"
                 Ticks="0,20,25,40,75,100"
                 Width="300" />
+        <Slider Name="ReversedTickedSlider"
+                Value="0"
+                Minimum="0"
+                Maximum="100"
+                TickPlacement="BottomRight"
+                IsSnapToTickEnabled="True"
+                IsDirectionReversed="True"
+                Ticks="0,20,25,40,75,100"
+                Width="300" />
         <Slider Name="SliderWithTooltip"
                 Value="0"
                 Minimum="0"

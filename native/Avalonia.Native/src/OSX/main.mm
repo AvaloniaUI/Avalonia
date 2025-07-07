@@ -129,14 +129,22 @@ public:
         }
     }
     
-    virtual HRESULT SetShowInDock(int show)  override
+    virtual HRESULT SetShowInDock(int show) override
     {
         START_COM_CALL;
         
         @autoreleasepool
         {
-            AvnDesiredActivationPolicy = show
-                ? NSApplicationActivationPolicyRegular : NSApplicationActivationPolicyAccessory;
+            NSApplication* app = [NSApplication sharedApplication];
+            NSApplicationActivationPolicy requestedPolicy = show
+                ? NSApplicationActivationPolicyRegular
+                : NSApplicationActivationPolicyAccessory;
+            
+            if ([app activationPolicy] != requestedPolicy)
+            {
+                [app setActivationPolicy:requestedPolicy];
+            }
+            
             return S_OK;
         }
     }

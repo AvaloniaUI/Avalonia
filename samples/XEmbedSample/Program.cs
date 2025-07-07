@@ -20,7 +20,7 @@ class Program
             .With(new X11PlatformOptions()
             {
                 UseGLibMainLoop = true,
-                ExterinalGLibMainLoopExceptionLogger = e => Console.WriteLine(e.ToString())
+                ExternalGLibMainLoopExceptionLogger = e => Console.WriteLine(e.ToString())
             })
             .UseX11()
             .SetupWithoutStarting();

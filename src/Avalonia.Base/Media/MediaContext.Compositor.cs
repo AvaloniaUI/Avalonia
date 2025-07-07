@@ -31,7 +31,7 @@ partial class MediaContext
         _pendingCompositionBatches[compositor] = commit;
         commit.Processed.ContinueWith(_ =>
             _dispatcher.Post(() => CompositionBatchFinished(compositor, commit), DispatcherPriority.Send),
-            TaskContinuationOptions.ExecuteSynchronously);
+            CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
         return commit;
     }
     

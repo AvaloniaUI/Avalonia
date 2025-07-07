@@ -71,6 +71,8 @@ BEGIN_INTERFACE_MAP()
     void ExitFullScreenMode ();
 
     virtual HRESULT SetWindowState (AvnWindowState state) override;
+    
+    virtual HRESULT SetWindowState (AvnWindowState state, bool shouldResize);
 
     virtual bool IsModal() override;
     

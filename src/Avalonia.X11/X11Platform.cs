@@ -384,8 +384,8 @@ namespace Avalonia
         /// will likely brick GLib machinery since it's not aware of managed Exceptions
         /// This property allows to inspect such exceptions before they will be ignored
         /// </summary>
-        public Action<Exception>? ExterinalGLibMainLoopExceptionLogger { get; set; }
-        
+        public Action<Exception>? ExternalGLibMainLoopExceptionLogger { get; set; }
+
         public X11PlatformOptions()
         {
             try

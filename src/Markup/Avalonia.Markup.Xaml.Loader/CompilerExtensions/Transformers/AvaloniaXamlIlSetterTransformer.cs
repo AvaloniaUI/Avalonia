@@ -77,9 +77,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     .FirstOrDefault(x => x.Property.GetClrProperty().Name == "PropertyPath");
                 if (propertyPath == null)
                     throw new XamlStyleTransformException("Setter without a property or property path is not valid", node);
-                if (propertyPath.Values[0] is IXamlIlPropertyPathNode ppn
-                    && ppn.PropertyType != null)
-                    propType = ppn.PropertyType;
                 else
                     throw new XamlStyleTransformException("Unable to get the property path property type", node);
             }

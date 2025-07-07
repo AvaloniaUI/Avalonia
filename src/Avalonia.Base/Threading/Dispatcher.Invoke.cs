@@ -445,7 +445,8 @@ public partial class Dispatcher
             // so it is safe to modify the operation outside of the lock.
             // Just mark the operation as aborted, which we can safely
             // return to the user.
-            operation.DoAbort();
+            operation.Status = DispatcherOperationStatus.Aborted;
+            operation.CallAbortCallbacks();
         }
     }
 

@@ -134,7 +134,14 @@ public partial class Dispatcher
     private void ExecuteJob(DispatcherOperation job)
     {
         lock (InstanceLock)
+        {
+            if(job.Status != DispatcherOperationStatus.Pending)
+                return;
+            
             _queue.RemoveItem(job);
+            job.Status = DispatcherOperationStatus.Executing;
+        }
+
         job.Execute();
         // The backend might be firing timers with a low priority,
         // so we manually check if our high priority timers are due for execution
@@ -236,11 +243,16 @@ public partial class Dispatcher
         }
     }
 
-    internal void Abort(DispatcherOperation operation)
+    internal bool Abort(DispatcherOperation operation)
     {
         lock (InstanceLock)
+        {
+            if (operation.Status != DispatcherOperationStatus.Pending)
+                return false;
             _queue.RemoveItem(operation);
-        operation.DoAbort();
+            operation.Status = DispatcherOperationStatus.Aborted;
+        }
+        return true;
     }
     
     // Returns whether or not the priority was set.

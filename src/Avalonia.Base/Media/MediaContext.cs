@@ -173,9 +173,8 @@ internal partial class MediaContext : ICompositorScheduler
 
     public void RemoveTopLevel(object key)
     {
-        if (_topLevels.TryGetValue(key, out var info))
+        if (_topLevels.Remove(key, out var info))
         {
-            _topLevels.Remove(key);
             info.Renderer.Stop();
         }
     }
