@@ -1017,7 +1017,7 @@ namespace Avalonia.Media.TextFormatting
                 }
 
                 var textLine = new TextLineImpl(remainingTextRuns, firstTextSourceIndex, splitLength,
-                    paragraphWidth, paragraphProperties, resolvedFlowDirection,
+                    paragraphWidth, paragraphProperties, fontMetrics, resolvedFlowDirection,
                     textLineBreak);
 
                 textLine.FinalizeLine();
