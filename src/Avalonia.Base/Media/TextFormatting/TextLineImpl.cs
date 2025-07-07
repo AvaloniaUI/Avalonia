@@ -1089,8 +1089,11 @@ namespace Avalonia.Media.TextFormatting
             var startHit = currentRun.GlyphRun.GetCharacterHitFromDistance(startOffset, out _);
             var endHit = currentRun.GlyphRun.GetCharacterHitFromDistance(endOffset, out _);
 
+            startIndex = startHit.FirstCharacterIndex + startHit.TrailingLength;
+            var endIndex = endHit.FirstCharacterIndex + endHit.TrailingLength;
+
             //Adjust characterLength by the cluster offset to only cover the remaining length of the cluster.
-            var characterLength = Math.Abs(startHit.FirstCharacterIndex + startHit.TrailingLength - endHit.FirstCharacterIndex - endHit.TrailingLength) - clusterOffset;
+            var characterLength = Math.Max(0, Math.Abs(startIndex - endIndex) - clusterOffset);
 
             if (characterLength == 0 && currentRun.Text.Length > 0 && startIndex < currentRun.Text.Length)
             {
