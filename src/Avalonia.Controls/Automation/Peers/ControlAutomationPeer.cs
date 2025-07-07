@@ -122,14 +122,14 @@ namespace Avalonia.Automation.Peers
 
             if (string.IsNullOrWhiteSpace(result))
             {
-                result = ToolTip.GetTip(Owner) as string;
+                var errors = DataValidationErrors.GetErrors(Owner);
+                var errorsStringList = errors?.Select(x => x.ToString());
+                result = errorsStringList != null ? string.Join(Environment.NewLine, errorsStringList.ToArray()) : null;
             }
 
             if (string.IsNullOrWhiteSpace(result))
             {
-                var errors = DataValidationErrors.GetErrors(Owner);
-                var errorsStringList = errors?.Select(x => x.ToString());
-                result = errorsStringList != null ? string.Join("\n", errorsStringList.ToArray()) : null;
+                result = ToolTip.GetTip(Owner) as string;
             }
 
             return result;

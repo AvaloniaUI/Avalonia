@@ -5,8 +5,6 @@ using Avalonia.Reactive;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
-using Avalonia.Automation.Peers;
-using Avalonia.Controls.Automation.Peers;
 namespace Avalonia.Controls
 {
     /// <summary>
