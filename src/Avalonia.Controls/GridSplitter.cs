@@ -206,41 +206,6 @@ namespace Avalonia.Controls
             }
         }
 
-        private Grid? GetParentGrid()
-        {
-            var grid = Parent as Grid;
-            if (grid is not null)
-            {
-                return grid;
-            }
-
-            // When GridSplitter is used inside an ItemsControl with Grid as
-            // its ItemsPanel, its immediate parent is usually a ItemsControl or ContentPresenter.
-            switch (Parent)
-            {
-                case ItemsControl itemsControl:
-                {
-                    if (itemsControl.ItemsPanelRoot is Grid itemsPanelGrid)
-                    {
-                        grid = itemsPanelGrid;
-                    }
-
-                    break;
-                }
-                case ContentPresenter { Parent: ItemsControl presenterItemsControl }:
-                {
-                    if (presenterItemsControl.ItemsPanelRoot is Grid itemsPanelGrid)
-                    {
-                        grid = itemsPanelGrid;
-                    }
-
-                    break;
-                }
-            }
-
-            return grid;
-        }
-
         /// <summary>
         /// Initialize the data needed for resizing.
         /// </summary>
@@ -283,7 +248,7 @@ namespace Avalonia.Controls
         private bool SetupDefinitionsToResize()
         {
             // Get properties values from ContentPresenter if Grid it's used in ItemsControl as ItemsPanel otherwise directly from GridSplitter.
-            var sourceControl = Parent is ContentPresenter ? Parent : this;
+            var sourceControl = GetPropertiesValueSource();
             int gridSpan = sourceControl.GetValue(_resizeData!.ResizeDirection == GridResizeDirection.Columns ?
                 Grid.ColumnSpanProperty :
                 Grid.RowSpanProperty);
@@ -389,6 +354,81 @@ namespace Avalonia.Controls
                 // Get constraints on preview's translation.
                 GetDeltaConstraints(out _resizeData.MinChange, out _resizeData.MaxChange);
             }
+        }
+
+        /// <summary>
+        /// Retrieves the <see cref="Grid"/> that ultimately hosts this
+        /// <see cref="GridSplitter"/> in the visual/logical tree.
+        /// </summary>
+        /// <remarks>
+        /// A splitter can be placed directly inside a <see cref="Grid"/> or
+        /// indirectly inside an <see cref="ItemsControl"/> that uses a
+        /// <see cref="Grid"/> as its <see cref="ItemsControl.ItemsPanel"/>.
+        /// In the latter case the first logical parent is usually an
+        /// <see cref="ContentPresenter"/> (or the items control itself),
+        /// so the method walks these intermediate containers to locate the
+        /// underlying grid.
+        /// </remarks>
+        /// <returns>
+        /// The containing <see cref="Grid"/> if one is found; otherwise
+        /// <c>null</c>.
+        /// </returns>
+        protected virtual Grid? GetParentGrid()
+        {
+            // When GridSplitter is used inside an ItemsControl with Grid as
+            // its ItemsPanel, its immediate parent is usually a ItemsControl or ContentPresenter.
+            switch (Parent)
+            {
+                case Grid grid:
+                {
+                    return grid;
+                }
+                case ItemsControl itemsControl:
+                {
+                    if (itemsControl.ItemsPanelRoot is Grid grid)
+                    {
+                        return grid;
+                    }
+
+                    break;
+                }
+                case ContentPresenter { Parent: ItemsControl presenterItemsControl }:
+                {
+                    if (presenterItemsControl.ItemsPanelRoot is Grid grid)
+                    {
+                        return grid;
+                    }
+
+                    break;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Returns the element that carries the grid-attached properties
+        /// (<see cref="Grid.RowProperty"/>, <see cref="Grid.ColumnProperty"/>, etc.) relevant
+        /// to this <see cref="GridSplitter"/>.
+        /// </summary>
+        /// <remarks>
+        /// When the splitter is generated as part of an <see cref="ItemsControl"/>
+        /// template, the attached properties are set on the surrounding
+        /// <see cref="ContentPresenter"/> rather than on the splitter itself.
+        /// This helper selects that presenter when appropriate so subsequent
+        /// property look-ups read the correct values; otherwise it simply
+        /// returns <c>this</c>.
+        /// </remarks>
+        /// <returns>
+        /// The <see cref="StyledElement"/> from which grid-attached properties
+        /// should be read—either the parent <see cref="ContentPresenter"/> or
+        /// the splitter instance.
+        /// </returns>
+        protected virtual StyledElement GetPropertiesValueSource()
+        {
+            return Parent is ContentPresenter 
+                ? Parent 
+                : this;
         }
 
         protected override void OnPointerEntered(PointerEventArgs e)
