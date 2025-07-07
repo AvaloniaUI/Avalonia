@@ -9,22 +9,20 @@ namespace Avalonia.Skia
 {
     public static class SkiaSharpExtensions
     {
-        public static SKFilterQuality ToSKFilterQuality(this BitmapInterpolationMode interpolationMode)
+        public static SKSamplingOptions ToSKSamplingOptions(this BitmapInterpolationMode interpolationMode)
         {
-            switch (interpolationMode)
+            return interpolationMode switch
             {
-                case BitmapInterpolationMode.Unspecified:
-                case BitmapInterpolationMode.LowQuality:
-                    return SKFilterQuality.Low;
-                case BitmapInterpolationMode.MediumQuality:
-                    return SKFilterQuality.Medium;
-                case BitmapInterpolationMode.HighQuality:
-                    return SKFilterQuality.High;
-                case BitmapInterpolationMode.None:
-                    return SKFilterQuality.None;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(interpolationMode), interpolationMode, null);
-            }
+                BitmapInterpolationMode.None =>
+                    new SKSamplingOptions(SKFilterMode.Nearest, SKMipmapMode.None),
+                BitmapInterpolationMode.Unspecified or BitmapInterpolationMode.LowQuality =>
+                    new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.None),
+                BitmapInterpolationMode.MediumQuality =>
+                    new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear),
+                BitmapInterpolationMode.HighQuality =>
+                    new SKSamplingOptions(SKCubicResampler.Mitchell),
+                _ => throw new ArgumentOutOfRangeException(nameof(interpolationMode), interpolationMode, null)
+            };
         }
 
         public static SKBlendMode ToSKBlendMode(this BitmapBlendingMode blendingMode)
@@ -146,10 +144,40 @@ namespace Avalonia.Skia
             return sm;
         }
 
+        public static SKMatrix44 ToSKMatrix44(this Matrix m)
+        {
+            var sm = new SKMatrix44
+            {
+                M00 = (float)m.M11,
+                M01 = (float)m.M12,
+                M02 = 0,
+                M03 = (float)m.M13,
+                M10 = (float)m.M21,
+                M11 = (float)m.M22,
+                M12 = 0,
+                M13 = (float)m.M23,
+                M20 = 0,
+                M21 = 0,
+                M22 = 1,
+                M23 = 0,
+                M30 = (float)m.M31,
+                M31 = (float)m.M32,
+                M32 = 0,
+                M33 = (float)m.M33
+            };
+
+            return sm;
+        }
+        
         internal static Matrix ToAvaloniaMatrix(this SKMatrix m) => new(
             m.ScaleX, m.SkewY, m.Persp0,
             m.SkewX, m.ScaleY, m.Persp1,
             m.TransX, m.TransY, m.Persp2);
+
+        internal static Matrix ToAvaloniaMatrix(this SKMatrix44 m) => new(
+            m.M00, m.M01, m.M03,
+            m.M10, m.M11, m.M13,
+            m.M30, m.M31, m.M33);
 
         public static SKColor ToSKColor(this Color c)
         {

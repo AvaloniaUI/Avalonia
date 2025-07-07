@@ -76,7 +76,7 @@ We have a [range of samples](https://github.com/AvaloniaUI/Avalonia.Samples) to 
 
 ## Building and Using
 
-See the [build instructions here](Documentation/build.md).
+See the [build instructions here](docs/build.md).
 
 ## Contributing
 
