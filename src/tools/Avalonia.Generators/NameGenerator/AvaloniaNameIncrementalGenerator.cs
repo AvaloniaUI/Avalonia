@@ -25,7 +25,7 @@ public class AvaloniaNameIncrementalGenerator : IIncrementalGenerator
                 var options = pair.Right.Left;
                 var optionsProvider = pair.Right.Right;
                 var filePath = text.Path;
-                
+
                 if (!(filePath.EndsWith(".xaml", StringComparison.OrdinalIgnoreCase) ||
                     filePath.EndsWith(".paml", StringComparison.OrdinalIgnoreCase) ||
                     filePath.EndsWith(".axaml", StringComparison.OrdinalIgnoreCase)))
@@ -54,7 +54,7 @@ public class AvaloniaNameIncrementalGenerator : IIncrementalGenerator
             .Where(tuple => tuple.textContent is not null);
 
         var generatorInput = xamlFiles.Combine(context.CompilationProvider);
-        
+
         context.RegisterSourceOutput(generatorInput, static (context, pair) =>
         {
             var options = pair.Left.options;
@@ -67,7 +67,8 @@ public class AvaloniaNameIncrementalGenerator : IIncrementalGenerator
             }
 
             var types = new RoslynTypeSystem((CSharpCompilation)compilation);
-            ICodeGenerator codeGenerator = options.AvaloniaNameGeneratorBehavior switch {
+            ICodeGenerator codeGenerator = options.AvaloniaNameGeneratorBehavior switch
+            {
                 Behavior.OnlyProperties => new OnlyPropertiesCodeGenerator(),
                 Behavior.InitializeComponent => new InitializeComponentCodeGenerator(types, options.AvaloniaNameGeneratorAttachDevTools),
                 _ => throw new ArgumentOutOfRangeException()
