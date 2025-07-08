@@ -1766,6 +1766,42 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Fact]
+        public void Should_GetTextBounds_For_Clustered_Zero_Width_Characters()
+        {
+            const string text = "\r\n";
+
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+
+                var textSource = new TextFormatterTests.ListTextSource(new TextHidden(1) ,new TextCharacters(text, defaultProperties));
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(FlowDirection.LeftToRight, TextAlignment.Left,
+                        true, true, defaultProperties, TextWrapping.NoWrap, 0, 0, 0));
+
+                Assert.NotNull(textLine);
+
+                var textBounds = textLine.GetTextBounds(2, 1);
+
+                Assert.NotEmpty(textBounds);
+
+                var firstBounds = textBounds[0];
+
+                Assert.NotEmpty(firstBounds.TextRunBounds);
+
+                var firstRunBounds = firstBounds.TextRunBounds[0];
+
+                Assert.Equal(2, firstRunBounds.TextSourceCharacterIndex);
+
+                Assert.Equal(1, firstRunBounds.Length);
+            }
+        }
+
         private class FixedRunsTextSource : ITextSource
         {
             private readonly IReadOnlyList<TextRun> _textRuns;

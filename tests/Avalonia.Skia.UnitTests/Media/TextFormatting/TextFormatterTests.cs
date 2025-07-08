@@ -1158,7 +1158,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
         
-        private class ListTextSource : ITextSource
+        internal class ListTextSource : ITextSource
         {
             private readonly List<TextRun> _runs;
 
