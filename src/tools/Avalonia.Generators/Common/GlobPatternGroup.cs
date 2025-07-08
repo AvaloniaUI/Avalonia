@@ -16,4 +16,5 @@ internal class GlobPatternGroup : IGlobPattern
     public bool Equals(IGlobPattern other) => _patterns.Any(pattern => pattern.Equals(other));
     public override int GetHashCode() => _patterns.GetHashCode();
     public override bool Equals(object? obj) => obj is GlobPattern pattern && Equals(pattern);
+    public override string ToString() => $"[{string.Join(", ", _patterns.Select(p => p.ToString()))}]";
 }

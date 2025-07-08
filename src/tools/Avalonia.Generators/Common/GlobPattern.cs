@@ -21,4 +21,5 @@ internal class GlobPattern : IGlobPattern
     public bool Equals(IGlobPattern other) => other is GlobPattern pattern && pattern._pattern == _pattern;
     public override int GetHashCode() => _pattern.GetHashCode();
     public override bool Equals(object? obj) => obj is GlobPattern pattern && Equals(pattern);
+    public override string ToString() => _pattern;
 }
