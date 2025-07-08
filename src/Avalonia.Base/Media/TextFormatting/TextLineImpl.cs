@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Utilities;
 
@@ -15,15 +16,23 @@ namespace Avalonia.Media.TextFormatting
         private readonly double _paragraphWidth;
         private readonly TextParagraphProperties _paragraphProperties;
         private TextLineMetrics _textLineMetrics;
+        private readonly FontMetrics _fontMetrics;
         private TextLineBreak? _textLineBreak;
         private readonly FlowDirection _resolvedFlowDirection;
 
         private Rect _inkBounds;
         private Rect _bounds;
 
-        public TextLineImpl(TextRun[] textRuns, int firstTextSourceIndex, int length, double paragraphWidth,
-            TextParagraphProperties paragraphProperties, FlowDirection resolvedFlowDirection = FlowDirection.LeftToRight,
-            TextLineBreak? lineBreak = null, bool hasCollapsed = false)
+        public TextLineImpl(
+            TextRun[] textRuns,
+            int firstTextSourceIndex,
+            int length, 
+            double paragraphWidth,
+            TextParagraphProperties paragraphProperties,
+            FontMetrics fontMetrics,
+            FlowDirection resolvedFlowDirection = FlowDirection.LeftToRight,
+            TextLineBreak? lineBreak = null,
+            bool hasCollapsed = false)
         {
             FirstTextSourceIndex = firstTextSourceIndex;
             Length = length;
@@ -33,7 +42,7 @@ namespace Avalonia.Media.TextFormatting
             _textRuns = textRuns;
             _paragraphWidth = paragraphWidth;
             _paragraphProperties = paragraphProperties;
-
+            _fontMetrics = fontMetrics;
             _resolvedFlowDirection = resolvedFlowDirection;
         }
 
@@ -101,7 +110,7 @@ namespace Avalonia.Media.TextFormatting
         /// <inheritdoc/>
         public override void Draw(DrawingContext drawingContext, Point lineOrigin)
         {
-            var (currentX, currentY) = lineOrigin + new Point(Start, 0);           
+            var (currentX, currentY) = lineOrigin + new Point(Start, 0);
 
             foreach (var textRun in _textRuns)
             {
@@ -109,7 +118,7 @@ namespace Avalonia.Media.TextFormatting
                 {
                     case DrawableTextRun drawableTextRun:
                         {
-                            var offsetY = GetBaselineOffset(drawableTextRun);
+                            var offsetY = GetBaselineOffset(this, drawableTextRun);
 
                             drawableTextRun.Draw(drawingContext, new Point(currentX, currentY + offsetY));
 
@@ -121,7 +130,7 @@ namespace Avalonia.Media.TextFormatting
             }
         }
 
-        private double GetBaselineOffset(DrawableTextRun textRun)
+        public static double GetBaselineOffset(TextLine textLine, DrawableTextRun textRun)
         {
             var baseline = textRun.Baseline;
             var baselineAlignment = textRun.Properties?.BaselineAlignment;
@@ -131,19 +140,19 @@ namespace Avalonia.Media.TextFormatting
             switch (baselineAlignment)
             {
                 case BaselineAlignment.Baseline:
-                    baselineOffset += Baseline;
+                    baselineOffset += textLine.Baseline;
                     break;
                 case BaselineAlignment.Top:
                 case BaselineAlignment.TextTop:
-                    baselineOffset += Height - Extent + textRun.Size.Height / 2;
+                    baselineOffset += textLine.Height - textLine.Extent + textRun.Size.Height / 2;
                     break;
                 case BaselineAlignment.Center:
-                    baselineOffset += Height / 2 + baseline - textRun.Size.Height / 2;
+                    baselineOffset += textLine.Height / 2 + baseline - textRun.Size.Height / 2;
                     break;
                 case BaselineAlignment.Subscript:
                 case BaselineAlignment.Bottom:
                 case BaselineAlignment.TextBottom:
-                    baselineOffset += Height - textRun.Size.Height + baseline;
+                    baselineOffset += textLine.Height - textRun.Size.Height + baseline;
                     break;
                 case BaselineAlignment.Superscript:
                     baselineOffset += baseline;
@@ -177,8 +186,15 @@ namespace Avalonia.Media.TextFormatting
                 return this;
             }
 
-            var collapsedLine = new TextLineImpl(collapsedRuns, FirstTextSourceIndex, Length, _paragraphWidth, _paragraphProperties,
-                _resolvedFlowDirection, TextLineBreak, true);
+            var collapsedLine = new TextLineImpl(
+                collapsedRuns, 
+                FirstTextSourceIndex, 
+                Length, 
+                _paragraphWidth, 
+                _paragraphProperties, 
+                _fontMetrics,
+                _resolvedFlowDirection, 
+                TextLineBreak, true);
 
             if (collapsedRuns.Length > 0)
             {
@@ -1098,23 +1114,37 @@ namespace Avalonia.Media.TextFormatting
             var characterLength = Math.Max(0, Math.Abs(startHit.FirstCharacterIndex + startHit.TrailingLength -
                  endHit.FirstCharacterIndex - endHit.TrailingLength) - clusterOffset);
 
-            if (characterLength == 0 && currentRun.Text.Length > 0 && startIndex < currentRun.Text.Length)
-            {
-                //Make sure we are properly dealing with zero width space runs
-                var codepointEnumerator = new CodepointEnumerator(currentRun.Text.Span.Slice(startIndex));
+            remainingLength -= characterLength;
 
-                while (remainingLength > 0 && codepointEnumerator.MoveNext(out var codepoint))
+            //Make sure we are properly dealing with zero width space runs
+            if (remainingLength > 0 && currentRun.Text.Length > 0 && startIndex + characterLength < currentRun.Text.Length)
+            {
+                var glyphInfos = currentRun.GlyphRun.GlyphInfos;
+
+                for (int i = startIndex + characterLength; i < glyphInfos.Count; i++)
                 {
-                    if (codepoint.IsWhiteSpace)
-                    {
-                        characterLength++;
-                        remainingLength--;
-                    }
-                    else
+                    var glyphInfo = glyphInfos[i];
+
+                    if(glyphInfo.GlyphAdvance > 0)
                     {
                         break;
                     }
-                }
+
+                    var graphemeEnumerator = new GraphemeEnumerator(currentRun.Text.Span.Slice(startIndex + characterLength));
+
+                    if(!graphemeEnumerator.MoveNext(out var grapheme))
+                    {
+                        break;
+                    }
+
+                    characterLength += grapheme.Length;
+                    remainingLength -= grapheme.Length;
+
+                    if(remainingLength <= 0)
+                    {
+                        break;
+                    }
+                }        
             }
 
             if (endX < startX)
@@ -1339,19 +1369,57 @@ namespace Avalonia.Media.TextFormatting
 
         private TextLineMetrics CreateLineMetrics()
         {
-            var fontMetrics = _paragraphProperties.DefaultTextRunProperties.CachedGlyphTypeface.Metrics;
             var fontRenderingEmSize = _paragraphProperties.DefaultTextRunProperties.FontRenderingEmSize;
-            var scale = fontRenderingEmSize / fontMetrics.DesignEmHeight;
+            var scale = fontRenderingEmSize / _fontMetrics.DesignEmHeight;
             var widthIncludingWhitespace = 0d;
             var trailingWhitespaceLength = 0;
             var newLineLength = 0;
-            var ascent = fontMetrics.Ascent * scale;
-            var descent = fontMetrics.Descent * scale;
-            var lineGap = fontMetrics.LineGap * scale;
+            var ascent = _fontMetrics.Ascent * scale;
+            var descent = _fontMetrics.Descent * scale;
+            var lineGap = _fontMetrics.LineGap * scale;
 
-            var height = descent - ascent + lineGap;
             var lineHeight = _paragraphProperties.LineHeight;
             var lineSpacing = _paragraphProperties.LineSpacing;
+
+            for (var index = 0; index < _textRuns.Length; index++)
+            {
+                switch (_textRuns[index])
+                {
+                    case ShapedTextRun textRun:
+                        {
+                            var textMetrics = textRun.TextMetrics;
+
+                            if (ascent > textMetrics.Ascent)
+                            {
+                                ascent = textMetrics.Ascent;
+                            }
+
+                            if (descent < textMetrics.Descent)
+                            {
+                                descent = textMetrics.Descent;
+                            }
+
+                            if (lineGap < textMetrics.LineGap)
+                            {
+                                lineGap = textMetrics.LineGap;
+                            }
+
+                            break;
+                        }
+
+                    case DrawableTextRun drawableTextRun:
+                        {
+                            if (drawableTextRun.Size.Height > -ascent)
+                            {
+                                ascent = -drawableTextRun.Size.Height;
+                            }
+
+                            break;
+                        }
+                }
+            }
+
+            var height = descent - ascent + lineGap;
 
             var bounds = new Rect();
 
@@ -1361,32 +1429,13 @@ namespace Avalonia.Media.TextFormatting
                 {
                     case ShapedTextRun textRun:
                     {
-                        var textMetrics = textRun.TextMetrics;
                         var glyphRun = textRun.GlyphRun;
-                        var runBounds = glyphRun.InkBounds.WithX(widthIncludingWhitespace + glyphRun.InkBounds.X);
+                        //Align the ink bounds at the common baseline
+                        var offsetY = -ascent - textRun.Baseline;
+
+                        var runBounds = glyphRun.InkBounds.Translate(new Vector(widthIncludingWhitespace, offsetY));
 
                         bounds = bounds.Union(runBounds);
-
-                        if (ascent > textMetrics.Ascent)
-                        {
-                            ascent = textMetrics.Ascent;
-                        }
-
-                        if (descent < textMetrics.Descent)
-                        {
-                            descent = textMetrics.Descent;
-                        }
-
-                        if (lineGap < textMetrics.LineGap)
-                        {
-                            lineGap = textMetrics.LineGap;
-                        }
-
-                        if (descent - ascent + lineGap > height)
-                        {
-                            height = descent - ascent + lineGap;
-                        }
-
 
                         widthIncludingWhitespace += textRun.Size.Width;
 
@@ -1395,24 +1444,19 @@ namespace Avalonia.Media.TextFormatting
 
                     case DrawableTextRun drawableTextRun:
                     {
+                        //Align the bounds at the common baseline
+                        var offsetY = -ascent - drawableTextRun.Baseline;
+
+                        bounds = bounds.Union(new Rect(new Point(widthIncludingWhitespace, offsetY), drawableTextRun.Size));
+
                         widthIncludingWhitespace += drawableTextRun.Size.Width;
-
-                        if (drawableTextRun.Size.Height > height)
-                        {
-                            height = drawableTextRun.Size.Height;
-                        }
-
-                        //Adjust current ascent so drawables and text align at the bottom edge of the line.
-                        var offset = Math.Max(0, drawableTextRun.Baseline + ascent - descent);
-
-                        ascent -= offset;
-
-                        bounds = bounds.Union(new Rect(new Point(bounds.Right, 0), drawableTextRun.Size));
-
+                        
                         break;
                     }
                 }
             }
+
+            height += lineSpacing;
 
             var width = widthIncludingWhitespace;
 
@@ -1450,6 +1494,7 @@ namespace Avalonia.Media.TextFormatting
 
             if (!double.IsNaN(lineHeight) && !MathUtilities.IsZero(lineHeight))
             {
+                //Center the line
                 var offset = (height - lineHeight) / 2;
 
                 ascent += offset;
@@ -1459,14 +1504,14 @@ namespace Avalonia.Media.TextFormatting
 
             var start = GetParagraphOffsetX(width, widthIncludingWhitespace);
 
-            _inkBounds = new Rect(bounds.Position + new Point(start, 0), bounds.Size);
+            _inkBounds = bounds.Translate(new Vector(start, 0));
 
             _bounds = new Rect(start, 0, widthIncludingWhitespace, height);
 
             return new TextLineMetrics
             {
                 HasOverflowed = hasOverflowed,
-                Height = height + lineSpacing,
+                Height = height,
                 Extent = bounds.Height,
                 NewlineLength = newLineLength,
                 Start = start,

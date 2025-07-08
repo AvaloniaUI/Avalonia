@@ -18,11 +18,6 @@ namespace Avalonia.Controls.Documents
         public static readonly StyledProperty<Control> ChildProperty =
             AvaloniaProperty.Register<InlineUIContainer, Control>(nameof(Child));
 
-        static InlineUIContainer()
-        {
-            BaselineAlignmentProperty.OverrideDefaultValue<InlineUIContainer>(BaselineAlignment.Top);
-        }
-
         /// <summary>
         /// Initializes a new instance of InlineUIContainer element.
         /// </summary>
