@@ -1,16 +1,12 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 using Avalonia.Generators.Common.Domain;
-using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Text;
 
 namespace Avalonia.Generators.NameGenerator;
 
 internal class AvaloniaNameGenerator : INameGenerator
 {
     private readonly ViewFileNamingStrategy _naming;
-    private readonly IGlobPattern _pathPattern;
     private readonly IGlobPattern _namespacePattern;
     private readonly IViewResolver _classes;
     private readonly INameResolver _names;
@@ -18,43 +14,32 @@ internal class AvaloniaNameGenerator : INameGenerator
 
     public AvaloniaNameGenerator(
         ViewFileNamingStrategy naming,
-        IGlobPattern pathPattern,
         IGlobPattern namespacePattern,
         IViewResolver classes,
         INameResolver names,
         ICodeGenerator code)
     {
         _naming = naming;
-        _pathPattern = pathPattern;
         _namespacePattern = namespacePattern;
         _classes = classes;
         _names = names;
         _code = code;
     }
 
-    public IEnumerable<GeneratedPartialClass> GenerateNameReferences(IEnumerable<AdditionalText> additionalFiles, CancellationToken cancellationToken)
+    public GeneratedPartialClass? GenerateNameReferences(SourceText sourceText)
     {
-        var resolveViews =
-            from file in additionalFiles
-            let filePath = file.Path
-            where (filePath.EndsWith(".xaml", StringComparison.OrdinalIgnoreCase) ||
-                   filePath.EndsWith(".paml", StringComparison.OrdinalIgnoreCase) ||
-                   filePath.EndsWith(".axaml", StringComparison.OrdinalIgnoreCase)) &&
-                  _pathPattern.Matches(filePath)
-            let xaml = file.GetText(cancellationToken)?.ToString()
-            where xaml != null
-            let view = _classes.ResolveView(xaml)
-            where view != null && _namespacePattern.Matches(view.Namespace)
-            select view;
+        var xaml = sourceText.ToString();
+        var view = _classes.ResolveView(xaml);
+        if (view is null
+            || !_namespacePattern.Matches(view.Namespace))
+        {
+            return null;
+        }
 
-        var query =
-            from view in resolveViews
-            let names = _names.ResolveNames(view.Xaml)
-            let code = _code.GenerateCode(view.ClassName, view.Namespace, view.XamlType, names)
-            let fileName = ResolveViewFileName(view, _naming)
-            select new GeneratedPartialClass(fileName, code);
-
-        return query;
+        var names = _names.ResolveNames(view.Xaml);
+        var code = _code.GenerateCode(view.ClassName, view.Namespace, view.XamlType, names);
+        var fileName = ResolveViewFileName(view, _naming);
+        return new GeneratedPartialClass(fileName, code);
     }
 
     private static string ResolveViewFileName(ResolvedView view, ViewFileNamingStrategy strategy) => strategy switch
