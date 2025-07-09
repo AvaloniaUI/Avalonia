@@ -5,20 +5,31 @@ using System.Linq;
 using Avalonia.Generators.Common.Domain;
 using XamlX;
 using XamlX.Ast;
+using XamlX.TypeSystem;
 
 namespace Avalonia.Generators.Common;
 
 internal class XamlXNameResolver
     : INameResolver, IXamlAstVisitor
 {
-    private readonly List<ResolvedName> _items = new();
+    private readonly Dictionary<string, ResolvedXmlName> _items = new();
 
-    public ImmutableArray<ResolvedName> ResolveNames(XamlDocument xaml)
+    public ImmutableArray<ResolvedXmlName> ResolveXmlNames(XamlDocument xaml)
     {
         _items.Clear();
         xaml.Root.Visit(this);
         xaml.Root.VisitChildren(this);
-        return _items.ToImmutableArray();
+        return _items.Values.ToImmutableArray();
+    }
+
+    public ResolvedName ResolveName(IXamlType clrType, string name, string? fieldModifier)
+    {
+        var typeName = $"{clrType.Namespace}.{clrType.Name}";
+        var typeAgs = clrType.GenericArguments.Select(arg => arg.FullName).ToImmutableList();
+        var genericTypeName = typeAgs.Count == 0
+            ? $"global::{typeName}"
+            : $"global::{typeName}<{string.Join(", ", typeAgs.Select(arg => $"global::{arg}"))}>";
+        return new ResolvedName(genericTypeName, name, fieldModifier);
     }
 
     IXamlAstNode IXamlAstVisitor.Visit(IXamlAstNode node)
@@ -26,9 +37,7 @@ internal class XamlXNameResolver
         if (node is not XamlAstObjectNode objectNode)
             return node;
 
-        var clrType = objectNode.Type.GetClrType();
-        if (!clrType.IsAvaloniaStyledElement())
-            return node;
+        var xamlType = (XamlAstXmlTypeReference)objectNode.Type;
 
         foreach (var child in objectNode.Children)
         {
@@ -40,20 +49,17 @@ internal class XamlXNameResolver
                 propertyValueNode.Values[0] is XamlAstTextNode text)
             {
                 var fieldModifier = TryGetFieldModifier(objectNode);
-                var typeName = $"{clrType.Namespace}.{clrType.Name}";
-                var typeAgs = clrType.GenericArguments.Select(arg => arg.FullName).ToImmutableList();
-                var genericTypeName = typeAgs.Count == 0
-                    ? $"global::{typeName}"
-                    : $"global::{typeName}<{string.Join(", ", typeAgs.Select(arg => $"global::{arg}"))}>";
-
-                var resolvedName = new ResolvedName(genericTypeName, text.Text, fieldModifier);
-                if (_items.Contains(resolvedName))
+                var resolvedName = new ResolvedXmlName(ConvertType(xamlType), text.Text, fieldModifier);
+                if (_items.ContainsKey(text.Text))
                     continue;
-                _items.Add(resolvedName);
+                _items.Add(text.Text, resolvedName);
             }
         }
 
         return node;
+
+        static XamlXmlType ConvertType(XamlAstXmlTypeReference type) => new(type.Name, type.XmlNamespace,
+            type.GenericArguments.Select(ConvertType).ToImmutableArray());
     }
 
     void IXamlAstVisitor.Push(IXamlAstNode node) { }

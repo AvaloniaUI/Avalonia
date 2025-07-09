@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using XamlX.Ast;
+using XamlX.TypeSystem;
 
 namespace Avalonia.Generators.Common.Domain;
 
@@ -13,7 +14,11 @@ internal enum NamedFieldModifier
 
 internal interface INameResolver
 {
-    ImmutableArray<ResolvedName> ResolveNames(XamlDocument xaml);
+    ImmutableArray<ResolvedXmlName> ResolveXmlNames(XamlDocument xaml);
+    ResolvedName ResolveName(IXamlType xamlType, string name, string? fieldModifier);
 }
 
+internal record XamlXmlType(string Name, string? XmlNamespace, ImmutableArray<XamlXmlType> GenericArguments);
+
+internal record ResolvedXmlName(XamlXmlType XmlType, string Name, string? FieldModifier);
 internal record ResolvedName(string TypeName, string Name, string? FieldModifier);

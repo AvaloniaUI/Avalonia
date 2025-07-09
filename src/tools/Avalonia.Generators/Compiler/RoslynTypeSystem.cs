@@ -14,7 +14,7 @@ internal class RoslynTypeSystem : IXamlTypeSystem
     private readonly List<IXamlAssembly> _assemblies = new();
     private readonly ConcurrentDictionary<string, IXamlType?> _typeCache = new();
 
-    public RoslynTypeSystem(CSharpCompilation compilation)
+    public RoslynTypeSystem(Compilation compilation)
     {
         _assemblies.Add(new RoslynAssembly(compilation.Assembly));
 

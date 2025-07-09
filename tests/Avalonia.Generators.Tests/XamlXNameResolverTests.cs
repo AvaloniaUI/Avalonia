@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Generators.Common;
@@ -6,6 +7,7 @@ using Avalonia.Generators.Common.Domain;
 using Avalonia.Generators.Compiler;
 using Avalonia.ReactiveUI;
 using Avalonia.Generators.Tests.Views;
+using Microsoft.CodeAnalysis;
 using Xunit;
 
 namespace Avalonia.Generators.Tests;
@@ -123,20 +125,19 @@ public class XamlXNameResolverTests
 
     private static IReadOnlyList<ResolvedName> ResolveNames(string xaml)
     {
+        var nameResolver = new XamlXNameResolver();
+
+        // Step 1: parse XAML as xml nodes, without any type information.
+        var classResolver = new XamlXViewResolver(MiniCompiler.CreateNoop());
+        var classInfo = classResolver.ResolveView(xaml);
+        Assert.NotNull(classInfo);
+        var names = nameResolver.ResolveXmlNames(classInfo.Xaml);
+
+        // Step 2: use compilation context to resolve types
         var compilation =
             View.CreateAvaloniaCompilation()
                 .WithCustomTextBox()
                 .WithBaseView();
-
-        var classResolver = new XamlXViewResolver(
-            new RoslynTypeSystem(compilation),
-            MiniCompiler.CreateDefault(
-                new RoslynTypeSystem(compilation),
-                MiniCompiler.AvaloniaXmlnsDefinitionAttribute));
-
-        var classInfo = classResolver.ResolveView(xaml);
-        Assert.NotNull(classInfo);
-        var nameResolver = new XamlXNameResolver();
-        return nameResolver.ResolveNames(classInfo.Xaml);
+        return names.ResolveNames(compilation, nameResolver).ToArray();
     }
 }
