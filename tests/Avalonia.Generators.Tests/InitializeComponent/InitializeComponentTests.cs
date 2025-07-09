@@ -23,7 +23,6 @@ public class InitializeComponentTests
     [InlineData(InitializeComponentCode.FieldModifier, View.FieldModifier, false)]
     [InlineData(InitializeComponentCode.AttachedPropsWithDevTools, View.AttachedProps, true)]
     [InlineData(InitializeComponentCode.AttachedProps, View.AttachedProps, false)]
-    [InlineData(InitializeComponentCode.ControlWithoutWindow, View.ControlWithoutWindow, true)]
     [InlineData(InitializeComponentCode.ControlWithoutWindow, View.ControlWithoutWindow, false)]
     public async Task Should_Generate_FindControl_Refs_From_Avalonia_Markup_File(
         string expectation,
@@ -48,11 +47,11 @@ public class InitializeComponentTests
         var nameResolver = new XamlXNameResolver();
         var names = nameResolver.ResolveNames(classInfo.Xaml);
 
-        var generator = new InitializeComponentCodeGenerator(types, devToolsMode);
+        var generator = new InitializeComponentCodeGenerator(devToolsMode);
         var generatorVersion = typeof(InitializeComponentCodeGenerator).Assembly.GetName().Version?.ToString();
 
         var code = generator
-            .GenerateCode("SampleView", "Sample.App",  classInfo.XamlType, names)
+            .GenerateCode("SampleView", "Sample.App",  names)
             .Replace("\r", string.Empty);
 
         var expected = (await InitializeComponentCode.Load(expectation))

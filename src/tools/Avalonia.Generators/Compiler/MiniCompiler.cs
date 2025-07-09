@@ -14,7 +14,7 @@ internal sealed class MiniCompiler : XamlCompiler<object, IXamlEmitResult>
     public const string AvaloniaXmlnsDefinitionAttribute = "Avalonia.Metadata.XmlnsDefinitionAttribute";
 
     [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = TrimmingMessages.Roslyn)]
-    public static MiniCompiler CreateDefault(RoslynTypeSystem typeSystem, params string[] additionalTypes)
+    public static MiniCompiler CreateDefault(IXamlTypeSystem typeSystem, params string[] additionalTypes)
     {
         var mappings = new XamlLanguageTypeMappings(typeSystem);
         foreach (var additionalType in additionalTypes)
@@ -29,7 +29,7 @@ internal sealed class MiniCompiler : XamlCompiler<object, IXamlEmitResult>
             diagnosticsHandler: diagnosticsHandler);
         return new MiniCompiler(configuration);
     }
-        
+
     private MiniCompiler(TransformerConfiguration configuration)
         : base(configuration, new XamlLanguageEmitMappings<object, IXamlEmitResult>(), false)
     {

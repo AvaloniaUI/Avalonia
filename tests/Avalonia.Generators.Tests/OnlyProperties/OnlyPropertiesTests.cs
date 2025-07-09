@@ -45,7 +45,7 @@ public class OnlyPropertiesTests
         var generatorVersion = typeof(OnlyPropertiesCodeGenerator).Assembly.GetName().Version?.ToString();
 
         var code = generator
-            .GenerateCode("SampleView", "Sample.App",  classInfo.XamlType, names)
+            .GenerateCode("SampleView", "Sample.App", names)
             .Replace("\r", string.Empty);
 
         var expected = (await OnlyPropertiesCode.Load(expectation))

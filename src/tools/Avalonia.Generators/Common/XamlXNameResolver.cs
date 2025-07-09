@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Avalonia.Generators.Common.Domain;
@@ -7,22 +8,17 @@ using XamlX.Ast;
 
 namespace Avalonia.Generators.Common;
 
-internal class XamlXNameResolver : INameResolver, IXamlAstVisitor
+internal class XamlXNameResolver
+    : INameResolver, IXamlAstVisitor
 {
     private readonly List<ResolvedName> _items = new();
-    private readonly string _defaultFieldModifier;
 
-    public XamlXNameResolver(NamedFieldModifier namedFieldModifier = NamedFieldModifier.Internal)
-    {
-        _defaultFieldModifier = namedFieldModifier.ToString().ToLowerInvariant();
-    }
-
-    public IReadOnlyList<ResolvedName> ResolveNames(XamlDocument xaml)
+    public ImmutableArray<ResolvedName> ResolveNames(XamlDocument xaml)
     {
         _items.Clear();
         xaml.Root.Visit(this);
         xaml.Root.VisitChildren(this);
-        return _items;
+        return _items.ToImmutableArray();
     }
 
     IXamlAstNode IXamlAstVisitor.Visit(IXamlAstNode node)
@@ -44,11 +40,11 @@ internal class XamlXNameResolver : INameResolver, IXamlAstVisitor
                 propertyValueNode.Values[0] is XamlAstTextNode text)
             {
                 var fieldModifier = TryGetFieldModifier(objectNode);
-                var typeName = $@"{clrType.Namespace}.{clrType.Name}";
+                var typeName = $"{clrType.Namespace}.{clrType.Name}";
                 var typeAgs = clrType.GenericArguments.Select(arg => arg.FullName).ToImmutableList();
                 var genericTypeName = typeAgs.Count == 0
                     ? $"global::{typeName}"
-                    : $@"global::{typeName}<{string.Join(", ", typeAgs.Select(arg => $"global::{arg}"))}>";
+                    : $"global::{typeName}<{string.Join(", ", typeAgs.Select(arg => $"global::{arg}"))}>";
 
                 var resolvedName = new ResolvedName(genericTypeName, text.Text, fieldModifier);
                 if (_items.Contains(resolvedName))
@@ -64,7 +60,7 @@ internal class XamlXNameResolver : INameResolver, IXamlAstVisitor
 
     void IXamlAstVisitor.Pop() { }
 
-    private string TryGetFieldModifier(XamlAstObjectNode objectNode)
+    private string? TryGetFieldModifier(XamlAstObjectNode objectNode)
     {
         // We follow Xamarin.Forms API behavior in terms of x:FieldModifier here:
         // https://docs.microsoft.com/en-us/xamarin/xamarin-forms/xaml/field-modifiers
@@ -87,7 +83,7 @@ internal class XamlXNameResolver : INameResolver, IXamlAstVisitor
             "protected" => "protected",
             "internal" => "internal",
             "notpublic" => "internal",
-            _ => _defaultFieldModifier
+            _ => null
         };
     }
 
