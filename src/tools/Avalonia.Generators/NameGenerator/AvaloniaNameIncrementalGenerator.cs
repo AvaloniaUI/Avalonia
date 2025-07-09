@@ -20,7 +20,7 @@ public class AvaloniaNameIncrementalGenerator : IIncrementalGenerator
         // Map MSBuild properties onto readonly GeneratorOptions.
         var options = context.AnalyzerConfigOptionsProvider
             .Select(static (options, _) => new GeneratorOptions(options.GlobalOptions))
-            .WithTrackingName(TrackingNames.XamlGeneratorOptions);
+            .WithTrackingName(TrackingNames.XamlGeneratorOptionsProvider);
 
         // Filter additional texts, we only need Avalonia XAML files.
         var xamlFiles = context.AdditionalTextsProvider
@@ -52,7 +52,7 @@ public class AvaloniaNameIncrementalGenerator : IIncrementalGenerator
                 return true;
             })
             .Select(static (pair, _) => pair.Left)
-            .WithTrackingName(TrackingNames.InputXamlFiles);
+            .WithTrackingName(TrackingNames.InputXamlFilesProvider);
 
         // Actual parsing step. We input XAML files one by one, but don't resolve any types.
         // That's why we use NoOp type system here, allowing parsing to run detached from C# compilation.
@@ -93,22 +93,16 @@ public class AvaloniaNameIncrementalGenerator : IIncrementalGenerator
             .Where(request => request is not null)
             .WithTrackingName(TrackingNames.ParsedXamlClasses);
 
-        // Map compilation into readonly XAML type system.
-        // Which is ONLY updated when any compilation references have changed.
-        var typeSystem = context.CompilationProvider
-            .WithComparer(new CompilationReferencesComparer())
-            .Select(static (compilation, _) => new RoslynTypeSystem(compilation))
-            .WithTrackingName(TrackingNames.XamlTypeSystem);
-
         // Note: this step will be re-executed on any C# file changes.
         // As much as possible heavy tasks should be moved outside of this step, like XAML parsing.
         var resolvedNames = parsedXamlClasses.Collect()
-            .Combine(typeSystem)
+            .Combine(context.CompilationProvider)
             .SelectMany(static (pair, _) =>
             {
-                var (classes, roslynTypeSystem) = pair;
+                var (classes, compilation) = pair;
+                var roslynTypeSystem = new RoslynTypeSystem(compilation);
                 var compiler = MiniCompiler.CreateRoslyn(roslynTypeSystem, MiniCompiler.AvaloniaXmlnsDefinitionAttribute);
-                var hasDevToolsReference = roslynTypeSystem.FindAssembly("Avalonia.Diagnostics") is not null;
+                var hasDevToolsReference = compilation.ReferencedAssemblyNames.Any(r => r.Name == "Avalonia.Diagnostics");
                 var nameResolver = new XamlXNameResolver();
 
                 var outputs = new List<ResolvedClassInfo>();
@@ -155,7 +149,7 @@ public class AvaloniaNameIncrementalGenerator : IIncrementalGenerator
 
                 return outputs;
             })
-            .WithTrackingName(TrackingNames.ResolvedNames);
+            .WithTrackingName(TrackingNames.ResolvedNamesProvider);
 
         context.RegisterSourceOutput(resolvedNames.Combine(options), static (context, pair) =>
         {
