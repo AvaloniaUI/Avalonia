@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Animation;
 using Avalonia.Animation.Easings;
+using Avalonia.Compatibility;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
@@ -72,15 +73,15 @@ namespace Avalonia.Rendering.Composition
         {
         }
 
-        internal Compositor(IRenderLoop loop, IPlatformGraphics? gpu, bool useUiThreadForSynchronousCommits = false)
-            : this(loop, gpu, useUiThreadForSynchronousCommits, MediaContext.Instance, false, Dispatcher.UIThread)
+        internal Compositor(IRenderLoop loop, IPlatformGraphics? gpu, bool useUiThreadForSynchronousCommits = false, IAvnTimeProvider? timeProvider = null)
+            : this(loop, gpu, useUiThreadForSynchronousCommits, MediaContext.Instance, false, Dispatcher.UIThread, timeProvider)
         {
         }
 
         internal Compositor(IRenderLoop loop, IPlatformGraphics? gpu,
             bool useUiThreadForSynchronousCommits,
             ICompositorScheduler scheduler, bool reclaimBuffersImmediately,
-            Dispatcher dispatcher, CompositionOptions? options = null)
+            Dispatcher dispatcher, IAvnTimeProvider? timeProvider = null, CompositionOptions? options = null)
         {
             options ??= AvaloniaLocator.Current.GetService<CompositionOptions>() ?? new();
             Loop = loop;
@@ -88,7 +89,7 @@ namespace Avalonia.Rendering.Composition
             Dispatcher = dispatcher;
             _batchMemoryPool = new(reclaimBuffersImmediately);
             _batchObjectPool = new(reclaimBuffersImmediately);
-            _server = new ServerCompositor(loop, gpu, options, _batchObjectPool, _batchMemoryPool);
+            _server = new ServerCompositor(loop, gpu, options, _batchObjectPool, _batchMemoryPool, timeProvider ?? new StopwatchTimeProvider());
             _triggerCommitRequested = () => scheduler.CommitRequested(this);
 
             DefaultEasing = new SplineEasing(new KeySpline(0.25, 0.1, 0.25, 1.0));
@@ -192,8 +193,8 @@ namespace Avalonia.Rendering.Composition
                 SerializeServerJobs(writer, _pendingServerCompositorPostTargetJobs, ServerCompositor.RenderThreadPostTargetJobsStartMarker,
                     ServerCompositor.RenderThreadPostTargetJobsEndMarker);
             }
-            
-            _nextCommit.CommittedAt = Server.Clock.Elapsed;
+
+            _nextCommit.CommittedAt = Server.ServerNow;
             _server.EnqueueBatch(_nextCommit);
             
             lock (_pendingBatchLock)
