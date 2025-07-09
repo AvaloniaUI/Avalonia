@@ -439,6 +439,11 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets whether this window was opened as modal
+        /// </summary>
+        public bool IsModal => _showingAsDialog;
+
+        /// <summary>
         /// Starts moving a window with left button being held. Should be called from left mouse button press event handler
         /// </summary>
         public void BeginMoveDrag(PointerPressedEventArgs e) => PlatformImpl?.BeginMoveDrag(e);
