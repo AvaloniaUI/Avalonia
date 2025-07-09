@@ -57,6 +57,8 @@ internal sealed class MiniCompiler : XamlCompiler<object, IXamlEmitResult>
         Transformers.Add(new XArgumentsTransformer());
     }
 
+    public IXamlTypeSystem TypeSystem => _configuration.TypeSystem;
+
     public IXamlType ResolveXamlType(XamlXmlType type)
     {
         var clrTypeRef = TypeReferenceResolver.ResolveType(

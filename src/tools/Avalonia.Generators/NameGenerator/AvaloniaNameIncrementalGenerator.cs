@@ -6,6 +6,7 @@ using Avalonia.Generators.Common;
 using Avalonia.Generators.Common.Domain;
 using Avalonia.Generators.Compiler;
 using Microsoft.CodeAnalysis;
+using XamlX.Transform;
 
 namespace Avalonia.Generators.NameGenerator;
 
@@ -93,61 +94,61 @@ public class AvaloniaNameIncrementalGenerator : IIncrementalGenerator
             .Where(request => request is not null)
             .WithTrackingName(TrackingNames.ParsedXamlClasses);
 
+        var compiler = context.CompilationProvider
+            .Select(static (compilation, _) =>
+            {
+                var roslynTypeSystem = new RoslynTypeSystem(compilation);
+                return MiniCompiler.CreateRoslyn(roslynTypeSystem, MiniCompiler.AvaloniaXmlnsDefinitionAttribute);
+            })
+            .WithTrackingName(TrackingNames.XamlTypeSystem);
+
         // Note: this step will be re-executed on any C# file changes.
         // As much as possible heavy tasks should be moved outside of this step, like XAML parsing.
-        var resolvedNames = parsedXamlClasses.Collect()
-            .Combine(context.CompilationProvider)
-            .SelectMany(static (pair, _) =>
+        var resolvedNames = parsedXamlClasses
+            .Combine(compiler)
+            .Select(static (pair, _) =>
             {
-                var (classes, compilation) = pair;
-                var roslynTypeSystem = new RoslynTypeSystem(compilation);
-                var compiler = MiniCompiler.CreateRoslyn(roslynTypeSystem, MiniCompiler.AvaloniaXmlnsDefinitionAttribute);
-                var hasDevToolsReference = compilation.ReferencedAssemblyNames.Any(r => r.Name == "Avalonia.Diagnostics");
+                var (classInfo, compiler) = pair;
+                var hasDevToolsReference = compiler.TypeSystem.FindAssembly("Avalonia.Diagnostics") is not null;
                 var nameResolver = new XamlXNameResolver();
 
-                var outputs = new List<ResolvedClassInfo>();
-                foreach (var classInfo in classes)
+                var diagnostics =  new List<DiagnosticDescriptor>(classInfo!.Diagnostics);
+                ResolvedView? view = null;
+                if (classInfo.XmlView is { } xmlView)
                 {
-                    var diagnostics =  new List<DiagnosticDescriptor>(classInfo!.Diagnostics);
-                    if (classInfo.XmlView is { } xmlView)
+                    var type = compiler.TypeSystem.FindType(xmlView.FullName);
+
+                    if (type is null)
                     {
-                        var type = roslynTypeSystem.FindType(xmlView.FullName);
-                        ResolvedView? view = null;
-
-                        if (type is null)
+                        diagnostics.Add(GeneratorExtensions.NameGeneratorInvalidType(xmlView.FullName));
+                    }
+                    else if (type.IsAvaloniaStyledElement())
+                    {
+                        var resolvedNames = new List<ResolvedName>();
+                        foreach (var xmlName in xmlView.XmlNames)
                         {
-                            diagnostics.Add(GeneratorExtensions.NameGeneratorInvalidType(xmlView.FullName));
-                        }
-                        else if (type.IsAvaloniaStyledElement())
-                        {
-                            var resolvedNames = new List<ResolvedName>();
-                            foreach (var xmlName in xmlView.XmlNames)
+                            try
                             {
-                                try
+                                var clrType = compiler.ResolveXamlType(xmlName.XmlType);
+                                if (!clrType.IsAvaloniaStyledElement())
                                 {
-                                    var clrType = compiler.ResolveXamlType(xmlName.XmlType);
-                                    if (!clrType.IsAvaloniaStyledElement())
-                                    {
-                                        continue;
-                                    }
+                                    continue;
+                                }
 
-                                    resolvedNames.Add(nameResolver
-                                        .ResolveName(clrType, xmlName.Name, xmlName.FieldModifier));
-                                }
-                                catch (Exception ex)
-                                {
-                                    diagnostics.Add(GeneratorExtensions.NameGeneratorUnhandledError(ex));
-                                }
+                                resolvedNames.Add(nameResolver
+                                    .ResolveName(clrType, xmlName.Name, xmlName.FieldModifier));
                             }
-
-                            view = new ResolvedView(xmlView, type.IsAvaloniaWindow(), resolvedNames.ToImmutableArray());
+                            catch (Exception ex)
+                            {
+                                diagnostics.Add(GeneratorExtensions.NameGeneratorUnhandledError(ex));
+                            }
                         }
 
-                        outputs.Add(new ResolvedClassInfo(view, hasDevToolsReference, diagnostics.ToImmutableArray()));
+                        view = new ResolvedView(xmlView, type.IsAvaloniaWindow(), resolvedNames.ToImmutableArray());
                     }
                 }
 
-                return outputs;
+                return new ResolvedClassInfo(view, hasDevToolsReference, diagnostics.ToImmutableArray());
             })
             .WithTrackingName(TrackingNames.ResolvedNamesProvider);
 
