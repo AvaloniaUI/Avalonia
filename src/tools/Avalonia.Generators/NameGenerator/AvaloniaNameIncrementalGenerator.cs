@@ -94,6 +94,8 @@ public class AvaloniaNameIncrementalGenerator : IIncrementalGenerator
             .Where(request => request is not null)
             .WithTrackingName(TrackingNames.ParsedXamlClasses);
 
+        // IMPORTANT: we shouldn't cache CompilationProvider as a whole,
+        // But we also should keep in mind that CompilationProvider can frequently re-trigger generator.
         var compiler = context.CompilationProvider
             .Select(static (compilation, _) =>
             {
