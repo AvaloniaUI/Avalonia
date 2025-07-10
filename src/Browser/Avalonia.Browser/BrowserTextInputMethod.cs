@@ -29,11 +29,13 @@ internal class BrowserTextInputMethod(
         if (_client != null)
         {
             _client.SurroundingTextChanged -= SurroundingTextChanged;
+            _client.InputPaneActivationRequested -= InputPaneActivationRequested;
         }
 
         if (client != null)
         {
             client.SurroundingTextChanged += SurroundingTextChanged;
+            client.InputPaneActivationRequested += InputPaneActivationRequested;
         }
 
         InputHelper.ClearInputElement(_inputElement);
@@ -42,8 +44,7 @@ internal class BrowserTextInputMethod(
 
         if (_client != null)
         {
-            InputHelper.ShowElement(_inputElement);
-            InputHelper.FocusElement(_inputElement);
+            ShowIme();
 
             var surroundingText = _client.SurroundingText ?? "";
             var selection = _client.Selection;
@@ -54,6 +55,20 @@ internal class BrowserTextInputMethod(
         {
             HideIme();
         }
+    }
+
+    private void InputPaneActivationRequested(object? sender, EventArgs e)
+    {
+        if (_client != null)
+        {
+            ShowIme();
+        }
+    }
+
+    private void ShowIme()
+    {
+        InputHelper.ShowElement(_inputElement);
+        InputHelper.FocusElement(_inputElement);
     }
 
     private void SurroundingTextChanged(object? sender, EventArgs e)
