@@ -218,9 +218,16 @@ namespace Avalonia.Input
         public static void RemoveScrollGestureInertiaStartingHandler(Interactive element, EventHandler<ScrollGestureInertiaStartingEventArgs> handler) =>
             element.RemoveHandler(ScrollGestureInertiaStartingEvent, handler);
 
+        private static object? GetCaptured(RoutedEventArgs? args)
+        {
+            if (args is not PointerEventArgs pointerEventArgs)
+                return null;
+            return pointerEventArgs.Pointer?.Captured ?? pointerEventArgs.Source;
+        }
+
         private static void PointerPressed(RoutedEventArgs ev)
         {
-            if (ev.Source is null)
+            if (GetCaptured(ev) is not { } source)
             {
                 return;
             }
@@ -228,11 +235,11 @@ namespace Avalonia.Input
             if (ev.Route == RoutingStrategies.Bubble)
             {
                 var e = (PointerPressedEventArgs)ev;
-                var visual = (Visual)ev.Source;
+                var visual = (Visual)source;
 
                 if(s_gestureState != null)
                 {
-                    if(s_gestureState.Value.Type == GestureStateType.Holding && ev.Source is Interactive i)
+                    if(s_gestureState.Value.Type == GestureStateType.Holding && source is Interactive i)
                     {
                         i.RaiseEvent(new HoldingRoutedEventArgs(HoldingState.Cancelled, s_lastPressPoint, s_gestureState.Value.Pointer.Type, e));
                     }
@@ -246,8 +253,8 @@ namespace Avalonia.Input
                 if (e.ClickCount % 2 == 1)
                 {
                     s_gestureState = new GestureState(GestureStateType.Pending, e.Pointer);
-                    s_lastPress.SetTarget(ev.Source);
-                    s_lastPressPoint = e.GetPosition((Visual)ev.Source);
+                    s_lastPress.SetTarget(source);
+                    s_lastPressPoint = e.GetPosition((Visual)source);
                     s_holdCancellationToken = new CancellationTokenSource();
                     var token = s_holdCancellationToken.Token;
                     var settings = ((IInputRoot?)visual.GetVisualRoot())?.PlatformSettings;
@@ -256,7 +263,7 @@ namespace Avalonia.Input
                     {
                         DispatcherTimer.RunOnce(() =>
                         {
-                            if (s_gestureState != null && !token.IsCancellationRequested && e.Source is InputElement i && GetIsHoldingEnabled(i) && (e.Pointer.Type != PointerType.Mouse || GetIsHoldWithMouseEnabled(i)))
+                            if (s_gestureState != null && !token.IsCancellationRequested && source is InputElement i && GetIsHoldingEnabled(i) && (e.Pointer.Type != PointerType.Mouse || GetIsHoldWithMouseEnabled(i)))
                             {
                                 s_gestureState = new GestureState(GestureStateType.Holding, s_gestureState.Value.Pointer);
                                 i.RaiseEvent(new HoldingRoutedEventArgs(HoldingState.Started, s_lastPressPoint, s_gestureState.Value.Pointer.Type, e));
@@ -267,8 +274,8 @@ namespace Avalonia.Input
                 else if (e.ClickCount % 2 == 0 && e.GetCurrentPoint(visual).Properties.IsLeftButtonPressed)
                 {
                     if (s_lastPress.TryGetTarget(out var target) && 
-                        target == e.Source && 
-                        e.Source is Interactive i)
+                        target == source && 
+                        source is Interactive i)
                     {
                         s_gestureState = new GestureState(GestureStateType.DoubleTapped, e.Pointer);
                         i.RaiseEvent(new TappedEventArgs(DoubleTappedEvent, e));
@@ -283,10 +290,12 @@ namespace Avalonia.Input
             {
                 var e = (PointerReleasedEventArgs)ev;
 
+                var source = GetCaptured(ev);
+
                 if (s_lastPress.TryGetTarget(out var target) &&
-                    target == e.Source &&
-                    e.InitialPressMouseButton is MouseButton.Left or MouseButton.Right &&
-                    e.Source is Interactive i)
+                target == source &&
+                e.InitialPressMouseButton is MouseButton.Left or MouseButton.Right &&
+                source is Interactive i)
                 {
                     var point = e.GetCurrentPoint((Visual)target);
                     var settings = ((IInputRoot?)i.GetVisualRoot())?.PlatformSettings;
@@ -325,9 +334,10 @@ namespace Avalonia.Input
             if (ev.Route == RoutingStrategies.Bubble)
             {
                 var e = (PointerEventArgs)ev;
+                var source = GetCaptured(e);
                 if (s_lastPress.TryGetTarget(out var target))
                 {
-                    if (e.Pointer == s_gestureState?.Pointer && ev.Source is Interactive i)
+                    if (e.Pointer == s_gestureState?.Pointer && source is Interactive i)
                     {
                         var point = e.GetCurrentPoint((Visual)target);
                         var settings = ((IInputRoot?)i.GetVisualRoot())?.PlatformSettings;
