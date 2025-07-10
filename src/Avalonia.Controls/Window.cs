@@ -723,12 +723,12 @@ namespace Avalonia.Controls
                     return null;
                 }
 
+                _showingAsDialog = modal;
                 RaiseEvent(new RoutedEventArgs(WindowOpenedEvent));
 
                 EnsureInitialized();
                 ApplyStyling();
                 _shown = true;
-                _showingAsDialog = modal;
                 IsVisible = true;
 
                 // If window position was not set before then platform may provide incorrect scaling at this time,
@@ -946,7 +946,7 @@ namespace Avalonia.Controls
             {
                 return;
             }
-            
+
             var location = GetEffectiveWindowStartupLocation(owner);
 
             switch (location)
@@ -979,7 +979,7 @@ namespace Avalonia.Controls
 
             return startupLocation;
         }
-        
+
         private void SetWindowStartupLocation(Window? owner = null)
         {
             if (_wasShownBefore)
@@ -1014,7 +1014,7 @@ namespace Avalonia.Controls
 
                 screen ??= Screens.ScreenFromPoint(Position);
                 screen ??= Screens.Primary;
-                
+
                 if (screen is not null)
                 {
                     var childRect = screen.WorkingArea.CenterRect(rect);
@@ -1034,7 +1034,7 @@ namespace Avalonia.Controls
                 var childRect = ownerRect.CenterRect(rect);
 
                 var screen = Screens.ScreenFromWindow(owner);
-                
+
                 childRect = ApplyScreenConstraint(screen, childRect);
 
                 Position = childRect.Position;
@@ -1042,7 +1042,7 @@ namespace Avalonia.Controls
 
             if (!_positionWasSet && DesktopScaling != PlatformImpl?.DesktopScaling) // Platform returns incorrect scaling, forcing setting position may fix it
                 PlatformImpl?.Move(Position);
-            
+
             PixelRect ApplyScreenConstraint(Screen? screen, PixelRect childRect)
             {
                 if (screen?.WorkingArea is { } constraint)
