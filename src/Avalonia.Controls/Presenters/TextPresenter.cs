@@ -913,10 +913,7 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
-        internal Rect GetCursorRectangle()
-        {
-            return _caretBounds;
-        }
+        public Rect GetCursorRectangle() => _caretBounds;
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
