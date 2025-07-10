@@ -30,7 +30,6 @@ namespace Avalonia.X11
         private Action<RawInputEventArgs>? Input => _window.Input;
         private IDragDropDevice? DragDropDevice  => _dragDropDevice ??= AvaloniaLocator.Current.GetService<IDragDropDevice>();
 
-       // private StreamWriter? _streamWriter;
         public X11DropTarget(X11Window window, IntPtr handle, X11Info info ) 
         { 
             _window = window;
@@ -73,15 +72,12 @@ namespace Avalonia.X11
         private void SetupXdndProtocol()
         {
             int version = 5;
-           /* IntPtr ptr = Marshal.AllocHGlobal(sizeof(int));
+            IntPtr ptr = Marshal.AllocHGlobal(sizeof(int));
             Marshal.WriteInt32(ptr, version);
 
             XLib.XChangeProperty(
                 _display, _handle, _atoms.XdndAware, _atoms.XA_ATOM, 32, PropertyMode.Replace, ptr, 1);
-            Marshal.FreeHGlobal(ptr);*/
-
-            XLib.XChangeProperty(_display, _handle, _atoms.XdndAware, _atoms.XA_ATOM,
-                32, PropertyMode.Replace, new[] { version }, 1);
+            Marshal.FreeHGlobal(ptr);
         }
 
         private bool OnClientMessageEvent(ref XClientMessageEvent clientMsg) 
@@ -115,17 +111,6 @@ namespace Avalonia.X11
             _dragSource = clientMsg.ptr1;
             IntPtr[] sourceTypes = Array.Empty<IntPtr>();
 
-            //if (!File.Exists("/tmp/debugpipe2"))
-            //{
-            //    Process.Start("mkfifo", "/tmp/debugpipe2").WaitForExit();
-            //}
-
-            ////// Process.Start("xterm", "-e 'cat /tmp/debugpipe/' &");
-
-            //_streamWriter = new StreamWriter("/tmp/debugpipe2");
-            //_streamWriter.AutoFlush = true;
-            //_streamWriter.WriteLine($"[START]{_handle}");
-
             if (((int)clientMsg.ptr2 & 1) == 0)
             {
                 // Types in message
@@ -148,8 +133,6 @@ namespace Avalonia.X11
                 if (sourceTypesName != null && sourceTypesName.Length != 0)
                 {
                     _currentDrag = new X11DataObject(sourceTypesName);
-
-                 //   _streamWriter?.WriteLine($"\u001b[31m {DateTime.Now.Ticks}:HandleXdndEnter {_dragSource} | {string.Join("|", sourceTypesName)} \u001b[0m");
 
                     //We do not have locations and actions here, so we will invoke DragEnter in first DragPosition
                     _enterEventSent = false;                  
@@ -234,10 +217,8 @@ namespace Avalonia.X11
 
             Input?.Invoke(args);
             
-            // Отправляем ответ
+            // Send response
             SendXdndStatus(_dragSource, args.Effects, x, y);
-
-          //  _streamWriter?.WriteLine($"\u001b[32m {DateTime.Now.Ticks}:HandleXdndPosition {_dragSource} | {args.Effects} | {x} | {y} \u001b[0m");
         }
 
         private void SendXdndStatus(WindowHandle source, DragDropEffects effects, int x = 0, int y = 0)
@@ -282,21 +263,15 @@ namespace Avalonia.X11
 
             _dragInProcess = true;
 
-          //  _streamWriter?.WriteLine($"\u001b[33m {DateTime.Now.Ticks}:HandleXdndDrop {_dragSource} | type {_currentDrag.GetBestType()} {bestType}\u001b[0m");
-
             // Request data
             XLib.XConvertSelection(_display, _atoms.XdndSelection, bestType,
                                  _atoms.XdndSelection, _handle, clientMsg.ptr3);
-
-         //   _streamWriter?.WriteLine($"\u001b[33m {DateTime.Now.Ticks}: XLib.XConvertSelection _display {_display} _atoms.XdndSelection {_atoms.XdndSelection} bestType {bestType} _atoms.XdndSelection {_atoms.XdndSelection} _handle {_handle} clientMsg.ptr3 {clientMsg.ptr3}\u001b[0m");
 
             XLib.XFlush(_display);
         }
 
         private void OnDataReceived(string type, object? data)
         {
-            //  _streamWriter?.WriteLine($"\u001b[33m {DateTime.Now.Ticks}:OnDataReceived {type} | {data}\u001b[0m");
-
             if (DragDropDevice == null || _currentDrag == null)
             {
                 return;
@@ -346,7 +321,6 @@ namespace Avalonia.X11
                     
                 if (DragDropDevice != null && _currentDrag != null)
                 {
-           //         _streamWriter?.WriteLine($"\u001b[33m {DateTime.Now.Ticks}:_receiver.HandleSelectionNotify\u001b[0m");
                     _receiver.HandleSelectionNotify(ref selectionEvent);                
                 }
                                 

@@ -79,6 +79,8 @@ namespace Avalonia.X11
             ulong offset = 0;
             IntPtr actualType = IntPtr.Zero;
 
+            _result.Clear();
+
             while (true)
             {
                 var code = XLib.XGetWindowProperty(_display, _handle, _atoms.XdndSelection,
@@ -135,6 +137,8 @@ namespace Avalonia.X11
             if (_result.Count == 0 || dataType == IntPtr.Zero)
             {
                 DataReceived?.Invoke(string.Empty, null);
+                _result.Clear();
+                return;
             }
 
             if (dataType == _uriList)
@@ -158,18 +162,20 @@ namespace Avalonia.X11
                 Encoding ansiEncoding = Encoding.GetEncoding(0); //system ANSI
                 string data = ansiEncoding.GetString(_result.ToArray());
 
-                DataReceived?.Invoke(DataFormats.Text, _result);
+                DataReceived?.Invoke(DataFormats.Text, data);
             }
             else if (dataType == _atoms.UTF8_STRING)
             {
                 string data = Encoding.UTF8.GetString(_result.ToArray());
 
-                DataReceived?.Invoke(DataFormats.Text, _result);
+                DataReceived?.Invoke(DataFormats.Text, data);
             }
             else
             {
                 DataReceived?.Invoke(_atoms.GetAtomName(dataType) ?? string.Empty, _result);
             }
+
+            _result.Clear();
         }
     }
 }

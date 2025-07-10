@@ -56,9 +56,6 @@ namespace Avalonia.X11
                 }
             }
 
-            
-
-
             return targets.FirstOrDefault();
         }
 
@@ -108,7 +105,6 @@ namespace Avalonia.X11
                 var windowRect = new Rect(wx, wy, width, height);
                 if (windowRect.Contains(new Point(x, y)))
                 {
-
                     if (ignoreNonXdndAware || CheckXdndSupport(window))
                     {
                         return window;
@@ -137,7 +133,8 @@ namespace Avalonia.X11
 
             if (XLib.XGetWindowProperty(_display, window, _atoms.XdndProxy,
                                        IntPtr.Zero, new IntPtr(1), false, _atoms.XA_WINDOW,
-                                       out _, out _, out _, out _, out var data) != 0 && data != IntPtr.Zero)
+                                       out _, out _, out _, out _, out var data) != 0 
+                                       && data != IntPtr.Zero)
             {
                 try
                 {
@@ -154,7 +151,8 @@ namespace Avalonia.X11
 
             if (XLib.XGetWindowProperty(_display, proxy, _atoms.XdndProxy,
                                        IntPtr.Zero, new IntPtr(1), false, _atoms.XA_WINDOW,
-                                       out _, out _, out _, out _, out data) != 0 && data != IntPtr.Zero)
+                                       out _, out _, out _, out _, out data) != 0 
+                                       && data != IntPtr.Zero)
             {
                 try
                 {
