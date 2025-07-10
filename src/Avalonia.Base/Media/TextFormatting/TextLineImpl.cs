@@ -1415,10 +1415,12 @@ namespace Avalonia.Media.TextFormatting
             }
 
             var width = widthIncludingWhitespace;
+            var isRtl = _paragraphProperties.FlowDirection == FlowDirection.RightToLeft;
 
-            for (var i = _textRuns.Length - 1; i >= 0; i--)
+            for (int i = 0; i < _textRuns.Length; i++)
             {
-                var currentRun = _textRuns[i];
+                var index = isRtl ? i : _textRuns.Length - 1 - i;
+                var currentRun = _textRuns[index];
 
                 if (currentRun is ShapedTextRun shapedText)
                 {
