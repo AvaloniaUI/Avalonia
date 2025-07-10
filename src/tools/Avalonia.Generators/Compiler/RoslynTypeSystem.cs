@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -11,8 +12,9 @@ namespace Avalonia.Generators.Compiler;
 internal class RoslynTypeSystem : IXamlTypeSystem
 {
     private readonly List<IXamlAssembly> _assemblies = new();
+    private readonly ConcurrentDictionary<string, IXamlType?> _typeCache = new();
 
-    public RoslynTypeSystem(CSharpCompilation compilation)
+    public RoslynTypeSystem(Compilation compilation)
     {
         _assemblies.Add(new RoslynAssembly(compilation.Assembly));
 
@@ -34,9 +36,9 @@ internal class RoslynTypeSystem : IXamlTypeSystem
 
     [UnconditionalSuppressMessage("Trimming", "IL2092", Justification = TrimmingMessages.Roslyn)]
     public IXamlType? FindType(string name) =>
-        _assemblies
+        _typeCache.GetOrAdd(name, _ => _assemblies
             .Select(assembly => assembly.FindType(name))
-            .FirstOrDefault(type => type != null);
+            .FirstOrDefault(type => type != null));
 
     [UnconditionalSuppressMessage("Trimming", "IL2092", Justification = TrimmingMessages.Roslyn)]
     public IXamlType? FindType(string name, string assembly) =>
