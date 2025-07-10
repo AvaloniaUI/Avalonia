@@ -5,9 +5,9 @@ using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
+using Avalonia.Controls.Utils;
 using Avalonia.Data;
 using Avalonia.Input;
-using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Metadata;
@@ -37,6 +37,14 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<bool> IsDropDownOpenProperty =
             AvaloniaProperty.Register<ComboBox, bool>(nameof(IsDropDownOpen));
+
+        /// <summary>
+        /// Defines the <see cref="IsEditable"/> property.
+        /// </summary>
+        public static readonly DirectProperty<ComboBox, bool> IsEditableProperty =
+            AvaloniaProperty.RegisterDirect<ComboBox, bool>(nameof(IsEditable),
+                o => o.IsEditable,
+                (o, v) => o.IsEditable = v);
 
         /// <summary>
         /// Defines the <see cref="MaxDropDownHeight"/> property.
@@ -73,7 +81,13 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<VerticalAlignment> VerticalContentAlignmentProperty =
             ContentControl.VerticalContentAlignmentProperty.AddOwner<ComboBox>();
-        
+
+        /// <summary>
+        /// Defines the <see cref="Text"/> property
+        /// </summary>
+        public static readonly StyledProperty<string?> TextProperty =
+            TextBlock.TextProperty.AddOwner<ComboBox>(new(string.Empty, BindingMode.TwoWay));
+
         /// <summary>
         /// Defines the <see cref="SelectionBoxItemTemplate"/> property.
         /// </summary>
@@ -95,6 +109,10 @@ namespace Avalonia.Controls
         private object? _selectionBoxItem;
         private readonly CompositeDisposable _subscriptionsOnOpen = new CompositeDisposable();
 
+        private bool _isEditable;
+        private TextBox? _inputText;
+        private BindingEvaluator<string?>? _textValueBindingEvaluator = null;
+
         /// <summary>
         /// Initializes static members of the <see cref="ComboBox"/> class.
         /// </summary>
@@ -103,6 +121,12 @@ namespace Avalonia.Controls
             ItemsPanelProperty.OverrideDefaultValue<ComboBox>(DefaultPanel);
             FocusableProperty.OverrideDefaultValue<ComboBox>(true);
             IsTextSearchEnabledProperty.OverrideDefaultValue<ComboBox>(true);
+            TextProperty.Changed.AddClassHandler<ComboBox>((x, e) => x.TextChanged(e));
+            DisplayMemberBindingProperty.Changed.AddClassHandler<ComboBox>((x, e) => x.DisplayMemberBindingChanged(e));
+            TextSearch.TextBindingProperty.Changed.AddClassHandler<ComboBox>((x, e) => x.ItemTextBindingChanged(e));
+            //when the items change we need to simulate a text change to validate the text being an item or not and selecting it
+            ItemsSourceProperty.Changed.AddClassHandler<ComboBox>((x, e) => x.TextChanged(
+                new AvaloniaPropertyChangedEventArgs<string?>(e.Sender, TextProperty, x.Text, x.Text, e.Priority)));
         }
 
         /// <summary>
@@ -122,6 +146,15 @@ namespace Avalonia.Controls
         {
             get => GetValue(IsDropDownOpenProperty);
             set => SetValue(IsDropDownOpenProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the control is editable
+        /// </summary>
+        public bool IsEditable
+        {
+            get => _isEditable;
+            set => SetAndRaise(IsEditableProperty, ref _isEditable, value);
         }
 
         /// <summary>
@@ -188,6 +221,15 @@ namespace Avalonia.Controls
             set => SetValue(SelectionBoxItemTemplateProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets the text used when <see cref="IsEditable"/> is true.
+        /// </summary>
+        public string? Text
+        {
+            get => GetValue(TextProperty);
+            set => SetValue(TextProperty, value);
+        }
+
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
@@ -229,7 +271,7 @@ namespace Avalonia.Controls
                 SetCurrentValue(IsDropDownOpenProperty, false);
                 e.Handled = true;
             }
-            else if (!IsDropDownOpen && (e.Key == Key.Enter || e.Key == Key.Space))
+            else if (!IsDropDownOpen && !IsEditable && (e.Key == Key.Enter || e.Key == Key.Space))
             {
                 SetCurrentValue(IsDropDownOpenProperty, true);
                 e.Handled = true;
@@ -315,6 +357,15 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {
+            //if the user clicked in the input text we don't want to open the dropdown
+            if (_inputText != null
+                && !e.Handled
+                && e.Source is StyledElement styledSource
+                && styledSource.TemplatedParent == _inputText)
+            {
+                return;
+            }
+
             if (!e.Handled && e.Source is Visual source)
             {
                 if (_popup?.IsInsidePopup(source) == true)
@@ -348,6 +399,8 @@ namespace Avalonia.Controls
             _popup = e.NameScope.Get<Popup>("PART_Popup");
             _popup.Opened += PopupOpened;
             _popup.Closed += PopupClosed;
+
+            _inputText = e.NameScope.Get<TextBox>("PART_InputText");
         }
 
         /// <inheritdoc/>
@@ -357,6 +410,7 @@ namespace Avalonia.Controls
             {
                 UpdateSelectionBoxItem(change.NewValue);
                 TryFocusSelectedItem();
+                UpdateInputTextFromSelection(change.NewValue);
             }
             else if (change.Property == IsDropDownOpenProperty)
             {
@@ -365,6 +419,10 @@ namespace Avalonia.Controls
             else if (change.Property == ItemTemplateProperty)
             {
                 CoerceValue(SelectionBoxItemTemplateProperty);
+            }
+            else if (change.Property == IsEditableProperty && change.GetNewValue<bool>())
+            {
+                UpdateInputTextFromSelection(SelectedItem);
             }
             base.OnPropertyChanged(change);
         }
@@ -385,6 +443,11 @@ namespace Avalonia.Controls
         private void PopupClosed(object? sender, EventArgs e)
         {
             _subscriptionsOnOpen.Clear();
+
+            if(IsEditable && CanFocus(this))
+            {
+                Focus();
+            }
 
             DropDownClosed?.Invoke(this, EventArgs.Empty);
         }
@@ -502,6 +565,14 @@ namespace Avalonia.Controls
             }
         }
 
+        private void UpdateInputTextFromSelection(object? item)
+        {
+            //if we are modifying the text box which has deselected a value we don't want to update the textbox value
+            if (_skipNextTextChanged)
+                return;
+            SetCurrentValue(TextProperty, GetItemTextValue(item));
+        }
+
         private void SelectFocusedItem()
         {
             foreach (var dropdownItem in GetRealizedContainers())
@@ -561,5 +632,66 @@ namespace Avalonia.Controls
             SelectedItem = null;
             SelectedIndex = -1;
         }
+
+        private void ItemTextBindingChanged(AvaloniaPropertyChangedEventArgs e) 
+            => HandleTextValueBindingValueChanged(e, null);
+
+        private void DisplayMemberBindingChanged(AvaloniaPropertyChangedEventArgs e)
+            => HandleTextValueBindingValueChanged(null, e);
+
+        private void HandleTextValueBindingValueChanged(AvaloniaPropertyChangedEventArgs? textSearchPropChange,
+            AvaloniaPropertyChangedEventArgs? displayMemberPropChange)
+        {
+            IBinding? textValueBinding;
+            //prioritise using the TextSearch.TextBindingProperty if possible
+            if (textSearchPropChange == null && TextSearch.GetTextBinding(this) is IBinding textSearchBinding)
+                textValueBinding = textSearchBinding;
+
+            else if (textSearchPropChange != null && textSearchPropChange.NewValue is IBinding eventTextSearchBinding)
+                textValueBinding = eventTextSearchBinding;
+
+            else if (displayMemberPropChange != null && displayMemberPropChange.NewValue is IBinding eventDisplayMemberBinding)
+                textValueBinding = eventDisplayMemberBinding;
+
+            else
+                textValueBinding = null;
+
+            _textValueBindingEvaluator = BindingEvaluator<string?>.TryCreate(textValueBinding);
+
+            //if the binding is set we want to set the initial value for the selected item so the text box has the correct value
+            if (_textValueBindingEvaluator != null)
+                _textValueBindingEvaluator.Value = GetItemTextValue(SelectedValue);
+        }
+
+        private bool _skipNextTextChanged = false;
+        private void TextChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            if (Items == null || !IsEditable || _skipNextTextChanged)
+                return;
+
+            string newVal = e.GetNewValue<string>();
+            int selectedIdx = -1;
+            object? selectedItem = null;
+            int i = -1;
+            foreach (object? item in Items)
+            {
+                i++;
+                string itemText = GetItemTextValue(item);
+                if (string.Equals(newVal, itemText, StringComparison.CurrentCultureIgnoreCase))
+                {
+                    selectedIdx = i;
+                    selectedItem = item;
+                    break;
+                }
+            }
+
+            _skipNextTextChanged = true;
+            SelectedIndex = selectedIdx;
+            SelectedItem = selectedItem;
+            _skipNextTextChanged = false;
+        }
+
+        private string GetItemTextValue(object? item) 
+            => TextSearch.GetEffectiveText(item, _textValueBindingEvaluator);
     }
 }
