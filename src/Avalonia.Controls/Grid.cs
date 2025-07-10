@@ -448,8 +448,8 @@ namespace Avalonia.Controls
                     MeasureCellsGroup(extData.CellGroup1, false, false);
                     double rowSpacing = RowSpacing;
                     double columnSpacing = ColumnSpacing;
-                    double combinedRowSpacing = RowSpacing * (RowDefinitions.Count - 1);
-                    double combinedColumnSpacing = ColumnSpacing * (ColumnDefinitions.Count - 1);
+                    double combinedRowSpacing = RowSpacing * (DefinitionsV.Count - 1);
+                    double combinedColumnSpacing = ColumnSpacing * (DefinitionsU.Count - 1);
                     Size innerAvailableSize = new Size(constraint.Width - combinedColumnSpacing, constraint.Height - combinedRowSpacing);
                     {
                         //  after Group1 is measured,  only Group3 may have cells belonging to Auto rows.
@@ -551,8 +551,8 @@ namespace Avalonia.Controls
                     Debug.Assert(DefinitionsU.Count > 0 && DefinitionsV.Count > 0);
                     double rowSpacing = RowSpacing;
                     double columnSpacing = ColumnSpacing;
-                    double combinedRowSpacing = rowSpacing * (RowDefinitions.Count - 1);
-                    double combinedColumnSpacing = columnSpacing * (ColumnDefinitions.Count - 1);
+                    double combinedRowSpacing = rowSpacing * (DefinitionsV.Count - 1);
+                    double combinedColumnSpacing = columnSpacing * (DefinitionsU.Count - 1);
                     SetFinalSize(DefinitionsU, arrangeSize.Width - combinedColumnSpacing, true);
                     SetFinalSize(DefinitionsV, arrangeSize.Height - combinedRowSpacing, false);
 
