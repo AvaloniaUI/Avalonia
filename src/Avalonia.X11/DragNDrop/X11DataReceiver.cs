@@ -10,7 +10,7 @@ using WindowHandle = System.IntPtr;
 
 namespace Avalonia.X11
 {
-    internal class X11DataReceiver
+    internal class X11DataReceiver: IDisposable
     {
         private readonly IntPtr _display;
         private readonly WindowHandle _handle;
@@ -20,7 +20,10 @@ namespace Avalonia.X11
         private IntPtr _textPlain;
 
         private bool _isIncremental = false;
-        List<byte> _result = new List<byte>();
+         List<byte> _result = new();
+
+        private Queue<string> _typesToLoad = new();
+        private X11DataObject? _currentDrag;
 
         public X11DataReceiver(IntPtr handle, X11Info info) 
         {
@@ -29,6 +32,73 @@ namespace Avalonia.X11
             _atoms = info.Atoms;
 
             InitializeTypeAtoms();
+        }
+
+        public void LoadData(X11DataObject data)
+        {
+            if (data == null)
+                return;
+
+            _result.Clear();
+            _typesToLoad.Clear();
+            _currentDrag = data;
+
+            var supportedTypes = data.GetSupportedTypes();
+
+            //Firstly request most usable types of data for case, if sender does not support second data requests.
+            if (supportedTypes.Contains(X11DataObject.c_mimeFiles))
+            {
+                _typesToLoad.Enqueue(X11DataObject.c_mimeFiles);
+            }
+
+            if (supportedTypes.Contains(X11DataObject.c_mimeUTF8))
+            {
+                _typesToLoad.Enqueue(X11DataObject.c_mimeUTF8);
+            }
+
+            if (supportedTypes.Contains(X11DataObject.c_mimeUTF8_alt))
+            {
+                _typesToLoad.Enqueue(X11DataObject.c_mimeUTF8_alt);
+            }
+
+            if (supportedTypes.Contains(X11DataObject.c_mimeTextPlain))
+            {
+                _typesToLoad.Enqueue(X11DataObject.c_mimeTextPlain);
+
+            }
+
+            // Request data for all supported types
+            foreach (var format in supportedTypes)
+            {
+                var type = X11DataObject.DataFormatToMimeFormat(format);
+
+                if (type == X11DataObject.c_mimeTextPlain || type == X11DataObject.c_mimeFiles || type == X11DataObject.c_mimeUTF8)
+                    continue;
+
+                _typesToLoad.Enqueue(type);
+            }
+
+            ProcessQuiery();
+        }
+
+        private void ProcessQuiery()
+        {
+            if (_typesToLoad.Count > 0)
+            {
+                var type = _typesToLoad.Dequeue();
+                IntPtr typeAtom = _atoms.GetAtom(type);
+                if (_currentDrag !=  null && !_currentDrag.GetLoadedSupportedTypes().Contains(type) && typeAtom != IntPtr.Zero)
+                {
+                    XLib.XConvertSelection(_display, _atoms.XdndSelection, typeAtom,
+                                         _atoms.XdndSelection, _handle, IntPtr.Zero);
+
+                    XLib.XFlush(_display);
+                }
+                else
+                {
+                    ProcessQuiery();
+                }
+            }
         }
 
         public bool HandlePropertyEvent(ref XPropertyEvent propertyEvent)
@@ -124,7 +194,7 @@ namespace Avalonia.X11
             ProcessDroppedData(actualType);
         }
 
-        public event Action<string, object?>? DataReceived;
+        public event Action? DataReceived;
 
         private void InitializeTypeAtoms()
         {
@@ -134,10 +204,12 @@ namespace Avalonia.X11
 
         private void ProcessDroppedData(IntPtr dataType)
         {
-            if (_result.Count == 0 || dataType == IntPtr.Zero)
+            ProcessQuiery();
+
+            if (_result.Count == 0 || dataType == IntPtr.Zero || _currentDrag == null)
             {
-                DataReceived?.Invoke(string.Empty, null);
                 _result.Clear();
+                DataReceived?.Invoke();
                 return;
             }
 
@@ -155,26 +227,33 @@ namespace Avalonia.X11
                         StorageProviderHelpers.TryCreateBclStorageItem(line.Substring(7))!)
                     .ToList();
 
-                DataReceived?.Invoke(DataFormats.Files, uris);
+                _currentDrag.SetData(DataFormats.Files, uris);
             }
             else if (dataType == _textPlain)
             {
                 Encoding ansiEncoding = Encoding.GetEncoding(0); //system ANSI
                 string data = ansiEncoding.GetString(_result.ToArray());
 
-                DataReceived?.Invoke(DataFormats.Text, data);
+                _currentDrag.SetData(DataFormats.Text, data);
             }
             else if (dataType == _atoms.UTF8_STRING)
             {
                 string data = Encoding.UTF8.GetString(_result.ToArray());
 
-                DataReceived?.Invoke(DataFormats.Text, data);
+                _currentDrag.SetData(DataFormats.Text, data);
             }
             else
             {
-                DataReceived?.Invoke(_atoms.GetAtomName(dataType) ?? string.Empty, _result);
+                _currentDrag.SetData(_atoms.GetAtomName(dataType) ?? string.Empty, _result.ToArray());
             }
 
+            _result.Clear();
+            DataReceived?.Invoke();
+        }
+
+        public void Dispose()
+        {
+            _currentDrag = null;
             _result.Clear();
         }
     }

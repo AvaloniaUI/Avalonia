@@ -3,23 +3,21 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Avalonia.Controls.Utils;
 using Avalonia.Input;
 using Avalonia.Platform.Storage;
 
 namespace Avalonia.X11
 {
-    internal class X11DataObject : IX11DataObject, IDataObject, IDisposable
+    internal class X11DataObject : IDataObject, IDisposable
     {
-        private const string c_mimeFiles = "text/uri-list";
-        private const string c_mimeTextPlain = "text/plain";
-        private const string c_mimeUTF8 = "UTF8_STRING";
+        public const string c_mimeFiles = "text/uri-list";
+        public const string c_mimeTextPlain = "text/plain";
+        public const string c_mimeUTF8 = "UTF8_STRING";
+        public const string c_mimeUTF8_alt = "text/plain;charset=utf-8";
 
+        private readonly Dictionary<string, object?> _data = new();
         private readonly IList<string> _supportedTypes;
-
-        private string _bestType = string.Empty;
-
-        private object? _data = null;
-        private bool _dataSetted = false;
         
         public X11DataObject(IList<string> supportedTypes) 
         {
@@ -28,96 +26,51 @@ namespace Avalonia.X11
 
         public bool Contains(string dataFormat)
         {
-            if (_dataSetted)
-            {
-                return _bestType == dataFormat;
-            }
-
-            return _supportedTypes.Contains(DataFormatToMimeFormat(dataFormat));
+            var mimeFormat = DataFormatToMimeFormat(dataFormat);
+            return _supportedTypes.Contains(mimeFormat) || _data.ContainsKey(mimeFormat);
         }
-               
+
 
         public object? Get(string dataFormat)
         {
-            if(_dataSetted && dataFormat == _bestType)
-            { 
-                return _data; 
-            }
-
-            return null;
+            var mimeFormat = DataFormatToMimeFormat(dataFormat);
+            return _data.TryGetValue(mimeFormat, out var value) ? value : null;
         }
 
         public IEnumerable<string> GetDataFormats()
         {
-            if (_dataSetted)
-            {
-                return [MimeFormatToDataFormat(_bestType)];
-            }
-            else
-            {               
-                return _supportedTypes.Select(MimeFormatToDataFormat);
-            }
+            return _data.Keys.Select(MimeFormatToDataFormat);
         }
 
-        public bool ReserveType(string typeName)
+        public IList<string> GetSupportedTypes()
         {
-            var mimeName = DataFormatToMimeFormat(typeName);
-
-            if(_dataSetted)
-            {
-                return mimeName == _bestType;
-            }
-                        
-            if(_supportedTypes.Contains(mimeName))
-            {
-                _bestType = typeName;
-                return true;
-            }
-            else if (typeName == DataFormats.Text && _supportedTypes.Contains(c_mimeTextPlain))
-            {
-                _bestType = c_mimeTextPlain;
-                return true;
-            }
-
-            return false;
+            return _supportedTypes;
         }
 
-        public string GetBestType()
+        public IList<string> GetLoadedSupportedTypes()
         {
-            if(!string.IsNullOrEmpty(_bestType))
-                return _bestType;
-
-            if (_supportedTypes.Contains(c_mimeFiles))
-                return c_mimeFiles;
-
-            if (_supportedTypes.Contains(c_mimeUTF8))
-                return c_mimeUTF8;
-
-            if (_supportedTypes.Contains(c_mimeTextPlain))
-                return c_mimeTextPlain;
-
-            if(_supportedTypes.Any())
-                return _supportedTypes.First();
-
-            return string.Empty;
+            return _data.Keys.ToArray();
         }
 
         public void SetData(string type, object? data)
         {
-            _dataSetted = true;
-            _bestType = type;
-            _data = data; 
+            _data[DataFormatToMimeFormat(type)] = data;
         }
 
         public void Dispose()
         {
             _supportedTypes.Clear();
-            _data = null;
+            _data.Clear();
         }    
         
+        public bool AllDataLoaded => _data.Count == _supportedTypes.Count;
+
+        public bool DataLoaded => _data.Count != 0;
+
+
         public static string DataFormatToMimeFormat(string format)
         {
-            if (format == DataFormats.Text )
+            if (format == DataFormats.Text || format == c_mimeUTF8_alt || format == c_mimeTextPlain)
             {
                 return c_mimeUTF8;
             }            
@@ -131,7 +84,7 @@ namespace Avalonia.X11
 
         public static string MimeFormatToDataFormat(string format)
         {
-            if (format == c_mimeUTF8 || format == c_mimeTextPlain)
+            if (format == c_mimeUTF8 || format == c_mimeUTF8_alt || format == c_mimeTextPlain)
             {
                 return DataFormats.Text;
             }
@@ -153,7 +106,7 @@ namespace Avalonia.X11
 
             string mime = DataFormatToMimeFormat(type);
 
-            if (mime == c_mimeUTF8)
+            if (mime == c_mimeUTF8 || mime == c_mimeUTF8_alt)
             {
                 if (obj is IEnumerable<string> strings)
                 {

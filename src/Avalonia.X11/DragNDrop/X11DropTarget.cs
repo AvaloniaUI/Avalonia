@@ -6,6 +6,7 @@ using Avalonia.Input;
 using WindowHandle = System.IntPtr;
 using System.Diagnostics;
 using System.IO;
+using System.Drawing;
 
 namespace Avalonia.X11
 {
@@ -186,8 +187,27 @@ namespace Avalonia.X11
             var serverEffect = clientMsg.ptr5;
             _locationData = (point, serverEffect);
 
-            RawDragEvent args;            
+            if (_currentDrag.AllDataLoaded)
+            {
+                var clientEffects = RaiseDragEnterOver(point, serverEffect);
 
+                // Send response
+                SendXdndStatus(_dragSource, clientEffects, x, y);
+            }
+            else
+            {
+                _receiver.LoadData(_currentDrag);
+            }           
+        }
+
+        private DragDropEffects RaiseDragEnterOver(Point point, WindowHandle serverEffect)
+        {
+            if (DragDropDevice == null || _currentDrag == null)
+            {
+                return DragDropEffects.None;
+            }
+
+            RawDragEvent args;
             if (!_enterEventSent)
             {
                 args = new RawDragEvent(
@@ -216,9 +236,7 @@ namespace Avalonia.X11
             }
 
             Input?.Invoke(args);
-            
-            // Send response
-            SendXdndStatus(_dragSource, args.Effects, x, y);
+            return args.Effects;
         }
 
         private void SendXdndStatus(WindowHandle source, DragDropEffects effects, int x = 0, int y = 0)
@@ -250,64 +268,95 @@ namespace Avalonia.X11
         {
             if (DragDropDevice == null || _currentDrag == null)
             {
-                return;
-            }
-
-            // Select mime type to ask
-            IntPtr bestType = string.IsNullOrEmpty(_currentDrag.GetBestType()) ? IntPtr.Zero : _atoms.GetAtom(_currentDrag.GetBestType());
-            if (bestType == IntPtr.Zero)
-            {
                 SendXdndFinished(_dragSource, false);
                 return;
             }
 
             _dragInProcess = true;
 
-            // Request data
-            XLib.XConvertSelection(_display, _atoms.XdndSelection, bestType,
-                                 _atoms.XdndSelection, _handle, clientMsg.ptr3);
+            if (_currentDrag.AllDataLoaded)
+            {
+                try
+                {
+                    RaiseInput();
+                }
+                finally
+                {
+                    SendXdndFinished(_dragSource, true);
+                    _dragInProcess = false;
 
-            XLib.XFlush(_display);
+                    if (_dragLeaved)
+                    {
+                        DragLeaved();
+                    }
+                }
+            }
+            else
+            {
+                _receiver.LoadData(_currentDrag);
+            }
         }
 
-        private void OnDataReceived(string type, object? data)
+        private void OnDataReceived()
         {
             if (DragDropDevice == null || _currentDrag == null)
             {
                 return;
             }
 
-            try
+            if (_dragInProcess)
             {
-                if (!string.IsNullOrEmpty(type))
+                try
                 {
-                    Point point = _locationData.HasValue ? _locationData.Value.Item1 : new Point(0, 0);
-                    IntPtr serverEffect = _locationData.HasValue ? _locationData.Value.Item2 : _atoms.XdndActionCopy;
+                    RaiseInput();
+                }
+                finally
+                {
+                    SendXdndFinished(_dragSource, true);
+                    _dragInProcess = false;
 
-                    _currentDrag.SetData(type, data);
-                    var args = new RawDragEvent(
-                      DragDropDevice,
-                      RawDragEventType.Drop,
-                      _window.InputRoot,
-                      point,
-                      _currentDrag,
-                      _atoms.ConvertDropEffect(serverEffect),
-                      RawInputModifiers.None
-                      );
-
-                    Input?.Invoke(args);
+                    if (_dragLeaved)
+                    {
+                        DragLeaved();
+                    }
                 }
             }
-            finally
+            else
             {
-                SendXdndFinished(_dragSource, true);                
-                _dragInProcess = false;
-                
-                if(_dragLeaved)
-                {
-                    DragLeaved();
-                }
+                Point point = _locationData.HasValue ? _locationData.Value.Item1 : new Point(0, 0);
+                IntPtr serverEffect = _locationData.HasValue ? _locationData.Value.Item2 : _atoms.XdndActionCopy;
+
+                var clientEffects = RaiseDragEnterOver(point, serverEffect);
+
+                var screenPoint = _window.PointToScreen(point);
+
+                // Send response
+                SendXdndStatus(_dragSource, clientEffects, screenPoint.X, screenPoint.Y);
             }
+        }
+
+        private void RaiseInput()
+        {
+            if (DragDropDevice == null || _currentDrag == null)
+            {
+                return;
+            }
+
+            Point point = _locationData.HasValue ? _locationData.Value.Item1 : new Point(0, 0);
+            IntPtr serverEffect = _locationData.HasValue ? _locationData.Value.Item2 : _atoms.XdndActionCopy;
+
+
+            var args = new RawDragEvent(
+              DragDropDevice,
+              RawDragEventType.Drop,
+              _window.InputRoot,
+              point,
+              _currentDrag,
+              _atoms.ConvertDropEffect(serverEffect),
+              RawInputModifiers.None
+              );
+
+            Input?.Invoke(args);
         }
 
         private bool OnSelectionEvent(ref XSelectionEvent selectionEvent)
