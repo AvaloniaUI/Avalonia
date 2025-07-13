@@ -1,6 +1,5 @@
 ﻿using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
-using Avalonia.Controls.Shapes;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using System;
@@ -13,23 +12,23 @@ namespace Avalonia.Controls
     /// Defines the presenter used for selecting a date for a 
     /// <see cref="DatePicker"/>
     /// </summary>
-    [TemplatePart("PART_AcceptButton",    typeof(Button), IsRequired = true)]
-    [TemplatePart("PART_DayDownButton",   typeof(RepeatButton))]
-    [TemplatePart("PART_DayHost",         typeof(Panel), IsRequired = true)]
-    [TemplatePart("PART_DaySelector",     typeof(DateTimePickerPanel), IsRequired = true)]
-    [TemplatePart("PART_DayUpButton",     typeof(RepeatButton))]
-    [TemplatePart("PART_DismissButton",   typeof(Button))]
-    [TemplatePart("PART_FirstSpacer",     typeof(Rectangle))]
-    [TemplatePart("PART_MonthDownButton", typeof(RepeatButton))]
-    [TemplatePart("PART_MonthHost",       typeof(Panel), IsRequired = true)]
-    [TemplatePart("PART_MonthSelector",   typeof(DateTimePickerPanel), IsRequired = true)]
-    [TemplatePart("PART_MonthUpButton",   typeof(RepeatButton))]
-    [TemplatePart("PART_PickerContainer", typeof(Grid), IsRequired = true)]
-    [TemplatePart("PART_SecondSpacer",    typeof(Rectangle))]
-    [TemplatePart("PART_YearDownButton",  typeof(RepeatButton))]
-    [TemplatePart("PART_YearHost",        typeof(Panel), IsRequired = true)]
-    [TemplatePart("PART_YearSelector",    typeof(DateTimePickerPanel), IsRequired = true)]
-    [TemplatePart("PART_YearUpButton",    typeof(RepeatButton))]
+    [TemplatePart(nameof(TemplateItems.PART_AcceptButton),    typeof(Button), IsRequired = true)]
+    [TemplatePart(nameof(TemplateItems.PART_DayDownButton),   typeof(Button))]
+    [TemplatePart(nameof(TemplateItems.PART_DayHost),         typeof(Panel), IsRequired = true)]
+    [TemplatePart(nameof(TemplateItems.PART_DaySelector),     typeof(DateTimePickerPanel), IsRequired = true)]
+    [TemplatePart(nameof(TemplateItems.PART_DayUpButton),     typeof(Button))]
+    [TemplatePart(nameof(TemplateItems.PART_DismissButton),   typeof(Button))]
+    [TemplatePart(nameof(TemplateItems.PART_FirstSpacer),     typeof(Control))]
+    [TemplatePart(nameof(TemplateItems.PART_MonthDownButton), typeof(Button))]
+    [TemplatePart(nameof(TemplateItems.PART_MonthHost),       typeof(Panel), IsRequired = true)]
+    [TemplatePart(nameof(TemplateItems.PART_MonthSelector),   typeof(DateTimePickerPanel), IsRequired = true)]
+    [TemplatePart(nameof(TemplateItems.PART_MonthUpButton),   typeof(Button))]
+    [TemplatePart(nameof(TemplateItems.PART_PickerContainer), typeof(Grid), IsRequired = true)]
+    [TemplatePart(nameof(TemplateItems.PART_SecondSpacer),    typeof(Control))]
+    [TemplatePart(nameof(TemplateItems.PART_YearDownButton),  typeof(Button))]
+    [TemplatePart(nameof(TemplateItems.PART_YearHost),        typeof(Panel), IsRequired = true)]
+    [TemplatePart(nameof(TemplateItems.PART_YearSelector),    typeof(DateTimePickerPanel), IsRequired = true)]
+    [TemplatePart(nameof(TemplateItems.PART_YearUpButton),    typeof(Button))]
     public class DatePickerPresenter : PickerPresenterBase
     {
         /// <summary>
@@ -102,24 +101,32 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<bool> YearVisibleProperty =
             DatePicker.YearVisibleProperty.AddOwner<DatePickerPresenter>();
 
-        // Template Items
-        private Grid? _pickerContainer;
-        private Button? _acceptButton;
-        private Button? _dismissButton;
-        private Rectangle? _spacer1;
-        private Rectangle? _spacer2;
-        private Panel? _monthHost;
-        private Panel? _yearHost;
-        private Panel? _dayHost;
-        private DateTimePickerPanel? _monthSelector;
-        private DateTimePickerPanel? _yearSelector;
-        private DateTimePickerPanel? _daySelector;
-        private Button? _monthUpButton;
-        private Button? _dayUpButton;
-        private Button? _yearUpButton;
-        private Button? _monthDownButton;
-        private Button? _dayDownButton;
-        private Button? _yearDownButton;
+        private struct TemplateItems
+        {
+            public Grid PART_PickerContainer;
+            public Button PART_AcceptButton;
+            public Button? PART_DismissButton;
+        
+            public Control? PART_FirstSpacer;
+            public Control? PART_SecondSpacer;
+        
+            public Panel PART_MonthHost;
+            public Panel PART_YearHost;
+            public Panel PART_DayHost;
+        
+            public DateTimePickerPanel PART_MonthSelector;
+            public DateTimePickerPanel PART_YearSelector;
+            public DateTimePickerPanel PART_DaySelector;
+        
+            public Button? PART_MonthUpButton;
+            public Button? PART_DayUpButton;
+            public Button? PART_YearUpButton;
+            public Button? PART_MonthDownButton;
+            public Button? PART_DayDownButton;
+            public Button? PART_YearDownButton;
+        }
+
+        private TemplateItems? _templateItems;
 
         private DateTimeOffset _syncDate;
 
@@ -235,69 +242,54 @@ namespace Avalonia.Controls
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             base.OnApplyTemplate(e);
-            // These are requirements, so throw if not found
-            _pickerContainer = e.NameScope.Get<Grid>("PART_PickerContainer");
-            _monthHost = e.NameScope.Get<Panel>("PART_MonthHost");
-            _dayHost = e.NameScope.Get<Panel>("PART_DayHost");
-            _yearHost = e.NameScope.Get<Panel>("PART_YearHost");
 
-            _monthSelector = e.NameScope.Get<DateTimePickerPanel>("PART_MonthSelector");
-            _monthSelector.SelectionChanged += OnMonthChanged;
-
-            _daySelector = e.NameScope.Get<DateTimePickerPanel>("PART_DaySelector");
-            _daySelector.SelectionChanged += OnDayChanged;
-
-            _yearSelector = e.NameScope.Get<DateTimePickerPanel>("PART_YearSelector");
-            _yearSelector.SelectionChanged += OnYearChanged;
-
-            _acceptButton = e.NameScope.Get<Button>("PART_AcceptButton");
-
-            _monthUpButton = e.NameScope.Find<RepeatButton>("PART_MonthUpButton");
-            if (_monthUpButton != null)
+            _templateItems = new()
             {
-                _monthUpButton.Click += OnSelectorButtonClick;
-            }
-            _monthDownButton = e.NameScope.Find<RepeatButton>("PART_MonthDownButton");
-            if (_monthDownButton != null)
-            {
-                _monthDownButton.Click += OnSelectorButtonClick;
-            }
+                // These are requirements, so throw if not found
+                PART_PickerContainer = e.NameScope.Get<Grid>(nameof(TemplateItems.PART_PickerContainer)),
+                PART_MonthHost = e.NameScope.Get<Panel>(nameof(TemplateItems.PART_MonthHost)),
+                PART_DayHost = e.NameScope.Get<Panel>(nameof(TemplateItems.PART_DayHost)),
+                PART_YearHost = e.NameScope.Get<Panel>(nameof(TemplateItems.PART_YearHost)),
 
-            _dayUpButton = e.NameScope.Find<RepeatButton>("PART_DayUpButton");
-            if (_dayUpButton != null)
+                PART_MonthSelector = e.NameScope.Get<DateTimePickerPanel>(nameof(TemplateItems.PART_MonthSelector)),
+                PART_DaySelector = e.NameScope.Get<DateTimePickerPanel>(nameof(TemplateItems.PART_DaySelector)),
+                PART_YearSelector = e.NameScope.Get<DateTimePickerPanel>(nameof(TemplateItems.PART_YearSelector)),
+
+                PART_AcceptButton = e.NameScope.Get<Button>(nameof(TemplateItems.PART_AcceptButton)),
+
+                PART_MonthUpButton = SelectorButton(nameof(TemplateItems.PART_MonthUpButton), DateTimePickerPanelType.Month, SpinDirection.Decrease),
+                PART_MonthDownButton = SelectorButton(nameof(TemplateItems.PART_MonthDownButton), DateTimePickerPanelType.Month, SpinDirection.Increase),
+                PART_DayUpButton = SelectorButton(nameof(TemplateItems.PART_DayUpButton), DateTimePickerPanelType.Day, SpinDirection.Decrease),
+                PART_DayDownButton = SelectorButton(nameof(TemplateItems.PART_DayDownButton), DateTimePickerPanelType.Day, SpinDirection.Increase),
+                PART_YearUpButton = SelectorButton(nameof(TemplateItems.PART_YearUpButton), DateTimePickerPanelType.Year, SpinDirection.Decrease),
+                PART_YearDownButton = SelectorButton(nameof(TemplateItems.PART_YearDownButton), DateTimePickerPanelType.Year, SpinDirection.Increase),
+
+                PART_DismissButton = e.NameScope.Find<Button>(nameof(TemplateItems.PART_DismissButton)),
+                PART_FirstSpacer = e.NameScope.Find<Control>(nameof(TemplateItems.PART_FirstSpacer)),
+                PART_SecondSpacer = e.NameScope.Find<Control>(nameof(TemplateItems.PART_SecondSpacer)),
+            };
+
+            _templateItems.Value.PART_AcceptButton.Click += OnAcceptButtonClicked;
+            _templateItems.Value.PART_MonthSelector.SelectionChanged += OnMonthChanged;
+            _templateItems.Value.PART_DaySelector.SelectionChanged += OnDayChanged;
+            _templateItems.Value.PART_YearSelector.SelectionChanged += OnYearChanged;
+
+            if (_templateItems.Value.PART_DismissButton is { } dismissButton)
             {
-                _dayUpButton.Click += OnSelectorButtonClick;
-            }
-            _dayDownButton = e.NameScope.Find<RepeatButton>("PART_DayDownButton");
-            if (_dayDownButton != null)
-            {
-                _dayDownButton.Click += OnSelectorButtonClick;
+                dismissButton.Click += OnDismissButtonClicked;
             }
 
-            _yearUpButton = e.NameScope.Find<RepeatButton>("PART_YearUpButton");
-            if (_yearUpButton != null)
-            {
-                _yearUpButton.Click += OnSelectorButtonClick;
-            }
-            _yearDownButton = e.NameScope.Find<RepeatButton>("PART_YearDownButton");
-            if (_yearDownButton != null)
-            {
-                _yearDownButton.Click += OnSelectorButtonClick;
-            }
-
-            _dismissButton = e.NameScope.Find<Button>("PART_DismissButton");
-            _spacer1 = e.NameScope.Find<Rectangle>("PART_FirstSpacer");
-            _spacer2 = e.NameScope.Find<Rectangle>("PART_SecondSpacer");
-
-            if (_acceptButton != null)
-            {
-                _acceptButton.Click += OnAcceptButtonClicked;
-            }
-            if (_dismissButton != null)
-            {
-                _dismissButton.Click += OnDismissButtonClicked;
-            }
             InitPicker();
+
+            Button? SelectorButton(string name, DateTimePickerPanelType type, SpinDirection direction)
+            {
+                if (e.NameScope.Find<Button>(name) is { } button)
+                {
+                    button.Click += (s, e) => OnSelectorButtonClick(type, direction);
+                    return button;
+                }
+                return null;
+            }
         }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -350,63 +342,63 @@ namespace Avalonia.Controls
         private void InitPicker()
         {
             // OnApplyTemplate must've been called before we can init here...
-            if (_pickerContainer == null)
+            if (_templateItems is not { } items)
                 return;
 
             _suppressUpdateSelection = true;
 
-            _monthSelector!.MaximumValue = 12;
-            _monthSelector.MinimumValue = 1;
-            _monthSelector.ItemFormat = MonthFormat;
+            items.PART_MonthSelector.MaximumValue = 12;
+            items.PART_MonthSelector.MinimumValue = 1;
+            items.PART_MonthSelector.ItemFormat = MonthFormat;
 
-            _daySelector!.ItemFormat = DayFormat;
+            items.PART_DaySelector.ItemFormat = DayFormat;
 
-            _yearSelector!.MaximumValue = MaxYear.Year;
-            _yearSelector.MinimumValue = MinYear.Year;
-            _yearSelector.ItemFormat = YearFormat;
+            items.PART_YearSelector.MaximumValue = MaxYear.Year;
+            items.PART_YearSelector.MinimumValue = MinYear.Year;
+            items.PART_YearSelector.ItemFormat = YearFormat;
 
-            SetGrid();
+            SetGrid(items);
 
             // Date should've been set when we reach this point
             var dt = Date;
             if (DayVisible)
             {
-                _daySelector.FormatDate = dt.Date;
+                items.PART_DaySelector.FormatDate = dt.Date;
                 var maxDays = _calendar.GetDaysInMonth(dt.Year, dt.Month);
-                _daySelector.MaximumValue = maxDays;
-                _daySelector.MinimumValue = 1;
-                _daySelector.SelectedValue = dt.Day;
+                items.PART_DaySelector.MaximumValue = maxDays;
+                items.PART_DaySelector.MinimumValue = 1;
+                items.PART_DaySelector.SelectedValue = dt.Day;
             }
 
             if (MonthVisible)
             {
-                _monthSelector.SelectedValue = dt.Month;
-                _monthSelector.FormatDate = dt.Date;
+                items.PART_MonthSelector.SelectedValue = dt.Month;
+                items.PART_MonthSelector.FormatDate = dt.Date;
             }
 
             if (YearVisible)
             {
-                _yearSelector.SelectedValue = dt.Year;
-                _yearSelector.FormatDate = dt.Date;
+                items.PART_YearSelector.SelectedValue = dt.Year;
+                items.PART_YearSelector.FormatDate = dt.Date;
             }
 
             _suppressUpdateSelection = false;
 
-            SetInitialFocus();
+            SetInitialFocus(items);
         }
 
-        private void SetGrid()
+        private void SetGrid(TemplateItems items)
         {
             var fmt = CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern;
             var columns = new List<(Panel?, int)>
             {
-                (_monthHost, MonthVisible ? fmt.IndexOf("m", StringComparison.OrdinalIgnoreCase) : -1),
-                (_yearHost, YearVisible ? fmt.IndexOf("y", StringComparison.OrdinalIgnoreCase) : -1),
-                (_dayHost, DayVisible ? fmt.IndexOf("d", StringComparison.OrdinalIgnoreCase) : -1),
+                (items.PART_MonthHost, MonthVisible ? fmt.IndexOf("m", StringComparison.OrdinalIgnoreCase) : -1),
+                (items.PART_YearHost, YearVisible ? fmt.IndexOf("y", StringComparison.OrdinalIgnoreCase) : -1),
+                (items.PART_DayHost, DayVisible ? fmt.IndexOf("d", StringComparison.OrdinalIgnoreCase) : -1),
             };
 
             columns.Sort((x, y) => x.Item2 - y.Item2);
-            _pickerContainer!.ColumnDefinitions.Clear();
+            items.PART_PickerContainer.ColumnDefinitions.Clear();
 
             var columnIndex = 0;
 
@@ -421,48 +413,53 @@ namespace Avalonia.Controls
                 {
                     if (columnIndex > 0)
                     {
-                        _pickerContainer.ColumnDefinitions.Add(new ColumnDefinition(0, GridUnitType.Auto));
+                        items.PART_PickerContainer.ColumnDefinitions.Add(new ColumnDefinition(0, GridUnitType.Auto));
                     }
 
-                    _pickerContainer.ColumnDefinitions.Add(
-                        new ColumnDefinition(column.Item1 == _monthHost ? 138 : 78, GridUnitType.Star));
+                    items.PART_PickerContainer.ColumnDefinitions.Add(
+                        new ColumnDefinition(column.Item1 == items.PART_MonthHost ? 138 : 78, GridUnitType.Star));
 
                     if (column.Item1.Parent is null)
                     {
-                        _pickerContainer.Children.Add(column.Item1);
+                        items.PART_PickerContainer.Children.Add(column.Item1);
                     }
 
                     Grid.SetColumn(column.Item1, (columnIndex++ * 2));
                 }
             }
 
-            var isSpacer1Visible = columnIndex > 1;
-            var isSpacer2Visible = columnIndex > 2;
-            // ternary conditional operator is used to make sure grid cells will be validated
-            Grid.SetColumn(_spacer1!, isSpacer1Visible ? 1 : 0);
-            Grid.SetColumn(_spacer2!, isSpacer2Visible ? 3 : 0);
+            ConfigureSpacer(items.PART_FirstSpacer, columnIndex > 1);
+            ConfigureSpacer(items.PART_SecondSpacer, columnIndex > 2);
 
-            _spacer1!.IsVisible = isSpacer1Visible;
-            _spacer2!.IsVisible = isSpacer2Visible;
+            static void ConfigureSpacer(Control? spacer, bool visible)
+            {
+                if (spacer == null)
+                    return;
+
+                // ternary conditional operator is used to make sure grid cells will be validated
+                Grid.SetColumn(spacer, visible ? 1 : 0);
+                spacer.IsVisible = visible;
+
+            }
         }
 
-        private void SetInitialFocus()
+        private void SetInitialFocus(TemplateItems items)
         {
-            int monthCol = MonthVisible ? Grid.GetColumn(_monthHost!) : int.MaxValue;
-            int dayCol = DayVisible ? Grid.GetColumn(_dayHost!) : int.MaxValue;
-            int yearCol = YearVisible ? Grid.GetColumn(_yearHost!) : int.MaxValue;
+            int monthCol = MonthVisible ? Grid.GetColumn(items.PART_MonthHost) : int.MaxValue;
+            int dayCol = DayVisible ? Grid.GetColumn(items.PART_DayHost) : int.MaxValue;
+            int yearCol = YearVisible ? Grid.GetColumn(items.PART_YearHost) : int.MaxValue;
 
             if (monthCol < dayCol && monthCol < yearCol)
             {
-                _monthSelector?.Focus(NavigationMethod.Pointer);
+                items.PART_MonthSelector.Focus(NavigationMethod.Pointer);
             }
             else if (dayCol < monthCol && dayCol < yearCol)
             {
-                _monthSelector?.Focus(NavigationMethod.Pointer);
+                items.PART_MonthSelector.Focus(NavigationMethod.Pointer);
             }
             else if (yearCol < monthCol && yearCol < dayCol)
             {
-                _yearSelector?.Focus(NavigationMethod.Pointer);
+                items.PART_YearSelector.Focus(NavigationMethod.Pointer);
             }
         }
 
@@ -477,29 +474,36 @@ namespace Avalonia.Controls
             OnConfirmed();
         }
 
-        private void OnSelectorButtonClick(object? sender, RoutedEventArgs e)
+        private void OnSelectorButtonClick(DateTimePickerPanelType type, SpinDirection direction)
         {
-            if (sender == _monthUpButton)
-                _monthSelector!.ScrollUp();
-            else if (sender == _monthDownButton)
-                _monthSelector!.ScrollDown();
-            else if (sender == _yearUpButton)
-                _yearSelector!.ScrollUp();
-            else if (sender == _yearDownButton)
-                _yearSelector!.ScrollDown();
-            else if (sender == _dayUpButton)
-                _daySelector!.ScrollUp();
-            else if (sender == _dayDownButton)
-                _daySelector!.ScrollDown();
+            var target = type switch
+            {
+                DateTimePickerPanelType.Month => _templateItems?.PART_MonthSelector,
+                DateTimePickerPanelType.Day => _templateItems?.PART_DaySelector,
+                DateTimePickerPanelType.Year=> _templateItems?.PART_YearSelector,
+                _ => throw new NotImplementedException(),
+            };
+
+            switch (direction)
+            {
+                case SpinDirection.Increase:
+                    target?.ScrollDown();
+                    break;
+                case SpinDirection.Decrease:
+                    target?.ScrollUp();
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
         }
 
         private void OnYearChanged(object? sender, EventArgs e)
         {
-            if (_suppressUpdateSelection)
+            if (_suppressUpdateSelection || _templateItems is not { } items)
                 return;
 
-            int maxDays = _calendar.GetDaysInMonth(_yearSelector!.SelectedValue, _syncDate.Month);
-            var newDate = new DateTimeOffset(_yearSelector.SelectedValue, _syncDate.Month,
+            int maxDays = _calendar.GetDaysInMonth(items.PART_YearSelector.SelectedValue, _syncDate.Month);
+            var newDate = new DateTimeOffset(items.PART_YearSelector.SelectedValue, _syncDate.Month,
                 _syncDate.Day > maxDays ? maxDays : _syncDate.Day, 0, 0, 0, _syncDate.Offset);
 
             _syncDate = newDate;
@@ -510,30 +514,30 @@ namespace Avalonia.Controls
 
             _suppressUpdateSelection = true;
 
-            _daySelector!.FormatDate = newDate.Date;
+            items.PART_DaySelector.FormatDate = newDate.Date;
 
-            if (_daySelector.MaximumValue != maxDays)
-                _daySelector.MaximumValue = maxDays;
+            if (items.PART_DaySelector.MaximumValue != maxDays)
+                items.PART_DaySelector.MaximumValue = maxDays;
             else
-                _daySelector.RefreshItems();
+                items.PART_DaySelector.RefreshItems();
 
             _suppressUpdateSelection = false;
         }
 
         private void OnDayChanged(object? sender, EventArgs e)
         {
-            if (_suppressUpdateSelection)
+            if (_suppressUpdateSelection || _templateItems is not { } items)
                 return;
-            _syncDate = new DateTimeOffset(_syncDate.Year, _syncDate.Month, _daySelector!.SelectedValue, 0, 0, 0, _syncDate.Offset);
+            _syncDate = new DateTimeOffset(_syncDate.Year, _syncDate.Month, items.PART_DaySelector.SelectedValue, 0, 0, 0, _syncDate.Offset);
         }
 
         private void OnMonthChanged(object? sender, EventArgs e)
         {
-            if (_suppressUpdateSelection)
+            if (_suppressUpdateSelection || _templateItems is not { } items)
                 return;
 
-            int maxDays = _calendar.GetDaysInMonth(_syncDate.Year, _monthSelector!.SelectedValue);
-            var newDate = new DateTimeOffset(_syncDate.Year, _monthSelector.SelectedValue,
+            int maxDays = _calendar.GetDaysInMonth(_syncDate.Year, items.PART_MonthSelector.SelectedValue);
+            var newDate = new DateTimeOffset(_syncDate.Year, items.PART_MonthSelector.SelectedValue,
                 _syncDate.Day > maxDays ? maxDays : _syncDate.Day, 0, 0, 0, _syncDate.Offset);
 
             if (!DayVisible)
@@ -544,24 +548,24 @@ namespace Avalonia.Controls
 
             _suppressUpdateSelection = true;
 
-            _daySelector!.FormatDate = newDate.Date;
+            items.PART_DaySelector.FormatDate = newDate.Date;
             _syncDate = newDate;
 
-            if (_daySelector.MaximumValue != maxDays)
-                _daySelector.MaximumValue = maxDays;
+            if (items.PART_DaySelector.MaximumValue != maxDays)
+                items.PART_DaySelector.MaximumValue = maxDays;
             else
-                _daySelector.RefreshItems();
+                items.PART_DaySelector.RefreshItems();
 
             _suppressUpdateSelection = false;
         }
 
         internal double GetOffsetForPopup()
         {
-            if (_monthSelector is null)
+            if (_templateItems is not { } items)
                 return 0;
 
-            var acceptDismissButtonHeight = _acceptButton != null ? _acceptButton.Bounds.Height : 41;
-            return -(MaxHeight - acceptDismissButtonHeight) / 2 - (_monthSelector.ItemHeight / 2);
+            var acceptDismissButtonHeight = items.PART_AcceptButton.Bounds.Height;
+            return -(MaxHeight - acceptDismissButtonHeight) / 2 - (items.PART_MonthSelector.ItemHeight / 2);
         }
     }
 }
