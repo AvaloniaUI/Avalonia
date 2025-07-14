@@ -52,9 +52,9 @@ namespace Avalonia.Skia
 
                 _glyphIndices[i] = glyphInfo.GlyphIndex;
 
-                _glyphPositions[i] = new SKPoint((float)(currentX + offset.X), (float)offset.Y);
+                _glyphPositions[i] = new SKPoint((float)(currentX + Math.Floor(offset.X)), (float)Math.Floor(offset.Y));
 
-                currentX += glyphInfos[i].GlyphAdvance;
+                currentX += Math.Floor(glyphInfos[i].GlyphAdvance);
             }
 
             // Ideally the requested edging should be passed to the glyph run.
