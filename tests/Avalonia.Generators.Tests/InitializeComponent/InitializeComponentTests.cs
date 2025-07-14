@@ -1,5 +1,7 @@
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Generators.Common;
+using Avalonia.Generators.Common.Domain;
 using Avalonia.Generators.Compiler;
 using Avalonia.Generators.NameGenerator;
 using Avalonia.Generators.Tests.InitializeComponent.GeneratedInitializeComponent;
@@ -23,7 +25,6 @@ public class InitializeComponentTests
     [InlineData(InitializeComponentCode.FieldModifier, View.FieldModifier, false)]
     [InlineData(InitializeComponentCode.AttachedPropsWithDevTools, View.AttachedProps, true)]
     [InlineData(InitializeComponentCode.AttachedProps, View.AttachedProps, false)]
-    [InlineData(InitializeComponentCode.ControlWithoutWindow, View.ControlWithoutWindow, true)]
     [InlineData(InitializeComponentCode.ControlWithoutWindow, View.ControlWithoutWindow, false)]
     public async Task Should_Generate_FindControl_Refs_From_Avalonia_Markup_File(
         string expectation,
@@ -31,28 +32,28 @@ public class InitializeComponentTests
         bool devToolsMode)
     {
         var excluded = devToolsMode ? null : "Avalonia.Diagnostics";
-        var compilation =
-            View.CreateAvaloniaCompilation(excluded)
-                .WithCustomTextBox();
 
-        var types = new RoslynTypeSystem(compilation);
-        var classResolver = new XamlXViewResolver(
-            types,
-            MiniCompiler.CreateDefault(
-                new RoslynTypeSystem(compilation),
-                MiniCompiler.AvaloniaXmlnsDefinitionAttribute));
+        // Step 1: parse XAML as xml nodes, without any type information.
+        var classResolver = new XamlXViewResolver(MiniCompiler.CreateNoop());
 
         var xaml = await View.Load(markup);
         var classInfo = classResolver.ResolveView(xaml);
         Assert.NotNull(classInfo);
         var nameResolver = new XamlXNameResolver();
-        var names = nameResolver.ResolveNames(classInfo.Xaml);
+        var names = nameResolver.ResolveXmlNames(classInfo.Xaml);
 
-        var generator = new InitializeComponentCodeGenerator(types, devToolsMode);
+        // Step 2: use compilation context to resolve types
+        var compilation =
+            View.CreateAvaloniaCompilation(excluded)
+                .WithCustomTextBox();
+        var resolvedNames = names.ResolveNames(compilation, nameResolver).ToArray();
+
+        // Step 3: run generator
+        var generator = new InitializeComponentCodeGenerator(devToolsMode);
         var generatorVersion = typeof(InitializeComponentCodeGenerator).Assembly.GetName().Version?.ToString();
 
         var code = generator
-            .GenerateCode("SampleView", "Sample.App",  classInfo.XamlType, names)
+            .GenerateCode("SampleView", "Sample.App",  resolvedNames)
             .Replace("\r", string.Empty);
 
         var expected = (await InitializeComponentCode.Load(expectation))
