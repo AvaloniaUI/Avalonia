@@ -8,6 +8,7 @@ using Avalonia.Controls.Utils;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
+using Avalonia.Reactive;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
 
@@ -51,6 +52,12 @@ namespace Avalonia.Controls
             RoutedEvent.Register<VirtualizingStackPanel, RoutedEventArgs>(
                 nameof(VerticalSnapPointsChanged),
                 RoutingStrategies.Bubble);
+        /// <summary>
+        /// Defines the <see cref="CacheLength"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> CacheLengthProperty =
+            AvaloniaProperty.Register<VirtualizingStackPanel, double>(nameof(CacheLength), 0.0, 
+                validate: v => v is >= 0 and <= 2);
 
         private static readonly AttachedProperty<object?> RecycleKeyProperty =
             AvaloniaProperty.RegisterAttached<VirtualizingStackPanel, Control, object?>("RecycleKey");
@@ -73,12 +80,24 @@ namespace Avalonia.Controls
         private int _focusedIndex = -1;
         private Control? _realizingElement;
         private int _realizingIndex = -1;
+        private double _bufferFactor; 
+        
+        private bool _hasReachedStart = false;
+        private bool _hasReachedEnd = false;
+        private Rect _extendedViewport;
+
+        static VirtualizingStackPanel()
+        {
+            CacheLengthProperty.Changed.AddClassHandler<VirtualizingStackPanel>((x, e) => x.OnCacheLengthChanged(e));
+        }
 
         public VirtualizingStackPanel()
         {
             _recycleElement = RecycleElement;
             _recycleElementOnItemRemoved = RecycleElementOnItemRemoved;
             _updateElementIndex = UpdateElementIndex;
+
+            _bufferFactor = Math.Max(0, CacheLength);
             EffectiveViewportChanged += OnEffectiveViewportChanged;
         }
 
@@ -132,6 +151,20 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets or sets the CacheLength.
+        /// </summary>
+        /// <remarks>The factor determines how much additional space to maintain above and below the viewport.
+        /// A value of 0.5 means half the viewport size will be buffered on each side (up-down or left-right)
+        /// This uses more memory as more UI elements are realized, but greatly reduces the number of Measure-Arrange
+        /// cycles which can cause heavy GC pressure depending on the complexity of the item layouts.
+        /// </remarks>
+        public double CacheLength
+        {
+            get => GetValue(CacheLengthProperty);
+            set => SetValue(CacheLengthProperty, value);
+        }
+
+        /// <summary>
         /// Gets the index of the first realized element, or -1 if no elements are realized.
         /// </summary>
         public int FirstRealizedIndex => _realizedElements?.FirstIndex ?? -1;
@@ -140,6 +173,16 @@ namespace Avalonia.Controls
         /// Gets the index of the last realized element, or -1 if no elements are realized.
         /// </summary>
         public int LastRealizedIndex => _realizedElements?.LastIndex ?? -1;
+
+        /// <summary>
+        /// Returns the viewport that contains any visible elements
+        /// </summary>
+        internal Rect ViewPort => _viewport;
+
+        /// <summary>
+        /// Returns the extended viewport that contains any visible elements and the additional elements for fast scrolling (viewport * CacheLength * 2)
+        /// </summary>
+        internal Rect ExtendedViewPort => _extendedViewport;
 
         protected override Size MeasureOverride(Size availableSize)
         {
@@ -217,8 +260,12 @@ namespace Avalonia.Controls
                         var rect = orientation == Orientation.Horizontal ?
                             new Rect(u, 0, sizeU, finalSize.Height) :
                             new Rect(0, u, finalSize.Width, sizeU);
+
                         e.Arrange(rect);
-                        _scrollAnchorProvider?.RegisterAnchorCandidate(e);
+                    
+                        if (_viewport.Intersects(rect))
+                            _scrollAnchorProvider?.RegisterAnchorCandidate(e);
+                        
                         u += orientation == Orientation.Horizontal ? rect.Width : rect.Height;
                     }
                 }
@@ -230,6 +277,7 @@ namespace Avalonia.Controls
                     var rect = orientation == Orientation.Horizontal ?
                         new Rect(u, 0, _focusedElement.DesiredSize.Width, finalSize.Height) :
                         new Rect(0, u, finalSize.Width, _focusedElement.DesiredSize.Height);
+
                     _focusedElement.Arrange(rect);
                 }
 
@@ -416,6 +464,7 @@ namespace Avalonia.Controls
                 // Create and measure the element to be brought into view. Store it in a field so that
                 // it can be re-used in the layout pass.
                 var scrollToElement = GetOrCreateElement(items, index);
+
                 scrollToElement.Measure(Size.Infinity);
 
                 // Get the expected position of the element and put it in place.
@@ -483,7 +532,8 @@ namespace Avalonia.Controls
         {
             Debug.Assert(_realizedElements is not null);
 
-            var viewport = _viewport;
+            // Use the extended viewport for calculations
+            var viewport = _extendedViewport;
 
             // Get the viewport in the orientation direction.
             var viewportStart = orientation == Orientation.Horizontal ? viewport.X : viewport.Y;
@@ -653,7 +703,6 @@ namespace Avalonia.Controls
             return index * estimatedSize;
         }
 
-
         private void RealizeElements(
             IReadOnlyList<object?> items,
             Size availableSize,
@@ -666,6 +715,10 @@ namespace Avalonia.Controls
             var index = viewport.anchorIndex;
             var horizontal = Orientation == Orientation.Horizontal;
             var u = viewport.anchorU;
+                    
+            // Reset boundary flags
+            _hasReachedStart = false;
+            _hasReachedEnd = false;
 
             // If the anchor element is at the beginning of, or before, the start of the viewport
             // then we can recycle all elements before it.
@@ -678,8 +731,9 @@ namespace Avalonia.Controls
                 _realizingIndex = index;
                 var e = GetOrCreateElement(items, index);
                 _realizingElement = e;
+                
                 e.Measure(availableSize);
-
+                
                 var sizeU = horizontal ? e.DesiredSize.Width : e.DesiredSize.Height;
                 var sizeV = horizontal ? e.DesiredSize.Height : e.DesiredSize.Width;
 
@@ -691,7 +745,10 @@ namespace Avalonia.Controls
                 _realizingIndex = -1;
                 _realizingElement = null;
             } while (u < viewport.viewportUEnd && index < items.Count);
-
+            
+            // Check if we reached the end of the collection
+            _hasReachedEnd = index >= items.Count;
+            
             // Store the last index and end U position for the desired size calculation.
             viewport.lastIndex = index - 1;
             viewport.realizedEndU = u;
@@ -706,8 +763,8 @@ namespace Avalonia.Controls
             while (u > viewport.viewportUStart && index >= 0)
             {
                 var e = GetOrCreateElement(items, index);
+                
                 e.Measure(availableSize);
-
                 var sizeU = horizontal ? e.DesiredSize.Width : e.DesiredSize.Height;
                 var sizeV = horizontal ? e.DesiredSize.Height : e.DesiredSize.Width;
                 u -= sizeU;
@@ -716,6 +773,9 @@ namespace Avalonia.Controls
                 viewport.measuredV = Math.Max(viewport.measuredV, sizeV);
                 --index;
             }
+            
+            // Check if we reached the start of the collection
+            _hasReachedStart = index < 0;
 
             // We can now recycle elements before the first element.
             _realizedElements.RecycleElementsBefore(index + 1, _recycleElement);
@@ -748,7 +808,7 @@ namespace Avalonia.Controls
         {
             return _realizedElements?.GetElement(index);
         }
-
+        
         private static Control? GetRealizedElement(
             int index,
             ref int specialIndex,
@@ -891,22 +951,146 @@ namespace Avalonia.Controls
 
             ItemContainerGenerator.ItemContainerIndexChanged(element, oldIndex, newIndex);
         }
-
+        
         private void OnEffectiveViewportChanged(object? sender, EffectiveViewportChangedEventArgs e)
         {
             var vertical = Orientation == Orientation.Vertical;
             var oldViewportStart = vertical ? _viewport.Top : _viewport.Left;
             var oldViewportEnd = vertical ? _viewport.Bottom : _viewport.Right;
+            var oldExtendedViewportStart = vertical ? _extendedViewport.Top : _extendedViewport.Left;
+            var oldExtendedViewportEnd = vertical ? _extendedViewport.Bottom : _extendedViewport.Right;
 
+            // Update current viewport
             _viewport = e.EffectiveViewport.Intersect(new(Bounds.Size));
             _isWaitingForViewportUpdate = false;
 
+            // Calculate buffer sizes based on viewport dimensions
+            var viewportSize = vertical ? _viewport.Height : _viewport.Width;
+            var bufferSize = viewportSize * _bufferFactor;
+            
+            // Calculate extended viewport with relative buffers
+            var extendedViewportStart = vertical ? 
+                Math.Max(0, _viewport.Top - bufferSize) : 
+                Math.Max(0, _viewport.Left - bufferSize);
+                
+            var extendedViewportEnd = vertical ? 
+                Math.Min(Bounds.Height, _viewport.Bottom + bufferSize) : 
+                Math.Min(Bounds.Width, _viewport.Right + bufferSize);
+
+            // special case:
+            // If we are at the start of the list, append 2 * CacheLength additional items
+            // If we are at the end of the list, prepend 2 * CacheLength additional items
+            // - this way we always maintain "2 * CacheLength * element" items. 
+            if (vertical)
+            {
+                var spaceAbove = _viewport.Top - bufferSize;
+                var spaceBelow = Bounds.Height - (_viewport.Bottom + bufferSize);
+                
+                if (spaceAbove < 0 && spaceBelow >= 0)
+                    extendedViewportEnd = Math.Min(Bounds.Height, extendedViewportEnd + Math.Abs(spaceAbove));
+                if (spaceAbove >= 0 && spaceBelow < 0)
+                    extendedViewportStart = Math.Max(0, extendedViewportStart - Math.Abs(spaceBelow));
+            }
+            else
+            {
+                var spaceLeft = _viewport.Left - bufferSize;
+                var spaceRight = Bounds.Width - (_viewport.Right + bufferSize);
+                
+                if (spaceLeft < 0 && spaceRight >= 0)
+                    extendedViewportEnd = Math.Min(Bounds.Width, extendedViewportEnd + Math.Abs(spaceLeft));
+                if(spaceLeft >= 0 && spaceRight < 0)
+                    extendedViewportStart = Math.Max(0, extendedViewportStart - Math.Abs(spaceRight));
+            }
+
+            Rect extendedViewPort;
+            if (vertical)
+            {
+                extendedViewPort = new Rect(
+                    _viewport.X, 
+                    extendedViewportStart,
+                    _viewport.Width,
+                    extendedViewportEnd - extendedViewportStart);
+            }
+            else
+            {
+                extendedViewPort = new Rect(
+                    extendedViewportStart,
+                    _viewport.Y,
+                    extendedViewportEnd - extendedViewportStart,
+                    _viewport.Height);
+            }
+
+            // Determine if we need a new measure
             var newViewportStart = vertical ? _viewport.Top : _viewport.Left;
             var newViewportEnd = vertical ? _viewport.Bottom : _viewport.Right;
+            var newExtendedViewportStart = vertical ? extendedViewPort.Top : extendedViewPort.Left;
+            var newExtendedViewportEnd = vertical ? extendedViewPort.Bottom : extendedViewPort.Right;
 
+            var needsMeasure = false;
+            
+           
+            // Case 1: Viewport has changed significantly
             if (!MathUtilities.AreClose(oldViewportStart, newViewportStart) ||
                 !MathUtilities.AreClose(oldViewportEnd, newViewportEnd))
             {
+                // Case 1a: The new viewport exceeds the old extended viewport
+                if (newViewportStart < oldExtendedViewportStart || 
+                    newViewportEnd > oldExtendedViewportEnd)
+                {
+                    needsMeasure = true;
+                }
+                // Case 1b: The extended viewport has changed significantly
+                else if (!MathUtilities.AreClose(oldExtendedViewportStart, newExtendedViewportStart) ||
+                         !MathUtilities.AreClose(oldExtendedViewportEnd, newExtendedViewportEnd))
+                {
+                    // Check if we're about to scroll into an area where we don't have realized elements
+                    // This would be the case if we're near the edge of our current extended viewport
+                    var nearingEdge = false;
+                    
+                    if (_realizedElements != null)
+                    {
+                        var firstRealizedElementU = _realizedElements.StartU;
+                        var lastRealizedElementU = _realizedElements.StartU;
+                        
+                        for (var i = 0; i < _realizedElements.Count; i++)
+                        {
+                            lastRealizedElementU += _realizedElements.SizeU[i];
+                        }
+                        
+                        // If scrolling up/left and nearing the top/left edge of realized elements
+                        if (newViewportStart < oldViewportStart && 
+                            newViewportStart - newExtendedViewportStart < bufferSize)
+                        {
+                            // Edge case: We're at item 0 with excess measurement space.
+                            // Skip re-measuring since we're at the list start and it won't change the result.
+                            // This prevents redundant Measure-Arrange cycles when at list beginning.
+                            nearingEdge = !_hasReachedStart;
+                        }
+                        
+                        // If scrolling down/right and nearing the bottom/right edge of realized elements
+                        if (newViewportEnd > oldViewportEnd && 
+                            newExtendedViewportEnd - newViewportEnd < bufferSize)
+                        {
+                            // Edge case: We're at the last item with excess measurement space.
+                            // Skip re-measuring since we're at the list end and it won't change the result.
+                            // This prevents redundant Measure-Arrange cycles when at list beginning.
+                            nearingEdge = !_hasReachedEnd;
+                        }
+                    }
+                    else
+                    {
+                        nearingEdge = true;
+                    }
+                    
+                    needsMeasure = nearingEdge;
+                }
+            }
+
+            if (needsMeasure)
+            {
+                // only store the new "old" extended viewport if we _did_ actually measure
+                _extendedViewport = extendedViewPort;
+                
                 InvalidateMeasure();
             }
         }
@@ -924,6 +1108,15 @@ namespace Avalonia.Controls
             }
         }
 
+        private void OnCacheLengthChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            var newValue = e.GetNewValue<double>();
+            _bufferFactor = newValue;
+    
+            // Force a recalculation of the extended viewport on the next layout pass
+            InvalidateMeasure();
+        }
+        
         /// <inheritdoc/>
         public IReadOnlyList<double> GetIrregularSnapPoints(Orientation orientation, SnapPointsAlignment snapPointsAlignment)
         {
