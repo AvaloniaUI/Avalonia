@@ -702,6 +702,202 @@ namespace Avalonia.Base.UnitTests.Input
             Assert.Same(innerButton, focusManager.GetFocusedElement());
         }
 
+        [Fact]
+        public void Can_Get_First_Focusable_Element()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var target1 = new Button { Focusable = true, Content = "1" };
+                var target2 = new Button { Focusable = true, Content = "2" };
+                var target3 = new Button { Focusable = true, Content = "3" };
+                var target4 = new Button { Focusable = true, Content = "4" };
+                var container = new StackPanel
+                {
+                    Children =
+                    {
+                        target1,
+                        target2,
+                        target3,
+                        target4
+                    }
+                };
+                var root = new TestRoot
+                {
+                    Child = container
+                };
+
+                var firstFocusable = FocusManager.FindFirstFocusableElement(container);
+
+                Assert.Equal(target1, firstFocusable);
+            }
+        }
+
+        [Fact]
+        public void Can_Get_Last_Focusable_Element()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var target1 = new Button { Focusable = true, Content = "1" };
+                var target2 = new Button { Focusable = true, Content = "2" };
+                var target3 = new Button { Focusable = true, Content = "3" };
+                var target4 = new Button { Focusable = true, Content = "4" };
+                var container = new StackPanel
+                {
+                    Children =
+                    {
+                        target1,
+                        target2,
+                        target3,
+                        target4
+                    }
+                };
+                var root = new TestRoot
+                {
+                    Child = container
+                };
+
+                var lastFocusable = FocusManager.FindLastFocusableElement(container);
+
+                Assert.Equal(target4, lastFocusable);
+            }
+        }
+
+        [Fact]
+        public void Can_Get_Next_Element()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var target1 = new Button { Focusable = true, Content = "1" };
+                var target2 = new Button { Focusable = true, Content = "2" };
+                var target3 = new Button { Focusable = true, Content = "3" };
+                var target4 = new Button { Focusable = true, Content = "4" };
+                var container = new StackPanel
+                {
+                    Children =
+                    {
+                        target1,
+                        target2,
+                        target3,
+                        target4
+                    }
+                };
+                var root = new TestRoot
+                {
+                    Child = container
+                };
+
+                var focusManager = FocusManager.GetFocusManager(container);
+                target1.Focus();
+
+                var next = focusManager.FindNextElement(NavigationDirection.Next);
+
+                Assert.Equal(next, target2);
+            }
+        }
+
+        [Fact]
+        public void Can_Get_Next_Element_With_Options()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var target1 = new Button { Focusable = true, Content = "1" };
+                var target2 = new Button { Focusable = true, Content = "2" };
+                var target3 = new Button { Focusable = true, Content = "3" };
+                var target4 = new Button { Focusable = true, Content = "4" };
+                var target5 = new Button { Focusable = true, Content = "5" };
+                var seachStack = new StackPanel()
+                {
+                    Children =
+                    {
+                        target3,
+                        target4
+                    }
+                };
+                var container = new StackPanel
+                {
+                    Orientation = Avalonia.Layout.Orientation.Horizontal,
+                    Children =
+                    {
+                        target1,
+                        target2,
+                        seachStack,
+                        target5
+                    }
+                };
+                var root = new TestRoot
+                {
+                    Child = container
+                };
+
+                root.InvalidateMeasure();
+                root.ExecuteInitialLayoutPass();
+
+                var focusManager = FocusManager.GetFocusManager(container);
+                target1.Focus();
+
+                var options = new FindNextElementOptions()
+                {
+                    SearchRoot = seachStack
+                };
+
+                // Search root is right of the current focus, should return the first focusable element in the search root
+                var next = focusManager.FindNextElement(NavigationDirection.Right, options);
+
+                Assert.Equal(next, target3);
+
+                target5.Focus();
+
+                // Search root is right of the current focus, should return the first focusable element in the search root
+                next = focusManager.FindNextElement(NavigationDirection.Left, options);
+
+                Assert.Equal(next, target3);
+
+                // Search root isn't to the right of the current focus, should return null
+                next = focusManager.FindNextElement(NavigationDirection.Right, options);
+
+                Assert.Null(next);
+            }
+        }
+
+
+        [Fact]
+        public void Focus_Should_Move_According_To_Direction()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var target1 = new Button { Focusable = true, Content = "1" };
+                var target2 = new Button { Focusable = true, Content = "2" };
+                var target3 = new Button { Focusable = true, Content = "3" };
+                var target4 = new Button { Focusable = true, Content = "4" };
+                var container = new StackPanel
+                {
+                    Children =
+                    {
+                        target1,
+                        target2,
+                        target3,
+                        target4
+                    }
+                };
+                var root = new TestRoot
+                {
+                    Child = container
+                };
+
+                var focusManager = FocusManager.GetFocusManager(container);
+
+                var hasMoved = focusManager.TryMoveFocus(NavigationDirection.Next);
+
+                Assert.True(target1.IsFocused);
+                Assert.True(hasMoved);
+
+                hasMoved = focusManager.TryMoveFocus(NavigationDirection.Previous);
+
+                Assert.True(target4.IsFocused);
+                Assert.True(hasMoved);
+            }
+        }
+
         private class TestFocusScope : Panel, IFocusScope
         {
         }
