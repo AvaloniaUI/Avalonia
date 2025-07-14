@@ -22,7 +22,7 @@ public static class DataTransferExtensions
     /// <param name="format">The format to check.</param>
     /// <returns>true if <paramref name="format"/> is supported, false otherwise.</returns>
     public static bool Contains(this IDataTransfer dataTransfer, DataFormat format)
-        => dataTransfer.GetItems([format]).Any();
+        => dataTransfer.GetFormats().Any(fmt => fmt == format);
 
     /// <summary>
     /// Tries to get a value for a given format from a <see cref="IDataTransfer"/>.

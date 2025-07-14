@@ -71,9 +71,9 @@ internal sealed class OleDataObjectToDataTransferWrapper(Win32Com.IDataObject ol
                 if (DataFormat.File.Equals(format))
                 {
                     // This is not ideal as we're reading the filenames ahead of time to generate the appropriate items.
-                    // However, it's very like that we're filtering on formats, so files are requested by the caller.
+                    // However, it's very likely that we're filtering on formats, so files are requested by the caller.
                     // If this isn't the case, this still isn't a heavy operation.
-                    if (TryGet(format) is IStorageItem[] storageItems)
+                    if (TryGet(format) is IEnumerable<IStorageItem> storageItems)
                     {
                         foreach (var storageItem in storageItems)
                             yield return DataTransferItem.Create(format, storageItem);

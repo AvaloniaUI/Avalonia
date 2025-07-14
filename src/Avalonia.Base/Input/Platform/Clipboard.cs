@@ -46,14 +46,14 @@ internal sealed class Clipboard(IClipboardImpl clipboardImpl) : IClipboard
     async Task<string[]> IClipboard.GetFormatsAsync()
     {
         var formats = await GetDataFormatsAsync().ConfigureAwait(false);
-        return formats.Select(format => format.SystemName).ToArray();
+        return formats.Select(DataFormats.ToString).ToArray();
     }
 
     public Task<DataFormat[]> GetDataFormatsAsync()
         => _clipboardImpl.GetDataFormatsAsync();
 
     Task<object?> IClipboard.GetDataAsync(string format)
-        => this.TryGetValueAsync<object?>(DataFormat.Parse(format));
+        => this.TryGetValueAsync<object?>(DataFormats.ToDataFormat(format));
 
     public Task<IDataTransfer?> TryGetDataAsync(IEnumerable<DataFormat> formats)
         => _clipboardImpl.TryGetDataAsync(formats);
