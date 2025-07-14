@@ -88,6 +88,13 @@ namespace Avalonia.X11
                 .Bind<IPlatformLifetimeEventsImpl>().ToConstant(new X11PlatformLifetimeEvents(this));
             
             Screens = X11Screens = new X11Screens(this);
+
+            if (options.AllowHighRefreshRate && AvaloniaLocator.Current.GetService<IRenderTimer>() is SleepLoopRenderTimer loopTimer)
+            {
+                X11Screens.Changed += () => { loopTimer.DesiredFps = X11Screens.MaxRefreshRate; };
+                loopTimer.DesiredFps = X11Screens.MaxRefreshRate;
+            }
+            
             if (Info.XInputVersion != null)
             {
                 XI2 = XI2Manager.TryCreate(this);
@@ -327,6 +334,11 @@ namespace Avalonia
         /// This setting is false by default.
         /// </summary>
         public bool ShouldRenderOnUIThread { get; set; }
+
+        /// <summary>
+        /// Query for display refresh rates from RANDR. May or may not use the refresh rate of your best display.
+        /// </summary>
+        public bool AllowHighRefreshRate { get; set; }
 
         public IList<GlVersion> GlProfiles { get; set; } = new List<GlVersion>
         {
