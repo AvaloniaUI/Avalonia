@@ -2,13 +2,13 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <ProvisioningType>manual</ProvisioningType>
-    <TargetFramework>$(AvsCurrentIOSTargetFramework)</TargetFramework>
-    <SupportedOSPlatformVersion>$(AvsMinSupportedIOSVersion)</SupportedOSPlatformVersion>
+    <TargetFramework>$(AvsCurrentMacCatalystTargetFramework)</TargetFramework>
+    <SupportedOSPlatformVersion>$(AvsMinSupportedMacCatalystVersion)</SupportedOSPlatformVersion>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\iOS\Avalonia.iOS\Avalonia.iOS.csproj" />
     <ProjectReference Include="..\ControlCatalog\ControlCatalog.csproj" />
-    <None Include="Info.iOS.plist">
+    <None Include="Info.Catalyst.plist">
       <LogicalName>Info.plist</LogicalName>
     </None>
   </ItemGroup>
