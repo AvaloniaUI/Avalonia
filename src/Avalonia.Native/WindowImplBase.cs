@@ -116,10 +116,14 @@ namespace Avalonia.Native
             Native?.SetMinMaxSize(minSize.ToAvnSize(), maxSize.ToAvnSize());
         }
 
-        internal void BeginDraggingSession(AvnDragDropEffects effects, AvnPoint point, IAvnClipboard clipboard,
-            IAvnDndResultCallback callback, IntPtr sourceHandle)
+        internal void BeginDraggingSession(
+            AvnDragDropEffects effects,
+            AvnPoint point,
+            IAvnClipboardDataSource source,
+            IAvnDndResultCallback callback,
+            IntPtr sourceHandle)
         {
-            Native?.BeginDragAndDropOperation(effects, point, clipboard, callback, sourceHandle);
+            Native?.BeginDragAndDropOperation(effects, point, source, callback, sourceHandle);
         }
 
         protected class WindowBaseEvents : TopLevelEvents, IAvnWindowBaseEvents

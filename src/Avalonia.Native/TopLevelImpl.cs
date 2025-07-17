@@ -497,16 +497,20 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
             if (dataTransferHandle != IntPtr.Zero)
                 dataTransfer = GCHandle.FromIntPtr(dataTransferHandle).Target as IDataTransfer;
 
-            using (var clipboardDataTransfer = new ClipboardDataTransfer(clipboard))
-            {
-                dataTransfer ??= clipboardDataTransfer;
+            using var clipboardDataTransfer = new ClipboardDataTransfer(
+                new ClipboardReadSession(clipboard, clipboard.ChangeCount, ownsNative: true));
+            dataTransfer ??= clipboardDataTransfer;
 
-                var args = new RawDragEvent(device, (RawDragEventType)type,
-                    _parent._inputRoot, position.ToAvaloniaPoint(), dataTransfer, (DragDropEffects)effects,
-                    (RawInputModifiers)modifiers);
-                _parent.Input?.Invoke(args);
-                return (AvnDragDropEffects)args.Effects;
-            }
+            var args = new RawDragEvent(
+                device,
+                (RawDragEventType)type,
+                _parent._inputRoot,
+                position.ToAvaloniaPoint(),
+                dataTransfer,
+                (DragDropEffects)effects,
+                (RawInputModifiers)modifiers);
+            _parent.Input?.Invoke(args);
+            return (AvnDragDropEffects)args.Effects;
         }
 
         IAvnAutomationPeer? IAvnTopLevelEvents.AutomationPeer

@@ -6,6 +6,7 @@
 #import <AppKit/AppKit.h>
 #import <Cocoa/Cocoa.h>
 #include "common.h"
+#include "clipboard.h"
 #include "AvnView.h"
 #include "menu.h"
 #include "automation.h"
@@ -411,13 +412,15 @@ HRESULT WindowBaseImpl::SetFrameThemeVariant(AvnPlatformThemeVariant variant) {
     return S_OK;
 }
 
-HRESULT WindowBaseImpl::BeginDragAndDropOperation(AvnDragDropEffects effects, AvnPoint point, IAvnClipboard *clipboard, IAvnDndResultCallback *cb, void *sourceHandle) {
+HRESULT WindowBaseImpl::BeginDragAndDropOperation(
+    AvnDragDropEffects effects,
+    AvnPoint point,
+    IAvnClipboardDataSource* source,
+    IAvnDndResultCallback* callback,
+    void* sourceHandle)
+{
     START_COM_CALL;
 
-    auto item = TryGetPasteboardItem(clipboard);
-    [item setString:@"" forType:GetAvnCustomDataType()];
-    if (item == nil)
-        return E_INVALIDARG;
     if (View == NULL)
         return E_FAIL;
 
@@ -435,12 +438,20 @@ HRESULT WindowBaseImpl::BeginDragAndDropOperation(AvnDragDropEffects effects, Av
         nsevent = [NSEvent eventWithCGEvent:cgevent];
         CFRelease(cgevent);
     }
-
-    auto dragItem = [[NSDraggingItem alloc] initWithPasteboardWriter:item];
-
+    
+    auto itemCount = source->GetItemCount();
+    auto draggingItems = [NSMutableArray<NSDraggingItem*> arrayWithCapacity:itemCount];
     auto dragItemImage = [NSImage imageNamed:NSImageNameMultipleDocuments];
     NSRect dragItemRect = {(float) point.X, (float) point.Y, [dragItemImage size].width, [dragItemImage size].height};
-    [dragItem setDraggingFrame:dragItemRect contents:dragItemImage];
+    
+    for (auto i = 0; i < itemCount; ++i)
+    {
+        auto item = source->GetItem(i);
+        auto writeableItem = [[WriteableClipboardItem alloc] initWithItem:item source:source];
+        auto draggingItem = [[NSDraggingItem alloc] initWithPasteboardWriter:writeableItem];
+        [draggingItem setDraggingFrame:dragItemRect contents:dragItemImage];
+        [draggingItems addObject:draggingItem];
+    }
 
     int op = 0;
     int ieffects = (int) effects;
@@ -450,9 +461,10 @@ HRESULT WindowBaseImpl::BeginDragAndDropOperation(AvnDragDropEffects effects, Av
         op |= NSDragOperationLink;
     if ((ieffects & (int) AvnDragDropEffects::Move) != 0)
         op |= NSDragOperationMove;
-    [View resetPressedMouseButtons];
-    [View beginDraggingSessionWithItems:@[dragItem] event:nsevent
-                                 source:CreateDraggingSource((NSDragOperation) op, cb, sourceHandle)];
+    
+    [View beginDraggingSessionWithItems:draggingItems
+                                  event:nsevent
+                                 source:CreateDraggingSource((NSDragOperation) op, callback, sourceHandle)];
     return S_OK;
 }
 

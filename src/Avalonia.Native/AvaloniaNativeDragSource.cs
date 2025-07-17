@@ -52,15 +52,13 @@ namespace Avalonia.Native
             triggerEvent.Pointer.Capture(null);
             
             var tcs = new TaskCompletionSource<DragDropEffects>();
-            
-            var clipboardImpl = _factory.CreateDndClipboard();
-            using (var clipboard = new ClipboardImpl(clipboardImpl))
+
             using (var cb = new DndCallback(tcs))
             {
-                clipboard.SetData(dataTransfer);
+                var dataSource = new DataTransferToAvnClipboardDataSourceWrapper(dataTransfer);
 
                 view.BeginDraggingSession((AvnDragDropEffects)allowedEffects,
-                    triggerEvent.GetPosition(tl).ToAvnPoint(), clipboardImpl, cb,
+                    triggerEvent.GetPosition(tl).ToAvnPoint(), dataSource, cb,
                     GCHandle.ToIntPtr(GCHandle.Alloc(dataTransfer)));
             }
 

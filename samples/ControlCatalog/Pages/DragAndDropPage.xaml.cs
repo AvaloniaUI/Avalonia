@@ -15,7 +15,7 @@ namespace ControlCatalog.Pages
         private readonly TextBlock _dropState;
 
         private readonly DataFormat _customFormat =
-            DataFormat.CreateOperatingSystemFormat("application/xxx-avalonia-controlcatalog-custom");
+            DataFormat.CreateApplicationFormat("application/xxx-avalonia-controlcatalog-custom");
 
         public DragAndDropPage()
         {
@@ -32,7 +32,7 @@ namespace ControlCatalog.Pages
             SetupDnd(
                 "Custom",
                 d => d.Items.Add(DataTransferItem.Create(_customFormat, "Test123")),
-                DragDropEffects.Move);
+                DragDropEffects.Copy | DragDropEffects.Move);
 
             SetupDnd(
                 "Files",
@@ -42,7 +42,7 @@ namespace ControlCatalog.Pages
                         TopLevel.GetTopLevel(this) is { } topLevel &&
                         await topLevel.StorageProvider.TryGetFileFromPathAsync(name) is { } storageFile)
                     {
-                        d.Items.Add(DataTransferItem.Create(DataFormat.Files, new[] { storageFile }));
+                        d.Items.Add(DataTransferItem.Create(DataFormat.File, storageFile));
                     }
                 },
                 DragDropEffects.Copy);
@@ -102,7 +102,7 @@ namespace ControlCatalog.Pages
 
                 // Only allow if the dragged data contains text or filenames.
                 if (!e.DataTransfer.Contains(DataFormat.Text)
-                    && !e.DataTransfer.Contains(DataFormat.Files)
+                    && !e.DataTransfer.Contains(DataFormat.File)
                     && !e.DataTransfer.Contains(_customFormat))
                     e.DragEffects = DragDropEffects.None;
             }
@@ -122,7 +122,7 @@ namespace ControlCatalog.Pages
                 {
                     _dropState.Text = await e.DataTransfer.TryGetTextAsync();
                 }
-                else if (e.DataTransfer.Contains(DataFormat.Files))
+                else if (e.DataTransfer.Contains(DataFormat.File))
                 {
                     var files = await e.DataTransfer.TryGetFilesAsync() ?? [];
                     var contentStr = "";

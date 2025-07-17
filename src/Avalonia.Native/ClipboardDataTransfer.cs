@@ -1,59 +1,85 @@
 ﻿#nullable enable
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Avalonia.Input.Platform;
-using Avalonia.Native.Interop;
 
 namespace Avalonia.Native;
 
-internal sealed class ClipboardDataTransfer(IAvnClipboard clipboard)
-    : IDataTransfer, IDataTransferItem
+/// <summary>
+/// Implementation of <see cref="IDataTransfer"/> for Avalonia.Native.
+/// </summary>
+/// <param name="session">
+/// The clipboard session.
+/// The <see cref="ClipboardDataTransfer"/> assumes ownership over this instance.
+/// </param>
+internal sealed class ClipboardDataTransfer(ClipboardReadSession session)
+    : IDataTransfer
 {
-    private ClipboardImpl? _clipboard = new(clipboard);
+    private readonly ClipboardReadSession _session = session;
     private DataFormat[]? _formats;
-
-    private ClipboardImpl Clipboard
-        => _clipboard ?? throw new ObjectDisposedException(nameof(ClipboardDataTransfer));
+    private ClipboardDataTransferItem[]? _items;
 
     private DataFormat[] Formats
-        => _formats ??= Clipboard.GetFormats();
+    {
+        get
+        {
+            return _formats ??= GetFormatsCore();
+
+            DataFormat[] GetFormatsCore()
+            {
+                using var formats = _session.GetFormats();
+                return ClipboardDataFormatHelper.ToDataFormats(formats);
+            }
+        }
+    }
+
+    private ClipboardDataTransferItem[] Items
+    {
+        get
+        {
+            return _items ??= GetItemsCore();
+
+            ClipboardDataTransferItem[] GetItemsCore()
+            {
+                var itemCount = _session.GetItemCount();
+                if (itemCount == 0)
+                    return [];
+
+                var items = new ClipboardDataTransferItem[itemCount];
+
+                for (var i = 0; i < itemCount; ++i)
+                    items[i] = new ClipboardDataTransferItem(_session, i);
+
+                return items;
+            }
+        }
+    }
 
     public IEnumerable<IDataTransferItem> GetItems(IEnumerable<DataFormat>? formats = null)
     {
         if (formats is null)
-            return [this];
+            return Items;
 
         var formatArray = formats as DataFormat[] ?? formats.ToArray();
-        if (formatArray.Length > 0)
+        if (formatArray.Length == 0)
+            return [];
+
+        return FilterItems();
+
+        IEnumerable<IDataTransferItem> FilterItems()
         {
-            foreach (var format in GetFormats())
+            foreach (var item in Items)
             {
-                if (Array.IndexOf(formatArray, format) >= 0)
-                    return [this];
+                if (item.ContainsAny(formatArray))
+                    yield return item;
             }
         }
-
-        return [];
     }
 
     public IEnumerable<DataFormat> GetFormats()
         => Formats;
 
-    public bool Contains(DataFormat format)
-        => Array.IndexOf(Formats, format) >= 0;
-
-    public object? TryGet(DataFormat format)
-        => Clipboard.TryGetData(format);
-
-    Task<object?> IDataTransferItem.TryGetAsync(DataFormat format)
-        => Task.FromResult(TryGet(format));
-
     public void Dispose()
-    {
-        _clipboard?.Dispose();
-        _clipboard = null;
-    }
+        => _session.Dispose();
 }

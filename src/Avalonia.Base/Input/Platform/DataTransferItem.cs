@@ -62,14 +62,6 @@ public abstract class DataTransferItem : IDataTransferItem
         return new AsyncDataTransferItem(format, untypedGetValueAsync, getValueAsync);
     }
 
-    /// <summary>
-    /// Creates a new <see cref="DataTransferItem"/> from a given dictionary.
-    /// </summary>
-    /// <param name="values">A dictionary containing the supported formats with their values.</param>
-    /// <returns>A <see cref="DataTransferItem"/> instance.</returns>
-    public static DataTransferItem Create(IReadOnlyDictionary<DataFormat, object?> values)
-        => new DictionaryDataTransferItem(values);
-
     private sealed class SimpleDataTransferItem(DataFormat format, object? value)
         : DataTransferItem
     {
@@ -106,23 +98,6 @@ public abstract class DataTransferItem : IDataTransferItem
                 return _cachedResult ??= _getValueAsync(_state);
 
             return Task.FromResult<object?>(null);
-        }
-    }
-
-    private sealed class DictionaryDataTransferItem(IReadOnlyDictionary<DataFormat, object?> values)
-        : DataTransferItem
-    {
-        private readonly IReadOnlyDictionary<DataFormat, object?> _values = values;
-
-        public override IEnumerable<DataFormat> GetFormats()
-            => _values.Keys;
-
-        public override Task<object?> TryGetAsync(DataFormat format)
-        {
-            if (!_values.TryGetValue(format, out var value))
-                value = null;
-
-            return Task.FromResult(value);
         }
     }
 }

@@ -38,12 +38,13 @@ public interface IDataTransfer : IDisposable
     /// </summary>
     /// <param name="formats">
     /// If null, no filtering is going to be performed: all items in the clipboard will be returned.
-    /// If non-null, only items matching at least one format is specified.
+    /// If non-null, only items matching at least one specified format will be returned.
     /// (If an empty collection is specified, no items will be returned).
     /// </param>
     /// <returns>A list of items.</returns>
     /// <remarks>
-    /// Some platforms (such as Windows and X11) may only support a single data item for most formats.
+    /// <para>Some platforms (such as Windows and X11) may only support a single data item for most formats.</para>
+    /// <para>Items returned by this method must stay valid until the <see cref="IDataTransfer"/> is disposed.</para>
     /// </remarks>
     IEnumerable<IDataTransferItem> GetItems(IEnumerable<DataFormat>? formats = null);
 

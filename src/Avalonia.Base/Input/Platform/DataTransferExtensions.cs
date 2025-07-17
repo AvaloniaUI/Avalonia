@@ -36,11 +36,8 @@ public static class DataTransferExtensions
     /// </remarks>
     public static async Task<T?> TryGetValueAsync<T>(this IDataTransfer dataTransfer, DataFormat format)
     {
-        foreach (var item in dataTransfer.GetItems([format]))
+        if (dataTransfer.GetItems([format]).FirstOrDefault() is { } item)
         {
-            if (!item.Contains(format))
-                continue;
-
             var result = await item.TryGetAsync(format).ConfigureAwait(false);
             return result is T typedResult ? typedResult : default;
         }
@@ -60,10 +57,7 @@ public static class DataTransferExtensions
 
         foreach (var item in dataTransfer.GetItems([format]))
         {
-            if (!item.Contains(format))
-                continue;
-
-            var result = await item.TryGetAsync(format).ConfigureAwait(false);
+            var result = await item.TryGetAsync(format);
             if (result is not T typedResult)
                 continue;
 
