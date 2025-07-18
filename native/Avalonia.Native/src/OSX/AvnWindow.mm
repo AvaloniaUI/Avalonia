@@ -491,6 +491,12 @@
                 AvnView* view = parent->View;
                 NSPoint windowPoint = [event locationInWindow];
                 NSPoint viewPoint = [view convertPoint:windowPoint fromView:nil];
+
+                NSRect bounds = view.bounds;
+                if ([self getExtendedTitleBarHeight] > 0)
+                {
+                    bounds.size.height += [self getExtendedTitleBarHeight];
+                }
                 
                 auto targetView = [[self findRootView:view] hitTest: windowPoint];
                 if(targetView)
@@ -500,7 +506,7 @@
                         return;
                 }
                 
-                if (!NSPointInRect(viewPoint, view.bounds))
+                if (!NSPointInRect(viewPoint, bounds))
                 {
                     auto avnPoint = ToAvnPoint(windowPoint);
                     auto point = [self translateLocalPoint:avnPoint];
