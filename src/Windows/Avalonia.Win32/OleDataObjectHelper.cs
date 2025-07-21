@@ -160,19 +160,13 @@ internal static class OleDataObjectHelper
         switch (data)
         {
             case byte[] bytes:
-            {
                 return WriteBytesToHGlobal(ref hGlobal, bytes.AsSpan());
-            }
 
             case Memory<byte> bytes:
-            {
                 return WriteBytesToHGlobal(ref hGlobal, bytes.Span);
-            }
 
             case string str:
-            {
                 return WriteStringToHGlobal(ref hGlobal, str);
-            }
 
             case Stream stream:
             {

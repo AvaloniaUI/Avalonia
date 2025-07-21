@@ -57,6 +57,7 @@ public static class DataTransferExtensions
 
         foreach (var item in dataTransfer.GetItems([format]))
         {
+            // No ConfigureAwait(false) here: we want TryGetAsync() for next items to be called on the initial thread.
             var result = await item.TryGetAsync(format);
             if (result is not T typedResult)
                 continue;

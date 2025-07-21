@@ -52,10 +52,12 @@ internal sealed class DataTransferItemToAvnClipboardDataItemWrapper(IDataTransfe
                 return new StringValue(str);
 
             case Stream stream:
+            {
                 var length = (int)(stream.Length - stream.Position);
                 var buffer = new byte[length];
                 stream.ReadExactly(buffer, 0, length);
                 return new BytesValue(buffer.AsMemory(length));
+            }
 
             default:
                 Logger.TryGet(LogEventLevel.Warning, LogArea.macOSPlatform)?.Log(

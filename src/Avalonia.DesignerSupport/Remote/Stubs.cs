@@ -237,7 +237,7 @@ namespace Avalonia.DesignerSupport.Remote
 
         public Task FlushAsync() => Task.CompletedTask;
 
-        public Task<IDataTransfer?> TryGetInProcessDataTransferAsync() => Task.FromResult<IDataTransfer?>(null);
+        public Task<IDataTransfer?> TryGetInProcessDataAsync() => Task.FromResult<IDataTransfer?>(null);
     }
 
     class CursorFactoryStub : ICursorFactory

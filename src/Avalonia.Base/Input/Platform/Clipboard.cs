@@ -60,11 +60,11 @@ internal sealed class Clipboard(IClipboardImpl clipboardImpl) : IClipboard
 
     async Task<IDataObject?> IClipboard.TryGetInProcessDataObjectAsync()
     {
-        var dataObject = await TryGetInProcessDataTransferAsync().ConfigureAwait(false);
+        var dataObject = await TryGetInProcessDataAsync().ConfigureAwait(false);
         return (dataObject as DataObjectToDataTransferWrapper)?.DataObject;
     }
 
-    public async Task<IDataTransfer?> TryGetInProcessDataTransferAsync()
+    public async Task<IDataTransfer?> TryGetInProcessDataAsync()
     {
         if (_lastDataTransfer is null || _clipboardImpl is not IOwnedClipboardImpl ownedClipboardImpl)
             return null;

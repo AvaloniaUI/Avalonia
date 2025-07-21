@@ -109,17 +109,18 @@ namespace Avalonia.Input.Platform
         /// null
         /// </summary>
         /// <returns></returns>
-        [Obsolete($"Use {nameof(TryGetInProcessDataTransferAsync)} instead.")]
+        [Obsolete($"Use {nameof(TryGetInProcessDataAsync)} instead.")]
         Task<IDataObject?> TryGetInProcessDataObjectAsync();
 
         /// <summary>
-        /// Retrieves a <see cref="IDataTransfer"/> previously placed on the clipboard by <see cref="SetDataAsync"/>, if any.
+        /// Retrieves the exact instance of a <see cref="IDataTransfer"/> previously placed on the clipboard
+        /// by <see cref="SetDataAsync"/>, if any.
         /// </summary>
-        /// <returns>The data object if present, null otherwise.</returns>
+        /// <returns>The data transfer object if present, null otherwise.</returns>
         /// <remarks>
         /// <para>This method cannot be used to retrieve a <see cref="IDataTransfer"/> set by another process.</para>
         /// <para>This method is only supported on Windows, macOS and X11 platforms. Other platforms will always return null.</para>
         /// </remarks>
-        Task<IDataTransfer?> TryGetInProcessDataTransferAsync();
+        Task<IDataTransfer?> TryGetInProcessDataAsync();
     }
 }
