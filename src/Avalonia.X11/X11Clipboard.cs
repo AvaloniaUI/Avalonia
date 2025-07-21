@@ -304,7 +304,7 @@ namespace Avalonia.X11
 
         public Task ClearAsync()
         {
-            return SetTextAsync(null);
+            return SetTextAsync(string.Empty);
         }
 
         public Task SetDataObjectAsync(IDataObject data)
