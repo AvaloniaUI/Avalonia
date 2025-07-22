@@ -292,20 +292,14 @@ partial class AvaloniaView
                 ?.Log(null, "IUIKeyInput.GetPosition {start} {offset}", pos.Index, (int)offset);
 
             var res = GetPositionCore(pos, offset);
-            Logger.TryGet(LogEventLevel.Debug, ImeLog)
-                ?.Log(null, $"res: " + (res == null ? "null" : (int)res.Index));
-            return res!;
+            Logger.TryGet(LogEventLevel.Debug, ImeLog)?.Log(null, "res: {position}", res.Index);
+            return res;
         }
 
-        private AvaloniaTextPosition? GetPositionCore(AvaloniaTextPosition pos, nint offset)
+        private AvaloniaTextPosition GetPositionCore(AvaloniaTextPosition pos, nint offset)
         {
-
             var end = pos.Index + (int)offset;
-            if (end < 0)
-                return null!;
-            if (end > DocumentLength)
-                return null;
-            return new AvaloniaTextPosition(end);
+            return new AvaloniaTextPosition(Math.Clamp(end, 0, DocumentLength));
         }
 
         UITextPosition IUITextInput.GetPosition(UITextPosition fromPosition, UITextLayoutDirection inDirection,
@@ -316,16 +310,14 @@ partial class AvaloniaView
                 ?.Log(null, "IUIKeyInput.GetPosition {start} {direction} {offset}", pos.Index, inDirection, (int)offset);
 
             var res = GetPositionCore(pos, inDirection, offset);
-            Logger.TryGet(LogEventLevel.Debug, ImeLog)
-                ?.Log(null, $"res: " + (res == null ? "null" : (int)res.Index));
-            return res!;
+            Logger.TryGet(LogEventLevel.Debug, ImeLog)?.Log(null, "res: {position}", res.Index);
+            return res;
         }
 
-        private AvaloniaTextPosition? GetPositionCore(AvaloniaTextPosition fromPosition, UITextLayoutDirection inDirection,
+        private AvaloniaTextPosition GetPositionCore(AvaloniaTextPosition fromPosition, UITextLayoutDirection inDirection,
             nint offset)
         {
-            var f = (AvaloniaTextPosition)fromPosition;
-            var newPosition = f.Index;
+            var newPosition = fromPosition.Index;
 
             switch (inDirection)
             {
@@ -338,13 +330,7 @@ partial class AvaloniaView
                     break;
             }
 
-            if (newPosition < 0)
-                return null!;
-
-            if (newPosition > DocumentLength)
-                return null!;
-
-            return new AvaloniaTextPosition(newPosition);
+            return new AvaloniaTextPosition(Math.Clamp(newPosition, 0, DocumentLength));
         }
 
         NSComparisonResult IUITextInput.ComparePosition(UITextPosition first, UITextPosition second)
