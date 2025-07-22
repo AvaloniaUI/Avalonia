@@ -1786,6 +1786,22 @@ namespace Avalonia.X11 {
         public ulong blue_mask;
         private fixed byte funcs[128];
     }
+
+    [Flags]
+    internal enum VisualInfoMasks : long
+    {
+        VisualNoMask = 0x0,
+        VisualIDMask = 0x1,
+        VisualScreenMask = 0x2,
+        VisualDepthMask = 0x4,
+        VisualClassMask = 0x8,
+        VisualRedMaskMask = 0x10,
+        VisualGreenMaskMask = 0x20,
+        VisualBlueMaskMask = 0x40,
+        VisualColormapSizeMask = 0x80,
+        VisualBitsPerRGBMask = 0x100,
+        VisualAllMask = 0x1FF,
+    }
     
     [StructLayout(LayoutKind.Sequential)]
     internal struct XVisualInfo

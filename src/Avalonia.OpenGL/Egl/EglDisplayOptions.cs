@@ -12,6 +12,7 @@ public class EglDisplayOptions
     public Func<bool>? DeviceLostCheckCallback { get; set; }
     public Action? DisposeCallback { get; set; }
     public IEnumerable<GlVersion>? GlVersions { get; set; }
+    public Func<EglInterface, nint, nint[], nint>? ChooseConfigCallback { get; set; }
 }
 
 public class EglContextOptions

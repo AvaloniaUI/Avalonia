@@ -749,5 +749,8 @@ namespace Avalonia.X11
 
         public static int XkbSetGroupForCoreState(int state, int newGroup)
             => (state & ~(0x3 << 13)) | ((newGroup & 0x3) << 13);
+
+        [DllImport(libX11)]
+        public static extern IntPtr XGetVisualInfo(IntPtr display, VisualInfoMasks vinfo_mask, in XVisualInfo vinfo_template, out int nitems_return);
     }
 }

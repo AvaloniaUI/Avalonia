@@ -64,8 +64,8 @@ namespace Avalonia.OpenGL.Egl
 
         [GetProcAddress("eglChooseConfig")]
         public partial bool ChooseConfig(IntPtr display, int[] attribs,
-            out IntPtr surfaceConfig, int numConfigs, out int choosenConfig);
-        
+            IntPtr[]? configs, int numConfigs, out int choosenConfig);
+
         [GetProcAddress("eglCreateContext")]
         public partial IntPtr CreateContext(IntPtr display, IntPtr config,
             IntPtr share, int[] attrs);

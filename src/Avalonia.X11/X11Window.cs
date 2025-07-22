@@ -121,8 +121,9 @@ namespace Avalonia.X11
 
             // OpenGL seems to be do weird things to it's current window which breaks resize sometimes
             _useRenderWindow = glfeature != null;
-            
+
             var glx = glfeature as GlxPlatformGraphics;
+            var egl = glfeature as EglPlatformGraphics;
             if (glx != null)
             {
                 visualInfo = *glx.Display.VisualInfo;
@@ -130,14 +131,23 @@ namespace Avalonia.X11
                 // the target sufrace currently is
                 _useCompositorDrivenRenderWindowResize = true;
             }
+            else if (egl != null)
+            {
+                XVisualInfo template = new XVisualInfo();
+                template.visualid = (nint)egl.Display.NativeVisualId;
+                var visualInfoPtr = XGetVisualInfo(_x11.Display, VisualInfoMasks.VisualIDMask, template, out var nitems);
+                if (nitems > 0 && visualInfoPtr != IntPtr.Zero)
+                {
+                    visualInfo = *(XVisualInfo*)visualInfoPtr;
+                    XFree(visualInfoPtr);
+                }
+            }
             else
             {
                 // Egl or software (no glfeature)
                 visualInfo = _x11.TransparentVisualInfo;
             }
 
-            var egl = glfeature as EglPlatformGraphics;
-            
             var visual = IntPtr.Zero;
             var depth = 24;
             if (visualInfo != null)
