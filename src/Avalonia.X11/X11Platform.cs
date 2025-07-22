@@ -209,7 +209,45 @@ namespace Avalonia.X11
 
                 if (renderingMode == X11RenderingMode.Egl)
                 {
-                    if (EglPlatformGraphics.TryCreate() is { } egl)
+                    if (EglPlatformGraphics.TryCreate(() => new EglDisplay(new EglDisplayCreationOptions
+                    {
+                        Egl = new EglInterface(),
+                        SupportsMultipleContexts = true,
+                        SupportsContextSharing = true,
+                        ChooseConfigCallback = (egl, display, configs) =>
+                        {
+                            if (configs.Length == 0)
+                            {
+                                return default;
+                            }
+                            XVisualInfo template = new XVisualInfo();
+                            for (int i = 0; i < configs.Length; i++)
+                            {
+                                egl.GetConfigAttrib(display, configs[i], EglConsts.EGL_NATIVE_VISUAL_ID, out var visualId);
+                                template.visualid = (nint)visualId;
+                                var visualInfoPtr = XGetVisualInfo(info.Display, VisualInfoMasks.VisualIDMask, template, out var nitems);
+                                if (nitems > 0 && visualInfoPtr != IntPtr.Zero)
+                                {
+                                    unsafe
+                                    {
+                                        try
+                                        {
+                                            if (((XVisualInfo*)visualInfoPtr)->depth == 32)
+                                            {
+                                                // Prefer to use 32bit depth.
+                                                return configs[i];
+                                            }
+                                        }
+                                        finally
+                                        {
+                                            XFree(visualInfoPtr);
+                                        }
+                                    }
+                                }
+                            }
+                            return configs.First();
+                        },
+                    })) is { } egl)
                     {
                         return egl;
                     }
