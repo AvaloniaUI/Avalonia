@@ -9,7 +9,7 @@ namespace Avalonia.Platform
     public enum ExtendClientAreaChromeHints
     {
         /// <summary>
-        /// The will be no chrome at all.
+        /// There will be no chrome at all.
         /// </summary>
         NoChrome,
 
