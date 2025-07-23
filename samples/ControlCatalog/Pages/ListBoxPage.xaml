@@ -20,6 +20,9 @@
         <Setter Property="Background" Value="Blue" />
         <Setter Property="FontWeight" Value="Bold" />
       </Style>
+	  <Style Selector="VirtualizingStackPanel">
+	    <Setter Property="CacheLength" Value="0.5" />
+	  </Style>
     </DockPanel.Styles>
     <StackPanel DockPanel.Dock="Top" Margin="4">
       <TextBlock Classes="h2">Hosts a collection of ListBoxItem.</TextBlock>
