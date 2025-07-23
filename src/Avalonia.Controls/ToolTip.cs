@@ -1,12 +1,12 @@
 using System;
-using System.ComponentModel;
+using System.Diagnostics;
 using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.Controls.Primitives.PopupPositioning;
+using Avalonia.Input;
 using Avalonia.Reactive;
-using Avalonia.Styling;
 
 namespace Avalonia.Controls
 {
@@ -81,6 +81,12 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterAttached<ToolTip, Control, bool>("ServiceEnabled", defaultValue: true, inherits: true);
 
         /// <summary>
+        /// Defines the ToolTip.MoveWithPointerProperty attached property.
+        /// </summary>
+        public static readonly AttachedProperty<bool> MoveWithPointerProperty =
+            AvaloniaProperty.RegisterAttached<ToolTip, Control, bool>("MoveWithPointer", defaultValue: false);
+        
+        /// <summary>
         /// Stores the current <see cref="ToolTip"/> instance in the control.
         /// </summary>
         internal static readonly AttachedProperty<ToolTip?> ToolTipProperty =
@@ -111,6 +117,7 @@ namespace Avalonia.Controls
         private Popup? _popup;
         private Action<IPopupHost?>? _popupHostChangedHandler;
         private CompositeDisposable? _subscriptions;
+        private static ToolTip? _activeToolTip;
 
         /// <summary>
         /// Initializes static members of the <see cref="ToolTip"/> class.
@@ -118,6 +125,7 @@ namespace Avalonia.Controls
         static ToolTip()
         {
             IsOpenProperty.Changed.Subscribe(IsOpenChanged);
+            PointerMovedEvent.AddClassHandler<TopLevel>(OnTopLevelPointerMoved, RoutingStrategies.Tunnel, handledEventsToo: true);
         }
 
         /// <summary>
@@ -162,6 +170,28 @@ namespace Avalonia.Controls
         public static void SetIsOpen(Control element, bool value)
         {
             element.SetValue(IsOpenProperty, value);
+        }
+        
+        /// <summary>
+        /// Gets the value of the ToolTip.MoveWithPointer attached property.
+        /// </summary>
+        /// <param name="element">The control to get the property from.</param>
+        /// <returns>
+        /// A value indicating whether to move the tool tip with the pointer.
+        /// </returns>
+        public static bool GetMoveWithPointer(Control element)
+        {
+            return element.GetValue(MoveWithPointerProperty);
+        }
+
+        /// <summary>
+        /// Sets the value of the ToolTip.MoveWithPointer attached property.
+        /// </summary>
+        /// <param name="element">The control to get the property from.</param>
+        /// <param name="value">A value indicating whether to move the tool tip with the pointer.</param>
+        public static void SetMoveWithPointer(Control element, bool value)
+        {
+            element.SetValue(MoveWithPointerProperty, value);
         }
 
         /// <summary>
@@ -389,6 +419,29 @@ namespace Avalonia.Controls
             }
         }
 
+        private static void OnTopLevelPointerMoved(TopLevel topLevel, PointerEventArgs e) 
+        {
+            if (_activeToolTip != null) 
+            {
+                Control? adorned = _activeToolTip.AdornedControl;
+                if (adorned == null)
+                    return;
+                
+                if (GetPlacement(adorned) != PlacementMode.Pointer || !GetMoveWithPointer(adorned)) 
+                    return;
+
+                ToolTip? tip = adorned.GetValue(ToolTipProperty);
+                Debug.Assert(ReferenceEquals(tip, _activeToolTip));
+                
+                if (tip._popup != null && tip._popup.IsOpen) 
+                {
+                    Debug.Assert(adorned == tip.AdornedControl);
+
+                    tip._popup.UpdatePositionToPointer();
+                }
+            }
+        }
+
         internal Control? AdornedControl { get; private set; }
         internal event EventHandler? Closed;
         internal IPopupHost? PopupHost => _popup?.Host;
@@ -422,7 +475,10 @@ namespace Avalonia.Controls
                 _popup.Bind(Popup.PlacementProperty, control.GetBindingObservable(PlacementProperty)),
                 _popup.Bind(Popup.CustomPopupPlacementCallbackProperty, control.GetBindingObservable(CustomPopupPlacementCallbackProperty))
             });
-
+            
+            Debug.Assert(_activeToolTip == null);
+            _activeToolTip = this;
+            
             _popup.PlacementTarget = control;
             _popup.SetPopupParent(control);
 
@@ -446,6 +502,8 @@ namespace Avalonia.Controls
             }
 
             _subscriptions?.Dispose();
+
+            _activeToolTip = null;
         }
 
         private void OnPopupClosed(object? sender, EventArgs e)

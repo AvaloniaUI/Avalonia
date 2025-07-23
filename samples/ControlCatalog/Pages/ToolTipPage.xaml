@@ -19,8 +19,9 @@
             <Border Background="{DynamicResource SystemAccentColor}"
                     Margin="5"
                     Padding="50"
-                    ToolTip.Tip="This is a ToolTip">
-                <TextBlock>Hover Here</TextBlock>
+                    ToolTip.Tip="This is a ToolTip"
+                    ToolTip.MoveWithPointer="True">
+                <TextBlock>Hover Here, Tip moves with cursor</TextBlock>
             </Border>
             <Border Name="Border"
                     Background="{DynamicResource SystemAccentColor}"
