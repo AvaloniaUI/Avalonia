@@ -280,13 +280,29 @@ namespace Avalonia.Controls.Primitives
                 case NotifyCollectionChangedAction.Add:
                     foreach (Visual i in e.NewItems!)
                     {
-                        UpdateAdornedElement(i, i.GetValue(AdornedElementProperty));
+                        if (!i.IsAttachedToVisualTree)
+                        {
+                            i.AttachedToVisualTree += AdornerAttachedToVisualTree;
+                        }
+                        else
+                        {
+                            UpdateAdornedElement(i, i.GetValue(AdornedElementProperty));
+                        }
                     }
 
                     break;
             }
 
             InvalidateArrange();
+        }
+
+        private void AdornerAttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
+        {
+            if (sender is Visual visual)
+            {
+                visual.AttachedToVisualTree -= AdornerAttachedToVisualTree;
+                UpdateAdornedElement(visual, visual.GetValue(AdornedElementProperty));
+            }
         }
 
         private void UpdateAdornedElement(Visual adorner, Visual? adorned)
