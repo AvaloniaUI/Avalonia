@@ -5,7 +5,7 @@ namespace Avalonia.Input
     /// <summary>
     /// Holds arguments for a <see cref="InputElement.GotFocusEvent"/>.
     /// </summary>
-    public class GotFocusEventArgs : RoutedEventArgs
+    public class GotFocusEventArgs : RoutedEventArgs, IKeyModifiersEventArgs
     {
         public GotFocusEventArgs() : base(InputElement.GotFocusEvent)
         {

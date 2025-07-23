@@ -1,3 +1,5 @@
+using Avalonia.Input;
+
 namespace Avalonia.Controls.Primitives
 {
     /// <summary>
@@ -5,5 +7,10 @@ namespace Avalonia.Controls.Primitives
     /// </summary>
     public class TabStripItem : ListBoxItem
     {
+        protected override void OnGotFocus(GotFocusEventArgs e)
+        {
+            base.OnGotFocus(e);
+            UpdateSelectionFromEvent(e);
+        }
     }
 }
