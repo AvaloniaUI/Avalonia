@@ -609,5 +609,9 @@ namespace Avalonia
         /// For now it's internal to keep some loud community members happy about the API being pretty 
         /// </summary>
         internal bool IsEmpty() => this == default;
+
+        internal bool IsUniform() => Left.Equals(Top) &&
+            Left.Equals(Right) &&
+            Left.Equals(Bottom);
     }
 }
