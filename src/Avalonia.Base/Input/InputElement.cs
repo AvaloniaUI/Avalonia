@@ -628,7 +628,7 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="e">Data about the event.</param>
         protected virtual void OnLostFocus(RoutedEventArgs e)
-        {            
+        {
         }
 
         /// <summary>
@@ -745,10 +745,10 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-		/// Called when FocusManager get the next TabStop to interact with the focused control.
-		/// </summary>
-		/// <returns>Next tab stop.</returns>
-		protected internal virtual InputElement? GetNextTabStopOverride() => null;
+        /// Called when FocusManager get the next TabStop to interact with the focused control.
+        /// </summary>
+        /// <returns>Next tab stop.</returns>
+        protected internal virtual InputElement? GetNextTabStopOverride() => null;
 
         /// <summary>
         /// Called when FocusManager get the previous TabStop to interact with the focused control.
