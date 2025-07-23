@@ -813,7 +813,10 @@ namespace Avalonia.Controls
 
                 _userCalledPopulate = false;
 
-                if (ContextMenu is not { IsOpen: true })
+                var textBoxContextMenuIsOpen = TextBox?.ContextFlyout?.IsOpen == true || TextBox?.ContextMenu?.IsOpen == true;
+                var contextMenuIsOpen = ContextFlyout?.IsOpen == true || ContextMenu?.IsOpen == true;
+
+                if (!textBoxContextMenuIsOpen && !contextMenuIsOpen && ClearSelectionOnLostFocus)
                 {
                     ClearTextBoxSelection();
                 }
