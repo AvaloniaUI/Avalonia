@@ -554,12 +554,14 @@
         while (ev.type != NSEventTypeLeftMouseUp)
         {
             [self forwardToAvnView:ev];
+            [super sendEvent:ev]; 
             ev = [NSApp nextEventMatchingMask:mask
                                      untilDate:[NSDate distantFuture]
                                         inMode:NSEventTrackingRunLoopMode
                                        dequeue:YES];
         }
         [self forwardToAvnView:ev];
+        [super sendEvent:ev];
         return;
     }
     
