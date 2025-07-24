@@ -245,7 +245,11 @@ namespace Avalonia.Headless
 
         public virtual bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, out IGlyphTypeface glyphTypeface)
         {
-            glyphTypeface = new HeadlessGlyphTypefaceImpl(FontFamily.DefaultFontFamilyName, FontStyle.Normal, FontWeight.Normal, FontStretch.Normal);
+            glyphTypeface = new HeadlessGlyphTypefaceImpl(
+                FontFamily.DefaultFontFamilyName, 
+                fontSimulations.HasFlag(FontSimulations.Oblique) ? FontStyle.Italic : FontStyle.Normal, 
+                fontSimulations.HasFlag(FontSimulations.Bold) ? FontWeight.Bold : FontWeight.Normal, 
+                FontStretch.Normal);
 
             TryCreateGlyphTypefaceCount++;
 

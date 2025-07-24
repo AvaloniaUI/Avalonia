@@ -141,18 +141,14 @@ unsafe class VulkanContent : IDisposable
 
         
         var model = Matrix4x4.CreateFromYawPitchRoll((float)yaw, (float)pitch, (float)roll);
-        var view = Matrix4x4.CreateLookAt(new Vector3(25, 25, 25), new Vector3(), new Vector3(0, -1, 0));
-        var projection =
-            Matrix4x4.CreatePerspectiveFieldOfView((float)(Math.PI / 4), (float)((float)image.Size.Width / image.Size.Height),
-                0.01f, 1000);
-        
+
         var vertexConstant = new VertextPushConstant()
         {
             Disco = (float)disco,
             MinY = _minY,
             MaxY = _maxY,
             Model = model,
-            Time = (float)St.Elapsed.TotalSeconds
+            Time = (float)(St.Elapsed.Ticks % (TimeSpan.TicksPerSecond * 40) / (double)TimeSpan.TicksPerSecond)
         };
 
         var commandBuffer = _context.Pool.CreateCommandBuffer();

@@ -279,20 +279,20 @@ namespace Avalonia.Android.Platform.Input
 
         public ICharSequence? GetSelectedTextFormatted([GeneratedEnum] GetTextFlags flags)
         {
-            return new SpannableString(_editBuffer.SelectedText);
+            return new Java.Lang.String(_editBuffer.SelectedText ?? "");
         }
 
         public ICharSequence? GetTextAfterCursorFormatted(int n, [GeneratedEnum] GetTextFlags flags)
         {
             var end = Math.Min(_editBuffer.Selection.End, _editBuffer.Text.Length);
-            return new SpannableString(_editBuffer.Text.Substring(end, Math.Min(n, _editBuffer.Text.Length - end)));
+            return new Java.Lang.String(_editBuffer.Text.Substring(end, Math.Min(n, _editBuffer.Text.Length - end)));
         }
 
         public ICharSequence? GetTextBeforeCursorFormatted(int n, [GeneratedEnum] GetTextFlags flags)
         {
             var start = Math.Max(0, _editBuffer.Selection.Start - n);
             var length = _editBuffer.Selection.Start - start;
-            return _editBuffer.Text == null ? null : new SpannableString(_editBuffer.Text.Substring(start, length));
+            return _editBuffer.Text == null ? null : new Java.Lang.String(_editBuffer.Text.Substring(start, length));
         }
 
         public bool PerformPrivateCommand(string? action, Bundle? data)

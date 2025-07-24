@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
 using System.Windows.Input;
 using Avalonia.Automation;
@@ -466,9 +465,11 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Called when the <see cref="MenuItem"/> is clicked.
+        /// Invoked when an unhandled <see cref="ClickEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
         /// </summary>
-        /// <param name="e">The click event args.</param>
+        /// <param name="e">Data about the event.</param>
         protected virtual void OnClick(RoutedEventArgs e)
         {
             (var command, var parameter) = (Command, CommandParameter);
@@ -507,9 +508,11 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Called when a submenu is opened on this MenuItem or a child MenuItem.
+        /// Invoked when an unhandled <see cref="SubmenuOpenedEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
         /// </summary>
-        /// <param name="e">The event args.</param>
+        /// <param name="e">Data about the event.</param>
         protected virtual void OnSubmenuOpened(RoutedEventArgs e)
         {
             var menuItem = e.Source as MenuItem;
@@ -567,7 +570,7 @@ namespace Avalonia.Controls
                 }
             }
         }
-        
+
         /// <summary>
         /// Closes all submenus of the menu item.
         /// </summary>
@@ -605,12 +608,12 @@ namespace Avalonia.Controls
             }
 
         }
-        
+
         private static void OnAccessKeyPressed(MenuItem sender, AccessKeyPressedEventArgs e)
         {
-            if (e is not { Handled: false, Target: null }) 
+            if (e is not { Handled: false, Target: null })
                 return;
-            
+
             e.Target = sender;
             e.Handled = true;
         }
@@ -785,15 +788,23 @@ namespace Avalonia.Controls
         {
             var (oldValue, newValue) = e.GetOldAndNewValue<object?>();
 
-            if (oldValue is ILogical oldLogical)
+            if (oldValue is { })
             {
-                LogicalChildren.Remove(oldLogical);
+                if (oldValue is ILogical oldLogical)
+                {
+                    LogicalChildren.Remove(oldLogical);
+                }
+
                 PseudoClasses.Remove(":icon");
             }
 
-            if (newValue is ILogical newLogical)
+            if (newValue is { })
             {
-                LogicalChildren.Add(newLogical);
+                if (newValue is ILogical newLogical)
+                {
+                    LogicalChildren.Add(newLogical);
+                }
+
                 PseudoClasses.Add(":icon");
             }
         }

@@ -14,6 +14,9 @@ namespace Avalonia.Skia
 {
     internal class TextShaperImpl : ITextShaperImpl
     {
+        [ThreadStatic]
+        private static Buffer? s_buffer;
+
         private static readonly ConcurrentDictionary<int, Language> s_cachedLanguage = new();
 
         public ShapedBuffer ShapeText(ReadOnlyMemory<char> text, TextShaperOptions options)
@@ -24,69 +27,70 @@ namespace Avalonia.Skia
             var bidiLevel = options.BidiLevel;
             var culture = options.Culture;
 
-            using (var buffer = new Buffer())
+            var buffer = s_buffer ??= new Buffer();
+
+            buffer.Reset();
+
+            // HarfBuzz needs the surrounding characters to correctly shape the text
+            var containingText = GetContainingMemory(text, out var start, out var length).Span;
+            buffer.AddUtf16(containingText, start, length);
+
+            MergeBreakPair(buffer);
+
+            buffer.GuessSegmentProperties();
+
+            buffer.Direction = (bidiLevel & 1) == 0 ? Direction.LeftToRight : Direction.RightToLeft;
+
+            var usedCulture = culture ?? CultureInfo.CurrentCulture;
+
+            buffer.Language = s_cachedLanguage.GetOrAdd(usedCulture.LCID, _ => new Language(usedCulture));
+
+            var font = ((GlyphTypefaceImpl)typeface).Font;
+
+            font.Shape(buffer, GetFeatures(options));
+
+            if (buffer.Direction == Direction.RightToLeft)
             {
-                // HarfBuzz needs the surrounding characters to correctly shape the text
-                var containingText = GetContainingMemory(text, out var start, out var length).Span;
-                buffer.AddUtf16(containingText, start, length);
-
-                MergeBreakPair(buffer);
-
-                buffer.GuessSegmentProperties();
-
-                buffer.Direction = (bidiLevel & 1) == 0 ? Direction.LeftToRight : Direction.RightToLeft;
-
-                var usedCulture = culture ?? CultureInfo.CurrentCulture;
-
-                buffer.Language = s_cachedLanguage.GetOrAdd(usedCulture.LCID, _ => new Language(usedCulture));
-
-                var font = ((GlyphTypefaceImpl)typeface).Font;
-
-                font.Shape(buffer, GetFeatures(options));
-
-                if (buffer.Direction == Direction.RightToLeft)
-                {
-                    buffer.Reverse();
-                }
-
-                font.GetScale(out var scaleX, out _);
-
-                var textScale = fontRenderingEmSize / scaleX;
-
-                var bufferLength = buffer.Length;
-
-                var shapedBuffer = new ShapedBuffer(text, bufferLength, typeface, fontRenderingEmSize, bidiLevel);
-
-                var glyphInfos = buffer.GetGlyphInfoSpan();
-
-                var glyphPositions = buffer.GetGlyphPositionSpan();
-
-                for (var i = 0; i < bufferLength; i++)
-                {
-                    var sourceInfo = glyphInfos[i];
-
-                    var glyphIndex = (ushort)sourceInfo.Codepoint;
-
-                    var glyphCluster = (int)sourceInfo.Cluster;
-
-                    var glyphAdvance = GetGlyphAdvance(glyphPositions, i, textScale) + options.LetterSpacing;
-
-                    var glyphOffset = GetGlyphOffset(glyphPositions, i, textScale);
-
-                    if (glyphCluster < containingText.Length && containingText[glyphCluster] == '\t')
-                    {
-                        glyphIndex = typeface.GetGlyph(' ');
-
-                        glyphAdvance = options.IncrementalTabWidth > 0 ?
-                            options.IncrementalTabWidth :
-                            4 * typeface.GetGlyphAdvance(glyphIndex) * textScale;
-                    }
-
-                    shapedBuffer[i] = new Media.TextFormatting.GlyphInfo(glyphIndex, glyphCluster, glyphAdvance, glyphOffset);
-                }
-
-                return shapedBuffer;
+                buffer.Reverse();
             }
+
+            font.GetScale(out var scaleX, out _);
+
+            var textScale = fontRenderingEmSize / scaleX;
+
+            var bufferLength = buffer.Length;
+
+            var shapedBuffer = new ShapedBuffer(text, bufferLength, typeface, fontRenderingEmSize, bidiLevel);
+
+            var glyphInfos = buffer.GetGlyphInfoSpan();
+
+            var glyphPositions = buffer.GetGlyphPositionSpan();
+
+            for (var i = 0; i < bufferLength; i++)
+            {
+                var sourceInfo = glyphInfos[i];
+
+                var glyphIndex = (ushort)sourceInfo.Codepoint;
+
+                var glyphCluster = (int)sourceInfo.Cluster;
+
+                var glyphAdvance = GetGlyphAdvance(glyphPositions, i, textScale) + options.LetterSpacing;
+
+                var glyphOffset = GetGlyphOffset(glyphPositions, i, textScale);
+
+                if (glyphCluster < containingText.Length && containingText[glyphCluster] == '\t')
+                {
+                    glyphIndex = typeface.GetGlyph(' ');
+
+                    glyphAdvance = options.IncrementalTabWidth > 0 ?
+                        options.IncrementalTabWidth :
+                        4 * typeface.GetGlyphAdvance(glyphIndex) * textScale;
+                }
+
+                shapedBuffer[i] = new Media.TextFormatting.GlyphInfo(glyphIndex, glyphCluster, glyphAdvance, glyphOffset);
+            }
+
+            return shapedBuffer;
         }
 
         private static void MergeBreakPair(Buffer buffer)
