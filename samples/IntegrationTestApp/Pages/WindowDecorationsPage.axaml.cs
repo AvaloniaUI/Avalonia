@@ -21,6 +21,12 @@ public partial class WindowDecorationsPage : UserControl
             | (WindowForceSystemChrome.IsChecked == true ? ExtendClientAreaChromeHints.SystemChrome : 0)
             | (WindowPreferSystemChrome.IsChecked == true ? ExtendClientAreaChromeHints.PreferSystemChrome : 0)
             | (WindowMacThickSystemChrome.IsChecked == true ? ExtendClientAreaChromeHints.OSXThickTitleBar : 0);
+        
+        if (window is ShowWindowTest showWindowTest && WindowShowTitleAreaControl.IsChecked == true)
+        {
+            showWindowTest.ShowTitleAreaControl();
+        }
+        
         AdjustOffsets(window);
 
         window.Background = Brushes.Transparent;

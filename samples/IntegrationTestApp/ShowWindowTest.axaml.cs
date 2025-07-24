@@ -30,12 +30,18 @@ namespace IntegrationTestApp
     {
         private readonly DispatcherTimer? _timer;
         private readonly TextBox? _orderTextBox;
+        private int _mouseMoveCount;
+        private int _mouseReleaseCount;
 
         public ShowWindowTest()
         {
             InitializeComponent();
             DataContext = this;
             PositionChanged += (s, e) => CurrentPosition.Text = $"{Position}";
+
+            PointerMoved += OnPointerMoved;
+            PointerReleased += OnPointerReleased;
+            PointerExited += (_, e) => ResetCounters();
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
@@ -74,5 +80,47 @@ namespace IntegrationTestApp
 
         private void AddToWidth_Click(object? sender, RoutedEventArgs e) => Width = Bounds.Width + 10;
         private void AddToHeight_Click(object? sender, RoutedEventArgs e) => Height = Bounds.Height + 10;
+        
+        private void OnPointerMoved(object? sender, Avalonia.Input.PointerEventArgs e)
+        {
+            _mouseMoveCount++;
+            UpdateCounterDisplays();
+        }
+        
+        private void OnPointerReleased(object? sender, Avalonia.Input.PointerReleasedEventArgs e)
+        {
+            _mouseReleaseCount++;
+            UpdateCounterDisplays();
+        }
+        
+        public void ResetCounters()
+        {
+            _mouseMoveCount = 0;
+            _mouseReleaseCount = 0;
+            UpdateCounterDisplays();
+        }
+        
+        private void UpdateCounterDisplays()
+        {
+            var mouseMoveCountTextBox = this.FindControl<TextBox>("MouseMoveCount");
+            var mouseReleaseCountTextBox = this.FindControl<TextBox>("MouseReleaseCount");
+            
+            if (mouseMoveCountTextBox != null)
+                mouseMoveCountTextBox.Text = _mouseMoveCount.ToString();
+            
+            if (mouseReleaseCountTextBox != null)
+                mouseReleaseCountTextBox.Text = _mouseReleaseCount.ToString();
+        }
+        
+        public void ShowTitleAreaControl()
+        {
+            var titleAreaControl = this.FindControl<Grid>("TitleAreaControl");
+            if (titleAreaControl == null) return;
+            titleAreaControl.IsVisible = true;
+                
+            var titleBarHeight = ExtendClientAreaTitleBarHeightHint > 0 ? ExtendClientAreaTitleBarHeightHint : 30;
+            titleAreaControl.Margin = new Thickness(110, -titleBarHeight, 8, 0);
+            titleAreaControl.Height = titleBarHeight;
+        }
     }
 }

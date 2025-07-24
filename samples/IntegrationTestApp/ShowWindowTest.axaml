@@ -5,8 +5,17 @@
         Name="SecondaryWindow"
         x:DataType="Window"
         Title="Show Window Test">
-  <integrationTestApp:MeasureBorder Name="MyBorder" Background="{DynamicResource SystemRegionBrush}">
-    <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+  <Grid>
+    <Grid Name="TitleAreaControl" IsVisible="False" 
+          Background="LightBlue" VerticalAlignment="Top" ZIndex="100"
+          Margin="0,0,0,0">
+      <TextBlock Text="Title Area Control (Tabs)" 
+                 HorizontalAlignment="Center" VerticalAlignment="Center" 
+                 Foreground="DarkBlue" FontWeight="Bold" />
+    </Grid>
+    
+    <integrationTestApp:MeasureBorder Name="MyBorder" Background="{DynamicResource SystemRegionBrush}">
+    <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
       <Label Grid.Column="0" Grid.Row="1">Client Size</Label>
       <TextBox Name="CurrentClientSize" Grid.Column="1" Grid.Row="1" IsReadOnly="True"
                Text="{Binding ClientSize, Mode=OneWay}" />
@@ -53,12 +62,19 @@
       <Label Grid.Row="11" Content="MeasuredWith:" />
       <TextBlock Grid.Column="1" Grid.Row="11" Name="CurrentMeasuredWithText" Text="{Binding #MyBorder.MeasuredWith}" />
 
-      <StackPanel Orientation="Horizontal" Grid.Row="12">
+      <Label Grid.Column="0" Grid.Row="12">Mouse Move Event Count</Label>
+      <TextBox Name="MouseMoveCount" Grid.Column="1" Grid.Row="12" IsReadOnly="True" Text="0" />
+      
+      <Label Grid.Column="0" Grid.Row="13">Mouse Release Event Count</Label>
+      <TextBox Name="MouseReleaseCount" Grid.Column="1" Grid.Row="13" IsReadOnly="True" Text="0" />
+      
+      <StackPanel Orientation="Horizontal" Grid.Row="14" Grid.ColumnSpan="2">
         <Button Name="HideButton" Command="{Binding $parent[Window].Hide}">Hide</Button>
         <Button Name="AddToWidth" Click="AddToWidth_Click">Add to Width</Button>
         <Button Name="AddToHeight" Click="AddToHeight_Click">Add to Height</Button>
       </StackPanel>
       
     </Grid>
-  </integrationTestApp:MeasureBorder>
+    </integrationTestApp:MeasureBorder>
+  </Grid>
 </Window>

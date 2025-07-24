@@ -9,6 +9,7 @@
     <CheckBox Name="WindowForceSystemChrome" Content="Force SystemChrome" />
     <CheckBox Name="WindowPreferSystemChrome" Content="Prefer SystemChrome" />
     <CheckBox Name="WindowMacThickSystemChrome" Content="Mac Thick SystemChrome" />
+    <CheckBox Name="WindowShowTitleAreaControl" Content="Show Title Area Control" />
     <TextBox Name="WindowTitleBarHeightHint" Text="-1" Watermark="In dips" />
     <Button Name="ApplyWindowDecorations"
             Content="Apply decorations on this Window"
