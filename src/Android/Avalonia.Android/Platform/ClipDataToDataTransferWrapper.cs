@@ -59,7 +59,7 @@ internal sealed class ClipDataToDataTransferWrapper(ClipData clipData, Context? 
         return Items;
     }
 
-    void IDisposable.Dispose()
+    public void Dispose()
     {
     }
 }

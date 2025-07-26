@@ -8,6 +8,8 @@
     <Button Click="PasteText" Content="Paste text from clipboard" />
     <Button Click="CopyFiles" Content="Copy files to clipboard" />
     <Button Click="PasteFiles" Content="Paste files from clipboard" />
+    <Button Click="CopyBinaryData" Content="Copy bytes to clipboard" />
+    <Button Click="PasteBinaryData" Content="Paste bytes from clipboard" />
     <Button Click="GetFormats" Content="Get clipboard formats" />
     <Button Click="Clear" Content="Clear clipboard" />
 

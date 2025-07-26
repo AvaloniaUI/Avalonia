@@ -165,7 +165,7 @@ namespace Avalonia.iOS
                 _inputPane = null;
 #else
                 _storageProvider = new Storage.IOSStorageProvider(view);
-                _clipboard = new ClipboardImpl();
+                _clipboard = new Input.Platform.Clipboard(new Clipboard.ClipboardImpl(UIPasteboard.General));
                 _inputPane = UIKitInputPane.Instance;
 #endif
                 _insetsManager = new InsetsManager();

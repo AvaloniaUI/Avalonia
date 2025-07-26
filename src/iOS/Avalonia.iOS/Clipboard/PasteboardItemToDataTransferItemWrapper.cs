@@ -1,0 +1,73 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Avalonia.Input.Platform;
+using Avalonia.iOS.Storage;
+using Foundation;
+
+namespace Avalonia.iOS.Clipboard;
+
+internal sealed class PasteboardItemToDataTransferItemWrapper(NSDictionary item)
+    : IDataTransferItem
+{
+    private readonly NSDictionary _item = item; // key: NSString* type, value: id value
+    private DataFormat[]? _formats;
+
+    private DataFormat[] Formats
+    {
+        get
+        {
+            return _formats ??= GetFormatsCore();
+
+            DataFormat[] GetFormatsCore()
+            {
+                var types = _item.Keys;
+                var formats = new DataFormat[types.Length];
+                for (var i = 0; i < types.Length; ++i)
+                    formats[i] = ClipboardDataFormatHelper.ToDataFormat((NSString)types[i]);
+                return formats;
+            }
+        }
+    }
+
+    public IEnumerable<DataFormat> GetFormats()
+        => Formats;
+
+    public bool Contains(DataFormat format)
+        => Array.IndexOf(Formats, format) >= 0;
+
+    public bool ContainsAny(ReadOnlySpan<DataFormat> formats)
+        => Formats.AsSpan().IndexOfAny(formats) >= 0;
+
+    public Task<object?> TryGetAsync(DataFormat format)
+    {
+        try
+        {
+            return Task.FromResult(TryGet(format));
+        }
+        catch (Exception ex)
+        {
+            return Task.FromException<object?>(ex);
+        }
+    }
+
+    private object? TryGet(DataFormat format)
+    {
+        var type = ClipboardDataFormatHelper.ToSystemType(format);
+        if (!_item.TryGetValue((NSString)type, out var value))
+            return null;
+
+        if (DataFormat.Text.Equals(format))
+            return (value as NSString)?.ToString();
+
+        if (DataFormat.File.Equals(format))
+            return (value as NSUrl)?.FilePathUrl is { } filePathUrl ? IOSStorageItem.CreateItem(filePathUrl) : null;
+
+        return value switch
+        {
+            NSString str => (string)str,
+            NSData data => data.ToArray(),
+            _ => null
+        };
+    }
+}

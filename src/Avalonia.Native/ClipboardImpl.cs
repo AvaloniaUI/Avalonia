@@ -9,15 +9,10 @@ using Avalonia.Native.Interop;
 
 namespace Avalonia.Native
 {
-    internal sealed class ClipboardImpl : IOwnedClipboardImpl, IDisposable
+    internal sealed class ClipboardImpl(IAvnClipboard native) : IOwnedClipboardImpl, IDisposable
     {
-        private IAvnClipboard? _native;
-        private long _lastClearChangeCount;
-
-        public ClipboardImpl(IAvnClipboard native)
-        {
-            _native = native;
-        }
+        private IAvnClipboard? _native = native;
+        private long _lastClearChangeCount = long.MinValue;
 
         internal IAvnClipboard Native
             => _native ?? throw new ObjectDisposedException(nameof(ClipboardImpl));
@@ -27,7 +22,7 @@ namespace Avalonia.Native
             _lastClearChangeCount = Native.Clear();
         }
 
-        Task IClipboardImpl.ClearAsync()
+        public Task ClearAsync()
         {
             try
             {
@@ -40,7 +35,7 @@ namespace Avalonia.Native
             }
         }
 
-        Task<DataFormat[]> IClipboardImpl.GetDataFormatsAsync()
+        public Task<DataFormat[]> GetDataFormatsAsync()
         {
             try
             {
@@ -76,7 +71,7 @@ namespace Avalonia.Native
             } while (true);
         }
 
-        Task<IDataTransfer?> IClipboardImpl.TryGetDataAsync(IEnumerable<DataFormat> formats)
+        public Task<IDataTransfer?> TryGetDataAsync(IEnumerable<DataFormat> formats)
         {
             try
             {
@@ -103,7 +98,7 @@ namespace Avalonia.Native
             return null;
         }
 
-        Task IClipboardImpl.SetDataAsync(IDataTransfer dataTransfer)
+        public Task SetDataAsync(IDataTransfer dataTransfer)
         {
             try
             {
@@ -116,7 +111,7 @@ namespace Avalonia.Native
             }
         }
 
-        public void SetData(IDataTransfer dataTransfer)
+        private void SetData(IDataTransfer dataTransfer)
         {
             ClearCore();
 

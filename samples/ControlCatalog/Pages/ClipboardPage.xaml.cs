@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
@@ -135,7 +136,7 @@ namespace ControlCatalog.Pages
         {
             if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
             {
-                var bytes = await clipboard.TryGetValueAsync<byte[]>(DataFormat.CreateOperatingSystemFormat("image/png"));
+                var bytes = await clipboard.TryGetValueAsync<byte[]>(DataFormat.CreateOperatingSystemFormat("public.zip-archive"));
                 ClipboardContent.Text = bytes is null ? "<null>" : $"{bytes.Length} bytes";
             }
         }
@@ -175,7 +176,7 @@ namespace ControlCatalog.Pages
                 var owns = false;
                 if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
                 {
-                    var dataTransfer = await clipboard.TryGetInProcessDataTransferAsync();
+                    var dataTransfer = await clipboard.TryGetInProcessDataAsync();
                     owns = dataTransfer == _storedDataTransfer && dataTransfer is not null;
                 }
 

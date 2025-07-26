@@ -96,8 +96,6 @@ namespace Avalonia.Browser
                             {
                                 ArrayPool<byte>.Shared.Return(buffer);
                             }
-
-                            AddBytesToItem(buffer);
                             break;
                         }
 

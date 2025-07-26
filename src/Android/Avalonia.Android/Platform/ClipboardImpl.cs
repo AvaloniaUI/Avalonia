@@ -35,7 +35,7 @@ namespace Avalonia.Android.Platform
         {
             try
             {
-                return Task.FromResult<IDataTransfer?>(TryGetData());
+                return Task.FromResult<IDataTransfer?>(TryGetData(formats));
             }
             catch (Exception ex)
             {
@@ -43,10 +43,37 @@ namespace Avalonia.Android.Platform
             }
         }
 
-        private ClipDataToDataTransferWrapper? TryGetData()
-            => _clipboardManager?.PrimaryClip is { } clipData ?
-                new ClipDataToDataTransferWrapper(clipData, _context) :
-                null;
+        private ClipDataToDataTransferWrapper? TryGetData(IEnumerable<DataFormat> formats)
+        {
+            if (_clipboardManager?.PrimaryClip is not { } clipData)
+                return null;
+
+            var shouldDispose = true;
+            var dataTransfer = new ClipDataToDataTransferWrapper(clipData, _context);
+
+            try
+            {
+                var currentFormats = dataTransfer.Formats;
+                if (currentFormats.Length == 0)
+                    return null;
+
+                foreach (var format in formats)
+                {
+                    if (Array.IndexOf(currentFormats, format) >= 0)
+                    {
+                        shouldDispose = false;
+                        return dataTransfer;
+                    }
+                }
+
+                return null;
+            }
+            finally
+            {
+                if (shouldDispose)
+                    dataTransfer.Dispose();
+            }
+        }
 
         public async Task SetDataAsync(IDataTransfer dataTransfer)
         {
