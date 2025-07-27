@@ -196,7 +196,8 @@ namespace Avalonia.X11
                     PropertyMode.Replace,
                     bytes, bytes.Length);
             }
-            SendIncrDataToClient(window, property, target, new MemoryStream(bytes));
+            else
+                SendIncrDataToClient(window, property, target, new MemoryStream(bytes));
         }
 
         private bool HasOwner => XGetSelectionOwner(_x11.Display, _x11.Atoms.CLIPBOARD) != IntPtr.Zero;

@@ -91,6 +91,8 @@ internal class EventStreamWindow : IDisposable
     
     public void Dispose()
     {
+        _timeoutTimer.Stop();
+
         _platform.Windows.Remove(_handle);
         if (_isForeign)
             XLib.XSelectInput(_platform.Display, _handle, IntPtr.Zero);
