@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 #if !BUILDTASK
 using Avalonia.Animation.Animators;
 #endif
@@ -187,11 +188,18 @@ namespace Avalonia
         /// <param name="thickness">The thickness.</param>
         /// <returns>The deflated size.</returns>
         /// <remarks>The deflated size cannot be less than 0.</remarks>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Size Deflate(Thickness thickness)
         {
-            return new Size(
-                Math.Max(0, _width - thickness.Left - thickness.Right),
-                Math.Max(0, _height - thickness.Top - thickness.Bottom));
+            var width = _width - thickness.Left - thickness.Right;
+            if (width < 0)
+                width = 0;
+
+            var height = _height - thickness.Top - thickness.Bottom;
+            if (height < 0)
+                height = 0;
+
+            return new Size(width, height);
         }
 
         /// <summary>
@@ -247,6 +255,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="thickness">The thickness.</param>
         /// <returns>The inflated size.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Size Inflate(Thickness thickness)
         {
             return new Size(

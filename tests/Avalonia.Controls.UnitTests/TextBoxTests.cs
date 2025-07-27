@@ -22,7 +22,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class TextBoxTests
+    public class TextBoxTests : ScopedTestBase
     {
         [Fact]
         public void Opening_Context_Menu_Does_not_Lose_Selection()
@@ -1872,6 +1872,68 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(tb.Text.Length, tb.SelectionStart);
                 Assert.Equal(tb.Text.Length, tb.SelectionEnd);
                 Assert.Equal(tb.Text.Length, tb.CaretIndex);
+            }
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(4)]
+        [InlineData(8)]
+        public void When_Selecting_Multiline_Selection_Should_Be_Extended_With_Up_Arrow_Key_Till_Start_Of_Text(int caretOffsetFromEnd)
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = """
+                           AAAAAA
+                           BBBB
+                           CCCCCCCC
+                           """,
+                    AcceptsReturn = true
+                };
+                tb.ApplyTemplate();
+                tb.Measure(Size.Infinity);
+                tb.CaretIndex = tb.Text.Length - caretOffsetFromEnd;
+
+                RaiseKeyEvent(tb, Key.Up, KeyModifiers.Shift);
+                RaiseKeyEvent(tb, Key.Up, KeyModifiers.Shift);
+                RaiseKeyEvent(tb, Key.Up, KeyModifiers.Shift);
+                RaiseKeyEvent(tb, Key.Up, KeyModifiers.Shift);
+
+                Assert.Equal(0, tb.SelectionEnd);
+            }
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(3)]
+        [InlineData(6)]
+        public void When_Selecting_Multiline_Selection_Should_Be_Extended_With_Down_Arrow_Key_Till_End_Of_Text(int caretOffsetFromStart)
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = """
+                           AAAAAA
+                           BBBB
+                           CCCCCCCC
+                           """,
+                    AcceptsReturn = true
+                };
+                tb.ApplyTemplate();
+                tb.Measure(Size.Infinity);
+                tb.CaretIndex = caretOffsetFromStart;
+
+                RaiseKeyEvent(tb, Key.Down, KeyModifiers.Shift);
+                RaiseKeyEvent(tb, Key.Down, KeyModifiers.Shift);
+                RaiseKeyEvent(tb, Key.Down, KeyModifiers.Shift);
+                RaiseKeyEvent(tb, Key.Down, KeyModifiers.Shift);
+
+                Assert.Equal(tb.Text.Length, tb.SelectionEnd);
             }
         }
 

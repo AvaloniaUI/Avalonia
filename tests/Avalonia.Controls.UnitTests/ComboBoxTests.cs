@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Subjects;
 using Avalonia.Controls.Presenters;
@@ -14,7 +16,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class ComboBoxTests
+    public class ComboBoxTests : ScopedTestBase
     {
         MouseTestHelper _helper = new MouseTestHelper();
         
@@ -253,25 +255,105 @@ namespace Avalonia.Controls.UnitTests
             int initialSelectedIndex,
             int expectedSelectedIndex,
             string searchTerm,
-            params string[] items)
+            params string[] contents)
+        {
+            TestTextSearch(
+                initialSelectedIndex,
+                expectedSelectedIndex,
+                searchTerm,
+                _ => { },
+                contents.Select(content => new ComboBoxItem { Content = content }));
+        }
+
+        [Theory]
+        [InlineData(-1, 1, "c", new[] { "A item", "B item", "C item" }, new[] { "B search", "C search", "A search" })]
+        [InlineData(0, 2, "baz", new[] { "A item", "B item", "C item" }, new[] { "foo", "bar", "baz" })]
+        public void TextSearch_With_TextSearchText_Should_Have_Expected_SelectedIndex(
+            int initialSelectedIndex,
+            int expectedSelectedIndex,
+            string searchTerm,
+            string[] contents,
+            string[] searchTexts)
+        {
+            Assert.Equal(contents.Length, searchTexts.Length);
+
+            TestTextSearch(
+                initialSelectedIndex,
+                expectedSelectedIndex,
+                searchTerm,
+                _ => { },
+                contents.Select((item, index) =>
+                {
+                    var comboBoxItem = new ComboBoxItem { Content = item };
+                    TextSearch.SetText(comboBoxItem, searchTexts[index]);
+                    return comboBoxItem;
+                }));
+        }
+
+        [Theory]
+        [InlineData(-1, 1, "c", new[] { "A item", "B item", "C item" }, new[] { "B search", "C search", "A search" })]
+        [InlineData(0, 2, "baz", new[] { "A item", "B item", "C item" }, new[] { "foo", "bar", "baz" })]
+        public void TextSearch_With_DisplayMemberBinding_Should_Have_Expected_SelectedIndex(
+            int initialSelectedIndex,
+            int expectedSelectedIndex,
+            string searchTerm,
+            string[] values,
+            string[] displays)
+        {
+            Assert.Equal(values.Length, displays.Length);
+
+            TestTextSearch(
+                initialSelectedIndex,
+                expectedSelectedIndex,
+                searchTerm,
+                comboBox => comboBox.DisplayMemberBinding = new Binding(nameof(Item.Display)),
+                values.Select((value, index) => new Item(value, displays[index])));
+        }
+
+        [Theory]
+        [InlineData(-1, 1, "c", new[] { "A item", "B item", "C item" }, new[] { "B search", "C search", "A search" })]
+        [InlineData(0, 2, "baz", new[] { "A item", "B item", "C item" }, new[] { "foo", "bar", "baz" })]
+        public void TextSearch_With_TextSearchBinding_Should_Have_Expected_SelectedIndex(
+            int initialSelectedIndex,
+            int expectedSelectedIndex,
+            string searchTerm,
+            string[] values,
+            string[] displays)
+        {
+            Assert.Equal(values.Length, displays.Length);
+
+            TestTextSearch(
+                initialSelectedIndex,
+                expectedSelectedIndex,
+                searchTerm,
+                comboBox => TextSearch.SetTextBinding(comboBox, new Binding(nameof(Item.Display))),
+                values.Select((value, index) => new Item(value, displays[index])));
+        }
+
+        private static void TestTextSearch(
+            int initialSelectedIndex,
+            int expectedSelectedIndex,
+            string searchTerm,
+            Action<ComboBox> configureComboBox,
+            IEnumerable<object> itemsSource)
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
                 var target = new ComboBox
                 {
-                    Template = GetTemplate(),                    
-                    ItemsSource = items.Select(x => new ComboBoxItem { Content = x }),
+                    Template = GetTemplate(),
+                    ItemsSource = itemsSource.ToArray(),
                 };
+
+                configureComboBox(target);
 
                 TestRoot root = new(target)
                 {
-                    ClientSize = new(500,500),
+                    ClientSize = new(500,500)
                 };
-                
-                target.ApplyTemplate();
-                target.Presenter.ApplyTemplate();
-                target.SelectedIndex = initialSelectedIndex;
+
                 root.LayoutManager.ExecuteInitialLayoutPass();
+                target.SelectedIndex = initialSelectedIndex;
 
                 var args = new TextInputEventArgs
                 {
@@ -284,7 +366,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(expectedSelectedIndex, target.SelectedIndex);
             }
         }
-        
+
         [Fact]
         public void SelectedItem_Validation()
         {
@@ -551,5 +633,7 @@ namespace Avalonia.Controls.UnitTests
             target.SelectedItem = null;
             Assert.Null(target.SelectionBoxItem);
         }
+
+        private sealed record Item(string Value, string Display);
     }
 }

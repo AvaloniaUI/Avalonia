@@ -44,6 +44,10 @@ namespace ControlCatalog
             {
                 desktopLifetime.MainWindow = new MainWindow { DataContext = new MainWindowViewModel() };
             }
+            else if(ApplicationLifetime is IActivityApplicationLifetime singleViewFactoryApplicationLifetime)
+            {
+                singleViewFactoryApplicationLifetime.MainViewFactory = () => new MainView { DataContext = new MainWindowViewModel() };
+            }
             else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewLifetime)
             {
                 singleViewLifetime.MainView = new MainView { DataContext = new MainWindowViewModel() };
@@ -96,6 +100,10 @@ namespace ControlCatalog
                     desktopLifetime.MainWindow = newWindow;
                     newWindow.Show();
                     oldWindow?.Close();
+                }
+                else if (app.ApplicationLifetime is IActivityApplicationLifetime singleViewFactoryApplicationLifetime)
+                {
+                    singleViewFactoryApplicationLifetime.MainViewFactory = () => new MainView { DataContext = new MainWindowViewModel() };
                 }
                 else if (app.ApplicationLifetime is ISingleViewApplicationLifetime singleViewLifetime)
                 {

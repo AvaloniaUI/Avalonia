@@ -1,9 +1,10 @@
 using System;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class NameScopeTests
+    public class NameScopeTests : ScopedTestBase
     {
         [Fact]
         public void Register_Registers_Element()

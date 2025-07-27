@@ -604,8 +604,13 @@ namespace Avalonia.Controls
                 context.FillRectangle(background, new Rect(Bounds.Size));
             }
 
-            var scale = LayoutHelper.GetLayoutScale(this);
-            var padding = LayoutHelper.RoundLayoutThickness(Padding, scale, scale);
+            var padding = Padding;
+            if (UseLayoutRounding)
+            {
+                var scale = LayoutHelper.GetLayoutScale(this);
+                padding = LayoutHelper.RoundLayoutThickness(padding, scale);
+            }
+
             var top = padding.Top;
             var textHeight = TextLayout.Height;
 
@@ -628,7 +633,7 @@ namespace Avalonia.Controls
 
         protected virtual void RenderTextLayout(DrawingContext context, Point origin)
         {
-            TextLayout.Draw(context, origin + new Point(TextLayout.OverhangLeading, 0));
+            TextLayout.Draw(context, origin);
         }
 
         private bool _clearTextInternal;
@@ -708,8 +713,14 @@ namespace Avalonia.Controls
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            var scale = LayoutHelper.GetLayoutScale(this);
-            var padding = LayoutHelper.RoundLayoutThickness(Padding, scale, scale);
+            var padding = Padding;
+
+            if (UseLayoutRounding)
+            {
+                var scale = LayoutHelper.GetLayoutScale(this);
+                padding = LayoutHelper.RoundLayoutThickness(Padding, scale);
+            }
+
             var deflatedSize = availableSize.Deflate(padding);
 
             if (_constraint != deflatedSize)
@@ -740,15 +751,18 @@ namespace Avalonia.Controls
             //This implicitly recreated the TextLayout with a new constraint if we previously reset it.
             var textLayout = TextLayout;
 
-            var size = LayoutHelper.RoundLayoutSizeUp(new Size(textLayout.MinTextWidth, textLayout.Height).Inflate(padding), 1, 1);
-
-            return size;
+            // The textWidth used here is matching that TextPresenter uses to measure the text.
+            return new Size(textLayout.WidthIncludingTrailingWhitespace, textLayout.Height).Inflate(padding);
         }
 
         protected override Size ArrangeOverride(Size finalSize)
         {
-            var scale = LayoutHelper.GetLayoutScale(this);
-            var padding = LayoutHelper.RoundLayoutThickness(Padding, scale, scale);
+            var padding = Padding;
+            if (UseLayoutRounding)
+            {
+                var scale = LayoutHelper.GetLayoutScale(this);
+                padding = LayoutHelper.RoundLayoutThickness(Padding, scale);
+            }
 
             var availableSize = finalSize.Deflate(padding);
 

@@ -1,9 +1,9 @@
-[submodule "nukebuild/Numerge"]
-	path = nukebuild/Numerge
+[submodule "Numerge"]
+	path = external/Numerge
 	url = https://github.com/kekekeks/Numerge.git
-[submodule "src/Markup/Avalonia.Markup.Xaml/XamlIl/xamlil.github"]
-	path = src/Markup/Avalonia.Markup.Xaml.Loader/xamlil.github
+[submodule "XamlX"]
+	path = external/XamlX
 	url = https://github.com/kekekeks/XamlX.git
-[submodule "src/Avalonia.Controls.DataGrid"]
-	path = src/Avalonia.Controls.DataGrid
+[submodule "Avalonia.Controls.DataGrid"]
+	path = external/Avalonia.Controls.DataGrid
 	url = https://github.com/AvaloniaUI/Avalonia.Controls.DataGrid.git

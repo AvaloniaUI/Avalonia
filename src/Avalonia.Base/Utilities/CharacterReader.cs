@@ -2,10 +2,7 @@ using System;
 
 namespace Avalonia.Utilities
 {
-#if !BUILDTASK
-    public
-#endif
-    ref struct CharacterReader
+    internal ref struct CharacterReader
     {
         private ReadOnlySpan<char> _s;
 
@@ -44,6 +41,20 @@ namespace Avalonia.Utilities
             {
                 return false;
             }
+        }
+
+        internal bool TakeIf(string s)
+        {
+            var p = TryPeek(s.Length);
+
+            if (p.SequenceEqual(s.AsSpan()))
+            {
+                _s = _s.Slice(s.Length);
+                Position += s.Length;
+                return true;
+            }
+
+            return false;
         }
 
         public bool TakeIf(Func<char, bool> condition)

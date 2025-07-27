@@ -244,7 +244,7 @@ namespace Avalonia.FreeDesktop
                             return null;
                         if (item.Gesture.KeyModifiers == 0)
                             return null;
-                        var lst = new List<string>();
+                        var lst = new Array<string>();
                         var mod = item.Gesture;
                         if (mod.KeyModifiers.HasAllFlags(KeyModifiers.Control))
                             lst.Add("Control");
@@ -255,7 +255,7 @@ namespace Avalonia.FreeDesktop
                         if (mod.KeyModifiers.HasAllFlags(KeyModifiers.Meta))
                             lst.Add("Super");
                         lst.Add(item.Gesture.Key.ToString());
-                        return VariantValue.ArrayOfVariant((VariantValue[]) [VariantValue.Array(lst)]);
+                        return new Array<Array<string>> { lst }.AsVariantValue();
                     }
 
                     if (name == "toggle-type")
@@ -324,7 +324,7 @@ namespace Avalonia.FreeDesktop
                         var layout = GetLayout(ch, (ch as NativeMenuItem)?.Menu, depth == -1 ? -1 : depth - 1, propertyNames);
                         children[c] = VariantValue.Struct(
                             VariantValue.Int32(layout.Item1),
-                            new Dict<string, VariantValue>(layout.Item2),
+                            new Dict<string, VariantValue>(layout.Item2).AsVariantValue(),
                             VariantValue.ArrayOfVariant(layout.Item3));
                     }
                 }
