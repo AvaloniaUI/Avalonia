@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using Avalonia.Input.Platform;
 using Avalonia.MicroCom;
+using Avalonia.Platform.Storage;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 using FORMATETC = Avalonia.Win32.Interop.UnmanagedMethods.FORMATETC;
 using STGMEDIUM = Avalonia.Win32.Interop.UnmanagedMethods.STGMEDIUM;
@@ -138,7 +139,7 @@ internal class DataTransferToOleDataObjectWrapper(IDataTransfer dataTransfer)
 
     private static object? GetDataCore(IDataTransfer dataTransfer, DataFormat format)
         => DataFormat.File.Equals(format) ?
-            dataTransfer.TryGetValuesAsync<IDataTransferItem>(format).GetAwaiter().GetResult() :
+            dataTransfer.TryGetValuesAsync<IStorageItem>(format).GetAwaiter().GetResult() :
             dataTransfer.TryGetValueAsync<object?>(format).GetAwaiter().GetResult();
 
     unsafe uint Win32Com.IDataObject.QueryGetData(FORMATETC* format)

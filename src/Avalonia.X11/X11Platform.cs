@@ -15,6 +15,7 @@ using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.Vulkan;
 using Avalonia.X11;
+using Avalonia.X11.Clipboard;
 using Avalonia.X11.Dispatching;
 using Avalonia.X11.Glx;
 using Avalonia.X11.Vulkan;
@@ -72,7 +73,7 @@ namespace Avalonia.X11
                : new SleepLoopRenderTimer(60);
 
             var clipboardImpl = new X11ClipboardImpl(this);
-            var clipboard = new Clipboard(clipboardImpl);
+            var clipboard = new Input.Platform.Clipboard(clipboardImpl);
 
             AvaloniaLocator.CurrentMutable.BindToSelf(this)
                 .Bind<IWindowingPlatform>().ToConstant(this)

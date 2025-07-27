@@ -43,7 +43,10 @@ public interface IDataTransfer : IDisposable
     /// </param>
     /// <returns>A list of items.</returns>
     /// <remarks>
-    /// <para>Some platforms (such as Windows and X11) may only support a single data item for most formats.</para>
+    /// <para>
+    /// Some platforms (such as Windows and X11) may only support a single data item for all formats
+    /// except <see cref="DataFormat.File"/>.
+    /// </para>
     /// <para>Items returned by this method must stay valid until the <see cref="IDataTransfer"/> is disposed.</para>
     /// </remarks>
     IEnumerable<IDataTransferItem> GetItems(IEnumerable<DataFormat>? formats = null);

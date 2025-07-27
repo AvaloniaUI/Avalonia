@@ -27,15 +27,15 @@ public sealed class DataTransfer : IDataTransfer
         if (formatArray.Length == 0)
             return [];
 
-        return GetItemsCore();
+        return FilterItems();
 
-        IEnumerable<IDataTransferItem> GetItemsCore()
+        IEnumerable<IDataTransferItem> FilterItems()
         {
             foreach (var item in Items)
             {
-                foreach (var format in item.GetFormats())
+                foreach (var format in formatArray)
                 {
-                    if (Array.IndexOf(formatArray, format) >= 0)
+                    if (item.Contains(format))
                     {
                         yield return item;
                         break;

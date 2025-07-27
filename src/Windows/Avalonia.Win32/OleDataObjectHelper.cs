@@ -13,6 +13,7 @@ using Avalonia.Platform.Storage;
 using Avalonia.Platform.Storage.FileIO;
 using Avalonia.Utilities;
 using FORMATETC = Avalonia.Win32.Interop.UnmanagedMethods.FORMATETC;
+using STGMEDIUM = Avalonia.Win32.Interop.UnmanagedMethods.STGMEDIUM;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia.Win32;
@@ -42,6 +43,33 @@ internal static class OleDataObjectHelper
             lindex = -1,
             tymed = TYMED.TYMED_HGLOBAL
         };
+
+    public static unsafe object? TryGet(this Win32Com.IDataObject _oleDataObject, DataFormat format)
+    {
+        var formatEtc = format.ToFormatEtc();
+
+        if (_oleDataObject.QueryGetData(&formatEtc) != (uint)HRESULT.S_OK)
+            return null;
+
+        var medium = new STGMEDIUM();
+        if (_oleDataObject.GetData(&formatEtc, &medium) != (uint)HRESULT.S_OK)
+            return null;
+
+        try
+        {
+            if (medium.tymed == TYMED.TYMED_HGLOBAL && medium.unionmember != IntPtr.Zero)
+            {
+                var hGlobal = medium.unionmember;
+                return ReadDataFromHGlobal(format, hGlobal);
+            }
+        }
+        finally
+        {
+            ReleaseStgMedium(ref medium);
+        }
+
+        return null;
+    }
 
     public static object? ReadDataFromHGlobal(DataFormat format, IntPtr hGlobal)
     {
