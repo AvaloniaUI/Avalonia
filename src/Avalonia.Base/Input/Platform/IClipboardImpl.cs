@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Avalonia.Metadata;
 
 namespace Avalonia.Input.Platform;
@@ -10,11 +9,8 @@ namespace Avalonia.Input.Platform;
 [PrivateApi]
 public interface IClipboardImpl
 {
-    /// <inheritdoc cref="IClipboard.GetDataFormatsAsync"/>
-    Task<DataFormat[]> GetDataFormatsAsync();
-
     /// <inheritdoc cref="IClipboard.TryGetDataAsync"/>
-    Task<IDataTransfer?> TryGetDataAsync(IEnumerable<DataFormat> formats);
+    Task<IDataTransfer?> TryGetDataAsync();
 
     /// <inheritdoc cref="IClipboard.SetDataAsync"/>
     Task SetDataAsync(IDataTransfer dataTransfer);

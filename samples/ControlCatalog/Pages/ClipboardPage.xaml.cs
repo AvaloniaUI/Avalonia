@@ -115,7 +115,7 @@ namespace ControlCatalog.Pages
             if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
             {
                 var formats = await clipboard.GetDataFormatsAsync();
-                ClipboardContent.Text = string.Join<DataFormat>(Environment.NewLine, formats);
+                ClipboardContent.Text = string.Join(Environment.NewLine, formats);
             }
         }
 

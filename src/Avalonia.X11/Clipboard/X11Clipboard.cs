@@ -297,20 +297,7 @@ namespace Avalonia.X11.Clipboard
             return Task.CompletedTask;
         }
 
-        public async Task<DataFormat[]> GetDataFormatsAsync()
-        {
-            var owner = GetOwner();
-            if (owner == IntPtr.Zero)
-                return [];
-
-            if (owner == _handle && _storedDataTransfer is { } storedDataTransfer)
-                return storedDataTransfer.Formats.ToArray();
-
-            var (dataFormats, _) = await GetDataFormatsCoreAsync().ConfigureAwait(false);
-            return dataFormats;
-        }
-
-        public async Task<IDataTransfer?> TryGetDataAsync(IEnumerable<DataFormat> formats)
+        public async Task<IDataTransfer?> TryGetDataAsync()
         {
             var owner = GetOwner();
             if (owner == IntPtr.Zero)
@@ -320,14 +307,14 @@ namespace Avalonia.X11.Clipboard
                 return storedDataTransfer;
 
             // Get the formats while we're in an async method, since IDataTransfer.GetFormats() is synchronous.
-            var (actualFormats, textFormatAtoms) = await GetDataFormatsCoreAsync().ConfigureAwait(false);
-            if (actualFormats.Length == 0)
+            var (dataFormats, textFormatAtoms) = await GetDataFormatsCoreAsync().ConfigureAwait(false);
+            if (dataFormats.Length == 0)
                 return null;
 
             // Get the items while we're in an async method. This does not get values, except for DataFormat.File.
             var reader = new ClipboardDataReader(_x11, _platform, textFormatAtoms, owner);
-            var items = await CreateItemsAsync(reader, actualFormats);
-            return new ClipboardDataTransfer(reader, actualFormats, items);
+            var items = await CreateItemsAsync(reader, dataFormats);
+            return new ClipboardDataTransfer(reader, dataFormats, items);
         }
 
         private async Task<(DataFormat[] DataFormats, IntPtr[] TextFormatAtoms)> GetDataFormatsCoreAsync()

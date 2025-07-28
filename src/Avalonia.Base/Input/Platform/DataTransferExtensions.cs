@@ -114,11 +114,20 @@ public static class DataTransferExtensions
         => dataTransfer.TryGetValueAsync<string>(DataFormat.Text);
 
     /// <summary>
+    /// Returns a file, if available, from a <see cref="IDataTransfer"/> instance.
+    /// </summary>
+    /// <param name="dataTransfer">The data transfer instance.</param>
+    /// <returns>An <see cref="IStorageItem"/> (file or folder), or null if the format isn't available.</returns>
+    /// <seealso cref="DataFormat.File"/>.
+    public static Task<IStorageItem?> TryGetFileAsync(this IDataTransfer dataTransfer)
+        => dataTransfer.TryGetValueAsync<IStorageItem>(DataFormat.File);
+
+    /// <summary>
     /// Returns a list of files, if available, from a <see cref="IDataTransfer"/> instance.
     /// </summary>
     /// <param name="dataTransfer">The data transfer instance.</param>
     /// <returns>An array of <see cref="IStorageItem"/> (files or folders), or null if the format isn't available.</returns>
     /// <seealso cref="DataFormat.File"/>.
-    public static async Task<IStorageItem[]?> TryGetFilesAsync(this IDataTransfer dataTransfer)
-        => await dataTransfer.TryGetValuesAsync<IStorageItem>(DataFormat.File).ConfigureAwait(false);
+    public static Task<IStorageItem[]?> TryGetFilesAsync(this IDataTransfer dataTransfer)
+        => dataTransfer.TryGetValuesAsync<IStorageItem>(DataFormat.File);
 }

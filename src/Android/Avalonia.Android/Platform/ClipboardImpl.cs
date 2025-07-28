@@ -16,26 +16,11 @@ namespace Avalonia.Android.Platform
         private readonly ClipboardManager? _clipboardManager = clipboardManager;
         private readonly Context? _context = context;
 
-        public Task<DataFormat[]> GetDataFormatsAsync()
+        public Task<IDataTransfer?> TryGetDataAsync()
         {
             try
             {
-                return Task.FromResult(GetDataFormats());
-            }
-            catch (Exception ex)
-            {
-                return Task.FromException<DataFormat[]>(ex);
-            }
-        }
-
-        private DataFormat[] GetDataFormats()
-            => _clipboardManager?.PrimaryClipDescription?.GetDataFormats() ?? [];
-
-        public Task<IDataTransfer?> TryGetDataAsync(IEnumerable<DataFormat> formats)
-        {
-            try
-            {
-                return Task.FromResult<IDataTransfer?>(TryGetData(formats));
+                return Task.FromResult<IDataTransfer?>(TryGetData());
             }
             catch (Exception ex)
             {
@@ -43,37 +28,10 @@ namespace Avalonia.Android.Platform
             }
         }
 
-        private ClipDataToDataTransferWrapper? TryGetData(IEnumerable<DataFormat> formats)
-        {
-            if (_clipboardManager?.PrimaryClip is not { } clipData)
-                return null;
-
-            var shouldDispose = true;
-            var dataTransfer = new ClipDataToDataTransferWrapper(clipData, _context);
-
-            try
-            {
-                var currentFormats = dataTransfer.Formats;
-                if (currentFormats.Length == 0)
-                    return null;
-
-                foreach (var format in formats)
-                {
-                    if (Array.IndexOf(currentFormats, format) >= 0)
-                    {
-                        shouldDispose = false;
-                        return dataTransfer;
-                    }
-                }
-
-                return null;
-            }
-            finally
-            {
-                if (shouldDispose)
-                    dataTransfer.Dispose();
-            }
-        }
+        private ClipDataToDataTransferWrapper? TryGetData() =>
+            _clipboardManager?.PrimaryClip is { } clipData ?
+                new ClipDataToDataTransferWrapper(clipData, _context) :
+                null;
 
         public async Task SetDataAsync(IDataTransfer dataTransfer)
         {

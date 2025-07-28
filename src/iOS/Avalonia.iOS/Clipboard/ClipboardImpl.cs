@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Input.Platform;
 using Avalonia.Logging;
@@ -17,24 +16,11 @@ namespace Avalonia.iOS.Clipboard
         private readonly UIPasteboard _pasteboard = pasteboard;
         private long _lastChangeCount = long.MinValue;
 
-        public Task<DataFormat[]> GetDataFormatsAsync()
+        public Task<IDataTransfer?> TryGetDataAsync()
         {
             try
             {
-                var formats = _pasteboard.Types.Select(ToDataFormat).ToArray();
-                return Task.FromResult(formats);
-            }
-            catch (Exception ex)
-            {
-                return Task.FromException<DataFormat[]>(ex);
-            }
-        }
-
-        public Task<IDataTransfer?> TryGetDataAsync(IEnumerable<DataFormat> formats)
-        {
-            try
-            {
-                return Task.FromResult(TryGetData(formats));
+                return Task.FromResult(TryGetData());
             }
             catch (Exception ex)
             {
@@ -42,33 +28,17 @@ namespace Avalonia.iOS.Clipboard
             }
         }
 
-        private IDataTransfer? TryGetData(IEnumerable<DataFormat> formats)
+        private IDataTransfer? TryGetData()
         {
-            var shouldDispose = true;
             var dataTransfer = new PasteboardToDataTransferWrapper(_pasteboard, _pasteboard.ChangeCount);
 
-            try
+            if (dataTransfer.Formats.Length == 0)
             {
-                var currentFormats = dataTransfer.Formats;
-                if (currentFormats.Length == 0)
-                    return null;
-
-                foreach (var format in formats)
-                {
-                    if (Array.IndexOf(currentFormats, format) >= 0)
-                    {
-                        shouldDispose = false;
-                        return dataTransfer;
-                    }
-                }
-
+                dataTransfer.Dispose();
                 return null;
             }
-            finally
-            {
-                if (shouldDispose)
-                    dataTransfer.Dispose();
-            }
+
+            return dataTransfer;
         }
 
         public async Task SetDataAsync(IDataTransfer dataTransfer)

@@ -129,7 +129,7 @@ internal static partial class InputHelper
     public static partial void AddBytesToWriteableClipboardItem(JSObject item, string format, [JSMarshalAs<JSType.MemoryView>] Span<byte> value);
 
     [JSImport("InputHelper.readClipboard", AvaloniaModule.MainModuleName)]
-    public static partial Task<JSObject> ReadClipboardAsync(JSObject window, string[]? formats);
+    public static partial Task<JSObject> ReadClipboardAsync(JSObject window);
 
     [JSImport("InputHelper.writeClipboard", AvaloniaModule.MainModuleName)]
     public static partial Task WriteClipboardAsync(JSObject globalThis, JSObject? source);

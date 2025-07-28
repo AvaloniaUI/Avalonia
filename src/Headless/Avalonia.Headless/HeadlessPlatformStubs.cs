@@ -19,33 +19,9 @@ namespace Avalonia.Headless
     {
         private IDataTransfer? _data;
 
-        public Task<DataFormat[]> GetDataFormatsAsync()
-            => Task.FromResult(_data is null ? [] : _data.Formats.ToArray());
-
-        public Task<IDataTransfer?> TryGetDataAsync(IEnumerable<DataFormat> formats)
-        {
-            if (_data is null)
-                return Task.FromResult<IDataTransfer?>(null);
-
-            DataTransfer? result = null;
-            var formatArray = formats as DataFormat[] ?? formats.ToArray();
-
-            foreach (var item in _data.Items)
-            {
-                foreach (var format in formatArray)
-                {
-                    if (item.Contains(format))
-                    {
-                        // Note: we're returning the item inside the result object, but the item's owner is still our _data field.
-                        // This _may_ cause issues in some convoluted scenarios involving custom implementations of IDataTransfer.
-                        result ??= new();
-                        result.Add(item);
-                    }
-                }
-            }
-
-            return Task.FromResult<IDataTransfer?>(result);
-        }
+        public Task<IDataTransfer?> TryGetDataAsync()
+            // Return an instance that won't be disposed (we're keeping the ownership).
+            => Task.FromResult<IDataTransfer?>(_data is null ? null : new NonDisposingDataTransfer(_data));
 
         public Task SetDataAsync(IDataTransfer dataTransfer)
         {
@@ -62,6 +38,21 @@ namespace Avalonia.Headless
 
         public Task<bool> IsCurrentOwnerAsync()
             => Task.FromResult(_data is not null);
+
+        private sealed class NonDisposingDataTransfer(IDataTransfer wrapped) : IDataTransfer
+        {
+            private readonly IDataTransfer _wrapped = wrapped;
+
+            public IReadOnlyList<DataFormat> Formats
+                => _wrapped.Formats;
+
+            public IReadOnlyList<IDataTransferItem> Items
+                => _wrapped.Items;
+
+            void IDisposable.Dispose()
+            {
+            }
+        }
     }
 
     internal class HeadlessCursorFactoryStub : ICursorFactory

@@ -227,11 +227,9 @@ namespace Avalonia.DesignerSupport.Remote
 
         public Task<string[]> GetFormatsAsync() => Task.FromResult<string[]>([]);
 
-        public Task<DataFormat[]> GetDataFormatsAsync() => Task.FromResult<DataFormat[]>([]);
-
         public Task<object?> GetDataAsync(string format) => Task.FromResult<object?>(null);
 
-        public Task<IDataTransfer?> TryGetDataAsync(IEnumerable<DataFormat> formats) => Task.FromResult<IDataTransfer?>(null);
+        public Task<IDataTransfer?> TryGetDataAsync() => Task.FromResult<IDataTransfer?>(null);
 
         public Task<IDataObject?> TryGetInProcessDataObjectAsync() => Task.FromResult<IDataObject?>(null);
 

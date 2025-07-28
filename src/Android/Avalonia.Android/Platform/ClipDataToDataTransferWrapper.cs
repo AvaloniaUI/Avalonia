@@ -16,14 +16,26 @@ internal sealed class ClipDataToDataTransferWrapper(ClipData clipData, Context? 
     public Context? Context { get; } = context;
 
     protected override DataFormat[] ProvideFormats()
-        => _clipData.Description?.GetDataFormats() ?? [];
+    {
+        if (_clipData.Description is not { MimeTypeCount: > 0 and var count } clipDescription)
+            return [];
+
+        var formats = new DataFormat[count];
+
+        for (var i = 0; i < count; ++i)
+            formats[i] = AndroidDataFormatHelper.MimeTypeToDataFormat(clipDescription.GetMimeType(i)!);
+
+        return formats;
+    }
 
     protected override IDataTransferItem[] ProvideItems()
     {
         var count = _clipData.ItemCount;
         var items = new IDataTransferItem[count];
+
         for (var i = 0; i < count; ++i)
             items[i] = new ClipDataItemToDataTransferItemWrapper(_clipData.GetItemAt(i)!, this);
+
         return items;
     }
 

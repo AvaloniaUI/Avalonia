@@ -1,8 +1,6 @@
 ﻿#nullable enable
 
 using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia.Input.Platform;
 using Avalonia.Native.Interop;
@@ -35,47 +33,11 @@ namespace Avalonia.Native
             }
         }
 
-        public Task<DataFormat[]> GetDataFormatsAsync()
+        public Task<IDataTransfer?> TryGetDataAsync()
         {
             try
             {
-                return Task.FromResult(GetFormats(out _));
-            }
-            catch (Exception ex)
-            {
-                return Task.FromException<DataFormat[]>(ex);
-            }
-        }
-
-        private DataFormat[] GetFormats(out long changeCount)
-        {
-            changeCount = Native.ChangeCount;
-
-            do
-            {
-                try
-                {
-                    using var formats = Native.GetFormats(changeCount);
-                    return ClipboardDataFormatHelper.ToDataFormats(formats);
-                }
-                catch (COMException ex) when (ClipboardReadSession.IsComObjectDisposedException(ex))
-                {
-                    // The native side returns COR_E_OBJECTDISPOSED if the clipboard has changed (ChangeCount doesn't match).
-                    // In that case, simply ignore the exception and retry.
-                    var newChangeCount = Native.ChangeCount;
-                    if (newChangeCount != changeCount)
-                        changeCount = newChangeCount;
-                    else
-                        throw new ObjectDisposedException(nameof(ClipboardImpl), ex);
-                }
-            } while (true);
-        }
-
-        public Task<IDataTransfer?> TryGetDataAsync(IEnumerable<DataFormat> formats)
-        {
-            try
-            {
-                return Task.FromResult(TryGetData(formats));
+                return Task.FromResult(TryGetData());
             }
             catch (Exception ex)
             {
@@ -83,19 +45,18 @@ namespace Avalonia.Native
             }
         }
 
-        private IDataTransfer? TryGetData(IEnumerable<DataFormat> formats)
+        private IDataTransfer? TryGetData()
         {
-            var currentFormats = GetFormats(out var changeCount);
-            if (currentFormats.Length == 0)
-                return null;
+            var dataTransfer = new ClipboardDataTransfer(
+                new ClipboardReadSession(Native, Native.ChangeCount, ownsNative: false));
 
-            foreach (var format in formats)
+            if (dataTransfer.Formats.Length == 0)
             {
-                if (Array.IndexOf(currentFormats, format) >= 0)
-                    return new ClipboardDataTransfer(new ClipboardReadSession(Native, changeCount, ownsNative: false));
+                dataTransfer.Dispose();
+                return null;
             }
 
-            return null;
+            return dataTransfer;
         }
 
         public Task SetDataAsync(IDataTransfer dataTransfer)

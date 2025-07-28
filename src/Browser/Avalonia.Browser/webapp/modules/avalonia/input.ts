@@ -73,7 +73,6 @@ export class InputHelper {
     static clipboardState: ClipboardState = ClipboardState.None;
     static resolveClipboard?: (value: readonly ReadableClipboardItem[]) => void;
     static rejectClipboard?: (reason?: any) => void;
-    static requestedClipboardFormats?: readonly string[] | null;
 
     public static initializeBackgroundHandlers() {
         if (this.clipboardState !== ClipboardState.None) {
@@ -85,12 +84,7 @@ export class InputHelper {
                 return;
             }
 
-            let items = this.getDataTransferItems(args.clipboardData);
-            const formats = this.requestedClipboardFormats;
-            if (formats != null) {
-                items = items.filter(item => formats.includes(item.type));
-            }
-
+            const items = this.getDataTransferItems(args.clipboardData);
             this.resolveClipboard(items.map((item) => ({ type: "dataTransferItem", value: item })));
         });
         this.clipboardState = ClipboardState.Ready;
@@ -128,21 +122,13 @@ export class InputHelper {
         item.data[format] = new Blob([bytes], { type: format });
     }
 
-    public static async readClipboard(window: Window, formats?: readonly string[] | null): Promise<readonly ReadableClipboardItem[]> {
+    public static async readClipboard(window: Window): Promise<readonly ReadableClipboardItem[]> {
         const clipboard = window.navigator.clipboard;
 
         if (clipboard.read) {
-            let clipboardItems = await clipboard.read();
-            if (formats != null) {
-                clipboardItems = clipboardItems.filter(item => item.types.some(type => formats.includes(type)));
-            }
-
+            const clipboardItems = await clipboard.read();
             return clipboardItems.map((item) => ({ type: "clipboardItem", value: item }));
         } else if (clipboard.readText) {
-            if (formats != null && !formats.includes("text/plain")) {
-                return [];
-            }
-
             const item: ReadableClipboardItem = {
                 type: "string",
                 value: await clipboard.readText()
@@ -154,13 +140,11 @@ export class InputHelper {
                     this.clipboardState = ClipboardState.Pending;
                     this.resolveClipboard = resolve;
                     this.rejectClipboard = reject;
-                    this.requestedClipboardFormats = formats;
                 });
             } finally {
                 this.clipboardState = ClipboardState.Ready;
                 this.resolveClipboard = undefined;
                 this.rejectClipboard = undefined;
-                this.requestedClipboardFormats = undefined;
             }
         }
     }

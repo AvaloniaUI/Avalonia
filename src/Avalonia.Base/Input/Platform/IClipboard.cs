@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia.Metadata;
 
@@ -73,14 +72,8 @@ namespace Avalonia.Input.Platform
         /// <summary>
         /// Get list of available Clipboard format.
         /// </summary>
-        [Obsolete($"Use {nameof(GetDataFormatsAsync)} instead.")]
+        [Obsolete($"Use {nameof(ClipboardExtensions.GetDataFormatsAsync)} instead.")]
         Task<string[]> GetFormatsAsync();
-
-        /// <summary>
-        /// Gets a list containing the formats currently available from the clipboard.
-        /// </summary>
-        /// <returns>A list of formats. It can be empty if the clipboard is empty.</returns>
-        Task<DataFormat[]> GetDataFormatsAsync();
 
         /// <summary>
         /// Retrieves data in a specified format from the Clipboard.
@@ -91,16 +84,16 @@ namespace Avalonia.Input.Platform
         Task<object?> GetDataAsync(string format);
 
         /// <summary>
-        /// Retrieves data from the clipboard matching one or more formats.
+        /// Retrieves data from the clipboard.
         /// </summary>
-        /// <param name="formats">The requested formats.</param>
-        /// <returns>
-        /// If at least one format specified by <paramref name="formats"/> was present on the clipboard, returns an
-        /// <see cref="IDataTransfer"/> containing the matching items (each returned item matches at least one format).
-        /// Otherwise, returns null.
-        /// </returns>
-        /// <remarks>The returned <see cref="IDataTransfer"/> MUST be disposed by the caller.</remarks>
-        Task<IDataTransfer?> TryGetDataAsync(IEnumerable<DataFormat> formats);
+        /// <remarks>
+        /// <para>The returned <see cref="IDataTransfer"/> MUST be disposed by the caller.</para>
+        /// <para>
+        /// Avoid storing the returned <see cref="IDataTransfer"/> instance for a long time:
+        /// use it, then dispose it as soon as possible.
+        /// </para>
+        /// </remarks>
+        Task<IDataTransfer?> TryGetDataAsync();
 
         /// <summary>
         /// If clipboard contains the IDataObject that was set by a previous call to <see cref="SetDataObjectAsync(Avalonia.Input.IDataObject)"/>,
@@ -120,6 +113,10 @@ namespace Avalonia.Input.Platform
         /// <remarks>
         /// <para>This method cannot be used to retrieve a <see cref="IDataTransfer"/> set by another process.</para>
         /// <para>This method is only supported on Windows, macOS and X11 platforms. Other platforms will always return null.</para>
+        /// <para>
+        /// Contrary to <see cref="TryGetDataAsync"/>, the returned <see cref="IDataTransfer"/> must NOT be disposed
+        /// by the caller since it's still owned by the clipboard.
+        /// </para>
         /// </remarks>
         Task<IDataTransfer?> TryGetInProcessDataAsync();
     }

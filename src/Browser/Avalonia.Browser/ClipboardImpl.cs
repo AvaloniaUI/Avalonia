@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices.JavaScript;
 using System.Threading.Tasks;
 using Avalonia.Input.Platform;
@@ -14,21 +12,10 @@ namespace Avalonia.Browser
 {
     internal sealed class ClipboardImpl : IClipboardImpl
     {
-        public async Task<DataFormat[]> GetDataFormatsAsync()
+        public async Task<IDataTransfer?> TryGetDataAsync()
         {
-            var jsItems = await ReadClipboardAsync(BrowserWindowingPlatform.GlobalThis, null).ConfigureAwait(false);
-            using var dataTransfer = new BrowserDataTransfer(jsItems);
-            return dataTransfer.Formats;
-        }
-
-        public async Task<IDataTransfer?> TryGetDataAsync(IEnumerable<DataFormat> formats)
-        {
-            var formatNames = formats.Select(ToBrowserFormat).ToArray();
-            if (formatNames.Length == 0)
-                return null;
-
-            var jsItems = await ReadClipboardAsync(BrowserWindowingPlatform.GlobalThis, formatNames).ConfigureAwait(false);
-            return new BrowserDataTransfer(jsItems);
+            var jsItems = await ReadClipboardAsync(BrowserWindowingPlatform.GlobalThis).ConfigureAwait(false);
+            return jsItems.GetPropertyAsInt32("length") == 0 ? null : new BrowserDataTransfer(jsItems);
         }
 
         public async Task SetDataAsync(IDataTransfer dataTransfer)

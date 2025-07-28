@@ -89,30 +89,7 @@ namespace Avalonia.Win32
             }
         }
 
-        public async Task<DataFormat[]> GetDataFormatsAsync()
-        {
-            Dispatcher.UIThread.VerifyAccess();
-            var i = OleRetryCount;
-
-            while (true)
-            {
-                var hr = UnmanagedMethods.OleGetClipboard(out var dataObject);
-
-                if (hr == 0)
-                {
-                    using var proxy = MicroComRuntime.CreateProxyFor<Win32Com.IDataObject>(dataObject, true);
-                    using var wrapper = new OleDataObjectToDataTransferWrapper(proxy);
-                    return wrapper.Formats.ToArray();
-                }
-
-                if (--i == 0)
-                    Marshal.ThrowExceptionForHR(hr);
-
-                await Task.Delay(OleRetryDelay);
-            }
-        }
-
-        public async Task<IDataTransfer?> TryGetDataAsync(IEnumerable<DataFormat> formats)
+        public async Task<IDataTransfer?> TryGetDataAsync()
         {
             Dispatcher.UIThread.VerifyAccess();
             var i = OleRetryCount;
@@ -126,22 +103,13 @@ namespace Avalonia.Win32
                     using var proxy = MicroComRuntime.CreateProxyFor<Win32Com.IDataObject>(dataObject, true);
                     var wrapper = new OleDataObjectToDataTransferWrapper(proxy);
 
-                    try
-                    {
-                        foreach (var format in formats)
-                        {
-                            if (wrapper.Contains(format))
-                                return wrapper; // Ownership returned to the caller
-                        }
-                    }
-                    catch
+                    if (wrapper.Formats.Length == 0)
                     {
                         wrapper.Dispose();
-                        throw;
+                        return null;
                     }
 
-                    wrapper.Dispose();
-                    return null;
+                    return wrapper;
                 }
 
                 if (--i == 0)

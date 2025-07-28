@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 
 namespace Avalonia.Input.Platform;
@@ -45,23 +44,20 @@ internal sealed class Clipboard(IClipboardImpl clipboardImpl) : IClipboard
 
     async Task<string[]> IClipboard.GetFormatsAsync()
     {
-        var formats = await GetDataFormatsAsync().ConfigureAwait(false);
-        return formats.Select(DataFormats.ToString).ToArray();
+        var dataTransfer = await TryGetDataAsync();
+        return dataTransfer is null ? [] : dataTransfer.Formats.Select(DataFormats.ToString).ToArray();
     }
-
-    public Task<DataFormat[]> GetDataFormatsAsync()
-        => _clipboardImpl.GetDataFormatsAsync();
 
     Task<object?> IClipboard.GetDataAsync(string format)
         => this.TryGetValueAsync<object?>(DataFormats.ToDataFormat(format));
 
-    public Task<IDataTransfer?> TryGetDataAsync(IEnumerable<DataFormat> formats)
-        => _clipboardImpl.TryGetDataAsync(formats);
+    public Task<IDataTransfer?> TryGetDataAsync()
+        => _clipboardImpl.TryGetDataAsync();
 
     async Task<IDataObject?> IClipboard.TryGetInProcessDataObjectAsync()
     {
-        var dataObject = await TryGetInProcessDataAsync().ConfigureAwait(false);
-        return (dataObject as DataObjectToDataTransferWrapper)?.DataObject;
+        var dataTransfer = await TryGetInProcessDataAsync().ConfigureAwait(false);
+        return (dataTransfer as DataObjectToDataTransferWrapper)?.DataObject;
     }
 
     public async Task<IDataTransfer?> TryGetInProcessDataAsync()

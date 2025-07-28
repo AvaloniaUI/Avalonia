@@ -10,6 +10,16 @@ namespace Avalonia.Input.Platform;
 public static class ClipboardExtensions
 {
     /// <summary>
+    /// Gets a list containing the formats currently available from the clipboard.
+    /// </summary>
+    /// <returns>A list of formats. It can be empty if the clipboard is empty.</returns>
+    public static async Task<IReadOnlyList<DataFormat>> GetDataFormatsAsync(this IClipboard clipboard)
+    {
+        using var dataTransfer = await clipboard.TryGetDataAsync();
+        return dataTransfer is null ? [] : dataTransfer.Formats;
+    }
+
+    /// <summary>
     /// Tries to get a value for a given format from the clipboard.
     /// </summary>
     /// <param name="clipboard">The <see cref="IClipboard"/> instance.</param>
@@ -21,8 +31,8 @@ public static class ClipboardExtensions
     /// </remarks>
     public static async Task<T?> TryGetValueAsync<T>(this IClipboard clipboard, DataFormat format)
     {
-        // No ConfigureAwait(false) here: we want TryGetAsync() below to be called on the initial thread.
-        using var dataTransfer = await clipboard.TryGetDataAsync([format]);
+        // No ConfigureAwait(false) here: we want TryGetValueAsync() below to be called on the initial thread.
+        using var dataTransfer = await clipboard.TryGetDataAsync();
         if (dataTransfer is null)
             return default;
 
@@ -38,8 +48,8 @@ public static class ClipboardExtensions
     /// <returns>A list of values for <paramref name="format"/>, or null if the format is not supported.</returns>
     public static async Task<T[]?> TryGetValuesAsync<T>(this IClipboard clipboard, DataFormat format)
     {
-        // No ConfigureAwait(false) here: we want TryGetAsync() below to be called on the initial thread.
-        using var dataTransfer = await clipboard.TryGetDataAsync([format]);
+        // No ConfigureAwait(false) here: we want TryGetValuesAsync() below to be called on the initial thread.
+        using var dataTransfer = await clipboard.TryGetDataAsync();
         if (dataTransfer is null)
             return null;
 
