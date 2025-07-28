@@ -9,7 +9,7 @@ namespace Avalonia.Input
     {
         private readonly Interactive _target;
         private readonly Point _targetLocation;
-        private IDataObject? _legacyDataObject;
+        [Obsolete] private IDataObject? _legacyDataObject;
 
         public DragDropEffects DragEffects { get; set; }
 

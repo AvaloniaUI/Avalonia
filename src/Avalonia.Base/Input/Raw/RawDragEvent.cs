@@ -7,7 +7,7 @@ namespace Avalonia.Input.Raw
     [PrivateApi]
     public class RawDragEvent : RawInputEventArgs
     {
-        private IDataObject? _legacyDataObject;
+        [Obsolete] private IDataObject? _legacyDataObject;
 
         public Point Location { get; set; }
 

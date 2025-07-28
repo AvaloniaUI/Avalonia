@@ -14,6 +14,7 @@ namespace Avalonia.Input.Platform;
 /// <summary>
 /// Wraps a legacy <see cref="IDataObject"/> into a <see cref="IDataTransfer"/>.
 /// </summary>
+[Obsolete]
 internal sealed class DataObjectToDataTransferWrapper(IDataObject dataObject)
     : PlatformDataTransfer
 {

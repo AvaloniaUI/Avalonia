@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Avalonia.Reactive;
 using System.Threading.Tasks;
 using Avalonia.Controls;
@@ -30,6 +31,7 @@ namespace Avalonia.Platform
             _dragDrop = AvaloniaLocator.Current.GetRequiredService<IDragDropDevice>();
         }
 
+        [Obsolete($"Use {nameof(DoDragDropAsync)} instead.")]
         Task<DragDropEffects> IPlatformDragSource.DoDragDrop(
             PointerEventArgs triggerEvent,
             IDataObject data,

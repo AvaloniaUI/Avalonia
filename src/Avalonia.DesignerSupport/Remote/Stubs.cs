@@ -221,6 +221,7 @@ namespace Avalonia.DesignerSupport.Remote
 
         public Task ClearAsync() => Task.CompletedTask;
 
+        [Obsolete($"Use {nameof(SetDataAsync)} instead.")]
         public Task SetDataObjectAsync(IDataObject data) => Task.CompletedTask;
 
         public Task SetDataAsync(IDataTransfer? dataTransfer) => Task.CompletedTask;
@@ -231,6 +232,7 @@ namespace Avalonia.DesignerSupport.Remote
 
         public Task<IDataTransfer?> TryGetDataAsync() => Task.FromResult<IDataTransfer?>(null);
 
+        [Obsolete($"Use {nameof(TryGetInProcessDataAsync)} instead.")]
         public Task<IDataObject?> TryGetInProcessDataObjectAsync() => Task.FromResult<IDataObject?>(null);
 
         public Task FlushAsync() => Task.CompletedTask;

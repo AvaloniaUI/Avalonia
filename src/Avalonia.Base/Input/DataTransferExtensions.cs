@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Input.Platform;
@@ -11,7 +12,7 @@ namespace Avalonia.Input;
 /// </summary>
 public static class DataTransferExtensions
 {
-    // TODO12: remove
+    [Obsolete]
     internal static IDataObject ToLegacyDataObject(this IDataTransfer dataTransfer)
         => (dataTransfer as DataObjectToDataTransferWrapper)?.DataObject
            ?? new DataTransferToDataObjectWrapper(dataTransfer);

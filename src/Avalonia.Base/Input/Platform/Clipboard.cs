@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Avalonia.Input.Platform;
@@ -25,6 +26,7 @@ internal sealed class Clipboard(IClipboardImpl clipboardImpl) : IClipboard
         return _clipboardImpl.ClearAsync();
     }
 
+    [Obsolete($"Use {nameof(SetDataAsync)} instead.")]
     Task IClipboard.SetDataObjectAsync(IDataObject data)
         => SetDataAsync(new DataObjectToDataTransferWrapper(data));
 
@@ -54,6 +56,7 @@ internal sealed class Clipboard(IClipboardImpl clipboardImpl) : IClipboard
     public Task<IDataTransfer?> TryGetDataAsync()
         => _clipboardImpl.TryGetDataAsync();
 
+    [Obsolete($"Use {nameof(TryGetInProcessDataAsync)} instead.")]
     async Task<IDataObject?> IClipboard.TryGetInProcessDataObjectAsync()
     {
         var dataTransfer = await TryGetInProcessDataAsync().ConfigureAwait(false);
