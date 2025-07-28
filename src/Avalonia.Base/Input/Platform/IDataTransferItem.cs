@@ -23,8 +23,7 @@ public interface IDataTransferItem
     /// <remarks>
     /// <para>
     /// Several supported platforms might wait on the returned task synchronously from the UI thread
-    /// while writing to the UI thread or during a drag and drop operation. This limitation is due to the underlying
-    /// platform.
+    /// while writing to the clipboard or during a drag and drop operation.
     /// </para>
     /// <para>
     /// For this reason, implementations of this method should never resume their work on the UI thread
