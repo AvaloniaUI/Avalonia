@@ -265,17 +265,24 @@ internal sealed class InputHandler
         switch (recognizer.State)
         {
             case UIGestureRecognizerState.Began:
+                // We've started scrolling, stop any previous inertia scrolling
+                // and cache the current scroll location.
                 StopMomentumScrolling();
                 _cachedScrollLocation = recognizer.LocationInView(_view).ToAvalonia();
                 return;
             case UIGestureRecognizerState.Changed:
+                // When you are actively scrolling, we send the scroll events
                 SendActiveScrollEvent(recognizer);
                 return;
             case UIGestureRecognizerState.Ended:
+                // When you stop scrolling, we start inertia scrolling
+                // UpdateInertiaScrolling will check when the inertia stops
+                // and will call StopMomentumScrolling
                 StartInertiaScrolling(recognizer);
                 return;
             case UIGestureRecognizerState.Cancelled:
             case UIGestureRecognizerState.Failed:
+                // If the gesture is cancelled or failed, stop.
                 StopMomentumScrolling();
                 return;
             default:
@@ -349,6 +356,14 @@ internal sealed class InputHandler
 #if !TVOS
         _momentumVelocityX *= DecelerationRate;
         _momentumVelocityY *= DecelerationRate;
+
+        var currentMagnitude = Math.Sqrt(_momentumVelocityX * _momentumVelocityX + _momentumVelocityY * _momentumVelocityY);
+
+        if (currentMagnitude < 0.0001)
+        {
+            StopMomentumScrolling();
+            return;
+        }
         
         // UIPanGestureRecognizer will continue to upload the location of the pointer,
         // to where it would be if it was moving with the current velocity,
