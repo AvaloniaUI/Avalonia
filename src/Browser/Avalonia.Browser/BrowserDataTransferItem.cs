@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices.JavaScript;
 using System.Threading.Tasks;
+using Avalonia.Browser.Interop;
 using Avalonia.Browser.Storage;
 using Avalonia.Input.Platform;
-using static Avalonia.Browser.BrowserDataFormatHelper;
-using static Avalonia.Browser.Interop.InputHelper;
 
 namespace Avalonia.Browser;
 
@@ -13,45 +11,24 @@ namespace Avalonia.Browser;
 /// Wraps a ReadableClipboardItem (a custom type defined in input.ts) into a <see cref="IDataTransferItem"/>.
 /// </summary>
 /// <param name="jsItem">The ReadableClipboardItem object.</param>
-internal sealed class BrowserDataTransferItem(JSObject jsItem) : IDataTransferItem, IDisposable
+internal sealed class BrowserDataTransferItem(JSObject jsItem)
+    : PlatformDataTransferItem, IDisposable
 {
     private readonly JSObject _jsItem = jsItem; // JS type: ReadableClipboardItem
-    private DataFormat[]? _formats;
 
-    public DataFormat[] Formats
+    protected override DataFormat[] ProvideFormats()
     {
-        get
-        {
-            return _formats ??= GetFormatsCore();
-
-            DataFormat[] GetFormatsCore()
-            {
-                var formatStrings = GetReadableClipboardItemFormats(_jsItem);
-
-                var formats = new DataFormat[formatStrings.Length];
-                for (var i = 0; i < formatStrings.Length; ++i)
-                    formats[i] = ToDataFormat(formatStrings[i]);
-                return formats;
-            }
-        }
+        var formatStrings = InputHelper.GetReadableClipboardItemFormats(_jsItem);
+        var formats = new DataFormat[formatStrings.Length];
+        for (var i = 0; i < formatStrings.Length; ++i)
+            formats[i] = BrowserDataFormatHelper.ToDataFormat(formatStrings[i]);
+        return formats;
     }
 
-    /// <inheritdoc />
-    public bool Contains(DataFormat format)
-        => Array.IndexOf(Formats, format) >= 0;
-
-    public bool ContainsAny(ReadOnlySpan<DataFormat> formats)
-        => Formats.AsSpan().IndexOfAny(formats) >= 0;
-
-    /// <inheritdoc />
-    public IEnumerable<DataFormat> GetFormats()
-        => Formats;
-
-    /// <inheritdoc />
-    public async Task<object?> TryGetAsync(DataFormat format)
+    protected override async Task<object?> TryGetAsyncCore(DataFormat format)
     {
-        var formatString = ToBrowserFormat(format);
-        var value = await TryGetReadableClipboardItemValueAsync(_jsItem, formatString).ConfigureAwait(false);
+        var formatString = BrowserDataFormatHelper.ToBrowserFormat(format);
+        var value = await InputHelper.TryGetReadableClipboardItemValueAsync(_jsItem, formatString).ConfigureAwait(false);
 
         return value?.GetPropertyAsString("type") switch
         {

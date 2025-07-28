@@ -1,7 +1,6 @@
 ﻿#nullable enable
 
 using System.Collections.Generic;
-using System.Linq;
 using Avalonia.Input.Platform;
 
 namespace Avalonia.Native;
@@ -14,72 +13,33 @@ namespace Avalonia.Native;
 /// The <see cref="ClipboardDataTransfer"/> assumes ownership over this instance.
 /// </param>
 internal sealed class ClipboardDataTransfer(ClipboardReadSession session)
-    : IDataTransfer
+    : PlatformDataTransfer
 {
     private readonly ClipboardReadSession _session = session;
-    private DataFormat[]? _formats;
-    private ClipboardDataTransferItem[]? _items;
 
-    private DataFormat[] Formats
+    protected override DataFormat[] ProvideFormats()
     {
-        get
-        {
-            return _formats ??= GetFormatsCore();
-
-            DataFormat[] GetFormatsCore()
-            {
-                using var formats = _session.GetFormats();
-                return ClipboardDataFormatHelper.ToDataFormats(formats);
-            }
-        }
+        using var formats = _session.GetFormats();
+        return ClipboardDataFormatHelper.ToDataFormats(formats);
     }
 
-    private ClipboardDataTransferItem[] Items
+    protected override IDataTransferItem[] ProvideItems()
     {
-        get
-        {
-            return _items ??= GetItemsCore();
-
-            ClipboardDataTransferItem[] GetItemsCore()
-            {
-                var itemCount = _session.GetItemCount();
-                if (itemCount == 0)
-                    return [];
-
-                var items = new ClipboardDataTransferItem[itemCount];
-
-                for (var i = 0; i < itemCount; ++i)
-                    items[i] = new ClipboardDataTransferItem(_session, i);
-
-                return items;
-            }
-        }
-    }
-
-    public IEnumerable<IDataTransferItem> GetItems(IEnumerable<DataFormat>? formats = null)
-    {
-        if (formats is null)
-            return Items;
-
-        var formatArray = formats as DataFormat[] ?? formats.ToArray();
-        if (formatArray.Length == 0)
+        var itemCount = _session.GetItemCount();
+        if (itemCount == 0)
             return [];
 
-        return FilterItems();
+        var items = new IDataTransferItem[itemCount];
 
-        IEnumerable<IDataTransferItem> FilterItems()
-        {
-            foreach (var item in Items)
-            {
-                if (item.ContainsAny(formatArray))
-                    yield return item;
-            }
-        }
+        for (var i = 0; i < itemCount; ++i)
+            items[i] = new ClipboardDataTransferItem(_session, i);
+
+        return items;
     }
 
     public IEnumerable<DataFormat> GetFormats()
         => Formats;
 
-    public void Dispose()
+    public override void Dispose()
         => _session.Dispose();
 }

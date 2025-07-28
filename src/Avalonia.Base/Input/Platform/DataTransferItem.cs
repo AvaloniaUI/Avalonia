@@ -1,25 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Avalonia.Input.Platform;
 
 /// <summary>
-/// Base implementation of <see cref="IDataTransferItem"/>.
+/// Simple implementation of <see cref="IDataTransferItem"/>.
 /// This class provides several static methods to easily create a <see cref="DataTransferItem"/> for common usages.
+/// For advanced usages, consider implementing <see cref="IDataTransferItem"/> directly.
 /// </summary>
-public abstract class DataTransferItem : IDataTransferItem
+public sealed class DataTransferItem : IDataTransferItem
 {
-    /// <inheritdoc />
-    public abstract IEnumerable<DataFormat> GetFormats();
+    private readonly DataFormat[] _formats;
+    private readonly Func<object?, Task<object?>> _getValueAsync;
+    private readonly object? _state;
+
+    private DataTransferItem(DataFormat format, Func<object?, Task<object?>> getValueAsync, object? state)
+    {
+        _formats = [format];
+        _getValueAsync = getValueAsync;
+        _state = state;
+    }
 
     /// <inheritdoc />
-    public virtual bool Contains(DataFormat format)
-        => GetFormats().Contains(format);
+    public IReadOnlyList<DataFormat> Formats
+        => _formats;
 
     /// <inheritdoc />
-    public abstract Task<object?> TryGetAsync(DataFormat format);
+    public Task<object?> TryGetAsync(DataFormat format)
+        => _formats[0].Equals(format) ? _getValueAsync(_state) : Task.FromResult<object?>(null);
 
     /// <summary>
     /// Creates a new <see cref="DataTransferItem"/> for a single format with a given value.
@@ -29,20 +38,30 @@ public abstract class DataTransferItem : IDataTransferItem
     /// <param name="value">The value corresponding to <paramref name="format"/>.</param>
     /// <returns>A <see cref="DataTransferItem"/> instance.</returns>
     public static DataTransferItem Create<T>(DataFormat format, T value)
-        => new SimpleDataTransferItem(format, value);
+        => new(format, Task.FromResult, value);
 
     /// <summary>
-    /// Creates a new <see cref="DataTransferItem"/> for a single format,
+    /// Creates a new <see cref="DataTransferItem"/> for a single format
     /// with its value created synchronously on demand.
     /// </summary>
     /// <typeparam name="T">The value type.</typeparam>
     /// <param name="format">The format.</param>
     /// <param name="getValue">A function returning the value corresponding to <paramref name="format"/>.</param>
     /// <returns>A <see cref="DataTransferItem"/> instance.</returns>
-    public static DataTransferItem Create<T>(DataFormat format, Func<T> getValue)
-        => new AsyncDataTransferItem(
+    public static DataTransferItem CreateLazy<T>(DataFormat format, Func<T> getValue)
+        => new(
             format,
-            static state => Task.FromResult<object?>(((Func<T>)state)()),
+            static state =>
+            {
+                try
+                {
+                    return Task.FromResult<object?>(((Func<T>)state!)());
+                }
+                catch (Exception ex)
+                {
+                    return Task.FromException<object?>(ex);
+                }
+            },
             getValue);
 
     /// <summary>
@@ -53,52 +72,13 @@ public abstract class DataTransferItem : IDataTransferItem
     /// <param name="format">The format.</param>
     /// <param name="getValueAsync">A function returning the value corresponding to <paramref name="format"/>.</param>
     /// <returns>A <see cref="DataTransferItem"/> instance.</returns>
-    public static DataTransferItem Create<T>(DataFormat format, Func<Task<T>> getValueAsync)
+    public static DataTransferItem CreateAsyncLazy<T>(DataFormat format, Func<Task<T>> getValueAsync)
     {
-        Func<object, Task<object?>> untypedGetValueAsync = typeof(T) == typeof(object) ?
-            static state => ((Func<Task<object?>>)state)() :
-            static async state => await ((Func<Task<T>>)state)().ConfigureAwait(false);
+        Func<object?, Task<object?>> untypedGetValueAsync = typeof(T) == typeof(object) ?
+            static state => ((Func<Task<object?>>)state!)() :
+            static async state => await ((Func<Task<T>>)state!)().ConfigureAwait(false);
 
-        return new AsyncDataTransferItem(format, untypedGetValueAsync, getValueAsync);
-    }
-
-    private sealed class SimpleDataTransferItem(DataFormat format, object? value)
-        : DataTransferItem
-    {
-        private readonly DataFormat _format = format;
-        private readonly object? _value = value;
-
-        public override IEnumerable<DataFormat> GetFormats()
-            => [_format];
-
-        public override bool Contains(DataFormat format)
-            => _format.Equals(format);
-
-        public override Task<object?> TryGetAsync(DataFormat format)
-            => Task.FromResult(_format.Equals(format) ? _value : null);
-    }
-
-    private sealed class AsyncDataTransferItem(DataFormat format, Func<object, Task<object?>> getValueAsync, object state)
-        : DataTransferItem
-    {
-        private readonly DataFormat _format = format;
-        private readonly Func<object, Task<object?>> _getValueAsync = getValueAsync;
-        private readonly object _state = state;
-        private Task<object?>? _cachedResult;
-
-        public override IEnumerable<DataFormat> GetFormats()
-            => [_format];
-
-        public override bool Contains(DataFormat format)
-            => _format.Equals(format);
-
-        public override Task<object?> TryGetAsync(DataFormat format)
-        {
-            if (_format.Equals(format))
-                return _cachedResult ??= _getValueAsync(_state);
-
-            return Task.FromResult<object?>(null);
-        }
+        return new(format, untypedGetValueAsync, getValueAsync);
     }
 }
 

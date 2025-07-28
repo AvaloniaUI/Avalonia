@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
@@ -14,18 +13,15 @@ namespace Avalonia.Android.Platform;
 /// <param name="item">The clip data item.</param>
 /// <param name="owner">The data transfer owning this item.</param>
 internal sealed class ClipDataItemToDataTransferItemWrapper(ClipData.Item item, ClipDataToDataTransferWrapper owner)
-    : IDataTransferItem
+    : PlatformDataTransferItem
 {
     private readonly ClipData.Item _item = item;
     private readonly ClipDataToDataTransferWrapper _owner = owner;
 
-    public IEnumerable<DataFormat> GetFormats()
+    protected override DataFormat[] ProvideFormats()
         => _owner.Formats; // There's no "format per item", assume each item handle all formats
 
-    public bool Contains(DataFormat format)
-        => Array.IndexOf(_owner.Formats, format) >= 0;
-
-    public Task<object?> TryGetAsync(DataFormat format)
+    protected override Task<object?> TryGetAsyncCore(DataFormat format)
     {
         try
         {

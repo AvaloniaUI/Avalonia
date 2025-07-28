@@ -36,7 +36,7 @@ internal sealed class DataTransferToAvnClipboardDataSourceWrapper(IDataTransfer 
             return _items;
 
             DataTransferItemToAvnClipboardDataItemWrapper[] GetItemsCore()
-                => DataTransfer.GetItems()
+                => DataTransfer.Items
                     .Select(static item => new DataTransferItemToAvnClipboardDataItemWrapper(item))
                     .ToArray();
         }

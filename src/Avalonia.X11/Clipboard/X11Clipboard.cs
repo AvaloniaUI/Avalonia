@@ -246,7 +246,7 @@ namespace Avalonia.X11.Clipboard
 
             if (dataTransfer is not null)
             {
-                foreach (var format in dataTransfer.GetFormats())
+                foreach (var format in dataTransfer.Formats)
                 {
                     foreach (var atom in ClipboardDataFormatHelper.ToAtoms(format, _textAtoms, _x11.Atoms))
                         atoms.Add(atom);
@@ -266,7 +266,7 @@ namespace Avalonia.X11.Clipboard
                 return Task.CompletedTask;
 
             // Skip storing atoms if the data object contains any non-trivial formats
-            if (dataTransfer.GetFormats().Any(f => !DataFormat.Text.Equals(f)))
+            if (dataTransfer.Formats.Any(f => !DataFormat.Text.Equals(f)))
                 return Task.CompletedTask;
 
             return StoreTextCoreAsync();
@@ -304,7 +304,7 @@ namespace Avalonia.X11.Clipboard
                 return [];
 
             if (owner == _handle && _storedDataTransfer is { } storedDataTransfer)
-                return storedDataTransfer.GetFormats().ToArray();
+                return storedDataTransfer.Formats.ToArray();
 
             var (dataFormats, _) = await GetDataFormatsCoreAsync().ConfigureAwait(false);
             return dataFormats;
@@ -371,9 +371,8 @@ namespace Avalonia.X11.Clipboard
             {
                 if (DataFormat.File.Equals(format))
                 {
-                    // This is not ideal as we're reading the filenames ahead of time to generate the appropriate items.
-                    // However, it's very likely that we're filtering on formats, so files are requested by the caller.
-                    // If this isn't the case, this still isn't a heavy operation.
+                    // We're reading the filenames ahead of time to generate the appropriate items.
+                    // This is async, so it should be fine.
                     if (await reader.TryGetAsync(format) is IEnumerable<IStorageItem> storageItems)
                     {
                         foreach (var storageItem in storageItems)
@@ -384,7 +383,7 @@ namespace Avalonia.X11.Clipboard
                     (nonFileFormats ??= new()).Add(format);
             }
 
-            // Single item containing all formats except for File.
+            // Single item containing all formats except for DataFormat.File.
             if (nonFileFormats is not null)
                 items.Add(new ClipboardDataTransferItem(reader, formats));
 

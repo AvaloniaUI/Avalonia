@@ -21,7 +21,7 @@ internal sealed class DataTransferItemToAvnClipboardDataItemWrapper(IDataTransfe
     private readonly IDataTransferItem _item = item;
 
     IAvnStringArray IAvnClipboardDataItem.ProvideFormats()
-        => new AvnStringArray(_item.GetFormats().Select(ClipboardDataFormatHelper.ToNativeFormat));
+        => new AvnStringArray(_item.Formats.Select(ClipboardDataFormatHelper.ToNativeFormat));
 
     IAvnClipboardDataValue? IAvnClipboardDataItem.GetValue(string format)
     {

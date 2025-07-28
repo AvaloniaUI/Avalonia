@@ -1,7 +1,6 @@
 #nullable enable
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia.Controls.Platform;
 using Avalonia.Input.Platform;
@@ -14,37 +13,18 @@ namespace Avalonia.Native;
 /// <param name="session">The clipboard session. This is NOT owned by the <see cref="ClipboardDataTransferItem"/>.</param>
 /// <param name="itemIndex">The item index.</param>
 internal sealed class ClipboardDataTransferItem(ClipboardReadSession session, int itemIndex)
-    : IDataTransferItem
+    : PlatformDataTransferItem
 {
     private readonly ClipboardReadSession _session = session;
     private readonly int _itemIndex = itemIndex;
-    private DataFormat[]? _formats;
 
-    private DataFormat[] Formats
+    protected override DataFormat[] ProvideFormats()
     {
-        get
-        {
-            return _formats ??= GetFormatsCore();
-
-            DataFormat[] GetFormatsCore()
-            {
-
-                using var formats = _session.GetItemFormats(_itemIndex);
-                return ClipboardDataFormatHelper.ToDataFormats(formats);
-            }
-        }
+        using var formats = _session.GetItemFormats(_itemIndex);
+        return ClipboardDataFormatHelper.ToDataFormats(formats);
     }
 
-    public IEnumerable<DataFormat> GetFormats()
-        => Formats;
-
-    public bool Contains(DataFormat format)
-        => Array.IndexOf(Formats, format) >= 0;
-
-    public bool ContainsAny(ReadOnlySpan<DataFormat> formats)
-        => Formats.AsSpan().IndexOfAny(formats) >= 0;
-
-    public Task<object?> TryGetAsync(DataFormat format)
+    protected override Task<object?> TryGetAsyncCore(DataFormat format)
     {
         try
         {
@@ -89,7 +69,7 @@ internal sealed class ClipboardDataTransferItem(ClipboardReadSession session, in
 
     private static Uri? TryGetFilePathUri(string? uriString, StorageProviderApi storageApi)
     {
-        if (!Uri.TryCreate(uriString, UriKind.Absolute, out var uri) || uri.Scheme != "file")
+        if (!Uri.TryCreate(uriString, UriKind.Absolute, out var uri) || !uri.IsFile)
             return null;
 
         // macOS may return a file reference URI (e.g. file:///.file/id=6571367.2773272/), convert it to a path URI.

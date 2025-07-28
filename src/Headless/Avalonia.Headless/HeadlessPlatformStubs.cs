@@ -20,7 +20,7 @@ namespace Avalonia.Headless
         private IDataTransfer? _data;
 
         public Task<DataFormat[]> GetDataFormatsAsync()
-            => Task.FromResult(_data is null ? [] : _data.GetFormats().ToArray());
+            => Task.FromResult(_data is null ? [] : _data.Formats.ToArray());
 
         public Task<IDataTransfer?> TryGetDataAsync(IEnumerable<DataFormat> formats)
         {
@@ -30,7 +30,7 @@ namespace Avalonia.Headless
             DataTransfer? result = null;
             var formatArray = formats as DataFormat[] ?? formats.ToArray();
 
-            foreach (var item in _data.GetItems(formatArray))
+            foreach (var item in _data.Items)
             {
                 foreach (var format in formatArray)
                 {
@@ -39,7 +39,7 @@ namespace Avalonia.Headless
                         // Note: we're returning the item inside the result object, but the item's owner is still our _data field.
                         // This _may_ cause issues in some convoluted scenarios involving custom implementations of IDataTransfer.
                         result ??= new();
-                        result.Items.Add(item);
+                        result.Add(item);
                     }
                 }
             }

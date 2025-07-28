@@ -31,7 +31,7 @@ internal class DataTransferToOleDataObjectWrapper(IDataTransfer dataTransfer)
             _current = current;
         }
 
-        public FormatEnumerator(IEnumerable<DataFormat> dataFormats)
+        public FormatEnumerator(IReadOnlyList<DataFormat> dataFormats)
         {
             _formats = dataFormats.Select(OleDataObjectHelper.ToFormatEtc).ToArray();
             _current = 0;
@@ -100,7 +100,7 @@ internal class DataTransferToOleDataObjectWrapper(IDataTransfer dataTransfer)
             throw new COMException(nameof(COR_E_OBJECTDISPOSED), unchecked((int)HRESULT.E_NOTIMPL));
 
         if ((DATADIR)direction == DATADIR.DATADIR_GET)
-            return new FormatEnumerator(DataTransfer.GetFormats());
+            return new FormatEnumerator(DataTransfer.Formats);
 
         throw new COMException(nameof(HRESULT.E_NOTIMPL), unchecked((int)HRESULT.E_NOTIMPL));
     }

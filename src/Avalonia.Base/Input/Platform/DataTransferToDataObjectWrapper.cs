@@ -14,7 +14,7 @@ internal sealed class DataTransferToDataObjectWrapper(IDataTransfer dataTransfer
     public IDataTransfer DataTransfer { get; } = dataTransfer;
 
     public IEnumerable<string> GetDataFormats()
-        => DataTransfer.GetFormats().Select(DataFormats.ToString);
+        => DataTransfer.Formats.Select(DataFormats.ToString);
 
     public bool Contains(string dataFormat)
         => DataTransfer.Contains(DataFormats.ToDataFormat(dataFormat));

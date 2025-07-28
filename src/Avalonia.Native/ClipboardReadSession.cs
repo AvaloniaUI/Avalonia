@@ -29,7 +29,7 @@ internal sealed class ClipboardReadSession(IAvnClipboard native, long changeCoun
         }
         catch (COMException ex) when (IsComObjectDisposedException(ex))
         {
-            throw CreateObjectDisposedException(ex);
+            return null;
         }
     }
 
@@ -41,7 +41,7 @@ internal sealed class ClipboardReadSession(IAvnClipboard native, long changeCoun
         }
         catch (COMException ex) when (IsComObjectDisposedException(ex))
         {
-            throw CreateObjectDisposedException(ex);
+            return 0;
         }
     }
 
@@ -53,7 +53,7 @@ internal sealed class ClipboardReadSession(IAvnClipboard native, long changeCoun
         }
         catch (COMException ex) when (IsComObjectDisposedException(ex))
         {
-            throw CreateObjectDisposedException(ex);
+            return null;
         }
     }
 
@@ -65,7 +65,7 @@ internal sealed class ClipboardReadSession(IAvnClipboard native, long changeCoun
         }
         catch (COMException ex) when (IsComObjectDisposedException(ex))
         {
-            throw CreateObjectDisposedException(ex);
+            return null;
         }
     }
 
@@ -77,16 +77,13 @@ internal sealed class ClipboardReadSession(IAvnClipboard native, long changeCoun
         }
         catch (COMException ex) when (IsComObjectDisposedException(ex))
         {
-            throw CreateObjectDisposedException(ex);
+            return null;
         }
     }
 
     public static bool IsComObjectDisposedException(COMException exception)
         // The native side returns COR_E_OBJECTDISPOSED if the clipboard has changed (_changeCount doesn't match).
         => exception.HResult == COR_E_OBJECTDISPOSED;
-
-    private static ObjectDisposedException CreateObjectDisposedException(COMException innerException)
-        => new(nameof(ClipboardReadSession), innerException);
 
     public void Dispose()
     {

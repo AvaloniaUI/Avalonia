@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Platform.Storage;
@@ -14,62 +15,69 @@ namespace Avalonia.Input.Platform;
 /// Wraps a legacy <see cref="IDataObject"/> into a <see cref="IDataTransfer"/>.
 /// </summary>
 internal sealed class DataObjectToDataTransferWrapper(IDataObject dataObject)
-    : IDataTransfer
+    : PlatformDataTransfer
 {
     public IDataObject DataObject { get; } = dataObject;
 
-    public IEnumerable<DataFormat> GetFormats()
-        => DataObject.GetDataFormats().Select(DataFormats.ToDataFormat).Distinct();
+    protected override DataFormat[] ProvideFormats()
+        => DataObject.GetDataFormats().Select(DataFormats.ToDataFormat).Distinct().ToArray();
 
-    public IEnumerable<IDataTransferItem> GetItems(IEnumerable<DataFormat>? formats = null)
+    protected override IDataTransferItem[] ProvideItems()
     {
-        DataFormat[]? formatArray = null;
+        var items = new List<IDataTransferItem>();
+        var nonFileFormats = new List<DataFormat>();
+        var nonFileFormatStrings = new List<string>();
 
-        if (formats is not null)
+        foreach (var formatString in DataObject.GetDataFormats())
         {
-            formatArray = formats as DataFormat[] ?? formats.ToArray();
-            if (formatArray.Length == 0)
-                return [];
-        }
+            var format = DataFormats.ToDataFormat(formatString);
 
-        return GetItemsCore();
-
-        IEnumerable<IDataTransferItem> GetItemsCore()
-        {
-            foreach (var formatString in DataObject.GetDataFormats())
+            if (formatString == DataFormats.Files)
             {
-                var format = DataFormats.ToDataFormat(formatString);
-                if (formatArray is not null && Array.IndexOf(formatArray, format) < 0)
-                    continue;
-
-                if (formatString == DataFormats.Files)
+                // This is not ideal as we're reading the filenames ahead of time to generate the appropriate items.
+                // We don't really care about that for this legacy wrapper.
+                if (DataObject.Get(formatString) is IEnumerable<IStorageItem> storageItems)
                 {
-                    // This is not ideal as we're reading the filenames ahead of time to generate the appropriate items.
-                    // We don't really care about that for this legacy wrapper.
-                    if (DataObject.Get(formatString) is IEnumerable<IStorageItem> storageItems)
+                    foreach (var storageItem in storageItems)
+                        items.Add(DataTransferItem.Create(format, storageItem));
+                }
+            }
+            else if (formatString == DataFormats.FileNames)
+            {
+                if (DataObject.Get(formatString) is IEnumerable<string> fileNames)
+                {
+                    foreach (var fileName in fileNames)
                     {
-                        foreach (var storageItem in storageItems)
-                            yield return DataTransferItem.Create(format, storageItem);
+                        if (StorageProviderHelpers.TryCreateBclStorageItem(fileName) is { } storageItem)
+                            items.Add(DataTransferItem.Create(format, storageItem));
                     }
                 }
-                else if (formatString == DataFormats.FileNames)
-                {
-                    if (DataObject.Get(formatString) is IEnumerable<string> fileNames)
-                    {
-                        foreach (var fileName in fileNames)
-                        {
-                            if (StorageProviderHelpers.TryCreateBclStorageItem(fileName) is { } storageItem)
-                                yield return DataTransferItem.Create(format, storageItem);
-                        }
-                    }
-                }
-                else
-                    yield return DataTransferItem.Create(format, () => DataObject.Get(formatString));
+            }
+            else
+            {
+                nonFileFormats.Add(format);
+                nonFileFormatStrings.Add(formatString);
             }
         }
+
+        if (nonFileFormats.Count > 0)
+        {
+            Debug.Assert(nonFileFormats.Count == nonFileFormatStrings.Count);
+
+            // Single item containing all formats except for DataFormat.File.
+            items.Add(new DataObjectToDataTransferItemWrapper(
+                DataObject,
+                nonFileFormats.ToArray(),
+                nonFileFormatStrings.ToArray()));
+        }
+
+        return items.ToArray();
     }
 
-    [SuppressMessage("ReSharper", "SuspiciousTypeConversion.Global", Justification = "IDisposable may be implemented externally.")]
-    public void Dispose()
+    [SuppressMessage(
+        "ReSharper",
+        "SuspiciousTypeConversion.Global",
+        Justification = "IDisposable may be implemented externally by the IDataObject instance.")]
+    public override void Dispose()
         => (DataObject as IDisposable)?.Dispose();
 }

@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia.Input.Platform;
 
@@ -11,17 +9,14 @@ namespace Avalonia.X11.Clipboard;
 /// <param name="reader">The object used to read values.</param>
 /// <param name="formats">The formats.</param>
 internal sealed class ClipboardDataTransferItem(ClipboardDataReader reader, DataFormat[] formats)
-    : IDataTransferItem
+    : PlatformDataTransferItem
 {
     private readonly ClipboardDataReader _reader = reader;
     private readonly DataFormat[] _formats = formats;
 
-    public IEnumerable<DataFormat> GetFormats()
+    protected override DataFormat[] ProvideFormats()
         => _formats;
 
-    public bool Contains(DataFormat format)
-        => Array.IndexOf(_formats, format) >= 0;
-
-    public Task<object?> TryGetAsync(DataFormat format)
-        => Contains(format) ? _reader.TryGetAsync(format) : Task.FromResult<object?>(null);
+    protected override Task<object?> TryGetAsyncCore(DataFormat format)
+        => _reader.TryGetAsync(format);
 }

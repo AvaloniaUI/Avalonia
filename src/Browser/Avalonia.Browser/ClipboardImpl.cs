@@ -35,7 +35,7 @@ namespace Avalonia.Browser
         {
             using var source = CreateWriteableClipboardSource();
 
-            foreach (var dataTransferItem in dataTransfer.GetItems())
+            foreach (var dataTransferItem in dataTransfer.Items)
             {
                 // No ConfigureAwait(false) here: we want TryGetAsync() for next items to be called on the initial thread.
                 await TryAddItemAsync(dataTransferItem, source);
@@ -51,7 +51,7 @@ namespace Avalonia.Browser
 
             try
             {
-                foreach (var dataFormat in dataTransferItem.GetFormats())
+                foreach (var dataFormat in dataTransferItem.Formats)
                 {
                     var formatString = ToBrowserFormat(dataFormat);
                     if (!IsClipboardFormatSupported(formatString))

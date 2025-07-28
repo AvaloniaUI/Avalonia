@@ -1,8 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia.Input.Platform;
-using MicroCom.Runtime;
 
 namespace Avalonia.Win32;
 
@@ -12,25 +10,16 @@ namespace Avalonia.Win32;
 /// <param name="oleDataObject">The wrapped OLE data object.</param>
 /// <param name="formats">The formats for this item.</param>
 internal sealed class OleDataObjectToDataTransferItemWrapper(Win32Com.IDataObject oleDataObject, DataFormat[] formats)
-    : IDataTransferItem
+    : PlatformDataTransferItem
 {
-    private readonly Win32Com.IDataObject _oleDataObject = oleDataObject.CloneReference();
+    private readonly Win32Com.IDataObject _oleDataObject = oleDataObject;
     private readonly DataFormat[] _formats = formats;
 
-    public IEnumerable<DataFormat> GetFormats()
+    protected override DataFormat[] ProvideFormats()
         => _formats;
 
-    public bool Contains(DataFormat format)
-        => Array.IndexOf(_formats, format) >= 0;
-
-    public bool ContainsAny(ReadOnlySpan<DataFormat> formats)
-        => _formats.AsSpan().IndexOfAny(formats) >= 0;
-
-    public Task<object?> TryGetAsync(DataFormat format)
+    protected override Task<object?> TryGetAsyncCore(DataFormat format)
     {
-        if (!Contains(format))
-            return Task.FromResult<object?>(null);
-
         try
         {
             return Task.FromResult(_oleDataObject.TryGet(format));

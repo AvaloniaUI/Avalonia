@@ -29,26 +29,17 @@ public interface IDataTransfer : IDisposable
     /// <summary>
     /// Gets the formats supported by a <see cref="IDataTransfer"/>.
     /// </summary>
-    /// <returns>A list of supported formats.</returns>
-    IEnumerable<DataFormat> GetFormats();
+    IReadOnlyList<DataFormat> Formats { get; }
 
     /// <summary>
-    /// Gets the list of <see cref="IDataTransferItem"/> contained in this object,
-    /// optionally filtered by specific formats.
+    /// Gets the list of <see cref="IDataTransferItem"/> contained in this object.
     /// </summary>
-    /// <param name="formats">
-    /// If null, no filtering is going to be performed: all items in the clipboard will be returned.
-    /// If non-null, only items matching at least one specified format will be returned.
-    /// (If an empty collection is specified, no items will be returned).
-    /// </param>
-    /// <returns>A list of items.</returns>
     /// <remarks>
     /// <para>
     /// Some platforms (such as Windows and X11) may only support a single data item for all formats
     /// except <see cref="DataFormat.File"/>.
     /// </para>
-    /// <para>Items returned by this method must stay valid until the <see cref="IDataTransfer"/> is disposed.</para>
+    /// <para>Items returned by this property must stay valid until the <see cref="IDataTransfer"/> is disposed.</para>
     /// </remarks>
-    IEnumerable<IDataTransferItem> GetItems(IEnumerable<DataFormat>? formats = null);
-
+    IReadOnlyList<IDataTransferItem> Items { get; }
 }

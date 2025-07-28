@@ -13,15 +13,7 @@ public interface IDataTransferItem
     /// <summary>
     /// Gets the formats supported by this item.
     /// </summary>
-    /// <returns>A list of supported formats.</returns>
-    IEnumerable<DataFormat> GetFormats();
-
-    /// <summary>
-    /// Gets whether this item supports a specific format.
-    /// </summary>
-    /// <param name="format">The format to check.</param>
-    /// <returns>true if <paramref name="format"/> is supported, false otherwise.</returns>
-    bool Contains(DataFormat format);
+    IReadOnlyList<DataFormat> Formats { get; }
 
     /// <summary>
     /// Tries to get a value for a given format.

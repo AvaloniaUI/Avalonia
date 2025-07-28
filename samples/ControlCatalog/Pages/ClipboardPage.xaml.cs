@@ -1,19 +1,15 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Notifications;
-using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
-using Avalonia.Platform;
 using Avalonia.Platform.Storage;
-using Avalonia.Platform.Storage.FileIO;
 using Avalonia.Threading;
 
 namespace ControlCatalog.Pages
@@ -93,7 +89,7 @@ namespace ControlCatalog.Pages
                 {
                     var dataTransfer = _storedDataTransfer = new DataTransfer();
                     foreach (var file in files)
-                        dataTransfer.Items.Add(DataTransferItem.Create(DataFormat.File, file));
+                        dataTransfer.Add(DataFormat.File, file);
                     await clipboard.SetDataAsync(dataTransfer);
                     NotificationManager.Show(new Notification("Success", "Copy completed.", NotificationType.Success));
                 }
@@ -130,7 +126,7 @@ namespace ControlCatalog.Pages
                 var dataTransfer = _storedDataTransfer = new DataTransfer();
                 var bytes = new byte[10 * 1024 * 1024];
                 new Random().NextBytes(bytes);
-                dataTransfer.Items.Add(DataTransferItem.Create(_customBinaryDataFormat, bytes));
+                dataTransfer.Add(_customBinaryDataFormat, bytes);
                 await clipboard.SetDataAsync(dataTransfer);
             }
         }

@@ -75,7 +75,7 @@ namespace Avalonia.iOS.Clipboard
         {
             List<NSDictionary>? pasteboardItems = null;
 
-            foreach (var dataTransferItem in dataTransfer.GetItems())
+            foreach (var dataTransferItem in dataTransfer.Items)
             {
                 if (await TryCreatePasteboardItemAsync(dataTransferItem) is not { } pasteboardItem)
                     continue;
@@ -92,7 +92,7 @@ namespace Avalonia.iOS.Clipboard
         {
             NSMutableDictionary? pasteboardItem = null;
 
-            foreach (var dataFormat in dataTransferItem.GetFormats())
+            foreach (var dataFormat in dataTransferItem.Formats)
             {
                 if (await dataTransferItem.TryGetAsync(dataFormat) is not { } data)
                     continue;

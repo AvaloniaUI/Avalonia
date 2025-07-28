@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
@@ -22,7 +23,41 @@ public static class DataTransferExtensions
     /// <param name="format">The format to check.</param>
     /// <returns>true if <paramref name="format"/> is supported, false otherwise.</returns>
     public static bool Contains(this IDataTransfer dataTransfer, DataFormat format)
-        => dataTransfer.GetFormats().Any(fmt => fmt == format);
+    {
+        var formats = dataTransfer.Formats;
+        var count = formats.Count;
+
+        for (var i = 0; i < count; ++i)
+        {
+            if (format == formats[i])
+                return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Gets the list of <see cref="IDataTransferItem"/> contained in this object, filtered by a given format.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Some platforms (such as Windows and X11) may only support a single data item for all formats
+    /// except <see cref="DataFormat.File"/>.
+    /// </para>
+    /// <para>Items returned by this property must stay valid until the <see cref="IDataTransfer"/> is disposed.</para>
+    /// </remarks>
+    public static IEnumerable<IDataTransferItem> GetItems(this IDataTransfer dataTransfer, DataFormat format)
+    {
+        var items = dataTransfer.Items;
+        var count = items.Count;
+
+        for (var i = 0; i < count; ++i)
+        {
+            var item = items[i];
+            if (item.Contains(format))
+                yield return item;
+        }
+    }
 
     /// <summary>
     /// Tries to get a value for a given format from a <see cref="IDataTransfer"/>.
@@ -36,7 +71,7 @@ public static class DataTransferExtensions
     /// </remarks>
     public static async Task<T?> TryGetValueAsync<T>(this IDataTransfer dataTransfer, DataFormat format)
     {
-        if (dataTransfer.GetItems([format]).FirstOrDefault() is { } item)
+        if (dataTransfer.GetItems(format).FirstOrDefault() is { } item)
         {
             var result = await item.TryGetAsync(format).ConfigureAwait(false);
             return result is T typedResult ? typedResult : default;
@@ -55,7 +90,7 @@ public static class DataTransferExtensions
     {
         List<T>? results = null;
 
-        foreach (var item in dataTransfer.GetItems([format]))
+        foreach (var item in dataTransfer.GetItems(format))
         {
             // No ConfigureAwait(false) here: we want TryGetAsync() for next items to be called on the initial thread.
             var result = await item.TryGetAsync(format);

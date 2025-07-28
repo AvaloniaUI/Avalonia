@@ -80,14 +80,14 @@ namespace Avalonia.Android.Platform
             if (_clipboardManager is null)
                 return;
 
-            var mimeTypes = dataTransfer.GetFormats()
+            var mimeTypes = dataTransfer.Formats
                 .Select(AndroidDataFormatHelper.DataFormatToMimeType)
                 .ToArray();
 
             ClipData.Item? firstItem = null;
             List<ClipData.Item>? additionalItems = null;
 
-            foreach (var dataTransferItem in dataTransfer.GetItems())
+            foreach (var dataTransferItem in dataTransfer.Items)
             {
                 if (await TryCreateDataItemAsync(dataTransferItem) is not { } clipDataItem)
                     continue;
@@ -120,7 +120,7 @@ namespace Avalonia.Android.Platform
             var hasFormats = false;
 
             // Create the item from the first format returning a supported value.
-            foreach (var dataFormat in item.GetFormats())
+            foreach (var dataFormat in item.Formats)
             {
                 hasFormats = true;
                 var data = await item.TryGetAsync(dataFormat);
@@ -154,7 +154,7 @@ namespace Avalonia.Android.Platform
                 Logger.TryGet(LogEventLevel.Warning, LogArea.AndroidPlatform)?.Log(
                     this,
                     "No compatible value found for data transfer item with formats {Formats}",
-                    string.Join(", ", item.GetFormats()));
+                    string.Join(", ", item.Formats));
             }
 
             return null;

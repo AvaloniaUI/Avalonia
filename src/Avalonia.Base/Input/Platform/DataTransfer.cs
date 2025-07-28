@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Avalonia.Input.Platform;
 
@@ -9,41 +10,62 @@ namespace Avalonia.Input.Platform;
 /// </summary>
 public sealed class DataTransfer : IDataTransfer
 {
-    /// <summary>
-    /// Gets the list of <see cref="IDataTransferItem"/> contained in this object.
-    /// </summary>
-    public List<IDataTransferItem> Items { get; } = [];
+    private readonly List<IDataTransferItem> _items = [];
+    private DataFormat[]? _formats;
 
     /// <inheritdoc />
-    public IEnumerable<DataFormat> GetFormats()
-        => Items.SelectMany(item => item.GetFormats()).Distinct();
-
-    IEnumerable<IDataTransferItem> IDataTransfer.GetItems(IEnumerable<DataFormat>? formats)
+    public IReadOnlyList<DataFormat> Formats
     {
-        if (formats is null)
-            return Items;
-
-        var formatArray = formats as DataFormat[] ?? formats.ToArray();
-        if (formatArray.Length == 0)
-            return [];
-
-        return FilterItems();
-
-        IEnumerable<IDataTransferItem> FilterItems()
+        get
         {
-            foreach (var item in Items)
-            {
-                foreach (var format in formatArray)
-                {
-                    if (item.Contains(format))
-                    {
-                        yield return item;
-                        break;
-                    }
-                }
-            }
+            return _formats ??= GetFormatsCore();
+
+            DataFormat[] GetFormatsCore()
+                => Items.SelectMany(item => item.Formats).Distinct().ToArray();
         }
     }
+
+    /// <inheritdoc />
+    public IReadOnlyList<IDataTransferItem> Items
+        => _items;
+
+    /// <summary>
+    /// Adds an existing <see cref="IDataTransferItem"/>.
+    /// </summary>
+    /// <param name="item">The item to add.</param>
+    public void Add(IDataTransferItem item)
+    {
+        _formats = null;
+        _items.Add(item);
+    }
+
+    /// <summary>
+    /// Creates and adds a new <see cref="IDataTransferItem"/> for a single format with a given value.
+    /// </summary>
+    /// <param name="format">The format.</param>
+    /// <param name="value">The value corresponding to <paramref name="format"/>.</param>
+    public void Add<T>(DataFormat format, T value)
+        => Add(DataTransferItem.Create(format, value));
+
+    /// <summary>
+    /// Creates a new <see cref="IDataTransferItem"/> for a single format,
+    /// with its value created synchronously on demand.
+    /// </summary>
+    /// <typeparam name="T">The value type.</typeparam>
+    /// <param name="format">The format.</param>
+    /// <param name="getValue">A function returning the value corresponding to <paramref name="format"/>.</param>
+    public void AddLazy<T>(DataFormat format, Func<T> getValue)
+        => Add(DataTransferItem.CreateLazy(format, getValue));
+
+    /// <summary>
+    /// Creates and adds a new <see cref="IDataTransferItem"/> for a single format,
+    /// with its value created asynchronously on demand.
+    /// </summary>
+    /// <typeparam name="T">The value type.</typeparam>
+    /// <param name="format">The format.</param>
+    /// <param name="getValueAsync">A function returning the value corresponding to <paramref name="format"/>.</param>
+    public void AddAsyncLazy<T>(DataFormat format, Func<Task<T>> getValueAsync)
+        => Add(DataTransferItem.CreateAsyncLazy(format, getValueAsync));
 
     void IDisposable.Dispose()
     {

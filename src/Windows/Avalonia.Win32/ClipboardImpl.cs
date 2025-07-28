@@ -102,7 +102,7 @@ namespace Avalonia.Win32
                 {
                     using var proxy = MicroComRuntime.CreateProxyFor<Win32Com.IDataObject>(dataObject, true);
                     using var wrapper = new OleDataObjectToDataTransferWrapper(proxy);
-                    return wrapper.GetFormats().ToArray();
+                    return wrapper.Formats.ToArray();
                 }
 
                 if (--i == 0)
