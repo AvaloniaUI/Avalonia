@@ -42,11 +42,20 @@ public sealed record DataFormat
     /// </summary>
     /// <param name="applicationPrefix">The system prefix used to recognize the name as an application format.</param>
     /// <returns>A system name for the format.</returns>
+    /// <remarks>
+    /// This method can only be called if <see cref="Kind"/> is
+    /// <see cref="DataFormatKind.Application"/> or <see cref="DataFormatKind.OperatingSystem"/>.
+    /// </remarks>
     public string ToSystemName(string applicationPrefix)
     {
         ThrowHelper.ThrowIfNull(applicationPrefix);
 
-        return applicationPrefix + Identifier;
+        return Kind switch
+        {
+            DataFormatKind.Application => applicationPrefix + Identifier,
+            DataFormatKind.OperatingSystem => Identifier,
+            _ => throw new InvalidOperationException($"Cannot get system name for cross-platform format {Identifier}")
+        };
     }
 
     private static DataFormat CreateCrossPlatformFormat(string identifier)

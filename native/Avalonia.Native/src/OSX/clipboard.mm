@@ -165,11 +165,19 @@ NSString* TryConvertFormatToUti(NSString* format)
         auto type = [UTType typeWithIdentifier:format];
         if (type == nil)
         {
-            type = [UTType typeWithMIMEType:format];
+            if ([format containsString:@"/"])
+                type = [UTType typeWithMIMEType:format];
+            else
+                type = [UTType exportedTypeWithIdentifier:format];
+            
             if (type == nil)
             {
                 // For now, we need to use the deprecated UTTypeCreatePreferredIdentifierForTag to create a dynamic UTI for arbitrary strings.
-                // Ideally, the managed side should take care of only providing UTIs.
+                // This is only necessary because the old IDataObject can provide arbitrary types that aren't UTIs nor mime types.
+                // With the new DataFormat:
+                //   - If the format is an application format, the managed side provides a UTI like net.avaloniaui.app.uti.xxx.
+                //   - If the format is an OS format, the user has been warned that they MUST provide a name which is valid for the OS.
+                // TODOV12: remove!
                 auto fromPasteboardType = UTTypeCreatePreferredIdentifierForTag(kUTTagClassNSPboardType, (__bridge CFStringRef)format, nil);
                 if (fromPasteboardType != nil)
                     return (__bridge_transfer NSString*)fromPasteboardType;
