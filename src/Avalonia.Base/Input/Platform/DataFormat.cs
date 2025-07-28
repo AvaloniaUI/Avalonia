@@ -9,21 +9,10 @@ namespace Avalonia.Input.Platform;
 /// </summary>
 public sealed record DataFormat
 {
-    private const string PrefixApplication = "avalonia-app-format:";
-    private const string PrefixCrossPlatform = "avalonia-xplat-format:";
-
-    internal DataFormat(DataFormatKind kind, string identifier)
+    private DataFormat(DataFormatKind kind, string identifier)
     {
         Kind = kind;
         Identifier = identifier;
-
-        SystemName = Kind switch
-        {
-            DataFormatKind.Application => PrefixApplication + Identifier,
-            DataFormatKind.OperatingSystem => Identifier,
-            DataFormatKind.CrossPlatform => PrefixCrossPlatform + Identifier,
-            _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null)
-        };
     }
 
     /// <summary>
@@ -35,8 +24,6 @@ public sealed record DataFormat
     /// Gets the identifier of the data format.
     /// </summary>
     public string Identifier { get; }
-
-    public string SystemName { get; }
 
     /// <summary>
     /// Gets a data format representing plain text.
@@ -50,6 +37,18 @@ public sealed record DataFormat
     /// </summary>
     public static DataFormat File { get; } = CreateCrossPlatformFormat("File");
 
+    /// <summary>
+    /// Creates a name for this format, usable by the operating system.
+    /// </summary>
+    /// <param name="applicationPrefix">The system prefix used to recognize the name as an application format.</param>
+    /// <returns>A system name for the format.</returns>
+    public string ToSystemName(string applicationPrefix)
+    {
+        ThrowHelper.ThrowIfNull(applicationPrefix);
+
+        return applicationPrefix + Identifier;
+    }
+
     private static DataFormat CreateCrossPlatformFormat(string identifier)
         => new(DataFormatKind.CrossPlatform, identifier);
 
@@ -57,14 +56,19 @@ public sealed record DataFormat
     /// Creates a new format specific to the application.
     /// </summary>
     /// <param name="identifier">
+    /// <para>
     /// The format identifier. To avoid conflicts with system identifiers, this value isn't passed to the underlying
-    /// operating system directly but might be mangled. However, two different applications using the same identifier
+    /// operating system directly. However, two different applications using the same identifier
     /// with <see cref="CreateApplicationFormat"/> are able to share data using this format.
+    /// </para>
+    /// <para>Only ASCII letters (A-Z, a-z), digits (0-9), the dot (.) and the hyphen (-) are accepted.</para>
     /// </param>
     /// <returns>A new <see cref="DataFormat"/>.</returns>
     public static DataFormat CreateApplicationFormat(string identifier)
     {
-        ThrowHelper.ThrowIfNullOrEmpty(identifier);
+        if (!IsValidApplicationFormatIdentifier(identifier))
+            throw new ArgumentException("Invalid application identifier", nameof(identifier));
+
         return new DataFormat(DataFormatKind.Application, identifier);
     }
 
@@ -72,29 +76,65 @@ public sealed record DataFormat
     /// Creates a new format for the current operating system.
     /// </summary>
     /// <param name="identifier">
-    /// The format identifier. This value is passed AS IS to the underlying operating system.
-    /// Consequently, the identifier should be a valid value.
+    /// The format identifier. This value is not validated and is passed AS IS to the underlying operating system.
     /// Most systems use mime types, but macOS requires Uniform Type Identifiers (UTI).
     /// </param>
     /// <returns>A new <see cref="DataFormat"/>.</returns>
     public static DataFormat CreateOperatingSystemFormat(string identifier)
     {
         ThrowHelper.ThrowIfNullOrEmpty(identifier);
+
         return new DataFormat(DataFormatKind.OperatingSystem, identifier);
     }
 
-    public static DataFormat FromSystemName(string systemName)
+    /// <summary>
+    /// Creates a <see cref="DataFormat"/> from a name coming from the underlying operating system.
+    /// </summary>
+    /// <param name="systemName">The name.</param>
+    /// <param name="applicationPrefix">The system prefix used to recognize the name as an application format.</param>
+    /// <returns>A <see cref="DataFormat"/> corresponding to <paramref name="systemName"/>.</returns>
+    public static DataFormat FromSystemName(string systemName, string applicationPrefix)
     {
-        ThrowHelper.ThrowIfNullOrEmpty(systemName);
+        ThrowHelper.ThrowIfNull(systemName);
+        ThrowHelper.ThrowIfNull(applicationPrefix);
 
-        return TryParseWithPrefix(systemName, PrefixApplication, DataFormatKind.Application)
-            ?? TryParseWithPrefix(systemName, PrefixCrossPlatform, DataFormatKind.CrossPlatform)
-            ?? new DataFormat(DataFormatKind.OperatingSystem, systemName);
+        if (systemName.StartsWith(applicationPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            var identifier = systemName.Substring(applicationPrefix.Length);
+            if (IsValidApplicationFormatIdentifier(identifier))
+                return new DataFormat(DataFormatKind.Application, identifier);
+        }
 
-        static DataFormat? TryParseWithPrefix(string format, string prefix, DataFormatKind kind)
-            => format.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) ?
-                new DataFormat(kind, format.Substring(prefix.Length)) :
-                null;
+        return new DataFormat(DataFormatKind.OperatingSystem, systemName);
+    }
+
+    private static bool IsValidApplicationFormatIdentifier(string identifier)
+    {
+        if (string.IsNullOrEmpty(identifier))
+            return false;
+
+        foreach (var c in identifier)
+        {
+            if (!IsValidChar(c))
+                return false;
+        }
+
+        return true;
+
+        static bool IsValidChar(char c)
+            => IsAsciiLetterOrDigit(c) || c == '.' || c == '-';
+
+        static bool IsAsciiLetterOrDigit(char c)
+        {
+#if NET8_0_OR_GREATER
+            return char.IsAsciiLetterOrDigit(c);
+#else
+            return c is
+                (>= '0' and <= '9') or
+                (>= 'A' and <= 'Z') or
+                (>= 'a' and <= 'z');
+#endif
+        }
     }
 
     /// <inheritdoc />

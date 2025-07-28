@@ -7,6 +7,7 @@ namespace Avalonia.X11.Clipboard;
 internal static class ClipboardDataFormatHelper
 {
     private const string MimeTypeTextUriList = "text/uri-list";
+    private const string AppPrefix = "application/avn-fmt.";
 
     public static DataFormat? ToDataFormat(IntPtr formatAtom, X11Atoms atoms)
     {
@@ -32,7 +33,7 @@ internal static class ClipboardDataFormatHelper
         {
             return atomName == MimeTypeTextUriList ?
                 DataFormat.File :
-                DataFormat.FromSystemName(atomName);
+                DataFormat.FromSystemName(atomName, AppPrefix);
         }
 
         return null;
@@ -46,7 +47,8 @@ internal static class ClipboardDataFormatHelper
         if (DataFormat.File.Equals(format))
             return atoms.GetAtom(MimeTypeTextUriList);
 
-        return atoms.GetAtom(format.SystemName);
+        var systemName = format.ToSystemName(AppPrefix);
+        return atoms.GetAtom(systemName);
     }
 
     public static IntPtr[] ToAtoms(DataFormat format, IntPtr[] textFormatAtoms, X11Atoms atoms)
@@ -57,7 +59,8 @@ internal static class ClipboardDataFormatHelper
         if (DataFormat.File.Equals(format))
             return [atoms.GetAtom(MimeTypeTextUriList)];
 
-        return [atoms.GetAtom(format.SystemName)];
+        var systemName = format.ToSystemName(AppPrefix);
+        return [atoms.GetAtom(systemName)];
     }
 
     private static IntPtr GetPreferredStringFormatAtom(IntPtr[] textFormatAtoms, X11Atoms atoms)

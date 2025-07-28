@@ -9,6 +9,7 @@ namespace Avalonia.Win32
     internal static class ClipboardFormatRegistry
     {
         private const int MaxFormatNameLength = 260;
+        private const string AppPrefix = "avn-app-fmt:";
 
         private static readonly List<(DataFormat Format, ushort Id)> s_formats = [];
 
@@ -41,7 +42,7 @@ namespace Avalonia.Win32
                 }
 
                 var systemName = GetFormatSystemName(id);
-                var format = DataFormat.FromSystemName(systemName);
+                var format = DataFormat.FromSystemName(systemName, AppPrefix);
                 AddDataFormat(format, id);
                 return format;
             }
@@ -57,7 +58,8 @@ namespace Avalonia.Win32
                         return s_formats[i].Id;
                 }
 
-                var result = UnmanagedMethods.RegisterClipboardFormat(format.SystemName);
+                var systemName = format.ToSystemName(AppPrefix);
+                var result = UnmanagedMethods.RegisterClipboardFormat(systemName);
                 if (result == 0)
                     throw new Win32Exception();
 

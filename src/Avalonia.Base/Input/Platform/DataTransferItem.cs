@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Avalonia.Utilities;
 
 namespace Avalonia.Input.Platform;
 
@@ -38,7 +39,11 @@ public sealed class DataTransferItem : IDataTransferItem
     /// <param name="value">The value corresponding to <paramref name="format"/>.</param>
     /// <returns>A <see cref="DataTransferItem"/> instance.</returns>
     public static DataTransferItem Create<T>(DataFormat format, T value)
-        => new(format, Task.FromResult, value);
+    {
+        ThrowHelper.ThrowIfNull(format);
+
+        return new DataTransferItem(format, Task.FromResult, value);
+    }
 
     /// <summary>
     /// Creates a new <see cref="DataTransferItem"/> for a single format
@@ -49,7 +54,11 @@ public sealed class DataTransferItem : IDataTransferItem
     /// <param name="getValue">A function returning the value corresponding to <paramref name="format"/>.</param>
     /// <returns>A <see cref="DataTransferItem"/> instance.</returns>
     public static DataTransferItem CreateLazy<T>(DataFormat format, Func<T> getValue)
-        => new(
+    {
+        ThrowHelper.ThrowIfNull(format);
+        ThrowHelper.ThrowIfNull(getValue);
+
+        return new DataTransferItem(
             format,
             static state =>
             {
@@ -63,6 +72,7 @@ public sealed class DataTransferItem : IDataTransferItem
                 }
             },
             getValue);
+    }
 
     /// <summary>
     /// Creates a new <see cref="DataTransferItem"/> for a single format,
@@ -74,6 +84,9 @@ public sealed class DataTransferItem : IDataTransferItem
     /// <returns>A <see cref="DataTransferItem"/> instance.</returns>
     public static DataTransferItem CreateAsyncLazy<T>(DataFormat format, Func<Task<T>> getValueAsync)
     {
+        ThrowHelper.ThrowIfNull(format);
+        ThrowHelper.ThrowIfNull(getValueAsync);
+
         Func<object?, Task<object?>> untypedGetValueAsync = typeof(T) == typeof(object) ?
             static state => ((Func<Task<object?>>)state!)() :
             static async state => await ((Func<Task<T>>)state!)().ConfigureAwait(false);

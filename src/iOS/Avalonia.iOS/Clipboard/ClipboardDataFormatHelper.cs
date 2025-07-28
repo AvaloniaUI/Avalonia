@@ -6,13 +6,14 @@ internal static class ClipboardDataFormatHelper
 {
     private const string UTTypeUTF8PlainText = "public.utf8-plain-text";
     private const string UTTypeFileUrl = "public.file-url";
+    private const string AppPrefix = "net.avaloniaui.app.uti.";
 
     public static DataFormat ToDataFormat(string type)
         => type switch
         {
             UTTypeUTF8PlainText => DataFormat.Text,
             UTTypeFileUrl => DataFormat.File,
-            _ => DataFormat.FromSystemName(type)
+            _ => DataFormat.FromSystemName(type, AppPrefix)
         };
 
     public static string ToSystemType(DataFormat format)
@@ -23,6 +24,6 @@ internal static class ClipboardDataFormatHelper
         if (format.Equals(DataFormat.File))
             return UTTypeFileUrl;
 
-        return format.SystemName;
+        return format.ToSystemName(AppPrefix);
     }
 }

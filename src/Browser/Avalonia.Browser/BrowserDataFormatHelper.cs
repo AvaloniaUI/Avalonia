@@ -6,13 +6,14 @@ internal static class BrowserDataFormatHelper
 {
     private const string FormatTextPlain = "text/plain";
     private const string FormatFiles = "Files";
+    private const string AppPrefix = "application/avn-fmt.";
 
     public static DataFormat ToDataFormat(string formatString)
         => formatString switch
         {
             FormatTextPlain => DataFormat.Text,
             FormatFiles => DataFormat.File,
-            _ => DataFormat.FromSystemName(formatString)
+            _ => DataFormat.FromSystemName(formatString, AppPrefix)
         };
 
     public static string ToBrowserFormat(DataFormat format)
@@ -23,6 +24,6 @@ internal static class BrowserDataFormatHelper
         if (DataFormat.File.Equals(format))
             return FormatFiles;
 
-        return format.SystemName;
+        return format.ToSystemName(AppPrefix);
     }
 }

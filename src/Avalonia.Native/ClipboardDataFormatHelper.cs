@@ -10,6 +10,7 @@ internal static class ClipboardDataFormatHelper
     // TODO hide native types behind IAvnClipboard abstraction, so managed side won't depend on macOS.
     private const string NSPasteboardTypeString = "public.utf8-plain-text";
     private const string NSPasteboardTypeFileUrl = "public.file-url";
+    private const string AppPrefix = "net.avaloniaui.app.uti.";
 
     public static DataFormat[] ToDataFormats(IAvnStringArray? nativeFormats)
     {
@@ -36,7 +37,7 @@ internal static class ClipboardDataFormatHelper
         {
             NSPasteboardTypeString => DataFormat.Text,
             NSPasteboardTypeFileUrl => DataFormat.File,
-            _ => DataFormat.FromSystemName(nativeFormat)
+            _ => DataFormat.FromSystemName(nativeFormat, AppPrefix)
         };
 
     public static string ToNativeFormat(DataFormat format)
@@ -47,6 +48,6 @@ internal static class ClipboardDataFormatHelper
         if (format.Equals(DataFormat.File))
             return NSPasteboardTypeFileUrl;
 
-        return format.SystemName;
+        return format.ToSystemName(AppPrefix);
     }
 }

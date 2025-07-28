@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Utilities;
 
 namespace Avalonia.Input.Platform;
 
@@ -35,6 +36,8 @@ public sealed class DataTransfer : IDataTransfer
     /// <param name="item">The item to add.</param>
     public void Add(IDataTransferItem item)
     {
+        ThrowHelper.ThrowIfNull(item);
+
         _formats = null;
         _items.Add(item);
     }

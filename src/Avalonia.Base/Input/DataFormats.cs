@@ -37,7 +37,7 @@ namespace Avalonia.Input
             if (format == Files || format == FileNames)
                 return DataFormat.File;
 
-            return DataFormat.FromSystemName(format);
+            return DataFormat.CreateOperatingSystemFormat(format);
         }
 
         internal static string ToString(DataFormat format)
@@ -48,7 +48,7 @@ namespace Avalonia.Input
             if (DataFormat.File.Equals(format))
                 return Files;
 
-            return format.SystemName;
+            return format.Identifier;
         }
 
 #pragma warning restore CS0618 // Type or member is obsolete

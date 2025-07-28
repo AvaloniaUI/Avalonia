@@ -6,6 +6,7 @@ internal static class AndroidDataFormatHelper
 {
     private const string MimeTypeTextPlain = "text/plain";
     private const string MimeTypeTextUriList = "text/uri-list";
+    private const string AppPrefix = "application/avn-fmt.";
 
     public static DataFormat MimeTypeToDataFormat(string mimeType)
     {
@@ -15,7 +16,7 @@ internal static class AndroidDataFormatHelper
         if (mimeType == MimeTypeTextUriList)
             return DataFormat.File;
 
-        return DataFormat.FromSystemName(mimeType);
+        return DataFormat.FromSystemName(mimeType, AppPrefix);
     }
 
     public static string DataFormatToMimeType(DataFormat format)
@@ -26,7 +27,7 @@ internal static class AndroidDataFormatHelper
         if (DataFormat.File.Equals(format))
             return MimeTypeTextUriList;
 
-        return format.SystemName;
+        return format.ToSystemName(AppPrefix);
     }
 
 }
