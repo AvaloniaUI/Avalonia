@@ -6,6 +6,9 @@ using Avalonia.Input.Raw;
 using Avalonia.Platform;
 using Foundation;
 using UIKit;
+#if !TVOS
+using CoreAnimation;
+#endif
 
 namespace Avalonia.iOS;
 
@@ -20,6 +23,14 @@ internal sealed class InputHandler
     private readonly PenDevice _penDevice = new(releasePointerOnPenUp: true);
     private static long _nextTouchPointId = 1;
     private readonly Dictionary<UITouch, long> _knownTouches = new();
+    private Point? _cachedScrollLocation;
+    
+    #if !TVOS
+    private CADisplayLink? _momentumDisplayLink;
+    private double _momentumVelocityX;
+    private double _momentumVelocityY;
+    private const double DecelerationRate = 0.95;
+    #endif
 
     public InputHandler(AvaloniaView view, ITopLevelImpl tl)
     {
@@ -247,6 +258,117 @@ internal sealed class InputHandler
         }
 
         return modifier;
+    }
+
+    public void HandleScrollWheel(UIPanGestureRecognizer recognizer)
+    {
+        switch (recognizer.State)
+        {
+            case UIGestureRecognizerState.Began:
+                StopMomentumScrolling();
+                _cachedScrollLocation = recognizer.LocationInView(_view).ToAvalonia();
+                return;
+            case UIGestureRecognizerState.Changed:
+                SendActiveScrollEvent(recognizer);
+                return;
+            case UIGestureRecognizerState.Ended:
+                StartInertiaScrolling(recognizer);
+                return;
+            case UIGestureRecognizerState.Cancelled:
+            case UIGestureRecognizerState.Failed:
+                StopMomentumScrolling();
+                return;
+            default:
+                return;
+        }
+    }
+
+    private void SendActiveScrollEvent(UIPanGestureRecognizer recognizer)
+    {
+#if !TVOS
+        // iOS 13.4+ and Catalyst support scroll wheel events
+        if (!OperatingSystem.IsIOSVersionAtLeast(13, 4) && !OperatingSystem.IsMacCatalyst())
+            return;
+
+        var velocity = recognizer.VelocityInView(_view);
+        
+        // Use much more sensitive scaling for active scrolling to match AppKit.
+        // macOS uses small deltas, so we need much larger divisors
+        var scaleFactor = 3000.0;
+        
+        var deltaX = velocity.X / scaleFactor;
+        var deltaY = velocity.Y / scaleFactor;
+            
+        var location = _cachedScrollLocation ?? new Point(0, 0);
+        var timestamp = (ulong)(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+        
+        var scrollEvent = new RawMouseWheelEventArgs(
+            _mouseDevice, 
+            timestamp, 
+            Root,
+            location,
+            new Vector(deltaX, deltaY),
+            RawInputModifiers.None
+        );
+        
+        _tl.Input?.Invoke(scrollEvent);
+#endif
+    }
+
+    private void StartInertiaScrolling(UIPanGestureRecognizer recognizer)
+    {
+#if !TVOS
+        // iOS 13.4+ and Catalyst support scroll wheel events
+        if (!OperatingSystem.IsIOSVersionAtLeast(13, 4) && !OperatingSystem.IsMacCatalyst())
+            return;
+
+        var velocity = recognizer.VelocityInView(_view);
+        
+        var scaleFactor = 800.0;
+        _momentumVelocityX = velocity.X / scaleFactor;
+        _momentumVelocityY = velocity.Y / scaleFactor;
+        _momentumDisplayLink = CADisplayLink.Create(UpdateInertiaScrolling);
+        _momentumDisplayLink.AddToRunLoop(NSRunLoop.Main, NSRunLoopMode.Common);
+#endif
+    }
+
+    private void StopMomentumScrolling()
+    {
+#if !TVOS
+        if (_momentumDisplayLink != null)
+        {
+            // Invalidate removes it from all run loops
+            // https://developer.apple.com/documentation/quartzcore/cadisplaylink
+            _momentumDisplayLink.Invalidate();
+            _momentumDisplayLink = null;
+        }
+        
+        _momentumVelocityX = 0;
+        _momentumVelocityY = 0;
+        _cachedScrollLocation = null;
+#endif
+    }
+
+    private void UpdateInertiaScrolling()
+    {
+#if !TVOS
+        _momentumVelocityX *= DecelerationRate;
+        _momentumVelocityY *= DecelerationRate;
+        
+        // UIPanGestureRecognizer will continue to upload the location of the pointer,
+        // to where it would be if it was moving with the current velocity,
+        // even though the pointer on screen is not moving.
+        // We can cache the location when we start scrolling and keep it static
+        // until the inertia stops.
+        _tl.Input?.Invoke(new RawMouseWheelEventArgs(
+            _mouseDevice, 
+            (ulong)(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()), 
+            Root,
+            _cachedScrollLocation ?? new Point(0, 0),
+            new Vector(_momentumVelocityX, _momentumVelocityY),
+            RawInputModifiers.None
+        ));
+#endif
     }
 
 #pragma warning disable CA1416
