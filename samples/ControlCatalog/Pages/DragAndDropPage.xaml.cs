@@ -26,12 +26,12 @@ namespace ControlCatalog.Pages
 
             SetupDnd(
                 "Text",
-                d => d.Add(DataFormat.Text, $"Text was dragged {++textCount} times"),
+                d => d.Add(DataTransferItem.Create(DataFormat.Text, $"Text was dragged {++textCount} times")),
                 DragDropEffects.Copy | DragDropEffects.Move | DragDropEffects.Link);
 
             SetupDnd(
                 "Custom",
-                d => d.Add(_customFormat, "Test123"),
+                d => d.Add(DataTransferItem.Create(_customFormat, "Test123")),
                 DragDropEffects.Copy | DragDropEffects.Move);
 
             SetupDnd(
@@ -42,7 +42,7 @@ namespace ControlCatalog.Pages
                         TopLevel.GetTopLevel(this) is { } topLevel &&
                         await topLevel.StorageProvider.TryGetFileFromPathAsync(name) is { } storageFile)
                     {
-                        d.Add(DataFormat.File, storageFile);
+                        d.Add(DataTransferItem.Create(DataFormat.File, storageFile));
                     }
                 },
                 DragDropEffects.Copy);

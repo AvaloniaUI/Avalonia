@@ -76,7 +76,7 @@ public static class ClipboardExtensions
             return clipboard.ClearAsync();
 
         var dataTransfer = new DataTransfer();
-        dataTransfer.Add(format, value);
+        dataTransfer.Add(DataTransferItem.Create(format, value));
         return clipboard.SetDataAsync(dataTransfer);
     }
 
@@ -101,7 +101,7 @@ public static class ClipboardExtensions
         var dataTransfer = new DataTransfer();
 
         foreach (var value in values)
-            dataTransfer.Add(format, value);
+            dataTransfer.Add(DataTransferItem.Create(format, value));
 
         return dataTransfer.Items.Count == 0
             ? clipboard.ClearAsync()

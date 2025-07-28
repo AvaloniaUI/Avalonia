@@ -90,7 +90,7 @@ namespace ControlCatalog.Pages
                 {
                     var dataTransfer = _storedDataTransfer = new DataTransfer();
                     foreach (var file in files)
-                        dataTransfer.Add(DataFormat.File, file);
+                        dataTransfer.Add(DataTransferItem.Create(DataFormat.File, file));
                     await clipboard.SetDataAsync(dataTransfer);
                     NotificationManager.Show(new Notification("Success", "Copy completed.", NotificationType.Success));
                 }
@@ -127,7 +127,7 @@ namespace ControlCatalog.Pages
                 var dataTransfer = _storedDataTransfer = new DataTransfer();
                 var bytes = new byte[10 * 1024 * 1024];
                 new Random().NextBytes(bytes);
-                dataTransfer.Add(_customBinaryDataFormat, bytes);
+                dataTransfer.Add(DataTransferItem.Create(_customBinaryDataFormat, bytes));
                 await clipboard.SetDataAsync(dataTransfer);
             }
         }
