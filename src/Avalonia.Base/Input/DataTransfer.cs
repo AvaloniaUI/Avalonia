@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Utilities;
 
-namespace Avalonia.Input.Platform;
+namespace Avalonia.Input;
 
 /// <summary>
 /// A mutable implementation of <see cref="IDataTransfer"/>.

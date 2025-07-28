@@ -1,6 +1,6 @@
 using System;
 using System.Text;
-using Avalonia.Input.Platform;
+using Avalonia.Input;
 
 namespace Avalonia.X11.Clipboard;
 

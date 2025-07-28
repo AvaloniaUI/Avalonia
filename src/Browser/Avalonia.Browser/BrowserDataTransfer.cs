@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Runtime.InteropServices.JavaScript;
 using Avalonia.Browser.Interop;
+using Avalonia.Input;
 using Avalonia.Input.Platform;
 
 namespace Avalonia.Browser;

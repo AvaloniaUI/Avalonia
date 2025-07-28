@@ -3,6 +3,7 @@ using System.Buffers;
 using System.IO;
 using System.Runtime.InteropServices.JavaScript;
 using System.Threading.Tasks;
+using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Logging;
 using static Avalonia.Browser.BrowserDataFormatHelper;

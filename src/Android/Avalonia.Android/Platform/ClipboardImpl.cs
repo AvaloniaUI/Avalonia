@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Android.Content;
+using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Logging;
 using Avalonia.Platform.Storage;

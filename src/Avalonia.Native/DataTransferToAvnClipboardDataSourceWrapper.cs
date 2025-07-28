@@ -2,7 +2,7 @@
 
 using System;
 using System.Linq;
-using Avalonia.Input.Platform;
+using Avalonia.Input;
 using Avalonia.Native.Interop;
 
 namespace Avalonia.Native;

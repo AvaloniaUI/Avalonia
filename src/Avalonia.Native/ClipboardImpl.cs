@@ -2,6 +2,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Native.Interop;
 

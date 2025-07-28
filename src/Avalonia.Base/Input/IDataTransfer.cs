@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using Avalonia.Input.Platform;
 
-namespace Avalonia.Input.Platform;
+namespace Avalonia.Input;
 
 /// <summary>
 /// Represents an object providing a list of <see cref="IDataTransferItem"/> usable by the clipboard

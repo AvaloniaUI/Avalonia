@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
-using Avalonia.Input.Platform;
+using Avalonia.Input;
 using Avalonia.Win32.Interop;
 using Avalonia.Utilities;
 

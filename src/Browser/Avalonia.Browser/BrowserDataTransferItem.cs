@@ -3,6 +3,7 @@ using System.Runtime.InteropServices.JavaScript;
 using System.Threading.Tasks;
 using Avalonia.Browser.Interop;
 using Avalonia.Browser.Storage;
+using Avalonia.Input;
 using Avalonia.Input.Platform;
 
 namespace Avalonia.Browser;

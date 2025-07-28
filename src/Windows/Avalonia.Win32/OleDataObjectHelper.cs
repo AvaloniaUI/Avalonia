@@ -7,7 +7,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Runtime.Serialization.Formatters.Binary;
-using Avalonia.Input.Platform;
+using Avalonia.Input;
 using Avalonia.Logging;
 using Avalonia.Platform.Storage;
 using Avalonia.Platform.Storage.FileIO;

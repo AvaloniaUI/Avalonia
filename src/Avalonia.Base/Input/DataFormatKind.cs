@@ -1,4 +1,4 @@
-﻿namespace Avalonia.Input.Platform;
+﻿namespace Avalonia.Input;
 
 /// <summary>
 /// Represents the kind of a <see cref="DataFormat"/>.

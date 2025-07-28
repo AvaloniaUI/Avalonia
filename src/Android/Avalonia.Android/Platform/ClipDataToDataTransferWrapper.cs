@@ -1,4 +1,5 @@
 ﻿using Android.Content;
+using Avalonia.Input;
 using Avalonia.Input.Platform;
 
 namespace Avalonia.Android.Platform;

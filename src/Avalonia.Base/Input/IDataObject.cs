@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Avalonia.Input
 {
     /// <summary>
     /// Interface to access information about the data of a drag-and-drop operation.
     /// </summary>
+    [Obsolete($"Use {nameof(IDataTransfer)} instead")]
     public interface IDataObject
     {
         /// <summary>

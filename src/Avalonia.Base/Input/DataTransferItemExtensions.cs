@@ -1,4 +1,6 @@
-﻿namespace Avalonia.Input.Platform;
+﻿using Avalonia.Input.Platform;
+
+namespace Avalonia.Input;
 
 /// <summary>
 /// Contains extension methods for <see cref="IDataTransferItem"/>.

@@ -1,6 +1,7 @@
 ﻿#nullable enable
 
 using System.Collections.Generic;
+using Avalonia.Input;
 using Avalonia.Input.Platform;
 
 namespace Avalonia.Native;

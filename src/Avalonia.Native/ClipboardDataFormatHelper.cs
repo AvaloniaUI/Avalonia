@@ -1,6 +1,6 @@
 #nullable enable
 
-using Avalonia.Input.Platform;
+using Avalonia.Input;
 using Avalonia.Native.Interop;
 
 namespace Avalonia.Native;

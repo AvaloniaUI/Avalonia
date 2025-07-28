@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Input.Platform;
 using Avalonia.Platform.Storage;
 
-namespace Avalonia.Input.Platform;
+namespace Avalonia.Input;
 
 /// <summary>
 /// Contains extension methods for <see cref="IDataTransfer"/>.

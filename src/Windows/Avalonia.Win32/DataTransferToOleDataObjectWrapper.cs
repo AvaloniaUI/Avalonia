@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
-using Avalonia.Input.Platform;
+using Avalonia.Input;
 using Avalonia.MicroCom;
 using Avalonia.Platform.Storage;
 using static Avalonia.Win32.Interop.UnmanagedMethods;

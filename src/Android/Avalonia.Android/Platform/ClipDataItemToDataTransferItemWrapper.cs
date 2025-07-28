@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
 using Avalonia.Android.Platform.Storage;
+using Avalonia.Input;
 using Avalonia.Input.Platform;
 
 namespace Avalonia.Android.Platform;

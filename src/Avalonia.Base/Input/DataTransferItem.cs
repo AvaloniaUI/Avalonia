@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Avalonia.Input.Platform;
 using Avalonia.Utilities;
 
-namespace Avalonia.Input.Platform;
+namespace Avalonia.Input;
 
 /// <summary>
 /// Simple implementation of <see cref="IDataTransferItem"/>.

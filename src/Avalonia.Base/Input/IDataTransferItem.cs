@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Avalonia.Input.Platform;
 
-namespace Avalonia.Input.Platform;
+namespace Avalonia.Input;
 
 /// <summary>
 /// Represent an item inside a <see cref="IDataTransfer"/>.

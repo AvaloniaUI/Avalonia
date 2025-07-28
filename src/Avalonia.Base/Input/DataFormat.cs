@@ -2,7 +2,7 @@
 using Avalonia.Platform.Storage;
 using Avalonia.Utilities;
 
-namespace Avalonia.Input.Platform;
+namespace Avalonia.Input;
 
 /// <summary>
 /// Represents a format usable with the clipboard and drag-and-drop.

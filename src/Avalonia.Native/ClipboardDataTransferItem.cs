@@ -3,6 +3,7 @@
 using System;
 using System.Threading.Tasks;
 using Avalonia.Controls.Platform;
+using Avalonia.Input;
 using Avalonia.Input.Platform;
 
 namespace Avalonia.Native;

@@ -3,7 +3,7 @@
 using System;
 using System.IO;
 using System.Linq;
-using Avalonia.Input.Platform;
+using Avalonia.Input;
 using Avalonia.Logging;
 using Avalonia.Native.Interop;
 using Avalonia.Platform.Storage;

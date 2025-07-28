@@ -1,10 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
-using Avalonia.Input.Platform;
-using Avalonia.Platform.Storage.FileIO;
+using Avalonia.Input;
 using static Avalonia.X11.XLib;
 
 namespace Avalonia.X11.Clipboard;

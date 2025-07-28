@@ -1,4 +1,4 @@
-﻿using Avalonia.Input.Platform;
+﻿using Avalonia.Input;
 
 namespace Avalonia.Android.Platform;
 
