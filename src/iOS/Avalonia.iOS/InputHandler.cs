@@ -298,20 +298,15 @@ internal sealed class InputHandler
         
         var deltaX = velocity.X / scaleFactor;
         var deltaY = velocity.Y / scaleFactor;
-            
-        var location = _cachedScrollLocation ?? new Point(0, 0);
-        var timestamp = (ulong)(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
         
-        var scrollEvent = new RawMouseWheelEventArgs(
+        _tl.Input?.Invoke(new RawMouseWheelEventArgs(
             _mouseDevice, 
-            timestamp, 
+            (ulong)(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()), 
             Root,
-            location,
+            _cachedScrollLocation ?? new Point(0, 0),
             new Vector(deltaX, deltaY),
             RawInputModifiers.None
-        );
-        
-        _tl.Input?.Invoke(scrollEvent);
+        ));
 #endif
     }
 
