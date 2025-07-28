@@ -17,7 +17,7 @@ namespace ControlCatalog.Pages
     public partial class ClipboardPage : UserControl
     {
         private readonly DataFormat _customBinaryDataFormat =
-            DataFormat.CreateApplicationFormat("application/controlcatalog-binary-data");
+            DataFormat.CreateApplicationFormat("controlcatalog-binary-data");
 
         private INotificationManager? _notificationManager;
         private INotificationManager NotificationManager => _notificationManager

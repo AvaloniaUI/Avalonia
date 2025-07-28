@@ -15,7 +15,7 @@ namespace ControlCatalog.Pages
         private readonly TextBlock _dropState;
 
         private readonly DataFormat _customFormat =
-            DataFormat.CreateApplicationFormat("application/xxx-avalonia-controlcatalog-custom");
+            DataFormat.CreateApplicationFormat("xxx-avalonia-controlcatalog-custom");
 
         public DragAndDropPage()
         {

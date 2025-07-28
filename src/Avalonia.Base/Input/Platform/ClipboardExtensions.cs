@@ -118,6 +118,15 @@ public static class ClipboardExtensions
         => clipboard.TryGetValueAsync<string>(DataFormat.Text);
 
     /// <summary>
+    /// Returns a file, if available, from the clipboard.
+    /// </summary>
+    /// <param name="clipboard">The clipboard instance.</param>
+    /// <returns>An <see cref="IStorageItem"/> (file or folder), or null if the format isn't available.</returns>
+    /// <seealso cref="DataFormat.File"/>.
+    public static Task<IStorageItem?> TryGetFileAsync(this IClipboard clipboard)
+        => clipboard.TryGetValueAsync<IStorageItem>(DataFormat.File);
+
+    /// <summary>
     /// Returns a list of files, if available, from the clipboard.
     /// </summary>
     /// <param name="clipboard">The data transfer instance.</param>
