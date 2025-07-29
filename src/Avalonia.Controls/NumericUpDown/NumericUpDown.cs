@@ -376,6 +376,7 @@ namespace Avalonia.Controls
             TextProperty.Changed.Subscribe(OnTextChanged);
             TextConverterProperty.Changed.Subscribe(OnTextConverterChanged);
             ValueProperty.Changed.Subscribe(OnValueChanged);
+            TabIndexProperty.Changed.Subscribe(OnTabIndexChanged);
 
             FocusableProperty.OverrideDefaultValue<NumericUpDown>(true);
             IsTabStopProperty.OverrideDefaultValue<NumericUpDown>(false);
@@ -408,6 +409,7 @@ namespace Avalonia.Controls
             if (TextBox != null)
             {
                 TextBox.Text = Text;
+                TextBox.TabIndex = TabIndex;
                 TextBox.PointerPressed += TextBoxOnPointerPressed;
                 _textBoxTextChangedSubscription = TextBox.GetObservable(TextBox.TextProperty).Subscribe(txt => TextBoxOnTextChanged());
             }
@@ -581,6 +583,18 @@ namespace Avalonia.Controls
             SetValidSpinDirection();
 
             RaiseValueChangedEvent(oldValue, newValue);
+        }
+
+        /// <summary>
+        /// Called when the <see cref="InputElement.TabIndex"/> property value changed.
+        /// </summary>
+        /// <param name="newValue">The new value.</param>
+        protected virtual void OnTabIndexChanged(int newValue)
+        {
+            if (TextBox != null)
+            {
+                TextBox.TabIndex = newValue;
+            }
         }
 
         /// <summary>
@@ -901,6 +915,19 @@ namespace Avalonia.Controls
                 var oldValue = (decimal?)e.OldValue;
                 var newValue = (decimal?)e.NewValue;
                 upDown.OnValueChanged(oldValue, newValue);
+            }
+        }
+
+        /// <summary>
+        /// Called when the <see cref="InputElement.TabIndex"/> property value changed.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        private static void OnTabIndexChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.Sender is NumericUpDown upDown)
+            {
+                var newValue = (int)e.NewValue!;
+                upDown.OnTabIndexChanged(newValue);
             }
         }
 
