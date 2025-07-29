@@ -152,18 +152,34 @@ public static class ClipboardExtensions
         => clipboard.SetValueAsync(DataFormat.Text, text);
 
     /// <summary>
-    /// Places a list of files on the clipboard.
+    /// Places a file on the clipboard.
     /// </summary>
     /// <param name="clipboard">The clipboard instance.</param>
-    /// <param name="files"></param>
+    /// <param name="file">The file to place on the clipboard.</param>
     /// <remarks>
     /// <para>By calling this method, the clipboard will get cleared of any possible previous data.</para>
     /// <para>
-    /// If <paramref name="files"/> is null, nothing will get placed on the clipboard and this method
+    /// If <paramref name="file"/> is null, nothing will get placed on the clipboard and this method
     /// will be equivalent to <see cref="IClipboard.ClearAsync"/>.
     /// </para>
     /// </remarks>
     /// <seealso cref="DataFormat.File"/>
-    public static Task SetFilesAsync(this IClipboard clipboard, IEnumerable<IStorageItem> files)
+    public static Task SetFileAsync(this IClipboard clipboard, IStorageItem? file)
+        => clipboard.SetValueAsync(DataFormat.File, file);
+
+    /// <summary>
+    /// Places a list of files on the clipboard.
+    /// </summary>
+    /// <param name="clipboard">The clipboard instance.</param>
+    /// <param name="files">The files to place on the clipboard.</param>
+    /// <remarks>
+    /// <para>By calling this method, the clipboard will get cleared of any possible previous data.</para>
+    /// <para>
+    /// If <paramref name="files"/> is null or empty, nothing will get placed on the clipboard and this method
+    /// will be equivalent to <see cref="IClipboard.ClearAsync"/>.
+    /// </para>
+    /// </remarks>
+    /// <seealso cref="DataFormat.File"/>
+    public static Task SetFilesAsync(this IClipboard clipboard, IEnumerable<IStorageItem>? files)
         => clipboard.SetValuesAsync(DataFormat.File, files);
 }
