@@ -359,7 +359,7 @@ internal sealed class InputHandler
 
         var currentMagnitude = Math.Sqrt(_momentumVelocityX * _momentumVelocityX + _momentumVelocityY * _momentumVelocityY);
 
-        if (currentMagnitude < 0.0001)
+        if (currentMagnitude < 0.0001 || _cachedScrollLocation is null)
         {
             StopMomentumScrolling();
             return;
@@ -370,9 +370,7 @@ internal sealed class InputHandler
         // even though the pointer on screen is not moving.
         // We can cache the location when we start scrolling and keep it static
         // until the inertia stops.
-        if (_cachedScrollLocation is not null)
-        {
-            _tl.Input?.Invoke(new RawMouseWheelEventArgs(
+        _tl.Input?.Invoke(new RawMouseWheelEventArgs(
             _mouseDevice, 
             (ulong)(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()), 
             Root,
@@ -380,7 +378,6 @@ internal sealed class InputHandler
             new Vector(_momentumVelocityX, _momentumVelocityY),
             RawInputModifiers.None
         ));
-        }
 #endif
     }
 
