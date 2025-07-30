@@ -370,14 +370,17 @@ internal sealed class InputHandler
         // even though the pointer on screen is not moving.
         // We can cache the location when we start scrolling and keep it static
         // until the inertia stops.
-        _tl.Input?.Invoke(new RawMouseWheelEventArgs(
+        if (_cachedScrollLocation is not null)
+        {
+            _tl.Input?.Invoke(new RawMouseWheelEventArgs(
             _mouseDevice, 
             (ulong)(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()), 
             Root,
-            _cachedScrollLocation ?? new Point(0, 0),
+            _cachedScrollLocation.Value,
             new Vector(_momentumVelocityX, _momentumVelocityY),
             RawInputModifiers.None
         ));
+        }
 #endif
     }
 
