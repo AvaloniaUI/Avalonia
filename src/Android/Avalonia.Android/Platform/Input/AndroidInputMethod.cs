@@ -72,6 +72,13 @@ namespace Avalonia.Android.Platform.Input
 
         public void SetClient(TextInputMethodClient? client)
         {
+            if(_client != null)
+            {
+                _client.SurroundingTextChanged -= _client_SurroundingTextChanged;
+                _client.SelectionChanged -= _client_SelectionChanged;
+                _client.InputPaneActivationRequested -= _client_InputPaneActivationRequested;
+            }
+
             _client = client;
 
             if (IsActive)
@@ -86,13 +93,21 @@ namespace Avalonia.Android.Platform.Input
 
                 _client.SurroundingTextChanged += _client_SurroundingTextChanged;
                 _client.SelectionChanged += _client_SelectionChanged;
+                _client.InputPaneActivationRequested += _client_InputPaneActivationRequested;
             }
             else
             {
-                _host.ClearFocus();
                 _imm.RestartInput(View);
                 _inputConnection = null;
                 _imm.HideSoftInputFromWindow(_host.WindowToken, HideSoftInputFlags.ImplicitOnly);
+            }
+        }
+
+        private void _client_InputPaneActivationRequested(object? sender, EventArgs e)
+        {
+            if(IsActive)
+            {
+                _imm.ShowSoftInput(_host, ShowFlags.Implicit);
             }
         }
 

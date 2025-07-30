@@ -5,7 +5,6 @@ using Avalonia.Reactive;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
-
 namespace Avalonia.Controls
 {
     /// <summary>
