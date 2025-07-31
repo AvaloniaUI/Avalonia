@@ -14,12 +14,12 @@ internal class XamlXNameResolver
 {
     private readonly Dictionary<string, ResolvedXmlName> _items = new();
 
-    public ImmutableArray<ResolvedXmlName> ResolveXmlNames(XamlDocument xaml)
+    public EquatableList<ResolvedXmlName> ResolveXmlNames(XamlDocument xaml)
     {
         _items.Clear();
         xaml.Root.Visit(this);
         xaml.Root.VisitChildren(this);
-        return _items.Values.ToImmutableArray();
+        return new EquatableList<ResolvedXmlName>(_items.Values.ToArray());
     }
 
     public ResolvedName ResolveName(IXamlType clrType, string name, string? fieldModifier)
@@ -59,7 +59,7 @@ internal class XamlXNameResolver
         return node;
 
         static XamlXmlType ConvertType(XamlAstXmlTypeReference type) => new(type.Name, type.XmlNamespace,
-            type.GenericArguments.Select(ConvertType).ToImmutableArray());
+            new EquatableList<XamlXmlType>(type.GenericArguments.Select(ConvertType).ToArray()));
     }
 
     void IXamlAstVisitor.Push(IXamlAstNode node) { }

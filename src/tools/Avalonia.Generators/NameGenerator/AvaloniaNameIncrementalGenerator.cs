@@ -80,12 +80,12 @@ public class AvaloniaNameIncrementalGenerator : IIncrementalGenerator
 
                         return new XmlClassInfo(
                             new ResolvedXmlView(view, xmlNames),
-                            diagnostics.ToImmutableArray());
+                            new EquatableList<DiagnosticDescriptor>(diagnostics));
                     }
                     catch (Exception ex)
                     {
                         diagnostics.Add(GeneratorExtensions.NameGeneratorUnhandledError(ex));
-                        return new XmlClassInfo(null, diagnostics.ToImmutableArray());
+                        return new XmlClassInfo(null, new EquatableList<DiagnosticDescriptor>(diagnostics));
                     }
                 }
 
@@ -146,11 +146,11 @@ public class AvaloniaNameIncrementalGenerator : IIncrementalGenerator
                             }
                         }
 
-                        view = new ResolvedView(xmlView, type.IsAvaloniaWindow(), resolvedNames.ToImmutableArray());
+                        view = new ResolvedView(xmlView, type.IsAvaloniaWindow(), new EquatableList<ResolvedName>(resolvedNames));
                     }
                 }
 
-                return new ResolvedClassInfo(view, hasDevToolsReference, diagnostics.ToImmutableArray());
+                return new ResolvedClassInfo(view, hasDevToolsReference, new EquatableList<DiagnosticDescriptor>(diagnostics));
             })
             .WithTrackingName(TrackingNames.ResolvedNamesProvider);
 
@@ -195,10 +195,10 @@ public class AvaloniaNameIncrementalGenerator : IIncrementalGenerator
 
     internal record XmlClassInfo(
         ResolvedXmlView? XmlView,
-        ImmutableArray<DiagnosticDescriptor> Diagnostics);
+        EquatableList<DiagnosticDescriptor> Diagnostics);
 
     internal record ResolvedClassInfo(
         ResolvedView? View,
         bool CanAttachDevTools,
-        ImmutableArray<DiagnosticDescriptor> Diagnostics);
+        EquatableList<DiagnosticDescriptor> Diagnostics);
 }

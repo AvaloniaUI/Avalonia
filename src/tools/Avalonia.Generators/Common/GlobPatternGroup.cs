@@ -1,21 +1,23 @@
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using Avalonia.Generators.Common.Domain;
 
 namespace Avalonia.Generators.Common;
 
-internal class GlobPatternGroup : IGlobPattern
+internal class GlobPatternGroup(IEnumerable<string> patterns)
+    : EquatableList<GlobPattern>(patterns.Select(p => new GlobPattern(p)).ToArray()), IGlobPattern
 {
-    private readonly ImmutableArray<GlobPattern> _patterns;
+    public bool Matches(string str)
+    {
+        for (var i = 0; i < Count; i++)
+        {
+            if (this[i].Matches(str))
+                return true;
+        }
+        return false;
+    }
 
-    public GlobPatternGroup(IEnumerable<string> patterns) =>
-        _patterns = patterns.Select(p => new GlobPattern(p)).ToImmutableArray();
-
-    public bool Matches(string str) => _patterns.Any(pattern => pattern.Matches(str));
-
-    public bool Equals(IGlobPattern other) => _patterns.Any(pattern => pattern.Equals(other));
-    public override int GetHashCode() => _patterns.Select(item => item?.GetHashCode() ?? 0).Aggregate(0, (x, y) => x ^ y);
-    public override bool Equals(object? obj) => obj is GlobPattern pattern && Equals(pattern);
-    public override string ToString() => $"[{string.Join(", ", _patterns.Select(p => p.ToString()))}]";
+    public bool Equals(IGlobPattern other) => other is GlobPatternGroup group && base.Equals(group);
+    public override string ToString() => $"[{string.Join(", ", this.Select(p => p.ToString()))}]";
 }
+
