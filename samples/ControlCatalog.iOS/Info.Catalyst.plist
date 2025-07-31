@@ -14,8 +14,7 @@
 	<true/>
 	<key>UIDeviceFamily</key>
 	<array>
-		<integer>1</integer>
-		<integer>2</integer>
+		<integer>6</integer>
 	</array>
     <key>UIRequiredDeviceCapabilities</key>
     <array>

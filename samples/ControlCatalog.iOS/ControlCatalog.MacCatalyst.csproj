@@ -3,7 +3,8 @@
     <OutputType>Exe</OutputType>
     <ProvisioningType>manual</ProvisioningType>
     <TargetFramework>$(AvsCurrentMacCatalystTargetFramework)</TargetFramework>
-    <SupportedOSPlatformVersion>$(AvsMinSupportedMacCatalystVersion)</SupportedOSPlatformVersion>
+    <!-- Used to support Desktop Mode Idiom, min supported version is 13.1, which supports iPad scaling. -->
+    <SupportedOSPlatformVersion>14.0</SupportedOSPlatformVersion>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\iOS\Avalonia.iOS\Avalonia.iOS.csproj" />
