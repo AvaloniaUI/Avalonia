@@ -118,11 +118,18 @@ internal class NuiAvaloniaViewTextEditable
             client.TextViewVisualChanged += OnTextViewVisualChanged;
             client.SurroundingTextChanged += OnSurroundingTextChanged;
             client.SelectionChanged += OnClientSelectionChanged;
+            client.InputPaneActivationRequested += OnInputPaneActivationRequested;
 
             TextInput.SelectWholeText();
             OnClientSelectionChanged(this, EventArgs.Empty);
         }
         finally { _updating = false; }
+    }
+
+    private void OnInputPaneActivationRequested(object? sender, EventArgs e)
+    {
+        var inputContext = TextInput.GetInputMethodContext();
+        inputContext.ShowInputPanel();
     }
 
     private void OnClientSelectionChanged(object? sender, EventArgs e) => InvokeUpdate(client =>
@@ -152,6 +159,7 @@ internal class NuiAvaloniaViewTextEditable
             _client!.TextViewVisualChanged -= OnTextViewVisualChanged;
             _client!.SurroundingTextChanged -= OnSurroundingTextChanged;
             _client!.SelectionChanged -= OnClientSelectionChanged;
+            _client!.InputPaneActivationRequested -= OnInputPaneActivationRequested;
         }
 
         if (Window.Instance.GetDefaultLayer().Children.Contains((View)TextInput))
