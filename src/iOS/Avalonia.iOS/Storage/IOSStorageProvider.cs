@@ -175,15 +175,10 @@ internal class IOSStorageProvider : IStorageProvider
         */
 
         // Create a temporary file to use with the document picker
-        var tempFileName = options.SuggestedFileName ?? "document";
-        if (!string.IsNullOrEmpty(options.DefaultExtension))
-        {
-            var extension = options.DefaultExtension.StartsWith('.') ? options.DefaultExtension : "." + options.DefaultExtension;
-            if (!tempFileName.EndsWith(extension, StringComparison.OrdinalIgnoreCase))
-            {
-                tempFileName += extension;
-            }
-        }
+        var tempFileName = StorageProviderHelpers.NameWithExtension(
+            options.SuggestedFileName ?? "document", 
+            options.DefaultExtension, 
+            options.FileTypeChoices?.FirstOrDefault());
         
         var tempDir = NSFileManager.DefaultManager.GetTemporaryDirectory().Append(Guid.NewGuid().ToString(), true);
         if (tempDir == null)
