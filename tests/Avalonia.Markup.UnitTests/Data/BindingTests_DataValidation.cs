@@ -13,7 +13,7 @@ namespace Avalonia.Markup.UnitTests.Data
 {
     public class BindingTests_DataValidation
     {
-        public abstract class TestBase<T>
+        public abstract class TestBase<T> : ScopedTestBase
             where T : AvaloniaProperty<int>
         {
             [Fact]

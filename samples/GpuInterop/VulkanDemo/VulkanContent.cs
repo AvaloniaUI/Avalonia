@@ -141,18 +141,14 @@ unsafe class VulkanContent : IDisposable
 
         
         var model = Matrix4x4.CreateFromYawPitchRoll((float)yaw, (float)pitch, (float)roll);
-        var view = Matrix4x4.CreateLookAt(new Vector3(25, 25, 25), new Vector3(), new Vector3(0, -1, 0));
-        var projection =
-            Matrix4x4.CreatePerspectiveFieldOfView((float)(Math.PI / 4), (float)((float)image.Size.Width / image.Size.Height),
-                0.01f, 1000);
-        
-        var vertexConstant = new VertextPushConstant()
+
+        var vertexConstant = new VertexPushConstant()
         {
             Disco = (float)disco,
             MinY = _minY,
             MaxY = _maxY,
             Model = model,
-            Time = (float)St.Elapsed.TotalSeconds
+            Time = (float)(St.Elapsed.Ticks % (TimeSpan.TicksPerSecond * 40) / (double)TimeSpan.TicksPerSecond)
         };
 
         var commandBuffer = _context.Pool.CreateCommandBuffer();
@@ -210,7 +206,7 @@ unsafe class VulkanContent : IDisposable
             _pipelineLayout,0,1, &dset, null);
 
         api.CmdPushConstants(commandBufferHandle, _pipelineLayout, ShaderStageFlags.VertexBit | ShaderStageFlags.FragmentBit, 0,
-            (uint)Marshal.SizeOf<VertextPushConstant>(), &vertexConstant);
+            (uint)Marshal.SizeOf<VertexPushConstant>(), &vertexConstant);
         api.CmdBindVertexBuffers(commandBufferHandle, 0, 1, _vertexBuffer, 0);
         api.CmdBindIndexBuffer(commandBufferHandle, _indexBuffer, 0, IndexType.Uint16);
 
@@ -617,14 +613,14 @@ unsafe class VulkanContent : IDisposable
                 var vertexPushConstantRange = new PushConstantRange()
                 {
                     Offset = 0,
-                    Size = (uint)Marshal.SizeOf<VertextPushConstant>(),
+                    Size = (uint)Marshal.SizeOf<VertexPushConstant>(),
                     StageFlags = ShaderStageFlags.VertexBit
                 };
 
                 var fragPushConstantRange = new PushConstantRange()
                 {
                     //Offset = vertexPushConstantRange.Size,
-                    Size = (uint)Marshal.SizeOf<VertextPushConstant>(),
+                    Size = (uint)Marshal.SizeOf<VertexPushConstant>(),
                     StageFlags = ShaderStageFlags.FragmentBit
                 };
 
@@ -813,7 +809,7 @@ unsafe class VulkanContent : IDisposable
     private DescriptorSet _descriptorSet;
 
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
-    private struct VertextPushConstant
+    private struct VertexPushConstant
     {
         public float MaxY;
         public float MinY;

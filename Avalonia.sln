@@ -170,13 +170,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PlatformSanityChecks", "sam
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.ReactiveUI.UnitTests", "tests\Avalonia.ReactiveUI.UnitTests\Avalonia.ReactiveUI.UnitTests.csproj", "{AF915D5C-AB00-4EA0-B5E6-001F4AE84E68}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Controls.DataGrid", "src\Avalonia.Controls.DataGrid\Avalonia.Controls.DataGrid.csproj", "{3278F3A9-9509-4A3F-A15B-BDC8B5BFF632}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Dialogs", "src\Avalonia.Dialogs\Avalonia.Dialogs.csproj", "{4D55985A-1EE2-4F25-AD39-6EA8BC04F8FB}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.FreeDesktop", "src\Avalonia.FreeDesktop\Avalonia.FreeDesktop.csproj", "{4D36CEC8-53F2-40A5-9A37-79AAE356E2DA}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Controls.DataGrid.UnitTests", "tests\Avalonia.Controls.DataGrid.UnitTests\Avalonia.Controls.DataGrid.UnitTests.csproj", "{351337F5-D66F-461B-A957-4EF60BDB4BA6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Themes.Fluent", "src\Avalonia.Themes.Fluent\Avalonia.Themes.Fluent.csproj", "{C42D2FC1-A531-4ED4-84B9-89AEC7C962FC}"
 EndProject
@@ -243,7 +239,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		NOTICE.md = NOTICE.md
 		NuGet.Config = NuGet.Config
 		readme.md = readme.md
-		Settings.StyleCop = Settings.StyleCop
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Generators", "src\tools\Avalonia.Generators\Avalonia.Generators.csproj", "{DDA28789-C21A-4654-86CE-D01E81F095C5}"
@@ -278,7 +273,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tizen", "Tizen", "{D1300000
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Tizen", "src\Tizen\Avalonia.Tizen\Avalonia.Tizen.csproj", "{DFFBDBF5-5DBE-47ED-9EAE-D40B75AC99E8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ControlCatalog.Tizen", "samples\ControlCatalog.Tizen\ControlCatalog.Tizen.csproj", "{A0B29221-2B6F-4B29-A4D5-2227811B5915}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControlCatalog.Tizen", "samples\ControlCatalog.Tizen\ControlCatalog.Tizen.csproj", "{A0B29221-2B6F-4B29-A4D5-2227811B5915}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Metal", "src\Avalonia.Metal\Avalonia.Metal.csproj", "{60B4ED1F-ECFA-453B-8A70-1788261C8355}"
 EndProject
@@ -301,6 +296,7 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.RenderTests.WpfCompare", "tests\Avalonia.RenderTests.WpfCompare\Avalonia.RenderTests.WpfCompare.csproj", "{9AE1B827-21AC-4063-AB22-C8804B7F931E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Win32.Automation", "src\Windows\Avalonia.Win32.Automation\Avalonia.Win32.Automation.csproj", "{0097673D-DBCE-476E-82FE-E78A56E58AA2}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XEmbedSample", "samples\XEmbedSample\XEmbedSample.csproj", "{255614F5-CB64-4ECA-A026-E0B1AF6A2EF4}"
 EndProject
 Global
@@ -497,10 +493,6 @@ Global
 		{AF915D5C-AB00-4EA0-B5E6-001F4AE84E68}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AF915D5C-AB00-4EA0-B5E6-001F4AE84E68}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AF915D5C-AB00-4EA0-B5E6-001F4AE84E68}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3278F3A9-9509-4A3F-A15B-BDC8B5BFF632}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3278F3A9-9509-4A3F-A15B-BDC8B5BFF632}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3278F3A9-9509-4A3F-A15B-BDC8B5BFF632}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3278F3A9-9509-4A3F-A15B-BDC8B5BFF632}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4D55985A-1EE2-4F25-AD39-6EA8BC04F8FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{4D55985A-1EE2-4F25-AD39-6EA8BC04F8FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4D55985A-1EE2-4F25-AD39-6EA8BC04F8FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -509,10 +501,6 @@ Global
 		{4D36CEC8-53F2-40A5-9A37-79AAE356E2DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4D36CEC8-53F2-40A5-9A37-79AAE356E2DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4D36CEC8-53F2-40A5-9A37-79AAE356E2DA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{351337F5-D66F-461B-A957-4EF60BDB4BA6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{351337F5-D66F-461B-A957-4EF60BDB4BA6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{351337F5-D66F-461B-A957-4EF60BDB4BA6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{351337F5-D66F-461B-A957-4EF60BDB4BA6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C42D2FC1-A531-4ED4-84B9-89AEC7C962FC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C42D2FC1-A531-4ED4-84B9-89AEC7C962FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C42D2FC1-A531-4ED4-84B9-89AEC7C962FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -754,7 +742,6 @@ Global
 		{D775DECB-4E00-4ED5-A75A-5FCE58ADFF0B} = {9B9E3891-2366-4253-A952-D08BCEB71098}
 		{AF915D5C-AB00-4EA0-B5E6-001F4AE84E68} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 		{4D36CEC8-53F2-40A5-9A37-79AAE356E2DA} = {86C53C40-57AA-45B8-AD42-FAE0EFDF0F2B}
-		{351337F5-D66F-461B-A957-4EF60BDB4BA6} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 		{8C89950F-F5D9-47FC-8066-CBC1EC3DF8FC} = {FF237916-7150-496B-89ED-6CA3292896E7}
 		{B859AE7C-F34F-4A9E-88AE-E0E7229FDE1E} = {FF237916-7150-496B-89ED-6CA3292896E7}
 		{909A8CBD-7D0E-42FD-B841-022AD8925820} = {8B6A8209-894F-4BA1-B880-965FD453982C}

@@ -9,7 +9,7 @@ using Xunit.Sdk;
 
 namespace Avalonia.Controls.UnitTests.Presenters
 {
-    public class ScrollContentPresenterTests
+    public class ScrollContentPresenterTests : NameScopeTests
     {
         [Theory]
         [InlineData(HorizontalAlignment.Stretch, VerticalAlignment.Stretch, 10, 10, 80, 80)]
@@ -301,7 +301,10 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.Measure(new Size(1000, 1000));
             target.Arrange(new Rect(0, 0, 1000, 1000));
 
-            Assert.Equal(new Size(176.00000000000003, 176.00000000000003), target.Child!.DesiredSize);
+            var nonRoundedVieViewport = target.Child!.Bounds.Size.Inflate(
+                LayoutHelper.RoundLayoutThickness(target.Child.Margin, root.LayoutScaling));
+
+            Assert.Equal(new Size(176.00000000000003, 176.00000000000003), nonRoundedVieViewport);
             Assert.Equal(new Size(176, 176), target.Viewport);
             Assert.Equal(new Size(176, 176), target.Extent);
         }

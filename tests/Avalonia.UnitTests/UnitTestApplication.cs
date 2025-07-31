@@ -42,7 +42,7 @@ namespace Avalonia.UnitTests
             var scope = AvaloniaLocator.EnterScope();
             var oldContext = SynchronizationContext.Current;
             _ = new UnitTestApplication(services);
-            Dispatcher.ResetForUnitTests();
+            Dispatcher.ResetBeforeUnitTests();
             return Disposable.Create(() =>
             {
                 if (Dispatcher.UIThread.CheckAccess())
@@ -51,9 +51,10 @@ namespace Avalonia.UnitTests
                 }
 
                 ((ToolTipService)AvaloniaLocator.Current.GetService<IToolTipService>())?.Dispose();
-
-                scope.Dispose();
+                
                 Dispatcher.ResetForUnitTests();
+                scope.Dispose();
+                Dispatcher.ResetBeforeUnitTests();
                 SynchronizationContext.SetSynchronizationContext(oldContext);
             });
         }

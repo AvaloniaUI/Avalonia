@@ -63,7 +63,7 @@ namespace Avalonia.Controls.UnitTests
         }
     }
 
-    public abstract class ToolTipTests
+    public abstract class ToolTipTests : ScopedTestBase
     {
         protected abstract TestServices ConfigureServices(TestServices baseServices);
 

@@ -34,6 +34,7 @@
         <Property Name="OpacityMaskBrush" ClientName="OpacityMaskBrushTransportField" Type="Avalonia.Media.IBrush?" Private="true"  />
         <Property Name="Effect" Type="Avalonia.Media.IImmutableEffect?" Internal="true" />
         <Property Name="RenderOptions" Type="Avalonia.Media.RenderOptions" />
+        <Property Name="ShouldExtendDirtyRect" Type="bool" Internal="true" />
     </Object>
     <Object Name="CompositionContainerVisual" Inherits="CompositionVisual"/>
     <Object Name="CompositionSolidColorVisual" Inherits="CompositionContainerVisual">
