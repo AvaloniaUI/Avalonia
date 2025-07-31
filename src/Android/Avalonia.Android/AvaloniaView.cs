@@ -20,8 +20,9 @@ namespace Avalonia.Android
     public class AvaloniaView : FrameLayout
     {
         private EmbeddableControlRoot? _root;
+        private ExploreByTouchHelper? _accessHelper;
+
         private readonly ViewImpl _view;
-        private readonly ExploreByTouchHelper _accessHelper;
 
         private IDisposable? _timerSubscription;
         private object? _content;
@@ -36,9 +37,6 @@ namespace Avalonia.Android
             this.SetBackgroundColor(global::Android.Graphics.Color.Transparent);
 
             _view.InternalView.SurfaceWindowCreated += InternalView_SurfaceWindowCreated;
-
-            _accessHelper = new AvaloniaAccessHelper(this);
-            ViewCompat.SetAccessibilityDelegate(this, _accessHelper);
         }
 
         private void InternalView_SurfaceWindowCreated(object? sender, EventArgs e)
@@ -80,6 +78,12 @@ namespace Avalonia.Android
             base.OnDetachedFromWindow();
             OnVisibilityChanged(false);
             _surfaceCreated = false;
+
+            if(_accessHelper is { }  accessHelper)
+            {
+                ViewCompat.SetAccessibilityDelegate(this, null);
+                _accessHelper = null;
+            }
         }
 
         protected override void OnAttachedToWindow()
@@ -90,6 +94,9 @@ namespace Avalonia.Android
             {
                 _root.Content = _content;
             }
+
+            _accessHelper = new AvaloniaAccessHelper(this);
+            ViewCompat.SetAccessibilityDelegate(this, _accessHelper);
             SendConfigurationChanged(Context?.Resources?.Configuration);
 
             base.OnAttachedToWindow();
@@ -98,18 +105,18 @@ namespace Avalonia.Android
         protected override void OnFocusChanged(bool gainFocus, FocusSearchDirection direction, global::Android.Graphics.Rect? previouslyFocusedRect)
         {
             base.OnFocusChanged(gainFocus, direction, previouslyFocusedRect);
-            _accessHelper.OnFocusChanged(gainFocus, (int)direction, previouslyFocusedRect);
+            _accessHelper?.OnFocusChanged(gainFocus, (int)direction, previouslyFocusedRect);
         }
 
         protected override bool DispatchHoverEvent(MotionEvent? e)
         {
-            return _accessHelper.DispatchHoverEvent(e!) || base.DispatchHoverEvent(e);
+            return _accessHelper?.DispatchHoverEvent(e!) == true || base.DispatchHoverEvent(e);
         }
 
         public override bool DispatchKeyEvent(KeyEvent? e)
         {
             if (!_view.View.DispatchKeyEvent(e))
-                return _accessHelper.DispatchKeyEvent(e!) || base.DispatchKeyEvent(e);
+                return _accessHelper?.DispatchKeyEvent(e!) == true || base.DispatchKeyEvent(e);
             return true;
         }
 
