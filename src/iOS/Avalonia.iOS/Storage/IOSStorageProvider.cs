@@ -195,7 +195,7 @@ internal class IOSStorageProvider : IStorageProvider
         var tempFileUrl = tempDir.Append(tempFileName, false);
         
         // Create an empty file at the temp location
-        NSData.FromString("").Save(tempFileUrl, false);
+        NSData.FromBytes(0, 0).Save(tempFileUrl, false);
         
         UIDocumentPickerViewController documentPicker;
         if (OperatingSystem.IsIOSVersionAtLeast(14))
