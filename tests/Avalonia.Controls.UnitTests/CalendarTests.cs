@@ -271,5 +271,97 @@ namespace Avalonia.Controls.UnitTests
             Assert.True(CompareDates(calendar.SelectedDate.Value, DateTime.Today.AddDays(100)));
             Assert.True(calendar.SelectedDates.Count == 1);
         }
+
+        [Fact]
+        public void AllowTapRangeSelection_Should_Enable_TapToSelectRange()
+        {
+            var calendar = new Calendar();
+            Assert.False(calendar.AllowTapRangeSelection); // Default should be false
+            
+            calendar.AllowTapRangeSelection = true;
+            Assert.True(calendar.AllowTapRangeSelection);
+        }
+
+        [Fact]
+        public void TapRangeSelection_Should_Work_In_SingleRange_Mode()
+        {
+            var calendar = new Calendar();
+            calendar.SelectionMode = CalendarSelectionMode.SingleRange;
+            calendar.AllowTapRangeSelection = true;
+            
+            var startDate = new DateTime(2023, 10, 10);
+            var endDate = new DateTime(2023, 10, 15);
+            
+            // First tap should select start date
+            var firstTapResult = calendar.ProcessTapRangeSelection(startDate);
+            Assert.True(firstTapResult);
+            Assert.Equal(1, calendar.SelectedDates.Count);
+            Assert.True(calendar.SelectedDates.Contains(startDate));
+            
+            // Second tap should complete the range
+            var secondTapResult = calendar.ProcessTapRangeSelection(endDate);
+            Assert.True(secondTapResult);
+            Assert.Equal(6, calendar.SelectedDates.Count); // 5 days inclusive
+            Assert.True(calendar.SelectedDates.Contains(startDate));
+            Assert.True(calendar.SelectedDates.Contains(endDate));
+        }
+
+        [Fact]
+        public void TapRangeSelection_Should_Not_Work_In_SingleDate_Mode()
+        {
+            var calendar = new Calendar();
+            calendar.SelectionMode = CalendarSelectionMode.SingleDate;
+            calendar.AllowTapRangeSelection = true;
+            
+            var date = new DateTime(2023, 10, 10);
+            var result = calendar.ProcessTapRangeSelection(date);
+            Assert.False(result); // Should not handle tap range selection
+        }
+
+        [Fact]
+        public void TapRangeSelection_Should_Handle_Blackout_Dates()
+        {
+            var calendar = new Calendar();
+            calendar.SelectionMode = CalendarSelectionMode.SingleRange;
+            calendar.AllowTapRangeSelection = true;
+            
+            var startDate = new DateTime(2023, 10, 10);
+            var blackoutDate = new DateTime(2023, 10, 12);
+            var endDate = new DateTime(2023, 10, 15);
+            
+            // Add blackout date in the middle
+            calendar.BlackoutDates.Add(new CalendarDateRange(blackoutDate, blackoutDate));
+            
+            // First tap
+            calendar.ProcessTapRangeSelection(startDate);
+            Assert.Equal(1, calendar.SelectedDates.Count);
+            
+            // Second tap should restart selection due to blackout date
+            calendar.ProcessTapRangeSelection(endDate);
+            Assert.Equal(1, calendar.SelectedDates.Count);
+            Assert.True(calendar.SelectedDates.Contains(endDate));
+            Assert.False(calendar.SelectedDates.Contains(startDate));
+        }
+
+        [Fact]
+        public void TapRangeSelection_Should_Handle_Reverse_Order_Dates()
+        {
+            var calendar = new Calendar();
+            calendar.SelectionMode = CalendarSelectionMode.SingleRange;
+            calendar.AllowTapRangeSelection = true;
+            
+            var laterDate = new DateTime(2023, 10, 15);
+            var earlierDate = new DateTime(2023, 10, 10);
+            
+            // First tap on later date
+            calendar.ProcessTapRangeSelection(laterDate);
+            Assert.Equal(1, calendar.SelectedDates.Count);
+            
+            // Second tap on earlier date should still create correct range
+            calendar.ProcessTapRangeSelection(earlierDate);
+            Assert.Equal(6, calendar.SelectedDates.Count);
+            Assert.True(calendar.SelectedDates.Contains(earlierDate));
+            Assert.True(calendar.SelectedDates.Contains(laterDate));
+        }
     }
 }

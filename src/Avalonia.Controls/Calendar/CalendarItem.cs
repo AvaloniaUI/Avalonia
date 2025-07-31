@@ -19,11 +19,11 @@ namespace Avalonia.Controls.Primitives
     /// Represents the currently displayed month or year on a
     /// <see cref="T:Avalonia.Controls.Calendar" />.
     /// </summary>
-    [TemplatePart(PART_ElementHeaderButton,   typeof(Button))]
-    [TemplatePart(PART_ElementMonthView,      typeof(Grid))]
-    [TemplatePart(PART_ElementNextButton,     typeof(Button))]
+    [TemplatePart(PART_ElementHeaderButton, typeof(Button))]
+    [TemplatePart(PART_ElementMonthView, typeof(Grid))]
+    [TemplatePart(PART_ElementNextButton, typeof(Button))]
     [TemplatePart(PART_ElementPreviousButton, typeof(Button))]
-    [TemplatePart(PART_ElementYearView,       typeof(Grid))]
+    [TemplatePart(PART_ElementYearView, typeof(Grid))]
     [PseudoClasses(":calendardisabled")]
     public sealed class CalendarItem : TemplatedControl
     {
@@ -41,7 +41,7 @@ namespace Avalonia.Controls.Primitives
         private Button? _headerButton;
         private Button? _nextButton;
         private Button? _previousButton;
-        
+
         private DateTime _currentMonth;
         private bool _isMouseLeftButtonDown;
         private bool _isMouseLeftButtonDownYearView;
@@ -163,7 +163,7 @@ namespace Avalonia.Controls.Primitives
         /// Gets the Grid that hosts the content when in year or decade mode.
         /// </summary>
         internal Grid? YearView { get; set; }
-        
+
         private void PopulateGrids()
         {
             if (MonthView != null)
@@ -206,7 +206,7 @@ namespace Avalonia.Controls.Primitives
                         children.Add(cell);
                     }
                 }
-                
+
                 MonthView.Children.AddRange(children);
             }
 
@@ -254,7 +254,7 @@ namespace Avalonia.Controls.Primitives
             NextButton = e.NameScope.Find<Button>(PART_ElementNextButton);
             MonthView = e.NameScope.Find<Grid>(PART_ElementMonthView);
             YearView = e.NameScope.Find<Grid>(PART_ElementYearView);
-            
+
             if (Owner != null)
             {
                 UpdateDisabled(Owner.IsEnabled);
@@ -886,7 +886,7 @@ namespace Avalonia.Controls.Primitives
                 }
             }
         }
-        
+
         internal void Cell_MouseLeftButtonDown(object? sender, PointerPressedEventArgs e)
         {
             if (Owner != null)
@@ -1029,6 +1029,17 @@ namespace Avalonia.Controls.Primitives
                     {
                         Owner.OnDayClick(selectedDate);
                         return;
+                    }
+
+                    if (Owner.AllowTapRangeSelection &&
+                        (Owner.SelectionMode == CalendarSelectionMode.SingleRange
+                            || Owner.SelectionMode == CalendarSelectionMode.MultipleRange))
+                    {
+                        if (Owner.ProcessTapRangeSelection(selectedDate))
+                        {
+                            Owner.OnDayClick(selectedDate);
+                            return;
+                        }
                     }
                     if (Owner.HoverStart.HasValue)
                     {
