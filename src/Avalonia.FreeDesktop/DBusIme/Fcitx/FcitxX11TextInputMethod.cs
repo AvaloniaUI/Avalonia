@@ -180,13 +180,15 @@ namespace Avalonia.FreeDesktop.DBusIme.Fcitx
                 mods |= KeyModifiers.Shift;
             if (state.HasAllFlags(FcitxKeyState.FcitxKeyState_Super))
                 mods |= KeyModifiers.Meta;
+            var isPressKey = ev.type == (int)FcitxKeyEventType.FCITX_PRESS_KEY;
             FireForward(new X11InputMethodForwardedKey
             {
                 Modifiers = mods,
                 KeyVal = (int)ev.keyval,
-                Type = ev.type == (int)FcitxKeyEventType.FCITX_PRESS_KEY ?
+                Type = isPressKey ?
                     RawKeyEventType.KeyDown :
-                    RawKeyEventType.KeyUp
+                    RawKeyEventType.KeyUp,
+                WithText = isPressKey,
             });
         }
 
