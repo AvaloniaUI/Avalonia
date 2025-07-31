@@ -913,11 +913,7 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
-
-        /// <summary>
-        /// bounding rectangle of the caret
-        /// </summary>
-        internal Rect GetCursorRectangle() => _caretBounds;
+        public Rect CursorRectangle => _caretBounds;
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
