@@ -213,6 +213,14 @@ namespace Avalonia.Win32.DirectX
         DXGI_ERROR_WAS_STILL_DRAWING = 0x887A000A
     }
 
+    [Flags]
+    internal enum DXGI_MWA : uint
+    {
+        DXGI_MWA_NO_WINDOW_CHANGES = 1,
+        DXGI_MWA_NO_ALT_ENTER = 2,
+        DXGI_MWA_NO_PRINT_SCREEN = 4
+    }
+    
     internal static class DxgiErrorExtensions
     {
         public static bool IsDeviceLostError(this DXGI_ERROR error)

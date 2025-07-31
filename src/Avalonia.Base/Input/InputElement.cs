@@ -83,10 +83,22 @@ namespace Avalonia.Input
             RoutedEvent.Register<InputElement, GotFocusEventArgs>(nameof(GotFocus), RoutingStrategies.Bubble);
 
         /// <summary>
+        /// Defines the <see cref="GettingFocus"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<FocusChangingEventArgs> GettingFocusEvent =
+            RoutedEvent.Register<InputElement, FocusChangingEventArgs>(nameof(GettingFocus), RoutingStrategies.Bubble);
+
+        /// <summary>
         /// Defines the <see cref="LostFocus"/> event.
         /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> LostFocusEvent =
             RoutedEvent.Register<InputElement, RoutedEventArgs>(nameof(LostFocus), RoutingStrategies.Bubble);
+
+        /// <summary>
+        /// Defines the <see cref="LosingFocus"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<FocusChangingEventArgs> LosingFocusEvent =
+            RoutedEvent.Register<InputElement, FocusChangingEventArgs>(nameof(LosingFocus), RoutingStrategies.Bubble);
 
         /// <summary>
         /// Defines the <see cref="KeyDown"/> event.
@@ -188,6 +200,11 @@ namespace Avalonia.Input
         public static readonly RoutedEvent<TappedEventArgs> TappedEvent = Gestures.TappedEvent;
 
         /// <summary>
+        /// Defines the <see cref="RightTapped"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<TappedEventArgs> RightTappedEvent = Gestures.RightTappedEvent;
+
+        /// <summary>
         /// Defines the <see cref="Holding"/> event.
         /// </summary>
         public static readonly RoutedEvent<HoldingRoutedEventArgs> HoldingEvent = Gestures.HoldingEvent;
@@ -213,6 +230,8 @@ namespace Avalonia.Input
 
             GotFocusEvent.AddClassHandler<InputElement>((x, e) => x.OnGotFocusCore(e));
             LostFocusEvent.AddClassHandler<InputElement>((x, e) => x.OnLostFocusCore(e));
+            GettingFocusEvent.AddClassHandler<InputElement>((x, e) => x.OnGettingFocus(e));
+            LosingFocusEvent.AddClassHandler<InputElement>((x, e) => x.OnLosingFocus(e));
             KeyDownEvent.AddClassHandler<InputElement>((x, e) => x.OnKeyDown(e));
             KeyUpEvent.AddClassHandler<InputElement>((x, e) => x.OnKeyUp(e));
             TextInputEvent.AddClassHandler<InputElement>((x, e) => x.OnTextInput(e));
@@ -223,6 +242,11 @@ namespace Avalonia.Input
             PointerReleasedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerReleased(e));
             PointerCaptureLostEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerCaptureLost(e));
             PointerWheelChangedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerWheelChanged(e));
+
+            TappedEvent.AddClassHandler<InputElement>((x, e) => x.OnTapped(e));
+            RightTappedEvent.AddClassHandler<InputElement>((x, e) => x.OnRightTapped(e));
+            DoubleTappedEvent.AddClassHandler<InputElement>((x, e) => x.OnDoubleTapped(e));
+            HoldingEvent.AddClassHandler<InputElement>((x, e) => x.OnHolding(e));
 
             // Gesture only handlers
             PointerMovedEvent.AddClassHandler<InputElement>((x, e) => x.OnGesturePointerMoved(e), handledEventsToo: true);
@@ -250,12 +274,30 @@ namespace Avalonia.Input
         }
 
         /// <summary>
+        /// Occurs before the control receives focus.
+        /// </summary>
+        public event EventHandler<FocusChangingEventArgs>? GettingFocus
+        {
+            add { AddHandler(GettingFocusEvent, value); }
+            remove { RemoveHandler(GettingFocusEvent, value); }
+        }
+
+        /// <summary>
         /// Occurs when the control loses focus.
         /// </summary>
         public event EventHandler<RoutedEventArgs>? LostFocus
         {
             add { AddHandler(LostFocusEvent, value); }
             remove { RemoveHandler(LostFocusEvent, value); }
+        }
+
+        /// <summary>
+        /// Occurs before the control loses focus.
+        /// </summary>
+        public event EventHandler<FocusChangingEventArgs>? LosingFocus
+        {
+            add { AddHandler(LosingFocusEvent, value); }
+            remove { RemoveHandler(LosingFocusEvent, value); }
         }
 
         /// <summary>
@@ -365,6 +407,15 @@ namespace Avalonia.Input
         {
             add { AddHandler(TappedEvent, value); }
             remove { RemoveHandler(TappedEvent, value); }
+        }
+
+        /// <summary>
+        /// Occurs when a right tap gesture occurs on the control.
+        /// </summary>
+        public event EventHandler<TappedEventArgs>? RightTapped
+        {
+            add { AddHandler(RightTappedEvent, value); }
+            remove { RemoveHandler(RightTappedEvent, value); }
         }
 
         /// <summary>
@@ -543,6 +594,16 @@ namespace Avalonia.Input
             OnGotFocus(e);
         }
 
+        protected virtual void OnGettingFocus(FocusChangingEventArgs e)
+        {
+
+        }
+
+        protected virtual void OnLosingFocus(FocusChangingEventArgs e)
+        {
+
+        }
+
         /// <summary>
         /// Invoked when an unhandled <see cref="GotFocusEvent"/> reaches an element in its 
         /// route that is derived from this class. Implement this method to add class handling 
@@ -704,6 +765,46 @@ namespace Avalonia.Input
         {
         }
 
+        /// <summary>
+        /// Invoked when an unhandled <see cref="TappedEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
+        /// </summary>
+        /// <param name="e">Data about the event.</param>
+        protected virtual void OnTapped(TappedEventArgs e)
+        {
+        }
+
+        /// <summary>
+        /// Invoked when an unhandled <see cref="RightTappedEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
+        /// </summary>
+        /// <param name="e">Data about the event.</param>
+        protected virtual void OnRightTapped(TappedEventArgs e)
+        {
+        }
+
+        /// <summary>
+        /// Invoked when an unhandled <see cref="DoubleTappedEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
+        /// </summary>
+        /// <param name="e">Data about the event.</param>
+        protected virtual void OnDoubleTapped(TappedEventArgs e)
+        {
+        }
+
+        /// <summary>
+        /// Invoked when an unhandled <see cref="HoldingEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
+        /// </summary>
+        /// <param name="e">Data about the event.</param>
+        protected virtual void OnHolding(HoldingRoutedEventArgs e)
+        {
+        }
+
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
@@ -720,9 +821,19 @@ namespace Avalonia.Input
             {
                 PseudoClasses.Set(":focus-within", change.GetNewValue<bool>());
             }
-            else if (change.Property == IsVisibleProperty && !change.GetNewValue<bool>() && IsFocused)
+            else if (change.Property == IsVisibleProperty)
             {
-                FocusManager.GetFocusManager(this)?.ClearFocus();
+                if (!change.GetNewValue<bool>() && IsKeyboardFocusWithin && FocusManager.GetFocusManager(this) is { } focusManager)
+                {
+                    if (focusManager.GetFocusedElement() is { } focusedElement && VisualParent != null)
+                    {
+                        focusManager.ClearFocusOnElementRemoved(focusedElement, VisualParent);
+                    }
+                    else
+                    {
+                        focusManager.ClearFocus();
+                    }
+                }
             }
         }
 

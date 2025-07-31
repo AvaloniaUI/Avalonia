@@ -15,22 +15,21 @@ internal partial class X11Screens
         // Length of a EDID-Block-Length(128 bytes), XRRGetOutputProperty multiplies offset and length by 4
         private const int EDIDStructureLength = 32;
 
-        public virtual void Refresh()
+        public virtual void Refresh(MonitorInfo newInfo)
         {
             if (scalingProvider == null)
                 return;
 
-            var namePtr = XGetAtomName(x11.Display, info.Name);
+            var namePtr = XGetAtomName(x11.Display, newInfo.Name);
             var name = Marshal.PtrToStringAnsi(namePtr);
             XFree(namePtr);
             DisplayName = name;
-            IsPrimary = info.IsPrimary;
-            Bounds = new PixelRect(info.X, info.Y, info.Width, info.Height);
-
+            IsPrimary = newInfo.IsPrimary;
+            Bounds = new PixelRect(newInfo.X, newInfo.Y, newInfo.Width, newInfo.Height);
             Size? pSize = null;
-            for (int o = 0; o < info.Outputs.Length; o++)
+            for (int o = 0; o < newInfo.Outputs.Length; o++)
             {
-                var outputSize = GetPhysicalMonitorSizeFromEDID(info.Outputs[o]);
+                var outputSize = GetPhysicalMonitorSizeFromEDID(newInfo.Outputs[o]);
                 if (outputSize != null)
                 {
                     pSize = outputSize;
@@ -121,7 +120,7 @@ internal partial class X11Screens
             PhysicalSize = pixelRect.Size.ToSize(Scaling);
             UpdateWorkArea();
         }
-        public override void Refresh()
+        public override void Refresh(MonitorInfo newInfo)
         {
         }
     }
@@ -131,6 +130,7 @@ internal partial class X11Screens
         nint[] ScreenKeys { get; }
         event Action? Changed;
         X11Screen CreateScreenFromKey(nint key);
+        MonitorInfo GetMonitorInfoByKey(nint key);
     }
 
     internal unsafe struct MonitorInfo
@@ -224,6 +224,20 @@ internal partial class X11Screens
 
             throw new ArgumentOutOfRangeException(nameof(key));
         }
+
+        public MonitorInfo GetMonitorInfoByKey(nint key)
+        {
+            var infos = MonitorInfos;
+            for (var i = 0; i < infos.Length; i++)
+            {
+                if (infos[i].Name == key)
+                {
+                    return infos[i];
+                }
+            }
+
+            throw new ArgumentOutOfRangeException(nameof(key));
+        }
     }
 
     private class FallbackScreensImpl : IX11RawScreenInfoProvider
@@ -249,6 +263,11 @@ internal partial class X11Screens
         public X11Screen CreateScreenFromKey(nint key)
         {
             return new FallBackScreen(new PixelRect(0, 0, _geo.width, _geo.height), _info);
+        }
+
+        public MonitorInfo GetMonitorInfoByKey(nint key)
+        {
+            return default;
         }
 
         public nint[] ScreenKeys => new[] { IntPtr.Zero };
