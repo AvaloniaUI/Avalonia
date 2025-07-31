@@ -14,12 +14,14 @@ internal sealed class PropertyAccessorNode : ExpressionNode, IPropertyAccessorNo
 {
     private readonly Action<object?> _onValueChanged;
     private readonly IPropertyAccessorPlugin _plugin;
+    private readonly bool _acceptsNull;
     private IPropertyAccessor? _accessor;
     private bool _enableDataValidation;
 
-    public PropertyAccessorNode(string propertyName, IPropertyAccessorPlugin plugin)
+    public PropertyAccessorNode(string propertyName, IPropertyAccessorPlugin plugin, bool acceptsNull)
     {
         _plugin = plugin;
+        _acceptsNull = acceptsNull;
         _onValueChanged = OnValueChanged;
         PropertyName = propertyName;
     }
@@ -50,8 +52,14 @@ internal sealed class PropertyAccessorNode : ExpressionNode, IPropertyAccessorNo
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
     protected override void OnSourceChanged(object? source, Exception? dataValidationError)
     {
-        if (!ValidateNonNullSource(source))
+        if (source is null)
+        {
+            if (_acceptsNull)
+                SetValue(null);
+            else
+                ValidateNonNullSource(source);
             return;
+        }
 
         var reference = new WeakReference<object?>(source);
 

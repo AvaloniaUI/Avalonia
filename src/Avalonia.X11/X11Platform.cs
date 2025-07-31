@@ -81,7 +81,7 @@ namespace Avalonia.X11
                 .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>() { }, meta: "Super"))
                 .Bind<IKeyboardDevice>().ToFunc(() => KeyboardDevice)
                 .Bind<ICursorFactory>().ToConstant(new X11CursorFactory(Display))
-                .Bind<IClipboard>().ToConstant(new X11Clipboard(this))
+                .Bind<IClipboard>().ToLazy(() => new X11Clipboard(this))
                 .Bind<IPlatformSettings>().ToSingleton<DBusPlatformSettings>()
                 .Bind<IPlatformIconLoader>().ToConstant(new X11IconLoader())
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new LinuxMountedVolumeInfoProvider())
@@ -384,8 +384,8 @@ namespace Avalonia
         /// will likely brick GLib machinery since it's not aware of managed Exceptions
         /// This property allows to inspect such exceptions before they will be ignored
         /// </summary>
-        public Action<Exception>? ExterinalGLibMainLoopExceptionLogger { get; set; }
-        
+        public Action<Exception>? ExternalGLibMainLoopExceptionLogger { get; set; }
+
         public X11PlatformOptions()
         {
             try

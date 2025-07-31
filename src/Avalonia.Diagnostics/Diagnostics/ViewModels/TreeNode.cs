@@ -15,26 +15,25 @@ namespace Avalonia.Diagnostics.ViewModels
         private string _classes;
         private bool _isExpanded;
 
-        protected TreeNode(AvaloniaObject avaloniaObject, TreeNode? parent, string? customName = null)
+        protected TreeNode(AvaloniaObject avaloniaObject, TreeNode? parent, string? customTypeName = null)
         {
             _classes = string.Empty;
             Parent = parent;
-            var visual = avaloniaObject ;
-            Type = customName ?? avaloniaObject.GetType().Name;
-            Visual = visual!;
+            Type = customTypeName ?? avaloniaObject.GetType().Name;
+            Visual = avaloniaObject;
             FontWeight = IsRoot ? FontWeight.Bold : FontWeight.Normal;
 
-            if (visual is Control control)
-            {
-                ElementName = control.Name;
+            ElementName = (avaloniaObject as INamed)?.Name;
 
-                _classesSubscription = ((IObservable<object?>)control.Classes.GetWeakCollectionChangedObservable())
+            if (avaloniaObject is StyledElement { Classes: { } classes })
+            {
+                _classesSubscription = ((IObservable<object?>)classes.GetWeakCollectionChangedObservable())
                     .StartWith(null)
                     .Subscribe(_ =>
                     {
-                        if (control.Classes.Count > 0)
+                        if (classes.Count > 0)
                         {
-                            Classes = "(" + string.Join(" ", control.Classes) + ")";
+                            Classes = $"({string.Join(" ", classes)})";
                         }
                         else
                         {

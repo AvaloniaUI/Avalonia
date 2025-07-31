@@ -104,6 +104,8 @@ namespace Avalonia.Win32
 
         private IDataObject _wrapped;
         public IDataObject Wrapped => _wrapped;
+        public bool IsDisposed => _wrapped == null!;
+        public event Action? OnDestroyed;
 
         public DataObject(IDataObject wrapped)
         {
@@ -375,6 +377,7 @@ namespace Avalonia.Win32
 
         protected override void Destroyed()
         {
+            OnDestroyed?.Invoke();
             ReleaseWrapped();
         }
 

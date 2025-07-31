@@ -886,6 +886,373 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Fact]
+        public void Should_Throw_ArgumentOutOfRangeException_For_Zero_TextLength()
+        {
+            using (Start())
+            {
+                var typeface = Typeface.Default;
+
+                var defaultProperties = new GenericTextRunProperties(typeface);
+                var textSource = new CustomTextBufferTextSource(new TextCharacters("1234", defaultProperties));
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
+
+                Assert.Throws<ArgumentOutOfRangeException>(() => textLine.GetTextBounds(0, 0));
+            }     
+        }
+
+        [Fact]
+        public void Should_GetTextBounds_For_Negative_TextLength()
+        {
+            using (Start())
+            {
+                var typeface = Typeface.Default;
+
+                var defaultProperties = new GenericTextRunProperties(typeface);
+                var textSource = new CustomTextBufferTextSource(new TextCharacters("1234", defaultProperties));
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
+
+                var textBounds = textLine.GetTextBounds(0, -1);
+
+                Assert.NotNull(textBounds);
+
+                Assert.NotEmpty(textBounds);
+
+                var firstBounds = textBounds[0];
+
+                Assert.Empty(firstBounds.TextRunBounds);
+
+                Assert.Equal(0, firstBounds.Rectangle.Width);
+
+                Assert.Equal(0, firstBounds.Rectangle.Left);
+            }
+        }
+
+        [Fact]
+        public void Should_GetTextBounds_For_Exceeding_TextLength()
+        {
+            using (Start())
+            {
+                var typeface = Typeface.Default;
+
+                var defaultProperties = new GenericTextRunProperties(typeface);
+                var textSource = new CustomTextBufferTextSource(new TextCharacters("1234", defaultProperties));
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
+
+                var textBounds = textLine.GetTextBounds(10, 1);
+
+                Assert.NotNull(textBounds);
+
+                Assert.NotEmpty(textBounds);
+
+                var firstBounds = textBounds[0];
+
+                Assert.Empty(firstBounds.TextRunBounds);
+
+                Assert.Equal(0, firstBounds.Rectangle.Width);
+
+                Assert.Equal(textLine.WidthIncludingTrailingWhitespace, firstBounds.Rectangle.Right);
+            }
+        }
+
+        [Fact]
+        public void Should_GetTextBounds_For_Mixed_Hidden_Runs_With_Ligature()
+        {
+            using (Start())
+            {
+                var typeface = new Typeface(FontFamily.Parse("resm:Avalonia.Skia.UnitTests.Fonts?assembly=Avalonia.Skia.UnitTests#Manrope"));
+
+                var defaultProperties = new GenericTextRunProperties(typeface);
+                var textSource = new CustomTextBufferTextSource(
+                    new TextHidden(1), 
+                    new TextCharacters("Authenti", defaultProperties), 
+                    new TextHidden(1), 
+                    new TextHidden(1),
+                    new TextCharacters("ff", defaultProperties),
+                    new TextHidden(1), 
+                    new TextHidden(1));
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
+
+                var textBounds = textLine.GetTextBounds(12, 1);
+
+                Assert.NotEmpty(textBounds);
+
+                var firstBounds = textBounds[0];
+
+                Assert.NotNull(firstBounds.TextRunBounds);
+                Assert.NotEmpty(firstBounds.TextRunBounds);
+
+                var firstRun = firstBounds.TextRunBounds[0];
+
+                Assert.NotNull(firstRun);
+
+                Assert.Equal(12, firstRun.TextSourceCharacterIndex);
+            }
+        }
+
+        [Fact]
+        public void Should_GetTextBounds_For_Mixed_Hidden_Runs()
+        {
+            using (Start())
+            {
+                var typeface = new Typeface(FontFamily.Parse("resm:Avalonia.Skia.UnitTests.Fonts?assembly=Avalonia.Skia.UnitTests#Manrope"));
+
+                var defaultProperties = new GenericTextRunProperties(typeface);
+                var textSource = new CustomTextBufferTextSource(
+                    new TextHidden(1),
+                    new TextCharacters("Authenti", defaultProperties),
+                    new TextHidden(1),
+                    new TextHidden(1),
+                    new TextEndOfParagraph(1));
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
+
+                var textBounds = textLine.GetTextBounds(8, 1);
+
+                Assert.NotEmpty(textBounds);
+
+                var firstBounds = textBounds[0];
+
+                Assert.NotNull(firstBounds.TextRunBounds);
+                Assert.NotEmpty(firstBounds.TextRunBounds);
+
+                var firstRun = firstBounds.TextRunBounds[0];
+
+                Assert.NotNull(firstRun);
+
+                Assert.Equal(8, firstRun.TextSourceCharacterIndex);
+            }
+        }
+
+        [Win32Fact("Windows font")]
+        public void Should_GetTextBounds_Within_Cluster()
+        {
+            using (Start())
+            {
+                var typeface = new Typeface("Segoe UI Emoji");
+
+                var defaultProperties = new GenericTextRunProperties(typeface);
+                var textSource = new CustomTextBufferTextSource(new TextCharacters("🙈", defaultProperties));
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
+
+                var textBounds = textLine.GetTextBounds(0, 1);
+
+                Assert.NotEmpty(textBounds);
+
+                var runBounds = textBounds[0].TextRunBounds[0];
+
+                Assert.Equal(0, runBounds.TextSourceCharacterIndex);
+
+                textBounds = textLine.GetTextBounds(1, 1);
+
+                Assert.NotEmpty(textBounds);
+
+                runBounds = textBounds[0].TextRunBounds[0];
+
+                Assert.Equal(1, runBounds.TextSourceCharacterIndex);
+
+                textBounds = textLine.GetTextBounds(2, 1);
+
+                Assert.NotEmpty(textBounds);
+
+                Assert.NotNull(textBounds[0].TextRunBounds);
+
+                Assert.Empty(textBounds[0].TextRunBounds);
+            }
+        }
+
+        [Win32Fact("Windows font")]
+        public void Should_GetTextBounds_After_Last_Index()
+        {
+            using (Start())
+            {
+                var typeface = new Typeface("Segoe UI Emoji");
+
+                var defaultProperties = new GenericTextRunProperties(typeface);
+                var textSource = new CustomTextBufferTextSource(new TextCharacters("🙈", defaultProperties));
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
+
+                var textBounds = textLine.GetTextBounds(2, 1);
+
+                Assert.NotEmpty(textBounds);
+
+                var firstBounds = textBounds[0];
+
+                Assert.Equal(textLine.Width, firstBounds.Rectangle.Right);
+
+                Assert.NotNull(firstBounds.TextRunBounds);
+
+                Assert.Empty(firstBounds.TextRunBounds);
+            }
+        }
+
+        [Fact]
+        public void Should_Get_Run_Bounds()
+        {
+            using (Start())
+            {
+                var typeface = new Typeface(FontFamily.Parse("resm:Avalonia.Skia.UnitTests.Fonts?assembly=Avalonia.Skia.UnitTests#Manrope"));
+                var defaultProperties = new GenericTextRunProperties(typeface);
+                var textSource = new CustomTextBufferTextSource(
+                    new TextCharacters("He", defaultProperties), 
+                    new TextCharacters("Wo", defaultProperties),
+                    new TextCharacters("ff", defaultProperties));
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
+
+                var textBounds = textLine.GetTextBounds(1, 1);
+
+                Assert.NotEmpty(textBounds);
+
+                textBounds = textLine.GetTextBounds(2, 1);
+
+                Assert.NotEmpty(textBounds);
+
+                textBounds = textLine.GetTextBounds(4, 1);
+
+                Assert.NotEmpty(textBounds);
+            }
+        }
+
+
+        [Fact]
+        public void Should_Handle_NewLine_In_RTL_Text()
+        {
+            using (Start())
+            {
+                var typeface = Typeface.Default;
+
+                var defaultProperties = new GenericTextRunProperties(typeface);
+
+                var textSource = new SingleBufferTextSource("test\r\n", defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(FlowDirection.RightToLeft, TextAlignment.Right,
+                        true, true, defaultProperties, TextWrapping.Wrap, 0, 0, 0));
+
+                Assert.NotNull(textLine);
+
+                Assert.NotEqual(textLine.NewLineLength, 0);
+
+            }
+        }
+
+        [Theory]
+        [InlineData("hello\r\nworld")]
+        [InlineData("مرحباً\r\nبالعالم")]
+        [InlineData("hello مرحباً\r\nworld بالعالم")]
+        [InlineData("مرحباً hello\r\nبالعالم nworld")]
+        public void Should_Set_NewLineLength_For_CRLF_In_RTL_Text(string text)
+        {
+            using (Start())
+            {
+                var typeface = Typeface.Default;
+                var defaultProperties = new GenericTextRunProperties(typeface);
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+      formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+          new GenericTextParagraphProperties(FlowDirection.RightToLeft, TextAlignment.Right,
+          true, true, defaultProperties, TextWrapping.Wrap, 0, 0, 0));
+
+                Assert.NotNull(textLine);
+                Assert.NotEqual(0, textLine.NewLineLength);
+            }
+        }
+
+        private class TextHidden : TextRun
+        {
+            public TextHidden(int length)
+            {
+                Length = length;
+            }
+
+            public override int Length { get; }
+        }
+
+        private class CustomTextBufferTextSource : ITextSource
+        {
+            private IReadOnlyList<TextRun> _textRuns;
+
+            public CustomTextBufferTextSource(params TextRun[] textRuns)
+            {
+                _textRuns = textRuns;
+            }
+
+            public TextRun? GetTextRun(int textSourceIndex)
+            {
+                var pos = 0;
+
+                for(var i = 0; i < _textRuns.Count; i++)
+                {
+                    var currentRun = _textRuns[i];
+
+                    if(pos + currentRun.Length > textSourceIndex)
+                    {
+                        return currentRun;
+                    }
+
+                    pos += currentRun.Length;
+                }
+
+                return null;
+            }
+        }
+
         private class MixedTextBufferTextSource : ITextSource
         {
             public TextRun? GetTextRun(int textSourceIndex)
@@ -1396,6 +1763,42 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 Assert.NotNull(textLine);
 
                 Assert.Equal(width, textLine.Width);
+            }
+        }
+
+        [Fact]
+        public void Should_GetTextBounds_For_Clustered_Zero_Width_Characters()
+        {
+            const string text = "\r\n";
+
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+
+                var textSource = new TextFormatterTests.ListTextSource(new TextHidden(1) ,new TextCharacters(text, defaultProperties));
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(FlowDirection.LeftToRight, TextAlignment.Left,
+                        true, true, defaultProperties, TextWrapping.NoWrap, 0, 0, 0));
+
+                Assert.NotNull(textLine);
+
+                var textBounds = textLine.GetTextBounds(2, 1);
+
+                Assert.NotEmpty(textBounds);
+
+                var firstBounds = textBounds[0];
+
+                Assert.NotEmpty(firstBounds.TextRunBounds);
+
+                var firstRunBounds = firstBounds.TextRunBounds[0];
+
+                Assert.Equal(2, firstRunBounds.TextSourceCharacterIndex);
+
+                Assert.Equal(1, firstRunBounds.Length);
             }
         }
 

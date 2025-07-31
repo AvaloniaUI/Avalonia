@@ -4,9 +4,9 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.UnitTests
 {
-    public class MouseTestHelper
+    public class MouseTestHelper(PointerType pointerType = PointerType.Mouse)
     {
-        private readonly Pointer _pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
+        private readonly Pointer _pointer = new Pointer(Pointer.GetNextFreeId(), pointerType, true);
         private ulong _nextStamp = 1;
         private ulong Timestamp() => _nextStamp++;
 
@@ -104,7 +104,8 @@ namespace Avalonia.UnitTests
             Point position = default, KeyModifiers modifiers = default)
         {
             Down(target, source, button, position, modifiers);
-            Up(target, source, button, position, modifiers);
+            var captured = (_pointer.Captured as Interactive) ?? source;
+            Up(captured, captured, button, position, modifiers);
         }
 
         public void DoubleClick(Interactive target, MouseButton button = MouseButton.Left, Point position = default,
@@ -115,7 +116,8 @@ namespace Avalonia.UnitTests
             Point position = default, KeyModifiers modifiers = default)
         {
             Down(target, source, button, position, modifiers, clickCount: 1);
-            Up(target, source, button, position, modifiers);
+            var captured = (_pointer.Captured as Interactive) ?? source;
+            Up(captured, captured, button, position, modifiers);
             Down(target, source, button, position, modifiers, clickCount: 2);
         }
 

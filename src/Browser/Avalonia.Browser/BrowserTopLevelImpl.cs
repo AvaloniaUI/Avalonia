@@ -70,6 +70,8 @@ namespace Avalonia.Browser
             _surface.SizeChanged += OnSizeChanged;
             _surface.ScalingChanged += OnScalingChanged;
             Compositor = _surface.Compositor;
+
+            Handle = new JSObjectControlHandle(container);
         }
 
         private void OnScalingChanged()

@@ -24,7 +24,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class ItemsControlTests
+    public class ItemsControlTests : ScopedTestBase
     {
         [Fact]
         public void Setting_ItemsSource_Should_Populate_Items()

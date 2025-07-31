@@ -10,7 +10,7 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class TextBlockTests
+    public class TextBlockTests : ScopedTestBase
     {
         [Fact]
         public void DefaultBindingMode_Should_Be_OneWay()
@@ -66,7 +66,7 @@ namespace Avalonia.Controls.UnitTests
 
                 var textLayout = textBlock.TextLayout;
 
-                var constraint = LayoutHelper.RoundLayoutSizeUp(new Size(textLayout.MinTextWidth, textLayout.Height), 1, 1);
+                var constraint = LayoutHelper.RoundLayoutSizeUp(new Size(textLayout.Width, textLayout.Height), 1);
 
                 Assert.Equal(textBlock.DesiredSize, constraint);
             }
@@ -83,7 +83,7 @@ namespace Avalonia.Controls.UnitTests
 
                 var textLayout = textBlock.TextLayout;
 
-                var constraint = LayoutHelper.RoundLayoutSizeUp(new Size(textLayout.WidthIncludingTrailingWhitespace, textLayout.Height), 1, 1);
+                var constraint = LayoutHelper.RoundLayoutSizeUp(new Size(textLayout.WidthIncludingTrailingWhitespace, textLayout.Height), 1);
 
                 textBlock.Arrange(new Rect(constraint));
 
@@ -118,7 +118,7 @@ namespace Avalonia.Controls.UnitTests
 
                 var textLayout = textBlock.TextLayout;
 
-                var constraint = LayoutHelper.RoundLayoutSizeUp(new Size(textLayout.WidthIncludingTrailingWhitespace, textLayout.Height), 1, 1);
+                var constraint = LayoutHelper.RoundLayoutSizeUp(new Size(textLayout.WidthIncludingTrailingWhitespace, textLayout.Height), 1);
 
                 Assert.Equal(constraint, textBlock.DesiredSize);
             }
@@ -456,6 +456,80 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.True(target.DesiredSize.Width > 0);
             Assert.True(target.DesiredSize.Height > 0);
+        }
+
+        [Fact]
+        public void TextBlock_With_UseLayoutRounding_True_Should_Round_DesiredSize()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var target = new TextBlock { Text = "1980" };
+
+            target.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+
+            Assert.Equal(target.DesiredSize, new Size(40, 10));
+        }
+
+        [Fact]
+        public void TextBlock_With_UseLayoutRounding_True_Should_Round_Padding_And_DesiredSize()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var target = new TextBlock { Text = "1980", Padding = new(2.25) };
+
+            target.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+
+            Assert.Equal(target.DesiredSize, new Size(44, 14));
+        }
+
+        [Fact]
+        public void TextBlock_With_UseLayoutRounding_False_Should_Not_Round_DesiredSize()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var target = new TextBlock { Text = "1980", UseLayoutRounding = false };
+
+            target.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+
+            Assert.Equal(target.DesiredSize, new Size(40, 9.6));
+        }
+
+        [Fact]
+        public void TextBlock_With_UseLayoutRounding_False_Should_Not_Round_Bounds()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var target = new TextBlock { Text = "1980", UseLayoutRounding = false };
+
+            target.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            target.Arrange(new Rect(default, target.DesiredSize));
+
+            Assert.Equal(target.Bounds, new Rect(0, 0, 40, 9.6));
+        }
+
+        [Fact]
+        public void TextBlock_With_UseLayoutRounding_False_Should_Not_Round_Padding_In_MeasureOverride()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var target = new TextBlock { Text = "1980", UseLayoutRounding = false, Padding = new(2.25) };
+
+            target.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+
+            Assert.Equal(target.DesiredSize, new Size(44.5, 14.1));
+        }
+
+        [Fact]
+        public void TextBlock_With_UseLayoutRounding_False_Should_Not_Round_Padding_In_ArrangeOverride()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var target = new TextBlock { Text = "1980", UseLayoutRounding = false, Padding = new(2.25) };
+
+            target.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            target.Arrange(new Rect(default, target.DesiredSize));
+
+            Assert.Equal(target.Bounds, new Rect(0, 0, 44.5, 14.1));
         }
 
         private class TestTextBlock : TextBlock

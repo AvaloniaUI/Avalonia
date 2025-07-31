@@ -274,11 +274,6 @@ namespace Avalonia.Media.TextFormatting
         }
 
         /// <summary>
-        /// Get minimum width of all text lines that can be layouted horizontally without trimming or wrapping.
-        /// </summary>
-        internal double MinTextWidth => _metrics.MinTextWidth;
-
-        /// <summary>
         /// Draws the text layout.
         /// </summary>
         /// <param name="context">The drawing context.</param>
@@ -679,20 +674,32 @@ namespace Avalonia.Media.TextFormatting
 
         private void UpdateMetrics(TextLineImpl currentLine, ref bool first)
         {
-            _metrics.InkBounds = _metrics.InkBounds.Union(new Rect(new Point(0, _metrics.Bounds.Bottom) + currentLine.InkBounds.Position, currentLine.InkBounds.Size));
-            _metrics.Bounds = _metrics.Bounds.Union(new Rect(new Point(0, _metrics.Bounds.Bottom) + currentLine.Bounds.Position, currentLine.Bounds.Size));
+            // 1) Accumulate total layout height by adding the line’s Height.
+            _metrics.Height += currentLine.Height;
 
-            _metrics.MinTextWidth = Math.Max(_metrics.MinTextWidth, currentLine.Bounds.Width);
-            _metrics.MinTextWidth = Math.Max(_metrics.MinTextWidth, currentLine.InkBounds.Width);
+            // 2) For the layout’s Width and WidthIncludingTrailingWhitespace,
+            //    use the maximum of the line widths rather than the bounding box.
+            _metrics.Width = Math.Max(_metrics.Width, currentLine.Width);
 
-            _metrics.Height = _metrics.Bounds.Height;
-            _metrics.Width = _metrics.InkBounds.Width;
-            _metrics.WidthIncludingTrailingWhitespace = _metrics.Bounds.Width;
-            _metrics.Extent = _metrics.InkBounds.Height;
-            _metrics.OverhangLeading = Math.Max(0, _metrics.Bounds.Left - _metrics.InkBounds.Left);
-            _metrics.OverhangTrailing = Math.Max(0, _metrics.InkBounds.Right - _metrics.Bounds.Right);
-            _metrics.OverhangAfter = Math.Max(0, _metrics.InkBounds.Bottom - _metrics.Bounds.Bottom);
+            // 3) Extent is the max black-pixel extent among lines.
+            _metrics.Extent = Math.Max(_metrics.Extent, currentLine.Extent);
 
+            // 4) TextWidth is the max of the text width among lines.
+            // We choose to update all related metrics at once (OverhangLeading, WidthIncludingTrailingWhitespace, OverhangTrailing)
+            // if the current line has a larger text width.
+            var previousTextWidth = _metrics.OverhangLeading + _metrics.WidthIncludingTrailingWhitespace + _metrics.OverhangTrailing;
+            var textWidth = currentLine.OverhangLeading + currentLine.WidthIncludingTrailingWhitespace + currentLine.OverhangTrailing;
+            if (previousTextWidth < textWidth)
+            {
+                _metrics.WidthIncludingTrailingWhitespace = currentLine.WidthIncludingTrailingWhitespace;
+                _metrics.OverhangLeading = currentLine.OverhangLeading;
+                _metrics.OverhangTrailing = currentLine.OverhangTrailing;
+            }
+
+            // 5) OverhangAfter is the last line’s OverhangAfter.
+            _metrics.OverhangAfter = currentLine.OverhangAfter;
+
+            // 6) Capture the baseline from the first line.
             if (first)
             {
                 _metrics.Baseline = currentLine.Baseline;
@@ -741,11 +748,6 @@ namespace Avalonia.Media.TextFormatting
             // horizontal bounding box metrics
             public double OverhangLeading;
             public double OverhangTrailing;
-
-            public Rect Bounds;
-            public Rect InkBounds;
-
-            public double MinTextWidth;
         }
     }
 }

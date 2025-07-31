@@ -13,7 +13,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Primitives
 {
-    public class SelectingItemsControlTests_SelectedValue
+    public class SelectingItemsControlTests_SelectedValue : ScopedTestBase
     {
         [Fact]
         public void Setting_SelectedItem_Sets_SelectedValue()
@@ -168,6 +168,53 @@ namespace Avalonia.Controls.UnitTests.Primitives
             sic.EndInit();
 
             Assert.Equal(items[2].Name, sic.SelectedValue);
+        }
+
+        [Fact]
+        public void Setting_SelectedValue_To_Non_Existent_Item_Without_ItemsSource_Should_Keep_Selection_Until_ItemsSource_Is_Set()
+        {
+            var target = new SelectingItemsControl
+            {
+                Template = Template(),
+                SelectedValueBinding = new Binding("Name")
+            };
+
+            target.ApplyTemplate();
+            target.SelectedValue = "Item2";
+
+            Assert.Equal(-1, target.SelectedIndex);
+            Assert.Null(target.SelectedItem);
+            Assert.Same("Item2", target.SelectedValue);
+
+            target.ItemsSource = Array.Empty<TestClass>();
+
+            Assert.Equal(-1, target.SelectedIndex);
+            Assert.Null(target.SelectedItem);
+            Assert.Null(target.SelectedValue);
+        }
+
+        [Fact]
+        public void Setting_SelectedValue_Without_ItemsSource_Should_Keep_Selection_If_Item_Exists_When_ItemsSource_IsSet()
+        {
+            var target = new SelectingItemsControl
+            {
+                Template = Template(),
+                SelectedValueBinding = new Binding("Name")
+            };
+
+            target.ApplyTemplate();
+            target.SelectedValue = "Item2";
+
+            Assert.Equal(-1, target.SelectedIndex);
+            Assert.Null(target.SelectedItem);
+            Assert.Same("Item2", target.SelectedValue);
+
+            var items = TestClass.GetItems();
+            target.ItemsSource = items;
+
+            Assert.Equal(2, target.SelectedIndex);
+            Assert.Same(items[2], target.SelectedItem);
+            Assert.Equal("Item2", target.SelectedValue);
         }
 
         [Fact]

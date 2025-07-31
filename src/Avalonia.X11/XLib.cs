@@ -14,7 +14,7 @@ using Avalonia.Platform.Interop;
 
 namespace Avalonia.X11
 {
-    internal unsafe static class XLib
+    internal unsafe static partial class XLib
     {
         private const string libX11 = "libX11.so.6";
         private const string libX11Randr = "libXrandr.so.2";
@@ -329,6 +329,9 @@ namespace Avalonia.X11
         [DllImport(libX11)]
         public static extern IntPtr XCreateFontCursor(IntPtr display, CursorFontShape shape);
 
+        [DllImport(libXCursor)]
+        public static extern IntPtr XcursorLibraryLoadCursor(IntPtr display, string name); 
+
         [DllImport(libX11)]
         public static extern IntPtr XCreatePixmapCursor(IntPtr display, IntPtr source, IntPtr mask,
             ref XColor foreground_color, ref XColor background_color, int x_hot, int y_hot);
@@ -555,6 +558,12 @@ namespace Avalonia.X11
 
         [DllImport(libX11)]
         public static extern void XFreeEventData(IntPtr display, void* cookie);
+        
+        [DllImport(libX11)]
+        public static extern IntPtr XMaxRequestSize(IntPtr display);
+        
+        [DllImport(libX11)]
+        public static extern IntPtr XExtendedMaxRequestSize(IntPtr display);
         
         [DllImport(libX11Randr)]
         public static extern int XRRQueryExtension (IntPtr dpy,
