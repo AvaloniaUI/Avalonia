@@ -226,9 +226,9 @@ internal class IOSStorageProvider : IStorageProvider
             var tcs = new TaskCompletionSource<NSUrl[]>();
             documentPicker.Delegate = new PickerDelegate(urls => tcs.TrySetResult(urls));
             var urls = await ShowPicker(documentPicker, tcs);
-            
-            // Clean up the temporary file
-            NSFileManager.DefaultManager.Remove(tempFileUrl, out _);
+
+            // Clean up the temporary directory
+            NSFileManager.DefaultManager.Remove(tempDir, out _);
             
             return urls.FirstOrDefault() is { } url ? new IOSStorageFile(url) : null;
         }
