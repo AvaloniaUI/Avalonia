@@ -672,4 +672,26 @@ public partial class Dispatcher
     /// </summary>
     public DispatcherPriorityAwaitable<T> AwaitWithPriority<T>(Task<T> task, DispatcherPriority priority) =>
         new(this, task, priority);
+    
+    
+    /// <summary>
+    ///  Returns an awaitable object that can be used to queue  continuations at background priority.
+    /// </summary>
+    public static DispatcherPriorityAwaitable Yield()
+    {
+        return Yield(DispatcherPriority.Background);
+    }
+
+    /// <summary>
+    /// Returns an awaitable object that can be used to queue continuations at the specified priority.
+    /// </summary>
+    public static DispatcherPriorityAwaitable Yield(DispatcherPriority priority)
+    {
+        // TODO12: Use current thread dispatcher here
+        UIThread.VerifyAccess();
+        
+        DispatcherPriority.Validate(priority, nameof(priority));
+        
+        return new DispatcherPriorityAwaitable(UIThread, null, priority);
+    }
 }
