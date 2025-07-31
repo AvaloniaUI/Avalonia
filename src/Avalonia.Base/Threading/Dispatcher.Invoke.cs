@@ -672,6 +672,7 @@ public partial class Dispatcher
     /// </summary>
     public DispatcherPriorityAwaitable<T> AwaitWithPriority<T>(Task<T> task, DispatcherPriority priority) =>
         new(this, task, priority);
+    
     /// <summary>
     /// Creates an awaitable object that asynchronously resumes execution on the dispatcher.
     /// </summary>
@@ -696,7 +697,7 @@ public partial class Dispatcher
     public DispatcherPriorityAwaitable Resume(DispatcherPriority priority)
     {
         DispatcherPriority.Validate(priority, nameof(priority));
-        return new(this, priority);
+        return new(this, null, priority);
     }
 
     /// <summary>
