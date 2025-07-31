@@ -672,26 +672,69 @@ public partial class Dispatcher
     /// </summary>
     public DispatcherPriorityAwaitable<T> AwaitWithPriority<T>(Task<T> task, DispatcherPriority priority) =>
         new(this, task, priority);
-    
-    
     /// <summary>
-    ///  Returns an awaitable object that can be used to queue  continuations at background priority.
+    /// Creates an awaitable object that asynchronously resumes execution on the dispatcher.
     /// </summary>
-    public static DispatcherPriorityAwaitable Yield()
+    /// <returns>
+    /// An awaitable object that asynchronously resumes execution on the dispatcher.
+    /// </returns>
+    /// <remarks>
+    /// This method is equivalent to calling the <see cref="Resume(DispatcherPriority)"/> method
+    /// and passing in <see cref="DispatcherPriority.Background"/>.
+    /// </remarks>
+    public DispatcherPriorityAwaitable Resume() =>
+        Resume(DispatcherPriority.Background);
+
+    /// <summary>``
+    /// Creates an awaitable object that asynchronously resumes execution on the dispatcher. The work that occurs
+    /// when control returns to the code awaiting the result of this method is scheduled with the specified priority.
+    /// </summary>
+    /// <param name="priority">The priority at which to schedule the continuation.</param>
+    /// <returns>
+    /// An awaitable object that asynchronously resumes execution on the dispatcher.
+    /// </returns>
+    public DispatcherPriorityAwaitable Resume(DispatcherPriority priority)
     {
-        return Yield(DispatcherPriority.Background);
+        DispatcherPriority.Validate(priority, nameof(priority));
+        return new(this, priority);
     }
 
     /// <summary>
-    /// Returns an awaitable object that can be used to queue continuations at the specified priority.
+    /// Creates an awaitable object that asynchronously yields control back to the current dispatcher
+    /// and provides an opportunity for the dispatcher to process other events.
     /// </summary>
+    /// <returns>
+    /// An awaitable object that asynchronously yields control back to the current dispatcher
+    /// and provides an opportunity for the dispatcher to process other events.
+    /// </returns>
+    /// <remarks>
+    /// This method is equivalent to calling the <see cref="Yield(DispatcherPriority)"/> method
+    /// and passing in <see cref="DispatcherPriority.Background"/>.
+    /// </remarks>
+    /// <exception cref="InvalidOperationException">
+    /// The current thread is not the UI thread.
+    /// </exception>
+    public static DispatcherPriorityAwaitable Yield() =>
+        Yield(DispatcherPriority.Background);
+
+    /// <summary>
+    /// Creates an cawaitable object that asynchronously yields control back to the current dispatcher
+    /// and provides an opportunity for the dispatcher to process other events. The work that occurs when
+    /// control returns to the code awaiting the result of this method is scheduled with the specified priority.
+    /// </summary>
+    /// <param name="priority">The priority at which to schedule the continuation.</param>
+    /// <returns>
+    /// An awaitable object that asynchronously yields control back to the current dispatcher
+    /// and provides an opportunity for the dispatcher to process other events.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// The current thread is not the UI thread.
+    /// </exception>
     public static DispatcherPriorityAwaitable Yield(DispatcherPriority priority)
     {
-        // TODO12: Use current thread dispatcher here
-        UIThread.VerifyAccess();
-        
-        DispatcherPriority.Validate(priority, nameof(priority));
-        
-        return new DispatcherPriorityAwaitable(UIThread, null, priority);
+        // TODO12: Update to use Dispatcher.CurrentDispatcher once multi-dispatcher support is merged
+        var current = UIThread;
+        current.VerifyAccess();
+        return UIThread.Resume(priority);
     }
 }
