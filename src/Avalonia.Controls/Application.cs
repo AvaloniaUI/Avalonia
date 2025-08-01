@@ -54,7 +54,7 @@ namespace Avalonia
         /// <inheritdoc cref="ThemeVariantScope.ActualThemeVariantProperty" />
         public static readonly StyledProperty<ThemeVariant> ActualThemeVariantProperty =
             ThemeVariantScope.ActualThemeVariantProperty.AddOwner<Application>();
-        
+
         /// <inheritdoc cref="ThemeVariantScope.RequestedThemeVariantProperty" />
         public static readonly StyledProperty<ThemeVariant?> RequestedThemeVariantProperty =
             ThemeVariantScope.RequestedThemeVariantProperty.AddOwner<Application>();
@@ -106,7 +106,7 @@ namespace Avalonia
             get => GetValue(RequestedThemeVariantProperty);
             set => SetValue(RequestedThemeVariantProperty, value);
         }
-        
+
         /// <inheritdoc />
         [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1031", Justification = "This property is supposed to be a styled readonly property.")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1030", Justification = "False positive.")]
@@ -216,7 +216,7 @@ namespace Avalonia
         /// as specific top levels might have different settings set-up. 
         /// </remarks>
         public IPlatformSettings? PlatformSettings => this.TryGetFeature<IPlatformSettings>();
-        
+
         event Action<IReadOnlyList<IStyle>>? IGlobalStyles.GlobalStylesAdded
         {
             add => _stylesAdded += value;
@@ -233,7 +233,7 @@ namespace Avalonia
         /// Initializes the application by loading XAML etc.
         /// </summary>
         public virtual void Initialize() { }
-        
+
         /// <inheritdoc/>
         public bool TryGetResource(object key, ThemeVariant? theme, out object? value)
         {
@@ -286,7 +286,7 @@ namespace Avalonia
                 .Bind<IThemeVariantHost>().ToConstant(this)
                 .Bind<IFocusManager>().ToConstant(focusManager)
                 .Bind<IInputManager>().ToConstant(InputManager)
-                .Bind< IToolTipService>().ToConstant(new ToolTipService(InputManager))
+                .Bind<IToolTipService>().ToConstant(new ToolTipService(InputManager))
                 .Bind<IKeyboardNavigationHandler>().ToTransient<KeyboardNavigationHandler>()
                 .Bind<IDragDropDevice>().ToConstant(DragDropDevice.Instance);
 
@@ -304,10 +304,10 @@ namespace Avalonia
         public virtual void OnFrameworkInitializationCompleted()
         {
         }
-        
+
         void IApplicationPlatformEvents.RaiseUrlsOpened(string[] urls)
         {
-            UrlsOpened?.Invoke(this, new UrlOpenedEventArgs (urls));
+            UrlsOpened?.Invoke(this, new UrlOpenedEventArgs(urls));
         }
 
         private string? _name;
@@ -361,13 +361,13 @@ namespace Avalonia
             {
                 if (change.GetNewValue<ThemeVariant>() is { } themeVariant)
                 {
-                    if (themeVariant == ThemeVariant.Default && PlatformSettings?.GetColorValues() is { } currentColors)
+                    if (themeVariant == ThemeVariant.Default)
                     {
-                        SetValue(ActualThemeVariantProperty, (ThemeVariant)currentColors.ThemeVariant);
+                        ClearValue(ActualThemeVariantProperty);
                     }
                     else
                     {
-                        SetValue(ActualThemeVariantProperty, themeVariant);   
+                        SetValue(ActualThemeVariantProperty, themeVariant);
                     }
                 }
             }
@@ -380,7 +380,7 @@ namespace Avalonia
         private void OnColorValuesChanged(object? sender, PlatformColorValues e)
         {
             if ((RequestedThemeVariant ?? ThemeVariant.Default) == ThemeVariant.Default)
-                SetCurrentValue(ActualThemeVariantProperty, (ThemeVariant)e.ThemeVariant);
+                SetValue(ActualThemeVariantProperty, (ThemeVariant)e.ThemeVariant);
         }
     }
 }

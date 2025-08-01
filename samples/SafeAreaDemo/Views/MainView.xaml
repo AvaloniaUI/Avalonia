@@ -39,6 +39,7 @@
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch">
                     <StackPanel Orientation="Vertical"
+                                Spacing="5"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center">
                         <Label HorizontalAlignment="Left">Options:</Label>
@@ -47,6 +48,11 @@
                         <CheckBox IsChecked="{Binding AutoSafeAreaPadding}">Automatic Paddings</CheckBox>
                         <CheckBox IsChecked="{Binding HideSystemBars}">Hide System Bars</CheckBox>
                         <TextBox Width="200" Watermark="Tap to Show Keyboard"/>
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                          <Button Command="{Binding SetLight}">Light</Button>
+                          <Button Command="{Binding SetDark}">Dark</Button>
+                          <Button Command="{Binding SetDefault}">Default</Button>
+                        </StackPanel>
                     </StackPanel>
                 </Grid>
             </DockPanel>

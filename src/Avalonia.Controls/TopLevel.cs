@@ -929,7 +929,7 @@ namespace Avalonia.Controls
 
         private void GlobalActualThemeVariantChanged(object? sender, EventArgs e)
         {
-            SetCurrentValue(ActualThemeVariantProperty, ((IThemeVariantHost)sender!).ActualThemeVariant);
+            SetValue(ActualThemeVariantProperty, ((IThemeVariantHost)sender!).ActualThemeVariant, BindingPriority.Template);
         }
 
         private void SceneInvalidated(object? sender, SceneInvalidatedEventArgs e)

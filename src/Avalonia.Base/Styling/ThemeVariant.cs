@@ -100,7 +100,7 @@ public sealed record ThemeVariant
         {
             PlatformThemeVariant.Light => Light,
             PlatformThemeVariant.Dark => Dark,
-            _ => Default,
+            _ => throw new ArgumentOutOfRangeException(nameof(themeVariant), themeVariant, null),
         };
     }
 
