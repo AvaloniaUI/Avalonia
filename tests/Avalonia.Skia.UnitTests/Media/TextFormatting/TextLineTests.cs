@@ -1163,6 +1163,57 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+
+        [Fact]
+        public void Should_Handle_NewLine_In_RTL_Text()
+        {
+            using (Start())
+            {
+                var typeface = Typeface.Default;
+
+                var defaultProperties = new GenericTextRunProperties(typeface);
+
+                var textSource = new SingleBufferTextSource("test\r\n", defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(FlowDirection.RightToLeft, TextAlignment.Right,
+                        true, true, defaultProperties, TextWrapping.Wrap, 0, 0, 0));
+
+                Assert.NotNull(textLine);
+
+                Assert.NotEqual(textLine.NewLineLength, 0);
+
+            }
+        }
+
+        [Theory]
+        [InlineData("hello\r\nworld")]
+        [InlineData("مرحباً\r\nبالعالم")]
+        [InlineData("hello مرحباً\r\nworld بالعالم")]
+        [InlineData("مرحباً hello\r\nبالعالم nworld")]
+        public void Should_Set_NewLineLength_For_CRLF_In_RTL_Text(string text)
+        {
+            using (Start())
+            {
+                var typeface = Typeface.Default;
+                var defaultProperties = new GenericTextRunProperties(typeface);
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+      formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+          new GenericTextParagraphProperties(FlowDirection.RightToLeft, TextAlignment.Right,
+          true, true, defaultProperties, TextWrapping.Wrap, 0, 0, 0));
+
+                Assert.NotNull(textLine);
+                Assert.NotEqual(0, textLine.NewLineLength);
+            }
+        }
+
         private class TextHidden : TextRun
         {
             public TextHidden(int length)
@@ -1712,6 +1763,42 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 Assert.NotNull(textLine);
 
                 Assert.Equal(width, textLine.Width);
+            }
+        }
+
+        [Fact]
+        public void Should_GetTextBounds_For_Clustered_Zero_Width_Characters()
+        {
+            const string text = "\r\n";
+
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+
+                var textSource = new TextFormatterTests.ListTextSource(new TextHidden(1) ,new TextCharacters(text, defaultProperties));
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(FlowDirection.LeftToRight, TextAlignment.Left,
+                        true, true, defaultProperties, TextWrapping.NoWrap, 0, 0, 0));
+
+                Assert.NotNull(textLine);
+
+                var textBounds = textLine.GetTextBounds(2, 1);
+
+                Assert.NotEmpty(textBounds);
+
+                var firstBounds = textBounds[0];
+
+                Assert.NotEmpty(firstBounds.TextRunBounds);
+
+                var firstRunBounds = firstBounds.TextRunBounds[0];
+
+                Assert.Equal(2, firstRunBounds.TextSourceCharacterIndex);
+
+                Assert.Equal(1, firstRunBounds.Length);
             }
         }
 
