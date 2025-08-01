@@ -23,21 +23,21 @@ public partial class XYFocus
         
     }
     
-    private XYFocusAlgorithms.XYFocusManifolds mManifolds = new();
+    private XYFocusAlgorithms.XYFocusManifolds _manifolds = new();
     private PooledList<XYFocusParams> _pooledCandidates = new();
 
     private static readonly XYFocus _instance = new();
     
     internal XYFocusAlgorithms.XYFocusManifolds ResetManifolds()
     {
-        mManifolds.Reset();
-        return mManifolds;
+        _manifolds.Reset();
+        return _manifolds;
     }
 
     internal void SetManifoldsFromBounds(Rect bounds)
     {
-        mManifolds.VManifold = (bounds.Left, bounds.Right);
-        mManifolds.HManifold = (bounds.Top, bounds.Bottom);
+        _manifolds.VManifold = (bounds.Left, bounds.Right);
+        _manifolds.HManifold = (bounds.Top, bounds.Bottom);
     }
 
     internal void UpdateManifolds(
@@ -47,7 +47,7 @@ public partial class XYFocus
         bool ignoreClipping)
     {
         var candidateBounds = GetBoundsForRanking(candidate, ignoreClipping)!.Value;
-        XYFocusAlgorithms.UpdateManifolds(direction, elementBounds, candidateBounds, mManifolds);
+        XYFocusAlgorithms.UpdateManifolds(direction, elementBounds, candidateBounds, _manifolds);
     }
 
     internal static InputElement? TryDirectionalFocus(
@@ -261,7 +261,7 @@ public partial class XYFocus
                 if (updateManifolds)
                 {
                     // Update the manifolds with the newly selected focus
-                    XYFocusAlgorithms.UpdateManifolds(direction, bounds, param.Bounds, mManifolds);
+                    XYFocusAlgorithms.UpdateManifolds(direction, bounds, param.Bounds, _manifolds);
                 }
 
                 break;
@@ -346,7 +346,7 @@ public partial class XYFocus
                     XYFocusAlgorithms.ShouldCandidateBeConsideredForRanking(bounds, candidateBounds, maxRootBoundsDistance,
                         direction, exclusionBounds, ignoreCone))
                 {
-                    candidate.Score = XYFocusAlgorithms.GetScoreProjection(direction, bounds, candidateBounds, mManifolds, maxRootBoundsDistance);
+                    candidate.Score = XYFocusAlgorithms.GetScoreProjection(direction, bounds, candidateBounds, _manifolds, maxRootBoundsDistance);
                 }
                 else if (mode == XYFocusNavigationStrategy.NavigationDirectionDistance ||
                          mode == XYFocusNavigationStrategy.RectilinearDistance)
