@@ -44,9 +44,6 @@ namespace Avalonia.Android.Platform.Input
 
         public AndroidInputMethod(TView host)
         {
-            if (host.OnCheckIsTextEditor() == false)
-                throw new InvalidOperationException("Host should return true from OnCheckIsTextEditor()");
-
             _host = host;
             _imm = host.Context?.GetSystemService(Context.InputMethodService).JavaCast<InputMethodManager>()
                    ?? throw new InvalidOperationException("Context.InputMethodService is expected to be not null.");
