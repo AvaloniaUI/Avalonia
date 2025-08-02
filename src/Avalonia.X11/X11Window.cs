@@ -69,6 +69,7 @@ namespace Avalonia.X11
         private bool _useCompositorDrivenRenderWindowResize = false;
         private bool _usePositioningFlags = false;
         private X11WindowMode _mode;
+        private X11DropTarget _dropTarget;
 
         private enum XSyncState
         {
@@ -187,7 +188,8 @@ namespace Avalonia.X11
             Handle = new PlatformHandle(_handle, "XID");
 
             _mode.OnHandleCreated(_handle);
-            
+            _dropTarget = new X11DropTarget(this, _handle, _x11);
+
             _realSize = new PixelSize(defaultWidth, defaultHeight);
             platform.Windows[_handle] = OnEvent;
             XEventMask ignoredMask = XEventMask.SubstructureRedirectMask
@@ -512,6 +514,9 @@ namespace Avalonia.X11
                 return;
             
             if(_mode.OnEvent(ref ev))
+                return;
+
+            if (_dropTarget.OnEvent(ref ev))
                 return;
 
             _activationTracker?.OnEvent(ref ev);

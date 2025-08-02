@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using static Avalonia.X11.XLib;
 
@@ -145,12 +146,15 @@ namespace Avalonia.X11
         private readonly PointerDeviceInfo _pointerDevice;
         private readonly AvaloniaX11Platform _platform;
 
+        private X11DragSource? _dragSource; 
+
         private XI2Manager(AvaloniaX11Platform platform, PointerDeviceInfo pointerDevice)
         {
             _platform = platform;
             _x11 = platform.Info;
             _multitouch = platform.Options.EnableMultiTouch ?? true;
             _pointerDevice = pointerDevice;
+            _dragSource = AvaloniaLocator.Current.GetRequiredService<IPlatformDragSource>() as X11DragSource;
         }
 
         public static XI2Manager? TryCreate(AvaloniaX11Platform platform)
@@ -228,9 +232,16 @@ namespace Avalonia.X11
                 _pointerDevice.Update(changed->Classes, changed->NumClasses);
             }
 
+            if (xev->evtype == XiEventType.XI_Motion || xev->evtype == XiEventType.XI_ButtonRelease)
+            {
+                var dev = (XIDeviceEvent*)xev;
+
+                bool handled = _dragSource?.OnDeviceEvent(ref *dev) ?? false;
+                if (handled) return;
+            }
 
             if ((xev->evtype >= XiEventType.XI_ButtonPress && xev->evtype <= XiEventType.XI_Motion)
-                || (xev->evtype >= XiEventType.XI_TouchBegin && xev->evtype <= XiEventType.XI_TouchEnd))
+            || (xev->evtype >= XiEventType.XI_TouchBegin && xev->evtype <= XiEventType.XI_TouchEnd))
             {
                 var dev = (XIDeviceEvent*)xev;
                 if (_clients.TryGetValue(dev->EventWindow, out var client))
