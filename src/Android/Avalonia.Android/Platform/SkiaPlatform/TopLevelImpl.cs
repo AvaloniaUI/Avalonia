@@ -39,7 +39,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         private readonly IStorageProvider? _storageProvider;
         private readonly AndroidSystemNavigationManagerImpl _systemNavigationManager;
         private readonly AndroidInsetsManager? _insetsManager;
-        private readonly ClipboardImpl _clipboard;
+        private readonly Clipboard _clipboard;
         private readonly AndroidLauncher? _launcher;
         private readonly AndroidScreens? _screens;
         private ViewImpl _view;
@@ -47,19 +47,21 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public TopLevelImpl(AvaloniaView avaloniaView, bool placeOnTop = false)
         {
-            if (avaloniaView.Context is null)
+            if (avaloniaView.Context is not { } context)
             {
                 throw new ArgumentException("AvaloniaView.Context must not be null");
             }
 
-            _view = new ViewImpl(avaloniaView.Context, this, placeOnTop);
+            _view = new ViewImpl(context, this, placeOnTop);
             _textInputMethod = new AndroidInputMethod<ViewImpl>(_view);
             _keyboardHelper = new AndroidKeyboardEventsHelper<TopLevelImpl>(this);
             _pointerHelper = new AndroidMotionEventsHelper(this);
-            _clipboard = new ClipboardImpl(avaloniaView.Context.GetSystemService(Context.ClipboardService).JavaCast<ClipboardManager>());
-            _screens = new AndroidScreens(avaloniaView.Context);
+            _clipboard = new Clipboard(new ClipboardImpl(
+                context.GetSystemService(Context.ClipboardService).JavaCast<ClipboardManager>(),
+                context));
+            _screens = new AndroidScreens(context);
 
-            if (avaloniaView.Context is Activity mainActivity)
+            if (context is Activity mainActivity)
             {
                 _insetsManager = new AndroidInsetsManager(mainActivity, this);
                 _storageProvider = new AndroidStorageProvider(mainActivity);
@@ -69,7 +71,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             _nativeControlHost = new AndroidNativeControlHostImpl(avaloniaView);
             _transparencyLevel = WindowTransparencyLevel.None;
 
-            _systemNavigationManager = new AndroidSystemNavigationManagerImpl(avaloniaView.Context as IActivityNavigationService);
+            _systemNavigationManager = new AndroidSystemNavigationManagerImpl(context as IActivityNavigationService);
 
             var gl = new EglGlPlatformSurface(this);
             var framebuffer = new FramebufferManager(this);

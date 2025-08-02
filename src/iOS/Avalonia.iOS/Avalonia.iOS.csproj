@@ -21,8 +21,8 @@
   </ItemGroup>
 
   <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tvos'">
-    <Compile Remove="Storage/**/*.*" />
-    <Compile Remove="ClipboardImpl.cs" />
+    <Compile Remove="Storage/**/*" />
+    <Compile Remove="Clipboard/**/*" />
     <Compile Remove="UIKitInputPane.cs" />
   </ItemGroup>
 

@@ -15,52 +15,44 @@ using Avalonia.Platform;
 
 namespace Avalonia.Headless
 {
-    internal class HeadlessClipboardStub : IClipboard
+    internal sealed class HeadlessClipboardImplStub : IOwnedClipboardImpl
     {
-        private IDataObject? _data;
+        private IDataTransfer? _data;
 
-        public Task<string?> GetTextAsync()
-        {
-            return Task.FromResult(_data?.GetText());
-        }
+        public Task<IDataTransfer?> TryGetDataAsync()
+            // Return an instance that won't be disposed (we're keeping the ownership).
+            => Task.FromResult<IDataTransfer?>(_data is null ? null : new NonDisposingDataTransfer(_data));
 
-        public Task SetTextAsync(string? text)
+        public Task SetDataAsync(IDataTransfer dataTransfer)
         {
-            var data = new DataObject();
-            if (text != null)
-                data.Set(DataFormats.Text, text);
-            _data = data;
+            _data = dataTransfer;
             return Task.CompletedTask;
         }
 
         public Task ClearAsync()
         {
+            _data?.Dispose();
             _data = null;
             return Task.CompletedTask;
         }
 
-        public Task SetDataObjectAsync(IDataObject data)
+        public Task<bool> IsCurrentOwnerAsync()
+            => Task.FromResult(_data is not null);
+
+        private sealed class NonDisposingDataTransfer(IDataTransfer wrapped) : IDataTransfer
         {
-            _data = data;
-            return Task.CompletedTask;
+            private readonly IDataTransfer _wrapped = wrapped;
+
+            public IReadOnlyList<DataFormat> Formats
+                => _wrapped.Formats;
+
+            public IReadOnlyList<IDataTransferItem> Items
+                => _wrapped.Items;
+
+            void IDisposable.Dispose()
+            {
+            }
         }
-
-        public Task<string[]> GetFormatsAsync()
-        {
-            return Task.FromResult<string[]>(_data?.GetDataFormats().ToArray() ?? []);
-        }
-
-        public Task<object?> GetDataAsync(string format)
-        {
-            return Task.FromResult(_data?.Get(format));
-        }
-
-
-        public Task<IDataObject?> TryGetInProcessDataObjectAsync() => Task.FromResult(_data);
-
-        /// <inheritdoc />
-        public Task FlushAsync() =>
-            Task.CompletedTask;
     }
 
     internal class HeadlessCursorFactoryStub : ICursorFactory
