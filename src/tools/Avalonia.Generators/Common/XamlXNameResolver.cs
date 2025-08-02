@@ -1,28 +1,35 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Avalonia.Generators.Common.Domain;
 using XamlX;
 using XamlX.Ast;
+using XamlX.TypeSystem;
 
 namespace Avalonia.Generators.Common;
 
-internal class XamlXNameResolver : INameResolver, IXamlAstVisitor
+internal class XamlXNameResolver
+    : INameResolver, IXamlAstVisitor
 {
-    private readonly List<ResolvedName> _items = new();
-    private readonly string _defaultFieldModifier;
+    private readonly Dictionary<string, ResolvedXmlName> _items = new();
 
-    public XamlXNameResolver(NamedFieldModifier namedFieldModifier = NamedFieldModifier.Internal)
-    {
-        _defaultFieldModifier = namedFieldModifier.ToString().ToLowerInvariant();
-    }
-
-    public IReadOnlyList<ResolvedName> ResolveNames(XamlDocument xaml)
+    public EquatableList<ResolvedXmlName> ResolveXmlNames(XamlDocument xaml)
     {
         _items.Clear();
         xaml.Root.Visit(this);
         xaml.Root.VisitChildren(this);
-        return _items;
+        return new EquatableList<ResolvedXmlName>(_items.Values.ToArray());
+    }
+
+    public ResolvedName ResolveName(IXamlType clrType, string name, string? fieldModifier)
+    {
+        var typeName = $"{clrType.Namespace}.{clrType.Name}";
+        var typeAgs = clrType.GenericArguments.Select(arg => arg.FullName).ToImmutableList();
+        var genericTypeName = typeAgs.Count == 0
+            ? $"global::{typeName}"
+            : $"global::{typeName}<{string.Join(", ", typeAgs.Select(arg => $"global::{arg}"))}>";
+        return new ResolvedName(genericTypeName, name, fieldModifier);
     }
 
     IXamlAstNode IXamlAstVisitor.Visit(IXamlAstNode node)
@@ -30,9 +37,7 @@ internal class XamlXNameResolver : INameResolver, IXamlAstVisitor
         if (node is not XamlAstObjectNode objectNode)
             return node;
 
-        var clrType = objectNode.Type.GetClrType();
-        if (!clrType.IsAvaloniaStyledElement())
-            return node;
+        var xamlType = (XamlAstXmlTypeReference)objectNode.Type;
 
         foreach (var child in objectNode.Children)
         {
@@ -44,27 +49,24 @@ internal class XamlXNameResolver : INameResolver, IXamlAstVisitor
                 propertyValueNode.Values[0] is XamlAstTextNode text)
             {
                 var fieldModifier = TryGetFieldModifier(objectNode);
-                var typeName = $@"{clrType.Namespace}.{clrType.Name}";
-                var typeAgs = clrType.GenericArguments.Select(arg => arg.FullName).ToImmutableList();
-                var genericTypeName = typeAgs.Count == 0
-                    ? $"global::{typeName}"
-                    : $@"global::{typeName}<{string.Join(", ", typeAgs.Select(arg => $"global::{arg}"))}>";
-
-                var resolvedName = new ResolvedName(genericTypeName, text.Text, fieldModifier);
-                if (_items.Contains(resolvedName))
+                var resolvedName = new ResolvedXmlName(ConvertType(xamlType), text.Text, fieldModifier);
+                if (_items.ContainsKey(text.Text))
                     continue;
-                _items.Add(resolvedName);
+                _items.Add(text.Text, resolvedName);
             }
         }
 
         return node;
+
+        static XamlXmlType ConvertType(XamlAstXmlTypeReference type) => new(type.Name, type.XmlNamespace,
+            new EquatableList<XamlXmlType>(type.GenericArguments.Select(ConvertType).ToArray()));
     }
 
     void IXamlAstVisitor.Push(IXamlAstNode node) { }
 
     void IXamlAstVisitor.Pop() { }
 
-    private string TryGetFieldModifier(XamlAstObjectNode objectNode)
+    private string? TryGetFieldModifier(XamlAstObjectNode objectNode)
     {
         // We follow Xamarin.Forms API behavior in terms of x:FieldModifier here:
         // https://docs.microsoft.com/en-us/xamarin/xamarin-forms/xaml/field-modifiers
@@ -87,7 +89,7 @@ internal class XamlXNameResolver : INameResolver, IXamlAstVisitor
             "protected" => "protected",
             "internal" => "internal",
             "notpublic" => "internal",
-            _ => _defaultFieldModifier
+            _ => null
         };
     }
 

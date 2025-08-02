@@ -8,7 +8,7 @@
                  Watermark="Please, enter user name..."
                  UseFloatingWatermark="True" />
         <TextBlock x:Name="UserNameValidation" 
-                   Foreground="Red"
+                   Foreground="Green"
                    FontSize="12" />
         <TextBox Margin="0 10 0 0"
                  x:Name="PasswordTextBox"
