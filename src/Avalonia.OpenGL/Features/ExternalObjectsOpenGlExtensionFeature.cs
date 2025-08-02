@@ -249,6 +249,16 @@ public class ExternalObjectsOpenGlExtensionFeature : IGlContextExternalObjectsFe
             var dstLayout = 0;
             _ext.SignalSemaphoreEXT(_semaphore, 0, null, 1, &texId, &dstLayout);
         }
+
+        public void WaitTimelineSemaphore(IGlExternalImageTexture texture, ulong value)
+        {
+            throw new NotSupportedException("This semaphore type doesn't support value-based wait");
+        }
+
+        public void SignalTimelineSemaphore(IGlExternalImageTexture texture, ulong value)
+        {
+            throw new NotSupportedException("This semaphore type doesn't support value-based signaling");
+        }
     }
 
     private class ExternalImageTexture : IGlExternalImageTexture
@@ -286,6 +296,7 @@ public class ExternalObjectsOpenGlExtensionFeature : IGlContextExternalObjectsFe
 
         public int TextureId { get; }
         public int InternalFormat => GL_RGBA8;
+        public int TextureType => GL_TEXTURE_2D;
         public PlatformGraphicsExternalImageProperties Properties { get; }
     }
 }

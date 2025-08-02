@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Metal;
 using Avalonia.Native.Interop;
 using Avalonia.Platform;
+using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.Utilities;
 
@@ -9,14 +12,16 @@ namespace Avalonia.Native;
 
 class MetalPlatformGraphics : IPlatformGraphics
 {
+    private readonly IAvaloniaNativeFactory _factory;
     private readonly IAvnMetalDisplay _display;
 
     public MetalPlatformGraphics(IAvaloniaNativeFactory factory)
     {
+        _factory = factory;
         _display = factory.ObtainMetalDisplay();
     }
     public bool UsesSharedContext => false;
-    public IPlatformGraphicsContext CreateContext() => new MetalDevice(_display.CreateDevice());
+    public IPlatformGraphicsContext CreateContext() => new MetalDevice(_factory, _display.CreateDevice());
 
     public IPlatformGraphicsContext GetSharedContext() => throw new NotSupportedException();
 }
@@ -25,11 +30,15 @@ class MetalDevice : IMetalDevice
 {
     public IAvnMetalDevice Native { get; private set; }
     private DisposableLock _syncRoot = new();
-    
+    private readonly GpuHandleWrapFeature _handleWrapFeature;
+    private readonly MetalExternalObjectsFeature _externalObjectsFeature;
 
-    public MetalDevice(IAvnMetalDevice native)
+
+    public MetalDevice(IAvaloniaNativeFactory factory, IAvnMetalDevice native)
     {
         Native = native;
+        _handleWrapFeature = new GpuHandleWrapFeature(factory);
+        _externalObjectsFeature = new MetalExternalObjectsFeature(native);
     }
 
     public void Dispose()
@@ -38,7 +47,14 @@ class MetalDevice : IMetalDevice
         Native = null;
     }
 
-    public object TryGetFeature(Type featureType) => null;
+    public object TryGetFeature(Type featureType)
+    {
+        if (featureType == typeof(IExternalObjectsHandleWrapRenderInterfaceContextFeature))
+            return _handleWrapFeature;
+        if (featureType == typeof(IMetalExternalObjectsFeature))
+            return _externalObjectsFeature;
+        return null;
+    }
 
     public bool IsLost => false;
 
@@ -65,6 +81,85 @@ class MetalPlatformSurface : IMetalPlatformSurface
         var target = _topLevel.CreateMetalRenderTarget(dev.Native);
         return new MetalRenderTarget(target);
     }
+}
+
+internal class MetalExternalObjectsFeature : IMetalExternalObjectsFeature
+{
+    private readonly IAvnMetalDevice _device;
+
+    public unsafe MetalExternalObjectsFeature(IAvnMetalDevice device)
+    {
+        _device = device;
+        ulong registryId;
+        if (_device.GetIOKitRegistryId(&registryId) != 0)
+        {
+            DeviceLuid = BitConverter.GetBytes(registryId).Reverse().ToArray();
+        }
+    }
+
+    public IReadOnlyList<string> SupportedImageHandleTypes { get; } =
+        [KnownPlatformGraphicsExternalImageHandleTypes.IOSurfaceRef];
+
+    public IReadOnlyList<string> SupportedSemaphoreTypes { get; } =
+        [KnownPlatformGraphicsExternalSemaphoreHandleTypes.MetalSharedEvent];
+    
+    public byte[] DeviceLuid { get; }
+
+    public CompositionGpuImportedImageSynchronizationCapabilities
+        GetSynchronizationCapabilities(string imageHandleType) =>
+        CompositionGpuImportedImageSynchronizationCapabilities.TimelineSemaphores;
+
+    public IMetalExternalTexture ImportImage(IPlatformHandle handle, PlatformGraphicsExternalImageProperties properties)
+    {
+        var format = properties.Format switch
+        {
+            PlatformGraphicsExternalImageFormat.R8G8B8A8UNorm => AvnPixelFormat.kAvnRgba8888,
+            PlatformGraphicsExternalImageFormat.B8G8R8A8UNorm => AvnPixelFormat.kAvnBgra8888,
+            _ => throw new NotSupportedException("Pixel format is not supported")
+        };
+        
+        if (handle.HandleDescriptor != KnownPlatformGraphicsExternalImageHandleTypes.IOSurfaceRef)
+            throw new NotSupportedException();
+
+        return new ImportedTexture(_device.ImportIOSurface(handle.Handle, format));
+    }
+
+    public IMetalSharedEvent ImportSharedEvent(IPlatformHandle handle)
+    {
+        if (handle.HandleDescriptor != KnownPlatformGraphicsExternalSemaphoreHandleTypes.MetalSharedEvent)
+            throw new NotSupportedException();
+        return new SharedEvent(_device.ImportSharedEvent(handle.Handle));
+    }
+
+    class ImportedTexture(IAvnMetalTexture texture) : IMetalExternalTexture
+    {
+        public void Dispose() => texture.Dispose();
+
+        public int Width => texture.Width;
+
+        public int Height => texture.Height;
+
+        public int Samples => texture.SampleCount;
+
+        public IntPtr Handle => texture.NativeHandle;
+    }
+    
+    class SharedEvent(IAvnMTLSharedEvent inner) : IMetalSharedEvent
+    {
+        public IAvnMTLSharedEvent Native => inner;
+        public void Dispose()
+        {
+            inner.Dispose();
+        }
+
+        public IntPtr Handle => inner.NativeHandle;
+    }
+
+    public void SubmitWait(IMetalSharedEvent @event, ulong waitForValue) =>
+        _device.SubmitWait(((SharedEvent)@event).Native, waitForValue);
+
+    public void SubmitSignal(IMetalSharedEvent @event, ulong signalValue) =>
+        _device.SubmitSignal(((SharedEvent)@event).Native, signalValue);
 }
 
 internal class MetalRenderTarget : IMetalPlatformSurfaceRenderTarget

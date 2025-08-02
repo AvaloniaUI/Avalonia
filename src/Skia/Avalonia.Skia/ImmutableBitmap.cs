@@ -14,6 +14,7 @@ namespace Avalonia.Skia
     {
         private readonly SKImage _image;
         private readonly SKBitmap? _bitmap;
+        private readonly Action? _customImageDispose = null;
 
         /// <summary>
         /// Create immutable bitmap from given stream.
@@ -39,9 +40,10 @@ namespace Avalonia.Skia
             }
         }
 
-        public ImmutableBitmap(SKImage image)
+        public ImmutableBitmap(SKImage image, Action? customImageDispose = null)
         {
             _image = image;
+            _customImageDispose = customImageDispose;
             PixelSize = new PixelSize(image.Width, image.Height);
             Dpi = new Vector(96, 96);
         }
@@ -154,7 +156,10 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void Dispose()
         {
-            _image.Dispose();
+            if (_customImageDispose != null)
+                _customImageDispose();
+            else
+                _image.Dispose();
             _bitmap?.Dispose();
         }
 
