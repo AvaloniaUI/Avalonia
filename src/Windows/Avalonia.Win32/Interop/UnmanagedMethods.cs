@@ -1502,6 +1502,14 @@ namespace Avalonia.Win32.Interop
         [DllImport("shell32", CharSet = CharSet.Auto)]
         public static extern int Shell_NotifyIcon(NIM dwMessage, NOTIFYICONDATA lpData);
 
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        public static extern nint ChangeWindowMessageFilter(uint message, MessageFilterFlag dwFlag);
+        public enum MessageFilterFlag
+        {
+            MSGFLT_ADD = 1,
+            MSGFLT_REMOVE = 2,
+        }
+
         [DllImport("shell32", CharSet = CharSet.Auto)]
         public static extern nint SHAppBarMessage(AppBarMessage dwMessage, ref APPBARDATA lpData);
 

@@ -33,6 +33,7 @@ namespace Avalonia.Win32
 
         static TrayIconImpl()
         {
+            ChangeWindowMessageFilter(WM_TASKBARCREATED, MessageFilterFlag.MSGFLT_ADD);
             using var bitmap = new WriteableBitmap(
                 new PixelSize(32, 32), new Vector(96, 96), PixelFormats.Bgra8888, AlphaFormat.Unpremul);
             s_emptyIcon = new Win32Icon(bitmap);
