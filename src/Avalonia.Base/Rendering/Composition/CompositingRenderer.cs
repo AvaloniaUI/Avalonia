@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Numerics;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Collections;
 using Avalonia.Collections.Pooled;
+using Avalonia.Diagnostics;
 using Avalonia.Media;
 using Avalonia.Rendering.Composition.Drawing;
 using Avalonia.Threading;
@@ -96,6 +98,8 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
     /// <inheritdoc/>
     public IEnumerable<Visual> HitTest(Point p, Visual? root, Func<Visual, bool>? filter)
     {
+        using var _ = Diagnostic.PerformingHitTest();
+
         CompositionVisual? rootVisual = null;
         if (root != null)
         {
@@ -184,7 +188,7 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
             {
                 _queuedSceneInvalidation = false;
                 SceneInvalidated?.Invoke(this, new SceneInvalidatedEventArgs(_root, new Rect(_root.ClientSize)));
-            }, DispatcherPriority.Input), TaskContinuationOptions.ExecuteSynchronously);
+            }, DispatcherPriority.Input), CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
         }
     }
 
@@ -198,7 +202,8 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
         _updating = true;
         try
         {
-            UpdateCore();
+            using (Diagnostic.BeginLayoutRenderPass())
+                UpdateCore();
         }
         finally
         {

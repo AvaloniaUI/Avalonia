@@ -27,6 +27,14 @@ namespace Avalonia.Styling
                     SelectorMatch.AlwaysThisType :
                     SelectorMatch.NeverThisType;
             }
+            else if (parent is ContainerQuery query && query.Parent is ControlTheme queryTheme)
+            {
+                if (queryTheme.TargetType is null)
+                    throw new InvalidOperationException("ControlTheme has no TargetType.");
+                return queryTheme.TargetType.IsAssignableFrom(StyledElement.GetStyleKey(control)) ?
+                    SelectorMatch.AlwaysThisType :
+                    SelectorMatch.NeverThisType;
+            }
 
             throw new InvalidOperationException(
                 "Nesting selector was specified but cannot determine parent selector.");

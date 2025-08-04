@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -462,6 +463,7 @@ public partial class DispatcherTests
     }
 
     [Fact]
+    [SuppressMessage("Usage", "xUnit1031:Do not use blocking task operations in test method", Justification = "Tests the dispatcher itself")]
     public void DispatcherInvokeAsyncUnwrapsTasks()
     {
         int asyncMethodStage = 0;
@@ -502,5 +504,105 @@ public partial class DispatcherTests
             Assert.True(t.IsCompletedSuccessfully);
             t.GetAwaiter().GetResult();
         }
+    }
+    
+    
+    [Fact]
+    public async Task DispatcherResumeContinuesOnUIThread()
+    {
+        using var services = new DispatcherServices(new SimpleControlledDispatcherImpl());
+
+        var tokenSource = new CancellationTokenSource();
+        var workload = Dispatcher.UIThread.InvokeAsync(
+            async () =>
+            {
+                Assert.True(Dispatcher.UIThread.CheckAccess());
+
+                await Task.Delay(1).ConfigureAwait(false);
+                Assert.False(Dispatcher.UIThread.CheckAccess());
+
+                await Dispatcher.UIThread.Resume();
+                Assert.True(Dispatcher.UIThread.CheckAccess());
+
+                tokenSource.Cancel();
+            });
+
+        Dispatcher.UIThread.MainLoop(tokenSource.Token);
+    }
+
+    [Fact]
+    public async Task DispatcherYieldContinuesOnUIThread()
+    {
+        using var services = new DispatcherServices(new SimpleControlledDispatcherImpl());
+
+        var tokenSource = new CancellationTokenSource();
+        var workload = Dispatcher.UIThread.InvokeAsync(
+            async () =>
+            {
+                Assert.True(Dispatcher.UIThread.CheckAccess());
+
+                await Dispatcher.Yield();
+                Assert.True(Dispatcher.UIThread.CheckAccess());
+
+                tokenSource.Cancel();
+            });
+
+        Dispatcher.UIThread.MainLoop(tokenSource.Token);
+    }
+
+    [Fact]
+    public async Task DispatcherYieldThrowsOnNonUIThread()
+    {
+        using var services = new DispatcherServices(new SimpleControlledDispatcherImpl());
+
+        var tokenSource = new CancellationTokenSource();
+        var workload = Dispatcher.UIThread.InvokeAsync(
+            async () =>
+            {
+                Assert.True(Dispatcher.UIThread.CheckAccess());
+
+                await Task.Delay(1).ConfigureAwait(false);
+                Assert.False(Dispatcher.UIThread.CheckAccess());
+                await Assert.ThrowsAsync<InvalidOperationException>(async () => await Dispatcher.Yield());
+
+                tokenSource.Cancel();
+            });
+
+        Dispatcher.UIThread.MainLoop(tokenSource.Token);
+    }
+
+    [Fact]
+    public async Task AwaitWithPriorityRunsOnUIThread()
+    {
+        static async Task<int> Workload()
+        {
+            await Task.Delay(1).ConfigureAwait(false);
+            Assert.False(Dispatcher.UIThread.CheckAccess());
+
+            return Thread.CurrentThread.ManagedThreadId;
+        }
+
+        using var services = new DispatcherServices(new SimpleControlledDispatcherImpl());
+
+        var tokenSource = new CancellationTokenSource();
+        var workload = Dispatcher.UIThread.InvokeAsync(
+            async () =>
+            {
+                Assert.True(Dispatcher.UIThread.CheckAccess());
+                Task taskWithoutResult = Workload();
+
+                await Dispatcher.UIThread.AwaitWithPriority(taskWithoutResult, DispatcherPriority.Default);
+
+                Assert.True(Dispatcher.UIThread.CheckAccess());
+                Task<int> taskWithResult = Workload();
+
+                await Dispatcher.UIThread.AwaitWithPriority(taskWithResult, DispatcherPriority.Default);
+
+                Assert.True(Dispatcher.UIThread.CheckAccess());
+
+                tokenSource.Cancel();
+            });
+
+        Dispatcher.UIThread.MainLoop(tokenSource.Token);
     }
 }

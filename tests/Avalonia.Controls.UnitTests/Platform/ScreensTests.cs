@@ -106,6 +106,7 @@ public class ScreensTests : ScopedTestBase
     {
         using var _ = UnitTestApplication.Start(TestServices.MockThreadingInterface);
 
+        Dispatcher.UIThread.VerifyAccess();
         var hasChangedTimes = 0;
         var screens = new TestScreens();
         screens.Changed = () =>
@@ -114,7 +115,7 @@ public class ScreensTests : ScopedTestBase
             hasChangedTimes += 1;
         };
 
-        Task.Run(() => screens.PushNewScreens([1, 2])).Wait();
+        ThreadRunHelper.RunOnDedicatedThread(() => screens.PushNewScreens([1, 2])).GetAwaiter().GetResult();
         Dispatcher.UIThread.RunJobs();
 
         Assert.Equal(1, hasChangedTimes);

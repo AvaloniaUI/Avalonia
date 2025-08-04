@@ -254,6 +254,12 @@ namespace Avalonia.Rendering.Composition.Server
         {
             if (rc == default)
                 return;
+
+            // If the visual isn't using layout rounding, it's possible that antialiasing renders to pixels
+            // outside the current bounds. Extend the dirty rect by 1px in all directions in this case.
+            if (ShouldExtendDirtyRect && RenderOptions.EdgeMode != EdgeMode.Aliased)
+                rc = rc.Inflate(new Thickness(1));
+
             Root?.AddDirtyRect(rc);
         }
 

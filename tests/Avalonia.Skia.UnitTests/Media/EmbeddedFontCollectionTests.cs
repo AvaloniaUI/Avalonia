@@ -1,7 +1,10 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Media;
 using Avalonia.Media.Fonts;
 using Avalonia.UnitTests;
@@ -16,6 +19,7 @@ namespace Avalonia.Skia.UnitTests.Media
 
         private const string s_manrope = "resm:Avalonia.Skia.UnitTests.Fonts?assembly=Avalonia.Skia.UnitTests#Manrope";
 
+
         [InlineData(FontWeight.SemiLight, FontStyle.Normal)]
         [InlineData(FontWeight.Bold, FontStyle.Italic)]
         [InlineData(FontWeight.Heavy, FontStyle.Oblique)]
@@ -26,13 +30,13 @@ namespace Avalonia.Skia.UnitTests.Media
             {
                 var source = new Uri(s_notoMono, UriKind.Absolute);
 
-                var fontCollection = new EmbeddedFontCollection(source, source);
+                var fontCollection = new TestEmbeddedFontCollection(source, source);
 
                 fontCollection.Initialize(new CustomFontManagerImpl());
 
                 Assert.True(fontCollection.TryGetGlyphTypeface("Noto Mono", fontStyle, fontWeight, FontStretch.Normal, out var glyphTypeface));
 
-                var actual = glyphTypeface?.FamilyName;
+                var actual = glyphTypeface.FamilyName;
 
                 Assert.Equal("Noto Mono", actual);
             }
@@ -45,11 +49,11 @@ namespace Avalonia.Skia.UnitTests.Media
             {
                 var source = new Uri(s_notoMono, UriKind.Absolute);
 
-                var fontCollection = new EmbeddedFontCollection(source, source);
+                var fontCollection = new TestEmbeddedFontCollection(source, source);
 
                 fontCollection.Initialize(new CustomFontManagerImpl());
 
-                Assert.False(fontCollection.TryGetGlyphTypeface("ABC", FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, out var glyphTypeface));
+                Assert.False(fontCollection.TryGetGlyphTypeface("ABC", FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, out _));
             }
         }
 
@@ -60,7 +64,7 @@ namespace Avalonia.Skia.UnitTests.Media
             {
                 var source = new Uri("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#T", UriKind.Absolute);
 
-                var fontCollection = new EmbeddedFontCollection(source, source);
+                var fontCollection = new TestEmbeddedFontCollection(source, source);
 
                 fontCollection.Initialize(new CustomFontManagerImpl());
 
@@ -77,7 +81,7 @@ namespace Avalonia.Skia.UnitTests.Media
             {
                 var source = new Uri(s_manrope, UriKind.Absolute);
 
-                var fontCollection = new EmbeddedFontCollection(source, source);
+                var fontCollection = new TestEmbeddedFontCollection(source, source);
 
                 fontCollection.Initialize(new CustomFontManagerImpl());
 
@@ -100,7 +104,7 @@ namespace Avalonia.Skia.UnitTests.Media
             {
                 var source = new Uri(s_manrope, UriKind.Absolute);
 
-                var fontCollection = new TestEmbeddedFontCollection(source, source);
+                var fontCollection = new TestEmbeddedFontCollection(source, source, true);
 
                 fontCollection.Initialize(new CustomFontManagerImpl());
 
@@ -118,11 +122,31 @@ namespace Avalonia.Skia.UnitTests.Media
 
         private class TestEmbeddedFontCollection : EmbeddedFontCollection
         {
-            public TestEmbeddedFontCollection(Uri key, Uri source) : base(key, source)
+            private bool _createSyntheticTypefaces;
+
+            public TestEmbeddedFontCollection(Uri key, Uri source, bool createSyntheticTypefaces = false) : base(key, source)
             {
+                _createSyntheticTypefaces = createSyntheticTypefaces;
             }
 
             public IDictionary<string, ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>> GlyphTypefaceCache => _glyphTypefaceCache;
+
+            public override bool TryCreateSyntheticGlyphTypeface(
+               IGlyphTypeface glyphTypeface,
+               FontStyle style, 
+               FontWeight weight,
+               FontStretch stretch,
+               [NotNullWhen(true)] out IGlyphTypeface? syntheticGlyphTypeface)
+            {
+                if (!_createSyntheticTypefaces)
+                {
+                    syntheticGlyphTypeface = null;
+
+                    return false;
+                }
+
+                return base.TryCreateSyntheticGlyphTypeface(glyphTypeface, style, weight, stretch, out syntheticGlyphTypeface);
+            }
         }
     }
 }

@@ -23,7 +23,7 @@ using Avalonia.Media;
 
 namespace Avalonia.Controls.UnitTests.Primitives
 {
-    public class PopupTests
+    public class PopupTests : ScopedTestBase
     {
         protected bool UsePopupHost;
 
@@ -666,6 +666,51 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Assert.Same(textBox, focusManager.GetFocusedElement());
 
                 popup.Close();
+            }
+        }
+
+        [Fact]
+        public void Popup_Should_Clear_Keyboard_Focus_From_Children_When_Closed()
+        {
+            using (CreateServicesWithFocus())
+            {
+                var winButton = new Button();
+                var window = PreparedWindow(new Panel { Children = { winButton }});
+
+                var border1 = new Border();
+                var border2 = new Border();
+                var button = new Button();
+                border1.Child = border2;
+                border2.Child = button;
+                var popup = new Popup
+                {
+                    PlacementTarget = window,
+                    Child = new StackPanel
+                    {
+                        Children =
+                        {
+                            border1
+                        }
+                    }
+                };
+
+                ((ISetLogicalParent)popup).SetParent(popup.PlacementTarget);
+                window.Show();
+                winButton.Focus();
+                popup.Open();
+
+                button.Focus();
+
+                var inputRoot = Assert.IsAssignableFrom<IInputRoot>(popup.Host);
+
+                var focusManager = inputRoot.FocusManager!;
+                Assert.Same(button, focusManager.GetFocusedElement());
+
+                border1.Child = null;
+
+                winButton.Focus();
+
+                Assert.False(border2.IsKeyboardFocusWithin);
             }
         }
 

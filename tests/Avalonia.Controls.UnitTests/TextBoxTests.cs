@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
@@ -20,7 +22,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class TextBoxTests
+    public class TextBoxTests : ScopedTestBase
     {
         [Fact]
         public void Opening_Context_Menu_Does_not_Lose_Selection()
@@ -837,7 +839,7 @@ namespace Avalonia.Controls.UnitTests
         [InlineData("abc", "ddd", 3, 0, 2, true, "ddc")]
         [InlineData("abc", "dddd", 4, 1, 3, true, "addd")]
         [InlineData("abc", "ddddd", 5, 3, 3, true, "abcdd")]
-        public void MaxLength_Works_Properly(
+        public async Task MaxLength_Works_Properly(
             string initalText,
             string textInput,
             int maxLength,
@@ -870,10 +872,10 @@ namespace Avalonia.Controls.UnitTests
                 
                 if (fromClipboard)
                 {
-                    topLevel.Clipboard?.SetTextAsync(textInput).GetAwaiter().GetResult();
+                    await topLevel.Clipboard!.SetTextAsync(textInput);
 
                     RaiseKeyEvent(target, Key.V, KeyModifiers.Control);
-                    topLevel.Clipboard?.ClearAsync().GetAwaiter().GetResult();
+                    await topLevel.Clipboard!.ClearAsync();
                 }
                 else
                 {
@@ -936,7 +938,7 @@ namespace Avalonia.Controls.UnitTests
                     SelectionEnd = 3,
                 };
 
-                var values = new List<string>();
+                var values = new List<string?>();
                 target.GetObservable(TextBox.TextProperty).Subscribe(x => values.Add(x));
 
                 target.SelectedText = "A";
@@ -960,7 +962,7 @@ namespace Avalonia.Controls.UnitTests
                     SelectionEnd = 3,
                 };
 
-                var values = new List<string>();
+                var values = new List<string?>();
                 target.GetObservable(TextBox.TextProperty).Subscribe(x => values.Add(x));
 
                 RaiseTextEvent(target, "A");
@@ -1008,7 +1010,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Should_Fullfill_MaxLines_Contraint()
+        public async Task Should_Fullfill_MaxLines_Contraint()
         {
             using (UnitTestApplication.Start(Services))
             {
@@ -1034,10 +1036,10 @@ namespace Avalonia.Controls.UnitTests
 
                 var initialHeight = target.DesiredSize.Height;
 
-                topLevel.Clipboard?.SetTextAsync(Environment.NewLine).GetAwaiter().GetResult();
+                await topLevel.Clipboard!.SetTextAsync(Environment.NewLine);
 
                 RaiseKeyEvent(target, Key.V, KeyModifiers.Control);
-                topLevel.Clipboard?.ClearAsync().GetAwaiter().GetResult();
+                await topLevel.Clipboard!.ClearAsync();
 
                 RaiseTextEvent(target, Environment.NewLine);
 
@@ -1075,10 +1077,12 @@ namespace Avalonia.Controls.UnitTests
                 topLevel.LayoutManager.ExecuteInitialLayoutPass();
 
                 var textPresenter = target.FindDescendantOfType<TextPresenter>();
+                Assert.NotNull(textPresenter);
                 Assert.Equal("PART_TextPresenter", textPresenter.Name);
                 Assert.Equal(new Thickness(0), textPresenter.Margin); // Test assumes no margin on TextPresenter
 
                 var scrollViewer = target.FindDescendantOfType<ScrollViewer>();
+                Assert.NotNull(scrollViewer);
                 Assert.Equal("PART_ScrollViewer", scrollViewer.Name);
                 Assert.Equal(maxLines * target.LineHeight, scrollViewer.MaxHeight);
             }
@@ -1111,6 +1115,7 @@ namespace Avalonia.Controls.UnitTests
                 topLevel.LayoutManager.ExecuteInitialLayoutPass();
 
                 var textPresenter = target.FindDescendantOfType<TextPresenter>();
+                Assert.NotNull(textPresenter);
                 Assert.Equal("PART_TextPresenter", textPresenter.Name);
                 var textPresenterMargin = new Thickness(horizontal: 0, vertical: 3);
                 textPresenter.Margin = textPresenterMargin;
@@ -1119,6 +1124,7 @@ namespace Avalonia.Controls.UnitTests
                 target.Measure(Size.Infinity);
 
                 var scrollViewer = target.FindDescendantOfType<ScrollViewer>();
+                Assert.NotNull(scrollViewer);
                 Assert.Equal("PART_ScrollViewer", scrollViewer.Name);
                 Assert.Equal((maxLines * target.LineHeight) + textPresenterMargin.Top + textPresenterMargin.Bottom, scrollViewer.MaxHeight);
             }
@@ -1187,10 +1193,12 @@ namespace Avalonia.Controls.UnitTests
                 topLevel.LayoutManager.ExecuteInitialLayoutPass();
 
                 var textPresenter = target.FindDescendantOfType<TextPresenter>();
+                Assert.NotNull(textPresenter);
                 Assert.Equal("PART_TextPresenter", textPresenter.Name);
                 Assert.Equal(new Thickness(0), textPresenter.Margin); // Test assumes no margin on TextPresenter
 
                 var scrollViewer = target.FindDescendantOfType<ScrollViewer>();
+                Assert.NotNull(scrollViewer);
                 Assert.Equal("PART_ScrollViewer", scrollViewer.Name);
                 Assert.Equal(minLines * target.LineHeight, scrollViewer.MinHeight);
             }
@@ -1223,6 +1231,7 @@ namespace Avalonia.Controls.UnitTests
                 topLevel.LayoutManager.ExecuteInitialLayoutPass();
 
                 var textPresenter = target.FindDescendantOfType<TextPresenter>();
+                Assert.NotNull(textPresenter);
                 Assert.Equal("PART_TextPresenter", textPresenter.Name);
                 var textPresenterMargin = new Thickness(horizontal: 0, vertical: 3);
                 textPresenter.Margin = textPresenterMargin;
@@ -1231,6 +1240,7 @@ namespace Avalonia.Controls.UnitTests
                 target.Measure(Size.Infinity);
 
                 var scrollViewer = target.FindDescendantOfType<ScrollViewer>();
+                Assert.NotNull(scrollViewer);
                 Assert.Equal("PART_ScrollViewer", scrollViewer.Name);
                 Assert.Equal((minLines * target.LineHeight) + textPresenterMargin.Top + textPresenterMargin.Bottom, scrollViewer.MinHeight);
             }
@@ -1525,6 +1535,408 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Theory]
+        [InlineData(2,4)]
+        [InlineData(0,4)]
+        [InlineData(2,6)]
+        [InlineData(0,6)]
+        [InlineData(3,4)]
+        public void When_Selection_From_Left_To_Right_Pressing_Right_Should_Remove_Selection_Moving_Caret_To_End_Of_Previous_Selection(int selectionStart, int selectionEnd)
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "ABCDEF"
+                };
+
+                tb.Measure(Size.Infinity);
+                tb.CaretIndex = selectionStart;
+                tb.SelectionStart = selectionStart;
+                tb.SelectionEnd = selectionEnd;
+
+                RaiseKeyEvent(tb, Key.Right, KeyModifiers.None);
+
+                Assert.Equal(selectionEnd, tb.SelectionStart);
+                Assert.Equal(selectionEnd, tb.SelectionEnd);
+                Assert.Equal(selectionEnd, tb.CaretIndex);
+            }
+        }
+
+        [Theory]
+        [InlineData(2,4)]
+        [InlineData(0,4)]
+        [InlineData(2,6)]
+        [InlineData(0,6)]
+        [InlineData(3,4)]
+        public void When_Selection_From_Left_To_Right_Pressing_Left_Should_Remove_Selection_Moving_Caret_To_Start_Of_Previous_Selection(int selectionStart, int selectionEnd)
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "ABCDEF"
+                };
+
+                tb.Measure(Size.Infinity);
+                tb.CaretIndex = selectionStart;
+                tb.SelectionStart = selectionStart;
+                tb.SelectionEnd = selectionEnd;
+
+                RaiseKeyEvent(tb, Key.Left, KeyModifiers.None);
+
+                Assert.Equal(selectionStart, tb.SelectionStart);
+                Assert.Equal(selectionStart, tb.SelectionEnd);
+                Assert.Equal(selectionStart, tb.CaretIndex);
+            }
+        }
+
+        [Theory]
+        [InlineData(4,2)]
+        [InlineData(4,0)]
+        [InlineData(6,2)]
+        [InlineData(6,0)]
+        [InlineData(4,3)]
+        public void When_Selection_From_Right_To_Left_Pressing_Right_Should_Remove_Selection_Moving_Caret_To_Start_Of_Previous_Selection(int selectionStart, int selectionEnd)
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "ABCDEF"
+                };
+
+                tb.Measure(Size.Infinity);
+                tb.CaretIndex = selectionStart;
+                tb.SelectionStart = selectionStart;
+                tb.SelectionEnd = selectionEnd;
+
+                RaiseKeyEvent(tb, Key.Right, KeyModifiers.None);
+
+                Assert.Equal(selectionStart, tb.SelectionStart);
+                Assert.Equal(selectionStart, tb.SelectionEnd);
+                Assert.Equal(selectionStart, tb.CaretIndex);
+            }
+        }
+
+        [Theory]
+        [InlineData(4,2)]
+        [InlineData(4,0)]
+        [InlineData(6,2)]
+        [InlineData(6,0)]
+        [InlineData(4,3)]
+        public void When_Selection_From_Right_To_Left_Pressing_Left_Should_Remove_Selection_Moving_Caret_To_End_Of_Previous_Selection(int selectionStart, int selectionEnd)
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "ABCDEF"
+                };
+
+                tb.Measure(Size.Infinity);
+                tb.CaretIndex = selectionStart;
+                tb.SelectionStart = selectionStart;
+                tb.SelectionEnd = selectionEnd;
+
+                RaiseKeyEvent(tb, Key.Left, KeyModifiers.None);
+
+                Assert.Equal(selectionEnd, tb.SelectionStart);
+                Assert.Equal(selectionEnd, tb.SelectionEnd);
+                Assert.Equal(selectionEnd, tb.CaretIndex);
+            }
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(2)]
+        [InlineData(4)]
+        [InlineData(6)]
+        public void When_Select_All_From_Position_Left_Should_Remove_Selection_Moving_Caret_To_Start(int caretIndex)
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "ABCDEF"
+                };
+
+                tb.Measure(Size.Infinity);
+                tb.CaretIndex = caretIndex;
+
+                RaiseKeyEvent(tb, Key.A, KeyModifiers.Control);
+                RaiseKeyEvent(tb, Key.Left, KeyModifiers.None);
+
+                Assert.Equal(0, tb.SelectionStart);
+                Assert.Equal(0, tb.SelectionEnd);
+                Assert.Equal(0, tb.CaretIndex);
+            }
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(2)]
+        [InlineData(4)]
+        [InlineData(6)]
+        public void When_Select_All_From_Position_Right_Should_Remove_Selection_Moving_Caret_To_End(int caretIndex)
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "ABCDEF"
+                };
+
+                tb.Measure(Size.Infinity);
+                tb.CaretIndex = caretIndex;
+
+                RaiseKeyEvent(tb, Key.A, KeyModifiers.Control);
+                RaiseKeyEvent(tb, Key.Right, KeyModifiers.None);
+
+                Assert.Equal(tb.Text.Length, tb.SelectionStart);
+                Assert.Equal(tb.Text.Length, tb.SelectionEnd);
+                Assert.Equal(tb.Text.Length, tb.CaretIndex);
+            }
+        }
+
+        [Theory]
+        [InlineData(2,4)]
+        [InlineData(0,4)]
+        [InlineData(2,6)]
+        [InlineData(0,6)]
+        [InlineData(3,4)]
+        public void When_Selection_From_Left_To_Right_Pressing_Up_Should_Remove_Selection_Moving_Caret_To_Start_Of_Previous_Selection(int selectionStart, int selectionEnd)
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "ABCDEF"
+                };
+
+                tb.Measure(Size.Infinity);
+                tb.CaretIndex = selectionStart;
+                tb.SelectionStart = selectionStart;
+                tb.SelectionEnd = selectionEnd;
+
+                RaiseKeyEvent(tb, Key.Up, KeyModifiers.None);
+
+                Assert.Equal(selectionStart, tb.SelectionStart);
+                Assert.Equal(selectionStart, tb.SelectionEnd);
+                Assert.Equal(selectionStart, tb.CaretIndex);
+            }
+        }
+
+        [Theory]
+        [InlineData(4,2)]
+        [InlineData(4,0)]
+        [InlineData(6,2)]
+        [InlineData(6,0)]
+        [InlineData(4,3)]
+        public void When_Selection_From_Right_To_Left_Pressing_Up_Should_Remove_Selection_Moving_Caret_To_End_Of_Previous_Selection(int selectionStart, int selectionEnd)
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "ABCDEF"
+                };
+
+                tb.Measure(Size.Infinity);
+                tb.CaretIndex = selectionStart;
+                tb.SelectionStart = selectionStart;
+                tb.SelectionEnd = selectionEnd;
+
+                RaiseKeyEvent(tb, Key.Up, KeyModifiers.None);
+
+                Assert.Equal(selectionEnd, tb.SelectionStart);
+                Assert.Equal(selectionEnd, tb.SelectionEnd);
+                Assert.Equal(selectionEnd, tb.CaretIndex);
+            }
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(2)]
+        [InlineData(4)]
+        [InlineData(6)]
+        public void When_Select_All_From_Position_Up_Should_Remove_Selection_Moving_Caret_To_Start(int caretIndex)
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "ABCDEF"
+                };
+
+                tb.Measure(Size.Infinity);
+                tb.CaretIndex = caretIndex;
+
+                RaiseKeyEvent(tb, Key.A, KeyModifiers.Control);
+                RaiseKeyEvent(tb, Key.Up, KeyModifiers.None);
+
+                Assert.Equal(0, tb.SelectionStart);
+                Assert.Equal(0, tb.SelectionEnd);
+                Assert.Equal(0, tb.CaretIndex);
+            }
+        }
+
+        [Theory]
+        [InlineData(2,4)]
+        [InlineData(0,4)]
+        [InlineData(2,6)]
+        [InlineData(0,6)]
+        [InlineData(3,4)]
+        public void When_Selection_From_Left_To_Right_Pressing_Down_Should_Remove_Selection_Moving_Caret_To_End_Of_Previous_Selection(int selectionStart, int selectionEnd)
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "ABCDEF"
+                };
+
+                tb.Measure(Size.Infinity);
+                tb.CaretIndex = selectionStart;
+                tb.SelectionStart = selectionStart;
+                tb.SelectionEnd = selectionEnd;
+
+                RaiseKeyEvent(tb, Key.Down, KeyModifiers.None);
+
+                Assert.Equal(selectionEnd, tb.SelectionStart);
+                Assert.Equal(selectionEnd, tb.SelectionEnd);
+                Assert.Equal(selectionEnd, tb.CaretIndex);
+            }
+        }
+
+        [Theory]
+        [InlineData(4,2)]
+        [InlineData(4,0)]
+        [InlineData(6,2)]
+        [InlineData(6,0)]
+        [InlineData(4,3)]
+        public void When_Selection_From_Right_To_Left_Pressing_Down_Should_Remove_Selection_Moving_Caret_To_Start_Of_Previous_Selection(int selectionStart, int selectionEnd)
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "ABCDEF"
+                };
+
+                tb.Measure(Size.Infinity);
+                tb.CaretIndex = selectionStart;
+                tb.SelectionStart = selectionStart;
+                tb.SelectionEnd = selectionEnd;
+
+                RaiseKeyEvent(tb, Key.Down, KeyModifiers.None);
+
+                Assert.Equal(selectionStart, tb.SelectionStart);
+                Assert.Equal(selectionStart, tb.SelectionEnd);
+                Assert.Equal(selectionStart, tb.CaretIndex);
+            }
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(2)]
+        [InlineData(4)]
+        [InlineData(6)]
+        public void When_Select_All_From_Position_Down_Should_Remove_Selection_Moving_Caret_To_End(int caretIndex)
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "ABCDEF"
+                };
+
+                tb.Measure(Size.Infinity);
+                tb.CaretIndex = caretIndex;
+
+                RaiseKeyEvent(tb, Key.A, KeyModifiers.Control);
+                RaiseKeyEvent(tb, Key.Down, KeyModifiers.None);
+
+                Assert.Equal(tb.Text.Length, tb.SelectionStart);
+                Assert.Equal(tb.Text.Length, tb.SelectionEnd);
+                Assert.Equal(tb.Text.Length, tb.CaretIndex);
+            }
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(4)]
+        [InlineData(8)]
+        public void When_Selecting_Multiline_Selection_Should_Be_Extended_With_Up_Arrow_Key_Till_Start_Of_Text(int caretOffsetFromEnd)
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = """
+                           AAAAAA
+                           BBBB
+                           CCCCCCCC
+                           """,
+                    AcceptsReturn = true
+                };
+                tb.ApplyTemplate();
+                tb.Measure(Size.Infinity);
+                tb.CaretIndex = tb.Text.Length - caretOffsetFromEnd;
+
+                RaiseKeyEvent(tb, Key.Up, KeyModifiers.Shift);
+                RaiseKeyEvent(tb, Key.Up, KeyModifiers.Shift);
+                RaiseKeyEvent(tb, Key.Up, KeyModifiers.Shift);
+                RaiseKeyEvent(tb, Key.Up, KeyModifiers.Shift);
+
+                Assert.Equal(0, tb.SelectionEnd);
+            }
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(3)]
+        [InlineData(6)]
+        public void When_Selecting_Multiline_Selection_Should_Be_Extended_With_Down_Arrow_Key_Till_End_Of_Text(int caretOffsetFromStart)
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = """
+                           AAAAAA
+                           BBBB
+                           CCCCCCCC
+                           """,
+                    AcceptsReturn = true
+                };
+                tb.ApplyTemplate();
+                tb.Measure(Size.Infinity);
+                tb.CaretIndex = caretOffsetFromStart;
+
+                RaiseKeyEvent(tb, Key.Down, KeyModifiers.Shift);
+                RaiseKeyEvent(tb, Key.Down, KeyModifiers.Shift);
+                RaiseKeyEvent(tb, Key.Down, KeyModifiers.Shift);
+                RaiseKeyEvent(tb, Key.Down, KeyModifiers.Shift);
+
+                Assert.Equal(tb.Text.Length, tb.SelectionEnd);
+            }
+        }
+
         [Fact]
         public void TextBox_In_AdornerLayer_Will_Not_Cause_Collection_Modified_In_VisualLayerManager_Measure()
         {
@@ -1541,6 +1953,7 @@ namespace Avalonia.Controls.UnitTests
                 var adorner = new TextBox { Template = CreateTemplate(), Text = "a" };
 
                 var adornerLayer = AdornerLayer.GetAdornerLayer(button);
+                Assert.NotNull(adornerLayer);
                 adornerLayer.Children.Add(adorner);
                 AdornerLayer.SetAdornedElement(adorner, button);
 
@@ -1561,6 +1974,7 @@ namespace Avalonia.Controls.UnitTests
                 };
                 var adorner = new TextBox { Template = CreateTemplate(), Text = "a" };
                 var adornerLayer = AdornerLayer.GetAdornerLayer(button);
+                Assert.NotNull(adornerLayer);
 
                 root.Measure(new Size(10, 10));
 
@@ -1780,7 +2194,7 @@ namespace Avalonia.Controls.UnitTests
         private class Class1 : NotifyingBase
         {
             private int _foo;
-            private string _bar;
+            private string? _bar;
 
             public int Foo
             {
@@ -1788,43 +2202,18 @@ namespace Avalonia.Controls.UnitTests
                 set { _foo = value; RaisePropertyChanged(); }
             }
 
-            public string Bar
+            public string? Bar
             {
                 get { return _bar; }
                 set { _bar = value; RaisePropertyChanged(); }
             }
         }
 
-        private class ClipboardStub : IClipboard // in order to get tests working that use the clipboard
-        {
-            private string _text;
-
-            public Task<string> GetTextAsync() => Task.FromResult(_text);
-
-            public Task SetTextAsync(string text)
-            {
-                _text = text;
-                return Task.CompletedTask;
-            }
-
-            public Task ClearAsync()
-            {
-                _text = null;
-                return Task.CompletedTask;
-            }
-            
-            public Task SetDataObjectAsync(IDataObject data) => Task.CompletedTask;
-
-            public Task<string[]> GetFormatsAsync() => Task.FromResult(Array.Empty<string>());
-
-            public Task<object> GetDataAsync(string format) => Task.FromResult((object)null);
-        }
-
         private class TestTopLevel : TopLevel
         {
             private readonly ILayoutManager _layoutManager;
 
-            public TestTopLevel(ITopLevelImpl impl, ILayoutManager layoutManager = null)
+            public TestTopLevel(ITopLevelImpl impl, ILayoutManager? layoutManager = null)
                 : base(impl)
             {
                 _layoutManager = layoutManager ?? new LayoutManager(this);
@@ -1838,7 +2227,7 @@ namespace Avalonia.Controls.UnitTests
             var clipboard = new Mock<ITopLevelImpl>();
             clipboard.Setup(x => x.Compositor).Returns(RendererMocks.CreateDummyCompositor());
             clipboard.Setup(r => r.TryGetFeature(typeof(IClipboard)))
-                .Returns(new ClipboardStub());
+                .Returns(new HeadlessClipboardStub());
             clipboard.SetupGet(x => x.RenderScaling).Returns(1);
             return clipboard;
         }

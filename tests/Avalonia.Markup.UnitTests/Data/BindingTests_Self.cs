@@ -7,10 +7,11 @@ using Xunit;
 using System.Reactive.Disposables;
 using Avalonia.Markup.Data;
 using Avalonia.Controls.Primitives;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Markup.UnitTests.Data
 {
-    public class BindingTests_Self
+    public class BindingTests_Self : ScopedTestBase
     {
         [Fact]
         public void Binding_To_Property_On_Self_Should_Work()

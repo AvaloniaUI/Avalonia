@@ -17,6 +17,8 @@ namespace Avalonia.Native
     class ClipboardImpl : IClipboard, IDisposable
     {
         private IAvnClipboard? _native;
+        private IDataObject? _savedDataObject;
+        private long _lastClearChangeCount;
 
         // TODO hide native types behind IAvnClipboard abstraction, so managed side won't depend on macOS.
         private const string NSPasteboardTypeString = "public.utf8-plain-text";
@@ -30,10 +32,15 @@ namespace Avalonia.Native
         private IAvnClipboard Native
             => _native ?? throw new ObjectDisposedException(nameof(ClipboardImpl));
 
+        private void ClearCore()
+        {
+            _savedDataObject = null;
+            _lastClearChangeCount = Native.Clear();
+        }
+        
         public Task ClearAsync()
         {
-            Native.Clear();
-
+            ClearCore();
             return Task.CompletedTask;
         }
 
@@ -47,7 +54,7 @@ namespace Avalonia.Native
         {
             var native = Native;
 
-            native.Clear();
+            ClearCore();
 
             if (text != null) 
                 native.SetText(NSPasteboardTypeString, text);
@@ -83,6 +90,7 @@ namespace Avalonia.Native
         
         public void Dispose()
         {
+            _savedDataObject = null;
             _native?.Dispose();
             _native = null;
         }
@@ -111,7 +119,7 @@ namespace Avalonia.Native
 
         public unsafe Task SetDataObjectAsync(IDataObject data)
         {
-            Native.Clear();
+            ClearCore();
 
             // If there is multiple values with the same "to" format, prefer these that were not mapped.
             var formats = data.GetDataFormats().Select(f =>
@@ -163,6 +171,8 @@ namespace Avalonia.Native
                         break;
                 }
             }
+
+            _savedDataObject = data;
             return Task.CompletedTask;
         }
 
@@ -182,6 +192,18 @@ namespace Avalonia.Native
             using (var n = Native.GetBytes(format))
                 return n.Bytes;
         }
+
+        public Task<IDataObject?> TryGetInProcessDataObjectAsync()
+        {
+            if (Native.ChangeCount != _lastClearChangeCount)
+                _savedDataObject = null;
+            return Task.FromResult(_savedDataObject);
+        }
+
+        /// <inheritdoc />
+        public Task FlushAsync() =>
+            Task.CompletedTask;
+
     }
     
     class ClipboardDataObject : IDataObject, IDisposable

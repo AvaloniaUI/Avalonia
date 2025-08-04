@@ -22,9 +22,9 @@ public class XamlXNameResolverTests
         var controls = ResolveNames(xaml);
 
         Assert.NotEmpty(controls);
-        Assert.Equal(1, controls.Count);
-        Assert.Equal("UserNameTextBox", controls[0].Name);
-        Assert.Contains(typeof(TextBox).FullName!, controls[0].TypeName);
+        var control = Assert.Single(controls);
+        Assert.Equal("UserNameTextBox", control.Name);
+        Assert.Contains(typeof(TextBox).FullName!, control.TypeName);
     }
 
     [Theory]

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Animation;
 using Avalonia.Animation.Easings;
@@ -114,7 +115,7 @@ namespace Avalonia.Rendering.Composition
                 if (pending != null)
                     pending.Processed.ContinueWith(
                         _ => Dispatcher.Post(_triggerCommitRequested, DispatcherPriority.Send),
-                        TaskContinuationOptions.ExecuteSynchronously);
+                        CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
                 else
                     _triggerCommitRequested();
             }
@@ -202,14 +203,36 @@ namespace Avalonia.Rendering.Composition
                 {
                     lock (_pendingBatchLock)
                     {
-                        if (_pendingBatch.Processed == t)
+                        if (_pendingBatch?.Processed == t)
                             _pendingBatch = null;
                     }
-                }, TaskContinuationOptions.ExecuteSynchronously);
+                }, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
                 _nextCommit = null;
                 
                 return commit;
             }
+        }
+        
+        /// <summary>
+        /// This method submits a composition with a single dispose command outside the normal
+        /// commit cycle. This is currently used for disposing CompositionTargets since we need to do that ASAP
+        /// and without affecting the not yet completed composition batch
+        /// </summary>
+        internal CompositionBatch OobDispose(CompositionObject obj)
+        {
+            using var _ = NonPumpingLockHelper.Use();
+            obj.Dispose();
+            var batch = new CompositionBatch();
+            using (var writer = new BatchStreamWriter(batch.Changes, _batchMemoryPool, _batchObjectPool))
+            {
+                writer.WriteObject(ServerCompositor.RenderThreadDisposeStartMarker);
+                writer.Write(1);
+                writer.WriteObject(obj.Server);
+            }
+
+            batch.CommittedAt = Server.Clock.Elapsed;
+            _server.EnqueueBatch(batch);
+            return batch;
         }
 
         internal void RegisterForSerialization(ICompositorSerializable compositionObject)

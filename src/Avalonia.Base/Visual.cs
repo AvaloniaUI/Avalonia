@@ -7,6 +7,7 @@ using System.Collections;
 using System.Collections.Specialized;
 using Avalonia.Collections;
 using Avalonia.Data;
+using Avalonia.Diagnostics;
 using Avalonia.Logging;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
@@ -31,6 +32,8 @@ namespace Avalonia
     [UsableDuringInitialization]
     public partial class Visual : StyledElement, IAvaloniaListItemValidator<Visual>
     {
+        internal static int RootedVisualChildrenCount { get; private set; }
+
         /// <summary>
         /// Defines the <see cref="Bounds"/> property.
         /// </summary>
@@ -145,6 +148,8 @@ namespace Avalonia
         /// </summary>
         public Visual()
         {
+            _visualRoot = this as IRenderRoot;
+
             // Disable transitions until we're added to the visual tree.
             DisableTransitions();
 
@@ -314,16 +319,12 @@ namespace Avalonia
         /// <summary>
         /// Gets the control's child visuals.
         /// </summary>
-        protected internal IAvaloniaList<Visual> VisualChildren
-        {
-            get;
-            private set;
-        }
+        protected internal IAvaloniaList<Visual> VisualChildren { get; }
 
         /// <summary>
         /// Gets the root of the visual tree, if the control is attached to a visual tree.
         /// </summary>
-        protected internal IRenderRoot? VisualRoot => _visualRoot ?? (this as IRenderRoot);
+        protected internal IRenderRoot? VisualRoot => _visualRoot;
 
         internal RenderOptions RenderOptions { get; set; }
 
@@ -493,6 +494,7 @@ namespace Avalonia
             Logger.TryGet(LogEventLevel.Verbose, LogArea.Visual)?.Log(this, "Attached to visual tree");
 
             _visualRoot = e.Root;
+            RootedVisualChildrenCount++;
             if (_visualParent is null)
             {
                 throw new InvalidOperationException("Visual was attached to the root without being added to the visual parent first.");
@@ -540,7 +542,8 @@ namespace Avalonia
         {
             Logger.TryGet(LogEventLevel.Verbose, LogArea.Visual)?.Log(this, "Detached from visual tree");
 
-            _visualRoot = null;
+            _visualRoot = this as IRenderRoot;
+            RootedVisualChildrenCount--;
 
             if (RenderTransform is IMutableTransform mutableTransform)
             {
@@ -678,9 +681,9 @@ namespace Avalonia
             var old = _visualParent;
             _visualParent = value;
 
-            if (_visualRoot != null)
+            if (_visualRoot is not null && old is not null)
             {
-                var e = new VisualTreeAttachmentEventArgs(old!, _visualRoot);
+                var e = new VisualTreeAttachmentEventArgs(old, _visualRoot);
                 OnDetachedFromVisualTreeCore(e);
             }
 

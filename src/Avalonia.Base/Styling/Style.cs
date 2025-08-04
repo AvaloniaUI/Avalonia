@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Diagnostics;
 using Avalonia.PropertyStore;
 
 namespace Avalonia.Styling
@@ -67,10 +68,16 @@ namespace Avalonia.Styling
 
             if (HasSettersOrAnimations)
             {
+                using var activity = Diagnostic.AttachingStyle()?
+                    .AddTag(Diagnostic.Tags.Style, this);
+
                 var match = Selector?.Match(target, Parent, true) ??
                     (target == host ?
-                        SelectorMatch.AlwaysThisInstance :
+                        (Parent is ContainerQuery containerQuery ? containerQuery.Query?.Match(target, containerQuery.Parent, true, containerQuery.Name) ??
+                            SelectorMatch.NeverThisInstance : SelectorMatch.AlwaysThisInstance) :
                         SelectorMatch.NeverThisInstance);
+
+                activity?.AddTag(Diagnostic.Tags.SelectorResult, match.Result);
 
                 if (match.IsMatch)
                 {

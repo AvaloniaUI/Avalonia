@@ -108,7 +108,7 @@ protected:
     std::list<WindowBaseImpl*> _children;
 
 public:
-    WindowBaseImpl* Parent = nullptr;
+    ComObjectWeakPtr<WindowBaseImpl> Parent = nullptr;
     NSWindow * Window;
     ComPtr<IAvnWindowBaseEvents> BaseEvents;
 };
