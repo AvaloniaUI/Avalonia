@@ -42,7 +42,7 @@
                             ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
                             IsVisible="{TemplateBinding IsEditable, Converter={x:Static BoolConverters.Not}}">
             </ContentControl>
-            <TextBox Name="PART_InputText"
+            <TextBox Name="PART_EditableTextBox"
                      Grid.Column="0"
                      Padding="{TemplateBinding Padding}"
                      HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"

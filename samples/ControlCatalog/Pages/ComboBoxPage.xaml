@@ -124,7 +124,7 @@
                     </ComboBox.SelectionBoxItemTemplate>
                 </ComboBox>
 
-                <ComboBox WrapSelection="{Binding WrapSelection}" ItemsSource="{Binding Values}" >
+                <ComboBox WrapSelection="{Binding WrapSelection}" ItemsSource="{Binding Values}">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">

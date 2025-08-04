@@ -20,6 +20,7 @@ namespace Avalonia.Controls
     /// A drop-down list control.
     /// </summary>
     [TemplatePart("PART_Popup", typeof(Popup), IsRequired = true)]
+    [TemplatePart("PART_EditableTextBox", typeof(TextBox), IsRequired = false)]
     [PseudoClasses(pcDropdownOpen, pcPressed)]
     public class ComboBox : SelectingItemsControl
     {
@@ -41,10 +42,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="IsEditable"/> property.
         /// </summary>
-        public static readonly DirectProperty<ComboBox, bool> IsEditableProperty =
-            AvaloniaProperty.RegisterDirect<ComboBox, bool>(nameof(IsEditable),
-                o => o.IsEditable,
-                (o, v) => o.IsEditable = v);
+        public static readonly StyledProperty<bool> IsEditableProperty =
+            AvaloniaProperty.Register<ComboBox, bool>(nameof(IsEditable));
 
         /// <summary>
         /// Defines the <see cref="MaxDropDownHeight"/> property.
@@ -109,9 +108,9 @@ namespace Avalonia.Controls
         private object? _selectionBoxItem;
         private readonly CompositeDisposable _subscriptionsOnOpen = new CompositeDisposable();
 
-        private bool _isEditable;
-        private TextBox? _inputText;
+        private TextBox? _inputTextBox;
         private BindingEvaluator<string?>? _textValueBindingEvaluator = null;
+        private bool _skipNextTextChanged = false;
 
         /// <summary>
         /// Initializes static members of the <see cref="ComboBox"/> class.
@@ -121,9 +120,6 @@ namespace Avalonia.Controls
             ItemsPanelProperty.OverrideDefaultValue<ComboBox>(DefaultPanel);
             FocusableProperty.OverrideDefaultValue<ComboBox>(true);
             IsTextSearchEnabledProperty.OverrideDefaultValue<ComboBox>(true);
-            TextProperty.Changed.AddClassHandler<ComboBox>((x, e) => x.TextChanged(e));
-            DisplayMemberBindingProperty.Changed.AddClassHandler<ComboBox>((x, e) => x.DisplayMemberBindingChanged(e));
-            TextSearch.TextBindingProperty.Changed.AddClassHandler<ComboBox>((x, e) => x.ItemTextBindingChanged(e));
             //when the items change we need to simulate a text change to validate the text being an item or not and selecting it
             ItemsSourceProperty.Changed.AddClassHandler<ComboBox>((x, e) => x.TextChanged(
                 new AvaloniaPropertyChangedEventArgs<string?>(e.Sender, TextProperty, x.Text, x.Text, e.Priority)));
@@ -153,8 +149,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool IsEditable
         {
-            get => _isEditable;
-            set => SetAndRaise(IsEditableProperty, ref _isEditable, value);
+            get => GetValue(IsEditableProperty);
+            set => SetValue(IsEditableProperty, value);
         }
 
         /// <summary>
@@ -358,10 +354,10 @@ namespace Avalonia.Controls
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {
             //if the user clicked in the input text we don't want to open the dropdown
-            if (_inputText != null
+            if (_inputTextBox != null
                 && !e.Handled
                 && e.Source is StyledElement styledSource
-                && styledSource.TemplatedParent == _inputText)
+                && styledSource.TemplatedParent == _inputTextBox)
             {
                 return;
             }
@@ -400,7 +396,7 @@ namespace Avalonia.Controls
             _popup.Opened += PopupOpened;
             _popup.Closed += PopupClosed;
 
-            _inputText = e.NameScope.Get<TextBox>("PART_InputText");
+            _inputTextBox = e.NameScope.Find<TextBox>("PART_EditableTextBox");
         }
 
         /// <inheritdoc/>
@@ -424,12 +420,45 @@ namespace Avalonia.Controls
             {
                 UpdateInputTextFromSelection(SelectedItem);
             }
+            else if (change.Property == TextProperty)
+            {
+                TextChanged(change);
+            }
+            else if(change.Property == DisplayMemberBindingProperty)
+            {
+                HandleTextValueBindingValueChanged(null, change);
+            }
+            else if (change.Property == TextSearch.TextBindingProperty)
+            {
+                HandleTextValueBindingValueChanged(change, null);
+            }
             base.OnPropertyChanged(change);
         }
 
         protected override AutomationPeer OnCreateAutomationPeer()
         {
             return new ComboBoxAutomationPeer(this);
+        }
+
+        protected override void OnGotFocus(GotFocusEventArgs e)
+        {
+            bool isNavigateBackwards = e.NavigationMethod == NavigationMethod.Tab && e.KeyModifiers.HasFlag(KeyModifiers.Shift);
+            if (IsEditable && _inputTextBox != null)
+            {
+                //when navigating backwards the "Source" is this combobox, meaning the focus was in the editable text box
+                //so skip past us
+                if (isNavigateBackwards && e.Source == this)
+                {
+                    FocusManager.GetFocusManager(this)?.TryMoveFocus(NavigationDirection.Previous);
+                }
+                else
+                {
+                    _inputTextBox.Focus();
+                    _inputTextBox.SelectAll();
+                }
+            }
+            else
+                base.OnGotFocus(e);
         }
 
         internal void ItemFocused(ComboBoxItem dropDownItem)
@@ -633,12 +662,6 @@ namespace Avalonia.Controls
             SelectedIndex = -1;
         }
 
-        private void ItemTextBindingChanged(AvaloniaPropertyChangedEventArgs e) 
-            => HandleTextValueBindingValueChanged(e, null);
-
-        private void DisplayMemberBindingChanged(AvaloniaPropertyChangedEventArgs e)
-            => HandleTextValueBindingValueChanged(null, e);
-
         private void HandleTextValueBindingValueChanged(AvaloniaPropertyChangedEventArgs? textSearchPropChange,
             AvaloniaPropertyChangedEventArgs? displayMemberPropChange)
         {
@@ -656,17 +679,21 @@ namespace Avalonia.Controls
             else
                 textValueBinding = null;
 
-            _textValueBindingEvaluator = BindingEvaluator<string?>.TryCreate(textValueBinding);
+            if (_textValueBindingEvaluator == null)
+                _textValueBindingEvaluator = BindingEvaluator<string?>.TryCreate(textValueBinding);
+            else if (textValueBinding == null)
+                _textValueBindingEvaluator = null;
+            else
+                _textValueBindingEvaluator.UpdateBinding(textValueBinding);
 
             //if the binding is set we want to set the initial value for the selected item so the text box has the correct value
             if (_textValueBindingEvaluator != null)
                 _textValueBindingEvaluator.Value = GetItemTextValue(SelectedValue);
         }
 
-        private bool _skipNextTextChanged = false;
         private void TextChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            if (Items == null || !IsEditable || _skipNextTextChanged)
+            if (!IsEditable || _skipNextTextChanged)
                 return;
 
             string newVal = e.GetNewValue<string>();
@@ -686,9 +713,15 @@ namespace Avalonia.Controls
             }
 
             _skipNextTextChanged = true;
-            SelectedIndex = selectedIdx;
-            SelectedItem = selectedItem;
-            _skipNextTextChanged = false;
+            try
+            {
+                SelectedIndex = selectedIdx;
+                SelectedItem = selectedItem;
+            }
+            finally
+            {
+                _skipNextTextChanged = false;
+            }
         }
 
         private string GetItemTextValue(object? item) 
