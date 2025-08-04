@@ -321,6 +321,7 @@ namespace Avalonia.IntegrationTests.Appium
                 var secondaryWindow = Session.GetWindowById("SecondaryWindow");
                 var windowChrome = secondaryWindow.GetSystemChromeButtons();
 
+                Assert.NotNull(windowChrome.Minimize);
                 Assert.Equal(canMinimize, windowChrome.Minimize!.Enabled);
             }
         }
@@ -335,7 +336,9 @@ namespace Avalonia.IntegrationTests.Appium
                 var secondaryWindow = Session.GetWindowById("SecondaryWindow");
                 var windowChrome = secondaryWindow.GetSystemChromeButtons();
 
-                Assert.Equal(canMaximize, windowChrome.Maximize!.Enabled);
+                var maximizeButton = windowChrome.FullScreen ?? windowChrome.Maximize;
+                Assert.NotNull(maximizeButton);
+                Assert.Equal(canMaximize, maximizeButton.Enabled);
             }
         }
 
