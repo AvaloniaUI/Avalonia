@@ -17,7 +17,7 @@ using Avalonia.Rendering;
 
 namespace Avalonia.Android
 {
-    public class AvaloniaView : FrameLayout
+    public partial class AvaloniaView : FrameLayout
     {
         private EmbeddableControlRoot _root;
         private readonly ViewImpl _view;
@@ -69,24 +69,6 @@ namespace Avalonia.Android
             _surfaceCreated = false;
             _root?.Dispose();
             _root = null!;
-        }
-
-        protected override void OnFocusChanged(bool gainFocus, FocusSearchDirection direction, global::Android.Graphics.Rect? previouslyFocusedRect)
-        {
-            base.OnFocusChanged(gainFocus, direction, previouslyFocusedRect);
-            _accessHelper.OnFocusChanged(gainFocus, (int)direction, previouslyFocusedRect);
-        }
-
-        protected override bool DispatchHoverEvent(MotionEvent? e)
-        {
-            return _accessHelper.DispatchHoverEvent(e!) || base.DispatchHoverEvent(e);
-        }
-
-        public override bool DispatchKeyEvent(KeyEvent? e)
-        {
-            if (!_view.View.DispatchKeyEvent(e))
-                return _accessHelper.DispatchKeyEvent(e!) || base.DispatchKeyEvent(e);
-            return true;
         }
 
         [SupportedOSPlatform("android24.0")]
@@ -149,7 +131,6 @@ namespace Avalonia.Android
         {
             public ViewImpl(AvaloniaView avaloniaView) : base(avaloniaView)
             {
-                View.Focusable = true;
                 View.FocusChange += ViewImpl_FocusChange;
             }
 
