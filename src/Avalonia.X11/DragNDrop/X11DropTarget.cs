@@ -133,7 +133,7 @@ namespace Avalonia.X11
 
                 if (sourceTypesName != null && sourceTypesName.Length != 0)
                 {
-                    _currentDrag = new X11DataObject(sourceTypesName);
+                    _currentDrag = new X11DataObject(sourceTypesName, _receiver);
 
                     //We do not have locations and actions here, so we will invoke DragEnter in first DragPosition
                     _enterEventSent = false;                  
@@ -196,7 +196,11 @@ namespace Avalonia.X11
             }
             else
             {
-                _receiver.LoadData(_currentDrag);
+                if(!_receiver.LoadDataOnEnter(_currentDrag)) 
+                {
+                    var clientEffects = RaiseDragEnterOver(point, serverEffect);
+                    SendXdndStatus(_dragSource, clientEffects, x, y);
+                }
             }           
         }
 
@@ -293,7 +297,10 @@ namespace Avalonia.X11
             }
             else
             {
-                _receiver.LoadData(_currentDrag);
+                if(!_receiver.LoadDataOnDrop(_currentDrag))
+                {
+                    OnDataReceived();
+                }
             }
         }
 

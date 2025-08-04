@@ -34,10 +34,10 @@ namespace Avalonia.X11
             InitializeTypeAtoms();
         }
 
-        public void LoadData(X11DataObject data)
+        public bool LoadDataOnEnter(X11DataObject data)
         {
             if (data == null)
-                return;
+                return false;
 
             _result.Clear();
             _typesToLoad.Clear();
@@ -67,19 +67,106 @@ namespace Avalonia.X11
 
             }
 
-            // Request data for all supported types
-            foreach (var format in supportedTypes)
+            if(_typesToLoad.Count <= 0)
             {
-                var type = X11DataObject.DataFormatToMimeFormat(format);
-
-                if (type == X11DataObject.c_mimeTextPlain || type == X11DataObject.c_mimeFiles || type == X11DataObject.c_mimeUTF8)
-                    continue;
-
-                _typesToLoad.Enqueue(type);
+                return false;
             }
 
             ProcessQuiery();
+
+            return true;
         }
+
+        public bool LoadDataOnDrop(X11DataObject data)
+        {
+            if (data == null)
+                return false;
+
+            _result.Clear();
+            _typesToLoad.Clear();
+            _currentDrag = data;
+
+            var supportedTypes = data.GetSupportedTypes();
+            var loadedTypes = data.GetLoadedSupportedTypes();
+
+             if (supportedTypes.Contains(X11DataObject.c_mimeFiles) && !loadedTypes.Contains(X11DataObject.c_mimeFiles))
+            {
+                _typesToLoad.Enqueue(X11DataObject.c_mimeFiles);
+            }
+
+            if (supportedTypes.Contains(X11DataObject.c_mimeUTF8) && !loadedTypes.Contains(X11DataObject.c_mimeUTF8))
+            {
+                _typesToLoad.Enqueue(X11DataObject.c_mimeUTF8);
+            }
+
+            if (supportedTypes.Contains(X11DataObject.c_mimeUTF8_alt) && !loadedTypes.Contains(X11DataObject.c_mimeUTF8_alt))
+            {
+                _typesToLoad.Enqueue(X11DataObject.c_mimeUTF8_alt);
+            }
+
+            if (supportedTypes.Contains(X11DataObject.c_mimeTextPlain) && !loadedTypes.Contains(X11DataObject.c_mimeTextPlain))
+            {
+                _typesToLoad.Enqueue(X11DataObject.c_mimeTextPlain);
+
+            }
+
+            //Load types, checked by user via Contains call.
+            foreach(var askedType in data.GetAskedTypes())
+            {
+                if (!string.IsNullOrEmpty(askedType))
+                {
+                    _typesToLoad.Enqueue(askedType);
+                }
+            }
+
+            
+            if(loadedTypes.Count < 1 && data.GetAskedTypes().Count == 0)
+            {
+                var bestType = supportedTypes.FirstOrDefault(t => t != X11DataObject.c_mimeTextPlain && t != X11DataObject.c_mimeUTF8 && t != X11DataObject.c_mimeUTF8_alt && t != X11DataObject.c_mimeFiles);
+                if (!string.IsNullOrEmpty(bestType))
+                { 
+                    _typesToLoad.Enqueue(bestType); 
+                }                
+            }
+
+            if (_typesToLoad.Count == 0)
+            {
+                return false;
+            }
+
+            ProcessQuiery();
+
+            return true;
+        }
+
+        public void RequestData(string mimeType)
+        {
+            var typeAtom = _atoms.GetAtom(mimeType);
+            if (typeAtom == IntPtr.Zero)  return;
+
+
+            // Clear any previous results
+            _result.Clear();
+
+            // Request the data
+            XLib.XConvertSelection(_display, _atoms.XdndSelection, typeAtom,
+                                 _atoms.XdndSelection, _handle, IntPtr.Zero);
+            XLib.XFlush(_display);
+
+            // Wait for the data with timeout
+            var startTime = DateTime.Now;
+            while ((DateTime.Now - startTime).TotalMilliseconds < 500) // 500ms timeout
+            {
+                var ev = new XEvent();
+                if (XLib.XCheckTypedWindowEvent(_display, _handle, (int)XEventName.SelectionNotify, ref ev))
+                {
+                    HandleSelectionNotify(ref ev.SelectionEvent, true);
+                    break;
+                }
+                System.Threading.Thread.Sleep(10);
+            }
+        }
+
 
         private void ProcessQuiery()
         {
@@ -144,7 +231,7 @@ namespace Avalonia.X11
             return true;
         }
 
-        public void HandleSelectionNotify(ref XSelectionEvent selectionEvent)
+        public void HandleSelectionNotify(ref XSelectionEvent selectionEvent, bool getCall = false)
         {
             ulong offset = 0;
             IntPtr actualType = IntPtr.Zero;
@@ -191,8 +278,10 @@ namespace Avalonia.X11
                 offset += chunkBytes;
             }
 
-            ProcessDroppedData(actualType);
+            ProcessDroppedData(actualType, getCall);
         }
+
+
 
         public event Action? DataReceived;
 
@@ -202,29 +291,33 @@ namespace Avalonia.X11
             _textPlain = _atoms.GetAtom("text/plain");
         }
 
-        private void ProcessDroppedData(IntPtr dataType)
+        private void ProcessDroppedData(IntPtr dataType, bool getCall = false)
         {
             ProcessQuiery();
 
             if (_result.Count == 0 || dataType == IntPtr.Zero || _currentDrag == null)
             {
                 _result.Clear();
-                DataReceived?.Invoke();
+                if(!getCall) DataReceived?.Invoke();
                 return;
             }
+
+            byte[] rawBytes = _result.ToArray();
 
             if (dataType == _uriList)
             {
                 Encoding ansiEncoding = Encoding.GetEncoding(0); //system ANSI
-                string data = ansiEncoding.GetString(_result.ToArray());
+                string data = ansiEncoding.GetString(rawBytes);
                               
 
                 var uris = Uri.UnescapeDataString(data)
                     .Split(new[] { "\r\n", "\n" }, 
                         StringSplitOptions.RemoveEmptyEntries)
-                    .Where(line => line.StartsWith("file://"))
+                    .Where(line => !line.StartsWith("#"))
+                    .Select(line => line.StartsWith("file://") ? line.Substring(7) : line)
+                    .Where(line => !string.IsNullOrEmpty(line) && !string.IsNullOrWhiteSpace(line))
                     .Select(line => 
-                        StorageProviderHelpers.TryCreateBclStorageItem(line.Substring(7))!)
+                        StorageProviderHelpers.TryCreateBclStorageItem(line)!)
                     .ToList();
 
                 _currentDrag.SetData(DataFormats.Files, uris);
@@ -232,24 +325,32 @@ namespace Avalonia.X11
             else if (dataType == _textPlain)
             {
                 Encoding ansiEncoding = Encoding.GetEncoding(0); //system ANSI
-                string data = ansiEncoding.GetString(_result.ToArray());
+                string data = ansiEncoding.GetString(rawBytes);
 
                 _currentDrag.SetData(DataFormats.Text, data);
             }
             else if (dataType == _atoms.UTF8_STRING)
             {
-                string data = Encoding.UTF8.GetString(_result.ToArray());
+                string data = Encoding.UTF8.GetString(rawBytes);
 
                 _currentDrag.SetData(DataFormats.Text, data);
+            }            
+            else if (IsSerializedObject(rawBytes))
+            {
+                _currentDrag.SetData(_atoms.GetAtomName(dataType) ?? string.Empty, X11DataObject.DeserializeObject(rawBytes));
             }
             else
-            {
-                _currentDrag.SetData(_atoms.GetAtomName(dataType) ?? string.Empty, _result.ToArray());
+            { 
+                _currentDrag.SetData(_atoms.GetAtomName(dataType) ?? string.Empty, rawBytes);
             }
 
             _result.Clear();
-            DataReceived?.Invoke();
+            if (!getCall)
+                DataReceived?.Invoke();
         }
+
+        private static bool IsSerializedObject(ReadOnlySpan<byte> data) =>
+          data.StartsWith(X11DataObject.SerializedObjectGUID);
 
         public void Dispose()
         {

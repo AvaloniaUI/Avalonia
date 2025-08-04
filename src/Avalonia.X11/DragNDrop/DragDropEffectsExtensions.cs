@@ -14,7 +14,7 @@ namespace Avalonia.X11
                 result |= DragDropEffects.Move;
             if (((uint)effect & (uint)(atoms.XdndActionLink)) == (uint)atoms.XdndActionLink)
                 result |= DragDropEffects.Link;
-            return result;
+            return result; 
         }       
 
         public static IntPtr ConvertDropEffect(this X11Atoms atoms, DragDropEffects operation)
