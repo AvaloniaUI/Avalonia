@@ -131,7 +131,7 @@ namespace Avalonia.Animation
                 return;
             }
 
-            var tasks = new List<Task>();
+            var tasks = new List<Task>(2);
 
             if (from != null)
             {
