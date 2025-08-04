@@ -442,9 +442,9 @@ namespace Avalonia.Controls
 
         protected override void OnGotFocus(GotFocusEventArgs e)
         {
-            bool isNavigateBackwards = e.NavigationMethod == NavigationMethod.Tab && e.KeyModifiers.HasFlag(KeyModifiers.Shift);
             if (IsEditable && _inputTextBox != null)
             {
+                bool isNavigateBackwards = e.NavigationMethod == NavigationMethod.Tab && e.KeyModifiers.HasFlag(KeyModifiers.Shift);
                 //when navigating backwards the "Source" is this combobox, meaning the focus was in the editable text box
                 //so skip past us
                 if (isNavigateBackwards && e.Source == this)
