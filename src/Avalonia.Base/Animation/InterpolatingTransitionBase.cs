@@ -8,17 +8,10 @@ namespace Avalonia.Animation;
 /// </summary>
 public abstract class InterpolatingTransitionBase<T> : Transition<T>
 {
-    class Animator : Animator<T>
+    class Animator(InterpolatingTransitionBase<T> parent) : Animator<T>
     {
-        private readonly InterpolatingTransitionBase<T> _parent;
-
-        public Animator(InterpolatingTransitionBase<T> parent)
-        {
-            _parent = parent;
-        }
-        
         public override T Interpolate(double progress, T oldValue, T newValue) =>
-            _parent.Interpolate(progress, oldValue, newValue);
+            parent.Interpolate(progress, oldValue, newValue);
     }
     
     protected abstract T Interpolate(double progress, T from, T to);
