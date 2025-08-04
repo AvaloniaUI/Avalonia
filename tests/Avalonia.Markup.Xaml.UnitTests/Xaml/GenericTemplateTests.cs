@@ -26,7 +26,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         public SampleTemplatedObjectTemplate Template { get; set; }
     }
     
-    public class GenericTemplateTests
+    public class GenericTemplateTests : XamlTestBase
     {
         [Fact]
         public void DataTemplate_Can_Be_Empty()

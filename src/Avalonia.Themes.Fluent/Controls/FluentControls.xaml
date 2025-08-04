@@ -22,6 +22,7 @@
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/Carousel.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/CheckBox.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/FlyoutPresenter.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/GroupBox.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/GridSplitter.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/HyperlinkButton.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ItemsControl.xaml" />

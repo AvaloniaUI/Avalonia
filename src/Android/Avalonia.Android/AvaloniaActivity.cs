@@ -8,10 +8,10 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using AndroidX.AppCompat.App;
-using Avalonia.Platform;
 using Avalonia.Android.Platform;
 using Avalonia.Android.Platform.Storage;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Platform;
 
 namespace Avalonia.Android;
 
@@ -47,6 +47,9 @@ public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity
                         _contentViewSet = true;
 
                         SetContentView(_view);
+
+                        // By default, the view isn't focused if the activity is created anew, so we force focus.
+                        _view.RequestFocus();
 
                         _listener = new GlobalLayoutListener(_view);
 

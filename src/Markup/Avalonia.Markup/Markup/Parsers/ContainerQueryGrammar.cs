@@ -169,50 +169,6 @@ namespace Avalonia.Markup.Parsers
 
             return double.Parse(number.ToString());
         }
-        
-        private static StyleQueryComparisonOperator ParseOperator(ref CharacterReader r)
-        {
-            r.SkipWhitespace();
-            var queryOperator = r.TakeWhile(x => !char.IsWhiteSpace(x));
-
-            return queryOperator.ToString() switch
-            {
-                "=" => StyleQueryComparisonOperator.Equals,
-                "<" => StyleQueryComparisonOperator.LessThan,
-                ">" => StyleQueryComparisonOperator.GreaterThan,
-                "<=" => StyleQueryComparisonOperator.LessThanOrEquals,
-                ">=" => StyleQueryComparisonOperator.GreaterThanOrEquals,
-                "" => StyleQueryComparisonOperator.None,
-                _ => throw new ExpressionParseException(r.Position, $"Expected a comparison operator after.")
-            };
-        }
-        
-        private static T ParseEnum<T>(ref CharacterReader r) where T: struct
-        {
-            var identifier = r.ParseIdentifier();
-
-            if (Enum.TryParse<T>(identifier.ToString(), true, out T value))
-                return value;
-
-            throw new ExpressionParseException(r.Position, $"Expected a {typeof(T)} after.");
-        }
-        
-        private static string ParseString(ref CharacterReader r) 
-        {
-            return r.ParseIdentifier().ToString();
-        }
-
-        private static void Expect(ref CharacterReader r, char c)
-        {
-            if (r.End)
-            {
-                throw new ExpressionParseException(r.Position, $"Expected '{c}', got end of selector.");
-            }
-            else if (!r.TakeIf(')'))
-            {
-                throw new ExpressionParseException(r.Position, $"Expected '{c}', got '{r.Peek}'.");
-            }
-        }
 
         public class OrSyntax : ISyntax
         {

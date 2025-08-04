@@ -54,14 +54,32 @@ namespace Avalonia.Controls.Primitives
 
         protected override AutomationPeer OnCreateAutomationPeer() => new ThumbAutomationPeer(this);
 
+        /// <summary>
+        /// Invoked when an unhandled <see cref="DragStartedEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
+        /// </summary>
+        /// <param name="e">Data about the event.</param>
         protected virtual void OnDragStarted(VectorEventArgs e)
         {
         }
 
+        /// <summary>
+        /// Invoked when an unhandled <see cref="DragDeltaEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
+        /// </summary>
+        /// <param name="e">Data about the event.</param>
         protected virtual void OnDragDelta(VectorEventArgs e)
         {
         }
 
+        /// <summary>
+        /// Invoked when an unhandled <see cref="DragCompletedEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
+        /// </summary>
+        /// <param name="e">Data about the event.</param>
         protected virtual void OnDragCompleted(VectorEventArgs e)
         {
         }

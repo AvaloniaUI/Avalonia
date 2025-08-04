@@ -48,7 +48,7 @@ internal sealed class BindingEvaluator<T> : StyledElement, IDisposable
     }
 
     public void ClearDataContext()
-        => DataContext = this;
+        => DataContext = null;
 
     public void Dispose()
     {

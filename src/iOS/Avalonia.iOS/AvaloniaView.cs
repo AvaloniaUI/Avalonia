@@ -76,6 +76,17 @@ namespace Avalonia.iOS
             {
 #if !TVOS
                 MultipleTouchEnabled = true;
+                
+                if (OperatingSystem.IsIOSVersionAtLeast(13, 4) || OperatingSystem.IsMacCatalyst())
+                {
+                    var scrollGestureRecognizer = new UIPanGestureRecognizer(_input.HandleScrollWheel)
+                    {
+                        // Only respond to scroll events, not touches
+                        MaximumNumberOfTouches = 0,
+                        AllowedScrollTypesMask = UIScrollTypeMask.Discrete | UIScrollTypeMask.Continuous
+                    };
+                    AddGestureRecognizer(scrollGestureRecognizer);
+                }
 #endif
             }
         }
@@ -375,6 +386,11 @@ namespace Avalonia.iOS
         {
             _topLevelImpl.Resized?.Invoke(_topLevelImpl.ClientSize, WindowResizeReason.Layout);
             var scaling = (double)ContentScaleFactor;
+            if (_latestLayoutProps.scaling != scaling)
+            {
+                _topLevelImpl.ScalingChanged?.Invoke(scaling);
+            }
+
             _latestLayoutProps = (new PixelSize((int)(Bounds.Width * scaling), (int)(Bounds.Height * scaling)), scaling);
             if (_currentRenderTarget is not null)
             {

@@ -592,10 +592,7 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnInitialized();
 
-            if (_selection is object)
-            {
-                _selection.Source = ItemsView.Source;
-            }
+            TryInitializeSelectionSource(_selection, _updateState is null);
         }
 
         /// <inheritdoc />
@@ -896,8 +893,8 @@ namespace Avalonia.Controls.Primitives
 
         private void OnItemsViewSourceChanged(object? sender, EventArgs e)
         {
-            if (_selection is not null && _updateState is null)
-                _selection.Source = ItemsView.Source;
+            if (_updateState is null)
+                TryInitializeSelectionSource(_selection, true);
         }
 
         /// <summary>
@@ -1202,7 +1199,7 @@ namespace Avalonia.Controls.Primitives
         {
             if (_updateState is null)
             {
-                model.Source = ItemsView.Source;
+                TryInitializeSelectionSource(model, false);
             }
 
             model.PropertyChanged += OnSelectionModelPropertyChanged;
@@ -1237,6 +1234,32 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        private void TryInitializeSelectionSource(ISelectionModel? selection, bool shouldSelectItemFromSelectedValue)
+        {
+            if (selection is not null && ItemsView.TryGetInitializedSource() is { } source)
+            {
+                // InternalSelectionModel keeps the SelectedIndex and SelectedItem values before the ItemsSource is set.
+                // However, SelectedValue isn't part of that model, so we have to set the SelectedItem from
+                // SelectedValue manually now that we have a source.
+                //
+                // While this works, this is messy: we effectively have "lazy selection initialization" in 3 places:
+                //  - UpdateState (all selection properties, for BeginInit/EndInit)
+                //  - InternalSelectionModel (SelectedIndex/SelectedItem)
+                //  - SelectedItemsControl (SelectedValue)
+                //
+                // There's the opportunity to have a single place responsible for this logic.
+                // TODO12 (or 13): refactor this.
+                if (shouldSelectItemFromSelectedValue && selection.SelectedIndex == -1 && selection.SelectedItem is null)
+                {
+                    var item = FindItemWithValue(SelectedValue);
+                    if (item != AvaloniaProperty.UnsetValue)
+                        selection.SelectedItem = item;
+                }
+
+                selection.Source = source;
+            }
+        }
+
         private void DeinitializeSelectionModel(ISelectionModel? model)
         {
             if (model is object)
@@ -1266,7 +1289,7 @@ namespace Avalonia.Controls.Primitives
 
                 if (_selection is InternalSelectionModel s)
                 {
-                    s.Update(ItemsView.Source, state.SelectedItems);
+                    s.Update(ItemsView.TryGetInitializedSource(), state.SelectedItems);
                 }
                 else
                 {
@@ -1275,7 +1298,7 @@ namespace Avalonia.Controls.Primitives
                         SelectedItems = state.SelectedItems.Value;
                     }
 
-                    Selection.Source = ItemsView.Source;
+                    TryInitializeSelectionSource(Selection, false);
                 }
 
                 if (state.SelectedValue.HasValue)

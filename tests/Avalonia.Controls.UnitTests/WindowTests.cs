@@ -12,7 +12,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class WindowTests
+    public class WindowTests : ScopedTestBase
     {
         [Fact]
         public void Setting_Title_Should_Set_Impl_Title()
@@ -672,7 +672,7 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        public class SizingTests
+        public class SizingTests : ScopedTestBase
         {
             [Fact]
             public void Child_Should_Be_Measured_With_Width_And_Height_If_SizeToContent_Is_Manual()
@@ -1090,6 +1090,25 @@ namespace Avalonia.Controls.UnitTests
 
                     Assert.True(task.IsCompletedSuccessfully);
                 }
+            }
+
+            [Fact]
+            public void Show_Works_When_Min_Dimension_Greater_Than_Max()
+            {
+                using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+                var target = new Window
+                {
+                    MinWidth = 100,
+                    MaxWidth = 80,
+                    MinHeight = 200,
+                    MaxHeight = 180
+                };
+
+                Show(target);
+
+                Assert.Equal(100, target.Width);
+                Assert.Equal(200, target.Height);
             }
             
             protected virtual void Show(Window window)
