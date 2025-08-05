@@ -97,11 +97,18 @@
         </Border>
       </ControlTemplate>
     </Setter>
+
     <Style Selector="^:pointerover /template/ Border#border">
       <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderHighBrush}" />
     </Style>
+
     <Style Selector="^:disabled /template/ Border#border">
       <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}" />
+    </Style>
+
+    <Style Selector="^[IsEditable=true]">
+      <Setter Property="IsTabStop" Value="False" />
+      <Setter Property="KeyboardNavigation.TabNavigation" Value="Local" />
     </Style>
   </ControlTheme>
 </ResourceDictionary>

@@ -444,21 +444,11 @@ namespace Avalonia.Controls
         {
             if (IsEditable && _inputTextBox != null)
             {
-                bool isNavigateBackwards = e.NavigationMethod == NavigationMethod.Tab && e.KeyModifiers.HasFlag(KeyModifiers.Shift);
-                //when navigating backwards the "Source" is this combobox, meaning the focus was in the editable text box
-                //so skip past us
-                if (isNavigateBackwards && e.Source == this)
-                {
-                    FocusManager.GetFocusManager(this)?.TryMoveFocus(NavigationDirection.Previous);
-                }
-                else
-                {
-                    _inputTextBox.Focus();
-                    _inputTextBox.SelectAll();
-                }
+                _inputTextBox.Focus();
+                _inputTextBox.SelectAll();
             }
-            else
-                base.OnGotFocus(e);
+
+            base.OnGotFocus(e);
         }
 
         internal void ItemFocused(ComboBoxItem dropDownItem)
