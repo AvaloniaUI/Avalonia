@@ -951,11 +951,6 @@ namespace Avalonia.X11
                 XSyncSetCounter(_x11.Display, _xSyncCounter, _xSyncValue);
             }
         }
-        
-        public void Invalidate(Rect rect)
-        {
-
-        }
 
         public IInputRoot InputRoot
             => _inputRoot ?? throw new InvalidOperationException($"{nameof(SetInputRoot)} must have been called");

@@ -59,5 +59,16 @@ namespace Avalonia.Media.Fonts
         ///     <c>True</c>, if the <see cref="IFontCollection2"/> could get the list of typefaces, <c>False</c> otherwise.
         /// </returns>
         bool TryGetFamilyTypefaces(string familyName, [NotNullWhen(true)] out IReadOnlyList<Typeface>? familyTypefaces);
+
+        /// <summary>
+        /// Try to get a synthetic glyph typeface for given parameters.
+        /// </summary>
+        /// <param name="glyphTypeface">The glyph typeface we try to synthesize.</param>
+        /// <param name="style">The font style.</param>
+        /// <param name="weight">The font weight.</param>
+        /// <param name="stretch">The font stretch.</param>
+        /// <param name="syntheticGlyphTypeface"></param>
+        /// <returns>Returns <c>true</c> if a synthetic glyph typface can be created; otherwise, <c>false</c></returns>
+        bool TryCreateSyntheticGlyphTypeface(IGlyphTypeface glyphTypeface, FontStyle style, FontWeight weight, FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface? syntheticGlyphTypeface);
     }
 }

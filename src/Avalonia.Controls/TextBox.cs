@@ -1791,8 +1791,6 @@ namespace Avalonia.Controls
 
             if (e.Pointer.Type != PointerType.Mouse && !_isDoubleTapped)
             {
-                _imClient.ShowInputPanel();
-
                 var text = Text;
                 var clickInfo = e.GetCurrentPoint(this);
                 if (text != null && !(clickInfo.Pointer?.Captured is Border))
@@ -2183,7 +2181,7 @@ namespace Avalonia.Controls
                 textBuilder.Append(text);
                 textBuilder.Remove(start, end - start);
 
-                SetCurrentValue(TextProperty, textBuilder.ToString());
+                SetCurrentValue(TextProperty, StringBuilderCache.GetStringAndRelease(textBuilder));
 
                 _presenter?.MoveCaretToTextPosition(start);
 
