@@ -10,6 +10,8 @@ namespace ControlCatalog.ViewModels
     public class ComboBoxPageViewModel : ViewModelBase
     {
         private bool _wrapSelection;
+        private string _textValue = string.Empty;
+        private IdAndName? _selectedItem = null;
 
         public bool WrapSelection
         {
@@ -17,14 +19,12 @@ namespace ControlCatalog.ViewModels
             set => this.RaiseAndSetIfChanged(ref _wrapSelection, value);
         }
 
-        private string _textValue = string.Empty;
         public string TextValue
         {
             get => _textValue;
             set => this.RaiseAndSetIfChanged(ref _textValue, value);
         }
 
-        private IdAndName? _selectedItem = null;
         public IdAndName? SelectedItem
         {
             get => _selectedItem;

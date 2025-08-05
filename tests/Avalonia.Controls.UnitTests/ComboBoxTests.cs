@@ -681,5 +681,39 @@ namespace Avalonia.Controls.UnitTests
             Assert.NotNull(target.SelectedItem);
             Assert.Equal(target.SelectedItem, items[0]);
         }
+
+        [Fact]
+        public void When_Items_Source_Changes_It_Selects_An_Item_By_Text()
+        {
+            var items = new[]
+            {
+                new Item("Value 1", "Display 1"),
+                new Item("Value 2", "Display 2")
+            };
+            var items2 = new[]
+            {
+                new Item("Value 1", "Display 3"),
+                new Item("Value 2", "Display 4")
+            };
+            var target = new ComboBox
+            {
+                DisplayMemberBinding = new Binding("Display"),
+                IsEditable = true,
+                ItemsSource = items
+            };
+            TextSearch.SetTextBinding(target, new Binding("Value"));
+
+            target.SelectedItem = null;
+            Assert.Null(target.SelectedItem);
+
+            target.Text = "Value 1";
+            Assert.NotNull(target.SelectedItem);
+            Assert.Equal(target.SelectedItem, items[0]);
+
+            target.ItemsSource = items2;
+            Assert.NotNull(target.SelectedItem);
+            Assert.Equal(target.SelectedItem, items2[0]);
+            Assert.Equal(target.Text, "Value 1");
+        }
     }
 }

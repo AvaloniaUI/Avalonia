@@ -120,9 +120,6 @@ namespace Avalonia.Controls
             ItemsPanelProperty.OverrideDefaultValue<ComboBox>(DefaultPanel);
             FocusableProperty.OverrideDefaultValue<ComboBox>(true);
             IsTextSearchEnabledProperty.OverrideDefaultValue<ComboBox>(true);
-            //when the items change we need to simulate a text change to validate the text being an item or not and selecting it
-            ItemsSourceProperty.Changed.AddClassHandler<ComboBox>((x, e) => x.TextChanged(
-                new AvaloniaPropertyChangedEventArgs<string?>(e.Sender, TextProperty, x.Text, x.Text, e.Priority)));
         }
 
         /// <summary>
@@ -219,6 +216,7 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Gets or sets the text used when <see cref="IsEditable"/> is true.
+        /// Does nothing if not <see cref="IsEditable"/>.
         /// </summary>
         public string? Text
         {
@@ -422,9 +420,17 @@ namespace Avalonia.Controls
             }
             else if (change.Property == TextProperty)
             {
-                TextChanged(change);
+                TextChanged(change.GetNewValue<string>());
             }
-            else if(change.Property == DisplayMemberBindingProperty)
+            else if (change.Property == ItemsSourceProperty)
+            {
+                //the base handler deselects the current item (and resets Text) so we want to run the base first, then try match by text
+                string? text = Text;
+                base.OnPropertyChanged(change);
+                SetCurrentValue(TextProperty, text);
+                return;
+            }
+            else if (change.Property == DisplayMemberBindingProperty)
             {
                 HandleTextValueBindingValueChanged(null, change);
             }
@@ -681,12 +687,11 @@ namespace Avalonia.Controls
                 _textValueBindingEvaluator.Value = GetItemTextValue(SelectedValue);
         }
 
-        private void TextChanged(AvaloniaPropertyChangedEventArgs e)
+        private void TextChanged(string? newValue)
         {
             if (!IsEditable || _skipNextTextChanged)
                 return;
 
-            string newVal = e.GetNewValue<string>();
             int selectedIdx = -1;
             object? selectedItem = null;
             int i = -1;
@@ -694,7 +699,7 @@ namespace Avalonia.Controls
             {
                 i++;
                 string itemText = GetItemTextValue(item);
-                if (string.Equals(newVal, itemText, StringComparison.CurrentCultureIgnoreCase))
+                if (string.Equals(newValue, itemText, StringComparison.CurrentCultureIgnoreCase))
                 {
                     selectedIdx = i;
                     selectedItem = item;
