@@ -40,7 +40,7 @@ namespace Avalonia.Win32
 
         internal static void ChangeWindowMessageFilter(IntPtr hWnd)
         {
-            ChangeWindowMessageFilterEx(hWnd, WM_TASKBARCREATED, MessageFilterFlag.MSGFLT_ADD, IntPtr.Zero);
+            ChangeWindowMessageFilterEx(hWnd, WM_TASKBARCREATED, MessageFilterFlag.MSGFLT_ALLOW, IntPtr.Zero);
         }
 
         public TrayIconImpl()

@@ -1511,8 +1511,9 @@ namespace Avalonia.Win32.Interop
         );
         public enum MessageFilterFlag
         {
-            MSGFLT_ADD = 1,
-            MSGFLT_REMOVE = 2,
+            MSGFLT_RESET = 0,
+            MSGFLT_ALLOW = 1,
+            MSGFLT_DISALLOW = 2,
         }
 
         [DllImport("shell32", CharSet = CharSet.Auto)]
