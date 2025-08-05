@@ -1,11 +1,9 @@
 using System;
-using System.Diagnostics;
 using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.Controls.Primitives.PopupPositioning;
-using Avalonia.Input;
 using Avalonia.Reactive;
 
 namespace Avalonia.Controls
@@ -117,7 +115,6 @@ namespace Avalonia.Controls
         private Popup? _popup;
         private Action<IPopupHost?>? _popupHostChangedHandler;
         private CompositeDisposable? _subscriptions;
-        private static ToolTip? _activeToolTip;
 
         /// <summary>
         /// Initializes static members of the <see cref="ToolTip"/> class.
@@ -125,7 +122,6 @@ namespace Avalonia.Controls
         static ToolTip()
         {
             IsOpenProperty.Changed.Subscribe(IsOpenChanged);
-            PointerMovedEvent.AddClassHandler<TopLevel>(OnTopLevelPointerMoved, RoutingStrategies.Tunnel, handledEventsToo: true);
         }
 
         /// <summary>
@@ -419,29 +415,6 @@ namespace Avalonia.Controls
             }
         }
 
-        private static void OnTopLevelPointerMoved(TopLevel topLevel, PointerEventArgs e) 
-        {
-            if (_activeToolTip != null) 
-            {
-                Control? adorned = _activeToolTip.AdornedControl;
-                if (adorned == null)
-                    return;
-                
-                if (GetPlacement(adorned) != PlacementMode.Pointer || !GetMoveWithPointer(adorned)) 
-                    return;
-
-                ToolTip? tip = adorned.GetValue(ToolTipProperty);
-                Debug.Assert(ReferenceEquals(tip, _activeToolTip));
-                
-                if (tip._popup != null && tip._popup.IsOpen) 
-                {
-                    Debug.Assert(adorned == tip.AdornedControl);
-
-                    tip._popup.UpdatePositionToPointer();
-                }
-            }
-        }
-
         internal Control? AdornedControl { get; private set; }
         internal event EventHandler? Closed;
         internal IPopupHost? PopupHost => _popup?.Host;
@@ -476,9 +449,6 @@ namespace Avalonia.Controls
                 _popup.Bind(Popup.CustomPopupPlacementCallbackProperty, control.GetBindingObservable(CustomPopupPlacementCallbackProperty))
             });
             
-            Debug.Assert(_activeToolTip == null);
-            _activeToolTip = this;
-            
             _popup.PlacementTarget = control;
             _popup.SetPopupParent(control);
 
@@ -502,8 +472,6 @@ namespace Avalonia.Controls
             }
 
             _subscriptions?.Dispose();
-
-            _activeToolTip = null;
         }
 
         private void OnPopupClosed(object? sender, EventArgs e)
@@ -529,6 +497,21 @@ namespace Avalonia.Controls
         private void UpdatePseudoClasses(bool newValue)
         {
             PseudoClasses.Set(":open", newValue);
+        }
+
+        internal void TryUpdatePositionForPointerMove() 
+        {
+            Control? adorned = this.AdornedControl;
+            if (adorned == null)
+                return;
+
+            if (GetPlacement(adorned) != PlacementMode.Pointer || !GetMoveWithPointer(adorned)) 
+                return;
+
+            if (this._popup != null && this._popup.IsOpen) 
+            {
+                this._popup.UpdatePositionToPointer();
+            }
         }
     }
 }
