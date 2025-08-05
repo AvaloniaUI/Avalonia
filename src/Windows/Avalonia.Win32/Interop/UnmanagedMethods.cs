@@ -1509,6 +1509,7 @@ namespace Avalonia.Win32.Interop
             MessageFilterFlag action,
             IntPtr pChangeFilterStruct
         );
+
         public enum MessageFilterFlag
         {
             MSGFLT_RESET = 0,
