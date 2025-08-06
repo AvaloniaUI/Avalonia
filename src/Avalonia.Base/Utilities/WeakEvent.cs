@@ -12,10 +12,8 @@ namespace Avalonia.Utilities;
 public sealed class WeakEvent<TSender, TEventArgs> : WeakEvent where TSender : class
 {
     private readonly Func<TSender, EventHandler<TEventArgs>, Action> _subscribe;
-
-    private readonly ConditionalWeakTable<object, Subscription> _subscriptions = new();
-
-    private ConditionalWeakTable<object, Subscription>.CreateValueCallback? _createSubscription;
+    private readonly ConditionalWeakTable<TSender, Subscription> _subscriptions = new();
+    private readonly ConditionalWeakTable<TSender, Subscription>.CreateValueCallback _createSubscription;
 
     internal WeakEvent(
         Action<TSender, EventHandler<TEventArgs>> subscribe,
@@ -26,16 +24,17 @@ public sealed class WeakEvent<TSender, TEventArgs> : WeakEvent where TSender : c
             subscribe(t, s);
             return () => unsubscribe(t, s);
         };
+        _createSubscription = CreateSubscription;
     }
 
     internal WeakEvent(Func<TSender, EventHandler<TEventArgs>, Action> subscribe)
     {
         _subscribe = subscribe;
+        _createSubscription = CreateSubscription;
     }
 
     public void Subscribe(TSender target, IWeakEventSubscriber<TEventArgs> subscriber)
     {
-        _createSubscription ??= CreateSubscription;
         var spinWait = default(SpinWait);
         while (true)
         {
@@ -52,7 +51,7 @@ public sealed class WeakEvent<TSender, TEventArgs> : WeakEvent where TSender : c
             subscription.Remove(subscriber);
     }
 
-    private Subscription CreateSubscription(object key) => new(this, (TSender) key);
+    private Subscription CreateSubscription(TSender key) => new(this, key);
 
     private sealed class Subscription
     {
