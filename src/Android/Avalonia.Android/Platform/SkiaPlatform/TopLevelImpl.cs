@@ -5,9 +5,7 @@ using Android.Content;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Runtime;
-using Android.Text;
 using Android.Views;
-using Android.Views.InputMethods;
 using AndroidX.AppCompat.App;
 using Avalonia.Android.Platform.Input;
 using Avalonia.Android.Platform.Specific;
@@ -15,13 +13,11 @@ using Avalonia.Android.Platform.Specific.Helpers;
 using Avalonia.Android.Platform.Storage;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
-using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.OpenGL.Egl;
-using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using Avalonia.Rendering.Composition;
@@ -34,7 +30,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
     {
         private readonly AndroidKeyboardEventsHelper<TopLevelImpl> _keyboardHelper;
         private readonly AndroidMotionEventsHelper _pointerHelper;
-        private readonly AndroidInputMethod<ViewImpl> _textInputMethod;
+        private readonly AndroidInputMethod<AvaloniaView> _textInputMethod;
         private readonly INativeControlHostImpl _nativeControlHost;
         private readonly IStorageProvider? _storageProvider;
         private readonly AndroidSystemNavigationManagerImpl _systemNavigationManager;
@@ -42,7 +38,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         private readonly Clipboard _clipboard;
         private readonly AndroidLauncher? _launcher;
         private readonly AndroidScreens? _screens;
-        private ViewImpl _view;
+        private SurfaceViewImpl _view;
         private WindowTransparencyLevel _transparencyLevel;
 
         public TopLevelImpl(AvaloniaView avaloniaView, bool placeOnTop = false)
@@ -52,8 +48,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 throw new ArgumentException("AvaloniaView.Context must not be null");
             }
 
-            _view = new ViewImpl(context, this, placeOnTop);
-            _textInputMethod = new AndroidInputMethod<ViewImpl>(_view);
+            _view = new SurfaceViewImpl(context, this, placeOnTop);
+            _textInputMethod = new AndroidInputMethod<AvaloniaView>(avaloniaView);
             _keyboardHelper = new AndroidKeyboardEventsHelper<TopLevelImpl>(this);
             _pointerHelper = new AndroidMotionEventsHelper(this);
             _clipboard = new Clipboard(new ClipboardImpl(
@@ -143,13 +139,13 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             Resized?.Invoke(size, WindowResizeReason.Layout);
         }
 
-        sealed class ViewImpl : InvalidationAwareSurfaceView, IInitEditorInfo
+        sealed class SurfaceViewImpl : InvalidationAwareSurfaceView
         {
             private readonly TopLevelImpl _tl;
             private Size _oldSize;
             private double _oldScaling;
 
-            public ViewImpl(Context context, TopLevelImpl tl, bool placeOnTop) : base(context)
+            public SurfaceViewImpl(Context context, TopLevelImpl tl, bool placeOnTop) : base(context)
             {
                 _tl = tl;
                 if (placeOnTop)
@@ -176,30 +172,6 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 }
 
                 base.DispatchDraw(canvas);
-            }
-
-            protected override bool DispatchGenericPointerEvent(MotionEvent? e)
-            {
-                var result = _tl._pointerHelper.DispatchMotionEvent(e, out var callBase);
-                var baseResult = callBase && base.DispatchGenericPointerEvent(e);
-
-                return result ?? baseResult;
-            }
-
-            public override bool DispatchTouchEvent(MotionEvent? e)
-            {
-                var result = _tl._pointerHelper.DispatchMotionEvent(e, out var callBase);
-                var baseResult = callBase && base.DispatchTouchEvent(e);
-
-                return result ?? baseResult;
-            }
-
-            public override bool DispatchKeyEvent(KeyEvent? e)
-            {
-                var res = _tl._keyboardHelper.DispatchKeyEvent(e, out var callBase);
-                var baseResult = callBase && base.DispatchKeyEvent(e);
-
-                return res ?? baseResult;
             }
 
             public override void SurfaceChanged(ISurfaceHolder holder, Format format, int width, int height)
@@ -233,23 +205,6 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             {
                 _tl.Compositor.RequestCompositionUpdate(drawingFinished.Run);
                 base.SurfaceRedrawNeededAsync(holder, drawingFinished);
-            }
-
-            public override bool OnCheckIsTextEditor()
-            {
-                return true;
-            }
-
-            private Func<TopLevelImpl, EditorInfo, IInputConnection>? _initEditorInfo;
-
-            public void InitEditorInfo(Func<TopLevelImpl, EditorInfo, IInputConnection> init)
-            {
-                _initEditorInfo = init;
-            }
-
-            public override IInputConnection OnCreateInputConnection(EditorInfo? outAttrs)
-            {
-                return _initEditorInfo?.Invoke(_tl, outAttrs!)!;
             }
         }
 
@@ -292,6 +247,10 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         bool EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfoWithWaitPolicy.SkipWaits => true;
         PixelSize EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Size => _view.Size;
         double EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Scaling => _view.Scaling;
+
+        internal AndroidKeyboardEventsHelper<TopLevelImpl> KeyboardHelper => _keyboardHelper;
+
+        internal AndroidMotionEventsHelper PointerHelper => _pointerHelper;
 
         public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevels)
         {
