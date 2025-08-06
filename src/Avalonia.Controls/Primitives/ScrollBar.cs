@@ -548,58 +548,69 @@ namespace Avalonia.Controls.Primitives
         private ContextMenu CreateVerticalContextMenu()
         {
             var contextMenu = new ContextMenu();
-            contextMenu.Items.Add(CreateMenuItem(ScrollBarResources.ScrollHere, "ScrollHere", () => ScrollHereAction(this)));
+            contextMenu.Items.Add(CreateMenuItem("StringScrollBarScrollHere", "ScrollHere", () => ScrollHereAction(this)));
             contextMenu.Items.Add(new Separator());
-            contextMenu.Items.Add(CreateMenuItem(ScrollBarResources.Top, "Top", () => ScrollToTopAction(this)));
-            contextMenu.Items.Add(CreateMenuItem(ScrollBarResources.Bottom, "Bottom", () => ScrollToBottomAction(this)));
+            contextMenu.Items.Add(CreateMenuItem("StringScrollBarTop", "Top", () => ScrollToTopAction(this)));
+            contextMenu.Items.Add(CreateMenuItem("StringScrollBarBottom", "Bottom", () => ScrollToBottomAction(this)));
             contextMenu.Items.Add(new Separator());
-            contextMenu.Items.Add(CreateMenuItem(ScrollBarResources.PageUp, "PageUp", () => PageUpAction(this)));
-            contextMenu.Items.Add(CreateMenuItem(ScrollBarResources.PageDown, "PageDown", () => PageDownAction(this)));
+            contextMenu.Items.Add(CreateMenuItem("StringScrollBarPageUp", "PageUp", () => PageUpAction(this)));
+            contextMenu.Items.Add(CreateMenuItem("StringScrollBarPageDown", "PageDown", () => PageDownAction(this)));
             contextMenu.Items.Add(new Separator());
-            contextMenu.Items.Add(CreateMenuItem(ScrollBarResources.ScrollUp, "ScrollUp", () => LineUpAction(this)));
-            contextMenu.Items.Add(CreateMenuItem(ScrollBarResources.ScrollDown, "ScrollDown", () => LineDownAction(this)));
+            contextMenu.Items.Add(CreateMenuItem("StringScrollBarScrollUp", "ScrollUp", () => LineUpAction(this)));
+            contextMenu.Items.Add(CreateMenuItem("StringScrollBarScrollDown", "ScrollDown", () => LineDownAction(this)));
             return contextMenu;
         }
 
         private ContextMenu CreateHorizontalContextMenuLTR()
         {
             var contextMenu = new ContextMenu();
-            contextMenu.Items.Add(CreateMenuItem(ScrollBarResources.ScrollHere, "ScrollHere", () => ScrollHereAction(this)));
+            contextMenu.Items.Add(CreateMenuItem("StringScrollBarScrollHere", "ScrollHere", () => ScrollHereAction(this)));
             contextMenu.Items.Add(new Separator());
-            contextMenu.Items.Add(CreateMenuItem(ScrollBarResources.LeftEdge, "LeftEdge", () => ScrollToLeftEndAction(this)));
-            contextMenu.Items.Add(CreateMenuItem(ScrollBarResources.RightEdge, "RightEdge", () => ScrollToRightEndAction(this)));
+            contextMenu.Items.Add(CreateMenuItem("StringScrollBarLeftEdge", "LeftEdge", () => ScrollToLeftEndAction(this)));
+            contextMenu.Items.Add(CreateMenuItem("StringScrollBarRightEdge", "RightEdge", () => ScrollToRightEndAction(this)));
             contextMenu.Items.Add(new Separator());
-            contextMenu.Items.Add(CreateMenuItem(ScrollBarResources.PageLeft, "PageLeft", () => PageLeftAction(this)));
-            contextMenu.Items.Add(CreateMenuItem(ScrollBarResources.PageRight, "PageRight", () => PageRightAction(this)));
+            contextMenu.Items.Add(CreateMenuItem("StringScrollBarPageLeft", "PageLeft", () => PageLeftAction(this)));
+            contextMenu.Items.Add(CreateMenuItem("StringScrollBarPageRight", "PageRight", () => PageRightAction(this)));
             contextMenu.Items.Add(new Separator());
-            contextMenu.Items.Add(CreateMenuItem(ScrollBarResources.ScrollLeft, "ScrollLeft", () => LineLeftAction(this)));
-            contextMenu.Items.Add(CreateMenuItem(ScrollBarResources.ScrollRight, "ScrollRight", () => LineRightAction(this)));
+            contextMenu.Items.Add(CreateMenuItem("StringScrollBarScrollLeft", "ScrollLeft", () => LineLeftAction(this)));
+            contextMenu.Items.Add(CreateMenuItem("StringScrollBarScrollRight", "ScrollRight", () => LineRightAction(this)));
             return contextMenu;
         }
 
         private ContextMenu CreateHorizontalContextMenuRTL()
         {
             var contextMenu = new ContextMenu();
-            contextMenu.Items.Add(CreateMenuItem(ScrollBarResources.ScrollHere, "ScrollHere", () => ScrollHereAction(this)));
+            contextMenu.Items.Add(CreateMenuItem("StringScrollBarScrollHere", "ScrollHere", () => ScrollHereAction(this)));
             contextMenu.Items.Add(new Separator());
-            contextMenu.Items.Add(CreateMenuItem(ScrollBarResources.RightEdge, "RightEdge", () => ScrollToRightEndAction(this)));
-            contextMenu.Items.Add(CreateMenuItem(ScrollBarResources.LeftEdge, "LeftEdge", () => ScrollToLeftEndAction(this)));
+            contextMenu.Items.Add(CreateMenuItem("StringScrollBarRightEdge", "RightEdge", () => ScrollToRightEndAction(this)));
+            contextMenu.Items.Add(CreateMenuItem("StringScrollBarLeftEdge", "LeftEdge", () => ScrollToLeftEndAction(this)));
             contextMenu.Items.Add(new Separator());
-            contextMenu.Items.Add(CreateMenuItem(ScrollBarResources.PageRight, "PageRight", () => PageRightAction(this)));
-            contextMenu.Items.Add(CreateMenuItem(ScrollBarResources.PageLeft, "PageLeft", () => PageLeftAction(this)));
+            contextMenu.Items.Add(CreateMenuItem("StringScrollBarPageRight", "PageRight", () => PageRightAction(this)));
+            contextMenu.Items.Add(CreateMenuItem("StringScrollBarPageLeft", "PageLeft", () => PageLeftAction(this)));
             contextMenu.Items.Add(new Separator());
-            contextMenu.Items.Add(CreateMenuItem(ScrollBarResources.ScrollRight, "ScrollRight", () => LineRightAction(this)));
-            contextMenu.Items.Add(CreateMenuItem(ScrollBarResources.ScrollLeft, "ScrollLeft", () => LineLeftAction(this)));
+            contextMenu.Items.Add(CreateMenuItem("StringScrollBarScrollRight", "ScrollRight", () => LineRightAction(this)));
+            contextMenu.Items.Add(CreateMenuItem("StringScrollBarScrollLeft", "ScrollLeft", () => LineLeftAction(this)));
             return contextMenu;
         }
 
-        private static MenuItem CreateMenuItem(string header, string automationId, Action action)
+        private MenuItem CreateMenuItem(string resourceKey, string automationId, Action action)
         {
             var menuItem = new MenuItem
             {
-                Header = header,
                 Command = new SimpleCommand(action)
             };
+            
+            if (this.TryFindResource(resourceKey, out var resource) && resource is string header)
+            {
+                menuItem.Header = header;
+            }
+            else
+            {
+                // If we can't get one, fall back to the resource key itself
+                // So at least something is there.
+                menuItem.Header = resourceKey.Replace("StringScrollBar", "").Replace("ScrollBar", "");
+            }
+            
             AutomationProperties.SetAutomationId(menuItem, automationId);
             return menuItem;
         }
