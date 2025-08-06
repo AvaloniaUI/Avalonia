@@ -548,48 +548,48 @@ namespace Avalonia.Controls.Primitives
         private ContextMenu CreateVerticalContextMenu()
         {
             var contextMenu = new ContextMenu();
-            contextMenu.Items.Add(CreateMenuItem("Scroll Here", "ScrollHere", () => ScrollHereAction(this)));
+            contextMenu.Items.Add(CreateMenuItem(ScrollBarResources.ScrollHere, "ScrollHere", () => ScrollHereAction(this)));
             contextMenu.Items.Add(new Separator());
-            contextMenu.Items.Add(CreateMenuItem("Top", "Top", () => ScrollToTopAction(this)));
-            contextMenu.Items.Add(CreateMenuItem("Bottom", "Bottom", () => ScrollToBottomAction(this)));
+            contextMenu.Items.Add(CreateMenuItem(ScrollBarResources.Top, "Top", () => ScrollToTopAction(this)));
+            contextMenu.Items.Add(CreateMenuItem(ScrollBarResources.Bottom, "Bottom", () => ScrollToBottomAction(this)));
             contextMenu.Items.Add(new Separator());
-            contextMenu.Items.Add(CreateMenuItem("Page Up", "PageUp", () => PageUpAction(this)));
-            contextMenu.Items.Add(CreateMenuItem("Page Down", "PageDown", () => PageDownAction(this)));
+            contextMenu.Items.Add(CreateMenuItem(ScrollBarResources.PageUp, "PageUp", () => PageUpAction(this)));
+            contextMenu.Items.Add(CreateMenuItem(ScrollBarResources.PageDown, "PageDown", () => PageDownAction(this)));
             contextMenu.Items.Add(new Separator());
-            contextMenu.Items.Add(CreateMenuItem("Scroll Up", "ScrollUp", () => LineUpAction(this)));
-            contextMenu.Items.Add(CreateMenuItem("Scroll Down", "ScrollDown", () => LineDownAction(this)));
+            contextMenu.Items.Add(CreateMenuItem(ScrollBarResources.ScrollUp, "ScrollUp", () => LineUpAction(this)));
+            contextMenu.Items.Add(CreateMenuItem(ScrollBarResources.ScrollDown, "ScrollDown", () => LineDownAction(this)));
             return contextMenu;
         }
 
         private ContextMenu CreateHorizontalContextMenuLTR()
         {
             var contextMenu = new ContextMenu();
-            contextMenu.Items.Add(CreateMenuItem("Scroll Here", "ScrollHere", () => ScrollHereAction(this)));
+            contextMenu.Items.Add(CreateMenuItem(ScrollBarResources.ScrollHere, "ScrollHere", () => ScrollHereAction(this)));
             contextMenu.Items.Add(new Separator());
-            contextMenu.Items.Add(CreateMenuItem("Left Edge", "LeftEdge", () => ScrollToLeftEndAction(this)));
-            contextMenu.Items.Add(CreateMenuItem("Right Edge", "RightEdge", () => ScrollToRightEndAction(this)));
+            contextMenu.Items.Add(CreateMenuItem(ScrollBarResources.LeftEdge, "LeftEdge", () => ScrollToLeftEndAction(this)));
+            contextMenu.Items.Add(CreateMenuItem(ScrollBarResources.RightEdge, "RightEdge", () => ScrollToRightEndAction(this)));
             contextMenu.Items.Add(new Separator());
-            contextMenu.Items.Add(CreateMenuItem("Page Left", "PageLeft", () => PageLeftAction(this)));
-            contextMenu.Items.Add(CreateMenuItem("Page Right", "PageRight", () => PageRightAction(this)));
+            contextMenu.Items.Add(CreateMenuItem(ScrollBarResources.PageLeft, "PageLeft", () => PageLeftAction(this)));
+            contextMenu.Items.Add(CreateMenuItem(ScrollBarResources.PageRight, "PageRight", () => PageRightAction(this)));
             contextMenu.Items.Add(new Separator());
-            contextMenu.Items.Add(CreateMenuItem("Scroll Left", "ScrollLeft", () => LineLeftAction(this)));
-            contextMenu.Items.Add(CreateMenuItem("Scroll Right", "ScrollRight", () => LineRightAction(this)));
+            contextMenu.Items.Add(CreateMenuItem(ScrollBarResources.ScrollLeft, "ScrollLeft", () => LineLeftAction(this)));
+            contextMenu.Items.Add(CreateMenuItem(ScrollBarResources.ScrollRight, "ScrollRight", () => LineRightAction(this)));
             return contextMenu;
         }
 
         private ContextMenu CreateHorizontalContextMenuRTL()
         {
             var contextMenu = new ContextMenu();
-            contextMenu.Items.Add(CreateMenuItem("Scroll Here", "ScrollHere", () => ScrollHereAction(this)));
+            contextMenu.Items.Add(CreateMenuItem(ScrollBarResources.ScrollHere, "ScrollHere", () => ScrollHereAction(this)));
             contextMenu.Items.Add(new Separator());
-            contextMenu.Items.Add(CreateMenuItem("Right Edge", "RightEdge", () => ScrollToRightEndAction(this)));
-            contextMenu.Items.Add(CreateMenuItem("Left Edge", "LeftEdge", () => ScrollToLeftEndAction(this)));
+            contextMenu.Items.Add(CreateMenuItem(ScrollBarResources.RightEdge, "RightEdge", () => ScrollToRightEndAction(this)));
+            contextMenu.Items.Add(CreateMenuItem(ScrollBarResources.LeftEdge, "LeftEdge", () => ScrollToLeftEndAction(this)));
             contextMenu.Items.Add(new Separator());
-            contextMenu.Items.Add(CreateMenuItem("Page Right", "PageRight", () => PageRightAction(this)));
-            contextMenu.Items.Add(CreateMenuItem("Page Left", "PageLeft", () => PageLeftAction(this)));
+            contextMenu.Items.Add(CreateMenuItem(ScrollBarResources.PageRight, "PageRight", () => PageRightAction(this)));
+            contextMenu.Items.Add(CreateMenuItem(ScrollBarResources.PageLeft, "PageLeft", () => PageLeftAction(this)));
             contextMenu.Items.Add(new Separator());
-            contextMenu.Items.Add(CreateMenuItem("Scroll Right", "ScrollRight", () => LineRightAction(this)));
-            contextMenu.Items.Add(CreateMenuItem("Scroll Left", "ScrollLeft", () => LineLeftAction(this)));
+            contextMenu.Items.Add(CreateMenuItem(ScrollBarResources.ScrollRight, "ScrollRight", () => LineRightAction(this)));
+            contextMenu.Items.Add(CreateMenuItem(ScrollBarResources.ScrollLeft, "ScrollLeft", () => LineLeftAction(this)));
             return contextMenu;
         }
 
