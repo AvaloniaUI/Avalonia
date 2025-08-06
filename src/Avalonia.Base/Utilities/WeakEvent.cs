@@ -15,6 +15,8 @@ public sealed class WeakEvent<TSender, TEventArgs> : WeakEvent where TSender : c
 
     private readonly ConditionalWeakTable<object, Subscription> _subscriptions = new();
 
+    private ConditionalWeakTable<object, Subscription>.CreateValueCallback? _createSubscription;
+
     internal WeakEvent(
         Action<TSender, EventHandler<TEventArgs>> subscribe,
         Action<TSender, EventHandler<TEventArgs>> unsubscribe)
@@ -33,10 +35,11 @@ public sealed class WeakEvent<TSender, TEventArgs> : WeakEvent where TSender : c
 
     public void Subscribe(TSender target, IWeakEventSubscriber<TEventArgs> subscriber)
     {
+        _createSubscription ??= CreateSubscription;
         var spinWait = default(SpinWait);
         while (true)
         {
-            var subscription = _subscriptions.GetValue(target, _ => new Subscription(this, target));
+            var subscription = _subscriptions.GetValue(target, _createSubscription);
             if (subscription.Add(subscriber))
                 break;
             spinWait.SpinOnce();
@@ -48,6 +51,8 @@ public sealed class WeakEvent<TSender, TEventArgs> : WeakEvent where TSender : c
         if (_subscriptions.TryGetValue(target, out var subscription))
             subscription.Remove(subscriber);
     }
+
+    private Subscription CreateSubscription(object key) => new(this, (TSender) key);
 
     private sealed class Subscription
     {
