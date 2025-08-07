@@ -5,12 +5,12 @@ using Avalonia.Input.Platform;
 namespace Avalonia.X11.Clipboard;
 
 /// <summary>
-/// Implementation of <see cref="IDataTransferItem"/> for the X11 clipboard.
+/// Implementation of <see cref="IAsyncDataTransferItem"/> for the X11 clipboard.
 /// </summary>
 /// <param name="reader">The object used to read values.</param>
 /// <param name="formats">The formats.</param>
 internal sealed class ClipboardDataTransferItem(ClipboardDataReader reader, DataFormat[] formats)
-    : PlatformDataTransferItem
+    : PlatformAsyncDataTransferItem
 {
     private readonly ClipboardDataReader _reader = reader;
     private readonly DataFormat[] _formats = formats;

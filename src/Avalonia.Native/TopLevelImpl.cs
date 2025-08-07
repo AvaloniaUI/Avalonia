@@ -493,9 +493,9 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
                 return AvnDragDropEffects.None;
             }
             
-            IDataTransfer? dataTransfer = null;
+            ISyncDataTransfer? dataTransfer = null;
             if (dataTransferHandle != IntPtr.Zero)
-                dataTransfer = GCHandle.FromIntPtr(dataTransferHandle).Target as IDataTransfer;
+                dataTransfer = GCHandle.FromIntPtr(dataTransferHandle).Target as ISyncDataTransfer;
 
             using var clipboardDataTransfer = new ClipboardDataTransfer(
                 new ClipboardReadSession(clipboard, clipboard.ChangeCount, ownsNative: true));

@@ -17,7 +17,7 @@ namespace Avalonia.X11.Clipboard
     {
         private readonly AvaloniaX11Platform _platform;
         private readonly X11Info _x11;
-        private IDataTransfer? _storedDataTransfer;
+        private IAsyncDataTransfer? _storedDataTransfer;
         private readonly IntPtr _handle;
         private TaskCompletionSource<bool>? _storeAtomTcs;
         private readonly IntPtr[] _textAtoms;
@@ -241,7 +241,7 @@ namespace Avalonia.X11.Clipboard
         
         private ClipboardReadSession OpenReadSession() => new(_platform);
 
-        private IntPtr[] ConvertDataTransfer(IDataTransfer? dataTransfer)
+        private IntPtr[] ConvertDataTransfer(IAsyncDataTransfer? dataTransfer)
         {
             var atoms = new List<IntPtr> { _x11.Atoms.TARGETS, _x11.Atoms.MULTIPLE };
 
@@ -257,7 +257,7 @@ namespace Avalonia.X11.Clipboard
             return atoms.ToArray();
         }
 
-        private Task StoreAtomsInClipboardManager(IDataTransfer dataTransfer)
+        private Task StoreAtomsInClipboardManager(IAsyncDataTransfer dataTransfer)
         {
             if (_x11.Atoms.CLIPBOARD_MANAGER == IntPtr.Zero || _x11.Atoms.SAVE_TARGETS == IntPtr.Zero)
                 return Task.CompletedTask;
@@ -298,7 +298,7 @@ namespace Avalonia.X11.Clipboard
             return Task.CompletedTask;
         }
 
-        public async Task<IDataTransfer?> TryGetDataAsync()
+        public async Task<IAsyncDataTransfer?> TryGetDataAsync()
         {
             var owner = GetOwner();
             if (owner == IntPtr.Zero)
@@ -307,7 +307,7 @@ namespace Avalonia.X11.Clipboard
             if (owner == _handle && _storedDataTransfer is { } storedDataTransfer)
                 return storedDataTransfer;
 
-            // Get the formats while we're in an async method, since IDataTransfer.GetFormats() is synchronous.
+            // Get the formats while we're in an async method, since IAsyncDataTransfer.GetFormats() is synchronous.
             var (dataFormats, textFormatAtoms) = await GetDataFormatsCoreAsync().ConfigureAwait(false);
             if (dataFormats.Length == 0)
                 return null;
@@ -350,10 +350,10 @@ namespace Avalonia.X11.Clipboard
             return (formats.ToArray(), textFormatAtoms?.ToArray() ?? []);
         }
 
-        private static async Task<IDataTransferItem[]> CreateItemsAsync(ClipboardDataReader reader, DataFormat[] formats)
+        private static async Task<IAsyncDataTransferItem[]> CreateItemsAsync(ClipboardDataReader reader, DataFormat[] formats)
         {
             List<DataFormat>? nonFileFormats = null;
-            var items = new List<IDataTransferItem>();
+            var items = new List<IAsyncDataTransferItem>();
 
             foreach (var format in formats)
             {
@@ -364,7 +364,7 @@ namespace Avalonia.X11.Clipboard
                     if (await reader.TryGetAsync(format) is IEnumerable<IStorageItem> storageItems)
                     {
                         foreach (var storageItem in storageItems)
-                            items.Add(DataTransferItem.Create(format, storageItem));
+                            items.Add(PlatformSyncDataTransferItem.Create(format, storageItem));
                     }
                 }
                 else
@@ -378,7 +378,7 @@ namespace Avalonia.X11.Clipboard
             return items.ToArray();
         }
 
-        public Task SetDataAsync(IDataTransfer dataTransfer)
+        public Task SetDataAsync(IAsyncDataTransfer dataTransfer)
         {
             _storedDataTransfer = dataTransfer;
             XSetSelectionOwner(_x11.Display, _x11.Atoms.CLIPBOARD, _handle, IntPtr.Zero);

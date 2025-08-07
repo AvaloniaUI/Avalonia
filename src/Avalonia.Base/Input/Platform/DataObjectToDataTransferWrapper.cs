@@ -12,20 +12,20 @@ namespace Avalonia.Input.Platform;
 
 // TODO12: remove
 /// <summary>
-/// Wraps a legacy <see cref="IDataObject"/> into a <see cref="IDataTransfer"/>.
+/// Wraps a legacy <see cref="IDataObject"/> into a <see cref="ISyncDataTransfer"/>.
 /// </summary>
 [Obsolete]
 internal sealed class DataObjectToDataTransferWrapper(IDataObject dataObject)
-    : PlatformDataTransfer
+    : PlatformSyncDataTransfer
 {
     public IDataObject DataObject { get; } = dataObject;
 
     protected override DataFormat[] ProvideFormats()
         => DataObject.GetDataFormats().Select(DataFormats.ToDataFormat).Distinct().ToArray();
 
-    protected override IDataTransferItem[] ProvideItems()
+    protected override PlatformSyncDataTransferItem[] ProvideItems()
     {
-        var items = new List<IDataTransferItem>();
+        var items = new List<PlatformSyncDataTransferItem>();
         var nonFileFormats = new List<DataFormat>();
         var nonFileFormatStrings = new List<string>();
 
@@ -40,7 +40,7 @@ internal sealed class DataObjectToDataTransferWrapper(IDataObject dataObject)
                 if (DataObject.Get(formatString) is IEnumerable<IStorageItem> storageItems)
                 {
                     foreach (var storageItem in storageItems)
-                        items.Add(DataTransferItem.Create(format, storageItem));
+                        items.Add(PlatformSyncDataTransferItem.Create(format, storageItem));
                 }
             }
             else if (formatString == DataFormats.FileNames)
@@ -50,7 +50,7 @@ internal sealed class DataObjectToDataTransferWrapper(IDataObject dataObject)
                     foreach (var fileName in fileNames)
                     {
                         if (StorageProviderHelpers.TryCreateBclStorageItem(fileName) is { } storageItem)
-                            items.Add(DataTransferItem.Create(format, storageItem));
+                            items.Add(PlatformSyncDataTransferItem.Create(format, storageItem));
                     }
                 }
             }

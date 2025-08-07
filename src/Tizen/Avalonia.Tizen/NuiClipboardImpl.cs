@@ -6,10 +6,10 @@ using Tizen.NUI.BaseComponents;
 
 namespace Avalonia.Tizen;
 
-internal class NuiClipboardImpl : IClipboardImpl, IDataTransfer, IDataTransferItem
+internal class NuiClipboardImpl : IClipboardImpl, IAsyncDataTransfer, IAsyncDataTransferItem
 {
     private readonly DataFormat[] _formats;
-    private readonly IDataTransferItem[] _items;
+    private readonly IAsyncDataTransferItem[] _items;
     private readonly TextEditor _textEditor;
 
     public NuiClipboardImpl()
@@ -29,22 +29,22 @@ internal class NuiClipboardImpl : IClipboardImpl, IDataTransfer, IDataTransferIt
         _textEditor.LowerToBottom();
     }
 
-    IReadOnlyList<DataFormat> IDataTransfer.Formats
+    IReadOnlyList<DataFormat> IAsyncDataTransfer.Formats
         => _formats;
 
-    IReadOnlyList<DataFormat> IDataTransferItem.Formats
+    IReadOnlyList<DataFormat> IAsyncDataTransferItem.Formats
         => _formats;
 
-    IReadOnlyList<IDataTransferItem> IDataTransfer.Items
+    IReadOnlyList<IAsyncDataTransferItem> IAsyncDataTransfer.Items
         => _items;
 
     public Task ClearAsync()
         => SetTextAsync(string.Empty);
 
-    public Task<IDataTransfer?> TryGetDataAsync()
-        => Task.FromResult<IDataTransfer?>(this);
+    public Task<IAsyncDataTransfer?> TryGetDataAsync()
+        => Task.FromResult<IAsyncDataTransfer?>(this);
 
-    public async Task SetDataAsync(IDataTransfer dataTransfer)
+    public async Task SetDataAsync(IAsyncDataTransfer dataTransfer)
     {
         var text = await dataTransfer.TryGetTextAsync();
         await SetTextAsync(text ?? string.Empty);

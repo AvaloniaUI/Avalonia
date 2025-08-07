@@ -1,7 +1,6 @@
 #nullable enable
 
 using System;
-using System.Threading.Tasks;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
@@ -14,7 +13,7 @@ namespace Avalonia.Native;
 /// <param name="session">The clipboard session. This is NOT owned by the <see cref="ClipboardDataTransferItem"/>.</param>
 /// <param name="itemIndex">The item index.</param>
 internal sealed class ClipboardDataTransferItem(ClipboardReadSession session, int itemIndex)
-    : PlatformDataTransferItem
+    : PlatformSyncDataTransferItem
 {
     private readonly ClipboardReadSession _session = session;
     private readonly int _itemIndex = itemIndex;
@@ -25,19 +24,7 @@ internal sealed class ClipboardDataTransferItem(ClipboardReadSession session, in
         return ClipboardDataFormatHelper.ToDataFormats(formats);
     }
 
-    protected override Task<object?> TryGetAsyncCore(DataFormat format)
-    {
-        try
-        {
-            return Task.FromResult(TryGet(format));
-        }
-        catch (Exception ex)
-        {
-            return Task.FromException<object?>(ex);
-        }
-    }
-
-    private object? TryGet(DataFormat format)
+    protected override object? TryGetCore(DataFormat format)
     {
         var nativeFormat = ClipboardDataFormatHelper.ToNativeFormat(format);
 

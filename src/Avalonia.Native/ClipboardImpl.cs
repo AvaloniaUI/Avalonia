@@ -4,6 +4,7 @@ using System;
 using System.Threading.Tasks;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.Logging;
 using Avalonia.Native.Interop;
 
 namespace Avalonia.Native
@@ -34,7 +35,7 @@ namespace Avalonia.Native
             }
         }
 
-        public Task<IDataTransfer?> TryGetDataAsync()
+        public Task<IAsyncDataTransfer?> TryGetDataAsync()
         {
             try
             {
@@ -42,11 +43,11 @@ namespace Avalonia.Native
             }
             catch (Exception ex)
             {
-                return Task.FromException<IDataTransfer?>(ex);
+                return Task.FromException<IAsyncDataTransfer?>(ex);
             }
         }
 
-        private IDataTransfer? TryGetData()
+        private IAsyncDataTransfer? TryGetData()
         {
             var dataTransfer = new ClipboardDataTransfer(
                 new ClipboardReadSession(Native, Native.ChangeCount, ownsNative: false));
@@ -60,7 +61,7 @@ namespace Avalonia.Native
             return dataTransfer;
         }
 
-        public Task SetDataAsync(IDataTransfer dataTransfer)
+        public Task SetDataAsync(IAsyncDataTransfer dataTransfer)
         {
             try
             {
@@ -73,11 +74,12 @@ namespace Avalonia.Native
             }
         }
 
-        private void SetData(IDataTransfer dataTransfer)
+        private void SetData(IAsyncDataTransfer dataTransfer)
         {
             ClearCore();
 
-            Native.SetData(new DataTransferToAvnClipboardDataSourceWrapper(dataTransfer));
+            Native.SetData(new DataTransferToAvnClipboardDataSourceWrapper(
+                dataTransfer.ToSyncDataTransfer(LogArea.macOSPlatform)));
         }
 
         public Task<bool> IsCurrentOwnerAsync()

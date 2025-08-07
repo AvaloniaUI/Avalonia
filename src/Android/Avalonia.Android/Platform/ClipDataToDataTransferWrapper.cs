@@ -5,12 +5,12 @@ using Avalonia.Input.Platform;
 namespace Avalonia.Android.Platform;
 
 /// <summary>
-/// Wraps a <see cref="ClipData"/> into a <see cref="IDataTransfer"/>.
+/// Wraps a <see cref="ClipData"/> into a <see cref="ISyncDataTransfer"/>.
 /// </summary>
 /// <param name="clipData">The clip data.</param>
 /// <param name="context">The application context.</param>
 internal sealed class ClipDataToDataTransferWrapper(ClipData clipData, Context? context)
-    : PlatformDataTransfer
+    : PlatformSyncDataTransfer
 {
     private readonly ClipData _clipData = clipData;
 
@@ -29,10 +29,10 @@ internal sealed class ClipDataToDataTransferWrapper(ClipData clipData, Context? 
         return formats;
     }
 
-    protected override IDataTransferItem[] ProvideItems()
+    protected override PlatformSyncDataTransferItem[] ProvideItems()
     {
         var count = _clipData.ItemCount;
-        var items = new IDataTransferItem[count];
+        var items = new PlatformSyncDataTransferItem[count];
 
         for (var i = 0; i < count; ++i)
             items[i] = new ClipDataItemToDataTransferItemWrapper(_clipData.GetItemAt(i)!, this);

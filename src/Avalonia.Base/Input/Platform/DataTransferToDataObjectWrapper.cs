@@ -7,11 +7,11 @@ namespace Avalonia.Input.Platform;
 #pragma warning disable CS0618 // Type or member is obsolete: usages of IDataObject and DataFormats
 
 /// <summary>
-/// Wraps a <see cref="IDataTransferItem"/> into a legacy <see cref="IDataObject"/>.
+/// Wraps a <see cref="ISyncDataTransfer"/> into a legacy <see cref="IDataObject"/>.
 /// </summary>
-internal sealed class DataTransferToDataObjectWrapper(IDataTransfer dataTransfer) : IDataObject
+internal sealed class DataTransferToDataObjectWrapper(ISyncDataTransfer dataTransfer) : IDataObject
 {
-    public IDataTransfer DataTransfer { get; } = dataTransfer;
+    public ISyncDataTransfer DataTransfer { get; } = dataTransfer;
 
     public IEnumerable<string> GetDataFormats()
         => DataTransfer.Formats.Select(DataFormats.ToString);
@@ -22,21 +22,21 @@ internal sealed class DataTransferToDataObjectWrapper(IDataTransfer dataTransfer
     public object? Get(string dataFormat)
     {
         if (dataFormat == DataFormats.Text)
-            return DataTransfer.TryGetTextAsync().GetAwaiter().GetResult();
+            return DataTransfer.TryGetText();
 
         if (dataFormat == DataFormats.Files)
-            return DataTransfer.TryGetFilesAsync().GetAwaiter().GetResult();
+            return DataTransfer.TryGetFiles();
 
         if (dataFormat == DataFormats.FileNames)
         {
             return DataTransfer
-                .TryGetFilesAsync().GetAwaiter().GetResult()
+                .TryGetFiles()
                 ?.Select(file => file.TryGetLocalPath())
                 .Where(path => path is not null)
                 .ToArray();
         }
 
         var typedFormat = DataFormat.CreateOperatingSystemFormat(dataFormat);
-        return DataTransfer.TryGetValueAsync<object?>(typedFormat).GetAwaiter().GetResult();
+        return DataTransfer.TryGetValue<object?>(typedFormat);
     }
 }

@@ -17,7 +17,7 @@ namespace Avalonia.iOS.Clipboard
         private readonly UIPasteboard _pasteboard = pasteboard;
         private long _lastChangeCount = long.MinValue;
 
-        public Task<IDataTransfer?> TryGetDataAsync()
+        public Task<IAsyncDataTransfer?> TryGetDataAsync()
         {
             try
             {
@@ -25,11 +25,11 @@ namespace Avalonia.iOS.Clipboard
             }
             catch (Exception ex)
             {
-                return Task.FromException<IDataTransfer?>(ex);
+                return Task.FromException<IAsyncDataTransfer?>(ex);
             }
         }
 
-        private IDataTransfer? TryGetData()
+        private IAsyncDataTransfer? TryGetData()
         {
             var dataTransfer = new PasteboardToDataTransferWrapper(_pasteboard, _pasteboard.ChangeCount);
 
@@ -42,7 +42,7 @@ namespace Avalonia.iOS.Clipboard
             return dataTransfer;
         }
 
-        public async Task SetDataAsync(IDataTransfer dataTransfer)
+        public async Task SetDataAsync(IAsyncDataTransfer dataTransfer)
         {
             List<NSDictionary>? pasteboardItems = null;
 
@@ -59,7 +59,7 @@ namespace Avalonia.iOS.Clipboard
             _lastChangeCount = _pasteboard.ChangeCount;
         }
 
-        private async Task<NSDictionary?> TryCreatePasteboardItemAsync(IDataTransferItem dataTransferItem)
+        private async Task<NSDictionary?> TryCreatePasteboardItemAsync(IAsyncDataTransferItem dataTransferItem)
         {
             NSMutableDictionary? pasteboardItem = null;
 

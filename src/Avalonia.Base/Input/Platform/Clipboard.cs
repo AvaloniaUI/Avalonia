@@ -10,7 +10,7 @@ namespace Avalonia.Input.Platform;
 internal sealed class Clipboard(IClipboardImpl clipboardImpl) : IClipboard
 {
     private readonly IClipboardImpl _clipboardImpl = clipboardImpl;
-    private IDataTransfer? _lastDataTransfer;
+    private IAsyncDataTransfer? _lastDataTransfer;
 
     Task<string?> IClipboard.GetTextAsync()
         => this.TryGetTextAsync();
@@ -30,7 +30,7 @@ internal sealed class Clipboard(IClipboardImpl clipboardImpl) : IClipboard
     Task IClipboard.SetDataObjectAsync(IDataObject data)
         => SetDataAsync(new DataObjectToDataTransferWrapper(data));
 
-    public Task SetDataAsync(IDataTransfer? dataTransfer)
+    public Task SetDataAsync(IAsyncDataTransfer? dataTransfer)
     {
         if (dataTransfer is null)
             return ClearAsync();
@@ -53,7 +53,7 @@ internal sealed class Clipboard(IClipboardImpl clipboardImpl) : IClipboard
     Task<object?> IClipboard.GetDataAsync(string format)
         => this.TryGetValueAsync<object?>(DataFormats.ToDataFormat(format));
 
-    public Task<IDataTransfer?> TryGetDataAsync()
+    public Task<IAsyncDataTransfer?> TryGetDataAsync()
         => _clipboardImpl.TryGetDataAsync();
 
     [Obsolete($"Use {nameof(TryGetInProcessDataAsync)} instead.")]
@@ -63,7 +63,7 @@ internal sealed class Clipboard(IClipboardImpl clipboardImpl) : IClipboard
         return (dataTransfer as DataObjectToDataTransferWrapper)?.DataObject;
     }
 
-    public async Task<IDataTransfer?> TryGetInProcessDataAsync()
+    public async Task<IAsyncDataTransfer?> TryGetInProcessDataAsync()
     {
         if (_lastDataTransfer is null || _clipboardImpl is not IOwnedClipboardImpl ownedClipboardImpl)
             return null;

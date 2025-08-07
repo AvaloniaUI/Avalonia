@@ -17,13 +17,13 @@ namespace Avalonia.Headless
 {
     internal sealed class HeadlessClipboardImplStub : IOwnedClipboardImpl
     {
-        private IDataTransfer? _data;
+        private IAsyncDataTransfer? _data;
 
-        public Task<IDataTransfer?> TryGetDataAsync()
+        public Task<IAsyncDataTransfer?> TryGetDataAsync()
             // Return an instance that won't be disposed (we're keeping the ownership).
-            => Task.FromResult<IDataTransfer?>(_data is null ? null : new NonDisposingDataTransfer(_data));
+            => Task.FromResult<IAsyncDataTransfer?>(_data is null ? null : new NonDisposingDataTransfer(_data));
 
-        public Task SetDataAsync(IDataTransfer dataTransfer)
+        public Task SetDataAsync(IAsyncDataTransfer dataTransfer)
         {
             _data = dataTransfer;
             return Task.CompletedTask;
@@ -39,14 +39,14 @@ namespace Avalonia.Headless
         public Task<bool> IsCurrentOwnerAsync()
             => Task.FromResult(_data is not null);
 
-        private sealed class NonDisposingDataTransfer(IDataTransfer wrapped) : IDataTransfer
+        private sealed class NonDisposingDataTransfer(IAsyncDataTransfer wrapped) : IAsyncDataTransfer
         {
-            private readonly IDataTransfer _wrapped = wrapped;
+            private readonly IAsyncDataTransfer _wrapped = wrapped;
 
             public IReadOnlyList<DataFormat> Formats
                 => _wrapped.Formats;
 
-            public IReadOnlyList<IDataTransferItem> Items
+            public IReadOnlyList<IAsyncDataTransferItem> Items
                 => _wrapped.Items;
 
             void IDisposable.Dispose()

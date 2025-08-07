@@ -5,7 +5,7 @@ using UIKit;
 namespace Avalonia.iOS.Clipboard;
 
 internal sealed class PasteboardToDataTransferWrapper(UIPasteboard pasteboard, long changeCount)
-    : PlatformDataTransfer
+    : PlatformSyncDataTransfer
 {
     private readonly UIPasteboard _pasteboard = pasteboard;
     private readonly long _changeCount = changeCount;
@@ -22,13 +22,13 @@ internal sealed class PasteboardToDataTransferWrapper(UIPasteboard pasteboard, l
         return formats;
     }
 
-    protected override IDataTransferItem[] ProvideItems()
+    protected override PlatformSyncDataTransferItem[] ProvideItems()
     {
         if (_changeCount != _pasteboard.ChangeCount)
             return [];
 
         var pasteboardItems = _pasteboard.Items;
-        var items = new IDataTransferItem[pasteboardItems.Length];
+        var items = new PlatformSyncDataTransferItem[pasteboardItems.Length];
         for (var i = 0; i < pasteboardItems.Length; ++i)
             items[i] = new PasteboardItemToDataTransferItemWrapper(pasteboardItems[i]);
         return items;

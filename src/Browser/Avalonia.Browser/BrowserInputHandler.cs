@@ -218,7 +218,7 @@ internal class BrowserInputHandler
             return false;
         }
 
-        var dropEffect = RawDragEvent(eventType, position, (RawInputModifiers)modifiers, new BrowserDataTransfer(items), effectAllowed);
+        var dropEffect = RawDragEvent(eventType, position, (RawInputModifiers)modifiers, new BrowserDragDataTransfer(items), effectAllowed);
         dataTransfer.SetProperty("dropEffect", dropEffect.ToString().ToLowerInvariant());
 
         // Note, due to complications of JS interop, we ignore this return value.
@@ -342,7 +342,7 @@ internal class BrowserInputHandler
     }
 
     private DragDropEffects RawDragEvent(RawDragEventType eventType, Point position, RawInputModifiers modifiers,
-        BrowserDataTransfer dataTransfer, DragDropEffects dropEffect)
+        BrowserDragDataTransfer dataTransfer, DragDropEffects dropEffect)
     {
         var device = AvaloniaLocator.Current.GetRequiredService<IDragDropDevice>();
         var eventArgs = new RawDragEvent(device, eventType, _inputRoot!, position, dataTransfer, dropEffect, modifiers);

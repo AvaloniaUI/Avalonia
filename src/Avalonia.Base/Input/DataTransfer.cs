@@ -6,14 +6,18 @@ using Avalonia.Utilities;
 namespace Avalonia.Input;
 
 /// <summary>
-/// A mutable implementation of <see cref="IDataTransfer"/>.
+/// A mutable implementation of <see cref="ISyncDataTransfer"/> and <see cref="IAsyncDataTransfer"/>.
 /// </summary>
-public sealed class DataTransfer : IDataTransfer
+/// <remarks>
+/// While it also implements <see cref="IAsyncDataTransfer"/>, this class always returns data synchronously.
+/// For advanced usages, consider implementing <see cref="IAsyncDataTransfer"/> directly.
+/// </remarks>
+public sealed class DataTransfer : ISyncDataTransfer, IAsyncDataTransfer
 {
-    private readonly List<IDataTransferItem> _items = [];
+    private readonly List<DataTransferItem> _items = [];
     private DataFormat[]? _formats;
 
-    /// <inheritdoc />
+    /// <inheritdoc cref="ISyncDataTransferItem.Formats" />
     public IReadOnlyList<DataFormat> Formats
     {
         get
@@ -25,15 +29,23 @@ public sealed class DataTransfer : IDataTransfer
         }
     }
 
-    /// <inheritdoc />
-    public IReadOnlyList<IDataTransferItem> Items
+    /// <summary>
+    /// Gets a list of <see cref="DataTransferItem"/> contained in this object.
+    /// </summary>
+    public IReadOnlyList<DataTransferItem> Items
         => _items;
 
+    IReadOnlyList<ISyncDataTransferItem> ISyncDataTransfer.Items
+        => Items;
+
+    IReadOnlyList<IAsyncDataTransferItem> IAsyncDataTransfer.Items
+        => Items;
+
     /// <summary>
-    /// Adds an existing <see cref="IDataTransferItem"/>.
+    /// Adds an existing <see cref="DataTransferItem"/> to this object.
     /// </summary>
     /// <param name="item">The item to add.</param>
-    public void Add(IDataTransferItem item)
+    public void Add(DataTransferItem item)
     {
         ThrowHelper.ThrowIfNull(item);
 

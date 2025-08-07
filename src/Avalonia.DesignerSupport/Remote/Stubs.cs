@@ -224,20 +224,20 @@ namespace Avalonia.DesignerSupport.Remote
         [Obsolete($"Use {nameof(SetDataAsync)} instead.")]
         public Task SetDataObjectAsync(IDataObject data) => Task.CompletedTask;
 
-        public Task SetDataAsync(IDataTransfer? dataTransfer) => Task.CompletedTask;
+        public Task SetDataAsync(IAsyncDataTransfer? dataTransfer) => Task.CompletedTask;
 
         public Task<string[]> GetFormatsAsync() => Task.FromResult<string[]>([]);
 
         public Task<object?> GetDataAsync(string format) => Task.FromResult<object?>(null);
 
-        public Task<IDataTransfer?> TryGetDataAsync() => Task.FromResult<IDataTransfer?>(null);
+        public Task<IAsyncDataTransfer?> TryGetDataAsync() => Task.FromResult<IAsyncDataTransfer?>(null);
 
         [Obsolete($"Use {nameof(TryGetInProcessDataAsync)} instead.")]
         public Task<IDataObject?> TryGetInProcessDataObjectAsync() => Task.FromResult<IDataObject?>(null);
 
         public Task FlushAsync() => Task.CompletedTask;
 
-        public Task<IDataTransfer?> TryGetInProcessDataAsync() => Task.FromResult<IDataTransfer?>(null);
+        public Task<IAsyncDataTransfer?> TryGetInProcessDataAsync() => Task.FromResult<IAsyncDataTransfer?>(null);
     }
 
     class CursorFactoryStub : ICursorFactory

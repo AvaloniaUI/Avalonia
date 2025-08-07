@@ -10,10 +10,10 @@ namespace Avalonia.Input.Platform;
 public interface IClipboardImpl
 {
     /// <inheritdoc cref="IClipboard.TryGetDataAsync"/>
-    Task<IDataTransfer?> TryGetDataAsync();
+    Task<IAsyncDataTransfer?> TryGetDataAsync();
 
     /// <inheritdoc cref="IClipboard.SetDataAsync"/>
-    Task SetDataAsync(IDataTransfer dataTransfer);
+    Task SetDataAsync(IAsyncDataTransfer dataTransfer);
 
     /// <inheritdoc cref="IClipboard.ClearAsync"/>
     Task ClearAsync();

@@ -17,24 +17,24 @@ namespace Avalonia.Android.Platform
         private readonly ClipboardManager? _clipboardManager = clipboardManager;
         private readonly Context? _context = context;
 
-        public Task<IDataTransfer?> TryGetDataAsync()
+        public Task<IAsyncDataTransfer?> TryGetDataAsync()
         {
             try
             {
-                return Task.FromResult<IDataTransfer?>(TryGetData());
+                return Task.FromResult<IAsyncDataTransfer?>(TryGetData());
             }
             catch (Exception ex)
             {
-                return Task.FromException<IDataTransfer?>(ex);
+                return Task.FromException<IAsyncDataTransfer?>(ex);
             }
         }
 
-        private ClipDataToDataTransferWrapper? TryGetData() =>
-            _clipboardManager?.PrimaryClip is { } clipData ?
+        private ClipDataToDataTransferWrapper? TryGetData()
+            => _clipboardManager?.PrimaryClip is { } clipData ?
                 new ClipDataToDataTransferWrapper(clipData, _context) :
                 null;
 
-        public async Task SetDataAsync(IDataTransfer dataTransfer)
+        public async Task SetDataAsync(IAsyncDataTransfer dataTransfer)
         {
             if (_clipboardManager is null)
                 return;
@@ -74,7 +74,7 @@ namespace Avalonia.Android.Platform
             _clipboardManager.PrimaryClip = clipData;
         }
 
-        private async Task<ClipData.Item?> TryCreateDataItemAsync(IDataTransferItem item)
+        private async Task<ClipData.Item?> TryCreateDataItemAsync(IAsyncDataTransferItem item)
         {
             var hasFormats = false;
 

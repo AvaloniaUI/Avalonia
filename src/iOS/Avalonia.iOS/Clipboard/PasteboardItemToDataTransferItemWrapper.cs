@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Avalonia.Input;
+﻿using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.iOS.Storage;
 using Foundation;
@@ -8,7 +6,7 @@ using Foundation;
 namespace Avalonia.iOS.Clipboard;
 
 internal sealed class PasteboardItemToDataTransferItemWrapper(NSDictionary item)
-    : PlatformDataTransferItem
+    : PlatformSyncDataTransferItem
 {
     private readonly NSDictionary _item = item; // key: NSString* type, value: id value
 
@@ -21,19 +19,7 @@ internal sealed class PasteboardItemToDataTransferItemWrapper(NSDictionary item)
         return formats;
     }
 
-    protected override Task<object?> TryGetAsyncCore(DataFormat format)
-    {
-        try
-        {
-            return Task.FromResult(TryGet(format));
-        }
-        catch (Exception ex)
-        {
-            return Task.FromException<object?>(ex);
-        }
-    }
-
-    private object? TryGet(DataFormat format)
+    protected override object? TryGetCore(DataFormat format)
     {
         var type = ClipboardDataFormatHelper.ToSystemType(format);
         if (!_item.TryGetValue((NSString)type, out var value))

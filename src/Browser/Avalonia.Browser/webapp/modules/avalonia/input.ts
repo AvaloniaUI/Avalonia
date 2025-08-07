@@ -47,7 +47,7 @@ interface WriteableClipboardSource {
     items: WriteableClipboardItem[];
 }
 
-type ReadableClipboardItem = {
+type ReadableDataItem = {
     type: "clipboardItem";
     value: ClipboardItem;
 } | {
@@ -58,7 +58,7 @@ type ReadableClipboardItem = {
     value: string;
 };
 
-type ReadableClipboardValue = {
+type ReadableDataValue = {
     type: "string";
     value: string;
 } | {
@@ -71,7 +71,7 @@ type ReadableClipboardValue = {
 
 export class InputHelper {
     static clipboardState: ClipboardState = ClipboardState.None;
-    static resolveClipboard?: (value: readonly ReadableClipboardItem[]) => void;
+    static resolveClipboard?: (value: readonly ReadableDataItem[]) => void;
     static rejectClipboard?: (reason?: any) => void;
 
     public static initializeBackgroundHandlers() {
@@ -122,21 +122,21 @@ export class InputHelper {
         item.data[format] = new Blob([bytes], { type: format });
     }
 
-    public static async readClipboard(window: Window): Promise<readonly ReadableClipboardItem[]> {
+    public static async readClipboard(window: Window): Promise<readonly ReadableDataItem[]> {
         const clipboard = window.navigator.clipboard;
 
         if (clipboard.read) {
             const clipboardItems = await clipboard.read();
             return clipboardItems.map((item) => ({ type: "clipboardItem", value: item }));
         } else if (clipboard.readText) {
-            const item: ReadableClipboardItem = {
+            const item: ReadableDataItem = {
                 type: "string",
                 value: await clipboard.readText()
             };
             return [item];
         } else {
             try {
-                return await new Promise<readonly ReadableClipboardItem[]>((resolve, reject) => {
+                return await new Promise<readonly ReadableDataItem[]>((resolve, reject) => {
                     this.clipboardState = ClipboardState.Pending;
                     this.resolveClipboard = resolve;
                     this.rejectClipboard = reject;
@@ -179,7 +179,7 @@ export class InputHelper {
         }
     }
 
-    public static getReadableClipboardItemFormats(item: ReadableClipboardItem): readonly string[] {
+    public static getReadableDataItemFormats(item: ReadableDataItem): readonly string[] {
         /* eslint-disable indent */
         switch (item.type) {
             case "clipboardItem":
@@ -201,7 +201,8 @@ export class InputHelper {
         /* eslint-enable indent */
     }
 
-    public static async tryGetReadableClipboardItemValue(item: ReadableClipboardItem, format: string): Promise<ReadableClipboardValue | null> {
+    // Asynchronous, used to read the clipboard.
+    public static async tryGetReadableDataItemValueAsync(item: ReadableDataItem, format: string): Promise<ReadableDataValue | null> {
         const type = item.type;
 
         /* eslint-disable indent */
@@ -250,6 +251,43 @@ export class InputHelper {
                 return format.startsWith("text/")
                     ? { type: "string", value: item.value }
                     : { type: "bytes", value: await this.getBlobBytes(new Blob([item.value])) };
+            }
+
+            default:
+                return null;
+        }
+        /* eslint-enable indent */
+    }
+
+    // Synchronous, used only to read a drag-and-drop item.
+    public static tryGetReadableDataItemValue(item: ReadableDataItem, format: string): ReadableDataValue | null {
+        const type = item.type;
+
+        if (type !== "dataTransferItem") {
+            return null;
+        }
+
+        const dataTransferItem = item.value;
+
+        /* eslint-disable indent */
+        switch (dataTransferItem.kind) {
+            case "string": {
+                if (format !== dataTransferItem.type) {
+                    return null;
+                }
+
+                let stringValue = "";
+                dataTransferItem.getAsString(function (str) { stringValue = str; });
+                return { type: "string", value: stringValue };
+            }
+
+            case "file": {
+                if (format !== "Files") {
+                    return null;
+                }
+
+                const file = dataTransferItem.getAsFile();
+                return file == null ? null : { type: "file", value: StorageItem.createFromFile(file) };
             }
 
             default:
@@ -418,7 +456,7 @@ export class InputHelper {
                 return;
             }
 
-            const items: ReadableClipboardItem[] =
+            const items: ReadableDataItem[] =
                 this.getDataTransferItems(dataTransfer).map((item) => ({ type: "dataTransferItem", value: item }));
 
             JsExports.InputHelper.OnDragDrop(topLevelId, args.type, args.offsetX, args.offsetY, this.getModifiers(args), dataTransfer, items);

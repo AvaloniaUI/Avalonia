@@ -120,11 +120,11 @@ namespace ControlCatalog.Pages
 
                 if (e.DataTransfer.Contains(DataFormat.Text))
                 {
-                    _dropState.Text = await e.DataTransfer.TryGetTextAsync();
+                    _dropState.Text = e.DataTransfer.TryGetText();
                 }
                 else if (e.DataTransfer.Contains(DataFormat.File))
                 {
-                    var files = await e.DataTransfer.TryGetFilesAsync() ?? [];
+                    var files = e.DataTransfer.TryGetFiles() ?? [];
                     var contentStr = "";
 
                     foreach (var item in files)
@@ -149,7 +149,7 @@ namespace ControlCatalog.Pages
                 }
                 else if (e.DataTransfer.Contains(_customFormat))
                 {
-                    _dropState.Text = "Custom: " + await e.DataTransfer.TryGetValueAsync<object?>(_customFormat);
+                    _dropState.Text = "Custom: " + e.DataTransfer.TryGetValue<object?>(_customFormat);
                 }
             }
 

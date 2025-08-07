@@ -134,11 +134,14 @@ internal static partial class InputHelper
     [JSImport("InputHelper.writeClipboard", AvaloniaModule.MainModuleName)]
     public static partial Task WriteClipboardAsync(JSObject globalThis, JSObject? source);
 
-    [JSImport("InputHelper.getReadableClipboardItemFormats", AvaloniaModule.MainModuleName)]
-    public static partial string[] GetReadableClipboardItemFormats(JSObject item);
+    [JSImport("InputHelper.getReadableDataItemFormats", AvaloniaModule.MainModuleName)]
+    public static partial string[] GetReadableDataItemFormats(JSObject item);
 
-    [JSImport("InputHelper.tryGetReadableClipboardItemValue", AvaloniaModule.MainModuleName)]
-    public static partial Task<JSObject?> TryGetReadableClipboardItemValueAsync(JSObject item, string format);
+    [JSImport("InputHelper.tryGetReadableDataItemValueAsync", AvaloniaModule.MainModuleName)]
+    public static partial Task<JSObject?> TryGetReadableDataItemValueAsync(JSObject item, string format);
+
+    [JSImport("InputHelper.tryGetReadableDataItemValue", AvaloniaModule.MainModuleName)]
+    public static partial JSObject? TryGetReadableDataItemValue(JSObject item, string format);
 
     [JSImport("InputHelper.setPointerCapture", AvaloniaModule.MainModuleName)]
     public static partial void

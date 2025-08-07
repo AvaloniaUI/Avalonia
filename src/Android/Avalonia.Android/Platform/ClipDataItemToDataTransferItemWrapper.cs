@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
 using Avalonia.Android.Platform.Storage;
@@ -9,12 +8,12 @@ using Avalonia.Input.Platform;
 namespace Avalonia.Android.Platform;
 
 /// <summary>
-/// Wraps a <see cref="ClipData.Item"/> into a <see cref="IDataTransferItem"/>.
+/// Wraps a <see cref="ClipData.Item"/> into a <see cref="ISyncDataTransferItem"/>.
 /// </summary>
 /// <param name="item">The clip data item.</param>
 /// <param name="owner">The data transfer owning this item.</param>
 internal sealed class ClipDataItemToDataTransferItemWrapper(ClipData.Item item, ClipDataToDataTransferWrapper owner)
-    : PlatformDataTransferItem
+    : PlatformSyncDataTransferItem
 {
     private readonly ClipData.Item _item = item;
     private readonly ClipDataToDataTransferWrapper _owner = owner;
@@ -22,19 +21,7 @@ internal sealed class ClipDataItemToDataTransferItemWrapper(ClipData.Item item, 
     protected override DataFormat[] ProvideFormats()
         => _owner.Formats; // There's no "format per item", assume each item handle all formats
 
-    protected override Task<object?> TryGetAsyncCore(DataFormat format)
-    {
-        try
-        {
-            return Task.FromResult(TryGetValue(format));
-        }
-        catch (Exception ex)
-        {
-            return Task.FromException<object?>(ex);
-        }
-    }
-
-    private object? TryGetValue(DataFormat format)
+    protected override object? TryGetCore(DataFormat format)
     {
         if (DataFormat.Text.Equals(format))
             return _item.CoerceToText(_owner.Context);

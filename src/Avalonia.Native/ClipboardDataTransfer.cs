@@ -7,14 +7,14 @@ using Avalonia.Input.Platform;
 namespace Avalonia.Native;
 
 /// <summary>
-/// Implementation of <see cref="IDataTransfer"/> for Avalonia.Native.
+/// Implementation of <see cref="ISyncDataTransfer"/> for Avalonia.Native.
 /// </summary>
 /// <param name="session">
 /// The clipboard session.
 /// The <see cref="ClipboardDataTransfer"/> assumes ownership over this instance.
 /// </param>
 internal sealed class ClipboardDataTransfer(ClipboardReadSession session)
-    : PlatformDataTransfer
+    : PlatformSyncDataTransfer
 {
     private readonly ClipboardReadSession _session = session;
 
@@ -24,13 +24,13 @@ internal sealed class ClipboardDataTransfer(ClipboardReadSession session)
         return ClipboardDataFormatHelper.ToDataFormats(formats);
     }
 
-    protected override IDataTransferItem[] ProvideItems()
+    protected override PlatformSyncDataTransferItem[] ProvideItems()
     {
         var itemCount = _session.GetItemCount();
         if (itemCount == 0)
             return [];
 
-        var items = new IDataTransferItem[itemCount];
+        var items = new PlatformSyncDataTransferItem[itemCount];
 
         for (var i = 0; i < itemCount; ++i)
             items[i] = new ClipboardDataTransferItem(_session, i);

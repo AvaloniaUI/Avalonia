@@ -11,7 +11,7 @@ namespace Avalonia.Input.Raw
 
         public Point Location { get; set; }
 
-        public IDataTransfer DataTransfer { get; }
+        public ISyncDataTransfer DataTransfer { get; }
 
         [Obsolete($"Use {nameof(DataTransfer)} instead.")]
         public IDataObject Data
@@ -23,7 +23,7 @@ namespace Avalonia.Input.Raw
 
         public KeyModifiers KeyModifiers { get; }
 
-        [Obsolete($"Use the constructor accepting a {nameof(IDataTransfer)} instance instead.")]
+        [Obsolete($"Use the constructor accepting a {nameof(ISyncDataTransfer)} instance instead.")]
         public RawDragEvent(IDragDropDevice inputDevice,
             RawDragEventType type,
             IInputRoot root,
@@ -40,7 +40,7 @@ namespace Avalonia.Input.Raw
             RawDragEventType type,
             IInputRoot root,
             Point location,
-            IDataTransfer dataTransfer,
+            ISyncDataTransfer dataTransfer,
             DragDropEffects effects,
             RawInputModifiers modifiers)
             : base(inputDevice, 0, root)

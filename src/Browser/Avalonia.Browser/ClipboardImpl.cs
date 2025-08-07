@@ -13,13 +13,13 @@ namespace Avalonia.Browser
 {
     internal sealed class ClipboardImpl : IClipboardImpl
     {
-        public async Task<IDataTransfer?> TryGetDataAsync()
+        public async Task<IAsyncDataTransfer?> TryGetDataAsync()
         {
             var jsItems = await ReadClipboardAsync(BrowserWindowingPlatform.GlobalThis).ConfigureAwait(false);
-            return jsItems.GetPropertyAsInt32("length") == 0 ? null : new BrowserDataTransfer(jsItems);
+            return jsItems.GetPropertyAsInt32("length") == 0 ? null : new BrowserClipboardDataTransfer(jsItems);
         }
 
-        public async Task SetDataAsync(IDataTransfer dataTransfer)
+        public async Task SetDataAsync(IAsyncDataTransfer dataTransfer)
         {
             using var source = CreateWriteableClipboardSource();
 
@@ -33,7 +33,7 @@ namespace Avalonia.Browser
             await WriteClipboardAsync(BrowserWindowingPlatform.GlobalThis, source).ConfigureAwait(false);
         }
 
-        private async Task TryAddItemAsync(IDataTransferItem dataTransferItem, JSObject source)
+        private async Task TryAddItemAsync(IAsyncDataTransferItem dataTransferItem, JSObject source)
         {
             JSObject? writeableItem = null;
 

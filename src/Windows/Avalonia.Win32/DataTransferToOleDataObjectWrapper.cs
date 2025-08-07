@@ -14,10 +14,10 @@ using STGMEDIUM = Avalonia.Win32.Interop.UnmanagedMethods.STGMEDIUM;
 namespace Avalonia.Win32;
 
 /// <summary>
-/// Wraps an Avalonia <see cref="IDataTransfer"/> into a Win32 <see cref="Win32Com.IDataObject"/>.
+/// Wraps an Avalonia <see cref="ISyncDataTransfer"/> into a Win32 <see cref="Win32Com.IDataObject"/>.
 /// </summary>
 /// <param name="dataTransfer">The wrapped data transfer instance.</param>
-internal class DataTransferToOleDataObjectWrapper(IDataTransfer dataTransfer)
+internal class DataTransferToOleDataObjectWrapper(ISyncDataTransfer dataTransfer)
     : CallbackBase, Win32Com.IDataObject
 {
     private class FormatEnumerator : CallbackBase, Win32Com.IEnumFORMATETC
@@ -78,7 +78,7 @@ internal class DataTransferToOleDataObjectWrapper(IDataTransfer dataTransfer)
         }
     }
 
-    public IDataTransfer? DataTransfer { get; private set; } = dataTransfer;
+    public ISyncDataTransfer? DataTransfer { get; private set; } = dataTransfer;
 
     public bool IsDisposed
         => DataTransfer is null;
@@ -137,10 +137,10 @@ internal class DataTransferToOleDataObjectWrapper(IDataTransfer dataTransfer)
         return OleDataObjectHelper.WriteDataToHGlobal(data, dataFormat, ref medium->unionmember);
     }
 
-    private static object? GetDataCore(IDataTransfer dataTransfer, DataFormat format)
+    private static object? GetDataCore(ISyncDataTransfer dataTransfer, DataFormat format)
         => DataFormat.File.Equals(format) ?
-            dataTransfer.TryGetValuesAsync<IStorageItem>(format).GetAwaiter().GetResult() :
-            dataTransfer.TryGetValueAsync<object?>(format).GetAwaiter().GetResult();
+            dataTransfer.TryGetValues<IStorageItem>(format) :
+            dataTransfer.TryGetValue<object?>(format);
 
     unsafe uint Win32Com.IDataObject.QueryGetData(FORMATETC* format)
     {

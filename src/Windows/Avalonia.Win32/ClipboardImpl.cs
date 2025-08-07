@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.Logging;
 using Avalonia.Reactive;
 using Avalonia.Threading;
 using Avalonia.Win32.Interop;
@@ -56,10 +57,12 @@ namespace Avalonia.Win32
             _lastStoredDataObjectIntPtr = IntPtr.Zero;
         }
 
-        public async Task SetDataAsync(IDataTransfer dataTransfer)
+        public async Task SetDataAsync(IAsyncDataTransfer dataTransfer)
         {
             Dispatcher.UIThread.VerifyAccess();
-            using var wrapper = new DataTransferToOleDataObjectWrapper(dataTransfer);
+
+            using var wrapper = new DataTransferToOleDataObjectWrapper(
+                dataTransfer.ToSyncDataTransfer(LogArea.Win32Platform));
             var i = OleRetryCount;
 
             while (true)
@@ -88,7 +91,7 @@ namespace Avalonia.Win32
             }
         }
 
-        public async Task<IDataTransfer?> TryGetDataAsync()
+        public async Task<IAsyncDataTransfer?> TryGetDataAsync()
         {
             Dispatcher.UIThread.VerifyAccess();
             var i = OleRetryCount;

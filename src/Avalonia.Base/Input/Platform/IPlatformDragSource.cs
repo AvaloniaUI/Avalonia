@@ -15,7 +15,7 @@ namespace Avalonia.Input.Platform
 
         Task<DragDropEffects> DoDragDropAsync(
             PointerEventArgs triggerEvent,
-            IDataTransfer dataTransfer,
+            ISyncDataTransfer dataTransfer,
             DragDropEffects allowedEffects);
     }
 }
