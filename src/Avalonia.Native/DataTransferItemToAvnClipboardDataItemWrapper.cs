@@ -11,14 +11,14 @@ using Avalonia.Platform.Storage;
 namespace Avalonia.Native;
 
 /// <summary>
-/// Wraps a <see cref="ISyncDataTransferItem"/> into a <see cref="IAvnClipboardDataItem"/>.
+/// Wraps a <see cref="IDataTransferItem"/> into a <see cref="IAvnClipboardDataItem"/>.
 /// This class is called by native code.
 /// </summary>
 /// <param name="item">The item to wrap.</param>
-internal sealed class DataTransferItemToAvnClipboardDataItemWrapper(ISyncDataTransferItem item)
+internal sealed class DataTransferItemToAvnClipboardDataItemWrapper(IDataTransferItem item)
     : NativeOwned, IAvnClipboardDataItem
 {
-    private readonly ISyncDataTransferItem _item = item;
+    private readonly IDataTransferItem _item = item;
 
     IAvnStringArray IAvnClipboardDataItem.ProvideFormats()
         => new AvnStringArray(_item.Formats.Select(ClipboardDataFormatHelper.ToNativeFormat));

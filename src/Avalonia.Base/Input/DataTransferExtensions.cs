@@ -6,25 +6,25 @@ using Avalonia.Platform.Storage;
 
 namespace Avalonia.Input;
 
-// Keep SyncDataTransferExtensions.TryGetXxx methods in sync with AsyncDataTransferExtensions.TryGetXxxAsync ones.
+// Keep DataTransferExtensions.TryGetXxx methods in sync with AsyncDataTransferExtensions.TryGetXxxAsync ones.
 
 /// <summary>
-/// Contains extension methods for <see cref="ISyncDataTransfer"/>.
+/// Contains extension methods for <see cref="IDataTransfer"/>.
 /// </summary>
-public static class SyncDataTransferExtensions
+public static class DataTransferExtensions
 {
     [Obsolete]
-    internal static IDataObject ToLegacyDataObject(this ISyncDataTransfer dataTransfer)
+    internal static IDataObject ToLegacyDataObject(this IDataTransfer dataTransfer)
         => (dataTransfer as DataObjectToDataTransferWrapper)?.DataObject
            ?? new DataTransferToDataObjectWrapper(dataTransfer);
 
     /// <summary>
-    /// Gets whether a <see cref="ISyncDataTransfer"/> supports a specific format.
+    /// Gets whether a <see cref="IDataTransfer"/> supports a specific format.
     /// </summary>
-    /// <param name="dataTransfer">The <see cref="ISyncDataTransfer"/> instance.</param>
+    /// <param name="dataTransfer">The <see cref="IDataTransfer"/> instance.</param>
     /// <param name="format">The format to check.</param>
     /// <returns>true if <paramref name="format"/> is supported, false otherwise.</returns>
-    public static bool Contains(this ISyncDataTransfer dataTransfer, DataFormat format)
+    public static bool Contains(this IDataTransfer dataTransfer, DataFormat format)
     {
         var formats = dataTransfer.Formats;
         var count = formats.Count;
@@ -39,16 +39,16 @@ public static class SyncDataTransferExtensions
     }
 
     /// <summary>
-    /// Gets the list of <see cref="ISyncDataTransferItem"/> contained in this object, filtered by a given format.
+    /// Gets the list of <see cref="IDataTransferItem"/> contained in this object, filtered by a given format.
     /// </summary>
     /// <remarks>
     /// <para>
     /// Some platforms (such as Windows and X11) may only support a single data item for all formats
     /// except <see cref="DataFormat.File"/>.
     /// </para>
-    /// <para>Items returned by this property must stay valid until the <see cref="ISyncDataTransfer"/> is disposed.</para>
+    /// <para>Items returned by this property must stay valid until the <see cref="IDataTransfer"/> is disposed.</para>
     /// </remarks>
-    public static IEnumerable<ISyncDataTransferItem> GetItems(this ISyncDataTransfer dataTransfer, DataFormat format)
+    public static IEnumerable<IDataTransferItem> GetItems(this IDataTransfer dataTransfer, DataFormat format)
     {
         var items = dataTransfer.Items;
         var count = items.Count;
@@ -62,16 +62,16 @@ public static class SyncDataTransferExtensions
     }
 
     /// <summary>
-    /// Tries to get a value for a given format from a <see cref="ISyncDataTransfer"/>.
+    /// Tries to get a value for a given format from a <see cref="IDataTransfer"/>.
     /// </summary>
-    /// <param name="dataTransfer">The <see cref="ISyncDataTransfer"/> instance.</param>
+    /// <param name="dataTransfer">The <see cref="IDataTransfer"/> instance.</param>
     /// <param name="format">The format to retrieve.</param>
     /// <returns>A value for <paramref name="format"/>, or null if the format is not supported.</returns>
     /// <remarks>
-    /// If the <see cref="ISyncDataTransfer"/> contains several items supporting <paramref name="format"/>,
+    /// If the <see cref="IDataTransfer"/> contains several items supporting <paramref name="format"/>,
     /// the first matching one will be returned.
     /// </remarks>
-    public static T? TryGetValue<T>(this ISyncDataTransfer dataTransfer, DataFormat format)
+    public static T? TryGetValue<T>(this IDataTransfer dataTransfer, DataFormat format)
     {
         if (dataTransfer.GetItems(format).FirstOrDefault() is { } item)
         {
@@ -83,12 +83,12 @@ public static class SyncDataTransferExtensions
     }
 
     /// <summary>
-    /// Tries to get multiple values for a given format from a <see cref="ISyncDataTransfer"/>.
+    /// Tries to get multiple values for a given format from a <see cref="IDataTransfer"/>.
     /// </summary>
-    /// <param name="dataTransfer">The <see cref="ISyncDataTransfer"/> instance.</param>
+    /// <param name="dataTransfer">The <see cref="IDataTransfer"/> instance.</param>
     /// <param name="format">The format to retrieve.</param>
     /// <returns>A list of values for <paramref name="format"/>, or null if the format is not supported.</returns>
-    public static T[]? TryGetValues<T>(this ISyncDataTransfer dataTransfer, DataFormat format)
+    public static T[]? TryGetValues<T>(this IDataTransfer dataTransfer, DataFormat format)
     {
         List<T>? results = null;
 
@@ -106,29 +106,29 @@ public static class SyncDataTransferExtensions
     }
 
     /// <summary>
-    /// Returns a text, if available, from a <see cref="ISyncDataTransfer"/> instance.
+    /// Returns a text, if available, from a <see cref="IDataTransfer"/> instance.
     /// </summary>
     /// <param name="dataTransfer">The data transfer instance.</param>
     /// <returns>A string, or null if the format isn't available.</returns>
     /// <seealso cref="DataFormat.Text"/>.
-    public static string? TryGetText(this ISyncDataTransfer dataTransfer)
+    public static string? TryGetText(this IDataTransfer dataTransfer)
         => dataTransfer.TryGetValue<string>(DataFormat.Text);
 
     /// <summary>
-    /// Returns a file, if available, from a <see cref="ISyncDataTransfer"/> instance.
+    /// Returns a file, if available, from a <see cref="IDataTransfer"/> instance.
     /// </summary>
     /// <param name="dataTransfer">The data transfer instance.</param>
     /// <returns>An <see cref="IStorageItem"/> (file or folder), or null if the format isn't available.</returns>
     /// <seealso cref="DataFormat.File"/>.
-    public static IStorageItem? TryGetFile(this ISyncDataTransfer dataTransfer)
+    public static IStorageItem? TryGetFile(this IDataTransfer dataTransfer)
         => dataTransfer.TryGetValue<IStorageItem>(DataFormat.File);
 
     /// <summary>
-    /// Returns a list of files, if available, from a <see cref="ISyncDataTransfer"/> instance.
+    /// Returns a list of files, if available, from a <see cref="IDataTransfer"/> instance.
     /// </summary>
     /// <param name="dataTransfer">The data transfer instance.</param>
     /// <returns>An array of <see cref="IStorageItem"/> (files or folders), or null if the format isn't available.</returns>
     /// <seealso cref="DataFormat.File"/>.
-    public static IStorageItem[]? TryGetFiles(this ISyncDataTransfer dataTransfer)
+    public static IStorageItem[]? TryGetFiles(this IDataTransfer dataTransfer)
         => dataTransfer.TryGetValues<IStorageItem>(DataFormat.File);
 }

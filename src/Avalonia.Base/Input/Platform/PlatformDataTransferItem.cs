@@ -5,17 +5,17 @@ using System.Threading.Tasks;
 namespace Avalonia.Input.Platform;
 
 /// <summary>
-/// Abstract implementation of <see cref="ISyncDataTransferItem"/> used by platform implementations.
+/// Abstract implementation of <see cref="IDataTransferItem"/> used by platform implementations.
 /// </summary>
 /// <remarks>Use this class when the platform can only provide the underlying data synchronously.</remarks>
-internal abstract class PlatformSyncDataTransferItem : ISyncDataTransferItem, IAsyncDataTransferItem
+internal abstract class PlatformDataTransferItem : IDataTransferItem, IAsyncDataTransferItem
 {
     private DataFormat[]? _formats;
 
     public DataFormat[] Formats
         => _formats ??= ProvideFormats();
 
-    IReadOnlyList<DataFormat> ISyncDataTransferItem.Formats
+    IReadOnlyList<DataFormat> IDataTransferItem.Formats
         => Formats;
 
     IReadOnlyList<DataFormat> IAsyncDataTransferItem.Formats
@@ -46,10 +46,10 @@ internal abstract class PlatformSyncDataTransferItem : ISyncDataTransferItem, IA
 
     protected abstract object? TryGetCore(DataFormat format);
 
-    public static PlatformSyncDataTransferItem Create(DataFormat format, object value)
+    public static PlatformDataTransferItem Create(DataFormat format, object value)
         => new SingleFormatItem(format, value);
 
-    private sealed class SingleFormatItem(DataFormat format, object value) : PlatformSyncDataTransferItem
+    private sealed class SingleFormatItem(DataFormat format, object value) : PlatformDataTransferItem
     {
         private readonly DataFormat _format = format;
         private readonly object _value = value;

@@ -7,11 +7,11 @@ namespace Avalonia.Input.Platform;
 #pragma warning disable CS0618 // Type or member is obsolete: usages of IDataObject and DataFormats
 
 /// <summary>
-/// Wraps a <see cref="ISyncDataTransfer"/> into a legacy <see cref="IDataObject"/>.
+/// Wraps a <see cref="IDataTransfer"/> into a legacy <see cref="IDataObject"/>.
 /// </summary>
-internal sealed class DataTransferToDataObjectWrapper(ISyncDataTransfer dataTransfer) : IDataObject
+internal sealed class DataTransferToDataObjectWrapper(IDataTransfer dataTransfer) : IDataObject
 {
-    public ISyncDataTransfer DataTransfer { get; } = dataTransfer;
+    public IDataTransfer DataTransfer { get; } = dataTransfer;
 
     public IEnumerable<string> GetDataFormats()
         => DataTransfer.Formats.Select(DataFormats.ToString);

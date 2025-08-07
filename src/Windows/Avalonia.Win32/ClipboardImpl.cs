@@ -62,7 +62,7 @@ namespace Avalonia.Win32
             Dispatcher.UIThread.VerifyAccess();
 
             using var wrapper = new DataTransferToOleDataObjectWrapper(
-                dataTransfer.ToSyncDataTransfer(LogArea.Win32Platform));
+                dataTransfer.ToSynchronous(LogArea.Win32Platform));
             var i = OleRetryCount;
 
             while (true)

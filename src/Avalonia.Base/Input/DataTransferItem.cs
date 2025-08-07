@@ -8,20 +8,20 @@ using Avalonia.Utilities;
 namespace Avalonia.Input;
 
 /// <summary>
-/// A mutable implementation of <see cref="ISyncDataTransferItem"/> and <see cref="IAsyncDataTransferItem"/>.
+/// A mutable implementation of <see cref="IDataTransferItem"/> and <see cref="IAsyncDataTransferItem"/>.
 /// This class also provides several static methods to easily create a <see cref="DataTransferItem"/> for common usages.
 /// </summary>
 /// <remarks>
 /// While it also implements <see cref="IAsyncDataTransferItem"/>, this class always returns data synchronously.
 /// For advanced usages, consider implementing <see cref="IAsyncDataTransferItem"/> directly.
 /// </remarks>
-public sealed class DataTransferItem : ISyncDataTransferItem, IAsyncDataTransferItem
+public sealed class DataTransferItem : IDataTransferItem, IAsyncDataTransferItem
 {
     private Dictionary<DataFormat, DataAccessor>? _accessorByFormat; // used for 2+ formats
     private KeyValuePair<DataFormat, DataAccessor>? _singleItem; // used for the common single format case
     private DataFormat[]? _formats;
 
-    /// <inheritdoc cref="ISyncDataTransferItem.Formats" />
+    /// <inheritdoc cref="IDataTransferItem.Formats" />
     public IReadOnlyList<DataFormat> Formats
     {
         get

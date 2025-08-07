@@ -364,7 +364,7 @@ namespace Avalonia.X11.Clipboard
                     if (await reader.TryGetAsync(format) is IEnumerable<IStorageItem> storageItems)
                     {
                         foreach (var storageItem in storageItems)
-                            items.Add(PlatformSyncDataTransferItem.Create(format, storageItem));
+                            items.Add(PlatformDataTransferItem.Create(format, storageItem));
                     }
                 }
                 else

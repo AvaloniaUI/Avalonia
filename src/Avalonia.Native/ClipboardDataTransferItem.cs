@@ -13,7 +13,7 @@ namespace Avalonia.Native;
 /// <param name="session">The clipboard session. This is NOT owned by the <see cref="ClipboardDataTransferItem"/>.</param>
 /// <param name="itemIndex">The item index.</param>
 internal sealed class ClipboardDataTransferItem(ClipboardReadSession session, int itemIndex)
-    : PlatformSyncDataTransferItem
+    : PlatformDataTransferItem
 {
     private readonly ClipboardReadSession _session = session;
     private readonly int _itemIndex = itemIndex;

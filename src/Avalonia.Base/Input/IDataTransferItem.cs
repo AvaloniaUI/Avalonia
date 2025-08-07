@@ -3,11 +3,11 @@
 namespace Avalonia.Input;
 
 /// <summary>
-/// Represent an item inside a <see cref="ISyncDataTransfer"/>.
+/// Represent an item inside a <see cref="IDataTransfer"/>.
 /// An item may support several formats and can return the value of a given format on demand.
 /// </summary>
 /// <seealso cref="DataTransferItem"/>
-public interface ISyncDataTransferItem
+public interface IDataTransferItem
 {
     /// <summary>
     /// Gets the formats supported by this item.

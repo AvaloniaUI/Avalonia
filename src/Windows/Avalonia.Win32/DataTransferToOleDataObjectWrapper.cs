@@ -14,10 +14,10 @@ using STGMEDIUM = Avalonia.Win32.Interop.UnmanagedMethods.STGMEDIUM;
 namespace Avalonia.Win32;
 
 /// <summary>
-/// Wraps an Avalonia <see cref="ISyncDataTransfer"/> into a Win32 <see cref="Win32Com.IDataObject"/>.
+/// Wraps an Avalonia <see cref="IDataTransfer"/> into a Win32 <see cref="Win32Com.IDataObject"/>.
 /// </summary>
 /// <param name="dataTransfer">The wrapped data transfer instance.</param>
-internal class DataTransferToOleDataObjectWrapper(ISyncDataTransfer dataTransfer)
+internal class DataTransferToOleDataObjectWrapper(IDataTransfer dataTransfer)
     : CallbackBase, Win32Com.IDataObject
 {
     private class FormatEnumerator : CallbackBase, Win32Com.IEnumFORMATETC
@@ -78,7 +78,7 @@ internal class DataTransferToOleDataObjectWrapper(ISyncDataTransfer dataTransfer
         }
     }
 
-    public ISyncDataTransfer? DataTransfer { get; private set; } = dataTransfer;
+    public IDataTransfer? DataTransfer { get; private set; } = dataTransfer;
 
     public bool IsDisposed
         => DataTransfer is null;
@@ -137,7 +137,7 @@ internal class DataTransferToOleDataObjectWrapper(ISyncDataTransfer dataTransfer
         return OleDataObjectHelper.WriteDataToHGlobal(data, dataFormat, ref medium->unionmember);
     }
 
-    private static object? GetDataCore(ISyncDataTransfer dataTransfer, DataFormat format)
+    private static object? GetDataCore(IDataTransfer dataTransfer, DataFormat format)
         => DataFormat.File.Equals(format) ?
             dataTransfer.TryGetValues<IStorageItem>(format) :
             dataTransfer.TryGetValue<object?>(format);

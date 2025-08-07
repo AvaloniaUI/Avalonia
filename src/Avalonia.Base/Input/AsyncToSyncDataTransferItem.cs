@@ -4,12 +4,12 @@ using System.Threading.Tasks;
 namespace Avalonia.Input;
 
 /// <summary>
-/// Wraps a <see cref="IAsyncDataTransferItem"/> into a <see cref="ISyncDataTransferItem"/>.
+/// Wraps a <see cref="IAsyncDataTransferItem"/> into a <see cref="IDataTransferItem"/>.
 /// </summary>
 /// <param name="asyncDataTransferItem">The async item to wrap.</param>
 /// <remarks>Using this type should be a last resort!</remarks>
 internal sealed class AsyncToSyncDataTransferItem(IAsyncDataTransferItem asyncDataTransferItem)
-    : ISyncDataTransferItem, IAsyncDataTransferItem
+    : IDataTransferItem, IAsyncDataTransferItem
 {
     private readonly IAsyncDataTransferItem _asyncDataTransferItem = asyncDataTransferItem;
 

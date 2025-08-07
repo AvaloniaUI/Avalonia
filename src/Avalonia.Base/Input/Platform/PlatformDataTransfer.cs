@@ -3,18 +3,18 @@
 namespace Avalonia.Input.Platform;
 
 /// <summary>
-/// Abstract implementation of <see cref="ISyncDataTransfer"/> used by platform implementations.
+/// Abstract implementation of <see cref="IDataTransfer"/> used by platform implementations.
 /// </summary>
 /// <remarks>Use this class when the platform can only provide the underlying data asynchronously.</remarks>
-internal abstract class PlatformSyncDataTransfer : ISyncDataTransfer, IAsyncDataTransfer
+internal abstract class PlatformDataTransfer : IDataTransfer, IAsyncDataTransfer
 {
     private DataFormat[]? _formats;
-    private PlatformSyncDataTransferItem[]? _items;
+    private PlatformDataTransferItem[]? _items;
 
     public DataFormat[] Formats
         => _formats ??= ProvideFormats();
 
-    IReadOnlyList<DataFormat> ISyncDataTransfer.Formats
+    IReadOnlyList<DataFormat> IDataTransfer.Formats
         => Formats;
 
     IReadOnlyList<DataFormat> IAsyncDataTransfer.Formats
@@ -23,10 +23,10 @@ internal abstract class PlatformSyncDataTransfer : ISyncDataTransfer, IAsyncData
     protected bool AreFormatsInitialized
         => _formats is not null;
 
-    public PlatformSyncDataTransferItem[] Items
+    public PlatformDataTransferItem[] Items
         => _items ??= ProvideItems();
 
-    IReadOnlyList<ISyncDataTransferItem> ISyncDataTransfer.Items
+    IReadOnlyList<IDataTransferItem> IDataTransfer.Items
         => Items;
 
     IReadOnlyList<IAsyncDataTransferItem> IAsyncDataTransfer.Items
@@ -37,7 +37,7 @@ internal abstract class PlatformSyncDataTransfer : ISyncDataTransfer, IAsyncData
 
     protected abstract DataFormat[] ProvideFormats();
 
-    protected abstract PlatformSyncDataTransferItem[] ProvideItems();
+    protected abstract PlatformDataTransferItem[] ProvideItems();
 
     public abstract void Dispose();
 }

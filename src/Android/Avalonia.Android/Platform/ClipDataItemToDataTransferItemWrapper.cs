@@ -8,12 +8,12 @@ using Avalonia.Input.Platform;
 namespace Avalonia.Android.Platform;
 
 /// <summary>
-/// Wraps a <see cref="ClipData.Item"/> into a <see cref="ISyncDataTransferItem"/>.
+/// Wraps a <see cref="ClipData.Item"/> into a <see cref="IDataTransferItem"/>.
 /// </summary>
 /// <param name="item">The clip data item.</param>
 /// <param name="owner">The data transfer owning this item.</param>
 internal sealed class ClipDataItemToDataTransferItemWrapper(ClipData.Item item, ClipDataToDataTransferWrapper owner)
-    : PlatformSyncDataTransferItem
+    : PlatformDataTransferItem
 {
     private readonly ClipData.Item _item = item;
     private readonly ClipDataToDataTransferWrapper _owner = owner;

@@ -6,24 +6,24 @@ using Avalonia.Platform.Storage;
 
 namespace Avalonia.Input;
 
-// Keep AsyncDataTransferExtensions.TryGetXxxAsync methods in sync with SyncDataTransferExtensions.TryGetXxx ones.
+// Keep AsyncDataTransferExtensions.TryGetXxxAsync methods in sync with DataTransferExtensions.TryGetXxx ones.
 
 /// <summary>
 /// Contains extension methods for <see cref="IAsyncDataTransfer"/>.
 /// </summary>
 public static class AsyncDataTransferExtensions
 {
-    internal static ISyncDataTransfer ToSyncDataTransfer(this IAsyncDataTransfer dataTransfer, string logArea)
+    internal static IDataTransfer ToSynchronous(this IAsyncDataTransfer asyncDataTransfer, string logArea)
     {
-        if (dataTransfer is ISyncDataTransfer syncDataTransfer)
-            return syncDataTransfer;
+        if (asyncDataTransfer is IDataTransfer dataTransfer)
+            return dataTransfer;
 
         Logger.TryGet(LogEventLevel.Warning, logArea)?.Log(
             null,
-            $"Using a synchronous wrapper for {nameof(IAsyncDataTransferItem)} {{Type}}. Consider implementing {nameof(ISyncDataTransfer)} instead.",
-            dataTransfer.GetType());
+            $"Using a synchronous wrapper for {nameof(IAsyncDataTransferItem)} {{Type}}. Consider implementing {nameof(IDataTransfer)} instead.",
+            asyncDataTransfer.GetType());
 
-        return new AsyncToSyncDataTransfer(dataTransfer);
+        return new AsyncToSyncDataTransfer(asyncDataTransfer);
     }
 
     /// <summary>

@@ -13,7 +13,7 @@ namespace Avalonia.Input
 
         public DragDropEffects DragEffects { get; set; }
 
-        public ISyncDataTransfer DataTransfer { get; }
+        public IDataTransfer DataTransfer { get; }
 
         [Obsolete($"Use {nameof(DataTransfer)} instead.")]
         public IDataObject Data
@@ -31,7 +31,7 @@ namespace Avalonia.Input
             return _target.TranslatePoint(_targetLocation, relativeTo) ?? new Point(0, 0);
         }
 
-        [Obsolete($"Use the constructor accepting a {nameof(ISyncDataTransfer)} instance instead.")]
+        [Obsolete($"Use the constructor accepting a {nameof(IDataTransfer)} instance instead.")]
         public DragEventArgs(
             RoutedEvent<DragEventArgs> routedEvent,
             IDataObject data,
@@ -45,7 +45,7 @@ namespace Avalonia.Input
         [Unstable("This constructor might be removed in 12.0. For unit testing, consider using DragDrop.DoDragDrop or IHeadlessWindow.DragDrop.")]
         public DragEventArgs(
             RoutedEvent<DragEventArgs> routedEvent,
-            ISyncDataTransfer dataTransfer,
+            IDataTransfer dataTransfer,
             Interactive target,
             Point targetLocation,
             KeyModifiers keyModifiers)

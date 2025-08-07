@@ -8,17 +8,17 @@ using Avalonia.Native.Interop;
 namespace Avalonia.Native;
 
 /// <summary>
-/// Wraps a <see cref="ISyncDataTransfer"/> into a <see cref="IAvnClipboardDataSource"/>.
+/// Wraps a <see cref="IDataTransfer"/> into a <see cref="IAvnClipboardDataSource"/>.
 /// This class is called by native code.
 /// </summary>
 /// <param name="dataTransfer">The data transfer object to wrap.</param>
-internal sealed class DataTransferToAvnClipboardDataSourceWrapper(ISyncDataTransfer dataTransfer)
+internal sealed class DataTransferToAvnClipboardDataSourceWrapper(IDataTransfer dataTransfer)
     : NativeOwned, IAvnClipboardDataSource
 {
-    private ISyncDataTransfer? _dataTransfer = dataTransfer;
+    private IDataTransfer? _dataTransfer = dataTransfer;
     private DataTransferItemToAvnClipboardDataItemWrapper[]? _items;
 
-    private ISyncDataTransfer DataTransfer
+    private IDataTransfer DataTransfer
         => _dataTransfer ?? throw new ObjectDisposedException(nameof(DataTransferToAvnClipboardDataSourceWrapper));
 
     private DataTransferItemToAvnClipboardDataItemWrapper[] Items

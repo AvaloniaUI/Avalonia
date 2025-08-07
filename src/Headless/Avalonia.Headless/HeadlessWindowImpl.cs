@@ -340,14 +340,14 @@ namespace Avalonia.Headless
                 point, delta, modifiers));
         }
 
-        [Obsolete($"Use the overload accepting a {nameof(ISyncDataTransfer)} instance instead.")]
+        [Obsolete($"Use the overload accepting a {nameof(IDataTransfer)} instance instead.")]
         void IHeadlessWindow.DragDrop(Point point, RawDragEventType type, IDataObject data, DragDropEffects effects, RawInputModifiers modifiers)
         {
             var device = AvaloniaLocator.Current.GetRequiredService<IDragDropDevice>();
             Input?.Invoke(new RawDragEvent(device, type, InputRoot!, point, new DataObjectToDataTransferWrapper(data), effects, modifiers));
         }
 
-        void IHeadlessWindow.DragDrop(Point point, RawDragEventType type, ISyncDataTransfer data, DragDropEffects effects, RawInputModifiers modifiers)
+        void IHeadlessWindow.DragDrop(Point point, RawDragEventType type, IDataTransfer data, DragDropEffects effects, RawInputModifiers modifiers)
         {
             var device = AvaloniaLocator.Current.GetRequiredService<IDragDropDevice>();
             Input?.Invoke(new RawDragEvent(device, type, InputRoot!, point, data, effects, modifiers));

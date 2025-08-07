@@ -20,7 +20,9 @@ namespace Avalonia.Input;
 /// </item>
 /// <item>
 /// This interface is mostly used during clipboard operations. However, several platforms only support synchronous
-/// clipboard manipulation and will try to use <see cref="ISyncDataTransfer"/> if the underlying type also implements it.
+/// clipboard manipulation and will try to use <see cref="IDataTransfer"/> if the underlying type also implements it.
+/// For this reason, custom implementations should ideally implement both <see cref="IAsyncDataTransfer"/> and
+/// <see cref="IDataTransfer"/>.
 /// </item>
 /// </list>
 /// </remarks>

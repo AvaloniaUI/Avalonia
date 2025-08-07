@@ -29,7 +29,7 @@ namespace Avalonia.Input
             Point point,
             RoutedEvent<DragEventArgs> routedEvent,
             DragDropEffects operation,
-            ISyncDataTransfer dataTransfer,
+            IDataTransfer dataTransfer,
             KeyModifiers modifiers)
         {
             if (target == null)
@@ -49,13 +49,13 @@ namespace Avalonia.Input
             return args.DragEffects;
         }
         
-        private DragDropEffects DragEnter(IInputRoot inputRoot, Point point, ISyncDataTransfer data, DragDropEffects effects, KeyModifiers modifiers)
+        private DragDropEffects DragEnter(IInputRoot inputRoot, Point point, IDataTransfer data, DragDropEffects effects, KeyModifiers modifiers)
         {
             _lastTarget = GetTarget(inputRoot, point);
             return RaiseDragEvent(_lastTarget, inputRoot, point, DragDrop.DragEnterEvent, effects, data, modifiers);
         }
 
-        private DragDropEffects DragOver(IInputRoot inputRoot, Point point, ISyncDataTransfer data, DragDropEffects effects, KeyModifiers modifiers)
+        private DragDropEffects DragOver(IInputRoot inputRoot, Point point, IDataTransfer data, DragDropEffects effects, KeyModifiers modifiers)
         {
             var target = GetTarget(inputRoot, point);
 
@@ -74,7 +74,7 @@ namespace Avalonia.Input
             }            
         }
 
-        private void DragLeave(IInputRoot inputRoot, Point point, ISyncDataTransfer data, DragDropEffects effects, KeyModifiers modifiers)
+        private void DragLeave(IInputRoot inputRoot, Point point, IDataTransfer data, DragDropEffects effects, KeyModifiers modifiers)
         {
             if (_lastTarget == null)
                 return;
@@ -88,7 +88,7 @@ namespace Avalonia.Input
             }
         }
 
-        private DragDropEffects Drop(IInputRoot inputRoot, Point point, ISyncDataTransfer data, DragDropEffects effects, KeyModifiers modifiers)
+        private DragDropEffects Drop(IInputRoot inputRoot, Point point, IDataTransfer data, DragDropEffects effects, KeyModifiers modifiers)
         {
             try
             {

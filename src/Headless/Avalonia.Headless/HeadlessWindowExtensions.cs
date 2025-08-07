@@ -124,7 +124,7 @@ public static class HeadlessWindowExtensions
     /// <summary>
     /// Simulates a drag and drop target event on the headless window/toplevel. This event simulates a user moving files from another app to the current app.
     /// </summary>
-    [Obsolete($"Use the overload accepting a {nameof(ISyncDataTransfer)} instance instead.")]
+    [Obsolete($"Use the overload accepting a {nameof(IDataTransfer)} instance instead.")]
     public static void DragDrop(this TopLevel topLevel, Point point, RawDragEventType type, IDataObject data,
         DragDropEffects effects, RawInputModifiers modifiers = RawInputModifiers.None) =>
         RunJobsOnImpl(topLevel, w => w.DragDrop(point, type, data, effects, modifiers));
@@ -132,7 +132,7 @@ public static class HeadlessWindowExtensions
     /// <summary>
     /// Simulates a drag and drop target event on the headless window/toplevel. This event simulates a user moving files from another app to the current app.
     /// </summary>
-    public static void DragDrop(this TopLevel topLevel, Point point, RawDragEventType type, ISyncDataTransfer data,
+    public static void DragDrop(this TopLevel topLevel, Point point, RawDragEventType type, IDataTransfer data,
         DragDropEffects effects, RawInputModifiers modifiers = RawInputModifiers.None) =>
         RunJobsOnImpl(topLevel, w => w.DragDrop(point, type, data, effects, modifiers));
 

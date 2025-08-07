@@ -6,7 +6,7 @@ using Foundation;
 namespace Avalonia.iOS.Clipboard;
 
 internal sealed class PasteboardItemToDataTransferItemWrapper(NSDictionary item)
-    : PlatformSyncDataTransferItem
+    : PlatformDataTransferItem
 {
     private readonly NSDictionary _item = item; // key: NSString* type, value: id value
 

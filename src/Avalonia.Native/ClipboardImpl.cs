@@ -79,7 +79,7 @@ namespace Avalonia.Native
             ClearCore();
 
             Native.SetData(new DataTransferToAvnClipboardDataSourceWrapper(
-                dataTransfer.ToSyncDataTransfer(LogArea.macOSPlatform)));
+                dataTransfer.ToSynchronous(LogArea.macOSPlatform)));
         }
 
         public Task<bool> IsCurrentOwnerAsync()

@@ -7,12 +7,12 @@ using Avalonia.Input.Platform;
 namespace Avalonia.Browser;
 
 /// <summary>
-/// Wraps a ReadableDataItem (a custom type defined in input.ts) into a <see cref="ISyncDataTransferItem"/>.
+/// Wraps a ReadableDataItem (a custom type defined in input.ts) into a <see cref="IDataTransferItem"/>.
 /// Synchronous only - used to read a drag and drop item.
 /// </summary>
 /// <param name="readableDataItem">The ReadableDataItem object.</param>
 internal sealed class BrowserDragDataTransferItem(JSObject readableDataItem)
-    : PlatformSyncDataTransferItem, IDisposable
+    : PlatformDataTransferItem, IDisposable
 {
     private readonly JSObject _readableDataItem = readableDataItem; // JS type: ReadableDataItem
 

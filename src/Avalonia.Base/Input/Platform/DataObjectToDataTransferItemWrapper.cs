@@ -3,14 +3,14 @@
 namespace Avalonia.Input.Platform;
 
 /// <summary>
-/// Wraps a legacy <see cref="IDataObject"/> into a <see cref="ISyncDataTransferItem"/>.
+/// Wraps a legacy <see cref="IDataObject"/> into a <see cref="IDataTransferItem"/>.
 /// </summary>
 [Obsolete]
 internal sealed class DataObjectToDataTransferItemWrapper(
     IDataObject dataObject,
     DataFormat[] formats,
     string[] formatStrings)
-    : PlatformSyncDataTransferItem
+    : PlatformDataTransferItem
 {
     private readonly IDataObject _dataObject = dataObject;
     private readonly DataFormat[] _formats = formats;

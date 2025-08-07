@@ -41,7 +41,7 @@ namespace Avalonia.Native
 
         public Task<DragDropEffects> DoDragDropAsync(
             PointerEventArgs triggerEvent,
-            ISyncDataTransfer dataTransfer,
+            IDataTransfer dataTransfer,
             DragDropEffects allowedEffects)
         {
             // Sanity check

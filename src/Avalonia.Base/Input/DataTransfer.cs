@@ -6,18 +6,18 @@ using Avalonia.Utilities;
 namespace Avalonia.Input;
 
 /// <summary>
-/// A mutable implementation of <see cref="ISyncDataTransfer"/> and <see cref="IAsyncDataTransfer"/>.
+/// A mutable implementation of <see cref="IDataTransfer"/> and <see cref="IAsyncDataTransfer"/>.
 /// </summary>
 /// <remarks>
 /// While it also implements <see cref="IAsyncDataTransfer"/>, this class always returns data synchronously.
 /// For advanced usages, consider implementing <see cref="IAsyncDataTransfer"/> directly.
 /// </remarks>
-public sealed class DataTransfer : ISyncDataTransfer, IAsyncDataTransfer
+public sealed class DataTransfer : IDataTransfer, IAsyncDataTransfer
 {
     private readonly List<DataTransferItem> _items = [];
     private DataFormat[]? _formats;
 
-    /// <inheritdoc cref="ISyncDataTransferItem.Formats" />
+    /// <inheritdoc cref="IDataTransferItem.Formats" />
     public IReadOnlyList<DataFormat> Formats
     {
         get
@@ -35,7 +35,7 @@ public sealed class DataTransfer : ISyncDataTransfer, IAsyncDataTransfer
     public IReadOnlyList<DataTransferItem> Items
         => _items;
 
-    IReadOnlyList<ISyncDataTransferItem> ISyncDataTransfer.Items
+    IReadOnlyList<IDataTransferItem> IDataTransfer.Items
         => Items;
 
     IReadOnlyList<IAsyncDataTransferItem> IAsyncDataTransfer.Items

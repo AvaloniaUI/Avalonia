@@ -12,11 +12,11 @@ using IEnumFORMATETC = Avalonia.Win32.Win32Com.IEnumFORMATETC;
 namespace Avalonia.Win32;
 
 /// <summary>
-/// Wraps a Win32 <see cref="Win32Com.IDataObject"/> into a <see cref="ISyncDataTransfer"/>.
+/// Wraps a Win32 <see cref="Win32Com.IDataObject"/> into a <see cref="IDataTransfer"/>.
 /// </summary>
 /// <param name="oleDataObject">The wrapped OLE data object.</param>
 internal sealed class OleDataObjectToDataTransferWrapper(Win32Com.IDataObject oleDataObject)
-    : PlatformSyncDataTransfer
+    : PlatformDataTransfer
 {
     private readonly Win32Com.IDataObject _oleDataObject = oleDataObject.CloneReference();
 
@@ -50,10 +50,10 @@ internal sealed class OleDataObjectToDataTransferWrapper(Win32Com.IDataObject ol
         }
     }
 
-    protected override PlatformSyncDataTransferItem[] ProvideItems()
+    protected override PlatformDataTransferItem[] ProvideItems()
     {
         List<DataFormat>? nonFileFormats = null;
-        var items = new List<PlatformSyncDataTransferItem>();
+        var items = new List<PlatformDataTransferItem>();
 
         foreach (var format in Formats)
         {
@@ -64,7 +64,7 @@ internal sealed class OleDataObjectToDataTransferWrapper(Win32Com.IDataObject ol
                 if (_oleDataObject.TryGet(format) is IEnumerable<IStorageItem> storageItems)
                 {
                     foreach (var storageItem in storageItems)
-                        items.Add(PlatformSyncDataTransferItem.Create(format, storageItem));
+                        items.Add(PlatformDataTransferItem.Create(format, storageItem));
                 }
             }
             else

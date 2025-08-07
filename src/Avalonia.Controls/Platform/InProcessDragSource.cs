@@ -19,7 +19,7 @@ namespace Avalonia.Platform
         private readonly LightweightSubject<DragDropEffects> _result = new();
 
         private DragDropEffects _allowedEffects;
-        private ISyncDataTransfer? _draggedData;
+        private IDataTransfer? _draggedData;
         private TopLevel? _lastRoot;
         private Point _lastPosition;
         private StandardCursorType? _lastCursorType;
@@ -40,7 +40,7 @@ namespace Avalonia.Platform
 
         public async Task<DragDropEffects> DoDragDropAsync(
             PointerEventArgs triggerEvent,
-            ISyncDataTransfer dataTransfer,
+            IDataTransfer dataTransfer,
             DragDropEffects allowedEffects)
         {
             Dispatcher.UIThread.VerifyAccess();

@@ -3,12 +3,12 @@
 namespace Avalonia.Input;
 
 /// <summary>
-/// Wraps a <see cref="IAsyncDataTransfer"/> into a <see cref="ISyncDataTransfer"/>.
+/// Wraps a <see cref="IAsyncDataTransfer"/> into a <see cref="IDataTransfer"/>.
 /// </summary>
 /// <param name="asyncDataTransfer">The async object to wrap.</param>
 /// <remarks>Using this type should be a last resort!</remarks>
 internal sealed class AsyncToSyncDataTransfer(IAsyncDataTransfer asyncDataTransfer)
-    : ISyncDataTransfer, IAsyncDataTransfer
+    : IDataTransfer, IAsyncDataTransfer
 {
     private readonly IAsyncDataTransfer _asyncDataTransfer = asyncDataTransfer;
     private AsyncToSyncDataTransferItem[]? _items;
@@ -19,7 +19,7 @@ internal sealed class AsyncToSyncDataTransfer(IAsyncDataTransfer asyncDataTransf
     public IReadOnlyList<AsyncToSyncDataTransferItem> Items
         => _items ??= ProvideItems();
 
-    IReadOnlyList<ISyncDataTransferItem> ISyncDataTransfer.Items
+    IReadOnlyList<IDataTransferItem> IDataTransfer.Items
         => Items;
 
     IReadOnlyList<IAsyncDataTransferItem> IAsyncDataTransfer.Items
