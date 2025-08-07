@@ -99,6 +99,8 @@ namespace Avalonia.Controls.UnitTests
                 (Orientation.Vertical, WrapPanelItemsAlignment.Center) => new(0, 50),
                 (Orientation.Horizontal, WrapPanelItemsAlignment.End) => new(100, 0),
                 (Orientation.Vertical, WrapPanelItemsAlignment.End) => new(0, 100),
+                (Orientation.Horizontal, WrapPanelItemsAlignment.SpaceBetween) => new(0, 0),
+                (Orientation.Vertical, WrapPanelItemsAlignment.SpaceBetween) => new(0, 0),
                 _ => throw new NotImplementedException(),
             }, rowBounds.Position);
         }

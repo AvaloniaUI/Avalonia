@@ -28,6 +28,11 @@ namespace Avalonia.Controls
         /// Items are laid out so the last one in each column/row touches the bottom/right of the panel.
         /// </summary>
         End,
+
+        /// <summary>
+        /// Items are laid out with equal spacing between them within each column/row.
+        /// </summary>
+        SpaceBetween
     }
 
     /// <summary>
@@ -308,37 +313,67 @@ namespace Avalonia.Controls
 
             void ArrangeLine(double lineV, int start, int end)
             {
-                bool useItemU = isHorizontal ? itemWidthSet : itemHeightSet;
+                var useItemU = isHorizontal ? itemWidthSet : itemHeightSet;
                 double u = 0;
-                if (ItemsAlignment != WrapPanelItemsAlignment.Start)
-                {
-                    double totalU = -itemSpacing;
-                    for (int i = start; i < end; ++i)
-                    {
-                        totalU += GetChildU(i) + (!children[i].IsVisible ? 0 : itemSpacing);
-                    }
 
-                    u = ItemsAlignment switch
-                    {
-                        WrapPanelItemsAlignment.Center => (uvFinalSize.U - totalU) / 2,
-                        WrapPanelItemsAlignment.End => uvFinalSize.U - totalU,
-                        WrapPanelItemsAlignment.Start => 0,
-                        _ => throw new ArgumentOutOfRangeException(nameof(ItemsAlignment), ItemsAlignment, null),
-                    };
+                var totalU = -itemSpacing;
+                for (var i = start; i < end; ++i)
+                {
+                    totalU += GetChildU(i) + (!children[i].IsVisible ? 0 : itemSpacing);
                 }
 
-                for (int i = start; i < end; ++i)
+                if (ItemsAlignment == WrapPanelItemsAlignment.SpaceBetween)
                 {
-                    double layoutSlotU = GetChildU(i);
-                    children[i].Arrange(isHorizontal ? new(u, accumulatedV, layoutSlotU, lineV) : new(accumulatedV, u, lineV, layoutSlotU));
-                    u += layoutSlotU + (!children[i].IsVisible ? 0 : itemSpacing);
+                    double childrenTotalWidth = 0;
+                    for (var i = start; i < end; i++)
+                    {
+                        childrenTotalWidth += GetChildU(i);
+                    }
+                    var remainingSpace = uvFinalSize.U - childrenTotalWidth;
+
+                    var spacing = end - start > 1
+                        ? remainingSpace / (end - start - 1)
+                        : remainingSpace / 2;
+
+                    u = end - start == 1 ? spacing : 0;
+
+                    for (var i = start; i < end; ++i)
+                    {
+                        var layoutSlotU = GetChildU(i);
+                        children[i].Arrange(isHorizontal ? new Rect(u, accumulatedV, layoutSlotU, lineV) : new Rect(accumulatedV, u, lineV, layoutSlotU));
+                        u += layoutSlotU + spacing;
+                    }
+                }
+                else
+                {
+                    if (ItemsAlignment != WrapPanelItemsAlignment.Start)
+                    {
+                        u = ItemsAlignment switch
+                        {
+                            WrapPanelItemsAlignment.Center => (uvFinalSize.U - totalU) / 2,
+                            WrapPanelItemsAlignment.End => uvFinalSize.U - totalU,
+                            WrapPanelItemsAlignment.Start => 0,
+                            _ => throw new ArgumentOutOfRangeException(nameof(ItemsAlignment), ItemsAlignment, null)
+                        };
+                    }
+
+                    for (var i = start; i < end; ++i)
+                    {
+                        var layoutSlotU = GetChildU(i);
+                        children[i].Arrange(isHorizontal ? new Rect(u, accumulatedV, layoutSlotU, lineV) : new Rect(accumulatedV, u, lineV, layoutSlotU));
+                        u += layoutSlotU + (!children[i].IsVisible ? 0 : itemSpacing);
+                    }
                 }
 
                 return;
-                double GetChildU(int i) => useItemU ? itemU :
-                    isHorizontal ? children[i].DesiredSize.Width : children[i].DesiredSize.Height;
+                double GetChildU(int i)
+                {
+                    return useItemU ? itemU :
+                        isHorizontal ? children[i].DesiredSize.Width : children[i].DesiredSize.Height;
+                }
             }
         }
+
 
         private struct UVSize
         {
