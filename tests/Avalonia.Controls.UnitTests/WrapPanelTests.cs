@@ -95,10 +95,10 @@ namespace Avalonia.Controls.UnitTests
             {
                 (Orientation.Horizontal, WrapPanelItemsAlignment.Start) => new Size(100, 50),
                 (Orientation.Vertical, WrapPanelItemsAlignment.Start) => new Size(50, 100),
-                (Orientation.Horizontal, WrapPanelItemsAlignment.Center) => new Size(200, 50),
-                (Orientation.Vertical, WrapPanelItemsAlignment.Center) => new Size(50, 200),
-                (Orientation.Horizontal, WrapPanelItemsAlignment.End) => new Size(200, 50),
-                (Orientation.Vertical, WrapPanelItemsAlignment.End) => new Size(50, 200),
+                (Orientation.Horizontal, WrapPanelItemsAlignment.Center) => new Size(100, 50),
+                (Orientation.Vertical, WrapPanelItemsAlignment.Center) => new Size(50, 100),
+                (Orientation.Horizontal, WrapPanelItemsAlignment.End) => new Size(100, 50),
+                (Orientation.Vertical, WrapPanelItemsAlignment.End) => new Size(50, 100),
                 (Orientation.Horizontal, WrapPanelItemsAlignment.SpaceBetween) => new Size(200, 50),
                 (Orientation.Vertical, WrapPanelItemsAlignment.SpaceBetween) => new Size(50, 200),
                 _ => throw new NotImplementedException()
