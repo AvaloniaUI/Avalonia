@@ -80,7 +80,7 @@ jobs:
     displayName: 'Install Workloads'
     inputs:
       script: |
-       dotnet workload install android ios macos wasm-tools
+       dotnet workload install android ios maccatalyst macos wasm-tools
   
   - task: CmdLine@2
     displayName: 'Generate avalonia-native'
@@ -154,7 +154,7 @@ jobs:
     displayName: 'Install Workloads'
     inputs:
       script: |
-       dotnet workload install android ios tvos wasm-tools
+       dotnet workload install android maccatalyst ios tvos wasm-tools
 
   - task: CmdLine@2
     displayName: 'Install Nuke'
