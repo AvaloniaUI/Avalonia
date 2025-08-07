@@ -65,7 +65,7 @@ namespace Avalonia.Controls.UnitTests
         [Theory, MemberData(nameof(GetItemsAlignmentValues))]
         public void Lays_Out_With_Items_Alignment(Orientation orientation, WrapPanelItemsAlignment itemsAlignment)
         {
-            var target = new WrapPanel()
+            var target = new WrapPanel
             {
                 Width = 200,
                 Height = 200,
@@ -73,8 +73,14 @@ namespace Avalonia.Controls.UnitTests
                 ItemsAlignment = itemsAlignment,
                 Children =
                 {
-                    new Border { Height = 50, Width = 50 },
-                    new Border { Height = 50, Width = 50 },
+                    new Border
+                    {
+                        Height = 50, Width = 50
+                    },
+                    new Border
+                    {
+                        Height = 50, Width = 50
+                    }
                 }
             };
 
@@ -85,23 +91,29 @@ namespace Avalonia.Controls.UnitTests
 
             var rowBounds = target.Children[0].Bounds.Union(target.Children[1].Bounds);
 
-            Assert.Equal(orientation switch
+            Assert.Equal((orientation, itemsAlignment) switch
             {
-                Orientation.Horizontal => new(100, 50),
-                Orientation.Vertical => new(50, 100),
+                (Orientation.Horizontal, WrapPanelItemsAlignment.Start) => new Size(100, 50),
+                (Orientation.Vertical, WrapPanelItemsAlignment.Start) => new Size(50, 100),
+                (Orientation.Horizontal, WrapPanelItemsAlignment.Center) => new Size(200, 50),
+                (Orientation.Vertical, WrapPanelItemsAlignment.Center) => new Size(50, 200),
+                (Orientation.Horizontal, WrapPanelItemsAlignment.End) => new Size(200, 50),
+                (Orientation.Vertical, WrapPanelItemsAlignment.End) => new Size(50, 200),
+                (Orientation.Horizontal, WrapPanelItemsAlignment.SpaceBetween) => new Size(200, 50),
+                (Orientation.Vertical, WrapPanelItemsAlignment.SpaceBetween) => new Size(50, 200),
                 _ => throw new NotImplementedException()
             }, rowBounds.Size);
 
             Assert.Equal((orientation, itemsAlignment) switch
             {
-                (_, WrapPanelItemsAlignment.Start) => new(0, 0),
-                (Orientation.Horizontal, WrapPanelItemsAlignment.Center) => new(50, 0),
-                (Orientation.Vertical, WrapPanelItemsAlignment.Center) => new(0, 50),
-                (Orientation.Horizontal, WrapPanelItemsAlignment.End) => new(100, 0),
-                (Orientation.Vertical, WrapPanelItemsAlignment.End) => new(0, 100),
-                (Orientation.Horizontal, WrapPanelItemsAlignment.SpaceBetween) => new(0, 0),
-                (Orientation.Vertical, WrapPanelItemsAlignment.SpaceBetween) => new(0, 0),
-                _ => throw new NotImplementedException(),
+                (_, WrapPanelItemsAlignment.Start) => new Point(0, 0),
+                (Orientation.Horizontal, WrapPanelItemsAlignment.Center) => new Point(50, 0),
+                (Orientation.Vertical, WrapPanelItemsAlignment.Center) => new Point(0, 50),
+                (Orientation.Horizontal, WrapPanelItemsAlignment.End) => new Point(100, 0),
+                (Orientation.Vertical, WrapPanelItemsAlignment.End) => new Point(0, 100),
+                (Orientation.Horizontal, WrapPanelItemsAlignment.SpaceBetween) => new Point(0, 0),
+                (Orientation.Vertical, WrapPanelItemsAlignment.SpaceBetween) => new Point(0, 0),
+                _ => throw new NotImplementedException()
             }, rowBounds.Position);
         }
 
