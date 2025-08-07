@@ -37,7 +37,12 @@ namespace Avalonia.Win32
                 new PixelSize(32, 32), new Vector(96, 96), PixelFormats.Bgra8888, AlphaFormat.Unpremul);
             s_emptyIcon = new Win32Icon(bitmap);
         }
-        
+
+        internal static void ChangeWindowMessageFilter(IntPtr hWnd)
+        {
+            ChangeWindowMessageFilterEx(hWnd, WM_TASKBARCREATED, MessageFilterFlag.MSGFLT_ALLOW, IntPtr.Zero);
+        }
+
         public TrayIconImpl()
         {
             FindTaskBarMonitor();
