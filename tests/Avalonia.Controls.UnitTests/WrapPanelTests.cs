@@ -207,7 +207,7 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(new Size(120, 50), target.Bounds.Size);
             Assert.Equal(new Rect(0, 0, 60, 50), target.Children[0].Bounds);
-            Assert.Equal(new Rect(0, 50, 50, 50), target.Children[2].Bounds);
+            Assert.Equal(new Rect(70, 0, 50, 50), target.Children[2].Bounds);
         }
 
         [Fact]
