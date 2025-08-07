@@ -99,8 +99,8 @@ namespace Avalonia.Controls.UnitTests
                 (Orientation.Vertical, WrapPanelItemsAlignment.Center) => new Size(50, 100),
                 (Orientation.Horizontal, WrapPanelItemsAlignment.End) => new Size(100, 50),
                 (Orientation.Vertical, WrapPanelItemsAlignment.End) => new Size(50, 100),
-                (Orientation.Horizontal, WrapPanelItemsAlignment.SpaceBetween) => new Size(100, 50),
-                (Orientation.Vertical, WrapPanelItemsAlignment.SpaceBetween) => new Size(50, 100),
+                (Orientation.Horizontal, WrapPanelItemsAlignment.Justify) => new Size(100, 50),
+                (Orientation.Vertical, WrapPanelItemsAlignment.Justify) => new Size(50, 100),
                 _ => throw new NotImplementedException()
             }, rowBounds.Size);
 
@@ -111,8 +111,8 @@ namespace Avalonia.Controls.UnitTests
                 (Orientation.Vertical, WrapPanelItemsAlignment.Center) => new Point(0, 50),
                 (Orientation.Horizontal, WrapPanelItemsAlignment.End) => new Point(100, 0),
                 (Orientation.Vertical, WrapPanelItemsAlignment.End) => new Point(0, 100),
-                (Orientation.Horizontal, WrapPanelItemsAlignment.SpaceBetween) => new Point(0, 0),
-                (Orientation.Vertical, WrapPanelItemsAlignment.SpaceBetween) => new Point(0, 0),
+                (Orientation.Horizontal, WrapPanelItemsAlignment.Justify) => new Point(0, 0),
+                (Orientation.Vertical, WrapPanelItemsAlignment.Justify) => new Point(0, 0),
                 _ => throw new NotImplementedException()
             }, rowBounds.Position);
         }

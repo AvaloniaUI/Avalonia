@@ -33,7 +33,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Items are laid out with equal spacing between them within each column/row.
         /// </summary>
-        SpaceBetween
+        Justify
     }
 
     /// <summary>
@@ -342,7 +342,7 @@ namespace Avalonia.Controls
                 }
 
                 double u = 0;
-                if (ItemsAlignment == WrapPanelItemsAlignment.SpaceBetween)
+                if (ItemsAlignment == WrapPanelItemsAlignment.Justify)
                 {
                     double spacingToUse = i == lineBreaks.Count - 1 && lineEnd - currentLineStart == 1 ? (uvFinalSize.U - GetLineChildrenU(currentLineStart, lineEnd)) / 2 : gridSpacing;
                     if (i == lineBreaks.Count - 1 && lineEnd - currentLineStart == 1)
