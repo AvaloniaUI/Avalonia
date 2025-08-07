@@ -99,8 +99,8 @@ namespace Avalonia.Controls.UnitTests
                 (Orientation.Vertical, WrapPanelItemsAlignment.Center) => new Size(50, 100),
                 (Orientation.Horizontal, WrapPanelItemsAlignment.End) => new Size(100, 50),
                 (Orientation.Vertical, WrapPanelItemsAlignment.End) => new Size(50, 100),
-                (Orientation.Horizontal, WrapPanelItemsAlignment.SpaceBetween) => new Size(200, 50),
-                (Orientation.Vertical, WrapPanelItemsAlignment.SpaceBetween) => new Size(50, 200),
+                (Orientation.Horizontal, WrapPanelItemsAlignment.SpaceBetween) => new Size(100, 50),
+                (Orientation.Vertical, WrapPanelItemsAlignment.SpaceBetween) => new Size(50, 100),
                 _ => throw new NotImplementedException()
             }, rowBounds.Size);
 
@@ -207,7 +207,7 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(new Size(120, 50), target.Bounds.Size);
             Assert.Equal(new Rect(0, 0, 60, 50), target.Children[0].Bounds);
-            Assert.Equal(new Rect(70, 0, 50, 50), target.Children[2].Bounds);
+            Assert.Equal(new Rect(0, 50, 50, 50), target.Children[2].Bounds);
         }
 
         [Fact]
