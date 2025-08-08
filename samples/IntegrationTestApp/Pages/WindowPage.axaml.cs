@@ -23,10 +23,13 @@ public partial class WindowPage : UserControl
     private void ShowWindow_Click(object? sender, RoutedEventArgs e)
     {
         var size = !string.IsNullOrWhiteSpace(ShowWindowSize.Text) ? Size.Parse(ShowWindowSize.Text) : (Size?)null;
+        var canResize = ShowWindowCanResize.IsChecked ?? false;
         var window = new ShowWindowTest
         {
             WindowStartupLocation = (WindowStartupLocation)ShowWindowLocation.SelectedIndex,
-            CanResize = ShowWindowCanResize.IsChecked ?? false,
+            CanResize = canResize,
+            CanMinimize = ShowWindowCanMinimize.IsChecked ?? false,
+            CanMaximize = canResize && (ShowWindowCanMaximize.IsChecked ?? false)
         };
 
         if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)
