@@ -90,9 +90,7 @@ namespace Avalonia.Skia
 
             FontSimulations = fontSimulations;
 
-            var fontWeight = _os2Table != null ? (FontWeight)_os2Table.WeightClass : FontWeight.Normal;
-
-            Weight = (fontSimulations & FontSimulations.Bold) != 0 ? FontWeight.Bold : fontWeight;
+            Weight = (fontSimulations & FontSimulations.Bold) != 0 ? FontWeight.Bold : (FontWeight)typeface.FontWeight;
 
             var style = _os2Table != null ? GetFontStyle(_os2Table.FontStyle) : FontStyle.Normal;
 
