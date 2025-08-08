@@ -33,6 +33,11 @@
         <Calendar SelectionMode="MultipleRange" />
       </StackPanel>
       <StackPanel>
+        <TextBlock Text="Tap Range Selection" />
+        <Calendar SelectionMode="SingleRange"
+                  AllowTapRangeSelection="True" />
+      </StackPanel>
+      <StackPanel>
         <TextBlock Text="DisplayDates"/>
         <Calendar Name="DisplayDatesCalendar"
                   SelectionMode="SingleDate" />
