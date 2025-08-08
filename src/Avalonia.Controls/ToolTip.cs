@@ -1,12 +1,10 @@
 using System;
-using System.ComponentModel;
 using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Reactive;
-using Avalonia.Styling;
 
 namespace Avalonia.Controls
 {
@@ -80,6 +78,12 @@ namespace Avalonia.Controls
         public static readonly AttachedProperty<bool> ServiceEnabledProperty =
             AvaloniaProperty.RegisterAttached<ToolTip, Control, bool>("ServiceEnabled", defaultValue: true, inherits: true);
 
+        /// <summary>
+        /// Defines the ToolTip.MoveWithPointerProperty attached property.
+        /// </summary>
+        public static readonly AttachedProperty<bool> MoveWithPointerProperty =
+            AvaloniaProperty.RegisterAttached<ToolTip, Control, bool>("MoveWithPointer", defaultValue: false);
+        
         /// <summary>
         /// Stores the current <see cref="ToolTip"/> instance in the control.
         /// </summary>
@@ -162,6 +166,28 @@ namespace Avalonia.Controls
         public static void SetIsOpen(Control element, bool value)
         {
             element.SetValue(IsOpenProperty, value);
+        }
+        
+        /// <summary>
+        /// Gets the value of the ToolTip.MoveWithPointer attached property.
+        /// </summary>
+        /// <param name="element">The control to get the property from.</param>
+        /// <returns>
+        /// A value indicating whether to move the tool tip with the pointer.
+        /// </returns>
+        public static bool GetMoveWithPointer(Control element)
+        {
+            return element.GetValue(MoveWithPointerProperty);
+        }
+
+        /// <summary>
+        /// Sets the value of the ToolTip.MoveWithPointer attached property.
+        /// </summary>
+        /// <param name="element">The control to get the property from.</param>
+        /// <param name="value">A value indicating whether to move the tool tip with the pointer.</param>
+        public static void SetMoveWithPointer(Control element, bool value)
+        {
+            element.SetValue(MoveWithPointerProperty, value);
         }
 
         /// <summary>
@@ -422,7 +448,7 @@ namespace Avalonia.Controls
                 _popup.Bind(Popup.PlacementProperty, control.GetBindingObservable(PlacementProperty)),
                 _popup.Bind(Popup.CustomPopupPlacementCallbackProperty, control.GetBindingObservable(CustomPopupPlacementCallbackProperty))
             });
-
+            
             _popup.PlacementTarget = control;
             _popup.SetPopupParent(control);
 
@@ -471,6 +497,21 @@ namespace Avalonia.Controls
         private void UpdatePseudoClasses(bool newValue)
         {
             PseudoClasses.Set(":open", newValue);
+        }
+
+        internal void TryUpdatePositionForPointerMove() 
+        {
+            Control? adorned = this.AdornedControl;
+            if (adorned == null)
+                return;
+
+            if (GetPlacement(adorned) != PlacementMode.Pointer || !GetMoveWithPointer(adorned)) 
+                return;
+
+            if (this._popup != null && this._popup.IsOpen) 
+            {
+                this._popup.UpdatePositionToPointer();
+            }
         }
     }
 }
