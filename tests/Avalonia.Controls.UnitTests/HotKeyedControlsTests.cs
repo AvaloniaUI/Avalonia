@@ -90,7 +90,6 @@ namespace Avalonia.Controls.UnitTests
                     windowingPlatform: new MockWindowingPlatform(
                         null,
                         window => MockWindowingPlatform.CreatePopupMock(window).Object),
-                focusManager: new FocusManager(),
                 keyboardDevice: () => new KeyboardDevice()));
         }
         
