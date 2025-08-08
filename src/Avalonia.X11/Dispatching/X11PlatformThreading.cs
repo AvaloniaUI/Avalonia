@@ -16,15 +16,15 @@ namespace Avalonia.X11
         [StructLayout(LayoutKind.Sequential)]
         public struct fd_set
         {
-            public const int FD_SETSIZE = 64;
-            public fixed uint fds[FD_SETSIZE];
+            public const int FD_SETSIZE = 1024;
+            public fixed uint fds[FD_SETSIZE / 32];
 
             public void Set(int fd)
             {
                 var idx = fd / 32;
-                if (idx >= FD_SETSIZE)
-                    throw new ArgumentException();
-                var bit = (fd % 32);
+                if (idx >= FD_SETSIZE / 32)
+                    throw new ArgumentOutOfRangeException(nameof(fd));
+                var bit = fd % 32;
                 fds[idx] |= 1u << bit;
             }
         }
@@ -60,12 +60,6 @@ namespace Avalonia.X11
 
         [DllImport("libc")]
         private extern static IntPtr read(int fd, void* buf, IntPtr count);
-
-        private enum EventCodes
-        {
-            X11 = 1,
-            Signal = 2
-        }
 
         private readonly int _sigread, _sigwrite, _x11Fd;
         private object _lock = new object();
