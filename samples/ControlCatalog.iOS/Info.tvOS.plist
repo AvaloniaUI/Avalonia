@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDisplayName</key>
-	<string>ControlCatalog.iOS</string>
+	<string>ControlCatalog.tvOS</string>
 	<key>CFBundleIdentifier</key>
 	<string>Avalonia.ControlCatalog</string>
 	<key>CFBundleShortVersionString</key>
@@ -14,9 +14,7 @@
 	<true/>
 	<key>UIDeviceFamily</key>
 	<array>
-		<integer>1</integer>
-		<integer>2</integer>
-        <integer>3</integer>
+		<integer>3</integer>
 	</array>
     <key>UIRequiredDeviceCapabilities</key>
     <array>
