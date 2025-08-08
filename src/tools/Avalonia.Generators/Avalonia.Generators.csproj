@@ -6,16 +6,9 @@
     <DebugType>embedded</DebugType>
     <IsPackable>true</IsPackable>
     <IncludeSymbols>false</IncludeSymbols>
-    <IsRoslynComponent>true</IsRoslynComponent>
-    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
     <Nullable>enable</Nullable>
     <XamlXSourcePath>../../../external/XamlX/src/XamlX</XamlXSourcePath>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.9.0" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
-  </ItemGroup>
 
   <ItemGroup>
     <Compile Include="$(XamlXSourcePath)/**/*.cs"
@@ -35,4 +28,5 @@
   </ItemGroup>
 
   <Import Project="../../../build/TrimmingEnable.props" />
+  <Import Project="../../../build/AnalyzerProject.targets" />
 </Project>
