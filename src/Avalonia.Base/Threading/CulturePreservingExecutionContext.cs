@@ -1,4 +1,11 @@
-﻿using System;
+﻿#if NET6_0_OR_GREATER
+// In .NET Core, the security context and call context are not supported, however,
+// the impersonation context and culture would typically flow with the execution context.
+// See: https://learn.microsoft.com/en-us/dotnet/api/system.threading.executioncontext
+//
+// So we can safely use ExecutionContext without worrying about culture flowing issues.
+#else
+using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -77,9 +84,6 @@ internal sealed class CulturePreservingExecutionContext
     }
 
     [DoesNotReturn]
-#if NET6_0_OR_GREATER
-    [StackTraceHidden]
-#endif
     private static void ThrowNullContext()
     {
         throw new InvalidOperationException("ExecutionContext cannot be null.");
@@ -149,3 +153,4 @@ internal sealed class CulturePreservingExecutionContext
         }
     }
 }
+#endif
