@@ -208,30 +208,6 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 base.DispatchDraw(canvas);
             }
 
-            protected override bool DispatchGenericPointerEvent(MotionEvent? e)
-            {
-                var result = _tl._pointerHelper.DispatchMotionEvent(e, out var callBase);
-                var baseResult = callBase && base.DispatchGenericPointerEvent(e);
-
-                return result ?? baseResult;
-            }
-
-            public override bool DispatchTouchEvent(MotionEvent? e)
-            {
-                var result = _tl._pointerHelper.DispatchMotionEvent(e, out var callBase);
-                var baseResult = callBase && base.DispatchTouchEvent(e);
-
-                return result ?? baseResult;
-            }
-
-            public override bool DispatchKeyEvent(KeyEvent? e)
-            {
-                var res = _tl._keyboardHelper.DispatchKeyEvent(e, out var callBase);
-                var baseResult = callBase && base.DispatchKeyEvent(e);
-
-                return res ?? baseResult;
-            }
-
             void ISurfaceHolderCallback.SurfaceChanged(ISurfaceHolder holder, Format format, int width, int height)
             {
                 var newSize = new PixelSize(width, height).ToSize(_tl.RenderScaling);
