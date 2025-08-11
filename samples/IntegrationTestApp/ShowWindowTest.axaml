@@ -15,7 +15,7 @@
     </Grid>
     
     <integrationTestApp:MeasureBorder Name="MyBorder" Background="{DynamicResource SystemRegionBrush}">
-    <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+    <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
       <Label Grid.Column="0" Grid.Row="1">Client Size</Label>
       <TextBox Name="CurrentClientSize" Grid.Column="1" Grid.Row="1" IsReadOnly="True"
                Text="{Binding ClientSize, Mode=OneWay}" />
@@ -65,10 +65,16 @@
       <Label Grid.Column="0" Grid.Row="12">Mouse Move Event Count</Label>
       <TextBox Name="MouseMoveCount" Grid.Column="1" Grid.Row="12" IsReadOnly="True" Text="0" />
       
-      <Label Grid.Column="0" Grid.Row="13">Mouse Release Event Count</Label>
-      <TextBox Name="MouseReleaseCount" Grid.Column="1" Grid.Row="13" IsReadOnly="True" Text="0" />
+      <Label Grid.Column="0" Grid.Row="13">Mouse Down Event Count</Label>
+      <TextBox Name="MouseDownCount" Grid.Column="1" Grid.Row="13" IsReadOnly="True" Text="0" />
       
-      <StackPanel Orientation="Horizontal" Grid.Row="14" Grid.ColumnSpan="2">
+      <Label Grid.Column="0" Grid.Row="14">Mouse Release Event Count</Label>
+      <TextBox Name="MouseReleaseCount" Grid.Column="1" Grid.Row="14" IsReadOnly="True" Text="0" />
+      
+      <Label Grid.Column="0" Grid.Row="15">Double-Click Event Count</Label>
+      <TextBox Name="DoubleClickCount" Grid.Column="1" Grid.Row="15" IsReadOnly="True" Text="0" />
+      
+      <StackPanel Orientation="Horizontal" Grid.Row="16" Grid.ColumnSpan="2">
         <Button Name="HideButton" Command="{Binding $parent[Window].Hide}">Hide</Button>
         <Button Name="AddToWidth" Click="AddToWidth_Click">Add to Width</Button>
         <Button Name="AddToHeight" Click="AddToHeight_Click">Add to Height</Button>
