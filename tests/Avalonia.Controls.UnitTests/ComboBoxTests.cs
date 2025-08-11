@@ -209,6 +209,10 @@ namespace Avalonia.Controls.UnitTests
                                     ItemsPanel = new FuncTemplate<Panel>(() => new VirtualizingStackPanel()),
                                 }.RegisterInNameScope(scope)
                             }.RegisterInNameScope(scope)
+                        }.RegisterInNameScope(scope),
+                        new TextBox
+                        {
+                            Name = "PART_InputText"
                         }.RegisterInNameScope(scope)
                     }
                 };
@@ -635,5 +639,81 @@ namespace Avalonia.Controls.UnitTests
         }
 
         private sealed record Item(string Value, string Display);
+
+        [Fact]
+        public void When_Editable_Input_Text_Matches_An_Item_It_Is_Selected()
+        {
+            var target = new ComboBox
+            {
+                DisplayMemberBinding = new Binding(),
+                IsEditable = true,
+                ItemsSource = new[] { "foo", "bar" }
+            };
+
+            target.SelectedItem = null;
+            Assert.Null(target.SelectedItem);
+
+            target.Text = "foo";
+            Assert.NotNull(target.SelectedItem);
+            Assert.Equal(target.SelectedItem, "foo");
+        }
+
+        [Fact]
+        public void When_Editable_TextSearch_TextBinding_Is_Prioritised_Over_DisplayMember()
+        {
+            var items = new[]
+            {
+                new Item("Value 1", "Display 1"),
+                new Item("Value 2", "Display 2")
+            };
+            var target = new ComboBox
+            {
+                DisplayMemberBinding = new Binding("Display"),
+                IsEditable = true,
+                ItemsSource = items
+            };
+            TextSearch.SetTextBinding(target, new Binding("Value"));
+
+            target.SelectedItem = null;
+            Assert.Null(target.SelectedItem);
+
+            target.Text = "Value 1";
+            Assert.NotNull(target.SelectedItem);
+            Assert.Equal(target.SelectedItem, items[0]);
+        }
+
+        [Fact]
+        public void When_Items_Source_Changes_It_Selects_An_Item_By_Text()
+        {
+            var items = new[]
+            {
+                new Item("Value 1", "Display 1"),
+                new Item("Value 2", "Display 2")
+            };
+            var items2 = new[]
+            {
+                new Item("Value 1", "Display 3"),
+                new Item("Value 2", "Display 4")
+            };
+            var target = new ComboBox
+            {
+                DisplayMemberBinding = new Binding("Display"),
+                IsEditable = true,
+                ItemsSource = items
+            };
+            TextSearch.SetTextBinding(target, new Binding("Value"));
+
+            target.SelectedItem = null;
+            Assert.Null(target.SelectedItem);
+
+            target.Text = "Value 1";
+            Assert.NotNull(target.SelectedItem);
+            Assert.Equal(target.SelectedItem, items[0]);
+
+            target.ItemsSource = items2;
+            Assert.NotNull(target.SelectedItem);
+            Assert.Equal(target.SelectedItem, items2[0]);
+            Assert.Equal(target.Text, "Value 1");
+        }
     }
 }
