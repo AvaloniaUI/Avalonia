@@ -105,3 +105,7 @@ You can find latest LTS on https://nodejs.org/.
 ## Windows
 
 It is possible to run some .NET Framework samples and tests using .NET Framework SDK. You need to install at least 4.7 SDK.
+
+## Building Avalonia into a local NuGet cache
+
+See [Building Local NuGet Packages](nuget.md)
