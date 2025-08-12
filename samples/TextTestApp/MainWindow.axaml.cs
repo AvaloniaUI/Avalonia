@@ -44,10 +44,18 @@ namespace TextTestApp
                 OnShapeBufferChanged();
                 e.Handled = true;
             }
-            else if (e.Key == Key.Escape && _hits.IsKeyboardFocusWithin && _hits.SelectedIndex != -1)
+            else if (e.Key == Key.Escape)
             {
-                _hits.SelectedIndex = -1;
-                e.Handled = true;
+                if (_hits.IsKeyboardFocusWithin && _hits.SelectedIndex != -1)
+                {
+                    _hits.SelectedIndex = -1;
+                    e.Handled = true;
+                }
+                else if (_buffer.IsKeyboardFocusWithin && _buffer.SelectedIndex != -1)
+                {
+                    _buffer.SelectedIndex = -1;
+                    e.Handled = true;
+                }
             }
 
             base.OnKeyDown(e);
@@ -75,6 +83,7 @@ namespace TextTestApp
             if (textLine == null)
                 return;
 
+            double currentX = _rendering.LineRenderBounds.Left;
             foreach (TextRun run in textLine.TextRuns)
             {
                 if (run is ShapedTextRun shapedRun)
@@ -87,7 +96,7 @@ namespace TextTestApp
                         Tag = run,
                     });
 
-                    ListBuffer(textLine, shapedRun);
+                    ListBuffer(textLine, shapedRun, ref currentX);
                 }
                 else
                     _buffer.Items.Add(new TextBlock
@@ -134,7 +143,7 @@ namespace TextTestApp
             }
         }
 
-        private void ListBuffer(TextLine textLine, ShapedTextRun shapedRun)
+        private void ListBuffer(TextLine textLine, ShapedTextRun shapedRun, ref double currentX)
         {
             ShapedBuffer buffer = shapedRun.ShapedBuffer;
 
@@ -143,6 +152,7 @@ namespace TextTestApp
 
             IReadOnlyList<GlyphInfo> glyphInfos = buffer;
 
+            currentX += shapedRun.GlyphRun.BaselineOrigin.X;
             for (var i = 0; i < glyphInfos.Count; i++)
             {
                 GlyphInfo info = glyphInfos[i];
@@ -172,11 +182,21 @@ namespace TextTestApp
                 row.Children.Add(new Image { Source = CreateGlyphDrawing(shapedRun.GlyphRun.GlyphTypeface, FontSize, info), Margin = new Thickness(2) });
                 row.Children.Add(new TextBlock { Text = info.GlyphIndex.ToString() });
                 row.Children.Add(new TextBlock { Text = info.GlyphAdvance.ToString() });
-                row.Children.Add(new TextBlock { Text = info.GlyphOffset.X.ToString() });
-                row.Children.Add(new TextBlock { Text = info.GlyphOffset.Y.ToString() });
+                row.Children.Add(new TextBlock { Text = info.GlyphOffset.ToString() });
+
+                Geometry glyph = GetGlyphOutline(shapedRun.GlyphRun.GlyphTypeface, shapedRun.GlyphRun.FontRenderingEmSize, info);
+                Rect glyphBounds = glyph.Bounds;
+                Rect offsetBounds = glyphBounds.Translate(new Vector(currentX + info.GlyphOffset.X, info.GlyphOffset.Y));
+
+                TextBlock boundsBlock = new TextBlock { Text = offsetBounds.ToString() };
+                ToolTip.SetTip(boundsBlock, "Origin bounds: " + glyphBounds);
+                row.Children.Add(boundsBlock);
 
                 border.Child = row;
+                border.Tag = offsetBounds;
                 _buffer.Items.Add(border);
+                
+                currentX += glyphInfos[i].GlyphAdvance;
             }
 
             int FindClusterLenghtAt(int index)
@@ -292,6 +312,17 @@ namespace TextTestApp
                     rectangles.Add(rect);
                 }
             }
+
+            _selectionAdorner.Rectangles = rectangles;
+        }
+
+        private void OnBufferSelectionChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            List<Rect> rectangles = new List<Rect>(_buffer.Selection.Count);
+
+            foreach (var row in _buffer.SelectedItems)
+                if (row is Control { Tag: Rect rect })
+                    rectangles.Add(rect);
 
             _selectionAdorner.Rectangles = rectangles;
         }

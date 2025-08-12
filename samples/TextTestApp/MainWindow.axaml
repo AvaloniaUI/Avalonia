@@ -55,7 +55,7 @@
 
         <TabControl Grid.Row="2" DockPanel.Dock="Bottom" Background="White" BorderBrush="Whitesmoke" BorderThickness="0,1,0,0">
           <TabItem Header="Shaped Buffer">
-            <ListBox Name="_buffer" Grid.IsSharedSizeScope="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" Background="Transparent">
+            <ListBox Name="_buffer" Grid.IsSharedSizeScope="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" SelectionMode="Multiple" SelectionChanged="OnBufferSelectionChanged" Background="Transparent">
               <ListBox.Styles>
                 <Style Selector="ListBoxItem">
                   <Setter Property="Padding" Value="0"/>
@@ -71,8 +71,8 @@
                   <TextBlock Text="Glyph" />
                   <TextBlock Text="Glyph ID" />
                   <TextBlock Text="Advance" />
-                  <TextBlock Text="Offset Adv" />
-                  <TextBlock Text="Offset Asc" />
+                  <TextBlock Text="Offset" />
+                  <TextBlock Text="Ink Bounds" />
                 </local:GridRow>
               </Border>
             </ListBox>
