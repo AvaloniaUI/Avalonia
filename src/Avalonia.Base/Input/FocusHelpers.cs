@@ -9,12 +9,12 @@ namespace Avalonia.Input
 {
     internal static class FocusHelpers
     {
-        public static IEnumerable<IInputElement> GetFocusChildren(AvaloniaObject? parent)
+        public static IEnumerable<IInputElement> GetInputElementChildren(AvaloniaObject? parent)
         {
             // TODO: add control overrides to return custom focus list from control
             if (parent is Visual visual)
             {
-                return visual.VisualChildren.Where(x => x is IInputElement).Select(x => (x as IInputElement)!);
+                return visual.VisualChildren.OfType<IInputElement>();
             }
 
             return Array.Empty<IInputElement>();
@@ -25,7 +25,7 @@ namespace Avalonia.Input
             if (parent == null)
                 return false;
 
-            var children = GetFocusChildren(parent);
+            var children = GetInputElementChildren(parent);
 
             bool hasFocusChildren = true;
 
@@ -55,11 +55,7 @@ namespace Avalonia.Input
             if (inputElement == null)
                 return null;
 
-            if (FocusManager.CanFocus(inputElement) && inputElement is not Visual)
-            {
-                return inputElement;
-            }
-            else if (inputElement is Visual visual)
+            if (inputElement is Visual visual)
             {
                 var rootVisual = visual.VisualRoot;
                 if (inputElement != rootVisual)
@@ -71,11 +67,8 @@ namespace Avalonia.Input
 
         public static bool IsPotentialTabStop(IInputElement? element)
         {
-            if(element != null)
-            {
-                if (element is InputElement inputElement)
-                    return inputElement.IsTabStop;
-            }
+            if (element is InputElement inputElement)
+                return inputElement.IsTabStop;
 
             return false;
         }

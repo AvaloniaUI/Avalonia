@@ -226,7 +226,7 @@ namespace Avalonia.Input.Navigation
             {
                 if (e is Visual elementAsVisual)
                 {
-                    var children = FocusHelpers.GetFocusChildren(elementAsVisual).ToList();
+                    var children = FocusHelpers.GetInputElementChildren(elementAsVisual).ToList();
                     var count = children.Count;
 
                     for (int i = 0; i < count; i++)
@@ -262,7 +262,7 @@ namespace Avalonia.Input.Navigation
             {
                 if (e is Visual elementAsVisual)
                 {
-                    var children = FocusHelpers.GetFocusChildren(elementAsVisual).ToList();
+                    var children = FocusHelpers.GetInputElementChildren(elementAsVisual).ToList();
                     var count = children.Count;
 
                     for (int i = count - 1; i >= 0; i--)
@@ -373,7 +373,7 @@ namespace Avalonia.Input.Navigation
         {
             if (GetParent(e) is Visual parentAsVisual && e is Visual elementAsVisual)
             {
-                var children = FocusHelpers.GetFocusChildren(parentAsVisual).ToList();
+                var children = FocusHelpers.GetInputElementChildren(parentAsVisual).ToList();
                 var count = children.Count;
                 var i = 0;
 
@@ -577,7 +577,7 @@ namespace Avalonia.Input.Navigation
         {
             if (GetParent(e) is Visual parentAsVisual && e is Visual elementAsVisual)
             {
-                var children = FocusHelpers.GetFocusChildren(parentAsVisual).ToList();
+                var children = FocusHelpers.GetInputElementChildren(parentAsVisual).ToList();
                 var count = children.Count;
                 IInputElement? prev = null;
                 

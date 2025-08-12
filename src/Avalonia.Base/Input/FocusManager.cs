@@ -1,14 +1,11 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
-using System.Xml.Linq;
 using Avalonia.Input.Navigation;
 using Avalonia.Interactivity;
 using Avalonia.Metadata;
 using Avalonia.Reactive;
-using Avalonia.Rendering;
 using Avalonia.VisualTree;
-using static Avalonia.Rendering.Composition.Expressions.ExpressionTrackedObjects;
 
 namespace Avalonia.Input
 {
@@ -41,7 +38,7 @@ namespace Avalonia.Input
                 RoutingStrategies.Tunnel);
         }
 
-        public FocusManager(IInputElement? contentRoot = null)
+        internal FocusManager(IInputElement? contentRoot = null)
         {
             _contentRoot = contentRoot;
         }
@@ -49,7 +46,7 @@ namespace Avalonia.Input
         private IInputElement? Current => KeyboardDevice.Instance?.FocusedElement;
 
         private XYFocus _xyFocus = new();
-        private bool _canTabOutOfPlugin = false;
+        private XYFocusOptions _xYFocusOptions = new XYFocusOptions();
         private bool _isMovingFocusToPreviousTabStop;
         private bool _isMovingFocusToNextTabStop;
         private IInputElement? _contentRoot;
@@ -166,11 +163,22 @@ namespace Avalonia.Input
                 ?? (FocusManager?)AvaloniaLocator.Current.GetService<IFocusManager>();
         }
 
+        /// <summary>
+        /// Attempts to change focus from the element with focus to the next focusable element in the specified direction.
+        /// </summary>
+        /// <param name="direction">The direction to traverse (in tab order).</param>
+        /// <returns>true if focus moved; otherwise, false.</returns>
         public bool TryMoveFocus(NavigationDirection direction)
         {
-            return FindAndSetNextFocus(direction, new XYFocusOptions());
+            return FindAndSetNextFocus(direction, _xYFocusOptions);
         }
 
+        /// <summary>
+        /// Attempts to change focus from the element with focus to the next focusable element in the specified direction, using the specified navigation options.
+        /// </summary>
+        /// <param name="direction">The direction to traverse (in tab order).</param>
+        /// <param name="options">The options to help identify the next element to receive focus with keyboard/controller/remote navigation.</param>
+        /// <returns>true if focus moved; otherwise, false.</returns>
         public bool TryMoveFocus(NavigationDirection direction, FindNextElementOptions options)
         {
             if (direction is not NavigationDirection.Up
@@ -178,27 +186,11 @@ namespace Avalonia.Input
                 and not NavigationDirection.Left
                 and not NavigationDirection.Right)
             {
-                throw new ArgumentOutOfRangeException(
+                throw new ArgumentOutOfRangeException(nameof(direction),
                         $"{direction} is not supported with FindNextElementOptions. Only Up, Down, Left and right are supported");
             }
 
-            var xyOption = new XYFocusOptions()
-            {
-                UpdateManifold = false,
-                SearchRoot = options.SearchRoot,
-            };
-
-
-            if (!options.ExclusionRect.IsUniform())
-                xyOption.ExclusionRect = options.ExclusionRect;
-
-            if (options.FocusHintRectangle is { } rect && !rect.IsUniform())
-                xyOption.FocusHintRectangle = options.FocusHintRectangle;
-
-            xyOption.NavigationStrategyOverride = options.NavigationStrategyOverride;
-            xyOption.IgnoreOcclusivity = options.IgnoreOcclusivity;
-
-            return FindAndSetNextFocus(direction, xyOption);
+            return FindAndSetNextFocus(direction, CreateFocusOptions(options));
         }
 
         /// <summary>
@@ -288,6 +280,10 @@ namespace Avalonia.Input
             return true;
         }
 
+        /// <summary>
+        /// Retrieves the first element that can receive focus.
+        /// </summary>
+        /// <returns>The first focusable element.</returns>
         public IInputElement? FindFirstFocusableElement()
         {
             var root = (_contentRoot as Visual)?.GetSelfAndVisualDescendants().FirstOrDefault(x => x is IInputElement) as IInputElement;
@@ -296,38 +292,43 @@ namespace Avalonia.Input
             return GetFirstFocusableElementFromRoot(false);
         }
 
+        /// <summary>
+        /// Retrieves the first element that can receive focus based on the specified scope.
+        /// </summary>
+        /// <param name="searchScope">The root element from which to search.</param>
+        /// <returns>The first focusable element.</returns>
         public static IInputElement? FindFirstFocusableElement(IInputElement searchScope)
         {
-            var focusManager = GetFocusManager(searchScope);
-
-            if (focusManager != null)
-            {
-                return focusManager.GetFirstFocusableElement(searchScope);
-            }
-            else
-                return null;
+            return GetFirstFocusableElement(searchScope);
         }
 
+        /// <summary>
+        /// Retrieves the last element that can receive focus.
+        /// </summary>
+        /// <returns>The last focusable element.</returns>
         public IInputElement? FindLastFocusableElement()
         {
             var root = (_contentRoot as Visual)?.GetSelfAndVisualDescendants().FirstOrDefault(x => x is IInputElement) as IInputElement;
             if (root == null)
                 return null;
-            return GetFirstFocusableElementFromRoot(false);
+            return GetFirstFocusableElementFromRoot(true);
         }
 
+        /// <summary>
+        /// Retrieves the last element that can receive focus based on the specified scope.
+        /// </summary>
+        /// <param name="searchScope">The root element from which to search.</param>
+        /// <returns>The last focusable object.</returns>
         public static IInputElement? FindLastFocusableElement(IInputElement searchScope)
         {
-            var focusManager = GetFocusManager(searchScope);
-
-            if (focusManager != null)
-            {
-                return focusManager.GetLastFocusableElement(searchScope);
-            }
-            else
-                return null;
+            return GetFocusManager(searchScope)?.GetLastFocusableElement(searchScope);
         }
 
+        /// <summary>
+        /// Retrieves the element that should receive focus based on the specified navigation direction.
+        /// </summary>
+        /// <param name="direction"></param>
+        /// <returns></returns>
         public IInputElement? FindNextElement(NavigationDirection direction)
         {
             var xyOption = new XYFocusOptions()
@@ -338,6 +339,12 @@ namespace Avalonia.Input
             return FindNextFocus(direction, xyOption);
         }
 
+        /// <summary>
+        /// Retrieves the element that should receive focus based on the specified navigation direction (cannot be used with tab navigation).
+        /// </summary>
+        /// <param name="direction">The direction that focus moves from element to element within the app UI.</param>
+        /// <param name="options">The options to help identify the next element to receive focus with the provided navigation.</param>
+        /// <returns>The next element to receive focus.</returns>
         public IInputElement? FindNextElement(NavigationDirection direction, FindNextElementOptions options)
         {
             if (direction is not NavigationDirection.Up
@@ -345,27 +352,24 @@ namespace Avalonia.Input
                 and not NavigationDirection.Left
                 and not NavigationDirection.Right)
             {
-                throw new ArgumentOutOfRangeException(
+                throw new ArgumentOutOfRangeException(nameof(direction),
                         $"{direction} is not supported with FindNextElementOptions. Only Up, Down, Left and right are supported");
             }
 
-            var xyOption = new XYFocusOptions()
+            return FindNextFocus(direction, CreateFocusOptions(options));
+        }
+
+        private static XYFocusOptions CreateFocusOptions(FindNextElementOptions options)
+        {
+            return new XYFocusOptions
             {
                 UpdateManifold = false,
                 SearchRoot = options.SearchRoot,
+                ExclusionRect = options.ExclusionRect,
+                FocusHintRectangle = options.FocusHintRectangle,
+                NavigationStrategyOverride = options.NavigationStrategyOverride,
+                IgnoreOcclusivity = options.IgnoreOcclusivity
             };
-
-
-            if (!options.ExclusionRect.IsUniform())
-                xyOption.ExclusionRect = options.ExclusionRect;
-
-            if (options.FocusHintRectangle is { } rect && !rect.IsUniform())
-                xyOption.FocusHintRectangle = options.FocusHintRectangle;
-
-            xyOption.NavigationStrategyOverride = options.NavigationStrategyOverride;
-            xyOption.IgnoreOcclusivity = options.IgnoreOcclusivity;
-
-            return FindNextFocus(direction, xyOption);
         }
 
         internal IInputElement? FindNextFocus(NavigationDirection direction, XYFocusOptions focusOptions, bool updateManifolds = true, bool isQueryOnly = true)
@@ -397,11 +401,11 @@ namespace Avalonia.Input
 
                     if (isReverse)
                     {
-                        _isMovingFocusToPreviousTabStop = false;
+                        _isMovingFocusToPreviousTabStop = true;
                     }
                     else if (direction == NavigationDirection.Next)
                     {
-                        _isMovingFocusToNextTabStop = false;
+                        _isMovingFocusToNextTabStop = true;
                     }
                     nextFocusedElement = ProcessTabStopInternal(isReverse, true);
                 }
@@ -424,7 +428,7 @@ namespace Avalonia.Input
             return nextFocusedElement;
         }
 
-        internal IInputElement? GetFirstFocusableElementInternal(IInputElement searchStart, IInputElement? focusCandidate = null)
+        internal static IInputElement? GetFirstFocusableElementInternal(IInputElement searchStart, IInputElement? focusCandidate = null)
         {
             IInputElement? firstFocusableFromCallback = null;
             var useFirstFocusableFromCallback = false;
@@ -440,41 +444,38 @@ namespace Avalonia.Input
 
             if (useFirstFocusableFromCallback)
             {
-                if(focusCandidate == null || (GetTabIndex(firstFocusableFromCallback) < GetTabIndex(focusCandidate)))
+                if (focusCandidate == null || (GetTabIndex(firstFocusableFromCallback) < GetTabIndex(focusCandidate)))
                 {
                     focusCandidate = firstFocusableFromCallback;
                 }
             }
             else
             {
-                var children = FocusHelpers.GetFocusChildren(searchStart as AvaloniaObject);
+                var children = FocusHelpers.GetInputElementChildren(searchStart as AvaloniaObject);
 
                 foreach (var child in children)
                 {
-                    if (child is not null)
+                    if (FocusHelpers.IsVisible(child))
                     {
-                        if (FocusHelpers.IsVisible(child))
+                        var hasFocusableChildren = FocusHelpers.CanHaveFocusableChildren(child as AvaloniaObject);
+                        if (FocusHelpers.IsPotentialTabStop(child))
                         {
-                            var hasFocusableChildren = FocusHelpers.CanHaveFocusableChildren(child as AvaloniaObject);
-                            if (FocusHelpers.IsPotentialTabStop(child))
+                            if (focusCandidate == null && (FocusHelpers.IsFocusable(child) || hasFocusableChildren))
                             {
-                                if (focusCandidate == null && (FocusHelpers.IsFocusable(child) || hasFocusableChildren))
+                                focusCandidate = child;
+                            }
+
+                            if (FocusHelpers.IsFocusable(child) || hasFocusableChildren)
+                            {
+                                if (focusCandidate == null || GetTabIndex(child) < GetTabIndex(focusCandidate))
                                 {
                                     focusCandidate = child;
                                 }
-
-                                if (FocusHelpers.IsFocusable(child) || hasFocusableChildren)
-                                {
-                                    if (focusCandidate == null || GetTabIndex(child) < GetTabIndex(focusCandidate))
-                                    {
-                                        focusCandidate = child;
-                                    }
-                                }
                             }
-                            else if (hasFocusableChildren)
-                            {
-                                focusCandidate = GetFirstFocusableElementInternal(child, focusCandidate);
-                            }
+                        }
+                        else if (hasFocusableChildren)
+                        {
+                            focusCandidate = GetFirstFocusableElementInternal(child, focusCandidate);
                         }
                     }
                 }
@@ -483,8 +484,7 @@ namespace Avalonia.Input
             return focusCandidate;
         }
 
-
-        internal IInputElement? GetLastFocusableElementInternal(IInputElement searchStart, IInputElement? lastFocus = null)
+        internal static IInputElement? GetLastFocusableElementInternal(IInputElement searchStart, IInputElement? lastFocus = null)
         {
             IInputElement? lastFocusableFromCallback = null;
             var useLastFocusableFromCallback = false;
@@ -507,34 +507,31 @@ namespace Avalonia.Input
             }
             else
             {
-                var children = FocusHelpers.GetFocusChildren(searchStart as AvaloniaObject);
+                var children = FocusHelpers.GetInputElementChildren(searchStart as AvaloniaObject);
 
                 foreach (var child in children)
                 {
-                    if (child is not null)
+                    if (FocusHelpers.IsVisible(child))
                     {
-                        if (FocusHelpers.IsVisible(child))
+                        var hasFocusableChildren = FocusHelpers.CanHaveFocusableChildren(child as AvaloniaObject);
+                        if (FocusHelpers.IsPotentialTabStop(child))
                         {
-                            var hasFocusableChildren = FocusHelpers.CanHaveFocusableChildren(child as AvaloniaObject);
-                            if (FocusHelpers.IsPotentialTabStop(child))
+                            if (lastFocus == null && (FocusHelpers.IsFocusable(child) || hasFocusableChildren))
                             {
-                                if (lastFocus == null && (FocusHelpers.IsFocusable(child) || hasFocusableChildren))
+                                lastFocus = child;
+                            }
+
+                            if (FocusHelpers.IsFocusable(child) || hasFocusableChildren)
+                            {
+                                if (lastFocus == null || GetTabIndex(child) >= GetTabIndex(lastFocus))
                                 {
                                     lastFocus = child;
                                 }
-
-                                if (FocusHelpers.IsFocusable(child) || hasFocusableChildren)
-                                {
-                                    if (lastFocus == null || GetTabIndex(child) >= GetTabIndex(lastFocus))
-                                    {
-                                        lastFocus = child;
-                                    }
-                                }
                             }
-                            else if (hasFocusableChildren)
-                            {
-                                lastFocus = GetLastFocusableElementInternal(child, lastFocus);
-                            }
+                        }
+                        else if (hasFocusableChildren)
+                        {
+                            lastFocus = GetLastFocusableElementInternal(child, lastFocus);
                         }
                     }
                 }
@@ -546,18 +543,17 @@ namespace Avalonia.Input
         private IInputElement? ProcessTabStopInternal(bool isReverse, bool queryOnly)
         {
             IInputElement? newTabStop = null;
-            bool isTabStopOverriden = false;
 
             var defaultCandidateTabStop = GetTabStopCandidateElement(isReverse, queryOnly, out var didCycleFocusAtRootVisualScope);
 
-            isTabStopOverriden = InputElement.ProcessTabStop(_contentRoot,
+            var isTabStopOverriden = InputElement.ProcessTabStop(_contentRoot,
                 Current,
                 defaultCandidateTabStop,
                 isReverse,
                 didCycleFocusAtRootVisualScope,
                 out var newTabStopFromCallback);
 
-            if(isTabStopOverriden)
+            if (isTabStopOverriden)
             {
                 newTabStop = newTabStopFromCallback;
             }
@@ -582,7 +578,7 @@ namespace Avalonia.Input
 
             bool internalCycleWorkaround = false;
 
-            if (Current != null && _canTabOutOfPlugin)
+            if (Current != null)
             {
                 internalCycleWorkaround = CanProcessTabStop(isReverse);
             }
@@ -604,7 +600,7 @@ namespace Avalonia.Input
             {
                 newTabStop = GetNextTabStop();
 
-                if (newTabStop == null && (!_canTabOutOfPlugin || internalCycleWorkaround || queryOnly))
+                if (newTabStop == null && (internalCycleWorkaround || queryOnly))
                 {
                     newTabStop = GetFirstFocusableElement(root, null);
 
@@ -615,7 +611,7 @@ namespace Avalonia.Input
             {
                 newTabStop = GetPreviousTabStop();
 
-                if (newTabStop == null && (!_canTabOutOfPlugin || internalCycleWorkaround || queryOnly))
+                if (newTabStop == null && (internalCycleWorkaround || queryOnly))
                 {
                     newTabStop = GetLastFocusableElement(root, null);
                     didCycleFocusAtRootVisualScope = true;
@@ -653,7 +649,7 @@ namespace Avalonia.Input
                 {
                     if (IsValidTabStopSearchCandidate(current) && current is InputElement c && KeyboardNavigation.GetTabNavigation(c) == KeyboardNavigationMode.Cycle)
                     {
-                        if (current == GetParentElement(focused))
+                        if (current == GetParentTabStopElement(focused))
                         {
                             newTabStop = GetFirstFocusableElement(focused, null);
                         }
@@ -673,14 +669,14 @@ namespace Avalonia.Input
                     }
                     else if (!IsValidTabStopSearchCandidate(parent))
                     {
-                        var parentElement = GetParentElement(parent);
+                        var parentElement = GetParentTabStopElement(parent);
                         if (parentElement == null)
                         {
                             parent = GetRootOfPopupSubTree(current) as IInputElement;
 
                             if (parent != null)
                             {
-                                newTabStop = GetNextTabStopInternal(parent, current, newTabStop, ref currentPassed, ref currentCompare);
+                                newTabStop = GetNextOrPreviousTabStopInternal(parent, current, newTabStop, true, ref currentPassed, ref currentCompare);
 
                                 if (newTabStop != null && !FocusHelpers.IsFocusable(newTabStop))
                                 {
@@ -697,7 +693,7 @@ namespace Avalonia.Input
                         }
                         else if (parentElement is InputElement pIE && KeyboardNavigation.GetTabNavigation(pIE) == KeyboardNavigationMode.None)
                         {
-                            current = parentElement as IInputElement;
+                            current = pIE;
                             parent = FocusHelpers.GetFocusParent(current);
                             if (parent == null)
                                 break;
@@ -715,7 +711,7 @@ namespace Avalonia.Input
                         }
                     }
 
-                    newTabStop = GetNextTabStopInternal(parent, current, newTabStop, ref currentPassed, ref currentCompare);
+                    newTabStop = GetNextOrPreviousTabStopInternal(parent, current, newTabStop, true, ref currentPassed, ref currentCompare);
 
                     if (newTabStop != null && !FocusHelpers.IsFocusable(newTabStop) && FocusHelpers.CanHaveFocusableChildren(newTabStop as AvaloniaObject))
                     {
@@ -781,14 +777,14 @@ namespace Avalonia.Input
                     }
                     else if (!IsValidTabStopSearchCandidate(parent))
                     {
-                        var parentElement = GetParentElement(parent);
+                        var parentElement = GetParentTabStopElement(parent);
                         if (parentElement == null)
                         {
                             parent = GetRootOfPopupSubTree(current) as IInputElement;
 
                             if (parent != null)
                             {
-                                newTabStop = GetPreviousTabStopInternal(parent, current, newTabStop, ref currentPassed, ref currentCompare);
+                                newTabStop = GetNextOrPreviousTabStopInternal(parent, current, newTabStop, false, ref currentPassed, ref currentCompare);
 
                                 if (newTabStop != null && !FocusHelpers.IsFocusable(newTabStop))
                                 {
@@ -819,18 +815,11 @@ namespace Avalonia.Input
                         }
                         else
                         {
-                            if (parentElement != null)
-                            {
-                                parent = parentElement as IInputElement;
-                            }
-                            else
-                            {
-                                parent = (_contentRoot as Visual)?.VisualRoot as IInputElement;
-                            }
+                            parent = parentElement as IInputElement;
                         }
                     }
 
-                    newTabStop = GetPreviousTabStopInternal(parent, current, newTabStop, ref currentPassed, ref currentCompare);
+                    newTabStop = GetNextOrPreviousTabStopInternal(parent, current, newTabStop, false, ref currentPassed, ref currentCompare);
 
                     if (newTabStop == null && FocusHelpers.IsPotentialTabStop(parent) && FocusHelpers.IsFocusable(parent))
                     {
@@ -867,11 +856,12 @@ namespace Avalonia.Input
             return newTabStop;
         }
 
-        private IInputElement? GetNextTabStopInternal(IInputElement? parent, IInputElement? current, IInputElement? candidate, ref bool currentPassed, ref IInputElement? currentCompare)
+        private IInputElement? GetNextOrPreviousTabStopInternal(IInputElement? parent, IInputElement? current, IInputElement? candidate, bool findNext, ref bool currentPassed, ref IInputElement? currentCompare)
         {
             var newTabStop = candidate;
             IInputElement? childStop = null;
             int compareIndexResult = 0;
+            bool compareCurrentForPreviousElement = false;
 
             if (IsValidTabStopSearchCandidate(current))
             {
@@ -881,17 +871,19 @@ namespace Avalonia.Input
             if (parent != null)
             {
                 bool foundCurrent = false;
-                foreach (var child in FocusHelpers.GetFocusChildren(parent as AvaloniaObject))
+                foreach (var child in FocusHelpers.GetInputElementChildren(parent as AvaloniaObject))
                 {
                     childStop = null;
-                    if (child != null && child == current)
+                    compareCurrentForPreviousElement = false;
+                    if (child == current)
                     {
                         foundCurrent = true;
                         currentPassed = true;
                         continue;
                     }
 
-                    if (child != null && FocusHelpers.IsVisible(child))
+                    childStop = null;
+                    if (FocusHelpers.IsVisible(child))
                     {
                         if (child == current)
                         {
@@ -904,7 +896,8 @@ namespace Avalonia.Input
                         {
                             if (!FocusHelpers.IsPotentialTabStop(child))
                             {
-                                childStop = GetNextTabStopInternal(childStop, current, newTabStop, ref currentPassed, ref currentCompare);
+                                childStop = GetNextOrPreviousTabStopInternal(childStop, current, newTabStop, findNext, ref currentPassed, ref currentCompare);
+                                compareCurrentForPreviousElement = true;
                             }
                             else
                             {
@@ -913,7 +906,8 @@ namespace Avalonia.Input
                         }
                         else if (FocusHelpers.CanHaveFocusableChildren(child as AvaloniaObject))
                         {
-                            childStop = GetNextTabStopInternal(child, current, newTabStop, ref currentPassed, ref currentCompare);
+                            childStop = GetNextOrPreviousTabStopInternal(child, current, newTabStop, findNext, ref currentPassed, ref currentCompare);
+                            compareCurrentForPreviousElement = true;
                         }
                     }
 
@@ -921,98 +915,38 @@ namespace Avalonia.Input
                     {
                         compareIndexResult = CompareTabIndex(childStop, currentCompare);
 
-                        if (compareIndexResult > 0 || ((foundCurrent || currentPassed) && compareIndexResult == 0))
+                        if (findNext)
                         {
-                            if (newTabStop != null)
+                            if (compareIndexResult > 0 || ((foundCurrent || currentPassed) && compareIndexResult == 0))
                             {
-                                if (CompareTabIndex(childStop, newTabStop) < 0)
+                                if (newTabStop != null)
+                                {
+                                    if (CompareTabIndex(childStop, newTabStop) < 0)
+                                    {
+                                        newTabStop = childStop;
+                                    }
+                                }
+                                else
                                 {
                                     newTabStop = childStop;
                                 }
                             }
-                            else
-                            {
-                                newTabStop = childStop;
-                            }
                         }
-                    }
-                }
-            }
-
-            return newTabStop;
-        }
-
-        private IInputElement? GetPreviousTabStopInternal(IInputElement? parent, IInputElement? current, IInputElement? candidate, ref bool currentPassed, ref IInputElement? currentCompare)
-        {
-            var newTabStop = candidate;
-            IInputElement? childStop = null;
-
-            if (IsValidTabStopSearchCandidate(current))
-            {
-                currentCompare = current;
-            }
-
-            if (parent != null)
-            {
-                int compareIndexResult = 0;
-                bool foundCurrent = false;
-                bool bCurrentCompare = false;
-
-                foreach (var child in FocusHelpers.GetFocusChildren(parent as AvaloniaObject))
-                {
-                    childStop = null;
-                    bCurrentCompare = false;
-                    if (child != null && child == current)
-                    {
-                        foundCurrent = true;
-                        currentPassed = true;
-                        continue;
-                    }
-
-                    if (child != null && FocusHelpers.IsVisible(child))
-                    {
-                        if (child == current)
+                        else
                         {
-                            foundCurrent = true;
-                            currentPassed = true;
-                            continue;
-                        }
-
-                        if (IsValidTabStopSearchCandidate(child))
-                        {
-                            if (!FocusHelpers.IsPotentialTabStop(child))
+                            if (compareIndexResult < 0 || (((foundCurrent || currentPassed) || compareCurrentForPreviousElement) && compareIndexResult == 0))
                             {
-                                childStop = GetPreviousTabStopInternal(childStop, current, newTabStop, ref currentPassed, ref currentCompare);
-                                bCurrentCompare = true;
-                            }
-                            else
-                            {
-                                childStop = child;
-                            }
-                        }
-                        else if (FocusHelpers.CanHaveFocusableChildren(child as AvaloniaObject))
-                        {
-                            childStop = GetPreviousTabStopInternal(child, current, newTabStop, ref currentPassed, ref currentCompare);
-                            bCurrentCompare = true;
-                        }
-                    }
-
-                    if (childStop != null && (FocusHelpers.IsFocusable(childStop) || FocusHelpers.CanHaveFocusableChildren(childStop as AvaloniaObject)))
-                    {
-                        compareIndexResult = CompareTabIndex(childStop, currentCompare);
-
-                        if (compareIndexResult < 0 || (((foundCurrent || currentPassed) || bCurrentCompare) && compareIndexResult == 0))
-                        {
-                            if (newTabStop != null)
-                            {
-                                if (CompareTabIndex(childStop, newTabStop) >= 0)
+                                if (newTabStop != null)
+                                {
+                                    if (CompareTabIndex(childStop, newTabStop) >= 0)
+                                    {
+                                        newTabStop = childStop;
+                                    }
+                                }
+                                else
                                 {
                                     newTabStop = childStop;
                                 }
-                            }
-                            else
-                            {
-                                newTabStop = childStop;
                             }
                         }
                     }
@@ -1024,12 +958,7 @@ namespace Avalonia.Input
 
         private static int CompareTabIndex(IInputElement? control1, IInputElement? control2)
         {
-            if (GetTabIndex(control1) > GetTabIndex(control2))
-                return 1;
-            else if (GetTabIndex(control1) < GetTabIndex(control2))
-                return -1;
-
-            return 0;
+            return GetTabIndex(control1).CompareTo(GetTabIndex(control2));
         }
 
         private static int GetTabIndex(IInputElement? element)
@@ -1070,8 +999,8 @@ namespace Avalonia.Input
 
                 if (edge != null)
                 {
-                    var edgeParent = GetParentElement(edge);
-                    if (edgeParent is InputElement inputElement && KeyboardNavigation.GetTabNavigation(inputElement) == KeyboardNavigationMode.Once && edgeParent == GetParentElement(Current))
+                    var edgeParent = GetParentTabStopElement(edge);
+                    if (edgeParent is InputElement inputElement && KeyboardNavigation.GetTabNavigation(inputElement) == KeyboardNavigationMode.Once && edgeParent == GetParentTabStopElement(Current))
                     {
                         canProcessTab = false;
                     }
@@ -1091,7 +1020,7 @@ namespace Avalonia.Input
                     }
                     else
                     {
-                        var focusedParent = GetParentElement(Current);
+                        var focusedParent = GetParentTabStopElement(Current);
                         while (focusedParent != null)
                         {
                             if (focusedParent is InputElement iE && KeyboardNavigation.GetTabNavigation(iE) == KeyboardNavigationMode.Cycle)
@@ -1100,7 +1029,7 @@ namespace Avalonia.Input
                                 break;
                             }
 
-                            focusedParent = GetParentElement(focusedParent as IInputElement);
+                            focusedParent = GetParentTabStopElement(focusedParent as IInputElement);
                         }
                     }
                 }
@@ -1109,7 +1038,7 @@ namespace Avalonia.Input
             return canProcessTab;
         }
 
-        private AvaloniaObject? GetParentElement(IInputElement? current)
+        private AvaloniaObject? GetParentTabStopElement(IInputElement? current)
         {
             if (current != null)
             {
@@ -1146,7 +1075,7 @@ namespace Avalonia.Input
             var root = (_contentRoot as Visual)?.VisualRoot as IInputElement;
 
             if (root != null)
-                return isReverse ? GetFirstFocusableElement(root, null) : GetLastFocusableElement(root, null);
+                return !isReverse ? GetFirstFocusableElement(root, null) : GetLastFocusableElement(root, null);
 
             return null;
         }
@@ -1177,7 +1106,7 @@ namespace Avalonia.Input
             return firstFocus == Current;
         }
 
-        private IInputElement? GetFirstFocusableElement(IInputElement searchStart, IInputElement? firstFocus = null)
+        private static IInputElement? GetFirstFocusableElement(IInputElement searchStart, IInputElement? firstFocus = null)
         {
             firstFocus = GetFirstFocusableElementInternal(searchStart, firstFocus);
 
@@ -1217,13 +1146,11 @@ namespace Avalonia.Input
                 _xyFocus.SetManifoldsFromBounds(xYFocusOptions.FocusHintRectangle ?? default);
             }
 
-            var queryOnly = false;
-
-            if (FindNextFocus(direction, xYFocusOptions, false, queryOnly) is { } nextFocusedElement)
+            if (FindNextFocus(direction, xYFocusOptions, false, false) is { } nextFocusedElement)
             {
                 focusChanged = nextFocusedElement.Focus();
 
-                if(focusChanged && xYFocusOptions.UpdateManifold && nextFocusedElement is InputElement inputElement)
+                if (focusChanged && xYFocusOptions.UpdateManifold && nextFocusedElement is InputElement inputElement)
                 {
                     var bounds = xYFocusOptions.FocusHintRectangle ?? xYFocusOptions.FocusedElementBounds ?? default;
 

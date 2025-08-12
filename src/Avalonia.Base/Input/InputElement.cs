@@ -793,7 +793,6 @@ namespace Avalonia.Input
             bool isCandidateTabStopOverridden = false;
             IInputElement? currentFocusedTarget = focusedElement;
             InputElement? focusedTargetAsIE = focusedElement as InputElement;
-            ;
             InputElement? candidateTargetAsIE = candidateTabStopElement as InputElement;
             InputElement? newCandidateTargetAsIE = null;
             IInputElement? newCandidateTabStop = null;
