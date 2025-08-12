@@ -83,6 +83,10 @@ public class AvaloniaNameIncrementalGenerator : IIncrementalGenerator
                             new ResolvedXmlView(view, xmlNames),
                             new EquatableList<DiagnosticDescriptor>(diagnostics));
                     }
+                    catch (OperationCanceledException)
+                    {
+                        throw;
+                    }
                     catch (Exception ex)
                     {
                         diagnostics.Add(GeneratorExtensions.NameGeneratorUnhandledError(ex));
