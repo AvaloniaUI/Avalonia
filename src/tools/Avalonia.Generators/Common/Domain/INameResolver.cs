@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using System.Threading;
 using XamlX.Ast;
 using XamlX.TypeSystem;
 
@@ -14,7 +15,7 @@ internal enum NamedFieldModifier
 
 internal interface INameResolver
 {
-    EquatableList<ResolvedXmlName> ResolveXmlNames(XamlDocument xaml);
+    EquatableList<ResolvedXmlName> ResolveXmlNames(XamlDocument xaml, CancellationToken cancellationToken);
     ResolvedName ResolveName(IXamlType xamlType, string name, string? fieldModifier);
 }
 

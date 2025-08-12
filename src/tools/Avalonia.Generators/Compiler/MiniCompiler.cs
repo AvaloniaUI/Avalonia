@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading;
 using Avalonia.Generators.Common.Domain;
 using XamlX.Ast;
 using XamlX.Compiler;
@@ -58,6 +59,28 @@ internal sealed class MiniCompiler : XamlCompiler<object, IXamlEmitResult>
     }
 
     public IXamlTypeSystem TypeSystem => _configuration.TypeSystem;
+
+    public void TransformWithCancellation(XamlDocument doc, CancellationToken cancellationToken)
+    {
+        var ctx = CreateTransformationContext(doc);
+
+        var root = doc.Root;
+        ctx.RootObject = new XamlRootObjectNode((XamlAstObjectNode)root);
+        foreach (var transformer in Transformers)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            ctx.VisitChildren(ctx.RootObject, transformer);
+            root = ctx.Visit(root, transformer);
+        }
+
+        foreach (var simplifier in SimplificationTransformers)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            root = ctx.Visit(root, simplifier);
+        }
+
+        doc.Root = root;
+    }
 
     public IXamlType ResolveXamlType(XamlXmlType type)
     {

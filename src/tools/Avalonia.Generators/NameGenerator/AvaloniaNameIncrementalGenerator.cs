@@ -61,6 +61,7 @@ public class AvaloniaNameIncrementalGenerator : IIncrementalGenerator
         var parsedXamlClasses = xamlFiles
             .Select(static (file, cancellationToken) =>
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 var text = file.GetText(cancellationToken);
                 var diagnostics = new List<DiagnosticDescriptor>();
                 if (text is not null)
@@ -69,14 +70,14 @@ public class AvaloniaNameIncrementalGenerator : IIncrementalGenerator
                     {
                         var xaml = text.ToString();
                         var viewResolver = new XamlXViewResolver(s_noopCompiler);
-                        var view = viewResolver.ResolveView(xaml);
+                        var view = viewResolver.ResolveView(xaml, cancellationToken);
                         if (view is null)
                         {
                             return null;
                         }
 
                         var nameResolver = new XamlXNameResolver();
-                        var xmlNames = nameResolver.ResolveXmlNames(view.Xaml);
+                        var xmlNames = nameResolver.ResolveXmlNames(view.Xaml, cancellationToken);
 
                         return new XmlClassInfo(
                             new ResolvedXmlView(view, xmlNames),
@@ -108,7 +109,7 @@ public class AvaloniaNameIncrementalGenerator : IIncrementalGenerator
         // As much as possible heavy tasks should be moved outside of this step, like XAML parsing.
         var resolvedNames = parsedXamlClasses
             .Combine(compiler)
-            .Select(static (pair, _) =>
+            .Select(static (pair, ct) =>
             {
                 var (classInfo, compiler) = pair;
                 var hasDevToolsReference = compiler.TypeSystem.FindAssembly("Avalonia.Diagnostics") is not null;
@@ -129,6 +130,8 @@ public class AvaloniaNameIncrementalGenerator : IIncrementalGenerator
                         var resolvedNames = new List<ResolvedName>();
                         foreach (var xmlName in xmlView.XmlNames)
                         {
+                            ct.ThrowIfCancellationRequested();
+
                             try
                             {
                                 var clrType = compiler.ResolveXamlType(xmlName.XmlType);

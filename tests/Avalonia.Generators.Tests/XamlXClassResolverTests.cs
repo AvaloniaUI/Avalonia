@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Generators.Common;
 using Avalonia.Generators.Compiler;
@@ -25,7 +26,7 @@ public class XamlXClassResolverTests
         var xaml = await View.Load(markup);
         var resolver = new XamlXViewResolver(MiniCompiler.CreateNoop());
 
-        var resolvedClass = resolver.ResolveView(xaml);
+        var resolvedClass = resolver.ResolveView(xaml, CancellationToken.None);
         Assert.NotNull(resolvedClass);
         Assert.Equal(className, resolvedClass.ClassName);
         Assert.Equal(nameSpace, resolvedClass.Namespace);

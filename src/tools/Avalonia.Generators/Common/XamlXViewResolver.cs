@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Avalonia.Generators.Common.Domain;
 using Avalonia.Generators.Compiler;
 using XamlX;
@@ -14,8 +15,9 @@ internal class XamlXViewResolver(MiniCompiler compiler) : IViewResolver, IXamlAs
 {
     private ResolvedViewDocument? _resolvedClass;
     private XamlDocument? _xaml;
+    private CancellationToken _cancellationToken;
 
-    public ResolvedViewDocument? ResolveView(string xaml)
+    public ResolvedViewDocument? ResolveView(string xaml, CancellationToken cancellationToken)
     {
         _resolvedClass = null;
         _xaml = XDocumentXamlParser.Parse(xaml, new Dictionary<string, string>
@@ -23,14 +25,24 @@ internal class XamlXViewResolver(MiniCompiler compiler) : IViewResolver, IXamlAs
             {XamlNamespaces.Blend2008, XamlNamespaces.Blend2008}
         });
 
-        compiler.Transform(_xaml);
-        _xaml.Root.Visit(this);
-        _xaml.Root.VisitChildren(this);
+        try
+        {
+            _cancellationToken = cancellationToken;
+            compiler.TransformWithCancellation(_xaml, cancellationToken);
+            _xaml.Root.Visit(this);
+            _xaml.Root.VisitChildren(this);
+        }
+        finally
+        {
+            _cancellationToken = CancellationToken.None;
+        }
         return _resolvedClass;
     }
 
     IXamlAstNode IXamlAstVisitor.Visit(IXamlAstNode node)
     {
+        _cancellationToken.ThrowIfCancellationRequested();
+
         if (node is not XamlAstObjectNode objectNode)
             return node;
 

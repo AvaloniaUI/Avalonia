@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Generators.Common;
@@ -129,9 +130,9 @@ public class XamlXNameResolverTests
 
         // Step 1: parse XAML as xml nodes, without any type information.
         var classResolver = new XamlXViewResolver(MiniCompiler.CreateNoop());
-        var classInfo = classResolver.ResolveView(xaml);
+        var classInfo = classResolver.ResolveView(xaml, CancellationToken.None);
         Assert.NotNull(classInfo);
-        var names = nameResolver.ResolveXmlNames(classInfo.Xaml);
+        var names = nameResolver.ResolveXmlNames(classInfo.Xaml, CancellationToken.None);
 
         // Step 2: use compilation context to resolve types
         var compilation =

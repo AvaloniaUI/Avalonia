@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Threading;
 using Avalonia.Generators.Common.Domain;
 using XamlX;
 using XamlX.Ast;
@@ -13,12 +14,22 @@ internal class XamlXNameResolver
     : INameResolver, IXamlAstVisitor
 {
     private readonly Dictionary<string, ResolvedXmlName> _items = new();
+    private CancellationToken _cancellationToken;
 
-    public EquatableList<ResolvedXmlName> ResolveXmlNames(XamlDocument xaml)
+    public EquatableList<ResolvedXmlName> ResolveXmlNames(XamlDocument xaml, CancellationToken cancellationToken)
     {
         _items.Clear();
-        xaml.Root.Visit(this);
-        xaml.Root.VisitChildren(this);
+        try
+        {
+            _cancellationToken = cancellationToken;
+            xaml.Root.Visit(this);
+            xaml.Root.VisitChildren(this);
+        }
+        finally
+        {
+            _cancellationToken = CancellationToken.None;
+        }
+
         return new EquatableList<ResolvedXmlName>(_items.Values.ToArray());
     }
 
@@ -34,6 +45,8 @@ internal class XamlXNameResolver
 
     IXamlAstNode IXamlAstVisitor.Visit(IXamlAstNode node)
     {
+        _cancellationToken.ThrowIfCancellationRequested();
+
         if (node is not XamlAstObjectNode objectNode)
             return node;
 

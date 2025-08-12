@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Generators.Common;
 using Avalonia.Generators.Common.Domain;
@@ -31,10 +32,10 @@ public class OnlyPropertiesTests
         var classResolver = new XamlXViewResolver(MiniCompiler.CreateNoop());
 
         var xaml = await View.Load(markup);
-        var classInfo = classResolver.ResolveView(xaml);
+        var classInfo = classResolver.ResolveView(xaml, CancellationToken.None);
         Assert.NotNull(classInfo);
         var nameResolver = new XamlXNameResolver();
-        var names = nameResolver.ResolveXmlNames(classInfo.Xaml);
+        var names = nameResolver.ResolveXmlNames(classInfo.Xaml, CancellationToken.None);
 
         // Step 2: use compilation context to resolve types
         var compilation =

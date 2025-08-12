@@ -1,11 +1,12 @@
 using System.Collections.Immutable;
+using System.Threading;
 using XamlX.Ast;
 
 namespace Avalonia.Generators.Common.Domain;
 
 internal interface IViewResolver
 {
-    ResolvedViewDocument? ResolveView(string xaml);
+    ResolvedViewDocument? ResolveView(string xaml, CancellationToken cancellationToken);
 }
 
 internal record ResolvedViewInfo(string ClassName, string Namespace)
