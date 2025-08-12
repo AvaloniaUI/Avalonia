@@ -729,6 +729,10 @@ namespace Avalonia.Base.UnitTests.Input
                 var firstFocusable = FocusManager.FindFirstFocusableElement(container);
 
                 Assert.Equal(target1, firstFocusable);
+
+                firstFocusable = (root.FocusManager as FocusManager)?.FindFirstFocusableElement();
+
+                Assert.Equal(target1, firstFocusable);
             }
         }
 
@@ -757,6 +761,10 @@ namespace Avalonia.Base.UnitTests.Input
                 };
 
                 var lastFocusable = FocusManager.FindLastFocusableElement(container);
+
+                Assert.Equal(target4, lastFocusable);
+
+                lastFocusable = (root.FocusManager as FocusManager)?.FindLastFocusableElement();
 
                 Assert.Equal(target4, lastFocusable);
             }
@@ -859,7 +867,6 @@ namespace Avalonia.Base.UnitTests.Input
             }
         }
 
-
         [Fact]
         public void Focus_Should_Move_According_To_Direction()
         {
@@ -894,6 +901,63 @@ namespace Avalonia.Base.UnitTests.Input
                 hasMoved = focusManager.TryMoveFocus(NavigationDirection.Previous);
 
                 Assert.True(target4.IsFocused);
+                Assert.True(hasMoved);
+
+                var options = new FindNextElementOptions()
+                {
+                    SearchRoot = container
+                };
+
+                hasMoved = focusManager.TryMoveFocus(NavigationDirection.Up, options);
+                Assert.True(target3.IsFocused);
+                Assert.True(hasMoved);
+            }
+        }
+
+        [Fact]
+        public void Focus_Should_Move_According_To_XY_Direction()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var target1 = new Button { Focusable = true, Content = "1" };
+                var target2 = new Button { Focusable = true, Content = "2" };
+                var target3 = new Button { Focusable = true, Content = "3" };
+                var target4 = new Button { Focusable = true, Content = "4" };
+                var center = new Button
+                {
+                    [XYFocus.LeftProperty] = target1,
+                    [XYFocus.RightProperty] = target2,
+                    [XYFocus.UpProperty] = target3,
+                    [XYFocus.DownProperty] = target4,
+                };
+                var container =  new Canvas
+                {
+                    Children =
+                    {
+                        target1,
+                        target2,
+                        target3,
+                        target4,
+                        center
+                    }
+                };
+
+                var root = new TestRoot
+                {
+                    Child = container
+                };
+
+                var focusManager = FocusManager.GetFocusManager(container);
+
+                center.Focus();
+
+                var options = new FindNextElementOptions()
+                {
+                    SearchRoot = container
+                };
+
+                var hasMoved = focusManager.TryMoveFocus(NavigationDirection.Up, options);
+                Assert.True(target3.IsFocused);
                 Assert.True(hasMoved);
             }
         }
