@@ -143,6 +143,8 @@ namespace TextTestApp
             }
         }
 
+        private static readonly IBrush TransparentAliceBlue = new SolidColorBrush(0x0F0188FF);
+        private static readonly IBrush TransparentAntiqueWhite = new SolidColorBrush(0x28DF8000);
         private void ListBuffer(TextLine textLine, ShapedTextRun shapedRun, ref double currentX)
         {
             ShapedBuffer buffer = shapedRun.ShapedBuffer;
@@ -171,7 +173,7 @@ namespace TextTestApp
                     oddCluster = !oddCluster;
                     lastClusterStart = clusterStart;
                 }
-                border.Background = oddCluster ? Brushes.AliceBlue : Brushes.AntiqueWhite;
+                border.Background = oddCluster ? TransparentAliceBlue : TransparentAntiqueWhite;
 
 
                 GridRow row = new GridRow { ColumnSpacing = 10 };
