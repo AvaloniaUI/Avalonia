@@ -1,3 +1,4 @@
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
@@ -239,7 +240,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		NOTICE.md = NOTICE.md
 		NuGet.Config = NuGet.Config
 		readme.md = readme.md
-		Settings.StyleCop = Settings.StyleCop
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Generators", "src\tools\Avalonia.Generators\Avalonia.Generators.csproj", "{DDA28789-C21A-4654-86CE-D01E81F095C5}"
@@ -299,6 +299,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Win32.Automation", "src\Windows\Avalonia.Win32.Automation\Avalonia.Win32.Automation.csproj", "{0097673D-DBCE-476E-82FE-E78A56E58AA2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XEmbedSample", "samples\XEmbedSample\XEmbedSample.csproj", "{255614F5-CB64-4ECA-A026-E0B1AF6A2EF4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ControlCatalog.MacCatalyst", "samples\ControlCatalog.iOS\ControlCatalog.MacCatalyst.csproj", "{DE3C28DD-B602-4750-831D-345102A54CA0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ControlCatalog.tvOS", "samples\ControlCatalog.iOS\ControlCatalog.tvOS.csproj", "{14342787-B4EF-4076-8C91-BA6C523DE8DF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -700,6 +704,14 @@ Global
 		{255614F5-CB64-4ECA-A026-E0B1AF6A2EF4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{255614F5-CB64-4ECA-A026-E0B1AF6A2EF4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{255614F5-CB64-4ECA-A026-E0B1AF6A2EF4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DE3C28DD-B602-4750-831D-345102A54CA0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE3C28DD-B602-4750-831D-345102A54CA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DE3C28DD-B602-4750-831D-345102A54CA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DE3C28DD-B602-4750-831D-345102A54CA0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{14342787-B4EF-4076-8C91-BA6C523DE8DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{14342787-B4EF-4076-8C91-BA6C523DE8DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{14342787-B4EF-4076-8C91-BA6C523DE8DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{14342787-B4EF-4076-8C91-BA6C523DE8DF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -788,6 +800,8 @@ Global
 		{9AE1B827-21AC-4063-AB22-C8804B7F931E} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 		{0097673D-DBCE-476E-82FE-E78A56E58AA2} = {B39A8919-9F95-48FE-AD7B-76E08B509888}
 		{255614F5-CB64-4ECA-A026-E0B1AF6A2EF4} = {9B9E3891-2366-4253-A952-D08BCEB71098}
+		{DE3C28DD-B602-4750-831D-345102A54CA0} = {9B9E3891-2366-4253-A952-D08BCEB71098}
+		{14342787-B4EF-4076-8C91-BA6C523DE8DF} = {9B9E3891-2366-4253-A952-D08BCEB71098}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {87366D66-1391-4D90-8999-95A620AD786A}

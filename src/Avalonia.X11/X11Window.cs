@@ -948,11 +948,6 @@ namespace Avalonia.X11
                 XSyncSetCounter(_x11.Display, _xSyncCounter, _xSyncValue);
             }
         }
-        
-        public void Invalidate(Rect rect)
-        {
-
-        }
 
         public IInputRoot InputRoot
             => _inputRoot ?? throw new InvalidOperationException($"{nameof(SetInputRoot)} must have been called");
@@ -1250,10 +1245,10 @@ namespace Avalonia.X11
                     ptr1 = l0,
                     ptr2 = l1 ?? IntPtr.Zero,
                     ptr3 = l2 ?? IntPtr.Zero,
-                    ptr4 = l3 ?? IntPtr.Zero
+                    ptr4 = l3 ?? IntPtr.Zero,
+                    ptr5 = l4 ?? IntPtr.Zero
                 }
             };
-            xev.ClientMessageEvent.ptr4 = l4 ?? IntPtr.Zero;
             XSendEvent(_x11.Display, _x11.RootWindow, false,
                 new IntPtr((int)(EventMask.SubstructureRedirectMask | EventMask.SubstructureNotifyMask)), ref xev);
 

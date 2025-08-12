@@ -218,6 +218,8 @@ namespace Avalonia.Win32
             {
                 throw new Win32Exception();
             }
+
+            TrayIconImpl.ChangeWindowMessageFilter(_hwnd);
         }
 
         public ITrayIconImpl CreateTrayIcon()

@@ -16,7 +16,7 @@ Go to https://dotnet.microsoft.com/en-us/download/visual-studio-sdks and install
 Since Avalonia targets pretty much every supported .NET platform, you need to install these workloads as well. 
 Running it from the command line:
 ```bash
-dotnet workload install android ios wasm-tools
+dotnet workload install android ios maccatalyst wasm-tools
 ```
 
 macOS workloads are not required to build Avalonia.

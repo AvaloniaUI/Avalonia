@@ -706,6 +706,11 @@ namespace Avalonia.Media.TextFormatting
 
                 lastBounds = currentBounds;
 
+                if(coveredLength <= 0)
+                {
+                    throw new InvalidOperationException("Covered length must be greater than zero.");
+                }
+
                 remainingLength -= coveredLength;
             }
 
@@ -1090,7 +1095,8 @@ namespace Avalonia.Media.TextFormatting
             var endHit = currentRun.GlyphRun.GetCharacterHitFromDistance(endOffset, out _);
 
             //Adjust characterLength by the cluster offset to only cover the remaining length of the cluster.
-            var characterLength = Math.Abs(startHit.FirstCharacterIndex + startHit.TrailingLength - endHit.FirstCharacterIndex - endHit.TrailingLength) - clusterOffset;
+            var characterLength = Math.Max(0, Math.Abs(startHit.FirstCharacterIndex + startHit.TrailingLength -
+                 endHit.FirstCharacterIndex - endHit.TrailingLength) - clusterOffset);
 
             if (characterLength == 0 && currentRun.Text.Length > 0 && startIndex < currentRun.Text.Length)
             {
@@ -1172,7 +1178,8 @@ namespace Avalonia.Media.TextFormatting
                 startIndex -= clusterOffset;
             }
 
-            var characterLength = Math.Abs(startHit.FirstCharacterIndex + startHit.TrailingLength - endHit.FirstCharacterIndex - endHit.TrailingLength) - clusterOffset;
+            var characterLength = Math.Max(0, Math.Abs(startHit.FirstCharacterIndex + startHit.TrailingLength - 
+                endHit.FirstCharacterIndex - endHit.TrailingLength) - clusterOffset);
 
             if (characterLength == 0 && currentRun.Text.Length > 0 && startIndex < currentRun.Text.Length)
             {
@@ -1408,10 +1415,12 @@ namespace Avalonia.Media.TextFormatting
             }
 
             var width = widthIncludingWhitespace;
+            var isRtl = _paragraphProperties.FlowDirection == FlowDirection.RightToLeft;
 
-            for (var i = _textRuns.Length - 1; i >= 0; i--)
+            for (int i = 0; i < _textRuns.Length; i++)
             {
-                var currentRun = _textRuns[i];
+                var index = isRtl ? i : _textRuns.Length - 1 - i;
+                var currentRun = _textRuns[index];
 
                 if (currentRun is ShapedTextRun shapedText)
                 {
