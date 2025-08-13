@@ -12,6 +12,7 @@ This documentation covers Avalonia framework development. For user documentation
 
 - [Debugging the XAML Compiler](debug-xaml-compiler.md)
 - [Porting Code from 3rd Party Sources](porting-code-from-3rd-party-sources.md)
+- [Building Local NuGet Packages](nuget.md)
 
 ## Releases
 
