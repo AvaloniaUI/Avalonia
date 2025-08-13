@@ -273,13 +273,13 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void AllowTapRangeSelection_Should_Enable_TapToSelectRange()
+        public void AllowTapRangeSelection_Should_Disable_TapToSelectRange()
         {
             var calendar = new Calendar();
-            Assert.False(calendar.AllowTapRangeSelection); // Default should be false
+            Assert.True(calendar.AllowTapRangeSelection); // Default should be true
             
-            calendar.AllowTapRangeSelection = true;
-            Assert.True(calendar.AllowTapRangeSelection);
+            calendar.AllowTapRangeSelection = false;
+            Assert.False(calendar.AllowTapRangeSelection);
         }
 
         [Fact]
