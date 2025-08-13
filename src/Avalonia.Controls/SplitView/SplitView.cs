@@ -314,6 +314,7 @@ namespace Avalonia.Controls
         {
             base.OnDetachedFromVisualTree(e);
             _pointerDisposable?.Dispose();
+            _pointerDisposable = null;
         }
 
         /// <inheritdoc/>
