@@ -314,6 +314,7 @@ namespace Avalonia.Controls
         {
             base.OnDetachedFromVisualTree(e);
             _pointerDisposable?.Dispose();
+            _pointerDisposable = null;
         }
 
         /// <inheritdoc/>
@@ -423,7 +424,7 @@ namespace Avalonia.Controls
 
         protected virtual void OnPaneOpened(RoutedEventArgs args)
         {
-            EnableLightDismiss();
+            InvalidateLightDismissSubscription();
             RaiseEvent(args);
         }
 
@@ -528,6 +529,8 @@ namespace Avalonia.Controls
             };
             TemplateSettings.ClosedPaneWidth = closedPaneWidth;
             TemplateSettings.PaneColumnGridLength = paneColumnGridLength;
+            
+            InvalidateLightDismissSubscription();
         }
 
         private void UpdateVisualStateForPanePlacementProperty(SplitViewPanePlacement newValue)
@@ -541,7 +544,7 @@ namespace Avalonia.Controls
             PseudoClasses.Add(_lastPlacementPseudoclass);
         }
 
-        private void EnableLightDismiss()
+        private void InvalidateLightDismissSubscription()
         {
             if (_pane == null)
                 return;
@@ -549,19 +552,26 @@ namespace Avalonia.Controls
             // If this returns false, we're not in Overlay or CompactOverlay DisplayMode
             // and don't need the light dismiss behavior
             if (!IsInOverlayMode())
-                return;
-
-            var topLevel = TopLevel.GetTopLevel(this);
-            if (topLevel != null)
             {
-                _pointerDisposable = Disposable.Create(() =>
-                {
-                    topLevel.PointerReleased -= PointerReleasedOutside;
-                    topLevel.BackRequested -= TopLevelBackRequested;
-                });
+                _pointerDisposable?.Dispose();
+                _pointerDisposable = null;
+                return;
+            }
 
-                topLevel.PointerReleased += PointerReleasedOutside;
-                topLevel.BackRequested += TopLevelBackRequested;
+            if (_pointerDisposable == null)
+            {
+                var topLevel = TopLevel.GetTopLevel(this);
+                if (topLevel != null)
+                {
+                    _pointerDisposable = Disposable.Create(() =>
+                    {
+                        topLevel.PointerReleased -= PointerReleasedOutside;
+                        topLevel.BackRequested -= TopLevelBackRequested;
+                    });
+
+                    topLevel.PointerReleased += PointerReleasedOutside;
+                    topLevel.BackRequested += TopLevelBackRequested;
+                }
             }
         }
 
