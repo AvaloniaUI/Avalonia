@@ -663,7 +663,7 @@ namespace TextTestApp
             PathFigure endFigure = new PathFigure();
             endFigure.StartPoint = new Point(xEnd, y - size / 2);
             endFigure.IsClosed = true;
-            endFigure.IsFilled = true;
+            endFigure.IsFilled = false;
             endFigure.Segments!.Add(new ArcSegment { Size = new Size(size / 2, size / 2), Point = new Point(xEnd, y + size / 2), SweepDirection = SweepDirection.Clockwise });
             endCap.Figures!.Add(endFigure);
 
