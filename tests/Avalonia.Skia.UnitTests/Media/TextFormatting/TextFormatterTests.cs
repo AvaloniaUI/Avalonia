@@ -374,7 +374,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             {
                 var defaultProperties = new GenericTextRunProperties(Typeface.Default);
 
-                var paragraphProperties = new GenericTextParagraphProperties(defaultProperties, textWrap: TextWrapping.WrapWithOverflow);
+                var paragraphProperties = new GenericTextParagraphProperties(defaultProperties, textWrapping: TextWrapping.WrapWithOverflow);
 
                 var textSource = new SingleBufferTextSource("ABCDEFHFFHFJHKHFK", defaultProperties, true);
 
@@ -488,7 +488,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 {
                     var textLine =
                         formatter.FormatLine(textSource, currentPosition, paragraphWidth,
-                            new GenericTextParagraphProperties(defaultProperties, textWrap: TextWrapping.Wrap));
+                            new GenericTextParagraphProperties(defaultProperties, textWrapping: TextWrapping.Wrap));
 
                     Assert.NotNull(textLine);
 
@@ -544,7 +544,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var defaultProperties = new GenericTextRunProperties(Typeface.Default);
 
-                var paragraphProperties = new GenericTextParagraphProperties(defaultProperties, textWrap: TextWrapping.Wrap);
+                var paragraphProperties = new GenericTextParagraphProperties(defaultProperties, textWrapping: TextWrapping.Wrap);
 
                 var textSource = new SingleBufferTextSource(text, defaultProperties);
 
@@ -574,7 +574,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 const string text = "012345";
 
                 var defaultProperties = new GenericTextRunProperties(Typeface.Default);
-                var paragraphProperties = new GenericTextParagraphProperties(defaultProperties, textWrap: TextWrapping.Wrap);
+                var paragraphProperties = new GenericTextParagraphProperties(defaultProperties, textWrapping: TextWrapping.Wrap);
                 var textSource = new SingleBufferTextSource(text, defaultProperties);
                 var formatter = new TextFormatterImpl();
 
@@ -632,7 +632,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 {
                     var textLine =
                         formatter.FormatLine(textSource, currentPosition, 300,
-                            new GenericTextParagraphProperties(defaultProperties, textWrap: TextWrapping.WrapWithOverflow));
+                            new GenericTextParagraphProperties(defaultProperties, textWrapping: TextWrapping.WrapWithOverflow));
 
                     Assert.NotNull(textLine);
 
@@ -712,7 +712,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 var defaultProperties = new GenericTextRunProperties(Typeface.Default);
 
                 var paragraphProperties =
-                    new GenericTextParagraphProperties(defaultProperties, textWrap: TextWrapping.Wrap);
+                    new GenericTextParagraphProperties(defaultProperties, textWrapping: TextWrapping.Wrap);
 
                 var textSource = new SingleBufferTextSource(text, defaultProperties);
                 var formatter = new TextFormatterImpl();
@@ -742,7 +742,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             using (Start())
             {
                 var defaultProperties = new GenericTextRunProperties(Typeface.Default);
-                var paragraphProperties = new GenericTextParagraphProperties(defaultProperties, textWrap: TextWrapping.Wrap);
+                var paragraphProperties = new GenericTextParagraphProperties(defaultProperties, textWrapping: TextWrapping.Wrap);
 
                 var textSource = new SingleBufferTextSource("0123456789_0123456789_0123456789_0123456789", defaultProperties);
                 var formatter = new TextFormatterImpl();
@@ -773,7 +773,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 var defaultProperties = new GenericTextRunProperties(Typeface.Default);
 
                 var paragraphProperties =
-                    new GenericTextParagraphProperties(defaultProperties, textWrap: TextWrapping.NoWrap);
+                    new GenericTextParagraphProperties(defaultProperties, textWrapping: TextWrapping.NoWrap);
 
                 var foreground = new SolidColorBrush(Colors.Red).ToImmutable();
 
@@ -878,7 +878,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             using (Start())
             {
                 var defaultRunProperties = new GenericTextRunProperties(Typeface.Default);
-                var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties, textWrap: TextWrapping.Wrap);
+                var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties, textWrapping: TextWrapping.Wrap);
 
                 var text = "Hello World";
 
@@ -975,7 +975,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         {
             var defaultRunProperties = new GenericTextRunProperties(Typeface.Default, foregroundBrush: Brushes.Black);
             var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties,
-                textWrap: wrapping);
+                textWrapping: wrapping);
 
             using (Start())
             {
@@ -993,7 +993,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         {
             var defaultRunProperties = new GenericTextRunProperties(Typeface.Default, foregroundBrush: Brushes.Black);
             var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties,
-                textWrap: wrapping);
+                textWrapping: wrapping);
             
             using (Start())
             {
@@ -1077,7 +1077,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             using (Start())
             {
                 var defaultRunProperties = new GenericTextRunProperties(Typeface.Default);
-                var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties, textWrap: TextWrapping.Wrap);
+                var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties, textWrapping: TextWrapping.Wrap);
 
                 var text = "一二三四 TEXT 一二三四五六七八九十零";
 
