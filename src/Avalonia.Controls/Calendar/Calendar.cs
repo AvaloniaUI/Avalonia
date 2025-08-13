@@ -442,7 +442,7 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<bool> AllowTapRangeSelectionProperty =
             AvaloniaProperty.Register<Calendar, bool>(
                 nameof(AllowTapRangeSelection),
-                defaultValue: false);
+                defaultValue: true);
 
         /// <summary>
         /// Gets or sets a value that indicates what kind of selections are
