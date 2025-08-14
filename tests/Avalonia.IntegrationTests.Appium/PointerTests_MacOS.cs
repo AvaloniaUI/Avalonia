@@ -67,8 +67,9 @@ public class PointerTests_MacOS : TestBase, IDisposable
         Assert.Equal(0, initialMouseDownCount);
         
         // Perform 3 single clicks in titlebar area with delays to avoid accidental double-clicks
-        new Actions(Session).MoveToElement(secondaryWindow).Perform();
-        new Actions(Session).MoveToElement(titleAreaControl).Click().Perform();
+        secondaryWindow.MovePointerOver();
+        titleAreaControl.MovePointerOver();
+        titleAreaControl.SendClick();
         Thread.Sleep(800); // Wait longer than double-click interval
         
         // After first single click - mouse down = 1, release = 1, double-click = 0
@@ -79,7 +80,7 @@ public class PointerTests_MacOS : TestBase, IDisposable
         Assert.Equal(1, afterFirstClickReleaseCount);
         Assert.Equal(0, afterFirstClickDoubleClickCount);
         
-        new Actions(Session).MoveToElement(titleAreaControl).Click().Perform();
+        titleAreaControl.SendClick();
         Thread.Sleep(800);
         
         // After second single click - mouse down = 2, release = 2, double-click = 0
@@ -90,7 +91,7 @@ public class PointerTests_MacOS : TestBase, IDisposable
         Assert.Equal(2, afterSecondClickReleaseCount);
         Assert.Equal(0, afterSecondClickDoubleClickCount);
         
-        new Actions(Session).MoveToElement(titleAreaControl).Click().Perform();
+        titleAreaControl.SendClick();
         Thread.Sleep(500);
         
         // After third single click - mouse down = 3, release = 3, double-click = 0
@@ -102,7 +103,7 @@ public class PointerTests_MacOS : TestBase, IDisposable
         Assert.Equal(0, afterThirdClickDoubleClickCount);
         
         // Now perform an actual double-click to verify the counters work
-        new Actions(Session).MoveToElement(titleAreaControl).DoubleClick().Perform();
+        titleAreaControl.SendDoubleClick();
         Thread.Sleep(500);
         
         // After double-click - mouse down = 5 (3 + 2), release = 5 (3 + 2), double-click = 1
