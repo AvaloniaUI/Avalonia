@@ -629,16 +629,18 @@ public partial class DispatcherTests
         {
             var testObject = new AsyncLocalTestClass();
 
-            // Test 1: Verify Invoke() preserves the execution context.
+            // Test 1: Verify Task.Run preserves the execution context.
+            // First, test Task.Run to ensure that the preceding validation always passes, serving as a baseline for the subsequent Invoke/InvokeAsync tests.
+            // This way, if a later test fails, we have the .NET framework's baseline behavior for reference.
             testObject.AsyncLocalField.Value = "Initial Value";
-            Dispatcher.UIThread.Invoke(() =>
+            var task1 = Task.Run(() =>
             {
                 test1 = testObject.AsyncLocalField.Value;
             });
 
-            // Test 2: Verify Task.Run preserves the execution context.
+            // Test 2: Verify Invoke preserves the execution context.
             testObject.AsyncLocalField.Value = "Initial Value";
-            var task2 = Task.Run(() =>
+            Dispatcher.UIThread.Invoke(() =>
             {
                 test2 = testObject.AsyncLocalField.Value;
             });
@@ -652,7 +654,7 @@ public partial class DispatcherTests
 
             _ = Dispatcher.UIThread.InvokeAsync(async () =>
             {
-                await Task.WhenAll(task2);
+                await Task.WhenAll(task1);
                 tokenSource.Cancel();
             });
 
@@ -726,13 +728,17 @@ public partial class DispatcherTests
             // This culture tag is Sumerian and is extremely unlikely to be set as the default on any device,
             // ensuring that this test will not be affected by the user's environment.
             Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("sux-Shaw-UM");
-            Dispatcher.UIThread.Invoke(() =>
+
+            // Test 1: Verify Task.Run preserves the culture in the execution context.
+            // First, test Task.Run to ensure that the preceding validation always passes, serving as a baseline for the subsequent Invoke/InvokeAsync tests.
+            // This way, if a later test fails, we have the .NET framework's baseline behavior for reference.
+            var task1 = Task.Run(() =>
             {
                 test1 = Thread.CurrentThread.CurrentCulture.Name;
             });
 
-            // Test 2: Verify Task.Run preserves the culture in the execution context.
-            var task2 = Task.Run(() =>
+            // Test 2: Verify Invoke preserves the execution context.
+            Dispatcher.UIThread.Invoke(() =>
             {
                 test2 = Thread.CurrentThread.CurrentCulture.Name;
             });
@@ -745,7 +751,7 @@ public partial class DispatcherTests
 
             _ = Dispatcher.UIThread.InvokeAsync(async () =>
             {
-                await Task.WhenAll(task2);
+                await Task.WhenAll(task1);
                 tokenSource.Cancel();
             });
         });
