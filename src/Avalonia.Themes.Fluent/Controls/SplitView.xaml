@@ -139,7 +139,7 @@
               <ContentPresenter x:Name="PART_ContentPresenter"
                                 Content="{TemplateBinding Content}"
                                 ContentTemplate="{TemplateBinding ContentTemplate}" />
-              <Rectangle Name="LightDismissLayer" IsVisible="False"/>
+              <Rectangle Name="LightDismissLayer" Fill="Transparent" IsVisible="False"/>
             </Panel>
 
           </Grid>
@@ -307,7 +307,7 @@
               <ContentPresenter x:Name="PART_ContentPresenter"
                                 Content="{TemplateBinding Content}"
                                 ContentTemplate="{TemplateBinding ContentTemplate}" />
-              <Rectangle Name="LightDismissLayer" IsVisible="False"/>
+              <Rectangle Name="LightDismissLayer" Fill="Transparent" IsVisible="False"/>
             </Panel>
 
           </Grid>
