@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Avalonia.IntegrationTests.Appium;
 
-[Collection("WindowDecorations")]
+[Collection("Default")]
 public class PointerTests_MacOS : TestBase, IDisposable
 {
     public PointerTests_MacOS(DefaultAppFixture fixture)
