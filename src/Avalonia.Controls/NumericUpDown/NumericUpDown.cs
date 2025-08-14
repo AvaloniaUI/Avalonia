@@ -379,6 +379,7 @@ namespace Avalonia.Controls
 
             FocusableProperty.OverrideDefaultValue<NumericUpDown>(true);
             IsTabStopProperty.OverrideDefaultValue<NumericUpDown>(false);
+            KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue<NumericUpDown>(KeyboardNavigationMode.Local);
         }
 
         /// <inheritdoc />
