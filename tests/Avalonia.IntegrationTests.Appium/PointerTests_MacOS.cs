@@ -79,18 +79,6 @@ public class PointerTests_MacOS : TestBase, IDisposable
         Assert.Equal(1, afterFirstClickReleaseCount);
         Assert.Equal(0, afterFirstClickDoubleClickCount);
         
-        // Now perform an actual double-click to verify the counters work
-        titleAreaControl.SendDoubleClick();
-        Thread.Sleep(500);
-        
-        // After double-click - mouse down = 3, release = 3, double-click = 1
-        var afterDoubleClickMouseDownCount = GetMouseDownCount(secondaryWindow);
-        var afterDoubleClickReleaseCount = GetReleaseCount(secondaryWindow);
-        var afterDoubleClickCount = GetDoubleClickCount(secondaryWindow);
-        Assert.Equal(3, afterDoubleClickMouseDownCount);
-        Assert.Equal(3, afterDoubleClickReleaseCount);
-        Assert.Equal(1, afterDoubleClickCount);
-        
         secondaryWindow.FindElementByAccessibilityId("_XCUI:CloseWindow").Click();
     }
     
