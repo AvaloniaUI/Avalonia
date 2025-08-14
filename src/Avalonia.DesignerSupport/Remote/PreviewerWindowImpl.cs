@@ -133,6 +133,14 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
+        public void SetCanMinimize(bool value)
+        {
+        }
+
+        public void SetCanMaximize(bool value)
+        {
+        }
+
         public void SetTopmost(bool value)
         {
         }
