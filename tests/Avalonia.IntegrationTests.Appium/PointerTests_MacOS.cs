@@ -69,7 +69,7 @@ public class PointerTests_MacOS : TestBase, IDisposable
         secondaryWindow.MovePointerOver();
         titleAreaControl.MovePointerOver();
         titleAreaControl.SendClick();
-        Thread.Sleep(800); // Wait longer than double-click interval
+        Thread.Sleep(800);
         
         // After first single click - mouse down = 1, release = 1, double-click = 0
         var afterFirstClickMouseDownCount = GetMouseDownCount(secondaryWindow);
@@ -78,41 +78,19 @@ public class PointerTests_MacOS : TestBase, IDisposable
         Assert.Equal(1, afterFirstClickMouseDownCount);
         Assert.Equal(1, afterFirstClickReleaseCount);
         Assert.Equal(0, afterFirstClickDoubleClickCount);
-        /*
-        titleAreaControl.SendClick();
-        Thread.Sleep(800);
-        
-        // After second single click - mouse down = 2, release = 2, double-click = 0
-        var afterSecondClickMouseDownCount = GetMouseDownCount(secondaryWindow);
-        var afterSecondClickReleaseCount = GetReleaseCount(secondaryWindow);
-        var afterSecondClickDoubleClickCount = GetDoubleClickCount(secondaryWindow);
-        Assert.Equal(2, afterSecondClickMouseDownCount);
-        Assert.Equal(2, afterSecondClickReleaseCount);
-        Assert.Equal(0, afterSecondClickDoubleClickCount);
-        
-        titleAreaControl.SendClick();
-        Thread.Sleep(500);
-        
-        // After third single click - mouse down = 3, release = 3, double-click = 0
-        var afterThirdClickMouseDownCount = GetMouseDownCount(secondaryWindow);
-        var afterThirdClickReleaseCount = GetReleaseCount(secondaryWindow);
-        var afterThirdClickDoubleClickCount = GetDoubleClickCount(secondaryWindow);
-        Assert.Equal(3, afterThirdClickMouseDownCount);
-        Assert.Equal(3, afterThirdClickReleaseCount);
-        Assert.Equal(0, afterThirdClickDoubleClickCount);
         
         // Now perform an actual double-click to verify the counters work
         titleAreaControl.SendDoubleClick();
         Thread.Sleep(500);
         
-        // After double-click - mouse down = 5 (3 + 2), release = 5 (3 + 2), double-click = 1
+        // After double-click - mouse down = 3, release = 3, double-click = 1
         var afterDoubleClickMouseDownCount = GetMouseDownCount(secondaryWindow);
         var afterDoubleClickReleaseCount = GetReleaseCount(secondaryWindow);
         var afterDoubleClickCount = GetDoubleClickCount(secondaryWindow);
-        Assert.Equal(5, afterDoubleClickMouseDownCount);
-        Assert.Equal(5, afterDoubleClickReleaseCount);
+        Assert.Equal(3, afterDoubleClickMouseDownCount);
+        Assert.Equal(3, afterDoubleClickReleaseCount);
         Assert.Equal(1, afterDoubleClickCount);
-        */
+        
         secondaryWindow.FindElementByAccessibilityId("_XCUI:CloseWindow").Click();
     }
     
