@@ -618,46 +618,56 @@ public partial class DispatcherTests
     {
         using var services = new DispatcherServices(new SimpleControlledDispatcherImpl());
         var tokenSource = new CancellationTokenSource();
-        var testObject = new AsyncLocalTestClass();
         string? test1 = null;
         string? test2 = null;
         string? test3 = null;
 
-        // Test 1: Verify Invoke() preserves the execution context.
-        testObject.AsyncLocalField.Value = "Initial Value";
-        Dispatcher.UIThread.Invoke(() =>
+        // All test code must run inside Task.Run to avoid interfering with the test:
+        //  1. Prevent the execution context from being captured by MainLoop.
+        //  2. Prevent the execution context from remaining effective when set on the same thread.
+        var task = Task.Run(() =>
         {
-            test1 = testObject.AsyncLocalField.Value;
-        });
+            var testObject = new AsyncLocalTestClass();
 
-        // Test 2: Verify Task.Run preserves the execution context.
-        testObject.AsyncLocalField.Value = "Initial Value";
-        _ = Task.Run(() =>
-        {
-            test2 = testObject.AsyncLocalField.Value;
-        });
+            // Test 1: Verify Invoke() preserves the execution context.
+            testObject.AsyncLocalField.Value = "Initial Value";
+            Dispatcher.UIThread.Invoke(() =>
+            {
+                test1 = testObject.AsyncLocalField.Value;
+            });
 
-        // Test 3: Verify InvokeAsync preserves the execution context.
-        testObject.AsyncLocalField.Value = "Initial Value";
-        _ = Dispatcher.UIThread.InvokeAsync(() =>
-        {
-            test3 = testObject.AsyncLocalField.Value;
-        });
+            // Test 2: Verify Task.Run preserves the execution context.
+            testObject.AsyncLocalField.Value = "Initial Value";
+            var task2 = Task.Run(() =>
+            {
+                test2 = testObject.AsyncLocalField.Value;
+            });
 
-        // Assertions
-        _ = Dispatcher.UIThread.InvokeAsync(() =>
-        {
-            // Invoke(): Always passes because the context is not changed.
-            Assert.Equal("Initial Value", test1);
-            // Task.Run: Always passes (guaranteed by the .NET runtime).
-            Assert.Equal("Initial Value", test2);
-            // InvokeAsync: See https://github.com/AvaloniaUI/Avalonia/pull/19163
-            Assert.Equal("Initial Value", test3);
+            // Test 3: Verify InvokeAsync preserves the execution context.
+            testObject.AsyncLocalField.Value = "Initial Value";
+            _ = Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                test3 = testObject.AsyncLocalField.Value;
+            });
 
-            tokenSource.Cancel();
+            _ = Dispatcher.UIThread.InvokeAsync(async () =>
+            {
+                await Task.WhenAll(task2);
+                tokenSource.Cancel();
+            });
+
         });
 
         Dispatcher.UIThread.MainLoop(tokenSource.Token);
+        await Task.WhenAll(task);
+
+        // Assertions
+        // Invoke(): Always passes because the context is not changed.
+        Assert.Equal("Initial Value", test1);
+        // Task.Run: Always passes (guaranteed by the .NET runtime).
+        Assert.Equal("Initial Value", test2);
+        // InvokeAsync: See https://github.com/AvaloniaUI/Avalonia/pull/19163
+        Assert.Equal("Initial Value", test3);
     }
 
     [Fact]
@@ -665,29 +675,37 @@ public partial class DispatcherTests
     {
         using var services = new DispatcherServices(new SimpleControlledDispatcherImpl());
         var tokenSource = new CancellationTokenSource();
-        var testObject = new AsyncLocalTestClass();
         string? test = null;
 
-        // Test: Verify that InvokeAsync calls do not share execution context between each other.
-        _ = Dispatcher.UIThread.InvokeAsync(() =>
+        // All test code must run inside Task.Run to avoid interfering with the test:
+        //  1. Prevent the execution context from being captured by MainLoop.
+        //  2. Prevent the execution context from remaining effective when set on the same thread.
+        var task = Task.Run(() =>
         {
-            testObject.AsyncLocalField.Value = "Initial Value";
-        });
-        _ = Dispatcher.UIThread.InvokeAsync(() =>
-        {
-            test = testObject.AsyncLocalField.Value;
-        });
+            var testObject = new AsyncLocalTestClass();
 
-        // Assertions
-        _ = Dispatcher.UIThread.InvokeAsync(() =>
-        {
-            // The value should NOT flow between different InvokeAsync execution contexts.
-            Assert.Null(test);
+            // Test: Verify that InvokeAsync calls do not share execution context between each other.
+            _ = Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                testObject.AsyncLocalField.Value = "Initial Value";
+            });
+            _ = Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                test = testObject.AsyncLocalField.Value;
+            });
 
-            tokenSource.Cancel();
+            _ = Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                tokenSource.Cancel();
+            });
         });
 
         Dispatcher.UIThread.MainLoop(tokenSource.Token);
+        await Task.WhenAll(task);
+
+        // Assertions
+        // The value should NOT flow between different InvokeAsync execution contexts.
+        Assert.Null(test);
     }
 
     [Fact]
@@ -698,44 +716,52 @@ public partial class DispatcherTests
         string? test1 = null;
         string? test2 = null;
         string? test3 = null;
-
-        // This culture tag is Sumerian and is extremely unlikely to be set as the default on any device,
-        // ensuring that this test will not be affected by the user's environment.
         var oldCulture = Thread.CurrentThread.CurrentCulture;
-        Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("sux-Shaw-UM");
-        Dispatcher.UIThread.Invoke(() =>
+
+        // All test code must run inside Task.Run to avoid interfering with the test:
+        //  1. Prevent the execution context from being captured by MainLoop.
+        //  2. Prevent the execution context from remaining effective when set on the same thread.
+        var task = Task.Run(() =>
         {
-            test1 = Thread.CurrentThread.CurrentCulture.Name;
+            // This culture tag is Sumerian and is extremely unlikely to be set as the default on any device,
+            // ensuring that this test will not be affected by the user's environment.
+            Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("sux-Shaw-UM");
+            Dispatcher.UIThread.Invoke(() =>
+            {
+                test1 = Thread.CurrentThread.CurrentCulture.Name;
+            });
+
+            // Test 2: Verify Task.Run preserves the culture in the execution context.
+            var task2 = Task.Run(() =>
+            {
+                test2 = Thread.CurrentThread.CurrentCulture.Name;
+            });
+
+            // Test 3: Verify InvokeAsync preserves the culture in the execution context.
+            _ = Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                test3 = Thread.CurrentThread.CurrentCulture.Name;
+            });
+
+            _ = Dispatcher.UIThread.InvokeAsync(async () =>
+            {
+                await Task.WhenAll(task2);
+                tokenSource.Cancel();
+            });
         });
 
-        // Test 2: Verify Task.Run preserves the culture in the execution context.
-        _ = Task.Run(() =>
+        try
         {
-            test2 = Thread.CurrentThread.CurrentCulture.Name;
-        });
+            Dispatcher.UIThread.MainLoop(tokenSource.Token);
+            await Task.WhenAll(task);
 
-        // Test 3: Verify InvokeAsync preserves the culture in the execution context.
-        _ = Dispatcher.UIThread.InvokeAsync(() =>
-        {
-            test3 = Thread.CurrentThread.CurrentCulture.Name;
-        });
-
-        // Assertions
-        _ = Dispatcher.UIThread.InvokeAsync(() =>
-        {
+            // Assertions
             // Invoke(): Always passes because the context is not changed.
             Assert.Equal("sux-Shaw-UM", test1);
             // Task.Run: Always passes (guaranteed by the .NET runtime).
             Assert.Equal("sux-Shaw-UM", test2);
             // InvokeAsync: See https://github.com/AvaloniaUI/Avalonia/pull/19163
             Assert.Equal("sux-Shaw-UM", test3);
-
-            tokenSource.Cancel();
-        });
-
-        try
-        {
-            Dispatcher.UIThread.MainLoop(tokenSource.Token);
         }
         finally
         {
