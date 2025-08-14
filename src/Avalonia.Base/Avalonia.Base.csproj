@@ -17,9 +17,11 @@
   <Import Project="..\..\build\DevAnalyzers.props" />
   <Import Project="..\..\build\SourceGenerators.props" />
   <ItemGroup>
-    <Compile Include="..\Shared\IsExternalInit.cs" Link="IsExternalInit.cs" />
-    <Compile Include="..\Shared\ModuleInitializer.cs" Link="ModuleInitializer.cs" />
+    <Compile Include="..\Shared\CallerArgumentExpressionAttribute.cs" Link="Compatibility\CallerArgumentExpressionAttribute.cs" />
+    <Compile Include="..\Shared\IsExternalInit.cs" Link="Compatibility\IsExternalInit.cs" />
+    <Compile Include="..\Shared\ModuleInitializer.cs" Link="Compatibility\ModuleInitializer.cs" />
     <Compile Include="..\Shared\StringCompatibilityExtensions.cs" Link="Compatibility\StringCompatibilityExtensions.cs" />
+    <Compile Include="..\Shared\StreamCompatibilityExtensions.cs" Link="Compatibility\StreamCompatibilityExtensions.cs" />
   </ItemGroup>
 
   <ItemGroup Label="InternalsVisibleTo">
