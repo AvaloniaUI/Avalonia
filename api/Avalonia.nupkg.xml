@@ -115,6 +115,40 @@
     <Left>baseline/netstandard2.0/Avalonia.Controls.dll</Left>
     <Right>target/netstandard2.0/Avalonia.Controls.dll</Right>
   </Suppression>
+    <Target>M:Avalonia.Threading.DispatcherPriorityAwaitable.get_IsCompleted</Target>
+    <Left>baseline/netstandard2.0/Avalonia.Base.dll</Left>
+    <Right>target/netstandard2.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Threading.DispatcherPriorityAwaitable.GetAwaiter</Target>
+    <Left>baseline/netstandard2.0/Avalonia.Base.dll</Left>
+    <Right>target/netstandard2.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Threading.DispatcherPriorityAwaitable.GetResult</Target>
+    <Left>baseline/netstandard2.0/Avalonia.Base.dll</Left>
+    <Right>target/netstandard2.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Threading.DispatcherPriorityAwaitable.OnCompleted(System.Action)</Target>
+    <Left>baseline/netstandard2.0/Avalonia.Base.dll</Left>
+    <Right>target/netstandard2.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Threading.DispatcherPriorityAwaitable`1.GetAwaiter</Target>
+    <Left>baseline/netstandard2.0/Avalonia.Base.dll</Left>
+    <Right>target/netstandard2.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Threading.DispatcherPriorityAwaitable`1.GetResult</Target>
+    <Left>baseline/netstandard2.0/Avalonia.Base.dll</Left>
+    <Right>target/netstandard2.0/Avalonia.Base.dll</Right>
+  </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Controls.Primitives.IPopupHost.ConfigurePosition(Avalonia.Visual,Avalonia.Controls.PlacementMode,Avalonia.Point,Avalonia.Controls.Primitives.PopupPositioning.PopupAnchor,Avalonia.Controls.Primitives.PopupPositioning.PopupGravity,Avalonia.Controls.Primitives.PopupPositioning.PopupPositionerConstraintAdjustment,System.Nullable{Avalonia.Rect})</Target>
@@ -192,6 +226,30 @@
     <Target>P:Avalonia.Controls.Platform.IInsetsManager.DisplaysEdgeToEdge</Target>
     <Left>baseline/netstandard2.0/Avalonia.Controls.dll</Left>
     <Right>target/netstandard2.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0007</DiagnosticId>
+    <Target>T:Avalonia.Threading.DispatcherPriorityAwaitable</Target>
+    <Left>baseline/netstandard2.0/Avalonia.Base.dll</Left>
+    <Right>target/netstandard2.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0007</DiagnosticId>
+    <Target>T:Avalonia.Threading.DispatcherPriorityAwaitable`1</Target>
+    <Left>baseline/netstandard2.0/Avalonia.Base.dll</Left>
+    <Right>target/netstandard2.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:Avalonia.Threading.DispatcherPriorityAwaitable</Target>
+    <Left>baseline/netstandard2.0/Avalonia.Base.dll</Left>
+    <Right>target/netstandard2.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:Avalonia.Threading.DispatcherPriorityAwaitable`1</Target>
+    <Left>baseline/netstandard2.0/Avalonia.Base.dll</Left>
+    <Right>target/netstandard2.0/Avalonia.Base.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0009</DiagnosticId>
