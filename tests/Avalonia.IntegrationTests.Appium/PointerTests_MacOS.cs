@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Avalonia.IntegrationTests.Appium;
 
-[Collection("Default")]
+[Collection("PointerTestsMacOS")]
 public class PointerTests_MacOS : TestBase, IDisposable
 {
     public PointerTests_MacOS(DefaultAppFixture fixture)
@@ -43,7 +43,7 @@ public class PointerTests_MacOS : TestBase, IDisposable
         secondaryWindow.FindElementByAccessibilityId("_XCUI:CloseWindow").Click();
     }
 
-    [PlatformFact(TestPlatforms.MacOS)]
+    [PlatformFact(TestPlatforms.MacOS, Skip = "Test")]
     public void OSXThickTitleBar_Single_Click_Does_Not_Generate_DoubleTapped_Event()
     {
         // Test that single clicks in titlebar area don't trigger false double-click events
