@@ -64,7 +64,7 @@ public class PointerTests_MacOS : TestBase, IDisposable
         Assert.Equal(0, initialDoubleClickCount);
         Assert.Equal(0, initialReleaseCount);
         Assert.Equal(0, initialMouseDownCount);
-        /*
+        
         // Perform a single click in titlebar area 
         secondaryWindow.MovePointerOver();
         titleAreaControl.MovePointerOver();
@@ -78,7 +78,7 @@ public class PointerTests_MacOS : TestBase, IDisposable
         Assert.Equal(1, afterFirstClickMouseDownCount);
         Assert.Equal(1, afterFirstClickReleaseCount);
         Assert.Equal(0, afterFirstClickDoubleClickCount);
-        
+        /*
         titleAreaControl.SendClick();
         Thread.Sleep(800);
         
