@@ -1,313 +1,311 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Collections.Immutable;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
+using NuGet.Configuration;
+using NuGet.Packaging;
+using NuGet.Protocol;
+using NuGet.Protocol.Core.Types;
+using NuGet.Versioning;
+using Nuke.Common.IO;
 using Nuke.Common.Tooling;
-using Serilog;
 using static Serilog.Log;
 
 public static class ApiDiffHelper
 {
-    static readonly HttpClient s_httpClient = new();
+    const string NightlyFeedUri = "https://nuget-feed-nightly.avaloniaui.net/v3/index.json";
+    const string MainPackageName = "Avalonia";
+    const string FolderLib = "lib";
 
-    public static async Task GetDiff(
-        Tool apiDiffTool, string outputFolder,
-        string packagePath, string baselineVersion)
+    public static void ValidatePackage(
+        Tool apiCompatTool,
+        PackageDiffInfo packageDiff,
+        AbsolutePath suppressionFilesFolderPath,
+        bool updateSuppressionFile)
     {
-        await using var baselineStream = await DownloadBaselinePackage(packagePath, baselineVersion);
-        if (baselineStream == null)
-            return;
+        Information("Validating API for package {Id}", packageDiff.PackageId);
 
-        if (!Directory.Exists(outputFolder))
-        {
-            Directory.CreateDirectory(outputFolder!);
-        }
+        Directory.CreateDirectory(suppressionFilesFolderPath);
 
-        using (var target = new ZipArchive(File.Open(packagePath, FileMode.Open, FileAccess.Read), ZipArchiveMode.Read))
-        using (var baseline = new ZipArchive(baselineStream, ZipArchiveMode.Read))
-        using (Helpers.UseTempDir(out var tempFolder))
-        {
-            var targetDlls = GetDlls(target);
-            var baselineDlls = GetDlls(baseline);
+        var suppressionArgs = "";
 
-            var pairs = new List<(string baseline, string target)>();
+        var suppressionFile = suppressionFilesFolderPath / (packageDiff.PackageId + ".nupkg.xml");
+        if (suppressionFile.FileExists())
+            suppressionArgs += $""" --suppression-file="{suppressionFile}" """;
 
-            var packageId = GetPackageId(packagePath);
+        if (updateSuppressionFile)
+            suppressionArgs += $""" --suppression-output-file="{suppressionFile}" --generate-suppression-file=true """;
 
-            // Don't use Path.Combine with these left and right tool parameters.
-            // Microsoft.DotNet.ApiCompat.Tool is stupid and treats '/' and '\' as different assemblies in suppression files.
-            // So, always use Unix '/'
-            foreach (var baselineDll in baselineDlls)
+        var allErrors = new List<string>();
+
+        Parallel.ForEach(
+            packageDiff.TargetFrameworks,
+            targetFramework =>
             {
-                var baselineDllPath = await ExtractDll("baseline", baselineDll, tempFolder);
+                var baselineFrameworkPath = packageDiff.BaselineFolderPath / FolderLib / targetFramework;
+                var currentFrameworkPath = packageDiff.CurrentFolderPath / FolderLib / targetFramework;
+                var args = $""" -l="{baselineFrameworkPath}" -r="{currentFrameworkPath}" {suppressionArgs}""";
 
-                var targetTfm = baselineDll.target;
-                var targetDll = targetDlls.FirstOrDefault(e =>
-                    e.target.StartsWith(targetTfm) && e.entry.Name == baselineDll.entry.Name);
-                if (targetDll is null)
+                var localErrors = GetErrors(apiCompatTool(args));
+
+                if (localErrors.Length > 0)
                 {
-                    if (s_tfmRedirects.FirstOrDefault(t => baselineDll.target.StartsWith(t.oldTfm) && (t.package is null || packageId == t.package)).newTfm is {} newTfm)
-                    {
-                        targetTfm = newTfm;
-                        targetDll = targetDlls.FirstOrDefault(e =>
-                            e.target.StartsWith(targetTfm) && e.entry.Name == baselineDll.entry.Name);
-                    }
+                    lock (allErrors)
+                        allErrors.AddRange(localErrors);
                 }
+            });
 
-                if (targetDll?.entry is null)
-                {
-                    throw new InvalidOperationException($"Some assemblies are missing in the new package {packageId}: {baselineDll.entry.Name} for {baselineDll.target}");
-                }
-
-                var targetDllPath = await ExtractDll("target", targetDll, tempFolder);
-
-                pairs.Add((baselineDllPath, targetDllPath));
-            }
-
-            await Task.WhenAll(pairs.Select(p => Task.Run(() =>
-            {
-                var baselineApi = p.baseline + Random.Shared.Next() + ".api.cs";
-                var targetApi = p.target + Random.Shared.Next() + ".api.cs";
-                var resultDiff = p.target + ".api.diff.cs";
-                
-                GenerateApiListing(apiDiffTool, p.baseline, baselineApi, tempFolder);
-                GenerateApiListing(apiDiffTool, p.target, targetApi, tempFolder);
-
-                var args = $"""-c core.autocrlf=false diff --no-index --minimal """;
-                args += """--ignore-matching-lines="^\[assembly: System.Reflection.AssemblyVersionAttribute" """;
-                args += $""" --output {resultDiff} {baselineApi} {targetApi}""";
-
-                using (var gitProcess = new Process())
-                {
-                    gitProcess.StartInfo = new ProcessStartInfo
-                    {
-                        CreateNoWindow = true,
-                        RedirectStandardError = false,
-                        RedirectStandardOutput = false,
-                        FileName = "git",
-                        Arguments = args,
-                        WorkingDirectory = tempFolder
-                    };
-                    gitProcess.Start();
-                    gitProcess.WaitForExit();
-                }
-
-                var resultFile = new FileInfo(Path.Combine(tempFolder, resultDiff));
-                if (resultFile.Length > 0)
-                {
-                    resultFile.CopyTo(Path.Combine(outputFolder, Path.GetFileName(resultDiff)), true);
-                }
-            })));
-        }
+        ThrowOnErrors(allErrors, packageDiff.PackageId, "ValidateApiDiff");
     }
 
-    private static readonly (string package, string oldTfm, string newTfm)[] s_tfmRedirects = new[]
+    public static void GenerateMarkdownDiff(
+        Tool apiDiffTool,
+        PackageDiffInfo packageDiff,
+        AbsolutePath outputFolderPath,
+        string baselineDisplay,
+        string currentDisplay)
     {
-        // We use StartsWith below comparing these tfm, as we ignore platform versions (like, net6.0-ios16.1).
-        ("Avalonia.Android", "net6.0-android", "net8.0-android"),
-        ("Avalonia.iOS", "net6.0-ios", "net8.0-ios"),
-        // Browser was changed from net7.0 to net8.0-browser. 
-        ("Avalonia.Browser", "net7.0", "net8.0-browser"),
-        ("Avalonia.Browser.Blazor", "net7.0", "net8.0-browser"),
-        // Designer was moved from netcoreapp to netstandard.
-        ("Avalonia", "netcoreapp2.0", "netstandard2.0"),
-        ("Avalonia", "net461", "netstandard2.0")
-    };
+        Information("Creating markdown diff for package {Id}", packageDiff.PackageId);
 
-    public static async Task ValidatePackage(
-        Tool apiCompatTool, string packagePath, string baselineVersion,
-        string suppressionFilesFolder, bool updateSuppressionFile)
-    {
-        if (!Directory.Exists(suppressionFilesFolder))
-        {
-            Directory.CreateDirectory(suppressionFilesFolder!);
-        }
+        Directory.CreateDirectory(outputFolderPath);
 
-        await using var baselineStream = await DownloadBaselinePackage(packagePath, baselineVersion);
-        if (baselineStream == null) 
-            return;
-
-        using (var target = new ZipArchive(File.Open(packagePath, FileMode.Open, FileAccess.Read), ZipArchiveMode.Read))
-        using (var baseline = new ZipArchive(baselineStream, ZipArchiveMode.Read))
-        using (Helpers.UseTempDir(out var tempFolder))
-        {
-            var targetDlls = GetDlls(target);
-            var baselineDlls = GetDlls(baseline);
-
-            var left = new List<string>();
-            var right = new List<string>();
-
-            var packageId = GetPackageId(packagePath);
-            var suppressionFile = Path.Combine(suppressionFilesFolder, packageId + ".nupkg.xml");
-
-            // Don't use Path.Combine with these left and right tool parameters.
-            // Microsoft.DotNet.ApiCompat.Tool is stupid and treats '/' and '\' as different assemblies in suppression files.
-            // So, always use Unix '/'
-            foreach (var baselineDll in baselineDlls)
-            {
-                var baselineDllPath = await ExtractDll("baseline", baselineDll, tempFolder);
-
-                var targetTfm = baselineDll.target;
-                var targetDll = targetDlls.FirstOrDefault(e =>
-                    e.target.StartsWith(targetTfm) && e.entry.Name == baselineDll.entry.Name);
-                if (targetDll?.entry is null)
-                {
-                    if (s_tfmRedirects.FirstOrDefault(t => baselineDll.target.StartsWith(t.oldTfm) && (t.package is null || packageId == t.package)).newTfm is {} newTfm)
-                    {
-                        targetTfm = newTfm;
-                        targetDll = targetDlls.FirstOrDefault(e =>
-                            e.target.StartsWith(targetTfm) && e.entry.Name == baselineDll.entry.Name);
-                    }
-                }
-                if (targetDll?.entry is null && targetDlls.Count == 1)
-                {
-                    targetDll = targetDlls.First();
-                    Warning(
-                        $"Some assemblies are missing in the new package {packageId}: {baselineDll.entry.Name} for {baselineDll.target}." +
-                        $"Resolved: {targetDll.target} ({targetDll.entry.Name})");
-                }
-
-                if (targetDll?.entry is null)
-                {
-                    if (packageId == "Avalonia"
-                        && baselineDll.target is "net461" or "netcoreapp2.0")
-                    {
-                        // In 11.1 we have removed net461 and netcoreapp2.0 targets from Avalonia package.
-                        continue;
-                    }
-                    
-                    var actualTargets = string.Join(", ",
-                        targetDlls.Select(d => $"{d.target} ({d.entry.Name})"));
-                    throw new InvalidOperationException(
-                        $"Some assemblies are missing in the new package {packageId}: {baselineDll.entry.Name} for {baselineDll.target}."
-                        + $"\r\nActual targets: {actualTargets}.");
-                }
-
-                var targetDllPath = await ExtractDll("target", targetDll, tempFolder);
-
-                left.Add(baselineDllPath);
-                right.Add(targetDllPath);
-            }
-
-            if (left.Any())
-            {
-                var args = $""" -l={string.Join(',', left)} -r="{string.Join(',', right)}" """;
-                if (File.Exists(suppressionFile))
-                {
-                    args += $""" --suppression-file="{suppressionFile}" """;
-                }
-
-                if (updateSuppressionFile)
-                {
-                    args += $""" --suppression-output-file="{suppressionFile}" --generate-suppression-file=true """;
-                }
-
-                var result = apiCompatTool(args, tempFolder)
-                    .Where(t => t.Type == OutputType.Err).ToArray();
-                if (result.Any())
-                {
-                    throw new AggregateException(
-                        $"ApiDiffValidation task has failed for \"{Path.GetFileName(packagePath)}\" package",
-                        result.Select(r => new Exception(r.Text)));
-                }
-            }
-        }
-    }
-
-    record DllEntry(string target, ZipArchiveEntry entry);
-    
-    static IReadOnlyCollection<DllEntry> GetDlls(ZipArchive archive)
-    {
-        return archive.Entries
-            .Where(e => Path.GetExtension(e.FullName) == ".dll"
-                // Exclude analyzers and build task, as we don't care about breaking changes there
-                && !e.FullName.Contains("analyzers/") && !e.FullName.Contains("analyzers\\")
-                && !e.Name.Contains("Avalonia.Build.Tasks"))
-            .Select(e => (
-                entry: e,
-                isRef: e.FullName.Contains("ref/") || e.FullName.Contains("ref\\"),
-                target: Path.GetDirectoryName(e.FullName)!.Split(new [] { '/', '\\' }).Last())
-            )
-            .GroupBy(e => (e.target, e.entry.Name))
-            .Select(g => g.MaxBy(e => e.isRef))
-            .Select(e => new DllEntry(e.target, e.entry))
-            .ToArray();
-    }
-
-    static async Task<Stream> DownloadBaselinePackage(string packagePath, string baselineVersion)
-    {
-        if (baselineVersion is null)
-        {
-            throw new InvalidOperationException(
-                "Build \"api-baseline\" parameter must be set when running Nuke CreatePackages");
-        }
-
-        /*
-         Gets package name from versions like:
-         Avalonia.0.10.0-preview1
-         Avalonia.11.0.999-cibuild0037534-beta
-         Avalonia.11.0.0
-         */
-        var packageId = GetPackageId(packagePath);
-        Information("Downloading {0} {1} baseline package", packageId, baselineVersion);
+        // Not specifying -eattrs incorrectly tries to load AttributesToExclude.txt, create an empty file instead.
+        // See https://github.com/dotnet/sdk/issues/49719
+        var excludedAttributesFilePath = (AbsolutePath)Path.Join(Path.GetTempPath(), Guid.NewGuid().ToString());
+        File.WriteAllBytes(excludedAttributesFilePath!, []);
 
         try
         {
-            using var response = await s_httpClient.SendAsync(new HttpRequestMessage(HttpMethod.Get,
-                $"https://www.nuget.org/api/v2/package/{packageId}/{baselineVersion}"), HttpCompletionOption.ResponseHeadersRead);
-            response.EnsureSuccessStatusCode();
+            var allErrors = new List<string>();
 
-            await using var stream = await response.Content.ReadAsStreamAsync(); 
-            var memoryStream = new MemoryStream();
-            await stream.CopyToAsync(memoryStream);
-            memoryStream.Seek(0, SeekOrigin.Begin);
-            return memoryStream;
+            Parallel.ForEach(
+                packageDiff.TargetFrameworks,
+                targetFramework =>
+                {
+                    var baselineFrameworkPath = packageDiff.BaselineFolderPath / FolderLib / targetFramework;
+                    var currentFrameworkPath = packageDiff.CurrentFolderPath / FolderLib / targetFramework;
+                    var outputFrameworkPath = outputFolderPath / targetFramework;
+                    var args = $""" -b="{baselineFrameworkPath}" -bfn="{baselineDisplay}" -a="{currentFrameworkPath}" -afn="{currentDisplay}" -o="{outputFrameworkPath}" -eattrs="{excludedAttributesFilePath}" """;
+
+                    var localErrors = GetErrors(apiDiffTool(args));
+
+                    if (localErrors.Length > 0)
+                    {
+                        lock (allErrors)
+                            allErrors.AddRange(localErrors);
+                    }
+
+                    // The API diff tool always output a summary file even if there's no diff. Delete it in this case.
+                    if (outputFrameworkPath.DirectoryExists() && Directory.GetFiles(outputFrameworkPath, "*.md").Length <= 1)
+                        Directory.Delete(outputFrameworkPath, true);
+                });
+
+            if (outputFolderPath.DirectoryExists() && !Directory.EnumerateFileSystemEntries(outputFolderPath).Any())
+                Directory.Delete(outputFolderPath);
+
+            ThrowOnErrors(allErrors, packageDiff.PackageId, "OutputApiDiff");
         }
-        catch (HttpRequestException e) when (e.StatusCode == HttpStatusCode.NotFound)
+        finally
         {
-            return null;
-        }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException($"Downloading baseline package for {packageId} {baselineVersion} failed.\r" + ex.Message, ex);
+            File.Delete(excludedAttributesFilePath);
         }
     }
 
-    static async Task<string> ExtractDll(string basePath, DllEntry dllEntry, string targetFolder)
-    {
-        var dllPath = $"{basePath}/{dllEntry.target}/{dllEntry.entry.Name}";
-        var dllRealPath = Path.Combine(targetFolder, dllPath);
-        Directory.CreateDirectory(Path.GetDirectoryName(dllRealPath)!);
-        await using (var dllFile = File.Create(dllRealPath))
-        {
-            await dllEntry.entry.Open().CopyToAsync(dllFile);
-        }
+    static string[] GetErrors(IEnumerable<Output> outputs)
+        => outputs
+            .Where(output => output.Type == OutputType.Err)
+            .Select(output => output.Text)
+            .ToArray();
 
-        return dllPath;
-    }
-
-    static void GenerateApiListing(Tool apiDiffTool, string inputFile, string outputFile, string workingDif)
+    static void ThrowOnErrors(List<string> errors, string packageId, string taskName)
     {
-        var args = $""" --assembly={inputFile}  --output-path={outputFile}  --include-assembly-attributes=true""";
-        var result = apiDiffTool(args, workingDif)
-            .Where(t => t.Type == OutputType.Err).ToArray();
-        if (result.Any())
+        if (errors.Count > 0)
         {
-            throw new AggregateException($"GetApi tool failed task has failed",
-                result.Select(r => new Exception(r.Text)));
+            throw new AggregateException(
+                $"{taskName} task has failed for \"{packageId}\" package",
+                errors.Select(error => new Exception(error)));
         }
     }
 
-    static string GetPackageId(string packagePath)
+    public static async Task<GlobalDiffInfo> DownloadAndExtractPackagesAsync(
+        IEnumerable<AbsolutePath> currentPackagePaths,
+        NuGetVersion currentVersion,
+        bool isReleaseBranch,
+        AbsolutePath outputFolderPath,
+        NuGetVersion? forcedBaselineVersion)
     {
-        return Regex.Replace(
-            Path.GetFileNameWithoutExtension(packagePath),
-            """(\.\d+\.\d+\.\d+(?:-.+)?)$""", "");
+        var downloadContext = await CreateNuGetDownloadContextAsync();
+        var baselineVersion = forcedBaselineVersion ??
+                              await GetBaselineVersionAsync(downloadContext, currentVersion, isReleaseBranch);
+
+        Information("API baseline version is {Baseline} for current version {Current}", baselineVersion, currentVersion);
+
+        var memoryStream = new MemoryStream();
+
+        var packageDiffs = ImmutableArray.CreateBuilder<PackageDiffInfo>();
+
+        foreach (var packagePath in currentPackagePaths)
+        {
+            string packageId;
+            AbsolutePath currentFolderPath;
+            AbsolutePath baselineFolderPath;
+            var targetFrameworks = new HashSet<string>();
+
+            // Extract current package
+            using (var currentArchive = new ZipArchive(File.OpenRead(packagePath), ZipArchiveMode.Read, leaveOpen: false))
+            {
+                using var packageReader = new PackageArchiveReader(currentArchive);
+                packageId = packageReader.NuspecReader.GetId();
+                currentFolderPath = outputFolderPath / "current" / packageId;
+                ExtractDiffableAssembliesFromPackage(currentArchive, currentFolderPath, targetFrameworks);
+            }
+
+            // Download baseline package
+            memoryStream.Position = 0L;
+            memoryStream.SetLength(0L);
+            await DownloadBaselinePackageAsync(memoryStream, downloadContext, packageId, baselineVersion);
+            memoryStream.Position = 0L;
+
+            // Extract baseline package
+            using (var baselineArchive = new ZipArchive(memoryStream, ZipArchiveMode.Read, leaveOpen: true))
+            {
+                baselineFolderPath = outputFolderPath / "baseline" / packageId;
+                ExtractDiffableAssembliesFromPackage(baselineArchive, baselineFolderPath, targetFrameworks);
+            }
+
+            // Ensure target framework folders exist on both sides
+            foreach (var targetFramework in targetFrameworks)
+            {
+                Directory.CreateDirectory(baselineFolderPath / FolderLib / targetFramework);
+                Directory.CreateDirectory(currentFolderPath / FolderLib / targetFramework);
+            }
+
+            packageDiffs.Add(new PackageDiffInfo(packageId, [..targetFrameworks], baselineFolderPath, currentFolderPath));
+        }
+
+        return new GlobalDiffInfo(baselineVersion, currentVersion, packageDiffs.DrainToImmutable());
+    }
+
+    static async Task<NuGetDownloadContext> CreateNuGetDownloadContextAsync()
+    {
+        var packageSource = new PackageSource(NightlyFeedUri) { ProtocolVersion = 3 };
+        var repository = Repository.Factory.GetCoreV3(packageSource);
+        var findPackageByIdResource = await repository.GetResourceAsync<FindPackageByIdResource>();
+        return new NuGetDownloadContext(packageSource, findPackageByIdResource);
+    }
+
+    /// <summary>
+    /// Finds the baseline version to diff against.
+    /// On release branches, use the latest stable version.
+    /// On the main branch and on PRs, use the latest nightly version.
+    /// This method assumes all packages share the same version.
+    /// </summary>
+    static async Task<NuGetVersion> GetBaselineVersionAsync(
+        NuGetDownloadContext context,
+        NuGetVersion currentVersion,
+        bool isReleaseBranch)
+    {
+        var versions = await context.FindPackageByIdResource.GetAllVersionsAsync(
+            MainPackageName,
+            context.CacheContext,
+            NullLogger.Instance,
+            CancellationToken.None);
+
+        versions = versions.Where(v => v < currentVersion);
+
+        if (isReleaseBranch)
+            versions = versions.Where(v => !v.IsPrerelease);
+
+        return versions.OrderDescending().FirstOrDefault()
+           ?? throw new InvalidOperationException(
+               $"Could not find a version less than {currentVersion} for package {MainPackageName} in source {context.PackageSource.Source}");
+    }
+
+    static async Task DownloadBaselinePackageAsync(
+        Stream destinationStream,
+        NuGetDownloadContext context,
+        string packageId,
+        NuGetVersion version)
+    {
+        Information("Downloading {Id} {Version} baseline package", packageId, version);
+
+        var downloaded = await context.FindPackageByIdResource.CopyNupkgToStreamAsync(
+            packageId,
+            version,
+            destinationStream,
+            context.CacheContext,
+            NullLogger.Instance,
+            CancellationToken.None);
+
+        if (!downloaded)
+        {
+            throw new InvalidOperationException(
+                $"Could not download version {version} for package {packageId} in source {context.PackageSource.Source}");
+        }
+    }
+
+    static void ExtractDiffableAssembliesFromPackage(
+        ZipArchive packageArchive,
+        AbsolutePath destinationFolderPath,
+        HashSet<string> outputTargetFrameworks)
+    {
+        foreach (var entry in packageArchive.Entries)
+        {
+            if (GetTargetFramework(entry) is not { } targetFramework)
+                continue;
+
+            outputTargetFrameworks.Add(targetFramework);
+            var targetFilePath = destinationFolderPath / entry.FullName;
+            Directory.CreateDirectory(targetFilePath.Parent);
+            entry.ExtractToFile(targetFilePath, overwrite: true);
+        }
+
+        static string? GetTargetFramework(ZipArchiveEntry entry)
+        {
+            if (!entry.FullName.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
+                return null;
+
+            var segments = entry.FullName.Split('/');
+            if (segments is not [FolderLib, var targetFramework, ..])
+                return null;
+
+            return targetFramework;
+        }
+    }
+
+    public sealed class GlobalDiffInfo(
+        NuGetVersion baselineVersion,
+        NuGetVersion currentVersion,
+        ImmutableArray<PackageDiffInfo> packages)
+    {
+        public NuGetVersion BaselineVersion { get; } = baselineVersion;
+        public NuGetVersion CurrentVersion { get; } = currentVersion;
+        public ImmutableArray<PackageDiffInfo> Packages { get; } = packages;
+    }
+
+    public sealed class PackageDiffInfo(
+        string packageId,
+        ImmutableArray<string> targetFrameworks,
+        AbsolutePath baselineFolderPath,
+        AbsolutePath currentFolderPath)
+    {
+        public string PackageId { get; } = packageId;
+        public ImmutableArray<string> TargetFrameworks { get; } = targetFrameworks;
+        public AbsolutePath BaselineFolderPath { get; } = baselineFolderPath;
+        public AbsolutePath CurrentFolderPath { get; } = currentFolderPath;
+    }
+
+    sealed class NuGetDownloadContext(PackageSource packageSource, FindPackageByIdResource findPackageByIdResource)
+    {
+        public SourceCacheContext CacheContext { get; } = new();
+        public PackageSource PackageSource { get; } = packageSource;
+        public FindPackageByIdResource FindPackageByIdResource { get; } = findPackageByIdResource;
     }
 }
