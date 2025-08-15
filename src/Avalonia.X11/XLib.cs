@@ -64,6 +64,9 @@ namespace Avalonia.X11
         public static extern IntPtr XNextEvent(IntPtr display, XEvent* xevent);
 
         [DllImport(libX11)]
+        public static extern bool XCheckTypedWindowEvent(IntPtr display, IntPtr window, int event_type, ref XEvent xevent);
+
+        [DllImport(libX11)]
         public static extern int XConnectionNumber(IntPtr diplay);
 
         [DllImport(libX11)]
