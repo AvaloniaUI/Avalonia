@@ -8,6 +8,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Controls.Utils;
 using Avalonia.Data;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Metadata;
@@ -270,12 +271,6 @@ namespace Avalonia.Controls
                 SetCurrentValue(IsDropDownOpenProperty, true);
                 e.Handled = true;
             }
-            else if (IsDropDownOpen && (e.Key == Key.Enter || e.Key == Key.Space))
-            {
-                SelectFocusedItem();
-                SetCurrentValue(IsDropDownOpenProperty, false);
-                e.Handled = true;
-            }
             // Ignore key buttons, if they are used for XY focus.
             else if (!IsDropDownOpen
                      && !XYFocusHelpers.IsAllowedXYNavigationMode(this, e.KeyDeviceType))
@@ -362,15 +357,7 @@ namespace Avalonia.Controls
 
             if (!e.Handled && e.Source is Visual source)
             {
-                if (_popup?.IsInsidePopup(source) == true)
-                {
-                    if (UpdateSelectionFromEventSource(e.Source))
-                    {
-                        _popup?.Close();
-                        e.Handled = true;
-                    }
-                }
-                else if (PseudoClasses.Contains(pcPressed))
+                if (_popup?.IsInsidePopup(source) != true && PseudoClasses.Contains(pcPressed))
                 {
                     SetCurrentValue(IsDropDownOpenProperty, !IsDropDownOpen);
                     e.Handled = true;
@@ -379,6 +366,27 @@ namespace Avalonia.Controls
 
             PseudoClasses.Set(pcPressed, false);
             base.OnPointerReleased(e);
+        }
+
+        public override bool UpdateSelectionFromEvent(Control container, RoutedEventArgs eventArgs)
+        {
+            if (base.UpdateSelectionFromEvent(container, eventArgs))
+            {
+                _popup?.Close();
+                return true;
+            }
+
+            return false;
+        }
+
+        protected override InputSelectionTrigger EventSelectionTrigger(InputElement selectable, PointerEventArgs eventArgs)
+        {
+            return base.EventSelectionTrigger(selectable, eventArgs) switch
+            {
+                InputSelectionTrigger.None => InputSelectionTrigger.None,
+                InputSelectionTrigger.Press or InputSelectionTrigger.Release => InputSelectionTrigger.Release, // never select on press
+                _ => throw new NotImplementedException(),
+            };
         }
 
         /// <inheritdoc/>
@@ -596,18 +604,6 @@ namespace Avalonia.Controls
             if (_skipNextTextChanged)
                 return;
             SetCurrentValue(TextProperty, GetItemTextValue(item));
-        }
-
-        private void SelectFocusedItem()
-        {
-            foreach (var dropdownItem in GetRealizedContainers())
-            {
-                if (dropdownItem.IsFocused)
-                {
-                    SelectedIndex = IndexFromContainer(dropdownItem);
-                    break;
-                }
-            }
         }
 
         private bool SelectNext() => MoveSelection(SelectedIndex, 1, WrapSelection);
