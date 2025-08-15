@@ -111,7 +111,7 @@ namespace Avalonia.Media.TextFormatting
         /// The overhang trailing distance.
         /// </returns>
         /// <remarks>
-        /// The <see cref="OverhangTrailing"/> value will be positive when the trailing drawn pixel comes after the trailing alignment point.
+        /// The <see cref="OverhangTrailing"/> value will be positive when the trailing drawn pixel comes before the trailing alignment point.
         /// </remarks>
         public abstract double OverhangTrailing { get; }
 

@@ -1461,10 +1461,10 @@ namespace Avalonia.Media.TextFormatting
             var extent = inkBounds.Height;
             //The width of overhanging pixels at the bottom
             var overhangAfter = inkBounds.Bottom - height;
-            //The width of overhanging pixels at the origin
+            //The width of overhanging pixels at the natural alignment point. Positive value means we are inside.
             var overhangLeading = inkBounds.Left;
-            //The width of overhanging pixels at the end
-            var overhangTrailing = inkBounds.Right - widthIncludingWhitespace;
+            //The width of overhanging pixels at the end of the natural bounds. Positive value means we are inside.
+            var overhangTrailing = widthIncludingWhitespace - inkBounds.Right;
             var hasOverflowed = width > _paragraphWidth;
 
             if (!double.IsNaN(lineHeight) && !MathUtilities.IsZero(lineHeight))
