@@ -687,8 +687,9 @@ namespace Avalonia.Media.TextFormatting
             // 4) TextWidth is the max of the text width among lines.
             // We choose to update all related metrics at once (OverhangLeading, WidthIncludingTrailingWhitespace, OverhangTrailing)
             // if the current line has a larger text width.
-            var previousTextWidth = _metrics.OverhangLeading + _metrics.WidthIncludingTrailingWhitespace + _metrics.OverhangTrailing;
-            var textWidth = currentLine.OverhangLeading + currentLine.WidthIncludingTrailingWhitespace + currentLine.OverhangTrailing;
+            var previousTextWidth = _metrics.WidthIncludingTrailingWhitespace;
+            var textWidth = currentLine.WidthIncludingTrailingWhitespace;
+
             if (previousTextWidth < textWidth)
             {
                 _metrics.WidthIncludingTrailingWhitespace = currentLine.WidthIncludingTrailingWhitespace;

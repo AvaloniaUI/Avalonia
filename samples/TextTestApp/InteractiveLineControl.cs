@@ -327,7 +327,7 @@ namespace TextTestApp
         protected Size TextLineSize => _textLineSize ??= TextLine is { } textLine ? new Size(textLine.WidthIncludingTrailingWhitespace, textLine.Height) : default;
 
         private Size? _inkSize;
-        protected Size InkSize => _inkSize ??= TextLine is { } textLine ? new Size(textLine.OverhangLeading + textLine.WidthIncludingTrailingWhitespace + textLine.OverhangTrailing, textLine.Extent) : default;
+        protected Size InkSize => _inkSize ??= TextLine is { } textLine ? new Size(-textLine.OverhangLeading + textLine.WidthIncludingTrailingWhitespace - textLine.OverhangTrailing, textLine.Extent) : default;
 
         public event EventHandler? TextLineChanged;
 
