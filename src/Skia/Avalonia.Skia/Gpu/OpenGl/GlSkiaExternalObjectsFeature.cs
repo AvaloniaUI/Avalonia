@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Avalonia.Media.Imaging;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition;
@@ -108,17 +109,17 @@ internal class GlSkiaImportedImage : IPlatformRenderInterfaceImportedImage
             _ => SKColorType.Rgba8888
         };
 
-    SKSurface? TryCreateSurface(int textureId, int format, int width, int height, bool topLeft)
+    SKSurface? TryCreateSurface(int target, int textureId, int format, int width, int height, bool topLeft)
     {
         var origin = topLeft ? GRSurfaceOrigin.TopLeft : GRSurfaceOrigin.BottomLeft; 
         using var texture = new GRBackendTexture(width, height, false,
-            new GRGlTextureInfo(GlConsts.GL_TEXTURE_2D, (uint)textureId, (uint)format));
+            new GRGlTextureInfo((uint)target, (uint)textureId, (uint)format));
         var surf = SKSurface.Create(_gpu.GrContext, texture, origin, SKColorType.Rgba8888);
         if (surf != null)
             return surf;
         
         using var unformatted = new GRBackendTexture(width, height, false,
-            new GRGlTextureInfo(GlConsts.GL_TEXTURE_2D, (uint)textureId));
+            new GRGlTextureInfo((uint)GlConsts.GL_TEXTURE_2D, (uint)textureId));
         
         return SKSurface.Create(_gpu.GrContext, unformatted, origin, SKColorType.Rgba8888);
     }
@@ -130,16 +131,34 @@ internal class GlSkiaImportedImage : IPlatformRenderInterfaceImportedImage
         var internalFormat = _image?.InternalFormat ?? _sharedTexture!.InternalFormat;
         var textureId = _image?.TextureId ?? _sharedTexture!.TextureId;
         var topLeft = _image?.Properties.TopLeftOrigin ?? false;
+        var textureType = _image?.TextureType ?? GlConsts.GL_TEXTURE_2D;
         
-        using var texture = new GRBackendTexture(width, height, false,
-            new GRGlTextureInfo(GlConsts.GL_TEXTURE_2D, (uint)textureId, (uint)internalFormat));
         
         IBitmapImpl rv;
-        using (var surf = TryCreateSurface(textureId, internalFormat, width, height, topLeft))
+        using (var surf = TryCreateSurface(textureType, textureId, internalFormat, width, height, topLeft))
         {
             if (surf == null)
                 throw new OpenGlException("Unable to consume provided texture");
-            rv = new ImmutableBitmap(surf.Snapshot());
+            var snapshot = surf.Snapshot();
+            var context = _gpu.GlContext;
+            
+            rv = new ImmutableBitmap(snapshot, () =>
+            {
+                IDisposable? restoreContext = null;
+                try
+                {
+                    restoreContext = context.EnsureCurrent();
+                }
+                catch
+                {
+                    // Ignore, context is likely dead
+                }
+
+                using (restoreContext)
+                {
+                    snapshot.Dispose();
+                }
+            });
         }
 
         _gpu.GrContext.Flush();
@@ -188,6 +207,30 @@ internal class GlSkiaImportedImage : IPlatformRenderInterfaceImportedImage
             finally
             {
                 signal.Semaphore.SignalSemaphore(_image);
+            }
+        }
+    }
+
+    public IBitmapImpl SnapshotWithTimelineSemaphores(IPlatformRenderInterfaceImportedSemaphore waitForSemaphore,
+        ulong waitForValue, IPlatformRenderInterfaceImportedSemaphore signalSemaphore, ulong signalValue)
+    {
+        if (_image is null)
+        {
+            throw new NotSupportedException("Only supported with an external image");
+        }
+
+        var wait = (GlSkiaImportedSemaphore)waitForSemaphore;
+        var signal = (GlSkiaImportedSemaphore)signalSemaphore;
+        using (_gpu.EnsureCurrent())
+        {
+            wait.Semaphore.WaitTimelineSemaphore(_image, waitForValue);
+            try
+            {
+                return TakeSnapshot();
+            }
+            finally
+            {
+                signal.Semaphore.SignalTimelineSemaphore(_image, signalValue);
             }
         }
     }
