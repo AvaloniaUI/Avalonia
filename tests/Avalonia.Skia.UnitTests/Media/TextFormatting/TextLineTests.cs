@@ -1806,7 +1806,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         [InlineData("y", -8, -1.304, -5.44)]
         [InlineData("f", -12, -11.824, -4.44)]
         [InlineData("a", 1, -0.232, -20.44)]
-        [Theory]
+        [Win32Theory("Values depend on the Skia platform backend")]
         public void Should_Produce_Overhang(string text, double leading, double trailing, double after)
         {
             const string symbolsFont = "resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Source Serif";
