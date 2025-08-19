@@ -359,6 +359,7 @@ partial class Build : NukeBuild
         .Executes(() =>
         {
             var globalDiff = GlobalDiff!;
+            var outputFolderPath = Parameters.ArtifactsDir / "api-diff" / "markdown";
             var baselineDisplay = globalDiff.BaselineVersion.ToString();
             var currentDisplay = globalDiff.CurrentVersion.ToString();
 
@@ -367,9 +368,11 @@ partial class Build : NukeBuild
                 packageDiff => ApiDiffHelper.GenerateMarkdownDiff(
                     ApiDiffTool,
                     packageDiff,
-                    Parameters.ArtifactsDir / "api-diff" / "markdown" / packageDiff.PackageId,
+                    outputFolderPath,
                     baselineDisplay,
                     currentDisplay));
+
+            ApiDiffHelper.MergePackageMarkdownDiffFiles(outputFolderPath, baselineDisplay, currentDisplay);
         });
     
     Target RunTests => _ => _

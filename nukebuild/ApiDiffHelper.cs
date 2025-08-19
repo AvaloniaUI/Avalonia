@@ -6,6 +6,7 @@ using System.Collections.Immutable;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -68,13 +69,14 @@ public static class ApiDiffHelper
     public static void GenerateMarkdownDiff(
         Tool apiDiffTool,
         PackageDiffInfo packageDiff,
-        AbsolutePath outputFolderPath,
+        AbsolutePath rootOutputFolderPath,
         string baselineDisplay,
         string currentDisplay)
     {
         Information("Creating markdown diff for package {Id}", packageDiff.PackageId);
 
-        Directory.CreateDirectory(outputFolderPath);
+        var packageOutputFolderPath = rootOutputFolderPath / packageDiff.PackageId;
+        Directory.CreateDirectory(packageOutputFolderPath);
 
         // Not specifying -eattrs incorrectly tries to load AttributesToExclude.txt, create an empty file instead.
         // See https://github.com/dotnet/sdk/issues/49719
@@ -85,13 +87,14 @@ public static class ApiDiffHelper
         {
             var allErrors = new List<string>();
 
+            // The API diff tool is unbelievably slow, process in parallel.
             Parallel.ForEach(
                 packageDiff.TargetFrameworks,
                 targetFramework =>
                 {
                     var baselineFrameworkPath = packageDiff.BaselineFolderPath / FolderLib / targetFramework;
                     var currentFrameworkPath = packageDiff.CurrentFolderPath / FolderLib / targetFramework;
-                    var outputFrameworkPath = outputFolderPath / targetFramework;
+                    var outputFrameworkPath = packageOutputFolderPath / targetFramework;
                     var args = $""" -b="{baselineFrameworkPath}" -bfn="{baselineDisplay}" -a="{currentFrameworkPath}" -afn="{currentDisplay}" -o="{outputFrameworkPath}" -eattrs="{excludedAttributesFilePath}" """;
 
                     var localErrors = GetErrors(apiDiffTool(args));
@@ -101,20 +104,115 @@ public static class ApiDiffHelper
                         lock (allErrors)
                             allErrors.AddRange(localErrors);
                     }
-
-                    // The API diff tool always output a summary file even if there's no diff. Delete it in this case.
-                    if (outputFrameworkPath.DirectoryExists() && Directory.GetFiles(outputFrameworkPath, "*.md").Length <= 1)
-                        Directory.Delete(outputFrameworkPath, true);
                 });
 
-            if (outputFolderPath.DirectoryExists() && !Directory.EnumerateFileSystemEntries(outputFolderPath).Any())
-                Directory.Delete(outputFolderPath);
-
             ThrowOnErrors(allErrors, packageDiff.PackageId, "OutputApiDiff");
+
+            MergeFrameworkMarkdownDiffFiles(rootOutputFolderPath, packageOutputFolderPath, packageDiff.TargetFrameworks);
+            Directory.Delete(packageOutputFolderPath, true);
         }
         finally
         {
             File.Delete(excludedAttributesFilePath);
+        }
+    }
+
+    static void MergeFrameworkMarkdownDiffFiles(
+        AbsolutePath rootOutputFolderPath,
+        AbsolutePath packageOutputFolderPath,
+        ImmutableArray<string> targetFrameworks)
+    {
+        // At this point, the hierarchy looks like:
+        //   markdown/
+        //   ├─ net8.0/
+        //   │  ├─ api_diff_Avalonia.md
+        //   │  ├─ api_diff_Avalonia.Controls.md
+        //   ├─ netstandard2.0/
+        //   │  ├─ api_diff_Avalonia.md
+        //   │  ├─ api_diff_Avalonia.Controls.md
+        //
+        // We want one file per assembly: merge all files with the same name.
+        // However, it's very likely that the diff is the same for several frameworks: in this case, keep only one file.
+
+        var assemblyGroups = targetFrameworks
+            .SelectMany(GetFrameworkDiffFiles, (targetFramework, filePath) => (targetFramework, filePath))
+            .GroupBy(x => x.filePath.Name)
+            .OrderBy(x => x.Key, StringComparer.OrdinalIgnoreCase);
+
+        foreach (var assemblyGroup in assemblyGroups)
+        {
+            using var writer = File.CreateText(rootOutputFolderPath / assemblyGroup.Key.Replace("api_diff_", ""));
+            var addSeparator = false;
+
+            foreach (var similarDiffGroup in assemblyGroup.GroupBy(x => HashFile(x.filePath), ByteArrayEqualityComparer.Instance))
+            {
+                if (addSeparator)
+                    writer.WriteLine();
+
+                using var reader = File.OpenText(similarDiffGroup.First().filePath);
+                var firstLine = reader.ReadLine();
+
+                writer.Write(firstLine);
+                writer.WriteLine(" (" + string.Join(", ", similarDiffGroup.Select(x => x.targetFramework)) + ")");
+
+                while (reader.ReadLine() is { } line)
+                    writer.WriteLine(line);
+
+                addSeparator = true;
+            }
+        }
+
+        AbsolutePath[] GetFrameworkDiffFiles(string targetFramework)
+        {
+            var frameworkFolderPath = packageOutputFolderPath / targetFramework;
+            if (!frameworkFolderPath.DirectoryExists())
+                return [];
+
+            return Directory.GetFiles(frameworkFolderPath, "*.md")
+                .Where(filePath => Path.GetFileName(filePath) != "api_diff.md")
+                .Select(filePath => (AbsolutePath)filePath)
+                .ToArray();
+        }
+
+        static byte[] HashFile(AbsolutePath filePath)
+        {
+            using var stream = File.OpenRead(filePath);
+            return SHA256.HashData(stream);
+        }
+    }
+
+    public static void MergePackageMarkdownDiffFiles(
+        AbsolutePath rootOutputFolderPath,
+        string baselineDisplay,
+        string currentDisplay)
+    {
+        var filePaths = Directory.GetFiles(rootOutputFolderPath, "*.md");
+        Array.Sort(filePaths, StringComparer.OrdinalIgnoreCase);
+
+        using var writer = File.CreateText(rootOutputFolderPath / "_diff.md");
+
+        writer.WriteLine($"# API diff between {baselineDisplay} and {currentDisplay}");
+
+        if (filePaths.Length == 0)
+        {
+            writer.WriteLine();
+            writer.WriteLine("No changes.");
+            return;
+        }
+
+        foreach (var filePath in filePaths)
+        {
+            writer.WriteLine();
+
+            using var reader = File.OpenText(filePath);
+
+            while (reader.ReadLine() is { } line)
+            {
+                if (line.StartsWith('#'))
+                    writer.Write('#');
+
+                writer.WriteLine(line);
+            }
         }
     }
 
@@ -148,7 +246,6 @@ public static class ApiDiffHelper
         Information("API baseline version is {Baseline} for current version {Current}", baselineVersion, currentVersion);
 
         var memoryStream = new MemoryStream();
-
         var packageDiffs = ImmutableArray.CreateBuilder<PackageDiffInfo>();
 
         foreach (var packagePath in currentPackagePaths)
@@ -179,6 +276,9 @@ public static class ApiDiffHelper
                 baselineFolderPath = outputFolderPath / "baseline" / packageId;
                 ExtractDiffableAssembliesFromPackage(baselineArchive, baselineFolderPath, targetFrameworks);
             }
+
+            if (targetFrameworks.Count == 0)
+                continue;
 
             // Ensure target framework folders exist on both sides
             foreach (var targetFramework in targetFrameworks)
