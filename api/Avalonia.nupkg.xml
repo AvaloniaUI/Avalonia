@@ -111,6 +111,10 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.Embedding.Offscreen.OffscreenTopLevelImplBase.SetFrameThemeVariant(Avalonia.Platform.PlatformThemeVariant)</Target>
+    <Left>baseline/netstandard2.0/Avalonia.Controls.dll</Left>
+    <Right>target/netstandard2.0/Avalonia.Controls.dll</Right>
+  </Suppression>
     <Target>M:Avalonia.Threading.DispatcherPriorityAwaitable.get_IsCompleted</Target>
     <Left>baseline/netstandard2.0/Avalonia.Base.dll</Left>
     <Right>target/netstandard2.0/Avalonia.Base.dll</Right>

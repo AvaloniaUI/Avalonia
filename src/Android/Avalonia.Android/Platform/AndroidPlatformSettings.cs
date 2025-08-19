@@ -49,14 +49,14 @@ internal class AndroidPlatformSettings : DefaultPlatformSettings
 
     public override TimeSpan HoldWaitDuration => _holdWaitDuration;
 
-    internal void OnViewConfigurationChanged(Context context)
+    internal void OnViewConfigurationChanged(Context context, Configuration configuration)
     {
-        if (context.Resources?.Configuration is null)
+        if (context.Resources is null)
         {
             return;
         }
 
-        var systemTheme = (context.Resources.Configuration.UiMode & UiMode.NightMask) switch
+        PlatformThemeVariant systemTheme = (configuration.UiMode & UiMode.NightMask) switch
         {
             UiMode.NightYes => PlatformThemeVariant.Dark,
             UiMode.NightNo => PlatformThemeVariant.Light,
@@ -98,7 +98,7 @@ internal class AndroidPlatformSettings : DefaultPlatformSettings
                 }
                 finally
                 {
-                    array.Recycle();   
+                    array.Recycle();
                 }
             }
         }
