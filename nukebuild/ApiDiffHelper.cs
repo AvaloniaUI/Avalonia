@@ -40,10 +40,10 @@ public static class ApiDiffHelper
 
         var suppressionFile = suppressionFilesFolderPath / (packageDiff.PackageId + ".nupkg.xml");
         if (suppressionFile.FileExists())
-            suppressionArgs += $""" --suppression-file="{suppressionFile}" """;
+            suppressionArgs += $""" --suppression-file="{suppressionFile}" --permit-unnecessary-suppressions """;
 
         if (updateSuppressionFile)
-            suppressionArgs += $""" --suppression-output-file="{suppressionFile}" --generate-suppression-file=true """;
+            suppressionArgs += $""" --suppression-output-file="{suppressionFile}" --generate-suppression-file --preserve-unnecessary-suppressions """;
 
         var allErrors = new List<string>();
 
