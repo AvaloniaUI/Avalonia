@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -47,12 +48,10 @@ public static class ApiDiffHelper
         var allErrors = new List<string>();
 
         Parallel.ForEach(
-            packageDiff.TargetFrameworks,
-            targetFramework =>
+            packageDiff.Frameworks,
+            framework =>
             {
-                var baselineFrameworkPath = packageDiff.BaselineFolderPath / FolderLib / targetFramework;
-                var currentFrameworkPath = packageDiff.CurrentFolderPath / FolderLib / targetFramework;
-                var args = $""" -l="{baselineFrameworkPath}" -r="{currentFrameworkPath}" {suppressionArgs}""";
+                var args = $""" -l="{framework.BaselineFolderPath}" -r="{framework.CurrentFolderPath}" {suppressionArgs}""";
 
                 var localErrors = GetErrors(apiCompatTool(args));
 
@@ -89,13 +88,11 @@ public static class ApiDiffHelper
 
             // The API diff tool is unbelievably slow, process in parallel.
             Parallel.ForEach(
-                packageDiff.TargetFrameworks,
-                targetFramework =>
+                packageDiff.Frameworks,
+                framework =>
                 {
-                    var baselineFrameworkPath = packageDiff.BaselineFolderPath / FolderLib / targetFramework;
-                    var currentFrameworkPath = packageDiff.CurrentFolderPath / FolderLib / targetFramework;
-                    var outputFrameworkPath = packageOutputFolderPath / targetFramework;
-                    var args = $""" -b="{baselineFrameworkPath}" -bfn="{baselineDisplay}" -a="{currentFrameworkPath}" -afn="{currentDisplay}" -o="{outputFrameworkPath}" -eattrs="{excludedAttributesFilePath}" """;
+                    var frameworkOutputFolderPath = packageOutputFolderPath / framework.Framework.GetShortFolderName();
+                    var args = $""" -b="{framework.BaselineFolderPath}" -bfn="{baselineDisplay}" -a="{framework.CurrentFolderPath}" -afn="{currentDisplay}" -o="{frameworkOutputFolderPath}" -eattrs="{excludedAttributesFilePath}" """;
 
                     var localErrors = GetErrors(apiDiffTool(args));
 
@@ -108,7 +105,11 @@ public static class ApiDiffHelper
 
             ThrowOnErrors(allErrors, packageDiff.PackageId, "OutputApiDiff");
 
-            MergeFrameworkMarkdownDiffFiles(rootOutputFolderPath, packageOutputFolderPath, packageDiff.TargetFrameworks);
+            MergeFrameworkMarkdownDiffFiles(
+                rootOutputFolderPath,
+                packageOutputFolderPath,
+                [..packageDiff.Frameworks.Select(info => info.Framework)]);
+
             Directory.Delete(packageOutputFolderPath, true);
         }
         finally
@@ -120,7 +121,7 @@ public static class ApiDiffHelper
     static void MergeFrameworkMarkdownDiffFiles(
         AbsolutePath rootOutputFolderPath,
         AbsolutePath packageOutputFolderPath,
-        ImmutableArray<string> targetFrameworks)
+        ImmutableArray<NuGetFramework> frameworks)
     {
         // At this point, the hierarchy looks like:
         //   markdown/
@@ -134,8 +135,8 @@ public static class ApiDiffHelper
         // We want one file per assembly: merge all files with the same name.
         // However, it's very likely that the diff is the same for several frameworks: in this case, keep only one file.
 
-        var assemblyGroups = targetFrameworks
-            .SelectMany(GetFrameworkDiffFiles, (targetFramework, filePath) => (targetFramework, filePath))
+        var assemblyGroups = frameworks
+            .SelectMany(GetFrameworkDiffFiles, (framework, filePath) => (framework, filePath))
             .GroupBy(x => x.filePath.Name)
             .OrderBy(x => x.Key, StringComparer.OrdinalIgnoreCase);
 
@@ -153,7 +154,7 @@ public static class ApiDiffHelper
                 var firstLine = reader.ReadLine();
 
                 writer.Write(firstLine);
-                writer.WriteLine(" (" + string.Join(", ", similarDiffGroup.Select(x => x.targetFramework)) + ")");
+                writer.WriteLine(" (" + string.Join(", ", similarDiffGroup.Select(x => x.framework.GetShortFolderName())) + ")");
 
                 while (reader.ReadLine() is { } line)
                     writer.WriteLine(line);
@@ -162,9 +163,9 @@ public static class ApiDiffHelper
             }
         }
 
-        AbsolutePath[] GetFrameworkDiffFiles(string targetFramework)
+        AbsolutePath[] GetFrameworkDiffFiles(NuGetFramework framework)
         {
-            var frameworkFolderPath = packageOutputFolderPath / targetFramework;
+            var frameworkFolderPath = packageOutputFolderPath / framework.GetShortFolderName();
             if (!frameworkFolderPath.DirectoryExists())
                 return [];
 
@@ -186,10 +187,14 @@ public static class ApiDiffHelper
         string baselineDisplay,
         string currentDisplay)
     {
-        var filePaths = Directory.GetFiles(rootOutputFolderPath, "*.md");
-        Array.Sort(filePaths, StringComparer.OrdinalIgnoreCase);
+        const string mergedFileName = "_diff.md";
 
-        using var writer = File.CreateText(rootOutputFolderPath / "_diff.md");
+        var filePaths = Directory.EnumerateFiles(rootOutputFolderPath, "*.md")
+            .Where(filePath => Path.GetFileName(filePath) != mergedFileName)
+            .Order(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        using var writer = File.CreateText(rootOutputFolderPath / mergedFileName);
 
         writer.WriteLine($"# API diff between {baselineDisplay} and {currentDisplay}");
 
@@ -253,7 +258,8 @@ public static class ApiDiffHelper
             string packageId;
             AbsolutePath currentFolderPath;
             AbsolutePath baselineFolderPath;
-            var targetFrameworks = new HashSet<string>();
+            Dictionary<NuGetFramework, string> currentFolderNames;
+            Dictionary<NuGetFramework, string> baselineFolderNames;
 
             // Extract current package
             using (var currentArchive = new ZipArchive(File.OpenRead(packagePath), ZipArchiveMode.Read, leaveOpen: false))
@@ -261,7 +267,7 @@ public static class ApiDiffHelper
                 using var packageReader = new PackageArchiveReader(currentArchive);
                 packageId = packageReader.NuspecReader.GetId();
                 currentFolderPath = outputFolderPath / "current" / packageId;
-                ExtractDiffableAssembliesFromPackage(currentArchive, currentFolderPath, targetFrameworks);
+                currentFolderNames = ExtractDiffableAssembliesFromPackage(currentArchive, currentFolderPath);
             }
 
             // Download baseline package
@@ -274,20 +280,41 @@ public static class ApiDiffHelper
             using (var baselineArchive = new ZipArchive(memoryStream, ZipArchiveMode.Read, leaveOpen: true))
             {
                 baselineFolderPath = outputFolderPath / "baseline" / packageId;
-                ExtractDiffableAssembliesFromPackage(baselineArchive, baselineFolderPath, targetFrameworks);
+                baselineFolderNames = ExtractDiffableAssembliesFromPackage(baselineArchive, baselineFolderPath);
             }
 
-            if (targetFrameworks.Count == 0)
+            if (currentFolderNames.Count == 0 && baselineFolderNames.Count == 0)
                 continue;
 
-            // Ensure target framework folders exist on both sides
-            foreach (var targetFramework in targetFrameworks)
+            var frameworkDiffs = new List<FrameworkDiffInfo>();
+
+            // Handle frameworks that exist only in the current package.
+            foreach (var framework in currentFolderNames.Keys.Except(baselineFolderNames.Keys))
             {
-                Directory.CreateDirectory(baselineFolderPath / FolderLib / targetFramework);
-                Directory.CreateDirectory(currentFolderPath / FolderLib / targetFramework);
+                var folderName = currentFolderNames[framework];
+                Directory.CreateDirectory(baselineFolderPath / folderName);
+                baselineFolderNames.Add(framework, folderName);
             }
 
-            packageDiffs.Add(new PackageDiffInfo(packageId, [..targetFrameworks], baselineFolderPath, currentFolderPath));
+            // Handle frameworks that exist only for the baseline package.
+            foreach (var framework in baselineFolderNames.Keys.Except(currentFolderNames.Keys))
+            {
+                var folderName = baselineFolderNames[framework];
+                Directory.CreateDirectory(currentFolderPath / folderName);
+                currentFolderNames.Add(framework, folderName);
+            }
+
+            foreach (var (framework, currentFolderName) in currentFolderNames)
+            {
+                var baselineFolderName = baselineFolderNames[framework];
+
+                frameworkDiffs.Add(new FrameworkDiffInfo(
+                    framework,
+                    baselineFolderPath / FolderLib / baselineFolderName,
+                    currentFolderPath / FolderLib / currentFolderName));
+            }
+
+            packageDiffs.Add(new PackageDiffInfo(packageId, [..frameworkDiffs]));
         }
 
         return new GlobalDiffInfo(baselineVersion, currentVersion, packageDiffs.DrainToImmutable());
@@ -351,33 +378,55 @@ public static class ApiDiffHelper
         }
     }
 
-    static void ExtractDiffableAssembliesFromPackage(
+    static Dictionary<NuGetFramework, string> ExtractDiffableAssembliesFromPackage(
         ZipArchive packageArchive,
-        AbsolutePath destinationFolderPath,
-        HashSet<string> outputTargetFrameworks)
+        AbsolutePath destinationFolderPath)
     {
+        var folderByFramework = new Dictionary<NuGetFramework, string>();
+
         foreach (var entry in packageArchive.Entries)
         {
-            if (GetTargetFramework(entry) is not { } targetFramework)
+            if (TryGetFrameworkFolderName(entry.FullName) is not { } folderName)
                 continue;
 
-            outputTargetFrameworks.Add(targetFramework);
+            // Ignore platform versions: assume that e.g. net8.0-android34 and net8.0-android35 are the same for diff purposes.
+            var framework = WithoutPlatformVersion(NuGetFramework.ParseFolder(folderName));
+
+            if (folderByFramework.TryGetValue(framework, out var existingFolderName))
+            {
+                if (existingFolderName != folderName)
+                {
+                    throw new InvalidOperationException(
+                        $"Found two similar frameworks with different platform versions: {existingFolderName} and {folderName}");
+                }
+            }
+            else
+                folderByFramework.Add(framework, folderName);
+
             var targetFilePath = destinationFolderPath / entry.FullName;
             Directory.CreateDirectory(targetFilePath.Parent);
             entry.ExtractToFile(targetFilePath, overwrite: true);
         }
 
-        static string? GetTargetFramework(ZipArchiveEntry entry)
+        return folderByFramework;
+
+        static string? TryGetFrameworkFolderName(string entryPath)
         {
-            if (!entry.FullName.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
+            if (!entryPath.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
                 return null;
 
-            var segments = entry.FullName.Split('/');
-            if (segments is not [FolderLib, var targetFramework, ..])
+            var segments = entryPath.Split('/');
+            if (segments is not [FolderLib, var name, ..])
                 return null;
 
-            return targetFramework;
+            return name;
         }
+
+        // e.g. net8.0-android34.0 to net8.0-android
+        static NuGetFramework WithoutPlatformVersion(NuGetFramework value)
+            => value.HasPlatform && value.PlatformVersion != FrameworkConstants.EmptyVersion ?
+                new NuGetFramework(value.Framework, value.Version, value.Platform, FrameworkConstants.EmptyVersion) :
+                value;
     }
 
     public sealed class GlobalDiffInfo(
@@ -390,14 +439,18 @@ public static class ApiDiffHelper
         public ImmutableArray<PackageDiffInfo> Packages { get; } = packages;
     }
 
-    public sealed class PackageDiffInfo(
-        string packageId,
-        ImmutableArray<string> targetFrameworks,
+    public sealed class PackageDiffInfo(string packageId, ImmutableArray<FrameworkDiffInfo> frameworks)
+    {
+        public string PackageId { get; } = packageId;
+        public ImmutableArray<FrameworkDiffInfo> Frameworks { get; } = frameworks;
+    }
+
+    public sealed class FrameworkDiffInfo(
+        NuGetFramework framework,
         AbsolutePath baselineFolderPath,
         AbsolutePath currentFolderPath)
     {
-        public string PackageId { get; } = packageId;
-        public ImmutableArray<string> TargetFrameworks { get; } = targetFrameworks;
+        public NuGetFramework Framework { get; } = framework;
         public AbsolutePath BaselineFolderPath { get; } = baselineFolderPath;
         public AbsolutePath CurrentFolderPath { get; } = currentFolderPath;
     }

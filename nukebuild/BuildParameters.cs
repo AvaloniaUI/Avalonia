@@ -75,7 +75,7 @@ public partial class Build
         public string? ForceApiValidationBaseline { get; }
         public bool UpdateApiValidationSuppression { get; }
         public AbsolutePath ApiValidationSuppressionFiles { get; }
-        public AbsolutePath VersionOutputDir { get; }
+        public AbsolutePath? VersionOutputDir { get; }
 
         public BuildParameters(Build b, bool isPackingToLocalCache)
         {
