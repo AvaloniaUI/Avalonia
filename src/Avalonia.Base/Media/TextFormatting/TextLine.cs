@@ -88,6 +88,9 @@ namespace Avalonia.Media.TextFormatting
         /// <returns>
         /// The overhang after distance.
         /// </returns>
+        /// <remarks>
+        /// The value is positive if the bottommost drawn pixel goes below the line bottom, and is negative if it is within (on or above) the line.
+        /// </remarks>
         public abstract double OverhangAfter { get; }
 
         /// <summary>
@@ -96,6 +99,9 @@ namespace Avalonia.Media.TextFormatting
         /// <returns>
         /// The overhang leading distance.
         /// </returns>
+        /// <remarks>
+        /// When the leading drawn pixel comes before the alignment point, the value is negative.
+        /// </remarks>
         public abstract double OverhangLeading { get; }
 
         /// <summary>
@@ -104,6 +110,9 @@ namespace Avalonia.Media.TextFormatting
         /// <returns>
         /// The overhang trailing distance.
         /// </returns>
+        /// <remarks>
+        /// The <see cref="OverhangTrailing"/> value will be positive when the trailing drawn pixel comes before the trailing alignment point.
+        /// </remarks>
         public abstract double OverhangTrailing { get; }
 
         /// <summary>

@@ -748,8 +748,14 @@ namespace Avalonia.Controls
 
         protected override Size ArrangeOverride(Size finalSize)
         {
-            var scale = LayoutHelper.GetLayoutScale(this);
-            var padding = LayoutHelper.RoundLayoutThickness(Padding, scale);
+            var scale = 1.0;
+            var padding = Padding;
+
+            if (UseLayoutRounding)
+            {
+                scale = LayoutHelper.GetLayoutScale(this);
+                padding = LayoutHelper.RoundLayoutThickness(Padding, scale);
+            }
 
             var availableSize = finalSize.Deflate(padding);
 
@@ -783,9 +789,11 @@ namespace Avalonia.Controls
                                 //Fixes: #17194
                                 VisualChildren.Add(control);
 
+                                var offsetY = TextLineImpl.GetBaselineOffset(textLine, drawable);
+
                                 control.Arrange(
-                                    new Rect(new Point(currentX, currentY),
-                                    new Size(control.DesiredSize.Width, textLine.Height)));
+                                    new Rect((new Point(currentX, currentY + offsetY)),
+                                    control.DesiredSize));
                             }
 
                             currentX += drawable.Size.Width;
