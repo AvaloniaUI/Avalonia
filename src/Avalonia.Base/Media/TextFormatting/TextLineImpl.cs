@@ -1098,23 +1098,39 @@ namespace Avalonia.Media.TextFormatting
             var characterLength = Math.Max(0, Math.Abs(startHit.FirstCharacterIndex + startHit.TrailingLength -
                  endHit.FirstCharacterIndex - endHit.TrailingLength) - clusterOffset);
 
-            if (characterLength == 0 && currentRun.Text.Length > 0 && startIndex < currentRun.Text.Length)
-            {
-                //Make sure we are properly dealing with zero width space runs
-                var codepointEnumerator = new CodepointEnumerator(currentRun.Text.Span.Slice(startIndex));
+            remainingLength -= characterLength;
 
-                while (remainingLength > 0 && codepointEnumerator.MoveNext(out var codepoint))
+            var runOffset = startIndex - firstCluster;
+
+            //Make sure we are properly dealing with zero width space runs
+            if (remainingLength > 0 && currentRun.Text.Length > 0 && runOffset + characterLength < currentRun.Text.Length)
+            {
+                var glyphInfos = currentRun.GlyphRun.GlyphInfos;
+
+                for (int i = runOffset + characterLength; i < glyphInfos.Count; i++)
                 {
-                    if (codepoint.IsWhiteSpace)
-                    {
-                        characterLength++;
-                        remainingLength--;
-                    }
-                    else
+                    var glyphInfo = glyphInfos[i];
+
+                    if(glyphInfo.GlyphAdvance > 0)
                     {
                         break;
                     }
-                }
+
+                    var graphemeEnumerator = new GraphemeEnumerator(currentRun.Text.Span.Slice(runOffset + characterLength));
+
+                    if(!graphemeEnumerator.MoveNext(out var grapheme))
+                    {
+                        break;
+                    }
+
+                    characterLength += grapheme.Length - clusterOffset;
+                    remainingLength -= grapheme.Length;
+
+                    if(remainingLength <= 0)
+                    {
+                        break;
+                    }
+                }        
             }
 
             if (endX < startX)
@@ -1181,10 +1197,12 @@ namespace Avalonia.Media.TextFormatting
             var characterLength = Math.Max(0, Math.Abs(startHit.FirstCharacterIndex + startHit.TrailingLength - 
                 endHit.FirstCharacterIndex - endHit.TrailingLength) - clusterOffset);
 
-            if (characterLength == 0 && currentRun.Text.Length > 0 && startIndex < currentRun.Text.Length)
+            var runOffset = startIndex - offset;
+
+            if (characterLength == 0 && currentRun.Text.Length > 0 && runOffset < currentRun.Text.Length)
             {
                 //Make sure we are properly dealing with zero width space runs
-                var codepointEnumerator = new CodepointEnumerator(currentRun.Text.Span.Slice(startIndex));
+                var codepointEnumerator = new CodepointEnumerator(currentRun.Text.Span.Slice(runOffset));
 
                 while (remainingLength > 0 && codepointEnumerator.MoveNext(out var codepoint))
                 {
