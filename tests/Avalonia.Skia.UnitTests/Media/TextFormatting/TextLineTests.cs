@@ -9,6 +9,7 @@ using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.UnitTests;
 using Xunit;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 {
@@ -1214,6 +1215,40 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Fact]
+        public void Should_Get_TextBounds_With_Trailing_Zero_Advance()
+        {
+            const string df7Font = "resm:Avalonia.Skia.UnitTests.Fonts?assembly=Avalonia.Skia.UnitTests#DF7segHMI";
+
+            using (Start())
+            {
+                var typeface = new Typeface(df7Font);
+                var defaultProperties = new GenericTextRunProperties(typeface);
+                var textSource = new SingleBufferTextSource("3,47-=?:#", defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
+
+                var textBounds = textLine.GetTextBounds(0, 2);
+
+                Assert.NotEmpty(textBounds);
+
+                var textRunBounds = textBounds.First().TextRunBounds;
+
+                Assert.NotEmpty(textBounds);
+
+                var first = textRunBounds.First();
+
+                Assert.Equal(0, first.TextSourceCharacterIndex);
+                Assert.Equal(2, first.Length);
+            }
+        }
+
         private class TextHidden : TextRun
         {
             public TextHidden(int length)
@@ -1799,6 +1834,37 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 Assert.Equal(2, firstRunBounds.TextSourceCharacterIndex);
 
                 Assert.Equal(1, firstRunBounds.Length);
+            }
+        }
+
+        [InlineData("y", -8, -1.304, -5.44)]
+        [InlineData("f", -12, -11.824, -4.44)]
+        [InlineData("a", 1, -0.232, -20.44)]
+        [Win32Theory("Values depend on the Skia platform backend")]
+        public void Should_Produce_Overhang(string text, double leading, double trailing, double after)
+        {
+            const string symbolsFont = "resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Source Serif";
+
+            using (Start())
+            {
+                var typeface = new Typeface(FontFamily.Parse(symbolsFont));
+
+                var defaultProperties = new GenericTextRunProperties(typeface, 64);
+
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(FlowDirection.LeftToRight, TextAlignment.Left,
+                        true, true, defaultProperties, TextWrapping.NoWrap, 0, 0, 0));
+
+                Assert.NotNull(textLine);
+
+                Assert.Equal(leading, textLine.OverhangLeading, 2);
+                Assert.Equal(trailing, textLine.OverhangTrailing, 2);
+                Assert.Equal(after, textLine.OverhangAfter, 2);
             }
         }
 

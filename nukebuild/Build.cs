@@ -20,6 +20,7 @@ using static Nuke.Common.Tools.VSWhere.VSWhereTasks;
 using static Serilog.Log;
 using MicroCom.CodeGenerator;
 using NuGet.Configuration;
+using NuGet.Versioning;
 using Nuke.Common.CI.AzurePipelines;
 using Nuke.Common.IO;
 
@@ -35,11 +36,15 @@ partial class Build : NukeBuild
 {
     BuildParameters Parameters { get; set; }
 
-    [PackageExecutable("Microsoft.DotNet.ApiCompat.Tool", "Microsoft.DotNet.ApiCompat.Tool.dll", Framework = "net6.0")]
+#nullable enable
+    ApiDiffHelper.GlobalDiffInfo? GlobalDiff { get; set; }
+#nullable restore
+
+    [PackageExecutable("Microsoft.DotNet.ApiCompat.Tool", "Microsoft.DotNet.ApiCompat.Tool.dll", Framework = "net8.0")]
     Tool ApiCompatTool;
     
-    [PackageExecutable("Microsoft.DotNet.GenAPI.Tool", "Microsoft.DotNet.GenAPI.Tool.dll", Framework = "net8.0")]
-    Tool ApiGenTool;
+    [PackageExecutable("Microsoft.DotNet.ApiDiff.Tool", "Microsoft.DotNet.ApiDiff.Tool.dll", Framework = "net8.0")]
+    Tool ApiDiffTool;
 
     [PackageExecutable("dotnet-ilrepack", "ILRepackTool.dll", Framework = "net8.0")]
     Tool IlRepackTool;
@@ -321,25 +326,53 @@ partial class Build : NukeBuild
                 Parameters.NugetRoot / $"Avalonia.{Parameters.Version}.nupkg",
                 Parameters.NugetRoot / $"Avalonia.{Parameters.Version}.snupkg");
         });
-    
-    Target ValidateApiDiff => _ => _
+
+    Target DownloadApiBaselinePackages => _ => _
         .DependsOn(CreateNugetPackages)
         .Executes(async () =>
         {
-            await Task.WhenAll(
-                Directory.GetFiles(Parameters.NugetRoot, "*.nupkg").Select(nugetPackage => ApiDiffHelper.ValidatePackage(
-                    ApiCompatTool, nugetPackage, Parameters.ApiValidationBaseline,
-                    Parameters.ApiValidationSuppressionFiles, Parameters.UpdateApiValidationSuppression)));
+            GlobalDiff = await ApiDiffHelper.DownloadAndExtractPackagesAsync(
+                Directory.EnumerateFiles(Parameters.NugetRoot, "*.nupkg").Select(path => (AbsolutePath)path),
+                NuGetVersion.Parse(Parameters.Version),
+                Parameters.IsReleaseBranch,
+                Parameters.ArtifactsDir / "api-diff" / "assemblies",
+                Parameters.ForceApiValidationBaseline is { } forcedBaseline ? NuGetVersion.Parse(forcedBaseline) : null);
+        });
+
+    Target ValidateApiDiff => _ => _
+        .DependsOn(DownloadApiBaselinePackages)
+        .Executes(() =>
+        {
+            var globalDiff = GlobalDiff!;
+
+            Parallel.ForEach(
+                globalDiff.Packages,
+                packageDiff => ApiDiffHelper.ValidatePackage(
+                    ApiCompatTool,
+                    packageDiff,
+                    Parameters.ApiValidationSuppressionFiles,
+                    Parameters.UpdateApiValidationSuppression));
         });
     
     Target OutputApiDiff => _ => _
-        .DependsOn(CreateNugetPackages)
-        .Executes(async () =>
+        .DependsOn(DownloadApiBaselinePackages)
+        .Executes(() =>
         {
-            await Task.WhenAll(
-                Directory.GetFiles(Parameters.NugetRoot, "*.nupkg").Select(nugetPackage => ApiDiffHelper.GetDiff(
-                    ApiGenTool, RootDirectory / "api" / "diff",
-                    nugetPackage, Parameters.ApiValidationBaseline)));
+            var globalDiff = GlobalDiff!;
+            var outputFolderPath = Parameters.ArtifactsDir / "api-diff" / "markdown";
+            var baselineDisplay = globalDiff.BaselineVersion.ToString();
+            var currentDisplay = globalDiff.CurrentVersion.ToString();
+
+            Parallel.ForEach(
+                globalDiff.Packages,
+                packageDiff => ApiDiffHelper.GenerateMarkdownDiff(
+                    ApiDiffTool,
+                    packageDiff,
+                    outputFolderPath,
+                    baselineDisplay,
+                    currentDisplay));
+
+            ApiDiffHelper.MergePackageMarkdownDiffFiles(outputFolderPath, baselineDisplay, currentDisplay);
         });
     
     Target RunTests => _ => _

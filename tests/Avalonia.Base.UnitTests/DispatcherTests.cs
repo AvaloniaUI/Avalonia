@@ -664,9 +664,9 @@ public partial class DispatcherTests
         await Task.WhenAll(task);
 
         // Assertions
-        // Invoke(): Always passes because the context is not changed.
-        Assert.Equal("Initial Value", test1);
         // Task.Run: Always passes (guaranteed by the .NET runtime).
+        Assert.Equal("Initial Value", test1);
+        // Invoke: Always passes because the context is not changed.
         Assert.Equal("Initial Value", test2);
         // InvokeAsync: See https://github.com/AvaloniaUI/Avalonia/pull/19163
         Assert.Equal("Initial Value", test3);
@@ -762,9 +762,9 @@ public partial class DispatcherTests
             await Task.WhenAll(task);
 
             // Assertions
-            // Invoke(): Always passes because the context is not changed.
-            Assert.Equal("sux-Shaw-UM", test1);
             // Task.Run: Always passes (guaranteed by the .NET runtime).
+            Assert.Equal("sux-Shaw-UM", test1);
+            // Invoke: Always passes because the context is not changed.
             Assert.Equal("sux-Shaw-UM", test2);
             // InvokeAsync: See https://github.com/AvaloniaUI/Avalonia/pull/19163
             Assert.Equal("sux-Shaw-UM", test3);
