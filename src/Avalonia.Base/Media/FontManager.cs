@@ -271,21 +271,35 @@ namespace Avalonia.Media
             }
 
             //Try to match against fallbacks first
-            if (fontFamily != null && fontFamily.Key is CompositeFontFamilyKey compositeKey)
+            if (fontFamily?.Key != null)
             {
-                for (int i = 0; i < compositeKey.Keys.Count; i++)
+                var fontUri = fontFamily.Key.Source.EnsureAbsolute(fontFamily.Key.BaseUri);
+
+                if (fontFamily.Key is CompositeFontFamilyKey compositeKey)
                 {
-                    var key = compositeKey.Keys[i];
-                    var familyName = fontFamily.FamilyNames[i];
-                    var source = key.Source.EnsureAbsolute(key.BaseUri);
-
-                    if(familyName == FontFamily.DefaultFontFamilyName)
+                    for (int i = 0; i < compositeKey.Keys.Count; i++)
                     {
-                        familyName = DefaultFontFamily.Name;
-                    }
+                        var key = compositeKey.Keys[i];
+                        var familyName = fontFamily.FamilyNames[i];
+                        var source = key.Source.EnsureAbsolute(key.BaseUri);
 
-                    if (TryGetFontCollection(source, out var fontCollection) &&
-                        fontCollection.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, familyName, culture, out typeface))
+                        if (familyName == FontFamily.DefaultFontFamilyName)
+                        {
+                            familyName = DefaultFontFamily.Name;
+                        }
+
+                        if (TryGetFontCollection(source, out var fontCollection) &&
+                            fontCollection.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, familyName, culture, out typeface))
+                        {
+                            return true;
+                        }
+                    }
+                }
+
+                if (fontUri.IsFontCollection())
+                {
+                    if (TryGetFontCollection(fontUri, out var fontCollection) &&
+                            fontCollection.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, fontFamily.Name, culture, out typeface))
                     {
                         return true;
                     }

@@ -27,29 +27,37 @@ namespace Avalonia.Media.Fonts
             string? familyName, CultureInfo? culture, out Typeface match)
         {
             match = default;
-
-            if (string.IsNullOrEmpty(familyName))
+        
+            //If a font family is defined we try to find a match inside that family first
+            if (familyName != null && _glyphTypefaceCache.TryGetValue(familyName, out var glyphTypefaces))
             {
-                foreach (var typefaces in _glyphTypefaceCache.Values)
+                if (TryGetNearestMatch(glyphTypefaces, new FontCollectionKey { Style = style, Weight = weight, Stretch = stretch }, out var glyphTypeface))
                 {
-                    if (TryGetNearestMatch(typefaces, new FontCollectionKey { Style = style, Weight = weight, Stretch = stretch }, out var glyphTypeface))
+                    if (glyphTypeface.TryGetGlyph((uint)codepoint, out _))
                     {
-                        if (glyphTypeface.TryGetGlyph((uint)codepoint, out _))
-                        {
-                            match = new Typeface(Key.AbsoluteUri + "#" + glyphTypeface.FamilyName, style, weight, stretch);
+                        match = new Typeface(Key.AbsoluteUri + "#" + glyphTypeface.FamilyName, style, weight, stretch);
 
-                            return true;
-                        }
+                        return true;
                     }
                 }
             }
-            else
+
+            //Try to find a match in any font family
+            foreach (var pair in _glyphTypefaceCache)
             {
-                if (TryGetGlyphTypeface(familyName, style, weight, stretch, out var glyphTypeface))
+                if(pair.Key == familyName)
                 {
-                    if (glyphTypeface.FamilyName.Contains(familyName) && glyphTypeface.TryGetGlyph((uint)codepoint, out _))
+                    //We already tried this before
+                    continue;
+                }
+
+                glyphTypefaces = pair.Value;
+
+                if (TryGetNearestMatch(glyphTypefaces, new FontCollectionKey { Style = style, Weight = weight, Stretch = stretch }, out var glyphTypeface))
+                {
+                    if (glyphTypeface.TryGetGlyph((uint)codepoint, out _))
                     {
-                        match = new Typeface(Key.AbsoluteUri + "#" + familyName, style, weight, stretch);
+                        match = new Typeface(Key.AbsoluteUri + "#" + glyphTypeface.FamilyName, style, weight, stretch);
 
                         return true;
                     }
