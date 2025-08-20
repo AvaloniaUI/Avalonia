@@ -1215,6 +1215,40 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Fact]
+        public void Should_Get_TextBounds_With_Trailing_Zero_Advance()
+        {
+            const string df7Font = "resm:Avalonia.Skia.UnitTests.Fonts?assembly=Avalonia.Skia.UnitTests#DF7segHMI";
+
+            using (Start())
+            {
+                var typeface = new Typeface(df7Font);
+                var defaultProperties = new GenericTextRunProperties(typeface);
+                var textSource = new SingleBufferTextSource("3,47-=?:#", defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
+
+                var textBounds = textLine.GetTextBounds(0, 2);
+
+                Assert.NotEmpty(textBounds);
+
+                var textRunBounds = textBounds.First().TextRunBounds;
+
+                Assert.NotEmpty(textBounds);
+
+                var first = textRunBounds.First();
+
+                Assert.Equal(0, first.TextSourceCharacterIndex);
+                Assert.Equal(2, first.Length);
+            }
+        }
+
         private class TextHidden : TextRun
         {
             public TextHidden(int length)
