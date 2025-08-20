@@ -6,15 +6,15 @@
     "build": {
       "type": "object",
       "properties": {
-        "api-baseline": {
-          "type": "string"
-        },
         "configuration": {
           "type": "string"
         },
         "Continue": {
           "type": "boolean",
           "description": "Indicates to continue a previously failed build attempt"
+        },
+        "force-api-baseline": {
+          "type": "string"
         },
         "force-nuget-version": {
           "type": "string"
@@ -83,6 +83,7 @@
               "CompileNative",
               "CreateIntermediateNugetPackages",
               "CreateNugetPackages",
+              "DownloadApiBaselinePackages",
               "GenerateCppHeaders",
               "OutputApiDiff",
               "OutputVersion",
@@ -121,6 +122,7 @@
               "CompileNative",
               "CreateIntermediateNugetPackages",
               "CreateNugetPackages",
+              "DownloadApiBaselinePackages",
               "GenerateCppHeaders",
               "OutputApiDiff",
               "OutputVersion",

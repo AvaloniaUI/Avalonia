@@ -3,7 +3,6 @@
   <PropertyGroup>
     <Product>Avalonia</Product>
     <Version>12.0.999</Version>
-    <ApiCompatVersion>11.1.0</ApiCompatVersion>
     <Authors>Avalonia Team</Authors>
     <Copyright>Copyright 2013-$([System.DateTime]::Now.ToString(`yyyy`)) &#169; The AvaloniaUI Project</Copyright>
     <PackageProjectUrl>https://avaloniaui.net/?utm_source=nuget&amp;utm_medium=referral&amp;utm_content=project_homepage_link</PackageProjectUrl>

@@ -9,8 +9,8 @@
     <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
     <!-- See https://github.com/nuke-build/nuke/issues/818 -->
     <EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
-    <!-- Necessary for Microsoft.DotNet.GenAPI.Tool -->
-    <RestoreAdditionalProjectSources>https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet8-transport/nuget/v3/index.json</RestoreAdditionalProjectSources>
+    <!-- Necessary for Microsoft.DotNet.ApiDiff.Tool -->
+    <RestoreAdditionalProjectSources>https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet10-transport/nuget/v3/index.json</RestoreAdditionalProjectSources>
   </PropertyGroup>
 
   <Import Project="..\build\JetBrains.dotMemoryUnit.props" />
@@ -21,13 +21,14 @@
     <!-- Keep in sync with Avalonia.Build.Tasks -->
     <PackageReference Include="Mono.Cecil" Version="0.11.5" />
     <PackageReference Include="Microsoft.Build.Framework" Version="17.3.2" PrivateAssets="All" />
+    <PackageReference Include="NuGet.Protocol" Version="6.14.0" />
     <PackageReference Include="xunit.runner.console" Version="2.4.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
 
-    <PackageDownload Include="Microsoft.DotNet.ApiCompat.Tool" Version="[8.0.200]" />
-    <PackageDownload Include="Microsoft.DotNet.GenAPI.Tool" Version="[8.0.300-preview.24115.44]" />
+    <PackageDownload Include="Microsoft.DotNet.ApiCompat.Tool" Version="[10.0.100-preview.7.25380.108]" />
+    <PackageDownload Include="Microsoft.DotNet.ApiDiff.Tool" Version="[10.0.100-rc.1.25414.111]" />
     <PackageDownload Include="dotnet-ilrepack" Version="[1.0.0]" />
   </ItemGroup>
 
