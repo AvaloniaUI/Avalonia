@@ -115,16 +115,13 @@ namespace Avalonia.Media.TextFormatting
 
             var codepoint = Codepoint.ReplacementCodepoint;
 
-            var codepointEnumerator = new GraphemeEnumerator(text.Slice(count).Span);
+            var graphemeEnumerator = new GraphemeEnumerator(text.Span);
 
-            while (codepointEnumerator.MoveNext(out var grapheme))
+            if (graphemeEnumerator.MoveNext(out var grapheme))
             {
                 codepoint = grapheme.FirstCodepoint;
-
-                break;
             }
 
-            //ToDo: Fix FontFamily fallback
             var matchFound =
                 fontManager.TryMatchCharacter(codepoint, defaultTypeface.Style, defaultTypeface.Weight,
                     defaultTypeface.Stretch, defaultTypeface.FontFamily, defaultProperties.CultureInfo,
@@ -143,20 +140,8 @@ namespace Avalonia.Media.TextFormatting
                 }          
             }
 
-            // no fallback found
-            var enumerator = new GraphemeEnumerator(textSpan);
-
-            while (enumerator.MoveNext(out var grapheme))
-            {
-                if (!grapheme.FirstCodepoint.IsWhiteSpace && defaultGlyphTypeface.TryGetGlyph(grapheme.FirstCodepoint, out _))
-                {
-                    break;
-                }
-
-                count += grapheme.Length;
-            }
-
-            return new UnshapedTextRun(text.Slice(0, count), defaultProperties, biDiLevel);
+            //No match was found so we return the full length
+            return new UnshapedTextRun(text, defaultProperties, biDiLevel);
         }
 
         /// <summary>
