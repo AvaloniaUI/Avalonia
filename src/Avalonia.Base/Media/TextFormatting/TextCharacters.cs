@@ -115,16 +115,11 @@ namespace Avalonia.Media.TextFormatting
 
             var codepoint = Codepoint.ReplacementCodepoint;
 
-            var codepointEnumerator = new CodepointEnumerator(text.Slice(count).Span);
+            var codepointEnumerator = new GraphemeEnumerator(text.Slice(count).Span);
 
-            while (codepointEnumerator.MoveNext(out var cp))
+            while (codepointEnumerator.MoveNext(out var grapheme))
             {
-                if (cp.IsWhiteSpace)
-                {
-                    continue;
-                }
-
-                codepoint = cp;
+                codepoint = grapheme.FirstCodepoint;
 
                 break;
             }

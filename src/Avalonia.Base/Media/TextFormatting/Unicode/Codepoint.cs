@@ -128,7 +128,6 @@ namespace Avalonia.Media.TextFormatting.Unicode
             {
                 const ulong whiteSpaceMask =
                     (1UL << (int)GeneralCategory.Control) |
-                    (1UL << (int)GeneralCategory.NonspacingMark) |
                     (1UL << (int)GeneralCategory.Format) |
                     (1UL << (int)GeneralCategory.SpaceSeparator);
 
