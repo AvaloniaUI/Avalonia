@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
@@ -1085,6 +1086,31 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.NotNull(textLine);
                 Assert.Equal(3, textLine.TextRuns.Count);
+            }
+        }
+
+        [Fact]
+        public void Should_MatchCharacter_For_Spacing_CombiningMark()
+        {
+            using (Start())
+            {
+                var text = "𖾇";
+
+                var defaultRunProperties = new GenericTextRunProperties(Typeface.Default);
+                var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties, textWrapping: TextWrapping.Wrap);
+                var textLine = TextFormatter.Current.FormatLine(new SimpleTextSource(text, defaultRunProperties), 0, 120, paragraphProperties);
+
+                Assert.NotNull(textLine);
+
+                var textRuns = textLine.TextRuns;
+
+                Assert.NotEmpty(textRuns);
+
+                var firstRun = textRuns[0];
+
+                Assert.NotNull(firstRun.Properties);
+
+                Assert.NotEqual(Typeface.Default, firstRun.Properties.Typeface);
             }
         }
 
