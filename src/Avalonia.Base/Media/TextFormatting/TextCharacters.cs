@@ -115,7 +115,7 @@ namespace Avalonia.Media.TextFormatting
 
             var codepoint = Codepoint.ReplacementCodepoint;
 
-            var graphemeEnumerator = new GraphemeEnumerator(text.Span);
+            var graphemeEnumerator = new GraphemeEnumerator(text.Slice(count).Span);
 
             if (graphemeEnumerator.MoveNext(out var grapheme))
             {
@@ -140,8 +140,21 @@ namespace Avalonia.Media.TextFormatting
                 }          
             }
 
-            //No match was found so we return the full length
-            return new UnshapedTextRun(text, defaultProperties, biDiLevel);
+            // no fallback found
+            var enumerator = new GraphemeEnumerator(textSpan);
+
+            //Move forward until we reach the next base character
+            while (enumerator.MoveNext(out grapheme))
+            {
+                if (!grapheme.FirstCodepoint.IsWhiteSpace && defaultGlyphTypeface.TryGetGlyph(grapheme.FirstCodepoint, out _))
+                {
+                    break;
+                }
+
+                count += grapheme.Length;
+            }
+
+            return new UnshapedTextRun(text.Slice(0, count), defaultProperties, biDiLevel);
         }
 
         /// <summary>
