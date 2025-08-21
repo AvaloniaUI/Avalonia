@@ -38,7 +38,7 @@ namespace Avalonia.Input
                 RoutingStrategies.Tunnel);
         }
 
-        internal FocusManager(IInputElement? contentRoot = null)
+        public FocusManager(IInputElement? contentRoot = null)
         {
             _contentRoot = contentRoot;
         }
