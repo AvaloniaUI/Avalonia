@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.UnitTests;
@@ -188,6 +189,94 @@ namespace Avalonia.Skia.UnitTests.Media
                 var bounds = glyphRun1.InkBounds;
 
                 Assert.True(bounds.Left > 0);
+            }
+        }
+
+        [Fact]
+        public void Should_Get_Distance_From_CharacterHit_Non_Trailing_RightToLeft()
+        {
+            const string text = "נִקּוּד";
+
+            using (Start())
+            {
+                var typeface = new Typeface("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Inter");
+                var options = new TextShaperOptions(typeface.GlyphTypeface, 14, 1);
+                var shapedBuffer = TextShaper.Current.ShapeText(text, options);
+
+                var glyphRun = CreateGlyphRun(shapedBuffer);
+
+                //Get the distance to the left side of the first glyph
+                var actualDistance = glyphRun.GetDistanceFromCharacterHit(new CharacterHit(text.Length));
+
+                var expectedDistance = 0.0;
+
+                Assert.Equal(expectedDistance, actualDistance, 2);
+
+                //Get the distance to the right side of the first glyph
+                actualDistance = glyphRun.GetDistanceFromCharacterHit(new CharacterHit(text.Length - 1));
+
+                expectedDistance = shapedBuffer[0].GlyphAdvance;
+
+                Assert.Equal(expectedDistance, actualDistance, 2);
+            }
+        }
+
+        [Fact]
+        public void Should_Get_Distance_From_CharacterHit_Zero_Width()
+        {
+            const string text = "נִקּוּד";
+
+            using (Start())
+            {
+                var typeface = new Typeface("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Inter");
+                var options = new TextShaperOptions(typeface.GlyphTypeface, 14, 1);
+                var shapedBuffer = TextShaper.Current.ShapeText(text, options);
+
+                var glyphRun = CreateGlyphRun(shapedBuffer);
+
+                var clusters = glyphRun.GlyphInfos.GroupBy(x => x.GlyphCluster);
+
+                var rightSideDistances = new List<double>();
+
+                var leftSideDistances = new List<double>();
+
+                var currentX = 0.0;
+
+                foreach (var cluster in clusters)
+                {
+                    leftSideDistances.Add(currentX);
+
+                    currentX += cluster.Sum(x => x.GlyphAdvance);
+
+                    rightSideDistances.Add(currentX);
+                }
+
+                var characterIndices = clusters.Select(x => x.First().GlyphCluster).ToList();
+
+                var characterHit = new CharacterHit(text.Length);
+
+                for (var i = 0; i < characterIndices.Count; i++)
+                {
+                    var characterIndex = characterIndices[i];
+
+                    var leftSideDistance = leftSideDistances[i];
+
+                    var leftSideCharacterHit = glyphRun.GetCharacterHitFromDistance(leftSideDistance, out _);
+
+                    var distance = glyphRun.GetDistanceFromCharacterHit(leftSideCharacterHit);
+
+                    Assert.Equal(leftSideDistance, distance, 2);
+
+                    var previousCharacterHit = glyphRun.GetPreviousCaretCharacterHit(characterHit);
+
+                    distance = glyphRun.GetDistanceFromCharacterHit(new CharacterHit(characterIndex));
+
+                    var rightSideDistance = rightSideDistances[i];
+
+                    Assert.Equal(rightSideDistance, distance, 2);
+
+                    characterHit = previousCharacterHit;
+                }
             }
         }
 

@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,25 +14,25 @@ using static Nuke.Common.IO.PathConstruction;
 public partial class Build
 {
     [Parameter(Name = "configuration")]
-    public string Configuration { get; set; }
+    public string? Configuration { get; set; }
 
     [Parameter(Name = "skip-tests")]
     public bool SkipTests { get; set; }
 
     [Parameter(Name = "force-nuget-version")]
-    public string ForceNugetVersion { get; set; }
+    public string? ForceNugetVersion { get; set; }
 
     [Parameter(Name = "skip-previewer")]
     public bool SkipPreviewer { get; set; }
 
-    [Parameter(Name = "api-baseline")]
-    public string ApiValidationBaseline { get; set; }
+    [Parameter(Name = "force-api-baseline")]
+    public string? ForceApiValidationBaseline { get; set; }
 
     [Parameter(Name = "update-api-suppression")]
     public bool? UpdateApiValidationSuppression { get; set; }
 
     [Parameter(Name = "version-output-dir")]
-    public AbsolutePath VersionOutputDir { get; set; }
+    public AbsolutePath? VersionOutputDir { get; set; }
 
     public class BuildParameters
     {
@@ -39,8 +41,8 @@ public partial class Build
         public bool SkipPreviewer {get;}
         public string MainRepo { get; }
         public string MasterBranch { get; }
-        public string RepositoryName { get; }
-        public string RepositoryBranch { get; }
+        public string? RepositoryName { get; }
+        public string? RepositoryBranch { get; }
         public string ReleaseConfiguration { get; }
         public Regex ReleaseBranchRegex { get; }
         public string MSBuildSolution { get; }
@@ -70,10 +72,10 @@ public partial class Build
         public string FileZipSuffix { get; }
         public AbsolutePath ZipCoreArtifacts { get; }
         public AbsolutePath ZipNuGetArtifacts { get; }
-        public string ApiValidationBaseline { get; }
+        public string? ForceApiValidationBaseline { get; }
         public bool UpdateApiValidationSuppression { get; }
         public AbsolutePath ApiValidationSuppressionFiles { get; }
-        public AbsolutePath VersionOutputDir { get; }
+        public AbsolutePath? VersionOutputDir { get; }
 
         public BuildParameters(Build b, bool isPackingToLocalCache)
         {
@@ -115,10 +117,9 @@ public partial class Build
             IsNuGetRelease = IsMainRepo && IsReleasable && IsReleaseBranch;
 
             // VERSION
-            var (propsVersion, propsApiCompatVersion) = GetVersion();
-            Version = b.ForceNugetVersion ?? propsVersion;
+            Version = b.ForceNugetVersion ?? GetVersion();
 
-            ApiValidationBaseline = b.ApiValidationBaseline ?? propsApiCompatVersion;
+            ForceApiValidationBaseline = b.ForceApiValidationBaseline;
             UpdateApiValidationSuppression = b.UpdateApiValidationSuppression ?? IsLocalBuild;
             
             if (IsRunningOnAzure)
@@ -126,7 +127,9 @@ public partial class Build
                 if (!IsNuGetRelease)
                 {
                     // Use AssemblyVersion with Build as version
-                    Version += "-cibuild" + int.Parse(Environment.GetEnvironmentVariable("BUILD_BUILDID")).ToString("0000000") + "-alpha";
+                    var buildId = Environment.GetEnvironmentVariable("BUILD_BUILDID") ??
+                                  throw new InvalidOperationException("Missing environment variable BUILD_BUILDID");
+                    Version += "-cibuild" + int.Parse(buildId).ToString("0000000") + "-alpha";
                 }
 
                 PublishTestResults = true;
@@ -157,13 +160,10 @@ public partial class Build
             VersionOutputDir = b.VersionOutputDir;
         }
 
-        (string Version, string ApiCompatVersion) GetVersion()
+        string GetVersion()
         {
             var xdoc = XDocument.Load(RootDirectory / "build/SharedVersion.props");
-            return (
-                xdoc.Descendants().First(x => x.Name.LocalName == "Version").Value,
-                xdoc.Descendants().First(x => x.Name.LocalName == "ApiCompatVersion").Value
-            );
+            return xdoc.Descendants().First(x => x.Name.LocalName == "Version").Value;
         }
     }
 

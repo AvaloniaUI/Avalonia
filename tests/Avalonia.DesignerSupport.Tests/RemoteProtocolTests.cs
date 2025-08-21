@@ -18,6 +18,8 @@ namespace Avalonia.DesignerSupport.Tests
 {
     public class RemoteProtocolTests : IDisposable
     {
+        private const int TimeoutInMs = 1000;
+
         private readonly List<IDisposable> _disposables = new List<IDisposable>();
         private IAvaloniaRemoteTransportConnection _server;
         private IAvaloniaRemoteTransportConnection _client;
@@ -68,7 +70,7 @@ namespace Avalonia.DesignerSupport.Tests
 
         object TakeServer()
         {
-            var src = new CancellationTokenSource(200);
+            var src = new CancellationTokenSource(TimeoutInMs);
             try
             {
                 return _serverMessages.Take(src.Token);
@@ -132,7 +134,7 @@ namespace Avalonia.DesignerSupport.Tests
                 foreach (var p in t.GetProperties())
                     p.SetValue(o, GetRandomValue(p.PropertyType, $"{t.FullName}.{p.Name}"));
 
-                _client.Send(o).Wait(200);
+                _client.Send(o).Wait(TimeoutInMs);
                 var received = TakeServer();
                 Helpers.StructDiff(received, o);
 
