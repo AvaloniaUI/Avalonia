@@ -47,8 +47,6 @@ namespace Avalonia.Input
 
         private XYFocus _xyFocus = new();
         private XYFocusOptions _xYFocusOptions = new XYFocusOptions();
-        private bool _isMovingFocusToPreviousTabStop;
-        private bool _isMovingFocusToNextTabStop;
         private IInputElement? _contentRoot;
 
         /// <summary>
@@ -181,16 +179,7 @@ namespace Avalonia.Input
         /// <returns>true if focus moved; otherwise, false.</returns>
         public bool TryMoveFocus(NavigationDirection direction, FindNextElementOptions options)
         {
-            if (direction is not NavigationDirection.Up
-                and not NavigationDirection.Down
-                and not NavigationDirection.Left
-                and not NavigationDirection.Right)
-            {
-                throw new ArgumentOutOfRangeException(nameof(direction),
-                        $"{direction} is not supported with FindNextElementOptions. Only Up, Down, Left and right are supported");
-            }
-
-            return FindAndSetNextFocus(direction, CreateFocusOptions(options));
+            return FindAndSetNextFocus(direction, ValidateAndCreateFocusOptions(direction, options));
         }
 
         /// <summary>
@@ -347,6 +336,11 @@ namespace Avalonia.Input
         /// <returns>The next element to receive focus.</returns>
         public IInputElement? FindNextElement(NavigationDirection direction, FindNextElementOptions options)
         {
+            return FindNextFocus(direction, ValidateAndCreateFocusOptions(direction, options));
+        }
+
+        private static XYFocusOptions ValidateAndCreateFocusOptions(NavigationDirection direction, FindNextElementOptions options)
+        {
             if (direction is not NavigationDirection.Up
                 and not NavigationDirection.Down
                 and not NavigationDirection.Left
@@ -356,11 +350,6 @@ namespace Avalonia.Input
                         $"{direction} is not supported with FindNextElementOptions. Only Up, Down, Left and right are supported");
             }
 
-            return FindNextFocus(direction, CreateFocusOptions(options));
-        }
-
-        private static XYFocusOptions CreateFocusOptions(FindNextElementOptions options)
-        {
             return new XYFocusOptions
             {
                 UpdateManifold = false,
@@ -372,7 +361,7 @@ namespace Avalonia.Input
             };
         }
 
-        internal IInputElement? FindNextFocus(NavigationDirection direction, XYFocusOptions focusOptions, bool updateManifolds = true, bool isQueryOnly = true)
+        internal IInputElement? FindNextFocus(NavigationDirection direction, XYFocusOptions focusOptions, bool updateManifolds = true)
         {
             IInputElement? nextFocusedElement = null;
 
@@ -381,34 +370,7 @@ namespace Avalonia.Input
             if (direction is NavigationDirection.Previous or NavigationDirection.Next || currentlyFocusedElement == null)
             {
                 var isReverse = direction == NavigationDirection.Previous;
-                if (isQueryOnly)
-                {
-                    nextFocusedElement = ProcessTabStopInternal(isReverse, true);
-                }
-                else
-                {
-                    using var _ = Disposable.Create(() =>
-                    {
-                        if (isReverse)
-                        {
-                            _isMovingFocusToPreviousTabStop = false;
-                        }
-                        else if (direction == NavigationDirection.Next)
-                        {
-                            _isMovingFocusToNextTabStop = false;
-                        }
-                    });
-
-                    if (isReverse)
-                    {
-                        _isMovingFocusToPreviousTabStop = true;
-                    }
-                    else if (direction == NavigationDirection.Next)
-                    {
-                        _isMovingFocusToNextTabStop = true;
-                    }
-                    nextFocusedElement = ProcessTabStopInternal(isReverse, true);
-                }
+                nextFocusedElement = ProcessTabStopInternal(isReverse, true);
             }
             else
             {
@@ -420,7 +382,7 @@ namespace Avalonia.Input
 
                 nextFocusedElement = _xyFocus.GetNextFocusableElement(direction,
                     currentlyFocusedElement as InputElement,
-                    null, // todo: engaged control
+                    null,
                     updateManifolds,
                     focusOptions);
             }
@@ -700,14 +662,7 @@ namespace Avalonia.Input
                         }
                         else
                         {
-                            if (parentElement != null)
-                            {
-                                parent = parentElement as IInputElement;
-                            }
-                            else
-                            {
-                                parent = (_contentRoot as Visual)?.VisualRoot as IInputElement;
-                            }
+                            parent = parentElement as IInputElement;
                         }
                     }
 
@@ -882,7 +837,6 @@ namespace Avalonia.Input
                         continue;
                     }
 
-                    childStop = null;
                     if (FocusHelpers.IsVisible(child))
                     {
                         if (child == current)
@@ -1146,7 +1100,7 @@ namespace Avalonia.Input
                 _xyFocus.SetManifoldsFromBounds(xYFocusOptions.FocusHintRectangle ?? default);
             }
 
-            if (FindNextFocus(direction, xYFocusOptions, false, false) is { } nextFocusedElement)
+            if (FindNextFocus(direction, xYFocusOptions, false) is { } nextFocusedElement)
             {
                 focusChanged = nextFocusedElement.Focus();
 

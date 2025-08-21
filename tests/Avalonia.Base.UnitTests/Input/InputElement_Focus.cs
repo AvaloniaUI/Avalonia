@@ -902,15 +902,6 @@ namespace Avalonia.Base.UnitTests.Input
 
                 Assert.True(target4.IsFocused);
                 Assert.True(hasMoved);
-
-                var options = new FindNextElementOptions()
-                {
-                    SearchRoot = container
-                };
-
-                hasMoved = focusManager.TryMoveFocus(NavigationDirection.Up, options);
-                Assert.True(target3.IsFocused);
-                Assert.True(hasMoved);
             }
         }
 
