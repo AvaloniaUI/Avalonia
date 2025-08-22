@@ -1088,6 +1088,32 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Fact]
+        public void Should_MatchCharacter_For_Spacing_CombiningMark()
+        {
+            using (Start())
+            {
+                var text = "𖾇";
+
+                var typeface = new Typeface(new FontFamily(new Uri("resm:Avalonia.Skia.UnitTests.Fonts?assembly=Avalonia.Skia.UnitTests"), "Noto Mono"));
+                var defaultRunProperties = new GenericTextRunProperties(typeface);
+                var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties, textWrapping: TextWrapping.Wrap);
+                var textLine = TextFormatter.Current.FormatLine(new SimpleTextSource(text, defaultRunProperties), 0, 120, paragraphProperties);
+
+                Assert.NotNull(textLine);
+
+                var textRuns = textLine.TextRuns;
+
+                Assert.NotEmpty(textRuns);
+
+                var firstRun = textRuns[0];
+
+                Assert.NotNull(firstRun.Properties);
+
+                Assert.Equal("Noto Sans Miao", firstRun.Properties.Typeface.GlyphTypeface.FamilyName);
+            }
+        }
+
         protected readonly record struct SimpleTextSource : ITextSource
         {
             private readonly string _text;
