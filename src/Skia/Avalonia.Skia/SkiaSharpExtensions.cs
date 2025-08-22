@@ -9,7 +9,7 @@ namespace Avalonia.Skia
 {
     public static class SkiaSharpExtensions
     {
-        public static SKSamplingOptions ToSKSamplingOptions(this BitmapInterpolationMode interpolationMode)
+        public static SKSamplingOptions ToSKSamplingOptions(this BitmapInterpolationMode interpolationMode, bool isUpscaling)
         {
             return interpolationMode switch
             {
@@ -20,7 +20,9 @@ namespace Avalonia.Skia
                 BitmapInterpolationMode.MediumQuality =>
                     new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear),
                 BitmapInterpolationMode.HighQuality =>
-                    new SKSamplingOptions(SKCubicResampler.Mitchell),
+                    isUpscaling ?
+                        new SKSamplingOptions(SKCubicResampler.Mitchell) :
+                        new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear),
                 _ => throw new ArgumentOutOfRangeException(nameof(interpolationMode), interpolationMode, null)
             };
         }
