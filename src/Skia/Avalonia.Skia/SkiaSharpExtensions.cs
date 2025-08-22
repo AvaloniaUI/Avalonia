@@ -9,7 +9,10 @@ namespace Avalonia.Skia
 {
     public static class SkiaSharpExtensions
     {
-        public static SKSamplingOptions ToSKSamplingOptions(this BitmapInterpolationMode interpolationMode, bool isUpscaling)
+        public static SKSamplingOptions ToSKSamplingOptions(this BitmapInterpolationMode interpolationMode)
+            => ToSKSamplingOptions(interpolationMode, true);
+
+        internal static SKSamplingOptions ToSKSamplingOptions(this BitmapInterpolationMode interpolationMode, bool isUpscaling)
         {
             return interpolationMode switch
             {
