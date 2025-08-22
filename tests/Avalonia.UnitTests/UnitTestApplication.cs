@@ -51,7 +51,8 @@ namespace Avalonia.UnitTests
                 }
 
                 ((ToolTipService)AvaloniaLocator.Current.GetService<IToolTipService>())?.Dispose();
-                
+                (AvaloniaLocator.Current.GetService<FontManager>() as IDisposable)?.Dispose();
+
                 Dispatcher.ResetForUnitTests();
                 scope.Dispose();
                 Dispatcher.ResetBeforeUnitTests();
