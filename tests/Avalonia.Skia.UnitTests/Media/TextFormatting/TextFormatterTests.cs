@@ -1095,7 +1095,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             {
                 var text = "𖾇";
 
-                var typeface = new Typeface(new FontFamily(new Uri("resm:Avalonia.Skia.UnitTests.Fonts?assembly=Avalonia.Skia.UnitTests"), "Noto Mono"));
+                var typeface = new Typeface(new FontFamily(new Uri("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests"), "Noto Mono"));
                 var defaultRunProperties = new GenericTextRunProperties(typeface);
                 var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties, textWrapping: TextWrapping.Wrap);
                 var textLine = TextFormatter.Current.FormatLine(new SimpleTextSource(text, defaultRunProperties), 0, 120, paragraphProperties);
