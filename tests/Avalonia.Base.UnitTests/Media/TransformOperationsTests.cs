@@ -1,3 +1,4 @@
+using Avalonia.Media;
 using Avalonia.Media.Transformation;
 using Avalonia.Utilities;
 using Xunit;
@@ -262,6 +263,27 @@ namespace Avalonia.Base.UnitTests.Media
             var interpolated_100 = TransformOperations.Interpolate(from, to, 1);
 
             AssertMatrix(interpolated_100.Value, scaleX: 0.5, scaleY: 0.5, translateX: 50, translateY: 50);
+        }
+
+        [Fact]
+        public void TransformGroup_Invalidates_When_Child_Collection_Changes()
+        {
+            var group = new TransformGroup();
+            var transform = new TranslateTransform(10, 0);
+
+            Assert.Equal(Matrix.Identity, group.Value);
+
+            group.Children.Add(transform);
+
+            Assert.NotEqual(Matrix.Identity, group.Value);
+
+            group.Children.Clear();
+
+            Assert.Equal(Matrix.Identity, group.Value);
+
+            group.Children = [transform];
+
+            Assert.NotEqual(Matrix.Identity, group.Value);
         }
 
         private static void AssertMatrix(Matrix matrix, double? angle = null, double? scaleX = null, double? scaleY = null, double? translateX = null, double? translateY = null)
