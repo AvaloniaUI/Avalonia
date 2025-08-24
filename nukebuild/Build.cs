@@ -11,12 +11,8 @@ using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Tools.Npm;
 using static Nuke.Common.EnvironmentInfo;
-using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.IO.PathConstruction;
-using static Nuke.Common.Tools.MSBuild.MSBuildTasks;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
-using static Nuke.Common.Tools.Xunit.XunitTasks;
-using static Nuke.Common.Tools.VSWhere.VSWhereTasks;
 using static Serilog.Log;
 using MicroCom.CodeGenerator;
 using NuGet.Configuration;
@@ -40,13 +36,13 @@ partial class Build : NukeBuild
     ApiDiffHelper.GlobalDiffInfo? GlobalDiff { get; set; }
 #nullable restore
 
-    [PackageExecutable("Microsoft.DotNet.ApiCompat.Tool", "Microsoft.DotNet.ApiCompat.Tool.dll", Framework = "net8.0")]
+    [NuGetPackage("Microsoft.DotNet.ApiCompat.Tool", "Microsoft.DotNet.ApiCompat.Tool.dll", Framework = "net8.0")]
     Tool ApiCompatTool;
     
-    [PackageExecutable("Microsoft.DotNet.ApiDiff.Tool", "Microsoft.DotNet.ApiDiff.Tool.dll", Framework = "net8.0")]
+    [NuGetPackage("Microsoft.DotNet.ApiDiff.Tool", "Microsoft.DotNet.ApiDiff.Tool.dll", Framework = "net8.0")]
     Tool ApiDiffTool;
 
-    [PackageExecutable("dotnet-ilrepack", "ILRepackTool.dll", Framework = "net8.0")]
+    [NuGetPackage("dotnet-ilrepack", "ILRepackTool.dll", Framework = "net8.0")]
     Tool IlRepackTool;
     
     protected override void OnBuildInitialized()
@@ -96,7 +92,7 @@ partial class Build : NukeBuild
             c.AddProperty("JavaSdkDirectory", GetVariable<string>("JAVA_HOME_11_X64"));
         c.AddProperty("PackageVersion", Parameters.Version)
             .SetConfiguration(Parameters.Configuration)
-            .SetVerbosity(DotNetVerbosity.Minimal);
+            .SetVerbosity(DotNetVerbosity.minimal);
         if (Parameters.IsPackingToLocalCache)
             c
                 .AddProperty("ForcePackAvaloniaNative", "True")
@@ -116,12 +112,23 @@ partial class Build : NukeBuild
 
     Target Clean => _ => _.Executes(() =>
     {
-        Parameters.BuildDirs.ForEach(DeleteDirectory);
-        EnsureCleanDirectory(Parameters.ArtifactsDir);
-        EnsureCleanDirectory(Parameters.NugetIntermediateRoot);
-        EnsureCleanDirectory(Parameters.NugetRoot);
-        EnsureCleanDirectory(Parameters.ZipRoot);
-        EnsureCleanDirectory(Parameters.TestResultsRoot);
+        foreach (var buildDir in Parameters.BuildDirs)
+        {
+            Information("Deleting {Directory}", buildDir);
+            buildDir.DeleteDirectory();
+        }
+
+        CleanDirectory(Parameters.ArtifactsDir);
+        CleanDirectory(Parameters.NugetIntermediateRoot);
+        CleanDirectory(Parameters.NugetRoot);
+        CleanDirectory(Parameters.ZipRoot);
+        CleanDirectory(Parameters.TestResultsRoot);
+
+        void CleanDirectory(AbsolutePath path)
+        {
+            Information("Cleaning {Path}", path);
+            path.CreateOrCleanDirectory();
+        }
     });
 
     Target CompileHtmlPreviewer => _ => _
@@ -133,7 +140,7 @@ partial class Build : NukeBuild
 
             NpmTasks.NpmInstall(c => c
                 .SetProcessWorkingDirectory(webappDir)
-                .SetProcessArgumentConfigurator(a => a.Add("--silent")));
+                .SetProcessAdditionalArguments("--silent"));
             NpmTasks.NpmRun(c => c
                 .SetProcessWorkingDirectory(webappDir)
                 .SetCommand("dist"));
@@ -226,7 +233,7 @@ partial class Build : NukeBuild
                 .SetFramework(tfm)
                 .EnableNoBuild()
                 .EnableNoRestore()
-                .When(Parameters.PublishTestResults, _ => _
+                .When(_ => Parameters.PublishTestResults, _ => _
                     .SetLoggers("trx")
                     .SetResultsDirectory(Parameters.TestResultsRoot)));
         }
@@ -241,7 +248,7 @@ partial class Build : NukeBuild
 
             NpmTasks.NpmInstall(c => c
                 .SetProcessWorkingDirectory(webappTestDir)
-                .SetProcessArgumentConfigurator(a => a.Add("--silent")));
+                .SetProcessAdditionalArguments("--silent"));
             NpmTasks.NpmRun(c => c
                 .SetProcessWorkingDirectory(webappTestDir)
                 .SetCommand("test"));
@@ -318,7 +325,7 @@ partial class Build : NukeBuild
                                                        Parameters.Version + ".nupkg",
                                                        IlRepackTool);
             var config = Numerge.MergeConfiguration.LoadFile(RootDirectory / "nukebuild" / "numerge.config");
-            EnsureCleanDirectory(Parameters.NugetRoot);
+            Parameters.NugetRoot.CreateOrCleanDirectory();
             if(!Numerge.NugetPackageMerger.Merge(Parameters.NugetIntermediateRoot, Parameters.NugetRoot, config,
                 new NumergeNukeLogger()))
                 throw new Exception("Package merge failed");
@@ -350,6 +357,7 @@ partial class Build : NukeBuild
                 packageDiff => ApiDiffHelper.ValidatePackage(
                     ApiCompatTool,
                     packageDiff,
+                    Parameters.ArtifactsDir / "api-diff" / "assemblies",
                     Parameters.ApiValidationSuppressionFiles,
                     Parameters.UpdateApiValidationSuppression));
         });
@@ -451,7 +459,7 @@ partial class Build : NukeBuild
             var artifactsDirectory = buildTestsDirectory / "artifacts";
             var nugetCacheDirectory = artifactsDirectory / "nuget-cache";
 
-            DeleteDirectory(artifactsDirectory);
+            artifactsDirectory.DeleteDirectory();
             BuildTestsAndVerify("Debug");
             BuildTestsAndVerify("Release");
 
@@ -465,7 +473,7 @@ partial class Build : NukeBuild
                     .SetProperty("NuGetPackageRoot", nugetCacheDirectory)
                     .SetPackageDirectory(nugetCacheDirectory)
                     .SetProjectFile(buildTestsDirectory / "BuildTests.sln")
-                    .SetProcessArgumentConfigurator(arguments => arguments.Add("--nodeReuse:false")));
+                    .SetProcessAdditionalArguments("--nodeReuse:false"));
 
                 // Standard compilation - should have compiled XAML
                 VerifyBuildTestAssembly("bin", "BuildTests");
@@ -494,7 +502,7 @@ partial class Build : NukeBuild
                         .SetPackageDirectory(nugetCacheDirectory)
                         .SetNoBuild(noBuild)
                         .SetProject(buildTestsDirectory / projectName / (projectName + ".csproj"))
-                        .SetProcessArgumentConfigurator(arguments => arguments.Add("--nodeReuse:false")));
+                        .SetProcessAdditionalArguments("--nodeReuse:false"));
 
                 void VerifyBuildTestAssembly(string folder, string projectName)
                     => XamlCompilationVerifier.VerifyAssemblyCompiledXaml(
