@@ -15,7 +15,7 @@ namespace Avalonia.Media
     ///     The font manager is used to query the system's installed fonts and is responsible for caching loaded fonts.
     ///     It is also responsible for the font fallback.
     /// </summary>
-    public sealed class FontManager
+    public sealed class FontManager : IDisposable
     {
         internal static Uri SystemFontsKey = new Uri("fonts:SystemFonts", UriKind.Absolute);
 
@@ -381,6 +381,15 @@ namespace Avalonia.Media
             }
 
             return defaultFontFamilyName;
+        }
+
+        void IDisposable.Dispose()
+        {
+            foreach (var pair in _fontCollections)
+                pair.Value.Dispose();
+
+            _fontCollections.Clear();
+            (PlatformImpl as IDisposable)?.Dispose();
         }
     }
 }

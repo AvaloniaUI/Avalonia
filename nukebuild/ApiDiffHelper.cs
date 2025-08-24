@@ -47,20 +47,13 @@ public static class ApiDiffHelper
 
         var allErrors = new List<string>();
 
-        Parallel.ForEach(
-            packageDiff.Frameworks,
-            framework =>
-            {
-                var args = $""" -l="{framework.BaselineFolderPath}" -r="{framework.CurrentFolderPath}" {suppressionArgs}""";
+        foreach (var framework in packageDiff.Frameworks)
+        {
+            var args = $""" -l="{framework.BaselineFolderPath}" -r="{framework.CurrentFolderPath}" {suppressionArgs}""";
 
-                var localErrors = GetErrors(apiCompatTool(args));
-
-                if (localErrors.Length > 0)
-                {
-                    lock (allErrors)
-                        allErrors.AddRange(localErrors);
-                }
-            });
+            var localErrors = GetErrors(apiCompatTool(args));
+            allErrors.AddRange(localErrors);
+        }
 
         ThrowOnErrors(allErrors, packageDiff.PackageId, "ValidateApiDiff");
     }
