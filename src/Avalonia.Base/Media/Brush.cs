@@ -40,8 +40,8 @@ namespace Avalonia.Media
         /// </summary>
         public double Opacity
         {
-            get { return GetValue(OpacityProperty); }
-            set { SetValue(OpacityProperty, value); }
+            get => GetValue(OpacityProperty);
+            set => SetValue(OpacityProperty, value);
         }
 
         /// <summary>
@@ -49,8 +49,8 @@ namespace Avalonia.Media
         /// </summary>
         public ITransform? Transform
         {
-            get { return GetValue(TransformProperty); }
-            set { SetValue(TransformProperty, value); }
+            get => GetValue(TransformProperty);
+            set => SetValue(TransformProperty, value);
         }
 
         /// <summary>
@@ -87,14 +87,14 @@ namespace Avalonia.Media
 
             throw new FormatException($"Invalid brush string: '{s}'.");
         }
-        
+
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             if (change.Property == TransformProperty) 
                 _resource.ProcessPropertyChangeNotification(change);
 
             RegisterForSerialization();
-            
+
             base.OnPropertyChanged(change);
         }
         
@@ -126,7 +126,7 @@ namespace Avalonia.Media
             if(_resource.Release(c))
                 OnUnreferencedFromCompositor(c);
         }
-        
+
         protected virtual void OnUnreferencedFromCompositor(Compositor c)
         {
             if (Transform is ICompositionRenderResource<ITransform> resource)
@@ -139,7 +139,7 @@ namespace Avalonia.Media
         {
             ServerCompositionSimpleBrush.SerializeAllChanges(writer, Opacity, TransformOrigin, Transform.GetServer(c));
         }
-        
+
         void ICompositorSerializable.SerializeChanges(Compositor c, BatchStreamWriter writer) => SerializeChanges(c, writer);
     }
 }
