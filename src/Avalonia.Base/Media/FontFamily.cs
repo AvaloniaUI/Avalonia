@@ -42,7 +42,9 @@ namespace Avalonia.Media
 
             if (fontSources.Count == 1)
             {
-                if(fontSources[0].Source is Uri source)
+                var singleSource = fontSources[0];
+
+                if (singleSource.Source is Uri source)
                 {
                     if (baseUri != null && !baseUri.IsAbsoluteUri)
                     {
@@ -50,6 +52,13 @@ namespace Avalonia.Media
                     }
 
                     Key = new FontFamilyKey(source, baseUri);
+                }
+                else
+                {
+                    if(baseUri != null && baseUri.IsAbsoluteUri)
+                    {
+                        Key = new FontFamilyKey(baseUri);
+                    }
                 }
             }
             else
@@ -141,11 +150,21 @@ namespace Avalonia.Media
 
                     case 2:
                         {
-                            var source = innerSegments[0].StartsWith("/", StringComparison.Ordinal)
-                                ? new Uri(innerSegments[0], UriKind.Relative)
-                                : new Uri(innerSegments[0], UriKind.RelativeOrAbsolute);
+                            var path = innerSegments[0].Trim();
+                            var innerName = innerSegments[1].Trim();
 
-                            identifier = new FontSourceIdentifier(innerSegments[1].Trim(), source);
+                            if (string.IsNullOrEmpty(path))
+                            {
+                                identifier = new FontSourceIdentifier(innerName, null);
+                            }
+                            else
+                            {
+                                var source = path.StartsWith("/", StringComparison.Ordinal)
+                                   ? new Uri(path, UriKind.Relative)
+                                   : new Uri(path, UriKind.RelativeOrAbsolute);
+
+                                identifier = new FontSourceIdentifier(innerName, source);
+                            }                              
 
                             break;
                         }

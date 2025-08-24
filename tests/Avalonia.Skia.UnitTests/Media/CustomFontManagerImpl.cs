@@ -18,9 +18,9 @@ namespace Avalonia.Skia.UnitTests.Media
 
         public CustomFontManagerImpl()
         {
-            _defaultFamilyName = "Noto Mono";
-
             var source = new Uri("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests");
+
+            _defaultFamilyName = source.AbsoluteUri + "#Noto Mono";
 
             _customFonts = new EmbeddedFontCollection(source, source);
         }
