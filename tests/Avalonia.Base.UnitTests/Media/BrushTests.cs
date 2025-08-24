@@ -90,7 +90,7 @@ namespace Avalonia.Base.UnitTests.Media
         public void Parse_Parses_All_Color_Format_Brushes(string input)
         {
             var brush = Brush.Parse(input);
-            Assert.IsType<ISolidColorBrush>(brush);
+            Assert.IsAssignableFrom<ISolidColorBrush>(brush);
 
             // The ColorTests already validate all color formats are parsed properly
             // Since Brush.Parse() forwards to Color.Parse() we don't need to repeat this
