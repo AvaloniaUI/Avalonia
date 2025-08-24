@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.Rendering.Composition.Drawing;
 using Xunit;
 
@@ -77,6 +78,27 @@ namespace Avalonia.Base.UnitTests.Media
         public void Parse_Hex_Value_Doesnt_Accept_Invalid_Number()
         {
             Assert.Throws<FormatException>(() => Brush.Parse("#ff808g80"));
+        }
+
+        [Theory]
+        [InlineData("rgb(255, 128, 64)")]
+        [InlineData("rgba(255, 128, 64, 0.5)")]
+        [InlineData("hsl(120, 100%, 50%)")]
+        [InlineData("hsla(120, 100%, 50%, 0.5)")]
+        [InlineData("hsv(300, 100%, 25%)")]
+        [InlineData("hsva(300, 100%, 25%, 0.75)")]
+        [InlineData("#ff808g80")]
+        [InlineData("Green")]
+        public void Parse_Parses_All_Color_Format_Brushes(string input)
+        {
+            var brush = Brush.Parse(input);
+            Assert.IsType<ISolidColorBrush>(brush);
+
+            // The ColorTests already validate all color formats are parsed properly
+            // Since Brush.Parse() forwards to Color.Parse() we don't need to repeat this
+            // We can simply check if the parsed Brush's color matches what Color.Parse provides
+            var expected = Color.Parse(input);
+            Assert.Equal(expected, (brush as ISolidColorBrush)?.Color);
         }
 
         [Fact]
