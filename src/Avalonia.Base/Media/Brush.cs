@@ -1,9 +1,7 @@
 using System;
 using System.ComponentModel;
 using Avalonia.Animation;
-using Avalonia.Animation.Animators;
 using Avalonia.Media.Immutable;
-using Avalonia.Reactive;
 using Avalonia.Rendering.Composition;
 using Avalonia.Rendering.Composition.Drawing;
 using Avalonia.Rendering.Composition.Server;
