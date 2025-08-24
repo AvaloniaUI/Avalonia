@@ -71,15 +71,17 @@ namespace Avalonia.Media
 
             if (s.Length > 0)
             {
-                if (Color.TryParse(s, out Color color))
-                {
-                    return new ImmutableSolidColorBrush(color);
-                }
-
+                // Attempt to get a cached known brush first
+                // This is a performance optimization for known colors
                 var brush = KnownColors.GetKnownBrush(s);
                 if (brush != null)
                 {
                     return brush;
+                }
+
+                if (Color.TryParse(s, out Color color))
+                {
+                    return new ImmutableSolidColorBrush(color);
                 }
             }
 
