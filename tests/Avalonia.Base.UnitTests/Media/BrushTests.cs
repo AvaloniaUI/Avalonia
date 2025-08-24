@@ -1,7 +1,5 @@
 using System;
 using Avalonia.Media;
-using Avalonia.Media.Immutable;
-using Avalonia.Rendering.Composition.Drawing;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests.Media
@@ -87,7 +85,7 @@ namespace Avalonia.Base.UnitTests.Media
         [InlineData("hsla(120, 100%, 50%, 0.5)")]
         [InlineData("hsv(300, 100%, 25%)")]
         [InlineData("hsva(300, 100%, 25%, 0.75)")]
-        [InlineData("#ff808g80")]
+        [InlineData("#40ff8844")]
         [InlineData("Green")]
         public void Parse_Parses_All_Color_Format_Brushes(string input)
         {
