@@ -334,13 +334,12 @@ namespace Avalonia.Controls.UnitTests
                     })
                 },
             };
-            kd.SetFocusedElement(target, NavigationMethod.Unspecified, KeyModifiers.None);
-            
 
             root.ApplyTemplate();
             root.Presenter.UpdateChild();
             target.ApplyTemplate();
             target.Presenter.UpdateChild();
+            kd.SetFocusedElement(target, NavigationMethod.Unspecified, KeyModifiers.None);
 
             Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
