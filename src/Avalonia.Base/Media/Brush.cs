@@ -73,9 +73,9 @@ namespace Avalonia.Media
 
             if (s.Length > 0)
             {
-                if (s[0] == '#')
+                if (Color.TryParse(s, out Color color))
                 {
-                    return new ImmutableSolidColorBrush(Color.Parse(s));
+                    return new ImmutableSolidColorBrush(color);
                 }
 
                 var brush = KnownColors.GetKnownBrush(s);
