@@ -258,7 +258,7 @@ namespace Avalonia.Controls.Presenters
                 return false;
             }
 
-            var rectangle = targetRect.TransformToAABB(transform.Value).Deflate(new Thickness(Child.Margin.Left, Child.Margin.Top, 0, 0));
+            var rectangle = targetRect.TransformToAABB(transform.Value);
             Rect viewport = new Rect(Offset.X, Offset.Y, Viewport.Width, Viewport.Height);
 
             double minX = ComputeScrollOffsetWithMinimalScroll(viewport.Left, viewport.Right, rectangle.Left, rectangle.Right);
