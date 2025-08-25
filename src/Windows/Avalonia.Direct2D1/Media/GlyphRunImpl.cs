@@ -71,7 +71,6 @@ namespace Avalonia.Direct2D1.Media
                     var height = metrics.Height;
                     if (height < 0)
                     {
-                        ybearing += height;
                         height = -height;
                     }
 
@@ -79,7 +78,9 @@ namespace Avalonia.Direct2D1.Media
                     var xOffset = metrics.XBearing * scale;
                     var xWidth = xOffset > 0 ? xOffset : 0;
                     var xBearing = xOffset < 0 ? xOffset : 0;
-                    runBounds = runBounds.Union(new Rect(currentX + xBearing, baselineOrigin.Y + ybearing, xWidth + metrics.Width * scale, height * scale));
+
+                    //yBearing is the vertical distance from the baseline to the top of the glyph's bbox. It is usually positive for horizontal layouts, and negative for vertical ones.
+                    runBounds = runBounds.Union(new Rect(currentX + xBearing, baselineOrigin.Y - ybearing * scale, xWidth + metrics.Width * scale, height * scale));
                 }
 
                 currentX += glyphInfos[i].GlyphAdvance;
