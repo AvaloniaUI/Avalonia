@@ -360,6 +360,8 @@ namespace Avalonia.Controls.UnitTests.Presenters
             {
                 Width = 100,
                 Height = 100,
+                CanVerticallyScroll = true,
+                CanHorizontallyScroll = true,
                 Content = new Border
                 {
                     Width = 200,
@@ -405,7 +407,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
         }
 
         [Fact]
-        public void BringDescendantIntoView_Should_Not_Move_Child_If_Completely_In_View()
+        public void BringDescendantIntoView_Should_Move_Child_Even_With_Margin_In_Parent()
         {
             var namescope = new NameScope();
             var content = new StackPanel()
@@ -464,6 +466,50 @@ namespace Avalonia.Controls.UnitTests.Presenters
         }
 
         [Fact]
+        public void BringDescendantIntoView_Should_Not_Move_Child_If_Completely_In_View()
+        {
+            var namescope = new NameScope();
+            var content = new StackPanel()
+            {
+                Orientation = Orientation.Vertical,
+                Width = 100,
+            };
+
+            for(int i = 0; i < 100; i++)
+            {
+                var child = new Border
+                {
+                    Width = 100,
+                    Height = 20,
+                    Name = $"Border{i}"
+                }.RegisterInNameScope(namescope);
+                content.Children.Add(child);
+            }
+            var target = new ScrollContentPresenter
+            {
+                CanHorizontallyScroll = true,
+                CanVerticallyScroll = true,
+                Width = 200,
+                Height = 100,
+                Content = new Decorator
+                {
+                    Child = content
+                }
+            };
+
+            NameScope.SetNameScope(target, namescope);
+
+            target.UpdateChild();
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(0, 0, 100, 100));
+            var border3 = target.FindControl<Border>("Border3");
+            target.BringDescendantIntoView(border3, new Rect(border3.Bounds.Size));
+
+            // Border3 is still in view, offset hasn't changed
+            Assert.Equal(new Vector(0, 0), target.Offset);
+        }
+
+        [Fact]
         public void BringDescendantIntoView_Should_Move_Child_At_Least_Partially_Above_Viewport()
         {
             Border border = new Border
@@ -502,14 +548,17 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.UpdateChild();
             target.Measure(Size.Infinity);
             target.Arrange(new Rect(0, 0, 100, 100));
+
             // move border to above the view port
             target.Offset = new Vector(0, 90);
+            target.Arrange(new Rect(0, 0, 100, 100));
             target.BringDescendantIntoView(border, new Rect(border.Bounds.Size));
 
             Assert.Equal(new Vector(0, 60), target.Offset);
 
             // move border to partially above the view port
             target.Offset = new Vector(0, 70);
+            target.Arrange(new Rect(0, 0, 100, 100));
             target.BringDescendantIntoView(border, new Rect(border.Bounds.Size));
 
             Assert.Equal(new Vector(0, 60), target.Offset);
@@ -556,6 +605,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.Arrange(new Rect(0, 0, 100, 100));
             // move border such that it's partially above viewport and partially below viewport
             target.Offset = new Vector(0, 90);
+            target.Arrange(new Rect(0, 0, 100, 100));
             target.BringDescendantIntoView(border, new Rect(border.Bounds.Size));
 
             Assert.Equal(new Vector(0, 90), target.Offset);
