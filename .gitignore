@@ -219,3 +219,4 @@ src/Browser/Avalonia.Browser.Blazor/wwwroot
 src/Browser/Avalonia.Browser/wwwroot
 api/diff
 src/Browser/Avalonia.Browser/staticwebassets
+/.nuke/temp/dotnet-win/host/fxr/8.0.11/hostfxr.dll
