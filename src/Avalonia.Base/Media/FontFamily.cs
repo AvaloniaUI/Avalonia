@@ -55,7 +55,7 @@ namespace Avalonia.Media
                 }
                 else
                 {
-                    if(baseUri != null && baseUri.IsAbsoluteUri)
+                    if(baseUri != null && baseUri.IsResm())
                     {
                         Key = new FontFamilyKey(baseUri);
                     }
@@ -161,7 +161,7 @@ namespace Avalonia.Media
                             {
                                 var source = path.StartsWith("/", StringComparison.Ordinal)
                                    ? new Uri(path, UriKind.Relative)
-                                   : new Uri(path, UriKind.RelativeOrAbsolute);
+                                   : new Uri(path, UriKind.Absolute);
 
                                 identifier = new FontSourceIdentifier(innerName, source);
                             }                              
