@@ -92,12 +92,12 @@ namespace Avalonia.Media
         {
             glyphTypeface = null;
 
-            var fontFamily = GetMappedFontFamily(typeface.FontFamily);
-            
             if (typeface.FontFamily.Name == FontFamily.DefaultFontFamilyName)
             {
                 return TryGetGlyphTypeface(new Typeface(DefaultFontFamily, typeface.Style, typeface.Weight, typeface.Stretch), out glyphTypeface);
             }
+
+            var fontFamily = GetMappedFontFamily(typeface.FontFamily);
 
             if (fontFamily.Key != null)
             {
@@ -107,9 +107,9 @@ namespace Avalonia.Media
                     {
                         var key = compositeKey.Keys[i];
 
-                        var familyName = fontFamily.FamilyNames[i];
+                        var currentFamilyName = fontFamily.FamilyNames[i];
 
-                        if (_fontFamilyMappings != null && _fontFamilyMappings.TryGetValue(familyName, out var mappedFontFamily))
+                        if (_fontFamilyMappings != null && _fontFamilyMappings.TryGetValue(currentFamilyName, out var mappedFontFamily))
                         {
                             if (mappedFontFamily.Key != null)
                             {
@@ -120,16 +120,16 @@ namespace Avalonia.Media
                                 key = new FontFamilyKey(SystemFontsKey);
                             }
 
-                            familyName = mappedFontFamily.FamilyNames.PrimaryFamilyName;
+                            currentFamilyName = mappedFontFamily.FamilyNames.PrimaryFamilyName;
                         }
 
-                        if (familyName == FontFamily.DefaultFontFamilyName)
+                        if (currentFamilyName == FontFamily.DefaultFontFamilyName)
                         {
                             return TryGetGlyphTypeface(new Typeface(DefaultFontFamily, typeface.Style, typeface.Weight, typeface.Stretch), out glyphTypeface);
                         }
 
-                        if (TryGetGlyphTypefaceByKeyAndName(typeface, key, familyName, out glyphTypeface) &&
-                            glyphTypeface.FamilyName.Contains(familyName))
+                        if (TryGetGlyphTypefaceByKeyAndName(typeface, key, currentFamilyName, out glyphTypeface) &&
+                            glyphTypeface.FamilyName.Contains(currentFamilyName))
                         {
                             return true;
                         }
@@ -137,30 +137,19 @@ namespace Avalonia.Media
                 }
                 else
                 {
-                    var familyName = fontFamily.FamilyNames.PrimaryFamilyName;
-
-                    if (TryGetGlyphTypefaceByKeyAndName(typeface, fontFamily.Key, familyName, out glyphTypeface))
+                    if (TryGetGlyphTypefaceByKeyAndName(typeface, fontFamily.Key, fontFamily.FamilyNames.PrimaryFamilyName, out glyphTypeface))
                     {
                         return true;
                     }
-
-                    return false;
-                }
-            }
-            else
-            {
-                var familyName = fontFamily.FamilyNames.PrimaryFamilyName;
-
-                if (SystemFonts.TryGetGlyphTypeface(familyName, typeface.Style, typeface.Weight, typeface.Stretch, out glyphTypeface))
-                {
-                    return true;
                 }
             }
 
-            if (typeface.FontFamily == DefaultFontFamily)
+            var familyName = fontFamily.FamilyNames.PrimaryFamilyName;
+
+            if (SystemFonts.TryGetGlyphTypeface(familyName, typeface.Style, typeface.Weight, typeface.Stretch, out glyphTypeface))
             {
-                return false;
-            }
+                return true;
+            }          
 
             //Nothing was found so use the default
             return TryGetGlyphTypeface(new Typeface(FontFamily.DefaultFontFamilyName, typeface.Style, typeface.Weight, typeface.Stretch), out glyphTypeface);

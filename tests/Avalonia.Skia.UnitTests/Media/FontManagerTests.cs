@@ -75,26 +75,6 @@ namespace Avalonia.Skia.UnitTests.Media
         }
 
         [Fact]
-        public void Should_Throw_For_Invalid_Custom_Font()
-        {
-            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
-            {
-                Assert.Throws<InvalidOperationException>(() => new Typeface("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Unknown").GlyphTypeface);
-            }
-        }
-
-        [Fact]
-        public void Should_Return_False_For_Unregistered_FontCollection_Uri()
-        {
-            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
-            {
-                var result = FontManager.Current.TryGetGlyphTypeface(new Typeface("fonts:invalid#Something"), out _);
-
-                Assert.False(result);
-            }
-        }
-
-        [Fact]
         public void Should_Only_Try_To_Create_GlyphTypeface_Once()
         {
             var fontManagerImpl = new HeadlessFontManagerStub();
@@ -406,6 +386,22 @@ namespace Avalonia.Skia.UnitTests.Media
                     Assert.NotNull(typeface.FontFamily.Key);
 
                     Assert.Equal("Noto Sans Hebrew", typeface.GlyphTypeface.FamilyName);
+                }
+            }
+        }
+
+        [InlineData("Arial")]
+        [InlineData("#Arial")]
+        [Win32Theory("Windows specific font")]
+        public void Should_Get_SystemFont_With_BaseUri(string name)
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                using (AvaloniaLocator.EnterScope())
+                {
+                    var fontFamily = new FontFamily(new Uri("avares://Avalonia.Skia.UnitTests/NotFound"), name);
+
+                    Assert.True(FontManager.Current.TryGetGlyphTypeface(new Typeface(fontFamily), out var glyphTypeface));
                 }
             }
         }
