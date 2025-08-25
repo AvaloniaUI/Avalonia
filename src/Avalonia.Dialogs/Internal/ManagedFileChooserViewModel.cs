@@ -212,11 +212,7 @@ namespace Avalonia.Dialogs.Internal
             {
                 try
                 {
-                    if (_selectingDirectory)
-                    {
-                        SelectedItems.Clear();
-                    }
-                    else
+                    if (!_selectingDirectory)
                     {
                         if (!_options.AllowDirectorySelection)
                         {
@@ -226,14 +222,11 @@ namespace Avalonia.Dialogs.Internal
                                 SelectedItems.Remove(item);
                         }
 
-                        if (!_selectingDirectory)
-                        {
-                            var selectedItem = SelectedItems.FirstOrDefault();
+                        var selectedItem = SelectedItems.FirstOrDefault();
 
-                            if (selectedItem != null)
-                            {
-                                FileName = selectedItem.DisplayName;
-                            }
+                        if (selectedItem != null)
+                        {
+                            FileName = selectedItem.DisplayName;
                         }
                     }
                     RaisePropertyChanged(nameof(SelectedItems));
