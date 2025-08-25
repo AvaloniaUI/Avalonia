@@ -9,6 +9,7 @@ using Avalonia.Controls.Platform;
 using Avalonia.Platform.Storage;
 using Avalonia.Reactive;
 using Avalonia.Threading;
+using Avalonia.Utilities;
 
 namespace Avalonia.Dialogs.Internal
 {
@@ -228,11 +229,29 @@ namespace Avalonia.Dialogs.Internal
 
                         if (!_selectingDirectory)
                         {
-                            var selectedItem = SelectedItems.FirstOrDefault();
-
-                            if (selectedItem != null)
+                            if (SelectedItems.Count > 1)
                             {
-                                FileName = selectedItem.DisplayName;
+                                var sb = StringBuilderCache.Acquire();
+
+                                for (var i = 0; i < SelectedItems.Count; i++)
+                                {
+                                    var item = SelectedItems[i];
+                                    sb.Append('"');
+                                    sb.Append(item.DisplayName);
+                                    sb.Append('"');
+                                    if (i + 1 < SelectedItems.Count)
+                                    {
+                                        sb.Append(' ');
+                                    }
+                                }
+
+                                FileName = sb.ToString();
+                                
+                                StringBuilderCache.Release(sb);
+                            }
+                            else
+                            {
+                                FileName = SelectedItems.FirstOrDefault()?.DisplayName;
                             }
                         }
                     }
