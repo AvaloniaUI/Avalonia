@@ -251,12 +251,14 @@ namespace Avalonia.Controls.Presenters
                 return scrollable.BringIntoView(control, targetRect);
             }
 
-            var transform = target.TransformToVisual(Child);
+            var transform = target.TransformToVisual(this);
 
             if (transform == null)
             {
                 return false;
             }
+
+            transform *= Matrix.CreateTranslation(Offset);
 
             var rectangle = targetRect.TransformToAABB(transform.Value);
             Rect viewport = new Rect(Offset.X, Offset.Y, Viewport.Width, Viewport.Height);
