@@ -36,6 +36,11 @@ namespace Avalonia.Media
                 throw new ArgumentNullException(nameof(name));
             }
 
+            if (baseUri != null && !baseUri.IsAbsoluteUri)
+            {
+                throw new ArgumentException("Base uri must be an absolute uri.", nameof(baseUri));
+            }
+
             var fontSources = GetFontSourceIdentifier(name);
 
             FamilyNames = new FamilyNameCollection(fontSources);
@@ -46,16 +51,18 @@ namespace Avalonia.Media
 
                 if (singleSource.Source is Uri source)
                 {
-                    if (baseUri != null && !baseUri.IsAbsoluteUri)
+                    if (source.IsAbsoluteUri)
                     {
-                        throw new ArgumentException("Base uri must be an absolute uri.", nameof(baseUri));
+                        Key = new FontFamilyKey(source);
                     }
-
-                    Key = new FontFamilyKey(source, baseUri);
+                    else
+                    {
+                        Key = new FontFamilyKey(source, baseUri);
+                    }
                 }
                 else
                 {
-                    if(baseUri != null && baseUri.IsResm())
+                    if(baseUri != null)
                     {
                         Key = new FontFamilyKey(baseUri);
                     }
