@@ -23,6 +23,8 @@
         <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
           <Label Content="_Font:" Target="{Binding ElementName=_font}" VerticalAlignment="Center" Margin="5,0,0,0" />
           <ComboBox Name="_font" ItemsSource="{Binding SystemFonts, Source={x:Static FontManager.Current}}" />
+          <Label Content="Fea_tures:" Target="{Binding ElementName=_features}" VerticalAlignment="Center" Margin="5,0,0,0" />
+          <TextBox Name="_features" VerticalAlignment="Center" Text="calt clig kern liga" />
           <Label Content="_Size:" Target="{Binding ElementName=_size}" VerticalAlignment="Center" Margin="5,0,0,0" />
           <TextBox Name="_size" VerticalAlignment="Center" Text="64" />
           <Button VerticalAlignment="Center" Click="OnNewWindowClick" ToolTip.Tip="New window" Margin="5,0,0,0">+</Button>
@@ -37,6 +39,7 @@
                                   
                                       Text="{Binding Text, ElementName=_text}"
                                       FontFamily="{Binding SelectedValue, ElementName=_font}"
+                                      FontFeatures="{Binding Text, ElementName=_features}"
                                       FontSize="{Binding Text, ElementName=_size}"
                                       Background="BlanchedAlmond"
                                       ExtentStroke="Black"
