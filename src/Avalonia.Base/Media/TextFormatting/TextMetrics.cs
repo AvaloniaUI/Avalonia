@@ -19,6 +19,8 @@
 
             LineGap = fontMetrics.LineGap * scale;
 
+            Baseline = -Ascent + LineGap * 0.5;
+
             LineHeight = Descent - Ascent + LineGap;
 
             UnderlineThickness = fontMetrics.UnderlineThickness * scale;
@@ -34,6 +36,8 @@
         /// Em size of font used to format and display text
         /// </summary>
         public double FontRenderingEmSize { get; }
+
+        public double Baseline { get; }
 
         /// <summary>
         /// Gets the recommended distance above the baseline.
