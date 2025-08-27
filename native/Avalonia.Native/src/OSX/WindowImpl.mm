@@ -16,6 +16,8 @@ WindowImpl::WindowImpl(IAvnWindowEvents *events) : TopLevelImpl(events), WindowB
     _extendClientHints = AvnDefaultChrome;
     _fullScreenActive = false;
     _canResize = true;
+    _canMinimize = true;
+    _canMaximize = true;
     _decorations = SystemDecorationsFull;
     _transitioningWindowState = false;
     _inSetWindowState = false;
@@ -191,7 +193,8 @@ bool WindowImpl::IsZoomed() {
 void WindowImpl::DoZoom() {
     if (_decorations == SystemDecorationsNone ||
         _decorations == SystemDecorationsBorderOnly ||
-        _canResize == false) {
+        _canResize == false ||
+        _canMaximize == false) {
         [Window setFrame:[Window screen].visibleFrame display:true];
     } else {
         [Window performZoom:Window];
@@ -206,6 +209,22 @@ HRESULT WindowImpl::SetCanResize(bool value) {
         UpdateAppearance();
         return S_OK;
     }
+}
+
+HRESULT WindowImpl::SetCanMinimize(bool value) {
+    START_COM_ARP_CALL;
+
+    _canMinimize = value;
+    UpdateAppearance();
+    return S_OK;
+}
+
+HRESULT WindowImpl::SetCanMaximize(bool value) {
+    START_COM_ARP_CALL;
+
+    _canMaximize = value;
+    UpdateAppearance();
+    return S_OK;
 }
 
 HRESULT WindowImpl::SetDecorations(SystemDecorations value) {
@@ -583,7 +602,7 @@ NSWindowStyleMask WindowImpl::CalculateStyleMask() {
             break;
     }
 
-    if (!IsOwned()) {
+    if (_canMinimize && !IsOwned()) {
         s |= NSWindowStyleMaskMiniaturizable;
     }
 
@@ -611,9 +630,9 @@ void WindowImpl::UpdateAppearance() {
     [closeButton setHidden:!hasTrafficLights];
     [closeButton setEnabled:_isEnabled];
     [miniaturizeButton setHidden:!hasTrafficLights];
-    [miniaturizeButton setEnabled:_isEnabled];
+    [miniaturizeButton setEnabled:_isEnabled && _canMinimize];
     [zoomButton setHidden:!hasTrafficLights];
-    [zoomButton setEnabled:CanZoom()];
+    [zoomButton setEnabled:CanZoom() || (([Window styleMask] & NSWindowStyleMaskFullScreen) != 0 && _isEnabled)];
 }
 
 extern IAvnWindow* CreateAvnWindow(IAvnWindowEvents*events)

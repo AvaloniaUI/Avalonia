@@ -379,6 +379,7 @@ namespace Avalonia.Controls
 
             FocusableProperty.OverrideDefaultValue<NumericUpDown>(true);
             IsTabStopProperty.OverrideDefaultValue<NumericUpDown>(false);
+            KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue<NumericUpDown>(KeyboardNavigationMode.Local);
         }
 
         /// <inheritdoc />
@@ -408,6 +409,7 @@ namespace Avalonia.Controls
             if (TextBox != null)
             {
                 TextBox.Text = Text;
+                TextBox[!TabIndexProperty] = this[!TabIndexProperty];
                 TextBox.PointerPressed += TextBoxOnPointerPressed;
                 _textBoxTextChangedSubscription = TextBox.GetObservable(TextBox.TextProperty).Subscribe(txt => TextBoxOnTextChanged());
             }

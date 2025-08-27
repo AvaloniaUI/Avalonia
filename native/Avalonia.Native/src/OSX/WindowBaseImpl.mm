@@ -450,7 +450,6 @@ HRESULT WindowBaseImpl::BeginDragAndDropOperation(AvnDragDropEffects effects, Av
         op |= NSDragOperationLink;
     if ((ieffects & (int) AvnDragDropEffects::Move) != 0)
         op |= NSDragOperationMove;
-    [View resetPressedMouseButtons];
     [View beginDraggingSessionWithItems:@[dragItem] event:nsevent
                                  source:CreateDraggingSource((NSDragOperation) op, cb, sourceHandle)];
     return S_OK;

@@ -1,29 +1,10 @@
-[![NuGet Stats](https://img.shields.io/nuget/v/XamlNameReferenceGenerator.svg)](https://www.nuget.org/packages/XamlNameReferenceGenerator) [![downloads](https://img.shields.io/nuget/dt/XamlNameReferenceGenerator)](https://www.nuget.org/packages/XamlNameReferenceGenerator) ![Build](https://github.com/avaloniaui/Avalonia.NameGenerator/workflows/Build/badge.svg) ![License](https://img.shields.io/github/license/avaloniaui/Avalonia.NameGenerator.svg) ![Size](https://img.shields.io/github/repo-size/avaloniaui/Avalonia.NameGenerator.svg)
-
 ### C# `SourceGenerator` for Typed Avalonia `x:Name` References 
 
 This is a [C# `SourceGenerator`](https://devblogs.microsoft.com/dotnet/introducing-c-source-generators/) built for generating strongly-typed references to controls with `x:Name` (or just `Name`) attributes declared in XAML (or, in `.axaml`). The source generator will look for the `xaml` (or `axaml`) file with the same name as your partial C# class that is a subclass of `Avalonia.INamed` and parses the XAML markup, finds all XAML tags with `x:Name` attributes and generates the C# code.
 
 ### Getting Started
 
-In order to get started, just install the NuGet package:
-
-```
-dotnet add package XamlNameReferenceGenerator
-```
-
-Or, if you are using [submodules](https://git-scm.com/docs/git-submodule), you can reference the generator as such:
-
-```xml
-<ItemGroup>
-    <!-- Remember to ensure XAML files are included via <AdditionalFiles>,
-         otherwise C# source generator won't see XAML files. -->
-    <AdditionalFiles Include="**\*.xaml"/>
-    <ProjectReference Include="..\Avalonia.NameGenerator\Avalonia.NameGenerator.csproj"
-                      OutputItemType="Analyzer"
-                      ReferenceOutputAssembly="false" />
-</ItemGroup>
-```
+In order to get started, just create project with Avalonia NuGet package:
 
 ### Usage
 
