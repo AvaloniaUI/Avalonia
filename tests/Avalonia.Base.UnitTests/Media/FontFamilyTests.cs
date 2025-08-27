@@ -185,5 +185,26 @@ namespace Avalonia.Base.UnitTests.Media
                 Assert.Equal(expectedUri, fontUri.AbsoluteUri);
             }
         }
+
+        [InlineData("avares://MyAssembly/", "Some/Path/#FontName", "avares://MyAssembly/Some/Path/"), ]
+        [InlineData("avares://MyAssembly/", "./Some/Path/#FontName", "avares://MyAssembly/Some/Path/")]
+        [InlineData("avares://MyAssembly/sub/", "../Some/Path/#FontName", "avares://MyAssembly/Some/Path/")]
+        [Theory]
+        public void Should_Parse_Relative_Path(string baseUriString, string path, string expected)
+        {
+            var baseUri = new Uri(baseUriString, UriKind.Absolute);
+
+            var fontFamily = FontFamily.Parse(path, baseUri);
+
+            Assert.NotNull(fontFamily.Key);
+
+            Assert.NotNull(fontFamily.Key.BaseUri);
+
+            Assert.NotNull(fontFamily.Key.Source);
+
+            var actual = new Uri(fontFamily.Key.BaseUri, fontFamily.Key.Source);
+
+            Assert.Equal(expected, actual.AbsoluteUri);
+        }
     }
 }

@@ -159,7 +159,7 @@ namespace Avalonia.Media
                             }
                             else
                             {
-                                if (path.StartsWith("/", StringComparison.Ordinal) && Uri.TryCreate(path, UriKind.Relative, out var source))
+                                if (path.Contains('/') && Uri.TryCreate(path, UriKind.Relative, out var source))
                                 {
                                     identifier = new FontSourceIdentifier(innerName, source);
                                 }
