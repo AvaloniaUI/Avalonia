@@ -37,6 +37,9 @@
         /// </summary>
         public double FontRenderingEmSize { get; }
 
+        /// <summary>
+        /// Gets the distance from the top to the baseline of the line of text.
+        /// </summary>
         public double Baseline { get; }
 
         /// <summary>
