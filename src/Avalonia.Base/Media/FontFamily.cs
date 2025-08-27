@@ -36,6 +36,11 @@ namespace Avalonia.Media
                 throw new ArgumentNullException(nameof(name));
             }
 
+            if (baseUri != null && !baseUri.IsAbsoluteUri)
+            {
+                throw new ArgumentException("Base uri must be an absolute uri.", nameof(baseUri));
+            }
+
             var fontSources = GetFontSourceIdentifier(name);
 
             FamilyNames = new FamilyNameCollection(fontSources);
@@ -46,20 +51,15 @@ namespace Avalonia.Media
 
                 if (singleSource.Source is Uri source)
                 {
-                    if (baseUri != null && !baseUri.IsAbsoluteUri)
+                    if (source.IsAbsoluteUri)
                     {
-                        throw new ArgumentException("Base uri must be an absolute uri.", nameof(baseUri));
+                        Key = new FontFamilyKey(source);
                     }
-
-                    Key = new FontFamilyKey(source, baseUri);
-                }
-                else
-                {
-                    if(baseUri != null && baseUri.IsAbsoluteUri)
+                    else
                     {
-                        Key = new FontFamilyKey(baseUri);
+                        Key = new FontFamilyKey(source, baseUri);
                     }
-                }
+                }               
             }
             else
             {
@@ -138,7 +138,7 @@ namespace Avalonia.Media
                 var segment = segments[i];
                 var innerSegments = segment.Split('#');
 
-                FontSourceIdentifier identifier;
+                FontSourceIdentifier identifier = new FontSourceIdentifier(name, null);
 
                 switch (innerSegments.Length)
                 {
@@ -159,19 +159,19 @@ namespace Avalonia.Media
                             }
                             else
                             {
-                                var source = path.StartsWith("/", StringComparison.Ordinal)
-                                   ? new Uri(path, UriKind.Relative)
-                                   : new Uri(path, UriKind.RelativeOrAbsolute);
+                                if (path.Contains('/') && Uri.TryCreate(path, UriKind.Relative, out var source))
+                                {
+                                    identifier = new FontSourceIdentifier(innerName, source);
+                                }
+                                else
+                                {
+                                    if (Uri.TryCreate(path, UriKind.Absolute, out source))
+                                    {
+                                        identifier = new FontSourceIdentifier(innerName, source);
+                                    }
+                                }
+                            }
 
-                                identifier = new FontSourceIdentifier(innerName, source);
-                            }                              
-
-                            break;
-                        }
-
-                    default:
-                        {
-                            identifier = new FontSourceIdentifier(name, null);
                             break;
                         }
                 }

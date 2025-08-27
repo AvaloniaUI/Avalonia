@@ -273,8 +273,6 @@ namespace Avalonia.Media
             //Try to match against fallbacks first
             if (fontFamily?.Key != null)
             {
-                var fontUri = fontFamily.Key.Source.EnsureAbsolute(fontFamily.Key.BaseUri);
-
                 if (fontFamily.Key is CompositeFontFamilyKey compositeKey)
                 {
                     for (int i = 0; i < compositeKey.Keys.Count; i++)
@@ -295,6 +293,8 @@ namespace Avalonia.Media
                         }
                     }
                 }
+
+                var fontUri = fontFamily.Key.Source.EnsureAbsolute(fontFamily.Key.BaseUri);
 
                 if (fontUri.IsFontCollection())
                 {
