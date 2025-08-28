@@ -409,5 +409,23 @@ namespace Avalonia.Skia.UnitTests.Media
                 }
             }
         }
+
+        [InlineData("Arial")]
+        [InlineData("#Arial")]
+        [Win32Theory("Windows specific font")]
+        public void Should_Get_SystemFont_With_BaseUri(string name)
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                using (AvaloniaLocator.EnterScope())
+                {
+                    var fontFamily = new FontFamily(new Uri("avares://Avalonia.Skia.UnitTests/NotFound"), name);
+
+                    var glyphTypeface = new Typeface(fontFamily).GlyphTypeface;
+
+                    Assert.Equal("Arial", glyphTypeface.FamilyName);
+                }
+            }
+        }
     }
 }
