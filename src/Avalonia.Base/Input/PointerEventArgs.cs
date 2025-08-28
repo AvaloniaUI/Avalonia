@@ -7,7 +7,7 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Input
 {
-    public class PointerEventArgs : RoutedEventArgs
+    public class PointerEventArgs : RoutedEventArgs, IKeyModifiersEventArgs
     {
         private readonly Visual? _rootVisual;
         private readonly Point _rootVisualPosition;
