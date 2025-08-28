@@ -1,11 +1,12 @@
-﻿using OpenQA.Selenium;
+﻿using System;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
 using Xunit;
 
 namespace Avalonia.IntegrationTests.Appium
 {
     [Collection("Default")]
-    public abstract class MenuTests : TestBase
+    public abstract class MenuTests : TestBase, IDisposable
     {
         public MenuTests(DefaultAppFixture fixture)
             : base(fixture, "Menu")
@@ -17,11 +18,18 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal("None", clickedMenuItem.Text);
         }
 
+        public void Dispose()
+        {
+            // Click the reset button so that any menu still open gets closed
+            var reset = Session.FindElementByAccessibilityId("MenuClickedMenuItemReset");
+            reset?.Click();
+        }
+
         [Fact]
         public void Click_Child()
         {
             var rootMenuItem = Session.FindElementByAccessibilityId("RootMenuItem");
-            
+
             rootMenuItem.SendClick();
 
             var childMenuItem = Session.FindElementByAccessibilityId("Child1MenuItem");
@@ -35,7 +43,7 @@ namespace Avalonia.IntegrationTests.Appium
         public void Click_Grandchild()
         {
             var rootMenuItem = Session.FindElementByAccessibilityId("RootMenuItem");
-            
+
             rootMenuItem.SendClick();
 
             var childMenuItem = Session.FindElementByAccessibilityId("Child2MenuItem");
