@@ -349,6 +349,18 @@ namespace Avalonia.Media
 
                     if (distance > currentX && distance <= currentX + advance)
                     {
+                        for(; index + 1 < _glyphInfos.Count;)
+                        {
+                            var nextGlyphInfo = _glyphInfos[++index];
+
+                            if(nextGlyphInfo.GlyphAdvance > 0)
+                            {
+                                break;
+                            }
+
+                            characterIndex = nextGlyphInfo.GlyphCluster;
+                        }
+                            
                         break;
                     }
 

@@ -222,6 +222,30 @@ namespace Avalonia.Skia.UnitTests.Media
         }
 
         [Fact]
+        public void Should_CharacterHit_From_Distance_Zero_Width()
+        {
+            const string df7Font = "resm:Avalonia.Skia.UnitTests.Fonts?assembly=Avalonia.Skia.UnitTests#DF7segHMI";
+            const string text = "3,47-=?:#";
+
+            using (Start())
+            {
+                var typeface = new Typeface(df7Font);
+                var options = new TextShaperOptions(typeface.GlyphTypeface, 14, 0);
+                var shapedBuffer = TextShaper.Current.ShapeText(text, options);
+
+                Assert.NotEmpty(shapedBuffer);
+
+                var firstGlyphInfo = shapedBuffer[0];
+
+                var glyphRun = CreateGlyphRun(shapedBuffer);
+
+                var characterHit = glyphRun.GetCharacterHitFromDistance(firstGlyphInfo.GlyphAdvance, out _);
+
+                Assert.Equal(2, characterHit.FirstCharacterIndex + characterHit.TrailingLength);
+            }
+        }
+
+        [Fact]
         public void Should_Get_Distance_From_CharacterHit_Zero_Width()
         {
             const string text = "נִקּוּד";

@@ -1868,6 +1868,103 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Fact]
+        public void Should_GetTextBounds_For_Multiple_TextRuns()
+        {
+            var text = "Test👩🏽‍🚒";
+
+            using (Start())
+            {
+                var typeface = Typeface.Default;
+
+                var defaultProperties = new GenericTextRunProperties(typeface, 12);
+
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(FlowDirection.LeftToRight, TextAlignment.Left,
+                        true, true, defaultProperties, TextWrapping.NoWrap, 0, 0, 0));
+
+                Assert.NotNull(textLine);
+
+                var result = textLine.GetTextBounds(0, 11);
+
+                Assert.Equal(1, result.Count);
+
+                var firstBounds = result[0];
+
+                Assert.NotEmpty(firstBounds.TextRunBounds);
+
+                Assert.Equal(textLine.WidthIncludingTrailingWhitespace, firstBounds.Rectangle.Width, 2);
+            }
+        }
+
+        [Fact]
+        public void Blubb()
+        {
+            var text = "Test👩🏽‍🚒";
+
+            using (Start())
+            {
+                var typeface = Typeface.Default;
+
+                var defaultProperties = new GenericTextRunProperties(typeface, 12);
+
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(FlowDirection.LeftToRight, TextAlignment.Left,
+                        true, true, defaultProperties, TextWrapping.NoWrap, 0, 0, 0));
+
+                Assert.NotNull(textLine);
+
+                var textPosition = 0;
+
+                while(textPosition < text.Length)
+                {
+                    var bounds = textLine.GetTextBounds(textPosition, 1);
+
+                    Assert.Equal(1, bounds.Count);
+
+                    var firstBounds = bounds[0];
+
+                    Assert.Equal(1, firstBounds.TextRunBounds.Count);
+
+                    var firstRunBounds = firstBounds.TextRunBounds[0];
+
+                    Assert.Equal(textPosition, firstRunBounds.TextSourceCharacterIndex);
+
+                    var expectedDistance = firstRunBounds.Rectangle.Left;
+
+                    var characterHit = new CharacterHit(textPosition);
+
+                    var distance = textLine.GetDistanceFromCharacterHit(characterHit);
+
+                    Assert.Equal(expectedDistance, distance, 2);
+
+                    var nextCharacterHit = textLine.GetNextCaretCharacterHit(characterHit);
+
+                    var expectedNextPosition = textPosition + firstRunBounds.Length;
+
+                    var nextPosition = nextCharacterHit.FirstCharacterIndex + nextCharacterHit.TrailingLength;
+
+                    Assert.Equal(expectedNextPosition, nextPosition);
+
+                    var previousCharacterHit = textLine.GetPreviousCaretCharacterHit(nextCharacterHit);
+
+                    Assert.Equal(characterHit, previousCharacterHit);
+
+                    textPosition += firstRunBounds.Length;
+                }
+            }
+        }
+
         private class FixedRunsTextSource : ITextSource
         {
             private readonly IReadOnlyList<TextRun> _textRuns;
