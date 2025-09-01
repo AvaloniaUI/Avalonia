@@ -1561,7 +1561,7 @@ namespace Avalonia.Controls.UnitTests
         [InlineData(0.5d,
             0, 7,
             0, 7,
-            0, 9)]
+            7, 17)]
         public void Focused_Container_Is_Positioned_Correctly_when_Container_Size_Change_Causes_It_To_Be_Moved_Into_Visible_Viewport(double bufferFactor, 
             int firstIndex1, int lastIndex1,
             int firstIndex2, int lastIndex2,
