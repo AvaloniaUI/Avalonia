@@ -349,7 +349,7 @@ namespace Avalonia.Media
 
                     if (distance > currentX && distance <= currentX + advance)
                     {
-                        for(; index + 1 < _glyphInfos.Count;)
+                        while (index + 1 < _glyphInfos.Count)
                         {
                             var nextGlyphInfo = _glyphInfos[++index];
 

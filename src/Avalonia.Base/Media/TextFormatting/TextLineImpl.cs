@@ -494,7 +494,7 @@ namespace Avalonia.Media.TextFormatting
 
                     var nextRun = nextIndexedRun.TextRun;
 
-                    if(nextRun is null)
+                    if (nextRun is null)
                     {
                         break;
                     }
