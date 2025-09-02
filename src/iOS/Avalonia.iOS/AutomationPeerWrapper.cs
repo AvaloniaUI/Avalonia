@@ -10,7 +10,7 @@ using UIKit;
 
 namespace Avalonia.iOS
 {
-    internal class AutomationPeerWrapper : UIAccessibilityElement
+    public class AutomationPeerWrapper : UIAccessibilityElement, IUIAccessibilityContainer
     {
         private static readonly IReadOnlyDictionary<AutomationProperty, Action<AutomationPeerWrapper>> s_propertySetters =
             new Dictionary<AutomationProperty, Action<AutomationPeerWrapper>>()
@@ -27,18 +27,88 @@ namespace Avalonia.iOS
             };
 
         private readonly AvaloniaView _view;
+
         private readonly AutomationPeer _peer;
 
-        public AutomationPeerWrapper(AvaloniaView view, AutomationPeer? peer = null) : base(view)
+        private List<AutomationPeer?> _childrenList;
+        private Dictionary<AutomationPeer, AutomationPeerWrapper> _childrenMap;
+
+        [Export("accessibilityContainerType")]
+        public UIAccessibilityContainerType AccessibilityContainerType { get; set; }
+
+        private AutomationPeerWrapper(NSObject container, AvaloniaView view, AutomationPeer peer) : base(container)
         {
             _view = view;
-            _peer = peer ?? ControlAutomationPeer.CreatePeerForElement(view.TopLevel);
+            _peer = peer;
 
-            _peer.PropertyChanged += PeerPropertyChanged;
             _peer.ChildrenChanged += PeerChildrenChanged;
+            _peer.PropertyChanged += PeerPropertyChanged;
 
-            AccessibilityContainer = _view;
-            AccessibilityIdentifier = _peer.GetAutomationId();
+            _childrenList = new();
+            _childrenMap = new();
+        }
+
+        public AutomationPeerWrapper(AvaloniaView view, AutomationPeer peer) : base(view)
+        {
+            _view = view;
+            _peer = peer;
+
+            _peer.ChildrenChanged += PeerChildrenChanged;
+            _peer.PropertyChanged += PeerPropertyChanged;
+
+            _childrenList = new();
+            _childrenMap = new();
+        }
+
+        [Export("accessibilityElementCount")]
+        public nint AccessibilityElementCount()
+        {
+            UpdateChildren();
+            return _childrenList.Count;
+        }
+
+        [Export("accessibilityElementAtIndex:")]
+        public NSObject GetAccessibilityElementAt(nint index)
+        {
+            AutomationPeer? child = _childrenList[(int)index];
+            if (child is not null)
+            {
+                return _childrenMap[child];
+            }
+            else
+            {
+                throw new ArgumentNullException();
+            }
+        }
+
+        [Export("indexOfAccessibilityElement:")]
+        public nint GetIndexOfAccessibilityElement(NSObject element)
+        {
+            int indexOf = _childrenList.IndexOf((element as AutomationPeerWrapper)?._peer);
+            return indexOf < 0 ? NSRange.NotFound : indexOf;
+        }
+
+        void UpdateChildren()
+        {
+            foreach (AutomationPeer child in _peer.GetChildren())
+            {
+                AutomationPeerWrapper? wrapper;
+                if (!_childrenMap.TryGetValue(child, out wrapper) && !child.IsOffscreen())
+                {
+                    wrapper = new(this, _view, child);
+                    _childrenList.Add(child);
+                    _childrenMap.Add(child, wrapper);
+                }
+                else if (child.IsOffscreen())
+                {
+                    _childrenList.Remove(child);
+                    _childrenMap.Remove(child);
+                    continue;
+                }
+
+                wrapper?.UpdatePropertiesAndAccessibility();
+                wrapper?.UpdateTraits();
+            }
         }
 
         private static void UpdateName(AutomationPeerWrapper self)
@@ -96,7 +166,7 @@ namespace Avalonia.iOS
 
         private void PeerChildrenChanged(object? sender, EventArgs e)
         {
-            _view.UpdateChildren(_peer);
+            UpdateChildren();
             UIAccessibility.PostNotification(UIAccessibilityPostNotification.ScreenChanged, null);
         }
 
@@ -118,16 +188,27 @@ namespace Avalonia.iOS
             }
         }
 
-        public bool UpdatePropertiesIfValid()
+        public void UpdatePropertiesAndAccessibility()
         {
-            if (_peer.IsContentElement() && !_peer.IsOffscreen())
+            UpdateProperties(s_propertySetters.Keys.ToArray());
+
+            if (_peer.GetChildren().Count == 0)
             {
-                UpdateProperties(s_propertySetters.Keys.ToArray());
-                return IsAccessibilityElement = true;
+                AccessibilityContainerType = UIAccessibilityContainerType.None;
             }
             else
             {
-                return IsAccessibilityElement = false;
+                AccessibilityContainerType = UIAccessibilityContainerType.SemanticGroup;
+            }
+
+            if (_peer.IsContentElement() && !_peer.IsOffscreen() &&
+                (_peer.GetName().Length > 0 || _peer.IsKeyboardFocusable()))
+            {
+                IsAccessibilityElement = true;
+            }
+            else
+            {
+                IsAccessibilityElement = false;
             }
         }
 
