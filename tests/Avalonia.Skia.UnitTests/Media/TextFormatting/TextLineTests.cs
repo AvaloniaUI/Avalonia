@@ -1639,7 +1639,6 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
         
-
         [Fact]
         public void Should_GetTextBounds_NotInfiniteLoop()
         {
@@ -1903,7 +1902,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         }
 
         [Fact]
-        public void Blubb()
+        public void Should_GetTextBounds_Within_Cluster_2()
         {
             var text = "Test👩🏽‍🚒";
 
@@ -1961,6 +1960,141 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     Assert.Equal(characterHit, previousCharacterHit);
 
                     textPosition += firstRunBounds.Length;
+                }
+            }
+        }
+
+        [Fact]
+        public void Should_Get_TextBounds_With_Mixed_Runs_Within_Cluster()
+        {
+            using (Start())
+            {
+                const string manropeFont = "resm:Avalonia.Skia.UnitTests.Fonts?assembly=Avalonia.Skia.UnitTests#Manrope";
+
+                var typeface = new Typeface(manropeFont);
+
+                var defaultProperties = new GenericTextRunProperties(typeface);
+                var text = "Fotografin";
+                var shaperOption = new TextShaperOptions(typeface.GlyphTypeface);
+
+                var firstRun = new ShapedTextRun(TextShaper.Current.ShapeText(text, shaperOption), defaultProperties);
+
+                var textRuns = new List<TextRun>
+                {
+                    new CustomDrawableRun(),
+                    new CustomDrawableRun(),
+                    firstRun,
+                    new CustomDrawableRun(),
+                };
+
+                var textSource = new FixedRunsTextSource(textRuns);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
+
+                var textBounds = textLine.GetTextBounds(10, 1);
+
+                Assert.Equal(1, textBounds.Count);
+
+                var firstBounds = textBounds[0];
+
+                Assert.NotEmpty(firstBounds.TextRunBounds);
+
+                var firstRunBounds = firstBounds.TextRunBounds[0];
+
+                Assert.Equal(1, firstRunBounds.Length);
+            }
+        }
+
+        [Fact]
+        public void Should_Get_TextBounds_Tamil()
+        {
+            var text = "எடுத்துக்காட்டு வழி வினவல்";
+
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var textSource = new SingleBufferTextSource(text, defaultProperties, true);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(FlowDirection.LeftToRight, TextAlignment.Left,
+                        true, true, defaultProperties, TextWrapping.NoWrap, 0, 0, 0));
+
+                Assert.NotNull(textLine);
+
+                Assert.NotEmpty(textLine.TextRuns);
+
+                var firstRun = textLine.TextRuns[0] as ShapedTextRun;
+
+                Assert.NotNull(firstRun);
+
+                var clusterWidth = new List<double>();
+                var distances = new List<double>();
+                var clusters = new List<int>();
+                var lastCluster = -1;
+                var currentDistance = 0.0;
+                var currentAdvance = 0.0;
+
+                foreach (var glyphInfo in firstRun.ShapedBuffer)
+                {
+                    if(lastCluster != glyphInfo.GlyphCluster)
+                    {
+                        clusterWidth.Add(currentAdvance);
+                        distances.Add(currentDistance);
+                        clusters.Add(glyphInfo.GlyphCluster);
+
+                        currentAdvance = 0;
+                    }
+
+                    lastCluster = glyphInfo.GlyphCluster;
+                    currentDistance += glyphInfo.GlyphAdvance;
+                    currentAdvance += glyphInfo.GlyphAdvance;
+                }
+
+                clusterWidth.RemoveAt(0);
+
+                clusterWidth.Add(currentAdvance);
+
+                for (var i = 6; i < clusters.Count; i++)
+                {
+                    var cluster = clusters[i];
+                    var expectedDistance = distances[i];
+                    var expectedWidth = clusterWidth[i];
+
+                    var actualDistance = textLine.GetDistanceFromCharacterHit(new CharacterHit(cluster));
+
+                    Assert.Equal(expectedDistance, actualDistance, 2);
+
+                    var characterHit = textLine.GetCharacterHitFromDistance(expectedDistance);
+
+                    var textPosition = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
+
+                    Assert.Equal(cluster, textPosition);
+
+                    var bounds = textLine.GetTextBounds(cluster, 1);
+
+                    Assert.NotNull(bounds);
+                    Assert.NotEmpty(bounds);
+
+                    var firstBounds = bounds[0];
+
+                    Assert.NotEmpty(firstBounds.TextRunBounds);
+
+                    var firstRunBounds = firstBounds.TextRunBounds[0];
+
+                    Assert.Equal(cluster, firstRunBounds.TextSourceCharacterIndex);
+
+                    var width = firstRunBounds.Rectangle.Width;
+
+                    Assert.Equal(expectedWidth, width, 2);
                 }
             }
         }

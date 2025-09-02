@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
+using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -301,6 +302,80 @@ namespace Avalonia.Skia.UnitTests.Media
 
                     characterHit = previousCharacterHit;
                 }
+            }
+        }
+
+        [Fact]
+        public void Should_Get_Distance_From_CharacterHit_Within_Cluster()
+        {
+            var text = "எடுத்துக்காட்டு வழி வினவல்";
+
+            using (Start())
+            {
+                var cp = Codepoint.ReadAt(text, 0, out _);
+
+                Assert.True(FontManager.Current.TryMatchCharacter(cp, FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, null, null, out var typeface));
+
+                var options = new TextShaperOptions(typeface.GlyphTypeface, 12);
+
+                var shapedBuffer = TextShaper.Current.ShapeText(text, options);
+
+                var glyphRun = CreateGlyphRun(shapedBuffer);
+
+                var clusterWidth = new List<double>();
+                var distances = new List<double>();
+                var clusters = new List<int>();
+                var lastCluster = -1;
+                var currentDistance = 0.0;
+                var currentAdvance = 0.0;
+
+                foreach (var glyphInfo in shapedBuffer)
+                {
+                    if (lastCluster != glyphInfo.GlyphCluster)
+                    {
+                        clusterWidth.Add(currentAdvance);
+                        distances.Add(currentDistance);
+                        clusters.Add(glyphInfo.GlyphCluster);
+
+                        currentAdvance = 0;
+                    }
+
+                    lastCluster = glyphInfo.GlyphCluster;
+                    currentDistance += glyphInfo.GlyphAdvance;
+                    currentAdvance += glyphInfo.GlyphAdvance;
+                }
+
+                clusterWidth.RemoveAt(0);
+
+                clusterWidth.Add(currentAdvance);
+
+                var expectedLeftHit = new CharacterHit(11);
+
+                var distance = glyphRun.GetDistanceFromCharacterHit(expectedLeftHit);
+
+                var expectedLeft = distances[6];
+
+                Assert.Equal(expectedLeft, distance);
+
+                var leftHit = glyphRun.GetCharacterHitFromDistance(expectedLeft, out _);
+
+                Assert.Equal(11, leftHit.FirstCharacterIndex + leftHit.TrailingLength);
+
+                var expectedRight = distances[7];
+
+                distance = glyphRun.GetDistanceFromCharacterHit(new CharacterHit(12));
+
+                Assert.Equal(expectedRight, distance);
+
+                var expectedRightHit = new CharacterHit(13);
+
+                distance = glyphRun.GetDistanceFromCharacterHit(expectedRightHit);
+
+                Assert.Equal(expectedRight, distance);
+
+                var rightHit = glyphRun.GetCharacterHitFromDistance(expectedRight, out _);
+
+                Assert.Equal(13, rightHit.FirstCharacterIndex + rightHit.TrailingLength);
             }
         }
 

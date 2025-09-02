@@ -469,7 +469,6 @@ namespace Avalonia.Media.TextFormatting
 
             var directionalWidth = 0.0;
             var firstRunIndex = currentIndexedRun.RunIndex;
-            var lastRunIndex = firstRunIndex;
 
             var currentDirection = GetDirection(currentTextRun, _resolvedFlowDirection);
 
@@ -480,40 +479,7 @@ namespace Avalonia.Media.TextFormatting
                 directionalWidth = currentDrawable.Size.Width;
             }
 
-            if (currentTextRun is not TextEndOfLine)
-            {
-                // Find consecutive runs of same direction
-                while (indexedRunIndex + 1 < _indexedTextRuns.Count)
-                {
-                    var nextIndexedRun = _indexedTextRuns[++indexedRunIndex];
-
-                    if (nextIndexedRun.RunIndex != lastRunIndex + 1)
-                    {
-                        break;
-                    }
-
-                    var nextRun = nextIndexedRun.TextRun;
-
-                    if (nextRun is null)
-                    {
-                        break;
-                    }
-
-                    var nextDirection = GetDirection(nextRun, currentDirection);
-
-                    if (currentDirection != nextDirection)
-                    {
-                        break;
-                    }
-
-                    if (nextRun is DrawableTextRun nextDrawable)
-                    {
-                        directionalWidth += nextDrawable.Size.Width;
-                    }
-
-                    lastRunIndex = nextIndexedRun.RunIndex;
-                }
-            }
+            var lastRunIndex = GetLastDirectionalRunIndex(indexedRunIndex, currentDirection, ref directionalWidth);
 
             switch (currentDirection)
             {
@@ -591,6 +557,71 @@ namespace Avalonia.Media.TextFormatting
             return GetPreviousCharacterHit(characterHit, true);
         }
 
+        private static FlowDirection GetRunDirection(TextRun? textRun, FlowDirection currentDirection)
+        {
+            if (textRun is ShapedTextRun shapedTextRun)
+            {
+                return shapedTextRun.ShapedBuffer.IsLeftToRight ?
+                    FlowDirection.LeftToRight :
+                    FlowDirection.RightToLeft;
+            }
+
+            return currentDirection;
+        }
+
+        /// <summary>
+        /// Get the last consecutive visual run index that shares the same direction as the current direction.
+        /// </summary>
+        /// <param name="indexedRunIndex">The current logical run's index.</param>
+        /// <param name="flowDirection">The current flow direction.</param>
+        /// <param name="directionalWidth">The current directional width.</param>
+        /// <returns>
+        /// The last consecutive visual run index that shares the same direction as the current direction.
+        /// </returns>
+        private int GetLastDirectionalRunIndex(int indexedRunIndex, FlowDirection flowDirection, ref double directionalWidth)
+        {
+            if(_indexedTextRuns is null)
+            {
+                return -1;
+            }
+
+            var lastRunIndex = _indexedTextRuns[indexedRunIndex].RunIndex;
+
+            // Find consecutive runs of same direction
+            while (indexedRunIndex + 1 < _indexedTextRuns.Count)
+            {
+                var nextIndexedRun = _indexedTextRuns[++indexedRunIndex];
+
+                if (nextIndexedRun.RunIndex != lastRunIndex + 1)
+                {
+                    break;
+                }
+
+                var nextRun = nextIndexedRun.TextRun;
+
+                if (nextRun is null)
+                {
+                    break;
+                }
+
+                var nextDirection = GetRunDirection(nextRun, flowDirection);
+
+                if (nextDirection != flowDirection)
+                {
+                    break;
+                }
+
+                if (nextRun is DrawableTextRun nextDrawable)
+                {
+                    directionalWidth += nextDrawable.Size.Width;
+                }
+
+                lastRunIndex = nextIndexedRun.RunIndex;
+            }
+
+            return lastRunIndex;
+        }
+
         public override IReadOnlyList<TextBounds> GetTextBounds(int firstTextSourceIndex, int textLength)
         {
             if(textLength == 0)
@@ -610,7 +641,7 @@ namespace Avalonia.Media.TextFormatting
             if (firstTextSourceIndex + textLength < FirstTextSourceIndex)
             {
                 var indexedTextRun = _indexedTextRuns[0];
-                var currentDirection = GetDirection(indexedTextRun.TextRun, _resolvedFlowDirection);
+                var currentDirection = GetRunDirection(indexedTextRun.TextRun, _resolvedFlowDirection);
 
                 return [new TextBounds(new Rect(0,0,0, Height), currentDirection, [])];
             }
@@ -619,7 +650,7 @@ namespace Avalonia.Media.TextFormatting
             if (firstTextSourceIndex >= FirstTextSourceIndex + Length)
             {
                 var indexedTextRun = _indexedTextRuns[_indexedTextRuns.Count - 1];
-                var currentDirection = GetDirection(indexedTextRun.TextRun, _resolvedFlowDirection);
+                var currentDirection = GetRunDirection(indexedTextRun.TextRun, _resolvedFlowDirection);
 
                 return [new TextBounds(new Rect(WidthIncludingTrailingWhitespace, 0, 0, Height), currentDirection, [])];
             }
@@ -644,7 +675,7 @@ namespace Avalonia.Media.TextFormatting
                     break;
                 }
 
-                var currentDirection = GetDirection(currentTextRun, _resolvedFlowDirection);
+                var currentDirection = GetRunDirection(currentTextRun, _resolvedFlowDirection);
 
                 if (currentIndexedRun.TextSourceCharacterIndex + currentTextRun.Length <= firstTextSourceIndex)
                 {
@@ -662,39 +693,7 @@ namespace Avalonia.Media.TextFormatting
                 }
     
                 var firstRunIndex = currentIndexedRun.RunIndex;
-                var lastRunIndex = firstRunIndex;
-
-                // Find consecutive runs of same direction
-                while (indexedRunIndex + 1 < _indexedTextRuns.Count)
-                {
-                    var nextIndexedRun = _indexedTextRuns[++indexedRunIndex];
-
-                    if (nextIndexedRun.RunIndex != lastRunIndex + 1)
-                    {
-                        break;
-                    }
-
-                    var nextRun = nextIndexedRun.TextRun;
-
-                    if (nextRun is null)
-                    {
-                        break;
-                    }
-
-                    var nextDirection = GetDirection(nextRun, currentDirection);
-
-                    if (currentDirection != nextDirection)
-                    {
-                        break;
-                    }
-
-                    if (nextRun is DrawableTextRun nextDrawable)
-                    {
-                        directionalWidth += nextDrawable.Size.Width;
-                    }
-
-                    lastRunIndex = nextIndexedRun.RunIndex;
-                }    
+                var lastRunIndex = GetLastDirectionalRunIndex(indexedRunIndex, currentDirection, ref directionalWidth);
 
                 TextBounds currentBounds;
                 int coveredLength;
@@ -741,18 +740,6 @@ namespace Avalonia.Media.TextFormatting
             result.Sort(TextBoundsComparer);
 
             return result;
-
-            static FlowDirection GetDirection(TextRun? textRun, FlowDirection currentDirection)
-            {
-                if (textRun is ShapedTextRun shapedTextRun)
-                {
-                    return shapedTextRun.ShapedBuffer.IsLeftToRight ?
-                        FlowDirection.LeftToRight :
-                        FlowDirection.RightToLeft;
-                }
-
-                return currentDirection;
-            }
 
             IndexedTextRun FindIndexedRun(out int index)
             {
@@ -1097,15 +1084,16 @@ namespace Avalonia.Media.TextFormatting
             //Cluster boundary correction
             if (runOffset > 0)            
             {   
-                var previousCharacterHit = currentRun.GlyphRun.GetPreviousCaretCharacterHit(new CharacterHit(startIndex -  runOffset));
-                var nextCharacterHit = currentRun.GlyphRun.GetNextCaretCharacterHit(previousCharacterHit);
+                var characterHit = currentRun.GlyphRun.FindNearestCharacterHit(startIndex, out _);
 
-                var clusterLength = nextCharacterHit.FirstCharacterIndex + nextCharacterHit.TrailingLength - (previousCharacterHit.FirstCharacterIndex + previousCharacterHit.TrailingLength);
+                var clusterStart = characterHit.FirstCharacterIndex;
+                var clusterEnd = clusterStart + characterHit.TrailingLength;
 
-                if (clusterLength > runOffset)
+                //Test against left and right edge
+                if (clusterStart < startIndex && clusterEnd > startIndex)
                 {
                     //Remember the cluster correction offset
-                    clusterOffset = clusterLength - runOffset;
+                    clusterOffset = startIndex - clusterStart;
 
                     //Move to the start of the cluster
                     startIndex -= clusterOffset;
@@ -1173,18 +1161,16 @@ namespace Avalonia.Media.TextFormatting
             //Cluster boundary correction
             if (runOffset > 0)
             {
-                var previousCharacterHit =
-                    currentRun.GlyphRun.GetPreviousCaretCharacterHit(new CharacterHit(startIndex - runOffset));
-                var nextCharacterHit = currentRun.GlyphRun.GetNextCaretCharacterHit(previousCharacterHit);
+                var characterHit = currentRun.GlyphRun.FindNearestCharacterHit(startIndex, out _);
 
-                var clusterLength =
-                    nextCharacterHit.FirstCharacterIndex + nextCharacterHit.TrailingLength -
-                    (previousCharacterHit.FirstCharacterIndex + previousCharacterHit.TrailingLength);
+                var clusterStart = characterHit.FirstCharacterIndex;
+                var clusterEnd = clusterStart + characterHit.TrailingLength;
 
-                if (clusterLength > runOffset)
+                //Test against left and right edge
+                if (clusterStart < startIndex && clusterEnd > startIndex)
                 {
                     //Remember the cluster correction offset
-                    clusterOffset = clusterLength - runOffset;
+                    clusterOffset = startIndex - clusterStart;
 
                     //Move to the start of the cluster
                     startIndex -= clusterOffset;
@@ -1195,16 +1181,16 @@ namespace Avalonia.Media.TextFormatting
             var startOffset = currentRun.GlyphRun.GetDistanceFromCharacterHit(new CharacterHit(startIndex));
             var endOffset = currentRun.GlyphRun.GetDistanceFromCharacterHit(new CharacterHit(endIndex));
 
+            //We need the distance from right to left and GetDistanceFromCharacterHit returs a distance from left to right so we need to adjust the offsets
+            startX -= currentRun.Size.Width - startOffset;
+            endX -= currentRun.Size.Width - endOffset;
+
             // Preserve non-zero width for zero-advance ranges
             if (startOffset == endOffset && startIndex != endIndex)
             {
                 //We need to make sure a zero width text line is hit test at the end so we add some delta
                 endOffset += MathUtilities.DoubleEpsilon;
             }
-        
-            // Map offsets to visual coordinates using the provided endX (right edge)
-            var visualStartX = endX - (currentRun.Size.Width - startOffset);
-            var visualEndX = endX - (currentRun.Size.Width - endOffset);
 
             //Hit test against visual positions
             var startHit = currentRun.GlyphRun.GetCharacterHitFromDistance(startOffset, out _);
@@ -1216,17 +1202,17 @@ namespace Avalonia.Media.TextFormatting
             var characterLength = Math.Max(0, Math.Abs(startHitIndex - endHitIndex) - clusterOffset);
 
             // Normalize bounds
-            if (visualEndX < visualStartX)
+            if (endX < startX)
             {
-                (visualEndX, visualStartX) = (visualStartX, visualEndX);
-            }           
+                (endX, startX) = (startX, endX);
+            }
 
-            var runWidth = visualEndX - visualStartX;
+            var runWidth = endX - startX;
 
             //We need to adjust the local position to the text source
             var textSourceIndex = textSourceOffset + startHitIndex + clusterOffset;
 
-            return new TextRunBounds(new Rect(visualStartX, 0, runWidth, Height), textSourceIndex, characterLength, currentRun);
+            return new TextRunBounds(new Rect(startX, 0, runWidth, Height), textSourceIndex, characterLength, currentRun);
         }
 
         public override void Dispose()

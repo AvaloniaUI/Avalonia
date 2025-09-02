@@ -243,6 +243,7 @@ namespace Avalonia.Media
         public double GetDistanceFromCharacterHit(CharacterHit characterHit)
         {
             var characterIndex = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
+            var isTrailingHit = characterHit.TrailingLength > 0;
 
             var distance = 0.0;
 
@@ -260,10 +261,28 @@ namespace Avalonia.Media
 
                 var glyphIndex = FindGlyphIndex(characterIndex);
 
-                var currentCluster = _glyphInfos[glyphIndex].GlyphCluster;
+                var glyphInfo = _glyphInfos[glyphIndex];
+
+                var currentCluster = glyphInfo.GlyphCluster;
+
+                var inClusterHit = currentCluster < characterIndex;
+
+                //For in cluster hits we need to move to the start of the next cluster.
+                if (inClusterHit)
+                {
+                    for(; glyphIndex < _glyphInfos.Count; glyphIndex++)
+                    {
+                        if (_glyphInfos[glyphIndex].GlyphCluster > characterIndex)
+                        {
+                            break;
+                        }
+                    }
+
+                    isTrailingHit = false;
+                }
 
                 //Move to the end of the glyph cluster
-                if (characterHit.TrailingLength > 0)
+                if (isTrailingHit)
                 {
                     while (glyphIndex + 1 < _glyphInfos.Count && _glyphInfos[glyphIndex + 1].GlyphCluster == currentCluster)
                     {
@@ -347,20 +366,8 @@ namespace Avalonia.Media
 
                     characterIndex = glyphInfo.GlyphCluster;
 
-                    if (distance > currentX && distance <= currentX + advance)
-                    {
-                        while (index + 1 < _glyphInfos.Count)
-                        {
-                            var nextGlyphInfo = _glyphInfos[++index];
-
-                            if(nextGlyphInfo.GlyphAdvance > 0)
-                            {
-                                break;
-                            }
-
-                            characterIndex = nextGlyphInfo.GlyphCluster;
-                        }
-                            
+                    if (currentX + advance > distance)
+                    {                            
                         break;
                     }
 
