@@ -192,22 +192,15 @@ namespace Avalonia.iOS
         {
             UpdateProperties(s_propertySetters.Keys.ToArray());
 
-            if (_peer.GetChildren().Count == 0)
-            {
-                AccessibilityContainerType = UIAccessibilityContainerType.None;
-            }
-            else
-            {
-                AccessibilityContainerType = UIAccessibilityContainerType.SemanticGroup;
-            }
-
             if (_peer.IsContentElement() && !_peer.IsOffscreen() &&
                 (_peer.GetName().Length > 0 || _peer.IsKeyboardFocusable()))
             {
+                AccessibilityContainerType = UIAccessibilityContainerType.None;
                 IsAccessibilityElement = true;
             }
             else
             {
+                AccessibilityContainerType = UIAccessibilityContainerType.SemanticGroup;
                 IsAccessibilityElement = false;
             }
         }
