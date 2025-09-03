@@ -101,14 +101,8 @@ namespace Avalonia.iOS
                     _childrenList.Add(child);
                     _childrenMap.Add(child, wrapper);
                 }
-                else if (child.IsOffscreen())
-                {
-                    _childrenList.Remove(child);
-                    _childrenMap.Remove(child);
-                    continue;
-                }
 
-                wrapper?.UpdatePropertiesAndAccessibility();
+                wrapper?.UpdateAllProperties();
                 wrapper?.UpdateTraits();
             }
         }
@@ -188,11 +182,6 @@ namespace Avalonia.iOS
                     setter.Invoke(this);
                 }
             }
-        }
-
-        public void UpdatePropertiesAndAccessibility()
-        {
-            UpdateProperties(s_propertySetters.Keys.ToArray());
 
             if (_peer.IsContentElement() && !_peer.IsOffscreen() &&
                 (_peer.GetName().Length > 0 || _peer.IsKeyboardFocusable()))
@@ -213,6 +202,11 @@ namespace Avalonia.iOS
                 AccessibilityContainerType = UIAccessibilityContainerType.SemanticGroup;
                 IsAccessibilityElement = false;
             }
+        }
+
+        public void UpdateAllProperties()
+        {
+            UpdateProperties(s_propertySetters.Keys.ToArray());
         }
 
         public void UpdateTraits()
