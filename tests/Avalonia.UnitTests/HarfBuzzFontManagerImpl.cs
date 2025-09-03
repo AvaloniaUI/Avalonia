@@ -14,11 +14,11 @@ namespace Avalonia.UnitTests
         private readonly string _defaultFamilyName;
 
         private static readonly Typeface _defaultTypeface =
-            new Typeface(new FontFamily(new Uri("resm:Avalonia.UnitTests.Assets?assembly=Avalonia.UnitTests", UriKind.Absolute), "Noto Mono"));
+            new Typeface(new FontFamily("resm:Avalonia.UnitTests.Assets?assembly=Avalonia.UnitTests#Noto Mono"));
         private  static readonly Typeface _italicTypeface =
-            new Typeface(new FontFamily(new Uri("resm:Avalonia.UnitTests.Assets?assembly=Avalonia.UnitTests", UriKind.Absolute), "Noto Sans"));
+            new Typeface(new FontFamily("resm:Avalonia.UnitTests.Assets?assembly=Avalonia.UnitTests#Noto Sans"));
         private  static readonly Typeface _emojiTypeface =
-            new Typeface(new FontFamily(new Uri("resm:Avalonia.UnitTests.Assets?assembly=Avalonia.UnitTests"), "Twitter Color Emoji"));
+            new Typeface(new FontFamily("resm:Avalonia.UnitTests.Assets?assembly=Avalonia.UnitTests#Twitter Color Emoji"));
 
         public HarfBuzzFontManagerImpl(string defaultFamilyName = "Noto Mono")
         {
