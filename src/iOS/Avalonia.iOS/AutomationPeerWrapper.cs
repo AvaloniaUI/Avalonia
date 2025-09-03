@@ -27,20 +27,22 @@ namespace Avalonia.iOS
             };
 
         private readonly AvaloniaView _view;
+        private readonly AutomationPeerWrapper? _parent;
 
         private readonly AutomationPeer _peer;
 
-        private List<AutomationPeer?> _childrenList;
-        private Dictionary<AutomationPeer, AutomationPeerWrapper> _childrenMap;
+        private readonly List<AutomationPeer?> _childrenList;
+        private readonly Dictionary<AutomationPeer, AutomationPeerWrapper> _childrenMap;
 
         [Export("accessibilityContainerType")]
         public UIAccessibilityContainerType AccessibilityContainerType { get; set; }
 
-        private AutomationPeerWrapper(NSObject container, AvaloniaView view, AutomationPeer peer) : base(container)
+        private AutomationPeerWrapper(AvaloniaView view, AutomationPeerWrapper parent, AutomationPeer peer) : base(parent)
         {
             _view = view;
-            _peer = peer;
+            _parent = parent;
 
+            _peer = peer;
             _peer.ChildrenChanged += PeerChildrenChanged;
             _peer.PropertyChanged += PeerPropertyChanged;
 
@@ -51,8 +53,8 @@ namespace Avalonia.iOS
         public AutomationPeerWrapper(AvaloniaView view, AutomationPeer peer) : base(view)
         {
             _view = view;
-            _peer = peer;
 
+            _peer = peer;
             _peer.ChildrenChanged += PeerChildrenChanged;
             _peer.PropertyChanged += PeerPropertyChanged;
 
@@ -95,7 +97,7 @@ namespace Avalonia.iOS
                 AutomationPeerWrapper? wrapper;
                 if (!_childrenMap.TryGetValue(child, out wrapper) && !child.IsOffscreen())
                 {
-                    wrapper = new(this, _view, child);
+                    wrapper = new(_view, this, child);
                     _childrenList.Add(child);
                     _childrenMap.Add(child, wrapper);
                 }
@@ -197,6 +199,14 @@ namespace Avalonia.iOS
             {
                 AccessibilityContainerType = UIAccessibilityContainerType.None;
                 IsAccessibilityElement = true;
+            }
+            else if (_peer.IsOffscreen())
+            {
+                _parent?._childrenList.Remove(_peer);
+                _parent?._childrenMap.Remove(_peer);
+
+                AccessibilityContainerType = UIAccessibilityContainerType.None;
+                IsAccessibilityElement = false;
             }
             else
             {
