@@ -14,7 +14,9 @@ internal unsafe class SkiaMetalApi
 {
     delegate* unmanaged[Stdcall] <IntPtr, IntPtr, IntPtr, IntPtr> _gr_direct_context_make_metal_with_options;
     private delegate* unmanaged[Stdcall]<int, int, int, GRMtlTextureInfoNative*, IntPtr>
-        _gr_backendrendertarget_new_metal;
+        _gr_backendrendertarget_new_metal_legacy; // Before SkiaSharp 3.118
+    private delegate* unmanaged[Stdcall]<int, int, GRMtlTextureInfoNative*, IntPtr>
+        _gr_backendrendertarget_new_metal_m118; // SkiaSharp 3.118+
     private readonly ConstructorInfo _contextCtor;
     private readonly MethodInfo _contextOptionsToNative;
     private readonly ConstructorInfo _renderTargetCtor;
@@ -50,8 +52,17 @@ internal unsafe class SkiaMetalApi
 
         if(NativeLibraryEx.TryGetExport(dll, "gr_backendrendertarget_new_metal", out address))
         {
-            _gr_backendrendertarget_new_metal =
-                (delegate* unmanaged[Stdcall]<int, int, int, GRMtlTextureInfoNative*, IntPtr>)address;
+            // Skia milestone 118 removed the "samples" parameter
+            if (typeof(GRContext).Assembly.GetName().Version >= new Version(3, 118))
+            {
+                _gr_backendrendertarget_new_metal_m118 =
+                    (delegate* unmanaged[Stdcall]<int, int, GRMtlTextureInfoNative*, IntPtr>)address;
+            }
+            else
+            {
+                _gr_backendrendertarget_new_metal_legacy =
+                    (delegate* unmanaged[Stdcall]<int, int, int, GRMtlTextureInfoNative*, IntPtr>)address;
+            }
         }
         else
         {
@@ -100,9 +111,14 @@ internal unsafe class SkiaMetalApi
     public GRBackendRenderTarget CreateBackendRenderTarget(int width, int height, int samples, IntPtr texture)
     {
         var info = new GRMtlTextureInfoNative() { Texture = texture };
-        var target = _gr_backendrendertarget_new_metal(width, height, samples, &info);
+
+        var target = _gr_backendrendertarget_new_metal_m118 is not null ?
+            _gr_backendrendertarget_new_metal_m118(width, height, &info) :
+            _gr_backendrendertarget_new_metal_legacy(width, height, samples, &info);
+
         if (target == IntPtr.Zero)
             throw new InvalidOperationException("Unable to create GRBackendRenderTarget");
+
         return (GRBackendRenderTarget)_renderTargetCtor.Invoke(new object[] { target, true });
     }
 }
