@@ -7,6 +7,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -26,9 +27,13 @@ public static class ApiDiffHelper
     const string MainPackageName = "Avalonia";
     const string FolderLib = "lib";
 
+    private static readonly Regex s_suppressionPathRegex =
+        new("<(Left|Right)>(.*?)</(Left|Right)>", RegexOptions.Compiled);
+
     public static void ValidatePackage(
         Tool apiCompatTool,
         PackageDiffInfo packageDiff,
+        AbsolutePath rootAssembliesFolderPath,
         AbsolutePath suppressionFilesFolderPath,
         bool updateSuppressionFile)
     {
@@ -36,33 +41,66 @@ public static class ApiDiffHelper
 
         Directory.CreateDirectory(suppressionFilesFolderPath);
 
-        var suppressionArgs = "";
-
-        var suppressionFile = suppressionFilesFolderPath / (packageDiff.PackageId + ".nupkg.xml");
-        if (suppressionFile.FileExists())
-            suppressionArgs += $""" --suppression-file="{suppressionFile}" --permit-unnecessary-suppressions """;
-
-        if (updateSuppressionFile)
-            suppressionArgs += $""" --suppression-output-file="{suppressionFile}" --generate-suppression-file --preserve-unnecessary-suppressions """;
-
+        var suppressionFilePath = suppressionFilesFolderPath / (packageDiff.PackageId + ".nupkg.xml");
+        var replaceDirectorySeparators = Path.DirectorySeparatorChar == '\\';
         var allErrors = new List<string>();
 
-        Parallel.ForEach(
-            packageDiff.Frameworks,
-            framework =>
+        foreach (var framework in packageDiff.Frameworks)
+        {
+            var relativeBaselinePath = rootAssembliesFolderPath.GetRelativePathTo(framework.BaselineFolderPath);
+            var relativeCurrentPath = rootAssembliesFolderPath.GetRelativePathTo(framework.CurrentFolderPath);
+            var args = "";
+
+            if (suppressionFilePath.FileExists())
             {
-                var args = $""" -l="{framework.BaselineFolderPath}" -r="{framework.CurrentFolderPath}" {suppressionArgs}""";
+                args += $""" --suppression-file="{suppressionFilePath}" --permit-unnecessary-suppressions """;
 
-                var localErrors = GetErrors(apiCompatTool(args));
+                if (replaceDirectorySeparators)
+                    ReplaceDirectorySeparators(suppressionFilePath, '/', '\\');
+            }
 
-                if (localErrors.Length > 0)
-                {
-                    lock (allErrors)
-                        allErrors.AddRange(localErrors);
-                }
-            });
+            if (updateSuppressionFile)
+                args += $""" --suppression-output-file="{suppressionFilePath}" --generate-suppression-file --preserve-unnecessary-suppressions """;
+
+            args += $""" -l="{relativeBaselinePath}" -r="{relativeCurrentPath}" """;
+
+            var localErrors = GetErrors(apiCompatTool($"{args:nq}", rootAssembliesFolderPath, exitHandler: _ => { }));
+
+            if (replaceDirectorySeparators)
+                ReplaceDirectorySeparators(suppressionFilePath, '\\', '/');
+
+            allErrors.AddRange(localErrors);
+        }
 
         ThrowOnErrors(allErrors, packageDiff.PackageId, "ValidateApiDiff");
+    }
+
+    /// <summary>
+    /// The ApiCompat tool treats paths with '/' and '\' separators as different files.
+    /// Before running the tool, adjust the existing separators (using a dirty regex) to match the current platform.
+    /// After running the tool, change all separators back to '/'.
+    /// </summary>
+    static void ReplaceDirectorySeparators(AbsolutePath suppressionFilePath, char oldSeparator, char newSeparator)
+    {
+        if (!File.Exists(suppressionFilePath))
+            return;
+
+        var lines = File.ReadAllLines(suppressionFilePath);
+
+        for (var i = 0; i < lines.Length; i++)
+        {
+            var original = lines[i];
+
+            var replacement = s_suppressionPathRegex.Replace(original, match =>
+            {
+                var path = match.Groups[2].Value.Replace(oldSeparator, newSeparator);
+                return $"<{match.Groups[1].Value}>{path}</{match.Groups[3].Value}>";
+            });
+
+            lines[i] = replacement;
+        }
+
+        File.WriteAllLines(suppressionFilePath, lines);
     }
 
     public static void GenerateMarkdownDiff(
@@ -94,7 +132,7 @@ public static class ApiDiffHelper
                     var frameworkOutputFolderPath = packageOutputFolderPath / framework.Framework.GetShortFolderName();
                     var args = $""" -b="{framework.BaselineFolderPath}" -bfn="{baselineDisplay}" -a="{framework.CurrentFolderPath}" -afn="{currentDisplay}" -o="{frameworkOutputFolderPath}" -eattrs="{excludedAttributesFilePath}" """;
 
-                    var localErrors = GetErrors(apiDiffTool(args));
+                    var localErrors = GetErrors(apiDiffTool($"{args:nq}"));
 
                     if (localErrors.Length > 0)
                     {

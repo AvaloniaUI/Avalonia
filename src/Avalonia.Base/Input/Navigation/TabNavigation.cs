@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Input.Navigation
@@ -225,8 +226,8 @@ namespace Avalonia.Input.Navigation
             {
                 if (e is Visual elementAsVisual)
                 {
-                    var children = elementAsVisual.VisualChildren;
-                    var count = children.Count;
+                    var children = FocusHelpers.GetInputElementChildren(elementAsVisual).ToArray();
+                    var count = children.Length;
 
                     for (int i = 0; i < count; i++)
                     {
@@ -261,8 +262,8 @@ namespace Avalonia.Input.Navigation
             {
                 if (e is Visual elementAsVisual)
                 {
-                    var children = elementAsVisual.VisualChildren;
-                    var count = children.Count;
+                    var children = FocusHelpers.GetInputElementChildren(elementAsVisual).ToArray();
+                    var count = children.Length;
 
                     for (int i = count - 1; i >= 0; i--)
                     {
@@ -284,7 +285,7 @@ namespace Avalonia.Input.Navigation
             return null;
         }
 
-        private static IInputElement? GetFirstTabInGroup(IInputElement container)
+        internal static IInputElement? GetFirstTabInGroup(IInputElement container)
         {
             IInputElement? firstTabElement = null;
             int minIndexFirstTab = int.MinValue;
@@ -372,7 +373,7 @@ namespace Avalonia.Input.Navigation
         {
             if (GetParent(e) is Visual parentAsVisual && e is Visual elementAsVisual)
             {
-                var children = parentAsVisual.VisualChildren;
+                var children = FocusHelpers.GetInputElementChildren(parentAsVisual).ToList();
                 var count = children.Count;
                 var i = 0;
 
@@ -576,7 +577,7 @@ namespace Avalonia.Input.Navigation
         {
             if (GetParent(e) is Visual parentAsVisual && e is Visual elementAsVisual)
             {
-                var children = parentAsVisual.VisualChildren;
+                var children = FocusHelpers.GetInputElementChildren(parentAsVisual).ToList();
                 var count = children.Count;
                 IInputElement? prev = null;
                 
@@ -646,7 +647,7 @@ namespace Avalonia.Input.Navigation
         private static bool IsFocusScope(IInputElement e) => FocusManager.GetIsFocusScope(e) || GetParent(e) == null;
         private static bool IsGroup(IInputElement e) => GetKeyNavigationMode(e) != KeyboardNavigationMode.Continue;
 
-        private static bool IsTabStop(IInputElement e)
+        internal static bool IsTabStop(IInputElement e)
         {
             if (e is InputElement ie)
                 return ie.Focusable && KeyboardNavigation.GetIsTabStop(ie) && ie.IsVisible && ie.IsEffectivelyEnabled;

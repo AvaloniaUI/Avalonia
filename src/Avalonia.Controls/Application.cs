@@ -265,7 +265,6 @@ namespace Avalonia
         public virtual void RegisterServices()
         {
             AvaloniaSynchronizationContext.InstallIfNeeded();
-            var focusManager = new FocusManager();
             InputManager = new InputManager();
 
             if (PlatformSettings is { } settings)
@@ -279,7 +278,6 @@ namespace Avalonia
                 .Bind<IGlobalDataTemplates>().ToConstant(this)
                 .Bind<IGlobalStyles>().ToConstant(this)
                 .Bind<IThemeVariantHost>().ToConstant(this)
-                .Bind<IFocusManager>().ToConstant(focusManager)
                 .Bind<IInputManager>().ToConstant(InputManager)
                 .Bind< IToolTipService>().ToConstant(new ToolTipService(InputManager))
                 .Bind<IKeyboardNavigationHandler>().ToTransient<KeyboardNavigationHandler>()
