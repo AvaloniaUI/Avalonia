@@ -2019,7 +2019,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 var typeface = Typeface.Default;
 
                 var defaultProperties = new GenericTextRunProperties(typeface);
-                var text = "a‬‬‬‬b";
+                var text = "a\u202C\u202C\u202C\u202Cb";
                 var shaperOption = new TextShaperOptions(typeface.GlyphTypeface);
 
                 var textSource = new SingleBufferTextSource(text, defaultProperties);
