@@ -73,6 +73,7 @@ namespace Avalonia.UnitTests
                 .Bind<IKeyboardNavigationHandler>().ToFunc(Services.KeyboardNavigation ?? (() => null))
                 .Bind<IRuntimePlatform>().ToConstant(Services.Platform)
                 .Bind<IPlatformRenderInterface>().ToConstant(Services.RenderInterface)
+                .Bind<FontManagerOptions>().ToConstant(Services.FontManagerOptions)
                 .Bind<FontManager>().ToConstant(Services.FontManagerImpl == null ?
                     null :
                     new FontManager(Services.FontManagerImpl))
