@@ -1104,22 +1104,28 @@ namespace Avalonia.Media.TextFormatting
             var startOffset = currentRun.GlyphRun.GetDistanceFromCharacterHit(new CharacterHit(startIndex));
             var endOffset = currentRun.GlyphRun.GetDistanceFromCharacterHit(new CharacterHit(endIndex));
 
-            // Preserve non-zero width for zero-advance ranges
-            if (startOffset == endOffset && startIndex != endIndex)
-            {
-                //We need to make sure a zero width text line is hit test at the end so we add some delta
-                endOffset += MathUtilities.DoubleEpsilon;
-            }
-
             var endX = startX + endOffset;
             startX += startOffset;
 
             //Hit test against visual positions
             var startHit = currentRun.GlyphRun.GetCharacterHitFromDistance(startOffset, out _);
-            var endHit = currentRun.GlyphRun.GetCharacterHitFromDistance(endOffset, out _);
-
             var startHitIndex = startHit.FirstCharacterIndex + startHit.TrailingLength;
-            var endHitIndex = endHit.FirstCharacterIndex + endHit.TrailingLength;
+
+            int endHitIndex;
+
+            //Find the next possible position that contains the endIndex
+            var nearestCharacterHit = currentRun.GlyphRun.FindNearestCharacterHit(endIndex, out _);
+
+            if (nearestCharacterHit.FirstCharacterIndex < endIndex)
+            {
+                //The hit is inside or at the trailing edge
+                endHitIndex = nearestCharacterHit.FirstCharacterIndex + nearestCharacterHit.TrailingLength;
+            }
+            else
+            {
+                //The hit is at the leading edge
+                endHitIndex = nearestCharacterHit.FirstCharacterIndex;
+            }
           
             //Adjust characterLength by the cluster offset to only cover the remaining length of the cluster.
             var characterLength = Math.Max(0, Math.Abs(startHitIndex - endHitIndex) - clusterOffset);
@@ -1154,6 +1160,7 @@ namespace Avalonia.Media.TextFormatting
 
             //Current position is a text source index and first cluster is relative to the GlyphRun's buffer.
             var textSourceOffset = currentPosition - firstCluster;
+
             Debug.Assert(textSourceOffset >= 0);
 
             var clusterOffset = 0;
@@ -1185,20 +1192,27 @@ namespace Avalonia.Media.TextFormatting
             startX -= currentRun.Size.Width - startOffset;
             endX -= currentRun.Size.Width - endOffset;
 
-            // Preserve non-zero width for zero-advance ranges
-            if (startOffset == endOffset && startIndex != endIndex)
-            {
-                //We need to make sure a zero width text line is hit test at the end so we add some delta
-                endOffset += MathUtilities.DoubleEpsilon;
-            }
-
             //Hit test against visual positions
             var startHit = currentRun.GlyphRun.GetCharacterHitFromDistance(startOffset, out _);
-            var endHit = currentRun.GlyphRun.GetCharacterHitFromDistance(endOffset, out _);
-
             var startHitIndex = startHit.FirstCharacterIndex + startHit.TrailingLength;
-            var endHitIndex = endHit.FirstCharacterIndex + endHit.TrailingLength;
 
+            int endHitIndex;
+
+            //Find the next possible position that contains the endIndex
+            var nearestCharacterHit = currentRun.GlyphRun.FindNearestCharacterHit(endIndex, out _);
+
+            if (nearestCharacterHit.FirstCharacterIndex < endIndex)
+            {
+                //The hit is inside or at the trailing edge
+                endHitIndex = nearestCharacterHit.FirstCharacterIndex + nearestCharacterHit.TrailingLength;
+            }
+            else
+            {
+                //The hit is at the leading edge
+                endHitIndex = nearestCharacterHit.FirstCharacterIndex;
+            }
+
+            //Adjust characterLength by the cluster offset to only cover the remaining length of the cluster.
             var characterLength = Math.Max(0, Math.Abs(startHitIndex - endHitIndex) - clusterOffset);
 
             // Normalize bounds

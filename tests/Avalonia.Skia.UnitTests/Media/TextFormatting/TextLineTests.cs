@@ -2012,6 +2012,42 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         }
 
         [Fact]
+        public void Should_Get_TextBounds_With_Glue()
+        {
+            using (Start())
+            {
+                var typeface = Typeface.Default;
+
+                var defaultProperties = new GenericTextRunProperties(typeface);
+                var text = "a‬‬‬‬b";
+                var shaperOption = new TextShaperOptions(typeface.GlyphTypeface);
+
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
+
+                var textBounds = textLine.GetTextBounds(1, 1);
+
+                Assert.NotEmpty(textBounds);
+
+                var firstTextBounds = textBounds[0];
+
+                Assert.NotEmpty(firstTextBounds.TextRunBounds);
+
+                var firstRunBounds = firstTextBounds.TextRunBounds[0];
+
+                Assert.Equal(1, firstRunBounds.TextSourceCharacterIndex);
+                Assert.Equal(1, firstRunBounds.Length);
+            }
+        }
+
+        [Fact]
         public void Should_Get_TextBounds_Tamil()
         {
             var text = "எடுத்துக்காட்டு வழி வினவல்";
