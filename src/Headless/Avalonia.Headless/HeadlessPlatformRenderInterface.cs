@@ -19,7 +19,7 @@ namespace Avalonia.Headless
         {
             AvaloniaLocator.CurrentMutable
                 .Bind<IPlatformRenderInterface>().ToConstant(new HeadlessPlatformRenderInterface())
-                .Bind<FontManager>().ToLazy(() => new FontManager(new HeadlessFontManagerStub()))
+                .Bind<IFontManagerImpl>().ToConstant(new HeadlessFontManagerStub())
                 .Bind<ITextShaperImpl>().ToConstant(new HeadlessTextShaperStub());
         }
 

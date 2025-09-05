@@ -73,9 +73,9 @@ namespace Avalonia.UnitTests
                 .Bind<IKeyboardNavigationHandler>().ToFunc(Services.KeyboardNavigation ?? (() => null))
                 .Bind<IRuntimePlatform>().ToConstant(Services.Platform)
                 .Bind<IPlatformRenderInterface>().ToConstant(Services.RenderInterface)
-                .Bind<FontManager>().ToLazy(() => Services.FontManagerImpl == null ?
-                    null :
-                    new FontManager(Services.FontManagerImpl))
+                .Bind<IFontManagerImpl>().ToConstant(Services.FontManagerImpl)
+                .Bind<FontManager>().ToLazy(() => new FontManager(
+                    AvaloniaLocator.Current.GetRequiredService<IFontManagerImpl>()))
                 .Bind<ITextShaperImpl>().ToConstant(Services.TextShaperImpl)
                 .Bind<IDispatcherImpl>().ToConstant(Services.DispatcherImpl)
                 .Bind<ICursorFactory>().ToConstant(Services.StandardCursorFactory)
@@ -83,7 +83,7 @@ namespace Avalonia.UnitTests
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
                 .Bind<IPlatformSettings>().ToSingleton<DefaultPlatformSettings>()
                 .Bind<IAccessKeyHandler>().ToConstant(Services.AccessKeyHandler);
-            
+
             var theme = Services.Theme?.Invoke();
 
             if (theme is Style styles)

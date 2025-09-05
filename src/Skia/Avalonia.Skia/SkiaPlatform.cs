@@ -1,4 +1,3 @@
-using Avalonia.Media;
 using Avalonia.Platform;
 
 namespace Avalonia.Skia
@@ -22,7 +21,7 @@ namespace Avalonia.Skia
 
             AvaloniaLocator.CurrentMutable
                 .Bind<IPlatformRenderInterface>().ToConstant(renderInterface)
-                .Bind<FontManager>().ToLazy(() => new FontManager(new FontManagerImpl()))
+                .Bind<IFontManagerImpl>().ToConstant(new FontManagerImpl())
                 .Bind<ITextShaperImpl>().ToConstant(new TextShaperImpl());
         }
 

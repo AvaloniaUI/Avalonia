@@ -51,7 +51,7 @@ namespace Avalonia.Rendering.Composition
                 if (_diagnosticTextRenderer == null)
                 {
                     // We are running in some unit test context
-                    if (AvaloniaLocator.Current.GetService<FontManager>() == null)
+                    if (AvaloniaLocator.Current.GetService<IFontManagerImpl>() == null)
                         return null;
                     _diagnosticTextRenderer = new(Typeface.Default.GlyphTypeface, 12.0);
                 }
