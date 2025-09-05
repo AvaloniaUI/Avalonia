@@ -8,7 +8,6 @@ using Avalonia.Rendering;
 using System.Reactive.Concurrency;
 using Avalonia.Animation;
 using Avalonia.Headless;
-using Avalonia.Media;
 using Avalonia.Threading;
 
 namespace Avalonia.UnitTests
@@ -83,7 +82,6 @@ namespace Avalonia.UnitTests
             Func<IStyle> theme = null,
             IDispatcherImpl dispatcherImpl = null,
             IFontManagerImpl fontManagerImpl = null,
-            FontManagerOptions fontManagerOptions = null,
             ITextShaperImpl textShaperImpl = null,
             IWindowImpl windowImpl = null,
             IWindowingPlatform windowingPlatform = null)
@@ -96,7 +94,6 @@ namespace Avalonia.UnitTests
             Platform = platform;
             RenderInterface = renderInterface;
             FontManagerImpl = fontManagerImpl;
-            FontManagerOptions = fontManagerOptions;
             TextShaperImpl = textShaperImpl;
             StandardCursorFactory = standardCursorFactory;
             Theme = theme;
@@ -119,7 +116,6 @@ namespace Avalonia.UnitTests
             Func<IStyle> theme = null,
             IDispatcherImpl dispatcherImpl = null,
             IFontManagerImpl fontManagerImpl = null,
-            FontManagerOptions fontManagerOptions = null,
             ITextShaperImpl textShaperImpl = null,
             IWindowImpl windowImpl = null,
             IWindowingPlatform windowingPlatform = null,
@@ -127,7 +123,7 @@ namespace Avalonia.UnitTests
             ) : this(assetLoader, inputManager, keyboardDevice,
             keyboardNavigation,
             mouseDevice, platform, renderInterface, renderLoop, standardCursorFactory, theme,
-            dispatcherImpl, fontManagerImpl, fontManagerOptions, textShaperImpl, windowImpl, windowingPlatform)
+            dispatcherImpl, fontManagerImpl, textShaperImpl, windowImpl, windowingPlatform)
         {
             GlobalClock = globalClock;
             AccessKeyHandler = accessKeyHandler;
@@ -143,7 +139,6 @@ namespace Avalonia.UnitTests
         public IRuntimePlatform Platform { get; }
         public IPlatformRenderInterface RenderInterface { get; }
         public IFontManagerImpl FontManagerImpl { get; }
-        public FontManagerOptions FontManagerOptions { get; }
         public ITextShaperImpl TextShaperImpl { get; }
         public ICursorFactory StandardCursorFactory { get; }
         public Func<IStyle> Theme { get; }
@@ -165,7 +160,6 @@ namespace Avalonia.UnitTests
             Func<IStyle> theme = null,
             IDispatcherImpl dispatcherImpl = null,
             IFontManagerImpl fontManagerImpl = null,
-            FontManagerOptions fontManagerOptions = null,
             ITextShaperImpl textShaperImpl = null,
             IWindowImpl windowImpl = null,
             IWindowingPlatform windowingPlatform = null,
@@ -182,7 +176,6 @@ namespace Avalonia.UnitTests
                 platform: platform ?? Platform,
                 renderInterface: renderInterface ?? RenderInterface,
                 fontManagerImpl: fontManagerImpl ?? FontManagerImpl,
-                fontManagerOptions: fontManagerOptions ?? FontManagerOptions,
                 textShaperImpl: textShaperImpl ?? TextShaperImpl,
                 standardCursorFactory: standardCursorFactory ?? StandardCursorFactory,
                 theme: theme ?? Theme,

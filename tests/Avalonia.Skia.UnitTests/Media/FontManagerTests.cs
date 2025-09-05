@@ -115,28 +115,34 @@ namespace Avalonia.Skia.UnitTests.Media
         [Fact]
         public void Should_Load_Embedded_DefaultFontFamily()
         {
-            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(
-                       fontManagerImpl: new FontManagerImpl(),
-                       fontManagerOptions: new FontManagerOptions { DefaultFamilyName = s_fontUri })))
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
             {
-                var result = FontManager.Current.TryGetGlyphTypeface(Typeface.Default, out var glyphTypeface);
+                using (AvaloniaLocator.EnterScope())
+                {
+                    AvaloniaLocator.CurrentMutable.BindToSelf(new FontManagerOptions { DefaultFamilyName = s_fontUri });
 
-                Assert.True(result);
+                    var result = FontManager.Current.TryGetGlyphTypeface(Typeface.Default, out var glyphTypeface);
 
-                Assert.Equal("Noto Mono", glyphTypeface.FamilyName);
+                    Assert.True(result);
+
+                    Assert.Equal("Noto Mono", glyphTypeface.FamilyName);
+                }
             }
         }
 
         [Fact]
         public void Should_Return_False_For_Invalid_DefaultFontFamily()
         {
-            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(
-                       fontManagerImpl: new FontManagerImpl(),
-                       fontManagerOptions: new FontManagerOptions { DefaultFamilyName = "avares://resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Unknown" })))
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
             {
-                var result = FontManager.Current.TryGetGlyphTypeface(Typeface.Default, out _);
+                using (AvaloniaLocator.EnterScope())
+                {
+                    AvaloniaLocator.CurrentMutable.BindToSelf(new FontManagerOptions { DefaultFamilyName = "avares://resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Unknown" });
 
-                Assert.False(result);
+                    var result = FontManager.Current.TryGetGlyphTypeface(Typeface.Default, out _);
+
+                    Assert.False(result);
+                }
             }
         }
 
@@ -336,24 +342,27 @@ namespace Avalonia.Skia.UnitTests.Media
         [Fact]
         public void Should_Map_FontFamily()
         {
-            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(
-                       fontManagerImpl: new FontManagerImpl(),
-                       fontManagerOptions: new FontManagerOptions 
-                       { 
-                           DefaultFamilyName = s_fontUri, 
-                           FontFamilyMappings = new Dictionary<string, FontFamily> 
-                           { 
-                               { "Segoe UI", new FontFamily("fonts:Inter#Inter") } 
-                           }
-                       })))
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
             {
-                FontManager.Current.AddFontCollection(new InterFontCollection());
+                using (AvaloniaLocator.EnterScope())
+                {
+                    AvaloniaLocator.CurrentMutable.BindToSelf(new FontManagerOptions 
+                    { 
+                        DefaultFamilyName = s_fontUri, 
+                        FontFamilyMappings = new Dictionary<string, FontFamily> 
+                        { 
+                            { "Segoe UI", new FontFamily("fonts:Inter#Inter") } 
+                        }
+                    });
 
-                var result = FontManager.Current.TryGetGlyphTypeface(new Typeface("Abc, Segoe UI"), out var glyphTypeface);
+                    FontManager.Current.AddFontCollection(new InterFontCollection());
 
-                Assert.True(result);
+                    var result = FontManager.Current.TryGetGlyphTypeface(new Typeface("Abc, Segoe UI"), out var glyphTypeface);
 
-                Assert.Equal("Inter", glyphTypeface.FamilyName);
+                    Assert.True(result);
+
+                    Assert.Equal("Inter", glyphTypeface.FamilyName);
+                }
             }
         }
 
