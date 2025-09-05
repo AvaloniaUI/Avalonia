@@ -44,26 +44,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Get the current font manager instance.
         /// </summary>
-        public static FontManager Current
-        {
-            get
-            {
-                var current = AvaloniaLocator.Current.GetService<FontManager>();
-
-                if (current != null)
-                {
-                    return current;
-                }
-
-                var fontManagerImpl = AvaloniaLocator.Current.GetRequiredService<IFontManagerImpl>();
-
-                current = new FontManager(fontManagerImpl);
-
-                AvaloniaLocator.CurrentMutable.Bind<FontManager>().ToConstant(current);
-
-                return current;
-            }
-        }
+        public static FontManager Current => AvaloniaLocator.Current.GetRequiredService<FontManager>();
 
         /// <summary>
         ///     Gets the system's default font family.

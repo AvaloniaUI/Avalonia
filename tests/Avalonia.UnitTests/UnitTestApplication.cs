@@ -73,19 +73,17 @@ namespace Avalonia.UnitTests
                 .Bind<IKeyboardNavigationHandler>().ToFunc(Services.KeyboardNavigation ?? (() => null))
                 .Bind<IRuntimePlatform>().ToConstant(Services.Platform)
                 .Bind<IPlatformRenderInterface>().ToConstant(Services.RenderInterface)
-                .Bind<IFontManagerImpl>().ToConstant(Services.FontManagerImpl)
+                .Bind<FontManager>().ToConstant(Services.FontManagerImpl == null ?
+                    null :
+                    new FontManager(Services.FontManagerImpl))
                 .Bind<ITextShaperImpl>().ToConstant(Services.TextShaperImpl)
                 .Bind<IDispatcherImpl>().ToConstant(Services.DispatcherImpl)
                 .Bind<ICursorFactory>().ToConstant(Services.StandardCursorFactory)
                 .Bind<IWindowingPlatform>().ToConstant(Services.WindowingPlatform)
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
                 .Bind<IPlatformSettings>().ToSingleton<DefaultPlatformSettings>()
-                .Bind<IAccessKeyHandler>().ToConstant(Services.AccessKeyHandler)
-                ;
+                .Bind<IAccessKeyHandler>().ToConstant(Services.AccessKeyHandler);
             
-            // This is a hack to make tests work, we need to refactor the way font manager is registered
-            // See https://github.com/AvaloniaUI/Avalonia/issues/10081
-            AvaloniaLocator.CurrentMutable.Bind<FontManager>().ToConstant((FontManager)null!);
             var theme = Services.Theme?.Invoke();
 
             if (theme is Style styles)
