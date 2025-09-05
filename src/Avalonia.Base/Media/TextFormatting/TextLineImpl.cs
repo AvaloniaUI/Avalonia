@@ -916,7 +916,7 @@ namespace Avalonia.Media.TextFormatting
 
                 if (currentRun is ShapedTextRun shapedTextRun)
                 {
-                    var runBounds = GetRunBoundsRightToLeft(shapedTextRun, startX, firstTextSourceIndex, remainingLength, currentPosition);
+                    var runBounds = GetRunBounds(shapedTextRun, startX, firstTextSourceIndex, remainingLength, currentPosition);
 
                     if (runBounds.TextSourceCharacterIndex < FirstTextSourceIndex + Length)
                     {
@@ -996,7 +996,7 @@ namespace Avalonia.Media.TextFormatting
 
                 if (currentRun is ShapedTextRun shapedTextRun)
                 {
-                    var runBounds = GetRunBoundsLeftToRight(shapedTextRun, endX, firstTextSourceIndex, remainingLength, currentPosition);
+                    var runBounds = GetRunBounds(shapedTextRun, endX, firstTextSourceIndex, remainingLength, currentPosition);
 
                     if(runBounds.TextSourceCharacterIndex < FirstTextSourceIndex + Length)
                     {
@@ -1062,12 +1062,15 @@ namespace Avalonia.Media.TextFormatting
             return new TextBounds(bounds, FlowDirection.LeftToRight, textRunBounds);
         }
 
-        private TextRunBounds GetRunBoundsLeftToRight(ShapedTextRun currentRun, double startX,
-            int firstTextSourceIndex, int remainingLength, int currentPosition)
+        private TextRunBounds GetRunBounds(ShapedTextRun currentRun, double currentX, int firstTextSourceIndex, int remainingLength, int currentPosition)
         {
-            //Determine the start of the first hit in local positions.
+            bool isLeftToRight = currentRun.BidiLevel % 2 == 0;
+
+            double startX = currentX;
+            double endX = currentX;
+
+            // Determine the start of the first hit in local positions
             var runOffset = Math.Max(0, firstTextSourceIndex - currentPosition);
-      
             var firstCluster = currentRun.GlyphRun.Metrics.FirstCluster;
 
             //The start index needs to be relative to the first cluster
@@ -1081,99 +1084,13 @@ namespace Avalonia.Media.TextFormatting
 
             var clusterOffset = 0;
 
-            //Cluster boundary correction
-            if (runOffset > 0)            
-            {   
-                var characterHit = currentRun.GlyphRun.FindNearestCharacterHit(startIndex, out _);
-
-                var clusterStart = characterHit.FirstCharacterIndex;
-                var clusterEnd = clusterStart + characterHit.TrailingLength;
-
-                //Test against left and right edge
-                if (clusterStart < startIndex && clusterEnd > startIndex)
-                {
-                    //Remember the cluster correction offset
-                    clusterOffset = startIndex - clusterStart;
-
-                    //Move to the start of the cluster
-                    startIndex -= clusterOffset;
-                }
-            }
-
-            //Find the visual start and end position we want to hit test against
-            var startOffset = currentRun.GlyphRun.GetDistanceFromCharacterHit(new CharacterHit(startIndex));
-            var endOffset = currentRun.GlyphRun.GetDistanceFromCharacterHit(new CharacterHit(endIndex));
-
-            var endX = startX + endOffset;
-            startX += startOffset;
-
-            //Hit test against visual positions
-            var startHit = currentRun.GlyphRun.GetCharacterHitFromDistance(startOffset, out _);
-            var startHitIndex = startHit.FirstCharacterIndex + startHit.TrailingLength;
-
-            int endHitIndex;
-
-            //Find the next possible position that contains the endIndex
-            var nearestCharacterHit = currentRun.GlyphRun.FindNearestCharacterHit(endIndex, out _);
-
-            if (nearestCharacterHit.FirstCharacterIndex < endIndex)
-            {
-                //The hit is inside or at the trailing edge
-                endHitIndex = nearestCharacterHit.FirstCharacterIndex + nearestCharacterHit.TrailingLength;
-            }
-            else
-            {
-                //The hit is at the leading edge
-                endHitIndex = nearestCharacterHit.FirstCharacterIndex;
-            }
-          
-            //Adjust characterLength by the cluster offset to only cover the remaining length of the cluster.
-            var characterLength = Math.Max(0, Math.Abs(startHitIndex - endHitIndex) - clusterOffset);
-
-            // Normalize bounds
-            if (endX < startX)
-            {
-                (endX, startX) = (startX, endX);
-            }
-
-            var runWidth = endX - startX;
-
-            //We need to adjust the local position to the text source
-            var textSourceIndex = textSourceOffset + startHitIndex + clusterOffset;
-
-            return new TextRunBounds(new Rect(startX, 0, runWidth, Height), textSourceIndex, characterLength, currentRun);
-        }
-
-        private TextRunBounds GetRunBoundsRightToLeft(ShapedTextRun currentRun, double endX, int firstTextSourceIndex, int remainingLength, int currentPosition)
-        {
-            // We start from the right edge of the run
-            var startX = endX;
-
-            //Determine the start of the first hit in local positions.
-            var runOffset = Math.Max(0, firstTextSourceIndex - currentPosition);
-
-            var firstCluster = currentRun.GlyphRun.Metrics.FirstCluster;
-
-            //The start index needs to be relative to the first cluster
-            var startIndex = firstCluster + runOffset;
-            var endIndex = startIndex + remainingLength;
-
-            //Current position is a text source index and first cluster is relative to the GlyphRun's buffer.
-            var textSourceOffset = currentPosition - firstCluster;
-
-            Debug.Assert(textSourceOffset >= 0);
-
-            var clusterOffset = 0;
-
-            //Cluster boundary correction
+            // Cluster boundary correction
             if (runOffset > 0)
             {
                 var characterHit = currentRun.GlyphRun.FindNearestCharacterHit(startIndex, out _);
-
                 var clusterStart = characterHit.FirstCharacterIndex;
                 var clusterEnd = clusterStart + characterHit.TrailingLength;
 
-                //Test against left and right edge
                 if (clusterStart < startIndex && clusterEnd > startIndex)
                 {
                     //Remember the cluster correction offset
@@ -1184,22 +1101,30 @@ namespace Avalonia.Media.TextFormatting
                 }
             }
 
-            //Find the visual start and end position we want to hit test against
+            //Find the visual start and end position of the hit
             var startOffset = currentRun.GlyphRun.GetDistanceFromCharacterHit(new CharacterHit(startIndex));
             var endOffset = currentRun.GlyphRun.GetDistanceFromCharacterHit(new CharacterHit(endIndex));
 
-            //We need the distance from right to left and GetDistanceFromCharacterHit returs a distance from left to right so we need to adjust the offsets
-            startX -= currentRun.Size.Width - startOffset;
-            endX -= currentRun.Size.Width - endOffset;
+            if (isLeftToRight)
+            {
+                endX = startX + endOffset;
+                startX += startOffset;
+            }
+            else
+            {
+                //We need the distance from right to left and GetDistanceFromCharacterHit returs a distance from left to right so we need to adjust the offsets
+                startX -= currentRun.Size.Width - startOffset;
+                endX -= currentRun.Size.Width - endOffset;
+            }
 
-            //Hit test against visual positions
+            // Find the start of the hit
             var startHit = currentRun.GlyphRun.GetCharacterHitFromDistance(startOffset, out _);
             var startHitIndex = startHit.FirstCharacterIndex + startHit.TrailingLength;
 
-            int endHitIndex;
-
             //Find the next possible position that contains the endIndex
             var nearestCharacterHit = currentRun.GlyphRun.FindNearestCharacterHit(endIndex, out _);
+
+            int endHitIndex;
 
             if (nearestCharacterHit.FirstCharacterIndex < endIndex)
             {
@@ -1212,8 +1137,7 @@ namespace Avalonia.Media.TextFormatting
                 endHitIndex = nearestCharacterHit.FirstCharacterIndex;
             }
 
-            //Adjust characterLength by the cluster offset to only cover the remaining length of the cluster.
-            var characterLength = Math.Max(0, Math.Abs(startHitIndex - endHitIndex) - clusterOffset);
+            var coveredLength = Math.Max(0, Math.Abs(startHitIndex - endHitIndex) - clusterOffset);
 
             // Normalize bounds
             if (endX < startX)
@@ -1226,7 +1150,7 @@ namespace Avalonia.Media.TextFormatting
             //We need to adjust the local position to the text source
             var textSourceIndex = textSourceOffset + startHitIndex + clusterOffset;
 
-            return new TextRunBounds(new Rect(startX, 0, runWidth, Height), textSourceIndex, characterLength, currentRun);
+            return new TextRunBounds(new Rect(startX, 0, runWidth, Height), textSourceIndex, coveredLength, currentRun);
         }
 
         public override void Dispose()
