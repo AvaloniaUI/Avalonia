@@ -661,15 +661,15 @@ namespace Avalonia.Controls
         private void HandleTextValueBindingValueChanged(AvaloniaPropertyChangedEventArgs? textSearchPropChange,
             AvaloniaPropertyChangedEventArgs? displayMemberPropChange)
         {
-            IBinding? textValueBinding;
+            BindingBase? textValueBinding;
             //prioritise using the TextSearch.TextBindingProperty if possible
-            if (textSearchPropChange == null && TextSearch.GetTextBinding(this) is IBinding textSearchBinding)
+            if (textSearchPropChange == null && TextSearch.GetTextBinding(this) is BindingBase textSearchBinding)
                 textValueBinding = textSearchBinding;
 
-            else if (textSearchPropChange != null && textSearchPropChange.NewValue is IBinding eventTextSearchBinding)
+            else if (textSearchPropChange != null && textSearchPropChange.NewValue is BindingBase eventTextSearchBinding)
                 textValueBinding = eventTextSearchBinding;
 
-            else if (displayMemberPropChange != null && displayMemberPropChange.NewValue is IBinding eventDisplayMemberBinding)
+            else if (displayMemberPropChange != null && displayMemberPropChange.NewValue is BindingBase eventDisplayMemberBinding)
                 textValueBinding = eventDisplayMemberBinding;
 
             else

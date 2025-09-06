@@ -1,25 +1,23 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using Avalonia.Reactive;
-using Avalonia.Data.Converters;
-using Avalonia.Metadata;
-using Avalonia.Data.Core;
 using System.ComponentModel;
+using System.Globalization;
+using Avalonia.Data.Converters;
+using Avalonia.Data.Core;
+using Avalonia.Metadata;
 
 namespace Avalonia.Data
 {
     /// <summary>
     /// A XAML binding that calculates an aggregate value from multiple child <see cref="Bindings"/>.
     /// </summary>
-    public class MultiBinding : IBinding2
+    public class MultiBinding : BindingBase
     {
         /// <summary>
         /// Gets the collection of child bindings.
         /// </summary>
         [Content, AssignBinding]
-        public IList<IBinding> Bindings { get; set; } = new List<IBinding>();
+        public IList<BindingBase> Bindings { get; set; } = new List<BindingBase>();
 
         /// <summary>
         /// Gets or sets the <see cref="IMultiValueConverter"/> to use.
@@ -77,18 +75,7 @@ namespace Avalonia.Data
             TargetNullValue = AvaloniaProperty.UnsetValue;
         }
 
-        /// <inheritdoc/>
-        public InstancedBinding? Initiate(
-            AvaloniaObject target,
-            AvaloniaProperty? targetProperty,
-            object? anchor = null,
-            bool enableDataValidation = false)
-        {
-            var expression = InstanceCore(target, targetProperty);
-            return new InstancedBinding(target, expression, Mode, Priority);
-        }
-
-        BindingExpressionBase IBinding2.Instance(
+        internal override BindingExpressionBase Instance(
             AvaloniaObject target,
             AvaloniaProperty? targetProperty,
             object? anchor)
