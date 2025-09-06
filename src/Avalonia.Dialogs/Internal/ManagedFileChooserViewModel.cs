@@ -213,11 +213,7 @@ namespace Avalonia.Dialogs.Internal
             {
                 try
                 {
-                    if (_selectingDirectory)
-                    {
-                        SelectedItems.Clear();
-                    }
-                    else
+                    if (!_selectingDirectory)
                     {
                         if (!_options.AllowDirectorySelection)
                         {
@@ -227,32 +223,28 @@ namespace Avalonia.Dialogs.Internal
                                 SelectedItems.Remove(item);
                         }
 
-                        if (!_selectingDirectory)
+                        if (SelectedItems.Count > 1)
                         {
-                            if (SelectedItems.Count > 1)
+                            var sb = StringBuilderCache.Acquire();
+                            for (var i = 0; i < SelectedItems.Count; i++)
                             {
-                                var sb = StringBuilderCache.Acquire();
-
-                                for (var i = 0; i < SelectedItems.Count; i++)
+                                var item = SelectedItems[i];
+                                sb.Append('"');
+                                sb.Append(item.DisplayName);
+                                sb.Append('"');
+                                if (i + 1 < SelectedItems.Count)
                                 {
-                                    var item = SelectedItems[i];
-                                    sb.Append('"');
-                                    sb.Append(item.DisplayName);
-                                    sb.Append('"');
-                                    if (i + 1 < SelectedItems.Count)
-                                    {
-                                        sb.Append(' ');
-                                    }
+                                    sb.Append(' ');
                                 }
-
-                                FileName = sb.ToString();
-                                
-                                StringBuilderCache.Release(sb);
                             }
-                            else
-                            {
-                                FileName = SelectedItems.FirstOrDefault()?.DisplayName;
-                            }
+                            
+                            FileName = sb.ToString();
+                            
+                            StringBuilderCache.Release(sb);
+                        }
+                        else
+                        {
+                            FileName = SelectedItems.FirstOrDefault()?.DisplayName;
                         }
                     }
                     RaisePropertyChanged(nameof(SelectedItems));
