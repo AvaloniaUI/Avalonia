@@ -15,9 +15,8 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
     {
         private OrgFreedesktopIBusServiceProxy? _service;
         private OrgFreedesktopIBusInputContextProxy? _context;
-        private string? _preeditText;
+        private string _preeditText = "";
         private int _preeditCursor;
-        private bool _preeditShown = true;
         private int _insideReset;
 
         public IBusX11TextInputMethod(Connection connection) : base(connection, "org.freedesktop.portal.IBus") { }
@@ -39,40 +38,46 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
 
         private void OnHidePreedit(Exception? obj)
         {
-            _preeditShown = false;
-            if (Client?.SupportsPreedit == true)
-                Client.SetPreeditText(null, null);
+            if (Client?.SupportsPreedit != true || string.IsNullOrEmpty(_preeditText))
+            {
+                return;
+            }
+            
+            _preeditText = "";
+                
+            Client?.SetPreeditText(_preeditText, 0);
         }
 
         private void OnShowPreedit(Exception? obj)
         {
-            _preeditShown = true;
-            if (Client?.SupportsPreedit == true)
-                Client.SetPreeditText(_preeditText, _preeditText == null ? null : _preeditCursor);
         }
 
         private void OnUpdatePreedit(Exception? arg1, (VariantValue Text, uint CursorPos, bool Visible) preeditComponents)
         {
+            string? preeditText;
+            
             if (preeditComponents.Text is { Type: VariantValueType.Struct, Count: >= 3 } structItem && structItem.GetItem(2) is { Type: VariantValueType.String} stringItem)
             {
-                _preeditText = stringItem.GetString();
-                _preeditCursor = _preeditText != null
-                    ? Utf16Utils.CharacterOffsetToStringOffset(_preeditText,
-                        (int)Math.Min(preeditComponents.CursorPos, int.MaxValue), false)
-                    : 0;
-
-                _preeditShown = true;
+                preeditText = stringItem.GetString();
             }
             else
             {
-                _preeditText = null;
-                _preeditShown = false;
-                _preeditCursor = 0;
+                preeditText = "";
             }
 
-            if (Client?.SupportsPreedit == true)
-                Client.SetPreeditText(
-                    _preeditShown ? _preeditText : null, _preeditCursor);
+            if (Client?.SupportsPreedit != true || preeditText == _preeditText)
+            {
+                return;
+            }
+            
+            _preeditText = preeditText;
+
+            _preeditCursor = !string.IsNullOrEmpty(_preeditText) ?
+                Utf16Utils.CharacterOffsetToStringOffset(_preeditText,
+                    (int)Math.Min(preeditComponents.CursorPos, int.MaxValue), false) :
+                0;
+            
+            Client.SetPreeditText(_preeditText, _preeditCursor);
         }
 
         private void OnForwardKey(Exception? e, (uint keyval, uint keycode, uint state) k)
@@ -140,7 +145,6 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
 
         protected override async Task ResetContextCore()
         {
-            _preeditShown = true;
             if (_context == null)
                 return;
             if (_context == null)
