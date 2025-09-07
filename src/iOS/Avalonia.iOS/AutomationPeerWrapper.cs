@@ -27,7 +27,6 @@ namespace Avalonia.iOS
             };
 
         private readonly AvaloniaView _view;
-        private readonly AutomationPeerWrapper? _parent;
 
         private readonly AutomationPeer _peer;
 
@@ -37,10 +36,9 @@ namespace Avalonia.iOS
         [Export("accessibilityContainerType")]
         public UIAccessibilityContainerType AccessibilityContainerType { get; set; }
 
-        private AutomationPeerWrapper(AvaloniaView view, AutomationPeerWrapper parent, AutomationPeer peer) : base(parent)
+        private AutomationPeerWrapper(AutomationPeerWrapper parent, AvaloniaView view, AutomationPeer peer) : base(parent)
         {
             _view = view;
-            _parent = parent;
 
             _peer = peer;
             _peer.ChildrenChanged += PeerChildrenChanged;
@@ -92,14 +90,22 @@ namespace Avalonia.iOS
 
         void UpdateChildren()
         {
+            UpdateAllProperties();
+            UpdateTraits();
+
             foreach (AutomationPeer child in _peer.GetChildren())
             {
                 AutomationPeerWrapper? wrapper;
                 if (!_childrenMap.TryGetValue(child, out wrapper) && !child.IsOffscreen())
                 {
-                    wrapper = new(_view, this, child);
+                    wrapper = new(this, _view, child);
                     _childrenList.Add(child);
                     _childrenMap.Add(child, wrapper);
+                }
+                else if (child.IsOffscreen())
+                {
+                    _childrenList.Remove(child);
+                    _childrenMap.Remove(child);
                 }
 
                 wrapper?.UpdateAllProperties();
@@ -182,6 +188,11 @@ namespace Avalonia.iOS
                     setter.Invoke(this);
                 }
             }
+        }
+
+        public void UpdateAllProperties()
+        {
+            UpdateProperties(s_propertySetters.Keys.ToArray());
 
             if (_peer.IsContentElement() && !_peer.IsOffscreen() &&
                 (_peer.GetName().Length > 0 || _peer.IsKeyboardFocusable()))
@@ -191,9 +202,6 @@ namespace Avalonia.iOS
             }
             else if (_peer.IsOffscreen())
             {
-                _parent?._childrenList.Remove(_peer);
-                _parent?._childrenMap.Remove(_peer);
-
                 AccessibilityContainerType = UIAccessibilityContainerType.None;
                 IsAccessibilityElement = false;
             }
@@ -202,11 +210,6 @@ namespace Avalonia.iOS
                 AccessibilityContainerType = UIAccessibilityContainerType.SemanticGroup;
                 IsAccessibilityElement = false;
             }
-        }
-
-        public void UpdateAllProperties()
-        {
-            UpdateProperties(s_propertySetters.Keys.ToArray());
         }
 
         public void UpdateTraits()
