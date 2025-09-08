@@ -4,7 +4,7 @@ using Avalonia.Metadata;
 
 namespace Avalonia.Input.Platform
 {
-    [Unstable]
+    [NotClientImplementable]
     public interface IPlatformDragSource
     {
         [Obsolete($"Use {nameof(DoDragDropAsync)} instead.")]
