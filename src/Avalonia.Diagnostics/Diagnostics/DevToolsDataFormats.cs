@@ -16,5 +16,5 @@ public static class DevToolsDataFormats
     /// Gets the clipboard data format representing a selector.
     /// It's used for quick format recognition in IDEs.
     /// </summary>
-    public static DataFormat Selector { get; } = DataFormat.CreateOperatingSystemFormat("Avalonia_DevTools_Selector");
+    public static DataFormat Selector { get; } = DataFormat.CreatePlatformFormat("Avalonia_DevTools_Selector");
 }

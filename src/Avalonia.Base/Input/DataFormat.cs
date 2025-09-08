@@ -29,22 +29,22 @@ public sealed record DataFormat
     /// Gets a data format representing plain text.
     /// Its data type is <see cref="string"/>.
     /// </summary>
-    public static DataFormat Text { get; } = CreateCrossPlatformFormat("Text");
+    public static DataFormat Text { get; } = CreateUniversalFormat("Text");
 
     /// <summary>
     /// Gets a data format representing a single file.
     /// Its data type is <see cref="IStorageItem"/>.
     /// </summary>
-    public static DataFormat File { get; } = CreateCrossPlatformFormat("File");
+    public static DataFormat File { get; } = CreateUniversalFormat("File");
 
     /// <summary>
-    /// Creates a name for this format, usable by the operating system.
+    /// Creates a name for this format, usable by the underlying platform.
     /// </summary>
     /// <param name="applicationPrefix">The system prefix used to recognize the name as an application format.</param>
     /// <returns>A system name for the format.</returns>
     /// <remarks>
     /// This method can only be called if <see cref="Kind"/> is
-    /// <see cref="DataFormatKind.Application"/> or <see cref="DataFormatKind.OperatingSystem"/>.
+    /// <see cref="DataFormatKind.Application"/> or <see cref="DataFormatKind.Platform"/>.
     /// </remarks>
     public string ToSystemName(string applicationPrefix)
     {
@@ -53,13 +53,13 @@ public sealed record DataFormat
         return Kind switch
         {
             DataFormatKind.Application => applicationPrefix + Identifier,
-            DataFormatKind.OperatingSystem => Identifier,
-            _ => throw new InvalidOperationException($"Cannot get system name for cross-platform format {Identifier}")
+            DataFormatKind.Platform => Identifier,
+            _ => throw new InvalidOperationException($"Cannot get system name for universal format {Identifier}")
         };
     }
 
-    private static DataFormat CreateCrossPlatformFormat(string identifier)
-        => new(DataFormatKind.CrossPlatform, identifier);
+    private static DataFormat CreateUniversalFormat(string identifier)
+        => new(DataFormatKind.Universal, identifier);
 
     /// <summary>
     /// Creates a new format specific to the application.
@@ -67,7 +67,7 @@ public sealed record DataFormat
     /// <param name="identifier">
     /// <para>
     /// The format identifier. To avoid conflicts with system identifiers, this value isn't passed to the underlying
-    /// operating system directly. However, two different applications using the same identifier
+    /// platform directly. However, two different applications using the same identifier
     /// with <see cref="CreateApplicationFormat"/> are able to share data using this format.
     /// </para>
     /// <para>Only ASCII letters (A-Z, a-z), digits (0-9), the dot (.) and the hyphen (-) are accepted.</para>
@@ -82,22 +82,22 @@ public sealed record DataFormat
     }
 
     /// <summary>
-    /// Creates a new format for the current operating system.
+    /// Creates a new format for the current platform.
     /// </summary>
     /// <param name="identifier">
-    /// The format identifier. This value is not validated and is passed AS IS to the underlying operating system.
+    /// The format identifier. This value is not validated and is passed AS IS to the underlying platform.
     /// Most systems use mime types, but macOS requires Uniform Type Identifiers (UTI).
     /// </param>
     /// <returns>A new <see cref="DataFormat"/>.</returns>
-    public static DataFormat CreateOperatingSystemFormat(string identifier)
+    public static DataFormat CreatePlatformFormat(string identifier)
     {
         ThrowHelper.ThrowIfNullOrEmpty(identifier);
 
-        return new DataFormat(DataFormatKind.OperatingSystem, identifier);
+        return new DataFormat(DataFormatKind.Platform, identifier);
     }
 
     /// <summary>
-    /// Creates a <see cref="DataFormat"/> from a name coming from the underlying operating system.
+    /// Creates a <see cref="DataFormat"/> from a name coming from the underlying platform.
     /// </summary>
     /// <param name="systemName">The name.</param>
     /// <param name="applicationPrefix">The system prefix used to recognize the name as an application format.</param>
@@ -114,7 +114,7 @@ public sealed record DataFormat
                 return new DataFormat(DataFormatKind.Application, identifier);
         }
 
-        return new DataFormat(DataFormatKind.OperatingSystem, systemName);
+        return new DataFormat(DataFormatKind.Platform, systemName);
     }
 
     private static bool IsValidApplicationFormatIdentifier(string identifier)

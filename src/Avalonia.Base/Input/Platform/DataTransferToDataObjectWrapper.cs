@@ -36,7 +36,7 @@ internal sealed class DataTransferToDataObjectWrapper(IDataTransfer dataTransfer
                 .ToArray();
         }
 
-        var typedFormat = DataFormat.CreateOperatingSystemFormat(dataFormat);
+        var typedFormat = DataFormat.CreatePlatformFormat(dataFormat);
         return DataTransfer.TryGetValue<object?>(typedFormat);
     }
 }

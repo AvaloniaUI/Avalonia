@@ -37,7 +37,7 @@ namespace Avalonia.Input
             if (format == Files || format == FileNames)
                 return DataFormat.File;
 
-            return DataFormat.CreateOperatingSystemFormat(format);
+            return DataFormat.CreatePlatformFormat(format);
         }
 
         internal static string ToString(DataFormat format)
