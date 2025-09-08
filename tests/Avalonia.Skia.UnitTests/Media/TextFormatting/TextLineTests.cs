@@ -2158,6 +2158,18 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 Assert.NotNull(textLine);
 
                 var textBounds = textLine.GetTextBounds(7, 3);
+
+                Assert.NotEmpty(textBounds);
+
+                var firstBounds = textBounds[0];
+
+                Assert.NotEmpty(firstBounds.TextRunBounds);
+
+                var firstRunBounds = firstBounds.TextRunBounds[0];
+
+                Assert.Equal(7, firstRunBounds.TextSourceCharacterIndex);
+
+                Assert.Equal(2, firstRunBounds.Length);
             }
         }
 
