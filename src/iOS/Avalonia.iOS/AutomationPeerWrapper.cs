@@ -321,23 +321,23 @@ namespace Avalonia.iOS
                 switch (direction)
                 {
                     case UIAccessibilityScrollDirection.Up:
-                        verticalAmount = ScrollAmount.SmallIncrement;
+                        verticalAmount = ScrollAmount.LargeIncrement;
                         horizontalAmount = ScrollAmount.NoAmount;
                         didScroll = true;
                         break;
                     case UIAccessibilityScrollDirection.Down:
-                        verticalAmount = ScrollAmount.SmallDecrement;
+                        verticalAmount = ScrollAmount.LargeDecrement;
                         horizontalAmount = ScrollAmount.NoAmount;
                         didScroll = true;
                         break;
                     case UIAccessibilityScrollDirection.Left:
                         verticalAmount = ScrollAmount.NoAmount;
-                        horizontalAmount = ScrollAmount.SmallIncrement;
+                        horizontalAmount = ScrollAmount.LargeIncrement;
                         didScroll = true;
                         break;
                     case UIAccessibilityScrollDirection.Right:
                         verticalAmount = ScrollAmount.NoAmount;
-                        horizontalAmount = ScrollAmount.SmallDecrement;
+                        horizontalAmount = ScrollAmount.LargeDecrement;
                         didScroll = true;
                         break;
                     default:
@@ -347,12 +347,16 @@ namespace Avalonia.iOS
                         break;
                 }
 
-                scrollProvider.Scroll(verticalAmount, horizontalAmount);
-                if (didScroll)
+                try
                 {
-                    UIAccessibility.PostNotification(UIAccessibilityPostNotification.PageScrolled, null);
-                    return true;
+                    scrollProvider.Scroll(verticalAmount, horizontalAmount);
+                    if (didScroll)
+                    {
+                        UIAccessibility.PostNotification(UIAccessibilityPostNotification.PageScrolled, null);
+                        return true;
+                    }
                 }
+                catch (InvalidOperationException) { }
             }
             return false;
         }
