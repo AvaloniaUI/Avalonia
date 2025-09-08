@@ -33,17 +33,6 @@ internal class MetalPlatformGraphics : IPlatformGraphics
             return null;
         }
 
-#if !TVOS
-        using var queue = device.CreateCommandQueue();
-        using var context = GRContext.CreateMetal(new GRMtlBackendContext { Device = device, Queue = queue });
-        if (context is null)
-        {
-            // Can be null on macCatalyst because of older Skia bug.
-            // Fixed in SkiaSharp 3.0
-            return null;
-        }
-#endif
-
         return new MetalPlatformGraphics(device);
     }
 }
