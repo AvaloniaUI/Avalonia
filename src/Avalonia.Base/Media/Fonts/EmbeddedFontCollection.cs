@@ -15,8 +15,6 @@ namespace Avalonia.Media.Fonts
 
         private readonly Uri _source;
 
-        private IFontManagerImpl? _fontManager;
-
         public EmbeddedFontCollection(Uri key, Uri source)
         {
             _key = key;
@@ -32,8 +30,6 @@ namespace Avalonia.Media.Fonts
 
         public override void Initialize(IFontManagerImpl fontManager)
         {
-            _fontManager = fontManager;
-
             var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
 
             var fontAssets = FontFamilyLoader.LoadFontAssets(_source);
