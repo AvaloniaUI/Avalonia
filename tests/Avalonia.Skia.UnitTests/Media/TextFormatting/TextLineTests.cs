@@ -2135,6 +2135,32 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Fact]
+        public void Should_GetTextBounds_Trailing_ZeroWidth()
+        {
+            var text = "dasdsad\r\n";
+
+            using (Start())
+            {
+                var typeface = Typeface.Default;
+
+                var defaultProperties = new GenericTextRunProperties(typeface);
+                var shaperOption = new TextShaperOptions(typeface.GlyphTypeface);
+
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
+
+                var textBounds = textLine.GetTextBounds(7, 3);
+            }
+        }
+
         private class FixedRunsTextSource : ITextSource
         {
             private readonly IReadOnlyList<TextRun> _textRuns;
