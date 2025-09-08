@@ -140,7 +140,7 @@ namespace Avalonia.iOS
             if (self.AccessibilityFrame != nativeRect)
             {
                 self.AccessibilityFrame = nativeRect;
-                UIAccessibility.PostNotification(UIAccessibilityPostNotification.LayoutChanged, null);
+                UIAccessibility.PostNotification(UIAccessibilityPostNotification.LayoutChanged, self);
             }
         }
 
@@ -162,14 +162,14 @@ namespace Avalonia.iOS
             if (self.AccessibilityValue != newValue)
             {
                 self.AccessibilityValue = newValue;
-                UIAccessibility.PostNotification(UIAccessibilityPostNotification.Announcement, null);
+                UIAccessibility.PostNotification(UIAccessibilityPostNotification.Announcement, (NSString?)newValue);
             }
         }
 
         private void PeerChildrenChanged(object? sender, EventArgs e)
         {
             UpdateChildren();
-            UIAccessibility.PostNotification(UIAccessibilityPostNotification.ScreenChanged, null);
+            UIAccessibility.PostNotification(UIAccessibilityPostNotification.ScreenChanged, this);
         }
 
         private void PeerPropertyChanged(object? sender, AutomationPropertyChangedEventArgs e) =>
