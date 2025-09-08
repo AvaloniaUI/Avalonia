@@ -1118,23 +1118,29 @@ namespace Avalonia.Media.TextFormatting
             }
 
             // Find the start of the hit
-            var startHit = currentRun.GlyphRun.GetCharacterHitFromDistance(startOffset, out _);
-            var startHitIndex = startHit.FirstCharacterIndex + startHit.TrailingLength;
+            var startHit = currentRun.GlyphRun.FindNearestCharacterHit(startIndex, out _);
+            var startHitIndex = startHit.FirstCharacterIndex;
+
+            //If the requested text range starts at the trailing edge we need to move at the end of the hit
+            if(startHitIndex < startIndex)
+            {
+                startHitIndex += startHit.TrailingLength;
+            }
 
             //Find the next possible position that contains the endIndex
-            var nearestCharacterHit = currentRun.GlyphRun.FindNearestCharacterHit(endIndex, out _);
+            var nearestEndHit = currentRun.GlyphRun.FindNearestCharacterHit(endIndex, out _);
 
             int endHitIndex;
 
-            if (nearestCharacterHit.FirstCharacterIndex < endIndex)
+            if (nearestEndHit.FirstCharacterIndex < endIndex)
             {
                 //The hit is inside or at the trailing edge
-                endHitIndex = nearestCharacterHit.FirstCharacterIndex + nearestCharacterHit.TrailingLength;
+                endHitIndex = nearestEndHit.FirstCharacterIndex + nearestEndHit.TrailingLength;
             }
             else
             {
                 //The hit is at the leading edge
-                endHitIndex = nearestCharacterHit.FirstCharacterIndex;
+                endHitIndex = nearestEndHit.FirstCharacterIndex;
             }
 
             var coveredLength = Math.Max(0, Math.Abs(startHitIndex - endHitIndex) - clusterOffset);
