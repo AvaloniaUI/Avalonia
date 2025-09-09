@@ -8,6 +8,10 @@
     <NoWarn>$(NoWarn);CS8002</NoWarn> <!-- ignore signing warnings for samples -->
   </PropertyGroup>
 
+  <ItemGroup>
+    <AdditionalFiles Include="**\*.xaml" SourceItemGroup="AvaloniaXaml" />
+  </ItemGroup>
+
   <Import Project="..\build\SharedVersion.props"/>
   <Import Project="..\build\DevAnalyzers.props"/>
   <Import Project="$(MSBuildThisFileDirectory)\..\Directory.Build.props" />
