@@ -1455,7 +1455,7 @@ namespace Avalonia.Win32
                     style &= ~WindowStyles.WS_MINIMIZEBOX;
 
                 if (newProperties.IsMaximizable || (newProperties.WindowState == WindowState.Maximized && newProperties.IsResizable))
-                    style |= WindowStyles.WS_MAXIMIZEBOX | WindowStyles.WS_SYSMENU;
+                    style |= WindowStyles.WS_MAXIMIZEBOX;
                 else
                     style &= ~WindowStyles.WS_MAXIMIZEBOX;
 
@@ -1469,9 +1469,13 @@ namespace Avalonia.Win32
                 {
                     style &= ~(fullDecorationFlags | WindowStyles.WS_THICKFRAME);
 
-                    if (newProperties.Decorations == SystemDecorations.BorderOnly && newProperties.IsResizable)
+                    if (newProperties.Decorations == SystemDecorations.BorderOnly && newProperties.WindowState != WindowState.Maximized && newProperties.IsResizable)
                     {
                         style |= WindowStyles.WS_THICKFRAME | WindowStyles.WS_BORDER;
+                    }
+                    else if(newProperties.WindowState == WindowState.Maximized && _isClientAreaExtended)
+                    {
+                        style |= WindowStyles.WS_THICKFRAME;
                     }
                 }
 
