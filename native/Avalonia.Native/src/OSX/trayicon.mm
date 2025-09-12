@@ -13,6 +13,7 @@ extern IAvnTrayIcon* CreateTrayIcon()
 AvnTrayIcon::AvnTrayIcon()
 {
     _native = [[NSStatusBar systemStatusBar] statusItemWithLength: NSSquareStatusItemLength];
+    
 }
 
 AvnTrayIcon::~AvnTrayIcon()
@@ -34,8 +35,16 @@ HRESULT AvnTrayIcon::SetIcon (void* data, size_t length)
         {
             NSData *imageData = [NSData dataWithBytes:data length:length];
             NSImage *image = [[NSImage alloc] initWithData:imageData];
-            [image setSize:NSMakeSize(17, 17)];
             
+            NSSize originalSize = [image size];
+             
+            NSSize size;
+            size.height = floor([[NSFont menuFontOfSize:0] pointSize] * 1.333333);
+
+            auto scaleFactor = size.height / originalSize.height;
+            size.width = floor(originalSize.width * scaleFactor);
+            
+            [image setSize: size];
             [image setTemplate: _isTemplateIcon];
             [_native setImage:image];
         }
