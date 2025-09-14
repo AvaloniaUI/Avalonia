@@ -161,7 +161,10 @@ public sealed class DataTransferItem : IDataTransferItem, IAsyncDataTransferItem
     /// </summary>
     /// <typeparam name="T">The value type.</typeparam>
     /// <param name="format">The format.</param>
-    /// <param name="value">The value corresponding to <paramref name="format"/>.</param>
+    /// <param name="value">
+    /// The value corresponding to <paramref name="format"/>.
+    /// If null, the format won't be part of the <see cref="DataTransferItem"/>.
+    /// </param>
     /// <returns>A <see cref="DataTransferItem"/> instance.</returns>
     public static DataTransferItem Create<T>(DataFormat format, T value)
     {
@@ -183,6 +186,28 @@ public sealed class DataTransferItem : IDataTransferItem, IAsyncDataTransferItem
         item.Set(format, getValue);
         return item;
     }
+
+    /// <summary>
+    /// Creates a new <see cref="DataTransferItem"/> with <see cref="DataFormat.Text"/> as a single format.
+    /// </summary>
+    /// <param name="value">
+    /// The value corresponding to the <see cref="DataFormat.Text"/> format.
+    /// If null, the format won't be part of the <see cref="DataTransferItem"/>.
+    /// </param>
+    /// <returns>A <see cref="DataTransferItem"/> instance.</returns>
+    public static DataTransferItem CreateText(string? value)
+        => Create(DataFormat.Text, value);
+
+    /// <summary>
+    /// Creates a new <see cref="DataTransferItem"/> with <see cref="DataFormat.File"/> as a single format.
+    /// </summary>
+    /// <param name="value">
+    /// The value corresponding to the <see cref="DataFormat.File"/> format.
+    /// If null, the format won't be part of the <see cref="DataTransferItem"/>.
+    /// </param>
+    /// <returns>A <see cref="DataTransferItem"/> instance.</returns>
+    public static DataTransferItem CreateFile(IStorageItem? value)
+        => Create(DataFormat.File, value);
 
     private readonly struct DataAccessor(Func<object, object?> getValue, object state)
     {
