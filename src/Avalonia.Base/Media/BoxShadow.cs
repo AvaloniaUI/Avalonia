@@ -55,16 +55,23 @@ namespace Avalonia.Media
             {
                 s = null;
                 if (_index >= _arr.Length)
+                {
                     return false;
+                }
+
                 s = _arr[_index];
                 _index++;
+
                 return true;
             }
 
             public string ReadString()
             {
-                if(!TryReadString(out var rv))
+                if (!TryReadString(out var rv))
+                {
                     throw new FormatException();
+                }
+
                 return rv;
             }
         }
@@ -108,18 +115,27 @@ namespace Avalonia.Media
 
         public static unsafe BoxShadow Parse(string s)
         {
-            if(s == null)
+            if (s == null)
+            {
                 throw new ArgumentNullException();
+            }
+
             if (s.Length == 0)
+            {
                 throw new FormatException();
+            }
 
             var p = s.Split(s_Separator, StringSplitOptions.RemoveEmptyEntries);
             if (p.Length == 1 && p[0] == "none")
+            {
                 return default;
-            
+            }
+
             if (p.Length < 3 || p.Length > 6)
+            {
                 throw new FormatException();
-            
+            }
+
             bool inset = false;
 
             var tokenizer = new ArrayReader(p);
@@ -135,16 +151,20 @@ namespace Avalonia.Media
             var offsetY = double.Parse(tokenizer.ReadString(), CultureInfo.InvariantCulture);
             double blur = 0;
             double spread = 0;
-            
 
             tokenizer.TryReadString(out var token3);
             tokenizer.TryReadString(out var token4);
             tokenizer.TryReadString(out var token5);
 
-            if (token4 != null) 
+            if (token4 != null)
+            {
                 blur = double.Parse(token3!, CultureInfo.InvariantCulture);
+            }
+
             if (token5 != null)
+            {
                 spread = double.Parse(token4!, CultureInfo.InvariantCulture);
+            }
 
             var color = Color.Parse(token5 ?? token4 ?? token3!);
             return new BoxShadow
