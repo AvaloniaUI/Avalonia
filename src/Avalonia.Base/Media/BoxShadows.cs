@@ -1,16 +1,28 @@
 using System;
 using System.ComponentModel;
-using Avalonia.Animation.Animators;
 using Avalonia.Utilities;
 
 namespace Avalonia.Media
 {
+    /// <summary>
+    /// Represents a collection of <see cref="BoxShadow"/>s.
+    /// </summary>
     public struct BoxShadows
     {
+        private static readonly char[] s_Separators = new[] { ',' };
+
         private readonly BoxShadow _first;
         private readonly BoxShadow[]? _list;
+
+        /// <summary>
+        /// Gets the number of <see cref="BoxShadow"/>s in the collection.
+        /// </summary>
         public int Count { get; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BoxShadows"/> struct.
+        /// </summary>
+        /// <param name="shadow">The first <see cref="BoxShadow"/> to add to the collection.</param>
         public BoxShadows(BoxShadow shadow)
         {
             _first = shadow;
@@ -18,6 +30,11 @@ namespace Avalonia.Media
             Count = _first == default ? 0 : 1;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BoxShadows"/> struct.
+        /// </summary>
+        /// <param name="first">The first <see cref="BoxShadow"/> to add to the collection.</param>
+        /// <param name="rest">All remaining <see cref="BoxShadow"/>s to add to the collection.</param>
         public BoxShadows(BoxShadow first, BoxShadow[] rest)
         {
             _first = first;
@@ -25,24 +42,33 @@ namespace Avalonia.Media
             Count = 1 + (rest?.Length ?? 0);
         }
 
-        public BoxShadow this[int c]
+        /// <summary>
+        /// Gets the <see cref="BoxShadow"/> at the specified index.
+        /// </summary>
+        /// <param name="index">The index of the <see cref="BoxShadow"/> to return.</param>
+        /// <returns>The <see cref="BoxShadow"/> at the specified index.</returns>
+        /// <exception cref="IndexOutOfRangeException">
+        /// Thrown when index less than 0 or index greater than or equal to <see cref="Count"/>.
+        /// </exception>
+        public BoxShadow this[int index]
         {
             get
             {
-                if (c< 0 || c >= Count)
+                if (index < 0 || index >= Count)
                 {
                     throw new IndexOutOfRangeException();
                 }
 
-                if (c == 0)
+                if (index == 0)
                 {
                     return _first;
                 }
 
-                return _list![c - 1];
+                return _list![index - 1];
             }
         }
 
+        /// <inheritdoc/>
         public override string ToString()
         {
             if (Count == 0)
@@ -87,7 +113,11 @@ namespace Avalonia.Media
         [EditorBrowsable(EditorBrowsableState.Never)]
         public BoxShadowsEnumerator GetEnumerator() => new BoxShadowsEnumerator(this);
 
-        private static readonly char[] s_Separators = new[] { ',' };
+        /// <summary>
+        /// Parses a <see cref="BoxShadows"/> string representing one or more <see cref="BoxShadow"/>s.
+        /// </summary>
+        /// <param name="s">The input string to parse.</param>
+        /// <returns>A new <see cref="BoxShadows"/> collection.</returns>
         public static BoxShadows Parse(string s)
         {
             var sp = s.Split(s_Separators, StringSplitOptions.RemoveEmptyEntries);
@@ -114,6 +144,13 @@ namespace Avalonia.Media
             return new BoxShadows(first, rest);
         }
 
+        /// <summary>
+        /// Transforms the specified bounding rectangle to account for all shadow's offset, spread, and blur.
+        /// </summary>
+        /// <param name="rect">The original bounding <see cref="Rect"/> to transform.</param>
+        /// <returns>
+        /// A new <see cref="Rect"/> that includes all shadow's offset, spread, and blur in the collection.
+        /// </returns>
         public Rect TransformBounds(in Rect rect)
         {
             var final = rect;
@@ -125,6 +162,10 @@ namespace Avalonia.Media
             return final;
         }
 
+        /// <summary>
+        /// Gets a value indicating whether any <see cref="BoxShadow"/> in the collection has
+        /// <see cref="BoxShadow.IsInset"/> set to <c>true</c>.
+        /// </summary>
         public bool HasInsetShadows
         {
             get
@@ -141,6 +182,13 @@ namespace Avalonia.Media
             }
         }
 
+        /// <summary>
+        /// Indicates whether the current object is equal to another object of the same type.
+        /// </summary>
+        /// <param name="other">An object to compare with this object.</param>
+        /// <returns>
+        /// <c>true</c> if the current object is equal to the other parameter; otherwise, <c>false</c>.
+        /// </returns>
         public bool Equals(BoxShadows other)
         {
             if (other.Count != Count)
@@ -159,11 +207,13 @@ namespace Avalonia.Media
             return true;
         }
 
+        /// <inheritdoc/>
         public override bool Equals(object? obj)
         {
             return obj is BoxShadows other && Equals(other);
         }
 
+        /// <inheritdoc/>
         public override int GetHashCode()
         {
             unchecked
@@ -178,9 +228,25 @@ namespace Avalonia.Media
             }
         }
 
+        /// <summary>
+        /// Determines whether two <see cref="BoxShadows"/> collections are equal.
+        /// </summary>
+        /// <param name="left">The first <see cref="BoxShadows"/> collection to compare.</param>
+        /// <param name="right">The second <see cref="BoxShadows"/> collection to compare.</param>
+        /// <returns>
+        /// <c>true</c> if the two <see cref="BoxShadows"/> collections are equal; otherwise, <c>false</c>.
+        /// </returns>
         public static bool operator ==(BoxShadows left, BoxShadows right) => 
             left.Equals(right);
 
+        /// <summary>
+        /// Determines whether two <see cref="BoxShadows"/> collections are not equal.
+        /// </summary>
+        /// <param name="left">The first <see cref="BoxShadows"/> collection to compare.</param>
+        /// <param name="right">The second <see cref="BoxShadows"/> collection to compare.</param>
+        /// <returns>
+        /// <c>true</c> if the two <see cref="BoxShadows"/> collections are not equal; otherwise, <c>false</c>.
+        /// </returns>
         public static bool operator !=(BoxShadows left, BoxShadows right) =>
             !(left == right);
     }
