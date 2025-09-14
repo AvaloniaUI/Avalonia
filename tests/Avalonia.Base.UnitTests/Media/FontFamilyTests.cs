@@ -2,12 +2,18 @@
 using System.Linq;
 using Avalonia.Media;
 using Avalonia.Media.Fonts;
+using Avalonia.Platform;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests.Media
 {
     public class FontFamilyTests
     {
+        public FontFamilyTests()
+        {
+            AssetLoader.RegisterResUriParsers();
+        }
+
         [Fact]
         public void Should_Implicitly_Convert_String_To_FontFamily()
         {
