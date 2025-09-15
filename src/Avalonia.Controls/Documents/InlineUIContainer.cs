@@ -18,6 +18,8 @@ namespace Avalonia.Controls.Documents
         public static readonly StyledProperty<Control> ChildProperty =
             AvaloniaProperty.Register<InlineUIContainer, Control>(nameof(Child));
 
+        private double _measuredWidth = double.NaN;
+
         /// <summary>
         /// Initializes a new instance of InlineUIContainer element.
         /// </summary>
@@ -51,11 +53,12 @@ namespace Avalonia.Controls.Documents
             set => SetValue(ChildProperty, value);
         }
 
-        internal override void BuildTextRun(IList<TextRun> textRuns)
+        internal override void BuildTextRun(IList<TextRun> textRuns, Size blockSize)
         {
-            if(!Child.IsMeasureValid)
+            if (_measuredWidth != blockSize.Width || !Child.IsMeasureValid)
             {
-                Child.Measure(Size.Infinity);
+                Child.Measure(new Size(blockSize.Width, double.PositiveInfinity));
+                _measuredWidth = blockSize.Width;
             }
 
             textRuns.Add(new EmbeddedControlRun(Child, CreateTextRunProperties()));
