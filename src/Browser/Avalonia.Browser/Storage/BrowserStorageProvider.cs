@@ -356,12 +356,13 @@ internal class JSStorageFolder : JSStorageItem, IStorageBookmarkFolder
     {
         try
         {
-            var storageFile = await StorageHelper.CreateFile(FileHandle, name);
-            if (storageFile is null)
+            var fileHandle = await StorageHelper.CreateFile(FileHandle, name);
+            if (fileHandle is null)
             {
                 return null;
             }
-
+            
+            var storageFile = StorageHelper.StorageItemFromHandle(fileHandle)!;
             return new JSStorageFile(storageFile);
         }
         catch (JSException ex) when (ex.Message == BrowserStorageProvider.NoPermissionsMessage)
@@ -374,13 +375,14 @@ internal class JSStorageFolder : JSStorageItem, IStorageBookmarkFolder
     {
         try
         {
-            var storageFile = await StorageHelper.CreateFolder(FileHandle, name);
-            if (storageFile is null)
+            var folderHandler = await StorageHelper.CreateFolder(FileHandle, name);
+            if (folderHandler is null)
             {
                 return null;
             }
-
-            return new JSStorageFolder(storageFile);
+            
+            var storageFolder = StorageHelper.StorageItemFromHandle(folderHandler)!;
+            return new JSStorageFolder(storageFolder);
         }
         catch (JSException ex) when (ex.Message == BrowserStorageProvider.NoPermissionsMessage)
         {
