@@ -62,37 +62,6 @@ internal static class StorageProviderHelpers
         }
     }
 
-    public static FilePickerFileType? TryGetFileTypeFromKnownList(
-        string? mimeType, string? extension, IReadOnlyList<FilePickerFileType>? choices)
-    {
-        if (choices is null || choices.Count == 0)
-        {
-            return null;
-        }
-
-        if (!string.IsNullOrEmpty(mimeType))
-        {
-            foreach (var choice in choices)
-            {
-                if (choice.MimeTypes?.Contains(mimeType) == true)
-                    return choice;
-            }
-        }
-
-        if (!string.IsNullOrEmpty(extension))
-        {
-            var extensionPattern = "*." + extension.TrimStart('.');
-
-            foreach (var choice in choices)
-            {
-                if (choice.Patterns?.Contains(extensionPattern) == true)
-                    return choice;
-            }
-        }
-
-        return choices.Contains(FilePickerFileTypes.All) ? FilePickerFileTypes.All : null;
-    }
-
     [return: NotNullIfNotNull(nameof(path))]
     public static string? NameWithExtension(string? path, string? defaultExtension, FilePickerFileType? filter)
     {

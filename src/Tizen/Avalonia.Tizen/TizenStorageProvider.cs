@@ -89,6 +89,12 @@ internal class TizenStorageProvider : IStorageProvider
             new PlatformNotSupportedException("Save file picker is not supported by Tizen"));
     }
 
+    public async Task<SaveFilePickerResult> SaveFilePickerWithResultAsync(FilePickerSaveOptions options)
+    {
+        var file = await SaveFilePickerAsync(options).ConfigureAwait(false);
+        return new SaveFilePickerResult(file);
+    }
+
     public async Task<IStorageFile?> TryGetFileFromPathAsync(Uri filePath)
     {
         await CheckPermission();

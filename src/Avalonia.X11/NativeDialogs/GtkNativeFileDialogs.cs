@@ -70,6 +70,12 @@ namespace Avalonia.X11.NativeDialogs
             });
         }
 
+        public override async Task<SaveFilePickerResult> SaveFilePickerWithResultAsync(FilePickerSaveOptions options)
+        {
+            var file = await SaveFilePickerAsync(options).ConfigureAwait(false);
+            return new SaveFilePickerResult(file);
+        }
+
         private unsafe Task<string[]?> ShowDialog(string? title, IWindowImpl parent, GtkFileChooserAction action,
             bool multiSelect, IStorageFolder? initialFolder, string? initialFileName,
             IEnumerable<FilePickerFileType>? filters, string? defaultExtension, bool overwritePrompt)

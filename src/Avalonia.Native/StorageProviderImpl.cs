@@ -26,6 +26,12 @@ internal sealed class StorageProviderImpl(TopLevelImpl topLevel, StorageProvider
         return native.SaveFileDialog(topLevel, options);
     }
 
+    public async Task<SaveFilePickerResult> SaveFilePickerWithResultAsync(FilePickerSaveOptions options)
+    {
+        var file = await SaveFilePickerAsync(options).ConfigureAwait(false);
+        return new SaveFilePickerResult(file);
+    }
+
     public Task<IReadOnlyList<IStorageFolder>> OpenFolderPickerAsync(FolderPickerOpenOptions options)
     {
         return native.SelectFolderDialog(topLevel, options);

@@ -26,6 +26,11 @@ internal class ManagedStorageProvider : BclStorageProvider
 
     public override bool CanSave => true;
     public override bool CanOpen => true;
+    public override Task<SaveFilePickerResult> SaveFilePickerWithResultAsync(FilePickerSaveOptions options)
+    {
+        throw new NotImplementedException();
+    }
+
     public override bool CanPickFolder => true;
             
     public override async Task<IReadOnlyList<IStorageFile>> OpenFilePickerAsync(FilePickerOpenOptions options)

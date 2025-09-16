@@ -144,6 +144,12 @@ namespace Avalonia.FreeDesktop
             return new BclStorageFile(new FileInfo(path));
         }
 
+        public override async Task<SaveFilePickerResult> SaveFilePickerWithResultAsync(FilePickerSaveOptions options)
+        {
+            var file = await SaveFilePickerAsync(options).ConfigureAwait(false);
+            return new SaveFilePickerResult(file);
+        }
+
         public override async Task<IReadOnlyList<IStorageFolder>> OpenFolderPickerAsync(FolderPickerOpenOptions options)
         {
             if (_version < 3)
