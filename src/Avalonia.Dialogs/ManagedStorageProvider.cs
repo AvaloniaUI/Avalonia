@@ -26,11 +26,6 @@ internal class ManagedStorageProvider : BclStorageProvider
 
     public override bool CanSave => true;
     public override bool CanOpen => true;
-    public override Task<SaveFilePickerResult> SaveFilePickerWithResultAsync(FilePickerSaveOptions options)
-    {
-        throw new NotImplementedException();
-    }
-
     public override bool CanPickFolder => true;
             
     public override async Task<IReadOnlyList<IStorageFile>> OpenFilePickerAsync(FilePickerOpenOptions options)
@@ -49,6 +44,19 @@ internal class ManagedStorageProvider : BclStorageProvider
         return results.FirstOrDefault() is { } result
             ? new BclStorageFile(new FileInfo(result))
             : null;
+    }
+
+    public override async Task<SaveFilePickerResult> SaveFilePickerWithResultAsync(FilePickerSaveOptions options)
+    {
+        var model = new ManagedFileChooserViewModel(options, _managedOptions);
+        var results = await Show(model);
+
+        var file = results.FirstOrDefault() is { } result ? new BclStorageFile(new FileInfo(result)) : null;
+        var filterType = model.SelectedFilter?.Index is { } index && index < options.FileTypeChoices?.Count ?
+            options.FileTypeChoices[index] :
+            null;
+
+        return new SaveFilePickerResult(file) { SelectedFileType = filterType };
     }
 
     public override async Task<IReadOnlyList<IStorageFolder>> OpenFolderPickerAsync(FolderPickerOpenOptions options)
