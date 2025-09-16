@@ -77,12 +77,15 @@ namespace Avalonia.Controls.Documents
                 if(change.OldValue is Control oldChild)
                 {
                     LogicalChildren.Remove(oldChild);
+                    InlineHost?.VisualChildren.Remove(oldChild);
                 }
 
                 if(change.NewValue is Control newChild)
                 {
                     LogicalChildren.Add(newChild);
                 }
+
+                InlineHost?.Invalidate();
             }
         }
     }
