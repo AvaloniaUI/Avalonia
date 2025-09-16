@@ -180,22 +180,12 @@ namespace Avalonia.Controls.Documents
 
             LogicalChildren?.Add(inline);
 
-            if (inline is InlineUIContainer container)
-            {
-                InlineHost?.VisualChildren.Add(container.Child);
-            }
-
             Invalidate();
         }
 
         private void OnRemove(TextElement inline)
         {
             LogicalChildren?.Remove(inline);
-
-            if (inline is InlineUIContainer container)
-            {
-                InlineHost?.VisualChildren.Remove(container.Child);
-            }
 
             inline.InlineHost = null;
 

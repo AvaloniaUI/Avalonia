@@ -83,10 +83,18 @@ namespace Avalonia.Controls.Documents
                 if(change.NewValue is Control newChild)
                 {
                     LogicalChildren.Add(newChild);
+                    InlineHost?.VisualChildren.Add(newChild);
                 }
 
                 InlineHost?.Invalidate();
             }
+        }
+
+        internal override void OnInlineHostChanged(IInlineHost? oldValue, IInlineHost? newValue)
+        {
+            var child = Child;
+            oldValue?.VisualChildren.Remove(child);
+            newValue?.VisualChildren.Add(child);
         }
     }
 }
