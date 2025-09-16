@@ -32,6 +32,12 @@ public interface IStorageProvider
     Task<IStorageFile?> SaveFilePickerAsync(FilePickerSaveOptions options);
 
     /// <summary>
+    /// Opens save file picker dialog and returns additional information about the result.
+    /// </summary>
+    /// <returns><see cref="SaveFilePickerResult"/> with saved file and additional dialog information such as selected file type.</returns>
+    Task<SaveFilePickerResult> SaveFilePickerWithResultAsync(FilePickerSaveOptions options);
+
+    /// <summary>
     /// Returns true if it's possible to open folder picker on the current platform. 
     /// </summary>
     bool CanPickFolder { get; }
