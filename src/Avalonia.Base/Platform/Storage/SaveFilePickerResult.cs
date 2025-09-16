@@ -3,7 +3,7 @@ namespace Avalonia.Platform.Storage;
 /// <summary>
 /// Extended result of the <see cref="IStorageProvider.SaveFilePickerWithResultAsync(FilePickerSaveOptions)"/> operation.
 /// </summary>
-public sealed class SaveFilePickerResult
+public struct SaveFilePickerResult
 {
     internal SaveFilePickerResult(IStorageFile? file)
     {
