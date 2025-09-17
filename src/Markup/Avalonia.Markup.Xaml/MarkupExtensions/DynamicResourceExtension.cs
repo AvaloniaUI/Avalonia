@@ -7,7 +7,7 @@ using Avalonia.Styling;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
-    public class DynamicResourceExtension : BindingBase
+    public sealed class DynamicResourceExtension : BindingBase
     {
         private object? _anchor;
         private BindingPriority _priority;

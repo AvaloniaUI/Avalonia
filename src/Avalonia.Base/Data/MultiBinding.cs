@@ -11,7 +11,7 @@ namespace Avalonia.Data
     /// <summary>
     /// A XAML binding that calculates an aggregate value from multiple child <see cref="Bindings"/>.
     /// </summary>
-    public class MultiBinding : BindingBase
+    public sealed class MultiBinding : BindingBase
     {
         /// <summary>
         /// Gets the collection of child bindings.

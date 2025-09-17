@@ -9,7 +9,7 @@ namespace Avalonia.Data
     /// <summary>
     /// A XAML binding to a property on a control's templated parent.
     /// </summary>
-    public partial class TemplateBinding : BindingBase
+    public sealed partial class TemplateBinding : BindingBase
     {
         public TemplateBinding()
         {
