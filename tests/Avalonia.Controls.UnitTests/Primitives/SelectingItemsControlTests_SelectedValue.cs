@@ -22,7 +22,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var sic = new SelectingItemsControl
             {
                 ItemsSource = items,
-                SelectedValueBinding = new Binding("Name"),
+                SelectedValueBinding = new ReflectionBinding("Name"),
                 Template = Template()
             };
 
@@ -38,7 +38,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var sic = new SelectingItemsControl
             {
                 ItemsSource = items,
-                SelectedValueBinding = new Binding("Name"),
+                SelectedValueBinding = new ReflectionBinding("Name"),
                 Template = Template()
             };
 
@@ -54,7 +54,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var sic = new ListBox
             {
                 ItemsSource = items,
-                SelectedValueBinding = new Binding("Name"),
+                SelectedValueBinding = new ReflectionBinding("Name"),
                 Template = Template()
             };
 
@@ -79,7 +79,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var sic = new SelectingItemsControl
                 {
                     ItemsSource = items,
-                    SelectedValueBinding = new Binding("Name"),
+                    SelectedValueBinding = new ReflectionBinding("Name"),
                     Template = Template()
                 };
 
@@ -100,7 +100,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var sic = new SelectingItemsControl
                 {
                     ItemsSource = items,
-                    SelectedValueBinding = new Binding("Name"),
+                    SelectedValueBinding = new ReflectionBinding("Name"),
                     Template = Template()
                 };
 
@@ -121,13 +121,13 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var sic = new SelectingItemsControl
                 {
                     ItemsSource = items,
-                    SelectedValueBinding = new Binding("Name"),
+                    SelectedValueBinding = new ReflectionBinding("Name"),
                     Template = Template()
                 };
 
                 sic.SelectedValue = "Item2";
 
-                sic.SelectedValueBinding = new Binding("AltProperty");
+                sic.SelectedValueBinding = new ReflectionBinding("AltProperty");
 
                 // Ensure SelectedItem didn't change
                 Assert.Equal(items[2], sic.SelectedItem);
@@ -160,7 +160,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             {
                 ItemsSource = items,
                 Template = Template(),
-                SelectedValueBinding = new Binding("Name"),
+                SelectedValueBinding = new ReflectionBinding("Name"),
                 SelectedValue = "Item2"
             };
 
@@ -176,7 +176,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var target = new SelectingItemsControl
             {
                 Template = Template(),
-                SelectedValueBinding = new Binding("Name")
+                SelectedValueBinding = new ReflectionBinding("Name")
             };
 
             target.ApplyTemplate();
@@ -199,7 +199,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var target = new SelectingItemsControl
             {
                 Template = Template(),
-                SelectedValueBinding = new Binding("Name")
+                SelectedValueBinding = new ReflectionBinding("Name")
             };
 
             target.ApplyTemplate();
@@ -225,7 +225,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             {
                 ItemsSource = items,
                 Template = Template(),
-                SelectedValueBinding = new Binding("Name"),
+                SelectedValueBinding = new ReflectionBinding("Name"),
                 SelectedValue = "Item2"
             };
 
@@ -246,7 +246,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 {
                     ItemsSource = items,
                     Template = Template(),
-                    SelectedValueBinding = new Binding("Name"),
+                    SelectedValueBinding = new ReflectionBinding("Name"),
                     SelectedValue = "Item2"
                 };
 
@@ -273,7 +273,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 {
                     ItemsSource = items,
                     Template = Template(),
-                    SelectedValueBinding = new Binding("Name"),
+                    SelectedValueBinding = new ReflectionBinding("Name"),
                 };
 
                 Prepare(sic);
@@ -299,7 +299,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             {
                 ItemsSource = items,
                 Template = Template(),
-                SelectedValueBinding = new Binding("Name"),
+                SelectedValueBinding = new ReflectionBinding("Name"),
                 SelectedValue = "Item2"
             };
 
@@ -324,7 +324,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             {
                 ItemsSource = items,
                 SelectedIndex = 1,
-                SelectedValueBinding = new Binding("Name"),
+                SelectedValueBinding = new ReflectionBinding("Name"),
                 Template = Template()
             };
 

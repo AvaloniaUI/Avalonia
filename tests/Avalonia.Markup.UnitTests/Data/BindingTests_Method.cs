@@ -16,7 +16,7 @@ namespace Avalonia.Markup.UnitTests.Data
             var target = new Button
             {
                 DataContext = vm,
-                [!Button.CommandProperty] = new Binding("MyMethod"),
+                [!Button.CommandProperty] = new ReflectionBinding("MyMethod"),
             };
             target.RaiseEvent(new AccessKeyEventArgs("b", false));
 

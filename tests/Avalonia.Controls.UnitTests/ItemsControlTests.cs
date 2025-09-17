@@ -818,7 +818,7 @@ namespace Avalonia.Controls.UnitTests
             using var app = Start();
             var target = CreateTarget(
                 itemsSource: new[] { "Foo" },
-                displayMemberBinding: new Binding("Length"));
+                displayMemberBinding: new ReflectionBinding("Length"));
 
             var container = GetContainer(target);
             var textBlock = Assert.IsType<TextBlock>(container.Child);
@@ -832,14 +832,14 @@ namespace Avalonia.Controls.UnitTests
             using var app = Start();
             var target = CreateTarget(
                 itemsSource: new[] { new Item("Foo", "Bar") },
-                displayMemberBinding: new Binding("Value"));
+                displayMemberBinding: new ReflectionBinding("Value"));
 
             var container = GetContainer(target);
             var textBlock = Assert.IsType<TextBlock>(container.Child);
 
             Assert.Equal(textBlock.Text, "Bar");
 
-            target.DisplayMemberBinding = new Binding("Caption");
+            target.DisplayMemberBinding = new ReflectionBinding("Caption");
             Layout(target);
 
             container = GetContainer(target);
@@ -853,7 +853,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using var app = Start();
             var target = CreateTarget(
-                displayMemberBinding: new Binding("Length"));
+                displayMemberBinding: new ReflectionBinding("Length"));
 
             Assert.Throws<InvalidOperationException>(() =>
                 target.ItemTemplate = new FuncDataTemplate<string>((_, _) => new TextBlock()));
@@ -866,7 +866,7 @@ namespace Avalonia.Controls.UnitTests
             var target = CreateTarget(
                 itemTemplate: new FuncDataTemplate<string>((_, _) => new TextBlock()));
 
-            Assert.Throws<InvalidOperationException>(() => target.DisplayMemberBinding = new Binding("Length"));
+            Assert.Throws<InvalidOperationException>(() => target.DisplayMemberBinding = new ReflectionBinding("Length"));
         }
 
         [Fact]

@@ -106,7 +106,7 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             switch (value)
             {
-                case Binding:
+                case ReflectionBinding:
                 case CompiledBindingExtension:
                 case TemplateBinding:
                     return true;

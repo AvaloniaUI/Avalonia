@@ -41,7 +41,7 @@ namespace Avalonia.Controls.UnitTests
 
                 application.DataContext = "Test";
 
-                application.Bind(Application.NameProperty, new Binding("."));
+                application.Bind(Application.NameProperty, new ReflectionBinding("."));
 
                 Assert.Equal("Test", Application.Current.Name);
             }

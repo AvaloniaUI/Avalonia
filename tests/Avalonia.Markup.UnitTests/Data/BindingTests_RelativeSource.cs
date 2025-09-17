@@ -25,7 +25,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 },
             };
 
-            var binding = new Binding
+            var binding = new ReflectionBinding
             {
                 Path = "Name",
                 RelativeSource = new RelativeSource
@@ -55,7 +55,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 },
             };
 
-            var binding = new Binding
+            var binding = new ReflectionBinding
             {
                 Path = "Name",
                 RelativeSource = new RelativeSource
@@ -82,7 +82,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 },
             };
 
-            var binding = new Binding
+            var binding = new ReflectionBinding
             {
                 Path = "Name",
                 RelativeSource = new RelativeSource
@@ -108,7 +108,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 },
             };
 
-            var binding = new Binding
+            var binding = new ReflectionBinding
             {
                 Path = "Name",
                 RelativeSource = new RelativeSource
@@ -145,7 +145,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 },
             };
 
-            var binding = new Binding
+            var binding = new ReflectionBinding
             {
                 Path = "Name",
                 RelativeSource = new RelativeSource
@@ -192,7 +192,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 DataContext = viewModel
             };
 
-            var binding = new Binding
+            var binding = new ReflectionBinding
             {
                 Path = "DataContext.Value",
                 RelativeSource = new RelativeSource
@@ -239,7 +239,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 DataContext = vm
             };
 
-            var binding = new Binding
+            var binding = new ReflectionBinding
             {
                 Path = "DataContext.Foo.Value",
                 RelativeSource = new RelativeSource

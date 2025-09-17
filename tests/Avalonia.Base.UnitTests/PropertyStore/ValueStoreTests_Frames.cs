@@ -102,7 +102,7 @@ namespace Avalonia.Base.UnitTests.PropertyStore
         public void Disposing_Binding_Removes_ImmediateValueFrame()
         {
             var target = new Class1();
-            var source = new Binding { Priority = BindingPriority.Style };
+            var source = new ReflectionBinding { Priority = BindingPriority.Style };
             var expression = target.Bind(Class1.FooProperty, source);
 
             var valueStore = target.GetValueStore();

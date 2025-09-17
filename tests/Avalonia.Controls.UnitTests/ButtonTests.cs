@@ -58,7 +58,7 @@ namespace Avalonia.Controls.UnitTests
         {
             var target = new Button
             {
-                [!Button.CommandProperty] = new Binding("Command"),
+                [!Button.CommandProperty] = new ReflectionBinding("Command"),
             };
 
             Assert.True(target.IsEnabled);
@@ -76,7 +76,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new Button
             {
                 DataContext = viewModel,
-                [!Button.CommandProperty] = new Binding("Command"),
+                [!Button.CommandProperty] = new ReflectionBinding("Command"),
             };
 
             Assert.True(target.IsEnabled);
@@ -99,7 +99,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new Button
             {
                 DataContext = new object(),
-                [!Button.CommandProperty] = new Binding("Command"),
+                [!Button.CommandProperty] = new ReflectionBinding("Command"),
             };
             var root = new TestRoot { Child = target };
 
@@ -125,7 +125,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new Button
             {
                 DataContext = new object(),
-                [!Button.CommandProperty] = new Binding("Command"),
+                [!Button.CommandProperty] = new ReflectionBinding("Command"),
             };
 
             Assert.True(target.IsEnabled);

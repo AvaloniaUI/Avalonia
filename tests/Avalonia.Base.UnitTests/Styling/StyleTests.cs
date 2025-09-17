@@ -219,7 +219,7 @@ namespace Avalonia.Base.UnitTests.Styling
                 {
                     Setters =
                     {
-                        new Setter(Class1.FooProperty, new Binding("Foo")),
+                        new Setter(Class1.FooProperty, new ReflectionBinding("Foo")),
                     },
                 },
 
@@ -227,7 +227,7 @@ namespace Avalonia.Base.UnitTests.Styling
                 {
                     Setters =
                     {
-                        new Setter(Class1.FooProperty, new Binding("Bar")),
+                        new Setter(Class1.FooProperty, new ReflectionBinding("Bar")),
                     },
                 }
             };
@@ -366,7 +366,7 @@ namespace Avalonia.Base.UnitTests.Styling
                     {
                         Setters =
                         {
-                            new Setter(Class1.FooProperty, new Binding("Foo")),
+                            new Setter(Class1.FooProperty, new ReflectionBinding("Foo")),
                         },
                     },
 
@@ -374,7 +374,7 @@ namespace Avalonia.Base.UnitTests.Styling
                     {
                         Setters =
                         {
-                            new Setter(Class1.FooProperty, new Binding("Bar")),
+                            new Setter(Class1.FooProperty, new ReflectionBinding("Bar")),
                         },
                     }
                 }
@@ -477,7 +477,7 @@ namespace Avalonia.Base.UnitTests.Styling
                     {
                         Setters =
                         {
-                            new Setter(Class1.FooProperty, new Binding("Foo")),
+                            new Setter(Class1.FooProperty, new ReflectionBinding("Foo")),
                         },
                     },
 
@@ -485,7 +485,7 @@ namespace Avalonia.Base.UnitTests.Styling
                     {
                         Setters =
                         {
-                            new Setter(Class1.FooProperty, new Binding("Bar")),
+                            new Setter(Class1.FooProperty, new ReflectionBinding("Bar")),
                         },
                     }
                 }

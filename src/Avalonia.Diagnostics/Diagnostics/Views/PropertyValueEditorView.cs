@@ -79,14 +79,14 @@ namespace Avalonia.Diagnostics.Views
 
                 el.Bind(
                         Shape.FillProperty,
-                        new Binding(nameof(Property.Value)) { Source = Property, Converter = Color2Brush })
+                        new ReflectionBinding(nameof(Property.Value)) { Source = Property, Converter = Color2Brush })
                     .DisposeWith(_cleanup);
 
                 var tbl = new TextBlock { VerticalAlignment = VerticalAlignment.Center };
 
                 tbl.Bind(
                         TextBlock.TextProperty,
-                        new Binding(nameof(Property.Value)) { Source = Property })
+                        new ReflectionBinding(nameof(Property.Value)) { Source = Property })
                     .DisposeWith(_cleanup);
 
                 var sp = new StackPanel
@@ -106,7 +106,7 @@ namespace Avalonia.Diagnostics.Views
 
                 cv.Bind(
                         ColorView.ColorProperty,
-                        new Binding(nameof(Property.Value), BindingMode.TwoWay)
+                        new ReflectionBinding(nameof(Property.Value), BindingMode.TwoWay)
                         {
                             Source = Property,
                             Converter = Color2Brush
@@ -244,7 +244,7 @@ namespace Avalonia.Diagnostics.Views
                 init?.Invoke(control);
 
                 control.Bind(valueProperty,
-                    new Binding(nameof(Property.Value), bindingMode)
+                    new ReflectionBinding(nameof(Property.Value), bindingMode)
                     {
                         Source = Property,
                         Converter = converter ?? new ValueConverter(),

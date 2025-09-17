@@ -35,7 +35,7 @@ namespace Avalonia.Controls.Primitives.UnitTests
             var source = new Class1();
 
             toggleButton.DataContext = source;
-            toggleButton.Bind(ToggleButton.IsCheckedProperty, new Binding("Foo"));
+            toggleButton.Bind(ToggleButton.IsCheckedProperty, new ReflectionBinding("Foo"));
 
             source.Foo = true;
             Assert.True(toggleButton.IsChecked);
@@ -51,7 +51,7 @@ namespace Avalonia.Controls.Primitives.UnitTests
             var source = new Class1();
 
             threeStateButton.DataContext = source;
-            threeStateButton.Bind(ToggleButton.IsCheckedProperty, new Binding(nameof(Class1.NullableFoo)));
+            threeStateButton.Bind(ToggleButton.IsCheckedProperty, new ReflectionBinding(nameof(Class1.NullableFoo)));
 
             source.NullableFoo = true;
             Assert.True(threeStateButton.IsChecked);

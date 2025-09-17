@@ -63,7 +63,7 @@ namespace Avalonia.Controls.UnitTests
             var itemTemplate = new TreeDataTemplate
             {
                 Content = (IServiceProvider? _) => new TemplateResult<Control>(new Canvas(), new NameScope()),
-                ItemsSource = new Binding("Children"),
+                ItemsSource = new ReflectionBinding("Children"),
             };
             var target = CreateTarget(itemTemplate: itemTemplate);
 
@@ -859,8 +859,8 @@ namespace Avalonia.Controls.UnitTests
             var target = CreateTarget();
 
             target.DataContext = dataContext;
-            target.Bind(TreeView.ItemsSourceProperty, new Binding("Items"));
-            target.Bind(TreeView.SelectedItemProperty, new Binding("SelectedItem"));
+            target.Bind(TreeView.ItemsSourceProperty, new ReflectionBinding("Items"));
+            target.Bind(TreeView.SelectedItemProperty, new ReflectionBinding("SelectedItem"));
 
             var selectedValues = new List<object?>();
 
@@ -1376,7 +1376,7 @@ namespace Avalonia.Controls.UnitTests
                 BasedOn = CreateTreeViewItemControlTheme(),
                 Setters =
                 {
-                    new Setter(SelectingItemsControl.IsSelectedProperty, new Binding("IsSelected")),
+                    new Setter(SelectingItemsControl.IsSelectedProperty, new ReflectionBinding("IsSelected")),
                 }
             };
 
@@ -1402,7 +1402,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 Setters =
                 {
-                    new Setter(SelectingItemsControl.IsSelectedProperty, new Binding("IsSelected")),
+                    new Setter(SelectingItemsControl.IsSelectedProperty, new ReflectionBinding("IsSelected")),
                 }
             };
 
@@ -1428,7 +1428,7 @@ namespace Avalonia.Controls.UnitTests
                 BasedOn = CreateTreeViewItemControlTheme(),
                 Setters =
                 {
-                    new Setter(SelectingItemsControl.IsSelectedProperty, new Binding("IsSelected")),
+                    new Setter(SelectingItemsControl.IsSelectedProperty, new ReflectionBinding("IsSelected")),
                 }
             };
 
@@ -1457,7 +1457,7 @@ namespace Avalonia.Controls.UnitTests
                 BasedOn = CreateTreeViewItemControlTheme(),
                 Setters =
                 {
-                    new Setter(SelectingItemsControl.IsSelectedProperty, new Binding("IsSelected")),
+                    new Setter(SelectingItemsControl.IsSelectedProperty, new ReflectionBinding("IsSelected")),
                 }
             };
 
@@ -1500,7 +1500,7 @@ namespace Avalonia.Controls.UnitTests
                 BasedOn = CreateTreeViewItemControlTheme(),
                 Setters =
                 {
-                    new Setter(SelectingItemsControl.IsSelectedProperty, new Binding("IsSelected")),
+                    new Setter(SelectingItemsControl.IsSelectedProperty, new ReflectionBinding("IsSelected")),
                 }
             };
 
@@ -1615,11 +1615,11 @@ namespace Avalonia.Controls.UnitTests
                     new TreeDataTemplate
                     {
                         DataType = typeof(Node),
-                        ItemsSource = new Binding(nameof(Node.Children)),
+                        ItemsSource = new ReflectionBinding(nameof(Node.Children)),
                         Content = (IServiceProvider? _) => new TemplateResult<Control>(
                             new TextBlock
                             {
-                                [!TextBlock.TextProperty] = new Binding(nameof(Node.Value)),
+                                [!TextBlock.TextProperty] = new ReflectionBinding(nameof(Node.Value)),
                             },
                             new NameScope())
                     },

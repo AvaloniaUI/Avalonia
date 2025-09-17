@@ -111,7 +111,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 var target = new Decorator
                 {
-                    [!ToolTip.TipProperty] = new Binding("Tip"),
+                    [!ToolTip.TipProperty] = new ReflectionBinding("Tip"),
                     [ToolTip.ShowDelayProperty] = 0,
                 };
 

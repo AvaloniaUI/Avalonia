@@ -20,7 +20,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 Template = new FuncControlTemplate<Button>((parent, _) =>
                     new ContentPresenter
                     {
-                        [~ContentPresenter.ContentProperty] = new Binding
+                        [~ContentPresenter.ContentProperty] = new ReflectionBinding
                         {
                             Mode = BindingMode.OneWay,
                             RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
@@ -48,7 +48,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 Template = new FuncControlTemplate<Button>((parent, _) =>
                     new ContentPresenter
                     {
-                        [~ContentPresenter.ContentProperty] = new Binding
+                        [~ContentPresenter.ContentProperty] = new ReflectionBinding
                         {
                             Mode = BindingMode.TwoWay,
                             RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),

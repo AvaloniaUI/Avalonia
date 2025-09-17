@@ -208,7 +208,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             // Test for issue #1099.
             var textBlock = new TextBlock
             {
-                [!TextBlock.TextProperty] = new Binding(),
+                [!TextBlock.TextProperty] = new ReflectionBinding(),
             };
 
             var target = new ContentPresenter()

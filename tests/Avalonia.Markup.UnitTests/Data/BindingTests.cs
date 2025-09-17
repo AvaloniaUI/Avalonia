@@ -20,7 +20,7 @@ namespace Avalonia.Markup.UnitTests.Data
         {
             var source = new Source { Foo = "foo" };
             var target = new TextBlock { DataContext = source };
-            var binding = new Binding
+            var binding = new ReflectionBinding
             {
                 Path = "Foo",
                 Mode = BindingMode.OneWay,
@@ -40,7 +40,7 @@ namespace Avalonia.Markup.UnitTests.Data
         {
             var source = new Source { Foo = "foo" };
             var target = new TextBlock { DataContext = source };
-            var binding = new Binding
+            var binding = new ReflectionBinding
             {
                 Path = "Foo",
                 Mode = BindingMode.TwoWay,
@@ -61,7 +61,7 @@ namespace Avalonia.Markup.UnitTests.Data
             var source = new WeakRefSource { Foo = null };
             var target = new TestControl { DataContext = source };
 
-            var binding = new Binding
+            var binding = new ReflectionBinding
             {
                 Path = "Foo",
                 Mode = BindingMode.TwoWay
@@ -137,7 +137,7 @@ namespace Avalonia.Markup.UnitTests.Data
         {
             var source = new Source { Foo = "foo" };
             var target = new TextBlock { DataContext = source };
-            var binding = new Binding
+            var binding = new ReflectionBinding
             {
                 Path = "Foo",
                 Mode = BindingMode.OneTime,
@@ -157,7 +157,7 @@ namespace Avalonia.Markup.UnitTests.Data
         {
             var source = new Source { Foo = "foo" };
             var target = new TextBlock { DataContext = source, Text = "bar" };
-            var binding = new Binding
+            var binding = new ReflectionBinding
             {
                 Path = "Foo",
                 Mode = BindingMode.OneWayToSource,
@@ -176,7 +176,7 @@ namespace Avalonia.Markup.UnitTests.Data
         public void OneWayToSource_Binding_Should_React_To_DataContext_Changed()
         {
             var target = new TextBlock { Text = "bar" };
-            var binding = new Binding
+            var binding = new ReflectionBinding
             {
                 Path = "Foo",
                 Mode = BindingMode.OneWayToSource,
@@ -199,7 +199,7 @@ namespace Avalonia.Markup.UnitTests.Data
         {
             // Issue #2912
             var target = new TextBlock { Text = null };
-            var binding = new Binding
+            var binding = new ReflectionBinding
             {
                 Path = "Foo",
                 Mode = BindingMode.OneWayToSource,
@@ -223,7 +223,7 @@ namespace Avalonia.Markup.UnitTests.Data
         {
             var source = new Source { Foo = "foo" };
             var target = new TwoWayBindingTest { DataContext = source };
-            var binding = new Binding
+            var binding = new ReflectionBinding
             {
                 Path = "Foo",
             };
@@ -248,7 +248,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 DataContext = parentDataContext,
             };
 
-            var binding = new Binding
+            var binding = new ReflectionBinding
             {
                 Path = "Header",
             };
@@ -272,7 +272,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             var child = new Control();
 
-            var binding = new Binding
+            var binding = new ReflectionBinding
             {
                 Path = "Foo",
             };
@@ -297,7 +297,7 @@ namespace Avalonia.Markup.UnitTests.Data
             var values = new List<object>();
 
             child.GetObservable(Control.DataContextProperty).Subscribe(x => values.Add(x));
-            child.Bind(Control.DataContextProperty, new Binding("Foo"));
+            child.Bind(Control.DataContextProperty, new ReflectionBinding("Foo"));
 
             // When binding to DataContext and the source isn't found, the binding should produce
             // null rather than UnsetValue in order to not propagate incorrect DataContexts from
@@ -315,7 +315,7 @@ namespace Avalonia.Markup.UnitTests.Data
         {
             var target = new TextBlock();
             var source = new Source();
-            var binding = new Binding
+            var binding = new ReflectionBinding
             {
                 Source = source,
                 Path = "BadPath",
@@ -332,7 +332,7 @@ namespace Avalonia.Markup.UnitTests.Data
         {
             var target = new ProgressBar();
             var source = new Source { Foo = "foo" };
-            var binding = new Binding
+            var binding = new ReflectionBinding
             {
                 Source = source,
                 Path = "Foo",
@@ -350,7 +350,7 @@ namespace Avalonia.Markup.UnitTests.Data
             var target = new TextBlock();
             var source = new Source { Foo = null };
 
-            var binding = new Binding
+            var binding = new ReflectionBinding
             {
                 Source = source,
                 Path = "Foo",
@@ -366,7 +366,7 @@ namespace Avalonia.Markup.UnitTests.Data
         public void Null_Path_Should_Bind_To_DataContext()
         {
             var target = new TextBlock { DataContext = "foo" };
-            var binding = new Binding();
+            var binding = new ReflectionBinding();
 
             target.Bind(TextBlock.TextProperty, binding);
 
@@ -377,7 +377,7 @@ namespace Avalonia.Markup.UnitTests.Data
         public void Empty_Path_Should_Bind_To_DataContext()
         {
             var target = new TextBlock { DataContext = "foo" };
-            var binding = new Binding { Path = string.Empty };
+            var binding = new ReflectionBinding { Path = string.Empty };
 
             target.Bind(TextBlock.TextProperty, binding);
 
@@ -388,7 +388,7 @@ namespace Avalonia.Markup.UnitTests.Data
         public void Dot_Path_Should_Bind_To_DataContext()
         {
             var target = new TextBlock { DataContext = "foo" };
-            var binding = new Binding { Path = "." };
+            var binding = new ReflectionBinding { Path = "." };
 
             target.Bind(TextBlock.TextProperty, binding);
 
@@ -413,13 +413,13 @@ namespace Avalonia.Markup.UnitTests.Data
             var vm = new OldDataContextViewModel();
             var target = new OldDataContextTest();
 
-            var fooBinding = new Binding
+            var fooBinding = new ReflectionBinding
             {
                 Path = "Foo",
                 Mode = BindingMode.TwoWay,
             };
 
-            var barBinding = new Binding
+            var barBinding = new ReflectionBinding
             {
                 Path = "Bar",
                 Mode = BindingMode.TwoWay,
@@ -456,7 +456,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 DataContext = new { Foo = "foo" }
             };
 
-            target[!ContentControl.ContentProperty] = new Binding("Foo");
+            target[!ContentControl.ContentProperty] = new ReflectionBinding("Foo");
 
             Assert.Equal("foo", target.Content);
         }
@@ -472,12 +472,12 @@ namespace Avalonia.Markup.UnitTests.Data
             var target = new StyledPropertyClass();
 
             target.Bind(StyledPropertyClass.DoubleValueProperty,
-                new Binding("Value") { Mode = BindingMode.TwoWay, Source = viewModel });
+                new ReflectionBinding("Value") { Mode = BindingMode.TwoWay, Source = viewModel });
 
             var child = new StyledPropertyClass();
 
             child.Bind(StyledPropertyClass.DoubleValueProperty,
-                new Binding("DoubleValue")
+                new ReflectionBinding("DoubleValue")
                 {
                     Mode = BindingMode.TwoWay,
                     Source = target
@@ -507,7 +507,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             var target = new DirectPropertyClass();
 
-            target.Bind(DirectPropertyClass.DoubleValueProperty, new Binding("Value")
+            target.Bind(DirectPropertyClass.DoubleValueProperty, new ReflectionBinding("Value")
             {
                 Mode = BindingMode.TwoWay,
                 Source = viewModel
@@ -516,7 +516,7 @@ namespace Avalonia.Markup.UnitTests.Data
             var child = new DirectPropertyClass();
 
             child.Bind(DirectPropertyClass.DoubleValueProperty,
-                new Binding("DoubleValue")
+                new ReflectionBinding("DoubleValue")
                 {
                     Mode = BindingMode.TwoWay,
                     Source = target
@@ -544,8 +544,8 @@ namespace Avalonia.Markup.UnitTests.Data
             var root = new Panel { Children = { target1, target2 } };
             var source = new Source { Foo = "foo" };
 
-            using (target1.Bind(TextBlock.TextProperty, new Binding("Foo", BindingMode.OneTime)))
-            using (target2.Bind(TextBlock.TextProperty, new Binding("Foo", BindingMode.OneWayToSource)))
+            using (target1.Bind(TextBlock.TextProperty, new ReflectionBinding("Foo", BindingMode.OneTime)))
+            using (target2.Bind(TextBlock.TextProperty, new ReflectionBinding("Foo", BindingMode.OneWayToSource)))
             {
                 root.DataContext = source;
             }
@@ -561,7 +561,7 @@ namespace Avalonia.Markup.UnitTests.Data
         {
             var source = new DynamicReflectableType { ["Foo"] = "foo" };
             var target = new TwoWayBindingTest { DataContext = source };
-            var binding = new Binding
+            var binding = new ReflectionBinding
             {
                 Path = "Foo",
             };
@@ -580,7 +580,7 @@ namespace Avalonia.Markup.UnitTests.Data
         {
             var type = typeof(string);
             var textBlock = new TextBlock() { DataContext = type };
-            using (textBlock.Bind(TextBlock.TextProperty, new Binding("Name")))
+            using (textBlock.Bind(TextBlock.TextProperty, new ReflectionBinding("Name")))
             {
                 Assert.Equal("String", textBlock.Text);
             };
@@ -594,7 +594,7 @@ namespace Avalonia.Markup.UnitTests.Data
             var vm = new NullableValuesViewModel() { NullableDouble = defaultValue };
             var target = new StyledPropertyClass();
 
-            target.Bind(StyledPropertyClass.NullableDoubleProperty, new Binding(nameof(NullableValuesViewModel.NullableDouble)) { Source = vm });
+            target.Bind(StyledPropertyClass.NullableDoubleProperty, new ReflectionBinding(nameof(NullableValuesViewModel.NullableDouble)) { Source = vm });
 
             Assert.Equal(BindingPriority.LocalValue, target.GetDiagnosticInternal(StyledPropertyClass.NullableDoubleProperty).Priority);
             Assert.Equal(defaultValue, target.GetValue(StyledPropertyClass.NullableDoubleProperty));
@@ -605,7 +605,7 @@ namespace Avalonia.Markup.UnitTests.Data
         {
             var source = new NullableValuesViewModel { NullableDouble = 42 };
             var target = new StyledPropertyClass();
-            var binding = new Binding(nameof(source.NullableDouble)) { Source = source };
+            var binding = new ReflectionBinding(nameof(source.NullableDouble)) { Source = source };
 
             target.Bind(StyledPropertyClass.DoubleValueProperty, binding);
             Assert.Equal(42, target.DoubleValue);
@@ -620,7 +620,7 @@ namespace Avalonia.Markup.UnitTests.Data
         {
             var source = new NullableValuesViewModel { NullableDouble = 42 };
             var target = new StyledPropertyClass();
-            var binding = new Binding(nameof(source.NullableDouble)) { Source = source };
+            var binding = new ReflectionBinding(nameof(source.NullableDouble)) { Source = source };
 
             target.Bind(StyledPropertyClass.NullableDoubleProperty, binding);
             Assert.Equal(42, target.NullableDouble);
@@ -643,8 +643,8 @@ namespace Avalonia.Markup.UnitTests.Data
                 Children = { target1, target2 }
             };
 
-            target1.Bind(TextBlock.TextProperty, new Binding("Foo", BindingMode.TwoWay));
-            target2.Bind(TextBlock.TextProperty, new Binding("Foo", BindingMode.OneWayToSource));
+            target1.Bind(TextBlock.TextProperty, new ReflectionBinding("Foo", BindingMode.TwoWay));
+            target2.Bind(TextBlock.TextProperty, new ReflectionBinding("Foo", BindingMode.OneWayToSource));
 
             Assert.Equal("OneWayToSource", source.Foo);
 
@@ -666,7 +666,7 @@ namespace Avalonia.Markup.UnitTests.Data
             // stack overflow.
             target.Bind(
                 TwoWayBindingTest.AlwaysFalseProperty,
-                new Binding(nameof(TestStackOverflowViewModel.BoolValue))
+                new ReflectionBinding(nameof(TestStackOverflowViewModel.BoolValue))
                 {
                     Mode = BindingMode.TwoWay,
                 });

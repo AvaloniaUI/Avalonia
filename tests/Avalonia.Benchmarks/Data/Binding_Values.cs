@@ -21,7 +21,7 @@ public class Binding_Values
         _data.IntValue = -1;
 
         var target = _target;
-        var binding = new Binding(nameof(_data.IntValue));
+        var binding = new ReflectionBinding(nameof(_data.IntValue));
         using var d = target.Bind(TestControl.IntValueProperty, binding);
 
         for (var i = 0; i < 100; ++i)
@@ -36,7 +36,7 @@ public class Binding_Values
         _data.IntValue = -1;
 
         var target = _target;
-        var binding = new Binding(nameof(_data.IntValue), mode: BindingMode.TwoWay);
+        var binding = new ReflectionBinding(nameof(_data.IntValue), mode: BindingMode.TwoWay);
         using var d = target.Bind(TestControl.IntValueProperty, binding);
 
         for (var i = 0; i < 100; ++i)

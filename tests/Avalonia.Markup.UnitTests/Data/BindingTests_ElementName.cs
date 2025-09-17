@@ -34,7 +34,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             root.RegisterChildrenNames();
             
-            var binding = new Binding
+            var binding = new ReflectionBinding
             {
                 ElementName = "source",
                 Path = "Text",
@@ -72,7 +72,7 @@ namespace Avalonia.Markup.UnitTests.Data
             };
             root.RegisterChildrenNames();
 
-            var binding = new Binding
+            var binding = new ReflectionBinding
             {
                 ElementName = "source",
                 NameScope = new WeakReference<INameScope>(NameScope.GetNameScope(root))
@@ -104,7 +104,7 @@ namespace Avalonia.Markup.UnitTests.Data
             };
             root.RegisterChildrenNames();
             
-            var binding = new Binding
+            var binding = new ReflectionBinding
             {
                 ElementName = "source",
                 Path = "Text",
@@ -143,7 +143,7 @@ namespace Avalonia.Markup.UnitTests.Data
             };
             root.RegisterChildrenNames();
 
-            var binding = new Binding
+            var binding = new ReflectionBinding
             {
                 ElementName = "source",
                 NameScope = new WeakReference<INameScope>(NameScope.GetNameScope(root))

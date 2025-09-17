@@ -1242,8 +1242,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
             };
 
             var target = new SelectingItemsControl { DataContext = vm };
-            var itemsBinding = new Binding("Child.Items");
-            var selectedBinding = new Binding("Child.SelectedItem");
+            var itemsBinding = new ReflectionBinding("Child.Items");
+            var selectedBinding = new ReflectionBinding("Child.SelectedItem");
 
             target.Bind(SelectingItemsControl.ItemsSourceProperty, itemsBinding);
             target.Bind(SelectingItemsControl.SelectedItemProperty, selectedBinding);
@@ -1405,8 +1405,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.BeginInit();
             root.Child = target;
 
-            DelayedBinding.Add(target, ItemsControl.ItemsSourceProperty, new Binding(nameof(RootWithItems.Items)));
-            DelayedBinding.Add(target, ListBox.SelectedItemProperty, new Binding(nameof(RootWithItems.Selected)));
+            DelayedBinding.Add(target, ItemsControl.ItemsSourceProperty, new ReflectionBinding(nameof(RootWithItems.Items)));
+            DelayedBinding.Add(target, ListBox.SelectedItemProperty, new ReflectionBinding(nameof(RootWithItems.Selected)));
             target.EndInit();
             root.EndInit();
 
@@ -1433,8 +1433,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
             };
 
             var target = new SelectingItemsControl { DataContext = vm };
-            var itemsBinding = new Binding("Child.Items");
-            var selectedIndBinding = new Binding("Child.SelectedIndex");
+            var itemsBinding = new ReflectionBinding("Child.Items");
+            var selectedIndBinding = new ReflectionBinding("Child.SelectedIndex");
 
             target.Bind(SelectingItemsControl.ItemsSourceProperty, itemsBinding);
             target.Bind(SelectingItemsControl.SelectedIndexProperty, selectedIndBinding);
@@ -2045,8 +2045,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             var target = new ListBox
             {
-                [!ListBox.ItemsSourceProperty] = new Binding("Items"),
-                [!ListBox.SelectedIndexProperty] = new Binding("SelectedIndex"),
+                [!ListBox.ItemsSourceProperty] = new ReflectionBinding("Items"),
+                [!ListBox.SelectedIndexProperty] = new ReflectionBinding("SelectedIndex"),
                 DataContext = vm,
             };
 
@@ -2075,8 +2075,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             var target = new ListBox
             {
-                [!ListBox.ItemsSourceProperty] = new Binding("Items"),
-                [!ListBox.SelectedItemsProperty] = new Binding("SelectedItems"),
+                [!ListBox.ItemsSourceProperty] = new ReflectionBinding("Items"),
+                [!ListBox.SelectedItemsProperty] = new ReflectionBinding("SelectedItems"),
                 DataContext = vm,
             };
 
@@ -2307,8 +2307,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var target = new SelectingItemsControl
             {
                 DataContext = vm1,
-                [!ItemsControl.ItemsSourceProperty] = new Binding("Items"),
-                [!SelectingItemsControl.SelectedItemProperty] = new Binding("SelectedItem"),
+                [!ItemsControl.ItemsSourceProperty] = new ReflectionBinding("Items"),
+                [!SelectingItemsControl.SelectedItemProperty] = new ReflectionBinding("SelectedItem"),
                 Template = Template(),
             };
 
@@ -2348,7 +2348,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Template = Template(), 
                 ItemsSource = items, 
                 SelectionMode = SelectionMode.AlwaysSelected,
-                [!ListBox.SelectedItemProperty] = new Binding("SelectedItem"),
+                [!ListBox.SelectedItemProperty] = new ReflectionBinding("SelectedItem"),
             };
             
             var target = new TextBox
@@ -2388,7 +2388,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 DataContext = Enumerable.Range(0, 10).ToList(),
                 SelectionMode = SelectionMode.AlwaysSelected,
                 Template = Template(),
-                [!ListBox.ItemsSourceProperty] = new Binding(),
+                [!ListBox.ItemsSourceProperty] = new ReflectionBinding(),
             };
 
             Assert.Equal(0, target.SelectedIndex);
@@ -2448,19 +2448,19 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 switch (field)
                 {
                     case SelectionField.ItemsSource:
-                        target.Bind(ItemsControl.ItemsSourceProperty, new Binding(nameof(FullSelectionViewModel.Items)));
+                        target.Bind(ItemsControl.ItemsSourceProperty, new ReflectionBinding(nameof(FullSelectionViewModel.Items)));
                         break;
                     case SelectionField.SelectedItem:
-                        target.Bind(SelectingItemsControl.SelectedItemProperty, new Binding(nameof(FullSelectionViewModel.SelectedItem)));
+                        target.Bind(SelectingItemsControl.SelectedItemProperty, new ReflectionBinding(nameof(FullSelectionViewModel.SelectedItem)));
                         break;
                     case SelectionField.SelectedIndex:
-                        target.Bind(SelectingItemsControl.SelectedIndexProperty, new Binding(nameof(FullSelectionViewModel.SelectedIndex)));
+                        target.Bind(SelectingItemsControl.SelectedIndexProperty, new ReflectionBinding(nameof(FullSelectionViewModel.SelectedIndex)));
                         break;
                     case SelectionField.SelectedValue:
-                        target.Bind(SelectingItemsControl.SelectedValueProperty, new Binding(nameof(FullSelectionViewModel.SelectedValue)));
+                        target.Bind(SelectingItemsControl.SelectedValueProperty, new ReflectionBinding(nameof(FullSelectionViewModel.SelectedValue)));
                         break;
                     case SelectionField.SelectedValueBinding:
-                        target.SelectedValueBinding = new Binding(nameof(ItemModel.Id));
+                        target.SelectedValueBinding = new ReflectionBinding(nameof(ItemModel.Id));
                         break;
                     default:
                         throw new InvalidOperationException($"Unknown field {field}");

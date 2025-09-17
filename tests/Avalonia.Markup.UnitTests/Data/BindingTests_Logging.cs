@@ -29,7 +29,7 @@ namespace Avalonia.Markup.UnitTests.Data
             {
                 var target = new Decorator { };
                 var root = new TestRoot(target);
-                var binding = new Binding("Foo");
+                var binding = new ReflectionBinding("Foo");
 
                 using (AssertNoLog())
                 {
@@ -42,7 +42,7 @@ namespace Avalonia.Markup.UnitTests.Data
             {
                 var target = new Decorator { DataContext = new TestClass("foo") };
                 var root = new TestRoot(target);
-                var binding = new Binding("Foo.Bar");
+                var binding = new ReflectionBinding("Foo.Bar");
 
                 using (AssertLog(
                     target,
@@ -59,7 +59,7 @@ namespace Avalonia.Markup.UnitTests.Data
             {
                 var target = new Decorator { DataContext = new TestClass() };
                 var root = new TestRoot(target);
-                var binding = new Binding("Foo.Length");
+                var binding = new ReflectionBinding("Foo.Length");
 
                 using (AssertLog(target, binding.Path, "Value is null.", "Foo"))
                 {
@@ -75,7 +75,7 @@ namespace Avalonia.Markup.UnitTests.Data
             {
                 var target = new Decorator { };
                 var root = new TestRoot(target);
-                var binding = new Binding("Foo") { Source = null };
+                var binding = new ReflectionBinding("Foo") { Source = null };
 
                 using (AssertLog(target, binding.Path, "Binding Source is null.", "(source)"))
                 {
@@ -87,7 +87,7 @@ namespace Avalonia.Markup.UnitTests.Data
             public void Should_Log_Null_Source_For_Unrooted_Control()
             {
                 var target = new Decorator { };
-                var binding = new Binding("Foo") { Source = null };
+                var binding = new ReflectionBinding("Foo") { Source = null };
 
                 using (AssertLog(target, binding.Path, "Binding Source is null.", "(source)"))
                 {
@@ -103,7 +103,7 @@ namespace Avalonia.Markup.UnitTests.Data
             {
                 var target = new Decorator { };
                 var root = new TestRoot(target);
-                var binding = new Binding("$parent[TextBlock]") { TypeResolver = ResolveType };
+                var binding = new ReflectionBinding("$parent[TextBlock]") { TypeResolver = ResolveType };
 
                 using (AssertLog(target, binding.Path, "Ancestor not found.", "$parent[TextBlock]"))
                 {
@@ -115,7 +115,7 @@ namespace Avalonia.Markup.UnitTests.Data
             public void Should_Not_Log_Ancestor_Not_Found_For_Unrooted_Control()
             {
                 var target = new Decorator { };
-                var binding = new Binding("$parent[TextBlock]") { TypeResolver = ResolveType };
+                var binding = new ReflectionBinding("$parent[TextBlock]") { TypeResolver = ResolveType };
 
                 using (AssertNoLog())
                 {
@@ -131,7 +131,7 @@ namespace Avalonia.Markup.UnitTests.Data
             {
                 var target = new Decorator { };
                 var root = new TestRoot(target);
-                var binding = new Binding
+                var binding = new ReflectionBinding
                 {
                     RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor)
                     {
@@ -150,7 +150,7 @@ namespace Avalonia.Markup.UnitTests.Data
             {
                 var target = new Decorator { };
                 var root = new TestRoot(target);
-                var binding = new Binding("Foo")
+                var binding = new ReflectionBinding("Foo")
                 {
                     RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor)
                     {
@@ -172,7 +172,7 @@ namespace Avalonia.Markup.UnitTests.Data
             public void Should_Not_Log_Ancestor_Not_Found_For_Unrooted_Control()
             {
                 var target = new Decorator { };
-                var binding = new Binding
+                var binding = new ReflectionBinding
                 {
                     RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor)
                     {
@@ -194,7 +194,7 @@ namespace Avalonia.Markup.UnitTests.Data
             {
                 var target = new Decorator { };
                 var root = new TestRoot(target);
-                var binding = new Binding("#source") { TypeResolver = ResolveType };
+                var binding = new ReflectionBinding("#source") { TypeResolver = ResolveType };
 
                 using (AssertLog(target, binding.Path, "NameScope not found.", "#source"))
                 {
@@ -208,7 +208,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 var ns = new NameScope();
                 var source = new Canvas { Name = "source" };
                 var target = new Decorator { };
-                var binding = new Binding("#source.DataContext.Foo") { TypeResolver = ResolveType, NameScope = new(ns) };
+                var binding = new ReflectionBinding("#source.DataContext.Foo") { TypeResolver = ResolveType, NameScope = new(ns) };
                 var container = new StackPanel 
                 { 
                     [NameScope.NameScopeProperty] = ns,
@@ -240,7 +240,7 @@ namespace Avalonia.Markup.UnitTests.Data
             {
                 var target = new Decorator { DataContext = new { Foo = new System.Version() } };
                 var root = new TestRoot(target);
-                var binding = new Binding("Foo");
+                var binding = new ReflectionBinding("Foo");
 
                 using (AssertLog(
                     target,
@@ -257,7 +257,7 @@ namespace Avalonia.Markup.UnitTests.Data
             {
                 var target = new Decorator { DataContext = new { Foo = new System.Version() } };
                 var root = new TestRoot(target);
-                var binding = new Binding("Foo")
+                var binding = new ReflectionBinding("Foo")
                 {
                     Converter = new ThrowingConverter(),
                 };
@@ -283,7 +283,7 @@ namespace Avalonia.Markup.UnitTests.Data
             public void Should_Log_Invalid_FallbackValue(bool rooted)
             {
                 var target = new Decorator { };
-                var binding = new Binding("foo") { FallbackValue = "bar" };
+                var binding = new ReflectionBinding("foo") { FallbackValue = "bar" };
 
                 if (rooted)
                     new TestRoot(target);
@@ -306,7 +306,7 @@ namespace Avalonia.Markup.UnitTests.Data
             public void Should_Log_Invalid_TargetNullValue(bool rooted)
             {
                 var target = new Decorator { DataContext = new { Bar = (string?) null }  };
-                var binding = new Binding("Bar") { TargetNullValue = "foo" };
+                var binding = new ReflectionBinding("Bar") { TargetNullValue = "foo" };
 
                 if (rooted)
                     new TestRoot(target);
@@ -330,7 +330,7 @@ namespace Avalonia.Markup.UnitTests.Data
             public void Should_Not_Log_Missing_Member_On_Null_DataContext()
             {
                 var target = new TestRoot();
-                var binding = new Binding("Foo") { DefaultAnchor = new(target) };
+                var binding = new ReflectionBinding("Foo") { DefaultAnchor = new(target) };
 
                 target.KeyBindings.Add(new KeyBinding
                 {
@@ -348,7 +348,7 @@ namespace Avalonia.Markup.UnitTests.Data
             public void Should_Log_Missing_Member_On_DataContext()
             {
                 var target = new TestRoot();
-                var binding = new Binding("Foo") { DefaultAnchor = new(target) };
+                var binding = new ReflectionBinding("Foo") { DefaultAnchor = new(target) };
 
                 target.KeyBindings.Add(new KeyBinding
                 {

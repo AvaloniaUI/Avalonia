@@ -25,9 +25,9 @@ namespace Avalonia.Markup.UnitTests.Data
                 Converter = new ConcatConverter(),
                 Bindings = new[]
                 {
-                    new Binding { Path = "A" },
-                    new Binding { Path = "B" },
-                    new Binding { Path = "C" },
+                    new ReflectionBinding { Path = "A" },
+                    new ReflectionBinding { Path = "B" },
+                    new ReflectionBinding { Path = "C" },
                 }
             };
 
@@ -46,14 +46,14 @@ namespace Avalonia.Markup.UnitTests.Data
                 Converter = new ConcatConverter(),
                 Bindings =
                 {
-                    new Binding { Path = "A" },
+                    new ReflectionBinding { Path = "A" },
                     new MultiBinding
                     {
                         Converter = new ConcatConverter(),
                         Bindings =
                         {
-                            new Binding { Path = "B"},
-                            new Binding { Path = "C"}
+                            new ReflectionBinding { Path = "B"},
+                            new ReflectionBinding { Path = "C"}
                         }
                     }
                 }
@@ -75,9 +75,9 @@ namespace Avalonia.Markup.UnitTests.Data
                 Converter = new UnsetValueConverter(),
                 Bindings = new[]
                 {
-                    new Binding { Path = "A" },
-                    new Binding { Path = "B" },
-                    new Binding { Path = "C" },
+                    new ReflectionBinding { Path = "A" },
+                    new ReflectionBinding { Path = "B" },
+                    new ReflectionBinding { Path = "C" },
                 },
                 FallbackValue = "fallback",
             };
@@ -98,9 +98,9 @@ namespace Avalonia.Markup.UnitTests.Data
                 Converter = new NullValueConverter(),
                 Bindings = new[]
                 {
-                    new Binding { Path = "A" },
-                    new Binding { Path = "B" },
-                    new Binding { Path = "C" },
+                    new ReflectionBinding { Path = "A" },
+                    new ReflectionBinding { Path = "B" },
+                    new ReflectionBinding { Path = "C" },
                 },
                 TargetNullValue = "(null)",
             };
@@ -122,9 +122,9 @@ namespace Avalonia.Markup.UnitTests.Data
                 Converter = new ConcatConverter(),
                 Bindings = new[]
                 {
-                    new Binding { Path = "A" },
-                    new Binding { Path = "B" },
-                    new Binding { Path = "Missing" },
+                    new ReflectionBinding { Path = "A" },
+                    new ReflectionBinding { Path = "B" },
+                    new ReflectionBinding { Path = "Missing" },
                 },
             };
 
@@ -145,9 +145,9 @@ namespace Avalonia.Markup.UnitTests.Data
                 Converter = new ConcatConverter(),
                 Bindings = new[]
                 {
-                    new Binding { Path = "A" },
-                    new Binding { Path = "B" },
-                    new Binding { Path = "Missing", FallbackValue = "Fallback" },
+                    new ReflectionBinding { Path = "A" },
+                    new ReflectionBinding { Path = "B" },
+                    new ReflectionBinding { Path = "Missing", FallbackValue = "Fallback" },
                 },
             };
 
@@ -167,9 +167,9 @@ namespace Avalonia.Markup.UnitTests.Data
             {
                 Bindings = new[]
                 {
-                    new Binding { Path = "A", Source = source },
-                    new Binding { Path = "B", Source = source },
-                    new Binding { Path = "C", Source = source },
+                    new ReflectionBinding { Path = "A", Source = source },
+                    new ReflectionBinding { Path = "B", Source = source },
+                    new ReflectionBinding { Path = "C", Source = source },
                 },
             };
 
@@ -191,9 +191,9 @@ namespace Avalonia.Markup.UnitTests.Data
                 Converter = new BindingNotificationConverter(),
                 Bindings = new[]
                 {
-                    new Binding { Path = "A" },
-                    new Binding { Path = "B" },
-                    new Binding { Path = "C" },
+                    new ReflectionBinding { Path = "A" },
+                    new ReflectionBinding { Path = "B" },
+                    new ReflectionBinding { Path = "C" },
                 },
             };
 
@@ -214,8 +214,8 @@ namespace Avalonia.Markup.UnitTests.Data
                 Converter = new TestModelMemberConverter(),
                 Bindings =
                 {
-                    new Binding(),
-                    new Binding(nameof(data.NotifyingValue)),
+                    new ReflectionBinding(),
+                    new ReflectionBinding(nameof(data.NotifyingValue)),
                 },
             };
 

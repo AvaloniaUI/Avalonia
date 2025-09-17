@@ -1000,7 +1000,7 @@ namespace Avalonia.Base.UnitTests
             var target = new Class1();
 
             target.Bind(Class1.DoubleValueProperty,
-                new Binding("Value") { Mode = BindingMode.TwoWay, Source = viewModel });
+                new ReflectionBinding("Value") { Mode = BindingMode.TwoWay, Source = viewModel });
 
             var child = new Class1();
 
@@ -1091,7 +1091,7 @@ namespace Avalonia.Base.UnitTests
             var target = new Class1();
             var source = new TestTwoWayBindingViewModel();
 
-            target.Bind(Class1.DoubleValueProperty, new Binding(nameof(source.Value), BindingMode.TwoWay) { Source = source });
+            target.Bind(Class1.DoubleValueProperty, new ReflectionBinding(nameof(source.Value), BindingMode.TwoWay) { Source = source });
 
             target.DoubleValue = 123.4;
 
@@ -1105,7 +1105,7 @@ namespace Avalonia.Base.UnitTests
             var target = new Class1();
             var source = new TestTwoWayBindingViewModel();
 
-            target.Bind(Class1.DoubleValueProperty, new Binding(nameof(source.Value), BindingMode.TwoWay) { Source = source });
+            target.Bind(Class1.DoubleValueProperty, new ReflectionBinding(nameof(source.Value), BindingMode.TwoWay) { Source = source });
 
             Assert.False(source.SetterCalled);
         }
@@ -1116,7 +1116,7 @@ namespace Avalonia.Base.UnitTests
             var target = new Class1();
             var source = new TestTwoWayBindingViewModel();
 
-            target.Bind(Class1.DoubleValueProperty, new Binding("[0]", BindingMode.TwoWay) { Source = source });
+            target.Bind(Class1.DoubleValueProperty, new ReflectionBinding("[0]", BindingMode.TwoWay) { Source = source });
 
             Assert.False(source.SetterCalled);
         }
@@ -1127,7 +1127,7 @@ namespace Avalonia.Base.UnitTests
             var target = new TextBlock();
             target.DataContext = null;
 
-            target.Bind(TextBlock.TextProperty, new Binding("Missing", BindingMode.TwoWay));
+            target.Bind(TextBlock.TextProperty, new ReflectionBinding("Missing", BindingMode.TwoWay));
         }
 
         [Fact]
@@ -1136,7 +1136,7 @@ namespace Avalonia.Base.UnitTests
             var target = new TextBlock();
             target.DataContext = null;
 
-            target.Bind(TextBlock.TextProperty, new Binding("[0]", BindingMode.TwoWay));
+            target.Bind(TextBlock.TextProperty, new ReflectionBinding("[0]", BindingMode.TwoWay));
         }
 
         [Theory(Skip = "Will need changes to binding internals in order to pass")]
@@ -1147,7 +1147,7 @@ namespace Avalonia.Base.UnitTests
         {
             var target = new Class1();
             var source = new TestTwoWayBindingViewModel();
-            var binding = new Binding(nameof(source.Value), BindingMode.TwoWay) { Source = source };
+            var binding = new ReflectionBinding(nameof(source.Value), BindingMode.TwoWay) { Source = source };
 
             target.Bind(Class1.DoubleValueProperty, binding, priority);
             target.SetValue(Class1.DoubleValueProperty, 123.4, priority - 1);
@@ -1165,7 +1165,7 @@ namespace Avalonia.Base.UnitTests
         {
             var target = new Class1();
             var source = new TestTwoWayBindingViewModel();
-            var binding1 = new Binding(nameof(source.Value), BindingMode.TwoWay) { Source = source };
+            var binding1 = new ReflectionBinding(nameof(source.Value), BindingMode.TwoWay) { Source = source };
             var binding2 = new BehaviorSubject<double>(123.4);
             
             target.Bind(Class1.DoubleValueProperty, binding1, priority);
@@ -1182,7 +1182,7 @@ namespace Avalonia.Base.UnitTests
             var target = new Class1();
             var source = new TestTwoWayBindingViewModel();
 
-            target.Bind(Class1.DoubleValueProperty, new Binding(nameof(source.Value), BindingMode.TwoWay) { Source = source });
+            target.Bind(Class1.DoubleValueProperty, new ReflectionBinding(nameof(source.Value), BindingMode.TwoWay) { Source = source });
             target.SetValue(Class1.DoubleValueProperty, 123.4, BindingPriority.Animation);
 
             // Setter should not be called because the TwoWay binding with Style priority
@@ -1197,7 +1197,7 @@ namespace Avalonia.Base.UnitTests
             var source1 = new TestTwoWayBindingViewModel();
             var source2 = new BehaviorSubject<double>(123.4);
 
-            target.Bind(Class1.DoubleValueProperty, new Binding(nameof(source1.Value), BindingMode.TwoWay) { Source = source1 });
+            target.Bind(Class1.DoubleValueProperty, new ReflectionBinding(nameof(source1.Value), BindingMode.TwoWay) { Source = source1 });
             target.Bind(Class1.DoubleValueProperty, source2, BindingPriority.Animation);
 
             // Setter should not be called because the TwoWay binding with Style priority

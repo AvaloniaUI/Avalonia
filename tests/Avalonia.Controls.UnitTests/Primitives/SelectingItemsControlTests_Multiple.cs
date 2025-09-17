@@ -431,13 +431,13 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var vm = new OldDataContextViewModel();
             var target = CreateTarget();
 
-            var itemsBinding = new Binding
+            var itemsBinding = new ReflectionBinding
             {
                 Path = "Items",
                 Mode = BindingMode.OneWay,
             };
 
-            var selectedItemsBinding = new Binding
+            var selectedItemsBinding = new ReflectionBinding
             {
                 Path = "SelectedItems",
                 Mode = BindingMode.OneWay,
@@ -472,13 +472,13 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var vm = new OldDataContextViewModel();
             var target = CreateTarget();
 
-            var itemsBinding = new Binding
+            var itemsBinding = new ReflectionBinding
             {
                 Path = "Items",
                 Mode = BindingMode.OneWay,
             };
 
-            var selectionBinding = new Binding
+            var selectionBinding = new ReflectionBinding
             {
                 Path = "Selection",
                 Mode = BindingMode.OneWay,
@@ -513,7 +513,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             };
 
             var target = CreateTarget(dataContext: data);
-            var itemsBinding = new Binding { Path = "Items" };
+            var itemsBinding = new ReflectionBinding { Path = "Items" };
             target.Bind(TestSelector.ItemsSourceProperty, itemsBinding);
 
             Assert.Same(data.Items, target.ItemsSource);
@@ -878,7 +878,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             {
                 Setters =
                 {
-                    new Setter(SelectingItemsControl.IsSelectedProperty, new Binding("IsSelected")),
+                    new Setter(SelectingItemsControl.IsSelectedProperty, new ReflectionBinding("IsSelected")),
                 }
             };
 
@@ -900,7 +900,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             {
                 Setters =
                 {
-                    new Setter(SelectingItemsControl.IsSelectedProperty, new Binding("IsSelected")),
+                    new Setter(SelectingItemsControl.IsSelectedProperty, new ReflectionBinding("IsSelected")),
                 }
             };
 
@@ -923,7 +923,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 BasedOn = CreateTestContainerTheme(),
                 Setters =
                 {
-                    new Setter(SelectingItemsControl.IsSelectedProperty, new Binding("IsSelected")),
+                    new Setter(SelectingItemsControl.IsSelectedProperty, new ReflectionBinding("IsSelected")),
                 }
             };
 
@@ -960,7 +960,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             {
                 Setters =
                 {
-                    new Setter(SelectingItemsControl.IsSelectedProperty, new Binding("IsSelected")),
+                    new Setter(SelectingItemsControl.IsSelectedProperty, new ReflectionBinding("IsSelected")),
                 }
             };
 
@@ -989,7 +989,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             {
                 Setters =
                 {
-                    new Setter(SelectingItemsControl.IsSelectedProperty, new Binding("IsSelected")),
+                    new Setter(SelectingItemsControl.IsSelectedProperty, new ReflectionBinding("IsSelected")),
                     new Setter(Control.HeightProperty, 100.0),
                 }
             };
@@ -1126,7 +1126,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             {
                 Setters =
                 {
-                    new Setter(SelectingItemsControl.IsSelectedProperty, new Binding("IsSelected")),
+                    new Setter(SelectingItemsControl.IsSelectedProperty, new ReflectionBinding("IsSelected")),
                     new Setter(Control.HeightProperty, 100.0),
                 }
             };

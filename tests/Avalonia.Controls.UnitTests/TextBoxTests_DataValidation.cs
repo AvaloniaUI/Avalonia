@@ -28,7 +28,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TextBox
                 {
                     DataContext = new ExceptionTest(),
-                    [!TextBox.TextProperty] = new Binding(nameof(ExceptionTest.LessThan10), BindingMode.TwoWay),
+                    [!TextBox.TextProperty] = new ReflectionBinding(nameof(ExceptionTest.LessThan10), BindingMode.TwoWay),
                     Template = CreateTemplate(),
                 };
 
@@ -50,7 +50,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TextBox
                 {
                     DataContext = new ExceptionTest(),
-                    [!TextBox.TextProperty] = new Binding(nameof(ExceptionTest.LessThan10), BindingMode.TwoWay),
+                    [!TextBox.TextProperty] = new ReflectionBinding(nameof(ExceptionTest.LessThan10), BindingMode.TwoWay),
                     Template = CreateTemplate(),
                 };
 
@@ -75,7 +75,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TextBox
                 {
                     DataContext = new ExceptionTest(),
-                    [!TextBox.TextProperty] = new Binding(nameof(ExceptionTest.LessThan10), BindingMode.TwoWay),
+                    [!TextBox.TextProperty] = new ReflectionBinding(nameof(ExceptionTest.LessThan10), BindingMode.TwoWay),
                     Template = CreateTemplate()  
                 };
                 DataValidationErrors.SetErrorConverter(target, err => "Error: " + err);
@@ -99,7 +99,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TextBox
                 {
                     DataContext = new ExceptionTest(),
-                    [!TextBox.TextProperty] = new Binding(nameof(ExceptionTest.LessThan10), BindingMode.TwoWay),
+                    [!TextBox.TextProperty] = new ReflectionBinding(nameof(ExceptionTest.LessThan10), BindingMode.TwoWay),
                     Template = CreateTemplate(),
                 };
 
@@ -158,7 +158,7 @@ namespace Avalonia.Controls.UnitTests
                 new TextPresenter
                 {
                     Name = "PART_TextPresenter",
-                    [!!TextPresenter.TextProperty] = new Binding
+                    [!!TextPresenter.TextProperty] = new ReflectionBinding
                     {
                         Path = "Text",
                         Mode = BindingMode.TwoWay,

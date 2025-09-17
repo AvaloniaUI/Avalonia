@@ -143,7 +143,7 @@ namespace Avalonia.Base.UnitTests.Styling
                 Classes = { "foo" },
             };
 
-            var binding = new Binding("Name", BindingMode.OneWay)
+            var binding = new ReflectionBinding("Name", BindingMode.OneWay)
             {
                 Converter = new TestConverter(),
                 RelativeSource = new RelativeSource(RelativeSourceMode.Self),
@@ -229,7 +229,7 @@ namespace Avalonia.Base.UnitTests.Styling
             {
                 Setters =
                 {
-                    new Setter(Control.TagProperty, new Binding()),
+                    new Setter(Control.TagProperty, new ReflectionBinding()),
                 },
             };
 
@@ -260,7 +260,7 @@ namespace Avalonia.Base.UnitTests.Styling
             {
                 Setters =
                 {
-                    new Setter(Control.TagProperty, new Binding()),
+                    new Setter(Control.TagProperty, new ReflectionBinding()),
                 },
             };
 
@@ -295,7 +295,7 @@ namespace Avalonia.Base.UnitTests.Styling
                     new Setter
                     {
                         Property = DirectPropertyClass.FooProperty,
-                        Value = new Binding
+                        Value = new ReflectionBinding
                         {
                             Path = "Foo",
                             Mode = BindingMode.TwoWay
@@ -327,7 +327,7 @@ namespace Avalonia.Base.UnitTests.Styling
                     new Setter
                     {
                         Property = Border.BackgroundProperty,
-                        Value = new Binding
+                        Value = new ReflectionBinding
                         {
                             Path = "Bar",
                             Mode = BindingMode.TwoWay
@@ -359,7 +359,7 @@ namespace Avalonia.Base.UnitTests.Styling
                     new Setter
                     {
                         Property = Border.BackgroundProperty,
-                        Value = new Binding("Bar"),
+                        Value = new ReflectionBinding("Bar"),
                     }
                 },
             };
@@ -407,7 +407,7 @@ namespace Avalonia.Base.UnitTests.Styling
                     new Setter
                     {
                         Property = Border.BackgroundProperty,
-                        Value = new Binding
+                        Value = new ReflectionBinding
                         {
                             Path = "Bar",
                             Mode = BindingMode.TwoWay
@@ -460,7 +460,7 @@ namespace Avalonia.Base.UnitTests.Styling
                     new Setter
                     {
                         Property = Border.BackgroundProperty,
-                        Value = new Binding
+                        Value = new ReflectionBinding
                         {
                             Path = "Bar",
                             Mode = BindingMode.TwoWay

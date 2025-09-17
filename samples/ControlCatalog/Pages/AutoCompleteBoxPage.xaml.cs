@@ -122,8 +122,8 @@ namespace ControlCatalog.Pages
                 return String.Format("{0} ({1})", parts.ToArray());
             });
             var binding = new MultiBinding { Converter = converter };
-            binding.Bindings.Add(new Binding("Name"));
-            binding.Bindings.Add(new Binding("Abbreviation"));
+            binding.Bindings.Add(new ReflectionBinding("Name"));
+            binding.Bindings.Add(new ReflectionBinding("Abbreviation"));
 
             var multibindingBox = this.Get<AutoCompleteBox>("MultiBindingBox");
             multibindingBox.ValueMemberBinding = binding;

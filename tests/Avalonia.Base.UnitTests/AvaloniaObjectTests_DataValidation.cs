@@ -150,7 +150,7 @@ namespace Avalonia.Base.UnitTests
 
                 var target = new Class1
                 {
-                    [!Class1.ValidatedDirectStringProperty] = new Binding
+                    [!Class1.ValidatedDirectStringProperty] = new ReflectionBinding
                     {
                         Path = nameof(ViewModel.StringValue),
                         Source = source,
@@ -180,7 +180,7 @@ namespace Avalonia.Base.UnitTests
 
                 var target = new Class1
                 {
-                    [!Class1.ValidatedDirectStringProperty] = new Binding
+                    [!Class1.ValidatedDirectStringProperty] = new ReflectionBinding
                     {
                         Path = nameof(ViewModel.StringValue),
                         Source = source,

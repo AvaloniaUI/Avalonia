@@ -174,7 +174,7 @@ namespace Avalonia.LeakTests
             {
                 var target = new TextBlock();
 
-                target.Bind(TextBlock.TextProperty, new Binding
+                target.Bind(TextBlock.TextProperty, new ReflectionBinding
                 {
                     Source = source,
                     Path = "(Grid.Row)",

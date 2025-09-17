@@ -26,7 +26,7 @@ public class BindingOperationsTests
     {
         var data = new { Tag = "foo" };
         var target = new Control { DataContext = data };
-        var binding = new Binding("Tag") { Priority = priority };
+        var binding = new ReflectionBinding("Tag") { Priority = priority };
         target.Bind(Control.TagProperty, binding);
 
         var expression = BindingOperations.GetBindingExpressionBase(target, Control.TagProperty);
@@ -38,7 +38,7 @@ public class BindingOperationsTests
     {
         // Target has no data context so binding will fail.
         var target = new Control();
-        var binding = new Binding("Tag");
+        var binding = new ReflectionBinding("Tag");
         target.Bind(Control.TagProperty, binding);
 
         var expression = BindingOperations.GetBindingExpressionBase(target, Control.TagProperty);
@@ -55,8 +55,8 @@ public class BindingOperationsTests
             Converter = new FuncMultiValueConverter<object, string>(x => string.Join(',', x)),
             Bindings =
             {
-                new Binding("Tag"),
-                new Binding("Tag"),
+                new ReflectionBinding("Tag"),
+                new ReflectionBinding("Tag"),
             }
         };
 
@@ -70,7 +70,7 @@ public class BindingOperationsTests
     public void GetBindingExpressionBase_Returns_Binding_When_Bound_Via_ControlTheme()
     {
         var target = new Control();
-        var binding = new Binding("Tag");
+        var binding = new ReflectionBinding("Tag");
         var theme = new ControlTheme(typeof(Control))
         {
             Setters = { new Setter(Control.TagProperty, binding) },
@@ -106,7 +106,7 @@ public class BindingOperationsTests
     public void GetBindingExpressionBase_Returns_Binding_When_Bound_Via_ControlTheme_Style()
     {
         var target = new Control { Classes = { "foo" } };
-        var binding = new Binding("Tag");
+        var binding = new ReflectionBinding("Tag");
         var theme = new ControlTheme(typeof(Control))
         {
             Children =
@@ -130,7 +130,7 @@ public class BindingOperationsTests
     public void GetBindingExpressionBase_Returns_Binding_When_Bound_Via_Style()
     {
         var target = new Control();
-        var binding = new Binding("Tag");
+        var binding = new ReflectionBinding("Tag");
         var style = new Style(x => x.OfType<Control>())
         {
             Setters = { new Setter(Control.TagProperty, binding) },

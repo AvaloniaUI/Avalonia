@@ -55,7 +55,7 @@ namespace Avalonia.Controls.UnitTests
         {
             var target = new MenuItem
             {
-                [!MenuItem.CommandProperty] = new Binding("Command"),
+                [!MenuItem.CommandProperty] = new ReflectionBinding("Command"),
             };
 
             Assert.True(target.IsEnabled);
@@ -81,9 +81,9 @@ namespace Avalonia.Controls.UnitTests
                     {
                         Setters =
                         {
-                            new Setter(MenuItem.HeaderProperty, new Binding("Header")),
-                            new Setter(MenuItem.ItemsSourceProperty, new Binding("Children")),
-                            new Setter(MenuItem.CommandProperty, new Binding("Command"))
+                            new Setter(MenuItem.HeaderProperty, new ReflectionBinding("Header")),
+                            new Setter(MenuItem.ItemsSourceProperty, new ReflectionBinding("Children")),
+                            new Setter(MenuItem.CommandProperty, new ReflectionBinding("Command"))
                         }
                     }
                 }
@@ -112,7 +112,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new MenuItem
             {
                 DataContext = viewModel,
-                [!MenuItem.CommandProperty] = new Binding("Command"),
+                [!MenuItem.CommandProperty] = new ReflectionBinding("Command"),
             };
 
             Assert.True(target.IsEnabled);
@@ -135,7 +135,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new MenuItem
             {
                 DataContext = new object(),
-                [!MenuItem.CommandProperty] = new Binding("Command"),
+                [!MenuItem.CommandProperty] = new ReflectionBinding("Command"),
             };
             var root = new TestRoot { Child = target };
 
@@ -161,7 +161,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new MenuItem
             {
                 DataContext = new object(),
-                [!MenuItem.CommandProperty] = new Binding("Command"),
+                [!MenuItem.CommandProperty] = new ReflectionBinding("Command"),
             };
 
             Assert.True(target.IsEnabled);
@@ -464,8 +464,8 @@ namespace Avalonia.Controls.UnitTests
                     {
                         Setters =
                         {
-                            new Setter(MenuItem.HeaderProperty, new Binding("Header")),
-                            new Setter(MenuItem.ItemsSourceProperty, new Binding("Children")),
+                            new Setter(MenuItem.HeaderProperty, new ReflectionBinding("Header")),
+                            new Setter(MenuItem.ItemsSourceProperty, new ReflectionBinding("Children")),
                         }
                     }
                 }
@@ -504,8 +504,8 @@ namespace Avalonia.Controls.UnitTests
                 {
                     Setters =
                     {
-                        new Setter(MenuItem.HeaderProperty, new Binding("Header")),
-                        new Setter(MenuItem.ItemsSourceProperty, new Binding("Children")),
+                        new Setter(MenuItem.HeaderProperty, new ReflectionBinding("Header")),
+                        new Setter(MenuItem.ItemsSourceProperty, new ReflectionBinding("Children")),
                     }
                 }
             };

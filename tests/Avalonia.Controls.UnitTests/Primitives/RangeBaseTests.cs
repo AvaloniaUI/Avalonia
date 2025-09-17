@@ -40,9 +40,9 @@ namespace Avalonia.Controls.UnitTests.Primitives
             
             var target = new TestRange
             {
-                [!RangeBase.MinimumProperty] = new Binding(nameof(viewModel.Minimum)),
-                [!RangeBase.MaximumProperty] = new Binding(nameof(viewModel.Maximum)),
-                [!RangeBase.ValueProperty] = new Binding(nameof(viewModel.Value)),
+                [!RangeBase.MinimumProperty] = new ReflectionBinding(nameof(viewModel.Minimum)),
+                [!RangeBase.MaximumProperty] = new ReflectionBinding(nameof(viewModel.Maximum)),
+                [!RangeBase.ValueProperty] = new ReflectionBinding(nameof(viewModel.Value)),
             };
             
             var root = new TestRoot(target);
@@ -135,7 +135,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                     if (useXamlBinding)
                     {
-                        track.Bind(Track.ValueProperty, new Binding("Value")
+                        track.Bind(Track.ValueProperty, new ReflectionBinding("Value")
                                                     {
                                                         Mode = BindingMode.TwoWay,
                                                         Source = c,
@@ -154,7 +154,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 DataContext = viewModel
             };
 
-            target.Bind(TestRange.ValueProperty, new Binding("Value") { Mode = BindingMode.TwoWay });
+            target.Bind(TestRange.ValueProperty, new ReflectionBinding("Value") { Mode = BindingMode.TwoWay });
 
             target.ApplyTemplate();
             track.Measure(new Size(100, 0));

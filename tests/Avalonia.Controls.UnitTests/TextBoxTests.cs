@@ -825,7 +825,7 @@ namespace Avalonia.Controls.UnitTests
 
                 target.ApplyTemplate();
 
-                target.Bind(TextBox.TextProperty, new Binding("Bar"));
+                target.Bind(TextBox.TextProperty, new ReflectionBinding("Bar"));
 
                 Assert.Equal("bar", target.Text);
                 source.Bar = null;
@@ -2153,14 +2153,14 @@ namespace Avalonia.Controls.UnitTests
                 Content = new TextPresenter
                 {
                     Name = "PART_TextPresenter",
-                    [!!TextPresenter.TextProperty] = new Binding
+                    [!!TextPresenter.TextProperty] = new ReflectionBinding
                     {
                         Path = nameof(TextPresenter.Text),
                         Mode = BindingMode.TwoWay,
                         Priority = BindingPriority.Template,
                         RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
                     },
-                    [!!TextPresenter.CaretIndexProperty] = new Binding
+                    [!!TextPresenter.CaretIndexProperty] = new ReflectionBinding
                     {
                         Path = nameof(TextPresenter.CaretIndex),
                         Mode = BindingMode.TwoWay,

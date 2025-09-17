@@ -264,7 +264,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             // Test for issue #1099.
             var textBlock = new TextBlock
             {
-                [!TextBlock.TextProperty] = new Binding(),
+                [!TextBlock.TextProperty] = new ReflectionBinding(),
             };
 
             var (target, host) = CreateTarget();
@@ -295,7 +295,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             canvas.GetObservable(ContentPresenter.DataContextProperty).Subscribe(x => dataContexts.Add(x));
 
             host.DataTemplates.Add(new FuncDataTemplate<string>((_, __) => canvas));
-            host.Bind(ContentControl.ContentProperty, new Binding(nameof(TestViewModel.Content)));
+            host.Bind(ContentControl.ContentProperty, new ReflectionBinding(nameof(TestViewModel.Content)));
             host.DataContext = viewModel;
 
             Assert.Same(canvas, target.Child);
@@ -361,7 +361,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             var textBlock = new TextBlock
             {
-                [!TextBlock.TextProperty] = new Binding("Name"),
+                [!TextBlock.TextProperty] = new ReflectionBinding("Name"),
             };
 
             var canvas = new Canvas()

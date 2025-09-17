@@ -221,7 +221,7 @@ namespace Avalonia.Controls.UnitTests
                 DataContext = data,
                 Child = new Canvas
                 {
-                    [!Canvas.DataContextProperty] = new Binding("Foo"),
+                    [!Canvas.DataContextProperty] = new ReflectionBinding("Foo"),
                 },
             };
 

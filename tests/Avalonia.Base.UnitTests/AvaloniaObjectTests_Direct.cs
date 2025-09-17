@@ -563,7 +563,7 @@ namespace Avalonia.Base.UnitTests
 
             var target = new Class1();
 
-            target.Bind(Class1.DoubleValueProperty, new Binding("Value")
+            target.Bind(Class1.DoubleValueProperty, new ReflectionBinding("Value")
                                                     {
                                                         Mode = BindingMode.TwoWay,
                                                         Source = viewModel

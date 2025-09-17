@@ -28,14 +28,14 @@ namespace Avalonia.Controls.UnitTests
             new CanvasCountingMeasureArrangeCalls
             {
                 Width = 100,
-                [!Layoutable.HeightProperty] = new Binding("Height"),
+                [!Layoutable.HeightProperty] = new ReflectionBinding("Height"),
             });
 
         private static FuncDataTemplate<ItemWithWidth> CanvasWithWidthTemplate = new((_, _) =>
             new CanvasCountingMeasureArrangeCalls
             {
                 Height = 100,
-                [!Layoutable.WidthProperty] = new Binding("Width"),
+                [!Layoutable.WidthProperty] = new ReflectionBinding("Width"),
             });
 
         [Theory]
@@ -1321,7 +1321,7 @@ namespace Avalonia.Controls.UnitTests
                 new Border
                 {
                     Height = 10,
-                    [!Layoutable.WidthProperty] = new Binding("Height"),
+                    [!Layoutable.WidthProperty] = new ReflectionBinding("Height"),
                 });
             var (target, scroll, itemsControl) = CreateTarget(
                 items: items,
@@ -2340,7 +2340,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 Setters =
                 {
-                    new Setter(Visual.IsVisibleProperty, new Binding("IsVisible")),
+                    new Setter(Visual.IsVisibleProperty, new ReflectionBinding("IsVisible")),
                 }
             };
         }

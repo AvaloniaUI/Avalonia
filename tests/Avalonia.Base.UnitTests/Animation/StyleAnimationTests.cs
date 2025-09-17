@@ -38,8 +38,8 @@ public class StyleAnimationTests
     [Fact]
     public void Application_ControlTheme_Applies_Animation_With_Bound_KeyFrame_Values()
     {
-        var fromBinding = new Binding("From");
-        var toBinding = new Binding("To");
+        var fromBinding = new ReflectionBinding("From");
+        var toBinding = new ReflectionBinding("To");
 
         using var app = new AnimationTestApplication
         {

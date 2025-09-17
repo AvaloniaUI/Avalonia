@@ -359,7 +359,7 @@ namespace Avalonia.Controls.UnitTests
                 target.ItemTemplate = new FuncDataTemplate<object>((c, _) =>
                 {
                     var tb = new TextBlock() { Height = 10, Width = 30 };
-                    tb.Bind(TextBlock.TextProperty, new Data.Binding());
+                    tb.Bind(TextBlock.TextProperty, new Data.ReflectionBinding());
                     return tb;
                 }, true);
 
@@ -544,8 +544,8 @@ namespace Avalonia.Controls.UnitTests
         {
             var target = new ListBox
             {
-                [!ListBox.ItemsSourceProperty] = new Binding("Items"),
-                [!ListBox.SelectedItemsProperty] = new Binding("SelectedItems"),
+                [!ListBox.ItemsSourceProperty] = new ReflectionBinding("Items"),
+                [!ListBox.SelectedItemsProperty] = new ReflectionBinding("SelectedItems"),
             };
 
             var viewModel = new
@@ -576,7 +576,7 @@ namespace Avalonia.Controls.UnitTests
                 {
                     Setters =
                     {
-                        new Setter(ListBoxItem.ContentProperty, new Binding("Caption")),
+                        new Setter(ListBoxItem.ContentProperty, new ReflectionBinding("Caption")),
                     }
                 };
 

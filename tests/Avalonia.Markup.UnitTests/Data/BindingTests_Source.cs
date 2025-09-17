@@ -15,7 +15,7 @@ namespace Avalonia.Markup.UnitTests.Data
         public void Source_Should_Be_Used()
         {
             var source = new Source { Foo = "foo" };
-            var binding = new Binding { Source = source, Path = "Foo" };
+            var binding = new ReflectionBinding { Source = source, Path = "Foo" };
             var target = new TextBlock();
 
             target.Bind(TextBlock.TextProperty, binding);

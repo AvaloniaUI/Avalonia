@@ -302,7 +302,7 @@ namespace Avalonia.Controls.UnitTests
                 };
 
                 target.Bind(ListBox.SelectedItemProperty,
-                    new Binding("SelectedItem") { Mode = BindingMode.TwoWay });
+                    new ReflectionBinding("SelectedItem") { Mode = BindingMode.TwoWay });
 
                 Assert.Equal(0, viewModel.SetterInvokedCount);
 

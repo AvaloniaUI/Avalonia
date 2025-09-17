@@ -27,8 +27,8 @@ namespace Avalonia.Markup.UnitTests.Data
                 StringFormat = format,
                 Bindings =
                 {
-                    new Binding(nameof(Class1.Foo)),
-                    new Binding(nameof(Class1.Bar)),
+                    new ReflectionBinding(nameof(Class1.Foo)),
+                    new ReflectionBinding(nameof(Class1.Bar)),
                 }
             };
 
@@ -51,8 +51,8 @@ namespace Avalonia.Markup.UnitTests.Data
                 Converter = new SumOfDoublesConverter(),
                 Bindings =
                 {
-                    new Binding(nameof(Class1.Foo)),
-                    new Binding(nameof(Class1.Bar)),
+                    new ReflectionBinding(nameof(Class1.Foo)),
+                    new ReflectionBinding(nameof(Class1.Bar)),
                 }
             };
 
@@ -75,8 +75,8 @@ namespace Avalonia.Markup.UnitTests.Data
                 Converter = new SumOfDoublesConverter(),
                 Bindings =
                 {
-                    new Binding(nameof(Class1.Foo)),
-                    new Binding(nameof(Class1.Bar)),
+                    new ReflectionBinding(nameof(Class1.Foo)),
+                    new ReflectionBinding(nameof(Class1.Bar)),
                 }
             };
 

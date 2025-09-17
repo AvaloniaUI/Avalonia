@@ -213,7 +213,7 @@ namespace Avalonia.LeakTests
                         Content = new TextBox()
                     };
 
-                    var binding = new Avalonia.Data.Binding
+                    var binding = new Avalonia.Data.ReflectionBinding
                     {
                         Path = "Name"
                     };
@@ -757,7 +757,7 @@ namespace Avalonia.LeakTests
                                     {
                                         Width = 10,
                                         Height = 10,
-                                        [!Control.TagProperty] = new Binding
+                                        [!Control.TagProperty] = new ReflectionBinding
                                         {
                                             ElementName = "tb",
                                             Path = "Text",
@@ -862,7 +862,7 @@ namespace Avalonia.LeakTests
                             return new Button
                             {
                                 DataContext = keyGesture,
-                                [!Button.HotKeyProperty] = new Binding("")
+                                [!Button.HotKeyProperty] = new ReflectionBinding("")
                             };
                         })
                     };

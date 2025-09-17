@@ -290,13 +290,13 @@ namespace Avalonia.Controls.UnitTests
 
             // The content and then the content template property need to be bound with delayed bindings
             // as they are in Avalonia.Markup.Xaml.
-            DelayedBinding.Add(presenter, ContentPresenter.ContentProperty, new Binding("Content")
+            DelayedBinding.Add(presenter, ContentPresenter.ContentProperty, new ReflectionBinding("Content")
             {
                 Priority = BindingPriority.Template,
                 RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
             });
 
-            DelayedBinding.Add(presenter, ContentPresenter.ContentTemplateProperty, new Binding("ContentTemplate")
+            DelayedBinding.Add(presenter, ContentPresenter.ContentTemplateProperty, new ReflectionBinding("ContentTemplate")
             {
                 Priority = BindingPriority.Template,
                 RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),

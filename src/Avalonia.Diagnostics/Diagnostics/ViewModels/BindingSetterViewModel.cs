@@ -12,7 +12,7 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             switch (value)
             {
-                case Binding binding:
+                case ReflectionBinding binding:
                     Path = binding.Path;
                     Tint = Brushes.CornflowerBlue;
                     ValueTypeTooltip = "Reflection Binding";

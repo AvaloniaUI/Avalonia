@@ -84,7 +84,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
                         new Setter
                         {
                             Property = TextBox.TextProperty,
-                            Value = new Binding
+                            Value = new ReflectionBinding
                             {
                                 Path = "Foo",
                                 Mode = BindingMode.TwoWay

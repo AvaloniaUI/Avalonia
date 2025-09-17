@@ -79,7 +79,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
             // Root `Avalonia.Controls`.
             GC.KeepAlive(typeof(Avalonia.Controls.Control));
             // Root `Avalonia.Markup`.
-            GC.KeepAlive(typeof(Avalonia.Data.Binding));
+            GC.KeepAlive(typeof(Avalonia.Data.ReflectionBinding));
             // Root `System.ObjectModel`
             GC.KeepAlive(typeof(System.ComponentModel.TypeConverterAttribute));
 

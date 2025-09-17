@@ -310,7 +310,7 @@ namespace Avalonia.Controls.UnitTests
                 initialSelectedIndex,
                 expectedSelectedIndex,
                 searchTerm,
-                comboBox => comboBox.DisplayMemberBinding = new Binding(nameof(Item.Display)),
+                comboBox => comboBox.DisplayMemberBinding = new ReflectionBinding(nameof(Item.Display)),
                 values.Select((value, index) => new Item(value, displays[index])));
         }
 
@@ -330,7 +330,7 @@ namespace Avalonia.Controls.UnitTests
                 initialSelectedIndex,
                 expectedSelectedIndex,
                 searchTerm,
-                comboBox => TextSearch.SetTextBinding(comboBox, new Binding(nameof(Item.Display))),
+                comboBox => TextSearch.SetTextBinding(comboBox, new ReflectionBinding(nameof(Item.Display))),
                 values.Select((value, index) => new Item(value, displays[index])));
         }
 
@@ -624,7 +624,7 @@ namespace Avalonia.Controls.UnitTests
         {
             var target = new ComboBox
             {
-                DisplayMemberBinding = new Binding(),
+                DisplayMemberBinding = new ReflectionBinding(),
                 ItemsSource = new[] { "foo", "bar" }
             };
 
@@ -645,7 +645,7 @@ namespace Avalonia.Controls.UnitTests
         {
             var target = new ComboBox
             {
-                DisplayMemberBinding = new Binding(),
+                DisplayMemberBinding = new ReflectionBinding(),
                 IsEditable = true,
                 ItemsSource = new[] { "foo", "bar" }
             };
@@ -668,11 +668,11 @@ namespace Avalonia.Controls.UnitTests
             };
             var target = new ComboBox
             {
-                DisplayMemberBinding = new Binding("Display"),
+                DisplayMemberBinding = new ReflectionBinding("Display"),
                 IsEditable = true,
                 ItemsSource = items
             };
-            TextSearch.SetTextBinding(target, new Binding("Value"));
+            TextSearch.SetTextBinding(target, new ReflectionBinding("Value"));
 
             target.SelectedItem = null;
             Assert.Null(target.SelectedItem);
@@ -697,11 +697,11 @@ namespace Avalonia.Controls.UnitTests
             };
             var target = new ComboBox
             {
-                DisplayMemberBinding = new Binding("Display"),
+                DisplayMemberBinding = new ReflectionBinding("Display"),
                 IsEditable = true,
                 ItemsSource = items
             };
-            TextSearch.SetTextBinding(target, new Binding("Value"));
+            TextSearch.SetTextBinding(target, new ReflectionBinding("Value"));
 
             target.SelectedItem = null;
             Assert.Null(target.SelectedItem);

@@ -20,7 +20,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 DataContext = new Class1(),
             };
 
-            var target = new Binding(nameof(Class1.Foo))
+            var target = new ReflectionBinding(nameof(Class1.Foo))
             {
                 Converter = StringConverters.IsNullOrEmpty,
             };
@@ -41,7 +41,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 DataContext = new Class1(),
             };
 
-            var target = new Binding(nameof(Class1.Foo))
+            var target = new ReflectionBinding(nameof(Class1.Foo))
             {
                 StringFormat = "Hello {0}",
             };
@@ -59,7 +59,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 DataContext = new Class1(),
             };
 
-            var target = new Binding(nameof(Class1.Foo))
+            var target = new ReflectionBinding(nameof(Class1.Foo))
             {
                 Converter = StringConverters.IsNotNullOrEmpty,
                 StringFormat = "Hello {0}",
@@ -80,7 +80,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             var culture = new CultureInfo("ar-SA");
             var converter = new Mock<IValueConverter>();
-            var target = new Binding(nameof(Class1.Foo))
+            var target = new ReflectionBinding(nameof(Class1.Foo))
             {
                 Converter = converter.Object,
                 ConverterCulture = culture,
@@ -106,7 +106,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             var culture = new CultureInfo("ar-SA");
             var converter = new Mock<IValueConverter>();
-            var target = new Binding(nameof(Class1.Foo))
+            var target = new ReflectionBinding(nameof(Class1.Foo))
             {
                 Converter = converter.Object,
                 ConverterCulture = culture,

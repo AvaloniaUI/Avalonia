@@ -20,7 +20,7 @@ namespace Avalonia.Markup.UnitTests.Data
             public void Setter_Exception_Causes_DataValidation_Error()
             {
                 var (target, property) = CreateTarget();
-                var binding = new Binding(nameof(ExceptionValidatingModel.Value))
+                var binding = new ReflectionBinding(nameof(ExceptionValidatingModel.Value))
                 {
                     Mode = BindingMode.TwoWay
                 };
@@ -45,7 +45,7 @@ namespace Avalonia.Markup.UnitTests.Data
             public void Indei_Error_Causes_DataValidation_Error()
             {
                 var (target, property) = CreateTarget();
-                var binding = new Binding(nameof(IndeiValidatingModel.Value))
+                var binding = new ReflectionBinding(nameof(IndeiValidatingModel.Value))
                 {
                     Mode = BindingMode.TwoWay
                 };
@@ -71,7 +71,7 @@ namespace Avalonia.Markup.UnitTests.Data
             public void Disposing_Binding_Subscription_Clears_DataValidation()
             {
                 var (target, property) = CreateTarget();
-                var binding = new Binding(nameof(ExceptionValidatingModel.Value))
+                var binding = new ReflectionBinding(nameof(ExceptionValidatingModel.Value))
                 {
                     Mode = BindingMode.TwoWay
                 };
@@ -108,7 +108,7 @@ namespace Avalonia.Markup.UnitTests.Data
             public void Style_Binding_Supports_Data_Validation()
             {
                 var (target, property) = CreateTarget();
-                var binding = new Binding(nameof(IndeiValidatingModel.Value))
+                var binding = new ReflectionBinding(nameof(IndeiValidatingModel.Value))
                 {
                     Mode = BindingMode.TwoWay
                 };
@@ -150,7 +150,7 @@ namespace Avalonia.Markup.UnitTests.Data
             public void Style_With_Activator_Binding_Supports_Data_Validation()
             {
                 var (target, property) = CreateTarget();
-                var binding = new Binding(nameof(IndeiValidatingModel.Value))
+                var binding = new ReflectionBinding(nameof(IndeiValidatingModel.Value))
                 {
                     Mode = BindingMode.TwoWay
                 };
@@ -203,8 +203,8 @@ namespace Avalonia.Markup.UnitTests.Data
                 var (target, property) = CreateTarget();
                 var model1 = new IndeiValidatingModel { Value = 200 };
                 var model2 = new IndeiValidatingModel { Value = 300 };
-                var binding1 = new Binding(nameof(IndeiValidatingModel.Value));
-                var binding2 = new Binding(nameof(IndeiValidatingModel.Value)) { Source = model2 };
+                var binding1 = new ReflectionBinding(nameof(IndeiValidatingModel.Value));
+                var binding2 = new ReflectionBinding(nameof(IndeiValidatingModel.Value)) { Source = model2 };
 
                 var root = new TestRoot
                 {
@@ -245,8 +245,8 @@ namespace Avalonia.Markup.UnitTests.Data
                 var (target, property) = CreateTarget();
                 var model1 = new IndeiValidatingModel { Value = 200 };
                 var model2 = new IndeiValidatingModel { Value = 300 };
-                var binding1 = new Binding(nameof(IndeiValidatingModel.Value));
-                var binding2 = new Binding(nameof(IndeiValidatingModel.Value)) { Source = model2 };
+                var binding1 = new ReflectionBinding(nameof(IndeiValidatingModel.Value));
+                var binding2 = new ReflectionBinding(nameof(IndeiValidatingModel.Value)) { Source = model2 };
 
                 var root = new TestRoot
                 {

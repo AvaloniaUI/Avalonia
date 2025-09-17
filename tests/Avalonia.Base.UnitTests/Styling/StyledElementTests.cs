@@ -608,7 +608,7 @@ namespace Avalonia.Base.UnitTests.Styling
                             },
                         },
                     },
-                    [!ContentControl.IsEnabledProperty] = new Binding(),
+                    [!ContentControl.IsEnabledProperty] = new ReflectionBinding(),
                 }
             };
 

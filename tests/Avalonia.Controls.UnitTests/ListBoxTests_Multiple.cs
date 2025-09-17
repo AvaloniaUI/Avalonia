@@ -625,7 +625,7 @@ namespace Avalonia.Controls.UnitTests
             var root = new TestRoot(target);
             root.LayoutManager.ExecuteInitialLayoutPass();
 
-            target.Bind(ListBox.SelectedItemProperty, new Binding("Tag") 
+            target.Bind(ListBox.SelectedItemProperty, new ReflectionBinding("Tag") 
             { 
                 Mode = BindingMode.TwoWay,
                 RelativeSource = new RelativeSource(RelativeSourceMode.Self),
@@ -654,7 +654,7 @@ namespace Avalonia.Controls.UnitTests
             var root = new TestRoot(target);
             root.LayoutManager.ExecuteInitialLayoutPass();
 
-            target.Bind(ListBox.SelectedIndexProperty, new Binding("Tag")
+            target.Bind(ListBox.SelectedIndexProperty, new ReflectionBinding("Tag")
             {
                 Mode = BindingMode.TwoWay,
                 RelativeSource = new RelativeSource(RelativeSourceMode.Self),
