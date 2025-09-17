@@ -368,7 +368,7 @@ namespace Avalonia
                 this._source = source;
             }
 
-            internal override BindingExpressionBase Instance(
+            internal override BindingExpressionBase CreateInstance(
                 AvaloniaObject target,
                 AvaloniaProperty? property,
                 object? anchor)

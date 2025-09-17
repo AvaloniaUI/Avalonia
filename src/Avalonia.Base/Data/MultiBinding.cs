@@ -75,7 +75,7 @@ namespace Avalonia.Data
             TargetNullValue = AvaloniaProperty.UnsetValue;
         }
 
-        internal override BindingExpressionBase Instance(
+        internal override BindingExpressionBase CreateInstance(
             AvaloniaObject target,
             AvaloniaProperty? targetProperty,
             object? anchor)

@@ -44,7 +44,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             return this;
         }
 
-        internal override BindingExpressionBase Instance(AvaloniaObject target, AvaloniaProperty? targetProperty, object? anchor)
+        internal override BindingExpressionBase CreateInstance(AvaloniaObject target, AvaloniaProperty? targetProperty, object? anchor)
         {
             if (ResourceKey is null)
                 throw new InvalidOperationException("DynamicResource must have a ResourceKey.");

@@ -53,7 +53,7 @@ namespace Avalonia.Data
 
         public BindingBase ProvideValue() => this;
 
-        internal override BindingExpressionBase Instance(AvaloniaObject target, AvaloniaProperty? targetProperty, object? anchor)
+        internal override BindingExpressionBase CreateInstance(AvaloniaObject target, AvaloniaProperty? targetProperty, object? anchor)
         {
             if (Mode is BindingMode.OneTime or BindingMode.OneWayToSource)
                 throw new NotSupportedException("TemplateBinding does not support OneTime or OneWayToSource bindings.");

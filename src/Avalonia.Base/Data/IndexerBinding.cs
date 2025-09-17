@@ -21,7 +21,7 @@ namespace Avalonia.Data
         private AvaloniaObject Source { get; }
         private BindingMode Mode { get; }
 
-        internal override BindingExpressionBase Instance(
+        internal override BindingExpressionBase CreateInstance(
             AvaloniaObject target,
             AvaloniaProperty? targetProperty,
             object? anchor)

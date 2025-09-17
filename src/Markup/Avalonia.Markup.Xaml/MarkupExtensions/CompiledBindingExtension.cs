@@ -48,7 +48,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 
         public Type? DataType { get; set; }
 
-        internal override BindingExpressionBase Instance(
+        internal override BindingExpressionBase CreateInstance(
             AvaloniaObject target,
             AvaloniaProperty? targetProperty,
             object? anchor)

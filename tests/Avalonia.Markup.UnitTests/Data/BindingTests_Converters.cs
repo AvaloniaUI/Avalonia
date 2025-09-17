@@ -25,7 +25,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 Converter = StringConverters.IsNullOrEmpty,
             };
 
-            var expression = (BindingExpression)target.Instance(
+            var expression = (BindingExpression)target.CreateInstance(
                 textBlock,
                 TextBlock.TextProperty,
                 null);

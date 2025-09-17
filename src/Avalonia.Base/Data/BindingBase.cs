@@ -21,7 +21,7 @@ public abstract class BindingBase
     /// This is a low-level method which returns a binding expression that is not yet connected to
     /// a binding sink, and so is inactive.
     /// </remarks>
-    internal abstract BindingExpressionBase Instance(
+    internal abstract BindingExpressionBase CreateInstance(
         AvaloniaObject target,
         AvaloniaProperty? targetProperty,
         object? anchor);

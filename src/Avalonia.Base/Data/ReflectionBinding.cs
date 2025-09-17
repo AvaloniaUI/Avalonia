@@ -67,7 +67,7 @@ namespace Avalonia.Data
         /// </summary>
         public Func<string?, string, Type>? TypeResolver { get; set; }
 
-        internal override BindingExpressionBase Instance(
+        internal override BindingExpressionBase CreateInstance(
             AvaloniaObject target,
             AvaloniaProperty? targetProperty,
             object? anchor)
