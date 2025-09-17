@@ -77,7 +77,12 @@ namespace Avalonia.Controls
         /// Derived controls may re-implement this based on their default style / control template
         /// and any specialized selection needs.
         /// </remarks>
-        protected virtual void ValidateSelection(bool initial = false)
+        protected virtual void ValidateSelection()
+        {
+            ValidateSelection(false);
+        }
+
+        private void ValidateSelection(bool initial)
         {
             if (_tabControl != null &&
                 _tabControl.Items != null)
