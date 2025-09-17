@@ -6,7 +6,7 @@ using Avalonia.Data;
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
     [RequiresUnreferencedCode(TrimmingMessages.ReflectionBindingRequiresUnreferencedCodeMessage)]
-    public class ReflectionBindingExtension : ReflectionBinding
+    public sealed class ReflectionBindingExtension : ReflectionBinding
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ReflectionBinding"/> class.
