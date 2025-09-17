@@ -77,7 +77,7 @@ namespace Avalonia.Controls
         /// Derived controls may re-implement this based on their default style / control template
         /// and any specialized selection needs.
         /// </remarks>
-        protected virtual void ValidateSelection()
+        protected virtual void ValidateSelection(bool initial = false)
         {
             if (_tabControl != null &&
                 _tabControl.Items != null)
@@ -98,19 +98,26 @@ namespace Avalonia.Controls
                 {
                     object? selectedItem = null;
 
-                    if (_tabControl.SelectedItem == null &&
-                        _tabControl.ItemCount > 0)
+                    if (initial && SelectedIndex >= 0 && SelectedIndex < numVisibleItems)
                     {
-                        // As a failsafe, forcefully select the first item
-                        foreach (var item in _tabControl.Items)
-                        {
-                            selectedItem = item;
-                            break;
-                        }
+                        selectedItem = _tabControl.Items[SelectedIndex];
                     }
                     else
                     {
-                        selectedItem = _tabControl.SelectedItem;
+                        if (_tabControl.SelectedItem == null &&
+                            _tabControl.ItemCount > 0)
+                        {
+                            // As a failsafe, forcefully select the first item
+                            foreach (var item in _tabControl.Items)
+                            {
+                                selectedItem = item;
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            selectedItem = _tabControl.SelectedItem;
+                        }
                     }
 
                     if (selectedItem is Control selectedControl &&
@@ -193,7 +200,7 @@ namespace Avalonia.Controls
             }
 
             base.OnApplyTemplate(e);
-            ValidateSelection();
+            ValidateSelection(true);
         }
 
         /// <inheritdoc/>
