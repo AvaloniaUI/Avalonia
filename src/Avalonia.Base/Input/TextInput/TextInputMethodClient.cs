@@ -54,6 +54,8 @@ namespace Avalonia.Input.TextInput
         /// </summary>
         public abstract string SurroundingText { get; }
 
+        internal virtual string Text => SurroundingText;
+
         /// <summary>
         /// Gets the cursor rectangle relative to the TextViewVisual
         /// </summary>
@@ -119,6 +121,11 @@ namespace Avalonia.Input.TextInput
         {
             ResetRequested?.Invoke(this, EventArgs.Empty);
         }
+
+        internal virtual string GetTextBeforeCaret(int length) => string.Empty;
+        internal virtual string GetTextAfterCaret(int length) => string.Empty;
+
+        internal virtual TextSelection ActualSelection { get => Selection; set => Selection = value; } 
     }
 
     public record struct TextSelection(int Start, int End);

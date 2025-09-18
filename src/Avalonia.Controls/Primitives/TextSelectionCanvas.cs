@@ -177,22 +177,30 @@ namespace Avalonia.Controls.Primitives
                 var selectionEnd = _textBox.SelectionEnd;
                 var start = Math.Min(selectionStart, selectionEnd);
                 var length = Math.Max(selectionStart, selectionEnd) - start;
-                var rects = new List<Rect>(_presenter.TextLayout.HitTestTextRange(start, length));
 
-                if (rects.Count > 0)
+                try
                 {
-                    var first = rects[0];
-                    var last = rects[rects.Count -1];
+                    var rects = new List<Rect>(_presenter.TextLayout.HitTestTextRange(start, length));
 
-                    if (handle.SelectionHandleType == SelectionHandleType.Start)
-                        handle?.SetTopLeft(ToLayer(first.BottomLeft));
-                    else
-                        handle?.SetTopLeft(ToLayer(last.BottomRight));
+                    if (rects.Count > 0)
+                    {
+                        var first = rects[0];
+                        var last = rects[rects.Count - 1];
 
-                    if (otherHandle.SelectionHandleType == SelectionHandleType.Start)
-                        otherHandle?.SetTopLeft(ToLayer(first.BottomLeft));
-                    else
-                        otherHandle?.SetTopLeft(ToLayer(last.BottomRight));
+                        if (handle.SelectionHandleType == SelectionHandleType.Start)
+                            handle?.SetTopLeft(ToLayer(first.BottomLeft));
+                        else
+                            handle?.SetTopLeft(ToLayer(last.BottomRight));
+
+                        if (otherHandle.SelectionHandleType == SelectionHandleType.Start)
+                            otherHandle?.SetTopLeft(ToLayer(first.BottomLeft));
+                        else
+                            otherHandle?.SetTopLeft(ToLayer(last.BottomRight));
+                    }
+                }
+                catch(InvalidOperationException)
+                {
+
                 }
 
                 _presenter?.MoveCaretToTextPosition(position);
@@ -241,28 +249,35 @@ namespace Avalonia.Controls.Primitives
                 var start = Math.Min(selectionStart, selectionEnd);
                 var length = Math.Max(selectionStart, selectionEnd) - start;
 
-                var rects = new List<Rect>(_presenter.TextLayout.HitTestTextRange(start, length));
-
-                if (rects.Count > 0)
+                try
                 {
-                    var first = rects[0];
-                    var last = rects[rects.Count - 1];
+                    var rects = new List<Rect>(_presenter.TextLayout.HitTestTextRange(start, length));
 
-                    if (!_startHandle.IsDragging)
+                    if (rects.Count > 0)
                     {
-                        _startHandle.SetTopLeft(ToLayer(first.BottomLeft));
-                        _startHandle.SelectionHandleType = selectionStart < selectionEnd ?
-                            SelectionHandleType.Start :
-                            SelectionHandleType.End;
-                    }
+                        var first = rects[0];
+                        var last = rects[rects.Count - 1];
 
-                    if (!_endHandle.IsDragging)
-                    {
-                        _endHandle.SetTopLeft(ToLayer(last.BottomRight));
-                        _endHandle.SelectionHandleType = selectionStart > selectionEnd ?
-                            SelectionHandleType.Start :
-                            SelectionHandleType.End;
+                        if (!_startHandle.IsDragging)
+                        {
+                            _startHandle.SetTopLeft(ToLayer(first.BottomLeft));
+                            _startHandle.SelectionHandleType = selectionStart < selectionEnd ?
+                                SelectionHandleType.Start :
+                                SelectionHandleType.End;
+                        }
+
+                        if (!_endHandle.IsDragging)
+                        {
+                            _endHandle.SetTopLeft(ToLayer(last.BottomRight));
+                            _endHandle.SelectionHandleType = selectionStart > selectionEnd ?
+                                SelectionHandleType.Start :
+                                SelectionHandleType.End;
+                        }
                     }
+                }
+                catch (InvalidOperationException)
+                {
+
                 }
             }
         }

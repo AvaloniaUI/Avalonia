@@ -284,15 +284,12 @@ namespace Avalonia.Android.Platform.Input
 
         public ICharSequence? GetTextAfterCursorFormatted(int n, [GeneratedEnum] GetTextFlags flags)
         {
-            var end = Math.Min(_editBuffer.Selection.End, _editBuffer.Text.Length);
-            return SafeSubstring(_editBuffer.Text, end, Math.Min(n, _editBuffer.Text.Length - end));
+            return _editBuffer.GetTextAfterCursor(n);
         }
 
         public ICharSequence? GetTextBeforeCursorFormatted(int n, [GeneratedEnum] GetTextFlags flags)
         {
-            var start = Math.Max(0, _editBuffer.Selection.Start - n);
-            var length = _editBuffer.Selection.Start - start;
-            return SafeSubstring(_editBuffer.Text, start, length);
+            return _editBuffer.GetTextBeforeCursor(n);
         }
 
         public bool PerformPrivateCommand(string? action, Bundle? data)
