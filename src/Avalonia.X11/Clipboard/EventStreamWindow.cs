@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 
-namespace Avalonia.X11;
+namespace Avalonia.X11.Clipboard;
 
 internal class EventStreamWindow : IDisposable
 {

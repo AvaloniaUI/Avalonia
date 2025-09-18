@@ -1019,7 +1019,7 @@ namespace Avalonia.Controls.UnitTests
             var clipboard = new Mock<ITopLevelImpl>();
             clipboard.Setup(x => x.Compositor).Returns(RendererMocks.CreateDummyCompositor());
             clipboard.Setup(r => r.TryGetFeature(typeof(IClipboard)))
-                .Returns(new HeadlessClipboardStub());
+                .Returns(new Clipboard(new HeadlessClipboardImplStub()));
             clipboard.SetupGet(x => x.RenderScaling).Returns(1);
             return clipboard;
         }

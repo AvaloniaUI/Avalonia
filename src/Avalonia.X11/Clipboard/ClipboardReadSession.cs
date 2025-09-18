@@ -4,6 +4,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using static Avalonia.X11.XLib;
+
 namespace Avalonia.X11.Clipboard;
 
 class ClipboardReadSession : IDisposable
