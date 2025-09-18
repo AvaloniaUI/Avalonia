@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using Avalonia.Controls.Presenters;
 using Avalonia.Input.TextInput;
 using Avalonia.Media.TextFormatting;
@@ -43,6 +44,101 @@ namespace Avalonia.Controls
 
                 return lineText;
             }
+        }
+
+        internal override string Text => _presenter?.Text ?? string.Empty;
+
+        internal override string GetTextBeforeCaret(int length)
+        {
+            if (_presenter is null || _parent is null)
+            {
+                return "";
+            }
+            var selectionStart = _presenter.SelectionStart;
+
+            var lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(selectionStart, false);
+
+            var textLine = _presenter.TextLayout.TextLines[lineIndex];
+
+            var offset = selectionStart - textLine.FirstTextSourceIndex;
+
+            var currentLineLength = Math.Min(offset, length);
+            var start = Math.Max(offset - currentLineLength, 0);
+
+            var lineText = GetTextLineText(textLine);
+            var text = lineText.Substring(start, currentLineLength);
+
+            var newText = text;
+
+            length -= currentLineLength;
+
+            while (length > 0)
+            {
+                lineIndex--;
+                if (lineIndex >= 0)
+                {
+                    textLine = _presenter.TextLayout.TextLines[lineIndex];
+                    currentLineLength = Math.Min(textLine.Length, length);
+
+                    lineText = GetTextLineText(textLine);
+                    text = lineText.Substring(textLine.Length - currentLineLength, currentLineLength);
+
+                    newText = text + newText;
+
+                    length -= currentLineLength;
+                }
+                else
+                    break;
+            }
+
+            return newText;
+        }
+
+        internal override string GetTextAfterCaret(int length)
+        {
+            if (_presenter is null || _parent is null)
+            {
+                return "";
+            }
+
+            var selectionEnd = _presenter.SelectionStart;
+
+            var lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(selectionEnd, false);
+
+            var textLine = _presenter.TextLayout.TextLines[lineIndex];
+            var lastIndex = textLine.FirstTextSourceIndex + textLine.Length;
+
+            var currentLineLength = Math.Min(lastIndex - selectionEnd, length);
+            var start = Math.Max(selectionEnd - textLine.FirstTextSourceIndex, 0);
+
+            var builder = new StringBuilder();
+
+            var lineText = GetTextLineText(textLine);
+
+            builder.Append(lineText.Substring(start, currentLineLength));
+
+            length -= currentLineLength;
+
+            while (length > 0)
+            {
+                lineIndex++;
+                if (lineIndex < _presenter.TextLayout.TextLines.Count)
+                {
+                    textLine = _presenter.TextLayout.TextLines[lineIndex];
+                    currentLineLength = Math.Min(textLine.Length, length);
+
+                    lineText = GetTextLineText(textLine);
+                    var text = lineText.Substring(0, currentLineLength);
+
+                    builder.Append(text);
+
+                    length -= currentLineLength;
+                }
+                else
+                    break;
+            }
+
+            return builder.ToString();
         }
 
         public override Rect CursorRectangle
@@ -106,6 +202,30 @@ namespace Avalonia.Controls
                 _parent.SelectionEnd = selectionEnd;
 
                 RaiseSelectionChanged();
+            }
+        }
+
+        internal override TextSelection ActualSelection
+        {
+            get
+            {
+                if (_presenter is null || _parent is null)
+                {
+                    return default;
+                }
+
+                return new TextSelection(_presenter.SelectionStart, _presenter.SelectionEnd);
+            }
+
+            set
+            {
+                if (_parent is not null)
+                {
+                    _parent.SelectionStart = value.Start;
+                    _parent.SelectionEnd = value.End;
+
+                    RaiseSelectionChanged();
+                }
             }
         }
 

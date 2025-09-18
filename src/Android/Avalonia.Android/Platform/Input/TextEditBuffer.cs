@@ -1,5 +1,4 @@
 ﻿using System;
-using Android.Text;
 using Android.Views;
 using Android.Views.InputMethods;
 using Avalonia.Android.Platform.SkiaPlatform;
@@ -25,14 +24,14 @@ namespace Avalonia.Android.Platform.Input
         {
             get
             {
-                var selection = _textInputMethod.Client?.Selection ?? default;
+                var selection = _textInputMethod.Client?.ActualSelection ?? default;
                 return new TextSelection(Math.Min(selection.Start, selection.End), Math.Max(selection.Start, selection.End));
             }
 
             set
             {
                 if (_textInputMethod.Client is { } client)
-                    client.Selection = value;
+                    client.ActualSelection = value;
             }
         }
 
@@ -56,14 +55,14 @@ namespace Avalonia.Android.Platform.Input
         {
             get
             {
-                if(_textInputMethod.Client is not { } client || Selection.Start < 0 || Selection.End >= client.SurroundingText.Length)
+                if(_textInputMethod.Client is not { } client || Selection.Start < 0 || Selection.End >= client.Text.Length)
                 {
-                    return "";
+                    return string.Empty;
                 }
 
                 var selection = Selection;
 
-                return client.SurroundingText.Substring(selection.Start, selection.End - selection.Start);
+                return Text.Substring(selection.Start, selection.End - selection.Start);
             }
         }
 
@@ -74,36 +73,46 @@ namespace Avalonia.Android.Platform.Input
                 if (HasComposition)
                 {
                     var start = Composition!.Value.Start;
-                    Replace(Composition!.Value.Start, Composition!.Value.End, value ?? "");
+                    Replace(Composition!.Value.Start, Composition!.Value.End, value ?? string.Empty);
                     Composition = new TextSelection(start, start  + (value?.Length ?? 0));
                 }
                 else
                 {
                     var selection = Selection;
-                    Replace(selection.Start, selection.End, value ?? "");
+                    Replace(selection.Start, selection.End, value ?? string.Empty);
                     Composition = new TextSelection(selection.Start, selection.Start + (value?.Length ?? 0));
                 }
             }
         }
 
-        public string Text => _textInputMethod.Client?.SurroundingText ?? "";
+        public string Text => _textInputMethod.Client?.Text ?? string.Empty;
 
-        public ExtractedText? ExtractedText => new ExtractedText
+        public ExtractedText? ExtractedText
         {
-            Flags = Text.Contains('\n') ? 0 : ExtractedTextFlags.SingleLine,
-            PartialStartOffset = -1,
-            PartialEndOffset = Text.Length,
-            SelectionStart = Selection.Start,
-            SelectionEnd = Selection.End,
-            StartOffset = 0,
-            Text = new Java.Lang.String(Text)
-        };
+            get
+            {
+                var text = Text;
+                return new ExtractedText
+                {
+                    Flags = text.Contains('\n') ? 0 : ExtractedTextFlags.SingleLine,
+                    PartialStartOffset = -1,
+                    PartialEndOffset = text.Length,
+                    SelectionStart = Selection.Start,
+                    SelectionEnd = Selection.End,
+                    StartOffset = 0,
+                    Text = new Java.Lang.String(text)
+                };
+            }
+        }
+
+        internal Java.Lang.ICharSequence? GetTextBeforeCursor(int n) => new Java.Lang.String(_textInputMethod.Client?.GetTextBeforeCaret(n) ?? string.Empty);
+        internal Java.Lang.ICharSequence? GetTextAfterCursor(int n) => new Java.Lang.String(_textInputMethod.Client?.GetTextAfterCaret(n) ?? string.Empty);
 
         internal void Remove(int index, int length)
         {
             if (_textInputMethod.Client is { } client)
             {
-                client.Selection = new TextSelection(index, index + length);
+                client.ActualSelection = new TextSelection(index, index + length);
                 if (length > 0)
                     _textInputMethod?.View.DispatchKeyEvent(new KeyEvent(KeyEventActions.Down, Keycode.ForwardDel));
             }
@@ -117,12 +126,12 @@ namespace Avalonia.Android.Platform.Input
                 var realEnd = Math.Max(start, end);
                 if (realEnd > realStart)
                 {
-                    client.Selection = new TextSelection(realStart, realEnd);
+                    client.ActualSelection = new TextSelection(realStart, realEnd);
                     _textInputMethod?.View.DispatchKeyEvent(new KeyEvent(KeyEventActions.Down, Keycode.ForwardDel));
                 }
                 _topLevel.TextInput(text);
                 var index = realStart + text.Length;
-                client.Selection = new TextSelection(index, index);
+                client.ActualSelection = new TextSelection(index, index);
                 Composition = null;
             }
         }

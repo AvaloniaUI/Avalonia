@@ -21,9 +21,7 @@ namespace Avalonia.Android.Platform.Input
 
         public override void Apply(TextEditBuffer buffer)
         {
-            var start = Math.Clamp(_start, 0, buffer.Text.Length);
-            var end = Math.Clamp(_end, 0, buffer.Text.Length);
-            buffer.Selection = new TextSelection(start, end);
+            buffer.Selection = new TextSelection(_start, _end);
         }
     }
 
@@ -57,11 +55,13 @@ namespace Avalonia.Android.Platform.Input
 
         public override void Apply(TextEditBuffer buffer)
         {
-            var end = Math.Min(buffer.Text.Length, buffer.Selection.End + _after);
-            var endCount = end - buffer.Selection.End;
-            var start = Math.Max(0, buffer.Selection.Start - _before);
-            buffer.Remove(buffer.Selection.End, endCount);
-            buffer.Remove(start, buffer.Selection.Start - start);
+            var length = buffer.Text.Length;
+            var selection = buffer.Selection;
+            var end = Math.Min(length, selection.End + _after);
+            var endCount = end - selection.End;
+            var start = Math.Max(0, selection.Start - _before);
+            buffer.Remove(selection.End, endCount);
+            buffer.Remove(start, selection.Start - start);
             buffer.Selection = new TextSelection(start, start);
         }
     }
@@ -81,13 +81,15 @@ namespace Avalonia.Android.Platform.Input
         {
             var beforeLengthInChar = 0;
 
+            var selection = buffer.Selection;
+            var text = buffer.Text;
             for (int i = 0; i < _before; i++)
             {
                 beforeLengthInChar++;
-                if (buffer.Selection.Start > beforeLengthInChar)
+                if (selection.Start > beforeLengthInChar)
                 {
-                    var lead = buffer.Text[buffer.Selection.Start - beforeLengthInChar - 1];
-                    var trail = buffer.Text[buffer.Selection.Start - beforeLengthInChar];
+                    var lead = text[selection.Start - beforeLengthInChar - 1];
+                    var trail = text[selection.Start - beforeLengthInChar];
 
                     if (char.IsSurrogatePair(lead, trail))
                     {
@@ -95,7 +97,7 @@ namespace Avalonia.Android.Platform.Input
                     }
                 }
 
-                if (beforeLengthInChar == buffer.Selection.Start)
+                if (beforeLengthInChar == selection.Start)
                     break;
             }
 
@@ -103,10 +105,10 @@ namespace Avalonia.Android.Platform.Input
             for (int i = 0; i < _after; i++)
             {
                 afterLengthInChar++;
-                if (buffer.Selection.End > afterLengthInChar)
+                if (selection.End > afterLengthInChar)
                 {
-                    var lead = buffer.Text[buffer.Selection.End + afterLengthInChar - 1];
-                    var trail = buffer.Text[buffer.Selection.End + afterLengthInChar];
+                    var lead = text[selection.End + afterLengthInChar - 1];
+                    var trail = text[selection.End + afterLengthInChar];
 
                     if (char.IsSurrogatePair(lead, trail))
                     {
@@ -114,12 +116,12 @@ namespace Avalonia.Android.Platform.Input
                     }
                 }
 
-                if (buffer.Selection.End + afterLengthInChar == buffer.Text.Length)
+                if (selection.End + afterLengthInChar == text.Length)
                     break;
             }
 
-            var start = buffer.Selection.Start - beforeLengthInChar;
-            buffer.Remove(buffer.Selection.End, afterLengthInChar);
+            var start = selection.Start - beforeLengthInChar;
+            buffer.Remove(selection.End, afterLengthInChar);
             buffer.Remove(start, beforeLengthInChar);
             buffer.Selection = new TextSelection(start, start);
         }
@@ -139,7 +141,8 @@ namespace Avalonia.Android.Platform.Input
         public override void Apply(TextEditBuffer buffer)
         {
             buffer.ComposingText = _text;
-            var newCursor = _newCursorPosition > 0 ? buffer.Selection.Start + _newCursorPosition - 1 : buffer.Selection.Start + _newCursorPosition;
+            var selection = buffer.Selection;
+            var newCursor = _newCursorPosition > 0 ? selection.Start + _newCursorPosition - 1 : selection.Start + _newCursorPosition;
             buffer.Selection = new TextSelection(newCursor, newCursor);
         }
     }
