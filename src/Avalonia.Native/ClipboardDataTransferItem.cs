@@ -1,9 +1,11 @@
 #nullable enable
 
 using System;
+using System.Text;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.Platform.Storage;
 
 namespace Avalonia.Native;
 
@@ -21,10 +23,10 @@ internal sealed class ClipboardDataTransferItem(ClipboardReadSession session, in
     protected override DataFormat[] ProvideFormats()
     {
         using var formats = _session.GetItemFormats(_itemIndex);
-        return ClipboardDataFormatHelper.ToDataFormats(formats);
+        return ClipboardDataFormatHelper.ToDataFormats(formats, _session.IsTextFormat);
     }
 
-    protected override object? TryGetCore(DataFormat format)
+    protected override object? TryGetRawCore(DataFormat format)
     {
         var nativeFormat = ClipboardDataFormatHelper.ToNativeFormat(format);
 
@@ -34,16 +36,34 @@ internal sealed class ClipboardDataTransferItem(ClipboardReadSession session, in
         if (DataFormat.File.Equals(format))
             return TryGetFile(nativeFormat);
 
-        return TryGetBytes(nativeFormat);
+        if (format is DataFormat<string>)
+        {
+            if (TryGetString(nativeFormat) is { } stringValue)
+                return stringValue;
+            if (TryGetBytes(nativeFormat) is { } bytes)
+                return Encoding.Unicode.GetString(bytes);
+            return null;
+        }
+
+        if (format is DataFormat<byte[]>)
+        {
+            if (TryGetBytes(nativeFormat) is { } bytes)
+                return bytes;
+            if (TryGetString(nativeFormat) is { } stringValue)
+                return Encoding.Unicode.GetBytes(stringValue);
+            return null;
+        }
+
+        return null;
     }
 
-    private object? TryGetString(string nativeFormat)
+    private string? TryGetString(string nativeFormat)
     {
         using var text = _session.GetItemValueAsString(_itemIndex, nativeFormat);
         return text?.String;
     }
 
-    private object? TryGetFile(string nativeFormat)
+    private IStorageItem? TryGetFile(string nativeFormat)
     {
         if (AvaloniaLocator.Current.GetService<IStorageProviderFactory>() is not StorageProviderApi storageApi)
             return null;
@@ -66,7 +86,7 @@ internal sealed class ClipboardDataTransferItem(ClipboardReadSession session, in
             uri;
     }
 
-    private object? TryGetBytes(string nativeFormat)
+    private byte[]? TryGetBytes(string nativeFormat)
     {
         using var bytes = _session.GetItemValueAsBytes(_itemIndex, nativeFormat);
         return bytes?.Bytes;

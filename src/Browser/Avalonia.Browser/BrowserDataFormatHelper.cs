@@ -1,4 +1,5 @@
-﻿using Avalonia.Input;
+﻿using System;
+using Avalonia.Input;
 
 namespace Avalonia.Browser;
 
@@ -13,8 +14,12 @@ internal static class BrowserDataFormatHelper
         {
             FormatTextPlain => DataFormat.Text,
             FormatFiles => DataFormat.File,
-            _ => DataFormat.FromSystemName(formatString, AppPrefix)
+            _ when IsTextFormat(formatString) => DataFormat.FromSystemName<string>(formatString, AppPrefix),
+            _ => DataFormat.FromSystemName<byte[]>(formatString, AppPrefix)
         };
+
+    private static bool IsTextFormat(string format)
+        => format.StartsWith("text/", StringComparison.OrdinalIgnoreCase);
 
     public static string ToBrowserFormat(DataFormat format)
     {

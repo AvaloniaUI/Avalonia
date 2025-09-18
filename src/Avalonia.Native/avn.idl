@@ -980,6 +980,7 @@ interface IAvnClipboard : IUnknown
     HRESULT Clear(int64_t* ret);
     HRESULT GetChangeCount(int64_t* ret);
     HRESULT SetData(IAvnClipboardDataSource* dataSource);
+    bool IsTextFormat([const] char* format);
 }
 
 [uuid(10b39f02-efcb-428b-bee5-a0b012c1fb7d)]

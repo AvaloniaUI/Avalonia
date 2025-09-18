@@ -1,3 +1,4 @@
+using System.Text;
 using Avalonia.Controls;
 using Avalonia.Diagnostics.ViewModels;
 using Avalonia.Input;

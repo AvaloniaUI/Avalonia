@@ -132,6 +132,23 @@ public:
         [_pasteboard writeObjects:writeableItems];
         return S_OK;
     }
+    
+    virtual bool IsTextFormat(const char *format) override
+    {
+        START_COM_ARP_CALL;
+        
+        auto formatString = [NSString stringWithUTF8String:format];
+        
+        if (@available(macOS 11.0, *))
+        {
+            auto type = [UTType typeWithIdentifier:formatString];
+            return type != nil && [type conformsToType:UTTypeText];
+        }
+        else
+        {
+            return UTTypeConformsTo((__bridge CFStringRef)formatString, kUTTypeText);
+        }
+    }
 };
 
 
@@ -161,7 +178,8 @@ extern IAvnClipboard* CreateClipboard(NSPasteboard* pb)
 
 NSString* TryConvertFormatToUti(NSString* format)
 {
-    if (@available(macOS 11.0, *)) {
+    if (@available(macOS 11.0, *))
+    {
         auto type = [UTType typeWithIdentifier:format];
         if (type == nil)
         {
@@ -177,7 +195,7 @@ NSString* TryConvertFormatToUti(NSString* format)
                 // With the new DataFormat:
                 //   - If the format is an application format, the managed side provides a UTI like net.avaloniaui.app.uti.xxx.
                 //   - If the format is an OS format, the user has been warned that they MUST provide a name which is valid for the OS.
-                // TODOV12: remove!
+                // TODO12: remove!
                 auto fromPasteboardType = UTTypeCreatePreferredIdentifierForTag(kUTTagClassNSPboardType, (__bridge CFStringRef)format, nil);
                 if (fromPasteboardType != nil)
                     return (__bridge_transfer NSString*)fromPasteboardType;
@@ -185,7 +203,9 @@ NSString* TryConvertFormatToUti(NSString* format)
         }
         
         return type == nil ? nil : [type identifier];
-    } else {
+    }
+    else
+    {
         auto bridgedFormat = (__bridge CFStringRef)format;
         if (UTTypeIsDeclared(bridgedFormat))
             return format;

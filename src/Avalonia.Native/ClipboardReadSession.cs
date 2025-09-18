@@ -81,6 +81,18 @@ internal sealed class ClipboardReadSession(IAvnClipboard native, long changeCoun
         }
     }
 
+    public bool IsTextFormat(string format)
+    {
+        try
+        {
+            return Native.IsTextFormat(format) != 0;
+        }
+        catch (COMException)
+        {
+            return false;
+        }
+    }
+
     public static bool IsComObjectDisposedException(COMException exception)
         // The native side returns COR_E_OBJECTDISPOSED if the clipboard has changed (_changeCount doesn't match).
         => exception.HResult == COR_E_OBJECTDISPOSED;

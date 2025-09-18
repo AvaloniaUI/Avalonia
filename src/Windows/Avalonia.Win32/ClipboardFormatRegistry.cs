@@ -42,7 +42,7 @@ namespace Avalonia.Win32
                 }
 
                 var systemName = GetFormatSystemName(id);
-                var format = DataFormat.FromSystemName(systemName, AppPrefix);
+                var format = DataFormat.FromSystemName<byte[]>(systemName, AppPrefix);
                 AddDataFormat(format, id);
                 return format;
             }

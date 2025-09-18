@@ -19,5 +19,16 @@ public interface IDataTransferItem
     /// </summary>
     /// <param name="format">The format to retrieve.</param>
     /// <returns>A value for <paramref name="format"/>, or null if the format is not supported.</returns>
-    object? TryGet(DataFormat format);
+    /// <remarks>
+    /// <para>
+    /// Implementations of this method are expected to return a value matching the exact type
+    /// of the generic argument of the underlying <see cref="DataFormat{T}"/>.
+    /// </para>
+    /// <para>
+    /// To retrieve a typed value, use <see cref="DataTransferItemExtensions.TryGetValue"/>.
+    /// </para>
+    /// </remarks>
+    /// <seealso cref="DataTransferItemExtensions.TryGetValue"/>
+    /// <seealso cref="DataTransferExtensions.TryGetValue"/>
+    object? TryGetRaw(DataFormat format);
 }

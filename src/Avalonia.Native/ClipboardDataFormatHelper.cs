@@ -1,5 +1,6 @@
 #nullable enable
 
+using System;
 using Avalonia.Input;
 using Avalonia.Native.Interop;
 
@@ -12,7 +13,7 @@ internal static class ClipboardDataFormatHelper
     private const string NSPasteboardTypeFileUrl = "public.file-url";
     private const string AppPrefix = "net.avaloniaui.app.uti.";
 
-    public static DataFormat[] ToDataFormats(IAvnStringArray? nativeFormats)
+    public static DataFormat[] ToDataFormats(IAvnStringArray? nativeFormats, Func<string, bool> isTextFormat)
     {
         if (nativeFormats is null)
             return [];
@@ -26,26 +27,27 @@ internal static class ClipboardDataFormatHelper
         for (var c = 0u; c < count; c++)
         {
             using var nativeFormat = nativeFormats.Get(c);
-            results[c] = ToDataFormat(nativeFormat.String);
+            results[c] = ToDataFormat(nativeFormat.String, isTextFormat);
         }
 
         return results;
     }
 
-    public static DataFormat ToDataFormat(string nativeFormat)
+    public static DataFormat ToDataFormat(string nativeFormat, Func<string, bool> isTextFormat)
         => nativeFormat switch
         {
             NSPasteboardTypeString => DataFormat.Text,
             NSPasteboardTypeFileUrl => DataFormat.File,
-            _ => DataFormat.FromSystemName(nativeFormat, AppPrefix)
+            _ when isTextFormat(nativeFormat) => DataFormat.FromSystemName<string>(nativeFormat, AppPrefix),
+            _ => DataFormat.FromSystemName<byte[]>(nativeFormat, AppPrefix)
         };
 
     public static string ToNativeFormat(DataFormat format)
     {
-        if (format.Equals(DataFormat.Text))
+        if (DataFormat.Text.Equals(format))
             return NSPasteboardTypeString;
 
-        if (format.Equals(DataFormat.File))
+        if (DataFormat.File.Equals(format))
             return NSPasteboardTypeFileUrl;
 
         return format.ToSystemName(AppPrefix);

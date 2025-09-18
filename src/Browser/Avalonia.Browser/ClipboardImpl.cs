@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Buffers;
-using System.IO;
 using System.Runtime.InteropServices.JavaScript;
 using System.Threading.Tasks;
 using Avalonia.Input;
@@ -9,113 +7,85 @@ using Avalonia.Logging;
 using static Avalonia.Browser.BrowserDataFormatHelper;
 using static Avalonia.Browser.Interop.InputHelper;
 
-namespace Avalonia.Browser
+namespace Avalonia.Browser;
+
+internal sealed class ClipboardImpl : IClipboardImpl
 {
-    internal sealed class ClipboardImpl : IClipboardImpl
+    public async Task<IAsyncDataTransfer?> TryGetDataAsync()
     {
-        public async Task<IAsyncDataTransfer?> TryGetDataAsync()
-        {
-            var jsItems = await ReadClipboardAsync(BrowserWindowingPlatform.GlobalThis).ConfigureAwait(false);
-            return jsItems.GetPropertyAsInt32("length") == 0 ? null : new BrowserClipboardDataTransfer(jsItems);
-        }
-
-        public async Task SetDataAsync(IAsyncDataTransfer dataTransfer)
-        {
-            using var source = CreateWriteableClipboardSource();
-
-            foreach (var dataTransferItem in dataTransfer.Items)
-            {
-                // No ConfigureAwait(false) here: we want TryGetAsync() for next items to be called on the initial thread.
-                await TryAddItemAsync(dataTransferItem, source);
-            }
-
-            // However, ConfigureAwait(false) is fine here: we're not doing anything after.
-            await WriteClipboardAsync(BrowserWindowingPlatform.GlobalThis, source).ConfigureAwait(false);
-        }
-
-        private async Task TryAddItemAsync(IAsyncDataTransferItem dataTransferItem, JSObject source)
-        {
-            JSObject? writeableItem = null;
-
-            try
-            {
-                foreach (var dataFormat in dataTransferItem.Formats)
-                {
-                    var formatString = ToBrowserFormat(dataFormat);
-                    if (!IsClipboardFormatSupported(formatString))
-                        continue;
-
-                    var data = await dataTransferItem.TryGetAsync(dataFormat);
-
-                    if (DataFormat.Text.Equals(dataFormat))
-                    {
-                        AddStringToItem(Convert.ToString(data) ?? string.Empty);
-                        continue;
-                    }
-
-                    switch (data)
-                    {
-                        case null:
-                            break;
-
-                        case byte[] bytes:
-                            AddBytesToItem(bytes.AsSpan());
-                            break;
-
-                        case Memory<byte> bytes:
-                            AddBytesToItem(bytes.Span);
-                            break;
-
-                        case string str:
-                            AddStringToItem(str);
-                            break;
-
-                        case Stream stream:
-                        {
-                            var length = (int)(stream.Length - stream.Position);
-                            var buffer = ArrayPool<byte>.Shared.Rent(length);
-
-                            try
-                            {
-                                await stream.ReadExactlyAsync(buffer, 0, length);
-                                AddBytesToItem(buffer.AsSpan(0, length));
-                            }
-                            finally
-                            {
-                                ArrayPool<byte>.Shared.Return(buffer);
-                            }
-                            break;
-                        }
-
-                        default:
-                            Logger.TryGet(LogEventLevel.Warning, LogArea.macOSPlatform)?.Log(
-                                this,
-                                "Unsupported value type {Type} for data format {Format}",
-                                data.GetType(),
-                                dataFormat);
-                            break;
-                    }
-
-                    void AddStringToItem(string str)
-                    {
-                        writeableItem ??= CreateWriteableClipboardItem(source);
-                        AddStringToWriteableClipboardItem(writeableItem, formatString, str);
-                    }
-
-                    void AddBytesToItem(Span<byte> bytes)
-                    {
-                        writeableItem ??= CreateWriteableClipboardItem(source);
-                        AddBytesToWriteableClipboardItem(writeableItem, formatString, bytes);
-                    }
-                }
-            }
-            finally
-            {
-                writeableItem?.Dispose();
-            }
-        }
-
-        public Task ClearAsync()
-            => WriteClipboardAsync(BrowserWindowingPlatform.GlobalThis, null);
+        var jsItems = await ReadClipboardAsync(BrowserWindowingPlatform.GlobalThis).ConfigureAwait(false);
+        return jsItems.GetPropertyAsInt32("length") == 0 ? null : new BrowserClipboardDataTransfer(jsItems);
     }
+
+    public async Task SetDataAsync(IAsyncDataTransfer dataTransfer)
+    {
+        using var source = CreateWriteableClipboardSource();
+
+        foreach (var dataTransferItem in dataTransfer.Items)
+        {
+            // No ConfigureAwait(false) here: we want TryGetAsync() for next items to be called on the initial thread.
+            await TryAddItemAsync(dataTransferItem, source);
+        }
+
+        // However, ConfigureAwait(false) is fine here: we're not doing anything after.
+        await WriteClipboardAsync(BrowserWindowingPlatform.GlobalThis, source).ConfigureAwait(false);
+    }
+
+    private async Task TryAddItemAsync(IAsyncDataTransferItem dataTransferItem, JSObject source)
+    {
+        JSObject? writeableItem = null;
+
+        try
+        {
+            foreach (var format in dataTransferItem.Formats)
+            {
+                var formatString = ToBrowserFormat(format);
+                if (!IsClipboardFormatSupported(formatString))
+                    continue;
+
+                if (DataFormat.Text.Equals(format))
+                {
+                    var text = await dataTransferItem.TryGetValueAsync(DataFormat.Text) ?? string.Empty;
+                    writeableItem ??= CreateWriteableClipboardItem(source);
+                    AddStringToWriteableClipboardItem(writeableItem, formatString, text);
+                    continue;
+                }
+
+                if (format is DataFormat<string> stringFormat)
+                {
+                    var stringValue = await dataTransferItem.TryGetValueAsync(stringFormat);
+                    if (stringValue is not null)
+                    {
+                        writeableItem ??= CreateWriteableClipboardItem(source);
+                        AddStringToWriteableClipboardItem(writeableItem, formatString, stringValue);
+                    }
+                    continue;
+                }
+
+                if (format is DataFormat<byte[]> bytesFormat)
+                {
+                    var bytes = await dataTransferItem.TryGetValueAsync(bytesFormat);
+                    if (bytes is not null)
+                    {
+                        writeableItem ??= CreateWriteableClipboardItem(source);
+                        AddBytesToWriteableClipboardItem(writeableItem, formatString, bytes.AsSpan());
+                    }
+                    continue;
+                }
+
+                // Note: DataFormat.File isn't supported, we can't put arbitrary files onto the clipboard
+                // on the browser for security reasons.
+
+                Logger.TryGet(LogEventLevel.Warning, LogArea.BrowserPlatform)
+                    ?.Log(this, "Unsupported data format {Format}", format);
+            }
+        }
+        finally
+        {
+            writeableItem?.Dispose();
+        }
+    }
+
+    public Task ClearAsync()
+        => WriteClipboardAsync(BrowserWindowingPlatform.GlobalThis, null);
 }

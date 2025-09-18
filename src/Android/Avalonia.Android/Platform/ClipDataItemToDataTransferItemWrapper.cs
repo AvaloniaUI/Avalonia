@@ -21,7 +21,7 @@ internal sealed class ClipDataItemToDataTransferItemWrapper(ClipData.Item item, 
     protected override DataFormat[] ProvideFormats()
         => _owner.Formats; // There's no "format per item", assume each item handle all formats
 
-    protected override object? TryGetCore(DataFormat format)
+    protected override object? TryGetRawCore(DataFormat format)
     {
         if (DataFormat.Text.Equals(format))
             return _item.CoerceToText(_owner.Context);
@@ -33,17 +33,25 @@ internal sealed class ClipDataItemToDataTransferItemWrapper(ClipData.Item item, 
                 null;
         }
 
+        if (format is DataFormat<string>)
+            return TryGetAsString();
+
+        return null;
+    }
+
+    private string? TryGetAsString()
+    {
         if (_item.Text is { } text)
             return text;
 
         if (_item.HtmlText is { } htmlText)
             return htmlText;
 
-        if (_item.Intent is { } intent)
-            return intent;
+        if (_item.Uri is { } uri)
+            return uri.ToString();
 
-        if (_item.Uri is { } androidUri && Uri.TryCreate(androidUri.ToString(), UriKind.Absolute, out var uri))
-            return uri;
+        if (_item.Intent is { } intent)
+            return intent.ToUri(IntentUriType.Scheme);
 
         return null;
     }

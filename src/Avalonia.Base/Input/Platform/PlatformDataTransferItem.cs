@@ -26,17 +26,17 @@ internal abstract class PlatformDataTransferItem : IDataTransferItem, IAsyncData
     public bool Contains(DataFormat format)
         => Array.IndexOf(Formats, format) >= 0;
 
-    public object? TryGet(DataFormat format)
-        => Contains(format) ? TryGetCore(format) : Task.FromResult<object?>(null);
+    public object? TryGetRaw(DataFormat format)
+        => Contains(format) ? TryGetRawCore(format) : Task.FromResult<object?>(null);
 
-    public Task<object?> TryGetAsync(DataFormat format)
+    public Task<object?> TryGetRawAsync(DataFormat format)
     {
         if (!Contains(format))
             return Task.FromResult<object?>(null);
 
         try
         {
-            return Task.FromResult(TryGetCore(format));
+            return Task.FromResult(TryGetRawCore(format));
         }
         catch (Exception ex)
         {
@@ -44,9 +44,9 @@ internal abstract class PlatformDataTransferItem : IDataTransferItem, IAsyncData
         }
     }
 
-    protected abstract object? TryGetCore(DataFormat format);
+    protected abstract object? TryGetRawCore(DataFormat format);
 
-    public static PlatformDataTransferItem Create(DataFormat format, object value)
+    public static PlatformDataTransferItem Create<T>(DataFormat<T> format, T value) where T : class
         => new SingleFormatItem(format, value);
 
     private sealed class SingleFormatItem(DataFormat format, object value) : PlatformDataTransferItem
@@ -57,7 +57,7 @@ internal abstract class PlatformDataTransferItem : IDataTransferItem, IAsyncData
         protected override DataFormat[] ProvideFormats()
             => [_format];
 
-        protected override object? TryGetCore(DataFormat format)
+        protected override object? TryGetRawCore(DataFormat format)
             => _format.Equals(format) ? _value : null;
     }
 }

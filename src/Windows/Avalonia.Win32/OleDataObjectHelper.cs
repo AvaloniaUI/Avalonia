@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Buffers;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
-using System.Runtime.Serialization.Formatters.Binary;
 using Avalonia.Input;
 using Avalonia.Logging;
 using Avalonia.Platform.Storage;
@@ -23,17 +19,6 @@ namespace Avalonia.Win32;
 /// </summary>
 internal static class OleDataObjectHelper
 {
-    // Compatibility with WinForms + WPF...
-    // TODO12: remove
-    private static ReadOnlySpan<byte> SerializedObjectGuid
-        => [
-            // FD9EA796-3B13-4370-A679-56106BB288FB
-            0x96, 0xa7, 0x9e, 0xfd,
-            0x13, 0x3b,
-            0x70, 0x43,
-            0xa6, 0x79, 0x56, 0x10, 0x6b, 0xb2, 0x88, 0xfb
-        ];
-
     public static FORMATETC ToFormatEtc(this DataFormat format)
         => new()
         {
@@ -84,7 +69,13 @@ internal static class OleDataObjectHelper
                 .ToArray();
         }
 
-        return DeserializeFromHGlobal(hGlobal);
+        if (format is DataFormat<string>)
+            return ReadStringFromHGlobal(hGlobal);
+
+        if (format is DataFormat<byte[]>)
+            return ReadBytesFromHGlobal(hGlobal);
+
+        return null;
     }
 
     private static string? ReadStringFromHGlobal(IntPtr hGlobal)
@@ -135,48 +126,17 @@ internal static class OleDataObjectHelper
         }
     }
 
-    // TODO12: remove, use ReadBytesFromHGlobal instead
-    private static unsafe object DeserializeFromHGlobal(IntPtr hGlobal)
-    {
-        var sourcePtr = GlobalLock(hGlobal);
-        try
-        {
-            var size = (int)GlobalSize(hGlobal);
-            var source = new ReadOnlySpan<byte>((void*)sourcePtr, size);
-
-            if (source.StartsWith(SerializedObjectGuid))
-            {
-                using var stream = new UnmanagedMemoryStream((byte*)sourcePtr, size);
-                stream.Position = SerializedObjectGuid.Length;
-                return DeserializeUsingBinaryFormatter(stream);
-            }
-
-            return source.ToArray();
-        }
-        finally
-        {
-            GlobalUnlock(hGlobal);
-        }
-    }
-
-    // TODO12: remove
-    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We still use BinaryFormatter for WinForms drag and drop compatibility")]
-    [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = "We still use BinaryFormatter for WinForms drag and drop compatibility")]
-    private static object DeserializeUsingBinaryFormatter(UnmanagedMemoryStream stream)
-    {
-#pragma warning disable SYSLIB0011 // Type or member is obsolete
-        return new BinaryFormatter().Deserialize(stream);
-#pragma warning restore SYSLIB0011 // Type or member is obsolete
-    }
-
-    public static uint WriteDataToHGlobal(object data, DataFormat format, ref IntPtr hGlobal)
+    public static uint WriteDataToHGlobal(IDataTransfer dataTransfer, DataFormat format, ref IntPtr hGlobal)
     {
         if (DataFormat.Text.Equals(format))
-            return WriteStringToHGlobal(ref hGlobal, Convert.ToString(data) ?? string.Empty);
+        {
+            var text = dataTransfer.TryGetValue(DataFormat.Text);
+            return WriteStringToHGlobal(ref hGlobal, text ?? string.Empty);
+        }
 
         if (DataFormat.File.Equals(format))
         {
-            var files = GetTypedData<IEnumerable<IStorageItem>>(data, format) ?? [];
+            var files = dataTransfer.TryGetValues(DataFormat.File) ?? [];
 
             IEnumerable<string> fileNames = files
                 .Select(StorageProviderExtensions.TryGetLocalPath)
@@ -185,49 +145,24 @@ internal static class OleDataObjectHelper
             return WriteFileNamesToHGlobal(ref hGlobal, fileNames);
         }
 
-        switch (data)
+        if (format is DataFormat<string> stringFormat)
         {
-            case byte[] bytes:
-                return WriteBytesToHGlobal(ref hGlobal, bytes.AsSpan());
-
-            case Memory<byte> bytes:
-                return WriteBytesToHGlobal(ref hGlobal, bytes.Span);
-
-            case string str:
-                return WriteStringToHGlobal(ref hGlobal, str);
-
-            case Stream stream:
-            {
-                var length = (int)(stream.Length - stream.Position);
-                var buffer = ArrayPool<byte>.Shared.Rent(length);
-
-                try
-                {
-                    stream.ReadExactly(buffer, 0, length);
-                    return WriteBytesToHGlobal(ref hGlobal, buffer.AsSpan(0, length));
-                }
-                finally
-                {
-                    ArrayPool<byte>.Shared.Return(buffer);
-                }
-            }
-
-            default:
-            {
-                // TODO12: remove the BinaryFormatter support
-                var bytes = SerializeUsingBinaryFormatter(data, format);
-                return WriteBytesToHGlobal(ref hGlobal, bytes);
-            }
+            return dataTransfer.TryGetValue(stringFormat) is { } stringValue ?
+                WriteStringToHGlobal(ref hGlobal, stringValue) :
+                DV_E_FORMATETC;
         }
 
-        static T? GetTypedData<T>(object? data, DataFormat format) where T : class
-            => data switch
-            {
-                null => null,
-                T value => value,
-                _ => throw new InvalidOperationException(
-                    $"Expected a value of type {typeof(T)} for data format {format}, got {data.GetType()} instead.")
-            };
+        if (format is DataFormat<byte[]> bytesFormat)
+        {
+            return dataTransfer.TryGetValue(bytesFormat) is { } bytes ?
+                WriteBytesToHGlobal(ref hGlobal, bytes.AsSpan()) :
+                DV_E_FORMATETC;
+        }
+
+        Logger.TryGet(LogEventLevel.Warning, LogArea.Win32Platform)
+            ?.Log(null, "Unsupported data format {Format}", format);
+
+        return DV_E_FORMATETC;
     }
 
     private static unsafe uint WriteStringToHGlobal(ref IntPtr hGlobal, string data)
@@ -334,31 +269,5 @@ internal static class OleDataObjectHelper
         {
             GlobalUnlock(hGlobal);
         }
-    }
-
-    // TODO12: remove
-    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We still use BinaryFormatter for WinForms drag and drop compatibility")]
-    [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = "We still use BinaryFormatter for WinForms drag and drop compatibility")]
-    private static ReadOnlySpan<byte> SerializeUsingBinaryFormatter(object data, DataFormat format)
-    {
-        Logger.TryGet(LogEventLevel.Warning, LogArea.Win32Platform)?.Log(
-            null,
-            "Using BinaryFormatter to serialize data format {Format}, prefer passing a byte[] or Stream instead.",
-            format);
-
-        var stream = new MemoryStream();
-
-#if NET6_0_OR_GREATER
-        stream.Write(SerializedObjectGuid);
-#else
-            stream.Write(SerializedObjectGuid.ToArray(), 0, SerializedObjectGuid.Length);
-#endif
-
-#pragma warning disable SYSLIB0011 // Type or member is obsolete
-        new BinaryFormatter().Serialize(stream, data);
-#pragma warning restore SYSLIB0011 // Type or member is obsolete
-
-        var buffer = stream.GetBuffer();
-        return new ReadOnlySpan<byte>(buffer, 0, buffer.Length);
     }
 }

@@ -40,7 +40,7 @@ internal sealed class DataObjectToDataTransferWrapper(IDataObject dataObject)
                 if (DataObject.Get(formatString) is IEnumerable<IStorageItem> storageItems)
                 {
                     foreach (var storageItem in storageItems)
-                        items.Add(PlatformDataTransferItem.Create(format, storageItem));
+                        items.Add(PlatformDataTransferItem.Create(DataFormat.File, storageItem));
                 }
             }
             else if (formatString == DataFormats.FileNames)
@@ -50,7 +50,7 @@ internal sealed class DataObjectToDataTransferWrapper(IDataObject dataObject)
                     foreach (var fileName in fileNames)
                     {
                         if (StorageProviderHelpers.TryCreateBclStorageItem(fileName) is { } storageItem)
-                            items.Add(PlatformDataTransferItem.Create(format, storageItem));
+                            items.Add(PlatformDataTransferItem.Create(DataFormat.File, storageItem));
                     }
                 }
             }

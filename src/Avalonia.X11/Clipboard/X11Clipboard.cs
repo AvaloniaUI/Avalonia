@@ -98,11 +98,7 @@ namespace Avalonia.X11.Clipboard
                     if (_storedDataTransfer is null || !_storedDataTransfer.Contains(dataFormat))
                         return IntPtr.Zero;
 
-                    var data = DataFormat.File.Equals(dataFormat) ?
-                        _storedDataTransfer.TryGetValuesAsync<IStorageItem>(dataFormat).GetAwaiter().GetResult() :
-                        _storedDataTransfer.TryGetValueAsync<object?>(dataFormat).GetAwaiter().GetResult();
-
-                    if (ConvertDataToBytes(data, dataFormat, target) is not { } bytes)
+                    if (TryGetDataAsBytes(_storedDataTransfer, dataFormat, target) is not { } bytes)
                         return IntPtr.Zero;
 
                     _ = SendDataToClientAsync(window, property, target, bytes);
@@ -139,62 +135,41 @@ namespace Avalonia.X11.Clipboard
 
         }
 
-        private byte[]? ConvertDataToBytes(object? data, DataFormat format, IntPtr formatAtom)
+        private byte[]? TryGetDataAsBytes(IAsyncDataTransfer dataTransfer, DataFormat format, IntPtr targetFormatAtom)
         {
             if (DataFormat.Text.Equals(format))
             {
-                return ClipboardDataFormatHelper.TryGetStringEncoding(formatAtom, _x11.Atoms) is { } encoding ?
-                    encoding.GetBytes(Convert.ToString(data) ?? string.Empty) :
+                var text = dataTransfer.TryGetValueAsync(DataFormat.Text).GetAwaiter().GetResult();
+
+                return ClipboardDataFormatHelper.TryGetStringEncoding(targetFormatAtom, _x11.Atoms) is { } encoding ?
+                    encoding.GetBytes(text ?? string.Empty) :
                     null;
             }
             
             if (DataFormat.File.Equals(format))
             {
-                var files = GetTypedData<IEnumerable<IStorageItem>>(data, format) ?? [];
+                if (dataTransfer.TryGetValuesAsync(DataFormat.File).GetAwaiter().GetResult() is not { } files)
+                    return null;
+
                 using var memoryStream = new MemoryStream();
                 ClipboardUriListHelper.WriteFileUriList(memoryStream, files);
                 return memoryStream.ToArray();
             }
 
-            switch (data)
+            if (format is DataFormat<string> stringFormat)
             {
-                case null:
-                    return null;
-
-                case byte[] bytes:
-                    return bytes;
-
-                case Memory<byte> bytes:
-                    return bytes.ToArray();
-
-                case string str:
-                    return Encoding.UTF8.GetBytes(str);
-
-                case Stream stream:
-                {
-                    var length = (int)(stream.Length - stream.Position);
-                    var buffer = new byte[length];
-                    stream.ReadExactly(buffer, 0, length);
-                    return buffer;
-                }
-
-                default:
-                    Logger.TryGet(LogEventLevel.Warning, LogArea.IOSPlatform)?.Log(
-                        this,
-                        "Unsupported value type {Type} for data format {Format}",
-                        data.GetType(),
-                        format);
-                    return null;
+                return dataTransfer.TryGetValueAsync(stringFormat).GetAwaiter().GetResult() is { } stringValue ?
+                    Encoding.UTF8.GetBytes(stringValue) :
+                    null;
             }
 
-            static T? GetTypedData<T>(object? data, DataFormat format) where T : class
-                => data switch
-                {
-                    null => null,
-                    T value => value,
-                    _ => throw new InvalidOperationException(
-                        $"Expected a value of type {typeof(T)} for data format {format}, got {data.GetType()} instead.")
-                };
+            if (format is DataFormat<byte[]> bytesFormat)
+                return dataTransfer.TryGetValueAsync(bytesFormat).GetAwaiter().GetResult();
+
+            Logger.TryGet(LogEventLevel.Warning, LogArea.X11Platform)
+                ?.Log(this, "Unsupported data format {Format}", format);
+
+            return null;
         }
 
         private async Task SendIncrDataToClientAsync(IntPtr window, IntPtr property, IntPtr target, Stream data)
@@ -364,7 +339,7 @@ namespace Avalonia.X11.Clipboard
                     if (await reader.TryGetAsync(format) is IEnumerable<IStorageItem> storageItems)
                     {
                         foreach (var storageItem in storageItems)
-                            items.Add(PlatformDataTransferItem.Create(format, storageItem));
+                            items.Add(PlatformDataTransferItem.Create(DataFormat.File, storageItem));
                     }
                 }
                 else

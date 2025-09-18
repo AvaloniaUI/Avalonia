@@ -33,7 +33,7 @@ internal static class ClipboardDataFormatHelper
         {
             return atomName == MimeTypeTextUriList ?
                 DataFormat.File :
-                DataFormat.FromSystemName(atomName, AppPrefix);
+                DataFormat.FromSystemName<byte[]>(atomName, AppPrefix);
         }
 
         return null;

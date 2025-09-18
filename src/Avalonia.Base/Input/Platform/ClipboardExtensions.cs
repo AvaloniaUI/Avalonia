@@ -29,15 +29,16 @@ public static class ClipboardExtensions
     /// If the <see cref="IClipboard"/> contains several items supporting <paramref name="format"/>,
     /// the first matching one will be returned.
     /// </remarks>
-    public static async Task<T?> TryGetValueAsync<T>(this IClipboard clipboard, DataFormat format)
+    public static async Task<T?> TryGetValueAsync<T>(this IClipboard clipboard, DataFormat<T> format)
+        where T : class
     {
         // No ConfigureAwait(false) here: we want TryGetValueAsync() below to be called on the initial thread.
         using var dataTransfer = await clipboard.TryGetDataAsync();
         if (dataTransfer is null)
-            return default;
+            return null;
 
         // However, ConfigureAwait(false) is fine here: we're not doing anything after.
-        return await dataTransfer.TryGetValueAsync<T>(format).ConfigureAwait(false);
+        return await dataTransfer.TryGetValueAsync(format).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -46,7 +47,8 @@ public static class ClipboardExtensions
     /// <param name="clipboard">The <see cref="IClipboard"/> instance.</param>
     /// <param name="format">The format to retrieve.</param>
     /// <returns>A list of values for <paramref name="format"/>, or null if the format is not supported.</returns>
-    public static async Task<T[]?> TryGetValuesAsync<T>(this IClipboard clipboard, DataFormat format)
+    public static async Task<T[]?> TryGetValuesAsync<T>(this IClipboard clipboard, DataFormat<T> format)
+        where T : class
     {
         // No ConfigureAwait(false) here: we want TryGetValuesAsync() below to be called on the initial thread.
         using var dataTransfer = await clipboard.TryGetDataAsync();
@@ -54,7 +56,7 @@ public static class ClipboardExtensions
             return null;
 
         // However, ConfigureAwait(false) is fine here: we're not doing anything after.
-        return await dataTransfer.TryGetValuesAsync<T>(format).ConfigureAwait(false);
+        return await dataTransfer.TryGetValuesAsync(format).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -70,7 +72,8 @@ public static class ClipboardExtensions
     /// will be equivalent to <see cref="IClipboard.ClearAsync"/>.
     /// </para>
     /// </remarks>
-    public static Task SetValueAsync<T>(this IClipboard clipboard, DataFormat format, T? value)
+    public static Task SetValueAsync<T>(this IClipboard clipboard, DataFormat<T> format, T? value)
+        where T : class
     {
         if (value is null)
             return clipboard.ClearAsync();
@@ -93,7 +96,8 @@ public static class ClipboardExtensions
     /// will be equivalent to <see cref="IClipboard.ClearAsync"/>.
     /// </para>
     /// </remarks>
-    public static Task SetValuesAsync<T>(this IClipboard clipboard, DataFormat format, IEnumerable<T>? values)
+    public static Task SetValuesAsync<T>(this IClipboard clipboard, DataFormat<T> format, IEnumerable<T>? values)
+        where T : class
     {
         if (values is null)
             return clipboard.ClearAsync();
@@ -115,7 +119,7 @@ public static class ClipboardExtensions
     /// <returns>A string, or null if the format isn't available.</returns>
     /// <seealso cref="DataFormat.Text"/>
     public static Task<string?> TryGetTextAsync(this IClipboard clipboard)
-        => clipboard.TryGetValueAsync<string>(DataFormat.Text);
+        => clipboard.TryGetValueAsync(DataFormat.Text);
 
     /// <summary>
     /// Returns a file, if available, from the clipboard.
@@ -124,7 +128,7 @@ public static class ClipboardExtensions
     /// <returns>An <see cref="IStorageItem"/> (file or folder), or null if the format isn't available.</returns>
     /// <seealso cref="DataFormat.File"/>.
     public static Task<IStorageItem?> TryGetFileAsync(this IClipboard clipboard)
-        => clipboard.TryGetValueAsync<IStorageItem>(DataFormat.File);
+        => clipboard.TryGetValueAsync(DataFormat.File);
 
     /// <summary>
     /// Returns a list of files, if available, from the clipboard.
@@ -133,7 +137,7 @@ public static class ClipboardExtensions
     /// <returns>An array of <see cref="IStorageItem"/> (files or folders), or null if the format isn't available.</returns>
     /// <seealso cref="DataFormat.File"/>.
     public static Task<IStorageItem[]?> TryGetFilesAsync(this IClipboard clipboard)
-        => clipboard.TryGetValuesAsync<IStorageItem>(DataFormat.File);
+        => clipboard.TryGetValuesAsync(DataFormat.File);
 
     /// <summary>
     /// Places a text on the clipboard.

@@ -18,6 +18,6 @@ internal sealed class ClipboardDataTransferItem(ClipboardDataReader reader, Data
     protected override DataFormat[] ProvideFormats()
         => _formats;
 
-    protected override Task<object?> TryGetAsyncCore(DataFormat format)
+    protected override Task<object?> TryGetRawCoreAsync(DataFormat format)
         => _reader.TryGetAsync(format);
 }

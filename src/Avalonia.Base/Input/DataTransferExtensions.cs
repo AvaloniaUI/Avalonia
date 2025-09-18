@@ -71,16 +71,11 @@ public static class DataTransferExtensions
     /// If the <see cref="IDataTransfer"/> contains several items supporting <paramref name="format"/>,
     /// the first matching one will be returned.
     /// </remarks>
-    public static T? TryGetValue<T>(this IDataTransfer dataTransfer, DataFormat format)
-    {
-        if (dataTransfer.GetItems(format).FirstOrDefault() is { } item)
-        {
-            var result = item.TryGet(format);
-            return result is T typedResult ? typedResult : default;
-        }
-
-        return default;
-    }
+    public static T? TryGetValue<T>(this IDataTransfer dataTransfer, DataFormat<T> format)
+        where T : class
+        => dataTransfer.GetItems(format).FirstOrDefault() is { } item ?
+            item.TryGetValue(format) :
+            null;
 
     /// <summary>
     /// Tries to get multiple values for a given format from a <see cref="IDataTransfer"/>.
@@ -88,18 +83,19 @@ public static class DataTransferExtensions
     /// <param name="dataTransfer">The <see cref="IDataTransfer"/> instance.</param>
     /// <param name="format">The format to retrieve.</param>
     /// <returns>A list of values for <paramref name="format"/>, or null if the format is not supported.</returns>
-    public static T[]? TryGetValues<T>(this IDataTransfer dataTransfer, DataFormat format)
+    public static T[]? TryGetValues<T>(this IDataTransfer dataTransfer, DataFormat<T> format)
+        where T : class
     {
         List<T>? results = null;
 
         foreach (var item in dataTransfer.GetItems(format))
         {
-            var result = item.TryGet(format);
-            if (result is not T typedResult)
+            var result = item.TryGetValue(format);
+            if (result is null)
                 continue;
 
             results ??= [];
-            results.Add(typedResult);
+            results.Add(result);
         }
 
         return results?.ToArray();
@@ -112,7 +108,7 @@ public static class DataTransferExtensions
     /// <returns>A string, or null if the format isn't available.</returns>
     /// <seealso cref="DataFormat.Text"/>.
     public static string? TryGetText(this IDataTransfer dataTransfer)
-        => dataTransfer.TryGetValue<string>(DataFormat.Text);
+        => dataTransfer.TryGetValue(DataFormat.Text);
 
     /// <summary>
     /// Returns a file, if available, from a <see cref="IDataTransfer"/> instance.
@@ -121,7 +117,7 @@ public static class DataTransferExtensions
     /// <returns>An <see cref="IStorageItem"/> (file or folder), or null if the format isn't available.</returns>
     /// <seealso cref="DataFormat.File"/>.
     public static IStorageItem? TryGetFile(this IDataTransfer dataTransfer)
-        => dataTransfer.TryGetValue<IStorageItem>(DataFormat.File);
+        => dataTransfer.TryGetValue(DataFormat.File);
 
     /// <summary>
     /// Returns a list of files, if available, from a <see cref="IDataTransfer"/> instance.
@@ -130,5 +126,5 @@ public static class DataTransferExtensions
     /// <returns>An array of <see cref="IStorageItem"/> (files or folders), or null if the format isn't available.</returns>
     /// <seealso cref="DataFormat.File"/>.
     public static IStorageItem[]? TryGetFiles(this IDataTransfer dataTransfer)
-        => dataTransfer.TryGetValues<IStorageItem>(DataFormat.File);
+        => dataTransfer.TryGetValues(DataFormat.File);
 }

@@ -11,10 +11,12 @@ public enum DataFormatKind
     /// The exact format name used internally by Avalonia will vary depending on the platform.
     /// </para>
     /// <para>
-    /// Such a format is created using <see cref="DataFormat.CreateApplicationFormat"/>.
+    /// Such a format is created using <see cref="DataFormat.CreateBytesApplicationFormat"/>
+    /// or <see cref="DataFormat.CreateStringApplicationFormat"/>.
     /// </para>
     /// </summary>
-    /// <seealso cref="DataFormat.CreateApplicationFormat"/>
+    /// <seealso cref="DataFormat.CreateBytesApplicationFormat"/>
+    /// <seealso cref="DataFormat.CreateStringApplicationFormat"/>
     Application,
 
     /// <summary>
@@ -23,10 +25,12 @@ public enum DataFormatKind
     /// Any other application using the same identifier will be able to access it.
     /// </para>
     /// <para>
-    /// Such a format is created using <see cref="DataFormat.CreatePlatformFormat"/>.
+    /// Such a format is created using <see cref="DataFormat.CreateBytesPlatformFormat"/>
+    /// or <see cref="DataFormat.CreateStringPlatformFormat"/>.
     /// </para>
     /// </summary>
-    /// <seealso cref="DataFormat.CreatePlatformFormat"/>
+    /// <seealso cref="DataFormat.CreateBytesPlatformFormat"/>
+    /// <seealso cref="DataFormat.CreateStringPlatformFormat"/>
     Platform,
 
     /// <summary>

@@ -21,7 +21,7 @@ internal sealed class ClipboardDataTransfer(ClipboardReadSession session)
     protected override DataFormat[] ProvideFormats()
     {
         using var formats = _session.GetFormats();
-        return ClipboardDataFormatHelper.ToDataFormats(formats);
+        return ClipboardDataFormatHelper.ToDataFormats(formats, _session.IsTextFormat);
     }
 
     protected override PlatformDataTransferItem[] ProvideItems()

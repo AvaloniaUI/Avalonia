@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -14,8 +15,8 @@ namespace ControlCatalog.Pages
     {
         private readonly TextBlock _dropState;
 
-        private readonly DataFormat _customFormat =
-            DataFormat.CreateApplicationFormat("xxx-avalonia-controlcatalog-custom");
+        private readonly DataFormat<string> _customFormat =
+            DataFormat.CreateStringApplicationFormat("xxx-avalonia-controlcatalog-custom");
 
         public DragAndDropPage()
         {
@@ -149,7 +150,7 @@ namespace ControlCatalog.Pages
                 }
                 else if (e.DataTransfer.Contains(_customFormat))
                 {
-                    _dropState.Text = "Custom: " + e.DataTransfer.TryGetValue<object?>(_customFormat);
+                    _dropState.Text = "Custom: " + e.DataTransfer.TryGetValue(_customFormat);
                 }
             }
 

@@ -50,7 +50,7 @@ internal class NuiClipboardImpl : IClipboardImpl, IAsyncDataTransfer, IAsyncData
         await SetTextAsync(text ?? string.Empty);
     }
 
-    public Task<object?> TryGetAsync(DataFormat format)
+    public Task<object?> TryGetRawAsync(DataFormat format)
         => DataFormat.Text.Equals(format) ? GetTextAsync() : Task.FromResult<object?>(null);
 
     private Task<object?> GetTextAsync()

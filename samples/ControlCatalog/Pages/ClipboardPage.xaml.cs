@@ -17,8 +17,8 @@ namespace ControlCatalog.Pages
 {
     public partial class ClipboardPage : UserControl
     {
-        private readonly DataFormat _customBinaryDataFormat =
-            DataFormat.CreateApplicationFormat("controlcatalog-binary-data");
+        private readonly DataFormat<byte[]> _customBinaryDataFormat =
+            DataFormat.CreateBytesApplicationFormat("controlcatalog-binary-data");
 
         private INotificationManager? _notificationManager;
         private INotificationManager NotificationManager => _notificationManager
@@ -136,7 +136,7 @@ namespace ControlCatalog.Pages
         {
             if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
             {
-                var bytes = await clipboard.TryGetValueAsync<byte[]>(_customBinaryDataFormat);
+                var bytes = await clipboard.TryGetValueAsync(_customBinaryDataFormat);
                 ClipboardContent.Text = bytes is null ? "<null>" : $"{bytes.Length} bytes";
             }
         }

@@ -1,4 +1,6 @@
-﻿namespace Avalonia.Input;
+﻿using Avalonia.Platform.Storage;
+
+namespace Avalonia.Input;
 
 /// <summary>
 /// Contains extension methods for <see cref="IDataTransferItem"/>.
@@ -24,4 +26,32 @@ public static class DataTransferItemExtensions
 
         return false;
     }
+
+    /// <summary>
+    /// Tries to get a value for a given format from a <see cref="IDataTransferItem"/>.
+    /// </summary>
+    /// <param name="dataTransferItem">The <see cref="IDataTransferItem"/> instance.</param>
+    /// <param name="format">The format to retrieve.</param>
+    /// <returns>A value for <paramref name="format"/>, or null if the format is not supported.</returns>
+    public static T? TryGetValue<T>(this IDataTransferItem dataTransferItem, DataFormat<T> format)
+        where T : class
+        => dataTransferItem.TryGetRaw(format) as T;
+
+    /// <summary>
+    /// Returns a text, if available, from a <see cref="IDataTransferItem"/> instance.
+    /// </summary>
+    /// <param name="dataTransferItem">The data transfer instance.</param>
+    /// <returns>A string, or null if the format isn't available.</returns>
+    /// <seealso cref="DataFormat.Text"/>.
+    public static string? TryGetText(this IDataTransferItem dataTransferItem)
+        => dataTransferItem.TryGetValue(DataFormat.Text);
+
+    /// <summary>
+    /// Returns a file, if available, from a <see cref="IDataTransferItem"/> instance.
+    /// </summary>
+    /// <param name="dataTransferItem">The data transfer instance.</param>
+    /// <returns>An <see cref="IStorageItem"/> (file or folder), or null if the format isn't available.</returns>
+    /// <seealso cref="DataFormat.File"/>.
+    public static IStorageItem? TryGetFile(this IDataTransferItem dataTransferItem)
+        => dataTransferItem.TryGetValue(DataFormat.File);
 }
