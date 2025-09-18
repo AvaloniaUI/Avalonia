@@ -26,56 +26,23 @@ internal sealed class DataTransferItemToAvnClipboardDataItemWrapper(IDataTransfe
     IAvnClipboardDataValue? IAvnClipboardDataItem.GetValue(string format)
     {
         var dataFormat = ClipboardDataFormatHelper.ToDataFormat(format);
-        var data = _item.TryGet(dataFormat);
 
         if (DataFormat.Text.Equals(dataFormat))
-            return new StringValue(Convert.ToString(data) ?? string.Empty);
+        {
+            var text = _item.TryGetValue(DataFormat.Text);
+            return new StringValue(text ?? string.Empty);
+        }
 
         if (DataFormat.File.Equals(dataFormat))
-        {
-            var file = GetTypedData<IStorageItem>(data, dataFormat);
-            return file is null ? null : new StringValue(file.Path.AbsoluteUri);
-        }
+            return _item.TryGetValue(DataFormat.File) is { } file ? new StringValue(file.Path.AbsoluteUri) : null;
 
-        switch (data)
-        {
-            case null:
-                return null;
+        if (dataFormat is DataFormat<byte[]> bytesFormat)
+            return _item.TryGetValue(bytesFormat) is { } bytes ? new BytesValue(bytes) : null;
 
-            case byte[] bytes:
-                return new BytesValue(bytes);
+        Logger.TryGet(LogEventLevel.Warning, LogArea.macOSPlatform)
+            ?.Log(this, "Unsupported data format {Format}", format);
 
-            case Memory<byte> bytes:
-                return new BytesValue(bytes);
-
-            case string str:
-                return new StringValue(str);
-
-            case Stream stream:
-            {
-                var length = (int)(stream.Length - stream.Position);
-                var buffer = new byte[length];
-                stream.ReadExactly(buffer, 0, length);
-                return new BytesValue(buffer.AsMemory(length));
-            }
-
-            default:
-                Logger.TryGet(LogEventLevel.Warning, LogArea.macOSPlatform)?.Log(
-                this,
-                "Unsupported value type {Type} for data format {Format}",
-                data.GetType(),
-                dataFormat);
-                return null;
-        }
-
-        static T? GetTypedData<T>(object? data, DataFormat format) where T : class
-            => data switch
-            {
-                null => null,
-                T value => value,
-                _ => throw new InvalidOperationException(
-                    $"Expected a value of type {typeof(T)} for data format {format}, got {data.GetType()} instead.")
-            };
+        return null;
     }
 
     private sealed class StringValue(string value) : NativeOwned, IAvnClipboardDataValue

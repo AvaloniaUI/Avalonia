@@ -24,7 +24,7 @@ internal sealed class ClipboardDataTransferItem(ClipboardReadSession session, in
         return ClipboardDataFormatHelper.ToDataFormats(formats);
     }
 
-    protected override object? TryGetCore(DataFormat format)
+    protected override object? TryGetRawCore(DataFormat format)
     {
         var nativeFormat = ClipboardDataFormatHelper.ToNativeFormat(format);
 
@@ -34,7 +34,10 @@ internal sealed class ClipboardDataTransferItem(ClipboardReadSession session, in
         if (DataFormat.File.Equals(format))
             return TryGetFile(nativeFormat);
 
-        return TryGetBytes(nativeFormat);
+        if (format is DataFormat<byte[]>)
+            return TryGetBytes(nativeFormat);
+
+        return null;
     }
 
     private object? TryGetString(string nativeFormat)

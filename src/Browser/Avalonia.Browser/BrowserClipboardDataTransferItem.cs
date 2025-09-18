@@ -20,11 +20,11 @@ internal sealed class BrowserClipboardDataTransferItem(JSObject readableDataItem
     protected override DataFormat[] ProvideFormats()
         => BrowserDataTransferHelper.GetReadableItemFormats(_readableDataItem);
 
-    protected override async Task<object?> TryGetAsyncCore(DataFormat format)
+    protected override async Task<object?> TryGetRawCoreAsync(DataFormat format)
     {
         var formatString = BrowserDataFormatHelper.ToBrowserFormat(format);
         var value = await InputHelper.TryGetReadableDataItemValueAsync(_readableDataItem, formatString).ConfigureAwait(false);
-        return BrowserDataTransferHelper.TryGetValue(value);
+        return BrowserDataTransferHelper.TryGetValue(value, format);
     }
 
     public void Dispose()

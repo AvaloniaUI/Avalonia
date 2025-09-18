@@ -16,9 +16,9 @@ internal sealed class AsyncToSyncDataTransferItem(IAsyncDataTransferItem asyncDa
     public IReadOnlyList<DataFormat> Formats
         => _asyncDataTransferItem.Formats;
 
-    public object? TryGet(DataFormat format)
-        => _asyncDataTransferItem.TryGetAsync(format).GetAwaiter().GetResult();
+    public object? TryGetRaw(DataFormat format)
+        => _asyncDataTransferItem.TryGetRawAsync(format).GetAwaiter().GetResult();
 
-    public Task<object?> TryGetAsync(DataFormat format)
-        => _asyncDataTransferItem.TryGetAsync(format);
+    public Task<object?> TryGetRawAsync(DataFormat format)
+        => _asyncDataTransferItem.TryGetRawAsync(format);
 }

@@ -40,14 +40,14 @@ public sealed class DataTransferItem : IDataTransferItem, IAsyncDataTransferItem
     }
 
     /// <inheritdoc />
-    public object? TryGet(DataFormat format)
+    public object? TryGetRaw(DataFormat format)
         => FindAccessor(format)?.GetValue();
 
-    Task<object?> IAsyncDataTransferItem.TryGetAsync(DataFormat format)
+    Task<object?> IAsyncDataTransferItem.TryGetRawAsync(DataFormat format)
     {
         try
         {
-            return Task.FromResult(TryGet(format));
+            return Task.FromResult(TryGetRaw(format));
         }
         catch (Exception ex)
         {
@@ -74,7 +74,8 @@ public sealed class DataTransferItem : IDataTransferItem, IAsyncDataTransferItem
     /// The value corresponding to <paramref name="format"/>.
     /// If null, the format won't be part of the <see cref="DataTransferItem"/>.
     /// </param>
-    public void Set<T>(DataFormat format, T value)
+    public void Set<T>(DataFormat<T> format, T? value)
+        where T : class
     {
         ThrowHelper.ThrowIfNull(format);
 
@@ -90,12 +91,13 @@ public sealed class DataTransferItem : IDataTransferItem, IAsyncDataTransferItem
     /// <typeparam name="T">The value type.</typeparam>
     /// <param name="format">The format.</param>
     /// <param name="getValue">A function returning the value corresponding to <paramref name="format"/>.</param>
-    public void Set<T>(DataFormat format, Func<T> getValue)
+    public void Set<T>(DataFormat<T> format, Func<T?> getValue)
+        where T : class
     {
         ThrowHelper.ThrowIfNull(format);
         ThrowHelper.ThrowIfNull(getValue);
 
-        SetCore(format, new DataAccessor(static state => ((Func<T>)state)(), getValue));
+        SetCore(format, new DataAccessor(static state => ((Func<T?>)state)(), getValue));
     }
 
     private void SetCore(DataFormat format, DataAccessor accessor)
@@ -166,7 +168,8 @@ public sealed class DataTransferItem : IDataTransferItem, IAsyncDataTransferItem
     /// If null, the format won't be part of the <see cref="DataTransferItem"/>.
     /// </param>
     /// <returns>A <see cref="DataTransferItem"/> instance.</returns>
-    public static DataTransferItem Create<T>(DataFormat format, T value)
+    public static DataTransferItem Create<T>(DataFormat<T> format, T? value)
+        where T : class
     {
         var item = new DataTransferItem();
         item.Set(format, value);
@@ -180,7 +183,8 @@ public sealed class DataTransferItem : IDataTransferItem, IAsyncDataTransferItem
     /// <param name="format">The format.</param>
     /// <param name="getValue">A function returning the value corresponding to <paramref name="format"/>.</param>
     /// <returns>A <see cref="DataTransferItem"/> instance.</returns>
-    public static DataTransferItem Create<T>(DataFormat format, Func<T> getValue)
+    public static DataTransferItem Create<T>(DataFormat<T> format, Func<T?> getValue)
+        where T : class
     {
         var item = new DataTransferItem();
         item.Set(format, getValue);

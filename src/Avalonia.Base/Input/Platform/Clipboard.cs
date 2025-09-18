@@ -50,8 +50,19 @@ internal sealed class Clipboard(IClipboardImpl clipboardImpl) : IClipboard
         return dataTransfer is null ? [] : dataTransfer.Formats.Select(DataFormats.ToString).ToArray();
     }
 
-    Task<object?> IClipboard.GetDataAsync(string format)
-        => this.TryGetValueAsync<object?>(DataFormats.ToDataFormat(format));
+    async Task<object?> IClipboard.GetDataAsync(string format)
+    {
+        var dataFormat = DataFormats.ToDataFormat(format);
+
+        // No ConfigureAwait(false) here: we want TryGetValueAsync() below to be called on the initial thread.
+        using var dataTransfer = await TryGetDataAsync();
+
+        if (dataTransfer?.GetItems(dataFormat).FirstOrDefault() is not { } item)
+            return null;
+
+        // However, ConfigureAwait(false) is fine here: we're not doing anything after.
+        return await item.TryGetRawAsync(dataFormat).ConfigureAwait(false);
+    }
 
     public Task<IAsyncDataTransfer?> TryGetDataAsync()
         => _clipboardImpl.TryGetDataAsync();

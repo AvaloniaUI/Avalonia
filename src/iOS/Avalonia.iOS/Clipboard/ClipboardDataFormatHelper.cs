@@ -18,10 +18,10 @@ internal static class ClipboardDataFormatHelper
 
     public static string ToSystemType(DataFormat format)
     {
-        if (format.Equals(DataFormat.Text))
+        if (DataFormat.Text.Equals(format))
             return UTTypeUTF8PlainText;
 
-        if (format.Equals(DataFormat.File))
+        if (DataFormat.File.Equals(format))
             return UTTypeFileUrl;
 
         return format.ToSystemName(AppPrefix);

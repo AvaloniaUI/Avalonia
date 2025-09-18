@@ -82,29 +82,20 @@ namespace Avalonia.Android.Platform
             foreach (var dataFormat in item.Formats)
             {
                 hasFormats = true;
-                var data = await item.TryGetAsync(dataFormat);
 
                 if (DataFormat.Text.Equals(dataFormat))
-                    return new ClipData.Item(Convert.ToString(data) ?? string.Empty);
+                {
+                    var text = await item.TryGetValueAsync(DataFormat.Text);
+                    return new ClipData.Item(text, string.Empty);
+                }
 
                 if (DataFormat.File.Equals(dataFormat))
                 {
-                    if (data is not IStorageItem storageItem)
+                    var storageItem = await item.TryGetValueAsync(DataFormat.File);
+                    if (storageItem is null)
                         continue;
 
                     return new ClipData.Item(AndroidUri.Parse(storageItem.Path.OriginalString));
-                }
-
-                switch (data)
-                {
-                    case string str:
-                        return new ClipData.Item(str);
-                    case Uri uri:
-                        return new ClipData.Item(AndroidUri.Parse(uri.OriginalString));
-                    case AndroidUri uri:
-                        return new ClipData.Item(uri);
-                    case Intent intent:
-                        return new ClipData.Item(intent);
                 }
             }
 

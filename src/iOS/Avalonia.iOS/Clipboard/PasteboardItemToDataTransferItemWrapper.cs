@@ -1,4 +1,5 @@
-﻿using Avalonia.Input;
+﻿using System.Text;
+using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.iOS.Storage;
 using Foundation;
@@ -19,7 +20,7 @@ internal sealed class PasteboardItemToDataTransferItemWrapper(NSDictionary item)
         return formats;
     }
 
-    protected override object? TryGetCore(DataFormat format)
+    protected override object? TryGetRawCore(DataFormat format)
     {
         var type = ClipboardDataFormatHelper.ToSystemType(format);
         if (!_item.TryGetValue((NSString)type, out var value))
@@ -31,11 +32,17 @@ internal sealed class PasteboardItemToDataTransferItemWrapper(NSDictionary item)
         if (DataFormat.File.Equals(format))
             return (value as NSUrl)?.FilePathUrl is { } filePathUrl ? IOSStorageItem.CreateItem(filePathUrl) : null;
 
-        return value switch
+        if (format is DataFormat<byte[]>)
+            return TryConvertToBytes(value);
+
+        return null;
+    }
+
+    private static byte[]? TryConvertToBytes(NSObject value)
+        => value switch
         {
-            NSString str => (string)str,
+            NSString str => Encoding.Unicode.GetBytes((string)str),
             NSData data => data.ToArray(),
             _ => null
         };
-    }
 }

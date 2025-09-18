@@ -35,26 +35,37 @@ internal sealed class ClipboardDataReader(
 
         using var session = new ClipboardReadSession(_platform);
         var result = await session.SendDataRequest(formatAtom).ConfigureAwait(false);
-
-        var fileAtom = format.Equals(DataFormat.File) ? formatAtom : IntPtr.Zero;
-        return ConvertDataResult(result, fileAtom);
+        return ConvertDataResult(result, format, formatAtom);
     }
 
-    private object? ConvertDataResult(ClipboardReadSession.GetDataResult? result, IntPtr fileListAtom)
+    private object? ConvertDataResult(ClipboardReadSession.GetDataResult? result, DataFormat format, IntPtr formatAtom)
     {
         if (result is null)
             return null;
 
-        if (ClipboardDataFormatHelper.TryGetStringEncoding(result.TypeAtom, _x11.Atoms) is { } textEncoding)
-            return textEncoding.GetString(result.AsBytes());
-
-        if (result.TypeAtom == fileListAtom && fileListAtom != IntPtr.Zero)
+        if (DataFormat.Text.Equals(format))
         {
-            using var memoryStream = new MemoryStream(result.AsBytes());
-            return ClipboardUriListHelper.TryReadFileUriList(memoryStream);
+            return ClipboardDataFormatHelper.TryGetStringEncoding(result.TypeAtom, _x11.Atoms) is { } textEncoding ?
+                textEncoding.GetString(result.AsBytes()) :
+                null;
         }
 
-        return result.AsBytes();
+        if (DataFormat.File.Equals(format))
+        {
+            // text/uri-list might not be supported
+            if (formatAtom != IntPtr.Zero && result.TypeAtom == formatAtom)
+            {
+                using var memoryStream = new MemoryStream(result.AsBytes());
+                return ClipboardUriListHelper.TryReadFileUriList(memoryStream);
+            }
+
+            return null;
+        }
+
+        if (format is DataFormat<byte[]>)
+            return result.AsBytes();
+
+        return null;
     }
 
     public void Dispose()

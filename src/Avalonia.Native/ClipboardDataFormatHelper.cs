@@ -42,10 +42,10 @@ internal static class ClipboardDataFormatHelper
 
     public static string ToNativeFormat(DataFormat format)
     {
-        if (format.Equals(DataFormat.Text))
+        if (DataFormat.Text.Equals(format))
             return NSPasteboardTypeString;
 
-        if (format.Equals(DataFormat.File))
+        if (DataFormat.File.Equals(format))
             return NSPasteboardTypeFileUrl;
 
         return format.ToSystemName(AppPrefix);

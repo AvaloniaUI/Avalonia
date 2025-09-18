@@ -17,6 +17,6 @@ internal sealed class OleDataObjectToDataTransferItemWrapper(Win32Com.IDataObjec
     protected override DataFormat[] ProvideFormats()
         => _formats;
 
-    protected override object? TryGetCore(DataFormat format)
+    protected override object? TryGetRawCore(DataFormat format)
         => _oleDataObject.TryGet(format);
 }

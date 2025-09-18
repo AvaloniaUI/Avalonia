@@ -64,7 +64,7 @@ internal sealed class OleDataObjectToDataTransferWrapper(Win32Com.IDataObject ol
                 if (_oleDataObject.TryGet(format) is IEnumerable<IStorageItem> storageItems)
                 {
                     foreach (var storageItem in storageItems)
-                        items.Add(PlatformDataTransferItem.Create(format, storageItem));
+                        items.Add(PlatformDataTransferItem.Create(DataFormat.File, storageItem));
                 }
             }
             else

@@ -113,13 +113,9 @@ internal class DataTransferToOleDataObjectWrapper(IDataTransfer dataTransfer)
         if (!ValidateFormat(format, out var result, out var dataFormat))
             return result;
 
-        var data = GetDataCore(DataTransfer, dataFormat);
-        if (data is null)
-            return DV_E_FORMATETC;
-
         *medium = default;
         medium->tymed = TYMED.TYMED_HGLOBAL;
-        return OleDataObjectHelper.WriteDataToHGlobal(data, dataFormat, ref medium->unionmember);
+        return OleDataObjectHelper.WriteDataToHGlobal(DataTransfer, dataFormat, ref medium->unionmember);
     }
 
     unsafe uint Win32Com.IDataObject.GetDataHere(FORMATETC* format, STGMEDIUM* medium)
@@ -130,17 +126,8 @@ internal class DataTransferToOleDataObjectWrapper(IDataTransfer dataTransfer)
         if (medium->unionmember == IntPtr.Zero)
             return STG_E_MEDIUMFULL;
 
-        var data = GetDataCore(DataTransfer, dataFormat);
-        if (data is null)
-            return DV_E_FORMATETC;
-
-        return OleDataObjectHelper.WriteDataToHGlobal(data, dataFormat, ref medium->unionmember);
+        return OleDataObjectHelper.WriteDataToHGlobal(DataTransfer, dataFormat, ref medium->unionmember);
     }
-
-    private static object? GetDataCore(IDataTransfer dataTransfer, DataFormat format)
-        => DataFormat.File.Equals(format) ?
-            dataTransfer.TryGetValues<IStorageItem>(format) :
-            dataTransfer.TryGetValue<object?>(format);
 
     unsafe uint Win32Com.IDataObject.QueryGetData(FORMATETC* format)
     {

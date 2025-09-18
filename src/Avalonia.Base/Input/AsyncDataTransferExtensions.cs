@@ -79,16 +79,11 @@ public static class AsyncDataTransferExtensions
     /// If the <see cref="IAsyncDataTransfer"/> contains several items supporting <paramref name="format"/>,
     /// the first matching one will be returned.
     /// </remarks>
-    public static async Task<T?> TryGetValueAsync<T>(this IAsyncDataTransfer dataTransfer, DataFormat format)
-    {
-        if (dataTransfer.GetItems(format).FirstOrDefault() is { } item)
-        {
-            var result = await item.TryGetAsync(format).ConfigureAwait(false);
-            return result is T typedResult ? typedResult : default;
-        }
-
-        return default;
-    }
+    public static Task<T?> TryGetValueAsync<T>(this IAsyncDataTransfer dataTransfer, DataFormat<T> format)
+        where T : class
+        => dataTransfer.GetItems(format).FirstOrDefault() is { } item ?
+            item.TryGetValueAsync(format) :
+            Task.FromResult<T?>(null);
 
     /// <summary>
     /// Tries to get multiple values for a given format from a <see cref="IAsyncDataTransfer"/>.
@@ -96,19 +91,20 @@ public static class AsyncDataTransferExtensions
     /// <param name="dataTransfer">The <see cref="IAsyncDataTransfer"/> instance.</param>
     /// <param name="format">The format to retrieve.</param>
     /// <returns>A list of values for <paramref name="format"/>, or null if the format is not supported.</returns>
-    public static async Task<T[]?> TryGetValuesAsync<T>(this IAsyncDataTransfer dataTransfer, DataFormat format)
+    public static async Task<T[]?> TryGetValuesAsync<T>(this IAsyncDataTransfer dataTransfer, DataFormat<T> format)
+        where T : class
     {
         List<T>? results = null;
 
         foreach (var item in dataTransfer.GetItems(format))
         {
             // No ConfigureAwait(false) here: we want TryGetAsync() for next items to be called on the initial thread.
-            var result = await item.TryGetAsync(format);
-            if (result is not T typedResult)
+            var result = await item.TryGetValueAsync(format);
+            if (result is null)
                 continue;
 
             results ??= [];
-            results.Add(typedResult);
+            results.Add(result);
         }
 
         return results?.ToArray();
@@ -121,7 +117,7 @@ public static class AsyncDataTransferExtensions
     /// <returns>A string, or null if the format isn't available.</returns>
     /// <seealso cref="DataFormat.Text"/>.
     public static Task<string?> TryGetTextAsync(this IAsyncDataTransfer dataTransfer)
-        => dataTransfer.TryGetValueAsync<string>(DataFormat.Text);
+        => dataTransfer.TryGetValueAsync(DataFormat.Text);
 
     /// <summary>
     /// Returns a file, if available, from a <see cref="IAsyncDataTransfer"/> instance.
@@ -130,7 +126,7 @@ public static class AsyncDataTransferExtensions
     /// <returns>An <see cref="IStorageItem"/> (file or folder), or null if the format isn't available.</returns>
     /// <seealso cref="DataFormat.File"/>.
     public static Task<IStorageItem?> TryGetFileAsync(this IAsyncDataTransfer dataTransfer)
-        => dataTransfer.TryGetValueAsync<IStorageItem>(DataFormat.File);
+        => dataTransfer.TryGetValueAsync(DataFormat.File);
 
     /// <summary>
     /// Returns a list of files, if available, from a <see cref="IAsyncDataTransfer"/> instance.
@@ -139,5 +135,5 @@ public static class AsyncDataTransferExtensions
     /// <returns>An array of <see cref="IStorageItem"/> (files or folders), or null if the format isn't available.</returns>
     /// <seealso cref="DataFormat.File"/>.
     public static Task<IStorageItem[]?> TryGetFilesAsync(this IAsyncDataTransfer dataTransfer)
-        => dataTransfer.TryGetValuesAsync<IStorageItem>(DataFormat.File);
+        => dataTransfer.TryGetValuesAsync(DataFormat.File);
 }

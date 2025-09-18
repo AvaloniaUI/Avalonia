@@ -1,5 +1,4 @@
-﻿using System;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Avalonia.Android.Platform.Storage;
 using Avalonia.Input;
@@ -21,7 +20,7 @@ internal sealed class ClipDataItemToDataTransferItemWrapper(ClipData.Item item, 
     protected override DataFormat[] ProvideFormats()
         => _owner.Formats; // There's no "format per item", assume each item handle all formats
 
-    protected override object? TryGetCore(DataFormat format)
+    protected override object? TryGetRawCore(DataFormat format)
     {
         if (DataFormat.Text.Equals(format))
             return _item.CoerceToText(_owner.Context);
@@ -32,18 +31,6 @@ internal sealed class ClipDataItemToDataTransferItemWrapper(ClipData.Item item, 
                 AndroidStorageItem.CreateItem(activity, fileUri) :
                 null;
         }
-
-        if (_item.Text is { } text)
-            return text;
-
-        if (_item.HtmlText is { } htmlText)
-            return htmlText;
-
-        if (_item.Intent is { } intent)
-            return intent;
-
-        if (_item.Uri is { } androidUri && Uri.TryCreate(androidUri.ToString(), UriKind.Absolute, out var uri))
-            return uri;
 
         return null;
     }

@@ -1,3 +1,4 @@
+using System.Text;
 using Avalonia.Controls;
 using Avalonia.Diagnostics.ViewModels;
 using Avalonia.Input;
@@ -81,7 +82,7 @@ namespace Avalonia.Diagnostics.Views
             {
                 var dataTransferItem = new DataTransferItem();
                 dataTransferItem.SetText(ToText(selector));
-                dataTransferItem.Set(DevToolsDataFormats.Selector, selector);
+                dataTransferItem.Set(DevToolsDataFormats.Selector, Encoding.Unicode.GetBytes(selector + '\0'));
 
                 var dataTransfer = new DataTransfer();
                 dataTransfer.Add(dataTransferItem);

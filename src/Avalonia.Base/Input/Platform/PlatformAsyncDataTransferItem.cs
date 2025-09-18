@@ -23,8 +23,8 @@ internal abstract class PlatformAsyncDataTransferItem : IAsyncDataTransferItem
     public bool Contains(DataFormat format)
         => Array.IndexOf(Formats, format) >= 0;
 
-    public Task<object?> TryGetAsync(DataFormat format)
-        => Contains(format) ? TryGetAsyncCore(format) : Task.FromResult<object?>(null);
+    public Task<object?> TryGetRawAsync(DataFormat format)
+        => Contains(format) ? TryGetRawCoreAsync(format) : Task.FromResult<object?>(null);
 
-    protected abstract Task<object?> TryGetAsyncCore(DataFormat format);
+    protected abstract Task<object?> TryGetRawCoreAsync(DataFormat format);
 }
