@@ -348,7 +348,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void InlineUIContainer_Child_Schould_Be_Arranged()
+        public void InlineUIContainer_Child_Should_Be_Arranged()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
@@ -379,6 +379,31 @@ namespace Avalonia.Controls.UnitTests
                 Assert.True(button.IsArrangeValid);
 
                 Assert.Equal(60, button.Bounds.Left);
+            }
+        }
+
+        [Fact]
+        public void InlineUIContainer_Child_Should_Be_Constrained()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var target = new TextBlock();
+
+                GeometryDrawing drawing = new GeometryDrawing();
+                drawing.Geometry = new RectangleGeometry(new Rect(0, 0, 500, 500));
+                DrawingImage image = new DrawingImage(drawing);
+
+                Image imageControl = new Image { Source = image };
+                InlineUIContainer container = new InlineUIContainer(imageControl);
+
+                target.Inlines.Add(new Run("The child should not be limited by position on line."));
+                target.Inlines.Add(container);
+
+                target.Measure(new Size(100, 100));
+                target.Arrange(new Rect(target.DesiredSize));
+
+                Assert.True(imageControl.IsMeasureValid);
+                Assert.Equal(100, imageControl.Bounds.Width);
             }
         }
 

@@ -719,7 +719,7 @@ namespace Avalonia.Controls
                 _textLayout = null;
                 _constraint = deflatedSize;
 
-                //Force arrange so text will be properly alligned.
+                //Force arrange so text will be properly aligned.
                 InvalidateArrange();
             }
            
@@ -731,7 +731,7 @@ namespace Avalonia.Controls
 
                 foreach (var inline in inlines!)
                 {
-                    inline.BuildTextRun(textRuns);
+                    inline.BuildTextRun(textRuns, deflatedSize);
                 }
 
                 _textRuns = textRuns;
