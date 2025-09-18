@@ -21,7 +21,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType StyledPropertyT { get; }
         public IXamlMethod AvaloniaObjectSetStyledPropertyValue { get; }
         public IXamlType AvaloniaAttachedPropertyT { get; }
-        public IXamlType IBinding { get; }
+        public IXamlType BindingBase { get; }
         public IXamlType MultiBinding { get; }
         public IXamlMethod AvaloniaObjectBindMethod { get; }
         public IXamlMethod AvaloniaObjectSetValueMethod { get; }
@@ -193,7 +193,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                                  && m.Parameters.Count == 3
                                  && m.Parameters[0].Name == "StyledProperty`1"
                                  && m.Parameters[2].Equals(BindingPriority));
-            IBinding = cfg.TypeSystem.GetType("Avalonia.Data.IBinding");
+            BindingBase = cfg.TypeSystem.GetType("Avalonia.Data.BindingBase");
             MultiBinding = cfg.TypeSystem.GetType("Avalonia.Data.MultiBinding");
             IDisposable = cfg.TypeSystem.GetType("System.IDisposable");
             ICommand = cfg.TypeSystem.GetType("System.Windows.Input.ICommand");
@@ -211,7 +211,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             OnExtensionType = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.MarkupExtensions.On");
             AvaloniaObjectBindMethod = AvaloniaObjectExtensions.GetMethod("Bind", IDisposable, false, AvaloniaObject,
                 AvaloniaProperty,
-                IBinding, cfg.WellKnownTypes.Object);
+                BindingBase, cfg.WellKnownTypes.Object);
             UnsetValueType = cfg.TypeSystem.GetType("Avalonia.UnsetValueType");
             StyledElement = cfg.TypeSystem.GetType("Avalonia.StyledElement");
             INameScope = cfg.TypeSystem.GetType("Avalonia.Controls.INameScope");
@@ -297,7 +297,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             ClassesBindMethod = cfg.TypeSystem.GetType("Avalonia.StyledElementExtensions")
                 .GetMethod("BindClass", IDisposable, false, StyledElement,
                 cfg.WellKnownTypes.String,
-                IBinding, cfg.WellKnownTypes.Object);
+                BindingBase, cfg.WellKnownTypes.Object);
 
             IBrush = cfg.TypeSystem.GetType("Avalonia.Media.IBrush");
             ImmutableSolidColorBrush = cfg.TypeSystem.GetType("Avalonia.Media.Immutable.ImmutableSolidColorBrush");
