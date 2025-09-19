@@ -36,7 +36,7 @@ namespace Avalonia.Media.TextFormatting
 
         public TextMetrics TextMetrics { get; }
 
-        public override double Baseline => -TextMetrics.Ascent;
+        public override double Baseline => -TextMetrics.Ascent + TextMetrics.LineGap * 0.5;
 
         public override Size Size => GlyphRun.Bounds.Size;
 
