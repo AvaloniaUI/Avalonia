@@ -619,7 +619,7 @@
 - (IAvnAutomationPeer* _Nonnull) automationPeer
 {
     auto parent = _parent.tryGet();
-    if (_automationPeer == nullptr)
+    if (_automationPeer == nullptr && parent != nullptr)
     {
         _automationPeer = parent->BaseEvents->GetAutomationPeer();
         _automationNode = new AvnAutomationNode(self);
