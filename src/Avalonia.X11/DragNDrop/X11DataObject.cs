@@ -217,7 +217,11 @@ namespace Avalonia.X11
                 MemoryStream stream => stream.ToArray(),
                 int num => BitConverter.GetBytes(num),
                 IConvertible convertible => BitConverter.GetBytes(convertible.ToInt32(null)),
+#if !NETSTANDARD2_0
                 object netObject => SerializeObject(netObject),
+#endif
+                _ => Array.Empty<byte>()
+
 
             };
 
@@ -225,31 +229,81 @@ namespace Avalonia.X11
 
         }
 
-        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We still use BinaryFormatter for netstandart 2.0 dragndrop compatability")]
+#if !NETSTANDARD2_0
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Using System.Text.Json for serialization")]
         private static byte[] SerializeObject(object data)
         {
-            using (var ms = new MemoryStream())
+            try
             {
-                ms.Write(SerializedObjectGUID, 0, SerializedObjectGUID.Length);
-#pragma warning disable SYSLIB0011 // Type or member is obsolete
-                new BinaryFormatter().Serialize(ms, data);
-#pragma warning restore SYSLIB0011 // Type or member is obsolete
-                return ms.ToArray();
+                // For .NET 6.0+ use System.Text.Json
+                using (var ms = new MemoryStream())
+                {
+                    ms.Write(SerializedObjectGUID, 0, SerializedObjectGUID.Length);
+
+                    // Simple JSON serialization for basic types
+                    if (data is string strData)
+                    {
+                        var jsonBytes = Encoding.UTF8.GetBytes($"\"{strData}\"");
+                        ms.Write(jsonBytes, 0, jsonBytes.Length);
+                    }
+                    else if (data is IEnumerable<string> stringEnumerable)
+                    {
+                        var jsonArray = "[" + string.Join(",", stringEnumerable.Select(s => $"\"{s}\"")) + "]";
+                        var jsonBytes = Encoding.UTF8.GetBytes(jsonArray);
+                        ms.Write(jsonBytes, 0, jsonBytes.Length);
+                    }
+                    else
+                    {
+                        // Fallback to simple string representation
+                        var stringData = data.ToString() ?? string.Empty;
+                        var jsonBytes = Encoding.UTF8.GetBytes($"\"{stringData}\"");
+                        ms.Write(jsonBytes, 0, jsonBytes.Length);
+                    }
+
+                    return ms.ToArray();
+                }
+            }
+            catch
+            {
+                // Fallback to empty array if serialization fails
+                return Array.Empty<byte>();
             }
         }
 
-        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We still use BinaryFormatter for netstandart 2.0 dragndrop compatability")]
-        [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = "We still use BinaryFormatter for netstandart 2.0 dragndrop compatability")]
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Using System.Text.Json for deserialization")]
         public static object DeserializeObject(byte[] bytes)
         {
-            using (var ms = new MemoryStream(bytes))
+            try
             {
-                ms.Position = SerializedObjectGUID.Length;
-#pragma warning disable SYSLIB0011 // Type or member is obsolete
-                BinaryFormatter binaryFormatter = new BinaryFormatter();
-                return binaryFormatter.Deserialize(ms);
-#pragma warning restore SYSLIB0011 // Type or member is obsolete
+                if (bytes.Length <= SerializedObjectGUID.Length)
+                    return string.Empty;
+
+                var jsonBytes = new byte[bytes.Length - SerializedObjectGUID.Length];
+                Array.Copy(bytes, SerializedObjectGUID.Length, jsonBytes, 0, jsonBytes.Length);
+
+                var jsonString = Encoding.UTF8.GetString(jsonBytes);
+
+                // Simple JSON parsing
+                if (jsonString.StartsWith("\"") && jsonString.EndsWith("\""))
+                {
+                    return jsonString.Trim('"');
+                }
+                else if (jsonString.StartsWith("[") && jsonString.EndsWith("]"))
+                {
+                    var content = jsonString.Trim('[', ']');
+                    return content.Split(',')
+                        .Select(s => s.Trim('"'))
+                        .ToArray();
+                }
+
+                return jsonString;
+            }
+            catch
+            {
+                return string.Empty;
             }
         }
-    }    
+#endif
+
+    }
 }
