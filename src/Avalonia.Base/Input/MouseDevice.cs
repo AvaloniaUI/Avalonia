@@ -104,6 +104,9 @@ namespace Avalonia.Input
                 case RawPointerEventType.Swipe:
                     e.Handled = GestureSwipe(mouse, e.Timestamp, e.Root, e.Position, props, ((RawPointerGestureEventArgs)e).Delta, keyModifiers, e.InputHitTestResult.firstEnabledAncestor);
                     break;
+                case RawPointerEventType.CancelCapture:
+                    PlatformCaptureLost();
+                    break;
             }
         }
 

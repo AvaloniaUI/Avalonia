@@ -114,7 +114,8 @@ namespace Avalonia.Win32
                         //Window doesn't exist anymore
                         _hwnd = IntPtr.Zero;
                         //Remove root reference to this class, so unmanaged delegate can be collected
-                        s_instances.Remove(this);
+                        lock (s_instances)
+                            s_instances.Remove(this);
 
                         _mouseDevice.Dispose();
                         _touchDevice.Dispose();
@@ -391,6 +392,26 @@ namespace Avalonia.Win32
                             RawPointerEventType.LeaveWindow,
                             new Point(-1, -1),
                             WindowsKeyboardDevice.Instance.Modifiers);
+                        break;
+                    }
+
+                case WindowsMessage.WM_CAPTURECHANGED:
+                    {
+                        if (IsMouseInPointerEnabled)
+                        {
+                            break;
+                        }
+                        if (!IsOurWindow(lParam))
+                        {
+                            _trackingMouse = false;
+                            e = new RawPointerEventArgs(
+                                _mouseDevice,
+                                timestamp,
+                                Owner,
+                                RawPointerEventType.CancelCapture,
+                                new Point(-1, -1),
+                                WindowsKeyboardDevice.Instance.Modifiers);
+                        }
                         break;
                     }
 
