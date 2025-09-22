@@ -160,15 +160,6 @@ namespace Avalonia.Controls.Documents
             foreach (var child in this)
             {
                 child.InlineHost = newValue;
-
-                if (child is not InlineUIContainer container)
-                {
-                    continue;
-                }
-
-                oldValue?.VisualChildren.Remove(container.Child);
-
-                newValue?.VisualChildren.Add(container.Child);
             }
 
             Invalidate();
@@ -180,22 +171,12 @@ namespace Avalonia.Controls.Documents
 
             LogicalChildren?.Add(inline);
 
-            if (inline is InlineUIContainer container)
-            {
-                InlineHost?.VisualChildren.Add(container.Child);
-            }
-
             Invalidate();
         }
 
         private void OnRemove(TextElement inline)
         {
             LogicalChildren?.Remove(inline);
-
-            if (inline is InlineUIContainer container)
-            {
-                InlineHost?.VisualChildren.Remove(container.Child);
-            }
 
             inline.InlineHost = null;
 

@@ -1,8 +1,7 @@
 using System;
-using System.Reflection;
 using System.Collections.Generic;
-using Avalonia.SourceGenerator;
 using System.Diagnostics.CodeAnalysis;
+using Avalonia.SourceGenerator;
 
 namespace Avalonia.Media
 {
@@ -45,13 +44,47 @@ namespace Avalonia.Media
         }
 
 #if !BUILDTASK
+
+        /// <summary>
+        /// Attempts to resolve a color name string to a solid color brush.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Returns a cached immutable brush if the name matches one of the predefined
+        /// <see cref="KnownColor"/> values. Repeated calls with the same color name will
+        /// return the same brush instance.
+        /// </para>
+        /// <para>
+        /// The lookup is case-sensitive and depends on the set of predefined known colors.
+        /// </para>
+        /// </remarks>
+        /// <param name="s">
+        /// The color name to look up (for example, <c>"Red"</c> or <c>"CornflowerBlue"</c>).
+        /// </param>
+        /// <returns>
+        /// An <see cref="ISolidColorBrush"/> corresponding to the specified name,
+        /// or <c>null</c> if the color name is not recognized.
+        /// </returns>
         public static ISolidColorBrush? GetKnownBrush(string s)
         {
             var color = GetKnownColor(s);
             return color != KnownColor.None ? color.ToBrush() : null;
         }
+
 #endif
 
+        /// <summary>
+        /// Attempts to resolve a color name string to a <see cref="KnownColor"/> value.
+        /// </summary>
+        /// <remarks>
+        /// The lookup is case-sensitive and depends on the set of predefined known colors.
+        /// </remarks>
+        /// <param name="s">
+        /// The color name to look up (for example, <c>Red</c> or <c>CornflowerBlue</c>).
+        /// </param>
+        /// <returns>
+        /// A <see cref="KnownColor"/> value if the name is recognized; otherwise <see cref="KnownColor.None"/>.
+        /// </returns>
         public static KnownColor GetKnownColor(string s)
         {
             if (_knownColorNames.TryGetValue(s, out var color))
@@ -76,6 +109,20 @@ namespace Avalonia.Media
         }
 
 #if !BUILDTASK
+
+        /// <summary>
+        /// Converts a <see cref="KnownColor"/> value to an immutable solid color brush.
+        /// </summary>
+        /// <remarks>
+        /// This method maintains an internal cache of brushes to avoid unnecessary allocations.
+        /// If the same <paramref name="color"/> is requested multiple times, the same immutable brush
+        /// instance is returned.
+        /// </remarks>
+        /// <param name="color">The <see cref="KnownColor"/> to convert.</param>
+        /// <returns>
+        /// An <see cref="IImmutableSolidColorBrush"/> instance representing the specified color.
+        /// Brushes created from known colors are cached and reused for efficiency.
+        /// </returns>
         public static IImmutableSolidColorBrush ToBrush(this KnownColor color)
         {
             lock (_knownBrushes)
@@ -89,9 +136,14 @@ namespace Avalonia.Media
                 return brush;
             }
         }
+
 #endif
+
     }
 
+    /// <summary>
+    /// Defines all known colors by name along with their 32-bit ARGB value.
+    /// </summary>
     internal enum KnownColor : uint
     {
         None,

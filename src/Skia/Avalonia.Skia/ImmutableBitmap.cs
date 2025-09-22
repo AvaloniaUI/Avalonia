@@ -50,9 +50,10 @@ namespace Avalonia.Skia
 
         public ImmutableBitmap(ImmutableBitmap src, PixelSize destinationSize, BitmapInterpolationMode interpolationMode)
         {
+            var isUpscaling = destinationSize.Width > src.PixelSize.Width || destinationSize.Height > src.PixelSize.Height;
             SKImageInfo info = new SKImageInfo(destinationSize.Width, destinationSize.Height, SKColorType.Bgra8888);
             _bitmap = new SKBitmap(info);
-            src._image.ScalePixels(_bitmap.PeekPixels(), interpolationMode.ToSKSamplingOptions());
+            src._image.ScalePixels(_bitmap.PeekPixels(), interpolationMode.ToSKSamplingOptions(isUpscaling));
             _bitmap.SetImmutable();
             _image = SKImage.FromBitmap(_bitmap);
 
@@ -97,7 +98,8 @@ namespace Avalonia.Skia
 
                 if (_bitmap.Width != desired.Width || _bitmap.Height != desired.Height)
                 {
-                    var scaledBmp = _bitmap.Resize(desired, interpolationMode.ToSKSamplingOptions());
+                    var isUpscaling = desired.Width > _bitmap.Width || desired.Height > _bitmap.Height;
+                    var scaledBmp = _bitmap.Resize(desired, interpolationMode.ToSKSamplingOptions(isUpscaling));
                     _bitmap.Dispose();
                     _bitmap = scaledBmp;
                 }

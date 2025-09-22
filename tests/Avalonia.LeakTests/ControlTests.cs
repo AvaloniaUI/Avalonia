@@ -1027,7 +1027,6 @@ namespace Avalonia.LeakTests
             {
                 Disposable.Create(Cleanup),
                 UnitTestApplication.Start(TestServices.StyledWindow.With(
-                    focusManager: new FocusManager(),
                     keyboardDevice: () => new KeyboardDevice(),
                     inputManager: new InputManager()))
             };
