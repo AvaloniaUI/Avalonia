@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Input;
 using Avalonia.Platform;
+using Avalonia.X11.DragNDrop;
 
 namespace Avalonia.X11
 {
@@ -38,9 +39,11 @@ namespace Avalonia.X11
 
         private IntPtr[] supportedTypes = Array.Empty<IntPtr>();
          
-        private IntPtr targetWindow = IntPtr.Zero;
+        private IntPtr _targetWindow = IntPtr.Zero;
         private DragState state = DragState.Idle;
         private IntPtr _effect = IntPtr.Zero;
+        private bool _sameAppTargetWindow = false;
+        private Ix11InnerDropTarget? _innerTarget = null;
 
         private IntPtr _lastTargetWindow = IntPtr.Zero;
         private (int x, int y, IntPtr time)? _cachedPosition;
@@ -89,7 +92,7 @@ namespace Avalonia.X11
         public bool StartDrag()
         {
             state = DragState.InProgress;
-            targetWindow = IntPtr.Zero;
+            _targetWindow = IntPtr.Zero;
 
             if (XLib.XSetSelectionOwner(_display, _atoms.XdndSelection, _handle, IntPtr.Zero) == 0)
             {
@@ -245,17 +248,24 @@ namespace Avalonia.X11
                 return;
 
             // Send any cached position before drop
-            if (_cachedPosition.HasValue && targetWindow != IntPtr.Zero)
+            if (_cachedPosition.HasValue && _targetWindow != IntPtr.Zero)
             {
-                SendXdndPosition(targetWindow, _cachedPosition.Value.x, _cachedPosition.Value.y, _cachedPosition.Value.time);
+                SendXdndPosition(_targetWindow, _cachedPosition.Value.x, _cachedPosition.Value.y, _cachedPosition.Value.time);
                 _cachedPosition = null;
                 // Don't wait for status since we're about to send drop
                 _waitingForStatus = false;
             }
             
-            if (targetWindow != IntPtr.Zero)
+            if (_targetWindow != IntPtr.Zero)
             {
-                SendXdndDrop(targetWindow);
+                if (_sameAppTargetWindow)
+                {
+                    SendSameAppDrop(_targetWindow);
+                }
+                else
+                {
+                    SendXdndDrop(_targetWindow);
+                }
             }
             else
             {
@@ -285,14 +295,14 @@ namespace Avalonia.X11
 
         private void HandlePointerPosition(IntPtr newTarget, int x, int y, IntPtr time)
         {
-            if (newTarget != targetWindow)
+            if (newTarget != _targetWindow)
             {
                 IntPtr proxyTarget = _x11WindowFinder.FindXdndProxy(newTarget);
                 if (proxyTarget != IntPtr.Zero)
                     newTarget = proxyTarget;
             }
 
-            if (newTarget != targetWindow)
+            if (newTarget != _targetWindow)
             {
                 if (newTarget != IntPtr.Zero && !_x11WindowFinder.CheckXdndSupport(newTarget))
                 {
@@ -300,12 +310,20 @@ namespace Avalonia.X11
                 }
             }
 
-            if (newTarget != targetWindow)
+            if (newTarget != _targetWindow)
             {
                 // Different window under the cursor
-                if (targetWindow != IntPtr.Zero)
+                if (_targetWindow != IntPtr.Zero)
                 {
-                    SendXdndLeave(targetWindow);
+
+                    if (_sameAppTargetWindow)
+                    {
+                        SendSameAppDragLeave(_targetWindow, x, y);
+                    }
+                    else
+                    {
+                        SendXdndLeave(_targetWindow);
+                    }
                 }
 
                 // Clear cache when changing windows
@@ -313,24 +331,35 @@ namespace Avalonia.X11
                 _cachedPosition = null;
                 _waitingForStatus = false;
 
-                targetWindow = newTarget;
+                _targetWindow = newTarget;
+                _sameAppTargetWindow = false;
 
-                if (targetWindow == IntPtr.Zero || !_x11WindowFinder.CheckXdndSupport(targetWindow))
+                if (_targetWindow == IntPtr.Zero || !_x11WindowFinder.CheckXdndSupport(_targetWindow))
                 {
                     var root = _platform.Info.RootWindow;
-                    targetWindow = _x11WindowFinder.FindRealWindow(root, x, y, 6, true);
-                    if (targetWindow == IntPtr.Zero)
+                    _targetWindow = _x11WindowFinder.FindRealWindow(root, x, y, 6, true);
+                    if (_targetWindow == IntPtr.Zero)
                     { 
-                        targetWindow = _x11WindowFinder.FindRealWindow(root, x, y, 6, false); 
+                        _targetWindow = _x11WindowFinder.FindRealWindow(root, x, y, 6, false); 
                     }
                 }
 
-                if (targetWindow != IntPtr.Zero)
+                if (_targetWindow != IntPtr.Zero)
                 {
-                    SendXdndEnter(targetWindow);
-                    SendXdndPosition(targetWindow, x, y, time);
-                    _waitingForStatus = true;
-                    _lastTargetWindow = targetWindow;
+                    if(IsSameAppWindow(_targetWindow))
+                    {
+                        _sameAppTargetWindow = true;
+                        SendSameAppDragEnter(_targetWindow, x, y);
+                    }
+                    else
+                    {
+                        SendXdndEnter(_targetWindow);
+                        SendXdndPosition(_targetWindow, x, y, time);
+                        _waitingForStatus = true;
+                    }
+                    
+                    
+                    _lastTargetWindow = _targetWindow;
                 }
                 else
                 {
@@ -338,11 +367,18 @@ namespace Avalonia.X11
                     return;
                 }                
             }
-            else if (targetWindow != IntPtr.Zero)
+            else if (_targetWindow != IntPtr.Zero)
             {
                 if (!_waitingForStatus)
                 {
-                    SendXdndPosition(targetWindow, x, y, time);
+                    if (_sameAppTargetWindow)
+                    {
+                        SendSameAppDragOver(_targetWindow, x, y);
+                    }
+                    else
+                    {
+                        SendXdndPosition(_targetWindow, x, y, time);
+                    }
                 }
                 else
                 {
@@ -354,7 +390,7 @@ namespace Avalonia.X11
 
         private void HandleUnsupportedTarget()
         {
-            targetWindow = IntPtr.Zero;
+            _targetWindow = IntPtr.Zero;
             SetCursor(_cursorFactory.GetCursor(StandardCursorType.Cross));
         }
 
@@ -536,9 +572,9 @@ namespace Avalonia.X11
 
             // We've received status, can send cached position if available
             _waitingForStatus = false;
-            if (_cachedPosition.HasValue && targetWindow != IntPtr.Zero)
+            if (_cachedPosition.HasValue && _targetWindow != IntPtr.Zero)
             {
-                SendXdndPosition(targetWindow, _cachedPosition.Value.x, _cachedPosition.Value.y, _cachedPosition.Value.time);
+                SendXdndPosition(_targetWindow, _cachedPosition.Value.x, _cachedPosition.Value.y, _cachedPosition.Value.time);
                 _cachedPosition = null;
                 _waitingForStatus = true; // Wait for next status
             }
@@ -569,9 +605,9 @@ namespace Avalonia.X11
 
         private void HandleDragFailure()
         {        
-            if (targetWindow != IntPtr.Zero)
+            if (_targetWindow != IntPtr.Zero)
             {
-                SendXdndLeave(targetWindow);
+                SendXdndLeave(_targetWindow);
             }
 
             CleanupAfterDrag();
@@ -585,9 +621,9 @@ namespace Avalonia.X11
             if (state != DragState.InProgress)
                 return;
 
-            if (targetWindow != IntPtr.Zero)
+            if (_targetWindow != IntPtr.Zero)
             {
-                SendXdndLeave(targetWindow);
+                SendXdndLeave(_targetWindow);
             }
 
             CleanupAfterDrag();
@@ -610,19 +646,19 @@ namespace Avalonia.X11
             switch (state)
             {
                 case DragState.InProgress:
-                    if (targetWindow == IntPtr.Zero)
+                    if (_targetWindow == IntPtr.Zero)
                     {
                         cursorShape = _cursorFactory.GetCursor(StandardCursorType.Hand);
                     }
-                    else if (((uint)_dropEffect & (uint)(_atoms.XdndActionCopy)) == (uint)_atoms.XdndActionCopy)
+                    else if (((uint)_effect & (uint)(_atoms.XdndActionCopy)) == (uint)_atoms.XdndActionCopy)
                     {
                         cursorShape = _cursorFactory.GetCursor(StandardCursorType.DragCopy);
                     }
-                    else if (((uint)_dropEffect & (uint)(_atoms.XdndActionMove)) == (uint)_atoms.XdndActionMove)
+                    else if (((uint)_effect & (uint)(_atoms.XdndActionMove)) == (uint)_atoms.XdndActionMove)
                     {
                         cursorShape = _cursorFactory.GetCursor(StandardCursorType.DragMove);
                     }
-                    else if (((uint)_dropEffect & (uint)(_atoms.XdndActionLink)) == (uint)_atoms.XdndActionLink)
+                    else if (((uint)_effect & (uint)(_atoms.XdndActionLink)) == (uint)_atoms.XdndActionLink)
                     {
                         cursorShape = _cursorFactory.GetCursor(StandardCursorType.DragLink);
                     }
@@ -641,6 +677,91 @@ namespace Avalonia.X11
 
             SetCursor(cursorShape);
         }
+
+        private bool IsSameAppWindow(IntPtr targetWindow)
+        {
+            return _platform.IsAppWindow(targetWindow);
+        }
+
+        private void SendSameAppDragEnter(IntPtr window, int x, int y)
+        {
+            _innerTarget = _platform.GetDropTarget(window);
+            
+            if (_innerTarget != null)
+            {
+                var point = new PixelPoint(x, y);
+
+                _effect = _atoms.ConvertDropEffect(
+                    _innerTarget.HandleDragEnter(point, _dataObject, _atoms.ConvertDropEffect(_dropEffect)));
+                
+                UpdateDragCursor();
+               
+                _waitingForStatus = false;
+            }
+        }
+
+        private void SendSameAppDragOver(IntPtr window, int x, int y)
+        {
+            if (_innerTarget == null)
+            {
+                _innerTarget = _platform.GetDropTarget(window);
+            }
+
+            if (_innerTarget != null)
+            {
+                var point = new PixelPoint(x, y);
+
+                _effect = _atoms.ConvertDropEffect(
+                    _innerTarget.HandleDragOver(point, _atoms.ConvertDropEffect(_dropEffect)));
+
+                UpdateDragCursor();
+
+                _waitingForStatus = false;
+            }
+        }
+
+        private void SendSameAppDragLeave(IntPtr window, int x, int y)
+        {
+            if (_innerTarget == null)
+            {
+                _innerTarget = _platform.GetDropTarget(window);
+            }
+
+            if (_innerTarget != null)
+            {
+                var point = new PixelPoint(x, y);
+
+                _effect = _atoms.ConvertDropEffect(
+                    _innerTarget.HandleDragLeave(point, _atoms.ConvertDropEffect(_dropEffect)));
+
+                UpdateDragCursor();
+
+                _waitingForStatus = false;
+            }
+
+            _innerTarget = null;
+        }
+
+        private void SendSameAppDrop(IntPtr window)
+        {
+            if (_innerTarget == null)
+            {
+                _innerTarget = _platform.GetDropTarget(window);
+            }
+
+            if (_innerTarget != null)
+            {
+
+                _effect = _atoms.ConvertDropEffect(
+                    _innerTarget.HandleDrop(_atoms.ConvertDropEffect(_dropEffect)));
+
+                UpdateDragCursor();
+
+                _waitingForStatus = false;
+            }
+        }
+
+
 
         public void SetCursor(ICursorImpl? cursor)
         {

@@ -10,6 +10,9 @@ using System.Drawing;
 
 namespace Avalonia.X11
 {
+    /// <summary>
+    /// Drop target for other apps via X11.
+    /// </summary>
     internal class X11DropTarget
     {
         private readonly X11Window _window;

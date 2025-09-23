@@ -303,6 +303,11 @@ namespace Avalonia.X11
                 return string.Empty;
             }
         }
+#else
+public static object DeserializeObject(byte[] bytes)
+        {
+                return string.Empty;
+        }
 #endif
 
     }

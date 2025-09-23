@@ -26,6 +26,7 @@ using Avalonia.Input.Platform;
 using System.Runtime.InteropServices;
 using Avalonia.Dialogs;
 using Avalonia.Platform.Storage.FileIO;
+using Avalonia.X11.DragNDrop;
 
 // ReSharper disable IdentifierTypo
 // ReSharper disable StringLiteralTypo
@@ -189,6 +190,7 @@ namespace Avalonia.X11
 
             _mode.OnHandleCreated(_handle);
             _dropTarget = new X11DropTarget(this, _handle, _x11);
+            _platform.RegisterDropTarget(Handle.Handle, new X11InnerDropTarget(this));
 
             _realSize = new PixelSize(defaultWidth, defaultHeight);
             platform.Windows[_handle] = OnEvent;
@@ -1072,6 +1074,7 @@ namespace Avalonia.X11
             {
                 _platform.Windows.Remove(_handle);
                 _platform.XI2?.OnWindowDestroyed(_handle);
+                _platform.UnregisterDropTarget(_handle);
                 var handle = _handle;
                 _handle = IntPtr.Zero;
                 _mouse.Dispose();
