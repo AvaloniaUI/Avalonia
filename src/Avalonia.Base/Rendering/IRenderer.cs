@@ -80,6 +80,10 @@ namespace Avalonia.Rendering
         /// <summary>
         /// Hit tests a location to find the visuals at the specified point.
         /// </summary>
+        /// <remarks>
+        /// <para>⚠️ This method is low-level and <b>DOES NOT respect <see cref="Input.InputElement.IsHitTestVisible"/></b>.</para>
+        /// <para>Use  <see cref="Input.InputExtensions"/> to perform input hit testing, or provide your own <paramref name="filter"/> function.</para>
+        /// </remarks>
         /// <param name="p">The point, in client coordinates.</param>
         /// <param name="root">The root of the subtree to search.</param>
         /// <param name="filter">
@@ -92,12 +96,7 @@ namespace Avalonia.Rendering
         /// <summary>
         /// Hit tests a location to find first visual at the specified point.
         /// </summary>
-        /// <param name="p">The point, in client coordinates.</param>
-        /// <param name="root">The root of the subtree to search.</param>
-        /// <param name="filter">
-        /// A filter predicate. If the predicate returns false then the visual and all its
-        /// children will be excluded from the results.
-        /// </param>
+        /// <inheritdoc cref="HitTest(Point, Visual, Func{Visual, bool}?)"/>
         /// <returns>The visual at the specified point, topmost first.</returns>
         Visual? HitTestFirst(Point p, Visual root, Func<Visual, bool>? filter);
     }
