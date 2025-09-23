@@ -9,11 +9,13 @@ namespace Avalonia.X11.Clipboard;
 
 internal static class ClipboardUriListHelper
 {
+    private static readonly Encoding s_utf8NoBomEncoding = new UTF8Encoding(false);
+
     public static IStorageItem[] TryReadFileUriList(Stream source)
     {
         try
         {
-            using var reader = new StreamReader(source, Encoding.UTF8);
+            using var reader = new StreamReader(source, s_utf8NoBomEncoding);
             var items = new List<IStorageItem>();
 
             while (reader.ReadLine() is { } line)
@@ -36,7 +38,7 @@ internal static class ClipboardUriListHelper
 
     public static void WriteFileUriList(Stream destination, IEnumerable<IStorageItem> items)
     {
-        using var writer = new StreamWriter(destination, Encoding.UTF8);
+        using var writer = new StreamWriter(destination, s_utf8NoBomEncoding);
 
         writer.NewLine = "\r\n"; // CR+LF is mandatory according to the text/uri-list spec
 
