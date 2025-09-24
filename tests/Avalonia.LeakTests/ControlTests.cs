@@ -1000,6 +1000,56 @@ namespace Avalonia.LeakTests
             }
         }
         
+        [Fact]
+        public void LayoutTransformControl_Is_Freed()
+        {
+            using (Start())
+            {
+                Func<Window> run = () =>
+                {
+                    var window = new Window
+                    {
+                        Styles =
+                        {
+                            new Style(x => x.OfType<LayoutTransformControl>())
+                            {
+                                Setters =
+                                {
+                                    new Setter
+                                    {
+                                        Property = LayoutTransformControl.LayoutTransformProperty,
+                                        Value = new RotateTransform(45),
+                                    }
+                                }
+                            }
+                        },
+                        Content = new LayoutTransformControl()
+                    };
+
+                    window.Show();
+
+                    // Do a layout and make sure that Canvas gets added to visual tree.
+                    window.LayoutManager.ExecuteInitialLayoutPass();
+                    Assert.IsType<LayoutTransformControl>(window.Presenter.Child);
+
+                    // Clear the content and ensure the Canvas is removed.
+                    window.Content = null;
+                    window.LayoutManager.ExecuteLayoutPass();
+                    Assert.Null(window.Presenter.Child);
+
+                    return window;
+                };
+
+                var result = run();
+
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
+                dotMemory.Check(memory =>
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<LayoutTransformControl>()).ObjectsCount));
+            }
+        }
+        
         private FuncControlTemplate CreateWindowTemplate()
         {
             return new FuncControlTemplate<Window>((parent, scope) =>

@@ -145,6 +145,22 @@ namespace Avalonia.Controls
             // Return result to allocate enough space for the transformation
             return transformedDesiredSize;
         }
+        
+        // protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        // {
+        //     base.OnAttachedToVisualTree(e);
+        //
+        //     if (LayoutTransform is Transform transform)
+        //         ApplyLayoutTransform(transform);
+        // }
+        //
+        // protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        // {
+        //     _transformChangedEvent?.Dispose();
+        //     _transformChangedEvent = null;
+        //     
+        //     base.OnDetachedFromVisualTree(e);
+        // }
 
         private IDisposable? _renderTransformChangedEvent;
 
@@ -429,11 +445,21 @@ namespace Avalonia.Controls
             _transformChangedEvent?.Dispose();
             _transformChangedEvent = null;
 
+            // if (!IsAttachedToVisualTree)
+            // {
+            //  return;   
+            // }
+            
+            ApplyLayoutTransform(newTransform);
+        }
+
+        private void ApplyLayoutTransform(Transform? newTransform)
+        {
             if (newTransform != null)
             {
                 _transformChangedEvent = Observable.FromEventPattern(
-                                        v => newTransform.Changed += v, v => newTransform.Changed -= v)
-                                        .Subscribe(_ => ApplyLayoutTransform());
+                        v => newTransform.Changed += v, v => newTransform.Changed -= v)
+                    .Subscribe(_ => ApplyLayoutTransform());
             }
 
             ApplyLayoutTransform();
