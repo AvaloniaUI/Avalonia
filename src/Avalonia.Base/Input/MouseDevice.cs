@@ -311,7 +311,7 @@ namespace Avalonia.Input
 
         internal void PlatformCaptureLost()
         {
-            _pointer.Capture(null);
+            _pointer.PlatformCaptureLost();
         }
     }
 }

@@ -177,9 +177,7 @@ namespace Avalonia.Win32
             _nativeControlHost = new Win32NativeControlHost(this, !UseRedirectionBitmap);
             _defaultTransparencyLevel = UseRedirectionBitmap ? WindowTransparencyLevel.None : WindowTransparencyLevel.Transparent;
             _transparencyLevel = _defaultTransparencyLevel;
-
-            lock (s_instances)
-                s_instances.Add(this);
+            s_instances.Add(this);
         }
 
         internal IInputRoot Owner
@@ -1022,22 +1020,6 @@ namespace Avalonia.Win32
                 return ret;
 
             return WndProc(hWnd, msg, wParam, lParam);
-        }
-
-        private bool IsOurWindow(IntPtr hwnd)
-        {
-            if (hwnd == IntPtr.Zero)
-                return false;
-
-            if (hwnd == _hwnd)
-                return true;
-
-            lock (s_instances)
-                for (int i = 0; i < s_instances.Count; i++)
-                    if (s_instances[i]._hwnd == hwnd)
-                        return true;
-
-            return false;
         }
 
         private void CreateDropTarget(IInputRoot inputRoot)
