@@ -281,7 +281,7 @@ namespace Avalonia.Automation.Peers
         ///   </item>
         ///   <item>
         ///     <term>macOS</term>
-        ///     <description>Not supported</description>
+        ///     <description><c>NSAccessibilityProtocol.accessibilityValue</c></description>
         ///   </item>
         /// </list>
         /// </remarks>
