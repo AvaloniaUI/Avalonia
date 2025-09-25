@@ -394,6 +394,26 @@ namespace Avalonia.Win32
                         break;
                     }
 
+                case WindowsMessage.WM_CAPTURECHANGED:
+                    {
+                        if (IsMouseInPointerEnabled)
+                        {
+                            break;
+                        }
+                        if (_hwnd != lParam)
+                        {
+                            _trackingMouse = false;
+                            e = new RawPointerEventArgs(
+                                _mouseDevice,
+                                timestamp,
+                                Owner,
+                                RawPointerEventType.CancelCapture,
+                                new Point(-1, -1),
+                                WindowsKeyboardDevice.Instance.Modifiers);
+                        }
+                        break;
+                    }
+
                 case WindowsMessage.WM_NCLBUTTONDOWN:
                 case WindowsMessage.WM_NCRBUTTONDOWN:
                 case WindowsMessage.WM_NCMBUTTONDOWN:
