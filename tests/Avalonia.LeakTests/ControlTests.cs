@@ -13,6 +13,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Diagnostics;
 using Avalonia.Input;
+using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -1009,28 +1010,14 @@ namespace Avalonia.LeakTests
                 {
                     var window = new Window
                     {
-                        Styles =
-                        {
-                            new Style(x => x.OfType<LayoutTransformControl>())
-                            {
-                                Setters =
-                                {
-                                    new Setter
-                                    {
-                                        Property = LayoutTransformControl.LayoutTransformProperty,
-                                        Value = new RotateTransform(45),
-                                    }
-                                }
-                            }
-                        },
-                        Content = new LayoutTransformControl()
+                        Content = new ProgressBar { Orientation = Orientation.Vertical }
                     };
 
                     window.Show();
 
                     // Do a layout and make sure that Canvas gets added to visual tree.
                     window.LayoutManager.ExecuteInitialLayoutPass();
-                    Assert.IsType<LayoutTransformControl>(window.Presenter.Child);
+                    Assert.IsType<ProgressBar>(window.Presenter.Child);
 
                     // Clear the content and ensure the Canvas is removed.
                     window.Content = null;
@@ -1046,7 +1033,7 @@ namespace Avalonia.LeakTests
                 Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
                 dotMemory.Check(memory =>
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<LayoutTransformControl>()).ObjectsCount));
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<ProgressBar>()).ObjectsCount));
             }
         }
         
