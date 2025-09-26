@@ -1004,6 +1004,8 @@ namespace Avalonia.LeakTests
         [Fact]
         public void LayoutTransformControl_Is_Freed()
         {
+            object hardLink = null;
+            
             using (Start())
             {
                 Func<Window> run = () =>
@@ -1012,6 +1014,8 @@ namespace Avalonia.LeakTests
                     {
                         Content = new ProgressBar { Orientation = Orientation.Vertical }
                     };
+
+                    hardLink = window.Content;
 
                     window.Show();
 
@@ -1034,6 +1038,8 @@ namespace Avalonia.LeakTests
 
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<ProgressBar>()).ObjectsCount));
+                dotMemory.Check(memory =>
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<LayoutTransformControl>()).ObjectsCount));
             }
         }
         
