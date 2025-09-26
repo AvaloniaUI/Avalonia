@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.JavaScript;
 using System.Threading.Tasks;
 
@@ -78,8 +77,8 @@ internal static partial class InputHelper
         RedirectInputAsync(topLevelId, t => t.InputHandler.OnWheel(offsetX, offsetY, deltaX, deltaY, modifier));
 
     [JSExport]
-    public static Task OnDragDrop(int topLevelId, string type, double offsetX, double offsetY, int modifiers, string? effectAllowedStr, JSObject? dataTransfer) =>
-        RedirectInputAsync(topLevelId, t => t.InputHandler.OnDragEvent(type, offsetX, offsetY, modifiers, effectAllowedStr, dataTransfer));
+    public static Task OnDragDrop(int topLevelId, string type, double offsetX, double offsetY, int modifiers, JSObject dataTransfer, JSObject items) =>
+        RedirectInputAsync(topLevelId, t => t.InputHandler.OnDragEvent(type, offsetX, offsetY, modifiers, dataTransfer, items));
 
     [JSExport]
     public static Task OnKeyboardGeometryChange(int topLevelId, double x, double y, double width, double height) =>
@@ -114,11 +113,35 @@ internal static partial class InputHelper
     [JSImport("InputHelper.initializeBackgroundHandlers", AvaloniaModule.MainModuleName)]
     public static partial void InitializeBackgroundHandlers(JSObject globalThis);
 
-    [JSImport("InputHelper.readClipboardText", AvaloniaModule.MainModuleName)]
-    public static partial Task<string> ReadClipboardTextAsync(JSObject globalThis);
+    [JSImport("InputHelper.isClipboardFormatSupported", AvaloniaModule.MainModuleName)]
+    public static partial bool IsClipboardFormatSupported(string format);
 
-    [JSImport("InputHelper.writeClipboardText", AvaloniaModule.MainModuleName)]
-    public static partial Task WriteClipboardTextAsync(JSObject globalThis, string text);
+    [JSImport("InputHelper.createWriteableClipboardSource", AvaloniaModule.MainModuleName)]
+    public static partial JSObject CreateWriteableClipboardSource();
+
+    [JSImport("InputHelper.createWriteableClipboardItem", AvaloniaModule.MainModuleName)]
+    public static partial JSObject CreateWriteableClipboardItem(JSObject source);
+
+    [JSImport("InputHelper.addStringToWriteableClipboardItem", AvaloniaModule.MainModuleName)]
+    public static partial void AddStringToWriteableClipboardItem(JSObject item, string format, string value);
+
+    [JSImport("InputHelper.addBytesToWriteableClipboardItem", AvaloniaModule.MainModuleName)]
+    public static partial void AddBytesToWriteableClipboardItem(JSObject item, string format, [JSMarshalAs<JSType.MemoryView>] Span<byte> value);
+
+    [JSImport("InputHelper.readClipboard", AvaloniaModule.MainModuleName)]
+    public static partial Task<JSObject> ReadClipboardAsync(JSObject window);
+
+    [JSImport("InputHelper.writeClipboard", AvaloniaModule.MainModuleName)]
+    public static partial Task WriteClipboardAsync(JSObject globalThis, JSObject? source);
+
+    [JSImport("InputHelper.getReadableDataItemFormats", AvaloniaModule.MainModuleName)]
+    public static partial string[] GetReadableDataItemFormats(JSObject item);
+
+    [JSImport("InputHelper.tryGetReadableDataItemValueAsync", AvaloniaModule.MainModuleName)]
+    public static partial Task<JSObject?> TryGetReadableDataItemValueAsync(JSObject item, string format);
+
+    [JSImport("InputHelper.tryGetReadableDataItemValue", AvaloniaModule.MainModuleName)]
+    public static partial JSObject? TryGetReadableDataItemValue(JSObject item, string format);
 
     [JSImport("InputHelper.setPointerCapture", AvaloniaModule.MainModuleName)]
     public static partial void

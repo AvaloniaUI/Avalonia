@@ -63,6 +63,7 @@
 		EDF8CDCD2964CB01001EE34F /* PlatformSettings.mm in Sources */ = {isa = PBXBuildFile; fileRef = EDF8CDCC2964CB01001EE34F /* PlatformSettings.mm */; };
 		F10084842BFF1F9E0024303E /* TopLevelImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = F10084832BFF1F9E0024303E /* TopLevelImpl.h */; };
 		F10084862BFF1FB40024303E /* TopLevelImpl.mm in Sources */ = {isa = PBXBuildFile; fileRef = F10084852BFF1FB40024303E /* TopLevelImpl.mm */; };
+		F931F8682E2D43A7004E081E /* clipboard.h in Headers */ = {isa = PBXBuildFile; fileRef = F931F8672E2D43A4004E081E /* clipboard.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -130,6 +131,7 @@
 		EDF8CDCC2964CB01001EE34F /* PlatformSettings.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = PlatformSettings.mm; sourceTree = "<group>"; };
 		F10084832BFF1F9E0024303E /* TopLevelImpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TopLevelImpl.h; sourceTree = "<group>"; };
 		F10084852BFF1FB40024303E /* TopLevelImpl.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = TopLevelImpl.mm; sourceTree = "<group>"; };
+		F931F8672E2D43A4004E081E /* clipboard.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = clipboard.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -189,6 +191,7 @@
 				1AFD334023E03C4F0042899B /* controlhost.mm */,
 				5BF943652167AD1D009CAE35 /* cursor.h */,
 				5B21A981216530F500CEE36E /* cursor.mm */,
+				F931F8672E2D43A4004E081E /* clipboard.h */,
 				5B8BD94E215BFEA6005ED2A7 /* clipboard.mm */,
 				1A465D0F246AB61600C5858B /* dnd.mm */,
 				AB8F7D6A21482D7F0057DBA5 /* platformthreading.mm */,
@@ -246,6 +249,7 @@
 			files = (
 				37155CE4233C00EB0034DCE9 /* menu.h in Headers */,
 				F10084842BFF1F9E0024303E /* TopLevelImpl.h in Headers */,
+				F931F8682E2D43A7004E081E /* clipboard.h in Headers */,
 				BC11A5BE2608D58F0017BAD0 /* automation.h in Headers */,
 				183916173528EC2737DBE5E1 /* WindowBaseImpl.h in Headers */,
 				1839171DCC651B0638603AC4 /* INSWindowHolder.h in Headers */,
