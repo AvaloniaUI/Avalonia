@@ -814,7 +814,7 @@ namespace Avalonia.Media.TextFormatting
             }
         }
 
-        private CharacterHit GetPreviousCharacterHit(CharacterHit characterHit, bool useGraphemeBoundaries)
+        private CharacterHit GetPreviousCharacterHit(CharacterHit characterHit, bool isBackspaceDelete)
         {
             if (_textRuns.Length == 0 || _indexedTextRuns is null)
             {
@@ -833,8 +833,6 @@ namespace Avalonia.Media.TextFormatting
                 return new CharacterHit(FirstTextSourceIndex);
             }
 
-            var currentCharacterHit = characterHit;
-
             var currentRun = GetRunAtCharacterIndex(characterIndex, LogicalDirection.Backward, out var currentPosition);
 
             var previousCharacterHit = characterHit;
@@ -843,46 +841,38 @@ namespace Avalonia.Media.TextFormatting
             {
                 case ShapedTextRun shapedRun:
                     {
-                        var offset = Math.Max(0, currentPosition - shapedRun.GlyphRun.Metrics.FirstCluster);
+                        //Determine the start of the first hit in local positions.
+                        var runOffset = Math.Max(0, characterIndex - currentPosition);
 
-                        if (offset > 0)
+                        var firstCluster = shapedRun.GlyphRun.Metrics.FirstCluster;
+
+                        //Current position is a text source index and first cluster is relative to the GlyphRun's buffer.
+                        var textSourceOffset = currentPosition - firstCluster;
+
+                        if (isBackspaceDelete)
                         {
-                            currentCharacterHit = new CharacterHit(Math.Max(0, characterHit.FirstCharacterIndex - offset), characterHit.TrailingLength);
-                        }
-
-                        previousCharacterHit = shapedRun.GlyphRun.GetPreviousCaretCharacterHit(currentCharacterHit);
-
-                        if (useGraphemeBoundaries)
-                        {
-                            var textPosition = Math.Max(0, previousCharacterHit.FirstCharacterIndex - shapedRun.GlyphRun.Metrics.FirstCluster);
-
-                            var text = shapedRun.GlyphRun.Characters.Slice(textPosition);
-
-                            var graphemeEnumerator = new GraphemeEnumerator(text.Span);
-
                             var length = 0;
 
-                            var clusterLength = Math.Max(0, currentCharacterHit.FirstCharacterIndex + currentCharacterHit.TrailingLength - 
-                                previousCharacterHit.FirstCharacterIndex - previousCharacterHit.TrailingLength);
-
-                            while (graphemeEnumerator.MoveNext(out var grapheme))
+                            while (Codepoint.ReadAt(shapedRun.GlyphRun.Characters.Span, length, out var count) != Codepoint.ReplacementCodepoint)
                             {
-                                if (length + grapheme.Length < clusterLength)
+                                if (length + count >= runOffset)
                                 {
-                                    length += grapheme.Length;
-
-                                    continue;
+                                    break;
                                 }
 
-                                previousCharacterHit = new CharacterHit(previousCharacterHit.FirstCharacterIndex + length);
-
-                                break;
+                                length += count;
                             }
-                        }
 
-                        if (offset > 0)
+                            previousCharacterHit = new CharacterHit(characterIndex - runOffset + length);
+                        }
+                        else
                         {
-                            previousCharacterHit = new CharacterHit(previousCharacterHit.FirstCharacterIndex + offset, previousCharacterHit.TrailingLength);
+                            previousCharacterHit = shapedRun.GlyphRun.GetPreviousCaretCharacterHit(new CharacterHit(firstCluster + runOffset));
+
+                            if(textSourceOffset > 0)
+                            {
+                                previousCharacterHit = new CharacterHit(textSourceOffset + previousCharacterHit.FirstCharacterIndex, previousCharacterHit.TrailingLength);
+                            }
                         }
 
                         break;
