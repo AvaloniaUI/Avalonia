@@ -25,11 +25,12 @@ namespace Avalonia.Markup.UnitTests.Data
                 Converter = StringConverters.IsNullOrEmpty,
             };
 
-            var expressionObserver = (BindingExpression)target.Initiate(
+            var expression = (BindingExpression)target.CreateInstance(
                 textBlock,
-                TextBlock.TextProperty).Expression;
+                TextBlock.TextProperty,
+                null);
 
-            Assert.Same(StringConverters.IsNullOrEmpty, expressionObserver.Converter);
+            Assert.Same(StringConverters.IsNullOrEmpty, expression.Converter);
         }
 
         [Fact]
