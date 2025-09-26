@@ -28,7 +28,7 @@ using Xunit.Abstractions;
 
 namespace Avalonia.LeakTests
 {
-    [DotMemoryUnit(FailIfRunWithoutSupport = false)]
+    [DotMemoryUnit(FailIfRunWithoutSupport = true)]
     public class ControlTests
     {
         // Need to have the collection as field, so GC will not free it
