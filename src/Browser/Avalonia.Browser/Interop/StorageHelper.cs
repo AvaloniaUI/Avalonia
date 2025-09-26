@@ -56,16 +56,16 @@ internal static partial class StorageHelper
     [JSImport("StorageProvider.createAcceptType", AvaloniaModule.StorageModuleName)]
     public static partial JSObject CreateAcceptType(string description, string[] mimeTypes, string[]? extensions);
 
-    [JSImport("StorageProvider.deleteAsync", AvaloniaModule.StorageModuleName)]
+    [JSImport("StorageItem.deleteAsync", AvaloniaModule.StorageModuleName)]
     public static partial Task DeleteAsync(JSObject fileHandle);
     
-    [JSImport("StorageProvider.moveAsync", AvaloniaModule.StorageModuleName)]
+    [JSImport("StorageItem.moveAsync", AvaloniaModule.StorageModuleName)]
     public static partial Task<JSObject?> MoveAsync(JSObject fileHandle, JSObject destinationFolder);
     
-    [JSImport("StorageProvider.createFile", AvaloniaModule.StorageModuleName)]
+    [JSImport("StorageItem.createFile", AvaloniaModule.StorageModuleName)]
     public static partial Task<JSObject?> CreateFile(JSObject folderHandle, string name);
     
-    [JSImport("StorageProvider.createFolder", AvaloniaModule.StorageModuleName)]
+    [JSImport("StorageItem.createFolder", AvaloniaModule.StorageModuleName)]
     public static partial Task<JSObject?> CreateFolder(JSObject folderHandle, string name);
 
     [JSImport("StorageItem.getFile", AvaloniaModule.StorageModuleName)]
