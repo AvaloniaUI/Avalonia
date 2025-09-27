@@ -13,6 +13,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Diagnostics;
 using Avalonia.Input;
+using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -28,7 +29,7 @@ using Xunit.Abstractions;
 
 namespace Avalonia.LeakTests
 {
-    [DotMemoryUnit(FailIfRunWithoutSupport = false)]
+    [DotMemoryUnit(FailIfRunWithoutSupport = true)]
     public class ControlTests
     {
         // Need to have the collection as field, so GC will not free it
@@ -997,6 +998,48 @@ namespace Avalonia.LeakTests
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Flyout>()).ObjectsCount);
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Popup>()).ObjectsCount);
                 });
+            }
+        }
+        
+        [Fact]
+        public void LayoutTransformControl_Is_Freed()
+        {
+            object hardLink = null;
+            
+            using (Start())
+            {
+                Func<Window> run = () =>
+                {
+                    var window = new Window
+                    {
+                        Content = new ProgressBar { Orientation = Orientation.Vertical }
+                    };
+
+                    hardLink = window.Content;
+
+                    window.Show();
+
+                    // Do a layout and make sure that Canvas gets added to visual tree.
+                    window.LayoutManager.ExecuteInitialLayoutPass();
+                    Assert.IsType<ProgressBar>(window.Presenter.Child);
+
+                    // Clear the content and ensure the Canvas is removed.
+                    window.Content = null;
+                    window.LayoutManager.ExecuteLayoutPass();
+                    Assert.Null(window.Presenter.Child);
+
+                    return window;
+                };
+
+                var result = run();
+
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
+                dotMemory.Check(memory =>
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<ProgressBar>()).ObjectsCount));
+                dotMemory.Check(memory =>
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<LayoutTransformControl>()).ObjectsCount));
             }
         }
         
