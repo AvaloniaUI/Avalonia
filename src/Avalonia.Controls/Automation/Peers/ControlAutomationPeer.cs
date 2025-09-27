@@ -127,6 +127,7 @@ namespace Avalonia.Automation.Peers
 
             return result;          
         }
+        protected override int GetHeadingLevelCore() => AutomationProperties.GetHeadingLevel(Owner);
         protected override AutomationPeer? GetParentCore()
         {
             EnsureConnected();

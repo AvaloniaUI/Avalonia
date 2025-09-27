@@ -1238,6 +1238,7 @@ interface IAvnAutomationPeer : IUnknown
      void ValueProvider_SetValue(char* value);
 
      IAvnString* GetHelpText();
+     int GetHeadingLevel();
 }
 
 [uuid(b00af5da-78af-4b33-bfff-4ce13a6239a9)]
