@@ -9,6 +9,8 @@
     <ProjectReference Remove="**/*.shproj" />
     <!-- Exclude iOS, Android and Browser samples from build -->
     <ProjectReference Remove="samples/*.iOS/*.csproj" />
+    <ProjectReference Remove="samples/*.tvOS/*.csproj" />
+    <ProjectReference Remove="samples/*.MacCatalyst/*.csproj" />
     <ProjectReference Remove="samples/*.Android/*.csproj" />
     <ProjectReference Remove="samples/*.Browser/*.csproj" />
     <ProjectReference Remove="samples/*.Blazor/*.csproj" />
