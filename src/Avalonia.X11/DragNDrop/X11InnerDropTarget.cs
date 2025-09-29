@@ -1,6 +1,7 @@
 ﻿using System;
 using Avalonia.Input.Raw;
 using Avalonia.Input;
+using System.Threading.Tasks;
 
 namespace Avalonia.X11.DragNDrop
 {
@@ -47,7 +48,7 @@ namespace Avalonia.X11.DragNDrop
             return args.Effects;
         }
 
-        public DragDropEffects HandleDragOver(PixelPoint coords, DragDropEffects effects)
+        public  DragDropEffects HandleDragOver(PixelPoint coords, DragDropEffects effects)
         {
             if (DragDropDevice == null || _currentDrag == null)
                 return DragDropEffects.None;
@@ -75,7 +76,7 @@ namespace Avalonia.X11.DragNDrop
             if (DragDropDevice == null || _currentDrag == null)
                 return DragDropEffects.None;
 
-            var point = _currentLocation.HasValue ? _currentLocation.Value : new Point(0,0);
+            var point = _currentLocation.HasValue ? _currentLocation.Value : new Point(0, 0);
 
             var args = new RawDragEvent(
                 DragDropDevice,
@@ -94,7 +95,7 @@ namespace Avalonia.X11.DragNDrop
             return args.Effects;
         }
 
-        public DragDropEffects HandleDragLeave(PixelPoint coords, DragDropEffects effects)
+        public async Task<DragDropEffects> HandleDragLeave(PixelPoint coords, DragDropEffects effects)
         {
             if (DragDropDevice == null || _currentDrag == null)
                 return DragDropEffects.None;
@@ -112,7 +113,7 @@ namespace Avalonia.X11.DragNDrop
                 RawInputModifiers.None
             );
 
-            Input?.Invoke(args);
+            await Task.Run(() => Input?.Invoke(args)).ConfigureAwait(false);
 
             _currentDrag = null;
 

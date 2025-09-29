@@ -14,6 +14,15 @@ namespace Avalonia.X11
         private readonly IntPtr _display;
         private readonly X11Atoms _atoms;
 
+        private readonly Dictionary<IntPtr, bool> _xdndSupportCache = new Dictionary<IntPtr, bool>();
+        private readonly object _supportCacheLock = new object();
+
+        private readonly Dictionary<IntPtr, List<IntPtr>> _windowChildrenCache = new Dictionary<IntPtr, List<IntPtr>>();
+        private readonly object _windowChildrenCacheLock = new object();
+
+        private readonly Dictionary<IntPtr, (MapState map_state, Rect rect)> _windowRectCache = new Dictionary<IntPtr, (MapState map_state, Rect rect)>();
+        private readonly object _windowRectCacheLock = new object();
+
         public X11WindowFinder(IntPtr display, X11Atoms atoms)
         {
             _display = display;
@@ -35,23 +44,37 @@ namespace Avalonia.X11
         {
             var windowsChildren = GetWindowChildren(root);
 
-            IntPtr target = IntPtr.Zero;
             var targets = new List<IntPtr>();
 
             for (int i = windowsChildren.Count - 1; i >= 0; i--)
             {
                 IntPtr child = windowsChildren[i];
                 XWindowAttributes attrs = new();
-                if (XLib.XGetWindowAttributes(_display, child, ref attrs) != 0)
+                lock (_windowRectCacheLock)
                 {
-                    if (attrs.map_state != MapState.IsViewable)
-                        continue;
-
-                    if (cursorX >= attrs.x && cursorX < attrs.x + attrs.width &&
-                        cursorY >= attrs.y && cursorY < attrs.y + attrs.height )
+                    if (_windowRectCache.TryGetValue(child, out var cachedWindowRect))
                     {
-                        targets.Add(child);
-                       //// break;
+                        if (cachedWindowRect.map_state != MapState.IsViewable)
+                            continue;
+
+                        if (cachedWindowRect.rect.Contains(new Point(cursorX, cursorY)))
+                        {
+                            targets.Add(child);
+                        }
+                    }
+                    else if (XLib.XGetWindowAttributes(_display, child, ref attrs) != 0)
+                    {
+                        var windowRect = new Rect(attrs.x, attrs.y, attrs.width, attrs.height);
+
+                        _windowRectCache[child] = (attrs.map_state, windowRect);
+
+                        if (attrs.map_state != MapState.IsViewable)
+                            continue;
+
+                        if (windowRect.Contains(new Point(cursorX, cursorY)))
+                        {
+                            targets.Add(child);
+                        }
                     }
                 }
             }
@@ -59,8 +82,14 @@ namespace Avalonia.X11
             return targets.FirstOrDefault();
         }
 
-        private unsafe List<IntPtr> GetWindowChildren(IntPtr window, bool recursive = true)
+        private unsafe List<IntPtr> GetWindowChildren(IntPtr window)
         {
+            lock (_windowChildrenCacheLock)
+            {
+                if (_windowChildrenCache.TryGetValue(window, out var cachedChildren))
+                    return cachedChildren;
+            }
+
             var windowsChildren = new List<IntPtr>();
 
             int errcode = XLib.XQueryTree(_display, window, out _, out _, out IntPtr childrenPtr, out int childrenCount);
@@ -73,16 +102,18 @@ namespace Avalonia.X11
                     for (var i = 0; i < childrenCount; i++)
                     {
                         windowsChildren.Add(children[i]);
-                        if(recursive)
-                        {
-                            windowsChildren.AddRange(GetWindowChildren(children[i]));
-                        }
+                        windowsChildren.AddRange(GetWindowChildren(children[i]));                       
                     }
                     XLib.XFree(childrenPtr);
                 }
             }
 
             errcode = 0;
+
+            lock (_windowChildrenCacheLock)
+            {
+                _windowChildrenCache[window] = windowsChildren;
+            }
 
             return windowsChildren;
         }
@@ -93,21 +124,41 @@ namespace Avalonia.X11
                 return IntPtr.Zero;
 
             XWindowAttributes attrs = new();
-            if (XLib.XGetWindowAttributes(_display, window, ref attrs) != 0)
+            lock (_windowRectCacheLock)
             {
-                if (attrs.map_state != MapState.IsViewable)
-                    return IntPtr.Zero;
-
-                if (!XLib.XGetGeometry(_display, window, out _, out var wx, out var wy,
-                      out var width, out var height, out _, out _))
-                    return IntPtr.Zero;
-
-                var windowRect = new Rect(wx, wy, width, height);
-                if (windowRect.Contains(new Point(x, y)))
+                if (_windowRectCache.TryGetValue(window, out var cachedWindowRect))
                 {
-                    if (ignoreNonXdndAware || CheckXdndSupport(window))
+                    if (cachedWindowRect.map_state != MapState.IsViewable)
+                        return IntPtr.Zero;
+
+                    if (cachedWindowRect.rect.Contains(new Point(x, y)))
                     {
-                        return window;
+                        if (ignoreNonXdndAware || CheckXdndSupport(window))
+                        {
+                            return window;
+                        }
+                    }
+                }
+                else if (XLib.XGetWindowAttributes(_display, window, ref attrs) != 0)
+                {
+                    if (attrs.map_state != MapState.IsViewable)
+                    {
+                        _windowRectCache[window] = (attrs.map_state, new Rect(attrs.x, attrs.y, attrs.width, attrs.height));
+                        return IntPtr.Zero;
+                    }
+
+                    if (!XLib.XGetGeometry(_display, window, out _, out var wx, out var wy,
+                          out var width, out var height, out _, out _))
+                        return IntPtr.Zero;
+
+                    var windowRect = new Rect(wx, wy, width, height);
+                    _windowRectCache[window] = (attrs.map_state, windowRect);
+                    if (windowRect.Contains(new Point(x, y)))
+                    {
+                        if (ignoreNonXdndAware || CheckXdndSupport(window))
+                        {
+                            return window;
+                        }
                     }
                 }
             }
@@ -193,6 +244,11 @@ namespace Avalonia.X11
 
         public bool CheckXdndSupport(IntPtr window)
         {
+            lock (_supportCacheLock)
+            {
+                if (_xdndSupportCache.TryGetValue(window, out var support))
+                    return support;
+            }
 
             int res = XLib.XGetWindowProperty(_display, window, _atoms.XdndAware, IntPtr.Zero,
                                     new IntPtr(1), false, _atoms.XA_ATOM,
@@ -203,12 +259,14 @@ namespace Avalonia.X11
             string msg = res + "|" + data + "|" + nitems;
             Debug.Write(msg);
 
+            bool ret = false;
+
             if (res == 0 && data != IntPtr.Zero)
             {
                 try
                 {
                     int version = Marshal.ReadInt32(data);
-                    return version >= 1;
+                    ret = version >= 1;
                 }
                 finally
                 {
@@ -216,7 +274,12 @@ namespace Avalonia.X11
                 }
             }
 
-            return false;
+            lock (_supportCacheLock)
+            {
+                _xdndSupportCache[window] = ret;
+            }
+
+            return ret;
         }
     }
 }
