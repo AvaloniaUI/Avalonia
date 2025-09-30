@@ -151,9 +151,7 @@ namespace Avalonia.X11.Clipboard
                 if (dataTransfer.TryGetValuesAsync(DataFormat.File).GetAwaiter().GetResult() is not { } files)
                     return null;
 
-                using var memoryStream = new MemoryStream();
-                ClipboardUriListHelper.WriteFileUriList(memoryStream, files);
-                return memoryStream.ToArray();
+                return ClipboardUriListHelper.FileUriListToUtf8Bytes(files);
             }
 
             if (format is DataFormat<string> stringFormat)

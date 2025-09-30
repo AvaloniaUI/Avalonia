@@ -54,13 +54,9 @@ internal sealed class ClipboardDataReader(
         if (DataFormat.File.Equals(format))
         {
             // text/uri-list might not be supported
-            if (formatAtom != IntPtr.Zero && result.TypeAtom == formatAtom)
-            {
-                using var memoryStream = new MemoryStream(result.AsBytes());
-                return ClipboardUriListHelper.TryReadFileUriList(memoryStream);
-            }
-
-            return null;
+            return formatAtom != IntPtr.Zero && result.TypeAtom == formatAtom ?
+                ClipboardUriListHelper.Utf8BytesToFileUriList(result.AsBytes()) :
+                null;
         }
 
         if (format is DataFormat<string>)

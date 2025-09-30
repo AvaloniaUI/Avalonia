@@ -11,11 +11,12 @@ internal static class ClipboardUriListHelper
 {
     private static readonly Encoding s_utf8NoBomEncoding = new UTF8Encoding(false);
 
-    public static IStorageItem[] TryReadFileUriList(Stream source)
+    public static IStorageItem[] Utf8BytesToFileUriList(byte[] utf8Bytes)
     {
         try
         {
-            using var reader = new StreamReader(source, s_utf8NoBomEncoding);
+            using var stream = new MemoryStream(utf8Bytes);
+            using var reader = new StreamReader(stream, s_utf8NoBomEncoding);
             var items = new List<IStorageItem>();
 
             while (reader.ReadLine() is { } line)
@@ -36,13 +37,16 @@ internal static class ClipboardUriListHelper
         }
     }
 
-    public static void WriteFileUriList(Stream destination, IEnumerable<IStorageItem> items)
+    public static byte[] FileUriListToUtf8Bytes(IEnumerable<IStorageItem> items)
     {
-        using var writer = new StreamWriter(destination, s_utf8NoBomEncoding);
+        using var stream = new MemoryStream();
+        using var writer = new StreamWriter(stream, s_utf8NoBomEncoding);
 
         writer.NewLine = "\r\n"; // CR+LF is mandatory according to the text/uri-list spec
 
         foreach (var item in items)
             writer.WriteLine(item.Path.AbsoluteUri);
+
+        return stream.ToArray();
     }
 }
