@@ -7,6 +7,7 @@
 #include "AvnTextInputMethod.h"
 #include "AvnView.h"
 #include "common.h"
+#include "clipboard.h"
 
 TopLevelImpl::~TopLevelImpl() {
     View = nullptr;
@@ -291,12 +292,16 @@ HRESULT TopLevelImpl::BeginDragAndDropOperation(
     // attempt to forge a new one
     if (!((nseventType >= NSEventTypeLeftMouseDown && nseventType <= NSEventTypeMouseExited)
             || (nseventType >= NSEventTypeOtherMouseDown && nseventType <= NSEventTypeOtherMouseDragged))) {
-        NSRect convertRect = [Window convertRectToScreen:NSMakeRect(point.X, point.Y, 0.0, 0.0)];
-        auto nspoint = NSMakePoint(convertRect.origin.x, convertRect.origin.y);
-        CGPoint cgpoint = NSPointToCGPoint(nspoint);
-        auto cgevent = CGEventCreateMouseEvent(NULL, kCGEventLeftMouseDown, cgpoint, kCGMouseButtonLeft);
-        nsevent = [NSEvent eventWithCGEvent:cgevent];
-        CFRelease(cgevent);
+        // For TopLevelImpl, we don't have a Window so we use the View's window
+        auto window = [View window];
+        if (window != nil) {
+            NSRect convertRect = [window convertRectToScreen:NSMakeRect(point.X, point.Y, 0.0, 0.0)];
+            auto nspoint = NSMakePoint(convertRect.origin.x, convertRect.origin.y);
+            CGPoint cgpoint = NSPointToCGPoint(nspoint);
+            auto cgevent = CGEventCreateMouseEvent(NULL, kCGEventLeftMouseDown, cgpoint, kCGMouseButtonLeft);
+            nsevent = [NSEvent eventWithCGEvent:cgevent];
+            CFRelease(cgevent);
+        }
     }
 
     auto itemCount = source->GetItemCount();
