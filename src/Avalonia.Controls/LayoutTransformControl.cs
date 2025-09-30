@@ -6,6 +6,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Reactive;
 using Avalonia.Media;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls
 {
@@ -224,7 +225,6 @@ namespace Avalonia.Controls
         /// Transformation matrix corresponding to _matrixTransform.
         /// </summary>
         private Matrix _transformation = Matrix.Identity;
-        private IDisposable? _transformChangedEvent;
 
         /// <summary>
         /// Returns true if Size a is smaller than Size b in either dimension.
@@ -424,18 +424,22 @@ namespace Avalonia.Controls
 
         private void OnLayoutTransformChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            var newTransform = e.NewValue as Transform;
-
-            _transformChangedEvent?.Dispose();
-            _transformChangedEvent = null;
-
-            if (newTransform != null)
+            //if LayoutTransform is set via global style or theme, LayoutTransformControl will not be collected
+            if (e.OldValue is Transform oldTransform)
             {
-                _transformChangedEvent = Observable.FromEventPattern(
-                                        v => newTransform.Changed += v, v => newTransform.Changed -= v)
-                                        .Subscribe(_ => ApplyLayoutTransform());
+                WeakEventHandlerManager.Unsubscribe<EventArgs, LayoutTransformControl>(oldTransform, nameof(Transform.Changed), OnTransformPropertyChanged);
             }
 
+            if (e.NewValue is Transform newTransform)
+            {
+                WeakEventHandlerManager.Subscribe<Transform, EventArgs, LayoutTransformControl>(newTransform, nameof(Transform.Changed), OnTransformPropertyChanged);
+            }
+
+            ApplyLayoutTransform();
+        }
+
+        private void OnTransformPropertyChanged(object? sender, EventArgs e)
+        {
             ApplyLayoutTransform();
         }
     }
