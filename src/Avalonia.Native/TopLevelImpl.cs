@@ -99,7 +99,6 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
         _handle = handle;
         _savedLogicalSize = ClientSize;
         _savedScaling = Native?.Scaling ?? 1;
-        ;
         _nativeControlHost = new NativeControlHostImpl(Native!.CreateNativeControlHost());
         _platformBehaviorInhibition = new PlatformBehaviorInhibition(Factory.CreatePlatformBehaviorInhibition());
         _surfaces = new object[] { new GlPlatformSurface(Native), new MetalPlatformSurface(Native), this };
