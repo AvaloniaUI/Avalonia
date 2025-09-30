@@ -30,5 +30,11 @@ namespace Avalonia.Automation
         /// by the <see cref="AutomationPeer.GetHelpText"/> method.
         /// </summary>
         public static AutomationProperty HelpTextProperty { get; } = new AutomationProperty();
+
+        /// <summary>
+        /// Identifiers the heading level automation property. The class name property value is returned
+        /// by the <see cref="AutomationPeer.GetHeadingLevel"/> method.
+        /// </summary>
+        public static AutomationProperty HeadingLevelProperty { get; } = new AutomationProperty();
     }
 }

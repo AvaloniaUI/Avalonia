@@ -136,7 +136,7 @@
                     <TextBlock Name="watermark"
                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"   
-                               Opacity="0.5"
+                               Opacity="{DynamicResource TextControlPlaceholderOpacity}"
                                Text="{TemplateBinding Watermark}"
                                TextAlignment="{TemplateBinding TextAlignment}"
                                TextWrapping="{TemplateBinding TextWrapping}">

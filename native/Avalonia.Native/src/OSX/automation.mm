@@ -122,7 +122,7 @@
         case AutomationSplitButton: return NSAccessibilityPopUpButtonRole;
         case AutomationWindow: return NSAccessibilityWindowRole;
         case AutomationPane: return NSAccessibilityGroupRole;
-        case AutomationHeader: return NSAccessibilityGroupRole;
+        case AutomationHeader: return @"AXHeading";
         case AutomationHeaderItem:  return NSAccessibilityButtonRole;
         case AutomationTable: return NSAccessibilityTableRole;
         case AutomationTitleBar: return NSAccessibilityGroupRole;
@@ -175,6 +175,10 @@
     else if (_peer->GetAutomationControlType() == AutomationText)
     {
         return GetNSStringAndRelease(_peer->GetName());
+    }
+    else if (_peer->GetAutomationControlType() == AutomationHeader)
+    {
+        return [NSNumber numberWithInt:_peer->GetHeadingLevel()];
     }
 
     return [super accessibilityValue];

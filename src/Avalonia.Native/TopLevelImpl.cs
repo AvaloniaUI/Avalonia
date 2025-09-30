@@ -52,7 +52,7 @@ internal class MacOSTopLevelHandle : IPlatformHandle, IMacOSTopLevelPlatformHand
     {
         return Native.ObtainNSViewHandleRetained();
     }
-    
+
     public IntPtr NSWindow => (Native as IAvnWindowBase)?.ObtainNSWindowHandle() ?? IntPtr.Zero;
 
     public IntPtr GetNSWindowRetained()
@@ -98,11 +98,21 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
     {
         _handle = handle;
         _savedLogicalSize = ClientSize;
-        _savedScaling = Native?.Scaling ?? 1;;
+        _savedScaling = Native?.Scaling ?? 1;
         _nativeControlHost = new NativeControlHostImpl(Native!.CreateNativeControlHost());
         _platformBehaviorInhibition = new PlatformBehaviorInhibition(Factory.CreatePlatformBehaviorInhibition());
         _surfaces = new object[] { new GlPlatformSurface(Native), new MetalPlatformSurface(Native), this };
         InputMethod = new AvaloniaNativeTextInputMethod(Native);
+    }
+
+    internal void BeginDraggingSession(
+        AvnDragDropEffects effects,
+        AvnPoint point,
+        IAvnClipboardDataSource source,
+        IAvnDndResultCallback callback,
+        IntPtr sourceHandle)
+    {
+        Native?.BeginDragAndDropOperation(effects, point, source, callback, sourceHandle);
     }
 
     public double DesktopScaling => 1;
@@ -118,7 +128,7 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
             {
                 return default;
             }
-            
+
             var s = Native.ClientSize;
             return new Size(s.Width, s.Height);
 
@@ -135,7 +145,7 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
     public Compositor Compositor => AvaloniaNativePlatform.Compositor;
     public Action? Closed { get; set; }
     public Action? LostFocus { get; set; }
-    
+
     public WindowTransparencyLevel TransparencyLevel
     {
         get => _transparencyLevel;
@@ -397,7 +407,7 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
         {
             throw new RenderTargetNotReadyException();
         }
-        
+
         return new FramebufferRenderTarget(this, nativeRenderTarget);
     }
 
@@ -439,7 +449,7 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
             {
                 return;
             }
-            
+
             var s = new Size(size->Width, size->Height);
             _parent._savedLogicalSize = s;
             _parent.Resized?.Invoke(s, (WindowResizeReason)reason);
@@ -492,7 +502,7 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
             {
                 return AvnDragDropEffects.None;
             }
-            
+
             IDataTransfer? dataTransfer = null;
             if (dataTransferHandle != IntPtr.Zero)
                 dataTransfer = GCHandle.FromIntPtr(dataTransferHandle).Target as IDataTransfer;
