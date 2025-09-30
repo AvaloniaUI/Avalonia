@@ -73,38 +73,7 @@ internal sealed class DataObjectToDataTransferItemWrapper(
                 return buffer;
 
             default:
-                if (OperatingSystemEx.IsWindows())
-                {
-                    Logger.TryGet(LogEventLevel.Warning, LogArea.Win32Platform)?.Log(
-                        null,
-                        "Using BinaryFormatter to serialize data format {Format}. This won't be supported in Avalonia v12. Prefer passing a byte[] or Stream instead.",
-                        format);
-
-                    return SerializeUsingBinaryFormatter(data);
-                }
-
-                return null;
+                return BinaryFormatterHelper.TrySerializeUsingBinaryFormatter(data, format);
         }
-    }
-
-    // TODO12: remove
-    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We still use BinaryFormatter for WinForms drag and drop compatibility")]
-    [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = "We still use BinaryFormatter for WinForms drag and drop compatibility")]
-    private static byte[] SerializeUsingBinaryFormatter(object data)
-    {
-        var stream = new MemoryStream();
-        var serializedGuid = DataTransferToDataObjectWrapper.SerializedObjectGuid;
-
-#if NET6_0_OR_GREATER
-        stream.Write(serializedGuid);
-#else
-        stream.Write(serializedGuid.ToArray(), 0, serializedGuid.Length);
-#endif
-
-#pragma warning disable SYSLIB0011 // Type or member is obsolete
-        new BinaryFormatter().Serialize(stream, data);
-#pragma warning restore SYSLIB0011 // Type or member is obsolete
-
-        return stream.GetBuffer();
     }
 }
