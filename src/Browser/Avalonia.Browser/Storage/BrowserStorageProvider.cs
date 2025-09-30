@@ -235,11 +235,13 @@ internal abstract class JSStorageItem : IStorageBookmarkItem
             throw new InvalidOperationException("Destination folder must be initialized the StorageProvider API.");
         }
 
-        var storageItem = await StorageHelper.MoveAsync(FileHandle, folder.FileHandle);
-        if (storageItem is null)
+        var itemHandle = await StorageHelper.MoveAsync(FileHandle, folder.FileHandle);
+        if (itemHandle is null)
         {
             return null;
         }
+        
+        var storageItem = StorageHelper.StorageItemFromHandle(itemHandle)!;
 
         var kind = storageItem.GetPropertyAsString("kind");
         return kind switch
@@ -394,13 +396,15 @@ internal class JSStorageFolder : JSStorageItem, IStorageBookmarkFolder
     {
         try
         {
-            var storageFile = await StorageHelper.GetFolder(FileHandle, name);
-            if (storageFile is null)
+            var folderHandle = await StorageHelper.GetFolder(FileHandle, name);
+            if (folderHandle is null)
             {
                 return null;
             }
+            
+            var storageFolder = StorageHelper.StorageItemFromHandle(folderHandle)!;
 
-            return new JSStorageFolder(storageFile);
+            return new JSStorageFolder(storageFolder);
         }
         catch (JSException ex) when (ShouldSupressErrorOnFileAccess(ex))
         {
@@ -412,11 +416,13 @@ internal class JSStorageFolder : JSStorageItem, IStorageBookmarkFolder
     {
         try
         {
-            var storageFile = await StorageHelper.GetFile(FileHandle, name);
-            if (storageFile is null)
+            var fileHandle = await StorageHelper.GetFile(FileHandle, name);
+            if (fileHandle is null)
             {
                 return null;
             }
+            
+            var storageFile = StorageHelper.StorageItemFromHandle(fileHandle)!;
 
             return new JSStorageFile(storageFile);
         }
