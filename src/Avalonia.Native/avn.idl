@@ -735,6 +735,9 @@ interface IAvnTopLevel : IUnknown
      HRESULT SetTransparencyMode(AvnWindowTransparencyMode mode);
      
      HRESULT GetCurrentDisplayId(uint* ret);
+
+     HRESULT BeginDragAndDropOperation(AvnDragDropEffects effects, AvnPoint point,
+                                              IAvnClipboard* clipboard, IAvnDndResultCallback* cb, [intptr]void* sourceHandle);
 }
 
 [uuid(e5aca675-02b7-4129-aa79-d6e417210bda), cpp-virtual-inherits]
@@ -757,8 +760,6 @@ interface IAvnWindowBase : IAvnTopLevel
      HRESULT SetMainMenu(IAvnMenu* menu);
      HRESULT ObtainNSWindowHandle([intptr]void** retOut);
      HRESULT ObtainNSWindowHandleRetained([intptr]void** retOut);
-     HRESULT BeginDragAndDropOperation(AvnDragDropEffects effects, AvnPoint point,
-                                              IAvnClipboard* clipboard, IAvnDndResultCallback* cb, [intptr]void* sourceHandle);
 }
 
 [uuid(83e588f3-6981-4e48-9ea0-e1e569f79a91), cpp-virtual-inherits]

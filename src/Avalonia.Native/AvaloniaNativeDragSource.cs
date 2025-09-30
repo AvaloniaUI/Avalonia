@@ -36,7 +36,7 @@ namespace Avalonia.Native
         {
             // Sanity check
             var tl = TopLevel.GetTopLevel(triggerEvent.Source as Visual);
-            var view = tl?.PlatformImpl as WindowBaseImpl;
+            var view = tl?.PlatformImpl as TopLevelImpl;
             if (view == null)
                 throw new ArgumentException();
 

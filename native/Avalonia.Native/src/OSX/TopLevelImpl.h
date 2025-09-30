@@ -60,6 +60,9 @@ public:
     virtual HRESULT SetTransparencyMode(AvnWindowTransparencyMode mode) override;
 
     virtual HRESULT GetCurrentDisplayId (CGDirectDisplayID* ret) override;
+
+    virtual HRESULT BeginDragAndDropOperation(AvnDragDropEffects effects, AvnPoint point,
+                                             IAvnClipboard* clipboard, IAvnDndResultCallback* cb, void* sourceHandle) override;
 protected:
     NSCursor *cursor;
     virtual void UpdateAppearance();
