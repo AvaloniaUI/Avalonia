@@ -304,9 +304,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Win32.Automation",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XEmbedSample", "samples\XEmbedSample\XEmbedSample.csproj", "{255614F5-CB64-4ECA-A026-E0B1AF6A2EF4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ControlCatalog.MacCatalyst", "samples\ControlCatalog.iOS\ControlCatalog.MacCatalyst.csproj", "{DE3C28DD-B602-4750-831D-345102A54CA0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ControlCatalog.MacCatalyst", "samples\ControlCatalog.MacCatalyst\ControlCatalog.MacCatalyst.csproj", "{DE3C28DD-B602-4750-831D-345102A54CA0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ControlCatalog.tvOS", "samples\ControlCatalog.iOS\ControlCatalog.tvOS.csproj", "{14342787-B4EF-4076-8C91-BA6C523DE8DF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ControlCatalog.tvOS", "samples\ControlCatalog.tvOS\ControlCatalog.tvOS.csproj", "{14342787-B4EF-4076-8C91-BA6C523DE8DF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
