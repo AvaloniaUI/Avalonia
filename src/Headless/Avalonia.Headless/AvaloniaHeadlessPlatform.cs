@@ -69,9 +69,13 @@ namespace Avalonia.Headless
         
         internal static void Initialize(AvaloniaHeadlessPlatformOptions opts)
         {
+            var clipboardImpl = new HeadlessClipboardImplStub();
+            var clipboard = new Clipboard(clipboardImpl);
+
             AvaloniaLocator.CurrentMutable
                 .Bind<IDispatcherImpl>().ToConstant(new ManagedDispatcherImpl(null))
-                .Bind<IClipboard>().ToSingleton<HeadlessClipboardStub>()
+                .Bind<IClipboardImpl>().ToConstant(clipboardImpl)
+                .Bind<IClipboard>().ToConstant(clipboard)
                 .Bind<ICursorFactory>().ToSingleton<HeadlessCursorFactoryStub>()
                 .Bind<IPlatformSettings>().ToSingleton<DefaultPlatformSettings>()
                 .Bind<IPlatformIconLoader>().ToSingleton<HeadlessIconLoaderStub>()

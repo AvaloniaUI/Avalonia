@@ -3,8 +3,11 @@ using System.ComponentModel;
 using System.Linq;
 using Avalonia.Platform.Storage;
 
+#pragma warning disable CS0618 // Type or member is obsolete
+
 namespace Avalonia.Input
 {
+    // TODO12: remove
     public static class DataObjectExtensions
     {
         /// <summary>

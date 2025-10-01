@@ -14,7 +14,7 @@ namespace Avalonia.Tizen;
 internal class TopLevelImpl : ITopLevelImpl
 {
     private readonly ITizenView _view;
-    private readonly NuiClipboardImpl _clipboard;
+    private readonly IClipboard _clipboard;
     private readonly IStorageProvider _storageProvider;
     private readonly NuiScreens _screen;
 
@@ -24,7 +24,7 @@ internal class TopLevelImpl : ITopLevelImpl
         Surfaces = surfaces;
 
         _storageProvider = new TizenStorageProvider();
-        _clipboard = new NuiClipboardImpl();
+        _clipboard = new Clipboard(new NuiClipboardImpl());
         _screen = new NuiScreens();
     }
 
