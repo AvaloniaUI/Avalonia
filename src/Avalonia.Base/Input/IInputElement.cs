@@ -71,6 +71,8 @@ namespace Avalonia.Input
         /// </summary>
         bool Focusable { get; }
 
+        bool FocusableInTouchMode { get; }
+
         /// <summary>
         /// Gets or sets a value indicating whether the control is enabled for user interaction.
         /// </summary>
