@@ -72,44 +72,43 @@ namespace Avalonia.Controls.Documents
 
         protected TextRunProperties CreateTextRunProperties()
         {
-            var textDecorations = TextDecorations;
-            var background = Background;
+            var parentOrSelfBackground = Background ?? FindParentBackground();
 
-            if(Parent is Inline inline)
-            {
-                if(textDecorations == null)
-                {
-                    textDecorations = inline.TextDecorations;
-                }
-
-                if(background == null)
-                {
-                    background = inline.Background;
-                }
-            }
-            
-            var fontStyle = FontStyle;
-
-            if(Parent is Italic)
-            {
-                fontStyle = FontStyle.Italic;
-            }
-
-            var fontWeight = FontWeight;
-
-            if(Parent is Bold)
-            {
-                fontWeight = FontWeight.Bold;
-            }
+            var typeface = new Typeface(
+                FontFamily, 
+                FontStyle, 
+                FontWeight, 
+                FontStretch);
 
             return new GenericTextRunProperties(
-                new Typeface(FontFamily, fontStyle, fontWeight),
+                typeface,
                 FontFeatures, 
                 FontSize,
-                textDecorations, 
-                Foreground, 
-                background,
+                TextDecorations, 
+                Foreground,
+                parentOrSelfBackground,
                 BaselineAlignment);
+        }
+
+        /// <summary>
+        /// Searches for the next parent inline element with a non-null Background and returns its Background brush.
+        /// </summary>
+        /// <returns>The first non-null Background brush found in parent inline elements, or null if none is found.</returns>
+        private IBrush? FindParentBackground()
+        {
+            var parent = Parent;
+
+            while (parent is Inline inline)
+            {
+                if (inline.Background != null)
+                {
+                    return inline.Background;
+                }
+                  
+                parent = inline.Parent;
+            }
+
+            return null;
         }
 
         /// <inheritdoc />
