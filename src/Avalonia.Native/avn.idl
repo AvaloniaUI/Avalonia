@@ -687,7 +687,6 @@ interface IAvaloniaNativeFactory : IUnknown
      HRESULT CreateStorageProvider(IAvnStorageProvider** ppv);
      HRESULT CreateScreens(IAvnScreenEvents* cb, IAvnScreens** ppv);
      HRESULT CreateClipboard(IAvnClipboard** ppv);
-     HRESULT CreateDndClipboard(IAvnClipboard** ppv);
      HRESULT CreateCursorFactory(IAvnCursorFactory** ppv);
      HRESULT ObtainGlDisplay(IAvnGlDisplay** ppv);
      HRESULT ObtainMetalDisplay(IAvnMetalDisplay** ppv);
@@ -735,6 +734,13 @@ interface IAvnTopLevel : IUnknown
      HRESULT SetTransparencyMode(AvnWindowTransparencyMode mode);
      
      HRESULT GetCurrentDisplayId(uint* ret);
+
+     HRESULT BeginDragAndDropOperation(
+             AvnDragDropEffects effects,
+             AvnPoint point,
+             IAvnClipboardDataSource* source,
+             IAvnDndResultCallback* callback,
+             [intptr]void* sourceHandle);
 }
 
 [uuid(e5aca675-02b7-4129-aa79-d6e417210bda), cpp-virtual-inherits]
@@ -757,8 +763,6 @@ interface IAvnWindowBase : IAvnTopLevel
      HRESULT SetMainMenu(IAvnMenu* menu);
      HRESULT ObtainNSWindowHandle([intptr]void** retOut);
      HRESULT ObtainNSWindowHandleRetained([intptr]void** retOut);
-     HRESULT BeginDragAndDropOperation(AvnDragDropEffects effects, AvnPoint point,
-                                              IAvnClipboard* clipboard, IAvnDndResultCallback* cb, [intptr]void* sourceHandle);
 }
 
 [uuid(83e588f3-6981-4e48-9ea0-e1e569f79a91), cpp-virtual-inherits]
@@ -816,7 +820,7 @@ interface IAvnTopLevelEvents : IUnknown
     
     AvnDragDropEffects DragEvent(AvnDragEventType type, AvnPoint position,
                                          AvnInputModifiers modifiers, AvnDragDropEffects effects,
-                                         IAvnClipboard* clipboard, [intptr]void* dataObjectHandle);
+                                         IAvnClipboard* clipboard, [intptr]void* dataTransferHandle);
 }
 
 [uuid(939b6599-40a8-4710-a4c8-5d72d8f174fb)]
@@ -935,7 +939,9 @@ interface IAvnStorageProvider : IUnknown
      void ReleaseBookmark(IAvnString*fileUri);
 
      bool OpenSecurityScope(IAvnString*fileUri);
-     void CloseSecurityScope(IAvnString*fileUri);         
+     void CloseSecurityScope(IAvnString*fileUri);
+
+     HRESULT TryResolveFileReferenceUri(IAvnString* fileUri, IAvnString** ret);
 }
 
 [uuid(4d7ab7db-a111-406f-abeb-11cb6aa033d5)]
@@ -967,16 +973,38 @@ interface IAvnScreens : IUnknown
 [uuid(792b1bd4-76cc-46ea-bfd0-9d642154b1b3)]
 interface IAvnClipboard : IUnknown
 {
-     HRESULT GetText(char* type, IAvnString**ppv);
-     HRESULT SetText(char* type, char* utf8Text);
-     HRESULT ObtainFormats(IAvnStringArray**ppv);
-     HRESULT GetStrings(char* type, IAvnStringArray**ppv);
-     HRESULT SetStrings(char* type, IAvnStringArray*ppv);
-     HRESULT SetBytes(char* type, void* utf8Text, int len);
-     HRESULT GetBytes(char* type, IAvnString**ppv);
-    
-     HRESULT Clear(int64_t* ret);
-     HRESULT GetChangeCount(int64_t* ret);
+    HRESULT GetFormats(int64_t changeCount, IAvnStringArray** ret);
+    HRESULT GetItemCount(int64_t changeCount, int* ret);
+    HRESULT GetItemFormats(int index, int64_t changeCount, IAvnStringArray** ret);
+    HRESULT GetItemValueAsString(int index, int64_t changeCount, [const] char* format, IAvnString** ret);
+    HRESULT GetItemValueAsBytes(int index, int64_t changeCount, [const] char* format, IAvnString** ret);
+    HRESULT Clear(int64_t* ret);
+    HRESULT GetChangeCount(int64_t* ret);
+    HRESULT SetData(IAvnClipboardDataSource* dataSource);
+    bool IsTextFormat([const] char* format);
+}
+
+[uuid(10b39f02-efcb-428b-bee5-a0b012c1fb7d)]
+interface IAvnClipboardDataSource : IUnknown
+{
+    int GetItemCount();
+    IAvnClipboardDataItem* GetItem(int index);
+}
+
+[uuid(e40f36d9-69f4-45fd-9ca2-6e64e80feb6d)]
+interface IAvnClipboardDataItem : IUnknown
+{
+    IAvnStringArray* ProvideFormats();
+    IAvnClipboardDataValue* GetValue([const] char* format);
+}
+
+[uuid(e97f24f6-1c84-4d95-8ffe-5b2c72e016ed)]
+interface IAvnClipboardDataValue : IUnknown
+{
+    bool IsString();
+    IAvnString* AsString();
+    int GetByteLength();
+    void CopyBytesTo(void* buffer);
 }
 
 [uuid(3f998545-f027-4d4d-bd2a-1a80926d984e)]
@@ -1238,6 +1266,7 @@ interface IAvnAutomationPeer : IUnknown
      void ValueProvider_SetValue(char* value);
 
      IAvnString* GetHelpText();
+     int GetHeadingLevel();
 }
 
 [uuid(b00af5da-78af-4b33-bfff-4ce13a6239a9)]

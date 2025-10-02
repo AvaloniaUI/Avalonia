@@ -145,7 +145,7 @@
                                 BringIntoViewOnFocusChange="{TemplateBinding (ScrollViewer.BringIntoViewOnFocusChange)}">
                     <Panel>
                       <TextBlock Name="PART_Watermark"
-                              Opacity="0.5"
+                              Opacity="{DynamicResource TextControlPlaceholderOpacity}"
                               Text="{TemplateBinding Watermark}"
                               TextAlignment="{TemplateBinding TextAlignment}"
                               TextWrapping="{TemplateBinding TextWrapping}"

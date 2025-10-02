@@ -868,7 +868,7 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
       return NSDragOperationNone;
     int reffects = (int)parent->TopLevelEvents
             ->DragEvent(type, point, modifiers, effects,
-                    CreateClipboard([info draggingPasteboard], nil),
+                    CreateClipboard([info draggingPasteboard]),
                     GetAvnDataObjectHandleFromDraggingInfo(info));
 
     NSDragOperation ret = static_cast<NSDragOperation>(0);
