@@ -91,9 +91,9 @@ namespace Avalonia.Controls.Documents
         }
 
         /// <summary>
-        /// Searches for the next parent inline element with a non-null Background.
+        /// Searches for the next parent inline element with a non-null Background and returns its Background brush.
         /// </summary>
-        /// <returns>The inline element with a non-null Background, or null if none is found.</returns>
+        /// <returns>The first non-null Background brush found in parent inline elements, or null if none is found.</returns>
         private IBrush? FindParentBackground()
         {
             var parent = Parent;
