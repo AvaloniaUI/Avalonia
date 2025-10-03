@@ -1363,6 +1363,8 @@ namespace Avalonia.Media.TextFormatting
                 }
             }
 
+            var halfLineGap = lineGap * 0.5;
+            var baseline = -ascent + halfLineGap;
             height += lineSpacing;
 
             var width = widthIncludingWhitespace;
@@ -1395,8 +1397,8 @@ namespace Avalonia.Media.TextFormatting
             }
 
             var extent = inkBounds.Height;
-            //The width of overhanging pixels at the bottom
-            var overhangAfter = inkBounds.Bottom - height;
+            //The height of overhanging pixels at the bottom
+            var overhangAfter = inkBounds.Bottom - height + halfLineGap;
             //The width of overhanging pixels at the natural alignment point. Positive value means we are inside.
             var overhangLeading = inkBounds.Left;
             //The width of overhanging pixels at the end of the natural bounds. Positive value means we are inside.
@@ -1408,7 +1410,7 @@ namespace Avalonia.Media.TextFormatting
                 //Center the line
                 var offset = (height - lineHeight) / 2;
 
-                ascent += offset;
+                baseline += offset;
 
                 height = lineHeight;
             }
@@ -1426,7 +1428,7 @@ namespace Avalonia.Media.TextFormatting
                 Extent = extent,
                 NewlineLength = newLineLength,
                 Start = start,
-                TextBaseline = -ascent,
+                TextBaseline = baseline,
                 TrailingWhitespaceLength = trailingWhitespaceLength,
                 Width = width,
                 WidthIncludingTrailingWhitespace = widthIncludingWhitespace,
