@@ -41,13 +41,15 @@ static class TestRenderHelper
     static TestRenderHelper()
     {
 #if AVALONIA_SKIA
-        SkiaPlatform.Initialize();
+            SkiaPlatform.Initialize();
 #else
             Direct2D1Platform.Initialize();
 #endif
         AvaloniaLocator.CurrentMutable
             .Bind<IDispatcherImpl>()
-            .ToConstant(s_dispatcherImpl);
+            .ToConstant(s_dispatcherImpl)
+            .Bind<FontManager>().ToLazy(() => new FontManager(
+                AvaloniaLocator.Current.GetRequiredService<IFontManagerImpl>()));
         
         AvaloniaLocator.CurrentMutable.Bind<IAssetLoader>().ToConstant(new StandardAssetLoader());
     }
