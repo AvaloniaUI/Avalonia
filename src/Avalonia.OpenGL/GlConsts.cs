@@ -544,7 +544,7 @@ namespace Avalonia.OpenGL
 //        public const int GL_UNSIGNED_SHORT_5_5_5_1 = 0x8034;
 //        public const int GL_UNSIGNED_SHORT_1_5_5_5_REV = 0x8366;
 //        public const int GL_UNSIGNED_INT_8_8_8_8 = 0x8035;
-//        public const int GL_UNSIGNED_INT_8_8_8_8_REV = 0x8367;
+        public const int GL_UNSIGNED_INT_8_8_8_8_REV = 0x8367;
 //        public const int GL_UNSIGNED_INT_10_10_10_2 = 0x8036;
 //        public const int GL_UNSIGNED_INT_2_10_10_10_REV = 0x8368;
 //        public const int GL_LIGHT_MODEL_COLOR_CONTROL = 0x81F8;
@@ -1231,8 +1231,8 @@ namespace Avalonia.OpenGL
 //        public const int GL_MAX_TEXTURE_BUFFER_SIZE = 0x8C2B;
 //        public const int GL_TEXTURE_BINDING_BUFFER = 0x8C2C;
 //        public const int GL_TEXTURE_BUFFER_DATA_STORE_BINDING = 0x8C2D;
-//        public const int GL_TEXTURE_RECTANGLE = 0x84F5;
-//        public const int GL_TEXTURE_BINDING_RECTANGLE = 0x84F6;
+        public const int GL_TEXTURE_RECTANGLE = 0x84F5;
+        public const int GL_TEXTURE_BINDING_RECTANGLE = 0x84F6;
 //        public const int GL_PROXY_TEXTURE_RECTANGLE = 0x84F7;
 //        public const int GL_MAX_RECTANGLE_TEXTURE_SIZE = 0x84F8;
 //        public const int GL_R8_SNORM = 0x8F94;
