@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Data.Core.ExpressionNodes;
 using Avalonia.Data.Core.ExpressionNodes.Reflection;
-using Avalonia.Markup.Parsers;
+using Avalonia.Data.Core.Parsers;
 using Avalonia.UnitTests;
 using Avalonia.Utilities;
 using Xunit;
