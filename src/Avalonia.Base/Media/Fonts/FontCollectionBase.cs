@@ -171,7 +171,7 @@ namespace Avalonia.Media.Fonts
             return GetEnumerator();
         }
 
-        internal static bool TryGetNearestMatch(
+        public static bool TryGetNearestMatch(
             ConcurrentDictionary<FontCollectionKey,
             IGlyphTypeface?> glyphTypefaces,
             FontCollectionKey key,
@@ -348,7 +348,7 @@ namespace Avalonia.Media.Fonts
             return false;
         }
 
-        internal static Typeface GetImplicitTypeface(Typeface typeface, out string normalizedFamilyName)
+        public static Typeface GetImplicitTypeface(Typeface typeface, out string normalizedFamilyName)
         {
             normalizedFamilyName = typeface.FontFamily.FamilyNames.PrimaryFamilyName;
 
