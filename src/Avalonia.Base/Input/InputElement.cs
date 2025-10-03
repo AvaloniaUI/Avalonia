@@ -24,6 +24,9 @@ namespace Avalonia.Input
         public static readonly StyledProperty<bool> FocusableProperty =
             AvaloniaProperty.Register<InputElement, bool>(nameof(Focusable));
 
+        public static readonly StyledProperty<bool> FocusableInTouchModeProperty =
+            AvaloniaProperty.Register<InputElement, bool>(nameof(FocusableInTouchMode));
+
         /// <summary>
         /// Defines the <see cref="IsEnabled"/> property.
         /// </summary>
@@ -443,6 +446,12 @@ namespace Avalonia.Input
         {
             get { return GetValue(FocusableProperty); }
             set { SetValue(FocusableProperty, value); }
+        }
+
+        public bool FocusableInTouchMode
+        {
+            get { return GetValue(FocusableInTouchModeProperty); }
+            set { SetValue(FocusableInTouchModeProperty, value); }
         }
 
         /// <summary>

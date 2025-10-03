@@ -352,6 +352,7 @@ namespace Avalonia.Controls
         static TextBox()
         {
             FocusableProperty.OverrideDefaultValue(typeof(TextBox), true);
+            FocusableInTouchModeProperty.OverrideDefaultValue(typeof(TextBox), true);
             TextInputMethodClientRequestedEvent.AddClassHandler<TextBox>((tb, e) =>
             {
                 if (!tb.IsReadOnly)
@@ -1867,6 +1868,8 @@ namespace Avalonia.Controls
                     SetCurrentValue(SelectionStartProperty, caretIndex);
                     SetCurrentValue(SelectionEndProperty, caretIndex);
                 }
+
+                _presenter.TextSelectionHandleCanvas?.Show();
 
                 if (SelectionStart != SelectionEnd)
                 {
