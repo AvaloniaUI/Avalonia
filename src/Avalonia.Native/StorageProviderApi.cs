@@ -216,6 +216,14 @@ internal class StorageProviderApi(IAvnStorageProvider native, bool sandboxEnable
             .Where(f => f is not null) ?? [])!;
     }
 
+    public Uri? TryResolveFileReferenceUri(Uri uri)
+    {
+        using var uriString = new AvnString(uri.AbsoluteUri);
+        using var resultString = _native.TryResolveFileReferenceUri(uriString);
+
+        return Uri.TryCreate(resultString?.String, UriKind.Absolute, out var resultUri) ? resultUri : null;
+    }
+
     internal class FilePickerFileTypesWrapper(
         IReadOnlyList<FilePickerFileType>? types,
         string? defaultExtension)

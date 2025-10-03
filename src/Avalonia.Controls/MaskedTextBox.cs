@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 
 namespace Avalonia.Controls
@@ -216,7 +217,7 @@ namespace Avalonia.Controls
                 string? text = null;
                 try
                 {
-                    text = await clipboard.GetTextAsync();
+                    text = await clipboard.TryGetTextAsync();
                 }
                 catch (TimeoutException)
                 {

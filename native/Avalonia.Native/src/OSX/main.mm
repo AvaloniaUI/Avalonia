@@ -312,18 +312,7 @@ public:
         
         @autoreleasepool
         {
-            *ppv = ::CreateClipboard (nil, nil);
-            return S_OK;
-        }
-    }
-    
-    virtual HRESULT CreateDndClipboard(IAvnClipboard** ppv) override
-    {
-        START_COM_CALL;
-        
-        @autoreleasepool
-        {
-            *ppv = ::CreateClipboard (nil, [NSPasteboardItem new]);
+            *ppv = ::CreateClipboard(nil);
             return S_OK;
         }
     }
