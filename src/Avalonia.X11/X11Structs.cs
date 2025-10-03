@@ -948,6 +948,7 @@ namespace Avalonia.X11 {
 	}
 
 	internal enum Atom {
+        None = 0,
 		AnyPropertyType		= 0,
 		XA_PRIMARY		= 1,
 		XA_SECONDARY		= 2,
