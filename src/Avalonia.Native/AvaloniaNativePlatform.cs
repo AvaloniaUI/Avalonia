@@ -149,7 +149,7 @@ namespace Avalonia.Native
                 {
                     try
                     {
-                        _platformGraphics = new AvaloniaNativeGlPlatformGraphics(_factory.ObtainGlDisplay());
+                        _platformGraphics = new AvaloniaNativeGlPlatformGraphics(_factory.ObtainGlDisplay(), _factory);
                         break;
                     }
                     catch (Exception)
