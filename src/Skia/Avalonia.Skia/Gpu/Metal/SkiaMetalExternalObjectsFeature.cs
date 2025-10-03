@@ -35,7 +35,7 @@ class SkiaMetalExternalObjectsFeature(SkiaMetalGpu gpu, IMetalExternalObjectsFea
         {
             gpu.GrContext.Flush(true, false);
             feature.SubmitWait(((ImportedSemaphore)waitForSemaphore).Event, waitForValue);
-            using var backendTarget = gpu.SkiaMetalApi.CreateBackendRenderTarget(texture.Width, texture.Height, texture.Samples, texture.Handle);
+            using var backendTarget = new GRBackendRenderTarget(texture.Width, texture.Height, new GRMtlTextureInfo(texture.Handle));
             
             using var surface = SKSurface.Create(gpu.GrContext, backendTarget,
                 topLeftOrigin ? GRSurfaceOrigin.TopLeft : GRSurfaceOrigin.BottomLeft,

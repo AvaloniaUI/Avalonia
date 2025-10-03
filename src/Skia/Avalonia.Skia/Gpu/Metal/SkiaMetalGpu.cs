@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using Avalonia.Metal;
 using Avalonia.Platform;
 using SkiaSharp;
@@ -12,9 +11,8 @@ internal class SkiaMetalGpu : ISkiaGpu, ISkiaGpuWithPlatformGraphicsContext
     private GRContext? _context;
     private readonly IMetalDevice _device;
     private readonly SkiaMetalExternalObjectsFeature? _externalObjects;
+
     internal GRContext GrContext => _context ?? throw new ObjectDisposedException(nameof(SkiaMetalGpu));
-    internal SkiaMetalApi SkiaMetalApi => _api;
-    internal IMetalDevice MetalDevice => _device;
 
     public SkiaMetalGpu(IMetalDevice device, long? maxResourceBytes)
     {
@@ -49,8 +47,7 @@ internal class SkiaMetalGpu : ISkiaGpu, ISkiaGpuWithPlatformGraphicsContext
     public IPlatformGraphicsContext? PlatformGraphicsContext => _device;
 
     public IScopedResource<GRContext> TryGetGrContext() =>
-        ScopedResource<GRContext>.Create(_context ?? throw new ObjectDisposedException(nameof(SkiaMetalGpu)),
-            EnsureCurrent().Dispose);
+        ScopedResource<GRContext>.Create(GrContext, EnsureCurrent().Dispose);
 
     public ISkiaGpuRenderTarget? TryCreateRenderTarget(IEnumerable<object> surfaces)
     {
