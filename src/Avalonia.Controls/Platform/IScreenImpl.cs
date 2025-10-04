@@ -135,6 +135,9 @@ namespace Avalonia.Platform
             if (_allScreens is not null)
                 return;
 
+            // We don't synchronize this method, as it is expected to be called on UI thread only.
+            Dispatcher.UIThread.VerifyAccess();
+
             var screens = GetAllScreenKeys();
             var screensSet = new HashSet<TKey>(screens, screenKeyComparer);
 
