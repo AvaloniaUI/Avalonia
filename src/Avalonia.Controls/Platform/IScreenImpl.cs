@@ -43,7 +43,7 @@ namespace Avalonia.Platform
         private readonly Dictionary<TKey, TScreen> _allScreensByKey = screenKeyComparer is not null ?
             new Dictionary<TKey, TScreen>(screenKeyComparer) :
             new Dictionary<TKey, TScreen>();
-        private TScreen[]? _allScreens;
+        private IReadOnlyList<TScreen>? _allScreens;
         private int? _screenCount;
         private bool? _screenDetailsRequestGranted;
         private DispatcherOperation? _onChangeOperation;
@@ -158,24 +158,21 @@ namespace Avalonia.Platform
                 }
             }
 
-            var tempScreens = new TScreen[screens.Count];
-            int i = 0;
+            var tempScreens = new List<TScreen>(screens.Count);
             foreach (var newScreenKey in screens)
             {
                 if (_allScreensByKey.TryGetValue(newScreenKey, out var oldScreen))
                 {
                     ScreenChanged(oldScreen);
-                    tempScreens[i] = oldScreen;
+                    tempScreens.Add(oldScreen);
                 }
                 else
                 {
                     var newScreen = CreateScreenFromKey(newScreenKey);
                     ScreenAdded(newScreen);
                     _allScreensByKey[newScreenKey] = newScreen;
-                    tempScreens[i] = newScreen;
+                    tempScreens.Add(newScreen);
                 }
-
-                i++;
             }
 
             _allScreens = tempScreens;
