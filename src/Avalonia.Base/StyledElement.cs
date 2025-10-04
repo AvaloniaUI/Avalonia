@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 using Avalonia.Animation;
 using Avalonia.Collections;
@@ -922,7 +923,7 @@ namespace Avalonia
                 OnDetachedFromLogicalTree(e);
                 DetachedFromLogicalTree?.Invoke(this, e);
 
-                var logicalChildren = LogicalChildren;
+                var logicalChildren = LogicalChildren.ToList();
                 var logicalChildrenCount = logicalChildren.Count;
 
                 for (var i = 0; i < logicalChildrenCount; i++)
