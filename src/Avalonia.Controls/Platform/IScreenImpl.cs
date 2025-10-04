@@ -137,9 +137,8 @@ namespace Avalonia.Platform
             var screens = GetAllScreenKeys();
             var screensSet = new HashSet<TKey>(screens, screenKeyComparer);
 
-            _allScreens = new TScreen[screens.Count];
-
-            foreach (var oldScreenKey in _allScreensByKey.Keys)
+            // .ToList() is only necessary for .NET Framework apps.
+            foreach (var oldScreenKey in _allScreensByKey.Keys.ToList())
             {
                 if (!screensSet.Contains(oldScreenKey))
                 {
@@ -151,24 +150,27 @@ namespace Avalonia.Platform
                 }
             }
 
+            var tempScreens = new TScreen[screens.Count];
             int i = 0;
             foreach (var newScreenKey in screens)
             {
                 if (_allScreensByKey.TryGetValue(newScreenKey, out var oldScreen))
                 {
                     ScreenChanged(oldScreen);
-                    _allScreens[i] = oldScreen;
+                    tempScreens[i] = oldScreen;
                 }
                 else
                 {
                     var newScreen = CreateScreenFromKey(newScreenKey);
                     ScreenAdded(newScreen);
                     _allScreensByKey[newScreenKey] = newScreen;
-                    _allScreens[i] = newScreen;
+                    tempScreens[i] = newScreen;
                 }
 
                 i++;
             }
+
+            _allScreens = tempScreens;
         }
     }
 }
