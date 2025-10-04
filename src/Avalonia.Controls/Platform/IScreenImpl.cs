@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Metadata;
 using Avalonia.Threading;
@@ -138,7 +139,11 @@ namespace Avalonia.Platform
             var screensSet = new HashSet<TKey>(screens, screenKeyComparer);
 
             // .ToList() is only necessary for .NET Framework apps.
+#if NET
+            foreach (var oldScreenKey in _allScreensByKey.Keys)
+#else
             foreach (var oldScreenKey in _allScreensByKey.Keys.ToList())
+#endif
             {
                 if (!screensSet.Contains(oldScreenKey))
                 {
