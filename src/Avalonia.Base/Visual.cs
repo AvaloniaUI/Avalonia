@@ -5,6 +5,7 @@
 using System;
 using System.Collections;
 using System.Collections.Specialized;
+using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Data;
 using Avalonia.Diagnostics;
@@ -558,7 +559,7 @@ namespace Avalonia
             DetachedFromVisualTree?.Invoke(this, e);
             e.Root.Renderer.AddDirty(this);
 
-            var visualChildren = VisualChildren;
+            var visualChildren = VisualChildren.ToList();
             var visualChildrenCount = visualChildren.Count;
 
             for (var i = 0; i < visualChildrenCount; i++)
