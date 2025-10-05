@@ -169,7 +169,7 @@ internal class BrowserInputHandler
             (RawInputModifiers)modifier);
     }
 
-    public bool OnDragEvent(string type, double offsetX, double offsetY, int modifiers, string? effectAllowedStr, JSObject? dataTransfer)
+    public bool OnDragEvent(string type, double offsetX, double offsetY, int modifiers, JSObject dataTransfer, JSObject items)
     {
         var eventType = type switch
         {
@@ -179,7 +179,7 @@ internal class BrowserInputHandler
             "drop" => RawDragEventType.Drop,
             _ => (RawDragEventType)(int)-1
         };
-        if (eventType < 0 || dataTransfer is null)
+        if (eventType < 0)
         {
             return false;
         }
@@ -190,8 +190,9 @@ internal class BrowserInputHandler
 
         var position = new Point(offsetX, offsetY);
 
-        effectAllowedStr ??= "none";
+        var effectAllowedStr = dataTransfer.GetPropertyAsString("effectAllowed") ?? "none";
         var effectAllowed = DragDropEffects.None;
+
         if (effectAllowedStr.Contains("copy", StringComparison.OrdinalIgnoreCase))
         {
             effectAllowed |= DragDropEffects.Copy;
@@ -217,7 +218,7 @@ internal class BrowserInputHandler
             return false;
         }
 
-        var dropEffect = RawDragEvent(eventType, position, (RawInputModifiers)modifiers, new BrowserDataObject(dataTransfer), effectAllowed);
+        var dropEffect = RawDragEvent(eventType, position, (RawInputModifiers)modifiers, new BrowserDragDataTransfer(items), effectAllowed);
         dataTransfer.SetProperty("dropEffect", dropEffect.ToString().ToLowerInvariant());
 
         // Note, due to complications of JS interop, we ignore this return value.
@@ -341,10 +342,10 @@ internal class BrowserInputHandler
     }
 
     private DragDropEffects RawDragEvent(RawDragEventType eventType, Point position, RawInputModifiers modifiers,
-        BrowserDataObject dataObject, DragDropEffects dropEffect)
+        BrowserDragDataTransfer dataTransfer, DragDropEffects dropEffect)
     {
         var device = AvaloniaLocator.Current.GetRequiredService<IDragDropDevice>();
-        var eventArgs = new RawDragEvent(device, eventType, _inputRoot!, position, dataObject, dropEffect, modifiers);
+        var eventArgs = new RawDragEvent(device, eventType, _inputRoot!, position, dataTransfer, dropEffect, modifiers);
         ScheduleInput(eventArgs);
         return eventArgs.Effects;
     }

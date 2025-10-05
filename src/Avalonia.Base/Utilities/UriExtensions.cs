@@ -22,9 +22,6 @@ internal static class UriExtensions
             throw new ArgumentException($"Relative uri {uri} without base url");
         if (!baseUri.IsAbsoluteUri)
             throw new ArgumentException($"Base uri {baseUri} is relative");
-        if (baseUri.IsResm())
-            throw new ArgumentException(
-                $"Relative uris for 'resm' scheme aren't supported; {baseUri} uses resm");
         return new Uri(baseUri, uri);
     }
 

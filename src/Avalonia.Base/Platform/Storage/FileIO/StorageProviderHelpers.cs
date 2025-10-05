@@ -8,7 +8,7 @@ namespace Avalonia.Platform.Storage.FileIO;
 
 internal static class StorageProviderHelpers
 {
-    public static BclStorageItem? TryCreateBclStorageItem(string path)
+    public static BclStorageItem? TryCreateBclStorageItem(string? path)
     {
         if (!string.IsNullOrWhiteSpace(path))
         {
