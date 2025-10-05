@@ -15,6 +15,7 @@
     <_AvaloniaIOSTarget Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">true</_AvaloniaIOSTarget>
     <_AvaloniaTvOSTarget Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tvos'">true</_AvaloniaTvOSTarget>
     <_AvaloniaBrowserTarget Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'browser'">true</_AvaloniaBrowserTarget>
+    <_AvaloniaTizenTarget Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">true</_AvaloniaTizenTarget>
     <!-- This target isn't yet supported by .NET -->
     <_AvaloniaLinuxTarget Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'linux'" >true</_AvaloniaLinuxTarget>
   </PropertyGroup>
@@ -69,6 +70,10 @@
     <!-- Browser -->
     <BrowserProjectFolder Condition=" '$(BrowserProjectFolder)' == '' ">$(PlatformsProjectFolder)Browser\</BrowserProjectFolder>
     <BrowserProjectFolder>$([MSBuild]::EnsureTrailingSlash('$(BrowserProjectFolder)'))</BrowserProjectFolder>
+    <!-- Tizen -->
+    <EnableDefaultTizenItems>false</EnableDefaultTizenItems>
+    <TizenProjectFolder Condition=" '$(TizenProjectFolder)' == '' ">$(PlatformsProjectFolder)Tizen\</TizenProjectFolder>
+    <TizenProjectFolder>$([MSBuild]::EnsureTrailingSlash('$(TizenProjectFolder)'))</TizenProjectFolder>
     <!-- Desktop (NET8.0 without specific target) -->
     <DesktopProjectFolder Condition=" '$(DesktopProjectFolder)' == '' ">$(PlatformsProjectFolder)Desktop\</DesktopProjectFolder>
     <DesktopProjectFolder>$([MSBuild]::EnsureTrailingSlash('$(DesktopProjectFolder)'))</DesktopProjectFolder>
@@ -83,6 +88,7 @@
     <MauiPlatformSpecificFolder Include="$(WindowsProjectFolder)" TargetPlatformIdentifier="windows" />
     <MauiPlatformSpecificFolder Include="$(LinuxProjectFolder)" TargetPlatformIdentifier="linux" />
     <MauiPlatformSpecificFolder Include="$(BrowserProjectFolder)" TargetPlatformIdentifier="browser" />
+    <MauiPlatformSpecificFolder Include="$(TizenProjectFolder)" TargetPlatformIdentifier="tizen" />
     <MauiPlatformSpecificFolder Include="$(DesktopProjectFolder)" TargetPlatformIdentifier="" />
   </ItemGroup>
 
@@ -93,6 +99,7 @@
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'macos'">10.15</SupportedOSPlatformVersion>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">13.1</SupportedOSPlatformVersion>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(_AvaloniaAndroidTarget)' == 'true' ">
@@ -120,6 +127,12 @@
   <PropertyGroup Condition="'$(_AvaloniaWindowsTarget)' == 'true'">
     <ApplicationManifest Condition=" Exists('$(WindowsProjectFolder)app.manifest') ">$(WindowsProjectFolder)app.manifest</ApplicationManifest>
     <PackageManifest Condition=" Exists('$(WindowsProjectFolder)Package.appxmanifest') ">$(WindowsProjectFolder)Package.appxmanifest</PackageManifest>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(_AvaloniaTizenTarget)' == 'true' ">
+    <TizenManifestFile Condition=" Exists('$(TizenProjectFolder)tizen-manifest.xml') ">$(TizenProjectFolder)tizen-manifest.xml</TizenManifestFile>
+    <TizenResourcePrefix>$(TizenProjectFolder)res</TizenResourcePrefix>
+    <TizenSharedPrefix>$(TizenProjectFolder)shared</TizenSharedPrefix>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(_AvaloniaBrowserTarget)' == 'true' ">
@@ -156,6 +169,9 @@
       <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
     </Compile>
     <Compile Condition=" '$(_AvaloniaBrowserTarget)' == 'true' " Update="$(BrowserProjectFolder)**/*$(DefaultLanguageSourceExtension)">
+      <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
+    </Compile>
+    <Compile Condition=" '$(_AvaloniaTizenTarget)' == 'true' " Update="$(TizenProjectFolder)**/*$(DefaultLanguageSourceExtension)">
       <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
     </Compile>
   </ItemGroup>
@@ -252,7 +268,17 @@
   <ItemGroup Condition=" '$(EnableDefaultItems)' == 'true' and '$(_AvaloniaBrowserTarget)' == 'true' and '$(BrowserProjectFolder)' != '' ">
     <WasmExtraFilesToDeploy Include="$(BrowserProjectFolder)/wwwroot/**/*.*" />
   </ItemGroup>
-  
+
+  <!-- Tizen -->
+  <ItemGroup Condition=" '$(EnableDefaultItems)' == 'true' and '$(_AvaloniaTizenTarget)' == 'true' and '$(TizenProjectFolder)' != '' ">
+    <TizenResource
+      Include="$(TizenResourcePrefix)\**\*"
+      Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);@(TizenTpkUserExcludeFiles)" />
+    <TizenSharedResource
+      Include="$(TizenSharedPrefix)\**\*"
+      Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);@(TizenTpkUserExcludeFiles)" />
+  </ItemGroup>
+
   <!-- Android workaround to allow projects without AndroidManifest.xml, as it used to be supported -->
   <Target Name="BeforeGetAndroidPackageName"
           BeforeTargets="_GetAndroidPackageName">
