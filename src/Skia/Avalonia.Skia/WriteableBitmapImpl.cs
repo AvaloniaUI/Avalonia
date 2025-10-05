@@ -73,7 +73,8 @@ namespace Avalonia.Skia
 
                 if (bmp.Width != desired.Width || bmp.Height != desired.Height)
                 {
-                    var scaledBmp = bmp.Resize(desired, interpolationMode.ToSKSamplingOptions());
+                    var isUpscaling = desired.Width > bmp.Width || desired.Height > bmp.Height;
+                    var scaledBmp = bmp.Resize(desired, interpolationMode.ToSKSamplingOptions(isUpscaling));
                     bmp.Dispose();
                     bmp = scaledBmp;
                 }

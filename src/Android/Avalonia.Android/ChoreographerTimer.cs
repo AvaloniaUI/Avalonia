@@ -13,7 +13,7 @@ namespace Avalonia.Android
 {
     internal sealed class ChoreographerTimer : IRenderTimer
     {
-        private static readonly bool s_supports64Callback = OperatingSystem.IsAndroidVersionAtLeast(10);
+        private static readonly bool s_supports64Callback = OperatingSystem.IsAndroidVersionAtLeast(29);
         private readonly object _lock = new();
         private readonly TaskCompletionSource<IntPtr> _choreographer = new();
         private readonly AutoResetEvent _event = new(false);

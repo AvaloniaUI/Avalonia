@@ -355,8 +355,9 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
             }
         }
 
-        // Don't set the value if it's unchanged.
-        if (TypeUtilities.IdentityEquals(LeafNode.Value, value, type))
+        // Don't set the value if it's unchanged. If there is a binding error, we still have to set the value
+        // in order to clear the error.
+        if (TypeUtilities.IdentityEquals(LeafNode.Value, value, type) && ErrorType == BindingErrorType.None)
             return true;
 
         try

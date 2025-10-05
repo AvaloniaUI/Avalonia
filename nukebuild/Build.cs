@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -10,16 +12,15 @@ using Nuke.Common;
 using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Tools.Npm;
+using Nuke.Common.Utilities;
 using static Nuke.Common.EnvironmentInfo;
-using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.IO.PathConstruction;
-using static Nuke.Common.Tools.MSBuild.MSBuildTasks;
+using static Nuke.Common.Tools.DotMemoryUnit.DotMemoryUnitTasks;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
-using static Nuke.Common.Tools.Xunit.XunitTasks;
-using static Nuke.Common.Tools.VSWhere.VSWhereTasks;
 using static Serilog.Log;
 using MicroCom.CodeGenerator;
 using NuGet.Configuration;
+using NuGet.Versioning;
 using Nuke.Common.CI.AzurePipelines;
 using Nuke.Common.IO;
 
@@ -35,13 +36,17 @@ partial class Build : NukeBuild
 {
     BuildParameters Parameters { get; set; }
 
-    [PackageExecutable("Microsoft.DotNet.ApiCompat.Tool", "Microsoft.DotNet.ApiCompat.Tool.dll", Framework = "net6.0")]
+#nullable enable
+    ApiDiffHelper.GlobalDiffInfo? GlobalDiff { get; set; }
+#nullable restore
+
+    [NuGetPackage("Microsoft.DotNet.ApiCompat.Tool", "Microsoft.DotNet.ApiCompat.Tool.dll", Framework = "net8.0")]
     Tool ApiCompatTool;
     
-    [PackageExecutable("Microsoft.DotNet.GenAPI.Tool", "Microsoft.DotNet.GenAPI.Tool.dll", Framework = "net8.0")]
-    Tool ApiGenTool;
+    [NuGetPackage("Microsoft.DotNet.ApiDiff.Tool", "Microsoft.DotNet.ApiDiff.Tool.dll", Framework = "net8.0")]
+    Tool ApiDiffTool;
 
-    [PackageExecutable("dotnet-ilrepack", "ILRepackTool.dll", Framework = "net8.0")]
+    [NuGetPackage("dotnet-ilrepack", "ILRepackTool.dll", Framework = "net8.0")]
     Tool IlRepackTool;
     
     protected override void OnBuildInitialized()
@@ -91,7 +96,7 @@ partial class Build : NukeBuild
             c.AddProperty("JavaSdkDirectory", GetVariable<string>("JAVA_HOME_11_X64"));
         c.AddProperty("PackageVersion", Parameters.Version)
             .SetConfiguration(Parameters.Configuration)
-            .SetVerbosity(DotNetVerbosity.Minimal);
+            .SetVerbosity(DotNetVerbosity.minimal);
         if (Parameters.IsPackingToLocalCache)
             c
                 .AddProperty("ForcePackAvaloniaNative", "True")
@@ -111,12 +116,23 @@ partial class Build : NukeBuild
 
     Target Clean => _ => _.Executes(() =>
     {
-        Parameters.BuildDirs.ForEach(DeleteDirectory);
-        EnsureCleanDirectory(Parameters.ArtifactsDir);
-        EnsureCleanDirectory(Parameters.NugetIntermediateRoot);
-        EnsureCleanDirectory(Parameters.NugetRoot);
-        EnsureCleanDirectory(Parameters.ZipRoot);
-        EnsureCleanDirectory(Parameters.TestResultsRoot);
+        foreach (var buildDir in Parameters.BuildDirs)
+        {
+            Information("Deleting {Directory}", buildDir);
+            buildDir.DeleteDirectory();
+        }
+
+        CleanDirectory(Parameters.ArtifactsDir);
+        CleanDirectory(Parameters.NugetIntermediateRoot);
+        CleanDirectory(Parameters.NugetRoot);
+        CleanDirectory(Parameters.ZipRoot);
+        CleanDirectory(Parameters.TestResultsRoot);
+
+        void CleanDirectory(AbsolutePath path)
+        {
+            Information("Cleaning {Path}", path);
+            path.CreateOrCleanDirectory();
+        }
     });
 
     Target CompileHtmlPreviewer => _ => _
@@ -128,7 +144,7 @@ partial class Build : NukeBuild
 
             NpmTasks.NpmInstall(c => c
                 .SetProcessWorkingDirectory(webappDir)
-                .SetProcessArgumentConfigurator(a => a.Add("--silent")));
+                .SetProcessAdditionalArguments("--silent"));
             NpmTasks.NpmRun(c => c
                 .SetProcessWorkingDirectory(webappDir)
                 .SetCommand("dist"));
@@ -171,6 +187,31 @@ partial class Build : NukeBuild
         });
 
     void RunCoreTest(string projectName)
+    {
+        RunCoreTest(projectName, (project, tfm) =>
+        {
+            DotNetTest(c => ApplySetting(c, project,tfm));
+        });
+    }
+
+    void RunCoreDotMemoryUnit(string projectName)
+    {
+        RunCoreTest(projectName, (project, tfm) =>
+        {
+            var testSettings = ApplySetting(new DotNetTestSettings(), project, tfm);
+            var testToolPath = GetToolPathInternal(new DotNetTasks(), testSettings);
+            var testArgs = GetArguments(testSettings).JoinSpace();
+            DotMemoryUnit($"{testToolPath} --propagate-exit-code -- {testArgs:nq}");
+        });
+
+        [UnsafeAccessor(UnsafeAccessorKind.Method, Name = nameof(GetToolPathInternal))]
+        extern static string GetToolPathInternal(ToolTasks tasks, ToolOptions options);
+
+        [UnsafeAccessor(UnsafeAccessorKind.Method, Name = nameof(GetArguments))]
+        extern static IEnumerable<string> GetArguments(ToolOptions options);
+    }
+
+    void RunCoreTest(string projectName, Action<string, string> runTest)
     {
         Information($"Running tests from {projectName}");
         var project = RootDirectory.GlobFiles(@$"**\{projectName}.csproj").FirstOrDefault()
@@ -216,16 +257,19 @@ partial class Build : NukeBuild
 
             Information($"Running for {projectName} ({tfm}) ...");
 
-            DotNetTest(c => ApplySetting(c)
-                .SetProjectFile(project)
-                .SetFramework(tfm)
-                .EnableNoBuild()
-                .EnableNoRestore()
-                .When(Parameters.PublishTestResults, _ => _
-                    .SetLoggers("trx")
-                    .SetResultsDirectory(Parameters.TestResultsRoot)));
+            runTest(project, tfm);
         }
     }
+
+    DotNetTestSettings ApplySetting(DotNetTestSettings settings, string project, string tfm) =>
+        ApplySetting(settings)
+        .SetProjectFile(project)
+        .SetFramework(tfm)
+        .EnableNoBuild()
+        .EnableNoRestore()
+        .When(_ => Parameters.PublishTestResults, _ => _
+            .SetLoggers("trx")
+            .SetResultsDirectory(Parameters.TestResultsRoot));
 
     Target RunHtmlPreviewerTests => _ => _
         .DependsOn(CompileHtmlPreviewer)
@@ -236,7 +280,7 @@ partial class Build : NukeBuild
 
             NpmTasks.NpmInstall(c => c
                 .SetProcessWorkingDirectory(webappTestDir)
-                .SetProcessArgumentConfigurator(a => a.Add("--silent")));
+                .SetProcessAdditionalArguments("--silent"));
             NpmTasks.NpmRun(c => c
                 .SetProcessWorkingDirectory(webappTestDir)
                 .SetCommand("test"));
@@ -284,7 +328,7 @@ partial class Build : NukeBuild
         {
             void DoMemoryTest()
             {
-                RunCoreTest("Avalonia.LeakTests");
+                RunCoreDotMemoryUnit("Avalonia.LeakTests");
             }
             ControlFlow.ExecuteWithRetry(DoMemoryTest, delay: TimeSpan.FromMilliseconds(3));
         });
@@ -313,7 +357,7 @@ partial class Build : NukeBuild
                                                        Parameters.Version + ".nupkg",
                                                        IlRepackTool);
             var config = Numerge.MergeConfiguration.LoadFile(RootDirectory / "nukebuild" / "numerge.config");
-            EnsureCleanDirectory(Parameters.NugetRoot);
+            Parameters.NugetRoot.CreateOrCleanDirectory();
             if(!Numerge.NugetPackageMerger.Merge(Parameters.NugetIntermediateRoot, Parameters.NugetRoot, config,
                 new NumergeNukeLogger()))
                 throw new Exception("Package merge failed");
@@ -321,25 +365,54 @@ partial class Build : NukeBuild
                 Parameters.NugetRoot / $"Avalonia.{Parameters.Version}.nupkg",
                 Parameters.NugetRoot / $"Avalonia.{Parameters.Version}.snupkg");
         });
-    
-    Target ValidateApiDiff => _ => _
+
+    Target DownloadApiBaselinePackages => _ => _
         .DependsOn(CreateNugetPackages)
         .Executes(async () =>
         {
-            await Task.WhenAll(
-                Directory.GetFiles(Parameters.NugetRoot, "*.nupkg").Select(nugetPackage => ApiDiffHelper.ValidatePackage(
-                    ApiCompatTool, nugetPackage, Parameters.ApiValidationBaseline,
-                    Parameters.ApiValidationSuppressionFiles, Parameters.UpdateApiValidationSuppression)));
+            GlobalDiff = await ApiDiffHelper.DownloadAndExtractPackagesAsync(
+                Directory.EnumerateFiles(Parameters.NugetRoot, "*.nupkg").Select(path => (AbsolutePath)path),
+                NuGetVersion.Parse(Parameters.Version),
+                Parameters.IsReleaseBranch,
+                Parameters.ArtifactsDir / "api-diff" / "assemblies",
+                Parameters.ForceApiValidationBaseline is { } forcedBaseline ? NuGetVersion.Parse(forcedBaseline) : null);
+        });
+
+    Target ValidateApiDiff => _ => _
+        .DependsOn(DownloadApiBaselinePackages)
+        .Executes(() =>
+        {
+            var globalDiff = GlobalDiff!;
+
+            Parallel.ForEach(
+                globalDiff.Packages,
+                packageDiff => ApiDiffHelper.ValidatePackage(
+                    ApiCompatTool,
+                    packageDiff,
+                    Parameters.ArtifactsDir / "api-diff" / "assemblies",
+                    Parameters.ApiValidationSuppressionFiles,
+                    Parameters.UpdateApiValidationSuppression));
         });
     
     Target OutputApiDiff => _ => _
-        .DependsOn(CreateNugetPackages)
-        .Executes(async () =>
+        .DependsOn(DownloadApiBaselinePackages)
+        .Executes(() =>
         {
-            await Task.WhenAll(
-                Directory.GetFiles(Parameters.NugetRoot, "*.nupkg").Select(nugetPackage => ApiDiffHelper.GetDiff(
-                    ApiGenTool, RootDirectory / "api" / "diff",
-                    nugetPackage, Parameters.ApiValidationBaseline)));
+            var globalDiff = GlobalDiff!;
+            var outputFolderPath = Parameters.ArtifactsDir / "api-diff" / "markdown";
+            var baselineDisplay = globalDiff.BaselineVersion.ToString();
+            var currentDisplay = globalDiff.CurrentVersion.ToString();
+
+            Parallel.ForEach(
+                globalDiff.Packages,
+                packageDiff => ApiDiffHelper.GenerateMarkdownDiff(
+                    ApiDiffTool,
+                    packageDiff,
+                    outputFolderPath,
+                    baselineDisplay,
+                    currentDisplay));
+
+            ApiDiffHelper.MergePackageMarkdownDiffFiles(outputFolderPath, baselineDisplay, currentDisplay);
         });
     
     Target RunTests => _ => _
@@ -418,7 +491,7 @@ partial class Build : NukeBuild
             var artifactsDirectory = buildTestsDirectory / "artifacts";
             var nugetCacheDirectory = artifactsDirectory / "nuget-cache";
 
-            DeleteDirectory(artifactsDirectory);
+            artifactsDirectory.DeleteDirectory();
             BuildTestsAndVerify("Debug");
             BuildTestsAndVerify("Release");
 
@@ -432,7 +505,7 @@ partial class Build : NukeBuild
                     .SetProperty("NuGetPackageRoot", nugetCacheDirectory)
                     .SetPackageDirectory(nugetCacheDirectory)
                     .SetProjectFile(buildTestsDirectory / "BuildTests.sln")
-                    .SetProcessArgumentConfigurator(arguments => arguments.Add("--nodeReuse:false")));
+                    .SetProcessAdditionalArguments("--nodeReuse:false"));
 
                 // Standard compilation - should have compiled XAML
                 VerifyBuildTestAssembly("bin", "BuildTests");
@@ -461,7 +534,7 @@ partial class Build : NukeBuild
                         .SetPackageDirectory(nugetCacheDirectory)
                         .SetNoBuild(noBuild)
                         .SetProject(buildTestsDirectory / projectName / (projectName + ".csproj"))
-                        .SetProcessArgumentConfigurator(arguments => arguments.Add("--nodeReuse:false")));
+                        .SetProcessAdditionalArguments("--nodeReuse:false"));
 
                 void VerifyBuildTestAssembly(string folder, string projectName)
                     => XamlCompilationVerifier.VerifyAssemblyCompiledXaml(

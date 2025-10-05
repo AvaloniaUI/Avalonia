@@ -31,16 +31,19 @@
                     CornerRadius="{TemplateBinding CornerRadius}"
                     BorderThickness="{TemplateBinding BorderThickness}"
                     BorderBrush="{TemplateBinding BorderBrush}">
-              <Border.Clip>
-                <CombinedGeometry GeometryCombineMode="Exclude">
-                  <CombinedGeometry.Geometry1>
-                    <RectangleGeometry Rect="{Binding #RootGrid.Bounds}" />
-                  </CombinedGeometry.Geometry1>
-                  <CombinedGeometry.Geometry2>
-                    <RectangleGeometry Rect="{Binding #Header.Bounds}" />
-                  </CombinedGeometry.Geometry2>
-                </CombinedGeometry>
-              </Border.Clip>
+              <Border.OpacityMask>
+                <VisualBrush>
+                  <VisualBrush.Visual>
+                    <Canvas Background="Transparent">
+                      <Rectangle Fill="Transparent"
+                                Width="{Binding #Header.Bounds.Width}"
+                                Height="{Binding #Header.Bounds.Height}"
+                                Canvas.Left="{Binding #Header.Bounds.X}"
+                                Canvas.Top="{Binding #Header.Bounds.Y}"/>
+                    </Canvas>
+                  </VisualBrush.Visual>
+                </VisualBrush>
+              </Border.OpacityMask>
             </Border>
 
             <!-- ContentPresenter for the header -->

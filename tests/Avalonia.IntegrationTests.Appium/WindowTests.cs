@@ -311,6 +311,37 @@ namespace Avalonia.IntegrationTests.Appium
             }
         }
 
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Window_Minimize_Button_Enabled_Matches_CanMinimize(bool canMinimize)
+        {
+            using (OpenWindow(canMinimize: canMinimize))
+            {
+                var secondaryWindow = Session.GetWindowById("SecondaryWindow");
+                var windowChrome = secondaryWindow.GetSystemChromeButtons();
+
+                Assert.NotNull(windowChrome.Minimize);
+                Assert.Equal(canMinimize, windowChrome.Minimize!.Enabled);
+            }
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Window_Maximize_Button_Enabled_Matches_CanMaximize(bool canMaximize)
+        {
+            using (OpenWindow(canMaximize: canMaximize))
+            {
+                var secondaryWindow = Session.GetWindowById("SecondaryWindow");
+                var windowChrome = secondaryWindow.GetSystemChromeButtons();
+
+                var maximizeButton = windowChrome.FullScreen ?? windowChrome.Maximize;
+                Assert.NotNull(maximizeButton);
+                Assert.Equal(canMaximize, maximizeButton.Enabled);
+            }
+        }
+
         [Fact]
         public void Changing_SystemDecorations_Should_Not_Change_Frame_Size_And_Position()
         {
@@ -452,13 +483,17 @@ namespace Avalonia.IntegrationTests.Appium
             WindowStartupLocation location = WindowStartupLocation.Manual,
             WindowState state = Controls.WindowState.Normal,
             bool canResize = true,
-            bool extendClientArea = false)
+            bool extendClientArea = false,
+            bool canMinimize = true,
+            bool canMaximize = true)
         {
             var sizeTextBox = Session.FindElementByAccessibilityId("ShowWindowSize");
             var modeComboBox = Session.FindElementByAccessibilityId("ShowWindowMode");
             var locationComboBox = Session.FindElementByAccessibilityId("ShowWindowLocation");
             var stateComboBox = Session.FindElementByAccessibilityId("ShowWindowState");
             var canResizeCheckBox = Session.FindElementByAccessibilityId("ShowWindowCanResize");
+            var canMinimizeCheckBox = Session.FindElementByAccessibilityId("ShowWindowCanMinimize");
+            var canMaximizeCheckBox = Session.FindElementByAccessibilityId("ShowWindowCanMaximize");
             var showButton = Session.FindElementByAccessibilityId("ShowWindow");
             var extendClientAreaCheckBox = Session.FindElementByAccessibilityId("ShowWindowExtendClientAreaToDecorationsHint");
 
@@ -485,6 +520,12 @@ namespace Avalonia.IntegrationTests.Appium
 
             if (canResizeCheckBox.GetIsChecked() != canResize)
                 canResizeCheckBox.Click();
+
+            if (canMinimizeCheckBox.GetIsChecked() != canMinimize)
+                canMinimizeCheckBox.Click();
+
+            if (canMaximizeCheckBox.GetIsChecked() != canMaximize)
+                canMaximizeCheckBox.Click();
 
             if (extendClientAreaCheckBox.GetIsChecked() != extendClientArea)
                 extendClientAreaCheckBox.Click();
