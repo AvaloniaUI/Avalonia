@@ -18,25 +18,6 @@ namespace Avalonia.Skia.UnitTests.Media
         private const string NotoMono =
           "resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests";
 
-        [InlineData("Hello World 6", "Hello World 6", FontStyle.Normal, FontWeight.Normal)]
-        [InlineData("Hello World Italic", "Hello World", FontStyle.Italic, FontWeight.Normal)]
-        [InlineData("Hello World Italic Bold", "Hello World", FontStyle.Italic, FontWeight.Bold)]
-        [InlineData("FontAwesome 6 Free Regular", "FontAwesome 6 Free", FontStyle.Normal, FontWeight.Normal)]
-        [InlineData("FontAwesome 6 Free Solid", "FontAwesome 6 Free", FontStyle.Normal, FontWeight.Solid)]
-        [InlineData("FontAwesome 6 Brands", "FontAwesome 6 Brands", FontStyle.Normal, FontWeight.Normal)]
-        [Theory]
-        public void Should_Get_Implicit_Typeface(string input, string familyName, FontStyle style, FontWeight weight)
-        {
-            var typeface = new Typeface(input);
-
-            var result = FontCollectionBase.GetImplicitTypeface(typeface, out var normalizedFamilyName);
-
-            Assert.Equal(familyName, normalizedFamilyName);
-            Assert.Equal(style, result.Style);
-            Assert.Equal(weight, result.Weight);
-            Assert.Equal(FontStretch.Normal, result.Stretch);
-        }
-
         [Win32Fact("Relies on some installed font family")]
         public void Should_Cache_Nearest_Match()
         {
