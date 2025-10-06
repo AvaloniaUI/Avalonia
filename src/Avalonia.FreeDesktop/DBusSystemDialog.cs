@@ -17,12 +17,13 @@ namespace Avalonia.FreeDesktop
     {
         internal static async Task<IStorageProvider?> TryCreateAsync(IPlatformHandle handle)
         {
-            if (DBusHelper.DefaultConnection is not {} conn)
+            if (DBusHelper.DefaultConnection is not { } conn)
                 return null;
 
             using var restoreContext = AvaloniaSynchronizationContext.Ensure(DispatcherPriority.Input);
 
-            var dbusFileChooser = new OrgFreedesktopPortalFileChooserProxy(conn, "org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop");
+            var dbusFileChooser = new OrgFreedesktopPortalFileChooserProxy(conn, "org.freedesktop.portal.Desktop",
+                "/org/freedesktop/portal/desktop");
             uint version;
             try
             {
@@ -41,7 +42,8 @@ namespace Avalonia.FreeDesktop
         private readonly IPlatformHandle _handle;
         private readonly uint _version;
 
-        private DBusSystemDialog(Connection connection, IPlatformHandle handle, OrgFreedesktopPortalFileChooserProxy fileChooser, uint version)
+        private DBusSystemDialog(Connection connection, IPlatformHandle handle,
+            OrgFreedesktopPortalFileChooserProxy fileChooser, uint version)
         {
             _connection = connection;
             _fileChooser = fileChooser;
@@ -64,14 +66,15 @@ namespace Avalonia.FreeDesktop
             if (TryParseFilters(options.FileTypeFilter, out var filters))
                 chooserOptions.Add("filters", filters);
 
-            if (options.SuggestedStartLocation?.TryGetLocalPath()  is { } folderPath)
+            if (options.SuggestedStartLocation?.TryGetLocalPath() is { } folderPath)
                 chooserOptions.Add("current_folder", VariantValue.Array(Encoding.UTF8.GetBytes(folderPath + "\0")));
 
             chooserOptions.Add("multiple", VariantValue.Bool(options.AllowMultiple));
 
             objectPath = await _fileChooser.OpenFileAsync(parentWindow, options.Title ?? string.Empty, chooserOptions);
 
-            var request = new OrgFreedesktopPortalRequestProxy(_connection, "org.freedesktop.portal.Desktop", objectPath);
+            var request =
+                new OrgFreedesktopPortalRequestProxy(_connection, "org.freedesktop.portal.Desktop", objectPath);
             var tsc = new TaskCompletionSource<string[]?>();
             using var disposable = await request.WatchResponseAsync((e, x) =>
             {
@@ -97,7 +100,8 @@ namespace Avalonia.FreeDesktop
             return new SaveFilePickerResult(file) { SelectedFileType = selectedType };
         }
 
-        private async Task<(IStorageFile? file, FilePickerFileType? selectedType)> SaveFilePickerCoreAsync(FilePickerSaveOptions options)
+        private async Task<(IStorageFile? file, FilePickerFileType? selectedType)> SaveFilePickerCoreAsync(
+            FilePickerSaveOptions options)
         {
             var parentWindow = $"x11:{_handle.Handle:X}";
             ObjectPath objectPath;
@@ -107,11 +111,13 @@ namespace Avalonia.FreeDesktop
 
             if (options.SuggestedFileName is { } currentName)
                 chooserOptions.Add("current_name", VariantValue.String(currentName));
-            if (options.SuggestedStartLocation?.TryGetLocalPath()  is { } folderPath)
+            if (options.SuggestedStartLocation?.TryGetLocalPath() is { } folderPath)
                 chooserOptions.Add("current_folder", VariantValue.Array(Encoding.UTF8.GetBytes(folderPath + "\0")));
 
-            objectPath = await _fileChooser.SaveFileAsync(parentWindow, options.Title ?? string.Empty, chooserOptions).ConfigureAwait(false);
-            var request = new OrgFreedesktopPortalRequestProxy(_connection, "org.freedesktop.portal.Desktop", objectPath);
+            objectPath = await _fileChooser.SaveFileAsync(parentWindow, options.Title ?? string.Empty, chooserOptions)
+                .ConfigureAwait(false);
+            var request =
+                new OrgFreedesktopPortalRequestProxy(_connection, "org.freedesktop.portal.Desktop", objectPath);
             var tsc = new TaskCompletionSource<string[]?>();
             FilePickerFileType? selectedType = null;
             using var disposable = await request.WatchResponseAsync((e, x) =>
@@ -125,20 +131,23 @@ namespace Avalonia.FreeDesktop
                     if (x.Results.TryGetValue("current_filter", out var currentFilter))
                     {
                         var name = currentFilter.GetItem(0).GetString();
-                        selectedType = new FilePickerFileType(name);
                         var patterns = new List<string>();
                         var mimeTypes = new List<string>();
                         var types = currentFilter.GetItem(1).GetArray<VariantValue>();
-                        foreach(var t in types)
+                        foreach (var t in types)
                         {
                             if (t.GetItem(0).GetUInt32() == 1)
                                 mimeTypes.Add(t.GetItem(1).GetString());
                             else
                                 patterns.Add(t.GetItem(1).GetString());
                         }
-
-                        selectedType.Patterns = patterns;
-                        selectedType.MimeTypes = mimeTypes;
+                        
+                        // Reuse the file type objects from options
+                        // so the consuming code can match exactly the
+                        // file type selected instead of spawning one.
+                        selectedType = options.FileTypeChoices?.FirstOrDefault(type => type.Name == name ||
+                            (type.MimeTypes?.All(y => mimeTypes.Contains(y)) ?? false) ||
+                            (type.Patterns?.All(y => patterns.Contains(y)) ?? false));
                     }
 
                     tsc.TrySetResult(x.Results["uris"].GetArray<string>());
@@ -164,8 +173,7 @@ namespace Avalonia.FreeDesktop
             var parentWindow = $"x11:{_handle.Handle:X}";
             var chooserOptions = new Dictionary<string, VariantValue>
             {
-                { "directory", VariantValue.Bool(true) },
-                { "multiple", VariantValue.Bool(options.AllowMultiple) }
+                { "directory", VariantValue.Bool(true) }, { "multiple", VariantValue.Bool(options.AllowMultiple) }
             };
 
             if (options.SuggestedFileName is { } currentName)
@@ -173,8 +181,10 @@ namespace Avalonia.FreeDesktop
             if (options.SuggestedStartLocation?.TryGetLocalPath() is { } folderPath)
                 chooserOptions.Add("current_folder", VariantValue.Array(Encoding.UTF8.GetBytes(folderPath + "\0")));
 
-            var objectPath = await _fileChooser.OpenFileAsync(parentWindow, options.Title ?? string.Empty, chooserOptions);
-            var request = new OrgFreedesktopPortalRequestProxy(_connection, "org.freedesktop.portal.Desktop", objectPath);
+            var objectPath =
+                await _fileChooser.OpenFileAsync(parentWindow, options.Title ?? string.Empty, chooserOptions);
+            var request =
+                new OrgFreedesktopPortalRequestProxy(_connection, "org.freedesktop.portal.Desktop", objectPath);
             var tsc = new TaskCompletionSource<string[]?>();
             using var disposable = await request.WatchResponseAsync((e, x) =>
             {
@@ -212,7 +222,8 @@ namespace Avalonia.FreeDesktop
                 if (fileType.Patterns?.Count > 0)
                     extensions.AddRange(fileType.Patterns.Select(static pattern => Struct.Create(GlobStyle, pattern)));
                 else if (fileType.MimeTypes?.Count > 0)
-                    extensions.AddRange(fileType.MimeTypes.Select(static mimeType => Struct.Create(MimeStyle, mimeType)));
+                    extensions.AddRange(
+                        fileType.MimeTypes.Select(static mimeType => Struct.Create(MimeStyle, mimeType)));
                 else
                     continue;
 
