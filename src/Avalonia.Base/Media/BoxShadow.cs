@@ -74,13 +74,15 @@ namespace Avalonia.Media
         /// <returns>
         /// <c>true</c> if the current object is equal to the other parameter; otherwise, <c>false</c>.
         /// </returns>
+        [SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator", Justification = "Bit equality is adequate here")]
         public bool Equals(in BoxShadow other)
         {
-            return OffsetX.Equals(other.OffsetX)
-                && OffsetY.Equals(other.OffsetY)
-                && Blur.Equals(other.Blur)
-                && Spread.Equals(other.Spread)
-                && Color.Equals(other.Color);
+            return OffsetX == other.OffsetX
+                && OffsetY == other.OffsetY
+                && Blur == other.Blur
+                && Spread == other.Spread
+                && Color.Equals(other.Color)
+                && IsInset == other.IsInset;
         }
 
         /// <inheritdoc/>
@@ -99,6 +101,7 @@ namespace Avalonia.Media
                 hashCode = (hashCode * 397) ^ Blur.GetHashCode();
                 hashCode = (hashCode * 397) ^ Spread.GetHashCode();
                 hashCode = (hashCode * 397) ^ Color.GetHashCode();
+                hashCode = (hashCode * 397) ^ IsInset.GetHashCode();
                 return hashCode;
             }
         }
