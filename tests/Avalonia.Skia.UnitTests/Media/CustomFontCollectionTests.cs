@@ -4,6 +4,7 @@ using Avalonia.Media;
 using Avalonia.Media.Fonts;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
+using Avalonia.Utilities;
 using Xunit;
 
 namespace Avalonia.Skia.UnitTests.Media
@@ -22,6 +23,8 @@ namespace Avalonia.Skia.UnitTests.Media
 
                 var fontCollection = new CustomFontCollection(new Uri("fonts:custom", UriKind.Absolute));
 
+                fontManager.AddFontCollection(fontCollection);
+
                 var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
 
                 var assets = assetLoader.GetAssets(new Uri(NotoMono, UriKind.Absolute), null).ToArray();
@@ -36,9 +39,39 @@ namespace Avalonia.Skia.UnitTests.Media
 
                 Assert.True(fontCollection.TryAddGlyphTypeface(notoMonoStream));
 
-                Assert.True(fontCollection.TryGetGlyphTypeface("Inter", FontStyle.Normal, FontWeight.Regular, FontStretch.Normal, out var glyphTypeface));
+                Assert.True(fontCollection.TryGetGlyphTypeface("Inter", FontStyle.Normal, FontWeight.Regular, FontStretch.Normal, out var firstGlyphTypeface));
 
-                Assert.Equal("Inter", glyphTypeface.FamilyName);
+                Assert.Equal("Inter", firstGlyphTypeface.FamilyName);
+
+                Assert.True(fontManager.TryGetGlyphTypeface(new Typeface("fonts:custom#Inter"), out var secondGlyphTypeface));
+
+                Assert.Equal(firstGlyphTypeface, secondGlyphTypeface);
+            }
+        }
+
+        [Fact]
+        public void Should_Enumerate_FontFamilies()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                var fontManager = FontManager.Current;
+
+                var fontCollection = new CustomFontCollection(new Uri("fonts:custom", UriKind.Absolute));
+
+                fontManager.AddFontCollection(fontCollection);
+
+                var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
+
+                var assets = assetLoader.GetAssets(new Uri(NotoMono, UriKind.Absolute), null).Where(x => x.AbsolutePath.EndsWith(".ttf")).ToArray();
+
+                foreach (var asset in assets)
+                {
+                    fontCollection.TryAddGlyphTypeface(assetLoader.Open(asset));
+                }
+
+                var families = fontCollection.ToArray();
+
+                Assert.Equal(assets.Length, families.Length);
             }
         }
     }

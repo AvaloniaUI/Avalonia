@@ -9,16 +9,16 @@ namespace Avalonia.Media.Fonts
 {
     public class CustomFontCollection : FontCollectionBase
     {
-        protected List<FontFamily> _fontFamilies { get; } = new List<FontFamily>();
+        private readonly List<FontFamily> _fontFamilies = [];
 
         public CustomFontCollection(Uri key)
         {
             Key = key;
         }
 
-        public override FontFamily this[int index] => throw new NotImplementedException();
-
         public override Uri Key { get; }
+
+        public override FontFamily this[int index] => _fontFamilies[index];
 
         public override int Count => _fontFamilies.Count;
 
