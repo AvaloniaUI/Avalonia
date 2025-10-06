@@ -48,7 +48,7 @@ namespace Avalonia.Media.Fonts
         public override bool TryGetGlyphTypeface(string familyName, FontStyle style, FontWeight weight,
             FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
         {
-            var typeface = GetImplicitTypeface(new Typeface(familyName, style, weight, stretch), out familyName);
+            var typeface = new Typeface(familyName, style, weight, stretch).Normalize(out familyName);
 
             style = typeface.Style;
 

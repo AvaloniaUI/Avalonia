@@ -70,5 +70,23 @@ namespace Avalonia.Media.Fonts
         /// <param name="syntheticGlyphTypeface"></param>
         /// <returns>Returns <c>true</c> if a synthetic glyph typface can be created; otherwise, <c>false</c></returns>
         bool TryCreateSyntheticGlyphTypeface(IGlyphTypeface glyphTypeface, FontStyle style, FontWeight weight, FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface? syntheticGlyphTypeface);
+
+        /// <summary>
+        /// Attempts to retrieve the glyph typeface that most closely matches the specified font family name, style,
+        /// weight, and stretch.
+        /// </summary>
+        /// <remarks>This method searches for a glyph typeface in the font collection cache that matches
+        /// the specified parameters. If an exact match is not found, fallback mechanisms are applied to find the
+        /// closest available match based on the specified style, weight, and stretch. If no suitable match is found,
+        /// the method returns <see langword="false"/> and <paramref name="glyphTypeface"/> is set to <see
+        /// langword="null"/>.</remarks>
+        /// <param name="familyName">The name of the font family to search for. This parameter cannot be <see langword="null"/> or empty.</param>
+        /// <param name="style">The desired font style.</param>
+        /// <param name="weight">The desired font weight.</param>
+        /// <param name="stretch">The desired font stretch.</param>
+        /// <param name="glyphTypeface">When this method returns, contains the <see cref="IGlyphTypeface"/> that most closely matches the specified
+        /// parameters, if a match is found; otherwise, <see langword="null"/>. This parameter is passed uninitialized.</param>
+        /// <returns><see langword="true"/> if a matching glyph typeface is found; otherwise, <see langword="false"/>.</returns>
+        bool TryGetNearestMatch(string familyName, FontStyle style, FontWeight weight, FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface);
     }
 }

@@ -4,9 +4,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Text;
 using Avalonia.Platform;
-using Avalonia.Utilities;
 
 namespace Avalonia.Media.Fonts
 {
@@ -170,12 +168,38 @@ namespace Avalonia.Media.Fonts
         {
             return GetEnumerator();
         }
+      
+        /// <summary>
+        /// Attempts to retrieve the glyph typeface that most closely matches the specified font family name, style,
+        /// weight, and stretch.
+        /// </summary>
+        /// <remarks>This method searches for a glyph typeface in the font collection cache that matches
+        /// the specified parameters. If an exact match is not found, fallback mechanisms are applied to find the
+        /// closest available match based on the specified style, weight, and stretch. If no suitable match is found,
+        /// the method returns <see langword="false"/> and <paramref name="glyphTypeface"/> is set to <see
+        /// langword="null"/>.</remarks>
+        /// <param name="familyName">The name of the font family to search for. This parameter cannot be <see langword="null"/> or empty.</param>
+        /// <param name="style">The desired font style.</param>
+        /// <param name="weight">The desired font weight.</param>
+        /// <param name="stretch">The desired font stretch.</param>
+        /// <param name="glyphTypeface">When this method returns, contains the <see cref="IGlyphTypeface"/> that most closely matches the specified
+        /// parameters, if a match is found; otherwise, <see langword="null"/>. This parameter is passed uninitialized.</param>
+        /// <returns><see langword="true"/> if a matching glyph typeface is found; otherwise, <see langword="false"/>.</returns>
+        public bool TryGetNearestMatch(string familyName, FontStyle style, FontWeight weight, FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
+        {
+            if(!_glyphTypefaceCache.TryGetValue(familyName, out var glyphTypefaces))
+            {
+                glyphTypeface = null;
 
-        internal static bool TryGetNearestMatch(
-            ConcurrentDictionary<FontCollectionKey,
-            IGlyphTypeface?> glyphTypefaces,
-            FontCollectionKey key,
-            [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
+                return false;
+            }
+
+            var key = new FontCollectionKey { Style = style, Weight = weight, Stretch = stretch };
+
+            return TryGetNearestMatch(glyphTypefaces, key, out glyphTypeface);
+        }
+
+        protected bool TryGetNearestMatch(IDictionary<FontCollectionKey, IGlyphTypeface?> glyphTypefaces, FontCollectionKey key, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
         {
             if (glyphTypefaces.TryGetValue(key, out glyphTypeface) && glyphTypeface != null)
             {
@@ -218,7 +242,7 @@ namespace Avalonia.Media.Fonts
             //Take the first glyph typeface we can find.
             foreach (var typeface in glyphTypefaces.Values)
             {
-                if(typeface != null)
+                if (typeface != null)
                 {
                     glyphTypeface = typeface;
 
@@ -230,8 +254,7 @@ namespace Avalonia.Media.Fonts
         }
 
         internal static bool TryFindStretchFallback(
-            ConcurrentDictionary<FontCollectionKey,
-            IGlyphTypeface?> glyphTypefaces,
+            IDictionary<FontCollectionKey, IGlyphTypeface?> glyphTypefaces,
             FontCollectionKey key,
             [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
         {
@@ -264,8 +287,7 @@ namespace Avalonia.Media.Fonts
         }
 
         internal static bool TryFindWeightFallback(
-            ConcurrentDictionary<FontCollectionKey,
-            IGlyphTypeface?> glyphTypefaces,
+            IDictionary<FontCollectionKey, IGlyphTypeface?> glyphTypefaces,
             FontCollectionKey key,
             [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
         {
@@ -346,70 +368,6 @@ namespace Avalonia.Media.Fonts
             }
 
             return false;
-        }
-
-        internal static Typeface GetImplicitTypeface(Typeface typeface, out string normalizedFamilyName)
-        {
-            normalizedFamilyName = typeface.FontFamily.FamilyNames.PrimaryFamilyName;
-
-            //Return early if no separator is present.
-            if (!normalizedFamilyName.Contains(' '))
-            {
-                return typeface;
-            }
-
-            var style = typeface.Style;
-            var weight = typeface.Weight;
-            var stretch = typeface.Stretch;
-
-            StringBuilder? normalizedFamilyNameBuilder = null;
-            var totalCharsRemoved = 0;
-
-            var tokenizer = new SpanStringTokenizer(normalizedFamilyName, ' ');
-
-            // Skip initial family name.
-            tokenizer.ReadSpan();
-
-            while (tokenizer.TryReadSpan(out var token))
-            {
-                // Don't try to match numbers.
-                if (new SpanStringTokenizer(token).TryReadInt32(out _))
-                {
-                    continue;
-                }
-
-                // Try match with font style, weight or stretch and update accordingly.
-                var match = false;
-                if (EnumHelper.TryParse<FontStyle>(token, true, out var newStyle))
-                {
-                    style = newStyle;
-                    match = true;
-                }
-                else if (EnumHelper.TryParse<FontWeight>(token, true, out var newWeight))
-                {
-                    weight = newWeight;
-                    match = true;
-                }
-                else if (EnumHelper.TryParse<FontStretch>(token, true, out var newStretch))
-                {
-                    stretch = newStretch;
-                    match = true;
-                }
-
-                if (match)
-                {
-                    // Carve out matched word from the normalized name.
-                    normalizedFamilyNameBuilder ??= new StringBuilder(normalizedFamilyName);
-                    normalizedFamilyNameBuilder.Remove(tokenizer.CurrentTokenIndex - totalCharsRemoved, token.Length);
-                    totalCharsRemoved += token.Length;
-                }
-            }
-
-            // Get rid of any trailing spaces.
-            normalizedFamilyName = (normalizedFamilyNameBuilder?.ToString() ?? normalizedFamilyName).TrimEnd();
-
-            //Preserve old font source
-            return new Typeface(typeface.FontFamily, style, weight, stretch);
         }
     }
 }
