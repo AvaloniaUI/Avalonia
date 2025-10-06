@@ -58,6 +58,7 @@ namespace Avalonia.FreeDesktop
             _statusNotifierItemDbusObj = new StatusNotifierItemDbusObj(_connection, dbusMenuPath);
             _pathHandler.Add(_statusNotifierItemDbusObj);
             _connection.AddMethodHandler(_pathHandler);
+            _statusNotifierItemDbusObj.ActivationDelegate += () => OnClicked?.Invoke();
 
             WatchAsync();
         }
@@ -125,7 +126,6 @@ namespace Avalonia.FreeDesktop
 
             _statusNotifierItemDbusObj!.SetTitleAndTooltip(_tooltipText);
             _statusNotifierItemDbusObj.SetIcon(_icon);
-            _statusNotifierItemDbusObj.ActivationDelegate += OnClicked;
         }
 
         private void DestroyTrayIcon()
