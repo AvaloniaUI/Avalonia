@@ -87,6 +87,18 @@ namespace Avalonia.FreeDesktop
 
         public override async Task<IStorageFile?> SaveFilePickerAsync(FilePickerSaveOptions options)
         {
+            var (file, _) = await SaveFilePickerCoreAsync(options).ConfigureAwait(false);
+            return file;
+        }
+
+        public override async Task<SaveFilePickerResult> SaveFilePickerWithResultAsync(FilePickerSaveOptions options)
+        {
+            var (file, selectedType) = await SaveFilePickerCoreAsync(options).ConfigureAwait(false);
+            return new SaveFilePickerResult(file) { SelectedFileType = selectedType };
+        }
+
+        private async Task<(IStorageFile? file, FilePickerFileType? selectedType)> SaveFilePickerCoreAsync(FilePickerSaveOptions options)
+        {
             var parentWindow = $"x11:{_handle.Handle:X}";
             ObjectPath objectPath;
             var chooserOptions = new Dictionary<string, VariantValue>();
@@ -98,7 +110,7 @@ namespace Avalonia.FreeDesktop
             if (options.SuggestedStartLocation?.TryGetLocalPath()  is { } folderPath)
                 chooserOptions.Add("current_folder", VariantValue.Array(Encoding.UTF8.GetBytes(folderPath + "\0")));
 
-            objectPath = await _fileChooser.SaveFileAsync(parentWindow, options.Title ?? string.Empty, chooserOptions);
+            objectPath = await _fileChooser.SaveFileAsync(parentWindow, options.Title ?? string.Empty, chooserOptions).ConfigureAwait(false);
             var request = new OrgFreedesktopPortalRequestProxy(_connection, "org.freedesktop.portal.Desktop", objectPath);
             var tsc = new TaskCompletionSource<string[]?>();
             FilePickerFileType? selectedType = null;
@@ -131,23 +143,17 @@ namespace Avalonia.FreeDesktop
 
                     tsc.TrySetResult(x.Results["uris"].GetArray<string>());
                 }
-            });
+            }).ConfigureAwait(false);
 
-            var uris = await tsc.Task;
+            var uris = await tsc.Task.ConfigureAwait(false);
             var path = uris?.FirstOrDefault() is { } filePath ? new Uri(filePath).LocalPath : null;
 
             if (path is null)
-                return null;
+                return (null, selectedType);
 
             // WSL2 freedesktop automatically adds extension from selected file type, but we can't pass "default ext". So apply it manually.
             path = StorageProviderHelpers.NameWithExtension(path, options.DefaultExtension, selectedType);
-            return new BclStorageFile(new FileInfo(path));
-        }
-
-        public override async Task<SaveFilePickerResult> SaveFilePickerWithResultAsync(FilePickerSaveOptions options)
-        {
-            var file = await SaveFilePickerAsync(options).ConfigureAwait(false);
-            return new SaveFilePickerResult(file);
+            return (new BclStorageFile(new FileInfo(path)), selectedType);
         }
 
         public override async Task<IReadOnlyList<IStorageFolder>> OpenFolderPickerAsync(FolderPickerOpenOptions options)
