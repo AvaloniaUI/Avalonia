@@ -7,7 +7,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.Media.Fonts
 {
-    internal class CustomFontCollection : FontCollectionBase
+    public class CustomFontCollection : FontCollectionBase
     {
         protected List<FontFamily> _fontFamilies { get; } = new List<FontFamily>();
 
