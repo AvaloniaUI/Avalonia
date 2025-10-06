@@ -151,7 +151,7 @@ namespace Avalonia.Media.Fonts
 
                 foreach (var key in glyphTypefaces.Keys)
                 {
-                    typefaces.Add(new Typeface(new FontFamily(_key, familyName), key.Style, key.Weight, key.Stretch));
+                    typefaces.Add(new Typeface(new FontFamily(_key + "#" + familyName), key.Style, key.Weight, key.Stretch));
                 }
 
                 familyTypefaces = typefaces;

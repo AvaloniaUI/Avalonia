@@ -7,7 +7,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.Media.Fonts
 {
-    public class CustomFontCollection : FontCollectionBase
+    public class CustomFontCollection : FontCollectionBase, IFontCollection2
     {
         private readonly List<FontFamily> _fontFamilies = [];
 
@@ -98,7 +98,7 @@ namespace Avalonia.Media.Fonts
                 glyphTypefaces = _glyphTypefaceCache.GetOrAdd(familyName,
                     (_) => new System.Collections.Concurrent.ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>());
 
-                _fontFamilies.Add(new FontFamily(familyName));
+                _fontFamilies.Add(new FontFamily(Key + "#" + familyName));
             }
             var key = new FontCollectionKey(glyphTypeface.Style, glyphTypeface.Weight, glyphTypeface.Stretch);
 
@@ -120,6 +120,27 @@ namespace Avalonia.Media.Fonts
             }
 
             return TryAddGlyphTypeface(glyphTypeface);
+        }
+
+        public bool TryGetFamilyTypefaces(string familyName, [NotNullWhen(true)] out IReadOnlyList<Typeface>? familyTypefaces)
+        {
+            familyTypefaces = null;
+
+            if (_glyphTypefaceCache.TryGetValue(familyName, out var glyphTypefaces))
+            {
+                var typefaces = new List<Typeface>(glyphTypefaces.Count);
+
+                foreach (var key in glyphTypefaces.Keys)
+                {
+                    typefaces.Add(new Typeface(new FontFamily(Key + "#" + familyName), key.Style, key.Weight, key.Stretch));
+                }
+
+                familyTypefaces = typefaces;
+
+                return true;
+            }
+
+            return false;
         }
     }
 }

@@ -72,6 +72,25 @@ namespace Avalonia.Skia.UnitTests.Media
                 var families = fontCollection.ToArray();
 
                 Assert.Equal(assets.Length, families.Length);
+
+                var other = new CustomFontCollection(new Uri("fonts:other", UriKind.Absolute));
+
+                foreach (var family in families)
+                {
+                    var familyTypefaces = family.FamilyTypefaces;
+
+                    foreach(var typeface in familyTypefaces)
+                    {
+                        other.TryAddGlyphTypeface(typeface.GlyphTypeface);
+                    }
+                }
+
+                Assert.Equal(families.Length, other.Count);
+
+                for (int i = 0; i < families.Length; i++)
+                {
+                    Assert.Equal(families[i].Name, other[i].Name);
+                }
             }
         }
     }
