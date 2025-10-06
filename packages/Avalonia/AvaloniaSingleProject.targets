@@ -278,7 +278,7 @@
       Include="$(TizenSharedPrefix)\**\*"
       Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);@(TizenTpkUserExcludeFiles)" />
   </ItemGroup>
-  
+
   <!-- Android workaround to allow projects without AndroidManifest.xml, as it used to be supported -->
   <Target Name="BeforeGetAndroidPackageName"
           BeforeTargets="_GetAndroidPackageName">
