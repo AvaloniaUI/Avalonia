@@ -32,14 +32,31 @@ namespace Avalonia.Input
         {
             
         }
-        
+
+        internal void PlatformCaptureLost()
+        {
+            if (Captured != null)
+                Capture(null, platformInitiated: true);
+        }
+
         public void Capture(IInputElement? control)
         {
-            if (Captured is Visual v1)
-                v1.DetachedFromVisualTree -= OnCaptureDetached;
+            Capture(control, platformInitiated: false);
+        }
+
+        private void Capture(IInputElement? control, bool platformInitiated)
+        {
             var oldCapture = Captured;
+            if (oldCapture == control)
+                return;
+
+            if (oldCapture is Visual v1)
+                v1.DetachedFromVisualTree -= OnCaptureDetached;
             Captured = control;
-            PlatformCapture(control);
+            
+            if (!platformInitiated)
+                PlatformCapture(control);
+
             if (oldCapture is Visual v2)
             {
                 var commonParent = FindCommonParent(control, oldCapture);

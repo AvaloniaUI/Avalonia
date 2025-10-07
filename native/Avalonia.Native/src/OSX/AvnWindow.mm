@@ -35,6 +35,7 @@
     bool _canBecomeKeyWindow;
     bool _isExtended;
     bool _isTransitioningToFullScreen;
+    bool _isTitlebarSession;
     AvnMenu* _menu;
     IAvnAutomationPeer* _automationPeer;
     AvnAutomationNode* _automationNode;
@@ -435,9 +436,23 @@
                 return;
             }
 
-            if(window->WindowState() == Maximized)
+            // If the window has been moved into a position where it's "zoomed"
+            // Then it should be set as Maximized.
+            if (window->WindowState() != Maximized && window->IsZoomed())
             {
-                window->SetWindowState(Normal);
+                window->SetWindowState(Maximized, false);
+            }
+            // We should only return the window state to normal if
+            // the internal window state is maximized, and macOS says
+            // the window is no longer zoomed (I.E, the user has moved it)
+            // Stage Manager will "move" the window when repositioning it
+            // So if the window was "maximized" before, it should stay maximized
+            else if(window->WindowState() == Maximized && !window->IsZoomed())
+            {
+                // If we're moving the window while maximized,
+                // we need to let macOS handle if it should be resized
+                // And not handle it ourselves.
+                window->SetWindowState(Normal, false);
             }
         }
 
@@ -462,8 +477,37 @@
     }
 }
 
+- (BOOL)isPointInTitlebar:(NSPoint)windowPoint
+{
+    auto parent = _parent.tryGetWithCast<WindowImpl>();
+    if (!parent || !_isExtended) {
+        return NO;
+    }
+    
+    AvnView* view = parent->View;
+    NSPoint viewPoint = [view convertPoint:windowPoint fromView:nil];
+    double titlebarHeight = [self getExtendedTitleBarHeight];
+    
+    // Check if click is in titlebar area (top portion of view)
+    if (viewPoint.y <= titlebarHeight) {
+        // Verify we're actually in a toolbar-related area
+        NSView* hitView = [[self findRootView:view] hitTest:windowPoint];
+        if (hitView) {
+            NSString* hitViewClass = [hitView className];
+            if ([hitViewClass containsString:@"Toolbar"] || [hitViewClass containsString:@"Titlebar"]) {
+                return YES;
+            }
+        }
+    }
+    return NO;
+}
+
 - (void)sendEvent:(NSEvent *_Nonnull)event
 {
+    if (event.type == NSEventTypeLeftMouseDown) {
+        _isTitlebarSession = [self isPointInTitlebar:event.locationInWindow];
+    }
+    
     [super sendEvent:event];
 
     auto parent = _parent.tryGetWithCast<WindowImpl>();
@@ -502,6 +546,37 @@
             }
             break;
 
+            case NSEventTypeLeftMouseDragged:
+            case NSEventTypeMouseMoved:
+            case NSEventTypeLeftMouseUp:
+            {
+                // Usually NSToolbar events are passed natively to AvnView when the mouse is inside the control.
+                // When a drag operation started in NSToolbar leaves the control region, the view does not get any 
+                // events. We will detect this scenario and pass events ourselves. 
+                
+                if(!_isTitlebarSession || [self isPointInTitlebar:event.locationInWindow]) 
+                    break;
+
+                AvnView* view = parent->View;
+                
+                if(!view) 
+                    break;
+                
+                if(event.type == NSEventTypeLeftMouseDragged)
+                {
+                    [view mouseDragged:event];
+                }
+                else if(event.type == NSEventTypeMouseMoved)
+                {
+                    [view mouseMoved:event];
+                }
+                else if(event.type == NSEventTypeLeftMouseUp)
+                {
+                    [view mouseUp:event];
+                }
+            }
+            break;
+
             case NSEventTypeMouseEntered:
             {
                 parent->UpdateCursor();
@@ -516,6 +591,10 @@
 
             default:
                 break;
+        }
+        
+        if(event.type == NSEventTypeLeftMouseUp) {
+            _isTitlebarSession = NO;
         }
     }
 }

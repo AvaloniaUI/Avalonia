@@ -5,6 +5,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Controls;
+using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.Reactive;
 using Avalonia.Threading;
@@ -124,9 +126,10 @@ public sealed class HeadlessUnitTestSession : IDisposable
     private IDisposable EnsureApplication()
     {
         var scope = AvaloniaLocator.EnterScope();
+        var oldContext = SynchronizationContext.Current;
         try
         {
-            Dispatcher.ResetForUnitTests();
+            Dispatcher.ResetBeforeUnitTests();
             _appBuilder.SetupUnsafe();
         }
         catch
@@ -137,9 +140,12 @@ public sealed class HeadlessUnitTestSession : IDisposable
 
         return Disposable.Create(() =>
         {
-            scope.Dispose();
+            ((ToolTipService?)AvaloniaLocator.Current.GetService<IToolTipService>())?.Dispose();
+            (AvaloniaLocator.Current.GetService<FontManager>() as IDisposable)?.Dispose();
             Dispatcher.ResetForUnitTests();
-            SynchronizationContext.SetSynchronizationContext(null);
+            scope.Dispose();
+            Dispatcher.ResetBeforeUnitTests();
+            SynchronizationContext.SetSynchronizationContext(oldContext);
         });
     }
 

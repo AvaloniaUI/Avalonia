@@ -89,6 +89,40 @@ namespace Avalonia.Base.UnitTests.Input
         }
 
         [Fact]
+        public void Tapped_Should_Be_Raised_From_Captured_Control()
+        {
+            Border inner = new Border()
+            {
+                Focusable = true,
+                Name = "Inner"
+            };
+            Border border = new Border()
+            {
+                Focusable = true,
+                Child = inner,
+                Name = "Parent"
+            };
+            var root = new TestRoot
+            {
+                Child = border
+            };
+            var raised = false;
+
+            border.PointerPressed += (s, e) =>
+            {
+                e.Pointer.Capture(inner);
+            };
+            _mouse.Click(border, MouseButton.Left);
+
+            root.AddHandler(Gestures.TappedEvent, (_, _) => raised = true);
+
+            _mouse.Click(border, MouseButton.Left);
+
+
+            Assert.True(raised);
+        }
+
+        [Fact]
         public void RightTapped_Should_Be_Raised_For_Right_Button()
         {
             Border border = new Border();

@@ -15,8 +15,6 @@ namespace Avalonia.Media.Fonts
 
         private readonly Uri _source;
 
-        private IFontManagerImpl? _fontManager;
-
         public EmbeddedFontCollection(Uri key, Uri source)
         {
             _key = key;
@@ -32,8 +30,6 @@ namespace Avalonia.Media.Fonts
 
         public override void Initialize(IFontManagerImpl fontManager)
         {
-            _fontManager = fontManager;
-
             var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
 
             var fontAssets = FontFamilyLoader.LoadFontAssets(_source);
@@ -71,13 +67,15 @@ namespace Avalonia.Media.Fonts
 
                 if (TryGetNearestMatch(glyphTypefaces, key, out glyphTypeface))
                 {
-                    if(_fontManager != null && FontManager.TryCreateSyntheticGlyphTypeface(_fontManager, glyphTypeface, style, weight, out var syntheticGlyphTypeface))
-                    {
-                        glyphTypeface = syntheticGlyphTypeface;
-                    }
+                    var matchedKey = new FontCollectionKey(glyphTypeface.Style, glyphTypeface.Weight, glyphTypeface.Stretch);
 
-                    //Make sure we cache the found match
-                    glyphTypefaces.TryAdd(key, glyphTypeface);
+                    if(matchedKey != key)
+                    {
+                        if (TryCreateSyntheticGlyphTypeface(glyphTypeface, style, weight, stretch, out var syntheticGlyphTypeface))
+                        {
+                            glyphTypeface = syntheticGlyphTypeface;
+                        }
+                    }
 
                     return true;
                 }
@@ -143,7 +141,7 @@ namespace Avalonia.Media.Fonts
             }
         }
 
-        bool IFontCollection2.TryGetFamilyTypefaces(string familyName, [NotNullWhen(true)] out IReadOnlyList<Typeface>? familyTypefaces)
+        public bool TryGetFamilyTypefaces(string familyName, [NotNullWhen(true)] out IReadOnlyList<Typeface>? familyTypefaces)
         {
             familyTypefaces = null;
 

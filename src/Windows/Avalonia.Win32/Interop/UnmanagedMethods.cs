@@ -1502,6 +1502,21 @@ namespace Avalonia.Win32.Interop
         [DllImport("shell32", CharSet = CharSet.Auto)]
         public static extern int Shell_NotifyIcon(NIM dwMessage, NOTIFYICONDATA lpData);
 
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool ChangeWindowMessageFilterEx(
+            IntPtr hWnd,
+            uint message,
+            MessageFilterFlag action,
+            IntPtr pChangeFilterStruct
+        );
+
+        public enum MessageFilterFlag
+        {
+            MSGFLT_RESET = 0,
+            MSGFLT_ALLOW = 1,
+            MSGFLT_DISALLOW = 2,
+        }
+
         [DllImport("shell32", CharSet = CharSet.Auto)]
         public static extern nint SHAppBarMessage(AppBarMessage dwMessage, ref APPBARDATA lpData);
 
@@ -1578,7 +1593,7 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("ole32.dll", PreserveSig = true)]
         public static extern int OleSetClipboard(IntPtr dataObject);
-        
+
         [DllImport("ole32.dll", PreserveSig = true)]
         public static extern int OleIsCurrentClipboard(IntPtr dataObject);
 
@@ -1589,7 +1604,7 @@ namespace Avalonia.Win32.Interop
         public static extern bool GlobalUnlock(IntPtr handle);
 
         [DllImport("kernel32.dll", ExactSpelling = true)]
-        public static extern IntPtr GlobalAlloc(int uFlags, int dwBytes);
+        public static extern IntPtr GlobalAlloc(GlobalAllocFlags uFlags, int dwBytes);
 
         [DllImport("kernel32.dll", ExactSpelling = true)]
         public static extern IntPtr GlobalFree(IntPtr hMem);
@@ -2440,7 +2455,7 @@ namespace Avalonia.Win32.Interop
             E_OUTOFMEMORY = 0x8007000E,
             E_NOTIMPL = 0x80004001,
             E_UNEXPECTED = 0x8000FFFF,
-            E_CANCELLED = 0x800704C7,
+            E_CANCELLED = 0x800704C7
         }
 
         public enum Icons
@@ -2516,34 +2531,50 @@ namespace Avalonia.Win32.Interop
                 cbSize = s_size;
             }
         }
-    }
 
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct _DROPFILES
-    {
-        public Int32 pFiles;
-        public Int32 X;
-        public Int32 Y;
-        public bool fNC;
-        public bool fWide;
-    }
+        public const uint STG_E_MEDIUMFULL = 0x80030070;
+        public const uint DV_E_TYMED = 0x80040069;
+        public const uint DV_E_DVASPECT = 0x8004006B;
+        public const uint DV_E_FORMATETC = 0x80040064;
+        public const uint OLE_E_ADVISENOTSUPPORTED = 0x80040003;
+        public const uint COR_E_OBJECTDISPOSED = 0x80131622;
 
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct STGMEDIUM
-    {
-        public TYMED tymed;
-        public IntPtr unionmember;
-        public IntPtr pUnkForRelease;
-    }
+        [StructLayout(LayoutKind.Sequential)]
+        public struct DROPFILES
+        {
+            public uint pFiles;
+            public POINT pt;
+            public int fNC;
+            public int fWide;
+        }
 
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct FORMATETC
-    {
-        public ushort cfFormat;
-        public IntPtr ptd;
-        public DVASPECT dwAspect;
-        public int lindex;
-        public TYMED tymed;
+        [StructLayout(LayoutKind.Sequential)]
+        public struct STGMEDIUM
+        {
+            public TYMED tymed;
+            public IntPtr unionmember;
+            public IntPtr pUnkForRelease;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct FORMATETC
+        {
+            public ushort cfFormat;
+            public IntPtr ptd;
+            public DVASPECT dwAspect;
+            public int lindex;
+            public TYMED tymed;
+        }
+
+        [Flags]
+        public enum GlobalAllocFlags : uint
+        {
+            GMEM_FIXED = 0x0000,
+            GMEM_MOVEABLE = 0x0002,
+            GMEM_ZEROINIT = 0x0040,
+            GPTR = GMEM_FIXED | GMEM_ZEROINIT,
+            GHND = GMEM_MOVEABLE | GMEM_ZEROINIT
+        }
     }
 
     [Flags]

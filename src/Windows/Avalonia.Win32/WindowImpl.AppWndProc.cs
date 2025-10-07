@@ -127,7 +127,6 @@ namespace Avalonia.Win32
                     }
 
                 case WindowsMessage.WM_DPICHANGED:
-                    if (!_ignoreDpiChanges)
                     {
                         _dpi = (uint)wParam >> 16;
                         var newDisplayRect = Marshal.PtrToStructure<RECT>(lParam);
@@ -149,19 +148,6 @@ namespace Avalonia.Win32
 
                         return IntPtr.Zero;
                     }
-                    else
-                    {
-                        // In case parent is on another screen with different scaling, window will have header scaled with
-                        // parent's scaling factor, so need to update frame
-                        SetWindowPos(hWnd,
-                            IntPtr.Zero, 0, 0, 0, 0,
-                            SetWindowPosFlags.SWP_FRAMECHANGED |
-                            SetWindowPosFlags.SWP_NOSIZE |
-                            SetWindowPosFlags.SWP_NOMOVE |
-                            SetWindowPosFlags.SWP_NOZORDER |
-                            SetWindowPosFlags.SWP_NOACTIVATE);
-                    }
-                    break;
 
                 case WindowsMessage.WM_GETICON:
                     if (_iconImpl == null)
@@ -405,6 +391,26 @@ namespace Avalonia.Win32
                             RawPointerEventType.LeaveWindow,
                             new Point(-1, -1),
                             WindowsKeyboardDevice.Instance.Modifiers);
+                        break;
+                    }
+
+                case WindowsMessage.WM_CAPTURECHANGED:
+                    {
+                        if (IsMouseInPointerEnabled)
+                        {
+                            break;
+                        }
+                        if (_hwnd != lParam)
+                        {
+                            _trackingMouse = false;
+                            e = new RawPointerEventArgs(
+                                _mouseDevice,
+                                timestamp,
+                                Owner,
+                                RawPointerEventType.CancelCapture,
+                                new Point(-1, -1),
+                                WindowsKeyboardDevice.Instance.Modifiers);
+                        }
                         break;
                     }
 

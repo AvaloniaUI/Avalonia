@@ -104,7 +104,6 @@ namespace Avalonia.Win32
         private bool _shown;
         private bool _hiddenWindowIsParent;
         private uint _langid;
-        private bool _ignoreDpiChanges;
         internal bool _ignoreWmChar;
         private WindowTransparencyLevel _transparencyLevel;
         private readonly WindowTransparencyLevel _defaultTransparencyLevel;
@@ -137,6 +136,8 @@ namespace Avalonia.Win32
             {
                 ShowInTaskbar = false,
                 IsResizable = true,
+                IsMinimizable = true,
+                IsMaximizable = true,
                 Decorations = SystemDecorations.Full
             };
 
@@ -730,20 +731,7 @@ namespace Avalonia.Win32
 
             _hiddenWindowIsParent = parentHwnd == OffscreenParentWindow.Handle;
 
-            // I can't find mention of this *anywhere* online, but it seems that setting
-            // GWL_HWNDPARENT to a window which is on the non-primary monitor can cause two
-            // WM_DPICHANGED messages to be sent: the first changing the DPI to the parent's DPI,
-            // then another changing the DPI back. This then causes Windows to provide an incorrect
-            // suggested new rectangle to the WM_DPICHANGED message if the window is immediately
-            // moved to the parent window's monitor (e.g. when using
-            // WindowStartupLocation.CenterOwner) causing the window to be shown with an incorrect
-            // size.
-            //
-            // Just ignore any WM_DPICHANGED while we're setting the parent as this shouldn't
-            // change the DPI anyway.
-            _ignoreDpiChanges = true;
             SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, parentHwnd);
-            _ignoreDpiChanges = false;
 
             // Windows doesn't seem to respect the HWND_TOPMOST flag of a window when showing an owned window for the first time.
             // So we set the HWND_TOPMOST again before the owned window is shown. This only needs to be done once.
@@ -868,6 +856,24 @@ namespace Avalonia.Win32
             var newWindowProperties = _windowProperties;
 
             newWindowProperties.IsResizable = value;
+
+            UpdateWindowProperties(newWindowProperties);
+        }
+
+        public void SetCanMinimize(bool value)
+        {
+            var newWindowProperties = _windowProperties;
+
+            newWindowProperties.IsMinimizable = value;
+
+            UpdateWindowProperties(newWindowProperties);
+        }
+
+        public void SetCanMaximize(bool value)
+        {
+            var newWindowProperties = _windowProperties;
+
+            newWindowProperties.IsMaximizable = value;
 
             UpdateWindowProperties(newWindowProperties);
         }
@@ -1439,17 +1445,21 @@ namespace Avalonia.Win32
                     style |= WindowStyles.WS_VISIBLE;
 
                 if (newProperties.IsResizable || newProperties.WindowState == WindowState.Maximized)
-                {
                     style |= WindowStyles.WS_THICKFRAME;
-                    style |= WindowStyles.WS_MAXIMIZEBOX;
-                }
                 else
-                {
                     style &= ~WindowStyles.WS_THICKFRAME;
-                    style &= ~WindowStyles.WS_MAXIMIZEBOX;
-                }
 
-                const WindowStyles fullDecorationFlags = WindowStyles.WS_CAPTION | WindowStyles.WS_SYSMENU | WindowStyles.WS_BORDER;
+                if (newProperties.IsMinimizable)
+                    style |= WindowStyles.WS_MINIMIZEBOX;
+                else
+                    style &= ~WindowStyles.WS_MINIMIZEBOX;
+
+                if (newProperties.IsMaximizable || (newProperties.WindowState == WindowState.Maximized && newProperties.IsResizable))
+                    style |= WindowStyles.WS_MAXIMIZEBOX;
+                else
+                    style &= ~WindowStyles.WS_MAXIMIZEBOX;
+
+                const WindowStyles fullDecorationFlags = WindowStyles.WS_CAPTION | WindowStyles.WS_BORDER;
 
                 if (newProperties.Decorations == SystemDecorations.Full)
                 {
@@ -1462,6 +1472,10 @@ namespace Avalonia.Win32
                     if (newProperties.Decorations == SystemDecorations.BorderOnly && newProperties.WindowState != WindowState.Maximized && newProperties.IsResizable)
                     {
                         style |= WindowStyles.WS_THICKFRAME | WindowStyles.WS_BORDER;
+                    }
+                    else if(newProperties.WindowState == WindowState.Maximized && _isClientAreaExtended)
+                    {
+                        style |= WindowStyles.WS_THICKFRAME;
                     }
                 }
 
@@ -1670,6 +1684,8 @@ namespace Avalonia.Win32
         {
             public bool ShowInTaskbar;
             public bool IsResizable;
+            public bool IsMinimizable;
+            public bool IsMaximizable;
             public SystemDecorations Decorations;
             public bool IsFullScreen;
             public WindowState WindowState;

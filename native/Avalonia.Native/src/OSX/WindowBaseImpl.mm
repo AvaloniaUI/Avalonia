@@ -411,51 +411,6 @@ HRESULT WindowBaseImpl::SetFrameThemeVariant(AvnPlatformThemeVariant variant) {
     return S_OK;
 }
 
-HRESULT WindowBaseImpl::BeginDragAndDropOperation(AvnDragDropEffects effects, AvnPoint point, IAvnClipboard *clipboard, IAvnDndResultCallback *cb, void *sourceHandle) {
-    START_COM_CALL;
-
-    auto item = TryGetPasteboardItem(clipboard);
-    [item setString:@"" forType:GetAvnCustomDataType()];
-    if (item == nil)
-        return E_INVALIDARG;
-    if (View == NULL)
-        return E_FAIL;
-
-    auto nsevent = [NSApp currentEvent];
-    auto nseventType = [nsevent type];
-
-    // If current event isn't a mouse one (probably due to malfunctioning user app)
-    // attempt to forge a new one
-    if (!((nseventType >= NSEventTypeLeftMouseDown && nseventType <= NSEventTypeMouseExited)
-            || (nseventType >= NSEventTypeOtherMouseDown && nseventType <= NSEventTypeOtherMouseDragged))) {
-        NSRect convertRect = [Window convertRectToScreen:NSMakeRect(point.X, point.Y, 0.0, 0.0)];
-        auto nspoint = NSMakePoint(convertRect.origin.x, convertRect.origin.y);
-        CGPoint cgpoint = NSPointToCGPoint(nspoint);
-        auto cgevent = CGEventCreateMouseEvent(NULL, kCGEventLeftMouseDown, cgpoint, kCGMouseButtonLeft);
-        nsevent = [NSEvent eventWithCGEvent:cgevent];
-        CFRelease(cgevent);
-    }
-
-    auto dragItem = [[NSDraggingItem alloc] initWithPasteboardWriter:item];
-
-    auto dragItemImage = [NSImage imageNamed:NSImageNameMultipleDocuments];
-    NSRect dragItemRect = {(float) point.X, (float) point.Y, [dragItemImage size].width, [dragItemImage size].height};
-    [dragItem setDraggingFrame:dragItemRect contents:dragItemImage];
-
-    int op = 0;
-    int ieffects = (int) effects;
-    if ((ieffects & (int) AvnDragDropEffects::Copy) != 0)
-        op |= NSDragOperationCopy;
-    if ((ieffects & (int) AvnDragDropEffects::Link) != 0)
-        op |= NSDragOperationLink;
-    if ((ieffects & (int) AvnDragDropEffects::Move) != 0)
-        op |= NSDragOperationMove;
-    [View resetPressedMouseButtons];
-    [View beginDraggingSessionWithItems:@[dragItem] event:nsevent
-                                 source:CreateDraggingSource((NSDragOperation) op, cb, sourceHandle)];
-    return S_OK;
-}
-
 bool WindowBaseImpl::IsModal() {
     return false;
 }

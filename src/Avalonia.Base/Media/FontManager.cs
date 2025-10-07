@@ -15,7 +15,7 @@ namespace Avalonia.Media
     ///     The font manager is used to query the system's installed fonts and is responsible for caching loaded fonts.
     ///     It is also responsible for the font fallback.
     /// </summary>
-    public sealed class FontManager
+    public sealed class FontManager : IDisposable
     {
         internal static Uri SystemFontsKey = new Uri("fonts:SystemFonts", UriKind.Absolute);
 
@@ -109,9 +109,9 @@ namespace Avalonia.Media
 
                         var familyName = fontFamily.FamilyNames[i];
 
-                        if(_fontFamilyMappings != null && _fontFamilyMappings.TryGetValue(familyName, out var mappedFontFamily))
+                        if (_fontFamilyMappings != null && _fontFamilyMappings.TryGetValue(familyName, out var mappedFontFamily))
                         {
-                            if(mappedFontFamily.Key != null)
+                            if (mappedFontFamily.Key != null)
                             {
                                 key = mappedFontFamily.Key;
                             }
@@ -121,6 +121,11 @@ namespace Avalonia.Media
                             }
 
                             familyName = mappedFontFamily.FamilyNames.PrimaryFamilyName;
+                        }
+
+                        if (familyName == FontFamily.DefaultFontFamilyName)
+                        {
+                            return TryGetGlyphTypeface(new Typeface(DefaultFontFamily, typeface.Style, typeface.Weight, typeface.Stretch), out glyphTypeface);
                         }
 
                         if (TryGetGlyphTypefaceByKeyAndName(typeface, key, familyName, out glyphTypeface) &&
@@ -266,16 +271,35 @@ namespace Avalonia.Media
             }
 
             //Try to match against fallbacks first
-            if (fontFamily != null && fontFamily.Key is CompositeFontFamilyKey compositeKey)
+            if (fontFamily?.Key != null)
             {
-                for (int i = 0; i < compositeKey.Keys.Count; i++)
+                if (fontFamily.Key is CompositeFontFamilyKey compositeKey)
                 {
-                    var key = compositeKey.Keys[i];
-                    var familyName = fontFamily.FamilyNames[i];
-                    var source = key.Source.EnsureAbsolute(key.BaseUri);
+                    for (int i = 0; i < compositeKey.Keys.Count; i++)
+                    {
+                        var key = compositeKey.Keys[i];
+                        var familyName = fontFamily.FamilyNames[i];
+                        var source = key.Source.EnsureAbsolute(key.BaseUri);
 
-                    if (TryGetFontCollection(source, out var fontCollection) &&
-                        fontCollection.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, familyName, culture, out typeface))
+                        if (familyName == FontFamily.DefaultFontFamilyName)
+                        {
+                            familyName = DefaultFontFamily.Name;
+                        }
+
+                        if (TryGetFontCollection(source, out var fontCollection) &&
+                            fontCollection.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, familyName, culture, out typeface))
+                        {
+                            return true;
+                        }
+                    }
+                }
+
+                var fontUri = fontFamily.Key.Source.EnsureAbsolute(fontFamily.Key.BaseUri);
+
+                if (fontUri.IsFontCollection())
+                {
+                    if (TryGetFontCollection(fontUri, out var fontCollection) &&
+                            fontCollection.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, fontFamily.Name, culture, out typeface))
                     {
                         return true;
                     }
@@ -284,58 +308,6 @@ namespace Avalonia.Media
 
             //Try to find a match with the system font manager
             return PlatformImpl.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, culture, out typeface);
-        }
-
-        /// <summary>
-        /// Tries to create a synthetic glyph typefacefor specified source glyph typeface and font properties.
-        /// </summary>
-        /// <param name="fontManager">The font manager implementation.</param>
-        /// <param name="glyphTypeface">The source glyph typeface.</param>
-        /// <param name="style">The requested font style.</param>
-        /// <param name="weight">The requested font weight.</param>
-        /// <param name="syntheticGlyphTypeface">The created synthetic glyph typeface.</param>
-        /// <returns>
-        ///     <c>True</c>, if the <see cref="FontManager"/> could create a synthetic glyph typeface, <c>False</c> otherwise.
-        /// </returns>
-        internal static bool TryCreateSyntheticGlyphTypeface(IFontManagerImpl fontManager, IGlyphTypeface glyphTypeface, FontStyle style, FontWeight weight,
-           [NotNullWhen(true)] out IGlyphTypeface? syntheticGlyphTypeface)
-        {
-            if (fontManager == null)
-            {
-                syntheticGlyphTypeface = null;
-
-                return false;
-            }
-
-            if (glyphTypeface is IGlyphTypeface2 glyphTypeface2)
-            {
-                var fontSimulations = FontSimulations.None;
-
-                if (style != FontStyle.Normal && glyphTypeface2.Style != style)
-                {
-                    fontSimulations |= FontSimulations.Oblique;
-                }
-
-                if ((int)weight >= 600 && glyphTypeface2.Weight < weight)
-                {
-                    fontSimulations |= FontSimulations.Bold;
-                }
-
-                if (fontSimulations != FontSimulations.None && glyphTypeface2.TryGetStream(out var stream))
-                {
-                    using (stream)
-                    {
-                        fontManager.TryCreateGlyphTypeface(stream, fontSimulations,
-                            out syntheticGlyphTypeface);
-
-                        return syntheticGlyphTypeface != null;
-                    }
-                }
-            }
-
-            syntheticGlyphTypeface = null;
-
-            return false;
         }
 
         internal IReadOnlyList<Typeface> GetFamilyTypefaces(FontFamily fontFamily)
@@ -409,6 +381,15 @@ namespace Avalonia.Media
             }
 
             return defaultFontFamilyName;
+        }
+
+        void IDisposable.Dispose()
+        {
+            foreach (var pair in _fontCollections)
+                pair.Value.Dispose();
+
+            _fontCollections.Clear();
+            (PlatformImpl as IDisposable)?.Dispose();
         }
     }
 }

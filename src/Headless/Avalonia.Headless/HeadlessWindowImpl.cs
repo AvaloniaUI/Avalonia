@@ -59,10 +59,6 @@ namespace Avalonia.Headless
 
         public Compositor Compositor => AvaloniaHeadlessPlatform.Compositor!;
 
-        public void Invalidate(Rect rect)
-        {
-        }
-
         public void SetInputRoot(IInputRoot inputRoot)
         {
             InputRoot = inputRoot;
@@ -94,16 +90,6 @@ namespace Avalonia.Headless
         public void Hide()
         {
             Dispatcher.UIThread.Post(() => Deactivated?.Invoke(), DispatcherPriority.Input);
-        }
-
-        public void BeginMoveDrag()
-        {
-
-        }
-
-        public void BeginResizeDrag(WindowEdge edge)
-        {
-
         }
 
         public PixelPoint Position { get; set; }
@@ -177,6 +163,14 @@ namespace Avalonia.Headless
         public void CanResize(bool value)
         {
 
+        }
+
+        public void SetCanMinimize(bool value)
+        {
+        }
+
+        public void SetCanMaximize(bool value)
+        {
         }
 
         public Func<WindowCloseReason, bool>? Closing { get; set; }
@@ -353,8 +347,15 @@ namespace Avalonia.Headless
             Input?.Invoke(new RawMouseWheelEventArgs(MouseDevice, Timestamp, InputRoot!,
                 point, delta, modifiers));
         }
-        
+
+        [Obsolete($"Use the overload accepting a {nameof(IDataTransfer)} instance instead.")]
         void IHeadlessWindow.DragDrop(Point point, RawDragEventType type, IDataObject data, DragDropEffects effects, RawInputModifiers modifiers)
+        {
+            var device = AvaloniaLocator.Current.GetRequiredService<IDragDropDevice>();
+            Input?.Invoke(new RawDragEvent(device, type, InputRoot!, point, new DataObjectToDataTransferWrapper(data), effects, modifiers));
+        }
+
+        void IHeadlessWindow.DragDrop(Point point, RawDragEventType type, IDataTransfer data, DragDropEffects effects, RawInputModifiers modifiers)
         {
             var device = AvaloniaLocator.Current.GetRequiredService<IDragDropDevice>();
             Input?.Invoke(new RawDragEvent(device, type, InputRoot!, point, data, effects, modifiers));

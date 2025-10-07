@@ -16,6 +16,8 @@ WindowImpl::WindowImpl(IAvnWindowEvents *events) : TopLevelImpl(events), WindowB
     _extendClientHints = AvnDefaultChrome;
     _fullScreenActive = false;
     _canResize = true;
+    _canMinimize = true;
+    _canMaximize = true;
     _decorations = SystemDecorationsFull;
     _transitioningWindowState = false;
     _inSetWindowState = false;
@@ -191,7 +193,8 @@ bool WindowImpl::IsZoomed() {
 void WindowImpl::DoZoom() {
     if (_decorations == SystemDecorationsNone ||
         _decorations == SystemDecorationsBorderOnly ||
-        _canResize == false) {
+        _canResize == false ||
+        _canMaximize == false) {
         [Window setFrame:[Window screen].visibleFrame display:true];
     } else {
         [Window performZoom:Window];
@@ -206,6 +209,22 @@ HRESULT WindowImpl::SetCanResize(bool value) {
         UpdateAppearance();
         return S_OK;
     }
+}
+
+HRESULT WindowImpl::SetCanMinimize(bool value) {
+    START_COM_ARP_CALL;
+
+    _canMinimize = value;
+    UpdateAppearance();
+    return S_OK;
+}
+
+HRESULT WindowImpl::SetCanMaximize(bool value) {
+    START_COM_ARP_CALL;
+
+    _canMaximize = value;
+    UpdateAppearance();
+    return S_OK;
 }
 
 HRESULT WindowImpl::SetDecorations(SystemDecorations value) {
@@ -451,6 +470,10 @@ void WindowImpl::ExitFullScreenMode() {
 }
 
 HRESULT WindowImpl::SetWindowState(AvnWindowState state) {
+    return SetWindowState(state, true);
+}
+
+HRESULT WindowImpl::SetWindowState(AvnWindowState state, bool shouldResize) {
     START_COM_CALL;
 
     @autoreleasepool {
@@ -474,61 +497,63 @@ HRESULT WindowImpl::SetWindowState(AvnWindowState state) {
         if (_shown) {
             _actualWindowState = _lastWindowState;
 
-            switch (state) {
-                case Maximized:
-                    if (currentState == FullScreen) {
-                        ExitFullScreenMode();
-                    }
-
-                    lastPositionSet.X = 0;
-                    lastPositionSet.Y = 0;
-
-                    if ([Window isMiniaturized]) {
-                        [Window deminiaturize:Window];
-                    }
-
-                    if (!IsZoomed()) {
-                        DoZoom();
-                    }
-                    break;
-
-                case Minimized:
-                    if (currentState == FullScreen) {
-                        ExitFullScreenMode();
-                    } else {
-                        [Window miniaturize:Window];
-                    }
-                    break;
-
-                case FullScreen:
-                    if ([Window isMiniaturized]) {
-                        [Window deminiaturize:Window];
-                    }
-
-                    EnterFullScreenMode();
-                    break;
-
-                case Normal:
-                    if ([Window isMiniaturized]) {
-                        [Window deminiaturize:Window];
-                    }
-
-                    if (currentState == FullScreen) {
-                        ExitFullScreenMode();
-                    }
-
-                    if (IsZoomed()) {
-                        if (_decorations == SystemDecorationsFull) {
-                            DoZoom();
-                        } else {
-                            [Window setFrame:_preZoomSize display:true];
-                            auto newFrame = [Window contentRectForFrameRect:[Window frame]].size;
-
-                            [View setFrameSize:newFrame];
+            if (shouldResize) {
+                switch (state) {
+                    case Maximized:
+                        if (currentState == FullScreen) {
+                            ExitFullScreenMode();
                         }
 
-                    }
-                    break;
+                        lastPositionSet.X = 0;
+                        lastPositionSet.Y = 0;
+
+                        if ([Window isMiniaturized]) {
+                            [Window deminiaturize:Window];
+                        }
+
+                        if (!IsZoomed()) {
+                            DoZoom();
+                        }
+                        break;
+
+                    case Minimized:
+                        if (currentState == FullScreen) {
+                            ExitFullScreenMode();
+                        } else {
+                            [Window miniaturize:Window];
+                        }
+                        break;
+
+                    case FullScreen:
+                        if ([Window isMiniaturized]) {
+                            [Window deminiaturize:Window];
+                        }
+
+                        EnterFullScreenMode();
+                        break;
+
+                    case Normal:
+                        if ([Window isMiniaturized]) {
+                            [Window deminiaturize:Window];
+                        }
+
+                        if (currentState == FullScreen) {
+                            ExitFullScreenMode();
+                        }
+
+                        if (IsZoomed()) {
+                            if (_decorations == SystemDecorationsFull) {
+                                DoZoom();
+                            } else {
+                                [Window setFrame:_preZoomSize display:true];
+                                auto newFrame = [Window contentRectForFrameRect:[Window frame]].size;
+
+                                [View setFrameSize:newFrame];
+                            }
+
+                        }
+                        break;
+                }
             }
 
             WindowEvents->WindowStateChanged(_actualWindowState);
@@ -577,7 +602,7 @@ NSWindowStyleMask WindowImpl::CalculateStyleMask() {
             break;
     }
 
-    if (!IsOwned()) {
+    if (_canMinimize && !IsOwned()) {
         s |= NSWindowStyleMaskMiniaturizable;
     }
 
@@ -605,9 +630,9 @@ void WindowImpl::UpdateAppearance() {
     [closeButton setHidden:!hasTrafficLights];
     [closeButton setEnabled:_isEnabled];
     [miniaturizeButton setHidden:!hasTrafficLights];
-    [miniaturizeButton setEnabled:_isEnabled];
+    [miniaturizeButton setEnabled:_isEnabled && _canMinimize];
     [zoomButton setHidden:!hasTrafficLights];
-    [zoomButton setEnabled:CanZoom()];
+    [zoomButton setEnabled:CanZoom() || (([Window styleMask] & NSWindowStyleMaskFullScreen) != 0 && _isEnabled)];
 }
 
 extern IAvnWindow* CreateAvnWindow(IAvnWindowEvents*events)
