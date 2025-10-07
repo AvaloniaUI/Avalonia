@@ -231,7 +231,7 @@ partial class AvaloniaView
             }
             else
             {
-                var currentSelection = _client.Selection;
+                var currentSelection = _client.SelectionInSurroundingText;
                 var span = new CombinedSpan3<char>(surroundingText.AsSpan(0, currentSelection.Start),
                     _markedText,
                     surroundingText.AsSpan(currentSelection.Start, currentSelection.End - currentSelection.Start));
@@ -249,7 +249,7 @@ partial class AvaloniaView
             var r = (AvaloniaTextRange)range;
             Logger.TryGet(LogEventLevel.Debug, ImeLog)?
                 .Log(null, "IUIKeyInput.ReplaceText {start} {end} {text}", r.StartIndex, r.EndIndex, text);
-            _client.Selection = new TextSelection(r.StartIndex, r.EndIndex);
+            _client.SelectionInSurroundingText = new TextSelection(r.StartIndex, r.EndIndex);
             TextInput(text);
         }
 
@@ -470,19 +470,19 @@ partial class AvaloniaView
         {
             get
             {
-                return new AvaloniaTextRange(_client.Selection.Start, _client.Selection.End);
+                return new AvaloniaTextRange(_client.SelectionInSurroundingText.Start, _client.SelectionInSurroundingText.End);
             }
             set
             {
                 if (_inSurroundingTextUpdateEvent > 0)
                     return;
                 if (value == null)
-                    _client.Selection = default;
+                    _client.SelectionInSurroundingText = default;
                 else
                 {
                     var r = (AvaloniaTextRange)value;
 
-                    _client.Selection = new TextSelection(r.StartIndex, r.EndIndex);
+                    _client.SelectionInSurroundingText = new TextSelection(r.StartIndex, r.EndIndex);
                 }
             }
         }
@@ -504,7 +504,7 @@ partial class AvaloniaView
             {
                 if (string.IsNullOrWhiteSpace(_markedText))
                     return null!;
-                return new AvaloniaTextRange(_client.Selection.Start, _client.Selection.Start + _markedText.Length);
+                return new AvaloniaTextRange(_client.SelectionInSurroundingText.Start, _client.SelectionInSurroundingText.Start + _markedText.Length);
             }
         }
 

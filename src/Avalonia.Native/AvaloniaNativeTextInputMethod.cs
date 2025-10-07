@@ -97,7 +97,7 @@ namespace Avalonia.Native
             }
             
             var surroundingText = _client.SurroundingText;
-            var selection = _client.Selection;
+            var selection = _client.SelectionInSurroundingText;
 
             _inputMethod.SetSurroundingText(
                 surroundingText ?? "",
@@ -137,7 +137,7 @@ namespace Avalonia.Native
             {
                 if (_client.SupportsSurroundingText)
                 {
-                    _client.Selection = new TextSelection(start, end);
+                    _client.SelectionInSurroundingText = new TextSelection(start, end);
                 }
             }
         }

@@ -24,14 +24,14 @@ namespace Avalonia.Android.Platform.Input
         {
             get
             {
-                var selection = _textInputMethod.Client?.ActualSelection ?? default;
+                var selection = _textInputMethod.Client?.Selection ?? default;
                 return new TextSelection(Math.Min(selection.Start, selection.End), Math.Max(selection.Start, selection.End));
             }
 
             set
             {
                 if (_textInputMethod.Client is { } client)
-                    client.ActualSelection = value;
+                    client.Selection = value;
             }
         }
 
@@ -51,18 +51,18 @@ namespace Avalonia.Android.Platform.Input
             }
         }
 
-        public string? SelectedText
+        public Java.Lang.String? SelectedText
         {
             get
             {
                 if(_textInputMethod.Client is not { } client || Selection.Start < 0 || Selection.End >= client.Text.Length)
                 {
-                    return string.Empty;
+                    return new Java.Lang.String();
                 }
 
                 var selection = Selection;
 
-                return Text.Substring(selection.Start, selection.End - selection.Start);
+                return new Java.Lang.String(Text.Substring(selection.Start, selection.End - selection.Start));
             }
         }
 
@@ -105,14 +105,23 @@ namespace Avalonia.Android.Platform.Input
             }
         }
 
-        internal Java.Lang.ICharSequence? GetTextBeforeCursor(int n) => new Java.Lang.String(_textInputMethod.Client?.GetTextBeforeCaret(n) ?? string.Empty);
-        internal Java.Lang.ICharSequence? GetTextAfterCursor(int n) => new Java.Lang.String(_textInputMethod.Client?.GetTextAfterCaret(n) ?? string.Empty);
+        internal Java.Lang.ICharSequence? GetTextBeforeCursor(int n)
+        {
+            var start = Math.Max(Selection.Start - n, 0);
+            var length = Math.Min(n, Selection.Start);
+            return new Java.Lang.String(_textInputMethod.Client?.GetTextInRange(start, length).ToArray() ?? Array.Empty<char>());
+        }
+
+        internal Java.Lang.ICharSequence? GetTextAfterCursor(int n)
+        {
+            return new Java.Lang.String(_textInputMethod.Client?.GetTextInRange(Selection.End, n).ToArray() ?? Array.Empty<char>());
+        }
 
         internal void Remove(int index, int length)
         {
             if (_textInputMethod.Client is { } client)
             {
-                client.ActualSelection = new TextSelection(index, index + length);
+                client.Selection = new TextSelection(index, index + length);
                 if (length > 0)
                     _textInputMethod?.View.DispatchKeyEvent(new KeyEvent(KeyEventActions.Down, Keycode.ForwardDel));
             }
@@ -126,12 +135,12 @@ namespace Avalonia.Android.Platform.Input
                 var realEnd = Math.Max(start, end);
                 if (realEnd > realStart)
                 {
-                    client.ActualSelection = new TextSelection(realStart, realEnd);
+                    client.Selection = new TextSelection(realStart, realEnd);
                     _textInputMethod?.View.DispatchKeyEvent(new KeyEvent(KeyEventActions.Down, Keycode.ForwardDel));
                 }
                 _topLevel.TextInput(text);
                 var index = realStart + text.Length;
-                client.ActualSelection = new TextSelection(index, index);
+                client.Selection = new TextSelection(index, index);
                 Composition = null;
             }
         }

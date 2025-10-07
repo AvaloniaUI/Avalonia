@@ -298,7 +298,7 @@ namespace Avalonia.Win32.Input
             {
                 Client.SetPreeditText(null);
 
-                if (Client.SupportsSurroundingText && Client.Selection.Start != Client.Selection.End)
+                if (Client.SupportsSurroundingText && Client.SelectionInSurroundingText.Start != Client.SelectionInSurroundingText.End)
                 {
                     KeyPress(Key.Delete, PhysicalKey.Delete);
                 }

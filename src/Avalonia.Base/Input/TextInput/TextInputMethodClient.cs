@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Media.TextFormatting;
 
 namespace Avalonia.Input.TextInput
 {
@@ -64,7 +65,7 @@ namespace Avalonia.Input.TextInput
         /// <summary>
         /// Gets or sets the curent selection range within current surrounding text.
         /// </summary>
-        public abstract TextSelection Selection { get; set; }
+        public abstract TextSelection SelectionInSurroundingText { get; set; }
 
         /// <summary>
         /// Sets the non-committed input string
@@ -122,10 +123,9 @@ namespace Avalonia.Input.TextInput
             ResetRequested?.Invoke(this, EventArgs.Empty);
         }
 
-        internal virtual string GetTextBeforeCaret(int length) => string.Empty;
-        internal virtual string GetTextAfterCaret(int length) => string.Empty;
+        internal virtual ReadOnlySpan<char> GetTextInRange(int start, int length) => Span<char>.Empty;
 
-        internal virtual TextSelection ActualSelection { get => Selection; set => Selection = value; } 
+        internal virtual TextSelection Selection { get => SelectionInSurroundingText; set => SelectionInSurroundingText = value; } 
     }
 
     public record struct TextSelection(int Start, int End);

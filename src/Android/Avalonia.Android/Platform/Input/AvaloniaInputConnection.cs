@@ -279,7 +279,7 @@ namespace Avalonia.Android.Platform.Input
 
         public ICharSequence? GetSelectedTextFormatted([GeneratedEnum] GetTextFlags flags)
         {
-            return new Java.Lang.String(_editBuffer.SelectedText ?? "");
+            return _editBuffer.SelectedText;
         }
 
         public ICharSequence? GetTextAfterCursorFormatted(int n, [GeneratedEnum] GetTextFlags flags)

@@ -47,7 +47,7 @@ internal class BrowserTextInputMethod(
             ShowIme();
 
             var surroundingText = _client.SurroundingText ?? "";
-            var selection = _client.Selection;
+            var selection = _client.SelectionInSurroundingText;
 
             InputHelper.SetSurroundingText(_inputElement, surroundingText, selection.Start, selection.End);
         }
@@ -76,7 +76,7 @@ internal class BrowserTextInputMethod(
         if (_client != null)
         {
             var surroundingText = _client.SurroundingText ?? "";
-            var selection = _client.Selection;
+            var selection = _client.SelectionInSurroundingText;
 
             InputHelper.SetSurroundingText(_inputElement, surroundingText, selection.Start, selection.End);
         }
@@ -86,7 +86,7 @@ internal class BrowserTextInputMethod(
     {
         InputHelper.FocusElement(_inputElement);
         InputHelper.SetBounds(_inputElement, (int)rect.X, (int)rect.Y, (int)rect.Width, (int)rect.Height,
-            _client?.Selection.End ?? 0);
+            _client?.SelectionInSurroundingText.End ?? 0);
         InputHelper.FocusElement(_inputElement);
     }
 
@@ -118,7 +118,7 @@ internal class BrowserTextInputMethod(
 
         if (start != -1 && end != -1 && _client != null)
         {
-            _client.Selection = new TextSelection(start, end);
+            _client.SelectionInSurroundingText = new TextSelection(start, end);
         }
     }
 
