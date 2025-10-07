@@ -145,9 +145,9 @@ namespace Avalonia.FreeDesktop
                         // Reuse the file type objects from options
                         // so the consuming code can match exactly the
                         // file type selected instead of spawning one.
-                        selectedType = options.FileTypeChoices?.FirstOrDefault(type => type.Name == name ||
+                        selectedType = options.FileTypeChoices?.FirstOrDefault(type => type.Name == name && (
                             (type.MimeTypes?.All(y => mimeTypes.Contains(y)) ?? false) ||
-                            (type.Patterns?.All(y => patterns.Contains(y)) ?? false));
+                            (type.Patterns?.All(y => patterns.Contains(y)) ?? false)));
                     }
 
                     tsc.TrySetResult(x.Results["uris"].GetArray<string>());
