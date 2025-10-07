@@ -126,7 +126,7 @@ namespace Avalonia.Android.Platform.Input
 
             _inputConnection.IsInUpdate = true;
 
-            var selection = Client.ActualSelection;
+            var selection = Client.Selection;
 
             var composition = _inputConnection.EditBuffer.HasComposition ? _inputConnection.EditBuffer.Composition!.Value : new TextSelection(-1,-1);
 

@@ -48,97 +48,15 @@ namespace Avalonia.Controls
 
         internal override string Text => _presenter?.Text ?? string.Empty;
 
-        internal override string GetTextBeforeCaret(int length)
+        internal override ReadOnlySpan<char> GetTextInRange(int start, int length)
         {
             if (_presenter is null || _parent is null)
             {
-                return "";
+                return base.GetTextInRange(start, length);
             }
-            var selectionStart = _presenter.SelectionStart;
-
-            var lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(selectionStart, false);
-
-            var textLine = _presenter.TextLayout.TextLines[lineIndex];
-
-            var offset = selectionStart - textLine.FirstTextSourceIndex;
-
-            var currentLineLength = Math.Min(offset, length);
-            var start = Math.Max(offset - currentLineLength, 0);
-
-            var lineText = GetTextLineText(textLine);
-            var text = lineText.Substring(start, currentLineLength);
-
-            var newText = text;
-
-            length -= currentLineLength;
-
-            while (length > 0)
-            {
-                lineIndex--;
-                if (lineIndex >= 0)
-                {
-                    textLine = _presenter.TextLayout.TextLines[lineIndex];
-                    currentLineLength = Math.Min(textLine.Length, length);
-
-                    lineText = GetTextLineText(textLine);
-                    text = lineText.Substring(textLine.Length - currentLineLength, currentLineLength);
-
-                    newText = text + newText;
-
-                    length -= currentLineLength;
-                }
-                else
-                    break;
-            }
-
-            return newText;
-        }
-
-        internal override string GetTextAfterCaret(int length)
-        {
-            if (_presenter is null || _parent is null)
-            {
-                return "";
-            }
-
-            var selectionEnd = _presenter.SelectionStart;
-
-            var lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(selectionEnd, false);
-
-            var textLine = _presenter.TextLayout.TextLines[lineIndex];
-            var lastIndex = textLine.FirstTextSourceIndex + textLine.Length;
-
-            var currentLineLength = Math.Min(lastIndex - selectionEnd, length);
-            var start = Math.Max(selectionEnd - textLine.FirstTextSourceIndex, 0);
-
-            var builder = new StringBuilder();
-
-            var lineText = GetTextLineText(textLine);
-
-            builder.Append(lineText.Substring(start, currentLineLength));
-
-            length -= currentLineLength;
-
-            while (length > 0)
-            {
-                lineIndex++;
-                if (lineIndex < _presenter.TextLayout.TextLines.Count)
-                {
-                    textLine = _presenter.TextLayout.TextLines[lineIndex];
-                    currentLineLength = Math.Min(textLine.Length, length);
-
-                    lineText = GetTextLineText(textLine);
-                    var text = lineText.Substring(0, currentLineLength);
-
-                    builder.Append(text);
-
-                    length -= currentLineLength;
-                }
-                else
-                    break;
-            }
-
-            return builder.ToString();
+            var end = Math.Max(0 ,Math.Min(start + length, Text.Length - 1));
+            start = Math.Max(start, 0);
+            return Text.AsSpan().Slice(start, end - start);
         }
 
         public override Rect CursorRectangle
@@ -161,7 +79,7 @@ namespace Avalonia.Controls
             }
         }
 
-        public override TextSelection Selection
+        public override TextSelection SelectionInSurroundingText
         {
             get
             {
@@ -205,7 +123,7 @@ namespace Avalonia.Controls
             }
         }
 
-        internal override TextSelection ActualSelection
+        internal override TextSelection Selection
         {
             get
             {
