@@ -17,7 +17,7 @@ namespace Avalonia.Controls.UnitTests
             manager.Show("Notification text");
             manager.Show("Notification text");
 
-            Assert.Equal(3, manager.Notifications.Count);
+            Assert.Equal(3, manager.Notifications.Count());
         }
 
         [Fact]
@@ -27,7 +27,7 @@ namespace Avalonia.Controls.UnitTests
 
             manager.Show("Notification text");
 
-            Assert.Equal(1, manager.Notifications.Count);
+            Assert.Equal(1, manager.Notifications.Count());
 
             manager.Close("Notification text");
 
@@ -42,7 +42,7 @@ namespace Avalonia.Controls.UnitTests
             manager.Show("Notification 1");
             manager.Show("Notification 2");
 
-            Assert.Equal(2, manager.Notifications.Count);
+            Assert.Equal(2, manager.Notifications.Count());
 
             manager.CloseAll();
 
@@ -66,7 +66,7 @@ namespace Avalonia.Controls.UnitTests
             manager.Show(notification);
             manager.Show(notification);
 
-            Assert.Equal(3, ((WindowNotificationManager)manager).Notifications.Count);
+            Assert.Equal(3, ((WindowNotificationManager)manager).Notifications.Count());
         }
 
         [Fact]
@@ -81,7 +81,7 @@ namespace Avalonia.Controls.UnitTests
 
             manager.Show(notification);
 
-            Assert.Equal(1, ((WindowNotificationManager)manager).Notifications.Count);
+            Assert.Equal(1, ((WindowNotificationManager)manager).Notifications.Count());
 
             manager.Close(notification);
 
@@ -106,7 +106,7 @@ namespace Avalonia.Controls.UnitTests
             manager.Show(notification1);
             manager.Show(notification2);
 
-            Assert.Equal(2, ((WindowNotificationManager)manager).Notifications.Count);
+            Assert.Equal(2, ((WindowNotificationManager)manager).Notifications.Count());
 
             manager.CloseAll();
 

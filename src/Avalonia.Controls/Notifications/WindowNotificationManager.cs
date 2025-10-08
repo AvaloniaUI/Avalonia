@@ -21,8 +21,7 @@ namespace Avalonia.Controls.Notifications
         /// <summary>
         /// Currently active notifications.
         /// </summary>
-        internal IReadOnlyCollection<NotificationCard> Notifications =>
-            _items is null ? [] : [.. _items.OfType<NotificationCard>()];
+        internal IEnumerable<NotificationCard> Notifications => _items.OfType<NotificationCard>();
 
         /// <summary>
         /// Defines the <see cref="Position"/> property.
@@ -154,9 +153,9 @@ namespace Avalonia.Controls.Notifications
 
             _items.Add(notificationControl);
 
-            if (_items.OfType<NotificationCard>().Count(i => !i.IsClosing) > MaxItems)
+            if (Notifications.Count(i => !i.IsClosing) > MaxItems)
             {
-                _items.OfType<NotificationCard>().First(i => !i.IsClosing).Close();
+                Notifications.First(i => !i.IsClosing).Close();
             }
 
             if (expiration == TimeSpan.Zero)
@@ -175,7 +174,7 @@ namespace Avalonia.Controls.Notifications
         {
             Dispatcher.UIThread.VerifyAccess();
 
-            var cardsToClose = _items.OfType<NotificationCard>().Where(x => x.ContentEquals(content));
+            var cardsToClose = Notifications.Where(x => x.Content?.Equals(content) ?? false);
             cardsToClose?.Do(x => x.Close());
         }
 
@@ -184,7 +183,7 @@ namespace Avalonia.Controls.Notifications
         {
             Dispatcher.UIThread.VerifyAccess();
 
-            _items.OfType<NotificationCard>().Do(x => x.Close());
+            Notifications.Do(x => x.Close());
         }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

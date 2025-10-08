@@ -189,12 +189,5 @@ namespace Avalonia.Controls.Notifications
                     break;
             }
         }
-
-        /// <summary>
-        /// Determines whether the <see cref="NotificationCard"/>'s content is equal to the specified object.
-        /// </summary>
-        /// <param name="o">The object with which to test equality.</param>
-        /// <returns><see langword="true"/> if the objects are equal, otherwise <see langword="false"/>.</returns>
-        public bool ContentEquals(object? o) => Content?.Equals(o) ?? false;
     }
 }
