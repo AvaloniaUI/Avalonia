@@ -148,7 +148,7 @@ namespace Avalonia.FreeDesktop
                         selectedType = options.FileTypeChoices?.FirstOrDefault(type => type.Name == name && (
                             (type.MimeTypes?.All(y => mimeTypes.Contains(y)) ?? false) ||
                             (type.Patterns?.All(y => patterns.Contains(y)) ?? false))) 
-                            ?? new FilePickerFileType(name);
+                            ?? new FilePickerFileType(name) { MimeTypes = mimeTypes, Patterns = patterns };
                     }
 
                     tsc.TrySetResult(x.Results["uris"].GetArray<string>());
