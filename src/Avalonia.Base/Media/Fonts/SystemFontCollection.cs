@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -7,7 +6,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.Media.Fonts
 {
-    internal class SystemFontCollection : FontCollectionBase, IFontCollection2
+    internal class SystemFontCollection : FontCollectionBase
     {
         private readonly FontManager _fontManager;
         private readonly List<string> _familyNames;
@@ -15,7 +14,7 @@ namespace Avalonia.Media.Fonts
         public SystemFontCollection(FontManager fontManager)
         {
             _fontManager = fontManager;
-            _familyNames = fontManager.PlatformImpl.GetInstalledFontFamilyNames().Where(x=> !string.IsNullOrEmpty(x)).ToList();
+            _familyNames = fontManager.PlatformImpl.GetInstalledFontFamilyNames().Where(x => !string.IsNullOrEmpty(x)).ToList();
         }
 
         public override Uri Key => FontManager.SystemFontsKey;
@@ -43,9 +42,12 @@ namespace Avalonia.Media.Fonts
         public override bool TryGetGlyphTypeface(string familyName, FontStyle style, FontWeight weight,
             FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
         {
-            glyphTypeface = null;
-
             var typeface = new Typeface(familyName, style, weight, stretch).Normalize(out familyName);
+
+            if (base.TryGetGlyphTypeface(familyName, style, weight, stretch, out glyphTypeface))
+            {
+                return true;
+            }
 
             style = typeface.Style;
 
@@ -55,53 +57,29 @@ namespace Avalonia.Media.Fonts
 
             var key = new FontCollectionKey(style, weight, stretch);
 
-            if (_glyphTypefaceCache.TryGetValue(familyName, out var glyphTypefaces))
+            //Check cache first to avoid unnecessary calls to the font manager
+            if (_glyphTypefaceCache.TryGetValue(familyName, out var glyphTypefaces) && glyphTypefaces.TryGetValue(key, out glyphTypeface))
             {
-                if (glyphTypefaces.TryGetValue(key, out glyphTypeface))
-                {
-                    return glyphTypeface != null;
-                }
+                return glyphTypeface != null;
             }
 
-            glyphTypefaces ??= _glyphTypefaceCache.GetOrAdd(familyName,
-                (_) => new ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>());
-
             //Try to create the glyph typeface via system font manager
-            if (!_fontManager.PlatformImpl.TryCreateGlyphTypeface(familyName, style, weight, stretch,
-                    out glyphTypeface))
+            if (!_fontManager.PlatformImpl.TryCreateGlyphTypeface(familyName, style, weight, stretch, out glyphTypeface))
             {
-                glyphTypefaces.TryAdd(key, null);
+                //Add null to cache to avoid future calls
+                TryAddGlyphTypeface(familyName, key, null);
 
                 return false;
             }
 
-            var createdKey =
-                new FontCollectionKey(glyphTypeface.Style, glyphTypeface.Weight, glyphTypeface.Stretch);
-
-            //No exact match
-            if (createdKey != key)
+            //Add to cache
+            if(!TryAddGlyphTypeface(glyphTypeface))
             {
-                //Add the created glyph typeface to the cache so we can match it.
-                glyphTypefaces.TryAdd(createdKey, glyphTypeface);
-
-                //Try to find nearest match if possible
-                if (TryGetNearestMatch(glyphTypefaces, key, out var nearestMatch))
-                {
-                    glyphTypeface = nearestMatch;
-                }
-
-                //Try to create a synthetic glyph typeface
-                if (TryCreateSyntheticGlyphTypeface(glyphTypeface, style, weight, stretch, out var syntheticGlyphTypeface))
-                {
-                    glyphTypeface = syntheticGlyphTypeface;
-
-                    return true;
-                }
+                return false;
             }
 
-            glyphTypefaces.TryAdd(key, glyphTypeface);
-
-            return glyphTypeface != null;
+            //Requested glyph typeface should be in cache now
+            return base.TryGetGlyphTypeface(familyName, style, weight, stretch, out glyphTypeface);
         }
 
         public override void Initialize(IFontManagerImpl fontManager)
@@ -134,34 +112,19 @@ namespace Avalonia.Media.Fonts
                     continue;
                 }
 
+                var key = new FontCollectionKey(glyphTypeface.Style, glyphTypeface.Weight, glyphTypeface.Stretch);
+
                 //Add TypographicFamilyName to the cache
                 if (glyphTypeface is IGlyphTypeface2 glyphTypeface2 && !string.IsNullOrEmpty(glyphTypeface2.TypographicFamilyName))
                 {
-                    AddGlyphTypefaceByFamilyName(glyphTypeface2.TypographicFamilyName, glyphTypeface);
+                    TryAddGlyphTypeface(glyphTypeface2.TypographicFamilyName, key, glyphTypeface);
                 }
 
-                AddGlyphTypefaceByFamilyName(glyphTypeface.FamilyName, glyphTypeface);
-            }
-
-            return;
-
-            void AddGlyphTypefaceByFamilyName(string familyName, IGlyphTypeface glyphTypeface)
-            {
-                var typefaces = _glyphTypefaceCache.GetOrAdd(familyName,
-                    x =>
-                    {
-                        _familyNames.Insert(0, familyName);
-
-                        return new ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>();
-                    });
-
-                typefaces.TryAdd(
-                    new FontCollectionKey(glyphTypeface.Style, glyphTypeface.Weight, glyphTypeface.Stretch),
-                    glyphTypeface);
+                TryAddGlyphTypeface(glyphTypeface.FamilyName, key, glyphTypeface);
             }
         }
 
-        public bool TryGetFamilyTypefaces(string familyName, [NotNullWhen(true)] out IReadOnlyList<Typeface>? familyTypefaces)
+        public override bool TryGetFamilyTypefaces(string familyName, [NotNullWhen(true)] out IReadOnlyList<Typeface>? familyTypefaces)
         {
             familyTypefaces = null;
 

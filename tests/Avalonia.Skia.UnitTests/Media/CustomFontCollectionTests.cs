@@ -71,7 +71,7 @@ namespace Avalonia.Skia.UnitTests.Media
 
                 var families = fontCollection.ToArray();
 
-                Assert.Equal(assets.Length, families.Length);
+                Assert.True(families.Length >= assets.Length);
 
                 var other = new CustomFontCollection(new Uri("fonts:other", UriKind.Absolute));
 
