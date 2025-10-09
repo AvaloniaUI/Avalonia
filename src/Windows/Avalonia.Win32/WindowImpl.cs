@@ -1120,8 +1120,8 @@ namespace Avalonia.Win32
             }
             else
             {
-                AdjustWindowRectExForDpi(ref borderCaptionThickness, GetStyle(), false, 0, (uint)(RenderScaling * StandardDpi));
-                AdjustWindowRectExForDpi(ref borderThickness, GetStyle() & ~WindowStyles.WS_CAPTION, false, 0, (uint)(RenderScaling * StandardDpi));
+                AdjustWindowRectExForDpi(ref borderCaptionThickness, GetStyle(), false, 0, scaling);
+                AdjustWindowRectExForDpi(ref borderThickness, GetStyle() & ~WindowStyles.WS_CAPTION, false, 0, scaling);
             }
 
             borderThickness.left *= -1;
