@@ -10,13 +10,13 @@ namespace Avalonia.Platform;
 public interface IPlatformTextShapingInterface
 {
     [PrivateApi]
-    public interface IWrappingGlyphTypefaceImpl : IGlyphTypeface
+    public interface IGlyphTypefaceWithRenderPlatformGlyphTypeface : IGlyphTypeface
     {
-        IWrappedPlatformTypefaceImpl RenderPlatformTypeface {get;}
+        IRenderPlatformGlyphTypefaceImpl RenderPlatformTypeface {get;}
     }
     
     [PrivateApi]
-    public interface IWrappedPlatformTypefaceImpl : IDisposable
+    public interface IRenderPlatformGlyphTypefaceImpl : IDisposable
     {
         IShapingFontTable? TryGetTableData(uint tag);
         bool TryGetTableData(uint tag, out byte[] table);
@@ -39,6 +39,6 @@ public interface IPlatformTextShapingInterface
     public ITextShaperImpl ShaperImpl { get; }
 
     
-    IGlyphTypeface CreateTypeface(IWrappedPlatformTypefaceImpl typeface);
+    IGlyphTypeface CreateTypeface(IRenderPlatformGlyphTypefaceImpl typeface);
     
 }

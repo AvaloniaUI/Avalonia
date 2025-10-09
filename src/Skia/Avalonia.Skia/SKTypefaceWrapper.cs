@@ -9,7 +9,7 @@ using SkiaSharp;
 namespace Avalonia.Skia;
 
 internal class SKTypefaceWrapper(SKTypeface typeface, FontSimulations fontSimulations)
-    : IPlatformTextShapingInterface.IWrappedPlatformTypefaceImpl
+    : IPlatformTextShapingInterface.IRenderPlatformGlyphTypefaceImpl
 {
     public SKTypeface Typeface => typeface;
     public int UnitsPerEm => typeface.UnitsPerEm;

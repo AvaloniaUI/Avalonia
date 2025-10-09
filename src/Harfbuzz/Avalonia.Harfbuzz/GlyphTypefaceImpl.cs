@@ -13,16 +13,16 @@ using HarfBuzzSharp;
 
 namespace Avalonia.Harfbuzz
 {
-    internal class GlyphTypefaceImpl : IGlyphTypeface2, IPlatformTextShapingInterface.IWrappingGlyphTypefaceImpl
+    internal class GlyphTypefaceImpl : IGlyphTypeface2, IPlatformTextShapingInterface.IGlyphTypefaceWithRenderPlatformGlyphTypeface
     {
         private bool _isDisposed;
         private readonly NameTable? _nameTable;
         private readonly OS2Table? _os2Table;
         private readonly HorizontalHeadTable? _hhTable;
         private IReadOnlyList<OpenTypeTag>? _supportedFeatures;
-        private readonly IPlatformTextShapingInterface.IWrappedPlatformTypefaceImpl _typeface;
+        private readonly IPlatformTextShapingInterface.IRenderPlatformGlyphTypefaceImpl _typeface;
 
-        public GlyphTypefaceImpl(IPlatformTextShapingInterface.IWrappedPlatformTypefaceImpl typeface)
+        public GlyphTypefaceImpl(IPlatformTextShapingInterface.IRenderPlatformGlyphTypefaceImpl typeface)
         {
             _typeface = typeface ?? throw new ArgumentNullException(nameof(typeface));
 
@@ -359,6 +359,6 @@ namespace Avalonia.Harfbuzz
             return _typeface.TryGetTableData(tag, out table);
         }
 
-        public IPlatformTextShapingInterface.IWrappedPlatformTypefaceImpl RenderPlatformTypeface => _typeface;
+        public IPlatformTextShapingInterface.IRenderPlatformGlyphTypefaceImpl RenderPlatformTypeface => _typeface;
     }
 }

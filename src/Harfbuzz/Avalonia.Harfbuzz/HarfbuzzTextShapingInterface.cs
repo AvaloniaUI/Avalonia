@@ -8,7 +8,7 @@ namespace Avalonia.Harfbuzz;
 class HarfbuzzTextShapingInterface : IPlatformTextShapingInterface
 {
     public ITextShaperImpl ShaperImpl { get; } = new TextShaperImpl();
-    public IGlyphTypeface CreateTypeface(IPlatformTextShapingInterface.IWrappedPlatformTypefaceImpl typeface) => new GlyphTypefaceImpl(typeface);
+    public IGlyphTypeface CreateTypeface(IPlatformTextShapingInterface.IRenderPlatformGlyphTypefaceImpl typeface) => new GlyphTypefaceImpl(typeface);
 }
 
 [PrivateApi]

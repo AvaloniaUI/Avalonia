@@ -37,7 +37,7 @@ namespace Avalonia.Skia
             }
 
             GlyphTypeface = glyphTypeface;
-            _glyphTypefaceImpl = (SKTypefaceWrapper)((IPlatformTextShapingInterface.IWrappingGlyphTypefaceImpl)glyphTypeface).RenderPlatformTypeface;
+            _glyphTypefaceImpl = (SKTypefaceWrapper)((IPlatformTextShapingInterface.IGlyphTypefaceWithRenderPlatformGlyphTypeface)glyphTypeface).RenderPlatformTypeface;
             FontRenderingEmSize = fontRenderingEmSize;
 
             var count = glyphInfos.Count;
