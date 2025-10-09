@@ -1868,6 +1868,8 @@ namespace Avalonia.Controls
                     SetCurrentValue(SelectionEndProperty, caretIndex);
                 }
 
+                _presenter.TextSelectionHandleCanvas?.Show();
+
                 if (SelectionStart != SelectionEnd)
                 {
                     _presenter.TextSelectionHandleCanvas?.ShowContextMenu();

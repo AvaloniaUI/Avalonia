@@ -27,7 +27,7 @@ internal abstract class PlatformDataTransferItem : IDataTransferItem, IAsyncData
         => Array.IndexOf(Formats, format) >= 0;
 
     public object? TryGetRaw(DataFormat format)
-        => Contains(format) ? TryGetRawCore(format) : Task.FromResult<object?>(null);
+        => Contains(format) ? TryGetRawCore(format) : null;
 
     public Task<object?> TryGetRawAsync(DataFormat format)
     {

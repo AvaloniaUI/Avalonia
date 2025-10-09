@@ -26,7 +26,7 @@ public interface IAsyncDataTransferItem
     /// of the generic argument of the underlying <see cref="DataFormat{T}"/>.
     /// </para>
     /// <para>
-    /// To retrieve a typed value, use <see cref="DataTransferItemExtensions.TryGetValue"/>.
+    /// To retrieve a typed value, use <see cref="AsyncDataTransferItemExtensions.TryGetValueAsync"/>.
     /// </para>
     /// </remarks>
     /// <seealso cref="AsyncDataTransferItemExtensions.TryGetValueAsync"/>
