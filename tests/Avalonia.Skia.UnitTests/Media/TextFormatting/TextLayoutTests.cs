@@ -1217,7 +1217,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         {
             var disposable = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface
                 .With(renderInterface: new PlatformRenderInterface(null),
-                    textShaperImpl: new TextShaperImpl(),
+                    textShaperImpl: SkiaPlatform.ShapingInterface.ShaperImpl,
                     fontManagerImpl: new CustomFontManagerImpl()));
 
             return disposable;

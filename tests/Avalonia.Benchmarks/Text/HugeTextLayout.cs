@@ -35,7 +35,7 @@ public class HugeTextLayout : IDisposable
         if (s_useSkia)
         {
             testServices = testServices.With(
-                textShaperImpl: new TextShaperImpl(),
+                textShaperImpl: SkiaPlatform.ShapingInterface.ShaperImpl,
                 fontManagerImpl: new FontManagerImpl());
         }
 

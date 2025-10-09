@@ -81,7 +81,7 @@ namespace Avalonia.Skia.UnitTests.Media
             var skTypeface = SKTypeface.FromFamilyName(familyName,
                         (SKFontStyleWeight)weight, SKFontStyleWidth.Normal, (SKFontStyleSlant)style);
 
-            glyphTypeface = new GlyphTypefaceImpl(skTypeface, FontSimulations.None);
+            glyphTypeface = SkiaPlatform.CreateGlyphTypeface(skTypeface, FontSimulations.None);
 
             return true;
         }
@@ -90,7 +90,7 @@ namespace Avalonia.Skia.UnitTests.Media
         {
             var skTypeface = SKTypeface.FromStream(stream);
 
-            glyphTypeface = new GlyphTypefaceImpl(skTypeface, fontSimulations);
+            glyphTypeface =  SkiaPlatform.CreateGlyphTypeface(skTypeface, fontSimulations);
 
             return true;
         }
