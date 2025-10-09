@@ -100,7 +100,8 @@ namespace Avalonia.Skia
                 fontSimulations |= FontSimulations.Oblique;
             }
 
-            glyphTypeface = new GlyphTypefaceImpl(skTypeface, fontSimulations);
+            glyphTypeface =
+                SkiaPlatform.ShapingInterface.CreateTypeface(new SKTypefaceWrapper(skTypeface, fontSimulations));
 
             return true;
         }
@@ -111,7 +112,8 @@ namespace Avalonia.Skia
 
             if (skTypeface != null)
             {
-                glyphTypeface = new GlyphTypefaceImpl(skTypeface, fontSimulations);
+                glyphTypeface =
+                    SkiaPlatform.ShapingInterface.CreateTypeface(new SKTypefaceWrapper(skTypeface, fontSimulations));
 
                 return true;
             }

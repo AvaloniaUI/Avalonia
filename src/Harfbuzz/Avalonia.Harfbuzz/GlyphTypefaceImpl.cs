@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -8,21 +8,21 @@ using Avalonia.Media;
 using Avalonia.Media.Fonts;
 using Avalonia.Media.Fonts.Tables;
 using Avalonia.Media.Fonts.Tables.Name;
+using Avalonia.Platform;
 using HarfBuzzSharp;
-using SkiaSharp;
 
-namespace Avalonia.Skia
+namespace Avalonia.Harfbuzz
 {
-    internal class GlyphTypefaceImpl : IGlyphTypeface2
+    internal class GlyphTypefaceImpl : IGlyphTypeface2, IPlatformTextShapingInterface.IWrappingGlyphTypefaceImpl
     {
         private bool _isDisposed;
-        private readonly SKTypeface _typeface;
         private readonly NameTable? _nameTable;
         private readonly OS2Table? _os2Table;
         private readonly HorizontalHeadTable? _hhTable;
         private IReadOnlyList<OpenTypeTag>? _supportedFeatures;
+        private readonly IPlatformTextShapingInterface.IWrappedPlatformTypefaceImpl _typeface;
 
-        public GlyphTypefaceImpl(SKTypeface typeface, FontSimulations fontSimulations)
+        public GlyphTypefaceImpl(IPlatformTextShapingInterface.IWrappedPlatformTypefaceImpl typeface)
         {
             _typeface = typeface ?? throw new ArgumentNullException(nameof(typeface));
 
@@ -88,6 +88,7 @@ namespace Avalonia.Skia
 
             GlyphCount = typeface.GlyphCount;
 
+            var fontSimulations = typeface.FontSimulations;
             FontSimulations = fontSimulations;
 
             var fontWeight = _os2Table != null ? (FontWeight)_os2Table.WeightClass : FontWeight.Normal;
@@ -152,6 +153,9 @@ namespace Avalonia.Skia
                 FaceNames = new Dictionary<ushort, string> { { (ushort)CultureInfo.InvariantCulture.LCID, Weight.ToString() } };
             }
         }
+
+        public bool TryGetStream([NotNullWhen(true)] out Stream? stream) => _typeface.TryGetStream(out stream);
+        
 
         public string TypographicFamilyName { get; }
 
@@ -315,22 +319,15 @@ namespace Avalonia.Skia
 
         private Blob? GetTable(Face face, Tag tag)
         {
-            var size = _typeface.GetTableSize(tag);
-
-            var data = Marshal.AllocCoTaskMem(size);
-
-            var releaseDelegate = new ReleaseDelegate(() => Marshal.FreeCoTaskMem(data));
-
-            return _typeface.TryGetTableData(tag, 0, size, data) ?
-                new Blob(data, size, MemoryMode.ReadOnly, releaseDelegate) : null;
-        }
-
-        public SKFont CreateSKFont(float size)
-            => new(_typeface, size, skewX: (FontSimulations & FontSimulations.Oblique) != 0 ? -0.3f : 0.0f)
+            var table = _typeface.TryGetTableData(tag);
+            if (table == null || table.Length == 0)
             {
-                LinearMetrics = true,
-                Embolden = (FontSimulations & FontSimulations.Bold) != 0
-            };
+                table?.Dispose();
+                return null;
+            }
+
+            return new Blob(table.Data, table.Length, MemoryMode.ReadOnly, () => table.Dispose());
+        }
 
         private void Dispose(bool disposing)
         {
@@ -362,26 +359,6 @@ namespace Avalonia.Skia
             return _typeface.TryGetTableData(tag, out table);
         }
 
-        public bool TryGetStream([NotNullWhen(true)] out Stream? stream)
-        {
-            try
-            {
-                var asset = _typeface.OpenStream();
-                var size = asset.Length;
-                var buffer = new byte[size];
-
-                asset.Read(buffer, size);
-
-                stream = new MemoryStream(buffer);
-
-                return true;
-            }
-            catch
-            {
-                stream = null;
-
-                return false;
-            }
-        }
+        public IPlatformTextShapingInterface.IWrappedPlatformTypefaceImpl RenderPlatformTypeface => _typeface;
     }
 }

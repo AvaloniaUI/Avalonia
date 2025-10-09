@@ -81,7 +81,10 @@ namespace Avalonia.Skia
 
         public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun)
         {
-            if (glyphRun.GlyphTypeface is not GlyphTypefaceImpl glyphTypeface)
+            if (glyphRun.GlyphTypeface is not IPlatformTextShapingInterface.IWrappingGlyphTypefaceImpl
+                {
+                    RenderPlatformTypeface: SKTypefaceWrapper glyphTypeface
+                })
             {
                 throw new InvalidOperationException("PlatformImpl can't be null.");
             }

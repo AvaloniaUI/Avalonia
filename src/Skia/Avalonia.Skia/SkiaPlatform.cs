@@ -22,8 +22,10 @@ namespace Avalonia.Skia
             AvaloniaLocator.CurrentMutable
                 .Bind<IPlatformRenderInterface>().ToConstant(renderInterface)
                 .Bind<IFontManagerImpl>().ToConstant(new FontManagerImpl())
-                .Bind<ITextShaperImpl>().ToConstant(new TextShaperImpl());
+                .Bind<ITextShaperImpl>().ToConstant(ShapingInterface.ShaperImpl);
         }
+
+        internal static IPlatformTextShapingInterface ShapingInterface = Harfbuzz.HarfbuzzTextShaping.Create();
 
         /// <summary>
         /// Default DPI.

@@ -302,6 +302,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ControlCatalog.MacCatalyst"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ControlCatalog.tvOS", "samples\ControlCatalog.tvOS\ControlCatalog.tvOS.csproj", "{14342787-B4EF-4076-8C91-BA6C523DE8DF}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Harfbuzz", "Harfbuzz", "{7670D720-6E84-4AFC-8331-A5C399481905}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Harfbuzz", "src\Harfbuzz\Avalonia.Harfbuzz\Avalonia.Harfbuzz.csproj", "{E2BFA463-6402-4EF8-8945-FD9A10A914D1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -704,6 +708,10 @@ Global
 		{14342787-B4EF-4076-8C91-BA6C523DE8DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{14342787-B4EF-4076-8C91-BA6C523DE8DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{14342787-B4EF-4076-8C91-BA6C523DE8DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E2BFA463-6402-4EF8-8945-FD9A10A914D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E2BFA463-6402-4EF8-8945-FD9A10A914D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E2BFA463-6402-4EF8-8945-FD9A10A914D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E2BFA463-6402-4EF8-8945-FD9A10A914D1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -793,6 +801,7 @@ Global
 		{255614F5-CB64-4ECA-A026-E0B1AF6A2EF4} = {9B9E3891-2366-4253-A952-D08BCEB71098}
 		{DE3C28DD-B602-4750-831D-345102A54CA0} = {9B9E3891-2366-4253-A952-D08BCEB71098}
 		{14342787-B4EF-4076-8C91-BA6C523DE8DF} = {9B9E3891-2366-4253-A952-D08BCEB71098}
+		{E2BFA463-6402-4EF8-8945-FD9A10A914D1} = {7670D720-6E84-4AFC-8331-A5C399481905}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {87366D66-1391-4D90-8999-95A620AD786A}
