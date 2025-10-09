@@ -348,13 +348,14 @@ namespace Avalonia.Media.Fonts
                     }
                 case "file":
                     {
-                        if (!File.Exists(source.LocalPath))
-                        {
-                            return false;
-                        }
-
+                        // If the path is a file, load the font file directly
                         if (FontFamilyLoader.IsFontSource(source))
                         {
+                            if (!File.Exists(source.LocalPath))
+                            {
+                                return false;
+                            }
+
                             using var stream = File.OpenRead(source.LocalPath);
 
                             if (FontManagerImpl.TryCreateGlyphTypeface(stream, FontSimulations.None, out var glyphTypeface))
@@ -365,25 +366,25 @@ namespace Avalonia.Media.Fonts
                                 }
                             }
                         }
+                        // If the path is a directory, load all font files from that directory
                         else
                         {
-                            // If the path is a directory, load all font files from that directory
-                            var directoryPath = source.LocalPath;
-
-                            if (Directory.Exists(directoryPath))
+                            if (!Directory.Exists(source.LocalPath))
                             {
-                                foreach (var file in Directory.EnumerateFiles(directoryPath))
-                                {
-                                    if (FontFamilyLoader.IsFontFile(file))
-                                    {
-                                        using var stream = File.OpenRead(file);
+                                return false;
+                            }
 
-                                        if (FontManagerImpl.TryCreateGlyphTypeface(stream, FontSimulations.None, out var glyphTypeface))
+                            foreach (var file in Directory.EnumerateFiles(source.LocalPath))
+                            {
+                                if (FontFamilyLoader.IsFontFile(file))
+                                {
+                                    using var stream = File.OpenRead(file);
+
+                                    if (FontManagerImpl.TryCreateGlyphTypeface(stream, FontSimulations.None, out var glyphTypeface))
+                                    {
+                                        if (TryAddGlyphTypeface(glyphTypeface))
                                         {
-                                            if (TryAddGlyphTypeface(glyphTypeface))
-                                            {
-                                                result = true;
-                                            }
+                                            result = true;
                                         }
                                     }
                                 }
@@ -408,7 +409,7 @@ namespace Avalonia.Media.Fonts
             {
                 index = ~index;
             }
-               
+
             _fontFamilies.Insert(index, fontFamily);
         }
 

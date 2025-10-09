@@ -95,7 +95,7 @@ namespace Avalonia.Skia.UnitTests.Media
         }
 
         [Fact]
-        public void Should_AddGlyphTypeface_From_File()
+        public void Should_AddFontSource_From_File()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
             {
@@ -108,11 +108,12 @@ namespace Avalonia.Skia.UnitTests.Media
                 Assert.True(File.Exists(fontPath));
 
                 var fontUri = new Uri(fontPath, UriKind.Absolute);
+
+                // Add the font file
                 Assert.True(fontCollection.TryAddFontSource(fontUri));
 
                 // Check if the font was loaded
                 Assert.True(fontCollection.TryGetGlyphTypeface("Inter", FontStyle.Normal, FontWeight.Regular, FontStretch.Normal, out var glyphTypeface));
-                Assert.NotNull(glyphTypeface);
                 Assert.Equal("Inter", glyphTypeface.FamilyName);
 
                 // Check if the FontManager can find the font
@@ -120,6 +121,66 @@ namespace Avalonia.Skia.UnitTests.Media
                 Assert.Equal(glyphTypeface, glyphTypeface2);
             }
         }
+
+        [Fact]
+        public void Should_AddFontSource_From_Folder()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                var fontManager = FontManager.Current;
+                var fontCollection = new CustomFontCollection(new Uri("fonts:custom", UriKind.Absolute));
+                fontManager.AddFontCollection(fontCollection);
+
+                // Path to the test fonts
+                var fontsFolder = Path.Combine(AppContext.BaseDirectory, "Assets");
+                Assert.True(Directory.Exists(fontsFolder));
+
+                var folderUri = new Uri(fontsFolder + Path.DirectorySeparatorChar, UriKind.Absolute);
+
+                // Add the fonts
+                Assert.True(fontCollection.TryAddFontSource(folderUri));
+
+                // Check if the font was loaded
+                Assert.True(fontCollection.TryGetGlyphTypeface("Inter", FontStyle.Normal, FontWeight.Regular, FontStretch.Normal, out var glyphTypeface));
+                Assert.Equal("Inter", glyphTypeface.FamilyName);
+
+                // Check if the FontManager can find the font
+                Assert.True(fontManager.TryGetGlyphTypeface(new Typeface("fonts:custom#Inter"), out var glyphTypeface2));
+                Assert.Equal(glyphTypeface, glyphTypeface2);
+            }
+        }
+
+        [Fact]
+        public void Should_AddFontSource_From_Resource()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                var fontManager = FontManager.Current;
+                var fontCollection = new CustomFontCollection(new Uri("fonts:custom", UriKind.Absolute));
+                fontManager.AddFontCollection(fontCollection);
+
+                // Use the NotoMono resource as FontSource
+                var notoMonoUri = new Uri(NotoMono, UriKind.Absolute);
+
+                // Add the font resource
+                Assert.True(fontCollection.TryAddFontSource(notoMonoUri));
+
+                // Get the loaded family names
+                var families = fontCollection.ToArray();
+
+                Assert.NotEmpty(families);
+
+                // Try to get a GlyphTypeface
+                Assert.True(fontCollection.TryGetGlyphTypeface("Noto Mono", FontStyle.Normal, FontWeight.Regular, FontStretch.Normal, out var glyphTypeface));
+                Assert.Equal("Noto Mono", glyphTypeface.FamilyName);
+
+                // Check if the FontManager can find the font
+                Assert.True(fontManager.TryGetGlyphTypeface(new Typeface("fonts:custom#Noto Mono"), out var glyphTypeface2));
+                Assert.Equal(glyphTypeface, glyphTypeface2);
+            }
+        }
+
+
 
         private class CustomFontCollection(Uri key) : FontCollectionBase
         {
