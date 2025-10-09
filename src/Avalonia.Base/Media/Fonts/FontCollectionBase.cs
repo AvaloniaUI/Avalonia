@@ -4,20 +4,38 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.IO;
 using Avalonia.Platform;
 
 namespace Avalonia.Media.Fonts
 {
     public abstract class FontCollectionBase : IFontCollection2
     {
+        private static readonly Comparer<FontFamily> FontFamilyNameComparer =
+            Comparer<FontFamily>.Create((a, b) => string.Compare(a.Name, b.Name, StringComparison.InvariantCultureIgnoreCase));
+
         protected readonly ConcurrentDictionary<string, ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>> _glyphTypefaceCache = new();
         private readonly List<FontFamily> _fontFamilies = [];
+        private IFontManagerImpl? _fontManagerImpl;
 
         public abstract Uri Key { get; }
 
         public virtual int Count => _fontFamilies.Count;
 
         public virtual FontFamily this[int index] => _fontFamilies[index];
+
+        protected IFontManagerImpl FontManagerImpl
+        {
+            get
+            {
+                if (_fontManagerImpl is null)
+                {
+                    throw new InvalidOperationException("Font collection is not initialized.");
+                }
+
+                return _fontManagerImpl;
+            }
+        }
 
         public virtual bool TryMatchCharacter(int codepoint, FontStyle style, FontWeight weight, FontStretch stretch,
             string? familyName, CultureInfo? culture, out Typeface match)
@@ -134,7 +152,10 @@ namespace Avalonia.Media.Fonts
             return false;
         }
 
-        public abstract void Initialize(IFontManagerImpl fontManager);
+        public virtual void Initialize(IFontManagerImpl fontManagerImpl)
+        {
+            _fontManagerImpl = fontManagerImpl;
+        }
 
         public virtual IEnumerator<FontFamily> GetEnumerator() => _fontFamilies.GetEnumerator();
 
@@ -209,7 +230,6 @@ namespace Avalonia.Media.Fonts
             return TryGetNearestMatch(glyphTypefaces, key, out glyphTypeface);
         }
 
-
         /// <summary>
         /// Attempts to add the specified <see cref="IGlyphTypeface"/> to the font collection.
         /// </summary>
@@ -221,7 +241,7 @@ namespace Avalonia.Media.Fonts
         /// cref="IGlyphTypeface.FamilyName"/>.</param>
         /// <returns><see langword="true"/> if the glyph typeface was successfully added to the collection; otherwise, <see
         /// langword="false"/>.</returns>
-        internal bool TryAddGlyphTypeface(IGlyphTypeface glyphTypeface)
+        public bool TryAddGlyphTypeface(IGlyphTypeface glyphTypeface)
         {
             if (glyphTypeface == null || string.IsNullOrEmpty(glyphTypeface.FamilyName))
             {
@@ -257,6 +277,139 @@ namespace Avalonia.Media.Fonts
             {
                 return TryAddGlyphTypeface(glyphTypeface.FamilyName, key, glyphTypeface);
             }
+        }
+
+        public bool TryAddGlyphTypeface(Stream stream)
+        {
+            if (!FontManagerImpl.TryCreateGlyphTypeface(stream, FontSimulations.None, out var glyphTypeface))
+            {
+                return false;
+            }
+
+            return TryAddGlyphTypeface(glyphTypeface);
+        }
+
+        /// <summary>
+        /// Attempts to add a font source to the font collection.
+        /// </summary>
+        /// <remarks>This method processes the specified font source and attempts to load all available
+        /// fonts from it.  Fonts are added to the collection based on their family name and typographic family name (if
+        /// available). If the <paramref name="source"/> is <see langword="null"/>, the method returns <see
+        /// langword="false"/>.</remarks>
+        /// <param name="source">The URI of the font source to add. This can be a file path, a resource URI, or another valid font source
+        /// URI.</param>
+        /// <returns><see langword="true"/> if at least one font from the specified source was successfully added to the font
+        /// collection;  otherwise, <see langword="false"/>.</returns>
+        public bool TryAddFontSource(Uri source)
+        {
+            if (source is null)
+            {
+                return false;
+            }
+
+            var result = false;
+
+            switch (source.Scheme)
+            {
+                case "avares":
+                case "resm":
+                    {
+                        var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
+
+                        var fontAssets = FontFamilyLoader.LoadFontAssets(source);
+
+                        foreach (var fontAsset in fontAssets)
+                        {
+                            var stream = assetLoader.Open(fontAsset);
+
+                            if (!FontManagerImpl.TryCreateGlyphTypeface(stream, FontSimulations.None, out var glyphTypeface))
+                            {
+                                continue;
+                            }
+
+                            var key = new FontCollectionKey(glyphTypeface.Style, glyphTypeface.Weight, glyphTypeface.Stretch);
+
+                            //Add TypographicFamilyName to the cache
+                            if (glyphTypeface is IGlyphTypeface2 glyphTypeface2 && !string.IsNullOrEmpty(glyphTypeface2.TypographicFamilyName))
+                            {
+                                if (TryAddGlyphTypeface(glyphTypeface2.TypographicFamilyName, key, glyphTypeface))
+                                {
+                                    result = true;
+                                }
+                            }
+
+                            if (TryAddGlyphTypeface(glyphTypeface.FamilyName, key, glyphTypeface))
+                            {
+                                result = true;
+                            }
+                        }
+
+                        break;
+                    }
+                case "file":
+                    {
+                        if (!File.Exists(source.LocalPath))
+                        {
+                            return false;
+                        }
+
+                        if (FontFamilyLoader.IsFontSource(source))
+                        {
+                            using var stream = File.OpenRead(source.LocalPath);
+
+                            if (FontManagerImpl.TryCreateGlyphTypeface(stream, FontSimulations.None, out var glyphTypeface))
+                            {
+                                if (TryAddGlyphTypeface(glyphTypeface))
+                                {
+                                    result = true;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // If the path is a directory, load all font files from that directory
+                            var directoryPath = source.LocalPath;
+
+                            if (Directory.Exists(directoryPath))
+                            {
+                                foreach (var file in Directory.EnumerateFiles(directoryPath))
+                                {
+                                    if (FontFamilyLoader.IsFontFile(file))
+                                    {
+                                        using var stream = File.OpenRead(file);
+
+                                        if (FontManagerImpl.TryCreateGlyphTypeface(stream, FontSimulations.None, out var glyphTypeface))
+                                        {
+                                            if (TryAddGlyphTypeface(glyphTypeface))
+                                            {
+                                                result = true;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        break;
+                    }
+                default:
+                    //Unsupported scheme
+                    return false;
+            }
+
+            return result;
+        }
+
+        protected void AddFontFamily(FontFamily fontFamily)
+        {
+            int index = _fontFamilies.BinarySearch(fontFamily, FontFamilyNameComparer);
+
+            if (index < 0)
+            {
+                index = ~index;
+            }
+               
+            _fontFamilies.Insert(index, fontFamily);
         }
 
         /// <summary>

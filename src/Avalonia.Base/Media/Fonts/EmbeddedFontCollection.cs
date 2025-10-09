@@ -6,7 +6,6 @@ namespace Avalonia.Media.Fonts
     public class EmbeddedFontCollection : FontCollectionBase
     {
         private readonly Uri _key;
-
         private readonly Uri _source;
 
         public EmbeddedFontCollection(Uri key, Uri source)
@@ -20,19 +19,9 @@ namespace Avalonia.Media.Fonts
 
         public override void Initialize(IFontManagerImpl fontManager)
         {
-            var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
+            base.Initialize(fontManager);
 
-            var fontAssets = FontFamilyLoader.LoadFontAssets(_source);
-
-            foreach (var fontAsset in fontAssets)
-            {
-                var stream = assetLoader.Open(fontAsset);
-
-                if (fontManager.TryCreateGlyphTypeface(stream, FontSimulations.None, out var glyphTypeface))
-                {
-                    TryAddGlyphTypeface(glyphTypeface);
-                }
-            }
+            TryAddFontSource(_source);
         }
     }
 }
