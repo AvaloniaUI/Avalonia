@@ -24,5 +24,11 @@ namespace Avalonia
         /// Enabling this might have performance implications.
         /// </remarks>
         public bool UseOpacitySaveLayer { get; set; } = false;
+
+        /// <summary>
+        /// Perform the GL buffer swap on the CPU instead of the GPU. This can help with some rendering issues on certain PCs.
+        /// Note that this may have a performance hit. The default value is false.
+        /// </summary>
+        public bool PerformGlSwapOnCpu { get; set; } = false;
     }
 }
