@@ -55,7 +55,7 @@ namespace Avalonia.Controls
                 return base.GetTextInRange(start, length);
             }
             var end = Math.Max(0 ,Math.Min(start + length, Text.Length - 1));
-            start = Math.Max(start, 0);
+            start = Math.Min(Math.Max(start, 0), end);
             return Text.AsSpan().Slice(start, end - start);
         }
 
