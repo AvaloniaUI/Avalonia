@@ -10,7 +10,7 @@ namespace Avalonia.Data.Core;
 internal class MultiBindingExpression : UntypedBindingExpressionBase, IBindingExpressionSink
 {
     private static readonly object s_uninitialized = new object();
-    private readonly IBinding[] _bindings;
+    private readonly BindingBase[] _bindings;
     private readonly IMultiValueConverter? _converter;
     private readonly CultureInfo? _converterCulture;
     private readonly object? _converterParameter;
@@ -22,7 +22,7 @@ internal class MultiBindingExpression : UntypedBindingExpressionBase, IBindingEx
 
     public MultiBindingExpression(
         BindingPriority priority,
-        IList<IBinding> bindings,
+        IList<BindingBase> bindings,
         IMultiValueConverter? converter,
         CultureInfo? converterCulture,
         object? converterParameter,
@@ -63,12 +63,7 @@ internal class MultiBindingExpression : UntypedBindingExpressionBase, IBindingEx
 
         for (var i = 0; i < _bindings.Length; ++i)
         {
-            var binding = _bindings[i]; 
-
-            if (binding is not IBinding2 b)
-                throw new NotSupportedException($"Unsupported IBinding implementation '{binding}'.");
-
-            var expression = b.Instance(target, null, null);
+            var expression = _bindings[i].CreateInstance(target, null, null);
 
             if (expression is not UntypedBindingExpressionBase e)
                 throw new NotSupportedException($"Unsupported BindingExpressionBase implementation '{expression}'.");

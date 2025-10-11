@@ -10,7 +10,7 @@ namespace Avalonia.Controls.Utils;
 internal sealed class BindingEvaluator<T> : StyledElement, IDisposable
 {
     private BindingExpressionBase? _expression;
-    private IBinding? _lastBinding;
+    private BindingBase? _lastBinding;
 
     [SuppressMessage(
         "AvaloniaProperty",
@@ -37,7 +37,7 @@ internal sealed class BindingEvaluator<T> : StyledElement, IDisposable
         return GetValue(ValueProperty);
     }
 
-    public void UpdateBinding(IBinding binding)
+    public void UpdateBinding(BindingBase binding)
     {
         if (binding == _lastBinding)
             return;
@@ -59,7 +59,7 @@ internal sealed class BindingEvaluator<T> : StyledElement, IDisposable
     }
 
     [return: NotNullIfNotNull(nameof(binding))]
-    public static BindingEvaluator<T>? TryCreate(IBinding? binding)
+    public static BindingEvaluator<T>? TryCreate(BindingBase? binding)
     {
         if (binding is null)
             return null;

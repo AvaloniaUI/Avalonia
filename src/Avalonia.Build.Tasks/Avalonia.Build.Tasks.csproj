@@ -71,13 +71,13 @@
         <Link>Markup\AssetLoader.cs</Link>
       </Compile>
       <Compile Include="..\Avalonia.Base\Utilities\StringBuilderCache.cs" Link="Utilities\StringBuilderCache.cs" />
-      <Compile Include="..\Markup\Avalonia.Markup\Markup\Parsers\ArgumentListParser.cs">
+      <Compile Include="..\Avalonia.Base\Data\Core\Parsers\ArgumentListParser.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
       <Compile Include="../Avalonia.Base/Utilities/KeywordParser.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
-      <Compile Include="..\Markup\Avalonia.Markup\Markup\Parsers\BindingExpressionGrammar.cs">
+      <Compile Include="..\Avalonia.Base\Data\Core\Parsers\BindingExpressionGrammar.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
       <Compile Include="../Avalonia.Base/Utilities/StyleClassParser.cs">
