@@ -776,6 +776,8 @@ namespace Avalonia.Controls
             _scaling = ValidateScaling(scaling);
             LayoutHelper.InvalidateSelfAndChildrenMeasure(this);
             Dispatcher.UIThread.Send(_ => ScalingChanged?.Invoke(this, EventArgs.Empty));
+
+            InvalidateChildInsetsPadding();
         }
 
         private void HandleTransparencyLevelChanged(WindowTransparencyLevel transparencyLevel)
