@@ -9,6 +9,7 @@ using Avalonia.Platform.Storage.FileIO;
 using Avalonia.Win32.Interop;
 using Avalonia.Win32.Win32Com;
 using MicroCom.Runtime;
+using Avalonia.Logging;
 
 namespace Avalonia.Win32
 {
@@ -80,7 +81,7 @@ namespace Avalonia.Win32
             Func<string, TStorageItem> convert)
             where TStorageItem : IStorageItem
         {
-            return Task.Run(() =>
+            return Task.Factory.StartNew(() =>
             {
                 IReadOnlyList<TStorageItem> result = Array.Empty<TStorageItem>();
                 try
@@ -194,7 +195,7 @@ namespace Avalonia.Win32
                     var message = new Win32Exception(ex.HResult).Message;
                     throw new COMException(message, ex);
                 }
-            });
+            }, TaskCreationOptions.LongRunning);
         }
 
 
@@ -202,7 +203,7 @@ namespace Avalonia.Win32
         {
             return GetDisplayName(shellItem, SIGDN_DESKTOPABSOLUTEPARSING);
         }
-        
+
         private static unsafe string? GetDisplayName(IShellItem shellItem, uint sigdnName)
         {
             char* pszString = null;
@@ -220,24 +221,24 @@ namespace Avalonia.Win32
             return default;
         }
 
-        private static byte[] FiltersToPointer(IReadOnlyList<FilePickerFileType>? filters, out int length)
+        private byte[] FiltersToPointer(IReadOnlyList<FilePickerFileType>? filters, out int length)
         {
-            if (filters == null || filters.Count == 0)
+            if (filters is not { Count: > 0 })
             {
-                filters = new List<FilePickerFileType>
-                {
-                    FilePickerFileTypes.All
-                };
+                filters = [FilePickerFileTypes.All];
             }
 
             var size = Marshal.SizeOf<UnmanagedMethods.COMDLG_FILTERSPEC>();
             var resultArr = new byte[size * filters.Count];
+            length = filters.Count;
 
             for (int i = 0; i < filters.Count; i++)
             {
                 var filter = filters[i];
-                if (filter.Patterns is null || filter.Patterns.Count == 0)
+                if (filter.Patterns is not { Count: > 0 })
                 {
+                    length--;
+                    Logger.TryGet(LogEventLevel.Warning, LogArea.Win32Platform)?.Log(this, $"Skipping invalid {nameof(FilePickerFileType)} '{filter.Name ?? "[unnamed]"}': no patterns defined.");
                     continue;
                 }
 
@@ -259,7 +260,6 @@ namespace Avalonia.Win32
                 }
             }
 
-            length = filters.Count;
             return resultArr;
         }
     }
