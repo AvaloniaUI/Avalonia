@@ -102,7 +102,14 @@ namespace Avalonia.Controls.Notifications
         /// <inheritdoc/>
         public void Show(object content)
         {
-            Show(content, NotificationType.Information);
+            if (content is INotification notification)
+            {
+                Show(notification, notification.Type, notification.Expiration, notification.OnClick, notification.OnClose);
+            }
+            else
+            {
+                Show(content, NotificationType.Information);
+            }
         }
 
         /// <summary>
