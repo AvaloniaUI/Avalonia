@@ -37,15 +37,13 @@ namespace Avalonia.Skia.UnitTests.Media
 
                 Assert.NotNull(notoMonoStream);
 
-                Assert.True(fontCollection.TryAddGlyphTypeface(notoMonoStream));
+                Assert.True(fontCollection.TryAddGlyphTypeface(notoMonoStream, out var glyphTypeface));
 
-                Assert.True(fontCollection.TryGetGlyphTypeface("Inter", FontStyle.Normal, FontWeight.Regular, FontStretch.Normal, out var firstGlyphTypeface));
-
-                Assert.Equal("Inter", firstGlyphTypeface.FamilyName);
+                Assert.Equal("Inter", glyphTypeface.FamilyName);
 
                 Assert.True(fontManager.TryGetGlyphTypeface(new Typeface("fonts:custom#Inter"), out var secondGlyphTypeface));
 
-                Assert.Equal(firstGlyphTypeface, secondGlyphTypeface);
+                Assert.Equal(glyphTypeface, secondGlyphTypeface);
             }
         }
 
@@ -66,7 +64,7 @@ namespace Avalonia.Skia.UnitTests.Media
 
                 foreach (var asset in assets)
                 {
-                    fontCollection.TryAddGlyphTypeface(assetLoader.Open(asset));
+                    fontCollection.TryAddGlyphTypeface(assetLoader.Open(asset), out _);
                 }
 
                 var families = fontCollection.ToArray();
