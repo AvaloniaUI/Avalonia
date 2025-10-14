@@ -6,7 +6,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Reactive;
 using Avalonia.Media;
-using Avalonia.Utilities;
 
 namespace Avalonia.Controls
 {
@@ -145,6 +144,18 @@ namespace Avalonia.Controls
 
             // Return result to allocate enough space for the transformation
             return transformedDesiredSize;
+        }
+        
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+            SubscribeLayoutTransform(LayoutTransform as Transform);
+        }
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTree(e);
+            UnsubscribeLayoutTransform(LayoutTransform as Transform);
         }
 
         private IDisposable? _renderTransformChangedEvent;
@@ -424,23 +435,34 @@ namespace Avalonia.Controls
 
         private void OnLayoutTransformChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            //if LayoutTransform is set via global style or theme, LayoutTransformControl will not be collected
-            if (e.OldValue is Transform oldTransform)
+            if (this.IsAttachedToVisualTree)
             {
-                WeakEventHandlerManager.Unsubscribe<EventArgs, LayoutTransformControl>(oldTransform, nameof(Transform.Changed), OnTransformPropertyChanged);
+                UnsubscribeLayoutTransform(e.OldValue as Transform);
+                SubscribeLayoutTransform(e.NewValue as Transform);
             }
-
-            if (e.NewValue is Transform newTransform)
-            {
-                WeakEventHandlerManager.Subscribe<Transform, EventArgs, LayoutTransformControl>(newTransform, nameof(Transform.Changed), OnTransformPropertyChanged);
-            }
-
+            
             ApplyLayoutTransform();
         }
 
-        private void OnTransformPropertyChanged(object? sender, EventArgs e)
+        private void OnTransformChanged(object? sender, EventArgs e)
         {
             ApplyLayoutTransform();
+        }
+        
+        private void SubscribeLayoutTransform(Transform? transform)
+        {
+            if (transform != null)
+            {
+                transform.Changed += OnTransformChanged;
+            }
+        }
+        
+        private void UnsubscribeLayoutTransform(Transform? transform)
+        {
+            if (transform != null)
+            {
+                transform.Changed -= OnTransformChanged;
+            }
         }
     }
 }
