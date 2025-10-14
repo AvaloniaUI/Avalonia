@@ -605,21 +605,30 @@
 
 - (id _Nullable) accessibilityFocusedUIElement
 {
-    if (![self automationPeer]->IsRootProvider())
+    auto automationPeer = [self automationPeer];
+    if (automationPeer == nullptr || !automationPeer->IsRootProvider())
         return nil;
-    auto focusedPeer = [self automationPeer]->RootProvider_GetFocus();
+
+    auto focusedPeer = automationPeer->RootProvider_GetFocus();
+    if (focusedPeer == nullptr)
+        return nil;
+
     return [AvnAccessibilityElement acquire:focusedPeer];
 }
 
 - (NSString * _Nullable) accessibilityIdentifier
 {
-    return GetNSStringAndRelease([self automationPeer]->GetAutomationId());
+    auto automationPeer = [self automationPeer];
+    if (automationPeer == nullptr)
+        return nil;
+
+    return GetNSStringAndRelease(automationPeer->GetAutomationId());
 }
 
 - (IAvnAutomationPeer* _Nonnull) automationPeer
 {
     auto parent = _parent.tryGet();
-    if (_automationPeer == nullptr)
+    if (parent && _automationPeer == nullptr)
     {
         _automationPeer = parent->BaseEvents->GetAutomationPeer();
         _automationNode = new AvnAutomationNode(self);
@@ -632,7 +641,8 @@
 - (void)raiseChildrenChanged
 {
     auto parent = _parent.tryGet();
-    [parent->View raiseAccessibilityChildrenChanged];
+    if(parent)
+        [parent->View raiseAccessibilityChildrenChanged];
 }
 
 - (void)raiseFocusChanged

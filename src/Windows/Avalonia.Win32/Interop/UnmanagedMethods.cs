@@ -1370,10 +1370,10 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll", EntryPoint = "LoadCursorW", ExactSpelling = true)]
         public static extern IntPtr LoadCursor(IntPtr hInstance, IntPtr lpCursorName);
 
-        [DllImport("user32.dll")]
+        [DllImport("user32.dll", SetLastError = true)]
         public static extern IntPtr CreateIconIndirect([In] ref ICONINFO iconInfo);
 
-        [DllImport("user32.dll")]
+        [DllImport("user32.dll", SetLastError = true)]
         public static extern IntPtr CreateIconFromResourceEx(byte* pbIconBits, uint cbIconBits,
             int fIcon, int dwVersion, int csDesired, int cyDesired, int flags);
 
@@ -1683,9 +1683,9 @@ namespace Avalonia.Win32.Interop
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool CloseHandle(IntPtr hObject);
-        [DllImport("gdi32.dll", SetLastError = true)]
+        [DllImport("gdi32.dll")]
         public static extern IntPtr CreateDIBSection(IntPtr hDC, ref BITMAPINFOHEADER pBitmapInfo, int un, out IntPtr lplpVoid, IntPtr handle, int dw);
-        [DllImport("gdi32.dll", SetLastError = true)]
+        [DllImport("gdi32.dll")]
         public static extern IntPtr CreateBitmap(int width, int height, int planes, int bitCount, IntPtr data);
         [DllImport("gdi32.dll")]
         public static extern int DeleteObject(IntPtr hObject);

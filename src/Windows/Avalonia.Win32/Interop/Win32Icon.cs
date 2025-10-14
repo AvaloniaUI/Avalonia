@@ -49,23 +49,30 @@ internal class Win32Icon : IDisposable
         }
     }
 
+    ~Win32Icon()
+    {
+        UnmanagedMethods.DestroyIcon(Handle);
+    }
+
     public IntPtr Handle { get; private set; }
     public PixelSize Size { get; }
     
     private readonly byte[]? _bytes;
+
+    private const string GdiError = "A GDI+ error occurred.";
     
     IntPtr CreateIcon(Bitmap bitmap, PixelPoint hotSpot = default)
     {
 
         var mainBitmap = CreateHBitmap(bitmap);
         if (mainBitmap == IntPtr.Zero)
-            throw new Win32Exception();
+            throw new Win32Exception(GdiError);
         var alphaBitmap = AlphaToMask(bitmap);
 
         try
         {
             if (alphaBitmap == IntPtr.Zero)
-                throw new Win32Exception();
+                throw new Win32Exception(GdiError);
             var info = new UnmanagedMethods.ICONINFO
             {
                 IsIcon = false,
@@ -77,7 +84,7 @@ internal class Win32Icon : IDisposable
 
             var hIcon = UnmanagedMethods.CreateIconIndirect(ref info);
             if (hIcon == IntPtr.Zero)
-                throw new Win32Exception();
+                throw new Win32Exception(Marshal.GetLastWin32Error());
             return hIcon;
         }
         finally
@@ -303,6 +310,7 @@ internal class Win32Icon : IDisposable
 
             var bestSize = new PixelSize(bestWidth, bestHeight);
 
+            IntPtr handle;
             // Copy the bytes into an aligned buffer if needed.
             if ((_bestImageOffset % IntPtr.Size) != 0)
             {
@@ -314,8 +322,8 @@ internal class Win32Icon : IDisposable
                 {
                     fixed (byte* pbAlignedBuffer = alignedBuffer)
                     {
-                        return (UnmanagedMethods.CreateIconFromResourceEx(pbAlignedBuffer, _bestBytesInRes, 1,
-                            0x00030000, 0, 0, 0), bestSize);
+                        handle = UnmanagedMethods.CreateIconFromResourceEx(pbAlignedBuffer, _bestBytesInRes, 1,
+                            0x00030000, 0, 0, 0);
                     }
                 }
                 finally
@@ -328,14 +336,26 @@ internal class Win32Icon : IDisposable
             {
                 try
                 {
-                    return (UnmanagedMethods.CreateIconFromResourceEx(checked(b + _bestImageOffset), _bestBytesInRes,
-                        1, 0x00030000, 0, 0, 0), bestSize);
+                    handle = UnmanagedMethods.CreateIconFromResourceEx(checked(b + _bestImageOffset), _bestBytesInRes,
+                        1, 0x00030000, 0, 0, 0);
                 }
                 catch (OverflowException)
                 {
                     return default;
                 }
             }
+
+            if (handle == default)
+            {
+                var error = Marshal.GetLastWin32Error();
+                // If there we are out of GDI handles then our fallback won't work either, so throw now.
+                if (error == (int)Windows.Win32.Foundation.WIN32_ERROR.ERROR_NOT_ENOUGH_MEMORY)
+                {
+                    throw new Win32Exception(error);
+                }
+            }
+
+            return (handle, bestSize);
         }
     }
 
@@ -348,5 +368,6 @@ internal class Win32Icon : IDisposable
     {
         UnmanagedMethods.DestroyIcon(Handle);
         Handle = IntPtr.Zero;
+        GC.SuppressFinalize(this);
     }
 }

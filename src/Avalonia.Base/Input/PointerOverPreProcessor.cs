@@ -77,7 +77,7 @@ namespace Avalonia.Input
                         args.InputModifiers.ToKeyModifiers());
                 }
                 else if (pointerDevice.TryGetPointer(args) is { } pointer &&
-                    pointer.Type != PointerType.Touch)
+                    pointer.Type != PointerType.Touch && args.Type != RawPointerEventType.CancelCapture)
                 {
                     var element = GetEffectivePointerOverElement(
                         args.InputHitTestResult.firstEnabledAncestor,
