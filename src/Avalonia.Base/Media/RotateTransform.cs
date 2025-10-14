@@ -5,7 +5,7 @@ using Avalonia.VisualTree;
 namespace Avalonia.Media
 {
     /// <summary>
-    /// Rotates an <see cref="Visual"/>.
+    /// Rotates a <see cref="Visual"/>.
     /// </summary>
     public sealed class RotateTransform : Transform
     {
@@ -49,8 +49,8 @@ namespace Avalonia.Media
         /// Initializes a new instance of the <see cref="RotateTransform"/> class.
         /// </summary>
         /// <param name="angle">The angle, in degrees.</param>
-        /// <param name="centerX">The x-coordinate of the center point for the rotation.</param>
-        /// <param name="centerY">The y-coordinate of the center point for the rotation.</param>
+        /// <param name="centerX">The x-coordinate of the center point for the rotation with 0 being the <see cref="Visual.RenderTransformOrigin"/> point (center by default).</param>
+        /// <param name="centerY">The y-coordinate of the center point for the rotation with 0 being the <see cref="Visual.RenderTransformOrigin"/> point (center by default).</param>
         public RotateTransform(double angle, double centerX, double centerY)
             : this()
         {
@@ -69,7 +69,7 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Gets or sets the x-coordinate of the rotation center point. The default is 0.
+        /// Gets or sets the x-coordinate of the rotation center point. The default is 0 which is the <see cref="Visual.RenderTransformOrigin"/> point (center by default).
         /// </summary>
         public double CenterX
         {
@@ -78,7 +78,7 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Gets or sets the y-coordinate of the rotation center point. The default is 0.
+        /// Gets or sets the y-coordinate of the rotation center point. The default is 0 which is the <see cref="Visual.RenderTransformOrigin"/> point (center by default).
         /// </summary>
         public double CenterY
         {
