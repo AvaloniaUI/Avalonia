@@ -279,9 +279,20 @@ namespace Avalonia.Media.Fonts
             }
         }
 
-        public bool TryAddGlyphTypeface(Stream stream)
+        /// <summary>
+        /// Attempts to add a glyph typeface from the specified font stream.
+        /// </summary>
+        /// <remarks>The method first attempts to create a glyph typeface from the provided font stream.
+        /// If successful, it adds the created glyph typeface to the collection.</remarks>
+        /// <param name="stream">The font stream containing the font data. The stream must be readable and positioned at the beginning of the
+        /// font data.</param>
+        /// <param name="glyphTypeface">When this method returns, contains the created <see cref="IGlyphTypeface"/> instance if the operation
+        /// succeeds; otherwise, <see langword="null"/>.</param>
+        /// <returns><see langword="true"/> if the glyph typeface was successfully created and added; otherwise, <see
+        /// langword="false"/>.</returns>
+        public bool TryAddGlyphTypeface(Stream stream, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
         {
-            if (!FontManagerImpl.TryCreateGlyphTypeface(stream, FontSimulations.None, out var glyphTypeface))
+            if (!FontManagerImpl.TryCreateGlyphTypeface(stream, FontSimulations.None, out glyphTypeface))
             {
                 return false;
             }
