@@ -74,13 +74,12 @@ namespace Avalonia.Input
                 }
             }
 
-            if (source == CaptureSource.Explicit)
-                PlatformCapture(control);
-
             if (oldVisual != null)
                 oldVisual.DetachedFromVisualTree -= OnCaptureDetached;
-            
             Captured = control;
+
+            if (source == CaptureSource.Explicit)
+                PlatformCapture(control);
 
             if (oldVisual != null)
                 foreach (var notifyTarget in oldVisual.GetSelfAndVisualAncestors().OfType<IInputElement>())
