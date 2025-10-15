@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using Android.Runtime;
 using Android.Views;
+using Avalonia.Logging;
 using Avalonia.Platform;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
@@ -11,14 +12,16 @@ namespace Avalonia.Android.Platform.SkiaPlatform
     {
         private IntPtr _window;
 
-        public AndroidFramebuffer(Surface surface, double scaling)
+        public AndroidFramebuffer(InvalidationAwareSurfaceView surface, double scaling)
         {
             if(surface == null)
                 throw new ArgumentNullException(nameof(surface));
-            _window = ANativeWindow_fromSurface(JNIEnv.Handle, surface.Handle);
+            _window = (surface as IPlatformHandle).Handle;
             if (_window == IntPtr.Zero)
                 throw new Exception("Unable to obtain ANativeWindow");
             ANativeWindow_Buffer buffer;
+            Logger.TryGet(LogEventLevel.Verbose, LogArea.AndroidPlatform)?
+                .Log(this, "Creating AndroidFrameBuffer");
             var rc = new ARect()
             {
                 right = ANativeWindow_getWidth(_window),

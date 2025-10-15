@@ -62,7 +62,7 @@ namespace Avalonia
         /// <exception cref="System.InvalidOperationException">Thrown if no values were matched.</exception>
         public IReadOnlyList<AndroidRenderingMode> RenderingMode { get; set; } = new[]
         {
-            AndroidRenderingMode.Egl, AndroidRenderingMode.Software
+            AndroidRenderingMode.Software
         };
     }
 }
