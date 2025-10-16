@@ -11,6 +11,9 @@ using Avalonia.Data.Core.ExpressionNodes.Reflection;
 namespace Avalonia.Data.Core.Parsers;
 
 [RequiresUnreferencedCode(TrimmingMessages.ExpressionNodeRequiresUnreferencedCodeMessage)]
+#if NET8_0_OR_GREATER
+[RequiresDynamicCode(TrimmingMessages.ExpressionNodeRequiresDynamicCodeMessage)]
+#endif
 internal class BindingExpressionVisitor<TIn> : ExpressionVisitor
 {
     private static readonly PropertyInfo AvaloniaObjectIndexer;

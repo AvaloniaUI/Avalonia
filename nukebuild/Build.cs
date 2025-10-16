@@ -240,11 +240,11 @@ partial class Build : NukeBuild
             var tfm = fw;
             if (tfm == "$(AvsCurrentTargetFramework)")
             {
-                tfm = "net8.0";
+                tfm = "net10.0";
             }
             if (tfm == "$(AvsLegacyTargetFrameworks)")
             {
-                tfm = "net6.0";
+                tfm = "net8.0";
             }
             
             if (tfm.StartsWith("net4")

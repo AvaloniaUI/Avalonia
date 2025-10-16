@@ -19,6 +19,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
     
     class AvaloniaXamlIlLanguage
     {
+        [UnconditionalSuppressMessage("Trimming", "IL2122", Justification = TrimmingMessages.TypesInCoreOrAvaloniaAssembly)]
         public static (XamlLanguageTypeMappings language, XamlLanguageEmitMappings<IXamlILEmitter, XamlILNodeEmitResult> emit) Configure(IXamlTypeSystem typeSystem)
         {
             var runtimeHelpers = typeSystem.GetType("Avalonia.Markup.Xaml.XamlIl.Runtime.XamlIlRuntimeHelpers");
@@ -83,6 +84,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
         public const string ContextNameScopeFieldName = "AvaloniaNameScope";
 
+        [UnconditionalSuppressMessage("Trimming", "IL2122", Justification = TrimmingMessages.TypesInCoreOrAvaloniaAssembly)]
         private static void EmitNameScopeField(
             XamlLanguageTypeMappings mappings,
             IXamlTypeSystem typeSystem,
@@ -100,6 +102,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 .Stfld(field);
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2122", Justification = TrimmingMessages.TypesInCoreOrAvaloniaAssembly)]
         private static void EmitEagerParentStackProvider(
             XamlLanguageTypeMappings mappings,
             IXamlTypeSystem typeSystem,
@@ -170,6 +173,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             private readonly IXamlType _avaloniaListConverter;
 
 
+            [UnconditionalSuppressMessage("Trimming", "IL2122", Justification = TrimmingMessages.TypesInCoreOrAvaloniaAssembly)]
             public AttributeResolver(IXamlTypeSystem typeSystem, XamlLanguageTypeMappings mappings)
             {
                 _typeConverterAttribute = mappings.TypeConverterAttributes.First();

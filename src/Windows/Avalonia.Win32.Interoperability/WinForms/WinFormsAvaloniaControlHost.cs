@@ -32,6 +32,7 @@ public class WinFormsAvaloniaControlHost : WinFormsControl
     /// <summary>
     /// Gets or sets the Avalonia control hosted by the <see cref="WinFormsAvaloniaControlHost"/> element.
     /// </summary>
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public AvControl? Content
     {
         get => _content;

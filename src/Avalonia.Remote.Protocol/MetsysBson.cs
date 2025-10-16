@@ -38,10 +38,10 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
 using System.Reflection;
-using System.Runtime.Serialization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using Avalonia;
 using Metsys.Bson.Configuration;
 // ReSharper disable All
 
@@ -1422,6 +1422,9 @@ namespace Metsys.Bson.Configuration
         ITypeConfiguration<T> IgnoreIfNull(Expression<Func<T, object>> expression);
     }
 
+#if NET8_0_OR_GREATER
+    [RequiresDynamicCode(TrimmingMessages.ExpressionNodeRequiresDynamicCodeMessage)]
+#endif
     internal class TypeConfiguration<T> : ITypeConfiguration<T>
     {
         private readonly BsonConfiguration _configuration;
@@ -1461,6 +1464,9 @@ namespace Metsys.Bson.Configuration
 
 namespace Metsys.Bson.Configuration
 {
+#if NET8_0_OR_GREATER
+    [RequiresDynamicCode(TrimmingMessages.ExpressionNodeRequiresDynamicCodeMessage)]
+#endif
     public static class ExpressionHelper
     {
         public static string GetName(this MemberExpression expression)
@@ -1493,6 +1499,9 @@ namespace Metsys.Bson.Configuration
             return null;
         }
 
+#if NET8_0_OR_GREATER
+        [RequiresDynamicCode(TrimmingMessages.ExpressionNodeRequiresDynamicCodeMessage)]
+#endif
         private class ExpressionNameVisitor
         {
             public string Visit(Expression expression)
@@ -1580,6 +1589,9 @@ namespace Metsys.Bson.Configuration
 
         private BsonConfiguration() { }
 
+#if NET8_0_OR_GREATER
+        [RequiresDynamicCode(TrimmingMessages.ExpressionNodeRequiresDynamicCodeMessage)]
+#endif
         public static void ForType<T>(Action<ITypeConfiguration<T>> action)
         {
             action(new TypeConfiguration<T>(Instance));

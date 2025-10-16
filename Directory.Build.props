@@ -8,7 +8,7 @@
       <!-- https://github.com/dotnet/msbuild/issues/2661 -->
       <AddSyntheticProjectReferencesForSolutionDependencies>false</AddSyntheticProjectReferencesForSolutionDependencies>
       <RunApiCompat>False</RunApiCompat>
-      <LangVersion>12</LangVersion>
+      <LangVersion>14.0</LangVersion>
       <CreateHardLinksForCopyAdditionalFilesIfPossible>true</CreateHardLinksForCopyAdditionalFilesIfPossible>
       <CreateHardLinksForCopyFilesToOutputDirectoryIfPossible>true</CreateHardLinksForCopyFilesToOutputDirectoryIfPossible>
       <CreateHardLinksForCopyLocalIfPossible>true</CreateHardLinksForCopyLocalIfPossible>

@@ -6,6 +6,7 @@
     <AssemblyOriginatorKeyFile>Key.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\Avalonia.Base\Diagnostics\TrimmingMessages.cs" />
     <Compile Include="..\Avalonia.Base\Input\Key.cs" />
     <Compile Include="..\Avalonia.Base\Input\PhysicalKey.cs" />
     <Compile Include="..\Avalonia.Base\Compatibility\TrimmingAttributes.cs" Visible="False" />

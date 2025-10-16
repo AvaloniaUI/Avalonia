@@ -9,11 +9,13 @@ internal static class TrimmingMessages
     public const string TypeConversionRequiresUnreferencedCodeMessage = "Conversion methods are required for type conversion, including op_Implicit, op_Explicit, Parse and TypeConverter.";
 
     public const string ReflectionBindingRequiresUnreferencedCodeMessage = "BindingExpression and ReflectionBinding heavily use reflection. Consider using CompiledBindings instead.";
+    public const string ReflectionBindingRequiresDynamicCodeMessage = "BindingExpression and ReflectionBinding require dynamic code. Consider using CompiledBindings instead.";
     public const string ReflectionBindingSupressWarningMessage = "BindingExpression and ReflectionBinding internal heavily use reflection.";
 
     public const string CompiledBindingSafeSupressWarningMessage = "CompiledBinding preserves members used in the expression tree.";
 
     public const string ExpressionNodeRequiresUnreferencedCodeMessage = "ExpressionNode might require unreferenced code.";
+    public const string ExpressionNodeRequiresDynamicCodeMessage = "ExpressionNode requires dynamic code.";
     public const string ExpressionSafeSupressWarningMessage = "Typed Expressions preserves members used in the expression tree.";
 
     public const string SelectorsParseRequiresUnreferencedCodeMessage = "Selectors runtime parser might require unreferenced code. Consider using stronly typed selectors factory with 'new Style(s => s.OfType<Button>())' syntax.";
@@ -28,4 +30,6 @@ internal static class TrimmingMessages
 
     public const string IgnoreNativeAotSupressWarningMessage = "This method is not supported by NativeAOT.";
     public const string DesignTimeSupressWarningMessage = "This method is design time only.";
+
+    public const string TypesInCoreOrAvaloniaAssembly = "The types reside in the core assembly or in an explicitly loaded Avalonia assembly and will always be found.";
 }
