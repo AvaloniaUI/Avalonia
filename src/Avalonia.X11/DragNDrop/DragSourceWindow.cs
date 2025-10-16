@@ -27,7 +27,7 @@ namespace Avalonia.X11
         private readonly (int X, int Y) _outOfScreen = (0, 0);
         private readonly (int Width, int Height) _smallest = (1, 1);
 
-        private readonly IDataObject _dataObject;
+        private readonly IDataTransfer _dataTransfer;
         private readonly IntPtr _dropEffect;
         private readonly ICursorFactory _cursorFactory;
         private readonly AvaloniaX11Platform _platform;
@@ -57,9 +57,9 @@ namespace Avalonia.X11
         private DispatcherTimer? _sameAppDragOverTimer;
         private (IntPtr window, int x, int y)? _pendingSameAppDragOver;
 
-        public DragSourceWindow(AvaloniaX11Platform platform, IntPtr parent, IDataObject dataObject, IntPtr dropEffect)
+        public DragSourceWindow(AvaloniaX11Platform platform, IntPtr parent, IDataTransfer dataTransfer, IntPtr dropEffect)
         {
-            _dataObject = dataObject;
+            _dataTransfer = dataTransfer;
             _platform = platform;
             _display = _platform.Display;
             _atoms = _platform.Info.Atoms;
@@ -106,9 +106,8 @@ namespace Avalonia.X11
                 return false;
             }
 
-            supportedTypes = _dataObject
-                .GetDataFormats()
-                .Select(X11DataObject.DataFormatToMimeFormat)
+            supportedTypes = _dataTransfer.Formats
+                .Select(X11DataTransfer.DataFormatToMimeFormat)
                 .Select(_atoms.GetAtom)
                 .Where(ptr => ptr != IntPtr.Zero)
                 .ToArray();
@@ -567,7 +566,7 @@ namespace Avalonia.X11
             }
             else if (supportedTypes.Contains(requestEvent.target))
             {
-                _dataTransmitter.StartTransfer(ref requestEvent, _dataObject);
+                _dataTransmitter.StartTransfer(ref requestEvent, _dataTransfer);
 
                 // indicate in the response that the data has been provided
                 responseEvent.property = requestEvent.property;
@@ -719,7 +718,7 @@ namespace Avalonia.X11
             {
                 var point = new PixelPoint(x, y);
                 var result = _atoms.ConvertDropEffect(
-                    _innerTarget.HandleDragEnter(point, _dataObject, _atoms.ConvertDropEffect(_dropEffect)));
+                    _innerTarget.HandleDragEnter(point, _dataTransfer, _atoms.ConvertDropEffect(_dropEffect)));
 
                 _waitingForStatus = false;
                 _effect = result;
@@ -887,8 +886,11 @@ namespace Avalonia.X11
             _sameAppDragOverTimer = null;
             _pendingSameAppDragOver = null;
 
-            finishTimeoutCts?.Cancel();
-            finishTimeoutCts?.Dispose();
+            try
+            {
+                finishTimeoutCts?.Cancel();
+                finishTimeoutCts?.Dispose();
+            } catch (ObjectDisposedException) { }
 
             if (_handle != IntPtr.Zero)
             {

@@ -24,7 +24,7 @@ namespace Avalonia.X11
         private IDragDropDevice? _dragDropDevice;
 
         private WindowHandle _dragSource;
-        private X11DataObject? _currentDrag;
+        private X11DataTransfer? _currentDrag;
         private (Point, IntPtr)? _locationData;
 
         private bool _enterEventSent = false;
@@ -43,9 +43,7 @@ namespace Avalonia.X11
 
             _receiver = new X11DataReceiver(handle, info);
             _receiver.DataReceived += OnDataReceived;
-
-          
-
+            
             SetupXdndProtocol();
         }        
 
@@ -136,7 +134,7 @@ namespace Avalonia.X11
 
                 if (sourceTypesName != null && sourceTypesName.Length != 0)
                 {
-                    _currentDrag = new X11DataObject(sourceTypesName, _receiver);
+                    _currentDrag = new X11DataTransfer(sourceTypesName, _receiver);
 
                     //We do not have locations and actions here, so we will invoke DragEnter in first DragPosition
                     _enterEventSent = false;                  
@@ -367,6 +365,8 @@ namespace Avalonia.X11
               );
 
             Input?.Invoke(args);
+
+            _currentDrag.DropEnded();
         }
 
         private bool OnSelectionEvent(ref XSelectionEvent selectionEvent)
@@ -439,6 +439,7 @@ namespace Avalonia.X11
                 Input?.Invoke(args);
             }
 
+            _currentDrag?.Dispose();
             _currentDrag = null;
             _locationData = null;
             _dragLeaved = false;

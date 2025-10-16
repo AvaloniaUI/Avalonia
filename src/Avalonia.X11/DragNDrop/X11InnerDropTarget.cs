@@ -13,7 +13,7 @@ namespace Avalonia.X11.DragNDrop
         private readonly X11Window _window;
 
         private IDragDropDevice? _dragDropDevice;
-        private IDataObject? _currentDrag;
+        private IDataTransfer? _currentDrag;
         private Point? _currentLocation; 
 
         private Action<RawInputEventArgs>? Input => _window.Input;
@@ -24,7 +24,7 @@ namespace Avalonia.X11.DragNDrop
             _window = window;
         }
 
-        public DragDropEffects HandleDragEnter(PixelPoint coords, IDataObject dataObject, DragDropEffects effects)
+        public DragDropEffects HandleDragEnter(PixelPoint coords, IDataTransfer dataObject, DragDropEffects effects)
         {
             if (DragDropDevice == null)
                 return DragDropEffects.None;

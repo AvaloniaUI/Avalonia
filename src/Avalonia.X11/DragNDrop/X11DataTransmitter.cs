@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Input;
 using WindowHandle = System.IntPtr;
 
 namespace Avalonia.X11
@@ -23,10 +24,10 @@ namespace Avalonia.X11
             _atoms = info.Atoms;
         }
 
-        public void StartTransfer(ref XSelectionRequestEvent requestEvent, Input.IDataObject dataObject)
+        public void StartTransfer(ref XSelectionRequestEvent requestEvent, IDataTransfer dataTransfer)
         {
-            byte[] dataBytes = X11DataObject.ToTransfer(dataObject,
-                    X11DataObject.MimeFormatToDataFormat(_atoms.GetAtomName(requestEvent.target) ?? string.Empty));
+            byte[] dataBytes = X11DataTransfer.ToTransfer(dataTransfer,
+                    X11DataTransfer.MimeFormatToDataFormat(_atoms.GetAtomName(requestEvent.target) ?? string.Empty));
 
             if (dataBytes.Length > _maxSize)
             {

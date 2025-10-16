@@ -7,6 +7,7 @@ using System.Linq;
 using Avalonia.Platform.Storage.FileIO;
 
 using WindowHandle = System.IntPtr;
+using System.Threading.Tasks;
 
 namespace Avalonia.X11
 {
@@ -23,7 +24,7 @@ namespace Avalonia.X11
          List<byte> _result = new();
 
         private Queue<string> _typesToLoad = new();
-        private X11DataObject? _currentDrag;
+        private X11DataTransfer? _currentDrag;
 
         public X11DataReceiver(IntPtr handle, X11Info info) 
         {
@@ -34,7 +35,7 @@ namespace Avalonia.X11
             InitializeTypeAtoms();
         }
 
-        public bool LoadDataOnEnter(X11DataObject data)
+        public bool LoadDataOnEnter(X11DataTransfer data)
         {
             if (data == null)
                 return false;
@@ -46,24 +47,24 @@ namespace Avalonia.X11
             var supportedTypes = data.GetSupportedTypes();
 
             //Firstly request most usable types of data for case, if sender does not support second data requests.
-            if (supportedTypes.Contains(X11DataObject.c_mimeFiles))
+            if (supportedTypes.Contains(X11DataTransfer.c_mimeFiles))
             {
-                _typesToLoad.Enqueue(X11DataObject.c_mimeFiles);
+                _typesToLoad.Enqueue(X11DataTransfer.c_mimeFiles);
             }
 
-            if (supportedTypes.Contains(X11DataObject.c_mimeUTF8))
+            if (supportedTypes.Contains(X11DataTransfer.c_mimeUTF8))
             {
-                _typesToLoad.Enqueue(X11DataObject.c_mimeUTF8);
+                _typesToLoad.Enqueue(X11DataTransfer.c_mimeUTF8);
             }
 
-            if (supportedTypes.Contains(X11DataObject.c_mimeUTF8_alt))
+            if (supportedTypes.Contains(X11DataTransfer.c_mimeUTF8_alt))
             {
-                _typesToLoad.Enqueue(X11DataObject.c_mimeUTF8_alt);
+                _typesToLoad.Enqueue(X11DataTransfer.c_mimeUTF8_alt);
             }
 
-            if (supportedTypes.Contains(X11DataObject.c_mimeTextPlain))
+            if (supportedTypes.Contains(X11DataTransfer.c_mimeTextPlain))
             {
-                _typesToLoad.Enqueue(X11DataObject.c_mimeTextPlain);
+                _typesToLoad.Enqueue(X11DataTransfer.c_mimeTextPlain);
 
             }
 
@@ -77,7 +78,7 @@ namespace Avalonia.X11
             return true;
         }
 
-        public bool LoadDataOnDrop(X11DataObject data)
+        public bool LoadDataOnDrop(X11DataTransfer data)
         {
             if (data == null)
                 return false;
@@ -89,40 +90,31 @@ namespace Avalonia.X11
             var supportedTypes = data.GetSupportedTypes();
             var loadedTypes = data.GetLoadedSupportedTypes();
 
-             if (supportedTypes.Contains(X11DataObject.c_mimeFiles) && !loadedTypes.Contains(X11DataObject.c_mimeFiles))
+             if (supportedTypes.Contains(X11DataTransfer.c_mimeFiles) && !loadedTypes.Contains(X11DataTransfer.c_mimeFiles))
             {
-                _typesToLoad.Enqueue(X11DataObject.c_mimeFiles);
+                _typesToLoad.Enqueue(X11DataTransfer.c_mimeFiles);
             }
 
-            if (supportedTypes.Contains(X11DataObject.c_mimeUTF8) && !loadedTypes.Contains(X11DataObject.c_mimeUTF8))
+            if (supportedTypes.Contains(X11DataTransfer.c_mimeUTF8) && !loadedTypes.Contains(X11DataTransfer.c_mimeUTF8))
             {
-                _typesToLoad.Enqueue(X11DataObject.c_mimeUTF8);
+                _typesToLoad.Enqueue(X11DataTransfer.c_mimeUTF8);
             }
 
-            if (supportedTypes.Contains(X11DataObject.c_mimeUTF8_alt) && !loadedTypes.Contains(X11DataObject.c_mimeUTF8_alt))
+            if (supportedTypes.Contains(X11DataTransfer.c_mimeUTF8_alt) && !loadedTypes.Contains(X11DataTransfer.c_mimeUTF8_alt))
             {
-                _typesToLoad.Enqueue(X11DataObject.c_mimeUTF8_alt);
+                _typesToLoad.Enqueue(X11DataTransfer.c_mimeUTF8_alt);
             }
 
-            if (supportedTypes.Contains(X11DataObject.c_mimeTextPlain) && !loadedTypes.Contains(X11DataObject.c_mimeTextPlain))
+            if (supportedTypes.Contains(X11DataTransfer.c_mimeTextPlain) && !loadedTypes.Contains(X11DataTransfer.c_mimeTextPlain))
             {
-                _typesToLoad.Enqueue(X11DataObject.c_mimeTextPlain);
+                _typesToLoad.Enqueue(X11DataTransfer.c_mimeTextPlain);
 
             }
-
-            //Load types, checked by user via Contains call.
-            foreach(var askedType in data.GetAskedTypes())
-            {
-                if (!string.IsNullOrEmpty(askedType))
-                {
-                    _typesToLoad.Enqueue(askedType);
-                }
-            }
-
+                       
             
-            if(loadedTypes.Count < 1 && data.GetAskedTypes().Count == 0)
+            if(loadedTypes.Count < 1)
             {
-                var bestType = supportedTypes.FirstOrDefault(t => t != X11DataObject.c_mimeTextPlain && t != X11DataObject.c_mimeUTF8 && t != X11DataObject.c_mimeUTF8_alt && t != X11DataObject.c_mimeFiles);
+                var bestType = supportedTypes.FirstOrDefault(t => t != X11DataTransfer.c_mimeTextPlain && t != X11DataTransfer.c_mimeUTF8 && t != X11DataTransfer.c_mimeUTF8_alt && t != X11DataTransfer.c_mimeFiles);
                 if (!string.IsNullOrEmpty(bestType))
                 { 
                     _typesToLoad.Enqueue(bestType); 
@@ -164,6 +156,35 @@ namespace Avalonia.X11
                     break;
                 }
                 System.Threading.Thread.Sleep(10);
+            }
+        }
+
+        public async Task RequestDataAsync(string mimeType)
+        {
+            var typeAtom = _atoms.GetAtom(mimeType);
+            if (typeAtom == IntPtr.Zero)
+                return;
+
+
+            // Clear any previous results
+            _result.Clear();
+
+            // Request the data
+            XLib.XConvertSelection(_display, _atoms.XdndSelection, typeAtom,
+                                 _atoms.XdndSelection, _handle, IntPtr.Zero);
+            XLib.XFlush(_display);
+
+            // Wait for the data with timeout
+            var startTime = DateTime.Now;
+            while ((DateTime.Now - startTime).TotalMilliseconds < 500) // 500ms timeout
+            {
+                var ev = new XEvent();
+                if (XLib.XCheckTypedWindowEvent(_display, _handle, (int)XEventName.SelectionNotify, ref ev))
+                {
+                    HandleSelectionNotify(ref ev.SelectionEvent, true);
+                    break;
+                }
+                await Task.Delay(10);
             }
         }
 
@@ -281,8 +302,6 @@ namespace Avalonia.X11
             ProcessDroppedData(actualType, getCall);
         }
 
-
-
         public event Action? DataReceived;
 
         private void InitializeTypeAtoms()
@@ -320,25 +339,21 @@ namespace Avalonia.X11
                         StorageProviderHelpers.TryCreateBclStorageItem(line)!)
                     .ToList();
 
-                _currentDrag.SetData(DataFormats.Files, uris);
+                _currentDrag.SetData(DataFormat.File, uris);
             }
             else if (dataType == _textPlain)
             {
                 Encoding ansiEncoding = Encoding.GetEncoding(0); //system ANSI
                 string data = ansiEncoding.GetString(rawBytes);
 
-                _currentDrag.SetData(DataFormats.Text, data);
+                _currentDrag.SetData(DataFormat.Text, data);
             }
             else if (dataType == _atoms.UTF8_STRING)
             {
                 string data = Encoding.UTF8.GetString(rawBytes);
 
-                _currentDrag.SetData(DataFormats.Text, data);
-            }            
-            else if (IsSerializedObject(rawBytes))
-            {
-                _currentDrag.SetData(_atoms.GetAtomName(dataType) ?? string.Empty, X11DataObject.DeserializeObject(rawBytes));
-            }
+                _currentDrag.SetData(DataFormat.Text, data);
+            }  
             else
             { 
                 _currentDrag.SetData(_atoms.GetAtomName(dataType) ?? string.Empty, rawBytes);
@@ -349,8 +364,6 @@ namespace Avalonia.X11
                 DataReceived?.Invoke();
         }
 
-        private static bool IsSerializedObject(ReadOnlySpan<byte> data) =>
-          data.StartsWith(X11DataObject.SerializedObjectGUID);
 
         public void Dispose()
         {
