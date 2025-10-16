@@ -7,7 +7,7 @@ using Avalonia.X11.NativeDialogs;
 using static Avalonia.X11.NativeDialogs.Gtk;
 using static Avalonia.X11.Interop.Glib;
 
-namespace ControlCatalog.NetCore;
+namespace ControlCatalog.Desktop;
 
 internal class GtkHelper
 {

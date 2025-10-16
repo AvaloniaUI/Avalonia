@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
     <TargetFrameworks>$(AvsCurrentTargetFramework);net481</TargetFrameworks>
+    <TargetFrameworks>$(AvsCurrentTargetFramework)</TargetFrameworks>
     <OutputType>Library</OutputType>
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
