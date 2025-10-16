@@ -17,13 +17,34 @@ namespace Avalonia.Win32
             // Get the window rectangle.
             GetWindowRect(hWnd, out var rcWindow);
 
+            var scaling = (uint)(RenderScaling * StandardDpi);
+            var relativeScaling = RenderScaling / PrimaryScreenRenderScaling;
+
             // Get the frame rectangle, adjusted for the style without a caption.
             var rcFrame = new RECT();
-            AdjustWindowRectEx(ref rcFrame, (uint)(WindowStyles.WS_OVERLAPPEDWINDOW & ~WindowStyles.WS_CAPTION), false, 0);
-
             var borderThickness = new RECT();
-            
-            AdjustWindowRectEx(ref borderThickness, (uint)GetStyle(), false, 0);
+            if (Win32Platform.WindowsVersion < PlatformConstants.Windows10_1607)
+            {
+                AdjustWindowRectEx(ref rcFrame, (uint)(WindowStyles.WS_OVERLAPPEDWINDOW & ~WindowStyles.WS_CAPTION), false, 0);
+
+                rcFrame.top = (int)(rcFrame.top * relativeScaling);
+                rcFrame.right = (int)(rcFrame.right * relativeScaling);
+                rcFrame.left = (int)(rcFrame.left * relativeScaling);
+                rcFrame.bottom = (int)(rcFrame.bottom * relativeScaling);
+
+                AdjustWindowRectEx(ref borderThickness, (uint)GetStyle(), false, 0);
+
+                borderThickness.top = (int)(borderThickness.top * relativeScaling);
+                borderThickness.right = (int)(borderThickness.right * relativeScaling);
+                borderThickness.left = (int)(borderThickness.left * relativeScaling);
+                borderThickness.bottom = (int)(borderThickness.bottom * relativeScaling);
+            }
+            else
+            {
+                AdjustWindowRectExForDpi(ref rcFrame, WindowStyles.WS_OVERLAPPEDWINDOW & ~WindowStyles.WS_CAPTION, false, 0, scaling);
+                AdjustWindowRectExForDpi(ref borderThickness, GetStyle(), false, 0, scaling);
+            }
+
             borderThickness.left *= -1;
             borderThickness.top *= -1;
 
