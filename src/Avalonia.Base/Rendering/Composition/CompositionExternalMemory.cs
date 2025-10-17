@@ -81,7 +81,11 @@ public enum CompositionGpuImportedImageSynchronizationCapabilities
     /// <summary>
     /// Synchronization and ordering is somehow handled by the underlying platform
     /// </summary>
-    Automatic = 4
+    Automatic = 4,
+    /// <summary>
+    /// Pre-render and after-render timeline semaphores must be provided alongside with the image
+    /// </summary>
+    TimelineSemaphores = 8
 }
 
 /// <summary>
