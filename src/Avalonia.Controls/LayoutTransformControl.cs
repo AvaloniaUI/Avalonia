@@ -150,6 +150,7 @@ namespace Avalonia.Controls
         {
             base.OnAttachedToVisualTree(e);
             SubscribeLayoutTransform(LayoutTransform as Transform);
+            ApplyLayoutTransform();
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
