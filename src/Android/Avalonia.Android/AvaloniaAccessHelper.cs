@@ -138,9 +138,9 @@ namespace Avalonia.Android
                 .Aggregate(false, (a, b) => a | b);
         }
 
-        protected override void OnPopulateNodeForVirtualView(int virtualViewId, AccessibilityNodeInfoCompat nodeInfo)
+        protected override void OnPopulateNodeForVirtualView(int virtualViewId, AccessibilityNodeInfoCompat? nodeInfo)
         {
-            if (!_peers.TryGetValue(virtualViewId, out AutomationPeer? peer))
+            if (nodeInfo is null || !_peers.TryGetValue(virtualViewId, out AutomationPeer? peer))
             {
                 return; // BAIL!! No work to be done
             }
