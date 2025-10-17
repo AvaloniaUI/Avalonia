@@ -334,7 +334,8 @@ namespace Avalonia.X11
                         StringSplitOptions.RemoveEmptyEntries)
                     .Where(line => !line.StartsWith("#"))
                     .Select(line => line.StartsWith("file://") ? line.Substring(7) : line)
-                    .Where(line => !string.IsNullOrEmpty(line) && !string.IsNullOrWhiteSpace(line))
+                    .Select(line => line.Replace("\0", "").Trim())
+                    .Where(line => !string.IsNullOrEmpty(line) && !string.IsNullOrWhiteSpace(line) && !line.Contains('\0'))
                     .Select(line => 
                         StorageProviderHelpers.TryCreateBclStorageItem(line)!)
                     .ToList();
