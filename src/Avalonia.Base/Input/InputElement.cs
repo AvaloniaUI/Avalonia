@@ -167,6 +167,14 @@ namespace Avalonia.Input
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
         
         /// <summary>
+        /// Defines the <see cref="PointerCaptureChanging"/> routed event.
+        /// </summary>
+        internal static readonly RoutedEvent<PointerCaptureChangingEventArgs> PointerCaptureChangingEvent =
+            RoutedEvent.Register<InputElement, PointerCaptureChangingEventArgs>(
+                nameof(PointerCaptureChanging),
+                RoutingStrategies.Direct);
+
+        /// <summary>
         /// Defines the <see cref="PointerCaptureLost"/> routed event.
         /// </summary>
         public static readonly RoutedEvent<PointerCaptureLostEventArgs> PointerCaptureLostEvent =
@@ -221,6 +229,7 @@ namespace Avalonia.Input
             PointerMovedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerMoved(e));
             PointerPressedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerPressed(e));
             PointerReleasedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerReleased(e));
+            PointerCaptureChangingEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerCaptureChanging(e));
             PointerCaptureLostEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerCaptureLost(e));
             PointerWheelChangedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerWheelChanged(e));
 
@@ -340,8 +349,18 @@ namespace Avalonia.Input
         }
 
         /// <summary>
+        /// Occurs when the control or its child control is about to lose capture,
+        /// event will not be triggered for a parent control if capture was transferred to another child of that parent control.
+        /// </summary>
+        internal event EventHandler<PointerCaptureChangingEventArgs>? PointerCaptureChanging
+        {
+            add => AddHandler(PointerCaptureChangingEvent, value);
+            remove => RemoveHandler(PointerCaptureChangingEvent, value);
+        }
+
+        /// <summary>
         /// Occurs when the control or its child control loses the pointer capture for any reason,
-        /// event will not be triggered for a parent control if capture was transferred to another child of that parent control
+        /// event will not be triggered for a parent control if capture was transferred to another child of that parent control.
         /// </summary>
         public event EventHandler<PointerCaptureLostEventArgs>? PointerCaptureLost
         {
@@ -669,6 +688,17 @@ namespace Avalonia.Input
                 {
                     e.Handled = true;
                 }
+        }
+
+        /// <summary>
+        /// Invoked when an unhandled <see cref="PointerCaptureChangingEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
+        /// </summary>
+        /// <param name="e">Data about the event.</param>
+        internal virtual void OnPointerCaptureChanging(PointerCaptureChangingEventArgs e)
+        {
+
         }
 
         /// <summary>
