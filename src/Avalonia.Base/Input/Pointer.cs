@@ -78,7 +78,7 @@ namespace Avalonia.Input
                 oldVisual.DetachedFromVisualTree -= OnCaptureDetached;
             Captured = control;
 
-            if (source == CaptureSource.Explicit)
+            if (source != CaptureSource.Platform)
                 PlatformCapture(control);
 
             if (oldVisual != null)
