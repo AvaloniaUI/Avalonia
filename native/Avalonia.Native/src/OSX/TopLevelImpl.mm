@@ -7,6 +7,7 @@
 #include "AvnTextInputMethod.h"
 #include "AvnView.h"
 #include "common.h"
+#include "clipboard.h"
 
 TopLevelImpl::~TopLevelImpl() {
     View = nullptr;
@@ -272,13 +273,15 @@ void TopLevelImpl::UpdateAppearance() {
     
 }
 
-HRESULT TopLevelImpl::BeginDragAndDropOperation(AvnDragDropEffects effects, AvnPoint point, IAvnClipboard *clipboard, IAvnDndResultCallback *cb, void *sourceHandle) {
+HRESULT TopLevelImpl::BeginDragAndDropOperation(
+    AvnDragDropEffects effects,
+    AvnPoint point,
+    IAvnClipboardDataSource* source,
+    IAvnDndResultCallback* callback,
+    void* sourceHandle)
+{
     START_COM_CALL;
 
-    auto item = TryGetPasteboardItem(clipboard);
-    [item setString:@"" forType:GetAvnCustomDataType()];
-    if (item == nil)
-        return E_INVALIDARG;
     if (View == NULL)
         return E_FAIL;
 
@@ -301,11 +304,19 @@ HRESULT TopLevelImpl::BeginDragAndDropOperation(AvnDragDropEffects effects, AvnP
         }
     }
 
-    auto dragItem = [[NSDraggingItem alloc] initWithPasteboardWriter:item];
-
+    auto itemCount = source->GetItemCount();
+    auto draggingItems = [NSMutableArray<NSDraggingItem*> arrayWithCapacity:itemCount];
     auto dragItemImage = [NSImage imageNamed:NSImageNameMultipleDocuments];
     NSRect dragItemRect = {(float) point.X, (float) point.Y, [dragItemImage size].width, [dragItemImage size].height};
-    [dragItem setDraggingFrame:dragItemRect contents:dragItemImage];
+
+    for (auto i = 0; i < itemCount; ++i)
+    {
+        auto item = source->GetItem(i);
+        auto writeableItem = [[WriteableClipboardItem alloc] initWithItem:item source:source];
+        auto draggingItem = [[NSDraggingItem alloc] initWithPasteboardWriter:writeableItem];
+        [draggingItem setDraggingFrame:dragItemRect contents:dragItemImage];
+        [draggingItems addObject:draggingItem];
+    }
 
     int op = 0;
     int ieffects = (int) effects;
@@ -315,8 +326,10 @@ HRESULT TopLevelImpl::BeginDragAndDropOperation(AvnDragDropEffects effects, AvnP
         op |= NSDragOperationLink;
     if ((ieffects & (int) AvnDragDropEffects::Move) != 0)
         op |= NSDragOperationMove;
-    [View beginDraggingSessionWithItems:@[dragItem] event:nsevent
-                                 source:CreateDraggingSource((NSDragOperation) op, cb, sourceHandle)];
+
+    [View beginDraggingSessionWithItems:draggingItems
+                                  event:nsevent
+                                 source:CreateDraggingSource((NSDragOperation) op, callback, sourceHandle)];
     return S_OK;
 }
 
