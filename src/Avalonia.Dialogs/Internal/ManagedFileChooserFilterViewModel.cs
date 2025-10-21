@@ -10,6 +10,10 @@ namespace Avalonia.Dialogs.Internal
         public string Name { get; }
         internal int Index { get; }
 
+        public ManagedFileChooserFilterViewModel(FilePickerFileType filter) : this(filter, 0)
+        {
+        }
+        
         public ManagedFileChooserFilterViewModel(FilePickerFileType filter, int index)
         {
             Index = index;

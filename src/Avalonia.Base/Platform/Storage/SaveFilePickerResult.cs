@@ -13,7 +13,7 @@ public readonly struct SaveFilePickerResult
     /// <summary>
     /// Saved <see cref="IStorageFile"/> or null if user canceled the dialog.
     /// </summary>
-    public IStorageFile? File { get; }
+    public IStorageFile? File { get; init; }
 
     /// <summary>
     /// Selected file type or null if not supported.
