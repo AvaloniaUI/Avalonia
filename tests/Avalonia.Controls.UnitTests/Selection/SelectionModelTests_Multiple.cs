@@ -1290,24 +1290,50 @@ namespace Avalonia.Controls.UnitTests.Selection
 
                 target.SelectionChanged += (s, e) =>
                 {
-                    Assert.Empty(e.DeselectedIndexes);
-                    Assert.Equal(new[] { "bar" }, e.DeselectedItems);
-                    Assert.Empty(e.SelectedIndexes);
-                    Assert.Empty(e.SelectedItems);
                     ++selectionChangedRaised;
                 };
 
                 data.Move(1, 0);
 
-                Assert.Equal(2, target.SelectedIndex);
-                Assert.Equal(new[] { 2, 3, 4 }, target.SelectedIndexes);
-                Assert.Equal("baz", target.SelectedItem);
-                Assert.Equal(new[] { "baz", "qux", "quux" }, target.SelectedItems);
-                Assert.Equal(2, target.AnchorIndex);
-                Assert.Equal(1, selectionChangedRaised);
+                Assert.Equal(0, target.SelectedIndex);
+                Assert.Equal(new[] { 0, 2, 3, 4 }, target.SelectedIndexes);
+                Assert.Equal("bar", target.SelectedItem);
+                Assert.Equal(new[] { "bar", "baz", "qux", "quux" }, target.SelectedItems);
+                Assert.Equal(0, target.AnchorIndex);
+                Assert.Equal(0, selectionChangedRaised);
                 Assert.Equal(1, selectedIndexRaised);
                 Assert.Equal(1, selectedItemRaised);
                 Assert.Equal(0, indexesChangedRaised);
+            }
+
+            [Fact]
+            public void Moving_Selected_Item_Does_Not_Deselect_Items()
+            {
+                var target = CreateTarget();
+                var data = (AvaloniaList<string>)target.Source!;
+                var selectionChangedRaised = false;
+                IReadOnlyList<int>? deselectedIndexes = null;
+                IReadOnlyList<string?>? deselectedItems = null;
+
+                target.Source = data;
+                target.SelectRange(1, 4);
+
+                target.SelectionChanged += (s, e) =>
+                {
+                    selectionChangedRaised = true;
+                    deselectedIndexes = e.DeselectedIndexes;
+                    deselectedItems = e.DeselectedItems;
+                };
+
+                data.Move(1, 0);
+
+                Assert.False(selectionChangedRaised);
+                Assert.Null(deselectedIndexes);
+                Assert.Null(deselectedItems);
+                Assert.Equal(0, target.SelectedIndex);
+                Assert.Equal(new[] { 0, 2, 3, 4 }, target.SelectedIndexes);
+                Assert.Equal("bar", target.SelectedItem);
+                Assert.Equal(new[] { "bar", "baz", "qux", "quux" }, target.SelectedItems);
             }
 
             [Fact]
