@@ -276,7 +276,6 @@ namespace Avalonia.Controls.Primitives
             {
                 _textBox.RemoveHandler(TextBox.TextChangingEvent, TextChanged);
                 _textBox.RemoveHandler(KeyDownEvent, TextBoxKeyDown);
-                _textBox.RemoveHandler(PointerReleasedEvent, TextBoxPointerReleased);
 
                 _textBox.PropertyChanged -= TextBoxPropertyChanged;
                 _textBox.EffectiveViewportChanged -= TextBoxEffectiveViewportChanged;
@@ -294,7 +293,6 @@ namespace Avalonia.Controls.Primitives
                 {
                     _textBox.AddHandler(TextBox.TextChangingEvent, TextChanged, handledEventsToo: true);
                     _textBox.AddHandler(KeyDownEvent, TextBoxKeyDown, handledEventsToo: true);
-                    _textBox.AddHandler(PointerReleasedEvent, TextBoxPointerReleased, handledEventsToo: true);
 
                     _textBox.PropertyChanged += TextBoxPropertyChanged;
                     _textBox.EffectiveViewportChanged += TextBoxEffectiveViewportChanged;
@@ -371,15 +369,12 @@ namespace Avalonia.Controls.Primitives
             return false;
         }
 
-        private void TextBoxPointerReleased(object? sender, PointerReleasedEventArgs e)
+        internal void Show()
         {
-            if (e.Pointer.Type != PointerType.Mouse)
-            {
-                ShowHandles = true;
+            ShowHandles = true;
 
-                MoveHandlesToSelection();
-                EnsureVisible();
-            }
+            MoveHandlesToSelection();
+            EnsureVisible();
         }
 
         private void TextBoxPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)

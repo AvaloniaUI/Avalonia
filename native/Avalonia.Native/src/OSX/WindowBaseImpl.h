@@ -69,10 +69,6 @@ public:
 
     virtual HRESULT SetFrameThemeVariant(AvnPlatformThemeVariant variant) override;
 
-    virtual HRESULT BeginDragAndDropOperation(AvnDragDropEffects effects, AvnPoint point,
-            IAvnClipboard *clipboard, IAvnDndResultCallback *cb,
-            void *sourceHandle) override;
-
     virtual HRESULT SetTransparencyMode(AvnWindowTransparencyMode mode) override;
                            
     virtual bool IsModal();

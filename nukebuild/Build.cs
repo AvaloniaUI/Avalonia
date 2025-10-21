@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -10,8 +12,10 @@ using Nuke.Common;
 using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Tools.Npm;
+using Nuke.Common.Utilities;
 using static Nuke.Common.EnvironmentInfo;
 using static Nuke.Common.IO.PathConstruction;
+using static Nuke.Common.Tools.DotMemoryUnit.DotMemoryUnitTasks;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 using static Serilog.Log;
 using MicroCom.CodeGenerator;
@@ -184,6 +188,31 @@ partial class Build : NukeBuild
 
     void RunCoreTest(string projectName)
     {
+        RunCoreTest(projectName, (project, tfm) =>
+        {
+            DotNetTest(c => ApplySetting(c, project,tfm));
+        });
+    }
+
+    void RunCoreDotMemoryUnit(string projectName)
+    {
+        RunCoreTest(projectName, (project, tfm) =>
+        {
+            var testSettings = ApplySetting(new DotNetTestSettings(), project, tfm);
+            var testToolPath = GetToolPathInternal(new DotNetTasks(), testSettings);
+            var testArgs = GetArguments(testSettings).JoinSpace();
+            DotMemoryUnit($"{testToolPath} --propagate-exit-code -- {testArgs:nq}");
+        });
+
+        [UnsafeAccessor(UnsafeAccessorKind.Method, Name = nameof(GetToolPathInternal))]
+        extern static string GetToolPathInternal(ToolTasks tasks, ToolOptions options);
+
+        [UnsafeAccessor(UnsafeAccessorKind.Method, Name = nameof(GetArguments))]
+        extern static IEnumerable<string> GetArguments(ToolOptions options);
+    }
+
+    void RunCoreTest(string projectName, Action<string, string> runTest)
+    {
         Information($"Running tests from {projectName}");
         var project = RootDirectory.GlobFiles(@$"**\{projectName}.csproj").FirstOrDefault()
             ?? throw new InvalidOperationException($"Project {projectName} doesn't exist");
@@ -228,16 +257,19 @@ partial class Build : NukeBuild
 
             Information($"Running for {projectName} ({tfm}) ...");
 
-            DotNetTest(c => ApplySetting(c)
-                .SetProjectFile(project)
-                .SetFramework(tfm)
-                .EnableNoBuild()
-                .EnableNoRestore()
-                .When(_ => Parameters.PublishTestResults, _ => _
-                    .SetLoggers("trx")
-                    .SetResultsDirectory(Parameters.TestResultsRoot)));
+            runTest(project, tfm);
         }
     }
+
+    DotNetTestSettings ApplySetting(DotNetTestSettings settings, string project, string tfm) =>
+        ApplySetting(settings)
+        .SetProjectFile(project)
+        .SetFramework(tfm)
+        .EnableNoBuild()
+        .EnableNoRestore()
+        .When(_ => Parameters.PublishTestResults, _ => _
+            .SetLoggers("trx")
+            .SetResultsDirectory(Parameters.TestResultsRoot));
 
     Target RunHtmlPreviewerTests => _ => _
         .DependsOn(CompileHtmlPreviewer)
@@ -296,7 +328,7 @@ partial class Build : NukeBuild
         {
             void DoMemoryTest()
             {
-                RunCoreTest("Avalonia.LeakTests");
+                RunCoreDotMemoryUnit("Avalonia.LeakTests");
             }
             ControlFlow.ExecuteWithRetry(DoMemoryTest, delay: TimeSpan.FromMilliseconds(3));
         });

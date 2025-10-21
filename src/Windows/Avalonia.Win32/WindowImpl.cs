@@ -1100,8 +1100,30 @@ namespace Avalonia.Win32
             RECT borderThickness = new RECT();
             RECT borderCaptionThickness = new RECT();
 
-            AdjustWindowRectEx(ref borderCaptionThickness, (uint)(GetStyle()), false, 0);
-            AdjustWindowRectEx(ref borderThickness, (uint)(GetStyle() & ~WindowStyles.WS_CAPTION), false, 0);
+            var scaling = (uint)(RenderScaling * StandardDpi);
+            var relativeScaling = RenderScaling / PrimaryScreenRenderScaling;
+
+            if (Win32Platform.WindowsVersion < PlatformConstants.Windows10_1607)
+            {
+                AdjustWindowRectEx(ref borderCaptionThickness, (uint)GetStyle(), false, 0);
+                AdjustWindowRectEx(ref borderThickness, (uint)(GetStyle() & ~WindowStyles.WS_CAPTION), false, 0);
+
+                borderCaptionThickness.top = (int)(borderCaptionThickness.top * relativeScaling);
+                borderCaptionThickness.right = (int)(borderCaptionThickness.right * relativeScaling);
+                borderCaptionThickness.left = (int)(borderCaptionThickness.left * relativeScaling);
+                borderCaptionThickness.bottom = (int)(borderCaptionThickness.bottom * relativeScaling);
+
+                borderThickness.top = (int)(borderThickness.top * relativeScaling);
+                borderThickness.right = (int)(borderThickness.right * relativeScaling);
+                borderThickness.left = (int)(borderThickness.left * relativeScaling);
+                borderThickness.bottom = (int)(borderThickness.bottom * relativeScaling);
+            }
+            else
+            {
+                AdjustWindowRectExForDpi(ref borderCaptionThickness, GetStyle(), false, 0, scaling);
+                AdjustWindowRectExForDpi(ref borderThickness, GetStyle() & ~WindowStyles.WS_CAPTION, false, 0, scaling);
+            }
+
             borderThickness.left *= -1;
             borderThickness.top *= -1;
             borderCaptionThickness.left *= -1;
@@ -1132,7 +1154,7 @@ namespace Avalonia.Win32
             if (WindowState == WindowState.Maximized)
             {
                 _extendedMargins = new Thickness(0, (borderCaptionThickness.top - borderThickness.top) / RenderScaling, 0, 0);
-                _offScreenMargin = new Thickness(borderThickness.left / PrimaryScreenRenderScaling, borderThickness.top / PrimaryScreenRenderScaling, borderThickness.right / PrimaryScreenRenderScaling, borderThickness.bottom / PrimaryScreenRenderScaling);
+                _offScreenMargin = new Thickness(borderThickness.left / RenderScaling, borderThickness.top / RenderScaling, borderThickness.right / RenderScaling, borderThickness.bottom / RenderScaling);
             }
             else
             {
@@ -1459,7 +1481,7 @@ namespace Avalonia.Win32
                 else
                     style &= ~WindowStyles.WS_MAXIMIZEBOX;
 
-                const WindowStyles fullDecorationFlags = WindowStyles.WS_CAPTION | WindowStyles.WS_SYSMENU | WindowStyles.WS_BORDER;
+                const WindowStyles fullDecorationFlags = WindowStyles.WS_CAPTION | WindowStyles.WS_BORDER;
 
                 if (newProperties.Decorations == SystemDecorations.Full)
                 {
@@ -1472,6 +1494,10 @@ namespace Avalonia.Win32
                     if (newProperties.Decorations == SystemDecorations.BorderOnly && newProperties.WindowState != WindowState.Maximized && newProperties.IsResizable)
                     {
                         style |= WindowStyles.WS_THICKFRAME | WindowStyles.WS_BORDER;
+                    }
+                    else if(newProperties.WindowState == WindowState.Maximized && _isClientAreaExtended)
+                    {
+                        style |= WindowStyles.WS_THICKFRAME;
                     }
                 }
 

@@ -2012,6 +2012,42 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         }
 
         [Fact]
+        public void Should_Get_TextBounds_With_Glue()
+        {
+            using (Start())
+            {
+                var typeface = Typeface.Default;
+
+                var defaultProperties = new GenericTextRunProperties(typeface);
+                var text = "a\u202C\u202C\u202C\u202Cb";
+                var shaperOption = new TextShaperOptions(typeface.GlyphTypeface);
+
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
+
+                var textBounds = textLine.GetTextBounds(1, 1);
+
+                Assert.NotEmpty(textBounds);
+
+                var firstTextBounds = textBounds[0];
+
+                Assert.NotEmpty(firstTextBounds.TextRunBounds);
+
+                var firstRunBounds = firstTextBounds.TextRunBounds[0];
+
+                Assert.Equal(1, firstRunBounds.TextSourceCharacterIndex);
+                Assert.Equal(1, firstRunBounds.Length);
+            }
+        }
+
+        [Fact]
         public void Should_Get_TextBounds_Tamil()
         {
             var text = "எடுத்துக்காட்டு வழி வினவல்";
@@ -2096,6 +2132,44 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                     Assert.Equal(expectedWidth, width, 2);
                 }
+            }
+        }
+
+        [Fact]
+        public void Should_GetTextBounds_Trailing_ZeroWidth()
+        {
+            var text = "dasdsad\r\n";
+
+            using (Start())
+            {
+                var typeface = Typeface.Default;
+
+                var defaultProperties = new GenericTextRunProperties(typeface);
+                var shaperOption = new TextShaperOptions(typeface.GlyphTypeface);
+
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
+
+                var textBounds = textLine.GetTextBounds(7, 3);
+
+                Assert.NotEmpty(textBounds);
+
+                var firstBounds = textBounds[0];
+
+                Assert.NotEmpty(firstBounds.TextRunBounds);
+
+                var firstRunBounds = firstBounds.TextRunBounds[0];
+
+                Assert.Equal(7, firstRunBounds.TextSourceCharacterIndex);
+
+                Assert.Equal(2, firstRunBounds.Length);
             }
         }
 
