@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <ProvisioningType>manual</ProvisioningType>
+    <TargetFramework>$(AvsCurrentTvOSTargetFramework)</TargetFramework>
+    <SupportedOSPlatformVersion>$(AvsMinSupportedTvOSVersion)</SupportedOSPlatformVersion>
+    <!-- To run this in the simulator, you need to use the x64 architecture, 
+     since SkiaSharp only bundles native libraries for x64 for the tvOS Simulator  -->
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">tvossimulator-x64</RuntimeIdentifier>
+    <UseInterpreter>true</UseInterpreter>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/iOS/Avalonia.iOS/Avalonia.iOS.csproj" />
+    <ProjectReference Include="../ControlCatalog/ControlCatalog.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="../ControlCatalog.iOS/*.cs" />
+    <InterfaceDefinition Include="../ControlCatalog.iOS/Resources/*.xib" />
+  </ItemGroup>
+
+</Project>

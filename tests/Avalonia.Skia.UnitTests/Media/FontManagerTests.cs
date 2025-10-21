@@ -427,5 +427,19 @@ namespace Avalonia.Skia.UnitTests.Media
                 }
             }
         }
+
+        [Fact]
+        public void Should_Fallback_When_Font_Family_Is_Empty()
+        {
+            using (UnitTestApplication.Start(
+                TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                using (AvaloniaLocator.EnterScope())
+                {
+                    var typeface = new Typeface(string.Empty);
+                    Assert.NotNull(typeface.FontFamily);
+                }
+            }
+        }
     }
 }

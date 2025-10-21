@@ -65,12 +65,12 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         internal static extern IntPtr AChoreographer_getInstance();
 
         [DllImport("android")]
-        [UnsupportedOSPlatform("android10.0")]
+        [UnsupportedOSPlatform("android29.0")]
         internal static extern void AChoreographer_postFrameCallback(
             IntPtr choreographer, delegate* unmanaged<int, IntPtr, void> callback, IntPtr data);
 
         [DllImport("android")]
-        [SupportedOSPlatform("android10.0")]
+        [SupportedOSPlatform("android29.0")]
         internal static extern void AChoreographer_postFrameCallback64(
             IntPtr choreographer, delegate* unmanaged<long, IntPtr, void> callback, IntPtr data);
 

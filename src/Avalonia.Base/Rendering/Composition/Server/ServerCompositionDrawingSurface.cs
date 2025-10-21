@@ -75,6 +75,19 @@ internal class ServerCompositionDrawingSurface : ServerCompositionSurface, IDisp
             Update(image.Image.SnapshotWithSemaphores(wait.Semaphore, signal.Semaphore), image.Context);
         }
     }
+    
+    public void UpdateWithTimelineSemaphores(CompositionImportedGpuImage image, 
+        CompositionImportedGpuSemaphore wait, ulong waitForValue,
+        CompositionImportedGpuSemaphore signal, ulong signalValue)
+    {
+        using (Compositor.RenderInterface.EnsureCurrent())
+        {
+            PerformSanityChecks(image);
+            if (!wait.IsUsable || !signal.IsUsable)
+                throw new PlatformGraphicsContextLostException();
+            Update(image.Image.SnapshotWithTimelineSemaphores(wait.Semaphore, waitForValue, signal.Semaphore, signalValue), image.Context);
+        }
+    }
 
     public void Dispose()
     {

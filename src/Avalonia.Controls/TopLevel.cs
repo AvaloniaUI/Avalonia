@@ -777,6 +777,8 @@ namespace Avalonia.Controls
             _scaling = ValidateScaling(scaling);
             LayoutHelper.InvalidateSelfAndChildrenMeasure(this);
             Dispatcher.UIThread.Send(_ => ScalingChanged?.Invoke(this, EventArgs.Empty));
+
+            InvalidateChildInsetsPadding();
         }
 
         private void HandleTransparencyLevelChanged(WindowTransparencyLevel transparencyLevel)
@@ -952,7 +954,7 @@ namespace Avalonia.Controls
                 var clientPoint = this.PointToClient(lastPos);
                 if (dirtyRect.Contains(clientPoint))
                 {
-                    _tooltipService.Update(this, HitTester.HitTestFirst(clientPoint, this, null));
+                    _tooltipService.Update(this, this.InputHitTest(clientPoint, enabledElementsOnly: false) as Visual);
                 }
             }
         }

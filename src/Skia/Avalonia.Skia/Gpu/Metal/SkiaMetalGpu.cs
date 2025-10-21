@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using Avalonia.Metal;
 using Avalonia.Platform;
 using SkiaSharp;
@@ -11,6 +10,9 @@ internal class SkiaMetalGpu : ISkiaGpu, ISkiaGpuWithPlatformGraphicsContext
 {
     private GRContext? _context;
     private readonly IMetalDevice _device;
+    private readonly SkiaMetalExternalObjectsFeature? _externalObjects;
+
+    internal GRContext GrContext => _context ?? throw new ObjectDisposedException(nameof(SkiaMetalGpu));
 
     public SkiaMetalGpu(IMetalDevice device, long? maxResourceBytes)
     {
@@ -19,6 +21,8 @@ internal class SkiaMetalGpu : ISkiaGpu, ISkiaGpuWithPlatformGraphicsContext
                        new GRContextOptions { AvoidStencilBuffers = true })
                    ?? throw new InvalidOperationException("Unable to create GRContext from Metal device.");
         _device = device;
+        if (device.TryGetFeature<IMetalExternalObjectsFeature>() is { } externalObjects)
+            _externalObjects = new SkiaMetalExternalObjectsFeature(this, externalObjects);
         if (maxResourceBytes.HasValue)
             _context.SetResourceCacheLimit(maxResourceBytes.Value);
     }
@@ -29,15 +33,21 @@ internal class SkiaMetalGpu : ISkiaGpu, ISkiaGpuWithPlatformGraphicsContext
         _context = null;
     }
 
-    public object? TryGetFeature(Type featureType) => null;
+    public object? TryGetFeature(Type featureType)
+    {
+        if (featureType == typeof(IExternalObjectsHandleWrapRenderInterfaceContextFeature))
+            return _device.TryGetFeature(featureType);
+        if (featureType == typeof(IExternalObjectsRenderInterfaceContextFeature))
+            return _externalObjects;
+        return null;
+    }
 
     public bool IsLost => false;
     public IDisposable EnsureCurrent() => _device.EnsureCurrent();
     public IPlatformGraphicsContext? PlatformGraphicsContext => _device;
 
     public IScopedResource<GRContext> TryGetGrContext() =>
-        ScopedResource<GRContext>.Create(_context ?? throw new ObjectDisposedException(nameof(SkiaMetalGpu)),
-            EnsureCurrent().Dispose);
+        ScopedResource<GRContext>.Create(GrContext, EnsureCurrent().Dispose);
 
     public ISkiaGpuRenderTarget? TryCreateRenderTarget(IEnumerable<object> surfaces)
     {

@@ -16,6 +16,18 @@ namespace Avalonia.Base.UnitTests.Input;
 
 public abstract class PointerTestsBase : ScopedTestBase
 {
+    protected class TestPointer : Pointer
+    {
+        internal int PlatformCaptureCalled = 0;
+
+        internal TestPointer(int id, PointerType type, bool isPrimary) : base(id, type, isPrimary) { }
+
+        protected override void PlatformCapture(IInputElement? element)
+        {
+            PlatformCaptureCalled++;
+        }
+    }
+
     private protected static void SetHit(Mock<IHitTester> renderer, Control? hit)
     {
         renderer.Setup(x => x.HitTest(It.IsAny<Point>(), It.IsAny<Visual>(), It.IsAny<Func<Visual, bool>>()))

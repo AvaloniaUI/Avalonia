@@ -28,7 +28,7 @@ namespace Avalonia.Browser
         
         private readonly INativeControlHostImpl _nativeControlHost;
         private readonly IStorageProvider _storageProvider;
-        private readonly ClipboardImpl _clipboard;
+        private readonly Clipboard _clipboard;
         private readonly IInsetsManager _insetsManager;
         private readonly JSObject _container;
         private readonly BrowserInputHandler _inputHandler;
@@ -60,7 +60,7 @@ namespace Avalonia.Browser
             _insetsManager = new BrowserInsetsManager();
             _nativeControlHost = new BrowserNativeControlHost(nativeControlHost);
             _storageProvider = new BrowserStorageProvider();
-            _clipboard = new ClipboardImpl();
+            _clipboard = new Clipboard(new ClipboardImpl());
 
             _container = container;
 
