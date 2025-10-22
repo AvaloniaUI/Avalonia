@@ -9,7 +9,6 @@ using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.UnitTests;
 using Xunit;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 {
@@ -905,7 +904,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 Assert.NotNull(textLine);
 
                 Assert.Throws<ArgumentOutOfRangeException>(() => textLine.GetTextBounds(0, 0));
-            }     
+            }
         }
 
         [Fact]
@@ -983,12 +982,12 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var defaultProperties = new GenericTextRunProperties(typeface);
                 var textSource = new CustomTextBufferTextSource(
-                    new TextHidden(1), 
-                    new TextCharacters("Authenti", defaultProperties), 
-                    new TextHidden(1), 
+                    new TextHidden(1),
+                    new TextCharacters("Authenti", defaultProperties),
+                    new TextHidden(1),
                     new TextHidden(1),
                     new TextCharacters("ff", defaultProperties),
-                    new TextHidden(1), 
+                    new TextHidden(1),
                     new TextHidden(1));
 
                 var formatter = new TextFormatterImpl();
@@ -1138,7 +1137,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 var typeface = new Typeface(FontFamily.Parse("resm:Avalonia.Skia.UnitTests.Fonts?assembly=Avalonia.Skia.UnitTests#Manrope"));
                 var defaultProperties = new GenericTextRunProperties(typeface);
                 var textSource = new CustomTextBufferTextSource(
-                    new TextCharacters("He", defaultProperties), 
+                    new TextCharacters("He", defaultProperties),
                     new TextCharacters("Wo", defaultProperties),
                     new TextCharacters("ff", defaultProperties));
 
@@ -1272,11 +1271,11 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             {
                 var pos = 0;
 
-                for(var i = 0; i < _textRuns.Count; i++)
+                for (var i = 0; i < _textRuns.Count; i++)
                 {
                     var currentRun = _textRuns[i];
 
-                    if(pos + currentRun.Length > textSourceIndex)
+                    if (pos + currentRun.Length > textSourceIndex)
                     {
                         return currentRun;
                     }
@@ -1638,7 +1637,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 Assert.True(firstBounds.TextRunBounds.Count > 0);
             }
         }
-        
+
         [Fact]
         public void Should_GetTextBounds_NotInfiniteLoop()
         {
@@ -1809,7 +1808,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             {
                 var defaultProperties = new GenericTextRunProperties(Typeface.Default);
 
-                var textSource = new TextFormatterTests.ListTextSource(new TextHidden(1) ,new TextCharacters(text, defaultProperties));
+                var textSource = new TextFormatterTests.ListTextSource(new TextHidden(1), new TextCharacters(text, defaultProperties));
 
                 var formatter = new TextFormatterImpl();
 
@@ -1925,7 +1924,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var textPosition = 0;
 
-                while(textPosition < text.Length)
+                while (textPosition < text.Length)
                 {
                     var bounds = textLine.GetTextBounds(textPosition, 1);
 
@@ -2081,7 +2080,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 foreach (var glyphInfo in firstRun.ShapedBuffer)
                 {
-                    if(lastCluster != glyphInfo.GlyphCluster)
+                    if (lastCluster != glyphInfo.GlyphCluster)
                     {
                         clusterWidth.Add(currentAdvance);
                         distances.Add(currentDistance);
@@ -2170,6 +2169,32 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 Assert.Equal(7, firstRunBounds.TextSourceCharacterIndex);
 
                 Assert.Equal(2, firstRunBounds.Length);
+            }
+        }
+
+        [Fact]
+        public void Should_Add_Half_LineGap_To_Baseline()
+        {
+            using (Start())
+            {
+                var typeface = new Typeface("resm:Avalonia.Skia.UnitTests.Fonts?assembly=Avalonia.Skia.UnitTests#Inter");
+                var defaultProperties = new GenericTextRunProperties(typeface);
+
+                var textSource = new SingleBufferTextSource("F", defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
+
+                var textMetrics = new TextMetrics(typeface.GlyphTypeface, 12);
+
+                var expectedBaseline = -textMetrics.Ascent + textMetrics.LineGap / 2;
+
+                Assert.Equal(expectedBaseline, textLine.Baseline);
             }
         }
 
