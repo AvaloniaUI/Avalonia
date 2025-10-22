@@ -108,6 +108,7 @@ namespace Avalonia.X11.NativeDialogs
             }
 
             gtk_window_set_modal(dlg, true);
+            gtk_file_chooser_set_local_only(dlg, false);
             var tcs = new TaskCompletionSource<(string[]?, FilePickerFileType?)>();
             List<IDisposable>? disposables = null;
 
