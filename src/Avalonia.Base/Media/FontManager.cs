@@ -96,6 +96,12 @@ namespace Avalonia.Media
             
             if (typeface.FontFamily.Name == FontFamily.DefaultFontFamilyName)
             {
+                if (DefaultFontFamily.Name == FontFamily.DefaultFontFamilyName)
+                {
+                    // Default font could not be resolved; returning false avoids infinite recursion.
+                    return false;
+                }
+
                 return TryGetGlyphTypeface(new Typeface(DefaultFontFamily, typeface.Style, typeface.Weight, typeface.Stretch), out glyphTypeface);
             }
 
@@ -125,6 +131,12 @@ namespace Avalonia.Media
 
                         if (familyName == FontFamily.DefaultFontFamilyName)
                         {
+                            if (DefaultFontFamily.Name == FontFamily.DefaultFontFamilyName)
+                            {
+                                // Cannot resolve the default family, try the next fallback instead of looping.
+                                continue;
+                            }
+
                             return TryGetGlyphTypeface(new Typeface(DefaultFontFamily, typeface.Style, typeface.Weight, typeface.Stretch), out glyphTypeface);
                         }
 
@@ -163,7 +175,13 @@ namespace Avalonia.Media
             }
 
             //Nothing was found so use the default
-            return TryGetGlyphTypeface(new Typeface(FontFamily.DefaultFontFamilyName, typeface.Style, typeface.Weight, typeface.Stretch), out glyphTypeface);
+            if (DefaultFontFamily.Name == FontFamily.DefaultFontFamilyName)
+            {
+                // No concrete default family available; fail gracefully to avoid recursion.
+                return false;
+            }
+
+            return TryGetGlyphTypeface(new Typeface(DefaultFontFamily, typeface.Style, typeface.Weight, typeface.Stretch), out glyphTypeface);
 
             FontFamily GetMappedFontFamily(FontFamily fontFamily)
             {
@@ -283,6 +301,11 @@ namespace Avalonia.Media
 
                         if (familyName == FontFamily.DefaultFontFamilyName)
                         {
+                            if (DefaultFontFamily.Name == FontFamily.DefaultFontFamilyName)
+                            {
+                                continue;
+                            }
+
                             familyName = DefaultFontFamily.Name;
                         }
 
