@@ -29,15 +29,15 @@ internal static class OleDataObjectHelper
             tymed = TYMED.TYMED_HGLOBAL
         };
 
-    public static unsafe object? TryGet(this Win32Com.IDataObject _oleDataObject, DataFormat format)
+    public static unsafe object? TryGet(this Win32Com.IDataObject oleDataObject, DataFormat format)
     {
         var formatEtc = format.ToFormatEtc();
 
-        if (_oleDataObject.QueryGetData(&formatEtc) != (uint)HRESULT.S_OK)
+        if (oleDataObject.QueryGetData(&formatEtc) != (uint)HRESULT.S_OK)
             return null;
 
         var medium = new STGMEDIUM();
-        if (_oleDataObject.GetData(&formatEtc, &medium) != (uint)HRESULT.S_OK)
+        if (oleDataObject.GetData(&formatEtc, &medium) != (uint)HRESULT.S_OK)
             return null;
 
         try
