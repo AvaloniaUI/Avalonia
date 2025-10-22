@@ -403,6 +403,12 @@ namespace Avalonia.Media
                     "Default font family name can't be null or empty.");
             }
 
+            if (defaultFontFamilyName == FontFamily.DefaultFontFamilyName)
+            {
+                throw new InvalidOperationException(
+                    $"'{FontFamily.DefaultFontFamilyName}' is a placeholder and cannot be used as the default font family name. Provide a concrete font family name via {nameof(FontManagerOptions)} or the platform implementation.");
+            }
+
             return defaultFontFamilyName;
         }
 
