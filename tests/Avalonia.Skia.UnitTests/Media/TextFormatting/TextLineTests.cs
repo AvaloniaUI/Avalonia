@@ -2198,6 +2198,70 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Fact]
+        public void Should_Clamp_Baseline_When_LineHeight_Is_Smaller_Than_Natural()
+        {
+            using (Start())
+            {
+                var typeface = new Typeface("resm:Avalonia.Skia.UnitTests.Fonts?assembly=Avalonia.Skia.UnitTests#Inter");
+                var defaultProperties = new GenericTextRunProperties(typeface);
+
+                var textSource = new SingleBufferTextSource("F", defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var textMetrics = new TextMetrics(typeface.GlyphTypeface, 12);
+                var natural = -textMetrics.Ascent + textMetrics.Descent + textMetrics.LineGap;
+
+                var smallerLineHeight = natural - 2;
+
+                // Force a smaller line height than ascent+descent+lineGap
+                var paragraphProps = new GenericTextParagraphProperties(defaultProperties, lineHeight: smallerLineHeight);
+
+                var textLine = formatter.FormatLine(textSource, 0, double.PositiveInfinity, paragraphProps);
+
+                Assert.NotNull(textLine);
+
+                // In this case, baseline should equal -Ascent (lineGap ignored)
+                var expectedBaseline = -textMetrics.Ascent;
+
+                Assert.Equal(expectedBaseline, textLine.Baseline);
+                Assert.Equal(paragraphProps.LineHeight, textLine.Height);
+            }
+        }
+
+        [Fact]
+        public void Should_Distribute_Extra_Space_When_LineHeight_Is_Larger_Than_Natural()
+        {
+            using (Start())
+            {
+                var typeface = new Typeface("resm:Avalonia.Skia.UnitTests.Fonts?assembly=Avalonia.Skia.UnitTests#Inter");
+                var defaultProperties = new GenericTextRunProperties(typeface);
+
+                var textSource = new SingleBufferTextSource("F", defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var textMetrics = new TextMetrics(typeface.GlyphTypeface, 12);
+                var natural = -textMetrics.Ascent + textMetrics.Descent + textMetrics.LineGap;
+
+                var largerLineHeight = natural + 50;
+
+                var paragraphProps = new GenericTextParagraphProperties(defaultProperties, lineHeight: largerLineHeight);
+
+                var textLine = formatter.FormatLine(textSource, 0, double.PositiveInfinity, paragraphProps);
+
+                Assert.NotNull(textLine);
+
+                // Extra space is distributed evenly above and below
+                var extra = largerLineHeight - (textMetrics.Descent - textMetrics.Ascent);
+                var expectedBaseline = -textMetrics.Ascent + extra / 2;
+
+                Assert.Equal(expectedBaseline, textLine.Baseline, 5);
+                Assert.Equal(largerLineHeight, textLine.Height, 5);
+            }
+        }
+
         private class FixedRunsTextSource : ITextSource
         {
             private readonly IReadOnlyList<TextRun> _textRuns;
