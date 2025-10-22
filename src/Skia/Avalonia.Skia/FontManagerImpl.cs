@@ -50,7 +50,7 @@ namespace Avalonia.Skia
                     skFontStyle = SKFontStyle.BoldItalic;
                     break;
                 default:
-                    skFontStyle = new SKFontStyle((SKFontStyleWeight)fontWeight, (SKFontStyleWidth)fontStretch, (SKFontStyleSlant)fontStyle);
+                    skFontStyle = new SKFontStyle((SKFontStyleWeight)fontWeight, (SKFontStyleWidth)fontStretch, fontStyle.ToSkia());
                     break;
             }
 
@@ -63,7 +63,12 @@ namespace Avalonia.Skia
 
             if (skTypeface != null)
             {
-                fontKey = new Typeface(skTypeface.FamilyName, (FontStyle)skTypeface.FontStyle.Slant, (FontWeight)skTypeface.FontStyle.Weight, (FontStretch)skTypeface.FontStyle.Width);
+                // ToDo: create glyph typeface here to get the correct style/weight/stretch
+                fontKey = new Typeface(
+                    skTypeface.FamilyName,
+                    skTypeface.FontStyle.Slant.ToAvalonia(),
+                    (FontWeight)skTypeface.FontStyle.Weight,
+                    (FontStretch)skTypeface.FontStyle.Width);
 
                 return true;
             }
@@ -78,8 +83,7 @@ namespace Avalonia.Skia
         {
             glyphTypeface = null;
 
-            var fontStyle = new SKFontStyle((SKFontStyleWeight)weight, (SKFontStyleWidth)stretch,
-                (SKFontStyleSlant)style);
+            var fontStyle = new SKFontStyle((SKFontStyleWeight)weight, (SKFontStyleWidth)stretch, style.ToSkia());
 
             var skTypeface = _skFontManager.MatchFamily(familyName, fontStyle);
 
@@ -127,7 +131,7 @@ namespace Avalonia.Skia
 
             var set = _skFontManager.GetFontStyles(familyName);
 
-            if(set.Count == 0)
+            if (set.Count == 0)
             {
                 return false;
             }
