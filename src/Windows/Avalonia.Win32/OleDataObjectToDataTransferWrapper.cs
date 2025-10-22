@@ -54,15 +54,21 @@ internal sealed class OleDataObjectToDataTransferWrapper(Win32Com.IDataObject ol
     {
         List<DataFormat>? nonFileFormats = null;
         var items = new List<PlatformDataTransferItem>();
+        var hasFiles = false;
 
         foreach (var format in Formats)
         {
             if (DataFormat.File.Equals(format))
             {
+                if (hasFiles)
+                    continue;
+
                 // This is not ideal as we're reading the filenames ahead of time to generate the appropriate items.
                 // However, it's unlikely to be a heavy operation.
                 if (_oleDataObject.TryGet(format) is IEnumerable<IStorageItem> storageItems)
                 {
+                    hasFiles = true;
+
                     foreach (var storageItem in storageItems)
                         items.Add(PlatformDataTransferItem.Create(DataFormat.File, storageItem));
                 }
