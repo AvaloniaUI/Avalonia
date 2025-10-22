@@ -1326,8 +1326,6 @@ namespace Avalonia.Media.TextFormatting
                 }
             }
 
-
-
             var inkBounds = new Rect();
 
             for (var index = 0; index < _textRuns.Length; index++)
