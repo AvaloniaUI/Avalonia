@@ -757,7 +757,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
-        public void Moving_Selected_Item_Should_Clear_Selection()
+        public void Moving_Selected_Item_Should_Not_Clear_Selection()
         {
             using var app = Start();
             var items = new ObservableCollection<string> { "foo", "bar" };
@@ -777,18 +777,15 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             target.SelectionChanged += (_, args) => receivedArgs = args;
 
-            var removed = items[1];
             items.Move(1, 0);
 
-            Assert.Null(target.SelectedItem);
-            Assert.Equal(-1, target.SelectedIndex);
-            Assert.NotNull(receivedArgs);
-            Assert.Empty(receivedArgs.AddedItems);
-            Assert.Equal(new[] { removed }, receivedArgs.RemovedItems);
+            Assert.Equal(items[0], target.SelectedItem);
+            Assert.Equal(0, target.SelectedIndex);
+            Assert.Null(receivedArgs);
         }
 
         [Fact]
-        public void Moving_Selected_Container_Should_Not_Clear_Selection()
+        public void Moving_Selected_Container_Should_Clear_Selection()
         {
             var items = new AvaloniaList<Item>
             {
@@ -815,16 +812,12 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var moved = items[1];
             items.Move(1, 0);
 
-            // Because the moved container is still marked as selected on the insert part of the
-            // move, it will remain selected.
-            Assert.Same(moved, target.SelectedItem);
-            Assert.Equal(0, target.SelectedIndex);
+            Assert.Null(target.SelectedItem);
+            Assert.Equal(-1, target.SelectedIndex);
             Assert.NotNull(receivedArgs);
-            Assert.Equal(2, receivedArgs.Count);
+            Assert.Single(receivedArgs);
             Assert.Equal(new[] { moved }, receivedArgs[0].RemovedItems);
-            Assert.Equal(new[] { moved }, receivedArgs[1].AddedItems);
-            Assert.True(items[0].IsSelected);
-            Assert.False(items[1].IsSelected);
+            Assert.True(items.All(x => !x.IsSelected));
         }
 
         [Fact]
