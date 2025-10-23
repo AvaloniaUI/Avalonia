@@ -1248,6 +1248,29 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Fact]
+        public void Should_Get_In_Cluster_Backspace_Hit()
+        {
+            using (Start())
+            {
+                var typeface = new Typeface(FontFamily.Parse("resm:Avalonia.Skia.UnitTests.Fonts?assembly=Avalonia.Skia.UnitTests#Manrope"));
+                var defaultProperties = new GenericTextRunProperties(typeface);
+                var textSource = new SingleBufferTextSource("ff", defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
+
+                var backspaceHit = textLine.GetBackspaceCaretCharacterHit(new CharacterHit(1, 1));
+
+                Assert.Equal(1, backspaceHit.FirstCharacterIndex);
+            }
+        }
+
         private class TextHidden : TextRun
         {
             public TextHidden(int length)
