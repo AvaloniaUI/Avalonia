@@ -708,9 +708,13 @@ namespace Avalonia.Media
                 }
             }
 
+            var ascent = GlyphTypeface.Metrics.Ascent * Scale;
+            var lineGap = GlyphTypeface.Metrics.LineGap * Scale;
+            var baseline = -ascent + lineGap * 0.5;
+
             return new GlyphRunMetrics
             {
-                Baseline = -GlyphTypeface.Metrics.Ascent * Scale,
+                Baseline = baseline,
                 Width = width,
                 WidthIncludingTrailingWhitespace = widthIncludingTrailingWhitespace,
                 Height = height,
