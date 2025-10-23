@@ -53,4 +53,18 @@ public static class FilePickerFileTypes
         AppleUniformTypeIdentifiers = new[] { "com.adobe.pdf" },
         MimeTypes = new[] { "application/pdf" }
     };
+
+    public static FilePickerFileType Json { get; } = new("JSON document")
+    {
+        Patterns = new[] { "*.json" },
+        AppleUniformTypeIdentifiers = new[] { "public.json" },
+        MimeTypes = new[] { "application/json" }
+    };
+
+    public static FilePickerFileType Xml { get; } = new("XML document")
+    {
+        Patterns = new[] { "*.xml" },
+        AppleUniformTypeIdentifiers = new[] { "public.xml" },
+        MimeTypes = new[] { "application/xml", "text/xml" }
+    };
 }

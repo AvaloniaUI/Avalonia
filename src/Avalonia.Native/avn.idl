@@ -910,6 +910,7 @@ interface IAvnPlatformThreadingInterface : IUnknown
 interface IAvnSystemDialogEvents : IUnknown
 {
      void OnCompleted(IAvnStringArray*array);
+     void OnCompletedWithFilter(IAvnStringArray*array, int selectedFilterIndex);
 }
 
 [uuid(4d7a47db-a944-4061-abe7-62cb6aa0ffd5)]

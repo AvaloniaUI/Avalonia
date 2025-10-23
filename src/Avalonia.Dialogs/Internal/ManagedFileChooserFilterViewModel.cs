@@ -8,9 +8,15 @@ namespace Avalonia.Dialogs.Internal
     {
         private readonly Regex[]? _patterns;
         public string Name { get; }
+        internal int Index { get; }
 
-        public ManagedFileChooserFilterViewModel(FilePickerFileType filter)
+        public ManagedFileChooserFilterViewModel(FilePickerFileType filter) : this(filter, 0)
         {
+        }
+        
+        public ManagedFileChooserFilterViewModel(FilePickerFileType filter, int index)
+        {
+            Index = index;
             Name = filter.Name;
 
             if (filter.Patterns?.Contains("*.*") == true)
