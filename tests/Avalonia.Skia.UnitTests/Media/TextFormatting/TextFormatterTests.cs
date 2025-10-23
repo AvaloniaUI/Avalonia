@@ -1144,6 +1144,57 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Fact]
+        public void DrawableRun_With_Same_Baseline_And_BiggerHeight_Should_Not_Alter_Baseline()
+        {
+            using (Start())
+            {
+                var text = "ABC";
+
+                var typeface = new Typeface(new FontFamily(new Uri("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests"), "Noto Mono"));
+                var defaultRunProperties = new GenericTextRunProperties(typeface);
+                var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties, textWrapping: TextWrapping.Wrap);
+
+                var embeddedTextLine = TextFormatter.Current.FormatLine(new SimpleTextSource(text, defaultRunProperties), 0, 120, paragraphProperties);
+
+                Assert.NotNull(embeddedTextLine);
+
+                var expectedHeight = embeddedTextLine.Height + 10;
+
+                var embeddedSize = new Size(embeddedTextLine.Width, expectedHeight);
+
+                var expectedBaseline = embeddedTextLine.Baseline;
+
+                var textSource = new ListTextSource(new TextCharacters("ABC", defaultRunProperties), new CustomDrawableRun(embeddedSize, expectedBaseline));
+
+                var textLine = TextFormatter.Current.FormatLine(textSource, 0, double.PositiveInfinity, paragraphProperties);
+
+                Assert.NotNull(textLine);
+
+                Assert.Equal(expectedHeight, textLine.Height);
+
+                Assert.Equal(expectedBaseline, textLine.Baseline);
+            }
+        }
+
+        private class CustomDrawableRun : DrawableTextRun
+        {
+            public CustomDrawableRun(Size size, double baseLine)
+            {
+                Size = size;
+                Baseline = baseLine;
+            }
+
+            public override Size Size { get; }
+
+            public override double Baseline { get; }
+
+            public override void Draw(DrawingContext drawingContext, Point origin)
+            {
+                // no op
+            }
+        }
+
         private class EmbeddedTextLineRun : DrawableTextRun
         {
             private readonly TextLine _textLine;

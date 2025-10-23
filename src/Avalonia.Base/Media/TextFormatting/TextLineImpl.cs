@@ -580,7 +580,7 @@ namespace Avalonia.Media.TextFormatting
         /// </returns>
         private int GetLastDirectionalRunIndex(int indexedRunIndex, FlowDirection flowDirection, ref double directionalWidth)
         {
-            if(_indexedTextRuns is null)
+            if (_indexedTextRuns is null)
             {
                 return -1;
             }
@@ -624,7 +624,7 @@ namespace Avalonia.Media.TextFormatting
 
         public override IReadOnlyList<TextBounds> GetTextBounds(int firstTextSourceIndex, int textLength)
         {
-            if(textLength == 0)
+            if (textLength == 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(textLength), textLength, $"{nameof(textLength)} ('0') must be a non-zero value. ");
             }
@@ -643,7 +643,7 @@ namespace Avalonia.Media.TextFormatting
                 var indexedTextRun = _indexedTextRuns[0];
                 var currentDirection = GetRunDirection(indexedTextRun.TextRun, _resolvedFlowDirection);
 
-                return [new TextBounds(new Rect(0,0,0, Height), currentDirection, [])];
+                return [new TextBounds(new Rect(0, 0, 0, Height), currentDirection, [])];
             }
 
             //We can return early if the requested text range is after the line's text range.
@@ -667,7 +667,7 @@ namespace Avalonia.Media.TextFormatting
                 {
                     break;
                 }
-   
+
                 var currentTextRun = currentIndexedRun.TextRun;
 
                 if (currentTextRun == null)
@@ -691,7 +691,7 @@ namespace Avalonia.Media.TextFormatting
                 {
                     directionalWidth = currentDrawable.Size.Width;
                 }
-    
+
                 var firstRunIndex = currentIndexedRun.RunIndex;
                 var lastRunIndex = GetLastDirectionalRunIndex(indexedRunIndex, currentDirection, ref directionalWidth);
 
@@ -709,8 +709,8 @@ namespace Avalonia.Media.TextFormatting
                         }
                     default:
                         {
-                             currentBounds = GetTextBoundsLeftToRight(firstRunIndex, lastRunIndex, currentX, firstTextSourceIndex,
-                                    currentPosition, remainingLength, out coveredLength, out currentPosition);
+                            currentBounds = GetTextBoundsLeftToRight(firstRunIndex, lastRunIndex, currentX, firstTextSourceIndex,
+                                   currentPosition, remainingLength, out coveredLength, out currentPosition);
 
                             break;
                         }
@@ -729,7 +729,7 @@ namespace Avalonia.Media.TextFormatting
 
                 lastBounds = currentBounds;
 
-                if(coveredLength <= 0)
+                if (coveredLength <= 0)
                 {
                     throw new InvalidOperationException("Covered length must be greater than zero.");
                 }
@@ -862,7 +862,7 @@ namespace Avalonia.Media.TextFormatting
 
                             var length = 0;
 
-                            var clusterLength = Math.Max(0, currentCharacterHit.FirstCharacterIndex + currentCharacterHit.TrailingLength - 
+                            var clusterLength = Math.Max(0, currentCharacterHit.FirstCharacterIndex + currentCharacterHit.TrailingLength -
                                 previousCharacterHit.FirstCharacterIndex - previousCharacterHit.TrailingLength);
 
                             while (graphemeEnumerator.MoveNext(out var grapheme))
@@ -998,14 +998,14 @@ namespace Avalonia.Media.TextFormatting
                 {
                     var runBounds = GetRunBounds(shapedTextRun, endX, firstTextSourceIndex, remainingLength, currentPosition);
 
-                    if(runBounds.TextSourceCharacterIndex < FirstTextSourceIndex + Length)
+                    if (runBounds.TextSourceCharacterIndex < FirstTextSourceIndex + Length)
                     {
                         textRunBounds.Add(runBounds);
                     }
 
                     currentPosition = runBounds.TextSourceCharacterIndex + runBounds.Length;
 
-                    if(i == firstRunIndex)
+                    if (i == firstRunIndex)
                     {
                         startX = runBounds.Rectangle.Left;
                     }
@@ -1122,7 +1122,7 @@ namespace Avalonia.Media.TextFormatting
             var startHitIndex = startHit.FirstCharacterIndex;
 
             //If the requested text range starts at the trailing edge we need to move at the end of the hit
-            if(startHitIndex < startIndex)
+            if (startHitIndex < startIndex)
             {
                 startHitIndex += startHit.TrailingLength;
             }
@@ -1240,7 +1240,7 @@ namespace Avalonia.Media.TextFormatting
                         }
                     case not null:
                         {
-                            if(direction == LogicalDirection.Forward)
+                            if (direction == LogicalDirection.Forward)
                             {
                                 if (textPosition == codepointIndex)
                                 {
@@ -1316,9 +1316,16 @@ namespace Avalonia.Media.TextFormatting
 
                     case DrawableTextRun drawableTextRun:
                         {
-                            if (drawableTextRun.Size.Height > -ascent)
+                            if (drawableTextRun.Baseline > -ascent)
                             {
-                                ascent = -drawableTextRun.Size.Height;
+                                ascent = -drawableTextRun.Baseline;
+                            }
+
+                            var bottom = drawableTextRun.Size.Height - drawableTextRun.Baseline;
+
+                            if (bottom > descent)
+                            {
+                                descent = bottom;
                             }
 
                             break;
@@ -1335,31 +1342,31 @@ namespace Avalonia.Media.TextFormatting
                 switch (_textRuns[index])
                 {
                     case ShapedTextRun textRun:
-                    {
-                        var glyphRun = textRun.GlyphRun;
-                        //Align the ink bounds at the common baseline
-                        var offsetY = -ascent - textRun.Baseline;
+                        {
+                            var glyphRun = textRun.GlyphRun;
+                            //Align the ink bounds at the common baseline
+                            var offsetY = -ascent - textRun.Baseline;
 
-                        var runBounds = glyphRun.InkBounds.Translate(new Vector(widthIncludingWhitespace, offsetY));
+                            var runBounds = glyphRun.InkBounds.Translate(new Vector(widthIncludingWhitespace, offsetY));
 
-                        inkBounds = inkBounds.Union(runBounds);
+                            inkBounds = inkBounds.Union(runBounds);
 
-                        widthIncludingWhitespace += textRun.Size.Width;
+                            widthIncludingWhitespace += textRun.Size.Width;
 
-                        break;
-                    }
+                            break;
+                        }
 
                     case DrawableTextRun drawableTextRun:
-                    {
-                        //Align the bounds at the common baseline
-                        var offsetY = -ascent - drawableTextRun.Baseline;
+                        {
+                            //Align the bounds at the common baseline
+                            var offsetY = -ascent - drawableTextRun.Baseline;
 
-                        inkBounds = inkBounds.Union(new Rect(new Point(widthIncludingWhitespace, offsetY), drawableTextRun.Size));
+                            inkBounds = inkBounds.Union(new Rect(new Point(widthIncludingWhitespace, offsetY), drawableTextRun.Size));
 
-                        widthIncludingWhitespace += drawableTextRun.Size.Width;
-                        
-                        break;
-                    }
+                            widthIncludingWhitespace += drawableTextRun.Size.Width;
+
+                            break;
+                        }
                 }
             }
 
