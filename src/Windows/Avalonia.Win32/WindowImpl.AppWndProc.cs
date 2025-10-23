@@ -114,9 +114,9 @@ namespace Avalonia.Win32
                         //Window doesn't exist anymore
                         _hwnd = IntPtr.Zero;
                         //Remove root reference to this class, so unmanaged delegate can be collected
-                        s_instances.Remove(this);
+                        lock (s_instances)
+                            s_instances.Remove(this);
 
-                        _mouseDevice.Dispose();
                         _touchDevice.Dispose();
                         //Free other resources
                         Dispose();
@@ -280,14 +280,6 @@ namespace Avalonia.Win32
                             DipFromLParam(lParam), GetMouseModifiers(wParam));
                         break;
                     }
-                // Mouse capture is lost
-                case WindowsMessage.WM_CANCELMODE:
-                    if (!IsMouseInPointerEnabled)
-                    {
-                        _mouseDevice.Capture(null);
-                    }
-
-                    break;
 
                 case WindowsMessage.WM_MOUSEMOVE:
                     {
@@ -394,13 +386,14 @@ namespace Avalonia.Win32
                         break;
                     }
 
+                // covers WM_CANCELMODE which sends WM_CAPTURECHANGED in DefWindowProc
                 case WindowsMessage.WM_CAPTURECHANGED:
                     {
                         if (IsMouseInPointerEnabled)
                         {
                             break;
                         }
-                        if (_hwnd != lParam)
+                        if (!IsOurWindow(lParam))
                         {
                             _trackingMouse = false;
                             e = new RawPointerEventArgs(
@@ -905,6 +898,22 @@ namespace Avalonia.Win32
             }
 
             return DefWindowProc(hWnd, msg, wParam, lParam);
+        }
+
+        private bool IsOurWindow(IntPtr hwnd)
+        {
+            if (hwnd == IntPtr.Zero)
+                return false;
+
+            if (hwnd == _hwnd)
+                return true;
+
+            lock (s_instances)
+                for (int i = 0; i < s_instances.Count; i++)
+                    if (s_instances[i]._hwnd == hwnd)
+                        return true;
+
+            return false;
         }
 
         private void OnShowHideMessage(bool shown)
