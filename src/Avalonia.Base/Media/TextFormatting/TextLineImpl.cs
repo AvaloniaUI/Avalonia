@@ -1306,9 +1306,16 @@ namespace Avalonia.Media.TextFormatting
 
                     case DrawableTextRun drawableTextRun:
                         {
-                            if (drawableTextRun.Size.Height > -ascent)
+                            if (drawableTextRun.Baseline > -ascent)
                             {
-                                ascent = -drawableTextRun.Size.Height;
+                                ascent = -drawableTextRun.Baseline;
+                            }
+
+                            var bottom = drawableTextRun.Size.Height - drawableTextRun.Baseline;
+
+                            if (bottom > descent)
+                            {
+                                descent = bottom;
                             }
 
                             break;
