@@ -29,7 +29,7 @@ namespace Avalonia.Win32.Input
             
             public static WindowsMousePointer CreatePointer(out WindowsMousePointer pointer)
             {
-                return pointer = new WindowsMousePointer();
+                return pointer = PrimaryMousePointer as WindowsMousePointer ?? new WindowsMousePointer();
             }
 
             protected override void PlatformCapture(IInputElement? element)
