@@ -147,6 +147,10 @@ namespace ControlCatalog.NetCore
                 {
                     UseRegionDirtyRectClipping = true
                 })
+                .With(new SkiaOptions()
+                {
+                    PerformGlSwapOnCpu = true
+                })
                 .UseSkia()
                 .WithInterFont()
                 .AfterSetup(builder =>

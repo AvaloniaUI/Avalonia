@@ -132,17 +132,19 @@ internal class GlSkiaImportedImage : IPlatformRenderInterfaceImportedImage
         var textureId = _image?.TextureId ?? _sharedTexture!.TextureId;
         var topLeft = _image?.Properties.TopLeftOrigin ?? false;
         var textureType = _image?.TextureType ?? GlConsts.GL_TEXTURE_2D;
-        
-        
+        var skiaOptions = AvaloniaLocator.Current.GetService<SkiaOptions>();
+
+
         IBitmapImpl rv;
         using (var surf = TryCreateSurface(textureType, textureId, internalFormat, width, height, topLeft))
         {
             if (surf == null)
                 throw new OpenGlException("Unable to consume provided texture");
             var snapshot = surf.Snapshot();
+            var raster = skiaOptions?.PerformGlSwapOnCpu == true ? snapshot.ToRasterImage() : null;
             var context = _gpu.GlContext;
             
-            rv = new ImmutableBitmap(snapshot, () =>
+            rv = new ImmutableBitmap(raster ?? snapshot, () =>
             {
                 IDisposable? restoreContext = null;
                 try
@@ -156,6 +158,7 @@ internal class GlSkiaImportedImage : IPlatformRenderInterfaceImportedImage
 
                 using (restoreContext)
                 {
+                    raster?.Dispose();
                     snapshot.Dispose();
                 }
             });
