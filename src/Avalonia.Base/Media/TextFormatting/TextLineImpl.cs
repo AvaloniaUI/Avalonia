@@ -814,7 +814,7 @@ namespace Avalonia.Media.TextFormatting
             }
         }
 
-        private CharacterHit GetPreviousCharacterHit(CharacterHit characterHit, bool useGraphemeBoundaries)
+        private CharacterHit GetPreviousCharacterHit(CharacterHit characterHit, bool isBackspaceDelete)
         {
             if (_textRuns.Length == 0 || _indexedTextRuns is null)
             {
@@ -833,8 +833,6 @@ namespace Avalonia.Media.TextFormatting
                 return new CharacterHit(FirstTextSourceIndex);
             }
 
-            var currentCharacterHit = characterHit;
-
             var currentRun = GetRunAtCharacterIndex(characterIndex, LogicalDirection.Backward, out var currentPosition);
 
             var previousCharacterHit = characterHit;
@@ -843,46 +841,38 @@ namespace Avalonia.Media.TextFormatting
             {
                 case ShapedTextRun shapedRun:
                     {
-                        var offset = Math.Max(0, currentPosition - shapedRun.GlyphRun.Metrics.FirstCluster);
+                        //Determine the start of the first hit in local positions.
+                        var runOffset = Math.Max(0, characterIndex - currentPosition);
 
-                        if (offset > 0)
+                        var firstCluster = shapedRun.GlyphRun.Metrics.FirstCluster;
+
+                        //Current position is a text source index and first cluster is relative to the GlyphRun's buffer.
+                        var textSourceOffset = currentPosition - firstCluster;
+
+                        if (isBackspaceDelete)
                         {
-                            currentCharacterHit = new CharacterHit(Math.Max(0, characterHit.FirstCharacterIndex - offset), characterHit.TrailingLength);
-                        }
-
-                        previousCharacterHit = shapedRun.GlyphRun.GetPreviousCaretCharacterHit(currentCharacterHit);
-
-                        if (useGraphemeBoundaries)
-                        {
-                            var textPosition = Math.Max(0, previousCharacterHit.FirstCharacterIndex - shapedRun.GlyphRun.Metrics.FirstCluster);
-
-                            var text = shapedRun.GlyphRun.Characters.Slice(textPosition);
-
-                            var graphemeEnumerator = new GraphemeEnumerator(text.Span);
-
                             var length = 0;
 
-                            var clusterLength = Math.Max(0, currentCharacterHit.FirstCharacterIndex + currentCharacterHit.TrailingLength -
-                                previousCharacterHit.FirstCharacterIndex - previousCharacterHit.TrailingLength);
-
-                            while (graphemeEnumerator.MoveNext(out var grapheme))
+                            while (Codepoint.ReadAt(shapedRun.GlyphRun.Characters.Span, length, out var count) != Codepoint.ReplacementCodepoint)
                             {
-                                if (length + grapheme.Length < clusterLength)
+                                if (length + count >= runOffset)
                                 {
-                                    length += grapheme.Length;
-
-                                    continue;
+                                    break;
                                 }
 
-                                previousCharacterHit = new CharacterHit(previousCharacterHit.FirstCharacterIndex + length);
-
-                                break;
+                                length += count;
                             }
-                        }
 
-                        if (offset > 0)
+                            previousCharacterHit = new CharacterHit(characterIndex - runOffset + length);
+                        }
+                        else
                         {
-                            previousCharacterHit = new CharacterHit(previousCharacterHit.FirstCharacterIndex + offset, previousCharacterHit.TrailingLength);
+                            previousCharacterHit = shapedRun.GlyphRun.GetPreviousCaretCharacterHit(new CharacterHit(firstCluster + runOffset));
+
+                            if(textSourceOffset > 0)
+                            {
+                                previousCharacterHit = new CharacterHit(textSourceOffset + previousCharacterHit.FirstCharacterIndex, previousCharacterHit.TrailingLength);
+                            }
                         }
 
                         break;
@@ -1333,8 +1323,6 @@ namespace Avalonia.Media.TextFormatting
                 }
             }
 
-            var height = descent - ascent + lineGap;
-
             var inkBounds = new Rect();
 
             for (var index = 0; index < _textRuns.Length; index++)
@@ -1370,6 +1358,28 @@ namespace Avalonia.Media.TextFormatting
                 }
             }
 
+            var halfLineGap = lineGap * 0.5;
+            var naturalHeight = descent - ascent + lineGap;
+            var baseline = -ascent + halfLineGap;
+            var height = naturalHeight;
+
+            if (!double.IsNaN(lineHeight) && !MathUtilities.IsZero(lineHeight))
+            {
+                if (lineHeight <= naturalHeight)
+                {
+                    //Clamp to the specified line height
+                    height = lineHeight;
+                    baseline = -ascent;
+                }
+                else
+                {
+                    // Center the text vertically within the specified line height
+                    height = lineHeight;
+                    var extra = lineHeight - (descent - ascent);
+                    baseline = -ascent + extra / 2;
+                }
+            }
+
             height += lineSpacing;
 
             var width = widthIncludingWhitespace;
@@ -1402,23 +1412,13 @@ namespace Avalonia.Media.TextFormatting
             }
 
             var extent = inkBounds.Height;
-            //The width of overhanging pixels at the bottom
-            var overhangAfter = inkBounds.Bottom - height;
+            //The height of overhanging pixels at the bottom
+            var overhangAfter = inkBounds.Bottom - height + halfLineGap;
             //The width of overhanging pixels at the natural alignment point. Positive value means we are inside.
             var overhangLeading = inkBounds.Left;
             //The width of overhanging pixels at the end of the natural bounds. Positive value means we are inside.
             var overhangTrailing = widthIncludingWhitespace - inkBounds.Right;
             var hasOverflowed = width > _paragraphWidth;
-
-            if (!double.IsNaN(lineHeight) && !MathUtilities.IsZero(lineHeight))
-            {
-                //Center the line
-                var offset = (height - lineHeight) / 2;
-
-                ascent += offset;
-
-                height = lineHeight;
-            }
 
             var start = GetParagraphOffsetX(width, widthIncludingWhitespace);
 
@@ -1433,7 +1433,7 @@ namespace Avalonia.Media.TextFormatting
                 Extent = extent,
                 NewlineLength = newLineLength,
                 Start = start,
-                TextBaseline = -ascent,
+                TextBaseline = baseline,
                 TrailingWhitespaceLength = trailingWhitespaceLength,
                 Width = width,
                 WidthIncludingTrailingWhitespace = widthIncludingWhitespace,
