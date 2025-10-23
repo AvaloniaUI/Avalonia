@@ -16,6 +16,9 @@ namespace Avalonia.Data
     /// A XAML binding.
     /// </summary>
     [RequiresUnreferencedCode(TrimmingMessages.ReflectionBindingRequiresUnreferencedCodeMessage)]
+#if NET8_0_OR_GREATER
+    [RequiresDynamicCode(TrimmingMessages.ReflectionBindingRequiresDynamicCodeMessage)]
+#endif
     public class Binding : BindingBase
     {
         /// <summary>
@@ -90,6 +93,9 @@ namespace Avalonia.Data
         /// ITreeDataTemplate in time for 11.0. We should revisit this in 12.0.
         /// </remarks>
         // TODO12: Refactor
+#if NET8_0_OR_GREATER
+    [RequiresDynamicCode(TrimmingMessages.ExpressionNodeRequiresDynamicCodeMessage)]
+#endif
         internal BindingExpression CreateObservableForTreeDataTemplate(object source)
         {
             if (!string.IsNullOrEmpty(ElementName))

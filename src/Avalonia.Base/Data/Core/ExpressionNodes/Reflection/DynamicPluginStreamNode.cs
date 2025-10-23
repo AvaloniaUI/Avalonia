@@ -7,6 +7,9 @@ using Avalonia.Reactive;
 namespace Avalonia.Data.Core.ExpressionNodes.Reflection;
 
 [RequiresUnreferencedCode(TrimmingMessages.ExpressionNodeRequiresUnreferencedCodeMessage)]
+#if NET8_0_OR_GREATER
+[RequiresDynamicCode(TrimmingMessages.ExpressionNodeRequiresDynamicCodeMessage)]
+#endif
 internal sealed class DynamicPluginStreamNode : ExpressionNode
 {
     private IDisposable? _subscription;

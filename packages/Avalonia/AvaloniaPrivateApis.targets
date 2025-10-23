@@ -13,7 +13,7 @@
   </Target>
   <Target Name="AddReferencePathsToRealAvaloniaAssemblies" BeforeTargets="CoreCompile" Condition="'$(AvaloniaAccessUnstablePrivateApis.ToLowerInvariant())'=='true'">
     <PropertyGroup>
-      <AvaloniaUnstableApiFrameworkToUse>net6.0</AvaloniaUnstableApiFrameworkToUse>
+      <AvaloniaUnstableApiFrameworkToUse>net8.0</AvaloniaUnstableApiFrameworkToUse>
       <AvaloniaUnstableApiFrameworkToUse Condition="$(TargetFramework.StartsWith('net4')) == 'true' or $(TargetFramework.StartsWith('net5')) == 'true' or $(TargetFramework.StartsWith('netsta')) == 'true' or $(TargetFramework.StartsWith('netcore')) == 'true'">netstandard2.0</AvaloniaUnstableApiFrameworkToUse>
     </PropertyGroup>
     <ItemGroup>
