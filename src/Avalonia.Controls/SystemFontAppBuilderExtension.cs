@@ -11,7 +11,7 @@ namespace Avalonia
             {
                 if(fontManager.SystemFonts is SystemFontCollection systemFontCollection)
                 {
-                    systemFontCollection.AddCustomFontSource(fontSource);
+                    systemFontCollection.TryAddFontSource(fontSource);
                 }
             });
         }

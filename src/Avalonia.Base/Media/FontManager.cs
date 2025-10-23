@@ -31,7 +31,7 @@ namespace Avalonia.Media
         {
             PlatformImpl = platformImpl;
 
-            AddFontCollection(new SystemFontCollection(this));
+            AddFontCollection(new SystemFontCollection());
 
             var options = AvaloniaLocator.Current.GetService<FontManagerOptions>();
             _fontFallbacks = options?.FontFallbacks;
