@@ -13,6 +13,7 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
+using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
@@ -774,9 +775,9 @@ namespace Avalonia.Controls.UnitTests
             {
                 Template = ListBoxTemplate(),
                 ItemsSource = items,
-                ItemsPanel = new FuncTemplate<Panel>(() => new VirtualizingStackPanel
+                ItemsPanel = new FuncTemplate<Panel>(() => new VirtualizingStackPanel 
                 {
-                    Orientation = Orientation.Horizontal
+                    Orientation = Orientation.Horizontal 
                 }),
                 ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Height = 10 }),
                 SelectedIndex = 0,
@@ -1110,8 +1111,8 @@ namespace Avalonia.Controls.UnitTests
                 Items = { "Foo", "Bar", "Baz" },
             };
 
-            var button = new Button
-            {
+            var button = new Button 
+            { 
                 Content = "Button",
                 [DockPanel.DockProperty] = Dock.Top,
             };
@@ -1346,9 +1347,9 @@ namespace Avalonia.Controls.UnitTests
         {
             private readonly List<string> _inner = new(Enumerable.Repeat<string>(null, 100));
 
-            public object this[int index]
-            {
-                get => _inner[index] = $"Item{index}";
+            public object this[int index] 
+            { 
+                get => _inner[index] = $"Item{index}"; 
                 set => throw new NotSupportedException();
             }
 

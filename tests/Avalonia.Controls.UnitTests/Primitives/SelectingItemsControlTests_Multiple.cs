@@ -1031,8 +1031,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             // Issue #11119
             using var app = Start();
-            var items = Enumerable.Range(0, 100).Select(x => new TestContainer
-            {
+            var items = Enumerable.Range(0, 100).Select(x => new TestContainer 
+            { 
                 Content = $"Item {x}",
                 Height = 100,
             }).ToList();
@@ -1093,7 +1093,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             // Create a SelectingItemsControl that creates containers that raise IsSelectedChanged,
             // with a virtualizing stack panel.
             var target = CreateTarget<TestSelectorWithContainers>(
-                itemsSource: items,
+                itemsSource: items, 
                 virtualizing: true);
             target.AutoScrollToSelectedItem = false;
 
@@ -1187,7 +1187,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             bool virtualizing = false)
         {
             return CreateTarget<TestSelector>(
-                dataContext: dataContext,
+                dataContext:  dataContext,
                 items: items,
                 itemsSource: itemsSource,
                 itemContainerTheme: itemContainerTheme,

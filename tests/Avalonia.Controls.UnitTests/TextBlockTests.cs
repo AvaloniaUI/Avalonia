@@ -169,7 +169,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 var target = new TextBlock();
 
-                target.Inlines.Add(new TextBox { Text = "Hello" });
+                target.Inlines.Add(new TextBox { Text = "Hello"});
 
                 target.Measure(Size.Infinity);
 
@@ -285,7 +285,7 @@ namespace Avalonia.Controls.UnitTests
 
                 var span = new Span { Inlines = new InlineCollection { new Run { Text = "World" } } };
 
-                var inlines = new InlineCollection { new Run { Text = "Hello " }, span };
+                var inlines = new InlineCollection{ new Run{Text = "Hello "}, span };
 
                 target.Inlines = inlines;
 
@@ -425,7 +425,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(0, target.Inlines.Count);
             }
         }
-
+        
         [Fact]
         public void Setting_TextDecorations_Should_Update_Inlines()
         {
@@ -446,7 +446,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(underline, target.Inlines[0].TextDecorations);
             }
         }
-
+        
         [Fact]
         public void TextBlock_TextLines_Should_Be_Empty()
         {

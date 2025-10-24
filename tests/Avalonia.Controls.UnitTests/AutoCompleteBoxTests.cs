@@ -1,18 +1,19 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
-using System.Reactive.Subjects;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Threading;
+using Avalonia.UnitTests;
+using Xunit;
+using System.Collections.ObjectModel;
+using System.Reactive.Subjects;
+using Avalonia.Headless;
 using Avalonia.Harfbuzz;
 using Avalonia.Input;
 using Avalonia.Platform;
-using Avalonia.Threading;
-using Avalonia.UnitTests;
 using Moq;
-using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
@@ -405,7 +406,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(control.Text, control.ItemSelector(input, selectedItem));
             });
         }
-
+        
         [Fact]
         public void Text_Validation()
         {
@@ -420,7 +421,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(DataValidationErrors.GetErrors(control).SequenceEqual(new[] { exception }), true);
             });
         }
-
+        
         [Fact]
         public void Text_Validation_TextBox_Errors_Binding()
         {
@@ -429,20 +430,20 @@ namespace Avalonia.Controls.UnitTests
                 // simulate the TemplateBinding that would be used within the AutoCompleteBox control theme for the inner PART_TextBox
                 //      DataValidationErrors.Errors="{TemplateBinding (DataValidationErrors.Errors)}"
                 textbox.Bind(DataValidationErrors.ErrorsProperty, control.GetBindingObservable(DataValidationErrors.ErrorsProperty));
-
+                
                 var exception = new InvalidCastException("failed validation");
                 var textObservable = new BehaviorSubject<BindingNotification>(new BindingNotification(exception, BindingErrorType.DataValidationError));
                 control.Bind(AutoCompleteBox.TextProperty, textObservable);
                 Dispatcher.UIThread.RunJobs();
-
+                
                 Assert.True(DataValidationErrors.GetHasErrors(control));
                 Assert.Equal([exception], DataValidationErrors.GetErrors(control));
-
+                
                 Assert.True(DataValidationErrors.GetHasErrors(textbox));
                 Assert.Equal([exception], DataValidationErrors.GetErrors(textbox));
             });
         }
-
+        
         [Fact]
         public void SelectedItem_Validation()
         {
@@ -1197,7 +1198,7 @@ namespace Avalonia.Controls.UnitTests
                 AutoCompleteBox control = CreateControl();
                 control.ItemsSource = CreateSimpleStringArray();
                 TextBox textBox = GetTextBox(control);
-                var window = new Window { Content = control };
+                var window = new Window {Content = control};
                 window.ApplyStyling();
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();

@@ -137,7 +137,7 @@ namespace Avalonia.Controls.UnitTests
                     Template = CreateTemplate(),
                     Text = "1234"
                 };
-
+                
                 target.ApplyTemplate();
 
                 RaiseKeyEvent(target, Key.A, KeyModifiers.Control);
@@ -192,7 +192,7 @@ namespace Avalonia.Controls.UnitTests
                     Text = "First Second Third Fourth",
                     CaretIndex = 5
                 };
-
+                
                 textBox.ApplyTemplate();
 
                 // (First| Second Third Fourth)
@@ -234,7 +234,7 @@ namespace Avalonia.Controls.UnitTests
                     Text = "First Second Third Fourth",
                     CaretIndex = 19
                 };
-
+                
                 textBox.ApplyTemplate();
 
                 // (First Second Third |Fourth)
@@ -337,7 +337,7 @@ namespace Avalonia.Controls.UnitTests
                     Template = CreateTemplate(),
                     AcceptsReturn = true
                 };
-
+                
                 target.ApplyTemplate();
 
                 RaiseKeyEvent(target, Key.Enter, 0);
@@ -454,7 +454,7 @@ namespace Avalonia.Controls.UnitTests
                     AcceptsReturn = true,
                     NewLine = "Test"
                 };
-
+                
                 target.ApplyTemplate();
 
                 RaiseKeyEvent(target, Key.Enter, 0);
@@ -897,8 +897,7 @@ namespace Avalonia.Controls.UnitTests
                 };
 
                 var impl = CreateMockTopLevelImpl();
-                var topLevel = new TestTopLevel(impl.Object)
-                {
+                var topLevel = new TestTopLevel(impl.Object) {
                     Template = CreateTopLevelTemplate(),
                     Content = target
                 };
