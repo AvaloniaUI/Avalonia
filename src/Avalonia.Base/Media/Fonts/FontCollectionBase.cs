@@ -33,7 +33,7 @@ namespace Avalonia.Media.Fonts
             {
                 if (TryGetNearestMatch(glyphTypefaces, new FontCollectionKey { Style = style, Weight = weight, Stretch = stretch }, out var glyphTypeface))
                 {
-                    if (glyphTypeface.TryGetGlyph((uint)codepoint, out _))
+                    if (glyphTypeface.CharacterToGlyphMap.TryGetValue(codepoint, out _))
                     {
                         match = new Typeface(new FontFamily(null, Key.AbsoluteUri + "#" + glyphTypeface.FamilyName), style, weight, stretch);
 
@@ -55,7 +55,7 @@ namespace Avalonia.Media.Fonts
 
                 if (TryGetNearestMatch(glyphTypefaces, new FontCollectionKey { Style = style, Weight = weight, Stretch = stretch }, out var glyphTypeface))
                 {
-                    if (glyphTypeface.TryGetGlyph((uint)codepoint, out _))
+                    if (glyphTypeface.CharacterToGlyphMap.TryGetValue(codepoint, out _))
                     {
                         match = new Typeface(new FontFamily(null, Key.AbsoluteUri + "#" + glyphTypeface.FamilyName), style, weight, stretch);
 
@@ -94,36 +94,31 @@ namespace Avalonia.Media.Fonts
                 return false;
             }
 
-            if (glyphTypeface is not IGlyphTypeface2 glyphTypeface2)
-            {
-                return false;
-            }
-
             var fontSimulations = FontSimulations.None;
 
-            if (style != FontStyle.Normal && glyphTypeface2.Style != style)
+            if (style != FontStyle.Normal && glyphTypeface.Style != style)
             {
                 fontSimulations |= FontSimulations.Oblique;
             }
 
-            if ((int)weight >= 600 && glyphTypeface2.Weight < weight)
+            if ((int)weight >= 600 && glyphTypeface.Weight < weight)
             {
                 fontSimulations |= FontSimulations.Bold;
             }
 
-            if (fontSimulations != FontSimulations.None && glyphTypeface2.TryGetStream(out var stream))
+            if (fontSimulations != FontSimulations.None && glyphTypeface.PlatformTypeface.TryGetStream(out var stream))
             {
                 using (stream)
                 {
                     if (fontManager.TryCreateGlyphTypeface(stream, fontSimulations, out syntheticGlyphTypeface))
                     {
                         //Add the TypographicFamilyName to the cache
-                        if (!string.IsNullOrEmpty(glyphTypeface2.TypographicFamilyName))
+                        if (!string.IsNullOrEmpty(glyphTypeface.TypographicFamilyName))
                         {
-                            AddGlyphTypefaceByFamilyName(glyphTypeface2.TypographicFamilyName, syntheticGlyphTypeface);
+                            AddGlyphTypefaceByFamilyName(glyphTypeface.TypographicFamilyName, syntheticGlyphTypeface);
                         }
 
-                        foreach (var kvp in glyphTypeface2.FamilyNames)
+                        foreach (var kvp in glyphTypeface.FamilyNames)
                         {
                             AddGlyphTypefaceByFamilyName(kvp.Value, syntheticGlyphTypeface);
                         }

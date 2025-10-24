@@ -93,14 +93,17 @@ namespace Avalonia.Media
             double fontRenderingEmSize, IGlyphTypeface glyphTypeface)
         {
             var glyphIndexSpan = ListToSpan(glyphIndices);
-            var glyphAdvances = glyphTypeface.GetGlyphAdvances(glyphIndexSpan);
 
             var glyphInfos = new GlyphInfo[glyphIndexSpan.Length];
             var scale = fontRenderingEmSize / glyphTypeface.Metrics.DesignEmHeight;
 
             for (var i = 0; i < glyphIndexSpan.Length; ++i)
             {
-                glyphInfos[i] = new GlyphInfo(glyphIndexSpan[i], i, glyphAdvances[i] * scale);
+                var glyphIndex = glyphIndexSpan[i];
+
+                var advance = glyphTypeface.GetGlyphAdvance(glyphIndex) * scale;
+
+                glyphInfos[i] = new GlyphInfo(glyphIndex, i, advance);
             }
 
             return glyphInfos;
@@ -205,7 +208,7 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Gets the scale of the current <see cref="IGlyphTypeface"/>
+        /// Gets the scale of the current <see cref="IPlatformTypeface"/>
         /// </summary>
         internal double Scale => FontRenderingEmSize / GlyphTypeface.Metrics.DesignEmHeight;
 
@@ -270,7 +273,7 @@ namespace Avalonia.Media
                 //For in cluster hits we need to move to the start of the next cluster.
                 if (inClusterHit)
                 {
-                    for(; glyphIndex < _glyphInfos.Count; glyphIndex++)
+                    for (; glyphIndex < _glyphInfos.Count; glyphIndex++)
                     {
                         if (_glyphInfos[glyphIndex].GlyphCluster > characterIndex)
                         {
@@ -367,7 +370,7 @@ namespace Avalonia.Media
                     characterIndex = glyphInfo.GlyphCluster;
 
                     if (currentX + advance > distance)
-                    {                            
+                    {
                         break;
                     }
 

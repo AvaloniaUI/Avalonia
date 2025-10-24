@@ -3,6 +3,7 @@ using System.Buffers;
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.Runtime.InteropServices;
+using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Platform;
@@ -10,83 +11,100 @@ using HarfBuzzSharp;
 using Buffer = HarfBuzzSharp.Buffer;
 using GlyphInfo = HarfBuzzSharp.GlyphInfo;
 
-namespace Avalonia.Direct2D1.Media
+namespace Avalonia.Harfbuzz
 {
-    internal class TextShaperImpl : ITextShaperImpl
+    public class HarfBuzzTextShaper : ITextShaperImpl
     {
+        [ThreadStatic]
+        private static Buffer? s_buffer;
+
         private static readonly ConcurrentDictionary<int, Language> s_cachedLanguage = new();
 
         public ShapedBuffer ShapeText(ReadOnlyMemory<char> text, TextShaperOptions options)
         {
             var textSpan = text.Span;
-            var typeface = options.Typeface;
+
+            var glyphTypeface = options.Typeface;
+
+            if (glyphTypeface.TextShaperTypeface is not HarfBuzzTypeface harfBuzzTypeface)
+            {
+                throw new NotSupportedException("The provided GlyphTypeface is not supported by this text shaper.");
+            }
+
             var fontRenderingEmSize = options.FontRenderingEmSize;
             var bidiLevel = options.BidiLevel;
             var culture = options.Culture;
 
-            using (var buffer = new Buffer())
+            var buffer = s_buffer ??= new Buffer();
+
+            buffer.Reset();
+
+            // HarfBuzz needs the surrounding characters to correctly shape the text
+            var containingText = GetContainingMemory(text, out var start, out var length).Span;
+            buffer.AddUtf16(containingText, start, length);
+
+            MergeBreakPair(buffer);
+
+            buffer.GuessSegmentProperties();
+
+            buffer.Direction = (bidiLevel & 1) == 0 ? Direction.LeftToRight : Direction.RightToLeft;
+
+            var usedCulture = culture ?? CultureInfo.CurrentCulture;
+
+            buffer.Language = s_cachedLanguage.GetOrAdd(usedCulture.LCID, _ => new Language(usedCulture));
+
+            var font = harfBuzzTypeface.HBFont;
+
+            font.Shape(buffer, GetFeatures(options));
+
+            if (buffer.Direction == Direction.RightToLeft)
             {
-                // HarfBuzz needs the surrounding characters to correctly shape the text
-                var containingText = GetContainingMemory(text, out var start, out var length).Span;
-                buffer.AddUtf16(containingText, start, length);
-
-                MergeBreakPair(buffer);
-
-                buffer.GuessSegmentProperties();
-
-                buffer.Direction = (bidiLevel & 1) == 0 ? Direction.LeftToRight : Direction.RightToLeft;
-
-                var usedCulture = culture ?? CultureInfo.CurrentCulture;
-
-                buffer.Language = s_cachedLanguage.GetOrAdd(usedCulture.LCID, _ => new Language(usedCulture));
-
-                var font = ((GlyphTypefaceImpl)typeface).Font;
-
-                font.Shape(buffer, GetFeatures(options));
-
-                if (buffer.Direction == Direction.RightToLeft)
-                {
-                    buffer.Reverse();
-                }
-
-                font.GetScale(out var scaleX, out _);
-
-                var textScale = fontRenderingEmSize / scaleX;
-
-                var bufferLength = buffer.Length;
-
-                var shapedBuffer = new ShapedBuffer(text, bufferLength, typeface, fontRenderingEmSize, bidiLevel);
-
-                var glyphInfos = buffer.GetGlyphInfoSpan();
-
-                var glyphPositions = buffer.GetGlyphPositionSpan();
-
-                for (var i = 0; i < bufferLength; i++)
-                {
-                    var sourceInfo = glyphInfos[i];
-
-                    var glyphIndex = (ushort)sourceInfo.Codepoint;
-
-                    var glyphCluster = (int)(sourceInfo.Cluster);
-
-                    var glyphAdvance = GetGlyphAdvance(glyphPositions, i, textScale) + options.LetterSpacing;
-
-                    var glyphOffset = GetGlyphOffset(glyphPositions, i, textScale);
-
-                    if (glyphCluster < containingText.Length && containingText[glyphCluster] == '\t')
-                    {
-                        glyphIndex = typeface.GetGlyph(' ');
-
-                        glyphAdvance = options.IncrementalTabWidth > 0 ?
-                            options.IncrementalTabWidth :
-                            4 * typeface.GetGlyphAdvance(glyphIndex) * textScale;
-                    }
-
-                    shapedBuffer[i] = new Avalonia.Media.TextFormatting.GlyphInfo(glyphIndex, glyphCluster, glyphAdvance, glyphOffset);
-                }
-
-                return shapedBuffer;
+                buffer.Reverse();
             }
+
+            font.GetScale(out var scaleX, out _);
+
+            var textScale = fontRenderingEmSize / scaleX;
+
+            var bufferLength = buffer.Length;
+
+            var shapedBuffer = new ShapedBuffer(text, bufferLength, glyphTypeface, fontRenderingEmSize, bidiLevel);
+
+            var glyphInfos = buffer.GetGlyphInfoSpan();
+
+            var glyphPositions = buffer.GetGlyphPositionSpan();
+
+            for (var i = 0; i < bufferLength; i++)
+            {
+                var sourceInfo = glyphInfos[i];
+
+                var glyphIndex = (ushort)sourceInfo.Codepoint;
+
+                var glyphCluster = (int)sourceInfo.Cluster;
+
+                var glyphAdvance = GetGlyphAdvance(glyphPositions, i, textScale) + options.LetterSpacing;
+
+                var glyphOffset = GetGlyphOffset(glyphPositions, i, textScale);
+
+                if (glyphCluster < containingText.Length && containingText[glyphCluster] == '\t')
+                {
+                    glyphIndex = glyphTypeface.CharacterToGlyphMap[' '];
+
+                    glyphAdvance = options.IncrementalTabWidth > 0 ?
+                        options.IncrementalTabWidth :
+                        4 * glyphTypeface.GetGlyphAdvance(glyphIndex) * textScale;
+                }
+
+                shapedBuffer[i] = new Media.TextFormatting.GlyphInfo(glyphIndex, glyphCluster, glyphAdvance, glyphOffset);
+            }
+
+            return shapedBuffer;
+        }
+
+
+        public ITextShaperTypeface CreateTypeface(IGlyphTypeface glyphTypeface)
+        {
+            return new HarfBuzzTypeface(glyphTypeface);
         }
 
         private static void MergeBreakPair(Buffer buffer)
@@ -169,7 +187,7 @@ namespace Avalonia.Direct2D1.Media
                 return segment.Array.AsMemory();
             }
 
-            if (MemoryMarshal.TryGetMemoryManager(memory, out MemoryManager<char> memoryManager, out start, out length))
+            if (MemoryMarshal.TryGetMemoryManager(memory, out MemoryManager<char>? memoryManager, out start, out length))
             {
                 return memoryManager.Memory;
             }
@@ -177,7 +195,7 @@ namespace Avalonia.Direct2D1.Media
             // should never happen
             throw new InvalidOperationException("Memory not backed by string, array or manager");
         }
-        
+
         private static Feature[] GetFeatures(TextShaperOptions options)
         {
             if (options.FontFeatures is null || options.FontFeatures.Count == 0)
@@ -186,18 +204,18 @@ namespace Avalonia.Direct2D1.Media
             }
 
             var features = new Feature[options.FontFeatures.Count];
-            
+
             for (var i = 0; i < options.FontFeatures.Count; i++)
             {
                 var fontFeature = options.FontFeatures[i];
 
                 features[i] = new Feature(
-                    Tag.Parse(fontFeature.Tag), 
+                    Tag.Parse(fontFeature.Tag),
                     (uint)fontFeature.Value,
                     (uint)fontFeature.Start,
                     (uint)fontFeature.End);
             }
-            
+
             return features;
         }
     }

@@ -960,10 +960,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             window.Resources.Clear();
         }
 
-        private IDisposable StyledWindow(params (string, string)[] assets)
+        private IDisposable StyledWindow()
         {
             var services = TestServices.StyledWindow.With(
-                assetLoader: new MockAssetLoader(assets),
                 theme: () => new Styles
                 {
                     WindowStyle(),

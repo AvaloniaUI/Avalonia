@@ -9,7 +9,7 @@ using SkiaSharp;
 
 namespace Avalonia.Skia
 {
-    internal class FontManagerImpl : IFontManagerImpl, IFontManagerImpl2
+    internal class FontManagerImpl : IFontManagerImpl
     {
         private SKFontManager _skFontManager = SKFontManager.Default;
 
@@ -30,8 +30,13 @@ namespace Avalonia.Skia
 
         [ThreadStatic] private static string[]? t_languageTagBuffer;
 
-        public bool TryMatchCharacter(int codepoint, FontStyle fontStyle,
-            FontWeight fontWeight, FontStretch fontStretch, CultureInfo? culture, out Typeface fontKey)
+        public bool TryMatchCharacter(
+            int codepoint,
+            FontStyle fontStyle,
+            FontWeight fontWeight,
+            FontStretch fontStretch,
+            CultureInfo? culture,
+            [NotNullWhen(returnValue: true)] out IPlatformTypeface? platformTypeface)
         {
             SKFontStyle skFontStyle;
 
@@ -63,17 +68,12 @@ namespace Avalonia.Skia
 
             if (skTypeface != null)
             {
-                // ToDo: create glyph typeface here to get the correct style/weight/stretch
-                fontKey = new Typeface(
-                    skTypeface.FamilyName,
-                    skTypeface.FontStyle.Slant.ToAvalonia(),
-                    (FontWeight)skTypeface.FontStyle.Weight,
-                    (FontStretch)skTypeface.FontStyle.Width);
+                platformTypeface = new SkiaTypeface(skTypeface, FontSimulations.None);
 
                 return true;
             }
 
-            fontKey = default;
+            platformTypeface = null;
 
             return false;
         }
@@ -104,7 +104,7 @@ namespace Avalonia.Skia
                 fontSimulations |= FontSimulations.Oblique;
             }
 
-            glyphTypeface = new GlyphTypefaceImpl(skTypeface, fontSimulations);
+            glyphTypeface = new GlyphTypeface(new SkiaTypeface(skTypeface, fontSimulations), fontSimulations);
 
             return true;
         }
@@ -115,7 +115,7 @@ namespace Avalonia.Skia
 
             if (skTypeface != null)
             {
-                glyphTypeface = new GlyphTypefaceImpl(skTypeface, fontSimulations);
+                glyphTypeface = new GlyphTypeface(new SkiaTypeface(skTypeface, fontSimulations), fontSimulations);
 
                 return true;
             }

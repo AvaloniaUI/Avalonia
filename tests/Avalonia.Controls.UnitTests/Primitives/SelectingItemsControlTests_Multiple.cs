@@ -10,6 +10,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Selection;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Harfbuzz;
 using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Layout;
@@ -1030,8 +1031,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             // Issue #11119
             using var app = Start();
-            var items = Enumerable.Range(0, 100).Select(x => new TestContainer 
-            { 
+            var items = Enumerable.Range(0, 100).Select(x => new TestContainer
+            {
                 Content = $"Item {x}",
                 Height = 100,
             }).ToList();
@@ -1092,7 +1093,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             // Create a SelectingItemsControl that creates containers that raise IsSelectedChanged,
             // with a virtualizing stack panel.
             var target = CreateTarget<TestSelectorWithContainers>(
-                itemsSource: items, 
+                itemsSource: items,
                 virtualizing: true);
             target.AutoScrollToSelectedItem = false;
 
@@ -1186,7 +1187,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             bool virtualizing = false)
         {
             return CreateTarget<TestSelector>(
-                dataContext:  dataContext,
+                dataContext: dataContext,
                 items: items,
                 itemsSource: itemsSource,
                 itemContainerTheme: itemContainerTheme,
@@ -1351,7 +1352,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     keyboardNavigation: () => new KeyboardNavigationHandler(),
                     inputManager: new InputManager(),
                     renderInterface: new HeadlessPlatformRenderInterface(),
-                    textShaperImpl: new HeadlessTextShaperStub()));
+                    textShaperImpl: new HarfBuzzTextShaper()));
         }
 
         private class TestSelector : SelectingItemsControl

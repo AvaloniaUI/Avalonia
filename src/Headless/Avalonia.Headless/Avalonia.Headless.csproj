@@ -5,6 +5,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\packages\Avalonia\Avalonia.csproj" />
+    <ProjectReference Include="..\..\Avalonia.Fonts.Inter\Avalonia.Fonts.Inter.csproj" />
   </ItemGroup>
 
   <Import Project="..\..\..\build\DevAnalyzers.props" />

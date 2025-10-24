@@ -583,7 +583,6 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         private static IDisposable StyledWindow(params (string, string)[] assets)
         {
             var services = TestServices.StyledWindow.With(
-                assetLoader: new MockAssetLoader(assets),
                 theme: () => new Styles
                 {
                     WindowStyle(),

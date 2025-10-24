@@ -164,7 +164,7 @@ namespace Avalonia.Skia.UnitTests.Media
                 {
                     foreach (var ignorable in _ignorables)
                     {
-                        if (glyphTypeface.FamilyName == ignorable.Name || glyphTypeface is IGlyphTypeface2 glyphTypeface2 && glyphTypeface2.TypographicFamilyName == ignorable.Name)
+                        if (glyphTypeface.FamilyName == ignorable.Name || glyphTypeface.TypographicFamilyName == ignorable.Name)
                         {
                             return false;
                         }

@@ -1,4 +1,6 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using Avalonia.Media;
@@ -33,7 +35,7 @@ namespace Avalonia.Direct2D1.Media
         }
 
         public bool TryMatchCharacter(int codepoint, FontStyle fontStyle,
-            FontWeight fontWeight, FontStretch fontStretch, CultureInfo culture, out Typeface typeface)
+            FontWeight fontWeight, FontStretch fontStretch, CultureInfo culture, out IPlatformTypeface typeface)
         {
             var familyCount = Direct2D1FontCollectionCache.InstalledFontCollection.FontFamilyCount;
 
@@ -51,7 +53,7 @@ namespace Avalonia.Direct2D1.Media
 
                 var fontFamilyName = font.FontFamily.FamilyNames.GetString(0);
 
-                typeface = new Typeface(fontFamilyName, fontStyle, fontWeight, fontStretch);
+                typeface = new DWriteTypeface(font);
 
                 return true;
             }
@@ -78,7 +80,7 @@ namespace Avalonia.Direct2D1.Media
                     (SharpDX.DirectWrite.FontStretch)stretch,
                     (SharpDX.DirectWrite.FontStyle)style);
 
-                glyphTypeface = new GlyphTypefaceImpl(font);
+                glyphTypeface = new GlyphTypeface(new DWriteTypeface(font), FontSimulations.None);
 
                 return true;
             }
@@ -102,7 +104,7 @@ namespace Avalonia.Direct2D1.Media
                 {
                     var font = fontFamily.GetFont(0);
 
-                    glyphTypeface = new GlyphTypefaceImpl(font);
+                    glyphTypeface = new GlyphTypeface(new DWriteTypeface(font), FontSimulations.None);
 
                     return true;
                 }
@@ -111,6 +113,11 @@ namespace Avalonia.Direct2D1.Media
             glyphTypeface = null;
 
             return false;
+        }
+
+        public bool TryGetFamilyTypefaces(string familyName, [NotNullWhen(true)] out IReadOnlyList<Typeface> familyTypefaces)
+        {
+            throw new NotSupportedException();
         }
     }
 }

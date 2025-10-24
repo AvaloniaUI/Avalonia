@@ -12,6 +12,7 @@
   <Import Project="..\..\build\Microsoft.Reactive.Testing.props" />
   <Import Project="..\..\build\SharedVersion.props" />
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Avalonia.Fonts.Inter\Avalonia.Fonts.Inter.csproj" />
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup.Xaml.Loader\Avalonia.Markup.Xaml.Loader.csproj" />
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup\Avalonia.Markup.csproj" />

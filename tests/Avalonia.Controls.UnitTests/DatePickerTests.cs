@@ -5,6 +5,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Harfbuzz;
 using Avalonia.Headless;
 using Avalonia.Platform;
 using Avalonia.Threading;
@@ -282,7 +283,7 @@ namespace Avalonia.Controls.UnitTests
         private static TestServices Services => TestServices.MockThreadingInterface.With(
             fontManagerImpl: new HeadlessFontManagerStub(),
             standardCursorFactory: Mock.Of<ICursorFactory>(),
-            textShaperImpl: new HeadlessTextShaperStub(),
+            textShaperImpl: new HarfBuzzTextShaper(),
             renderInterface: new HeadlessPlatformRenderInterface());
 
         private static IControlTemplate CreateTemplate()

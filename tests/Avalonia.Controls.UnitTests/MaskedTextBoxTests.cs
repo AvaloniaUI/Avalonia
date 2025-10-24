@@ -6,6 +6,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Harfbuzz;
 using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
@@ -136,7 +137,7 @@ namespace Avalonia.Controls.UnitTests
                     Template = CreateTemplate(),
                     Text = "1234"
                 };
-                
+
                 target.ApplyTemplate();
 
                 RaiseKeyEvent(target, Key.A, KeyModifiers.Control);
@@ -191,7 +192,7 @@ namespace Avalonia.Controls.UnitTests
                     Text = "First Second Third Fourth",
                     CaretIndex = 5
                 };
-                
+
                 textBox.ApplyTemplate();
 
                 // (First| Second Third Fourth)
@@ -233,7 +234,7 @@ namespace Avalonia.Controls.UnitTests
                     Text = "First Second Third Fourth",
                     CaretIndex = 19
                 };
-                
+
                 textBox.ApplyTemplate();
 
                 // (First Second Third |Fourth)
@@ -336,7 +337,7 @@ namespace Avalonia.Controls.UnitTests
                     Template = CreateTemplate(),
                     AcceptsReturn = true
                 };
-                
+
                 target.ApplyTemplate();
 
                 RaiseKeyEvent(target, Key.Enter, 0);
@@ -453,7 +454,7 @@ namespace Avalonia.Controls.UnitTests
                     AcceptsReturn = true,
                     NewLine = "Test"
                 };
-                
+
                 target.ApplyTemplate();
 
                 RaiseKeyEvent(target, Key.Enter, 0);
@@ -896,7 +897,8 @@ namespace Avalonia.Controls.UnitTests
                 };
 
                 var impl = CreateMockTopLevelImpl();
-                var topLevel = new TestTopLevel(impl.Object) {
+                var topLevel = new TestTopLevel(impl.Object)
+                {
                     Template = CreateTopLevelTemplate(),
                     Content = target
                 };
@@ -926,13 +928,13 @@ namespace Avalonia.Controls.UnitTests
             inputManager: new InputManager(),
             renderInterface: new HeadlessPlatformRenderInterface(),
             fontManagerImpl: new HeadlessFontManagerStub(),
-            textShaperImpl: new HeadlessTextShaperStub(),
+            textShaperImpl: new HarfBuzzTextShaper(),
             standardCursorFactory: Mock.Of<ICursorFactory>());
 
         private static TestServices Services => TestServices.MockThreadingInterface.With(
             renderInterface: new HeadlessPlatformRenderInterface(),
-            standardCursorFactory: Mock.Of<ICursorFactory>(),     
-            textShaperImpl: new HeadlessTextShaperStub(), 
+            standardCursorFactory: Mock.Of<ICursorFactory>(),
+            textShaperImpl: new HarfBuzzTextShaper(),
             fontManagerImpl: new HeadlessFontManagerStub());
 
         private static IControlTemplate CreateTemplate()
