@@ -24,12 +24,14 @@ jobs:
       if [[ $(uname -m) == 'arm64' ]]; then
       arch="arm64"
       fi
-      sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+      git clean -ffdx
       pkill node
       pkill testmanagerd
       appium > appium.out &
       pkill IntegrationTestApp
+      sudo xcode-select -s /Applications/Xcode_15.2.app/Contents/Developer        
       ./build.sh CompileNative
+      sudo xcode-select -s /Applications/Xcode_14.3.app/Contents/Developer
       rm -rf $(osascript -e "POSIX path of (path to application id \"net.avaloniaui.avalonia.integrationtestapp\")")
       pkill IntegrationTestApp
       ./samples/IntegrationTestApp/bundle.sh

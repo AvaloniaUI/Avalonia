@@ -22,7 +22,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class TextBoxTests
+    public class TextBoxTests : ScopedTestBase
     {
         [Fact]
         public void Opening_Context_Menu_Does_not_Lose_Selection()
@@ -1875,6 +1875,68 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Theory]
+        [InlineData(0)]
+        [InlineData(4)]
+        [InlineData(8)]
+        public void When_Selecting_Multiline_Selection_Should_Be_Extended_With_Up_Arrow_Key_Till_Start_Of_Text(int caretOffsetFromEnd)
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = """
+                           AAAAAA
+                           BBBB
+                           CCCCCCCC
+                           """,
+                    AcceptsReturn = true
+                };
+                tb.ApplyTemplate();
+                tb.Measure(Size.Infinity);
+                tb.CaretIndex = tb.Text.Length - caretOffsetFromEnd;
+
+                RaiseKeyEvent(tb, Key.Up, KeyModifiers.Shift);
+                RaiseKeyEvent(tb, Key.Up, KeyModifiers.Shift);
+                RaiseKeyEvent(tb, Key.Up, KeyModifiers.Shift);
+                RaiseKeyEvent(tb, Key.Up, KeyModifiers.Shift);
+
+                Assert.Equal(0, tb.SelectionEnd);
+            }
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(3)]
+        [InlineData(6)]
+        public void When_Selecting_Multiline_Selection_Should_Be_Extended_With_Down_Arrow_Key_Till_End_Of_Text(int caretOffsetFromStart)
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = """
+                           AAAAAA
+                           BBBB
+                           CCCCCCCC
+                           """,
+                    AcceptsReturn = true
+                };
+                tb.ApplyTemplate();
+                tb.Measure(Size.Infinity);
+                tb.CaretIndex = caretOffsetFromStart;
+
+                RaiseKeyEvent(tb, Key.Down, KeyModifiers.Shift);
+                RaiseKeyEvent(tb, Key.Down, KeyModifiers.Shift);
+                RaiseKeyEvent(tb, Key.Down, KeyModifiers.Shift);
+                RaiseKeyEvent(tb, Key.Down, KeyModifiers.Shift);
+
+                Assert.Equal(tb.Text.Length, tb.SelectionEnd);
+            }
+        }
+
         [Fact]
         public void TextBox_In_AdornerLayer_Will_Not_Cause_Collection_Modified_In_VisualLayerManager_Measure()
         {
@@ -2068,7 +2130,6 @@ namespace Avalonia.Controls.UnitTests
         }
 
         private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
-            focusManager: new FocusManager(),
             keyboardDevice: () => new KeyboardDevice(),
             keyboardNavigation: () => new KeyboardNavigationHandler(),
             inputManager: new InputManager(),
@@ -2147,34 +2208,6 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        private class ClipboardStub : IClipboard // in order to get tests working that use the clipboard
-        {
-            private string? _text;
-
-            public Task<string?> GetTextAsync() => Task.FromResult(_text);
-
-            public Task SetTextAsync(string? text)
-            {
-                _text = text;
-                return Task.CompletedTask;
-            }
-
-            public Task ClearAsync()
-            {
-                _text = null;
-                return Task.CompletedTask;
-            }
-            
-            public Task SetDataObjectAsync(IDataObject data) => Task.CompletedTask;
-
-            public Task<string[]> GetFormatsAsync() => Task.FromResult(Array.Empty<string>());
-
-            public Task<object> GetDataAsync(string format) => Task.FromResult((object)null);
-
-            public Task FlushAsync() =>
-                Task.CompletedTask;
-        }
-
         private class TestTopLevel : TopLevel
         {
             private readonly ILayoutManager _layoutManager;
@@ -2193,7 +2226,7 @@ namespace Avalonia.Controls.UnitTests
             var clipboard = new Mock<ITopLevelImpl>();
             clipboard.Setup(x => x.Compositor).Returns(RendererMocks.CreateDummyCompositor());
             clipboard.Setup(r => r.TryGetFeature(typeof(IClipboard)))
-                .Returns(new ClipboardStub());
+                .Returns(new Clipboard(new HeadlessClipboardImplStub()));
             clipboard.SetupGet(x => x.RenderScaling).Returns(1);
             return clipboard;
         }

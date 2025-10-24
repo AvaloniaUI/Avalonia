@@ -109,6 +109,7 @@ namespace Avalonia.Controls.Presenters
         static ScrollContentPresenter()
         {
             ClipToBoundsProperty.OverrideDefaultValue(typeof(ScrollContentPresenter), true);
+            AffectsMeasure<ScrollContentPresenter>(CanHorizontallyScrollProperty, CanVerticallyScrollProperty);
         }
 
         /// <summary>
@@ -250,14 +251,16 @@ namespace Avalonia.Controls.Presenters
                 return scrollable.BringIntoView(control, targetRect);
             }
 
-            var transform = target.TransformToVisual(Child);
+            var transform = target.TransformToVisual(this);
 
             if (transform == null)
             {
                 return false;
             }
 
-            var rectangle = targetRect.TransformToAABB(transform.Value).Deflate(new Thickness(Child.Margin.Left, Child.Margin.Top, 0, 0));
+            transform *= Matrix.CreateTranslation(Offset);
+
+            var rectangle = targetRect.TransformToAABB(transform.Value);
             Rect viewport = new Rect(Offset.X, Offset.Y, Viewport.Width, Viewport.Height);
 
             double minX = ComputeScrollOffsetWithMinimalScroll(viewport.Left, viewport.Right, rectangle.Left, rectangle.Right);
@@ -511,7 +514,7 @@ namespace Avalonia.Controls.Presenters
             if (Child.UseLayoutRounding)
             {
                 var scale = LayoutHelper.GetLayoutScale(Child);
-                childMargin = LayoutHelper.RoundLayoutThickness(childMargin, scale, scale);
+                childMargin = LayoutHelper.RoundLayoutThickness(childMargin, scale);
             }
 
             var extent = Child!.Bounds.Size.Inflate(childMargin);

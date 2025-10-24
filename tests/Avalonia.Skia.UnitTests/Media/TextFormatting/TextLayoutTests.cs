@@ -1160,6 +1160,59 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Fact]
+        public void Should_Wrap_With_LineEnd()
+        {
+            using (Start())
+            {
+                var defaultProperties =
+                   new GenericTextRunProperties(Typeface.Default, 72, foregroundBrush: Brushes.Black);
+
+                var paragraphProperties = new GenericTextParagraphProperties(defaultProperties, textWrapping: TextWrapping.Wrap);
+
+                var textLayout = new TextLayout(new SingleBufferTextSource("01", defaultProperties, true), paragraphProperties, maxWidth: 36);
+
+                Assert.Equal(2, textLayout.TextLines.Count);
+
+                var lastLine = textLayout.TextLines.Last();
+
+                Assert.Equal(2, lastLine.TextRuns.Count);
+
+                var lastRun = lastLine.TextRuns.Last();
+
+                Assert.IsAssignableFrom<TextEndOfLine>(lastRun);
+            }
+        }
+
+        [Fact]
+        public void Should_Measure_TextLayoutSymbolWithAndWidthIncludingTrailingWhitespaceAndMinTextWidth()
+        {
+            using (Start())
+            {
+                var typeFace = new Typeface("Courier New");
+                var textLayout0 = new TextLayout("aaaa", typeFace, 12.0, Brushes.White);
+                Assert.Equal(textLayout0.WidthIncludingTrailingWhitespace, textLayout0.Width);
+
+                var textLayout01 = new TextLayout("a a", typeFace, 12.0, Brushes.White);
+                var textLayout1 = new TextLayout("a a ", typeFace, 12.0, Brushes.White);
+                Assert.Equal(new Size(textLayout0.Width, textLayout0.Height), new Size(textLayout1.WidthIncludingTrailingWhitespace, textLayout1.Height));
+                Assert.Equal(textLayout0.WidthIncludingTrailingWhitespace, textLayout1.WidthIncludingTrailingWhitespace);
+
+
+                var textLayout2 = new TextLayout(" aa ", typeFace, 12.0, Brushes.White);
+                Assert.Equal(new Size(textLayout1.Width, textLayout1.Height), new Size(textLayout2.Width, textLayout2.Height));
+                Assert.Equal(textLayout0.WidthIncludingTrailingWhitespace, textLayout2.WidthIncludingTrailingWhitespace);
+                Assert.Equal(textLayout01.Width, textLayout2.Width);
+                
+                var textLayout3 = new TextLayout("    ", typeFace, 12.0, Brushes.White);
+                Assert.Equal(new Size(0, textLayout0.Height), new Size(textLayout3.Width, textLayout3.Height));
+                Assert.Equal(textLayout0.WidthIncludingTrailingWhitespace, textLayout3.WidthIncludingTrailingWhitespace);
+                Assert.Equal(0, textLayout3.Width);
+            }
+        }
+        
+        private static void AssertGreaterThan(double x, double y, string message) => Assert.True(x > y, $"{message}. {x} is not > {y}");
+
         private static IDisposable Start()
         {
             var disposable = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface

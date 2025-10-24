@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class NumericUpDownTests
+    public class NumericUpDownTests : ScopedTestBase
     {
         private static TestServices Services => TestServices.StyledWindow;
 
@@ -150,6 +150,23 @@ namespace Avalonia.Controls.UnitTests
                         Name = "PART_Spinner",
                         Content = textBox,
                     }.RegisterInNameScope(scope);
+            });
+        }
+
+        [Fact]
+        public void TabIndex_Should_Be_Synchronized_With_Inner_TextBox()
+        {
+            RunTest((control, textbox) =>
+            {
+                // Set TabIndex on NumericUpDown
+                control.TabIndex = 5;
+                
+                // The inner TextBox should inherit the same TabIndex
+                Assert.Equal(5, textbox.TabIndex);
+                
+                // Change TabIndex and verify it gets synchronized
+                control.TabIndex = 10;
+                Assert.Equal(10, textbox.TabIndex);
             });
         }
     }

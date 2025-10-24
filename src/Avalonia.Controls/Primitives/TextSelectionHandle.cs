@@ -151,11 +151,6 @@ namespace Avalonia.Controls.Primitives
             {
                 var vector = e.GetPosition(VisualRoot as Visual) - _lastPoint.Value;
 
-                var tapSize = TopLevel.GetTopLevel(this)?.PlatformSettings?.GetTapSize(PointerType.Touch) ?? new Size(10, 10);
-
-                if (Math.Abs(vector.X) < tapSize.Width && Math.Abs(vector.Y) < tapSize.Height)
-                    return;
-
                 ev = new VectorEventArgs
                 {
                     RoutedEvent = DragDeltaEvent,

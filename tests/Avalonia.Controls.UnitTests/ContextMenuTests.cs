@@ -13,7 +13,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class ContextMenuTests
+    public class ContextMenuTests : ScopedTestBase
     {
         private Mock<IPopupImpl> popupImpl;
         private MouseTestHelper _mouse = new MouseTestHelper();
@@ -672,7 +672,6 @@ namespace Avalonia.Controls.UnitTests
             windowImpl.Setup(x => x.TryGetFeature(It.Is<Type>(t => t == typeof(IScreenImpl)))).Returns(screenImpl.Object);
 
             var services = TestServices.StyledWindow.With(
-                                        focusManager: new FocusManager(),
                                         keyboardDevice: () => new KeyboardDevice(),
                                         inputManager: new InputManager(),
                                         windowImpl: windowImpl.Object,

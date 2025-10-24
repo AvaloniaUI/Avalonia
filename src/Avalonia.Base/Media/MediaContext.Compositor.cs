@@ -1,4 +1,7 @@
+using System;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 using Avalonia.Platform;
@@ -11,20 +14,24 @@ namespace Avalonia.Media;
 
 partial class MediaContext
 {
-    private bool _scheduleCommitOnLastCompositionBatchCompletion;
-    
     /// <summary>
     /// Actually sends the current batch to the compositor and does the required housekeeping
     /// This is the only place that should be allowed to call Commit
     /// </summary>
     private CompositionBatch CommitCompositor(Compositor compositor)
     {
-        var commit = compositor.Commit();
+        // Compositor is allowed to schedule the next batch during Commit procedure if update
+        // was requested while it was doing an update
+        // This can e. g. happen if InvalidateVisual is called from Visual.OnRender which is currently separate
+        // from our FireInvokeOnRenderCallbacks loop, so we clean the commit request flag before rendering so
+        // it can be set again
         _requestedCommits.Remove(compositor);
+        var commit = compositor.Commit();
+       
         _pendingCompositionBatches[compositor] = commit;
         commit.Processed.ContinueWith(_ =>
             _dispatcher.Post(() => CompositionBatchFinished(compositor, commit), DispatcherPriority.Send),
-            TaskContinuationOptions.ExecuteSynchronously);
+            CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
         return commit;
     }
     
@@ -42,25 +49,12 @@ partial class MediaContext
         {
             _animationsAreWaitingForComposition = false;
 
-            // Check if we have uncommited changes
-            if (_scheduleCommitOnLastCompositionBatchCompletion)
-            {
-                _scheduleCommitOnLastCompositionBatchCompletion = false;
-                if (!CommitCompositorsWithThrottling())
-                    ScheduleRenderForAnimationsIfNeeded();
-
-            }
-            // Check if there are active animations and schedule the next render
-            else
-                ScheduleRenderForAnimationsIfNeeded();
+            // Check if we have requested commits or active animations and schedule a new render pass 
+            if (_requestedCommits.Count != 0 || _clock.HasSubscriptions)
+                ScheduleRender(false);
         }
     }
 
-    void ScheduleRenderForAnimationsIfNeeded()
-    {
-        if (_clock.HasSubscriptions) 
-            ScheduleRender(false);
-    }
 
     /// <summary>
     /// Triggers a composition commit if any batches are waiting to be sent,
@@ -69,10 +63,10 @@ partial class MediaContext
     /// <returns>true if there are pending commits in-flight and there will be a "all-done" callback later</returns>
     private bool CommitCompositorsWithThrottling()
     {
+        Dispatcher.UIThread.VerifyAccess();
         // Check if we are still waiting for previous composition batches
         if (_pendingCompositionBatches.Count > 0)
         {
-            _scheduleCommitOnLastCompositionBatchCompletion = true;
             // Previous commit isn't handled yet
             return true;
         }
@@ -84,7 +78,6 @@ partial class MediaContext
         foreach (var c in _requestedCommits.ToArray())
             CommitCompositor(c);
         
-        _requestedCommits.Clear();
         return true;
     }
     

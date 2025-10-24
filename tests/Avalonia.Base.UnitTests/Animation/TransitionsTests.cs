@@ -84,7 +84,8 @@ namespace Avalonia.Base.UnitTests.Animation
             var clock = new TestClock();
 
             var i = -1;
-            
+            var completed = false;
+
             new TransitionInstance(clock, TimeSpan.FromMilliseconds(30), TimeSpan.FromMilliseconds(70)).Subscribe(
                 nextValue =>
                 {
@@ -124,12 +125,50 @@ namespace Avalonia.Base.UnitTests.Animation
                             Assert.Equal(1d, nextValue);
                             break;
                     }
-                });
+                }, () => completed = true);
 
             for (var z = 0; z <= 10; z++)
             {
                 clock.Pulse(TimeSpan.FromMilliseconds(10));
             }
+
+            Assert.True(completed);
+        }
+
+        [Fact]
+        public void TransitionInstance_With_Delay_But_Zero_Duration_Is_Completed_After_Delay()
+        {
+            var clock = new TestClock();
+
+            var i = -1;
+            var completed = false;
+
+            new TransitionInstance(clock, TimeSpan.FromMilliseconds(30), TimeSpan.Zero).Subscribe(
+                nextValue =>
+                {
+                    switch (i++)
+                    {
+                        case 0:
+                            Assert.Equal(0, nextValue);
+                            break;
+                        case 1:
+                            Assert.Equal(0, nextValue);
+                            break;
+                        case 2:
+                            Assert.Equal(0, nextValue);
+                            break;
+                        case 3: // one iteration sooner than the test above, because the start of the transition is also the end
+                            Assert.Equal(1, nextValue);
+                            break;
+                    }
+                }, () => completed = true);
+
+            for (var z = 0; z <= 4; z++)
+            {
+                clock.Pulse(TimeSpan.FromMilliseconds(10));
+            }
+
+            Assert.True(completed);
         }
     }
 }

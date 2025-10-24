@@ -24,7 +24,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class ItemsControlTests
+    public class ItemsControlTests : ScopedTestBase
     {
         [Fact]
         public void Setting_ItemsSource_Should_Populate_Items()
@@ -1233,7 +1233,6 @@ namespace Avalonia.Controls.UnitTests
         {
             return UnitTestApplication.Start(
                 TestServices.MockThreadingInterface.With(
-                    focusManager: new FocusManager(),
                     fontManagerImpl: new HeadlessFontManagerStub(),
                     keyboardDevice: () => new KeyboardDevice(),
                     keyboardNavigation: () => new KeyboardNavigationHandler(),

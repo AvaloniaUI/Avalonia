@@ -36,7 +36,7 @@ namespace Avalonia.Media.TextFormatting
 
         public TextMetrics TextMetrics { get; }
 
-        public override double Baseline => -TextMetrics.Ascent;
+        public override double Baseline => -TextMetrics.Ascent + TextMetrics.LineGap * 0.5;
 
         public override Size Size => GlyphRun.Bounds.Size;
 
@@ -182,9 +182,9 @@ namespace Avalonia.Media.TextFormatting
 
 #if DEBUG
 
-            if (first.Length != length)
+            if (first.Length < length)
             {
-                throw new InvalidOperationException("Split length mismatch.");
+                throw new InvalidOperationException("Split length too small.");
             }
 #endif
             var second = new ShapedTextRun(splitBuffer.Second!, Properties);

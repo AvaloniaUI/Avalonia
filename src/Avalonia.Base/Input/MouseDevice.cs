@@ -104,6 +104,9 @@ namespace Avalonia.Input
                 case RawPointerEventType.Swipe:
                     e.Handled = GestureSwipe(mouse, e.Timestamp, e.Root, e.Position, props, ((RawPointerGestureEventArgs)e).Delta, keyModifiers, e.InputHitTestResult.firstEnabledAncestor);
                     break;
+                case RawPointerEventType.CancelCapture:
+                    PlatformCaptureLost();
+                    break;
             }
         }
 
@@ -128,7 +131,7 @@ namespace Avalonia.Input
 
             if (source != null)
             {
-                _pointer.Capture(source);
+                _pointer.Capture(source, CaptureSource.Implicit);
 
                 var settings = ((IInputRoot?)(source as Interactive)?.GetVisualRoot())?.PlatformSettings;
                 if (settings is not null)
@@ -203,7 +206,7 @@ namespace Avalonia.Input
                 }
                 finally
                 {
-                    _pointer.Capture(null);
+                    _pointer.Capture(null, CaptureSource.Implicit);
                     _pointer.CaptureGestureRecognizer(null);
                     _pointer.IsGestureRecognitionSkipped = false;
                     _lastMouseDownButton = default;
@@ -308,7 +311,7 @@ namespace Avalonia.Input
 
         internal void PlatformCaptureLost()
         {
-            _pointer.Capture(null);
+            _pointer.PlatformCaptureLost();
         }
     }
 }

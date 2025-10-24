@@ -421,7 +421,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         return ReturnOnParseError($"x:Array element {element.Type.GetClrType().Name} is not assignable to the array element type {elementType.Name}", out result);
                     }
                 }
-                
+
                 if (types.AvaloniaList.MakeGenericType(elementType).IsAssignableFrom(type))
                 {
                     result = new AvaloniaXamlIlAvaloniaListConstantAstNode(node, types, type, elementType, nodes);
@@ -439,11 +439,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     result = new AvaloniaXamlIlArrayConstantAstNode(node, listType, elementType, nodes);
                     return true;
                 }
-
-                result = null;
-                return false;
             }
-            
+
             result = null;
             return false;
         }

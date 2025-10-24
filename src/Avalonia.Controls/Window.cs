@@ -181,8 +181,23 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<WindowStartupLocation> WindowStartupLocationProperty =
             AvaloniaProperty.Register<Window, WindowStartupLocation>(nameof(WindowStartupLocation));
 
+        /// <summary>
+        /// Defines the <see cref="CanResize"/> property.
+        /// </summary>
         public static readonly StyledProperty<bool> CanResizeProperty =
             AvaloniaProperty.Register<Window, bool>(nameof(CanResize), true);
+
+        /// <summary>
+        /// Defines the <see cref="CanMinimize"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> CanMinimizeProperty =
+            AvaloniaProperty.Register<Window, bool>(nameof(CanMinimize), true);
+
+        /// <summary>
+        /// Defines the <see cref="CanMaximize"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> CanMaximizeProperty =
+            AvaloniaProperty.Register<Window, bool>(nameof(CanMaximize), true, coerce: CoerceCanMaximize);
 
         /// <summary>
         /// Routed event that can be used for global tracking of window destruction
@@ -236,6 +251,8 @@ namespace Avalonia.Controls
             CreatePlatformImplBinding(TitleProperty, title => PlatformImpl!.SetTitle(title));
             CreatePlatformImplBinding(IconProperty, icon => PlatformImpl!.SetIcon((icon ?? s_defaultIcon.Value)?.PlatformImpl));
             CreatePlatformImplBinding(CanResizeProperty, canResize => PlatformImpl!.CanResize(canResize));
+            CreatePlatformImplBinding(CanMinimizeProperty, canMinimize => PlatformImpl!.SetCanMinimize(canMinimize));
+            CreatePlatformImplBinding(CanMaximizeProperty, canMaximize => PlatformImpl!.SetCanMaximize(canMaximize));
             CreatePlatformImplBinding(ShowInTaskbarProperty, show => PlatformImpl!.ShowTaskbarIcon(show));
 
             CreatePlatformImplBinding(WindowStateProperty, state => PlatformImpl!.WindowState = state);
@@ -408,6 +425,32 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Enables or disables minimizing the window.
+        /// </summary>
+        /// <remarks>
+        /// This property might be ignored by some window managers on Linux.
+        /// </remarks>
+        public bool CanMinimize
+        {
+            get => GetValue(CanMinimizeProperty);
+            set => SetValue(CanMinimizeProperty, value);
+        }
+
+        /// <summary>
+        /// Enables or disables maximizing the window.
+        /// </summary>
+        /// <remarks>
+        /// <para>When <see cref="CanResize"/> is false, this property is always false.</para>
+        /// <para>On macOS, setting this property to false also disables the full screen mode.</para>
+        /// <para>This property might be ignored by some window managers on Linux.</para>
+        /// </remarks>
+        public bool CanMaximize
+        {
+            get => GetValue(CanMaximizeProperty);
+            set => SetValue(CanMaximizeProperty, value);
+        }
+
+        /// <summary>
         /// Gets or sets the icon of the window.
         /// </summary>
         public WindowIcon? Icon
@@ -437,6 +480,11 @@ namespace Avalonia.Controls
                 _positionWasSet = true;
             }
         }
+
+        /// <summary>
+        /// Gets whether this window was opened as a dialog
+        /// </summary>
+        public bool IsDialog => _showingAsDialog;
 
         /// <summary>
         /// Starts moving a window with left button being held. Should be called from left mouse button press event handler
@@ -718,12 +766,12 @@ namespace Avalonia.Controls
                     return null;
                 }
 
+                _showingAsDialog = modal;
                 RaiseEvent(new RoutedEventArgs(WindowOpenedEvent));
 
                 EnsureInitialized();
                 ApplyStyling();
                 _shown = true;
-                _showingAsDialog = modal;
                 IsVisible = true;
 
                 // If window position was not set before then platform may provide incorrect scaling at this time,
@@ -734,9 +782,11 @@ namespace Avalonia.Controls
                     double.IsNaN(Width) ? ClientSize.Width : Width,
                     double.IsNaN(Height) ? ClientSize.Height : Height);
 
+                var minMax = new MinMax(this);
+
                 initialSize = new Size(
-                MathUtilities.Clamp(initialSize.Width, MinWidth, MaxWidth),
-                MathUtilities.Clamp(initialSize.Height, MinHeight, MaxHeight));
+                    MathUtilities.Clamp(initialSize.Width, minMax.MinWidth, minMax.MaxWidth),
+                    MathUtilities.Clamp(initialSize.Height, minMax.MinHeight, minMax.MaxHeight));
 
                 var clientSizeChanged = initialSize != ClientSize;
                 ClientSize = initialSize; // ClientSize is required for Measure and Arrange
@@ -746,14 +796,14 @@ namespace Avalonia.Controls
 
                 if (SizeToContent.HasFlag(SizeToContent.Width))
                 {
-                    initialSize = initialSize.WithWidth(MathUtilities.Clamp(_arrangeBounds.Width, MinWidth, MaxWidth));
+                    initialSize = initialSize.WithWidth(MathUtilities.Clamp(_arrangeBounds.Width, minMax.MinWidth, minMax.MaxWidth));
                     clientSizeChanged |= initialSize != ClientSize;
                     ClientSize = initialSize;
                 }
 
                 if (SizeToContent.HasFlag(SizeToContent.Height))
                 {
-                    initialSize = initialSize.WithHeight(MathUtilities.Clamp(_arrangeBounds.Height, MinHeight, MaxHeight));
+                    initialSize = initialSize.WithHeight(MathUtilities.Clamp(_arrangeBounds.Height, minMax.MinHeight, minMax.MaxHeight));
                     clientSizeChanged |= initialSize != ClientSize;
                     ClientSize = initialSize;
                 }
@@ -939,7 +989,7 @@ namespace Avalonia.Controls
             {
                 return;
             }
-            
+
             var location = GetEffectiveWindowStartupLocation(owner);
 
             switch (location)
@@ -972,7 +1022,7 @@ namespace Avalonia.Controls
 
             return startupLocation;
         }
-        
+
         private void SetWindowStartupLocation(Window? owner = null)
         {
             if (_wasShownBefore)
@@ -1007,7 +1057,7 @@ namespace Avalonia.Controls
 
                 screen ??= Screens.ScreenFromPoint(Position);
                 screen ??= Screens.Primary;
-                
+
                 if (screen is not null)
                 {
                     var childRect = screen.WorkingArea.CenterRect(rect);
@@ -1027,7 +1077,7 @@ namespace Avalonia.Controls
                 var childRect = ownerRect.CenterRect(rect);
 
                 var screen = Screens.ScreenFromWindow(owner);
-                
+
                 childRect = ApplyScreenConstraint(screen, childRect);
 
                 Position = childRect.Position;
@@ -1035,7 +1085,7 @@ namespace Avalonia.Controls
 
             if (!_positionWasSet && DesktopScaling != PlatformImpl?.DesktopScaling) // Platform returns incorrect scaling, forcing setting position may fix it
                 PlatformImpl?.Move(Position);
-            
+
             PixelRect ApplyScreenConstraint(Screen? screen, PixelRect childRect)
             {
                 if (screen?.WorkingArea is { } constraint)
@@ -1182,7 +1232,7 @@ namespace Avalonia.Controls
                 PlatformImpl?.SetSystemDecorations(typedNewValue);
             }
 
-            if (change.Property == OwnerProperty)
+            else if (change.Property == OwnerProperty)
             {
                 var oldParent = change.OldValue as Window;
                 var newParent = change.NewValue as Window;
@@ -1194,6 +1244,11 @@ namespace Avalonia.Controls
                 {
                     impl.SetParent(_showingAsDialog ? newParent?.PlatformImpl! : (newParent?.PlatformImpl ?? null));
                 }
+            }
+
+            else if (change.Property == CanResizeProperty)
+            {
+                CoerceValue(CanMaximizeProperty);
             }
         }
 
@@ -1215,5 +1270,8 @@ namespace Avalonia.Controls
             }
             return null;
         }
+
+        private static bool CoerceCanMaximize(AvaloniaObject target, bool value)
+            => value && target is not Window { CanResize: false };
     }
 }

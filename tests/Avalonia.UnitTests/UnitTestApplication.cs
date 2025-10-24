@@ -42,7 +42,7 @@ namespace Avalonia.UnitTests
             var scope = AvaloniaLocator.EnterScope();
             var oldContext = SynchronizationContext.Current;
             _ = new UnitTestApplication(services);
-            Dispatcher.ResetForUnitTests();
+            Dispatcher.ResetBeforeUnitTests();
             return Disposable.Create(() =>
             {
                 if (Dispatcher.UIThread.CheckAccess())
@@ -51,9 +51,11 @@ namespace Avalonia.UnitTests
                 }
 
                 ((ToolTipService)AvaloniaLocator.Current.GetService<IToolTipService>())?.Dispose();
+                (AvaloniaLocator.Current.GetService<FontManager>() as IDisposable)?.Dispose();
 
-                scope.Dispose();
                 Dispatcher.ResetForUnitTests();
+                scope.Dispose();
+                Dispatcher.ResetBeforeUnitTests();
                 SynchronizationContext.SetSynchronizationContext(oldContext);
             });
         }
@@ -62,7 +64,6 @@ namespace Avalonia.UnitTests
         {
             AvaloniaLocator.CurrentMutable
                 .Bind<IAssetLoader>().ToConstant(Services.AssetLoader)
-                .Bind<IFocusManager>().ToConstant(Services.FocusManager)
                 .Bind<IGlobalClock>().ToConstant(Services.GlobalClock)
                 .BindToSelf<IGlobalStyles>(this)
                 .Bind<IInputManager>().ToConstant(Services.InputManager)

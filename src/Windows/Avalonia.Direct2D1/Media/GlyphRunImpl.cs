@@ -50,7 +50,10 @@ namespace Avalonia.Direct2D1.Media
             }
 
             _glyphOffsets = new GlyphOffset[glyphCount];
-
+            
+            var runBounds = new Rect();
+            var currentX = 0.0;
+            var scale = fontRenderingEmSize / glyphTypeface.Metrics.DesignEmHeight;
             for (var i = 0; i < glyphCount; i++)
             {
                 var (x, y) = glyphInfos[i].GlyphOffset;
@@ -60,13 +63,30 @@ namespace Avalonia.Direct2D1.Media
                     AdvanceOffset = (float)x,
                     AscenderOffset = (float)y
                 };
+
+                if (_glyphTypefaceImpl.TryGetGlyphMetrics(glyphInfos[i].GlyphIndex, out var metrics))
+                {
+                    // Found metrics with negative height, prefer to adjust it to positive.
+                    var ybearing = metrics.YBearing;
+                    var height = metrics.Height;
+                    if (height < 0)
+                    {
+                        height = -height;
+                    }
+
+                    // Not entirely sure about why we need to do this, but it seems to work
+                    var xOffset = metrics.XBearing * scale;
+                    var xWidth = xOffset > 0 ? xOffset : 0;
+                    var xBearing = xOffset < 0 ? xOffset : 0;
+
+                    //yBearing is the vertical distance from the baseline to the top of the glyph's bbox. It is usually positive for horizontal layouts, and negative for vertical ones.
+                    runBounds = runBounds.Union(new Rect(currentX + xBearing, baselineOrigin.Y - ybearing * scale, xWidth + metrics.Width * scale, height * scale));
+                }
+
+                currentX += glyphInfos[i].GlyphAdvance;
             }
 
-            var scale = fontRenderingEmSize / glyphTypeface.Metrics.DesignEmHeight;
-
-            var height = glyphTypeface.Metrics.LineSpacing * scale;
-
-            Bounds = new Rect(baselineOrigin.X, 0, width, height);
+            Bounds = runBounds.Translate(new Vector(baselineOrigin.X, 0));
         }
 
         public SharpDX.DirectWrite.GlyphRun GlyphRun

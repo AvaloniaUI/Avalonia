@@ -20,7 +20,7 @@
       <Setter Property="Margin" Value="10 0 -20 0"/>
     </Style>
   </UserControl.Styles>
-  <Grid Name="rootGrid" RowDefinitions="Auto,Auto,*,Auto,Auto">
+  <Grid Name="rootGrid" RowDefinitions="Auto,Auto,Auto,*,Auto,Auto">
     <Menu>
       <MenuItem Header="_File">
         <MenuItem Header="E_xit" Command="{Binding $parent[Window].Close}" />
@@ -251,24 +251,36 @@
         </MenuItem>
       </MenuItem>
     </Menu>
+    
 
-    <TabStrip Grid.Row="1" SelectedIndex="{Binding SelectedTab, Mode=TwoWay}">
+   <HyperlinkButton Grid.Row="1"
+                    CornerRadius="0"
+                    NavigateUri="https://avaloniaui.net/accelerate" 
+                    Content="Try the new Avalonia Dev Tools – now available in Accelerate." 
+                    Background="#F3ECC0" Foreground="#746D44"
+                    Height="30"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center" VerticalContentAlignment="Bottom"
+                    FontWeight="Bold" FontSize="14"/>
+
+
+    <TabStrip Grid.Row="2" SelectedIndex="{Binding SelectedTab, Mode=TwoWay}">
       <TabStripItem Content="Logical Tree" />
       <TabStripItem Content="Visual Tree" />
       <TabStripItem Content="Events" />
       <TabStripItem Content="HotKeys" IsVisible="False" />
     </TabStrip>
 
-    <ContentControl Grid.Row="2"
+    <ContentControl Grid.Row="3"
                     BorderBrush="{DynamicResource ThemeControlMidBrush}"
                     BorderThickness="0,1,0,0"
                     Content="{Binding Content}" />
 
-    <GridSplitter Name="consoleSplitter" Grid.Row="3" Height="1"
+    <GridSplitter Name="consoleSplitter" Grid.Row="4" Height="1"
                   Background="{DynamicResource ThemeControlMidBrush}"
                   IsVisible="False" />
 
-    <Border Grid.Row="4"
+    <Border Grid.Row="5"
             BorderBrush="{DynamicResource ThemeControlMidBrush}"
             BorderThickness="0,1,0,0">
       <Grid ColumnDefinitions="*, Auto">

@@ -15,71 +15,44 @@ using Avalonia.Platform;
 
 namespace Avalonia.Headless
 {
-    internal class HeadlessClipboardStub : IClipboard
+    internal sealed class HeadlessClipboardImplStub : IOwnedClipboardImpl
     {
-        private string? _text;
-        private IDataObject? _data;
+        private IAsyncDataTransfer? _data;
 
-        public Task<string?> GetTextAsync()
-        {
-            return Task.Run(() => _text);
-        }
+        public Task<IAsyncDataTransfer?> TryGetDataAsync()
+            // Return an instance that won't be disposed (we're keeping the ownership).
+            => Task.FromResult<IAsyncDataTransfer?>(_data is null ? null : new NonDisposingDataTransfer(_data));
 
-        public Task SetTextAsync(string? text)
+        public Task SetDataAsync(IAsyncDataTransfer dataTransfer)
         {
-            return Task.Run(() => _text = text);
+            _data = dataTransfer;
+            return Task.CompletedTask;
         }
 
         public Task ClearAsync()
         {
-            return Task.Run(() => _text = null);
+            _data?.Dispose();
+            _data = null;
+            return Task.CompletedTask;
         }
 
-        public Task SetDataObjectAsync(IDataObject data)
-        {
-            return Task.Run(() => _data = data);
-        }
+        public Task<bool> IsCurrentOwnerAsync()
+            => Task.FromResult(_data is not null);
 
-        public Task<string[]> GetFormatsAsync()
+        private sealed class NonDisposingDataTransfer(IAsyncDataTransfer wrapped) : IAsyncDataTransfer
         {
-            return Task.Run(() =>
+            private readonly IAsyncDataTransfer _wrapped = wrapped;
+
+            public IReadOnlyList<DataFormat> Formats
+                => _wrapped.Formats;
+
+            public IReadOnlyList<IAsyncDataTransferItem> Items
+                => _wrapped.Items;
+
+            void IDisposable.Dispose()
             {
-                if (_data is not null)
-                {
-                    return _data.GetDataFormats().ToArray();
-                }
-
-                if (_text is not null)
-                {
-                    return new[] { DataFormats.Text };
-                }
-
-                return Array.Empty<string>();
-            });
+            }
         }
-
-        public async Task<object?> GetDataAsync(string format)
-        {
-            return await Task.Run(() =>
-            {
-                if (format == DataFormats.Text)
-                    return _text;
-                if (format == DataFormats.Files && _data is not null)
-                    return _data.GetFiles();
-                if (format == DataFormats.FileNames && _data is not null)
-                {
-#pragma warning disable CS0618 // Type or member is obsolete
-                    return _data.GetFileNames();
-#pragma warning restore CS0618 // Type or member is obsolete
-                }
-                else
-                    return (object?)_data;
-            });
-        }
-
-        /// <inheritdoc />
-        public Task FlushAsync() =>
-            Task.CompletedTask;
     }
 
     internal class HeadlessCursorFactoryStub : ICursorFactory
@@ -264,7 +237,11 @@ namespace Avalonia.Headless
 
         public virtual bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, out IGlyphTypeface glyphTypeface)
         {
-            glyphTypeface = new HeadlessGlyphTypefaceImpl(FontFamily.DefaultFontFamilyName, FontStyle.Normal, FontWeight.Normal, FontStretch.Normal);
+            glyphTypeface = new HeadlessGlyphTypefaceImpl(
+                FontFamily.DefaultFontFamilyName, 
+                fontSimulations.HasFlag(FontSimulations.Oblique) ? FontStyle.Italic : FontStyle.Normal, 
+                fontSimulations.HasFlag(FontSimulations.Bold) ? FontWeight.Bold : FontWeight.Normal, 
+                FontStretch.Normal);
 
             TryCreateGlyphTypefaceCount++;
 

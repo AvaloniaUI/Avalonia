@@ -12,12 +12,13 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class WindowTests
+    public class WindowTests : ScopedTestBase
     {
         [Fact]
         public void Setting_Title_Should_Set_Impl_Title()
         {
             var windowImpl = new Mock<IWindowImpl>();
+            windowImpl.Setup(r => r.RenderScaling).Returns(1.0);
             windowImpl.Setup(r => r.Compositor).Returns(RendererMocks.CreateDummyCompositor());
             var windowingPlatform = new MockWindowingPlatform(() => windowImpl.Object);
 
@@ -671,7 +672,24 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        public class SizingTests
+        [Fact]
+        public void CanMaximize_Should_Be_False_If_CanResize_Is_False()
+        {
+            var windowImpl = MockWindowingPlatform.CreateWindowMock();
+
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow.With(
+                windowingPlatform: new MockWindowingPlatform(() => windowImpl.Object)));
+
+            var window = new Window();
+
+            Assert.True(window.CanMaximize);
+
+            window.CanResize = false;
+
+            Assert.False(window.CanMaximize);
+        }
+
+        public class SizingTests : ScopedTestBase
         {
             [Fact]
             public void Child_Should_Be_Measured_With_Width_And_Height_If_SizeToContent_Is_Manual()
@@ -1089,6 +1107,25 @@ namespace Avalonia.Controls.UnitTests
 
                     Assert.True(task.IsCompletedSuccessfully);
                 }
+            }
+
+            [Fact]
+            public void Show_Works_When_Min_Dimension_Greater_Than_Max()
+            {
+                using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+                var target = new Window
+                {
+                    MinWidth = 100,
+                    MaxWidth = 80,
+                    MinHeight = 200,
+                    MaxHeight = 180
+                };
+
+                Show(target);
+
+                Assert.Equal(100, target.Width);
+                Assert.Equal(200, target.Height);
             }
             
             protected virtual void Show(Window window)

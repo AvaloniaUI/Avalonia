@@ -4,13 +4,14 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.GestureRecognizers;
 using Avalonia.Interactivity;
+using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Moq;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Platform
 {
-    public class DefaultMenuInteractionHandlerTests
+    public class DefaultMenuInteractionHandlerTests : ScopedTestBase
     {
         static PointerPressedEventArgs CreatePressed(object source) => new PointerPressedEventArgs(source,
             new FakePointer(), (Visual)source, default,0, new PointerPointProperties (RawInputModifiers.None, PointerUpdateKind.LeftButtonPressed),
@@ -21,7 +22,7 @@ namespace Avalonia.Controls.UnitTests.Platform
             new PointerPointProperties(RawInputModifiers.None, PointerUpdateKind.LeftButtonReleased),
             default, MouseButton.Left);
 
-        public class TopLevel
+        public class TopLevel : ScopedTestBase
         {
             [Fact]
             public void Up_Opens_MenuItem_With_SubMenu()
@@ -227,7 +228,7 @@ namespace Avalonia.Controls.UnitTests.Platform
             }
         }
 
-        public class NonTopLevel
+        public class NonTopLevel : ScopedTestBase
         {
             [Fact]
             public void Up_Selects_Previous_MenuItem()
@@ -546,7 +547,7 @@ namespace Avalonia.Controls.UnitTests.Platform
             }
         }
 
-        public class ContextMenu
+        public class ContextMenu : ScopedTestBase
         {
             [Fact]
             public void Down_Selects_Selects_First_MenuItem_When_No_Selection()

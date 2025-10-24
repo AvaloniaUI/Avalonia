@@ -3,7 +3,6 @@
     <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsCurrentAndroidTargetFramework);$(AvsCurrentBrowserTargetFramework)</TargetFrameworks>
     <TargetFrameworks Condition="'$(IncludeIOSTargetSamples)' == 'true'">$(TargetFrameworks);$(AvsCurrentIOSTargetFramework)</TargetFrameworks>
     <TargetFrameworks Condition="'$(IncludeMacTargetSamples)' == 'true'">$(TargetFrameworks);$(AvsCurrentMacOSTargetFramework)</TargetFrameworks>
-    <TargetFrameworks Condition="'$(IncludeTizenTargetSamples)' == 'true'">$(TargetFrameworks);$(AvsCurrentTizenTargetFramework)</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
@@ -19,7 +18,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\packages\Avalonia\Avalonia.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Controls.ColorPicker\Avalonia.Controls.ColorPicker.csproj" />
-    <ProjectReference Include="..\..\src\Avalonia.Controls.DataGrid\Avalonia.Controls.DataGrid.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Fonts.Inter\Avalonia.Fonts.Inter.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Themes.Fluent\Avalonia.Themes.Fluent.csproj" />
     <ProjectReference Include="..\MiniMvvm\MiniMvvm.csproj" />

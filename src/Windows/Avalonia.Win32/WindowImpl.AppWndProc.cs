@@ -127,7 +127,6 @@ namespace Avalonia.Win32
                     }
 
                 case WindowsMessage.WM_DPICHANGED:
-                    if (!_ignoreDpiChanges)
                     {
                         _dpi = (uint)wParam >> 16;
                         var newDisplayRect = Marshal.PtrToStructure<RECT>(lParam);
@@ -149,19 +148,6 @@ namespace Avalonia.Win32
 
                         return IntPtr.Zero;
                     }
-                    else
-                    {
-                        // In case parent is on another screen with different scaling, window will have header scaled with
-                        // parent's scaling factor, so need to update frame
-                        SetWindowPos(hWnd,
-                            IntPtr.Zero, 0, 0, 0, 0,
-                            SetWindowPosFlags.SWP_FRAMECHANGED |
-                            SetWindowPosFlags.SWP_NOSIZE |
-                            SetWindowPosFlags.SWP_NOMOVE |
-                            SetWindowPosFlags.SWP_NOZORDER |
-                            SetWindowPosFlags.SWP_NOACTIVATE);
-                    }
-                    break;
 
                 case WindowsMessage.WM_GETICON:
                     if (_iconImpl == null)
@@ -180,11 +166,12 @@ namespace Avalonia.Win32
                     return LoadIcon(requestIcon, requestDpi)?.Handle ?? default;
 
                 case WindowsMessage.WM_KEYDOWN:
+                    e = TryCreateRawKeyEventArgs(RawKeyEventType.KeyDown, timestamp, wParam, lParam, true);
+                    break;
+
                 case WindowsMessage.WM_SYSKEYDOWN:
-                    {
-                        e = TryCreateRawKeyEventArgs(RawKeyEventType.KeyDown, timestamp, wParam, lParam);
-                        break;
-                    }
+                    e = TryCreateRawKeyEventArgs(RawKeyEventType.KeyDown, timestamp, wParam, lParam, false);
+                    break;
 
                 case WindowsMessage.WM_SYSCOMMAND:
                     // Disable system handling of Alt/F10 menu keys.
@@ -199,11 +186,15 @@ namespace Avalonia.Win32
                     }
 
                 case WindowsMessage.WM_KEYUP:
+                    e = TryCreateRawKeyEventArgs(RawKeyEventType.KeyUp, timestamp, wParam, lParam, true);
+                    _ignoreWmChar = false;
+                    break;
+
                 case WindowsMessage.WM_SYSKEYUP:
-                    {
-                        e = TryCreateRawKeyEventArgs(RawKeyEventType.KeyUp, timestamp, wParam, lParam);
-                        break;
-                    }
+                    e = TryCreateRawKeyEventArgs(RawKeyEventType.KeyUp, timestamp, wParam, lParam, false);
+                    _ignoreWmChar = false;
+                    break;
+
                 case WindowsMessage.WM_CHAR:
                     {
                         if (Imm32InputMethod.Current.IsComposing)
@@ -218,7 +209,6 @@ namespace Avalonia.Win32
 
                             e = new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp, Owner, text);
                         }
-
                         break;
                     }
 
@@ -401,6 +391,26 @@ namespace Avalonia.Win32
                             RawPointerEventType.LeaveWindow,
                             new Point(-1, -1),
                             WindowsKeyboardDevice.Instance.Modifiers);
+                        break;
+                    }
+
+                case WindowsMessage.WM_CAPTURECHANGED:
+                    {
+                        if (IsMouseInPointerEnabled)
+                        {
+                            break;
+                        }
+                        if (_hwnd != lParam)
+                        {
+                            _trackingMouse = false;
+                            e = new RawPointerEventArgs(
+                                _mouseDevice,
+                                timestamp,
+                                Owner,
+                                RawPointerEventType.CancelCapture,
+                                new Point(-1, -1),
+                                WindowsKeyboardDevice.Instance.Modifiers);
+                        }
                         break;
                     }
 
@@ -881,7 +891,7 @@ namespace Avalonia.Win32
                         // is handled.
                         _ignoreWmChar = e.Handled;
                     }
-                 }
+                }
 
                 if (s_intermediatePointsPooledList.Count > 0)
                 {
@@ -1314,13 +1324,16 @@ namespace Avalonia.Win32
             return modifiers;
         }
 
-        private RawKeyEventArgs? TryCreateRawKeyEventArgs(RawKeyEventType eventType, ulong timestamp, IntPtr wParam, IntPtr lParam)
+        private RawKeyEventArgs? TryCreateRawKeyEventArgs(RawKeyEventType eventType, ulong timestamp, IntPtr wParam, IntPtr lParam, bool useKeySymbol)
         {
             var virtualKey = ToInt32(wParam);
             var keyData = ToInt32(lParam);
             var key = KeyInterop.KeyFromVirtualKey(virtualKey, keyData);
             var physicalKey = KeyInterop.PhysicalKeyFromVirtualKey(virtualKey, keyData);
-            var keySymbol = KeyInterop.GetKeySymbol(virtualKey, keyData);
+
+            // Avoid calling GetKeySymbol() for WM_SYSKEYDOWN/UP:
+            // it ultimately calls User32!ToUnicodeEx, which messes up the keyboard state in this case.
+            var keySymbol = useKeySymbol ? KeyInterop.GetKeySymbol(virtualKey, keyData) : null;
 
             if (key == Key.None && physicalKey == PhysicalKey.None && string.IsNullOrWhiteSpace(keySymbol))
                 return null;

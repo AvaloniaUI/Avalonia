@@ -2,7 +2,7 @@ jobs:
 
 - job: GetPRNumber
   pool:
-    vmImage: 'ubuntu-20.04'
+    vmImage: 'ubuntu-22.04'
   variables:
     SolutionDir: '$(Build.SourcesDirectory)'
   steps:
@@ -23,7 +23,7 @@ jobs:
       
 - job: Linux
   pool:
-    vmImage: 'ubuntu-20.04'
+    vmImage: 'ubuntu-22.04'
   steps:
   - task: UseDotNet@2
     displayName: 'Use .NET 6.0 Runtime'
@@ -80,7 +80,7 @@ jobs:
     displayName: 'Install Workloads'
     inputs:
       script: |
-       dotnet workload install android ios macos wasm-tools
+       dotnet workload install android ios maccatalyst macos wasm-tools
   
   - task: CmdLine@2
     displayName: 'Generate avalonia-native'
@@ -95,11 +95,11 @@ jobs:
     inputs:
       actions: 'build'
       scheme: ''
-      sdk: 'macosx13.0'
+      sdk: 'macosx14.2'
       configuration: 'Release'
       xcWorkspacePath: '**/*.xcodeproj/project.xcworkspace'
       xcodeVersion: 'specifyPath' # Options: 8, 9, default, specifyPath
-      xcodeDeveloperDir: '/Applications/Xcode_14.1.app/Contents/Developer'
+      xcodeDeveloperDir: '/Applications/Xcode_15.2.app/Contents/Developer'
       args: '-derivedDataPath ./'
 
   - task: CmdLine@2
@@ -154,7 +154,7 @@ jobs:
     displayName: 'Install Workloads'
     inputs:
       script: |
-       dotnet workload install android ios tvos wasm-tools
+       dotnet workload install android maccatalyst ios tvos wasm-tools
 
   - task: CmdLine@2
     displayName: 'Install Nuke'
