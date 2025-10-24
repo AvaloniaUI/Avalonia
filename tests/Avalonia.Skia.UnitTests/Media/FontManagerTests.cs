@@ -101,12 +101,14 @@ namespace Avalonia.Skia.UnitTests.Media
             {
                 Assert.True(FontManager.Current.TryGetGlyphTypeface(Typeface.Default, out _));
 
+                var countBefore = fontManagerImpl.TryCreateGlyphTypefaceCount;
+
                 for (int i = 0; i < 10; i++)
                 {
                     FontManager.Current.TryGetGlyphTypeface(new Typeface("Unknown"), out _);
                 }
 
-                Assert.Equal(fontManagerImpl.TryCreateGlyphTypefaceCount, 2);
+                Assert.Equal(countBefore + 1, fontManagerImpl.TryCreateGlyphTypefaceCount);
             }
         }
 
@@ -330,7 +332,7 @@ namespace Avalonia.Skia.UnitTests.Media
 
                     Assert.Equal("Inter", glyphTypeface.FamilyName);
 
-                    var features = ((IGlyphTypeface2)glyphTypeface).SupportedFeatures;
+                    var features = glyphTypeface.SupportedFeatures;
 
                     Assert.NotEmpty(features);
                 }
@@ -448,7 +450,7 @@ namespace Avalonia.Skia.UnitTests.Media
 
                     Assert.Equal(FontStyle.Normal, regularTypeface.Style);
 
-                    Assert.NotEqual(((GlyphTypefaceImpl)italicTypeface.GlyphTypeface).SKTypeface, ((GlyphTypefaceImpl)regularTypeface.GlyphTypeface).SKTypeface);
+                    Assert.NotEqual(((SkiaTypeface)italicTypeface.GlyphTypeface.PlatformTypeface).SKTypeface, ((SkiaTypeface)regularTypeface.GlyphTypeface.PlatformTypeface).SKTypeface);
                 }
             }
         }

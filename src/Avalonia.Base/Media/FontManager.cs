@@ -262,7 +262,7 @@ namespace Avalonia.Media
                     {
                         typeface = new Typeface(fallback.FontFamily, fontStyle, fontWeight, fontStretch);
 
-                        if (TryGetGlyphTypeface(typeface, out var glyphTypeface) && glyphTypeface.TryGetGlyph((uint)codepoint, out _))
+                        if (TryGetGlyphTypeface(typeface, out var glyphTypeface) && glyphTypeface.CharacterToGlyphMap.TryGetValue(codepoint, out _))
                         {
                             return true;
                         }
@@ -289,6 +289,11 @@ namespace Avalonia.Media
                         if (TryGetFontCollection(source, out var fontCollection) &&
                             fontCollection.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, familyName, culture, out typeface))
                         {
+                            if (typeface.FontFamily.Name == DefaultFontFamily.Name && i + 1 < compositeKey.Keys.Count)
+                            {
+                                continue;
+                            }
+
                             return true;
                         }
                     }
@@ -306,8 +311,8 @@ namespace Avalonia.Media
                 }
             }
 
-            //Try to find a match with the system font manager
-            return PlatformImpl.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, culture, out typeface);
+            //Try to find a match with the system fonts
+            return SystemFonts.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, fontFamily?.Name, culture, out typeface);
         }
 
         internal IReadOnlyList<Typeface> GetFamilyTypefaces(FontFamily fontFamily)

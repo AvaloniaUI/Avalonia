@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Avalonia;
+using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Media;
-using Avalonia.Media.TextFormatting;
-using Avalonia.Media.TextFormatting.Unicode;
+using Avalonia.Media.Fonts;
 using Avalonia.Platform;
 
 namespace Avalonia.Headless
@@ -66,34 +66,20 @@ namespace Avalonia.Headless
         }
     }
 
-    internal class HeadlessGlyphTypefaceImpl : IGlyphTypeface
+    internal class HeadlessPlatformTypeface : IPlatformTypeface
     {
-        public HeadlessGlyphTypefaceImpl(string familyName, FontStyle style, FontWeight weight, FontStretch stretch)
+        private readonly UnmanagedFontMemory _fontMemory;
+
+        public HeadlessPlatformTypeface(Stream stream)
         {
-            FamilyName = familyName;
-            Style = style;
-            Weight = weight;
-            Stretch = stretch;
+            _fontMemory = UnmanagedFontMemory.LoadFromStream(stream);
+
+            var dummy = new GlyphTypeface(this, FontSimulations.None);
+
+            Weight = dummy.Weight;
+            Style = dummy.Style;
+            Stretch = dummy.Stretch;
         }
-
-        public FontMetrics Metrics => new FontMetrics
-        {
-            DesignEmHeight = 10,
-            Ascent = 2,
-            Descent = 10,
-            IsFixedPitch = true,
-            LineGap = 0,
-            UnderlinePosition = 2,
-            UnderlineThickness = 1,
-            StrikethroughPosition = 2,
-            StrikethroughThickness = 1
-        };
-
-        public int GlyphCount => 1337;
-
-        public FontSimulations FontSimulations => FontSimulations.None;
-
-        public string FamilyName { get; }
 
         public FontWeight Weight { get; }
 
@@ -103,260 +89,217 @@ namespace Avalonia.Headless
 
         public void Dispose()
         {
+            _fontMemory.Dispose();
         }
 
-        public ushort GetGlyph(uint codepoint)
+        public bool TryGetStream([NotNullWhen(true)] out Stream? stream)
         {
-            return (ushort)codepoint;
-        }
+            var data = _fontMemory.Memory.Span;
 
-        public bool TryGetGlyph(uint codepoint, out ushort glyph)
-        {
-            glyph = 8;
+            stream = new MemoryStream(data.ToArray());
 
             return true;
         }
 
-        public int GetGlyphAdvance(ushort glyph)
-        {
-            return 8;
-        }
+        public bool TryGetTable(OpenTypeTag tag, out ReadOnlyMemory<byte> table) => _fontMemory.TryGetTable(tag, out table);
+    }
+}
 
-        public int[] GetGlyphAdvances(ReadOnlySpan<ushort> glyphs)
-        {
-            var advances = new int[glyphs.Length];
+internal class HeadlessGlyphTypeface : IGlyphTypeface
+{
+    private readonly IGlyphTypeface _inner;
 
-            for (var i = 0; i < advances.Length; i++)
-            {
-                advances[i] = 8;
-            }
-
-            return advances;
-        }
-
-        public ushort[] GetGlyphs(ReadOnlySpan<uint> codepoints)
-        {
-            return codepoints.ToArray().Select(x => (ushort)x).ToArray();
-        }
-
-        public bool TryGetTable(uint tag, out byte[] table)
-        {
-            table = null!;
-            return false;
-        }
-
-        public bool TryGetGlyphMetrics(ushort glyph, out GlyphMetrics metrics)
-        {
-            metrics = new GlyphMetrics
-            {
-                Width = 10,
-                Height = 10
-            };
-
-            return true;
-        }
+    public HeadlessGlyphTypeface(IGlyphTypeface inner, string familyName)
+    {
+        _inner = inner;
+        FamilyName = familyName;
     }
 
-    internal class HeadlessTextShaperStub : ITextShaperImpl
+    public string FamilyName { get; }
+
+    public string TypographicFamilyName => FamilyName;
+
+    public IReadOnlyDictionary<CultureInfo, string> FamilyNames => _inner.FamilyNames;
+
+    public IReadOnlyList<OpenTypeTag> SupportedFeatures => _inner.SupportedFeatures;
+
+    public IReadOnlyDictionary<CultureInfo, string> FaceNames => _inner.FaceNames;
+
+    public FontWeight Weight => _inner.Weight;
+
+    public FontStyle Style => _inner.Style;
+
+    public FontStretch Stretch => _inner.Stretch;
+
+    public uint GlyphCount => _inner.GlyphCount;
+
+    public FontSimulations FontSimulations => _inner.FontSimulations;
+
+    public FontMetrics Metrics => _inner.Metrics;
+
+    public IReadOnlyDictionary<int, ushort> CharacterToGlyphMap => _inner.CharacterToGlyphMap;
+
+    public IPlatformTypeface PlatformTypeface => _inner.PlatformTypeface;
+
+    public ITextShaperTypeface TextShaperTypeface => _inner.TextShaperTypeface;
+
+    public void Dispose() => _inner.Dispose();
+
+    public ushort GetGlyphAdvance(ushort glyph) => _inner.GetGlyphAdvance(glyph);
+
+    public bool TryGetGlyphMetrics(ushort glyph, out GlyphMetrics metrics) => _inner.TryGetGlyphMetrics(glyph, out metrics);
+}
+
+internal class HeadlessFontManagerStub : IFontManagerImpl
+{
+    private readonly string _defaultFamilyName = "avares://Avalonia.Fonts.Inter/Assets#Inter";
+
+    public int TryCreateGlyphTypefaceCount { get; private set; }
+
+    public string GetDefaultFontFamilyName() => _defaultFamilyName;
+
+    string[] IFontManagerImpl.GetInstalledFontFamilyNames(bool checkForUpdates)
     {
-        public ShapedBuffer ShapeText(ReadOnlyMemory<char> text, TextShaperOptions options)
-        {
-            var typeface = options.Typeface;
-            var fontRenderingEmSize = options.FontRenderingEmSize;
-            var bidiLevel = options.BidiLevel;
-            var shapedBuffer = new ShapedBuffer(text, text.Length, typeface, fontRenderingEmSize, bidiLevel);
-            var textSpan = text.Span;
-            var textStartIndex = TextTestHelper.GetStartCharIndex(text);
-
-            for (var i = 0; i < shapedBuffer.Length;)
-            {
-                var glyphCluster = i + textStartIndex;
-
-                var codepoint = Codepoint.ReadAt(textSpan, i, out var count);
-
-                var glyphIndex = typeface.GetGlyph(codepoint);
-
-                for (var j = 0; j < count; ++j)
-                {
-                    shapedBuffer[i + j] = new GlyphInfo(glyphIndex, glyphCluster, 10);
-                }
-
-                i += count;
-            }
-
-            return shapedBuffer;
-        }
+        return new[] { _defaultFamilyName };
     }
 
-    internal class HeadlessFontManagerStub : IFontManagerImpl
+    public bool TryMatchCharacter(
+        int codepoint,
+        FontStyle fontStyle,
+        FontWeight fontWeight,
+        FontStretch fontStretch,
+        CultureInfo? culture,
+        out IPlatformTypeface platformTypeface)
     {
-        private readonly string _defaultFamilyName;
+        platformTypeface = null!;
 
-        public HeadlessFontManagerStub(string defaultFamilyName = "Default")
-        {
-            _defaultFamilyName = defaultFamilyName;
-        }
-
-        public int TryCreateGlyphTypefaceCount { get; private set; }
-
-        public string GetDefaultFontFamilyName()
-        {
-            return _defaultFamilyName;
-        }
-
-        string[] IFontManagerImpl.GetInstalledFontFamilyNames(bool checkForUpdates)
-        {
-            return new[] { _defaultFamilyName };
-        }
-
-        public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight,
-            FontStretch fontStretch,
-            CultureInfo? culture, out Typeface fontKey)
-        {
-            fontKey = new Typeface(_defaultFamilyName);
-
-            return false;
-        }
-
-        public virtual bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight, 
-            FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
-        {
-            glyphTypeface = null;
-
-            TryCreateGlyphTypefaceCount++;
-
-            if (familyName == "Unknown")
-            {
-                return false;
-            }
-
-            glyphTypeface = new HeadlessGlyphTypefaceImpl(familyName, style, weight, stretch);
-
-            return true;
-        }
-
-        public virtual bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, out IGlyphTypeface glyphTypeface)
-        {
-            glyphTypeface = new HeadlessGlyphTypefaceImpl(
-                FontFamily.DefaultFontFamilyName, 
-                fontSimulations.HasFlag(FontSimulations.Oblique) ? FontStyle.Italic : FontStyle.Normal, 
-                fontSimulations.HasFlag(FontSimulations.Bold) ? FontWeight.Bold : FontWeight.Normal, 
-                FontStretch.Normal);
-
-            TryCreateGlyphTypefaceCount++;
-
-            return true;
-        }
+        return false;
     }
 
-    internal class HeadlessFontManagerWithMultipleSystemFontsStub : IFontManagerImpl
+    public virtual bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight,
+        FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
     {
-        private readonly string[] _installedFontFamilyNames;
-        private readonly string _defaultFamilyName;
+        glyphTypeface = null;
 
-        public HeadlessFontManagerWithMultipleSystemFontsStub(
-            string[] installedFontFamilyNames,
-            string defaultFamilyName = "Default")
+        if (familyName == "MyFont")
         {
-            _installedFontFamilyNames = installedFontFamilyNames;
-            _defaultFamilyName = defaultFamilyName;
+            glyphTypeface = new HeadlessGlyphTypeface(Typeface.Default.GlyphTypeface, familyName);
         }
 
-        public int TryCreateGlyphTypefaceCount { get; private set; }
+        TryCreateGlyphTypefaceCount++;
 
-        public string GetDefaultFontFamilyName()
-        {
-            return _defaultFamilyName;
-        }
-
-        string[] IFontManagerImpl.GetInstalledFontFamilyNames(bool checkForUpdates)
-        {
-            return _installedFontFamilyNames;
-        }
-
-        public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight,
-            FontStretch fontStretch,
-            CultureInfo? culture, out Typeface fontKey)
-        {
-            fontKey = new Typeface(_defaultFamilyName);
-
-            return false;
-        }
-
-        public virtual bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight,
-            FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
-        {
-            glyphTypeface = null;
-
-            TryCreateGlyphTypefaceCount++;
-
-            if (familyName == "Unknown")
-            {
-                return false;
-            }
-
-            glyphTypeface = new HeadlessGlyphTypefaceImpl(familyName, style, weight, stretch);
-
-            return true;
-        }
-
-        public virtual bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, out IGlyphTypeface glyphTypeface)
-        {
-            glyphTypeface = new HeadlessGlyphTypefaceImpl(FontFamily.DefaultFontFamilyName, FontStyle.Normal, FontWeight.Normal, FontStretch.Normal);
-
-            return true;
-        }
+        return glyphTypeface != null;
     }
 
-    internal class HeadlessIconLoaderStub : IPlatformIconLoader
+    public virtual bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, out IGlyphTypeface glyphTypeface)
     {
-        private class IconStub : IWindowIconImpl
-        {
-            public void Save(Stream outputStream)
-            {
+        glyphTypeface = new GlyphTypeface(new HeadlessPlatformTypeface(stream), fontSimulations);
 
-            }
-        }
-        public IWindowIconImpl LoadIcon(string fileName)
-        {
-            return new IconStub();
-        }
+        TryCreateGlyphTypefaceCount++;
 
-        public IWindowIconImpl LoadIcon(Stream stream)
-        {
-            return new IconStub();
-        }
-
-        public IWindowIconImpl LoadIcon(IBitmapImpl bitmap)
-        {
-            return new IconStub();
-        }
+        return true;
     }
 
-    internal class HeadlessScreensStub : ScreensBase<int, PlatformScreen>
+    public bool TryGetFamilyTypefaces(string familyName, [NotNullWhen(true)] out IReadOnlyList<Typeface>? familyTypefaces)
     {
-        protected override IReadOnlyList<int> GetAllScreenKeys() => new[] { 1 };
+        throw new NotImplementedException();
+    }
+}
 
-        protected override PlatformScreen CreateScreenFromKey(int key) => new PlatformScreenStub(key);
+internal class HeadlessFontManagerWithMultipleSystemFontsStub : IFontManagerImpl
+{
+    private readonly string[] _installedFontFamilyNames;
+    private readonly string _defaultFamilyName;
 
-        private class PlatformScreenStub : PlatformScreen
-        {
-            public PlatformScreenStub(int key) : base(new PlatformHandle((nint)key, nameof(HeadlessScreensStub)))
-            {
-                Scaling = 1;
-                Bounds = WorkingArea = new PixelRect(0, 0, 1920, 1280);
-                IsPrimary = true;
-            }
-        }
+    public HeadlessFontManagerWithMultipleSystemFontsStub(
+        string[] installedFontFamilyNames,
+        string defaultFamilyName = "Default")
+    {
+        _installedFontFamilyNames = installedFontFamilyNames;
+        _defaultFamilyName = defaultFamilyName;
     }
 
-    internal static class TextTestHelper
+    public int TryCreateGlyphTypefaceCount { get; private set; }
+
+    string[] IFontManagerImpl.GetInstalledFontFamilyNames(bool checkForUpdates)
     {
-        public static int GetStartCharIndex(ReadOnlyMemory<char> text)
+        return _installedFontFamilyNames;
+    }
+
+    public string GetDefaultFontFamilyName()
+    {
+        return _defaultFamilyName;
+    }
+
+    public bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight, FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
+    {
+        throw new NotImplementedException();
+    }
+
+    public bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
+    {
+        throw new NotImplementedException();
+    }
+
+    public bool TryGetFamilyTypefaces(string familyName, [NotNullWhen(true)] out IReadOnlyList<Typeface>? familyTypefaces)
+    {
+        throw new NotImplementedException();
+    }
+
+    public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight, FontStretch fontStretch, CultureInfo? culture, [NotNullWhen(true)] out IPlatformTypeface? platformTypeface)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+internal class HeadlessIconLoaderStub : IPlatformIconLoader
+{
+    private class IconStub : IWindowIconImpl
+    {
+        public void Save(Stream outputStream)
         {
-            if (!MemoryMarshal.TryGetString(text, out _, out var start, out _))
-                throw new InvalidOperationException("text memory should have been a string");
-            return start;
+
         }
+    }
+    public IWindowIconImpl LoadIcon(string fileName)
+    {
+        return new IconStub();
+    }
+
+    public IWindowIconImpl LoadIcon(Stream stream)
+    {
+        return new IconStub();
+    }
+
+    public IWindowIconImpl LoadIcon(IBitmapImpl bitmap)
+    {
+        return new IconStub();
+    }
+}
+
+internal class HeadlessScreensStub : ScreensBase<int, PlatformScreen>
+{
+    protected override IReadOnlyList<int> GetAllScreenKeys() => new[] { 1 };
+
+    protected override PlatformScreen CreateScreenFromKey(int key) => new PlatformScreenStub(key);
+
+    private class PlatformScreenStub : PlatformScreen
+    {
+        public PlatformScreenStub(int key) : base(new PlatformHandle((nint)key, nameof(HeadlessScreensStub)))
+        {
+            Scaling = 1;
+            Bounds = WorkingArea = new PixelRect(0, 0, 1920, 1280);
+            IsPrimary = true;
+        }
+    }
+}
+
+internal static class TextTestHelper
+{
+    public static int GetStartCharIndex(ReadOnlyMemory<char> text)
+    {
+        if (!MemoryMarshal.TryGetString(text, out _, out var start, out _))
+            throw new InvalidOperationException("text memory should have been a string");
+        return start;
     }
 }

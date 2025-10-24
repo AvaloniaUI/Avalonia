@@ -4,7 +4,6 @@
 
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using Avalonia.Utilities;
 
 namespace Avalonia.Media.Fonts.Tables.Name
@@ -69,7 +68,7 @@ namespace Avalonia.Media.Fonts.Tables.Name
                 {
                     // Get just the first one, just in case.
                     first ??= name;
-                    if (name.Platform == PlatformIDs.Windows)
+                    if (name.Platform == PlatformID.Windows)
                     {
                         // If us not found return the first windows one.
                         firstWindows ??= name;
@@ -99,46 +98,30 @@ namespace Avalonia.Media.Fonts.Tables.Name
 
         public static NameTable? Load(IGlyphTypeface glyphTypeface)
         {
-            if (!glyphTypeface.TryGetTable(Tag, out var table))
+            if (!glyphTypeface.PlatformTypeface.TryGetTable(Tag, out var table))
             {
                 return null;
             }
 
-            using var stream = new MemoryStream(table);
-            using var binaryReader = new BigEndianBinaryReader(stream, false);
+            var reader = new BigEndianBinaryReader(table.Span);
 
-            // Move to start of table.
-            return Load(binaryReader);
-        }
+            reader.ReadUInt16(); // version
+            var count = reader.ReadUInt16();
+            var storageOffset = reader.ReadUInt16();
 
-        public static NameTable Load(BigEndianBinaryReader reader)
-        {
-            var strings = new List<StringLoader>();
-            var format = reader.ReadUInt16();
-            var nameCount = reader.ReadUInt16();
-            var stringOffset = reader.ReadUInt16();
+            var names = new NameRecord[count];
 
-            var names = new NameRecord[nameCount];
-
-            for (var i = 0; i < nameCount; i++)
+            for (var i = 0; i < count; i++)
             {
-                names[i] = NameRecord.Read(reader);
+                var platform = reader.ReadUInt16<PlatformID>();
+                var encodingId = reader.ReadUInt16<EncodingIDs>();
+                var encoding = encodingId.AsEncoding();
+                var languageID = reader.ReadUInt16();
+                var nameID = reader.ReadUInt16<KnownNameIds>();
+                var length = reader.ReadUInt16();
+                var offset = reader.ReadUInt16();
 
-                var sr = names[i].StringReader;
-
-                if (sr is not null)
-                {
-                    strings.Add(sr);
-                }
-            }
-
-            foreach (var readable in strings)
-            {
-                var readableStartOffset = stringOffset + readable.Offset;
-
-                reader.Seek(readableStartOffset, SeekOrigin.Begin);
-
-                readable.LoadValue(reader);
+                names[i] = new NameRecord(table.Slice(storageOffset), platform, languageID, nameID, offset, length, encoding);
             }
 
             return new NameTable(names);

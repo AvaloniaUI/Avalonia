@@ -146,7 +146,7 @@ namespace Avalonia.Media.TextFormatting
             //Move forward until we reach the next base character
             while (enumerator.MoveNext(out grapheme))
             {
-                if (!grapheme.FirstCodepoint.IsWhiteSpace && defaultGlyphTypeface.TryGetGlyph(grapheme.FirstCodepoint, out _))
+                if (!grapheme.FirstCodepoint.IsWhiteSpace && defaultGlyphTypeface.CharacterToGlyphMap.TryGetValue(grapheme.FirstCodepoint, out _))
                 {
                     break;
                 }
@@ -194,15 +194,15 @@ namespace Avalonia.Media.TextFormatting
 
                 if (!currentCodepoint.IsWhiteSpace
                     && defaultGlyphTypeface != null
-                    && defaultGlyphTypeface.TryGetGlyph(currentCodepoint, out _))
+                    && defaultGlyphTypeface.CharacterToGlyphMap.TryGetValue(currentCodepoint, out _))
                 {
                     break;
                 }
 
                 //Stop at the first missing glyph
-                if (!currentCodepoint.IsBreakChar && 
-                    currentCodepoint.GeneralCategory != GeneralCategory.Control && 
-                    !glyphTypeface.TryGetGlyph(currentCodepoint, out _))
+                if (!currentCodepoint.IsBreakChar &&
+                    currentCodepoint.GeneralCategory != GeneralCategory.Control &&
+                    !glyphTypeface.CharacterToGlyphMap.TryGetValue(currentCodepoint, out _))
                 {
                     break;
                 }

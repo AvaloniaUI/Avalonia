@@ -9,6 +9,7 @@
     <ProjectReference Include="../../src/Avalonia.Native/Avalonia.Native.csproj" />
     <ProjectReference Include="../../packages/Avalonia/Avalonia.csproj" />
     <ProjectReference Include="../Avalonia.X11/Avalonia.X11.csproj" />
+    <ProjectReference Include="..\Harfbuzz\Avalonia.Harfbuzz\Avalonia.Harfbuzz.csproj" />
   </ItemGroup>
 
   <Import Project="..\..\build\TrimmingEnable.props" />

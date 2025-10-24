@@ -475,7 +475,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var formatter = new TextFormatterImpl();
 
-                var glyph = typeface.GlyphTypeface.GetGlyph('a');
+                var glyph = typeface.GlyphTypeface.CharacterToGlyphMap['a'];
 
                 var advance = typeface.GlyphTypeface.GetGlyphAdvance(glyph) *
                               (12.0 / typeface.GlyphTypeface.Metrics.DesignEmHeight);
@@ -1253,8 +1253,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         public static IDisposable Start()
         {
             var disposable = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface
-                .With(renderInterface: new PlatformRenderInterface(),
-                    textShaperImpl: new TextShaperImpl()));
+                .With(renderInterface: new PlatformRenderInterface()));
 
             AvaloniaLocator.CurrentMutable
                 .Bind<FontManager>().ToConstant(new FontManager(new CustomFontManagerImpl()));

@@ -105,22 +105,15 @@ namespace Avalonia.Media.Fonts
 
         private void AddGlyphTypeface(IGlyphTypeface glyphTypeface)
         {
-            if (glyphTypeface is IGlyphTypeface2 glyphTypeface2)
+            //Add the TypographicFamilyName to the cache
+            if (!string.IsNullOrEmpty(glyphTypeface.TypographicFamilyName))
             {
-                //Add the TypographicFamilyName to the cache
-                if (!string.IsNullOrEmpty(glyphTypeface2.TypographicFamilyName))
-                {
-                    AddGlyphTypefaceByFamilyName(glyphTypeface2.TypographicFamilyName, glyphTypeface);
-                }
-
-                foreach (var kvp in glyphTypeface2.FamilyNames)
-                {
-                    AddGlyphTypefaceByFamilyName(kvp.Value, glyphTypeface);
-                }
+                AddGlyphTypefaceByFamilyName(glyphTypeface.TypographicFamilyName, glyphTypeface);
             }
-            else
+
+            foreach (var kvp in glyphTypeface.FamilyNames)
             {
-                AddGlyphTypefaceByFamilyName(glyphTypeface.FamilyName, glyphTypeface);
+                AddGlyphTypefaceByFamilyName(kvp.Value, glyphTypeface);
             }
 
             return;

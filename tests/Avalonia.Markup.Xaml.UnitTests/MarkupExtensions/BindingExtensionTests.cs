@@ -134,10 +134,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             public object Foo { get; } = null;
         }
 
-        private static IDisposable StyledWindow(params (string, string)[] assets)
+        private static IDisposable StyledWindow()
         {
             var services = TestServices.StyledWindow.With(
-                assetLoader: new MockAssetLoader(assets),
                 theme: () => new Styles
                 {
                     WindowStyle(),

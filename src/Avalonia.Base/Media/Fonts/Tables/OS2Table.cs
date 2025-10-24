@@ -3,14 +3,13 @@
 // Ported from: https://github.com/SixLabors/Fonts/blob/034a440aece357341fcc6b02db58ffbe153e54ef/src/SixLabors.Fonts
 
 using System;
-using System.IO;
 
 namespace Avalonia.Media.Fonts.Tables
 {
     internal sealed class OS2Table
     {
         internal const string TableName = "OS/2";
-        internal static OpenTypeTag Tag = OpenTypeTag.Parse(TableName);
+        internal static OpenTypeTag Tag { get; } = OpenTypeTag.Parse(TableName);
   
         private readonly byte[] panose;
         private readonly short capHeight;
@@ -54,7 +53,7 @@ namespace Avalonia.Media.Fonts.Tables
             uint unicodeRange3,
             uint unicodeRange4,
             string tag,
-            FontStyleSelection fontStyle,
+            FontSelectionFlags fontStyle,
             ushort firstCharIndex,
             ushort lastCharIndex,
             short typoAscender,
@@ -66,7 +65,7 @@ namespace Avalonia.Media.Fonts.Tables
             this.averageCharWidth = averageCharWidth;
             WeightClass = weightClass;
             WidthClass = widthClass;
-            StyleType = styleType;
+            Type = styleType;
             SubscriptXSize = subscriptXSize;
             SubscriptYSize = subscriptYSize;
             SubscriptXOffset = subscriptXOffset;
@@ -84,7 +83,7 @@ namespace Avalonia.Media.Fonts.Tables
             this.unicodeRange3 = unicodeRange3;
             this.unicodeRange4 = unicodeRange4;
             this.tag = tag;
-            FontStyle = fontStyle;
+            Selection = fontStyle;
             this.firstCharIndex = firstCharIndex;
             this.lastCharIndex = lastCharIndex;
             TypoAscender = typoAscender;
@@ -107,7 +106,7 @@ namespace Avalonia.Media.Fonts.Tables
                 version0Table.averageCharWidth,
                 version0Table.WeightClass,
                 version0Table.WidthClass,
-                version0Table.StyleType,
+                version0Table.Type,
                 version0Table.SubscriptXSize,
                 version0Table.SubscriptYSize,
                 version0Table.SubscriptXOffset,
@@ -125,7 +124,7 @@ namespace Avalonia.Media.Fonts.Tables
                 version0Table.unicodeRange3,
                 version0Table.unicodeRange4,
                 version0Table.tag,
-                version0Table.FontStyle,
+                version0Table.Selection,
                 version0Table.firstCharIndex,
                 version0Table.lastCharIndex,
                 version0Table.TypoAscender,
@@ -159,7 +158,7 @@ namespace Avalonia.Media.Fonts.Tables
         }
 
         [Flags]
-        internal enum FontStyleSelection : ushort
+        internal enum FontSelectionFlags : ushort
         {
             /// <summary>
             /// Font contains italic or oblique characters, otherwise they are upright.
@@ -214,7 +213,7 @@ namespace Avalonia.Media.Fonts.Tables
             // 10–15        <reserved>  Reserved; set to 0.
         }
 
-        public FontStyleSelection FontStyle { get; }
+        public FontSelectionFlags Selection { get; }
 
         public short TypoAscender { get; }
 
@@ -246,27 +245,25 @@ namespace Avalonia.Media.Fonts.Tables
 
         public short SuperscriptYSize { get; }
 
-        public ushort StyleType { get; }
+        public ushort Type { get; }
 
         public ushort WeightClass { get; }
 
         public ushort WidthClass { get; }
 
-        public static OS2Table? Load(IGlyphTypeface glyphTypeface)
+        public static OS2Table? Load(IGlyphTypeface fontFace)
         {
-            if (!glyphTypeface.TryGetTable(Tag, out var table))
+            if (!fontFace.PlatformTypeface.TryGetTable(Tag, out var table))
             {
                 return null;
             }
 
-            using var stream = new MemoryStream(table);
-            using var binaryReader = new BigEndianBinaryReader(stream, false);
+            var binaryReader = new BigEndianBinaryReader(table.Span);
 
-            // Move to start of table.
             return Load(binaryReader);
         }
 
-        public static OS2Table Load(BigEndianBinaryReader reader)
+        private static OS2Table Load(BigEndianBinaryReader reader)
         {
             // Version 1.0
             // Type   | Name                   | Comments
@@ -334,7 +331,7 @@ namespace Avalonia.Media.Fonts.Tables
             uint unicodeRange3 = reader.ReadUInt32(); // Bits 64–95
             uint unicodeRange4 = reader.ReadUInt32(); // Bits 96–127
             string tag = reader.ReadTag();
-            FontStyleSelection fontStyle = reader.ReadUInt16<FontStyleSelection>();
+            FontSelectionFlags fontStyle = reader.ReadUInt16<FontSelectionFlags>();
             ushort firstCharIndex = reader.ReadUInt16();
             ushort lastCharIndex = reader.ReadUInt16();
             short typoAscender = reader.ReadInt16();

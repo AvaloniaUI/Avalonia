@@ -2,7 +2,7 @@
 
 namespace Avalonia.Media.Fonts
 {
-    internal readonly record struct OpenTypeTag
+    public readonly record struct OpenTypeTag
     {
         public static readonly OpenTypeTag None = new OpenTypeTag(0, 0, 0, 0);
         public static readonly OpenTypeTag Max = new OpenTypeTag(byte.MaxValue, byte.MaxValue, byte.MaxValue, byte.MaxValue);

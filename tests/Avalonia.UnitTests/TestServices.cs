@@ -1,14 +1,15 @@
 using System;
-using Moq;
-using Avalonia.Input;
-using Avalonia.Platform;
-using Avalonia.Styling;
-using Avalonia.Themes.Simple;
-using Avalonia.Rendering;
 using System.Reactive.Concurrency;
 using Avalonia.Animation;
+using Avalonia.Harfbuzz;
 using Avalonia.Headless;
+using Avalonia.Input;
+using Avalonia.Platform;
+using Avalonia.Rendering;
+using Avalonia.Styling;
+using Avalonia.Themes.Simple;
 using Avalonia.Threading;
+using Moq;
 
 namespace Avalonia.UnitTests
 {
@@ -22,20 +23,21 @@ namespace Avalonia.UnitTests
             theme: () => CreateSimpleTheme(),
             dispatcherImpl: new NullDispatcherImpl(),
             fontManagerImpl: new HeadlessFontManagerStub(),
-            textShaperImpl: new HeadlessTextShaperStub(),
+            textShaperImpl: new HarfBuzzTextShaper(),
             windowingPlatform: new MockWindowingPlatform());
 
         public static readonly TestServices MockPlatformRenderInterface = new TestServices(
             assetLoader: new StandardAssetLoader(),
             renderInterface: new HeadlessPlatformRenderInterface(),
             fontManagerImpl: new HeadlessFontManagerStub(),
-            textShaperImpl: new HeadlessTextShaperStub());
+            textShaperImpl: new HarfBuzzTextShaper());
 
         public static readonly TestServices MockPlatformWrapper = new TestServices(
             platform: Mock.Of<IRuntimePlatform>());
 
         public static readonly TestServices MockThreadingInterface = new TestServices(
-            dispatcherImpl: new NullDispatcherImpl());
+            dispatcherImpl: new NullDispatcherImpl(),
+            assetLoader: new StandardAssetLoader());
 
         public static readonly TestServices MockWindowingPlatform = new TestServices(
             windowingPlatform: new MockWindowingPlatform());
@@ -47,7 +49,7 @@ namespace Avalonia.UnitTests
             assetLoader: new StandardAssetLoader(),
             renderInterface: new HeadlessPlatformRenderInterface(),
             fontManagerImpl: new HeadlessFontManagerStub(),
-            textShaperImpl: new HeadlessTextShaperStub());
+            textShaperImpl: new HarfBuzzTextShaper());
 
         public static readonly TestServices FocusableWindow = new TestServices(
             keyboardDevice: () => new KeyboardDevice(),
@@ -60,15 +62,15 @@ namespace Avalonia.UnitTests
             theme: () => CreateSimpleTheme(),
             dispatcherImpl: new NullDispatcherImpl(),
             fontManagerImpl: new HeadlessFontManagerStub(),
-            textShaperImpl: new HeadlessTextShaperStub(),
+            textShaperImpl: new HarfBuzzTextShaper(),
             windowingPlatform: new MockWindowingPlatform());
-        
+
         public static readonly TestServices TextServices = new TestServices(
             assetLoader: new StandardAssetLoader(),
             renderInterface: new HeadlessPlatformRenderInterface(),
-            fontManagerImpl: new HarfBuzzFontManagerImpl(),
-            textShaperImpl: new HarfBuzzTextShaperImpl());
-        
+            fontManagerImpl: new HeadlessFontManagerImpl(),
+            textShaperImpl: new HarfBuzzTextShaper());
+
         public TestServices(
             IAssetLoader assetLoader = null,
             IInputManager inputManager = null,

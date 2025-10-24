@@ -89,11 +89,7 @@ namespace Avalonia.Skia.UnitTests.Media
 
                 Assert.Equal("Manrope Light", glyphTypeface.FamilyName);
 
-                Assert.True(glyphTypeface is IGlyphTypeface2);
-
-                var glyphTypeface2 = (IGlyphTypeface2)glyphTypeface;
-
-                Assert.Equal("Manrope", glyphTypeface2.TypographicFamilyName);
+                Assert.Equal("Manrope", glyphTypeface.TypographicFamilyName);
             }
         }
 

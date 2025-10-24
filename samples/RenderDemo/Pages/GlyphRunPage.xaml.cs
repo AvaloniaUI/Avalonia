@@ -69,7 +69,7 @@ namespace RenderDemo.Pages
 
             _fontSize += _direction;
 
-            _glyphIndices[0] = _glyphTypeface.GetGlyph(c);
+            _glyphIndices[0] = _glyphTypeface.CharacterToGlyphMap[c];
 
             _characters[0] = c;
 
@@ -128,7 +128,7 @@ namespace RenderDemo.Pages
 
             _fontSize += _direction;
 
-            _glyphIndices[0] = _glyphTypeface.GetGlyph(c);
+            _glyphIndices[0] = _glyphTypeface.CharacterToGlyphMap[c];
 
             _characters[0] = c;
 
