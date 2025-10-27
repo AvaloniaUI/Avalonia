@@ -1,4 +1,7 @@
-﻿using System.Security;
+﻿using System;
+using System.Collections.Generic;
+using System.Security;
+using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
 using Avalonia.Platform.Storage.FileIO;
 using Avalonia.Tizen.Platform;
@@ -9,9 +12,48 @@ internal class TizenStorageProvider : IStorageProvider
 {
     public bool CanOpen => true;
 
+    Task<IReadOnlyList<IStorageFile>> IStorageProvider.OpenFilePickerAsync(FilePickerOpenOptions options)
+    {
+        return OpenFilePickerAsync(options);
+    }
+
     public bool CanSave => false;
+    Task<IStorageFile?> IStorageProvider.SaveFilePickerAsync(FilePickerSaveOptions options)
+    {
+        return SaveFilePickerAsync(options);
+    }
+
+    public Task<SaveFilePickerResult> SaveFilePickerWithResultAsync(FilePickerSaveOptions options)
+    {
+        throw new NotImplementedException();
+    }
 
     public bool CanPickFolder => false;
+
+    Task<IReadOnlyList<IStorageFolder>> IStorageProvider.OpenFolderPickerAsync(FolderPickerOpenOptions options)
+    {
+        return OpenFolderPickerAsync(options);
+    }
+
+    Task<IStorageBookmarkFile?> IStorageProvider.OpenFileBookmarkAsync(string bookmark)
+    {
+        return OpenFileBookmarkAsync(bookmark);
+    }
+
+    Task<IStorageBookmarkFolder?> IStorageProvider.OpenFolderBookmarkAsync(string bookmark)
+    {
+        return OpenFolderBookmarkAsync(bookmark);
+    }
+
+    Task<IStorageFolder?> IStorageProvider.TryGetFolderFromPathAsync(Uri folderPath)
+    {
+        return TryGetFolderFromPathAsync(folderPath);
+    }
+
+    Task<IStorageFolder?> IStorageProvider.TryGetWellKnownFolderAsync(WellKnownFolder wellKnownFolder)
+    {
+        return TryGetWellKnownFolderAsync(wellKnownFolder);
+    }
 
     public Task<IStorageBookmarkFile?> OpenFileBookmarkAsync(string bookmark)
     {
