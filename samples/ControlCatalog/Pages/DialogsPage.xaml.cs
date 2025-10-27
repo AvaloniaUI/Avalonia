@@ -276,6 +276,48 @@ namespace ControlCatalog.Pages
 
                 await SetPickerResult(file is null ? null : new[] { file });
             };
+            this.Get<Button>("SaveFilePickerWithResult").Click += async delegate
+            {
+                var result = await GetStorageProvider().SaveFilePickerWithResultAsync(new FilePickerSaveOptions()
+                {
+                    Title = "Save file",
+                    FileTypeChoices = [FilePickerFileTypes.Json, FilePickerFileTypes.Xml],
+                    SuggestedStartLocation = lastSelectedDirectory,
+                    SuggestedFileName = "FileName",
+                    ShowOverwritePrompt = true
+                });
+
+                try
+                {
+                    if (result.File is { } file)
+                    {
+                        // Sync disposal of StreamWriter is not supported on WASM
+#if NET6_0_OR_GREATER
+                        await using var stream = await file.OpenWriteAsync();
+                        await using var writer = new System.IO.StreamWriter(stream);
+#else
+                        using var stream = await file.OpenWriteAsync();
+                        using var writer = new System.IO.StreamWriter(stream);
+#endif
+                        if (result.SelectedFileType == FilePickerFileTypes.Xml)
+                        {
+                            await writer.WriteLineAsync("<sample>Test</sample>");
+                        }
+                        else
+                        {
+                            await writer.WriteLineAsync("""{ "sample": "Test" }""");
+                        }
+
+                        SetFolder(await result.File.GetParentAsync());
+                    }
+                }
+                catch (Exception ex)
+                {
+                    openedFileContent.Text = ex.ToString();
+                }
+
+                await SetPickerResult(result.File is null ? null : new[] { result.File }, result.SelectedFileType);
+            };
             this.Get<Button>("OpenFolderPicker").Click += async delegate
             {
                 var folders = await GetStorageProvider().OpenFolderPickerAsync(new FolderPickerOpenOptions()
@@ -341,15 +383,16 @@ namespace ControlCatalog.Pages
                 currentFolderBox.Text = folder?.Path is { IsAbsoluteUri: true } abs ? abs.LocalPath : folder?.Path?.ToString();
                 ignoreTextChanged = false;
             }
-            async Task SetPickerResult(IReadOnlyCollection<IStorageItem>? items)
+            async Task SetPickerResult(IReadOnlyCollection<IStorageItem>? items, FilePickerFileType? selectedType = null)
             {
                 items ??= Array.Empty<IStorageItem>();
                 bookmarkContainer.Text = items.FirstOrDefault(f => f.CanBookmark) is { } f ? await f.SaveBookmarkAsync() : "Can't bookmark";
                 var mappedResults = new List<string>();
 
+                string resultText = "";
                 if (items.FirstOrDefault() is IStorageItem item)
                 {
-                    var resultText = item is IStorageFile ? "File:" : "Folder:";
+                    resultText += item is IStorageFile ? "File:" : "Folder:";
                     resultText += Environment.NewLine;
 
                     var props = await item.GetBasicPropertiesAsync();
@@ -373,8 +416,6 @@ namespace ControlCatalog.Pages
                             resultText += ex.ToString();
                         }
                     }
-
-                    openedFileContent.Text = resultText;
 
                     if (item is IStorageFolder storageFolder)
                     {
@@ -404,6 +445,12 @@ namespace ControlCatalog.Pages
                     lastSelectedItem = item;
                 }
 
+                if (selectedType is not null)
+                {
+                    resultText += Environment.NewLine + "Selected type: " + selectedType.Name;
+                }
+
+                openedFileContent.Text = resultText;
                 results.ItemsSource = mappedResults;
                 resultsVisible.IsVisible = mappedResults.Any();
             }
