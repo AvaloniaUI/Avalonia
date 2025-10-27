@@ -6,6 +6,7 @@
 
     <Button Click="CopyText" Content="Copy text to clipboard" />
     <Button Click="PasteText" Content="Paste text from clipboard" />
+    <Button Click="PasteImage" Content="Paste image from clipboard" />
     <Button Click="CopyFiles" Content="Copy files to clipboard" />
     <Button Click="PasteFiles" Content="Paste files from clipboard" />
     <Button Click="CopyBinaryData" Content="Copy bytes to clipboard" />
@@ -20,5 +21,9 @@
              MinHeight="100"
              AcceptsReturn="True"
              Watermark="Text to copy of file names per line" />
+    <Viewbox Width="420" Height="360">
+      <Image x:Name="ClipboardImage"
+      />
+    </Viewbox>
   </StackPanel>
 </UserControl>

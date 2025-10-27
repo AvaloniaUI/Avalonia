@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
@@ -8,9 +9,9 @@ using Avalonia.Logging;
 using Avalonia.Platform.Storage;
 using Avalonia.Platform.Storage.FileIO;
 using Avalonia.Utilities;
+using static Avalonia.Win32.Interop.UnmanagedMethods;
 using FORMATETC = Avalonia.Win32.Interop.UnmanagedMethods.FORMATETC;
 using STGMEDIUM = Avalonia.Win32.Interop.UnmanagedMethods.STGMEDIUM;
-using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia.Win32;
 
@@ -67,6 +68,14 @@ internal static class OleDataObjectHelper
                 .Select(fileName => StorageProviderHelpers.TryCreateBclStorageItem(fileName) as IStorageItem)
                 .Where(f => f is not null)
                 .ToArray();
+        }
+
+        if(format is DataFormat<Avalonia.Media.IImage>)
+        {
+            var data = ReadBytesFromHGlobal(hGlobal);
+            using var stream = new MemoryStream(data);
+
+            return new Avalonia.Media.Imaging.Bitmap(stream);
         }
 
         if (format is DataFormat<string>)

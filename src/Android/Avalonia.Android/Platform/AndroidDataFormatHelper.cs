@@ -1,6 +1,7 @@
 ﻿using System;
 using Android.Content;
 using Avalonia.Input;
+using Avalonia.Media;
 
 namespace Avalonia.Android.Platform;
 
@@ -18,6 +19,9 @@ internal static class AndroidDataFormatHelper
 
         if (mimeType.StartsWith("text/", StringComparison.OrdinalIgnoreCase))
             return DataFormat.FromSystemName<string>(mimeType, AppPrefix);
+
+        if (mimeType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+            return DataFormat.FromSystemName<IImage>(mimeType, AppPrefix);
 
         return DataFormat.FromSystemName<byte[]>(mimeType, AppPrefix);
     }

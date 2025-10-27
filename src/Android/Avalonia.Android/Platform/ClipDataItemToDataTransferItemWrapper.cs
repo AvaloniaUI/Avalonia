@@ -1,9 +1,9 @@
-﻿using System;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Avalonia.Android.Platform.Storage;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.Media;
 
 namespace Avalonia.Android.Platform;
 
@@ -31,6 +31,29 @@ internal sealed class ClipDataItemToDataTransferItemWrapper(ClipData.Item item, 
             return _item.Uri is { Scheme: "file" or "content" } fileUri && _owner.Context is Activity activity ?
                 AndroidStorageItem.CreateItem(activity, fileUri) :
                 null;
+        }
+
+        if (format is DataFormat<IImage>)
+        {
+            var file = item.Uri is { Scheme: "file" or "content" } fileUri && _owner.Context is Activity activity ?
+                AndroidStorageFile.CreateItem(activity, fileUri) :
+                null;
+
+            IImage? image = null;
+
+            if(file is AndroidStorageFile storageFile)
+            {
+                using var stream = storageFile.OpenReadAsync().Result;
+
+                if (stream != null)
+                {
+                    image = new global::Avalonia.Media.Imaging.Bitmap(stream);
+                }
+            }
+
+            file?.Dispose();
+
+            return image;
         }
 
         if (format is DataFormat<string>)
