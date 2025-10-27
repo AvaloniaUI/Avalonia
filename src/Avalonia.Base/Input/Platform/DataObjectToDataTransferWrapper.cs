@@ -28,6 +28,7 @@ internal sealed class DataObjectToDataTransferWrapper(IDataObject dataObject)
         var items = new List<PlatformDataTransferItem>();
         var nonFileFormats = new List<DataFormat>();
         var nonFileFormatStrings = new List<string>();
+        var hasFiles = false;
 
         foreach (var formatString in DataObject.GetDataFormats())
         {
@@ -35,18 +36,28 @@ internal sealed class DataObjectToDataTransferWrapper(IDataObject dataObject)
 
             if (formatString == DataFormats.Files)
             {
+                if (hasFiles)
+                    continue;
+
                 // This is not ideal as we're reading the filenames ahead of time to generate the appropriate items.
                 // We don't really care about that for this legacy wrapper.
                 if (DataObject.Get(formatString) is IEnumerable<IStorageItem> storageItems)
                 {
+                    hasFiles = true;
+
                     foreach (var storageItem in storageItems)
                         items.Add(PlatformDataTransferItem.Create(DataFormat.File, storageItem));
                 }
             }
             else if (formatString == DataFormats.FileNames)
             {
+                if (hasFiles)
+                    continue;
+
                 if (DataObject.Get(formatString) is IEnumerable<string> fileNames)
                 {
+                    hasFiles = true;
+
                     foreach (var fileName in fileNames)
                     {
                         if (StorageProviderHelpers.TryCreateBclStorageItem(fileName) is { } storageItem)
