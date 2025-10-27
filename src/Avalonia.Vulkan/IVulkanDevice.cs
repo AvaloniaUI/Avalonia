@@ -37,5 +37,5 @@ public interface IVulkanPlatformGraphicsContext : IPlatformGraphicsContext
     internal VkInstance InstanceHandle { get; }
     internal VkQueue MainQueueHandle { get; }
     internal uint GraphicsQueueFamilyIndex { get; }
-    IVulkanRenderTarget CreateRenderTarget(IEnumerable<object> surfaces);
+    IVulkanRenderTarget? CreateRenderTarget(IEnumerable<object> surfaces);
 }

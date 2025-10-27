@@ -83,6 +83,7 @@ public class VulkanPlatformGraphics : IPlatformGraphics
         try
         {
             instance = VulkanInstance.Create(options.VulkanInstanceCreationOptions ?? new(),
+                options.VulkanDeviceCreationOptions ?? new(),
                 platformOptions);
 
             var devOpts = options.VulkanDeviceCreationOptions ?? new();

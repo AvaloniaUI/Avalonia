@@ -24,7 +24,11 @@ internal unsafe partial class VulkanDevice
         api.EnumeratePhysicalDevices(vkInstance, ref deviceCount, devices)
             .ThrowOnError("vkEnumeratePhysicalDevices");
 
-        var surfaceForProbePtr = platformOptions.DeviceCheckSurfaceFactory?.Invoke(api.Instance);
+        var surfaceForProbePtr =
+            api.IsGetPhysicalDeviceSurfaceSupportKHRAvailable
+                ? platformOptions.DeviceCheckSurfaceFactory?.Invoke(api.Instance)
+                : null;
+        
         var surfaceForProbe = surfaceForProbePtr.HasValue && surfaceForProbePtr.Value != 0
             ? new VkSurfaceKHR(surfaceForProbePtr.Value)
             : (VkSurfaceKHR?)null;
@@ -66,10 +70,11 @@ internal unsafe partial class VulkanDevice
         };
 
         var enableExtensions =
-            new HashSet<string>(options.DeviceExtensions.Concat(VulkanExternalObjectsFeature.RequiredDeviceExtensions));
+            new HashSet<string>(options.DeviceExtensions.Concat(VulkanExternalObjectsFeature.RequiredDeviceExtensions)
+                .Append(VK_KHR_swapchain));
 
         var enabledExtensions = enableExtensions
-            .Intersect(dev.Extensions).Append(VK_KHR_swapchain).Distinct().ToArray();
+            .Intersect(dev.Extensions).Distinct().ToArray();
 
         using var pEnabledExtensions = new Utf8BufferArray(enabledExtensions);
 
@@ -127,9 +132,14 @@ internal unsafe partial class VulkanDevice
         instance.GetPhysicalDeviceProperties(physicalDevice, out var properties);
 
         var supportedExtensions = GetDeviceExtensions(instance, physicalDevice);
-        if (!supportedExtensions.Contains(VK_KHR_swapchain))
-            return null;
-        
+        var deviceSupportsSwapchain = supportedExtensions.Contains(VK_KHR_swapchain);
+        if (!deviceSupportsSwapchain)
+        {
+            if (!options.AllowDevicesWithoutKhrSurfaces)
+                return null;
+            surface = new();
+        }
+
         uint familyCount = 0;
         instance.GetPhysicalDeviceQueueFamilyProperties(physicalDevice, ref familyCount, null);
         var familyProperties = stackalloc VkQueueFamilyProperties[(int)familyCount];

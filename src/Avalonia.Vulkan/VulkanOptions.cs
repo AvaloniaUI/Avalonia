@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Avalonia.Metadata;
 
 namespace Avalonia.Vulkan;
 
@@ -60,11 +61,19 @@ public class VulkanDeviceCreationOptions
     public bool PreferDiscreteGpu { get; set; }
     
     public bool RequireComputeBit { get; set; }
+    
+    /// <summary>
+    /// Allows selection of devices that lack VK_KHR_surface-related extensions reported by platform backend
+    /// This might be useful for scenarios where WSI is missing for your display server for whatever reason
+    /// </summary>
+    public bool AllowDevicesWithoutKhrSurfaces { get; set; }
 }
 
+[Unstable]
 public class VulkanPlatformSpecificOptions
 {
     public IList<string> RequiredInstanceExtensions { get; set; } = new List<string>();
+    public IList<string> RequiredKhrSurfaceExtensions { get; set; } = new List<string>();
     public VkGetInstanceProcAddressDelegate? GetProcAddressDelegate { get; set; }
     public Func<IVulkanInstance, ulong>? DeviceCheckSurfaceFactory { get; set; }
     public Dictionary<Type, object> PlatformFeatures { get; set; } = new();
