@@ -1,9 +1,10 @@
-﻿using Android.App;
+﻿using System.IO;
+using Android.App;
 using Android.Content;
 using Avalonia.Android.Platform.Storage;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
-using Avalonia.Media;
+using Avalonia.Media.Imaging;
 
 namespace Avalonia.Android.Platform;
 
@@ -26,38 +27,57 @@ internal sealed class ClipDataItemToDataTransferItemWrapper(ClipData.Item item, 
         if (DataFormat.Text.Equals(format))
             return _item.CoerceToText(_owner.Context);
 
-        if (DataFormat.File.Equals(format))
-        {
-            return _item.Uri is { Scheme: "file" or "content" } fileUri && _owner.Context is Activity activity ?
-                AndroidStorageItem.CreateItem(activity, fileUri) :
-                null;
-        }
+        if (format is DataFormat<string>)
+            return TryGetAsString();
 
-        if (format is DataFormat<IImage>)
-        {
-            var file = item.Uri is { Scheme: "file" or "content" } fileUri && _owner.Context is Activity activity ?
+        var file = item.Uri is { Scheme: "file" or "content" } fileUri && _owner.Context is Activity activity ?
                 AndroidStorageFile.CreateItem(activity, fileUri) :
                 null;
 
-            IImage? image = null;
-
-            if(file is AndroidStorageFile storageFile)
+        if(file != null)
+        {
+            if (DataFormat.File.Equals(format))
             {
-                using var stream = storageFile.OpenReadAsync().Result;
-
-                if (stream != null)
-                {
-                    image = new global::Avalonia.Media.Imaging.Bitmap(stream);
-                }
+                return file;
             }
 
-            file?.Dispose();
+            try
+            {
+                if (DataFormat.Image.Equals(format))
+                {
+                    Bitmap? image = null;
 
-            return image;
+                    if (file is AndroidStorageFile storageFile)
+                    {
+                        using var stream = storageFile.OpenReadAsync().Result;
+
+                        if (stream != null)
+                        {
+                            image = new Bitmap(stream);
+                        }
+                    }
+
+                    return image;
+                }
+
+                if (format is DataFormat<byte[]>)
+                {
+                    if (file is AndroidStorageFile storageFile)
+                    {
+                        using var stream = storageFile.OpenReadAsync().Result;
+
+                        using var mem = new MemoryStream();
+                        stream.CopyTo(mem);
+                        return mem.ToArray();
+                    }
+                }
+            }
+            finally
+            {
+
+                file?.Dispose();
+            }
         }
-
-        if (format is DataFormat<string>)
-            return TryGetAsString();
 
         return null;
     }

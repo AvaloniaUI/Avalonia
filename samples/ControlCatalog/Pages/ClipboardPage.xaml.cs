@@ -10,6 +10,7 @@ using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 
@@ -60,29 +61,12 @@ namespace ControlCatalog.Pages
             if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
             {
                 using var data = await clipboard.TryGetDataAsync();
-                var imageFormats = data?.Formats.Where(x => x is DataFormat<IImage>);
-                if (imageFormats?.Count() > 0)
+                Bitmap? source = null;
+                if (data != null)
                 {
-                    // prefer png, then jpg if not available
-                    IImage? source = null;
-
-                    var preferredFormat = imageFormats.Where(x => x.Identifier == "image/png").FirstOrDefault();
-                    if (preferredFormat == null)
-                    {
-                        preferredFormat = imageFormats.Where(x => x.Identifier == "image/jpg" || x.Identifier == "image/jpeg").FirstOrDefault();
-                    }
-                    if(preferredFormat == null)
-                    {
-                        // pick the first available image format
-                        preferredFormat = imageFormats.FirstOrDefault();
-                    }
-
-                    if (preferredFormat != null)
-                    {
-                        source = await data!.TryGetValueAsync<IImage>((preferredFormat as DataFormat<IImage>)!);
-                        ClipboardImage.Source = source;
-                    }
+                    source = await data!.TryGetValueAsync(DataFormat.Image);
                 }
+                ClipboardImage.Source = source;
             }
         }
 

@@ -70,7 +70,7 @@ internal static class OleDataObjectHelper
                 .ToArray();
         }
 
-        if(format is DataFormat<Avalonia.Media.IImage>)
+        if(DataFormat.Image.Equals(format))
         {
             var data = ReadBytesFromHGlobal(hGlobal);
             using var stream = new MemoryStream(data);

@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
 using Avalonia.Input;
-using Avalonia.Media;
 using Avalonia.Utilities;
 using Avalonia.Win32.Interop;
 
@@ -43,31 +42,27 @@ namespace Avalonia.Win32
                 }
 
                 var systemName = GetFormatSystemName(id);
-                var format = GetDataFormatForName(systemName);
+                var format = DataFormat.FromSystemName<byte[]>(systemName, AppPrefix);
                 AddDataFormat(format, id);
                 return format;
             }
-        }
-
-        private static DataFormat GetDataFormatForName(string name)
-        {
-            return name switch
-            {
-                "image/jpg" or 
-                "image/jpeg" or 
-                "image/png" or 
-                "image/webp" or 
-                "image/ico" or 
-                "image/bmp"
-                    => DataFormat.FromSystemName<IImage>(name, AppPrefix),
-                _ => DataFormat.FromSystemName<byte[]>(name, AppPrefix),
-            };
         }
 
         public static ushort GetFormatId(DataFormat format)
         {
             lock (s_formats)
             {
+                if (DataFormat.Image.Equals(format))
+                {
+                    var imageFormat = s_formats.Find(x => x.Format.Identifier == "image/png");
+                    if (imageFormat.Format == null)
+                        imageFormat = s_formats.Find(x => x.Format.Identifier == "image/jpg" || x.Format.Identifier == "image/jpeg");
+                    if (imageFormat.Format == null)
+                        imageFormat = s_formats.Find(x => x.Format.Identifier == "image/bmp");
+
+                    return imageFormat.Id;
+                }
+
                 for (var i = 0; i < s_formats.Count; ++i)
                 {
                     if (s_formats[i].Format.Equals(format))
