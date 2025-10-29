@@ -1352,8 +1352,14 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 .With(renderInterface: new PlatformRenderInterface(),
                     textShaperImpl: new TextShaperImpl()));
 
+            var customFontManagerImpl = new CustomFontManagerImpl();
+
+            var fontManager = new FontManager(customFontManagerImpl);
+
+            fontManager.AddFontCollection(customFontManagerImpl.SystemFonts);
+
             AvaloniaLocator.CurrentMutable
-                .Bind<FontManager>().ToConstant(new FontManager(new CustomFontManagerImpl()));
+                .Bind<FontManager>().ToConstant(fontManager);
 
             return disposable;
         }

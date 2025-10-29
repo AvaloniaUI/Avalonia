@@ -14,11 +14,8 @@ namespace Avalonia.Skia.UnitTests.Media
 {
     public class EmbeddedFontCollectionTests
     {
-        private const string s_notoMono =
-            "resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Noto Mono";
-
-        private const string s_manrope = "resm:Avalonia.Skia.UnitTests.Fonts?assembly=Avalonia.Skia.UnitTests#Manrope";
-
+        private const string s_fontAssets =
+            "resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests";
 
         [InlineData(FontWeight.SemiLight, FontStyle.Normal)]
         [InlineData(FontWeight.Bold, FontStyle.Italic)]
@@ -28,7 +25,8 @@ namespace Avalonia.Skia.UnitTests.Media
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
-                var source = new Uri(s_notoMono, UriKind.Absolute);
+                var key = new Uri("fonts:testFonts", UriKind.Absolute);
+                var source = new Uri(s_fontAssets, UriKind.Absolute);
 
                 var fontCollection = new TestEmbeddedFontCollection(source, source);
 
@@ -47,9 +45,10 @@ namespace Avalonia.Skia.UnitTests.Media
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
-                var source = new Uri(s_notoMono, UriKind.Absolute);
+                var key = new Uri("fonts:testFonts", UriKind.Absolute);
+                var source = new Uri(s_fontAssets, UriKind.Absolute);
 
-                var fontCollection = new TestEmbeddedFontCollection(source, source);
+                var fontCollection = new TestEmbeddedFontCollection(key, source);
 
                 fontCollection.Initialize(new CustomFontManagerImpl());
 
@@ -62,9 +61,10 @@ namespace Avalonia.Skia.UnitTests.Media
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
-                var source = new Uri("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#T", UriKind.Absolute);
+                var key = new Uri("fonts:testFonts", UriKind.Absolute);
+                var source = new Uri(s_fontAssets, UriKind.Absolute);
 
-                var fontCollection = new TestEmbeddedFontCollection(source, source);
+                var fontCollection = new TestEmbeddedFontCollection(key, source);
 
                 fontCollection.Initialize(new CustomFontManagerImpl());
 
@@ -79,9 +79,10 @@ namespace Avalonia.Skia.UnitTests.Media
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
-                var source = new Uri(s_manrope, UriKind.Absolute);
+                var key = new Uri("fonts:testFonts", UriKind.Absolute);
+                var source = new Uri(s_fontAssets, UriKind.Absolute);
 
-                var fontCollection = new TestEmbeddedFontCollection(source, source);
+                var fontCollection = new TestEmbeddedFontCollection(key, source);
 
                 fontCollection.Initialize(new CustomFontManagerImpl());
 
@@ -102,9 +103,10 @@ namespace Avalonia.Skia.UnitTests.Media
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
-                var source = new Uri(s_manrope, UriKind.Absolute);
+                var key = new Uri("fonts:testFonts", UriKind.Absolute);
+                var source = new Uri(s_fontAssets, UriKind.Absolute);
 
-                var fontCollection = new TestEmbeddedFontCollection(source, source, true);
+                var fontCollection = new TestEmbeddedFontCollection(key, source, true);
 
                 fontCollection.Initialize(new CustomFontManagerImpl());
 

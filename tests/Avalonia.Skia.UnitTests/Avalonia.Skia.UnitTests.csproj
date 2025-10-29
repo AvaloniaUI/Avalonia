@@ -20,4 +20,9 @@
     <ProjectReference Include="..\..\src\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
     <ProjectReference Include="..\Avalonia.UnitTests\Avalonia.UnitTests.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="..\Avalonia.RenderTests\Assets\Inter-Regular.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
 </Project>
