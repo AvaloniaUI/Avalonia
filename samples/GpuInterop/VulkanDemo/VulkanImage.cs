@@ -25,6 +25,7 @@ public unsafe class VulkanImage : IDisposable
         private readonly PhysicalDevice _physicalDevice;
         private readonly VulkanCommandBufferPool _commandBufferPool;
         private ImageLayout _currentLayout;
+        private bool _ownedByInterop;
         private AccessFlags _currentAccessFlags;
         private ImageUsageFlags _imageUsageFlags { get; }
         private ImageView _imageView { get; set; }
@@ -120,16 +121,18 @@ public unsafe class VulkanImage : IDisposable
                 Api.GetImageMemoryRequirements(_device, InternalHandle,
                     out var memoryRequirements);
 
-                var dedicatedAllocation = new MemoryDedicatedAllocateInfoKHR
+                var dedicatedAllocationStruct = new MemoryDedicatedAllocateInfoKHR
                 {
                     SType = StructureType.MemoryDedicatedAllocateInfoKhr, Image = image
                 };
+                var dedicatedAllocationPtr = &dedicatedAllocationStruct;
+                dedicatedAllocationPtr = null;
 
                 var fdExport = new ExportMemoryAllocateInfo
                 {
                     HandleTypes = handleType,
                     SType = StructureType.ExportMemoryAllocateInfo,
-                    PNext = &dedicatedAllocation
+                    PNext = dedicatedAllocationPtr
                 };
 
                 ImportMemoryWin32HandleInfoKHR handleImport = default;
@@ -141,7 +144,7 @@ public unsafe class VulkanImage : IDisposable
 
                     handleImport = new ImportMemoryWin32HandleInfoKHR
                     {
-                        PNext = &dedicatedAllocation,
+                        PNext = dedicatedAllocationPtr,
                         SType = StructureType.ImportMemoryWin32HandleInfoKhr,
                         HandleType = ExternalMemoryHandleTypeFlags.D3D11TextureBit,
                         Handle = dxgi.CreateSharedHandle(null, SharedResourceFlags.Read | SharedResourceFlags.Write),
@@ -199,7 +202,7 @@ public unsafe class VulkanImage : IDisposable
 
             _currentLayout = ImageLayout.Undefined;
 
-            TransitionLayout(ImageLayout.ColorAttachmentOptimal, AccessFlags.NoneKhr);
+            TransitionLayout(ImageLayout.ColorAttachmentOptimal, AccessFlags.NoneKhr, false);
         }
 
         public int ExportFd()
@@ -279,36 +282,44 @@ public unsafe class VulkanImage : IDisposable
         
         internal void TransitionLayout(CommandBuffer commandBuffer,
             ImageLayout fromLayout, AccessFlags fromAccessFlags,
-            ImageLayout destinationLayout, AccessFlags destinationAccessFlags)
+            ImageLayout destinationLayout, AccessFlags destinationAccessFlags, bool transferToInterop)
         {
+            var direction =
+                transferToInterop && !_ownedByInterop
+                    ? InteropTransferDirection.AppToAvalonia
+                    : !transferToInterop && _ownedByInterop
+                        ? InteropTransferDirection.AvaloniaToApp
+                        : InteropTransferDirection.None;
+            
             VulkanMemoryHelper.TransitionLayout(Api, commandBuffer, InternalHandle,
                 fromLayout,
                 fromAccessFlags,
                 destinationLayout, destinationAccessFlags,
-                MipLevels);
-            
+                MipLevels, _vk.QueueFamilyIndex, direction);
+
+            _ownedByInterop = transferToInterop;
             _currentLayout = destinationLayout;
             _currentAccessFlags = destinationAccessFlags;
         }
 
         internal void TransitionLayout(CommandBuffer commandBuffer,
-            ImageLayout destinationLayout, AccessFlags destinationAccessFlags)
+            ImageLayout destinationLayout, AccessFlags destinationAccessFlags, bool transferToInterop)
             => TransitionLayout(commandBuffer, _currentLayout, _currentAccessFlags, destinationLayout,
-                destinationAccessFlags);
+                destinationAccessFlags, transferToInterop);
         
         
-        internal void TransitionLayout(ImageLayout destinationLayout, AccessFlags destinationAccessFlags)
+        internal void TransitionLayout(ImageLayout destinationLayout, AccessFlags destinationAccessFlags, bool transferToInterop)
         {
             var commandBuffer = _commandBufferPool.CreateCommandBuffer();
             commandBuffer.BeginRecording();
-            TransitionLayout(commandBuffer.InternalHandle, destinationLayout, destinationAccessFlags);
+            TransitionLayout(commandBuffer.InternalHandle, destinationLayout, destinationAccessFlags, transferToInterop);
             commandBuffer.EndRecording();
             commandBuffer.Submit();
         }
 
-        public void TransitionLayout(uint destinationLayout, uint destinationAccessFlags)
+        public void TransitionLayout(uint destinationLayout, uint destinationAccessFlags, bool transferToInterop)
         {
-            TransitionLayout((ImageLayout)destinationLayout, (AccessFlags)destinationAccessFlags);
+            TransitionLayout((ImageLayout)destinationLayout, (AccessFlags)destinationAccessFlags, transferToInterop);
         }
 
         public unsafe void Dispose()

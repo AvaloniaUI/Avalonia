@@ -89,7 +89,7 @@ class VulkanSwapchainImage : ISwapchainImage
 
         _image.TransitionLayout(buffer.InternalHandle, 
             ImageLayout.Undefined, AccessFlags.None,
-            ImageLayout.ColorAttachmentOptimal, AccessFlags.ColorAttachmentReadBit);
+            ImageLayout.ColorAttachmentOptimal, AccessFlags.ColorAttachmentReadBit, false);
 
         if(_image.IsDirectXBacked)
             buffer.Submit(null,null,null, null, new VulkanCommandBufferPool.VulkanCommandBuffer.KeyedMutexSubmitInfo
@@ -132,7 +132,7 @@ class VulkanSwapchainImage : ISwapchainImage
     {
         var buffer = _vk.Pool.CreateCommandBuffer();
         buffer.BeginRecording();
-        _image.TransitionLayout(buffer.InternalHandle, ImageLayout.TransferSrcOptimal, AccessFlags.TransferWriteBit);
+        _image.TransitionLayout(buffer.InternalHandle, ImageLayout.TransferSrcOptimal, AccessFlags.TransferWriteBit, true);
 
 
         if (_image.IsDirectXBacked)

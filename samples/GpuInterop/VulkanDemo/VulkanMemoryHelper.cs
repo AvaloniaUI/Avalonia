@@ -27,7 +27,7 @@ internal static class VulkanMemoryHelper
         AccessFlags sourceAccessMask,
         ImageLayout destinationLayout,
         AccessFlags destinationAccessMask,
-        uint mipLevels)
+        uint mipLevels, uint appQueueFamily, InteropTransferDirection direction)
     {
         var subresourceRange = new ImageSubresourceRange(ImageAspectFlags.ColorBit, 0, mipLevels, 0, 1);
 
@@ -38,8 +38,10 @@ internal static class VulkanMemoryHelper
             DstAccessMask = destinationAccessMask,
             OldLayout = sourceLayout,
             NewLayout = destinationLayout,
-            SrcQueueFamilyIndex = Vk.QueueFamilyIgnored,
-            DstQueueFamilyIndex = Vk.QueueFamilyIgnored,
+            SrcQueueFamilyIndex = direction == InteropTransferDirection.None ? Vk.QueueFamilyIgnored
+                : direction == InteropTransferDirection.AppToAvalonia ? appQueueFamily : Vk.QueueFamilyExternal,
+            DstQueueFamilyIndex = direction == InteropTransferDirection.None ? Vk.QueueFamilyIgnored 
+                : direction == InteropTransferDirection.AppToAvalonia ? Vk.QueueFamilyExternal : appQueueFamily,
             Image = image,
             SubresourceRange = subresourceRange
         };

@@ -38,6 +38,7 @@ namespace Avalonia.X11.Glx
             {
                 GlInterface = new GlInterface(version, GlxInterface.SafeGetProcAddress);
                 _externalObjects = ExternalObjectsOpenGlExtensionFeature.TryCreate(this);
+                ArbDebugHandler.Install(GlInterface);
             }
         }
         

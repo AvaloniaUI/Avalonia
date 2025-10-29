@@ -159,7 +159,7 @@ public class ExternalObjectsOpenGlExtensionFeature : IGlContextExternalObjectsFe
             _ext.CreateMemoryObjectsEXT(1, out var memoryObject);
             _ext.ImportMemoryFdEXT(memoryObject, properties.MemorySize, GL_HANDLE_TYPE_OPAQUE_FD_EXT,
                 handle.Handle.ToInt32());
-            
+            Console.WriteLine($"{properties.Width}\t{properties.Height}\t{properties.MemorySize}\t{properties.MemorySize:X}");
             var err = _context.GlInterface.GetError();
             if (err != 0)
                 throw OpenGlException.GetFormattedException("glImportMemoryFdEXT", err);
@@ -170,6 +170,7 @@ public class ExternalObjectsOpenGlExtensionFeature : IGlContextExternalObjectsFe
             _context.GlInterface.BindTexture(GL_TEXTURE_2D, texture);
             _ext.TexStorageMem2DEXT(GL_TEXTURE_2D, 1, GL_RGBA8, properties.Width, properties.Height,
                 memoryObject, properties.MemoryOffset);
+            _context.GlInterface.Finish();
             err = _context.GlInterface.GetError();
 
             _context.GlInterface.BindTexture(GL_TEXTURE_2D, oldTexture);

@@ -355,7 +355,7 @@ namespace Avalonia.OpenGL
 //        public const int GL_LINE_SMOOTH_HINT = 0x0C52;
 //        public const int GL_POLYGON_SMOOTH_HINT = 0x0C53;
 //        public const int GL_FOG_HINT = 0x0C54;
-//        public const int GL_DONT_CARE = 0x1100;
+        public const int GL_DONT_CARE = 0x1100;
 //        public const int GL_FASTEST = 0x1101;
 //        public const int GL_NICEST = 0x1102;
 //        public const int GL_SCISSOR_BOX = 0x0C10;

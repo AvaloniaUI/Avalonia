@@ -64,6 +64,8 @@ namespace Avalonia.Rendering.Composition.Server
             IsDirtyComposition = false;
             return new(_transformedContentBounds, oldInvalidated, newInvalidated);
         }
+        
+        
 
         void AddEffectPaddedDirtyRect(IImmutableEffect effect, LtrbRect transformedBounds)
         {

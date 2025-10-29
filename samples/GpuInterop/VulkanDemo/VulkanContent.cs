@@ -156,7 +156,7 @@ unsafe class VulkanContent : IDisposable
 
         _colorAttachment!.TransitionLayout(commandBuffer.InternalHandle,
             ImageLayout.Undefined, AccessFlags.None,
-            ImageLayout.ColorAttachmentOptimal, AccessFlags.ColorAttachmentWriteBit);
+            ImageLayout.ColorAttachmentOptimal, AccessFlags.ColorAttachmentWriteBit, false);
 
         var commandBufferHandle = new CommandBuffer(commandBuffer.Handle);
 
@@ -215,8 +215,8 @@ unsafe class VulkanContent : IDisposable
         
         api.CmdEndRenderPass(commandBufferHandle);
         
-        _colorAttachment.TransitionLayout(commandBuffer.InternalHandle, ImageLayout.TransferSrcOptimal, AccessFlags.TransferReadBit);
-        image.TransitionLayout(commandBuffer.InternalHandle, ImageLayout.TransferDstOptimal, AccessFlags.TransferWriteBit);
+        _colorAttachment.TransitionLayout(commandBuffer.InternalHandle, ImageLayout.TransferSrcOptimal, AccessFlags.TransferReadBit, false);
+        image.TransitionLayout(commandBuffer.InternalHandle, ImageLayout.TransferDstOptimal, AccessFlags.TransferWriteBit, false);
         
         
         var srcBlitRegion = new ImageBlit

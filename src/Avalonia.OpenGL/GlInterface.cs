@@ -385,6 +385,16 @@ namespace Avalonia.OpenGL
         [GlMinVersionEntryPoint("glGenVertexArrays", 3, 0)]
         [GlExtensionEntryPoint("glGenVertexArraysOES", "GL_OES_vertex_array_object")]
         public partial void GenVertexArrays(int n, int* rv);
+        
+        [GetProcAddress(true)]
+        [GlMinVersionEntryPoint("glDebugMessageCallback", 4, 3)]
+        [GlExtensionEntryPoint("glDebugMessageCallbackARB", "GL_ARB_debug_output")]
+        public partial void DebugMessageCallback(IntPtr proc, IntPtr userParam);
+
+        [GetProcAddress(true)]
+        [GlMinVersionEntryPoint("glDebugMessageControl", 4, 3)]
+        [GlExtensionEntryPoint("glDebugMessageControlARB", "GL_ARB_debug_output")]
+        public partial void DebugMessageControl(int source, int type, int severity, IntPtr count, uint* ids, int enabled);
 
         public int GenVertexArray()
         {
