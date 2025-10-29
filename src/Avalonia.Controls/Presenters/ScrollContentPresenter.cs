@@ -1,13 +1,14 @@
 using System;
 using System.Collections.Generic;
-using Avalonia.Reactive;
+using System.Linq;
+using Avalonia.Animation;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.GestureRecognizers;
+using Avalonia.Layout;
+using Avalonia.Reactive;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
-using System.Linq;
-using Avalonia.Layout;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -102,6 +103,7 @@ namespace Avalonia.Controls.Presenters
         private ScrollViewer? _owner;
         private IScrollSnapPointsInfo? _scrollSnapPointsInfo;
         private bool _isSnapPointsUpdated;
+        private bool _isAnimationsDisabled;
 
         /// <summary>
         /// Initializes static members of the <see cref="ScrollContentPresenter"/> class.
@@ -610,6 +612,13 @@ namespace Avalonia.Controls.Presenters
                     newOffset = new Vector(xOffset, yOffset);
                 }
 
+                // We temporarily disable implicit animations in the child
+                if (Child is { } child)
+                {
+                    _isAnimationsDisabled = true;
+                    CompositionAnimation.SetEnableAnimations(child, false);
+                }
+
                 bool offsetChanged = newOffset != Offset;
                 SetCurrentValue(OffsetProperty, newOffset);
 
@@ -624,7 +633,16 @@ namespace Avalonia.Controls.Presenters
             _activeLogicalGestureScrolls?.Remove(e.Id);
             _scrollGestureSnapPoints?.Remove(e.Id);
 
-            SetCurrentValue(OffsetProperty, SnapOffset(Offset));
+            if (_isAnimationsDisabled)
+            {
+                _isAnimationsDisabled = false;
+                if (Child is { } child)
+                {
+                    child.ClearValue(CompositionAnimation.EnableAnimationsProperty);
+                }
+            }
+
+            SetCurrentValue(OffsetProperty, SnapOffset(Offset));  
         }
 
         private void OnScrollGestureInertiaStartingEnded(object? sender, ScrollGestureInertiaStartingEventArgs e)
@@ -788,6 +806,12 @@ namespace Avalonia.Controls.Presenters
 
             if (e.OldValue != null)
             {
+                if(_isAnimationsDisabled)
+                {
+                    _isAnimationsDisabled = false;
+
+                    (e.OldValue as Visual)?.ClearValue(CompositionAnimation.EnableAnimationsProperty);
+                }
                 SetCurrentValue(OffsetProperty, default);
             }
         }
@@ -815,6 +839,11 @@ namespace Avalonia.Controls.Presenters
                         Disposable.Create(() => scrollable.ScrollInvalidated -= ScrollInvalidated));
                     UpdateFromScrollable(scrollable);
                 }
+            }
+
+            if (child is not null && !child.IsSet(CompositionAnimation.ImplictionAnimationsProperty))
+            {
+                child[!CompositionAnimation.ImplictionAnimationsProperty] = child.GetResourceObservable("ThumbOffsetAnimation").ToBinding();
             }
         }
 

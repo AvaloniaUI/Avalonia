@@ -18,7 +18,8 @@ namespace ControlCatalog.Pages;
 
 public partial class CompositionPage : UserControl
 {
-    private ImplicitAnimationCollection? _implicitAnimations;
+    //private ImplicitAnimationCollection? _implicitAnimations;
+    //private ImplicitAnimationCollection? _implicitAnimations;
     private CompositionCustomVisual? _customVisual;
     private CompositionSolidColorVisual? _solidVisual;
 
@@ -94,7 +95,7 @@ public partial class CompositionPage : UserControl
     
     private void EnsureImplicitAnimations()
     {
-        if (_implicitAnimations == null)
+        /*if (_implicitAnimations == null)
         {
             var compositor = ElementComposition.GetElementVisual(this)!.Compositor;
 
@@ -103,19 +104,30 @@ public partial class CompositionPage : UserControl
             offsetAnimation.InsertExpressionKeyFrame(1.0f, "this.FinalValue");
             offsetAnimation.Duration = TimeSpan.FromMilliseconds(400);
 
-            var rotationAnimation = compositor.CreateScalarKeyFrameAnimation();
+            /*var rotationAnimation = compositor.CreateScalarKeyFrameAnimation();
             rotationAnimation.Target = "RotationAngle";
             rotationAnimation.InsertKeyFrame(.5f, 0.160f);
             rotationAnimation.InsertKeyFrame(1f, 0f);
             rotationAnimation.Duration = TimeSpan.FromMilliseconds(400);
 
-            var animationGroup = compositor.CreateAnimationGroup();
+            /*var animationGroup = compositor.CreateAnimationGroup();
             animationGroup.Add(offsetAnimation);
-            animationGroup.Add(rotationAnimation);
+            //animationGroup.Add(rotationAnimation);
 
-            _implicitAnimations = compositor.CreateImplicitAnimationCollection();
-            _implicitAnimations["Offset"] = animationGroup;
-        }
+            _implicitAnimations = new ImplicitAnimationCollection();
+            _implicitAnimations.Add(new OffsetImplicitAnimation()
+            {
+                Duration = TimeSpan.FromMilliseconds(400),
+                Children =
+                {
+                    new CompositionAnimationKeyFrame()
+                    {
+                        Value = "this.FinalValue",
+                        NormalizedProgressKey = 1.0f,
+                    }
+                }
+            });
+        }*/
     }
 
     public static void SetEnableAnimations(Border border, bool value)
@@ -130,12 +142,11 @@ public partial class CompositionPage : UserControl
         if (ElementComposition.GetElementVisual(page) == null)
             return;
 
-        page.EnsureImplicitAnimations();
-        if (border.GetVisualParent() is Visual visualParent 
-            && ElementComposition.GetElementVisual(visualParent) is CompositionVisual compositionVisual)
+        /*page.EnsureImplicitAnimations();
+        if (border.GetVisualParent() is Visual visualParent ) 
         {
-            compositionVisual.ImplicitAnimations = page._implicitAnimations;
-        }
+            CompositionAnimation.SetAnimations(visualParent, page._implicitAnimations);
+        }*/
     }
     
     void AttachAnimatedSolidVisual(Visual v)
