@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
+using System.Xml;
+using System.Xml.Linq;
 using Avalonia.Generators.Common;
 using Avalonia.Generators.Common.Domain;
 using Avalonia.Generators.Compiler;
 using Microsoft.CodeAnalysis;
-using XamlX.Transform;
+using Microsoft.CodeAnalysis.Text;
+using XamlX;
 
 namespace Avalonia.Generators.NameGenerator;
 
@@ -62,39 +64,52 @@ public class AvaloniaNameIncrementalGenerator : IIncrementalGenerator
             .Select(static (file, cancellationToken) =>
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                var text = file.GetText(cancellationToken);
-                var diagnostics = new List<DiagnosticDescriptor>();
-                if (text is not null)
+                var xaml = file.GetText(cancellationToken)?.ToString();
+                if (xaml is null)
                 {
-                    try
-                    {
-                        var xaml = text.ToString();
-                        var viewResolver = new XamlXViewResolver(s_noopCompiler);
-                        var view = viewResolver.ResolveView(xaml, cancellationToken);
-                        if (view is null)
-                        {
-                            return null;
-                        }
-
-                        var nameResolver = new XamlXNameResolver();
-                        var xmlNames = nameResolver.ResolveXmlNames(view.Xaml, cancellationToken);
-
-                        return new XmlClassInfo(
-                            new ResolvedXmlView(view, xmlNames),
-                            new EquatableList<DiagnosticDescriptor>(diagnostics));
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        throw;
-                    }
-                    catch (Exception ex)
-                    {
-                        diagnostics.Add(GeneratorExtensions.NameGeneratorUnhandledError(ex));
-                        return new XmlClassInfo(null, new EquatableList<DiagnosticDescriptor>(diagnostics));
-                    }
+                    return null;
                 }
 
-                return null;
+                ResolvedXmlView? resolvedXmlView;
+                DiagnosticFactory? diagnosticFactory = null;
+                var location =  new FileLinePositionSpan(file.Path, default);
+                try
+                {
+                    var viewResolver = new XamlXViewResolver(s_noopCompiler);
+                    var view = viewResolver.ResolveView(xaml, cancellationToken);
+                    if (view is null)
+                    {
+                        return null;
+                    }
+
+                    var xmlNames = EquatableList<ResolvedXmlName>.Empty;
+                    var nameResolver = new XamlXNameResolver();
+                    xmlNames = nameResolver.ResolveXmlNames(view.Xaml, cancellationToken);
+
+                    resolvedXmlView = new ResolvedXmlView(view, xmlNames);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (XmlException ex)
+                {
+                    diagnosticFactory = new(NameGeneratorDiagnostics.ParseFailed, new(file.Path, GetLinePositionSpan(ex)), new([ex.Message]));
+
+                    resolvedXmlView = ex is XamlParseException ? TryExtractTypeFromXml(xaml) : null;
+                }
+                catch (XamlTypeSystemException ex)
+                {
+                    diagnosticFactory = new(NameGeneratorDiagnostics.ParseFailed, location, new([ex.Message]));
+                    resolvedXmlView = TryExtractTypeFromXml(xaml);
+                }
+                catch (Exception ex)
+                {
+                    diagnosticFactory = GetInternalErrorDiagnostic(location, ex);
+                    resolvedXmlView = null;
+                }
+
+                return new XmlClassInfo(file.Path, resolvedXmlView, diagnosticFactory);
             })
             .Where(request => request is not null)
             .WithTrackingName(TrackingNames.ParsedXamlClasses);
@@ -119,15 +134,20 @@ public class AvaloniaNameIncrementalGenerator : IIncrementalGenerator
                 var hasDevToolsReference = compiler.TypeSystem.FindAssembly("Avalonia.Diagnostics") is not null;
                 var nameResolver = new XamlXNameResolver();
 
-                var diagnostics =  new List<DiagnosticDescriptor>(classInfo!.Diagnostics);
+                var diagnostics = new List<DiagnosticFactory>(2);
+                if (classInfo?.Diagnostic != null)
+                {
+                    diagnostics.Add(classInfo.Diagnostic);
+                }
+
                 ResolvedView? view = null;
-                if (classInfo.XmlView is { } xmlView)
+                if (classInfo?.XmlView is { } xmlView)
                 {
                     var type = compiler.TypeSystem.FindType(xmlView.FullName);
 
                     if (type is null)
                     {
-                        diagnostics.Add(GeneratorExtensions.NameGeneratorInvalidType(xmlView.FullName));
+                        diagnostics.Add(new(NameGeneratorDiagnostics.InvalidType, new(classInfo.FilePath, default), new([xmlView.FullName])));
                     }
                     else if (type.IsAvaloniaStyledElement())
                     {
@@ -147,17 +167,22 @@ public class AvaloniaNameIncrementalGenerator : IIncrementalGenerator
                                 resolvedNames.Add(nameResolver
                                     .ResolveName(clrType, xmlName.Name, xmlName.FieldModifier));
                             }
+                            catch (XmlException ex)
+                            {
+                                diagnostics.Add(new(NameGeneratorDiagnostics.NamedElementFailed,
+                                    new(classInfo.FilePath, GetLinePositionSpan(ex)), new([xmlName.Name, ex.Message])));
+                            }
                             catch (Exception ex)
                             {
-                                diagnostics.Add(GeneratorExtensions.NameGeneratorUnhandledError(ex));
+                                diagnostics.Add(GetInternalErrorDiagnostic(new(classInfo.FilePath, default), ex));
                             }
                         }
 
-                        view = new ResolvedView(xmlView, type.IsAvaloniaWindow(), new EquatableList<ResolvedName>(resolvedNames));
+                        view = new ResolvedView(xmlView, type.IsAvaloniaWindow(), new(resolvedNames));
                     }
                 }
 
-                return new ResolvedClassInfo(view, hasDevToolsReference, new EquatableList<DiagnosticDescriptor>(diagnostics));
+                return new ResolvedClassInfo(view, hasDevToolsReference, new(diagnostics));
             })
             .WithTrackingName(TrackingNames.ResolvedNamesProvider);
 
@@ -165,9 +190,9 @@ public class AvaloniaNameIncrementalGenerator : IIncrementalGenerator
         {
             var (info, options) = pair;
 
-            foreach (var diagnostic in info!.Diagnostics)
+            foreach (var diagnostic in info.Diagnostics)
             {
-                context.Report(diagnostic);
+                context.ReportDiagnostic(diagnostic.Create());
             }
 
             if (info.View is { } view && options.AvaloniaNameGeneratorFilterByNamespace.Matches(view.Namespace))
@@ -200,12 +225,53 @@ public class AvaloniaNameIncrementalGenerator : IIncrementalGenerator
         });
     }
 
+    private static DiagnosticFactory GetInternalErrorDiagnostic(FileLinePositionSpan location, Exception ex) =>
+        new(NameGeneratorDiagnostics.InternalError, location, new([ex.ToString().Replace('\n', '*').Replace('\r', '*')]));
+
+    /// <summary>
+    /// Fallback in case XAML parsing fails. Extracts just the class name and namespace of the root element.
+    /// </summary>
+    private static ResolvedXmlView? TryExtractTypeFromXml(string xaml)
+    {
+        try
+        {
+            var document = XDocument.Parse(xaml);
+            var classValue = document.Root.Attribute(XName.Get("Class", XamlNamespaces.Xaml2006))?.Value;
+            if (classValue?.LastIndexOf('.') is { } lastDotIndex && lastDotIndex != -1)
+            {
+                return new(classValue.Substring(lastDotIndex + 1), classValue.Substring(0, lastDotIndex), EquatableList<ResolvedXmlName>.Empty);
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+        return null;
+    }
+
+    private static LinePositionSpan GetLinePositionSpan(XmlException ex)
+    {
+        var position = new LinePosition(Math.Max(0, ex.LineNumber - 1), Math.Max(0, ex.LinePosition - 1));
+        return new(position, position);
+    }
+
     internal record XmlClassInfo(
+        string FilePath,
         ResolvedXmlView? XmlView,
-        EquatableList<DiagnosticDescriptor> Diagnostics);
+        DiagnosticFactory? Diagnostic);
 
     internal record ResolvedClassInfo(
         ResolvedView? View,
         bool CanAttachDevTools,
-        EquatableList<DiagnosticDescriptor> Diagnostics);
+        EquatableList<DiagnosticFactory> Diagnostics);
+
+    /// <summary>
+    /// Avoid holding references to <see cref="Diagnostic"/> because it can hold references to <see cref="ISymbol"/>, <see cref="SyntaxTree"/>, etc.
+    /// </summary>
+    internal record DiagnosticFactory(DiagnosticDescriptor Descriptor, FileLinePositionSpan LinePosition, EquatableList<string> FormatArguments)
+    {
+        public Diagnostic Create() => Diagnostic.Create(Descriptor, 
+            Location.Create(LinePosition.Path, default, new(LinePosition.StartLinePosition, LinePosition.EndLinePosition)),
+            messageArgs: [.. FormatArguments]);
+    }
 }
