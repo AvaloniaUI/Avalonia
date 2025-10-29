@@ -48,6 +48,51 @@ public unsafe class VulkanImage : IDisposable
 
         private bool _hasIOSurface;
 
+        ExternalImageFormatProperties? TryGetExternalFormatProperties(ImageCreateInfo imageCreateInfo)
+        {
+            if (!Api.TryGetDeviceExtension<KhrGetMemoryRequirements2>(_instance, _device, out var getMemReq2Ext))
+                return null;
+
+            var externalFormatInfo = new PhysicalDeviceExternalImageFormatInfo
+            {
+                SType = StructureType.PhysicalDeviceExternalImageFormatInfo,
+                HandleType = ExternalMemoryHandleTypeFlags.OpaqueFDBit
+            };
+
+            var formatInfo = new PhysicalDeviceImageFormatInfo2
+            {
+                SType = StructureType.PhysicalDeviceImageFormatInfo2,
+                PNext = &externalFormatInfo,
+                Format =imageCreateInfo.Format,
+                Type = imageCreateInfo.ImageType,
+                Tiling = imageCreateInfo.Tiling,
+                Usage = imageCreateInfo.Usage,
+                Flags = imageCreateInfo.Flags,
+            };
+
+            var externalProps = new ExternalImageFormatProperties
+            {
+                SType = StructureType.ExternalImageFormatProperties
+            };
+
+            var formatProps = new ImageFormatProperties2
+            {
+                SType = StructureType.ImageFormatProperties2,
+                PNext = &externalProps
+            };
+
+            if (Api.GetPhysicalDeviceImageFormatProperties2(_physicalDevice, &formatInfo, &formatProps) ==
+                Result.Success)
+                return externalProps;
+            return null;
+        }
+
+        // Function pointer delegate for vkGetPhysicalDeviceImageFormatProperties2
+        private unsafe delegate Result PfnGetPhysicalDeviceImageFormatProperties2(
+            PhysicalDevice physicalDevice,
+            PhysicalDeviceImageFormatInfo2* pImageFormatInfo,
+            ImageFormatProperties2* pImageFormatProperties);
+
         public VulkanImage(VulkanContext vk, uint format, PixelSize size,
             bool exportable, IReadOnlyList<string> supportedHandleTypes)
         {
@@ -128,10 +173,11 @@ public unsafe class VulkanImage : IDisposable
                 var fdExport = new ExportMemoryAllocateInfo
                 {
                     HandleTypes = handleType,
-                    SType = StructureType.ExportMemoryAllocateInfo,
-                    PNext = &dedicatedAllocation
+                    SType = StructureType.ExportMemoryAllocateInfo
                 };
 
+                void* memoryAllocatePNext = null;
+                
                 ImportMemoryWin32HandleInfoKHR handleImport = default;
                 if (handleType == ExternalMemoryHandleTypeFlags.D3D11TextureBit && exportable)
                 {
@@ -146,12 +192,20 @@ public unsafe class VulkanImage : IDisposable
                         HandleType = ExternalMemoryHandleTypeFlags.D3D11TextureBit,
                         Handle = dxgi.CreateSharedHandle(null, SharedResourceFlags.Read | SharedResourceFlags.Write),
                     };
+                    memoryAllocatePNext = &handleImport;
+                }
+                else if (handleType == ExternalMemoryHandleTypeFlags.OpaqueFDBit)
+                {
+                    memoryAllocatePNext = &fdExport;
+                    // Use dedicated allocation if required
+                    if (TryGetExternalFormatProperties(imageCreateInfo) is {} formatProps 
+                        && formatProps.ExternalMemoryProperties.ExternalMemoryFeatures.HasFlag(ExternalMemoryFeatureFlags.DedicatedOnlyBit))
+                        fdExport.PNext = &dedicatedAllocation;
                 }
 
                 var memoryAllocateInfo = new MemoryAllocateInfo
                 {
-                    PNext =
-                        exportable ? handleImport.Handle != IntPtr.Zero ? &handleImport : &fdExport : null,
+                    PNext =memoryAllocatePNext,
                     SType = StructureType.MemoryAllocateInfo,
                     AllocationSize = memoryRequirements.Size,
                     MemoryTypeIndex = (uint)VulkanMemoryHelper.FindSuitableMemoryTypeIndex(

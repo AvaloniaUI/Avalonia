@@ -116,6 +116,7 @@ public unsafe class VulkanContext : IDisposable
                     "VK_KHR_external_semaphore"
                 ]);
             };
+            var enableDeviceExtensions = new List<string> { "VK_KHR_get_physical_device_properties2" };
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
@@ -216,7 +217,12 @@ public unsafe class VulkanContext : IDisposable
                         PQueuePriorities = queuePriorities
                     };
 
-                    using var pEnabledDeviceExtensions = new ByteStringList(requireDeviceExtensions);
+                    var optionalExtensions = enableDeviceExtensions
+                        .Where(ext => api.IsDeviceExtensionPresent(physicalDevice, ext)).ToList();
+
+                    using var pEnabledDeviceExtensions =
+                        new ByteStringList(requireDeviceExtensions.Concat(optionalExtensions).Distinct().ToList());
+                    
                     var deviceCreateInfo = new DeviceCreateInfo
                     {
                         SType = StructureType.DeviceCreateInfo,

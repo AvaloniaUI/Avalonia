@@ -20,7 +20,7 @@ namespace GpuInterop
                         Win32RenderingMode.Vulkan
                     }
                 })
-                .With(new X11PlatformOptions(){RenderingMode =new[] { X11RenderingMode.Vulkan } })
+                .With(new X11PlatformOptions(){RenderingMode =new[] { X11RenderingMode.Glx } })
                 .With(new VulkanOptions()
                 {
                     VulkanInstanceCreationOptions = new VulkanInstanceCreationOptions()

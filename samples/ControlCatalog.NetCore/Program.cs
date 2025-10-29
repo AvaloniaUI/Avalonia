@@ -134,6 +134,7 @@ namespace ControlCatalog.NetCore
                     EnableMultiTouch = true,
                     UseDBusMenu = true,
                     EnableIme = true,
+                    RenderingMode = [X11RenderingMode.Vulkan]
                 })
 
                 .With(new VulkanOptions
@@ -141,6 +142,10 @@ namespace ControlCatalog.NetCore
                     VulkanInstanceCreationOptions = new ()
                     {
                         UseDebug = true
+                    },
+                    VulkanDeviceCreationOptions =
+                    {
+                        AllowDevicesWithoutKhrSurfaces = true
                     }
                 })
                 .With(new CompositionOptions()
