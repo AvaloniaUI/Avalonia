@@ -2,12 +2,12 @@ jobs:
 
 - job: GetPRNumber
   pool:
-    vmImage: 'ubuntu-22.04'
+    vmImage: 'ubuntu-24.04'
   variables:
     SolutionDir: '$(Build.SourcesDirectory)'
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET 8.0 SDK'
+    displayName: 'Use .NET 10.0 SDK'
     inputs:
       packageType: sdk
       useGlobalJson: true
@@ -23,16 +23,16 @@ jobs:
       
 - job: Linux
   pool:
-    vmImage: 'ubuntu-22.04'
+    vmImage: 'ubuntu-24.04'
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET 6.0 Runtime'
+    displayName: 'Use .NET 8.0 Runtime'
     inputs:
       packageType: runtime
-      version: 6.0.x
+      version: 8.0.x
 
   - task: UseDotNet@2
-    displayName: 'Use .NET 8.0 SDK'
+    displayName: 'Use .NET 10.0 SDK'
     inputs:
       packageType: sdk
       useGlobalJson: true
@@ -65,13 +65,13 @@ jobs:
     vmImage: 'macos-13'
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET 6.0 Runtime'
+    displayName: 'Use .NET 8.0 Runtime'
     inputs:
       packageType: runtime
-      version: 6.0.x
+      version: 8.0.x
 
   - task: UseDotNet@2
-    displayName: 'Use .NET 8.0 SDK'
+    displayName: 'Use .NET 10.0 SDK'
     inputs:
       packageType: sdk
       useGlobalJson: true
@@ -134,18 +134,18 @@ jobs:
 
 - job: Windows
   pool:
-    vmImage: 'windows-2022'
+    vmImage: 'windows-2025'
   variables:
     SolutionDir: '$(Build.SourcesDirectory)'
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET 6.0 Runtime'
+    displayName: 'Use .NET 8.0 Runtime'
     inputs:
       packageType: runtime
-      version: 6.0.x
+      version: 8.0.x
 
   - task: UseDotNet@2
-    displayName: 'Use .NET 8.0 SDK'
+    displayName: 'Use .NET 10.0 SDK'
     inputs:
       packageType: sdk
       useGlobalJson: true
@@ -160,7 +160,7 @@ jobs:
     displayName: 'Install Nuke'
     inputs:
       script: |
-       dotnet tool install --global Nuke.GlobalTool --version 6.2.1 
+       dotnet tool install --global Nuke.GlobalTool --version 9.0.4 
 
   - task: CmdLine@2
     displayName: 'Run Nuke'

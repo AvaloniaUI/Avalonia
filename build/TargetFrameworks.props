@@ -1,17 +1,17 @@
 <Project>
   <PropertyGroup>
-    <AvsCurrentTargetFramework>net8.0</AvsCurrentTargetFramework>
+    <AvsCurrentTargetFramework>net10.0</AvsCurrentTargetFramework>
     <AvsCurrentWindowsTargetFramework>$(AvsCurrentTargetFramework)-windows</AvsCurrentWindowsTargetFramework>
     <AvsCurrentMacOSTargetFramework>$(AvsCurrentTargetFramework)-macos</AvsCurrentMacOSTargetFramework>
-    <AvsCurrentAndroidTargetFramework>$(AvsCurrentTargetFramework)-android34.0</AvsCurrentAndroidTargetFramework>
-    <AvsCurrentMacCatalystTargetFramework>$(AvsCurrentTargetFramework)-maccatalyst17.0</AvsCurrentMacCatalystTargetFramework>
-    <AvsCurrentIOSTargetFramework>$(AvsCurrentTargetFramework)-ios17.0</AvsCurrentIOSTargetFramework>
-    <AvsCurrentTvOSTargetFramework>$(AvsCurrentTargetFramework)-tvos17.0</AvsCurrentTvOSTargetFramework>
+    <AvsCurrentAndroidTargetFramework>$(AvsCurrentTargetFramework)-android36.0</AvsCurrentAndroidTargetFramework>
+    <AvsCurrentMacCatalystTargetFramework>$(AvsCurrentTargetFramework)-maccatalyst26.0</AvsCurrentMacCatalystTargetFramework>
+    <AvsCurrentIOSTargetFramework>$(AvsCurrentTargetFramework)-ios26.0</AvsCurrentIOSTargetFramework>
+    <AvsCurrentTvOSTargetFramework>$(AvsCurrentTargetFramework)-tvos26.0</AvsCurrentTvOSTargetFramework>
     <AvsCurrentBrowserTargetFramework>$(AvsCurrentTargetFramework)-browser</AvsCurrentBrowserTargetFramework>
   </PropertyGroup>
   <PropertyGroup Condition="'$(AvsSkipBuildingLegacyTargetFrameworks)' != 'True'">
-    <AvsLegacyTargetFrameworks>net6.0</AvsLegacyTargetFrameworks>
-    <AvsLegacyWindowsTargetFrameworks>net6.0-windows</AvsLegacyWindowsTargetFrameworks>
+    <AvsLegacyTargetFrameworks>net8.0</AvsLegacyTargetFrameworks>
+    <AvsLegacyWindowsTargetFrameworks>net8.0-windows</AvsLegacyWindowsTargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>

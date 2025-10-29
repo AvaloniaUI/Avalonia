@@ -35,6 +35,7 @@ namespace Avalonia.Markup.Xaml.Templates
         }
 
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "If ItemsSource is a CompiledBinding, then path members will be preserved")]
+        [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Dynamic code should be available if reflection bindings are used")]
         public InstancedBinding? ItemsSelector(object item)
         {
             if (ItemsSource != null)

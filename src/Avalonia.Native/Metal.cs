@@ -93,7 +93,9 @@ internal class MetalExternalObjectsFeature : IMetalExternalObjectsFeature
         ulong registryId;
         if (_device.GetIOKitRegistryId(&registryId) != 0)
         {
-            DeviceLuid = BitConverter.GetBytes(registryId).Reverse().ToArray();
+            var bytes = BitConverter.GetBytes(registryId);
+            bytes.Reverse();
+            DeviceLuid = bytes;
         }
     }
 
