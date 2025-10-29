@@ -153,6 +153,20 @@ namespace Avalonia.Base.UnitTests
 
             Assert.Equal(",Bar,Baz", value);
         }
+        
+        [Fact]
+        public void MultiValueConverter_Supports_Indexing_The_Parameters()
+        {
+            var target = new FuncMultiValueConverter<string, string>(v => v[0]);
+
+            object value = target.Convert(new[] { "Foo", "Bar", "Baz" }, typeof(string), null, CultureInfo.InvariantCulture);
+
+            Assert.Equal("Foo", value);
+
+            value = target.Convert(new[] { null, "Bar", "Baz" }, typeof(string), null, CultureInfo.InvariantCulture);
+
+            Assert.Null(value);
+        }
 
         private struct StringValueTypeWrapper
         {
