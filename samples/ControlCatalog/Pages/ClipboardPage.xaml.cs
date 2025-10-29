@@ -10,6 +10,7 @@ using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 
@@ -34,6 +35,7 @@ namespace ControlCatalog.Pages
         }
 
         private TextBox ClipboardContent => this.Get<TextBox>("ClipboardContent");
+        private Image ClipboardImage => this.Get<Image>("ClipboardImage");
 
         private void InitializeComponent()
         {
@@ -51,6 +53,20 @@ namespace ControlCatalog.Pages
             if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
             {
                 ClipboardContent.Text = await clipboard.TryGetTextAsync();
+            }
+        }
+
+        private async void PasteImage(object? sender, RoutedEventArgs args)
+        {
+            if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
+            {
+                using var data = await clipboard.TryGetDataAsync();
+                Bitmap? source = null;
+                if (data != null)
+                {
+                    source = await data!.TryGetValueAsync(DataFormat.Image);
+                }
+                ClipboardImage.Source = source;
             }
         }
 

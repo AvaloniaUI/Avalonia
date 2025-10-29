@@ -1,4 +1,5 @@
-﻿using Android.Content;
+﻿using System.Linq;
+using Android.Content;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 
@@ -25,6 +26,11 @@ internal sealed class ClipDataToDataTransferWrapper(ClipData clipData, Context? 
 
         for (var i = 0; i < count; ++i)
             formats[i] = AndroidDataFormatHelper.MimeTypeToDataFormat(clipDescription.GetMimeType(i)!);
+
+        if (formats.Any(x => x?.Identifier.StartsWith("image/", System.StringComparison.OrdinalIgnoreCase) == true))
+        {
+            formats = [.. formats, DataFormat.Image];
+        }
 
         return formats;
     }

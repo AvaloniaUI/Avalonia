@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
 using Avalonia.Input;
-using Avalonia.Win32.Interop;
 using Avalonia.Utilities;
+using Avalonia.Win32.Interop;
 
 namespace Avalonia.Win32
 {
@@ -52,6 +52,17 @@ namespace Avalonia.Win32
         {
             lock (s_formats)
             {
+                if (DataFormat.Image.Equals(format))
+                {
+                    var imageFormat = s_formats.Find(x => x.Format.Identifier == "image/png");
+                    if (imageFormat.Format == null)
+                        imageFormat = s_formats.Find(x => x.Format.Identifier == "image/jpg" || x.Format.Identifier == "image/jpeg");
+                    if (imageFormat.Format == null)
+                        imageFormat = s_formats.Find(x => x.Format.Identifier == "image/bmp");
+
+                    return imageFormat.Id;
+                }
+
                 for (var i = 0; i < s_formats.Count; ++i)
                 {
                     if (s_formats[i].Format.Equals(format))

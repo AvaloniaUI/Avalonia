@@ -1,9 +1,10 @@
-﻿using System;
+﻿using System.IO;
 using Android.App;
 using Android.Content;
 using Avalonia.Android.Platform.Storage;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.Media.Imaging;
 
 namespace Avalonia.Android.Platform;
 
@@ -26,15 +27,57 @@ internal sealed class ClipDataItemToDataTransferItemWrapper(ClipData.Item item, 
         if (DataFormat.Text.Equals(format))
             return _item.CoerceToText(_owner.Context);
 
-        if (DataFormat.File.Equals(format))
-        {
-            return _item.Uri is { Scheme: "file" or "content" } fileUri && _owner.Context is Activity activity ?
-                AndroidStorageItem.CreateItem(activity, fileUri) :
-                null;
-        }
-
         if (format is DataFormat<string>)
             return TryGetAsString();
+
+        var file = item.Uri is { Scheme: "file" or "content" } fileUri && _owner.Context is Activity activity ?
+                AndroidStorageFile.CreateItem(activity, fileUri) :
+                null;
+
+        if(file != null)
+        {
+            if (DataFormat.File.Equals(format))
+            {
+                return file;
+            }
+
+            try
+            {
+                if (DataFormat.Image.Equals(format))
+                {
+                    Bitmap? image = null;
+
+                    if (file is AndroidStorageFile storageFile)
+                    {
+                        using var stream = storageFile.OpenReadAsync().Result;
+
+                        if (stream != null)
+                        {
+                            image = new Bitmap(stream);
+                        }
+                    }
+
+                    return image;
+                }
+
+                if (format is DataFormat<byte[]>)
+                {
+                    if (file is AndroidStorageFile storageFile)
+                    {
+                        using var stream = storageFile.OpenReadAsync().Result;
+
+                        using var mem = new MemoryStream();
+                        stream.CopyTo(mem);
+                        return mem.ToArray();
+                    }
+                }
+            }
+            finally
+            {
+
+                file?.Dispose();
+            }
+        }
 
         return null;
     }
