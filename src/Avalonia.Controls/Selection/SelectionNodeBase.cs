@@ -171,6 +171,37 @@ namespace Avalonia.Controls.Selection
                         shiftIndex = removeChange.ShiftIndex;
                         shiftDelta = removeChange.ShiftDelta + addChange.ShiftDelta;
                         removed = removeChange.RemovedItems;
+
+                        if (removeChange.DeselectedRanges is { Count: > 0 } deselectedRanges)
+                        {
+                            var movedRanges = new List<IndexRange>(deselectedRanges.Count);
+
+                            foreach (var range in deselectedRanges)
+                            {
+                                var relativeBegin = range.Begin - e.OldStartingIndex;
+                                var begin = insertIndex + relativeBegin;
+                                var end = begin + (range.End - range.Begin);
+                                movedRanges.Add(new IndexRange(begin, end));
+
+                                if (RangesEnabled)
+                                {
+                                    CommitSelect(begin, end);
+                                }
+                            }
+
+                            var movedItems = removeChange.RemovedItems is { Count: > 0 } items
+                                ? (IReadOnlyList<T>)items
+                                : Array.Empty<T>();
+
+                            OnSelectionMoved(
+                                e.OldStartingIndex,
+                                insertIndex,
+                                deselectedRanges,
+                                movedRanges,
+                                movedItems);
+
+                            removed = null;
+                        }
                     }
                     break;
                 case NotifyCollectionChangedAction.Reset:
@@ -221,6 +252,24 @@ namespace Avalonia.Controls.Selection
         /// detailing the items removed by a collection change.
         /// </summary>
         protected virtual void OnSelectionRemoved(int index, int count, IReadOnlyList<T> deselectedItems)
+        {
+        }
+
+        /// <summary>
+        /// Called by <see cref="OnSourceCollectionChanged(NotifyCollectionChangedEventArgs)"/>,
+        /// detailing selection that moved within the source collection.
+        /// </summary>
+        /// <param name="oldStartIndex">The starting index of the move before the change.</param>
+        /// <param name="newStartIndex">The starting index of the move after the change.</param>
+        /// <param name="oldSelectedRanges">Ranges representing selected indexes before the move.</param>
+        /// <param name="newSelectedRanges">Ranges representing selected indexes after the move.</param>
+        /// <param name="movedItems">The selected items affected by the move.</param>
+        private protected virtual void OnSelectionMoved(
+            int oldStartIndex,
+            int newStartIndex,
+            IReadOnlyList<IndexRange> oldSelectedRanges,
+            IReadOnlyList<IndexRange> newSelectedRanges,
+            IReadOnlyList<T> movedItems)
         {
         }
 
@@ -339,10 +388,11 @@ namespace Avalonia.Controls.Selection
             var removedRange = new IndexRange(index, index + count - 1);
             var shifted = false;
             List<T>? removed = null;
+            List<IndexRange>? deselected = null;
 
             if (_ranges is not null)
             {
-                var deselected = new List<IndexRange>();
+                deselected = new List<IndexRange>();
 
                 if (IndexRange.Remove(_ranges, removedRange, deselected) > 0)
                 {
@@ -374,6 +424,7 @@ namespace Avalonia.Controls.Selection
                 ShiftIndex = index,
                 ShiftDelta = shifted ? -count : 0,
                 RemovedItems = removed,
+                DeselectedRanges = deselected is { Count: > 0 } ? deselected : null,
             };
         }
 
@@ -426,6 +477,11 @@ namespace Avalonia.Controls.Selection
             /// Gets or sets the items removed by the collection change, if any.
             /// </summary>
             public List<T>? RemovedItems { get; set; }
+
+            /// <summary>
+            /// Gets or sets the ranges deselected by the collection change, if any.
+            /// </summary>
+            internal IReadOnlyList<IndexRange>? DeselectedRanges { get; set; }
         }
     }
 }

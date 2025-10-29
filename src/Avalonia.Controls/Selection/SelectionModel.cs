@@ -20,6 +20,8 @@ namespace Avalonia.Controls.Selection
         private EventHandler<SelectionModelSelectionChangedEventArgs>? _untypedSelectionChanged;
         private IList? _initSelectedItems;
         private bool _isSourceCollectionChanging;
+        private int _oldSelectedIndexDuringSourceChange = -1;
+        private int _oldAnchorIndexDuringSourceChange = -1;
 
         public SelectionModel()
         {
@@ -399,43 +401,85 @@ namespace Avalonia.Controls.Selection
             var count = items.Count;
             var removedRange = new IndexRange(index, index + count - 1);
             var shifted = false;
-            List<T>? removed;
+            var previousSelectedIndex = _selectedIndex;
+            var previousAnchorIndex = _anchorIndex;
 
             var baseResult = base.OnItemsRemoved(index, items);
             shifted |= baseResult.ShiftDelta != 0;
-            removed = baseResult.RemovedItems;
+            var removed = baseResult.RemovedItems;
+            var deselectedRanges = baseResult.DeselectedRanges;
 
-            if (removedRange.Contains(SelectedIndex))
+            if (removedRange.Contains(previousSelectedIndex))
             {
                 if (SingleSelect)
                 {
-                    removed = new List<T> { (T)items[SelectedIndex - index]! };
+                    removed = new List<T> { (T)items[previousSelectedIndex - index]! };
+                }
+
+                if (!IndexRange.Contains(deselectedRanges, previousSelectedIndex))
+                {
+                    var list = deselectedRanges as List<IndexRange> ??
+                        (deselectedRanges is null ?
+                            new List<IndexRange>() :
+                            new List<IndexRange>(deselectedRanges));
+                    list.Add(new IndexRange(previousSelectedIndex));
+                    deselectedRanges = list;
                 }
 
                 _selectedIndex = GetFirstSelectedIndexFromRanges();
             }
-            else if (SelectedIndex >= index)
+            else if (_selectedIndex >= index)
             {
                 _selectedIndex -= count;
                 shifted = true;
             }
 
-            if (removedRange.Contains(AnchorIndex))
+            if (removedRange.Contains(previousAnchorIndex))
             {
                 _anchorIndex = GetFirstSelectedIndexFromRanges();
             }
-            else if (AnchorIndex >= index)
+            else if (_anchorIndex >= index)
             {
                 _anchorIndex -= count;
                 shifted = true;
             }
 
-            return new CollectionChangeState
+            baseResult.ShiftIndex = index;
+            baseResult.ShiftDelta = shifted ? -count : 0;
+            baseResult.RemovedItems = removed;
+            baseResult.DeselectedRanges = deselectedRanges;
+
+            return baseResult;
+        }
+
+        private protected override void OnSelectionMoved(
+            int oldStartIndex,
+            int newStartIndex,
+            IReadOnlyList<IndexRange> oldSelectedRanges,
+            IReadOnlyList<IndexRange> newSelectedRanges,
+            IReadOnlyList<T> movedItems)
+        {
+            _ = movedItems;
+            var previousSelectedIndex = _oldSelectedIndexDuringSourceChange;
+            var previousAnchorIndex = _oldAnchorIndexDuringSourceChange;
+
+            for (var i = 0; i < oldSelectedRanges.Count && i < newSelectedRanges.Count; ++i)
             {
-                ShiftIndex = index,
-                ShiftDelta = shifted ? -count : 0,
-                RemovedItems = removed,
-            };
+                var oldRange = oldSelectedRanges[i];
+                var newRange = newSelectedRanges[i];
+
+                if (previousSelectedIndex >= oldRange.Begin && previousSelectedIndex <= oldRange.End)
+                {
+                    var offset = previousSelectedIndex - oldRange.Begin;
+                    _selectedIndex = newRange.Begin + offset;
+                }
+
+                if (previousAnchorIndex >= oldRange.Begin && previousAnchorIndex <= oldRange.End)
+                {
+                    var offset = previousAnchorIndex - oldRange.Begin;
+                    _anchorIndex = newRange.Begin + offset;
+                }
+            }
         }
 
         protected override void OnSourceCollectionChanged(NotifyCollectionChangedEventArgs e)
@@ -447,8 +491,13 @@ namespace Avalonia.Controls.Selection
 
             var oldAnchorIndex = _anchorIndex;
             var oldSelectedIndex = _selectedIndex;
+            _oldSelectedIndexDuringSourceChange = _selectedIndex;
+            _oldAnchorIndexDuringSourceChange = _anchorIndex;
 
             base.OnSourceCollectionChanged(e);
+
+            _oldSelectedIndexDuringSourceChange = -1;
+            _oldAnchorIndexDuringSourceChange = -1;
 
             if (oldSelectedIndex != _selectedIndex)
             {

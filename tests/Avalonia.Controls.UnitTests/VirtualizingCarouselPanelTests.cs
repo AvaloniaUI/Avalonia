@@ -110,7 +110,7 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Single(target.Children);
             Assert.Same(container, target.Children[0]);
-            Assert.Equal("bar", container.Content);
+            Assert.Equal("foo", container.Content);
         }
 
         [Fact]
