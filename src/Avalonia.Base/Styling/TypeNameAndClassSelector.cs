@@ -143,7 +143,12 @@ namespace Avalonia.Styling
 
             if (_previous != null)
             {
+                var previousIsOrSelector = _previous is OrSelector;
+                if (previousIsOrSelector)
+                    builder.Append('(');
                 builder.Append(_previous.ToString(owner));
+                if (previousIsOrSelector)
+                    builder.Append(')');
             }
 
             if (TargetType != null)
@@ -156,7 +161,7 @@ namespace Avalonia.Styling
                 {
                     builder.Append(":is(");
                     builder.Append(TargetType.Name);
-                    builder.Append(")");
+                    builder.Append(')');
                 }
             }
 

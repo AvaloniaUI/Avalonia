@@ -45,7 +45,12 @@ namespace Avalonia.Styling
 
                 if (_previous != null)
                 {
+                    var previousIsOrSelector = _previous is OrSelector;
+                    if (previousIsOrSelector)
+                        builder.Append('(');
                     builder.Append(_previous.ToString(owner));
+                    if (previousIsOrSelector)
+                        builder.Append(')');
                 }
 
                 builder.Append('[');

@@ -49,7 +49,11 @@ namespace Avalonia.Styling
         {
             if (_selectorString == null)
             {
-                _selectorString = string.Join(", ", _selectors.Select(x => x.ToString(owner)));
+                var selectorStrings = _selectors.Select(x =>
+                    x is OrSelector ?
+                        $"({x.ToString(owner)})" :
+                        x.ToString(owner));
+                _selectorString = string.Join(", ", selectorStrings);
             }
 
             return _selectorString;
@@ -97,13 +101,13 @@ namespace Avalonia.Styling
         private protected override Selector? MovePrevious() => null;
         private protected override Selector? MovePreviousOrParent() => null;
 
-        internal override void ValidateNestingSelector(bool inControlTheme)
+        internal override void ValidateNestingSelector(bool inControlTheme, int templateCount = 0)
         {
             var count = _selectors.Count;
 
             for (var i = 0; i < count; i++)
             {
-                _selectors[i].ValidateNestingSelector(inControlTheme);
+                _selectors[i].ValidateNestingSelector(inControlTheme, templateCount);
             }
         }
 

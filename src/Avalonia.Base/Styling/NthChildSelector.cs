@@ -110,7 +110,16 @@ namespace Avalonia.Styling
         {
             var expectedCapacity = NthLastChildSelectorName.Length + 8;
             var stringBuilder =  StringBuilderCache.Acquire(expectedCapacity);
-            stringBuilder.Append(_previous?.ToString(owner));
+
+            if (_previous != null)
+            {
+                var previousIsOrSelector = _previous is OrSelector;
+                if (previousIsOrSelector)
+                    stringBuilder.Append('(');
+                stringBuilder.Append(_previous.ToString(owner));
+                if (previousIsOrSelector)
+                    stringBuilder.Append(')');
+            }
             
             stringBuilder.Append(':');
             stringBuilder.Append(_reversed ? NthLastChildSelectorName : NthChildSelectorName);
