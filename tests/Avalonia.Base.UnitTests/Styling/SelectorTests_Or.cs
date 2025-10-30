@@ -102,6 +102,9 @@ namespace Avalonia.Base.UnitTests.Styling
             Assert.Throws<InvalidOperationException>(() => target.ValidateNestingSelector(false));
             
             target = Selectors.Or(
+                Selectors.Or(
+                    default(Selector).Nesting().Child(),
+                    default(Selector).Nesting().NthChild(0, 1)),
                 default(Selector).Nesting().Class("foo"),
                 default(Selector).Nesting().Class("bar")
             ).Name("baz");

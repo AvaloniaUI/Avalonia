@@ -49,7 +49,11 @@ namespace Avalonia.Styling
         {
             if (_selectorString == null)
             {
-                _selectorString = string.Join(", ", _selectors.Select(x => x.ToString(owner)));
+                var selectorStrings = _selectors.Select(x =>
+                    x is OrSelector ?
+                        $"({x.ToString(owner)})" :
+                        x.ToString(owner));
+                _selectorString = string.Join(", ", selectorStrings);
             }
 
             return _selectorString;
