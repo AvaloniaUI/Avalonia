@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using Avalonia.Input;
 using Avalonia.Utilities;
@@ -28,6 +29,8 @@ namespace Avalonia.Win32
             var buffer = StringBuilderCache.Acquire(MaxFormatNameLength);
             if (UnmanagedMethods.GetClipboardFormatName(id, buffer, buffer.Capacity) > 0)
                 return StringBuilderCache.GetStringAndRelease(buffer);
+            if (Enum.IsDefined(typeof(UnmanagedMethods.ClipboardFormat), (int)id))
+                return Enum.GetName(typeof(UnmanagedMethods.ClipboardFormat), (int)id)!;
             return $"Unknown_Format_{id}";
         }
 
@@ -54,13 +57,23 @@ namespace Avalonia.Win32
             {
                 if (DataFormat.Image.Equals(format))
                 {
-                    var imageFormat = s_formats.Find(x => x.Format.Identifier == "image/png");
-                    if (imageFormat.Format == null)
-                        imageFormat = s_formats.Find(x => x.Format.Identifier == "image/jpg" || x.Format.Identifier == "image/jpeg");
-                    if (imageFormat.Format == null)
-                        imageFormat = s_formats.Find(x => x.Format.Identifier == "image/bmp");
+                    (DataFormat, ushort)? pngFormat = null;
+                    (DataFormat, ushort)? jpgFormat = null;
+                    (DataFormat, ushort)? dibFormat = null;
+                    (DataFormat, ushort)? bitFormat = null;
 
-                    return imageFormat.Id;
+                    foreach (var currentFormat in s_formats)
+                    {
+                        if (currentFormat.Id == (ushort)UnmanagedMethods.ClipboardFormat.CF_DIB)
+                            dibFormat = currentFormat;
+                        if (currentFormat.Id == (ushort)UnmanagedMethods.ClipboardFormat.CF_BITMAP)
+                            bitFormat = currentFormat;
+                        if(currentFormat.Format.Identifier == "image/png")
+                            pngFormat = currentFormat;
+                        if (currentFormat.Format.Identifier == "image/jpg" || currentFormat.Format.Identifier == "image/jpeg")
+                            jpgFormat = currentFormat;
+                    }
+                    return dibFormat?.Item2 ?? bitFormat?.Item2 ?? pngFormat?.Item2 ?? jpgFormat?.Item2 ?? 0;
                 }
 
                 for (var i = 0; i < s_formats.Count; ++i)

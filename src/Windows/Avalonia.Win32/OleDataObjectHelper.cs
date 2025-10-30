@@ -6,9 +6,11 @@ using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using Avalonia.Input;
 using Avalonia.Logging;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 using Avalonia.Platform.Storage.FileIO;
 using Avalonia.Utilities;
+using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 using FORMATETC = Avalonia.Win32.Interop.UnmanagedMethods.FORMATETC;
 using STGMEDIUM = Avalonia.Win32.Interop.UnmanagedMethods.STGMEDIUM;
@@ -20,6 +22,8 @@ namespace Avalonia.Win32;
 /// </summary>
 internal static class OleDataObjectHelper
 {
+    private const int SRCCOPY = 0x00CC0020;
+
     public static FORMATETC ToFormatEtc(this DataFormat format)
         => new()
         {
@@ -38,15 +42,78 @@ internal static class OleDataObjectHelper
             return null;
 
         var medium = new STGMEDIUM();
-        if (_oleDataObject.GetData(&formatEtc, &medium) != (uint)HRESULT.S_OK)
-            return null;
+        var result = _oleDataObject.GetData(&formatEtc, &medium);
+        if (result != (uint)HRESULT.S_OK)
+        {
+            if (result == 0x80040069) // DV_E_TYMED
+            {
+                formatEtc.tymed = TYMED.TYMED_GDI;
+
+                if (_oleDataObject.GetData(&formatEtc, &medium) != (uint)HRESULT.S_OK)
+                {
+                    return null;
+                }
+            }
+            else
+                return null;
+        }
 
         try
         {
-            if (medium.tymed == TYMED.TYMED_HGLOBAL && medium.unionmember != IntPtr.Zero)
+            if (medium.unionmember != IntPtr.Zero)
             {
-                var hGlobal = medium.unionmember;
-                return ReadDataFromHGlobal(format, hGlobal);
+                if (medium.tymed == TYMED.TYMED_HGLOBAL)
+                {
+                    var hGlobal = medium.unionmember;
+                    return ReadDataFromHGlobal(format, hGlobal, formatEtc);
+                }
+                else if (medium.tymed == TYMED.TYMED_GDI)
+                {
+                    var bitmapHandle = medium.unionmember;
+                    var bitmap = new BITMAP();
+                    unsafe
+                    {
+                        var pBitmap = &bitmap;
+                        GetObject(bitmapHandle, Marshal.SizeOf(bitmap), (IntPtr)pBitmap);
+
+                        var bitmapInfoHeader = new BITMAPINFOHEADER()
+                        {
+                            biWidth = bitmap.bmWidth,
+                            biHeight = bitmap.bmHeight,
+                            biPlanes = bitmap.bmPlanes,
+                            biBitCount = 32,
+                            biCompression = 0,
+                            biSizeImage = (uint)(bitmap.bmWidth * 4 * Math.Abs(bitmap.bmHeight))
+                        };
+
+                        bitmapInfoHeader.Init();
+
+                        var destHdc = UnmanagedMethods.GetDC(IntPtr.Zero);
+                        var compatDc = UnmanagedMethods.CreateCompatibleDC(destHdc);
+                        var section = UnmanagedMethods.CreateDIBSection(compatDc, ref bitmapInfoHeader, 0, out var lbBits, IntPtr.Zero, 0);
+                        SelectObject(compatDc, section);
+                        var sourceHdc = UnmanagedMethods.GetDC(IntPtr.Zero);
+                        var srcCompatHdc = UnmanagedMethods.CreateCompatibleDC(sourceHdc);
+                        SelectObject(srcCompatHdc, bitmapHandle);
+
+                        StretchBlt(compatDc, 0, bitmapInfoHeader.biHeight, bitmapInfoHeader.biWidth, -bitmapInfoHeader.biHeight, srcCompatHdc, 0, 0, bitmap.bmWidth, bitmap.bmHeight, SRCCOPY);
+                        var avBitmap = new Bitmap(Platform.PixelFormats.Bgra8888,
+                            Platform.AlphaFormat.Opaque,
+                            lbBits,
+                            new PixelSize(bitmapInfoHeader.biWidth, bitmapInfoHeader.biHeight),
+                            new Vector(96, 96),
+                            bitmapInfoHeader.biWidth * 4);
+
+                        DeleteObject(section);
+
+                        UnmanagedMethods.ReleaseDC(IntPtr.Zero, sourceHdc);
+                        UnmanagedMethods.ReleaseDC(IntPtr.Zero, srcCompatHdc);
+                        UnmanagedMethods.ReleaseDC(IntPtr.Zero, compatDc);
+                        UnmanagedMethods.ReleaseDC(IntPtr.Zero, destHdc);
+
+                        return avBitmap;
+                    }
+                }
             }
         }
         finally
@@ -57,7 +124,7 @@ internal static class OleDataObjectHelper
         return null;
     }
 
-    public static object? ReadDataFromHGlobal(DataFormat format, IntPtr hGlobal)
+    public unsafe static object? ReadDataFromHGlobal(DataFormat format, IntPtr hGlobal, FORMATETC formatEtc)
     {
         if (DataFormat.Text.Equals(format))
             return ReadStringFromHGlobal(hGlobal);
@@ -70,12 +137,65 @@ internal static class OleDataObjectHelper
                 .ToArray();
         }
 
-        if(DataFormat.Image.Equals(format))
+        if (DataFormat.Image.Equals(format))
         {
-            var data = ReadBytesFromHGlobal(hGlobal);
-            using var stream = new MemoryStream(data);
+            if (formatEtc.cfFormat == (ushort)UnmanagedMethods.ClipboardFormat.CF_DIB)
+            {
+                var data = ReadBytesFromHGlobal(hGlobal);
+                fixed (byte* ptr = data)
+                {
+                    var bitmapInfo = Marshal.PtrToStructure<UnmanagedMethods.BITMAPINFO>((IntPtr)ptr);
 
-            return new Avalonia.Media.Imaging.Bitmap(stream);
+                    var bitmapInfoHeader = new BITMAPINFOHEADER()
+                    {
+                        biWidth = bitmapInfo.biWidth,
+                        biHeight = bitmapInfo.biHeight,
+                        biPlanes = bitmapInfo.biPlanes,
+                        biBitCount = 32,
+                        biCompression = 0,
+                        biSizeImage = (uint)(bitmapInfo.biWidth * 4 * Math.Abs(bitmapInfo.biHeight))
+                    };
+
+                    bitmapInfoHeader.Init();
+
+                    var hdc = UnmanagedMethods.GetDC(IntPtr.Zero);
+                    var compatDc = UnmanagedMethods.CreateCompatibleDC(hdc);
+                    var section = UnmanagedMethods.CreateDIBSection(compatDc, ref bitmapInfoHeader, 0, out var lbBits, IntPtr.Zero, 0);
+                    SelectObject(compatDc, section);
+                    var ret = UnmanagedMethods.StretchDIBits(compatDc,
+                        0,
+                        bitmapInfo.biHeight,
+                        bitmapInfo.biWidth,
+                        -bitmapInfo.biHeight,
+                        0,
+                        0,
+                        bitmapInfoHeader.biWidth,
+                        bitmapInfoHeader.biHeight,
+                        (IntPtr)(ptr + bitmapInfo.biSize),
+                        ref bitmapInfo,
+                        0,
+                        SRCCOPY
+                        );
+
+                    var bitmap = new Bitmap(Platform.PixelFormats.Bgra8888,
+                        Platform.AlphaFormat.Opaque,
+                        lbBits,
+                        new PixelSize(bitmapInfoHeader.biWidth, bitmapInfoHeader.biHeight), 
+                        new Vector(96, 96),
+                        bitmapInfoHeader.biWidth * 4);
+
+                    DeleteObject(section);
+                    UnmanagedMethods.ReleaseDC(IntPtr.Zero, compatDc);
+                    UnmanagedMethods.ReleaseDC(IntPtr.Zero, hdc);
+                    return bitmap;
+                }
+            }
+            else
+            {
+                var data = ReadBytesFromHGlobal(hGlobal);
+                var stream = new MemoryStream(data);
+                return new Bitmap(stream);
+            }
         }
 
         if (format is DataFormat<string>)
