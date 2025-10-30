@@ -24,10 +24,16 @@ internal sealed class ClipDataToDataTransferWrapper(ClipData clipData, Context? 
 
         var formats = new DataFormat[count];
 
+        bool hasImage = false;
         for (var i = 0; i < count; ++i)
+        {
             formats[i] = AndroidDataFormatHelper.MimeTypeToDataFormat(clipDescription.GetMimeType(i)!);
 
-        if (formats.Any(x => x?.Identifier.StartsWith("image/", System.StringComparison.OrdinalIgnoreCase) == true))
+            if (!hasImage)
+                hasImage = formats[i]?.Identifier.StartsWith("image/", System.StringComparison.OrdinalIgnoreCase) == true;
+        }
+
+        if (hasImage)
         {
             formats = [.. formats, DataFormat.Image];
         }

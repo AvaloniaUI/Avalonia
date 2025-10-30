@@ -23,21 +23,7 @@ internal sealed class BrowserClipboardDataTransferItem(JSObject readableDataItem
 
     protected override async Task<object?> TryGetRawCoreAsync(DataFormat format)
     {
-        string formatString = "";
-
-        if (DataFormat.Image.Equals(format))
-        {
-            var formats = Formats;
-            var imageFormat = formats.FirstOrDefault(x => x.Identifier == "image/png");
-            if (imageFormat == null)
-                imageFormat = formats.FirstOrDefault(x => x.Identifier is "image/jpg" or "image/jpeg");
-            if (imageFormat == null)
-                imageFormat = formats.FirstOrDefault(x => x.Identifier == "image/bmp");
-            
-            formatString = imageFormat?.Identifier ?? "";
-        }
-        else
-            formatString = BrowserDataFormatHelper.ToBrowserFormat(format);
+        string formatString = BrowserDataFormatHelper.ToBrowserFormat(format);
 
         var value = await InputHelper.TryGetReadableDataItemValueAsync(_readableDataItem, formatString)
             .ConfigureAwait(false);

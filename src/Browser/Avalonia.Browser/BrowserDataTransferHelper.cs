@@ -19,7 +19,7 @@ internal static class BrowserDataTransferHelper
         for (var i = 0; i < formatStrings.Length; ++i)
         {
             var formatString = formatStrings[i];
-            hasSupportedImage = formatString is "image/png" or "image/jpeg" or "image/bmp" or "image/jpeg";
+            hasSupportedImage = formatString is "image/png";
             formats[i] = BrowserDataFormatHelper.ToDataFormat(formatString);
         }
 

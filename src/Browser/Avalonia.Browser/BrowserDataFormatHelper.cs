@@ -7,7 +7,7 @@ internal static class BrowserDataFormatHelper
 {
     private const string FormatTextPlain = "text/plain";
     private const string FormatFiles = "Files";
-    private const string FormatImage = "Image";
+    private const string FormatImage = "image/png";
     private const string AppPrefix = "application/avn-fmt.";
 
     public static DataFormat ToDataFormat(string formatString)

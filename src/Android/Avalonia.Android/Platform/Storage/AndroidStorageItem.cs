@@ -392,6 +392,8 @@ internal sealed class AndroidStorageFile : AndroidStorageItem, IStorageBookmarkF
     public Task<Stream> OpenReadAsync() => Task.FromResult(OpenContentStream(Activity, Uri, false)
         ?? throw new InvalidOperationException("Failed to open content stream"));
 
+    public Stream OpenRead() => OpenReadAsync().Result;
+
     public Task<Stream> OpenWriteAsync() => Task.FromResult(OpenContentStream(Activity, Uri, true)
         ?? throw new InvalidOperationException("Failed to open content stream"));
 

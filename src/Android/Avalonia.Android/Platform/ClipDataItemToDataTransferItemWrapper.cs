@@ -16,7 +16,6 @@ namespace Avalonia.Android.Platform;
 internal sealed class ClipDataItemToDataTransferItemWrapper(ClipData.Item item, ClipDataToDataTransferWrapper owner)
     : PlatformDataTransferItem
 {
-    private readonly ClipData.Item _item = item;
     private readonly ClipDataToDataTransferWrapper _owner = owner;
 
     protected override DataFormat[] ProvideFormats()
@@ -25,57 +24,46 @@ internal sealed class ClipDataItemToDataTransferItemWrapper(ClipData.Item item, 
     protected override object? TryGetRawCore(DataFormat format)
     {
         if (DataFormat.Text.Equals(format))
-            return _item.CoerceToText(_owner.Context);
+            return item.CoerceToText(_owner.Context);
 
         if (format is DataFormat<string>)
             return TryGetAsString();
 
-        var file = item.Uri is { Scheme: "file" or "content" } fileUri && _owner.Context is Activity activity ?
-                AndroidStorageFile.CreateItem(activity, fileUri) :
-                null;
-
-        if(file != null)
+        if (DataFormat.File.Equals(format))
         {
-            if (DataFormat.File.Equals(format))
+            return item.Uri is { Scheme: "file" or "content" } fileUri && _owner.Context is Activity activity ?
+                    AndroidStorageFile.CreateItem(activity, fileUri) :
+                    null;
+        }
+        else if (DataFormat.Image.Equals(format))
+        {
+            var file = item.Uri is { Scheme: "file" or "content" } fileUri && _owner.Context is Activity activity ?
+                    AndroidStorageFile.CreateItem(activity, fileUri) :
+                    null;
+
+            if (file is AndroidStorageFile storageFile)
             {
-                return file;
-            }
+                using var stream = storageFile.OpenReadAsync().Result;
 
-            try
-            {
-                if (DataFormat.Image.Equals(format))
+                if (stream != null)
                 {
-                    Bitmap? image = null;
-
-                    if (file is AndroidStorageFile storageFile)
-                    {
-                        using var stream = storageFile.OpenReadAsync().Result;
-
-                        if (stream != null)
-                        {
-                            image = new Bitmap(stream);
-                        }
-                    }
-
-                    return image;
-                }
-
-                if (format is DataFormat<byte[]>)
-                {
-                    if (file is AndroidStorageFile storageFile)
-                    {
-                        using var stream = storageFile.OpenReadAsync().Result;
-
-                        using var mem = new MemoryStream();
-                        stream.CopyTo(mem);
-                        return mem.ToArray();
-                    }
+                    return new Bitmap(stream);
                 }
             }
-            finally
-            {
+        }
+        else if (format is DataFormat<byte[]>)
+        {
+            var file = item.Uri is { Scheme: "file" or "content" } fileUri && _owner.Context is Activity activity ?
+                    AndroidStorageFile.CreateItem(activity, fileUri) :
+                    null;
 
-                file?.Dispose();
+            if (file is AndroidStorageFile storageFile)
+            {
+                using var stream = storageFile.OpenRead();
+
+                using var mem = new MemoryStream();
+                stream.CopyTo(mem);
+                return mem.ToArray();
             }
         }
 
@@ -84,16 +72,16 @@ internal sealed class ClipDataItemToDataTransferItemWrapper(ClipData.Item item, 
 
     private string? TryGetAsString()
     {
-        if (_item.Text is { } text)
+        if (item.Text is { } text)
             return text;
 
-        if (_item.HtmlText is { } htmlText)
+        if (item.HtmlText is { } htmlText)
             return htmlText;
 
-        if (_item.Uri is { } uri)
+        if (item.Uri is { } uri)
             return uri.ToString();
 
-        if (_item.Intent is { } intent)
+        if (item.Intent is { } intent)
             return intent.ToUri(IntentUriType.Scheme);
 
         return null;
