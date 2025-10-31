@@ -67,6 +67,9 @@ internal class VulkanInstance : IVulkanInstance
                 enabledLayers.Add("VK_LAYER_KHRONOS_validation");
         }
 
+        foreach (var ext in KnownExtensions.SkiaKnownExtensions)
+            AddExtensionsIfSupported(ext);
+        
         AddExtensionsIfSupported(VulkanExternalObjectsFeature.RequiredInstanceExtensions);
 
         var khrSurfaceExtensions = platformOptions.RequiredKhrSurfaceExtensions.Append("VK_KHR_surface").ToArray();
