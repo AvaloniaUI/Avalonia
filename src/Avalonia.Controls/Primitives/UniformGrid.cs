@@ -101,7 +101,6 @@ namespace Avalonia.Controls.Primitives
                 (availableSize.Width - (_columns - 1) * ColumnSpacing) / _columns,
                 (availableSize.Height - (_rows - 1) * RowSpacing) / _rows);
 
-            // Measure children using the computed per-cell available size (do not round here).
             foreach (var child in Children)
             {
                 child.Measure(childAvailableSize);
