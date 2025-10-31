@@ -101,6 +101,7 @@ namespace Avalonia.Controls.Primitives
                 (availableSize.Width - (_columns - 1) * ColumnSpacing) / _columns,
                 (availableSize.Height - (_rows - 1) * RowSpacing) / _rows);
 
+            // Measure children using the computed per-cell available size (do not round here).
             foreach (var child in Children)
             {
                 child.Measure(childAvailableSize);
@@ -113,6 +114,22 @@ namespace Avalonia.Controls.Primitives
                 if (child.DesiredSize.Height > maxHeight)
                 {
                     maxHeight = child.DesiredSize.Height;
+                }
+            }
+
+            // If layout rounding is enabled, round the measured per-cell unit size (maxWidth/maxHeight).
+            // We round the measured max sizes instead of the childAvailableSize to avoid changing the input
+            // used for children.Measure(...) which could change how children measure themselves.
+            if (UseLayoutRounding)
+            {
+                if (!double.IsInfinity(maxWidth) && !double.IsNaN(maxWidth))
+                {
+                    maxWidth = Math.Round(maxWidth);
+                }
+
+                if (!double.IsInfinity(maxHeight) && !double.IsNaN(maxHeight))
+                {
+                    maxHeight = Math.Round(maxHeight);
                 }
             }
 
@@ -135,6 +152,20 @@ namespace Avalonia.Controls.Primitives
 
             var width = Math.Max((finalSize.Width - (_columns - 1) * columnSpacing) / _columns, 0);
             var height = Math.Max((finalSize.Height - (_rows - 1) * rowSpacing) / _rows, 0);
+
+            // If layout rounding is enabled, round the per-cell unit size to integral device units.
+            if (UseLayoutRounding)
+            {
+                if (!double.IsInfinity(width) && !double.IsNaN(width))
+                {
+                    width = Math.Round(width);
+                }
+
+                if (!double.IsInfinity(height) && !double.IsNaN(height))
+                {
+                    height = Math.Round(height);
+                }
+            }
 
             foreach (var child in Children)
             {
