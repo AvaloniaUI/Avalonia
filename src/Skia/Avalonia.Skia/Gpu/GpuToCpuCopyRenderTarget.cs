@@ -59,33 +59,51 @@ class GpuToCpuCopyRenderTarget(
         if (isLost())
             throw new PlatformGraphicsContextLostException();
 
-        using var locked = fb.Lock().DisposeIfFailed();
-        using var drawOp = beginDraw?.Invoke().DisposeIfFailed();
-
-        if (_surfaceSize.HasValue && _surfaceSize.Value != locked.Value.Size)
-            DisposeSurface();
-
-        if (_surface == null)
+        bool success = false;
+        ILockedFramebuffer? locked = null;
+        IDisposable? drawOp = null;
+        try
         {
-            var info = new SKImageInfo(locked.Value.Size.Width, locked.Value.Size.Height,
-                SKColorType.Rgba8888, SKAlphaType.Premul);
-            _surface = SKSurface.Create(grContext, false, info);
+            locked = fb.Lock();
+            drawOp = beginDraw?.Invoke();
+
+            if (_surfaceSize.HasValue && _surfaceSize.Value != locked.Size)
+                DisposeSurface();
+
             if (_surface == null)
-                throw new Exception($"Unable to create offscreen surface for rendering");
-            _surfaceSize = locked.Value.Size;
+            {
+                var info = new SKImageInfo(locked.Size.Width, locked.Size.Height,
+                    SKColorType.Rgba8888, SKAlphaType.Premul);
+                _surface = SKSurface.Create(grContext, false, info);
+                if (_surface == null)
+                    throw new Exception($"Unable to create offscreen surface for rendering");
+                _surfaceSize = locked.Size;
+            }
+            
+            
+            var rv = new Session(grContext, _surface, locked.Dpi.X / 96, () =>
+            {
+                using (locked)
+                using (drawOp)
+                    _surface.ReadPixels(new SKImageInfo(locked.Size.Width, locked.Size.Height,
+                            locked.Format.ToSkColorType(),
+                            locked.Format == PixelFormat.Rgb565 ? SKAlphaType.Opaque : SKAlphaType.Premul),
+                        locked.Address, locked.RowBytes, 0, 0);
+            });
+            success = true;
+            return rv;
         }
-
-        var l = locked.SuccessReturn();
-        var endDraw = drawOp?.SuccessReturn();
-        return new Session(grContext, _surface, locked.Value.Dpi.X / 96, () =>
+        finally
         {
-            using (l)
-            using (endDraw)
-                _surface.ReadPixels(new SKImageInfo(l.Size.Width, l.Size.Height,
-                        l.Format.ToSkColorType(),
-                        l.Format == PixelFormat.Rgb565 ? SKAlphaType.Opaque : SKAlphaType.Premul),
-                    l.Address, l.RowBytes, 0, 0);
-        });
+            if (!success)
+            {
+                using (drawOp)
+                using (locked)
+                {
+                    // Dispose
+                }
+            }
+        }
     }
 
     public bool IsCorrupted => isLost();

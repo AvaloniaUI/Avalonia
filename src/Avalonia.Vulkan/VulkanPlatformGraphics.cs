@@ -86,6 +86,10 @@ public class VulkanPlatformGraphics : IPlatformGraphics
                 options.VulkanDeviceCreationOptions ?? new(),
                 platformOptions);
 
+            Logger.TryGet(LogEventLevel.Information, "Vulkan")?.Log(null,
+                "Vulkan instance created. Enabled extensions: {0}",
+                string.Join(", ", instance.EnabledExtensions));
+
             var devOpts = options.VulkanDeviceCreationOptions ?? new();
             Interop.VulkanDevice.Create(instance, devOpts, platformOptions)
                 .Dispose();
