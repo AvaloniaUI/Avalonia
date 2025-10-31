@@ -255,7 +255,7 @@ internal static class OleDataObjectHelper
         }
     }
 
-    public static uint WriteDataToHGlobal(IDataTransfer dataTransfer, DataFormat format, ref IntPtr hGlobal)
+    public unsafe static uint WriteDataToHGlobal(IDataTransfer dataTransfer, DataFormat format, ref IntPtr hGlobal)
     {
         if (DataFormat.Text.Equals(format))
         {
@@ -272,6 +272,42 @@ internal static class OleDataObjectHelper
                 .Where(path => path is not null)!;
 
             return WriteFileNamesToHGlobal(ref hGlobal, fileNames);
+        }
+
+        if (DataFormat.Image.Equals(format))
+        {
+            var bitmap = dataTransfer.TryGetValue(DataFormat.Image);
+            if (bitmap != null)
+            {
+                var pixelSize = bitmap.PixelSize;
+                var stride = ((bitmap.Format?.BitsPerPixel ?? 0) / 8) * pixelSize.Width;
+                var buffer = new byte[stride * pixelSize.Height];
+                fixed (byte* bytes = buffer)
+                {
+                    bitmap.CopyPixels(new PixelRect(pixelSize), (IntPtr)bytes, buffer.Length, stride);
+
+                    var infoHeader = new BITMAPINFOHEADER()
+                    {
+                        biSizeImage = (uint)buffer.Length,
+                        biWidth = pixelSize.Width,
+                        biHeight = -pixelSize.Height,
+                        biBitCount = (ushort)(bitmap.Format?.BitsPerPixel ?? 0),
+                        biPlanes = 1,
+                        biCompression = (uint)BitmapCompressionMode.BI_RGB
+                    };
+                    infoHeader.Init();
+
+                    var imageData = new byte[infoHeader.biSize + infoHeader.biSizeImage];
+
+                    fixed (byte* image = imageData)
+                    {
+                        Marshal.StructureToPtr(infoHeader, (IntPtr)image, false);
+                        new Span<byte>(bytes, buffer.Length).CopyTo(new Span<byte>((image + infoHeader.biSize), buffer.Length));
+
+                        return WriteBytesToHGlobal(ref hGlobal, imageData);
+                    }
+                }
+            }
         }
 
         if (format is DataFormat<string> stringFormat)

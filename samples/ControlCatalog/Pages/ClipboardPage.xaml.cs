@@ -11,6 +11,7 @@ using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 
@@ -32,6 +33,9 @@ namespace ControlCatalog.Pages
             _clipboardLastDataObjectChecker =
                 new DispatcherTimer(TimeSpan.FromSeconds(0.5), default, CheckLastDataObject);
             InitializeComponent();
+            using var asset = AssetLoader.Open(new Uri("avares://ControlCatalog/Assets/image1.jpg"));
+            _defaultImage = new Bitmap(asset);
+            ClipboardImage.Source = _defaultImage;
         }
 
         private TextBox ClipboardContent => this.Get<TextBox>("ClipboardContent");
@@ -46,6 +50,12 @@ namespace ControlCatalog.Pages
         {
             if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
                 await clipboard.SetTextAsync(ClipboardContent.Text ?? string.Empty);
+        }
+
+        private async void CopyImage(object? sender, RoutedEventArgs args)
+        {
+            if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
+                await clipboard.SetValueAsync(DataFormat.Image, _defaultImage);
         }
 
         private async void PasteText(object? sender, RoutedEventArgs args)
@@ -181,6 +191,8 @@ namespace ControlCatalog.Pages
 
         private Run OwnsClipboardDataObject => this.Get<Run>("OwnsClipboardDataObject");
         private bool _checkingClipboardDataTransfer;
+        private Bitmap _defaultImage;
+
         private async void CheckLastDataObject(object? sender, EventArgs e)
         {
             if(_checkingClipboardDataTransfer)

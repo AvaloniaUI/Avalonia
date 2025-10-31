@@ -19,6 +19,7 @@ namespace Avalonia.Win32
             AddDataFormat(DataFormat.Text, (ushort)UnmanagedMethods.ClipboardFormat.CF_UNICODETEXT);
             AddDataFormat(DataFormat.Text, (ushort)UnmanagedMethods.ClipboardFormat.CF_TEXT);
             AddDataFormat(DataFormat.File, (ushort)UnmanagedMethods.ClipboardFormat.CF_HDROP);
+            AddDataFormat(DataFormat.Image, (ushort)UnmanagedMethods.ClipboardFormat.CF_DIB);
         }
 
         private static void AddDataFormat(DataFormat format, ushort id)
@@ -73,7 +74,12 @@ namespace Avalonia.Win32
                         if (currentFormat.Format.Identifier == "image/jpg" || currentFormat.Format.Identifier == "image/jpeg")
                             jpgFormat = currentFormat;
                     }
-                    return dibFormat?.Item2 ?? bitFormat?.Item2 ?? pngFormat?.Item2 ?? jpgFormat?.Item2 ?? 0;
+                    var imageFormatId = dibFormat?.Item2 ?? bitFormat?.Item2 ?? pngFormat?.Item2 ?? jpgFormat?.Item2 ?? 0;
+
+                    if(imageFormatId != 0)
+                    {
+                        return imageFormatId;
+                    }
                 }
 
                 for (var i = 0; i < s_formats.Count; ++i)

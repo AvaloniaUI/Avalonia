@@ -6,6 +6,7 @@
 
     <Button Click="CopyText" Content="Copy text to clipboard" />
     <Button Click="PasteText" Content="Paste text from clipboard" />
+    <Button Click="CopyImage" Content="Copy image to clipboard" />
     <Button Click="PasteImage" Content="Paste image from clipboard" />
     <Button Click="CopyFiles" Content="Copy files to clipboard" />
     <Button Click="PasteFiles" Content="Paste files from clipboard" />
