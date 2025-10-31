@@ -24,6 +24,7 @@ internal class VulkanInstance : IVulkanInstance
 
     internal static unsafe IVulkanInstance Create(
         VulkanInstanceCreationOptions options,
+        VulkanDeviceCreationOptions deviceOptions,
         VulkanPlatformSpecificOptions platformOptions)
     {
         var getProcAddress = options.CustomGetProcAddressDelegate ??
@@ -48,8 +49,7 @@ internal class VulkanInstance : IVulkanInstance
         };
 
         var enabledExtensions = new HashSet<string>(options.InstanceExtensions
-            .Concat(platformOptions.RequiredInstanceExtensions)
-            .Append("VK_KHR_surface"));
+            .Concat(platformOptions.RequiredInstanceExtensions));
         
         var enabledLayers = options.EnabledLayers.ToList();
 
@@ -68,6 +68,14 @@ internal class VulkanInstance : IVulkanInstance
         }
 
         AddExtensionsIfSupported(VulkanExternalObjectsFeature.RequiredInstanceExtensions);
+
+        var khrSurfaceExtensions = platformOptions.RequiredKhrSurfaceExtensions.Append("VK_KHR_surface").ToArray();
+
+        if (deviceOptions.AllowDevicesWithoutKhrSurfaces)
+            AddExtensionsIfSupported(khrSurfaceExtensions);
+        else
+            foreach (var ext in khrSurfaceExtensions)
+                enabledExtensions.Add(ext);
         
         using var enabledExtensionBuffers = new Utf8BufferArray(
             enabledExtensions

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
+using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Logging;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Surfaces;
@@ -70,6 +72,7 @@ namespace Avalonia.Skia
 
         public ISkiaGpuRenderTarget? TryCreateRenderTarget(IEnumerable<object> surfaces)
         {
+            surfaces = surfaces.ToList();
             var customRenderTargetFactory = _glContext.TryGetFeature<IGlPlatformSurfaceRenderTargetFactory>();
             foreach (var surface in surfaces)
             {
@@ -81,6 +84,14 @@ namespace Avalonia.Skia
                 {
                     return new GlRenderTarget(_grContext, _glContext, glSurface);
                 }
+            }
+            
+            var fb = surfaces.OfType<IFramebufferPlatformSurface>().FirstOrDefault();
+            if (fb != null)
+            {
+                Console.WriteLine("Using GL GPU->CPU copy fallback");
+                return new GpuToCpuCopyRenderTarget(GrContext, fb.CreateFramebufferRenderTarget(),
+                    () => IsLost, _glContext.EnsureCurrent, SafeDispose);
             }
 
             return null;
@@ -182,6 +193,21 @@ namespace Avalonia.Skia
         {
             lock (_postDisposeCallbacks)
                 _postDisposeCallbacks.Add(dispose);
+        }
+
+        void SafeDispose(IDisposable? disposable)
+        {
+            if(disposable == null)
+                return;
+            try
+            {
+                using (_glContext.EnsureCurrent()) 
+                    disposable.Dispose();
+            }
+            catch (PlatformGraphicsContextLostException)
+            {
+                AddPostDispose(disposable.Dispose);
+            }
         }
     }
 }

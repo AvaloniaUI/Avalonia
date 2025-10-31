@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Avalonia.Logging;
 using Avalonia.Vulkan.UnmanagedInterop;
 
 namespace Avalonia.Vulkan.Interop;
@@ -24,10 +25,17 @@ internal unsafe partial class VulkanDevice
         api.EnumeratePhysicalDevices(vkInstance, ref deviceCount, devices)
             .ThrowOnError("vkEnumeratePhysicalDevices");
 
-        var surfaceForProbePtr = platformOptions.DeviceCheckSurfaceFactory?.Invoke(api.Instance);
+        var surfaceForProbePtr =
+            api.IsGetPhysicalDeviceSurfaceSupportKHRAvailable
+                ? platformOptions.DeviceCheckSurfaceFactory?.Invoke(api.Instance)
+                : null;
+        
         var surfaceForProbe = surfaceForProbePtr.HasValue && surfaceForProbePtr.Value != 0
             ? new VkSurfaceKHR(surfaceForProbePtr.Value)
             : (VkSurfaceKHR?)null;
+
+        Logger.TryGet(LogEventLevel.Information, "Vulkan")?.Log(null,
+            "Probing {0} physical devices for compatibility with surface {1}", deviceCount, surfaceForProbePtr);
 
         DeviceInfo? compatibleDevice = null, discreteDevice = null;
 
@@ -66,10 +74,11 @@ internal unsafe partial class VulkanDevice
         };
 
         var enableExtensions =
-            new HashSet<string>(options.DeviceExtensions.Concat(VulkanExternalObjectsFeature.RequiredDeviceExtensions));
-
+            new HashSet<string>(options.DeviceExtensions.Concat(VulkanExternalObjectsFeature.RequiredDeviceExtensions)
+                .Append(VK_KHR_swapchain));
+        
         var enabledExtensions = enableExtensions
-            .Intersect(dev.Extensions).Append(VK_KHR_swapchain).Distinct().ToArray();
+            .Intersect(dev.Extensions).Distinct().ToArray();
 
         using var pEnabledExtensions = new Utf8BufferArray(enabledExtensions);
 
@@ -125,11 +134,34 @@ internal unsafe partial class VulkanDevice
         VulkanDeviceCreationOptions options, VkSurfaceKHR? surface)
     {
         instance.GetPhysicalDeviceProperties(physicalDevice, out var properties);
+        var deviceName = Marshal.PtrToStringAnsi((IntPtr)properties.deviceName);
+        Logger.TryGet(LogEventLevel.Information, "Vulkan")?.Log(null,
+            "Found device: {0} (Type: {1}, API Version: {2})",
+            deviceName,
+            properties.deviceType,
+            VulkanUnmanagedHelpers.DecodeVersion(properties.apiVersion));
 
         var supportedExtensions = GetDeviceExtensions(instance, physicalDevice);
-        if (!supportedExtensions.Contains(VK_KHR_swapchain))
-            return null;
         
+        Logger.TryGet(LogEventLevel.Information, "Vulkan")?.Log(null,
+            "Supported extensions: {0}", string.Join(", ", supportedExtensions));
+
+        if (surface != null)
+        {
+            var deviceSupportsSwapchain = supportedExtensions.Contains(VK_KHR_swapchain);
+            if (!deviceSupportsSwapchain)
+            {
+                Logger.TryGet(LogEventLevel.Error, "Vulkan")?.Log(null,
+                    "Device {0} does not support VK_KHR_swapchain",
+                    deviceName, VK_KHR_swapchain);
+                if (!options.AllowDevicesWithoutKhrSurfaces)
+                    return null;
+                Logger.TryGet(LogEventLevel.Information, "Vulkan")?.Log(null,
+                    "Devices without KHR surfaces are allowed by configuration, continuing");
+                surface = null;
+            }
+        }
+
         uint familyCount = 0;
         instance.GetPhysicalDeviceQueueFamilyProperties(physicalDevice, ref familyCount, null);
         var familyProperties = stackalloc VkQueueFamilyProperties[(int)familyCount];
@@ -150,6 +182,8 @@ internal unsafe partial class VulkanDevice
                     continue;
             }
 
+            Logger.TryGet(LogEventLevel.Information, "Vulkan")?.Log(null,
+                "Device {0} is compatible", deviceName);
             return new DeviceInfo
             {
                 PhysicalDevice = physicalDevice,
@@ -158,8 +192,11 @@ internal unsafe partial class VulkanDevice
                 QueueFamilyIndex = (uint)c,
                 QueueCount = familyProperties[c].queueCount
             };
-
         }
+
+        Logger.TryGet(LogEventLevel.Error, "Vulkan")?.Log(null,
+            "Device {0} does not support {1} or output surface type on any queue family",
+            deviceName, requredFlags);
 
         return null;
     }

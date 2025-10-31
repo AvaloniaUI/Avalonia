@@ -14,7 +14,7 @@ namespace Avalonia.Android.Platform.Vulkan
         public static VulkanPlatformGraphics? TryInitialize(VulkanOptions options) =>
             VulkanPlatformGraphics.TryCreate(options ?? new(), new VulkanPlatformSpecificOptions
                 {
-                    RequiredInstanceExtensions = { "VK_KHR_android_surface" },
+                    RequiredKhrSurfaceExtensions = { "VK_KHR_android_surface" },
                     GetProcAddressDelegate = vkGetInstanceProcAddr,
                     PlatformFeatures = new Dictionary<Type, object>
                     {
