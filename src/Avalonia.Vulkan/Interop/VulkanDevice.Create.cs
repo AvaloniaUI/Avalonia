@@ -75,7 +75,7 @@ internal unsafe partial class VulkanDevice
 
         var enableExtensions =
             new HashSet<string>(options.DeviceExtensions.Concat(VulkanExternalObjectsFeature.RequiredDeviceExtensions)
-                .Append(VK_KHR_swapchain).Concat(KnownExtensions.SkiaKnownExtensions));
+                .Append(VK_KHR_swapchain));
         
         var enabledExtensions = enableExtensions
             .Intersect(dev.Extensions).Distinct().ToArray();
