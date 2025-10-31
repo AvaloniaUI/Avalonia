@@ -36,11 +36,15 @@ internal static class StorageProviderHelpers
 
     public static Uri UriFromFilePath(string path, bool isDirectory)
     {
-        var uriPath = new StringBuilder(path)
-            .Replace("%", $"%{(int)'%':X2}")
-            .Replace("[", $"%{(int)'[':X2}")
-            .Replace("]", $"%{(int)']':X2}");
-
+        bool isLongPatah = path.StartsWith(@"\\?\");//Windows Long Path Prefix
+        if (isLongPatah)
+        {
+            path = path.Substring(4);
+        }
+        var uriPath = new StringBuilder(path);
+        uriPath = uriPath.Replace("%", $"%{(int)'%':X2}")
+                                    .Replace("[", $"%{(int)'[':X2}")
+                                    .Replace("]", $"%{(int)']':X2}");
         if (!path.EndsWith('/') && isDirectory)
         {
             uriPath.Append('/');
@@ -60,7 +64,7 @@ internal static class StorageProviderHelpers
             return null;
         }
     }
-    
+
     [return: NotNullIfNotNull(nameof(path))]
     public static string? NameWithExtension(string? path, string? defaultExtension, FilePickerFileType? filter)
     {
