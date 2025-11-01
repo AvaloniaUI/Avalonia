@@ -51,8 +51,9 @@ namespace Avalonia.X11
         private (int x, int y, IntPtr time)? _cachedPosition;
         private (int x, int y)? _lastPosition;
         private bool _waitingForStatus = false;
+        private bool _isFinished = false;
 
-        private CancellationTokenSource finishTimeoutCts;
+        private CancellationTokenSource _finishTimeoutCts;
 
         private DispatcherTimer? _sameAppDragOverTimer;
         private (IntPtr window, int x, int y)? _pendingSameAppDragOver;
@@ -64,7 +65,7 @@ namespace Avalonia.X11
             _display = _platform.Display;
             _atoms = _platform.Info.Atoms;
             _cursorFactory = AvaloniaLocator.Current.GetRequiredService<ICursorFactory>();
-            finishTimeoutCts = new CancellationTokenSource();
+            _finishTimeoutCts = new CancellationTokenSource();
             _dropEffect = dropEffect;
 
             _x11WindowFinder = new X11WindowFinder(_display, _atoms);
@@ -88,13 +89,7 @@ namespace Avalonia.X11
 
             SetupXdndProtocol();
         }
-
-        ~DragSourceWindow()
-        {
-            _dataTransmitter.Dispose();
-            Dispose();
-        }
-
+               
         public bool StartDrag()
         {
             state = DragState.InProgress;
@@ -512,19 +507,20 @@ namespace Avalonia.X11
             XLib.XFlush(_display);
 
             state = DragState.WaitingForFinish;
-            SetupFinishTimeout();
+            SetupFinishTimeout(3500);
         }
 
-        private void SetupFinishTimeout()
+        private void SetupFinishTimeout(int delay)
         {
-            var oldCts = finishTimeoutCts;
-            finishTimeoutCts = new CancellationTokenSource();
+            var oldCts = _finishTimeoutCts;
+            _finishTimeoutCts = new CancellationTokenSource();
             oldCts?.Cancel();
             oldCts?.Dispose();
 
-            Task.Delay(3000, finishTimeoutCts.Token).ContinueWith(t =>
+            var currentCts = _finishTimeoutCts;
+            Task.Delay(delay, currentCts.Token).ContinueWith(t =>
             {
-                if (!t.IsCanceled && state == DragState.WaitingForFinish)
+                if (!t.IsCanceled && !currentCts.Token.IsCancellationRequested && state == DragState.WaitingForFinish)
                 {
                     HandleDragFailure();
                 }
@@ -608,6 +604,9 @@ namespace Avalonia.X11
 
         private void HandleXdndFinished(ref XClientMessageEvent finishedEvent)
         {
+            if (_handle == IntPtr.Zero)
+                return;
+
             if (state == DragState.WaitingForFinish)
             {
                 bool success = ((ulong)finishedEvent.ptr2 & 1) != 0;
@@ -620,7 +619,7 @@ namespace Avalonia.X11
                     if (result == DragDropEffects.None)
                         result = DragDropEffects.Copy;
 
-                    Finished?.Invoke(this, result);
+                    InvokeFinished(result);
                 }
                 else
                 {
@@ -631,6 +630,9 @@ namespace Avalonia.X11
 
         private void HandleDragFailure()
         {
+            if (_handle == IntPtr.Zero)
+                return;
+
             if (_targetWindow != IntPtr.Zero)
             {
                 SendXdndLeave(_targetWindow);
@@ -639,7 +641,7 @@ namespace Avalonia.X11
             CleanupAfterDrag();
             state = DragState.Failed;
 
-            Finished?.Invoke(this, DragDropEffects.None);
+            InvokeFinished(DragDropEffects.None);
         }
 
         private void CancelDragOperation()
@@ -655,13 +657,20 @@ namespace Avalonia.X11
             CleanupAfterDrag();
             state = DragState.Cancelled;
 
-            Finished?.Invoke(this, DragDropEffects.None);
+            InvokeFinished(DragDropEffects.None);
         }
 
         private void CleanupAfterDrag()
         {
-            finishTimeoutCts?.Cancel();
+            if (_finishTimeoutCts != null && _finishTimeoutCts.Token.CanBeCanceled)
+            {
+                _finishTimeoutCts?.Cancel();
+            }
+
             XLib.XUngrabPointer(_display, IntPtr.Zero);
+            XLib.XUnmapWindow(_display, _handle);
+            XLib.XFlush(_display);
+
             SetCursor(null);
             _innerTarget = null;
         }
@@ -814,7 +823,7 @@ namespace Avalonia.X11
             if (_innerTarget != null)
             {
                 state = DragState.WaitingForFinish;
-                SetupFinishTimeout();
+                SetupFinishTimeout(5500);
 
                 Dispatcher.UIThread.Send(_ =>
                 {
@@ -838,9 +847,7 @@ namespace Avalonia.X11
                         }
                         DragDropEffects result = _innerTarget.HandleDrop(_atoms.ConvertDropEffect(_dropEffect));
 
-                        if (state != DragState.WaitingForFinish)
-                            return;
-
+                        
                         if (result == DragDropEffects.None)
                             result = DragDropEffects.Copy;
 
@@ -849,12 +856,13 @@ namespace Avalonia.X11
 
                         state = DragState.Completed;
                         CleanupAfterDrag();
-                        Finished?.Invoke(this, result);
+                        InvokeFinished(result);
 
                     }
                     catch (Exception ex)
                     {
-                        HandleDragFailure();
+                        if (state != DragState.Completed)
+                            HandleDragFailure();
 
                     }
                     finally
@@ -880,24 +888,50 @@ namespace Avalonia.X11
             }
         }
 
+        private void InvokeFinished(DragDropEffects result)
+        {
+            if (!_isFinished)
+            {
+                _isFinished = true;
+                Finished?.Invoke(this, result);
+            }
+        }
+
         public void Dispose()
         {
             _sameAppDragOverTimer?.Stop();
             _sameAppDragOverTimer = null;
             _pendingSameAppDragOver = null;
 
+            if (state != DragState.Completed)
+            {
+                state = DragState.Cancelled;
+            }
+
             try
             {
-                finishTimeoutCts?.Cancel();
-                finishTimeoutCts?.Dispose();
-            } catch (ObjectDisposedException) { }
+                if (_finishTimeoutCts != null && _finishTimeoutCts.Token.CanBeCanceled)
+                {
+                    _finishTimeoutCts?.Cancel();
+                }
+                _finishTimeoutCts?.Dispose();
+            }
+            catch (ObjectDisposedException) { }
 
             if (_handle != IntPtr.Zero)
             {
                 _platform.Windows.Remove(_handle);
                 _platform.XI2?.OnWindowDestroyed(_handle);
+
+                XLib.XUngrabPointer(_display, IntPtr.Zero);
+                XLib.XUnmapWindow(_display, _handle);
+                XLib.XDestroyWindow(_display, _handle);
+                XLib.XFlush(_display);
+
                 _handle = IntPtr.Zero;
             }
+
+            _dataTransmitter.Dispose();
 
             GC.SuppressFinalize(this);
         }

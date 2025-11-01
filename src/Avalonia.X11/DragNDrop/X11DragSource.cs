@@ -15,6 +15,7 @@ namespace Avalonia.X11
         private readonly AvaloniaX11Platform _platform;
 
         private DragSourceWindow? _processWindow = null;
+        private IntPtr _parentWindow = IntPtr.Zero;
 
         public X11DragSource(AvaloniaX11Platform platform)
         {
@@ -47,10 +48,11 @@ namespace Avalonia.X11
             using (var sourceWindow = new DragSourceWindow(_platform, parent, data, effects))
             {
                 _processWindow = sourceWindow;
+                _parentWindow = parent;
 
                 sourceWindow.Finished += (sender, result) =>
                 {
-                    completionSource.SetResult(result);
+                    completionSource.TrySetResult(result);
                 };
 
                 try
@@ -70,10 +72,23 @@ namespace Avalonia.X11
 
                 finally
                 {
+                    if (_parentWindow != IntPtr.Zero)
+                    {
+                        XLib.XSetInputFocus(_platform.Display, _parentWindow, RevertTo.Parent, IntPtr.Zero);
+                        XLib.XFlush(_platform.Display);
+
+                        _parentWindow = IntPtr.Zero;
+                    }
+
                     _processWindow = null;
                     if (sourceWindow is IDisposable disposable)
                     {
                         disposable.Dispose();
+                    }
+
+                    if (!completionSource.Task.IsCompleted)
+                    {
+                        completionSource.TrySetResult(DragDropEffects.None);
                     }
                 }
             }
