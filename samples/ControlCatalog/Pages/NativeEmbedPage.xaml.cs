@@ -1,26 +1,17 @@
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-
-using Avalonia.Platform;
-using Avalonia.Interactivity;
-using Avalonia.Controls;
-using Avalonia.Controls.Platform;
-using Avalonia.Markup.Xaml;
 using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Platform;
 
 namespace ControlCatalog.Pages
 {
-    public class NativeEmbedPage : UserControl
+    public partial class NativeEmbedPage : UserControl
     {
         public NativeEmbedPage()
         {
-            this.InitializeComponent();
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
+            InitializeComponent();
         }
 
         public async void ShowPopupDelay(object sender, RoutedEventArgs args)
@@ -47,8 +38,8 @@ namespace ControlCatalog.Pages
             if (change.Property == BoundsProperty)
             {
                 var isMobile = change.GetNewValue<Rect>().Width < 1200;
-                this.Find<DockPanel>("FirstPanel")!.Classes.Set("mobile", isMobile);
-                this.Find<DockPanel>("SecondPanel")!.Classes.Set("mobile", isMobile);
+                FirstPanel.Classes.Set("mobile", isMobile);
+                SecondPanel.Classes.Set("mobile", isMobile);
             }
         }
     }
