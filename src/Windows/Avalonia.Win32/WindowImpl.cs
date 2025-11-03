@@ -1481,7 +1481,7 @@ namespace Avalonia.Win32
                 else
                     style &= ~WindowStyles.WS_MAXIMIZEBOX;
 
-                const WindowStyles fullDecorationFlags = WindowStyles.WS_CAPTION | WindowStyles.WS_BORDER;
+                const WindowStyles fullDecorationFlags = WindowStyles.WS_CAPTION | WindowStyles.WS_BORDER | WindowStyles.WS_SYSMENU;
 
                 if (newProperties.Decorations == SystemDecorations.Full)
                 {

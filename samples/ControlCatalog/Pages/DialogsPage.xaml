@@ -38,6 +38,7 @@
         <Button Name="OpenFolderPicker">Select Fo_lder</Button>
         <Button Name="OpenFilePicker">_Open File</Button>
         <Button Name="SaveFilePicker">_Save File</Button>
+        <Button Name="SaveFilePickerWithResult">Save File XML or JSON</Button>
         <Button Name="OpenFileFromBookmark">Open File Bookmark</Button>
         <Button Name="OpenFolderFromBookmark">Open Folder Bookmark</Button>
       </StackPanel>
