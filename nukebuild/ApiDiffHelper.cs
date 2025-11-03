@@ -326,25 +326,11 @@ public static class ApiDiffHelper
 
             var frameworkDiffs = new List<FrameworkDiffInfo>();
 
-            // Handle frameworks that exist only in the current package.
-            foreach (var framework in currentFolderNames.Keys.Except(baselineFolderNames.Keys))
-            {
-                var folderName = currentFolderNames[framework];
-                Directory.CreateDirectory(baselineFolderPath / folderName);
-                baselineFolderNames.Add(framework, folderName);
-            }
-
-            // Handle frameworks that exist only for the baseline package.
-            foreach (var framework in baselineFolderNames.Keys.Except(currentFolderNames.Keys))
-            {
-                var folderName = baselineFolderNames[framework];
-                Directory.CreateDirectory(currentFolderPath / folderName);
-                currentFolderNames.Add(framework, folderName);
-            }
-
             foreach (var (framework, currentFolderName) in currentFolderNames)
             {
-                var baselineFolderName = baselineFolderNames[framework];
+                // Ignore new frameworks that didn't exist in the baseline package. Empty folders make the ApiDiff tool crash.
+                if (!baselineFolderNames.TryGetValue(framework, out var baselineFolderName))
+                    continue;
 
                 frameworkDiffs.Add(new FrameworkDiffInfo(
                     framework,
