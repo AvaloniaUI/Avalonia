@@ -30,7 +30,7 @@ internal static class BrowserDataFormatHelper
         if (DataFormat.File.Equals(format))
             return FormatFiles;
 
-        if (DataFormat.Image.Equals(format))
+        if (DataFormat.Bitmap.Equals(format))
             return FormatImage;
 
         return format.ToSystemName(AppPrefix);

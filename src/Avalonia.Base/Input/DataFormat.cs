@@ -35,9 +35,9 @@ public abstract class DataFormat : IEquatable<DataFormat>
 
     /// <summary>
     /// Gets a data format representing a bitmap.
-    /// Its data type is <see cref="Bitmap"/>.
+    /// Its data type is <see cref="Media.Imaging.Bitmap"/>.
     /// </summary>
-    public static DataFormat<Bitmap> Image { get; } = CreateUniversalFormat<Bitmap>("Image");
+    public static DataFormat<Bitmap> Bitmap { get; } = CreateUniversalFormat<Bitmap>("Image");
 
     /// <summary>
     /// Gets a data format representing a single file.

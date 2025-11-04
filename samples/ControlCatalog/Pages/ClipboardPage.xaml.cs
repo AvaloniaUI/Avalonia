@@ -55,7 +55,7 @@ namespace ControlCatalog.Pages
         private async void CopyImage(object? sender, RoutedEventArgs args)
         {
             if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
-                await clipboard.SetValueAsync(DataFormat.Image, _defaultImage);
+                await clipboard.SetValueAsync(DataFormat.Bitmap, _defaultImage);
         }
 
         private async void PasteText(object? sender, RoutedEventArgs args)
@@ -74,7 +74,7 @@ namespace ControlCatalog.Pages
                 Bitmap? source = null;
                 if (data != null)
                 {
-                    source = await data!.TryGetValueAsync(DataFormat.Image);
+                    source = await data!.TryGetValueAsync(DataFormat.Bitmap);
                 }
                 ClipboardImage.Source = source;
             }

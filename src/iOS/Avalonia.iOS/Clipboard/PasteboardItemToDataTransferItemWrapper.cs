@@ -26,7 +26,7 @@ internal sealed class PasteboardItemToDataTransferItemWrapper(NSDictionary item)
     protected override object? TryGetRawCore(DataFormat format)
     {
         // Handle images specially without ToSystemType, as we may have multiple UTI types for images.
-        if (DataFormat.Image.Equals(format))
+        if (DataFormat.Bitmap.Equals(format))
         {
             if (!_item.TryGetValue((NSString)ClipboardDataFormatHelper.UTTypePng, out var imageValue)
                 && !_item.TryGetValue((NSString)ClipboardDataFormatHelper.UTTypeJpeg, out imageValue)

@@ -24,7 +24,7 @@ internal static class BrowserDataTransferHelper
         }
 
         if (hasSupportedImage)
-            formats = [..formats, DataFormat.Image];
+            formats = [..formats, DataFormat.Bitmap];
 
         return formats;
     }
@@ -58,7 +58,7 @@ internal static class BrowserDataTransferHelper
             };
         }
 
-        if (DataFormat.Image.Equals(format))
+        if (DataFormat.Bitmap.Equals(format))
         {
             if (data is byte[] bytes)
             {

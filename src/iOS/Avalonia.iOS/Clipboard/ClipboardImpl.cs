@@ -91,9 +91,9 @@ internal sealed class ClipboardImpl(UIPasteboard pasteboard)
             return file is null ? null : (NSString)file.Path.AbsoluteUri;
         }
 
-        if (format.Equals(DataFormat.Image))
+        if (format.Equals(DataFormat.Bitmap))
         {
-            var bitmap = await dataTransferItem.TryGetValueAsync(DataFormat.Image);
+            var bitmap = await dataTransferItem.TryGetValueAsync(DataFormat.Bitmap);
             if (bitmap is null)
                 return null;
             using var memoryStream = new MemoryStream();

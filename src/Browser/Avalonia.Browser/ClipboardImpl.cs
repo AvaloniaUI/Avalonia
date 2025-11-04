@@ -52,9 +52,9 @@ internal sealed class ClipboardImpl : IClipboardImpl
                     continue;
                 }
 
-                if(DataFormat.Image.Equals(format))
+                if(DataFormat.Bitmap.Equals(format))
                 {
-                    var bitmap = await dataTransferItem.TryGetValueAsync(DataFormat.Image) ?? null;
+                    var bitmap = await dataTransferItem.TryGetValueAsync(DataFormat.Bitmap) ?? null;
                     if (bitmap != null)
                     {
                         using var stream = new MemoryStream();

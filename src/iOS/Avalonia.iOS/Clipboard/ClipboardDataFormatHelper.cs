@@ -19,7 +19,7 @@ internal static class ClipboardDataFormatHelper
         {
             UTTypeUTF8PlainText => DataFormat.Text,
             UTTypeFileUrl => DataFormat.File,
-            UTTypeImage or UTTypePng or UTTypeJpeg => DataFormat.Image,
+            UTTypeImage or UTTypePng or UTTypeJpeg => DataFormat.Bitmap,
             _ when IsTextUti(type) => DataFormat.FromSystemName<string>(type, AppPrefix),
             _ => DataFormat.FromSystemName<byte[]>(type, AppPrefix)
         };
@@ -33,7 +33,7 @@ internal static class ClipboardDataFormatHelper
         if (DataFormat.File.Equals(format))
             return UTTypeFileUrl;
 
-        if (DataFormat.Image.Equals(format))
+        if (DataFormat.Bitmap.Equals(format))
             // Avalonia writes images as PNGs to the clipboard for iOS/macOS.
             return UTTypePng;
 

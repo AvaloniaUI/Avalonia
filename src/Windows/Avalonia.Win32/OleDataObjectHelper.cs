@@ -137,7 +137,7 @@ internal static class OleDataObjectHelper
                 .ToArray();
         }
 
-        if (DataFormat.Image.Equals(format))
+        if (DataFormat.Bitmap.Equals(format))
         {
             if (formatEtc.cfFormat == (ushort)UnmanagedMethods.ClipboardFormat.CF_DIB)
             {
@@ -274,9 +274,9 @@ internal static class OleDataObjectHelper
             return WriteFileNamesToHGlobal(ref hGlobal, fileNames);
         }
 
-        if (DataFormat.Image.Equals(format))
+        if (DataFormat.Bitmap.Equals(format))
         {
-            var bitmap = dataTransfer.TryGetValue(DataFormat.Image);
+            var bitmap = dataTransfer.TryGetValue(DataFormat.Bitmap);
             if (bitmap != null)
             {
                 var pixelSize = bitmap.PixelSize;

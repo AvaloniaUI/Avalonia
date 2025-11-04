@@ -53,7 +53,7 @@ internal sealed class OleDataObjectToDataTransferWrapper(Win32Com.IDataObject ol
 
         if (hasSupportedFormat)
         {
-            formats.Add(DataFormat.Image);
+            formats.Add(DataFormat.Bitmap);
         }
 
         return formats.ToArray();

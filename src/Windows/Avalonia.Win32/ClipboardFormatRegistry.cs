@@ -19,7 +19,7 @@ namespace Avalonia.Win32
             AddDataFormat(DataFormat.Text, (ushort)UnmanagedMethods.ClipboardFormat.CF_UNICODETEXT);
             AddDataFormat(DataFormat.Text, (ushort)UnmanagedMethods.ClipboardFormat.CF_TEXT);
             AddDataFormat(DataFormat.File, (ushort)UnmanagedMethods.ClipboardFormat.CF_HDROP);
-            AddDataFormat(DataFormat.Image, (ushort)UnmanagedMethods.ClipboardFormat.CF_DIB);
+            AddDataFormat(DataFormat.Bitmap, (ushort)UnmanagedMethods.ClipboardFormat.CF_DIB);
         }
 
         private static void AddDataFormat(DataFormat format, ushort id)
@@ -56,7 +56,7 @@ namespace Avalonia.Win32
         {
             lock (s_formats)
             {
-                if (DataFormat.Image.Equals(format))
+                if (DataFormat.Bitmap.Equals(format))
                 {
                     (DataFormat, ushort)? pngFormat = null;
                     (DataFormat, ushort)? jpgFormat = null;

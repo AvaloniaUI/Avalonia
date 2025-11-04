@@ -35,7 +35,7 @@ internal sealed class ClipDataItemToDataTransferItemWrapper(ClipData.Item item, 
                     AndroidStorageFile.CreateItem(activity, fileUri) :
                     null;
         }
-        else if (DataFormat.Image.Equals(format))
+        else if (DataFormat.Bitmap.Equals(format))
         {
             var file = item.Uri is { Scheme: "file" or "content" } fileUri && _owner.Context is Activity activity ?
                     AndroidStorageFile.CreateItem(activity, fileUri) :

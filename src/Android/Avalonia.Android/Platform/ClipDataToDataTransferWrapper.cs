@@ -35,7 +35,7 @@ internal sealed class ClipDataToDataTransferWrapper(ClipData clipData, Context? 
 
         if (hasImage)
         {
-            formats = [.. formats, DataFormat.Image];
+            formats = [.. formats, DataFormat.Bitmap];
         }
 
         return formats;
