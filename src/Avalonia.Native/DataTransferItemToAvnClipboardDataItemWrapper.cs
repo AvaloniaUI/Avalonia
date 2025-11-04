@@ -33,6 +33,19 @@ internal sealed class DataTransferItemToAvnClipboardDataItemWrapper(IDataTransfe
             if (DataFormat.File.Equals(dataFormat))
                 return _item.TryGetValue(DataFormat.File) is { } file ? new StringValue(file.Path.AbsoluteUri) : null;
 
+            if (DataFormat.Bitmap.Equals(dataFormat))
+            {
+                if (_item.TryGetValue(DataFormat.Bitmap) is { } bitmap)
+                {
+                    var memoryStream = new MemoryStream();
+                    bitmap.Save(memoryStream);
+                    memoryStream.Seek(0, SeekOrigin.Begin);
+                    return new BytesValue(memoryStream.ToArray());
+                }
+
+                return null;
+            }
+
             if (dataFormat is DataFormat<string> stringFormat)
                 return _item.TryGetValue(stringFormat) is { } stringValue ? new StringValue(stringValue) : null;
 
