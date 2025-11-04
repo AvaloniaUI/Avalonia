@@ -1,19 +1,20 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Input.Platform;
 using Avalonia.Markup.Xaml;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 
 namespace ControlCatalog.Pages
 {
     public class DragAndDropPage : UserControl
     {
-        private readonly TextBlock _dropState;
+        private readonly ContentControl _dropState;
 
         private readonly DataFormat<string> _customFormat =
             DataFormat.CreateStringApplicationFormat("xxx-avalonia-controlcatalog-custom");
@@ -21,7 +22,7 @@ namespace ControlCatalog.Pages
         public DragAndDropPage()
         {
             InitializeComponent();
-            _dropState = this.Get<TextBlock>("DropState");
+            _dropState = this.Get<ContentControl>("DropState");
 
             int textCount = 0;
 
@@ -46,6 +47,11 @@ namespace ControlCatalog.Pages
                         d.Add(DataTransferItem.Create(DataFormat.File, storageFile));
                     }
                 },
+                DragDropEffects.Copy);
+
+            SetupDnd(
+                "Bitmap",
+                d => d.Add(DataTransferItem.Create(DataFormat.Bitmap, new Bitmap(AssetLoader.Open(new Uri("avares://ControlCatalog/Assets/image1.jpg"))))),
                 DragDropEffects.Copy);
         }
 
@@ -104,6 +110,7 @@ namespace ControlCatalog.Pages
                 // Only allow if the dragged data contains text or filenames.
                 if (!e.DataTransfer.Contains(DataFormat.Text)
                     && !e.DataTransfer.Contains(DataFormat.File)
+                    && !e.DataTransfer.Contains(DataFormat.Bitmap)
                     && !e.DataTransfer.Contains(_customFormat))
                     e.DragEffects = DragDropEffects.None;
             }
@@ -121,7 +128,7 @@ namespace ControlCatalog.Pages
 
                 if (e.DataTransfer.Contains(DataFormat.Text))
                 {
-                    _dropState.Text = e.DataTransfer.TryGetText();
+                    _dropState.Content = e.DataTransfer.TryGetText();
                 }
                 else if (e.DataTransfer.Contains(DataFormat.File))
                 {
@@ -146,11 +153,19 @@ namespace ControlCatalog.Pages
                         }
                     }
 
-                    _dropState.Text = contentStr;
+                    _dropState.Content = contentStr;
+                }
+                else if (e.DataTransfer.Contains(DataFormat.Bitmap))
+                {
+                    var bitmap = e.DataTransfer.TryGetValue(DataFormat.Bitmap);
+                    _dropState.Content = new Image
+                    {
+                        Source = bitmap, Width = 400, Height = 300, Stretch = Stretch.Uniform
+                    };
                 }
                 else if (e.DataTransfer.Contains(_customFormat))
                 {
-                    _dropState.Text = "Custom: " + e.DataTransfer.TryGetValue(_customFormat);
+                    _dropState.Content = "Custom: " + e.DataTransfer.TryGetValue(_customFormat);
                 }
             }
 
