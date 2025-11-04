@@ -6,7 +6,7 @@ using System.Linq;
 using Avalonia.Input;
 using Avalonia.Logging;
 using Avalonia.Native.Interop;
-using Avalonia.Platform.Storage;
+using Avalonia.Utilities;
 
 namespace Avalonia.Native;
 
@@ -40,7 +40,7 @@ internal sealed class DataTransferItemToAvnClipboardDataItemWrapper(IDataTransfe
                     var memoryStream = new MemoryStream();
                     bitmap.Save(memoryStream);
                     memoryStream.Seek(0, SeekOrigin.Begin);
-                    return new BytesValue(memoryStream.ToArray());
+                    return new StreamValue(memoryStream);
                 }
 
                 return null;
@@ -83,7 +83,7 @@ internal sealed class DataTransferItemToAvnClipboardDataItemWrapper(IDataTransfe
         IAvnString IAvnClipboardDataValue.AsString()
             => new AvnString(_value);
 
-        int IAvnClipboardDataValue.ByteLength
+        IntPtr IAvnClipboardDataValue.ByteLength
             => throw new InvalidOperationException();
 
         unsafe void IAvnClipboardDataValue.CopyBytesTo(void* buffer)
@@ -100,10 +100,44 @@ internal sealed class DataTransferItemToAvnClipboardDataItemWrapper(IDataTransfe
         IAvnString IAvnClipboardDataValue.AsString()
             => throw new InvalidOperationException();
 
-        int IAvnClipboardDataValue.ByteLength
-            => _value.Length;
+        IntPtr IAvnClipboardDataValue.ByteLength
+            => new(_value.Length);
 
         unsafe void IAvnClipboardDataValue.CopyBytesTo(void* buffer)
             => _value.Span.CopyTo(new Span<byte>(buffer, _value.Length));
+    }
+    
+    private sealed class StreamValue(MemoryStream value) : NativeOwned, IAvnClipboardDataValue
+    {
+        private readonly MemoryStream _value = value;
+        private readonly byte[] _buffer = new byte[1024 * 1024];
+
+        int IAvnClipboardDataValue.IsString()
+            => false.AsComBool();
+
+        IAvnString IAvnClipboardDataValue.AsString()
+            => throw new InvalidOperationException();
+
+        IntPtr IAvnClipboardDataValue.ByteLength
+#pragma warning disable CA2020 // overflow in unchecked context
+            => (IntPtr)_value.Length;
+#pragma warning restore CA2020
+
+        unsafe void IAvnClipboardDataValue.CopyBytesTo(void* output)
+        {
+            long totalCopied = 0;
+
+            while (true)
+            {
+                var read = _value.Read(_buffer, 0, _buffer.Length);
+                if (read == 0)
+                    break;
+
+                var destinationSpan = new Span<byte>((byte*)output + totalCopied, read);
+                _buffer.AsSpan(0, read).CopyTo(destinationSpan);
+
+                totalCopied += read;
+            }
+        }
     }
 }
