@@ -19,7 +19,8 @@ namespace ControlCatalog
             ctl.Cursor = new Cursor(cursor);
             ctl.PointerPressed += (i, e) =>
             {
-                BeginResizeDrag(edge, e);
+                if (WindowState == WindowState.Normal)
+                    BeginResizeDrag(edge, e);
             };
         }
 
