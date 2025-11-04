@@ -1,4 +1,6 @@
 ﻿using System;
+using Avalonia.Layout;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -116,20 +118,10 @@ namespace Avalonia.Controls.Primitives
                 }
             }
 
-            // If layout rounding is enabled, round the measured per-cell unit size (maxWidth/maxHeight).
-            // We round the measured max sizes instead of the childAvailableSize to avoid changing the input
-            // used for children.Measure(...) which could change how children measure themselves.
             if (UseLayoutRounding)
             {
-                if (!double.IsInfinity(maxWidth) && !double.IsNaN(maxWidth))
-                {
-                    maxWidth = Math.Round(maxWidth);
-                }
-
-                if (!double.IsInfinity(maxHeight) && !double.IsNaN(maxHeight))
-                {
-                    maxHeight = Math.Round(maxHeight);
-                }
+                var scale = LayoutHelper.GetLayoutScale(this);
+                (maxWidth, maxHeight) = LayoutHelper.RoundLayoutSizeUp(new Size(maxWidth, maxHeight), scale);
             }
 
             var totalWidth = maxWidth * _columns + ColumnSpacing * (_columns - 1);
@@ -155,15 +147,8 @@ namespace Avalonia.Controls.Primitives
             // If layout rounding is enabled, round the per-cell unit size to integral device units.
             if (UseLayoutRounding)
             {
-                if (!double.IsInfinity(width) && !double.IsNaN(width))
-                {
-                    width = Math.Round(width);
-                }
-
-                if (!double.IsInfinity(height) && !double.IsNaN(height))
-                {
-                    height = Math.Round(height);
-                }
+                var scale = LayoutHelper.GetLayoutScale(this);
+                (width, height) = LayoutHelper.RoundLayoutSizeUp(new Size(width, height), scale);
             }
 
             foreach (var child in Children)
