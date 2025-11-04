@@ -11,6 +11,7 @@ internal static class ClipboardDataFormatHelper
     internal const string UTTypeImage = "public.image";
     internal const string UTTypePng = "public.png";
     internal const string UTTypeJpeg = "public.jpeg";
+    internal const string UTTypeTiff = "public.tiff";
     private const string AppPrefix = "net.avaloniaui.app.uti.";
 
     public static DataFormat ToDataFormat(string type)
@@ -19,7 +20,7 @@ internal static class ClipboardDataFormatHelper
         {
             UTTypeUTF8PlainText => DataFormat.Text,
             UTTypeFileUrl => DataFormat.File,
-            UTTypeImage or UTTypePng or UTTypeJpeg => DataFormat.Bitmap,
+            UTTypeImage or UTTypePng or UTTypeJpeg or UTTypeTiff => DataFormat.Bitmap,
             _ when IsTextUti(type) => DataFormat.FromSystemName<string>(type, AppPrefix),
             _ => DataFormat.FromSystemName<byte[]>(type, AppPrefix)
         };

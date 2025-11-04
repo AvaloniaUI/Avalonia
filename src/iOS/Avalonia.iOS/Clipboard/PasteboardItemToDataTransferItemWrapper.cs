@@ -28,10 +28,23 @@ internal sealed class PasteboardItemToDataTransferItemWrapper(NSDictionary item)
         // Handle images specially without ToSystemType, as we may have multiple UTI types for images.
         if (DataFormat.Bitmap.Equals(format))
         {
-            if (!_item.TryGetValue((NSString)ClipboardDataFormatHelper.UTTypePng, out var imageValue)
-                && !_item.TryGetValue((NSString)ClipboardDataFormatHelper.UTTypeJpeg, out imageValue)
-                && !_item.TryGetValue((NSString)ClipboardDataFormatHelper.UTTypeImage, out imageValue))
-                return null;
+            NSObject? imageValue;
+
+            if (_item.TryGetValue((NSString)ClipboardDataFormatHelper.UTTypePng, out imageValue)
+                || _item.TryGetValue((NSString)ClipboardDataFormatHelper.UTTypeJpeg, out imageValue))
+            {
+                // keep imageValue as is, it can be either UIImage or NSData, in either case Bitmap can handle it directly.
+            }
+            else if (_item.TryGetValue((NSString)ClipboardDataFormatHelper.UTTypeImage, out imageValue)
+                     || _item.TryGetValue((NSString)ClipboardDataFormatHelper.UTTypeTiff, out imageValue))
+            {
+                // if it's NSData, we need to convert it to UIImage first, as TIFF is not directly supported by Bitmap.
+                if (imageValue is NSData imageData)
+                {
+                    imageValue = UIImage.LoadFromData(imageData);
+                    imageData.Dispose();
+                }
+            }
 
             switch (imageValue)
             {
