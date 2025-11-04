@@ -327,15 +327,21 @@ namespace Avalonia.X11.Clipboard
         {
             List<DataFormat>? nonFileFormats = null;
             var items = new List<IAsyncDataTransferItem>();
+            var hasFiles = false;
 
             foreach (var format in formats)
             {
                 if (DataFormat.File.Equals(format))
                 {
+                    if (hasFiles)
+                        continue;
+
                     // We're reading the filenames ahead of time to generate the appropriate items.
                     // This is async, so it should be fine.
                     if (await reader.TryGetAsync(format) is IEnumerable<IStorageItem> storageItems)
                     {
+                        hasFiles = true;
+
                         foreach (var storageItem in storageItems)
                             items.Add(PlatformDataTransferItem.Create(DataFormat.File, storageItem));
                     }
