@@ -1,6 +1,7 @@
 ﻿using System;
 using Avalonia.Controls.Primitives;
 using Avalonia.UnitTests;
+using Avalonia.Utilities;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Primitives
@@ -269,6 +270,62 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal(new Size(105, 145), target.Bounds.Size);
         }
 
+        [Fact]
+        public void Grid_Ensures_Consistent_Cell_Width_When_UseLayoutRounding()
+        {
+            // Test scenario: 800x600 resolution, 21 children, 3 rows, 7 columns, 1 pixel spacing
+            // Verifies that all cells have consistent width when UseLayoutRounding is enabled
+            var target = new UniformGrid
+            {
+                Rows = 3,
+                Columns = 7,
+                RowSpacing = 1,
+                ColumnSpacing = 1,
+                UseLayoutRounding = true
+            };
+
+            // Add 21 children
+            for (int i = 0; i < 21; i++)
+            {
+                target.Children.Add(new Border());
+            }
+
+            // Arrange at 800x600 resolution
+            target.Measure(new Size(800, 600));
+            target.Arrange(new Rect(0, 0, 800, 600));
+
+            // Calculate expected cell width
+            // Available width = 800, column spacing takes up 6 pixels (7 columns - 1 = 6 gaps)
+            // Available width for cells = 800 - 6 = 794
+            // Width per cell = 794 / 7 = 113.428...
+            // With layout rounding, this should be rounded to ensure consistent cell sizes
+            double expectedCellWidth = Math.Round((800 - 6) / 7.0); // 794 / 7 ≈ 113.43 → rounds to 113
+
+            // Verify all children have the same width
+            double? firstChildWidth = null;
+            for (int i = 0; i < target.Children.Count; i++)
+            {
+                var child = target.Children[i] as Border;
+                Assert.NotNull(child);
+
+                if (firstChildWidth == null)
+                {
+                    firstChildWidth = child.Bounds.Width;
+                }
+                else
+                {
+                    // All children should have the same width (allowing for minor floating point differences)
+                    Assert.True(Math.Abs(child.Bounds.Width - firstChildWidth.Value) < 0.01,
+                        $"Child {i} has width {child.Bounds.Width}, expected {firstChildWidth.Value}");
+                }
+            }
+
+            // Verify the calculated width matches expected
+            Assert.NotNull(firstChildWidth);
+            Assert.True(Math.Abs(firstChildWidth.Value - expectedCellWidth) < 0.01,
+                $"Child width {firstChildWidth.Value} does not match expected {expectedCellWidth}");
+        }
+
         /// <summary>
         ///  Exposes MeasureOverride for testing inherited classes
         /// </summary>
@@ -304,7 +361,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             // Expected: (0, 0)
             Assert.Equal(0, desiredSize.Width);
             Assert.Equal(0, desiredSize.Height);
-        
+
         }
 
         [Fact]

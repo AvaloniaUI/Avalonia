@@ -121,7 +121,8 @@ namespace Avalonia.Controls.Primitives
             if (UseLayoutRounding)
             {
                 var scale = LayoutHelper.GetLayoutScale(this);
-                (maxWidth, maxHeight) = LayoutHelper.RoundLayoutSizeUp(new Size(maxWidth, maxHeight), scale);
+                maxWidth = LayoutHelper.RoundLayoutValue(maxWidth, scale);
+                maxHeight = LayoutHelper.RoundLayoutValue(maxHeight, scale);
             }
 
             var totalWidth = maxWidth * _columns + ColumnSpacing * (_columns - 1);
@@ -148,7 +149,8 @@ namespace Avalonia.Controls.Primitives
             if (UseLayoutRounding)
             {
                 var scale = LayoutHelper.GetLayoutScale(this);
-                (width, height) = LayoutHelper.RoundLayoutSizeUp(new Size(width, height), scale);
+                width = LayoutHelper.RoundLayoutValue(width, scale);
+                height = LayoutHelper.RoundLayoutValue(height, scale);
             }
 
             foreach (var child in Children)
