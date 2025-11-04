@@ -69,12 +69,15 @@
                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                 Content="{TemplateBinding Content}"
                 ContentTemplate="{TemplateBinding ContentTemplate}"
-                Foreground="{TemplateBinding Foreground}"
-                RecognizesAccessKey="True" />
+                Foreground="{TemplateBinding Foreground}" />
           </Grid>
         </Border>
       </ControlTemplate>
     </Setter>
+
+    <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="RecognizesAccessKey" Value="True" />
+    </Style>
 
     <!--  PointerOver State  -->
     <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">

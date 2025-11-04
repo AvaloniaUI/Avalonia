@@ -61,7 +61,6 @@
                           ContentTemplate="{TemplateBinding ContentTemplate}"
                           Content="{TemplateBinding Content}"
                           Margin="{TemplateBinding Padding}"
-                          RecognizesAccessKey="True"
                           HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                           VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                           TextWrapping="Wrap"
@@ -69,6 +68,10 @@
         </Grid>
       </ControlTemplate>
     </Setter>
+
+    <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="RecognizesAccessKey" Value="True" />
+    </Style>
 
     <!-- Unchecked PointerOver State -->
     <Style Selector="^:pointerover">
