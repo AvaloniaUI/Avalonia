@@ -6,6 +6,7 @@ using System.Text;
 using Avalonia.Controls;
 using Avalonia.Controls.Embedding.Offscreen;
 using Avalonia.Controls.Platform;
+using Avalonia.DesignerSupport.DesignerSelection;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
 
@@ -47,6 +48,7 @@ namespace Avalonia.DesignerSupport
                 });
                 var style = loaded as IStyle;
                 var resources = loaded as ResourceDictionary;
+                bool found = true;
                 if (style != null)
                 {
                     var substitute = Design.GetPreviewWith((AvaloniaObject)style);
@@ -56,6 +58,7 @@ namespace Avalonia.DesignerSupport
                         control = substitute;
                     }
                     else
+                    {
                         control = new StackPanel
                         {
                             Children =
@@ -67,6 +70,8 @@ namespace Avalonia.DesignerSupport
                                 new TextBlock {Text = "before setters in your first Style"}
                             }
                         };
+                        found = false;
+                    }
                 }
                 else if (resources != null)
                 {
@@ -77,6 +82,7 @@ namespace Avalonia.DesignerSupport
                         control = substitute;
                     }
                     else
+                    {
                         control = new StackPanel
                         {
                             Children =
@@ -88,9 +94,14 @@ namespace Avalonia.DesignerSupport
                                 new TextBlock {Text = "in your resource dictionary"}
                             }
                         };
+                        found = false;
+                    }
                 }
                 else if (loaded is Application)
+                {
                     control = new TextBlock { Text = "This file cannot be previewed in design view" };
+                    found = false;
+                }
                 else
                     control = (Control)loaded;
 
@@ -104,6 +115,10 @@ namespace Avalonia.DesignerSupport
                     offscreenImpl.RenderScaling = renderScaling;
 
                 Design.ApplyDesignModeProperties(window, control);
+                if (found)
+                {
+                    ElementInspector.Initialize(window);
+                }
 
                 if (!window.IsSet(Window.SizeToContentProperty))
                 {

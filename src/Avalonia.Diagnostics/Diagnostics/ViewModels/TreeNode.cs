@@ -4,6 +4,7 @@ using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.LogicalTree;
+using Avalonia.Markup.Xaml.SourceInfo;
 using Avalonia.Media;
 using Avalonia.Reactive;
 
@@ -76,6 +77,11 @@ namespace Avalonia.Diagnostics.ViewModels
             set { RaiseAndSetIfChanged(ref _isExpanded, value); }
         }
 
+        public bool HasSourceInfo
+        {
+            get { return Visual != null && Source.GetSourceInfo(Visual) != default; }
+        }
+
         public TreeNode? Parent
         {
             get;
@@ -91,6 +97,14 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             _classesSubscription?.Dispose();
             Children.Dispose();
+        }
+
+        public async void JumpToSource()
+        {
+            if(Visual != null)
+            {
+               await SourceNavigatorRegistry.NavigateToAsync(Visual);
+            }
         }
     }
 }

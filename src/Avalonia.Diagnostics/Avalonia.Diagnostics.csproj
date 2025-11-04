@@ -22,6 +22,7 @@
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj" />
     <ProjectReference Include="..\Avalonia.Themes.Simple\Avalonia.Themes.Simple.csproj" />
+    <PackageReference Include="envdte" Version="17.14.40260"/>
   </ItemGroup>
 
   <Import Project="..\..\build\EmbedXaml.props" />

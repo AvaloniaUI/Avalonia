@@ -134,6 +134,8 @@
       <AvaloniaXamlIlVerifyIl Condition="'$(AvaloniaXamlIlVerifyIl)' == ''">false</AvaloniaXamlIlVerifyIl>
       <AvaloniaXamlIlDebuggerLaunch Condition="'$(AvaloniaXamlIlDebuggerLaunch)' == ''">false</AvaloniaXamlIlDebuggerLaunch>
       <AvaloniaXamlVerboseExceptions Condition="'$(AvaloniaXamlVerboseExceptions)' == ''">false</AvaloniaXamlVerboseExceptions>
+      <AvaloniaXamlCreateSourceInfo Condition="'$(AvaloniaXamlCreateSourceInfo)' == '' AND '$(Configuration)' == 'Debug'">true</AvaloniaXamlCreateSourceInfo>
+      <AvaloniaXamlCreateSourceInfo Condition="'$(AvaloniaXamlCreateSourceInfo)' == '' AND '$(Configuration)' != 'Debug'">false</AvaloniaXamlCreateSourceInfo>
     </PropertyGroup>
 
     <ItemGroup>
@@ -162,6 +164,7 @@
       DelaySign="$(DelaySign)"
       SkipXamlCompilation="$(_AvaloniaSkipXamlCompilation)"
       DebuggerLaunch="$(AvaloniaXamlIlDebuggerLaunch)"
+      CreateSourceInfo="$(AvaloniaXamlCreateSourceInfo)"
       DefaultCompileBindings="$(AvaloniaUseCompiledBindingsByDefault)"
       VerboseExceptions="$(AvaloniaXamlVerboseExceptions)"
       AnalyzerConfigFiles="@(EditorConfigFiles)"/>

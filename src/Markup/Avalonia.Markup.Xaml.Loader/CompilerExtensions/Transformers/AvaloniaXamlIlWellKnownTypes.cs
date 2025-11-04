@@ -134,6 +134,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType EventHandlerT {  get; }
         public IXamlMethod GetClassProperty { get; }
 
+        public IXamlType SourceInfoType { get; }
+        public IXamlConstructor SourceInfoConstructor { get; }
+        public IXamlConstructor SourceInfoConstructorFull { get; }
+        public IXamlType SourceInfoAttachedType { get; }
+        public IXamlMethod SourceInfoPropertySetter { get; }
+
         sealed internal class InteractivityWellKnownTypes
         {
             public IXamlType Interactive { get; }
@@ -339,6 +345,14 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 allowDowncast:false,
                 cfg.WellKnownTypes.String
                 );
+
+            SourceInfoAttachedType = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.SourceInfo.Source");
+            SourceInfoType = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.SourceInfo.SourceInfo");
+            SourceInfoConstructor = SourceInfoType.GetConstructor(new List<IXamlType> { XamlIlTypes.Int32, XamlIlTypes.Int32 });
+            SourceInfoConstructorFull = SourceInfoType.GetConstructor(new List<IXamlType> { XamlIlTypes.Int32, XamlIlTypes.Int32, XamlIlTypes.String });
+
+            SourceInfoPropertySetter =
+               SourceInfoAttachedType.GetMethod("SetSourceInfo", XamlIlTypes.Void, false, AvaloniaObject, SourceInfoType);
         }
     }
 

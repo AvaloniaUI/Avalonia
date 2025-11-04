@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Avalonia.Markup.Xaml.Loader.CompilerExtensions.Transformers;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.GroupTransformers;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
 using XamlX;
@@ -20,6 +21,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
         private readonly IXamlType _contextType = null!;
         private readonly AvaloniaXamlIlDesignPropertiesTransformer _designTransformer;
         private readonly AvaloniaBindingExtensionTransformer _bindingTransformer;
+        private readonly AvaloniaXamlIlAddSourceInfoTransformer _addSourceInfoTransformer;
 
         private AvaloniaXamlIlCompiler(TransformerConfiguration configuration, XamlLanguageEmitMappings<IXamlILEmitter, XamlILNodeEmitResult> emitMappings)
             : base(configuration, emitMappings, true)
@@ -46,7 +48,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             InsertBefore<PropertyReferenceResolver>(
                 new AvaloniaXamlIlResolveClassesPropertiesTransformer(),
                 new AvaloniaXamlIlTransformInstanceAttachedProperties(),
-                new AvaloniaXamlIlTransformSyntheticCompiledBindingMembers());
+                new AvaloniaXamlIlTransformSyntheticCompiledBindingMembers(),
+                _addSourceInfoTransformer = new AvaloniaXamlIlAddSourceInfoTransformer()
+                );
+
+
             InsertAfter<PropertyReferenceResolver>(
                 new AvaloniaXamlIlAvaloniaPropertyResolver(),
                 new AvaloniaXamlIlReorderClassesPropertiesTransformer(),
@@ -121,6 +127,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
         public const string PopulateName = "__AvaloniaXamlIlPopulate";
         public const string BuildName = "__AvaloniaXamlIlBuild";
+
+        public bool CreateSourceInfo 
+        { 
+            get => _addSourceInfoTransformer.CreateSourceInfo; 
+            set => _addSourceInfoTransformer.CreateSourceInfo = value; 
+        }
 
         public bool IsDesignMode
         {

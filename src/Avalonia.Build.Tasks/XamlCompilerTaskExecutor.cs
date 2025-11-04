@@ -52,7 +52,7 @@ namespace Avalonia.Build.Tasks
             string[] references, string projectDirectory,
             bool verifyIl, bool defaultCompileBindings, MessageImportance logImportance,
             XamlCompilerDiagnosticsFilter diagnosticsFilter, string strongNameKey,
-            bool skipXamlCompilation, bool debuggerLaunch, bool verboseExceptions)
+            bool skipXamlCompilation, bool debuggerLaunch, bool verboseExceptions, bool createSourceInfo)
         {
             try
             {
@@ -67,7 +67,7 @@ namespace Avalonia.Build.Tasks
 	                var compileRes = CompileCore(
                         engine, typeSystem, projectDirectory, verifyIl,
                         defaultCompileBindings, logImportance, diagnosticsFilter,
-                        debuggerLaunch, verboseExceptions);
+                        debuggerLaunch, verboseExceptions, createSourceInfo);
 	                if (compileRes == null)
 	                    return new CompileResult(true);
 	                if (compileRes == false)
@@ -107,7 +107,8 @@ namespace Avalonia.Build.Tasks
             MessageImportance logImportance,
             XamlCompilerDiagnosticsFilter diagnosticsFilter,
             bool debuggerLaunch,
-            bool verboseExceptions)
+            bool verboseExceptions,
+            bool createSourceInfo)
         {
             if (debuggerLaunch)
             {
@@ -210,6 +211,7 @@ namespace Avalonia.Build.Tasks
             {
                 EnableIlVerification = verifyIl,
                 DefaultCompileBindings = defaultCompileBindings,
+                CreateSourceInfo = createSourceInfo,
                 DynamicSetterContainerProvider = new DefaultXamlDynamicSetterContainerProvider(dynamicSettersBuilder)
             };
 
@@ -476,6 +478,30 @@ namespace Avalonia.Build.Tasks
                                 FieldAttributes.Static | FieldAttributes.Private, designLoaderFieldTypeReference);
                             classTypeDefinition.Fields.Add(designLoaderField);
                             typeSystem.AddCompilerGeneratedAttribute(designLoaderField);
+
+                            // Add [XamlSourceInfoAttribute] to the generated class.
+                            // Used at design time to locate the original .axaml file,
+                            // since the runtime loader substitutes a fake file name.
+                            if (createSourceInfo && document.FileSource.FilePath is { } filePath) 
+                            {
+                                var attrType = typeSystem.FindType("Avalonia.Markup.Xaml.SourceInfo.XamlSourceInfoAttribute");
+                                var attrTypeRef = asm.MainModule.ImportReference(typeSystem.GetTypeReference(attrType));
+
+                                var attrCtorDef = attrTypeRef.Resolve()
+                                    .Methods.First(m => m.IsConstructor
+                                                     && m.Parameters.Count == 1
+                                                     && m.Parameters[0].ParameterType.FullName == "System.String");
+
+                                var attrCtorRef = asm.MainModule.ImportReference(attrCtorDef);
+                                var designFilenameAttribute = new CustomAttribute(attrCtorRef);
+                                designFilenameAttribute.ConstructorArguments.Add(
+                                    new CustomAttributeArgument(
+                                        asm.MainModule.TypeSystem.String,
+                                        filePath
+                                    )
+                                );
+                                classTypeDefinition.CustomAttributes.Add(designFilenameAttribute);
+                            }
 
                             const string TrampolineName = "!XamlIlPopulateTrampoline";
                             var trampolineMethodWithoutSP = new Lazy<MethodDefinition>(() => CreateTrampolineMethod(false));
