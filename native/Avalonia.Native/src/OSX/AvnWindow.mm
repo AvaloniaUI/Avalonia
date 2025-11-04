@@ -436,23 +436,28 @@
                 return;
             }
 
-            // If the window has been moved into a position where it's "zoomed"
-            // Then it should be set as Maximized.
-            if (window->WindowState() != Maximized && window->IsZoomed())
+            // Don't adjust window state during fullscreen transitions
+            // as this can interfere with proper decoration restoration
+            if(!window->IsTransitioningWindowState())
             {
-                window->SetWindowState(Maximized, false);
-            }
-            // We should only return the window state to normal if
-            // the internal window state is maximized, and macOS says
-            // the window is no longer zoomed (I.E, the user has moved it)
-            // Stage Manager will "move" the window when repositioning it
-            // So if the window was "maximized" before, it should stay maximized
-            else if(window->WindowState() == Maximized && !window->IsZoomed())
-            {
-                // If we're moving the window while maximized,
-                // we need to let macOS handle if it should be resized
-                // And not handle it ourselves.
-                window->SetWindowState(Normal, false);
+                // If the window has been moved into a position where it's "zoomed"
+                // Then it should be set as Maximized.
+                if (window->WindowState() != Maximized && window->IsZoomed())
+                {
+                    window->SetWindowState(Maximized, false);
+                }
+                // We should only return the window state to normal if
+                // the internal window state is maximized, and macOS says
+                // the window is no longer zoomed (I.E, the user has moved it)
+                // Stage Manager will "move" the window when repositioning it
+                // So if the window was "maximized" before, it should stay maximized
+                else if(window->WindowState() == Maximized && !window->IsZoomed())
+                {
+                    // If we're moving the window while maximized,
+                    // we need to let macOS handle if it should be resized
+                    // And not handle it ourselves.
+                    window->SetWindowState(Normal, false);
+                }
             }
         }
 
