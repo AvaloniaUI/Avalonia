@@ -32,7 +32,12 @@ namespace Avalonia.Android.Automation
             nodeInfo.Clickable = true;
 
             IToggleProvider provider = GetProvider();
-            nodeInfo.Checked = provider.ToggleState == ToggleState.On;
+            nodeInfo.Checked = provider.ToggleState switch
+            {
+                ToggleState.On => 1,
+                ToggleState.Indeterminate => 2,
+                _ => 0
+            };
             nodeInfo.Checkable = true;
         }
     }

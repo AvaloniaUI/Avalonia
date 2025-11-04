@@ -8,7 +8,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\packages\Avalonia\Avalonia.csproj" />
     <PackageReference Include="Xamarin.AndroidX.AppCompat" Version="1.7.1.1" />
-    <PackageReference Include="Xamarin.AndroidX.Window" Version="1.4.0.1" />
+    <PackageReference Include="Xamarin.AndroidX.Window" Version="1.5.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj" />
