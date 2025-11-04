@@ -36,12 +36,16 @@ internal static class StorageProviderHelpers
 
     public static Uri UriFromFilePath(string path, bool isDirectory)
     {
-        bool isLongPatah = path.StartsWith(@"\\?\");//Windows Long Path Prefix
-        if (isLongPatah)
+        var uriPath = new StringBuilder();
+        bool isLongPath = path.StartsWith(@"\\?\", StringComparison.Ordinal);//Windows long path prefix
+        if (isLongPath)
         {
-            path = path.Substring(4);
+            uriPath.Append(path, 4, path.Length - 4);
         }
-        var uriPath = new StringBuilder(path);
+        else
+        {
+            uriPath.Append(path);
+        }
         uriPath = uriPath.Replace("%", $"%{(int)'%':X2}")
                                     .Replace("[", $"%{(int)'[':X2}")
                                     .Replace("]", $"%{(int)']':X2}");
