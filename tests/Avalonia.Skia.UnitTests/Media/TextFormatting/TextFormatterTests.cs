@@ -905,7 +905,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 Assert.NotNull(textLine.TextLineBreak.TextEndOfLine);
             }
         }
-        
+
         [Fact]
         public void Should_HitTestStringWithInvisibleRuns()
         {
@@ -913,7 +913,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties);
             //var textSource = new ListTextSource(
 
-            
+
 
             using (Start())
             {
@@ -923,7 +923,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     new GenericTextRunProperties(Typeface.Default, foregroundBrush: Brushes.Red));
 
                 var source = new ListTextSource(new InvisibleRun(1), hello, new InvisibleRun(1), world);
-                
+
                 var textLine =
                     TextFormatter.Current.FormatLine(source, 0, double.PositiveInfinity, paragraphProperties);
 
@@ -939,7 +939,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 VerifyHit(8);
             }
         }
-        
+
         [Fact]
         public void GetTextBounds_For_TextLine_With_ZeroWidthSpaces_Does_Not_Freeze()
         {
@@ -952,7 +952,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     new GenericTextRunProperties(Typeface.Default, foregroundBrush: Brushes.Black));
 
                 var source = new ListTextSource(text, new InvisibleRun(1), new TextEndOfParagraph());
-                
+
                 var textLine =
                     TextFormatter.Current.FormatLine(source, 0, double.PositiveInfinity, paragraphProperties);
 
@@ -968,9 +968,9 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
-        
+
         [Theory]
-        [InlineData(TextWrapping.NoWrap),InlineData(TextWrapping.Wrap),InlineData(TextWrapping.WrapWithOverflow)]
+        [InlineData(TextWrapping.NoWrap), InlineData(TextWrapping.Wrap), InlineData(TextWrapping.WrapWithOverflow)]
         public void Line_Formatting_For_Oversized_Embedded_Runs_Does_Not_Produce_Empty_Lines(TextWrapping wrapping)
         {
             var defaultRunProperties = new GenericTextRunProperties(Typeface.Default, foregroundBrush: Brushes.Black);
@@ -985,25 +985,25 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 Assert.Equal(200d, textLine.WidthIncludingTrailingWhitespace);
             }
         }
-        
+
         [Theory]
-        [InlineData(TextWrapping.NoWrap),InlineData(TextWrapping.Wrap),InlineData(TextWrapping.WrapWithOverflow)]
+        [InlineData(TextWrapping.NoWrap), InlineData(TextWrapping.Wrap), InlineData(TextWrapping.WrapWithOverflow)]
         public void Line_Formatting_For_Oversized_Embedded_Runs_Inside_Normal_Text_Does_Not_Produce_Empty_Lines(
             TextWrapping wrapping)
         {
             var defaultRunProperties = new GenericTextRunProperties(Typeface.Default, foregroundBrush: Brushes.Black);
             var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties,
                 textWrap: wrapping);
-            
+
             using (Start())
             {
                 var typeface = new Typeface(FontFamily.Parse("resm:Avalonia.Skia.UnitTests.Fonts?assembly=Avalonia.Skia.UnitTests#DejaVu Sans"));
-                
+
                 var text1 = new TextCharacters("Hello",
                     new GenericTextRunProperties(typeface, foregroundBrush: Brushes.Black));
                 var text2 = new TextCharacters("world",
                     new GenericTextRunProperties(typeface, foregroundBrush: Brushes.Black));
-                
+
                 var source = new ListTextSource(
                     text1,
                     new RectangleRun(new Rect(0, 0, 200, 10), Brushes.Aqua),
@@ -1014,15 +1014,15 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var lines = new List<TextLine>();
                 var dcp = 0;
-                for (var c = 0;; c++)
+                for (var c = 0; ; c++)
                 {
                     Assert.True(c < 1000, "Infinite loop");
                     var textLine = TextFormatter.Current.FormatLine(source, dcp, 30, paragraphProperties);
                     Assert.NotNull(textLine);
                     lines.Add(textLine);
                     dcp += textLine.Length;
-                    
-                    if (textLine.TextLineBreak is {} eol && eol.TextEndOfLine is TextEndOfParagraph)
+
+                    if (textLine.TextLineBreak is { } eol && eol.TextEndOfLine is TextEndOfParagraph)
                         break;
                 }
 
@@ -1046,25 +1046,25 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             public override double Indent => default;
             public override double DefaultIncrementalTab => 64;
         }
-        
+
         [Fact]
         public void Line_With_IncrementalTab_Should_Return_Correct_Backspace_Position()
         {
             using (Start())
             {
                 var typeface = new Typeface(FontFamily.Parse("resm:Avalonia.Skia.UnitTests.Fonts?assembly=Avalonia.Skia.UnitTests#DejaVu Sans"));
-                
+
                 var defaultRunProperties = new GenericTextRunProperties(typeface, foregroundBrush: Brushes.Black);
                 var paragraphProperties = new IncrementalTabProperties(defaultRunProperties);
 
                 var text = new TextCharacters("ff",
                     new GenericTextRunProperties(typeface, foregroundBrush: Brushes.Black));
-                
+
                 var source = new ListTextSource(text);
-                
+
                 var textLine = TextFormatter.Current.FormatLine(source, 0, double.PositiveInfinity, paragraphProperties);
                 Assert.NotNull(textLine);
-                
+
                 var backspaceHit = textLine.GetBackspaceCaretCharacterHit(new CharacterHit(2));
                 Assert.Equal(1, backspaceHit.FirstCharacterIndex);
                 Assert.Equal(0, backspaceHit.TrailingLength);
@@ -1111,6 +1111,102 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 Assert.NotNull(firstRun.Properties);
 
                 Assert.Equal("Noto Sans Miao", firstRun.Properties.Typeface.GlyphTypeface.FamilyName);
+            }
+        }
+
+        [Fact]
+        public void DrawableRun_With_Same_Baseline_And_Size_Should_Not_Alter_LineHeight()
+        {
+            using (Start())
+            {
+                var text = "ABC";
+
+                var typeface = new Typeface(new FontFamily(new Uri("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests"), "Noto Mono"));
+                var defaultRunProperties = new GenericTextRunProperties(typeface);
+                var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties, textWrap: TextWrapping.Wrap);
+
+                var embeddedTextLine = TextFormatter.Current.FormatLine(new SimpleTextSource(text, defaultRunProperties), 0, 120, paragraphProperties);
+
+                Assert.NotNull(embeddedTextLine);
+
+                var expectedHeight = embeddedTextLine.Height;
+                var expectedBaseline = embeddedTextLine.Baseline;
+
+                var textSource = new ListTextSource(new TextCharacters("ABC", defaultRunProperties), new EmbeddedTextLineRun(embeddedTextLine));
+
+                var textLine = TextFormatter.Current.FormatLine(textSource, 0, double.PositiveInfinity, paragraphProperties);
+
+                Assert.NotNull(textLine);
+
+                Assert.Equal(expectedHeight, textLine.Height);
+
+                Assert.Equal(expectedBaseline, textLine.Baseline);
+            }
+        }
+
+        [Fact]
+        public void DrawableRun_With_Same_Baseline_And_BiggerHeight_Should_Not_Alter_Baseline()
+        {
+            using (Start())
+            {
+                var text = "ABC";
+
+                var typeface = new Typeface(new FontFamily(new Uri("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests"), "Noto Mono"));
+                var defaultRunProperties = new GenericTextRunProperties(typeface);
+                var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties, textWrap: TextWrapping.Wrap);
+
+                var embeddedTextLine = TextFormatter.Current.FormatLine(new SimpleTextSource(text, defaultRunProperties), 0, 120, paragraphProperties);
+
+                Assert.NotNull(embeddedTextLine);
+
+                var expectedHeight = embeddedTextLine.Height + 10;
+
+                var embeddedSize = new Size(embeddedTextLine.Width, expectedHeight);
+
+                var expectedBaseline = embeddedTextLine.Baseline;
+
+                var textSource = new ListTextSource(new TextCharacters("ABC", defaultRunProperties), new CustomDrawableRun(embeddedSize, expectedBaseline));
+
+                var textLine = TextFormatter.Current.FormatLine(textSource, 0, double.PositiveInfinity, paragraphProperties);
+
+                Assert.NotNull(textLine);
+
+                Assert.Equal(expectedHeight, textLine.Height);
+
+                Assert.Equal(expectedBaseline, textLine.Baseline);
+            }
+        }
+
+        private class CustomDrawableRun : DrawableTextRun
+        {
+            public CustomDrawableRun(Size size, double baseLine)
+            {
+                Size = size;
+                Baseline = baseLine;
+            }
+
+            public override Size Size { get; }
+
+            public override double Baseline { get; }
+
+            public override void Draw(DrawingContext drawingContext, Point origin)
+            {
+                // no op
+            }
+        }
+
+        private class EmbeddedTextLineRun : DrawableTextRun
+        {
+            private readonly TextLine _textLine;
+            public EmbeddedTextLineRun(TextLine textLine)
+            {
+                _textLine = textLine;
+            }
+            public override Size Size => new Size(_textLine.Width, _textLine.Height);
+            public override double Baseline => _textLine.Baseline;
+            public override void Draw(DrawingContext drawingContext, Point origin)
+            {
+                _textLine.Draw(drawingContext, origin);
             }
         }
 
@@ -1183,21 +1279,21 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 return new TextCharacters(_text, new GenericTextRunProperties(Typeface.Default, foregroundBrush: Brushes.Black));
             }
         }
-        
+
         internal class ListTextSource : ITextSource
         {
             private readonly List<TextRun> _runs;
 
             public ListTextSource(params TextRun[] runs) : this((IEnumerable<TextRun>)runs)
             {
-                
+
             }
-            
+
             public ListTextSource(IEnumerable<TextRun> runs)
             {
                 _runs = runs.ToList();
             }
-            
+
             public TextRun? GetTextRun(int textSourceIndex)
             {
                 var off = 0;
@@ -1240,7 +1336,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 }
             }
         }
-        
+
         private class InvisibleRun : TextRun
         {
             public InvisibleRun(int length)
