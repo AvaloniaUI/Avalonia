@@ -27,32 +27,11 @@ public:
         
         if (changeCount != [_pasteboard changeCount])
             return COR_E_OBJECTDISPOSED;
-        
-        auto types = [_pasteboard types];
-        if (types != nil)
-        {
-            NSMutableArray<NSString *> *mutableTypes = [types mutableCopy];
 
-            // Add png if format list doesn't have PNG,
-            // but has any other image type that can be converter into PNG
-            if (![mutableTypes containsObject:NSPasteboardTypePNG])
-            {
-                if ([mutableTypes containsObject:NSPasteboardTypeTIFF])
-                {
-                    [mutableTypes addObject: NSPasteboardTypePNG];
-                }
-            }
-
-            *ret = CreateAvnStringArray(mutableTypes);
-        }
-        else
-        {
-            *ret = nil;
-        }
-
+        *ret = ConvertPasteboardTypes([_pasteboard types]);
         return S_OK;
     }
-    
+
     virtual HRESULT GetItemCount(int64_t changeCount, int* ret) override
     {
         START_COM_ARP_CALL;
@@ -79,8 +58,13 @@ public:
             return COR_E_OBJECTDISPOSED;
 
         auto item = [[_pasteboard pasteboardItems] objectAtIndex:index];
-        auto types = [item types];
+        
+        *ret = ConvertPasteboardTypes([item types]);
+        return S_OK;
+    }
 
+    static IAvnStringArray* ConvertPasteboardTypes(NSArray<NSPasteboardType> *types)
+    {
         if (types != nil)
         {
             NSMutableArray<NSString *> *mutableTypes = [types mutableCopy];
@@ -89,22 +73,19 @@ public:
             // but has any other image type that can be converter into PNG
             if (![mutableTypes containsObject:NSPasteboardTypePNG])
             {
-                if ([mutableTypes containsObject:NSPasteboardTypeTIFF])
+                if ([mutableTypes containsObject:NSPasteboardTypeTIFF]
+                    || [mutableTypes containsObject:@"public.jpeg"])
                 {
                     [mutableTypes addObject: NSPasteboardTypePNG];
                 }
             }
 
-            *ret = CreateAvnStringArray(mutableTypes);
-        }
-        else
-        {
-            *ret = nil;
+            return CreateAvnStringArray(mutableTypes);
         }
 
-        return S_OK;
+        return nil;
     }
-    
+
     virtual HRESULT GetItemValueAsString(int index, int64_t changeCount, const char* format, IAvnString** ret) override
     {
         START_COM_ARP_CALL;
@@ -136,13 +117,22 @@ public:
         
         auto value = [item dataForType: formatStr];
 
-        // If PNG wasn't found, try to convert TIFF
+        // If PNG wasn't found, try to convert TIFF or JPEG to PNG
         if (value == nil && [formatStr isEqualToString: NSPasteboardTypePNG])
         {
-            auto tiffData = [item dataForType:NSPasteboardTypeTIFF];
-            if (tiffData != nil)
+            NSData *imageData = nil;
+
+            // Try TIFF first
+            imageData = [item dataForType:NSPasteboardTypeTIFF];
+
+            // If no TIFF, try JPEG
+            if (imageData == nil) {
+                imageData = [item dataForType:@"public.jpeg"];
+            }
+
+            if (imageData != nil)
             {
-                auto image = [[NSImage alloc] initWithData:tiffData];
+                auto image = [[NSImage alloc] initWithData:imageData];
 
                 NSBitmapImageRep *bitmapRep = nil;
                 for (NSImageRep *rep in image.representations) {
