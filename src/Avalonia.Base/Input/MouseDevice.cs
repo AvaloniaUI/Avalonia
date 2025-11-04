@@ -19,7 +19,7 @@ namespace Avalonia.Input
     public class MouseDevice : IMouseDevice, IDisposable
     {
         private static MouseDevice? _primary;
-        internal static MouseDevice Primary => _primary ?? new MouseDevice();
+        internal static MouseDevice Primary => _primary ??= new MouseDevice();
 
         private int _clickCount;
         private Rect _lastClickRect;
