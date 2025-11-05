@@ -45,11 +45,19 @@ namespace Avalonia.Styling
         internal override Type? TargetType => _targetType ??= EvaluateTargetType();
 
         /// <inheritdoc/>
-        public override string ToString(Style? owner)
+        public override string ToString(Style? owner) => ToString(owner, false);
+
+        /// <inheritdoc/>
+        internal override string ToString(Style? owner, bool hasNext)
         {
             if (_selectorString == null)
             {
-                _selectorString = string.Join(", ", _selectors.Select(x => x.ToString(owner)));
+                _selectorString = string.Join(", ", _selectors.Select(x => x.ToString(owner, true)));
+
+                if (hasNext)
+                {
+                    _selectorString = $"({_selectorString})";
+                }
             }
 
             return _selectorString;

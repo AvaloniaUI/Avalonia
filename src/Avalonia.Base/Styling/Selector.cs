@@ -47,7 +47,7 @@ namespace Avalonia.Styling
             // right-to-left, so MatchUntilCombinator reverses this order because the type selector
             // will be on the left.
             var match = MatchUntilCombinator(control, this, parent, subscribe, out var combinator);
-            
+
             // If the pre-combinator selector matches, we can now match the combinator, if any.
             if (match.IsMatch && combinator is object)
             {
@@ -75,6 +75,10 @@ namespace Avalonia.Styling
         /// </summary>
         /// <param name="owner">The owner style.</param>
         public abstract string ToString(Style? owner);
+
+        /// <inheritdoc cref="ToString(Style?)"/>
+        /// <param name="hasNext">Whether there is a selector that comes after this one.</param>
+        internal virtual string ToString(Style? owner, bool hasNext) => ToString(owner);
 
         /// <summary>
         /// Evaluates the selector for a match.
@@ -113,7 +117,7 @@ namespace Avalonia.Styling
                     throw new InvalidOperationException(
                         "ControlTemplate styles cannot contain multiple template selectors.");
             }
-            
+
             var previous = s.MovePreviousOrParent();
 
             if (previous is null)

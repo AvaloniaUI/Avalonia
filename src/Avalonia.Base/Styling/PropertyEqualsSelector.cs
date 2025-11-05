@@ -45,7 +45,7 @@ namespace Avalonia.Styling
 
                 if (_previous != null)
                 {
-                    builder.Append(_previous.ToString(owner));
+                    builder.Append(_previous.ToString(owner, true));
                 }
 
                 builder.Append('[');
@@ -85,7 +85,6 @@ namespace Avalonia.Styling
                     ? SelectorMatch.AlwaysThisInstance
                     : SelectorMatch.NeverThisInstance;
             }
-            
         }
 
         private protected override Selector? MovePrevious() => _previous;
