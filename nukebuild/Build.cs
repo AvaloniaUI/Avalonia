@@ -414,13 +414,13 @@ partial class Build : NukeBuild
 
             ApiDiffHelper.MergePackageMarkdownDiffFiles(outputFolderPath, baselineDisplay, currentDisplay);
         });
-    
+
     Target RunTests => _ => _
         .DependsOn(RunCoreLibsTests)
         .DependsOn(RunRenderTests)
         .DependsOn(RunToolsTests)
-        .DependsOn(RunHtmlPreviewerTests)
-        .DependsOn(RunLeakTests);
+        .DependsOn(RunHtmlPreviewerTests);
+        //.DependsOn(RunLeakTests); // dotMemory Unit doesn't support modern .NET versions, see https://youtrack.jetbrains.com/issue/DMU-300/
 
     Target Package => _ => _
         .DependsOn(RunTests)
