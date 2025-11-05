@@ -100,25 +100,25 @@ export class PreviewerPresenter extends React.Component<PreviewerPresenterProps>
 
     handleMouseDown(e: React.MouseEvent) {
         e.preventDefault();
-        const pointerPressedEventMessage = new PointerPressedEventMessage(e, this.scale);
+        const pointerPressedEventMessage = new PointerPressedEventMessage(e, this.scale / window.devicePixelRatio);
         this.props.conn.sendMouseEvent(pointerPressedEventMessage);
     }
 
     handleMouseUp(e: React.MouseEvent) {
         e.preventDefault();
-        const pointerReleasedEventMessage = new PointerReleasedEventMessage(e, this.scale);
+        const pointerReleasedEventMessage = new PointerReleasedEventMessage(e, this.scale / window.devicePixelRatio);
         this.props.conn.sendMouseEvent(pointerReleasedEventMessage);
     }
 
     handleMouseMove(e: React.MouseEvent) {
         e.preventDefault();
-        const pointerMovedEventMessage = new PointerMovedEventMessage(e, this.scale);
+        const pointerMovedEventMessage = new PointerMovedEventMessage(e, this.scale / window.devicePixelRatio);
         this.props.conn.sendMouseEvent(pointerMovedEventMessage);
     }
 
     handleWheel(e: React.WheelEvent) {
         e.preventDefault();
-        const scrollEventMessage = new ScrollEventMessage(e, this.scale);
+        const scrollEventMessage = new ScrollEventMessage(e, this.scale / window.devicePixelRatio);
         this.props.conn.sendMouseEvent(scrollEventMessage);
     }
 

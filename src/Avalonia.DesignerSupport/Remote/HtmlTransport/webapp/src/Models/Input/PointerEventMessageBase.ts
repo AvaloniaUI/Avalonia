@@ -7,7 +7,7 @@ export abstract class PointerEventMessageBase extends InputEventMessageBase {
 
     protected constructor(e: React.MouseEvent, scale: number) {
         super(e);
-        this.x = e.clientX * window.devicePixelRatio / scale;
-        this.y = e.clientY * window.devicePixelRatio / scale;
+        this.x = e.clientX / scale;
+        this.y = e.clientY / scale;
     }
 }
