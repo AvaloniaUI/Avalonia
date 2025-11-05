@@ -9,10 +9,11 @@ internal partial class ServerCompositionSimplePen : IPen
     /// <inheritdoc/>
     public override void Dispose()
     {
-        // Dispose of the brush resource, this will remove the pen from the brush observers.
-        // This was causing the pen to be retained in memory by long lived brush resources (e.g. those defined in
+        // Remove the pen from the brush observers.
+        // Without this, the pen was being retained in memory by long lived brush resources (e.g. those defined in
         // the theme or app resources), hence was causing memory leaks; see Issue #16451
-        SetValue(ref _brush, null!);
+        RemoveObserversFromProperty(ref _brush);
+        _brush = null;
         base.Dispose();
     }
 }
