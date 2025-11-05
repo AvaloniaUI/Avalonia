@@ -54,7 +54,6 @@
                     Grid.Column="1">
                 <ContentPresenter Name="PART_HeaderPresenter"
                                   Content="{TemplateBinding Header}"
-                                  RecognizesAccessKey="True"
                                   ContentTemplate="{TemplateBinding HeaderTemplate}"
                                   HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                                   VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
@@ -67,7 +66,6 @@
                               Name="PART_ContentPresenter"
                               ContentTemplate="{TemplateBinding ContentTemplate}"
                               Content="{TemplateBinding Content}"
-                              RecognizesAccessKey="True"
                               VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                               HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                               UseLayoutRounding="{TemplateBinding UseLayoutRounding}"
@@ -75,5 +73,13 @@
         </Grid>
       </ControlTemplate>
     </Setter>
+
+    <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="RecognizesAccessKey" Value="True" />
+    </Style>
+
+    <Style Selector="^ /template/ ContentPresenter#PART_HeaderPresenter">
+      <Setter Property="RecognizesAccessKey" Value="True" />
+    </Style> 
   </ControlTheme>
 </ResourceDictionary>
