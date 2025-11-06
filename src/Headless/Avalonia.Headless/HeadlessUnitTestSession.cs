@@ -188,8 +188,25 @@ public sealed class HeadlessUnitTestSession : IDisposable
     /// </param>
     public static HeadlessUnitTestSession StartNew(
         [DynamicallyAccessedMembers(DynamicallyAccessed)]
+        Type entryPointType)
+    {
+        // Cannot be optional parameter for ABI stability
+        // ReSharper disable once IntroduceOptionalParameters.Global
+        return StartNew(entryPointType, AvaloniaTestIsolationLevel.PerTest);
+    }
+
+    /// <summary>
+    /// Creates instance of <see cref="HeadlessUnitTestSession"/>. 
+    /// </summary>
+    /// <param name="entryPointType">
+    /// Parameter from which <see cref="AppBuilder"/> should be created.
+    /// It either needs to have BuildAvaloniaApp -> AppBuilder method or inherit Application.
+    /// </param>
+    /// <param name="isolationLevel">Defines the isolation level for headless unit tests</param>
+    public static HeadlessUnitTestSession StartNew(
+        [DynamicallyAccessedMembers(DynamicallyAccessed)]
         Type entryPointType,
-        bool isolated)
+        AvaloniaTestIsolationLevel isolationLevel)
     {
         var tcs = new TaskCompletionSource<HeadlessUnitTestSession>();
         var cancellationTokenSource = new CancellationTokenSource();
@@ -201,6 +218,7 @@ public sealed class HeadlessUnitTestSession : IDisposable
             try
             {
                 var appBuilder = AppBuilder.Configure(entryPointType);
+                var runIsolated = isolationLevel == AvaloniaTestIsolationLevel.PerTest;
 
                 // If windowing subsystem wasn't initialized by user, force headless with default parameters.
                 if (appBuilder.WindowingSubsystemName != "Headless")
@@ -209,7 +227,7 @@ public sealed class HeadlessUnitTestSession : IDisposable
                 }
 
                 // ReSharper disable once AccessToModifiedClosure
-                tcs.SetResult(new HeadlessUnitTestSession(appBuilder, cancellationTokenSource, queue, task!, isolated));
+                tcs.SetResult(new HeadlessUnitTestSession(appBuilder, cancellationTokenSource, queue, task!, runIsolated));
             }
             catch (Exception e)
             {
@@ -259,11 +277,10 @@ public sealed class HeadlessUnitTestSession : IDisposable
 
                 var isolationLevel = assembly.GetCustomAttribute<AvaloniaTestIsolationAttribute>()
                     ?.IsolationLevel ?? AvaloniaTestIsolationLevel.PerTest;
-                var runIsolated = isolationLevel == AvaloniaTestIsolationLevel.PerTest;
 
                 session = appBuilderEntryPointType is not null ?
-                    StartNew(appBuilderEntryPointType, runIsolated) :
-                    StartNew(typeof(Application), runIsolated);
+                    StartNew(appBuilderEntryPointType, isolationLevel) :
+                    StartNew(typeof(Application), isolationLevel);
 
                 s_session.Add(assembly, session);
             }
