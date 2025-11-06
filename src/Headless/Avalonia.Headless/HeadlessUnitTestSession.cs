@@ -26,19 +26,23 @@ public sealed class HeadlessUnitTestSession : IDisposable
     private readonly CancellationTokenSource _cancellationTokenSource;
     private readonly BlockingCollection<(Action, ExecutionContext?)> _queue;
     private readonly Task _dispatchTask;
+    private readonly bool _isolated;
 
     internal const DynamicallyAccessedMemberTypes DynamicallyAccessed =
         DynamicallyAccessedMemberTypes.PublicMethods |
         DynamicallyAccessedMemberTypes.NonPublicMethods |
         DynamicallyAccessedMemberTypes.PublicParameterlessConstructor;
 
-    private HeadlessUnitTestSession(AppBuilder appBuilder, CancellationTokenSource cancellationTokenSource,
-        BlockingCollection<(Action, ExecutionContext?)> queue, Task dispatchTask)
+    private HeadlessUnitTestSession(
+        AppBuilder appBuilder, CancellationTokenSource cancellationTokenSource,
+        BlockingCollection<(Action, ExecutionContext?)> queue, Task dispatchTask,
+        bool isolated)
     {
         _appBuilder = appBuilder;
         _cancellationTokenSource = cancellationTokenSource;
         _queue = queue;
         _dispatchTask = dispatchTask;
+        _isolated = isolated;
     }
 
     /// <inheritdoc cref="DispatchCore{TResult}"/>
@@ -92,7 +96,9 @@ public sealed class HeadlessUnitTestSession : IDisposable
 
             try
             {
-                using var application = EnsureApplication();
+                using var application = _isolated
+                    ? EnsureIsolatedApplication()
+                    : EnsureSharedApplication();
                 var task = action();
                 if (task.Status != TaskStatus.RanToCompletion)
                 {
@@ -122,7 +128,24 @@ public sealed class HeadlessUnitTestSession : IDisposable
         return tcs.Task;
     }
 
-    private IDisposable EnsureApplication()
+    private IDisposable EnsureSharedApplication()
+    {
+        var oldContext = SynchronizationContext.Current;
+        if (Application.Current is null)
+        {
+            _appBuilder.SetupUnsafe();
+        }
+
+        AvaloniaSynchronizationContext.InstallIfNeeded();
+
+        return Disposable.Create(() =>
+        {
+            Dispatcher.UIThread.RunJobs();
+            SynchronizationContext.SetSynchronizationContext(oldContext);
+        });
+    }
+
+    private IDisposable EnsureIsolatedApplication()
     {
         var scope = AvaloniaLocator.EnterScope();
         var oldContext = SynchronizationContext.Current;
@@ -165,7 +188,8 @@ public sealed class HeadlessUnitTestSession : IDisposable
     /// </param>
     public static HeadlessUnitTestSession StartNew(
         [DynamicallyAccessedMembers(DynamicallyAccessed)]
-        Type entryPointType)
+        Type entryPointType,
+        bool isolated)
     {
         var tcs = new TaskCompletionSource<HeadlessUnitTestSession>();
         var cancellationTokenSource = new CancellationTokenSource();
@@ -185,7 +209,7 @@ public sealed class HeadlessUnitTestSession : IDisposable
                 }
 
                 // ReSharper disable once AccessToModifiedClosure
-                tcs.SetResult(new HeadlessUnitTestSession(appBuilder, cancellationTokenSource, queue, task!));
+                tcs.SetResult(new HeadlessUnitTestSession(appBuilder, cancellationTokenSource, queue, task!, isolated));
             }
             catch (Exception e)
             {
@@ -233,9 +257,13 @@ public sealed class HeadlessUnitTestSession : IDisposable
                 var appBuilderEntryPointType = assembly.GetCustomAttribute<AvaloniaTestApplicationAttribute>()
                     ?.AppBuilderEntryPointType;
 
+                var isolationLevel = assembly.GetCustomAttribute<AvaloniaTestIsolationAttribute>()
+                    ?.IsolationLevel ?? AvaloniaTestIsolationLevel.PerTest;
+                var runIsolated = isolationLevel == AvaloniaTestIsolationLevel.PerTest;
+
                 session = appBuilderEntryPointType is not null ?
-                    StartNew(appBuilderEntryPointType) :
-                    StartNew(typeof(Application));
+                    StartNew(appBuilderEntryPointType, runIsolated) :
+                    StartNew(typeof(Application), runIsolated);
 
                 s_session.Add(assembly, session);
             }
