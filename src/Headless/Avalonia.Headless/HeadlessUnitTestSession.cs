@@ -18,7 +18,6 @@ namespace Avalonia.Headless;
 /// All UI tests are supposed to be executed from one of the <see cref="Dispatch"/> methods to keep execution flow on the UI thread.
 /// Disposing unit test session stops internal dispatcher loop. 
 /// </summary>
-[Unstable("This API is experimental and might be unstable. Use on your risk. API might or might not be changed in a minor update.")]
 public sealed class HeadlessUnitTestSession : IDisposable
 {
     private static readonly Dictionary<Assembly, HeadlessUnitTestSession> s_session = new();
