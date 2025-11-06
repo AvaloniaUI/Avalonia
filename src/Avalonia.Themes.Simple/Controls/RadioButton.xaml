@@ -36,11 +36,14 @@
                             Margin="4,0,0,0"
                             VerticalAlignment="Center"
                             Content="{TemplateBinding Content}"
-                            ContentTemplate="{TemplateBinding ContentTemplate}"
-                            RecognizesAccessKey="True" />
+                            ContentTemplate="{TemplateBinding ContentTemplate}" />
         </Grid>
       </ControlTemplate>
     </Setter>
+
+    <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="RecognizesAccessKey" Value="True" />
+    </Style>
 
     <Style Selector="^:pointerover /template/ Ellipse#border">
       <Setter Property="Stroke" Value="{DynamicResource ThemeBorderHighBrush}" />
