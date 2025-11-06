@@ -97,7 +97,7 @@ namespace Avalonia.X11
             _popup = popupParent != null;
             _overrideRedirect = _popup || overrideRedirect;
             _x11 = platform.Info;
-            _mouse = new MouseDevice();
+            _mouse = Avalonia.Input.MouseDevice.Primary;
             _pen = new PenDevice();
             _touch = new TouchDevice();
             _keyboard = platform.KeyboardDevice;
@@ -1074,7 +1074,7 @@ namespace Avalonia.X11
                 _platform.XI2?.OnWindowDestroyed(_handle);
                 var handle = _handle;
                 _handle = IntPtr.Zero;
-                _mouse.Dispose();
+                _pen.Dispose();
                 _touch.Dispose();
                 if (!fromDestroyNotification) 
                     XDestroyWindow(_x11.Display, handle);
