@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using Avalonia.Controls;
 using Avalonia.Input;
 
 namespace Avalonia.X11.Clipboard;
@@ -33,19 +34,40 @@ internal static class ClipboardDataFormatHelper
         {
             return atomName == MimeTypeTextUriList ?
                 DataFormat.File :
-                DataFormat.FromSystemName<byte[]>(atomName, AppPrefix);
+                atomName == "image/png" ?
+                    DataFormat.Bitmap :
+                    DataFormat.FromSystemName<byte[]>(atomName, AppPrefix);
         }
 
         return null;
     }
 
-    public static IntPtr ToAtom(DataFormat format, IntPtr[] textFormatAtoms, X11Atoms atoms)
+    public static IntPtr ToAtom(DataFormat format, IntPtr[] textFormatAtoms, X11Atoms atoms, DataFormat[] dataFormats)
     {
         if (DataFormat.Text.Equals(format))
             return GetPreferredStringFormatAtom(textFormatAtoms, atoms);
 
         if (DataFormat.File.Equals(format))
             return atoms.GetAtom(MimeTypeTextUriList);
+
+        if (DataFormat.Bitmap.Equals(format))
+        {
+            DataFormat? pngFormat = null, jpegFormat = null;
+            foreach (var imageFormat in dataFormats)
+            {
+                if (imageFormat.Identifier is "image/png")
+                    pngFormat = imageFormat;
+                else if (imageFormat.Identifier is "image/jpeg" or "image/jpg")
+                    jpegFormat = imageFormat;
+
+                if (pngFormat != null && jpegFormat != null)
+                    break;
+            }
+
+            var preferredFormat = pngFormat ?? jpegFormat ?? null;
+
+            return atoms.GetAtom(preferredFormat!.ToSystemName(AppPrefix));
+        }
 
         var systemName = format.ToSystemName(AppPrefix);
         return atoms.GetAtom(systemName);
@@ -58,6 +80,9 @@ internal static class ClipboardDataFormatHelper
 
         if (DataFormat.File.Equals(format))
             return [atoms.GetAtom(MimeTypeTextUriList)];
+
+        if (DataFormat.Bitmap.Equals(format))
+            return [atoms.GetAtom("image/png")];
 
         var systemName = format.ToSystemName(AppPrefix);
         return [atoms.GetAtom(systemName)];

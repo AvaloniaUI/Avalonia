@@ -145,6 +145,17 @@ namespace Avalonia.X11.Clipboard
                     encoding.GetBytes(text ?? string.Empty) :
                     null;
             }
+
+            if (DataFormat.Bitmap.Equals(format))
+            {
+                if (dataTransfer.TryGetValueAsync(DataFormat.Bitmap).GetAwaiter().GetResult() is not { } bitmap)
+                    return null;
+
+                using var stream = new MemoryStream();
+                bitmap.Save(stream);
+
+                return stream.ToArray();
+            }
             
             if (DataFormat.File.Equals(format))
             {
@@ -286,7 +297,7 @@ namespace Avalonia.X11.Clipboard
                 return null;
 
             // Get the items while we're in an async method. This does not get values, except for DataFormat.File.
-            var reader = new ClipboardDataReader(_x11, _platform, textFormatAtoms, owner);
+            var reader = new ClipboardDataReader(_x11, _platform, textFormatAtoms, owner, dataFormats);
             var items = await CreateItemsAsync(reader, dataFormats);
             return new ClipboardDataTransfer(reader, dataFormats, items);
         }
@@ -301,6 +312,8 @@ namespace Avalonia.X11.Clipboard
 
             var formats = new List<DataFormat>(formatAtoms.Length);
             List<IntPtr>? textFormatAtoms = null;
+
+            var hasImage = false;
 
             foreach (var formatAtom in formatAtoms)
             {
@@ -317,8 +330,19 @@ namespace Avalonia.X11.Clipboard
                     textFormatAtoms.Add(formatAtom);
                 }
                 else
+                {
                     formats.Add(format);
+
+                    if(!hasImage)
+                    {
+                        if (format.Identifier is "image/jpeg" or "image/jpg" or "image.png")
+                            hasImage = true;
+                    }
+                }
             }
+
+            if (hasImage)
+                formats.Add(DataFormat.Bitmap);
 
             return (formats.ToArray(), textFormatAtoms?.ToArray() ?? []);
         }
