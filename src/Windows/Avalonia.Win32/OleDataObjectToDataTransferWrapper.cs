@@ -32,24 +32,16 @@ internal sealed class OleDataObjectToDataTransferWrapper(Win32Com.IDataObject ol
         while (Next(enumFormat) is { } format)
             formats.Add(format);
 
-        DataFormat? dibImageFormat = null;
-        DataFormat? bitImageFormat = null;
-        DataFormat? pngImageFormat = null;
-        DataFormat? jpegImageFormat = null;
+        bool hasSupportedFormat = false;
 
         foreach (var format in formats)
         {
-            if (format.Identifier == "CF_DIB")
-                dibImageFormat = format;
-            if (format.Identifier == "CF_BITMAP")
-                bitImageFormat = format;
-            else if (format.Identifier == "image/png")
-                pngImageFormat = format;
-            else if (format.Identifier == "image/jpg" || format.Identifier == "image/jpeg")
-                jpegImageFormat = format;
+            if (format.Identifier is "CF_DIB" or "CF_BITMAP" or "image/png" or "image/jpg" or "image/jpeg")
+            {
+                hasSupportedFormat = true;
+                break;
+            }
         }
-
-        var hasSupportedFormat = (dibImageFormat ?? bitImageFormat ?? pngImageFormat ?? jpegImageFormat ?? null) != null;
 
         if (hasSupportedFormat)
         {
