@@ -302,9 +302,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ControlCatalog.MacCatalyst"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ControlCatalog.tvOS", "samples\ControlCatalog.tvOS\ControlCatalog.tvOS.csproj", "{14342787-B4EF-4076-8C91-BA6C523DE8DF}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Harfbuzz", "Harfbuzz", "{7670D720-6E84-4AFC-8331-A5C399481905}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HarfBuzz", "HarfBuzz", "{7670D720-6E84-4AFC-8331-A5C399481905}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Harfbuzz", "src\Harfbuzz\Avalonia.Harfbuzz\Avalonia.Harfbuzz.csproj", "{E2BFA463-6402-4EF8-8945-FD9A10A914D1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.HarfBuzz", "src\HarfBuzz\Avalonia.HarfBuzz\Avalonia.HarfBuzz.csproj", "{E2BFA463-6402-4EF8-8945-FD9A10A914D1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
