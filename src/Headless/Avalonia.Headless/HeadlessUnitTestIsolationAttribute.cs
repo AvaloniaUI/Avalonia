@@ -16,6 +16,7 @@ public enum AvaloniaTestIsolationLevel
     /// </summary>
     /// <remarks>
     /// Tests must not rely on any global or persistent state that could leak between runs.
+    /// Headless framework won't dispose any resources after tests when using this mode.
     /// </remarks>
     PerAssembly,
 
