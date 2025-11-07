@@ -18,6 +18,25 @@ internal struct ComVariant : IDisposable
     internal const short VARIANT_TRUE = -1;
     internal const short VARIANT_FALSE = 0;
 
+#if DEBUG
+    static unsafe ComVariant()
+    {
+        // Variant size is the size of 4 pointers (16 bytes) on a 32-bit processor,
+        // and 3 pointers (24 bytes) on a 64-bit processor.
+        // See definition in oaidl.h in the Windows SDK.
+        int variantSize = sizeof(ComVariant);
+        if (IntPtr.Size == 4)
+        {
+            Debug.Assert(variantSize == (4 * IntPtr.Size));
+        }
+        else
+        {
+            Debug.Assert(IntPtr.Size == 8);
+            Debug.Assert(variantSize == (3 * IntPtr.Size));
+        }
+    }
+#endif
+
     // Most of the data types in the Variant are carried in _typeUnion
     [FieldOffset(0)] private TypeUnion _typeUnion;
 
@@ -30,6 +49,13 @@ internal struct ComVariant : IDisposable
         public ushort _wReserved3;
 
         public UnionTypes _unionTypes;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct Record
+    {
+        public IntPtr _record;
+        public IntPtr _recordInfo;
     }
 
     [StructLayout(LayoutKind.Explicit)]
@@ -56,6 +82,7 @@ internal struct ComVariant : IDisposable
         [FieldOffset(0)] public IntPtr _dispatch;
         [FieldOffset(0)] public IntPtr _pvarVal;
         [FieldOffset(0)] public IntPtr _byref;
+        [FieldOffset(0)] public Record _record;
         [FieldOffset(0)] public SafeArrayRef parray;
         [FieldOffset(0)] public SafeArrayRef*pparray;
     }
