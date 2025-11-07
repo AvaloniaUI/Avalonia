@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -9,6 +8,7 @@ using Avalonia.Diagnostics.SourceNavigator;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
+using Avalonia.Logging;
 using Avalonia.Markup.Xaml.SourceInfo;
 using Avalonia.Media;
 using Avalonia.VisualTree;
@@ -17,12 +17,12 @@ namespace Avalonia.DesignerSupport.DesignerSelection
 {
     internal class WindowInspectorState
     {
-        private static readonly Color _selectionColorFill = Color.Parse("#330078D7");
-        private static readonly Color _selectionColorStroke = Color.Parse("#0078D7");
-        private static readonly Color _toggleButtonInactiveColor = Color.FromArgb(128, 30, 30, 30);
+        private static readonly Color s_selectionColorFill = Color.Parse("#330078D7");
+        private static readonly Color s_selectionColorStroke = Color.Parse("#0078D7");
+        private static readonly Color s_toggleButtonInactiveColor = Color.FromArgb(128, 30, 30, 30);
 
-        private static readonly IBrush _selectionBrushStroke = new SolidColorBrush(_selectionColorStroke);
-        private static readonly IBrush _toggleButtonInactiveBrush = new SolidColorBrush(_toggleButtonInactiveColor);
+        private static readonly IBrush s_selectionBrushStroke = new SolidColorBrush(s_selectionColorStroke);
+        private static readonly IBrush s_toggleButtonInactiveBrush = new SolidColorBrush(s_toggleButtonInactiveColor);
 
         private const double BoundsEpsilon = 2.0;
 
@@ -32,15 +32,15 @@ namespace Avalonia.DesignerSupport.DesignerSelection
         }
 
         private Control Window { get; init; }
-        private Panel? OverlayLayer { get; set; }
-        private Rectangle? HighlightRect { get; set; }
-        private Border? InfoPopup { get; set; }
-        private TextBlock? InfoText { get; set; }
-        private Border? ToggleButton { get; set; }
-        private Point? ToggleButtonDragStart = null;
+        private Panel OverlayLayer { get; set; }
+        private Rectangle HighlightRect { get; set; }
+        private Border InfoPopup { get; set; }
+        private TextBlock InfoText { get; set; }
+        private Border ToggleButton { get; set; }
+        private bool _toggleButtonDragStart;
 
-        private Visual? LastSelectedVisual { get; set; }
-        private List<(Control control, SourceInfo info)>? CurrentAncestry { get; set; }
+        private Visual LastSelectedVisual { get; set; }
+        private List<(Control control, SourceInfo info)> CurrentAncestry { get; set; }
         private int SelectedAncestorIndex { get; set; }
 
         internal void Register()
@@ -57,10 +57,11 @@ namespace Avalonia.DesignerSupport.DesignerSelection
             Window.RemoveHandler(InputElement.PointerMovedEvent, OnPointerMoved);
             Window.RemoveHandler(InputElement.PointerWheelChangedEvent, OnPointerWheelChanged);
 
-            if(ToggleButton != null)
+            if (ToggleButton != null)
             {
                 ToggleButton.PointerPressed -= OnToggleButton_PointerPressed;
                 ToggleButton.PointerMoved -= OnToggleButton_PointerMoved;
+                ToggleButton.PointerReleased -= OnToggleButton_PointerReleased;
             }
         }
 
@@ -81,8 +82,8 @@ namespace Avalonia.DesignerSupport.DesignerSelection
                 StrokeThickness = 2,
                 IsVisible = false,
                 IsHitTestVisible = false,
-                Stroke = new SolidColorBrush(_selectionColorStroke),
-                Fill = new SolidColorBrush(_selectionColorFill)
+                Stroke = new SolidColorBrush(s_selectionColorStroke),
+                Fill = new SolidColorBrush(s_selectionColorFill)
             };
             OverlayLayer.Children.Add(HighlightRect);
 
@@ -118,8 +119,8 @@ namespace Avalonia.DesignerSupport.DesignerSelection
             var btn = new Border
             {
                 Background = ElementInspector.IsDesignerSelecting
-                    ? _selectionBrushStroke
-                    : _toggleButtonInactiveBrush,
+                    ? s_selectionBrushStroke
+                    : s_toggleButtonInactiveBrush,
                 BorderBrush = Brushes.White,
                 BorderThickness = new Thickness(1),
                 CornerRadius = new CornerRadius(12),
@@ -143,16 +144,6 @@ namespace Avalonia.DesignerSupport.DesignerSelection
                 return;
 
             InfoText.Inlines?.Clear();
-
-            void AddLine(string label, string text, bool isCurrent = false)
-            {
-                var line = new Avalonia.Controls.Documents.Run($"{label} {text}\n")
-                {
-                    FontWeight = isCurrent ? FontWeight.Bold : FontWeight.Normal,
-                    Foreground = isCurrent ? Brushes.White : new SolidColorBrush(Color.FromRgb(200, 200, 200))
-                };
-                InfoText?.Inlines?.Add(line);
-            }
 
             // Parent (above current)
             if (CurrentAncestry != null && SelectedAncestorIndex < CurrentAncestry.Count - 1)
@@ -184,11 +175,22 @@ namespace Avalonia.DesignerSupport.DesignerSelection
                     AddLine("Child:", child.control.GetType().Name);
             }
             InfoPopup.IsVisible = true;
+            return;
+
+            void AddLine(string label, string text, bool isCurrent = false)
+            {
+                var line = new Controls.Documents.Run($"{label} {text}\n")
+                {
+                    FontWeight = isCurrent ? FontWeight.Bold : FontWeight.Normal,
+                    Foreground = isCurrent ? Brushes.White : new SolidColorBrush(Color.FromRgb(200, 200, 200))
+                };
+                InfoText?.Inlines?.Add(line);
+            }
         }
 
 
         // --- Pointer handling per window ---
-        private void OnPointerMoved(object? sender, PointerEventArgs e)
+        private void OnPointerMoved(object sender, PointerEventArgs e)
         {
             if (!ElementInspector.IsDesignerSelecting)
                 return;
@@ -219,51 +221,59 @@ namespace Avalonia.DesignerSupport.DesignerSelection
             LastSelectedVisual = visual;
         }
 
-        private async void OnPointerPressed(object? sender, PointerPressedEventArgs e)
+        private async void OnPointerPressed(object sender, PointerPressedEventArgs e)
         {
-            if (!ElementInspector.IsDesignerSelecting ||
-                Window == null ||
-                CurrentAncestry == null)
-                return;
-
-            var pos = e.GetPosition(Window);
-            var visual = Window.GetVisualAt(pos, v => v != HighlightRect && v != InfoPopup);
-
-            // Ignore the toggle button itself
-            if (visual == ToggleButton || visual == ToggleButton?.Child)
-                visual = null;
-
-            var control = FindNearestControl(visual);
-            if (control == null)
-                return;
-
-            e.Handled = true;
-
-            // Detect modifier keys for ancestor navigation
-            var mods = e.KeyModifiers;
-            if (mods.HasFlag(KeyModifiers.Shift))
+            try
             {
-                if (SelectedAncestorIndex < CurrentAncestry.Count - 1)
+                if (!ElementInspector.IsDesignerSelecting ||
+                    Window == null ||
+                    CurrentAncestry == null)
+                    return;
+
+                var pos = e.GetPosition(Window);
+                var visual = Window.GetVisualAt(pos, v => v != HighlightRect && v != InfoPopup);
+
+                // Ignore the toggle button itself
+                if (visual == ToggleButton || visual == ToggleButton?.Child)
+                    visual = null;
+
+                var control = FindNearestControl(visual);
+                if (control == null)
+                    return;
+
+                e.Handled = true;
+
+                // Detect modifier keys for ancestor navigation
+                var mods = e.KeyModifiers;
+                if (mods.HasFlag(KeyModifiers.Shift))
                 {
-                    SelectedAncestorIndex++;
-                    UpdateSelection(e);
+                    if (SelectedAncestorIndex < CurrentAncestry.Count - 1)
+                    {
+                        SelectedAncestorIndex++;
+                        UpdateSelection(e);
+                    }
+                }
+                else if (mods.HasFlag(KeyModifiers.Control))
+                {
+                    if (SelectedAncestorIndex > 0)
+                    {
+                        SelectedAncestorIndex--;
+                        UpdateSelection(e);
+                    }
+                }
+                else
+                {
+                    await SourceNavigatorRegistry.NavigateToAsync(CurrentAncestry[SelectedAncestorIndex].control);
                 }
             }
-            else if (mods.HasFlag(KeyModifiers.Control))
+            catch (Exception ex)
             {
-                if (SelectedAncestorIndex > 0)
-                {
-                    SelectedAncestorIndex--;
-                    UpdateSelection(e);
-                }
-            }
-            else
-            {
-                await SourceNavigatorRegistry.NavigateToAsync(CurrentAncestry[SelectedAncestorIndex].control);
+                Logger.TryGet(LogEventLevel.Error, LogArea.Platform)?
+                    .Log(this, $"Unexpected error in designer element inspector: {ex}");
             }
         }
 
-        private void OnPointerWheelChanged(object? sender, PointerWheelEventArgs e)
+        private void OnPointerWheelChanged(object sender, PointerWheelEventArgs e)
         {
             if (!ElementInspector.IsDesignerSelecting ||
                 CurrentAncestry == null ||
@@ -279,24 +289,25 @@ namespace Avalonia.DesignerSupport.DesignerSelection
             e.Handled = true;
         }
 
-        //toggle button
-        private void OnToggleButton_PointerPressed(object? sender, PointerPressedEventArgs e)
+        // Toggle button handlers
+        private void OnToggleButton_PointerPressed(object sender, PointerPressedEventArgs e)
         {
-            if(ToggleButton != null)
+            if (ToggleButton != null)
             {
+                // Toggle the selection mode for the inspector and update the toggle visual.
                 ElementInspector.SetDesignerSelecting(!ElementInspector.IsDesignerSelecting);
 
                 ToggleButton.Background = ElementInspector.IsDesignerSelecting
-                    ? _selectionBrushStroke
-                    : _toggleButtonInactiveBrush;
+                    ? s_selectionBrushStroke
+                    : s_toggleButtonInactiveBrush;
 
-                ToggleButtonDragStart = e.GetPosition(OverlayLayer);
+                _toggleButtonDragStart = true;
             }
         }
 
-        private void OnToggleButton_PointerMoved(object? sender, PointerEventArgs e)
+        private void OnToggleButton_PointerMoved(object sender, PointerEventArgs e)
         {
-            if (ToggleButton != null && ToggleButtonDragStart is { } start && e.GetCurrentPoint(ToggleButton).Properties.IsLeftButtonPressed)
+            if (ToggleButton != null && _toggleButtonDragStart  && e.GetCurrentPoint(ToggleButton).Properties.IsLeftButtonPressed)
             {
                 var pos = e.GetPosition(OverlayLayer);
                 Canvas.SetRight(ToggleButton, double.NaN);
@@ -305,6 +316,14 @@ namespace Avalonia.DesignerSupport.DesignerSelection
             }
         }
 
+        private void OnToggleButton_PointerReleased(object sender, PointerReleasedEventArgs e)
+        {
+            if (ToggleButton != null)
+            {
+                _toggleButtonDragStart = false;
+            }
+        }
+        
         private void Highlight(Control control)
         {
             if (Window == null || OverlayLayer == null || HighlightRect == null)
@@ -350,7 +369,7 @@ namespace Avalonia.DesignerSupport.DesignerSelection
             CreateInfoPopupDialogText();
         }
 
-        private static Panel? TryGetAdornerLayer(Control window)
+        private static Panel TryGetAdornerLayer(Control window)
         {
             var adorner = AdornerLayer.GetAdornerLayer(window);
             if (adorner != null)
@@ -365,7 +384,7 @@ namespace Avalonia.DesignerSupport.DesignerSelection
             return null;
         }
 
-        private static Control? FindNearestControl(Visual? v)
+        private static Control FindNearestControl(Visual v)
         {
             while (v != null)
             {
@@ -381,12 +400,12 @@ namespace Avalonia.DesignerSupport.DesignerSelection
             var ancestry = new List<(Control control, SourceInfo info)>();
 
             // Collect all parents (including self) that have SourceInfo
-            Visual? current = start;
+            Visual current = start;
             while (current != null)
             {
                 if (current is Control control)
                 {
-                    var info = Avalonia.Markup.Xaml.SourceInfo.Source.GetSourceInfo(control);
+                    var info = Source.GetSourceInfo(control);
                     if (info != default)
                     {
                         ancestry.Add((control, info));
@@ -397,7 +416,7 @@ namespace Avalonia.DesignerSupport.DesignerSelection
             }
 
             if (ancestry.Count == 0)
-                return new List<(Control control, SourceInfo info)> { (start, default) };
+                return [(start, default)];
 
             return ancestry;
         }
@@ -450,21 +469,20 @@ namespace Avalonia.DesignerSupport.DesignerSelection
     /// </summary>
     internal static class ElementInspector
     {
-        private static readonly Dictionary<Control, WindowInspectorState> _windows = new();
-        private static bool _firstLoaded = true;
-        internal static bool DevToolsOpened = false;
-
+        private static readonly Dictionary<Control, WindowInspectorState> s_windows = new();
+        private static bool s_firstLoaded = true;
+        
         public static bool IsDesignerSelecting { get; set; }
 
         // --- Initialization per window ---
         public static void Initialize(Control control)
         {
-            if (_firstLoaded)
+            if (s_firstLoaded)
             {
                 SourceNavigatorRegistry.RegisterIfNotExists(() => new VisualStudioSourceNavigator());
                 SourceNavigatorRegistry.RegisterIfNotExists(() => new RiderSourceNavigator());
                 SourceNavigatorRegistry.RegisterIfNotExists(() => new VsCodeSourceNavigator());
-                _firstLoaded = false;
+                s_firstLoaded = false;
                 SetDesignerSelecting(Design.IsDesignMode);
             }
 
@@ -477,11 +495,11 @@ namespace Avalonia.DesignerSupport.DesignerSelection
         private static void Register(Control control)
         {
             var root = control.GetVisualRoot() as Control ?? control;
-            if (_windows.ContainsKey(root))
+            if (s_windows.ContainsKey(root))
                 return;
 
             var state = new WindowInspectorState(root);
-            _windows[root] = state;
+            s_windows[root] = state;
 
             state.Register();
 
@@ -493,7 +511,7 @@ namespace Avalonia.DesignerSupport.DesignerSelection
 
         private static void Unregister(Control control)
         {
-            if (_windows.Remove(control, out var state))
+            if (s_windows.Remove(control, out var state))
             {
                 state.Unregister();
             }
@@ -502,7 +520,7 @@ namespace Avalonia.DesignerSupport.DesignerSelection
         internal static void SetDesignerSelecting(bool value)
         {
             ElementInspector.IsDesignerSelecting = value;
-            foreach (var s in _windows.Values)
+            foreach (var s in s_windows.Values)
             {
                 if (!value)
                 {

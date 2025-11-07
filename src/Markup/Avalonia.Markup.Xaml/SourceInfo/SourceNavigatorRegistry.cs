@@ -25,7 +25,7 @@ namespace Avalonia.Markup.Xaml.SourceInfo
         /// <summary>
         /// Determines whether this navigator is able to handle navigation
         /// </summary>
-        /// <returns><c>true</c> if this navigator is enable to handle navigation requests; otherwise, <c>false</c>.</returns>
+        /// <returns><c>true</c> if this navigator is able to handle navigation requests; otherwise, <c>false</c>.</returns>
         bool CanNavigate();
 
 
@@ -64,12 +64,12 @@ namespace Avalonia.Markup.Xaml.SourceInfo
     /// </remarks>
     public class SourceNavigatorRegistry : INotifyPropertyChanged
     {
-        private static readonly List<IAvaloniaSourceNavigator> _navigators = new();
+        private static readonly List<IAvaloniaSourceNavigator> s_navigators = new();
 
         public static SourceNavigatorRegistry Instance { get; } = new SourceNavigatorRegistry();
 
 
-
+        /// <inheritdoc />
         public event PropertyChangedEventHandler? PropertyChanged;
         
         /// <summary>
@@ -109,7 +109,7 @@ namespace Avalonia.Markup.Xaml.SourceInfo
             if (navigator == null)
                 throw new ArgumentNullException(nameof(navigator));
 
-            _navigators.Add(navigator);
+            s_navigators.Add(navigator);
             Instance.NotifyIsEnabledChanged();
         }
 
@@ -132,10 +132,10 @@ namespace Avalonia.Markup.Xaml.SourceInfo
             if (factory == null)
                 throw new ArgumentNullException(nameof(factory));
 
-            if (_navigators.Any(x => x is T))
+            if (s_navigators.Any(x => x is T))
                 return false;
 
-            _navigators.Add(factory());
+            s_navigators.Add(factory());
             Instance.NotifyIsEnabledChanged();
             return true;
         }
@@ -146,7 +146,7 @@ namespace Avalonia.Markup.Xaml.SourceInfo
         /// <param name="navigator">The navigator instance to remove.</param>
         public static void Unregister(IAvaloniaSourceNavigator navigator)
         {
-            _navigators.Remove(navigator);
+            s_navigators.Remove(navigator);
             Instance.NotifyIsEnabledChanged();
         }
 
@@ -155,7 +155,7 @@ namespace Avalonia.Markup.Xaml.SourceInfo
         /// </summary>
         public static void Clear() 
         {
-            _navigators.Clear(); 
+            s_navigators.Clear(); 
             Instance.NotifyIsEnabledChanged();
         }
 
@@ -178,7 +178,7 @@ namespace Avalonia.Markup.Xaml.SourceInfo
         /// </returns>
         public static bool CanNavigate()
         {
-            return _navigators.Any(c => c.CanNavigate());
+            return s_navigators.Any(c => c.CanNavigate());
         }
 
         /// <summary>
@@ -193,7 +193,7 @@ namespace Avalonia.Markup.Xaml.SourceInfo
         /// </returns>
         public static async Task<bool> NavigateToAsync(string filePath, int line, int column)
         {
-            foreach (var navigator in _navigators)
+            foreach (var navigator in s_navigators)
             {
                 try
                 {
@@ -224,7 +224,7 @@ namespace Avalonia.Markup.Xaml.SourceInfo
         /// </returns>
         public static async Task<bool> NavigateToAsync(AvaloniaObject avaloniaObject)
         {
-            SourceInfo sourceInfo = Source.GetSourceInfo(avaloniaObject);
+            var sourceInfo = Source.GetSourceInfo(avaloniaObject);
             if (sourceInfo != default)
             {
                 string? filePath = sourceInfo.FilePath;
@@ -232,22 +232,19 @@ namespace Avalonia.Markup.Xaml.SourceInfo
                 {
                     filePath = null;
 
-                    //if we are in the desinger, we do not get the current filepath, 
+                    //if we are in the designer, we do not get the current filepath, 
                     //try to read the filepath from the root XamlSourceInfoAttribute
-                    if (avaloniaObject is Visual visual)
+                    if (avaloniaObject is Visual { VisualRoot: { } root })
                     {
-                        if (visual.VisualRoot is { } root)
+                        if (root.GetType().GetCustomAttribute(typeof(XamlSourceInfoAttribute)) is XamlSourceInfoAttribute customAttribute)
                         {
-                            if (root.GetType().GetCustomAttribute(typeof(XamlSourceInfoAttribute)) is XamlSourceInfoAttribute customAttribute)
+                            filePath = customAttribute.SourceFileName;
+                        }
+                        else if (root is Controls.Window { Content: { } content })  //e.g. a UserControl
+                        {
+                            if (content.GetType().GetCustomAttribute(typeof(XamlSourceInfoAttribute)) is XamlSourceInfoAttribute customAttribute2)
                             {
-                                filePath = customAttribute.SourceFileName;
-                            }
-                            else if (root is Avalonia.Controls.Window { Content: { } content })  //e.g. a UserControl
-                            {
-                                if (content.GetType().GetCustomAttribute(typeof(XamlSourceInfoAttribute)) is XamlSourceInfoAttribute customAttribute2)
-                                {
-                                    filePath = customAttribute2.SourceFileName;
-                                }
+                                filePath = customAttribute2.SourceFileName;
                             }
                         }
                     }
@@ -263,6 +260,6 @@ namespace Avalonia.Markup.Xaml.SourceInfo
         /// <summary>
         /// Gets a snapshot of all currently registered source navigators.
         /// </summary>
-        public static IReadOnlyList<IAvaloniaSourceNavigator> RegisteredNavigators => _navigators.AsReadOnly();
+        public static IReadOnlyList<IAvaloniaSourceNavigator> RegisteredNavigators => s_navigators.AsReadOnly();
     }
 }

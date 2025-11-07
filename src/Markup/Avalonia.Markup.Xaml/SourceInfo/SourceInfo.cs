@@ -10,7 +10,7 @@ namespace Avalonia.Markup.Xaml.SourceInfo
     /// This struct is typically used to store the line, column, and file path of a control or object
     /// to enable navigation or diagnostics (for example, jumping to a definition in Visual Studio).
     /// </remarks>
-    public readonly struct SourceInfo
+    public readonly struct SourceInfo : IEquatable<SourceInfo>
     {
         /// <summary>
         /// Gets the 1-based line number in the source file where the element is defined.
@@ -67,6 +67,14 @@ namespace Avalonia.Markup.Xaml.SourceInfo
             return $"{file}:{Line},{Column}";
         }
 
+        /// <summary>
+        /// Determines whether the specified object is equal to the current <see cref="SourceInfo"/>.
+        /// </summary>
+        /// <param name="obj">The object to compare with the current instance.</param>
+        /// <returns>
+        /// <c>true</c> if <paramref name="obj"/> is a <see cref="SourceInfo"/> with the same
+        /// <see cref="Line"/>, <see cref="Column"/>, and <see cref="FilePath"/> values; otherwise, <c>false</c>.
+        /// </returns>
         public override bool Equals(object? obj)
         {
             return obj is SourceInfo info &&
@@ -75,6 +83,10 @@ namespace Avalonia.Markup.Xaml.SourceInfo
                    FilePath == info.FilePath;
         }
 
+        /// <summary>
+        /// Returns a hash code for this <see cref="SourceInfo"/>.
+        /// </summary>
+        /// <returns>An integer hash code computed from <see cref="Line"/>, <see cref="Column"/>, and <see cref="FilePath"/>.</returns>
         public override int GetHashCode()
         {
             int hash = 17;
@@ -83,14 +95,37 @@ namespace Avalonia.Markup.Xaml.SourceInfo
             hash = hash * 31 + (FilePath?.GetHashCode() ?? 0);
             return hash;
         }
+
+        /// <summary>
+        /// Determines whether two <see cref="SourceInfo"/> instances are equal.
+        /// </summary>
+        /// <param name="left">Left-hand operand.</param>
+        /// <param name="right">Right-hand operand.</param>
+        /// <returns><c>true</c> when both operands represent the same source location; otherwise <c>false</c>.</returns>
         public static bool operator ==(SourceInfo left, SourceInfo right)
         {
             return left.Equals(right);
         }
 
+        /// <summary>
+        /// Determines whether two <see cref="SourceInfo"/> instances are not equal.
+        /// </summary>
+        /// <param name="left">Left-hand operand.</param>
+        /// <param name="right">Right-hand operand.</param>
+        /// <returns><c>true</c> when operands do not represent the same source location; otherwise <c>false</c>.</returns>
         public static bool operator !=(SourceInfo left, SourceInfo right)
         {
             return !(left == right);
+        }
+
+        /// <summary>
+        /// Indicates whether the current instance is equal to another <see cref="SourceInfo"/>.
+        /// </summary>
+        /// <param name="other">The other <see cref="SourceInfo"/> to compare with.</param>
+        /// <returns><c>true</c> when both instances represent the same source location; otherwise <c>false</c>.</returns>
+        public bool Equals(SourceInfo other)
+        {
+            return Line == other.Line && Column == other.Column && FilePath == other.FilePath;
         }
     }
 
@@ -153,11 +188,25 @@ namespace Avalonia.Markup.Xaml.SourceInfo
         }
     }
 
+    /// <summary>
+    /// Attribute applied to types generated from XAML to record the original source file name.
+    /// </summary>
+    /// <remarks>
+    /// The XAML compiler may add this attribute to generated classes so design-time tooling
+    /// can map a runtime type back to its originating XAML file.
+    /// </remarks>
     [AttributeUsage(AttributeTargets.Class, Inherited = false)]
     public sealed class XamlSourceInfoAttribute : Attribute
     {
+        /// <summary>
+        /// Gets the source file name that produced the type.
+        /// </summary>
         public string SourceFileName { get; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="XamlSourceInfoAttribute"/> class.
+        /// </summary>
+        /// <param name="sourceFileName">The source file name associated with the generated type.</param>
         public XamlSourceInfoAttribute(string sourceFileName)
         {
             SourceFileName = sourceFileName;

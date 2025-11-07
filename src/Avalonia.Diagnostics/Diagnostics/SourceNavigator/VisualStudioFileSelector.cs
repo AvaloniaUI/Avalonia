@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml.SourceInfo;
@@ -32,9 +33,9 @@ namespace Avalonia.Diagnostics.SourceNavigator
         /// Gets the parent process of the current process.
         /// </summary>
         /// <returns>An instance of the Process class.</returns>
-        public static System.Diagnostics.Process? GetParentProcess()
+        public static Process? GetParentProcess()
         {
-            return GetParentProcess(System.Diagnostics.Process.GetCurrentProcess().Handle);
+            return GetParentProcess(Process.GetCurrentProcess().Handle);
         }
 
         /// <summary>
@@ -42,17 +43,16 @@ namespace Avalonia.Diagnostics.SourceNavigator
         /// </summary>
         /// <param name="handle">The process handle.</param>
         /// <returns>An instance of the Process class.</returns>
-        public static System.Diagnostics.Process? GetParentProcess(IntPtr handle)
+        public static Process? GetParentProcess(IntPtr handle)
         {
-            ProcessHelperWindows pbi = new ProcessHelperWindows();
-            int returnLength;
-            int status = NtQueryInformationProcess(handle, 0, ref pbi, Marshal.SizeOf(pbi), out returnLength);
+            var pbi = new ProcessHelperWindows();
+            int status = NtQueryInformationProcess(handle, 0, ref pbi, Marshal.SizeOf(pbi), out _);
             if (status != 0)
                 throw new System.ComponentModel.Win32Exception(status);
 
             try
             {
-                return System.Diagnostics.Process.GetProcessById(pbi.InheritedFromUniqueProcessId.ToInt32());
+                return Process.GetProcessById(pbi.InheritedFromUniqueProcessId.ToInt32());
             }
             catch (ArgumentException)
             {
@@ -115,7 +115,7 @@ namespace Avalonia.Diagnostics.SourceNavigator
     internal sealed class VisualStudioSourceNavigator : IAvaloniaSourceNavigator
     {
         private bool _isInitialized;
-        private DTE? _cachedDTE;
+        private DTE? _cachedDte;
 
         /// <summary>
         /// Returns <c>true</c> if a Visual Studio instance is available for navigation.
@@ -123,7 +123,7 @@ namespace Avalonia.Diagnostics.SourceNavigator
         public bool CanNavigate()
         {
             EnsureInitialized();
-            return _cachedDTE != null;
+            return _cachedDte != null;
         }
 
         /// <summary>
@@ -136,7 +136,7 @@ namespace Avalonia.Diagnostics.SourceNavigator
 
             try
             {
-                var dte = _cachedDTE!;
+                var dte = _cachedDte!;
                 RetryHelper.ExecuteWithRetry(() => dte.MainWindow.Activate(), 3, 150);
 
                 dte.ItemOperations.OpenFile(filePath);
@@ -147,7 +147,7 @@ namespace Avalonia.Diagnostics.SourceNavigator
 
                 var sel = RetryHelper.ExecuteWithRetry(() => (TextSelection)activeDocument.Selection, 3, 150);
                 RetryHelper.ExecuteWithRetry(() => sel.MoveToLineAndOffset(line, column), 3, 150);
-                RetryHelper.ExecuteWithRetry(() => sel.ActivePoint.TryToShow(vsPaneShowHow.vsPaneShowCentered, null), 3, 150);
+                RetryHelper.ExecuteWithRetry(() => sel.ActivePoint.TryToShow(), 3, 150);
             }
             catch (Exception ex)
             {
@@ -166,7 +166,7 @@ namespace Avalonia.Diagnostics.SourceNavigator
                 return;
 
             _isInitialized = true;
-            _cachedDTE ??= GetCurrentDTE();
+            _cachedDte ??= GetCurrentDte();
         }
 
         /// <summary>
@@ -174,7 +174,7 @@ namespace Avalonia.Diagnostics.SourceNavigator
         /// Visual Studio instance that is either hosting the designer
         /// or debugging the current process.
         /// </summary>
-        private DTE? GetCurrentDTE()
+        private DTE? GetCurrentDte()
         {
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 return null;
@@ -187,7 +187,7 @@ namespace Avalonia.Diagnostics.SourceNavigator
                     if (parentProcess?.ProcessName.Equals("devenv", StringComparison.OrdinalIgnoreCase) == true)
                     {
                         var rot = new RunningObjectTable();
-                        return rot.FindDTEByVisualStudioProcessId(parentProcess.Id);
+                        return rot.FindDteByVisualStudioProcessId(parentProcess.Id);
                     }
                     return null;
                 }
@@ -195,7 +195,7 @@ namespace Avalonia.Diagnostics.SourceNavigator
                 {
                     var processId = Process.GetCurrentProcess().Id;
                     var rot = new RunningObjectTable();
-                    return rot.FindDTEByDebuggedProcess(processId);
+                    return rot.FindDteByDebuggedProcess(processId);
                 }
             }
             catch (Exception ex)
@@ -211,7 +211,7 @@ namespace Avalonia.Diagnostics.SourceNavigator
         public void Reset()
         {
             _isInitialized = false;
-            _cachedDTE = null;
+            _cachedDte = null;
         }
 
         private class RunningObjectTable
@@ -229,7 +229,7 @@ namespace Avalonia.Diagnostics.SourceNavigator
                 _rot.EnumRunning(out _enum);
             }
 
-            public DTE? FindDTEByDebuggedProcess(int pid)
+            public DTE? FindDteByDebuggedProcess(int pid)
             {
                 var monikers = new System.Runtime.InteropServices.ComTypes.IMoniker[1];
                 while (_enum.Next(1, monikers, IntPtr.Zero) == 0)
@@ -251,7 +251,7 @@ namespace Avalonia.Diagnostics.SourceNavigator
                 return null;
             }
 
-            public DTE? FindDTEByVisualStudioProcessId(int devenvPid)
+            public DTE? FindDteByVisualStudioProcessId(int devenvPid)
             {
                 var monikers = new System.Runtime.InteropServices.ComTypes.IMoniker[1];
                 while (_enum.Next(1, monikers, IntPtr.Zero) == 0)

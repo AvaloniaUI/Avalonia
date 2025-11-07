@@ -90,7 +90,7 @@ namespace Avalonia.Diagnostics.SourceNavigator
             if (!File.Exists(filePath))
                 return column;
 
-            string? textLine = File.ReadLines(filePath).Skip(line - 1).FirstOrDefault();
+            var textLine = File.ReadLines(filePath).Skip(line - 1).FirstOrDefault();
             if (textLine == null)
                 return column;
 
