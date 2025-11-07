@@ -154,7 +154,7 @@ namespace Avalonia.Win32
                                 var tm = new TRACKMOUSEEVENT
                                 {
                                     cbSize = Marshal.SizeOf<TRACKMOUSEEVENT>(),
-                                    dwFlags = 0x10, // TME_LEAVE | TME_NONCLIENT
+                                    dwFlags = TME_LEAVE | TME_NONCLIENT,
                                     hwndTrack = _hwnd,
                                     dwHoverTime = 0,
                                 };
