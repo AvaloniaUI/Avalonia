@@ -33,10 +33,7 @@ internal static class ClipboardDataFormatHelper
         if (atoms.GetAtomName(formatAtom) is { } atomName)
         {
             return atomName == MimeTypeTextUriList ?
-                DataFormat.File :
-                atomName == "image/png" ?
-                    DataFormat.Bitmap :
-                    DataFormat.FromSystemName<byte[]>(atomName, AppPrefix);
+                DataFormat.File : DataFormat.FromSystemName<byte[]>(atomName, AppPrefix);
         }
 
         return null;

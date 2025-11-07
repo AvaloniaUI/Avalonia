@@ -95,7 +95,14 @@ namespace Avalonia.X11.Clipboard
                 }
                 else if (ClipboardDataFormatHelper.ToDataFormat(target, _x11.Atoms) is { } dataFormat)
                 {
-                    if (_storedDataTransfer is null || !_storedDataTransfer.Contains(dataFormat))
+                    if (_storedDataTransfer is null)
+                        return IntPtr.Zero;
+
+                    // Our default bitmap format is image/png
+                    if (dataFormat.Identifier is "image/png" && _storedDataTransfer.Contains(DataFormat.Bitmap))
+                        dataFormat = DataFormat.Bitmap;
+
+                    if (!_storedDataTransfer.Contains(dataFormat))
                         return IntPtr.Zero;
 
                     if (TryGetDataAsBytes(_storedDataTransfer, dataFormat, target) is not { } bytes)
