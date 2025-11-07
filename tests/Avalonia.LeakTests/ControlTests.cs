@@ -13,6 +13,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Diagnostics;
 using Avalonia.Input;
+using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -1000,6 +1001,54 @@ namespace Avalonia.LeakTests
             }
         }
         
+        [Fact]
+        public void LayoutTransformControl_Is_Freed()
+        {
+            using (Start())
+            {
+                var transform = new RotateTransform { Angle = 90 };
+
+                Func<Window> run = () =>
+                {
+                    var window = new Window
+                    {
+                        Content = new LayoutTransformControl
+                        {
+                            LayoutTransform = transform,
+                            Child = new Canvas()
+                        }
+                    };
+
+                    window.Show();
+
+                    // Do a layout and make sure that LayoutTransformControl gets added to visual tree
+                    window.LayoutManager.ExecuteInitialLayoutPass();
+                    Assert.IsType<LayoutTransformControl>(window.Presenter.Child);
+                    Assert.NotEmpty(window.Presenter.Child.GetVisualChildren());
+
+                    // Clear the content and ensure the LayoutTransformControl is removed.
+                    window.Content = null;
+                    window.LayoutManager.ExecuteLayoutPass();
+                    Assert.Null(window.Presenter.Child);
+
+                    return window;
+                };
+
+                var result = run();
+
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
+                dotMemory.Check(memory =>
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<LayoutTransformControl>()).ObjectsCount));
+                dotMemory.Check(memory =>
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Canvas>()).ObjectsCount));
+
+                // We are keeping transform alive to simulate a resource that outlives the control.
+                GC.KeepAlive(transform);
+            }
+        }
+
         private FuncControlTemplate CreateWindowTemplate()
         {
             return new FuncControlTemplate<Window>((parent, scope) =>
@@ -1027,7 +1076,6 @@ namespace Avalonia.LeakTests
             {
                 Disposable.Create(Cleanup),
                 UnitTestApplication.Start(TestServices.StyledWindow.With(
-                    focusManager: new FocusManager(),
                     keyboardDevice: () => new KeyboardDevice(),
                     inputManager: new InputManager()))
             };

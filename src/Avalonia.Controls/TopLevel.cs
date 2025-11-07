@@ -590,7 +590,7 @@ namespace Avalonia.Controls
         public IClipboard? Clipboard => PlatformImpl?.TryGetFeature<IClipboard>();
 
         /// <inheritdoc />
-        public IFocusManager? FocusManager => AvaloniaLocator.Current.GetService<IFocusManager>();
+        public IFocusManager? FocusManager => _focusManager ??= new FocusManager(this);
 
         /// <inheritdoc />
         public IPlatformSettings? PlatformSettings => AvaloniaLocator.Current.GetService<IPlatformSettings>();
@@ -665,6 +665,7 @@ namespace Avalonia.Controls
         }
 
         private IDisposable? _insetsPaddings;
+        private FocusManager? _focusManager;
 
         private void InvalidateChildInsetsPadding()
         {
@@ -776,6 +777,8 @@ namespace Avalonia.Controls
             _scaling = ValidateScaling(scaling);
             LayoutHelper.InvalidateSelfAndChildrenMeasure(this);
             Dispatcher.UIThread.Send(_ => ScalingChanged?.Invoke(this, EventArgs.Empty));
+
+            InvalidateChildInsetsPadding();
         }
 
         private void HandleTransparencyLevelChanged(WindowTransparencyLevel transparencyLevel)
@@ -951,7 +954,7 @@ namespace Avalonia.Controls
                 var clientPoint = this.PointToClient(lastPos);
                 if (dirtyRect.Contains(clientPoint))
                 {
-                    _tooltipService.Update(this, HitTester.HitTestFirst(clientPoint, this, null));
+                    _tooltipService.Update(this, this.InputHitTest(clientPoint, enabledElementsOnly: false) as Visual);
                 }
             }
         }

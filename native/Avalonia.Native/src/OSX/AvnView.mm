@@ -868,7 +868,7 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
       return NSDragOperationNone;
     int reffects = (int)parent->TopLevelEvents
             ->DragEvent(type, point, modifiers, effects,
-                    CreateClipboard([info draggingPasteboard], nil),
+                    CreateClipboard([info draggingPasteboard]),
                     GetAvnDataObjectHandleFromDraggingInfo(info));
 
     NSDragOperation ret = static_cast<NSDragOperation>(0);
@@ -943,7 +943,7 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
     auto window = (AvnWindow*)[self window];
     auto peer = [window automationPeer];
 
-    if (!peer->IsRootProvider())
+    if (peer == nullptr || !peer->IsRootProvider())
         return nil;
 
     auto clientPoint = [window convertPointFromScreen:point];
@@ -980,6 +980,10 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
     // of the AvnView.
     auto window = (AvnWindow*)[self window];
     auto peer = [window automationPeer];
+    if (peer == nullptr)
+    {
+        return;
+    }
     auto childPeers = peer->GetChildren();
     auto childCount = childPeers != nullptr ? childPeers->GetCount() : 0;
 

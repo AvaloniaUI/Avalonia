@@ -6,6 +6,8 @@
 #include "TopLevelImpl.h"
 #include "AvnTextInputMethod.h"
 #include "AvnView.h"
+#include "common.h"
+#include "clipboard.h"
 
 TopLevelImpl::~TopLevelImpl() {
     View = nullptr;
@@ -269,6 +271,66 @@ HRESULT TopLevelImpl::GetCurrentDisplayId (CGDirectDisplayID* ret) {
 
 void TopLevelImpl::UpdateAppearance() {
     
+}
+
+HRESULT TopLevelImpl::BeginDragAndDropOperation(
+    AvnDragDropEffects effects,
+    AvnPoint point,
+    IAvnClipboardDataSource* source,
+    IAvnDndResultCallback* callback,
+    void* sourceHandle)
+{
+    START_COM_CALL;
+
+    if (View == NULL)
+        return E_FAIL;
+
+    auto nsevent = [NSApp currentEvent];
+    auto nseventType = [nsevent type];
+
+    // If current event isn't a mouse one (probably due to malfunctioning user app)
+    // attempt to forge a new one
+    if (!((nseventType >= NSEventTypeLeftMouseDown && nseventType <= NSEventTypeMouseExited)
+            || (nseventType >= NSEventTypeOtherMouseDown && nseventType <= NSEventTypeOtherMouseDragged))) {
+        // For TopLevelImpl, we don't have a Window so we use the View's window
+        auto window = [View window];
+        if (window != nil) {
+            NSRect convertRect = [window convertRectToScreen:NSMakeRect(point.X, point.Y, 0.0, 0.0)];
+            auto nspoint = NSMakePoint(convertRect.origin.x, convertRect.origin.y);
+            CGPoint cgpoint = NSPointToCGPoint(nspoint);
+            auto cgevent = CGEventCreateMouseEvent(NULL, kCGEventLeftMouseDown, cgpoint, kCGMouseButtonLeft);
+            nsevent = [NSEvent eventWithCGEvent:cgevent];
+            CFRelease(cgevent);
+        }
+    }
+
+    auto itemCount = source->GetItemCount();
+    auto draggingItems = [NSMutableArray<NSDraggingItem*> arrayWithCapacity:itemCount];
+    auto dragItemImage = [NSImage imageNamed:NSImageNameMultipleDocuments];
+    NSRect dragItemRect = {(float) point.X, (float) point.Y, [dragItemImage size].width, [dragItemImage size].height};
+
+    for (auto i = 0; i < itemCount; ++i)
+    {
+        auto item = source->GetItem(i);
+        auto writeableItem = [[WriteableClipboardItem alloc] initWithItem:item source:source];
+        auto draggingItem = [[NSDraggingItem alloc] initWithPasteboardWriter:writeableItem];
+        [draggingItem setDraggingFrame:dragItemRect contents:dragItemImage];
+        [draggingItems addObject:draggingItem];
+    }
+
+    int op = 0;
+    int ieffects = (int) effects;
+    if ((ieffects & (int) AvnDragDropEffects::Copy) != 0)
+        op |= NSDragOperationCopy;
+    if ((ieffects & (int) AvnDragDropEffects::Link) != 0)
+        op |= NSDragOperationLink;
+    if ((ieffects & (int) AvnDragDropEffects::Move) != 0)
+        op |= NSDragOperationMove;
+
+    [View beginDraggingSessionWithItems:draggingItems
+                                  event:nsevent
+                                 source:CreateDraggingSource((NSDragOperation) op, callback, sourceHandle)];
+    return S_OK;
 }
 
 void TopLevelImpl::SetClientSize(NSSize size){

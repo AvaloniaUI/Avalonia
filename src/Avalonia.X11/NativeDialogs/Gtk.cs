@@ -61,7 +61,10 @@ namespace Avalonia.X11.NativeDialogs
 
         [DllImport(GtkName)]
         public static extern void gtk_file_chooser_set_select_multiple(IntPtr chooser, bool allow);
-        
+
+        [DllImport(GtkName)]
+        public static extern void gtk_file_chooser_set_local_only(IntPtr chooser, bool local_only);
+
         [DllImport(GtkName)]
         public static extern void gtk_file_chooser_set_do_overwrite_confirmation(IntPtr chooser, bool do_overwrite_confirmation);
 

@@ -64,6 +64,12 @@ namespace Avalonia.DesignerSupport.Remote
         
         public void Resize(Size clientSize, WindowResizeReason reason)
         {
+            // Don't let it clientSize be unconstrained or risk running Out Of Memory 
+            clientSize = new Size(
+                Math.Min(clientSize.Width, MaxAutoSizeHint.Width),
+                Math.Min(clientSize.Height, MaxAutoSizeHint.Height)
+            );
+
             _transport.Send(new RequestViewportResizeMessage
             {
                 Width = Math.Ceiling(clientSize.Width * RenderScaling),
@@ -130,6 +136,14 @@ namespace Avalonia.DesignerSupport.Remote
         }
 
         public void CanResize(bool value)
+        {
+        }
+
+        public void SetCanMinimize(bool value)
+        {
+        }
+
+        public void SetCanMaximize(bool value)
         {
         }
 

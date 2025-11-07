@@ -15,7 +15,7 @@ namespace Avalonia.Media
     ///     The font manager is used to query the system's installed fonts and is responsible for caching loaded fonts.
     ///     It is also responsible for the font fallback.
     /// </summary>
-    public sealed class FontManager
+    public sealed class FontManager : IDisposable
     {
         internal static Uri SystemFontsKey = new Uri("fonts:SystemFonts", UriKind.Absolute);
 
@@ -163,7 +163,7 @@ namespace Avalonia.Media
             }
 
             //Nothing was found so use the default
-            return TryGetGlyphTypeface(new Typeface(FontFamily.DefaultFontFamilyName, typeface.Style, typeface.Weight, typeface.Stretch), out glyphTypeface);
+            return TryGetGlyphTypeface(new Typeface(DefaultFontFamily, typeface.Style, typeface.Weight, typeface.Stretch), out glyphTypeface);
 
             FontFamily GetMappedFontFamily(FontFamily fontFamily)
             {
@@ -271,21 +271,35 @@ namespace Avalonia.Media
             }
 
             //Try to match against fallbacks first
-            if (fontFamily != null && fontFamily.Key is CompositeFontFamilyKey compositeKey)
+            if (fontFamily?.Key != null)
             {
-                for (int i = 0; i < compositeKey.Keys.Count; i++)
+                if (fontFamily.Key is CompositeFontFamilyKey compositeKey)
                 {
-                    var key = compositeKey.Keys[i];
-                    var familyName = fontFamily.FamilyNames[i];
-                    var source = key.Source.EnsureAbsolute(key.BaseUri);
-
-                    if(familyName == FontFamily.DefaultFontFamilyName)
+                    for (int i = 0; i < compositeKey.Keys.Count; i++)
                     {
-                        familyName = DefaultFontFamily.Name;
-                    }
+                        var key = compositeKey.Keys[i];
+                        var familyName = fontFamily.FamilyNames[i];
+                        var source = key.Source.EnsureAbsolute(key.BaseUri);
 
-                    if (TryGetFontCollection(source, out var fontCollection) &&
-                        fontCollection.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, familyName, culture, out typeface))
+                        if (familyName == FontFamily.DefaultFontFamilyName)
+                        {
+                            familyName = DefaultFontFamily.Name;
+                        }
+
+                        if (TryGetFontCollection(source, out var fontCollection) &&
+                            fontCollection.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, familyName, culture, out typeface))
+                        {
+                            return true;
+                        }
+                    }
+                }
+
+                var fontUri = fontFamily.Key.Source.EnsureAbsolute(fontFamily.Key.BaseUri);
+
+                if (fontUri.IsFontCollection())
+                {
+                    if (TryGetFontCollection(fontUri, out var fontCollection) &&
+                            fontCollection.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, fontFamily.Name, culture, out typeface))
                     {
                         return true;
                     }
@@ -366,7 +380,22 @@ namespace Avalonia.Media
                     "Default font family name can't be null or empty.");
             }
 
+            if (defaultFontFamilyName == FontFamily.DefaultFontFamilyName)
+            {
+                throw new InvalidOperationException(
+                    $"'{FontFamily.DefaultFontFamilyName}' is a placeholder and cannot be used as the default font family name. Provide a concrete font family name via {nameof(FontManagerOptions)} or the platform implementation.");
+            }
+
             return defaultFontFamilyName;
+        }
+
+        void IDisposable.Dispose()
+        {
+            foreach (var pair in _fontCollections)
+                pair.Value.Dispose();
+
+            _fontCollections.Clear();
+            (PlatformImpl as IDisposable)?.Dispose();
         }
     }
 }
