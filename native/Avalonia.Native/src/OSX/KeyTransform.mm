@@ -33,7 +33,7 @@ const KeyInfo keyInfos[] =
     { 0x1A, AvnPhysicalKeyDigit7, AvnKeyD7, '7' },
     { 0x1C, AvnPhysicalKeyDigit8, AvnKeyD8, '8' },
     { 0x19, AvnPhysicalKeyDigit9, AvnKeyD9, '9' },
-    { 0x18, AvnPhysicalKeyEqual, AvnKeyOemMinus, '-' },
+    { 0x18, AvnPhysicalKeyEqual, AvnKeyOemPlus, '=' },
     { 0x0A, AvnPhysicalKeyIntlBackslash, AvnKeyOem102, 0 },
     { 0x5E, AvnPhysicalKeyIntlRo, AvnKeyOem102, 0 },
     { 0x5D, AvnPhysicalKeyIntlYen, AvnKeyOem5, 0 },
