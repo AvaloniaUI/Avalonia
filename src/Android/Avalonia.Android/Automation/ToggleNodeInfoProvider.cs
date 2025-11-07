@@ -9,7 +9,7 @@ namespace Avalonia.Android.Automation
 {
     internal class ToggleNodeInfoProvider : NodeInfoProvider<IToggleProvider>
     {
-        private PropertyInfo? _checkedProperty;
+        private PropertyInfo? s_checkedProperty;
 
         public ToggleNodeInfoProvider(ExploreByTouchHelper owner, AutomationPeer peer, int virtualViewId) : 
             base(owner, peer, virtualViewId)
@@ -41,11 +41,11 @@ namespace Avalonia.Android.Automation
 
             IToggleProvider provider = GetProvider();
 
-            _checkedProperty ??= nodeInfo.GetType().GetProperty(nameof(nodeInfo.Checked));
-            if (_checkedProperty?.PropertyType == typeof(int))
+            s_checkedProperty ??= nodeInfo.GetType().GetProperty(nameof(nodeInfo.Checked));
+            if (s_checkedProperty?.PropertyType == typeof(int))
             {
                 // Needed for Xamarin.AndroidX.Core 1.17+
-                _checkedProperty.SetValue(this, 
+                s_checkedProperty.SetValue(this, 
                     provider.ToggleState switch
                     {
                         ToggleState.On => 1,
@@ -53,10 +53,10 @@ namespace Avalonia.Android.Automation
                         _ => 0
                     });
             }
-            else if (_checkedProperty?.PropertyType == typeof(bool))
+            else if (s_checkedProperty?.PropertyType == typeof(bool))
             {
                 // Needed for Xamarin.AndroidX.Core < 1.17
-                _checkedProperty.SetValue(this, provider.ToggleState == ToggleState.On);
+                s_checkedProperty.SetValue(this, provider.ToggleState == ToggleState.On);
             }
 
             nodeInfo.Checkable = true;
