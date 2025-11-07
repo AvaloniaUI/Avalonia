@@ -45,11 +45,19 @@ namespace Avalonia.Styling
         internal override Type? TargetType => _targetType ??= EvaluateTargetType();
 
         /// <inheritdoc/>
-        public override string ToString(Style? owner)
+        public override string ToString(Style? owner) => ToString(owner, false);
+
+        /// <inheritdoc/>
+        internal override string ToString(Style? owner, bool hasNext)
         {
             if (_selectorString == null)
             {
-                _selectorString = string.Join(", ", _selectors.Select(x => x.ToString(owner)));
+                _selectorString = string.Join(", ", _selectors.Select(x => x.ToString(owner, true)));
+
+                if (hasNext)
+                {
+                    _selectorString = $"({_selectorString})";
+                }
             }
 
             return _selectorString;
@@ -97,13 +105,13 @@ namespace Avalonia.Styling
         private protected override Selector? MovePrevious() => null;
         private protected override Selector? MovePreviousOrParent() => null;
 
-        internal override void ValidateNestingSelector(bool inControlTheme)
+        internal override void ValidateNestingSelector(bool inControlTheme, int templateCount = 0)
         {
             var count = _selectors.Count;
 
             for (var i = 0; i < count; i++)
             {
-                _selectors[i].ValidateNestingSelector(inControlTheme);
+                _selectors[i].ValidateNestingSelector(inControlTheme, templateCount);
             }
         }
 
