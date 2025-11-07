@@ -120,7 +120,7 @@ namespace Avalonia.Win32
         public WindowImpl()
         {
             _touchDevice = new TouchDevice();
-            _mouseDevice = new WindowsMouseDevice();
+            _mouseDevice = Avalonia.Input.MouseDevice.GetOrCreatePrimary<WindowsMouseDevice>();
             _penDevice = new PenDevice();
 
 #if USE_MANAGED_DRAG
@@ -178,7 +178,9 @@ namespace Avalonia.Win32
             _nativeControlHost = new Win32NativeControlHost(this, !UseRedirectionBitmap);
             _defaultTransparencyLevel = UseRedirectionBitmap ? WindowTransparencyLevel.None : WindowTransparencyLevel.Transparent;
             _transparencyLevel = _defaultTransparencyLevel;
-            s_instances.Add(this);
+
+            lock (s_instances)
+                s_instances.Add(this);
         }
 
         internal IInputRoot Owner
@@ -1482,7 +1484,7 @@ namespace Avalonia.Win32
                 else
                     style &= ~WindowStyles.WS_MAXIMIZEBOX;
 
-                const WindowStyles fullDecorationFlags = WindowStyles.WS_CAPTION | WindowStyles.WS_BORDER;
+                const WindowStyles fullDecorationFlags = WindowStyles.WS_CAPTION | WindowStyles.WS_BORDER | WindowStyles.WS_SYSMENU;
 
                 if (newProperties.Decorations == SystemDecorations.Full)
                 {
