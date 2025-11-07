@@ -9,7 +9,7 @@ namespace Avalonia.Android.Automation
 {
     internal class ToggleNodeInfoProvider : NodeInfoProvider<IToggleProvider>
     {
-        private PropertyInfo? s_checkedProperty;
+        private static PropertyInfo? s_checkedProperty;
 
         public ToggleNodeInfoProvider(ExploreByTouchHelper owner, AutomationPeer peer, int virtualViewId) : 
             base(owner, peer, virtualViewId)
