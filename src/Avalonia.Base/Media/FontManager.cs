@@ -287,6 +287,8 @@ namespace Avalonia.Media
                         }
 
                         if (TryGetFontCollection(source, out var fontCollection) &&
+                            // With composite fonts we need to first check if the font collection contains the family if not we skip it
+                            fontCollection.TryGetGlyphTypeface(familyName, fontStyle, fontWeight, fontStretch, out _) && 
                             fontCollection.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, familyName, culture, out typeface))
                         {
                             return true;
@@ -306,8 +308,9 @@ namespace Avalonia.Media
                 }
             }
 
-            //Try to find a match with the system font manager
-            return PlatformImpl.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, culture, out typeface);
+            //Try to find a match with the system font collection
+            return SystemFonts.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, fontFamily?.Name,
+                culture, out typeface);
         }
 
         internal IReadOnlyList<Typeface> GetFamilyTypefaces(FontFamily fontFamily)

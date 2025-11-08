@@ -13,11 +13,7 @@ namespace ControlCatalog.Pages
         {
             InitializeComponent();
 
-            var afp = this.FindControl<Panel>("AttachedFlyoutPanel");
-            if (afp != null)
-            {
-                afp.DoubleTapped += Afp_DoubleTapped;
-            }
+            AttachedFlyoutPanel.DoubleTapped += Afp_DoubleTapped;
 
             SetXamlTexts();
         }
@@ -32,7 +28,7 @@ namespace ControlCatalog.Pages
 
         private void SetXamlTexts()
         {
-            var bfxt = this.Get<TextBlock>("ButtonFlyoutXamlText");
+            var bfxt = ButtonFlyoutXamlText;
             bfxt.Text = "<Button Content=\"Click me!\">\n" +
                         "    <Button.Flyout>\n" +
                         "        <Flyout>\n" +
@@ -42,7 +38,7 @@ namespace ControlCatalog.Pages
                         "        </Flyout>\n" +
                         "    </Button.Flyout>\n</Button>";
 
-            var mfxt = this.Get<TextBlock>("MenuFlyoutXamlText");
+            var mfxt = this.MenuFlyoutXamlText;
             mfxt.Text = "<Button Content=\"Click me!\">\n" +
                     "    <Button.Flyout>\n" +
                     "        <MenuFlyout>\n" +
@@ -51,7 +47,7 @@ namespace ControlCatalog.Pages
                     "        </MenuFlyout>\n" +
                     "    </Button.Flyout>\n</Button>";
 
-            var afxt = this.Get<TextBlock>("AttachedFlyoutXamlText");
+            var afxt = this.AttachedFlyoutXamlText;
             afxt.Text = "<Panel Name=\"AttachedFlyoutPanel\">\n" +
                 "    <FlyoutBase.AttachedFlyout>\n" +
                 "        <Flyout>\n" +
@@ -63,7 +59,7 @@ namespace ControlCatalog.Pages
                 "\n\n In DoubleTapped handler:\n" +
                 "FlyoutBase.ShowAttachedFlyout(AttachedFlyoutPanel);";
 
-            var sfxt = this.Get<TextBlock>("SharedFlyoutXamlText");
+            var sfxt = this.SharedFlyoutXamlText;
             sfxt.Text = "Declare a flyout in Resources:\n" +
                 "<Window.Resources>\n" +
                 "    <Flyout x:Key=\"SharedFlyout\">\n" +
