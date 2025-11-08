@@ -1007,7 +1007,7 @@ interface IAvnClipboardDataValue : IUnknown
 {
     bool IsString();
     IAvnString* AsString();
-    IntPtr GetByteLength();
+    long GetByteLength();
     void CopyBytesTo(void* buffer);
 }
 
