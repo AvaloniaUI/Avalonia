@@ -4,7 +4,7 @@
              xmlns:pages="using:ControlCatalog.Pages"
              xmlns:openGl="clr-namespace:ControlCatalog.Pages.OpenGl">
     <Grid>
-        <Control x:Name="Viewport" />
-        <openGl:GlPageKnobs x:Name="Knobs" />
+        <Control x:Name="Viewport" AttachedToVisualTree="ViewportAttachedToVisualTree" DetachedFromVisualTree="ViewportDetachedFromVisualTree"/>
+        <openGl:GlPageKnobs x:Name="Knobs" PropertyChanged="KnobsPropertyChanged" />
     </Grid>
 </UserControl>

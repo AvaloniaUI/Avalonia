@@ -1,27 +1,21 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Input.Platform;
-using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
 
 namespace ControlCatalog.Pages
 {
-    public class DragAndDropPage : UserControl
+    public partial class DragAndDropPage : UserControl
     {
-        private readonly TextBlock _dropState;
-
         private readonly DataFormat<string> _customFormat =
             DataFormat.CreateStringApplicationFormat("xxx-avalonia-controlcatalog-custom");
 
         public DragAndDropPage()
         {
             InitializeComponent();
-            _dropState = this.Get<TextBlock>("DropState");
 
             int textCount = 0;
 
@@ -121,7 +115,7 @@ namespace ControlCatalog.Pages
 
                 if (e.DataTransfer.Contains(DataFormat.Text))
                 {
-                    _dropState.Text = e.DataTransfer.TryGetText();
+                    DropState.Text = e.DataTransfer.TryGetText();
                 }
                 else if (e.DataTransfer.Contains(DataFormat.File))
                 {
@@ -146,11 +140,11 @@ namespace ControlCatalog.Pages
                         }
                     }
 
-                    _dropState.Text = contentStr;
+                    DropState.Text = contentStr;
                 }
                 else if (e.DataTransfer.Contains(_customFormat))
                 {
-                    _dropState.Text = "Custom: " + e.DataTransfer.TryGetValue(_customFormat);
+                    DropState.Text = "Custom: " + e.DataTransfer.TryGetValue(_customFormat);
                 }
             }
 
@@ -158,11 +152,6 @@ namespace ControlCatalog.Pages
 
             AddHandler(DragDrop.DropEvent, Drop);
             AddHandler(DragDrop.DragOverEvent, DragOver);
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
         }
     }
 }
