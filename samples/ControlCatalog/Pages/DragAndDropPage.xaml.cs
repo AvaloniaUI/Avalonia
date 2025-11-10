@@ -8,21 +8,19 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+
 using Avalonia.Platform.Storage;
 
 namespace ControlCatalog.Pages
 {
-    public class DragAndDropPage : UserControl
+    public partial class DragAndDropPage : UserControl
     {
-        private readonly ContentControl _dropState;
-
         private readonly DataFormat<string> _customFormat =
             DataFormat.CreateStringApplicationFormat("xxx-avalonia-controlcatalog-custom");
 
         public DragAndDropPage()
         {
             InitializeComponent();
-            _dropState = this.Get<ContentControl>("DropState");
 
             int textCount = 0;
 
@@ -128,7 +126,7 @@ namespace ControlCatalog.Pages
 
                 if (e.DataTransfer.Contains(DataFormat.Text))
                 {
-                    _dropState.Content = e.DataTransfer.TryGetText();
+                    DropState.Content = e.DataTransfer.TryGetText();
                 }
                 else if (e.DataTransfer.Contains(DataFormat.File))
                 {
@@ -152,20 +150,19 @@ namespace ControlCatalog.Pages
                             contentStr += $"Folder {item.Name}: items {childrenCount}{Environment.NewLine}{Environment.NewLine}";
                         }
                     }
-
-                    _dropState.Content = contentStr;
+                    DropState.Content = contentStr;
                 }
                 else if (e.DataTransfer.Contains(DataFormat.Bitmap))
                 {
                     var bitmap = e.DataTransfer.TryGetValue(DataFormat.Bitmap);
-                    _dropState.Content = new Image
+                    DropState.Content = new Image
                     {
                         Source = bitmap, Width = 400, Height = 300, Stretch = Stretch.Uniform
                     };
                 }
                 else if (e.DataTransfer.Contains(_customFormat))
                 {
-                    _dropState.Content = "Custom: " + e.DataTransfer.TryGetValue(_customFormat);
+                    DropState.Content = "Custom: " + e.DataTransfer.TryGetValue(_customFormat);
                 }
             }
 
@@ -173,11 +170,6 @@ namespace ControlCatalog.Pages
 
             AddHandler(DragDrop.DropEvent, Drop);
             AddHandler(DragDrop.DragOverEvent, DragOver);
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
         }
     }
 }

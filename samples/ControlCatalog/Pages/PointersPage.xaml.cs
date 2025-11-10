@@ -1,32 +1,14 @@
 using System;
 using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Markup.Xaml;
 
 namespace ControlCatalog.Pages;
 
-public class PointersPage : UserControl
+public partial class PointersPage : UserControl
 {
     public PointersPage()
     {
-        this.InitializeComponent();
-
-        var border1 = this.Get<Border>("BorderCapture1");
-        var border2 = this.Get<Border>("BorderCapture2");
-
-        border1.PointerPressed += Border_PointerPressed;
-        border1.PointerReleased += Border_PointerReleased;
-        border1.PointerCaptureLost += Border_PointerCaptureLost;
-        border1.PointerMoved += Border_PointerUpdated;
-        border1.PointerEntered += Border_PointerUpdated;
-        border1.PointerExited += Border_PointerUpdated;
-
-        border2.PointerPressed += Border_PointerPressed;
-        border2.PointerReleased += Border_PointerReleased;
-        border2.PointerCaptureLost += Border_PointerCaptureLost;
-        border2.PointerMoved += Border_PointerUpdated;
-        border2.PointerEntered += Border_PointerUpdated;
-        border2.PointerExited += Border_PointerUpdated;
+        InitializeComponent();
     }
 
     private void Border_PointerUpdated(object? sender, PointerEventArgs e)
@@ -73,10 +55,5 @@ Position: ??? ???";
         e.Pointer.Capture(sender as Border);
         e.Handled = true;
         e.PreventGestureRecognition();
-    }
-
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
     }
 }

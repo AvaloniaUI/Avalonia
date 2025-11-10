@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Documents;
 using Avalonia.Controls.Notifications;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
-using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
@@ -28,22 +26,19 @@ namespace ControlCatalog.Pages
 
         private readonly DispatcherTimer _clipboardLastDataObjectChecker;
         private DataTransfer? _storedDataTransfer;
+
+        private bool _checkingClipboardDataTransfer;
+        private Bitmap _defaultImage;
+
         public ClipboardPage()
         {
+            InitializeComponent();
             _clipboardLastDataObjectChecker =
                 new DispatcherTimer(TimeSpan.FromSeconds(0.5), default, CheckLastDataObject);
-            InitializeComponent();
+
             using var asset = AssetLoader.Open(new Uri("avares://ControlCatalog/Assets/image1.jpg"));
             _defaultImage = new Bitmap(asset);
             ClipboardImage.Source = _defaultImage;
-        }
-
-        private TextBox ClipboardContent => this.Get<TextBox>("ClipboardContent");
-        private Image ClipboardImage => this.Get<Image>("ClipboardImage");
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
         }
 
         private async void CopyText(object? sender, RoutedEventArgs args)
@@ -189,13 +184,9 @@ namespace ControlCatalog.Pages
             base.OnDetachedFromVisualTree(e);
         }
 
-        private Run OwnsClipboardDataObject => this.Get<Run>("OwnsClipboardDataObject");
-        private bool _checkingClipboardDataTransfer;
-        private Bitmap _defaultImage;
-
         private async void CheckLastDataObject(object? sender, EventArgs e)
         {
-            if(_checkingClipboardDataTransfer)
+            if (_checkingClipboardDataTransfer)
                 return;
             try
             {
