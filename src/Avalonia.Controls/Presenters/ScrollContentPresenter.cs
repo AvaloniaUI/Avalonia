@@ -404,8 +404,8 @@ namespace Avalonia.Controls.Presenters
             }
 
             var constraint = new Size(
-                CanHorizontallyScroll ? double.PositiveInfinity : availableSize.Width,
-                CanVerticallyScroll ? double.PositiveInfinity : availableSize.Height);
+                CanHorizontallyScroll ? double.PositiveInfinity : availableSize.Width - Padding.Left - Padding.Right,
+                CanVerticallyScroll ? double.PositiveInfinity : availableSize.Height - Padding.Top - Padding.Bottom);
 
             Child.Measure(constraint);
 
