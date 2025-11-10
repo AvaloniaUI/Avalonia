@@ -27,6 +27,8 @@ public sealed class HeadlessUnitTestSession : IDisposable
     private readonly BlockingCollection<(Action, ExecutionContext?)> _queue;
     private readonly Task _dispatchTask;
     private readonly bool _isolated;
+    // Only set and used with PerAssembly isolation
+    private SynchronizationContext? _sharedContext;
 
     internal const DynamicallyAccessedMemberTypes DynamicallyAccessed =
         DynamicallyAccessedMemberTypes.PublicMethods |
@@ -134,9 +136,12 @@ public sealed class HeadlessUnitTestSession : IDisposable
         if (Application.Current is null)
         {
             _appBuilder.SetupUnsafe();
+            _sharedContext = SynchronizationContext.Current;
         }
-
-        AvaloniaSynchronizationContext.InstallIfNeeded();
+        else
+        {
+            SynchronizationContext.SetSynchronizationContext(_sharedContext);
+        }
 
         return Disposable.Create(() =>
         {
