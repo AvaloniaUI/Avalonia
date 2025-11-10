@@ -148,7 +148,7 @@ namespace Avalonia.Utilities
         {
             private readonly SafeEnumerableList<T> _owner;
             private readonly int _generation;
-            private readonly AvaloniaList<T>.Enumerator _enumerator;
+            private readonly IEnumerator<T> _enumerator;
 
             public SafeListEnumerator(SafeEnumerableList<T> owner, AvaloniaList<T> list)
             {
@@ -163,7 +163,7 @@ namespace Avalonia.Utilities
 
             public T Current => _enumerator.Current;
 
-            object IEnumerator.Current => ((IEnumerator)_enumerator).Current;
+            object IEnumerator.Current => _enumerator.Current!;
 
             public void Reset() => throw new InvalidOperationException();
 
