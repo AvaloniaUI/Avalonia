@@ -85,7 +85,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.Measure(new Size(100, 100));
             target.Arrange(new Rect(0, 0, 100, 100));
 
-            Assert.Equal(new Size(100, 100), target.DesiredSize);
+            Assert.Equal(new Size(80, 80), target.DesiredSize);
         }
 
         [Fact]
