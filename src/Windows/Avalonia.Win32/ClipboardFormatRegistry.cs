@@ -11,7 +11,10 @@ namespace Avalonia.Win32
     {
         private const int MaxFormatNameLength = 260;
         private const string AppPrefix = "avn-app-fmt:";
-
+        public const string PngFormatMimeType = "image/png";
+        public const string JpegFormatMimeType = "image/jpeg";
+        public const string BitmapFormat = "CF_BITMAP";
+        public const string DibFormat = "CF_DIB";
         private static readonly List<(DataFormat Format, ushort Id)> s_formats = [];
 
         static ClipboardFormatRegistry()
@@ -67,11 +70,11 @@ namespace Avalonia.Win32
                     {
                         if (currentFormat.Id == (ushort)UnmanagedMethods.ClipboardFormat.CF_DIB)
                             dibFormat = currentFormat;
-                        if (currentFormat.Id == (ushort)UnmanagedMethods.ClipboardFormat.CF_BITMAP)
+                        else if (currentFormat.Id == (ushort)UnmanagedMethods.ClipboardFormat.CF_BITMAP)
                             bitFormat = currentFormat;
-                        if(currentFormat.Format.Identifier == "image/png")
+                        else if (currentFormat.Format.Identifier == PngFormatMimeType)
                             pngFormat = currentFormat;
-                        if (currentFormat.Format.Identifier == "image/jpg" || currentFormat.Format.Identifier == "image/jpeg")
+                        else if (currentFormat.Format.Identifier == JpegFormatMimeType)
                             jpgFormat = currentFormat;
                     }
                     var imageFormatId = dibFormat?.Item2 ?? bitFormat?.Item2 ?? pngFormat?.Item2 ?? jpgFormat?.Item2 ?? 0;

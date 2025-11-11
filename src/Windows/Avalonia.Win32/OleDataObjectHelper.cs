@@ -45,7 +45,7 @@ internal static class OleDataObjectHelper
         var result = oleDataObject.GetData(&formatEtc, &medium);
         if (result != (uint)HRESULT.S_OK)
         {
-            if (result == 0x80040069) // DV_E_TYMED
+            if (result == DV_E_TYMED)
             {
                 formatEtc.tymed = TYMED.TYMED_GDI;
 
@@ -70,49 +70,7 @@ internal static class OleDataObjectHelper
                 else if (medium.tymed == TYMED.TYMED_GDI)
                 {
                     var bitmapHandle = medium.unionmember;
-                    var bitmap = new BITMAP();
-                    unsafe
-                    {
-                        var pBitmap = &bitmap;
-                        GetObject(bitmapHandle, Marshal.SizeOf(bitmap), (IntPtr)pBitmap);
-
-                        var bitmapInfoHeader = new BITMAPINFOHEADER()
-                        {
-                            biWidth = bitmap.bmWidth,
-                            biHeight = bitmap.bmHeight,
-                            biPlanes = bitmap.bmPlanes,
-                            biBitCount = 32,
-                            biCompression = 0,
-                            biSizeImage = (uint)(bitmap.bmWidth * 4 * Math.Abs(bitmap.bmHeight))
-                        };
-
-                        bitmapInfoHeader.Init();
-
-                        var destHdc = UnmanagedMethods.GetDC(IntPtr.Zero);
-                        var compatDc = UnmanagedMethods.CreateCompatibleDC(destHdc);
-                        var section = UnmanagedMethods.CreateDIBSection(compatDc, ref bitmapInfoHeader, 0, out var lbBits, IntPtr.Zero, 0);
-                        SelectObject(compatDc, section);
-                        var sourceHdc = UnmanagedMethods.GetDC(IntPtr.Zero);
-                        var srcCompatHdc = UnmanagedMethods.CreateCompatibleDC(sourceHdc);
-                        SelectObject(srcCompatHdc, bitmapHandle);
-
-                        StretchBlt(compatDc, 0, bitmapInfoHeader.biHeight, bitmapInfoHeader.biWidth, -bitmapInfoHeader.biHeight, srcCompatHdc, 0, 0, bitmap.bmWidth, bitmap.bmHeight, SRCCOPY);
-                        var avBitmap = new Bitmap(Platform.PixelFormats.Bgra8888,
-                            Platform.AlphaFormat.Opaque,
-                            lbBits,
-                            new PixelSize(bitmapInfoHeader.biWidth, bitmapInfoHeader.biHeight),
-                            new Vector(96, 96),
-                            bitmapInfoHeader.biWidth * 4);
-
-                        DeleteObject(section);
-
-                        UnmanagedMethods.ReleaseDC(IntPtr.Zero, sourceHdc);
-                        UnmanagedMethods.ReleaseDC(IntPtr.Zero, srcCompatHdc);
-                        UnmanagedMethods.ReleaseDC(IntPtr.Zero, compatDc);
-                        UnmanagedMethods.ReleaseDC(IntPtr.Zero, destHdc);
-
-                        return avBitmap;
-                    }
+                    return ReadDataFromGdi(bitmapHandle);
                 }
             }
         }
@@ -122,6 +80,83 @@ internal static class OleDataObjectHelper
         }
 
         return null;
+    }
+
+    private static unsafe object? ReadDataFromGdi(nint bitmapHandle)
+    {
+        var bitmap = new BITMAP();
+        unsafe
+        {
+            var pBitmap = &bitmap;
+            if ((uint)GetObject(bitmapHandle, Marshal.SizeOf(bitmap), (IntPtr)pBitmap) == 0)
+                return null;
+
+            var bitmapInfoHeader = new BITMAPINFOHEADER()
+            {
+                biWidth = bitmap.bmWidth,
+                biHeight = bitmap.bmHeight,
+                biPlanes = bitmap.bmPlanes,
+                biBitCount = 32,
+                biCompression = 0,
+                biSizeImage = (uint)(bitmap.bmWidth * 4 * Math.Abs(bitmap.bmHeight))
+            };
+
+            bitmapInfoHeader.Init();
+
+            IntPtr destHdc = IntPtr.Zero, compatDc = IntPtr.Zero, section = IntPtr.Zero, sourceHdc = IntPtr.Zero, srcCompatHdc = IntPtr.Zero;
+
+            try
+            {
+                destHdc = GetDC(IntPtr.Zero);
+                if (destHdc == IntPtr.Zero)
+                    return null;
+
+                compatDc = CreateCompatibleDC(destHdc);
+                if (compatDc == IntPtr.Zero)
+                    return null;
+
+                section = CreateDIBSection(compatDc, ref bitmapInfoHeader, 0, out var lbBits, IntPtr.Zero, 0);
+                if (section == IntPtr.Zero)
+                    return null;
+
+                SelectObject(compatDc, section);
+                sourceHdc = GetDC(IntPtr.Zero);
+                if (sourceHdc == IntPtr.Zero)
+                    return null;
+
+                srcCompatHdc = CreateCompatibleDC(sourceHdc);
+                if (srcCompatHdc == IntPtr.Zero)
+                    return null;
+
+                SelectObject(srcCompatHdc, bitmapHandle);
+
+                if (StretchBlt(compatDc, 0, bitmapInfoHeader.biHeight, bitmapInfoHeader.biWidth, -bitmapInfoHeader.biHeight, srcCompatHdc, 0, 0, bitmap.bmWidth, bitmap.bmHeight, SRCCOPY) != 0)
+                    return new Bitmap(Platform.PixelFormats.Bgra8888,
+                        Platform.AlphaFormat.Opaque,
+                        lbBits,
+                        new PixelSize(bitmapInfoHeader.biWidth, bitmapInfoHeader.biHeight),
+                        new Vector(96, 96),
+                        bitmapInfoHeader.biWidth * 4);
+            }
+            finally
+            {
+                if (sourceHdc != IntPtr.Zero)
+                    ReleaseDC(IntPtr.Zero, sourceHdc);
+
+                if (srcCompatHdc != IntPtr.Zero)
+                    ReleaseDC(IntPtr.Zero, srcCompatHdc);
+
+                if (compatDc != IntPtr.Zero)
+                    ReleaseDC(IntPtr.Zero, compatDc);
+
+                if (destHdc != IntPtr.Zero)
+                    ReleaseDC(IntPtr.Zero, destHdc);
+
+                if (section != IntPtr.Zero)
+                    DeleteObject(section);
+            }
+            return null;
+        }
     }
 
     public unsafe static object? ReadDataFromHGlobal(DataFormat format, IntPtr hGlobal, FORMATETC formatEtc)
@@ -139,12 +174,12 @@ internal static class OleDataObjectHelper
 
         if (DataFormat.Bitmap.Equals(format))
         {
-            if (formatEtc.cfFormat == (ushort)UnmanagedMethods.ClipboardFormat.CF_DIB)
+            if (formatEtc.cfFormat == (ushort)ClipboardFormat.CF_DIB)
             {
                 var data = ReadBytesFromHGlobal(hGlobal);
                 fixed (byte* ptr = data)
                 {
-                    var bitmapInfo = Marshal.PtrToStructure<UnmanagedMethods.BITMAPINFO>((IntPtr)ptr);
+                    var bitmapInfo = Marshal.PtrToStructure<BITMAPINFO>((IntPtr)ptr);
 
                     var bitmapInfoHeader = new BITMAPINFOHEADER()
                     {
@@ -158,36 +193,54 @@ internal static class OleDataObjectHelper
 
                     bitmapInfoHeader.Init();
 
-                    var hdc = UnmanagedMethods.GetDC(IntPtr.Zero);
-                    var compatDc = UnmanagedMethods.CreateCompatibleDC(hdc);
-                    var section = UnmanagedMethods.CreateDIBSection(compatDc, ref bitmapInfoHeader, 0, out var lbBits, IntPtr.Zero, 0);
-                    SelectObject(compatDc, section);
-                    var ret = UnmanagedMethods.StretchDIBits(compatDc,
-                        0,
-                        bitmapInfo.biHeight,
-                        bitmapInfo.biWidth,
-                        -bitmapInfo.biHeight,
-                        0,
-                        0,
-                        bitmapInfoHeader.biWidth,
-                        bitmapInfoHeader.biHeight,
-                        (IntPtr)(ptr + bitmapInfo.biSize),
-                        ref bitmapInfo,
-                        0,
-                        SRCCOPY
-                        );
+                    IntPtr hdc = IntPtr.Zero, compatDc = IntPtr.Zero, section = IntPtr.Zero;
+                    try
+                    {
+                        hdc = GetDC(IntPtr.Zero);
+                        if (hdc == IntPtr.Zero)
+                            return null;
 
-                    var bitmap = new Bitmap(Platform.PixelFormats.Bgra8888,
-                        Platform.AlphaFormat.Opaque,
-                        lbBits,
-                        new PixelSize(bitmapInfoHeader.biWidth, bitmapInfoHeader.biHeight), 
-                        new Vector(96, 96),
-                        bitmapInfoHeader.biWidth * 4);
+                        compatDc = CreateCompatibleDC(hdc);
+                        if (compatDc == IntPtr.Zero)
+                            return null;
 
-                    DeleteObject(section);
-                    UnmanagedMethods.ReleaseDC(IntPtr.Zero, compatDc);
-                    UnmanagedMethods.ReleaseDC(IntPtr.Zero, hdc);
-                    return bitmap;
+                        section = CreateDIBSection(compatDc, ref bitmapInfoHeader, 0, out var lbBits, IntPtr.Zero, 0);
+                        if (section == IntPtr.Zero)
+                            return null;
+
+                        SelectObject(compatDc, section);
+                        if (StretchDIBits(compatDc,
+                                0,
+                                bitmapInfo.biHeight,
+                                bitmapInfo.biWidth,
+                                -bitmapInfo.biHeight,
+                                0,
+                                0,
+                                bitmapInfoHeader.biWidth,
+                                bitmapInfoHeader.biHeight,
+                                (IntPtr)(ptr + bitmapInfo.biSize),
+                                ref bitmapInfo,
+                                0,
+                                SRCCOPY
+                                ) != 0)
+                            return new Bitmap(Platform.PixelFormats.Bgra8888,
+                                Platform.AlphaFormat.Opaque,
+                                lbBits,
+                                new PixelSize(bitmapInfoHeader.biWidth, bitmapInfoHeader.biHeight),
+                                new Vector(96, 96),
+                                bitmapInfoHeader.biWidth * 4);
+                    }
+                    finally
+                    {
+                        if (section != IntPtr.Zero)
+                            DeleteObject(section);
+
+                        if (compatDc != IntPtr.Zero)
+                            ReleaseDC(IntPtr.Zero, compatDc);
+
+                        if (hdc != IntPtr.Zero)
+                            ReleaseDC(IntPtr.Zero, hdc);
+                    }
                 }
             }
             else

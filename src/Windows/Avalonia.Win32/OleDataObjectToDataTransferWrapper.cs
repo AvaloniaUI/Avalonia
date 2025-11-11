@@ -36,7 +36,10 @@ internal sealed class OleDataObjectToDataTransferWrapper(Win32Com.IDataObject ol
 
         foreach (var format in formats)
         {
-            if (format.Identifier is "CF_DIB" or "CF_BITMAP" or "image/png" or "image/jpg" or "image/jpeg")
+            if (format.Identifier is ClipboardFormatRegistry.DibFormat 
+                or ClipboardFormatRegistry.BitmapFormat 
+                or ClipboardFormatRegistry.PngFormatMimeType 
+                or ClipboardFormatRegistry.JpegFormatMimeType)
             {
                 hasSupportedFormat = true;
                 break;

@@ -9,6 +9,8 @@ internal static class ClipboardDataFormatHelper
 {
     private const string MimeTypeTextUriList = "text/uri-list";
     private const string AppPrefix = "application/avn-fmt.";
+    public const string PngFormatMimeType = "image/png";
+    public const string JpegFormatMimeType = "image/jpeg";
 
     public static DataFormat? ToDataFormat(IntPtr formatAtom, X11Atoms atoms)
     {
@@ -52,9 +54,9 @@ internal static class ClipboardDataFormatHelper
             DataFormat? pngFormat = null, jpegFormat = null;
             foreach (var imageFormat in dataFormats)
             {
-                if (imageFormat.Identifier is "image/png")
+                if (imageFormat.Identifier is PngFormatMimeType)
                     pngFormat = imageFormat;
-                else if (imageFormat.Identifier is "image/jpeg" or "image/jpg")
+                else if (imageFormat.Identifier is JpegFormatMimeType)
                     jpegFormat = imageFormat;
 
                 if (pngFormat != null && jpegFormat != null)
@@ -63,7 +65,8 @@ internal static class ClipboardDataFormatHelper
 
             var preferredFormat = pngFormat ?? jpegFormat ?? null;
 
-            return atoms.GetAtom(preferredFormat!.ToSystemName(AppPrefix));
+            if (preferredFormat != null)
+                return atoms.GetAtom(preferredFormat.ToSystemName(AppPrefix));
         }
 
         var systemName = format.ToSystemName(AppPrefix);
@@ -79,7 +82,7 @@ internal static class ClipboardDataFormatHelper
             return [atoms.GetAtom(MimeTypeTextUriList)];
 
         if (DataFormat.Bitmap.Equals(format))
-            return [atoms.GetAtom("image/png")];
+            return [atoms.GetAtom(PngFormatMimeType)];
 
         var systemName = format.ToSystemName(AppPrefix);
         return [atoms.GetAtom(systemName)];

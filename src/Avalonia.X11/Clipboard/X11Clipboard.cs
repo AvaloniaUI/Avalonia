@@ -342,7 +342,7 @@ namespace Avalonia.X11.Clipboard
 
                     if(!hasImage)
                     {
-                        if (format.Identifier is "image/jpeg" or "image/jpg" or "image.png")
+                        if (format.Identifier is ClipboardDataFormatHelper.JpegFormatMimeType or ClipboardDataFormatHelper.PngFormatMimeType)
                             hasImage = true;
                     }
                 }
