@@ -18,5 +18,6 @@
 
     <ItemGroup Label="InternalsVisibleTo">
         <InternalsVisibleTo Include="Avalonia.Benchmarks, PublicKey=$(AvaloniaPublicKey)" />
+        <InternalsVisibleTo Include="Avalonia.Skia.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
     </ItemGroup>
 </Project>
