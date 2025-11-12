@@ -14,7 +14,7 @@
   <Import Project="../../../build/TrimmingEnable.props" />
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.0-rc.2.25502.107" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.0" />
   </ItemGroup>
 
   <ItemGroup>
