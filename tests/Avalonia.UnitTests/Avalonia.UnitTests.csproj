@@ -10,7 +10,7 @@
     <EmbeddedResource Include="..\Avalonia.UnitTests\Assets\*.ttf" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Harfbuzz\Avalonia.Harfbuzz\Avalonia.Harfbuzz.csproj" />
+    <ProjectReference Include="..\..\src\HarfBuzz\Avalonia.HarfBuzz\Avalonia.HarfBuzz.csproj" />
     <ProjectReference Include="..\..\src\Headless\Avalonia.Headless\Avalonia.Headless.csproj" />
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup\Avalonia.Markup.csproj" />

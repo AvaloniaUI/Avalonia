@@ -298,7 +298,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ControlCatalog.MacCatalyst"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ControlCatalog.tvOS", "samples\ControlCatalog.tvOS\ControlCatalog.tvOS.csproj", "{14342787-B4EF-4076-8C91-BA6C523DE8DF}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Harfbuzz", "Harfbuzz", "{7670D720-6E84-4AFC-8331-A5C399481905}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HarfBuzz", "HarfBuzz", "{7670D720-6E84-4AFC-8331-A5C399481905}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Harfbuzz", "src\Harfbuzz\Avalonia.Harfbuzz\Avalonia.Harfbuzz.csproj", "{E2BFA463-6402-4EF8-8945-FD9A10A914D1}"
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Headless.NUnit.PerAssembly.UnitTests", "tests\Avalonia.Headless.NUnit.PerAssembly.UnitTests\Avalonia.Headless.NUnit.PerAssembly.UnitTests.csproj", "{A175EFAE-476C-4DAA-87D5-742C18CFCC27}"
@@ -308,6 +308,7 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Headless.XUnit.PerAssembly.UnitTests", "tests\Avalonia.Headless.XUnit.PerAssembly.UnitTests\Avalonia.Headless.XUnit.PerAssembly.UnitTests.csproj", "{342D2657-2F84-493C-B74B-9D2CAE5D9DAB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Headless.XUnit.PerTest.UnitTests", "tests\Avalonia.Headless.XUnit.PerTest.UnitTests\Avalonia.Headless.XUnit.PerTest.UnitTests.csproj", "{26918642-829D-4FA2-B60A-BE8D83F4E063}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.HarfBuzz", "src\HarfBuzz\Avalonia.HarfBuzz\Avalonia.HarfBuzz.csproj", "{E2BFA463-6402-4EF8-8945-FD9A10A914D1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
