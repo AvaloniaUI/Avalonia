@@ -1,8 +1,6 @@
 using System;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.LogicalTree;
-using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
@@ -14,10 +12,8 @@ using static Avalonia.OpenGL.GlConsts;
 
 namespace ControlCatalog.Pages;
 
-public class OpenGlLeasePage : UserControl
+public partial class OpenGlLeasePage : UserControl
 {
-    private readonly Control _viewport;
-    private readonly GlPageKnobs _knobs;
     private CompositionCustomVisual? _visual;
 
     class GlVisual : CompositionCustomVisualHandler
@@ -161,12 +157,7 @@ public class OpenGlLeasePage : UserControl
     
     public OpenGlLeasePage()
     {
-        AvaloniaXamlLoader.Load(this);
-        _viewport = this.FindControl<Control>("Viewport")!;
-        _viewport.AttachedToVisualTree += ViewportAttachedToVisualTree;
-        _viewport.DetachedFromVisualTree += ViewportDetachedFromVisualTree;
-        _knobs = this.FindControl<GlPageKnobs>("Knobs")!;
-        _knobs.PropertyChanged += KnobsPropertyChanged;
+        InitializeComponent();
     }
 
     private void KnobsPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs change)
@@ -180,16 +171,16 @@ public class OpenGlLeasePage : UserControl
 
     Parameters GetParameters() => new()
     {
-        Yaw = _knobs!.Yaw, Pitch = _knobs.Pitch, Roll = _knobs.Roll, Disco = _knobs.Disco
+        Yaw = Knobs!.Yaw, Pitch = Knobs.Pitch, Roll = Knobs.Roll, Disco = Knobs.Disco
     };
     
     private void ViewportAttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
     {
-        var visual = ElementComposition.GetElementVisual(_viewport!);
+        var visual = ElementComposition.GetElementVisual(Viewport);
         if(visual == null)
             return;
         _visual = visual.Compositor.CreateCustomVisual(new GlVisual(new OpenGlContent(), GetParameters()));
-        ElementComposition.SetElementChildVisual(_viewport, _visual);
+        ElementComposition.SetElementChildVisual(Viewport, _visual);
         UpdateSize(Bounds.Size);
     }
 
@@ -210,7 +201,7 @@ public class OpenGlLeasePage : UserControl
     {
         _visual?.SendHandlerMessage(new DisposeMessage());
         _visual = null;
-        ElementComposition.SetElementChildVisual(_viewport, null);
+        ElementComposition.SetElementChildVisual(Viewport, null);
         base.OnDetachedFromVisualTree(e);
     }
 }

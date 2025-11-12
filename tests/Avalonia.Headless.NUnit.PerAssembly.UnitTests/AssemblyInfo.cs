@@ -5,3 +5,4 @@ using Avalonia.Headless;
 using Avalonia.Headless.UnitTests;
 
 [assembly: AvaloniaTestApplication(typeof(TestApplication))]
+[assembly: AvaloniaTestIsolation(AvaloniaTestIsolationLevel.PerAssembly)]

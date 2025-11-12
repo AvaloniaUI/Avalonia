@@ -110,8 +110,10 @@ namespace Avalonia.Media.Fonts
             {
                 using (stream)
                 {
-                    if (fontManager.TryCreateGlyphTypeface(stream, fontSimulations, out syntheticGlyphTypeface))
+                    if (fontManager.TryCreateGlyphTypeface(stream, fontSimulations, out var platformTypeface))
                     {
+                        syntheticGlyphTypeface = new GlyphTypeface(platformTypeface, fontSimulations);
+
                         //Add the TypographicFamilyName to the cache
                         if (!string.IsNullOrEmpty(glyphTypeface.TypographicFamilyName))
                         {

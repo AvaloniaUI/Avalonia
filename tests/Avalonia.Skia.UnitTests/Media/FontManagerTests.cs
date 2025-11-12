@@ -113,6 +113,27 @@ namespace Avalonia.Skia.UnitTests.Media
         }
 
         [Fact]
+        public void Should_Cache_MatchCharacter()
+        {
+            var fontManagerImpl = new CustomFontManagerImpl();
+
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: fontManagerImpl)))
+            {
+                var emoji = Codepoint.ReadAt("😀", 0, out _);
+
+                Assert.True(FontManager.Current.TryMatchCharacter((int)emoji, FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, null, null, out var firstMatch));
+
+                var firstGlyphTypeface = firstMatch.GlyphTypeface;
+
+                Assert.True(FontManager.Current.TryMatchCharacter((int)emoji, FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, null, null, out var secondMatch));
+
+                var secondGlyphTypeface = secondMatch.GlyphTypeface;
+
+                Assert.Equal(firstGlyphTypeface, secondGlyphTypeface);
+            }
+        }
+
+        [Fact]
         public void Should_Load_Embedded_DefaultFontFamily()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))

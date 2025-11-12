@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia;
+using Avalonia.Controls.Utils;
 using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
@@ -177,23 +179,31 @@ internal class HeadlessFontManagerStub : IFontManagerImpl
     }
 
     public virtual bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight,
-        FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
+        FontStretch stretch, [NotNullWhen(true)] out IPlatformTypeface? platformTypeface)
     {
-        glyphTypeface = null;
+        platformTypeface = null;
 
         if (familyName == "MyFont")
         {
-            glyphTypeface = new HeadlessGlyphTypeface(Typeface.Default.GlyphTypeface, familyName);
+            var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
+
+            var assets = assetLoader.GetAssets(new Uri(_defaultFamilyName), null);
+
+            var firstUri = assets.First();
+
+            var stream = assetLoader.Open(firstUri);
+
+            platformTypeface = new HeadlessPlatformTypeface(stream);
         }
 
         TryCreateGlyphTypefaceCount++;
 
-        return glyphTypeface != null;
+        return platformTypeface != null;
     }
 
-    public virtual bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, out IGlyphTypeface glyphTypeface)
+    public virtual bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, [NotNullWhen(true)] out IPlatformTypeface? platformTypeface)
     {
-        glyphTypeface = new GlyphTypeface(new HeadlessPlatformTypeface(stream), fontSimulations);
+        platformTypeface = new HeadlessPlatformTypeface(stream);
 
         TryCreateGlyphTypefaceCount++;
 
@@ -231,12 +241,12 @@ internal class HeadlessFontManagerWithMultipleSystemFontsStub : IFontManagerImpl
         return _defaultFamilyName;
     }
 
-    public bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight, FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
+    public bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight, FontStretch stretch, [NotNullWhen(true)] out IPlatformTypeface? platformTypeface)
     {
         throw new NotImplementedException();
     }
 
-    public bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
+    public bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, [NotNullWhen(true)] out IPlatformTypeface? platformTypeface)
     {
         throw new NotImplementedException();
     }

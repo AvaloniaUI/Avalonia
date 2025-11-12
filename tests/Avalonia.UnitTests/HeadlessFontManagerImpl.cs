@@ -60,19 +60,17 @@ namespace Avalonia.UnitTests
             return false;
         }
 
-        public bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, out IGlyphTypeface glyphTypeface)
+        public bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, [NotNullWhen(true)] out IPlatformTypeface? platformTypeface)
         {
-            var platformTypeface = new HeadlessPlatformTypeface(stream);
-
-            glyphTypeface = new GlyphTypeface(platformTypeface, FontSimulations.None);
+            platformTypeface = new HeadlessPlatformTypeface(stream);
 
             return true;
         }
 
         public bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight,
-            FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface glyphTypeface)
+            FontStretch stretch, [NotNullWhen(true)] out IPlatformTypeface? platformTypeface)
         {
-            glyphTypeface = null;
+            platformTypeface = null;
 
             return false;
         }

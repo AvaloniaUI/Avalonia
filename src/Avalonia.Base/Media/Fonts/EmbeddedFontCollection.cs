@@ -38,8 +38,10 @@ namespace Avalonia.Media.Fonts
             {
                 var stream = assetLoader.Open(fontAsset);
 
-                if (fontManager.TryCreateGlyphTypeface(stream, FontSimulations.None, out var glyphTypeface))
+                if (fontManager.TryCreateGlyphTypeface(stream, FontSimulations.None, out var platformTypeface))
                 {
+                    var glyphTypeface = new GlyphTypeface(platformTypeface);
+
                     AddGlyphTypeface(glyphTypeface);
                 }
             }

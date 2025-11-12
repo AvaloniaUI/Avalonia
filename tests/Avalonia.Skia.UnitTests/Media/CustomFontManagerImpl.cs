@@ -76,31 +76,33 @@ namespace Avalonia.Skia.UnitTests.Media
         }
 
         public bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight,
-            FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface glyphTypeface)
+            FontStretch stretch, [NotNullWhen(true)] out IPlatformTypeface platformTypeface)
         {
             if (!_isInitialized)
             {
                 _customFonts.Initialize(this);
             }
 
-            if (_customFonts.TryGetGlyphTypeface(familyName, style, weight, stretch, out glyphTypeface))
+            if (_customFonts.TryGetGlyphTypeface(familyName, style, weight, stretch, out var glyphTypeface))
             {
+                platformTypeface = glyphTypeface.PlatformTypeface;
+
                 return true;
             }
 
             var skTypeface = SKTypeface.FromFamilyName(familyName,
                         (SKFontStyleWeight)weight, SKFontStyleWidth.Normal, (SKFontStyleSlant)style);
 
-            glyphTypeface = new GlyphTypeface(new SkiaTypeface(skTypeface, FontSimulations.None), FontSimulations.None);
+            platformTypeface = new SkiaTypeface(skTypeface, FontSimulations.None);
 
             return true;
         }
 
-        public bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, [NotNullWhen(true)] out IGlyphTypeface glyphTypeface)
+        public bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, [NotNullWhen(true)] out IPlatformTypeface platformTypeface)
         {
             var skTypeface = SKTypeface.FromStream(stream);
 
-            glyphTypeface = new GlyphTypeface(new SkiaTypeface(skTypeface, FontSimulations.None), fontSimulations);
+            platformTypeface = new SkiaTypeface(skTypeface, FontSimulations.None);
 
             return true;
         }
