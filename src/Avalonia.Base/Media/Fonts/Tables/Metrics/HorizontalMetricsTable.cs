@@ -9,7 +9,7 @@ namespace Avalonia.Media.Fonts.Tables.Metrics
 
         private readonly ReadOnlyMemory<byte> _data;
         private readonly ushort _numOfHMetrics;
-        private readonly uint _numGlyphs;
+        private readonly int _numGlyphs;
 
         private HorizontalMetricsTable(ReadOnlyMemory<byte> data, ushort numOfHMetrics, int numGlyphs)
         {

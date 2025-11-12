@@ -133,7 +133,7 @@ internal class HeadlessGlyphTypeface : IGlyphTypeface
 
     public FontStretch Stretch => _inner.Stretch;
 
-    public uint GlyphCount => _inner.GlyphCount;
+    public int GlyphCount => _inner.GlyphCount;
 
     public FontSimulations FontSimulations => _inner.FontSimulations;
 
