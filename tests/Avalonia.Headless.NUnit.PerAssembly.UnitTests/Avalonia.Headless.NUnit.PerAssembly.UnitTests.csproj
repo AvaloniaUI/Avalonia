@@ -25,7 +25,7 @@
   
   <ItemGroup>
     <ProjectReference Include="..\..\src\Avalonia.Themes.Simple\Avalonia.Themes.Simple.csproj" />
-    <ProjectReference Include="..\..\src\Harfbuzz\Avalonia.Harfbuzz\Avalonia.Harfbuzz.csproj" />
+    <ProjectReference Include="..\..\src\HarfBuzz\Avalonia.HarfBuzz\Avalonia.HarfBuzz.csproj" />
     <ProjectReference Include="..\..\src\Headless\Avalonia.Headless.NUnit\Avalonia.Headless.NUnit.csproj" />
     <ProjectReference Include="..\..\src\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
   </ItemGroup>

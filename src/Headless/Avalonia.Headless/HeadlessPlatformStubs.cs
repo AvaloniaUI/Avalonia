@@ -154,6 +154,7 @@ internal class HeadlessGlyphTypeface : IGlyphTypeface
 
 internal class HeadlessFontManagerStub : IFontManagerImpl
 {
+    private readonly string _interFontUri = "avares://Avalonia.Fonts.Inter/Assets/Inter-Regular.ttf";
     private readonly string _defaultFamilyName = "avares://Avalonia.Fonts.Inter/Assets#Inter";
 
     public int TryCreateGlyphTypefaceCount { get; private set; }
@@ -187,11 +188,7 @@ internal class HeadlessFontManagerStub : IFontManagerImpl
         {
             var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
 
-            var assets = assetLoader.GetAssets(new Uri(_defaultFamilyName), null);
-
-            var firstUri = assets.First();
-
-            var stream = assetLoader.Open(firstUri);
+            var stream = assetLoader.Open(new Uri(_interFontUri));
 
             platformTypeface = new HeadlessPlatformTypeface(stream);
         }
