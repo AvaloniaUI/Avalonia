@@ -39,7 +39,7 @@ namespace Avalonia.Media
         /// <param name="baselineOrigin">The baseline origin of the run.</param>
         /// <param name="biDiLevel">The bidi level.</param>
         public GlyphRun(
-            IGlyphTypeface glyphTypeface,
+            GlyphTypeface glyphTypeface,
             double fontRenderingEmSize,
             ReadOnlyMemory<char> characters,
             IReadOnlyList<ushort> glyphIndices,
@@ -61,7 +61,7 @@ namespace Avalonia.Media
         /// <param name="baselineOrigin">The baseline origin of the run.</param>
         /// <param name="biDiLevel">The bidi level.</param>
         public GlyphRun(
-            IGlyphTypeface glyphTypeface,
+            GlyphTypeface glyphTypeface,
             double fontRenderingEmSize,
             ReadOnlyMemory<char> characters,
             IReadOnlyList<GlyphInfo> glyphInfos,
@@ -90,7 +90,7 @@ namespace Avalonia.Media
         }
 
         private static IReadOnlyList<GlyphInfo> CreateGlyphInfos(IReadOnlyList<ushort> glyphIndices,
-            double fontRenderingEmSize, IGlyphTypeface glyphTypeface)
+            double fontRenderingEmSize, GlyphTypeface glyphTypeface)
         {
             var glyphIndexSpan = ListToSpan(glyphIndices);
 
@@ -140,9 +140,9 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        ///     Gets the <see cref="IGlyphTypeface"/> for the <see cref="GlyphRun"/>.
+        ///     Gets the <see cref="GlyphTypeface"/> for the <see cref="GlyphRun"/>.
         /// </summary>
-        public IGlyphTypeface GlyphTypeface { get; }
+        public GlyphTypeface GlyphTypeface { get; }
 
         /// <summary>
         ///     Gets or sets the em size used for rendering the <see cref="GlyphRun"/>.

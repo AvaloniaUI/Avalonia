@@ -8,7 +8,7 @@ namespace Avalonia.Platform
     /// <summary>
     /// An abstraction that is used produce shaped text.
     /// </summary>
-    [Unstable]
+    [NotClientImplementable]
     public interface ITextShaperImpl
     {
         /// <summary>

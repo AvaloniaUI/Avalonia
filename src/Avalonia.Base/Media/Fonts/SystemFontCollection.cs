@@ -42,7 +42,7 @@ namespace Avalonia.Media.Fonts
         }
 
         public override bool TryGetGlyphTypeface(string familyName, FontStyle style, FontWeight weight,
-            FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
+            FontStretch stretch, [NotNullWhen(true)] out GlyphTypeface? glyphTypeface)
         {
             glyphTypeface = null;
 
@@ -65,7 +65,7 @@ namespace Avalonia.Media.Fonts
             }
 
             glyphTypefaces ??= _glyphTypefaceCache.GetOrAdd(familyName,
-                (_) => new ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>());
+                (_) => new ConcurrentDictionary<FontCollectionKey, GlyphTypeface?>());
 
             //Try to create the glyph typeface via system font manager
             if (!_fontManager.PlatformImpl.TryCreateGlyphTypeface(familyName, style, weight, stretch,
@@ -177,7 +177,7 @@ namespace Avalonia.Media.Fonts
                 }
                 else
                 {
-                    if (!_glyphTypefaceCache.TryAdd(glyphTypeface.FamilyName, new ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>() { [createdKey] = glyphTypeface }))
+                    if (!_glyphTypefaceCache.TryAdd(glyphTypeface.FamilyName, new ConcurrentDictionary<FontCollectionKey, GlyphTypeface?>() { [createdKey] = glyphTypeface }))
                     {
                         return false;
                     }
@@ -191,7 +191,7 @@ namespace Avalonia.Media.Fonts
             return false;
         }
 
-        private void AddGlyphTypefaceByFamilyName(string familyName, IGlyphTypeface glyphTypeface)
+        private void AddGlyphTypefaceByFamilyName(string familyName, GlyphTypeface glyphTypeface)
         {
             // Add family name to the collection if not exists
             if (!_familyNames.Contains(familyName))
@@ -202,7 +202,7 @@ namespace Avalonia.Media.Fonts
             // Get or create the typefaces dictionary for the family name
             if (!_glyphTypefaceCache.TryGetValue(familyName, out var typefaces))
             {
-                typefaces = new ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>();
+                typefaces = new ConcurrentDictionary<FontCollectionKey, GlyphTypeface?>();
 
                 // Add the new dictionary to the cache
                 if (!_glyphTypefaceCache.TryAdd(familyName, typefaces))

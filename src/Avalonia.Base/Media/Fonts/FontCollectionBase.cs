@@ -12,7 +12,7 @@ namespace Avalonia.Media.Fonts
 {
     public abstract class FontCollectionBase : IFontCollection
     {
-        protected readonly ConcurrentDictionary<string, ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>> _glyphTypefaceCache = new();
+        protected readonly ConcurrentDictionary<string, ConcurrentDictionary<FontCollectionKey, GlyphTypeface?>> _glyphTypefaceCache = new();
 
         public abstract Uri Key { get; }
 
@@ -21,7 +21,7 @@ namespace Avalonia.Media.Fonts
         public abstract FontFamily this[int index] { get; }
 
         public abstract bool TryGetGlyphTypeface(string familyName, FontStyle style, FontWeight weight, FontStretch stretch,
-           [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface);
+           [NotNullWhen(true)] out GlyphTypeface? glyphTypeface);
 
         public virtual bool TryMatchCharacter(int codepoint, FontStyle style, FontWeight weight, FontStretch stretch,
             string? familyName, CultureInfo? culture, out Typeface match)
@@ -68,11 +68,11 @@ namespace Avalonia.Media.Fonts
         }
 
         public virtual bool TryCreateSyntheticGlyphTypeface(
-            IGlyphTypeface glyphTypeface,
+            GlyphTypeface glyphTypeface,
             FontStyle style, 
             FontWeight weight, 
             FontStretch stretch, 
-            [NotNullWhen(true)] out IGlyphTypeface? syntheticGlyphTypeface)
+            [NotNullWhen(true)] out GlyphTypeface? syntheticGlyphTypeface)
         {
             syntheticGlyphTypeface = null;
 
@@ -134,12 +134,12 @@ namespace Avalonia.Media.Fonts
 
             return false;
 
-            void AddGlyphTypefaceByFamilyName(string familyName, IGlyphTypeface glyphTypeface)
+            void AddGlyphTypefaceByFamilyName(string familyName, GlyphTypeface glyphTypeface)
             {
                 var typefaces = _glyphTypefaceCache.GetOrAdd(familyName,
                     x =>
                     {
-                        return new ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>();
+                        return new ConcurrentDictionary<FontCollectionKey, GlyphTypeface?>();
                     });
 
                 typefaces.TryAdd(key, glyphTypeface);
@@ -170,9 +170,9 @@ namespace Avalonia.Media.Fonts
 
         internal static bool TryGetNearestMatch(
             ConcurrentDictionary<FontCollectionKey,
-            IGlyphTypeface?> glyphTypefaces,
+            GlyphTypeface?> glyphTypefaces,
             FontCollectionKey key,
-            [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
+            [NotNullWhen(true)] out GlyphTypeface? glyphTypeface)
         {
             if (glyphTypefaces.TryGetValue(key, out glyphTypeface) && glyphTypeface != null)
             {
@@ -228,9 +228,9 @@ namespace Avalonia.Media.Fonts
 
         internal static bool TryFindStretchFallback(
             ConcurrentDictionary<FontCollectionKey,
-            IGlyphTypeface?> glyphTypefaces,
+            GlyphTypeface?> glyphTypefaces,
             FontCollectionKey key,
-            [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
+            [NotNullWhen(true)] out GlyphTypeface? glyphTypeface)
         {
             glyphTypeface = null;
 
@@ -262,9 +262,9 @@ namespace Avalonia.Media.Fonts
 
         internal static bool TryFindWeightFallback(
             ConcurrentDictionary<FontCollectionKey,
-            IGlyphTypeface?> glyphTypefaces,
+            GlyphTypeface?> glyphTypefaces,
             FontCollectionKey key,
-            [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
+            [NotNullWhen(true)] out GlyphTypeface? glyphTypeface)
         {
             glyphTypeface = null;
             var weight = (int)key.Weight;

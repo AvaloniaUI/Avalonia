@@ -29,7 +29,7 @@ namespace Avalonia.Media.Fonts
         /// <param name="glyphTypeface">The glyph typeface.</param>
         /// <returns>Returns <c>true</c> if a glyph typface can be found; otherwise, <c>false</c></returns>
         bool TryGetGlyphTypeface(string familyName, FontStyle style, FontWeight weight,
-            FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface);
+            FontStretch stretch, [NotNullWhen(true)] out GlyphTypeface? glyphTypeface);
 
         /// <summary>
         ///     Tries to match a specified character to a <see cref="Typeface"/> that supports specified font properties.
@@ -69,6 +69,6 @@ namespace Avalonia.Media.Fonts
         /// <param name="stretch">The font stretch.</param>
         /// <param name="syntheticGlyphTypeface"></param>
         /// <returns>Returns <c>true</c> if a synthetic glyph typface can be created; otherwise, <c>false</c></returns>
-        bool TryCreateSyntheticGlyphTypeface(IGlyphTypeface glyphTypeface, FontStyle style, FontWeight weight, FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface? syntheticGlyphTypeface);
+        bool TryCreateSyntheticGlyphTypeface(GlyphTypeface glyphTypeface, FontStyle style, FontWeight weight, FontStretch stretch, [NotNullWhen(true)] out GlyphTypeface? syntheticGlyphTypeface);
     }
 }

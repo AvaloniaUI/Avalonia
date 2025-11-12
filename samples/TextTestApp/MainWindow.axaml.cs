@@ -223,12 +223,12 @@ namespace TextTestApp
             }
         }
 
-        private IImage CreateGlyphDrawing(IGlyphTypeface glyphTypeface, double emSize, GlyphInfo info)
+        private IImage CreateGlyphDrawing(GlyphTypeface glyphTypeface, double emSize, GlyphInfo info)
         {
             return new DrawingImage { Drawing = new GeometryDrawing { Brush = Brushes.Black, Geometry = GetGlyphOutline(glyphTypeface, emSize, info) } };
         }
 
-        private Geometry GetGlyphOutline(IGlyphTypeface typeface, double emSize, GlyphInfo info)
+        private Geometry GetGlyphOutline(GlyphTypeface typeface, double emSize, GlyphInfo info)
         {
             // substitute for GlyphTypeface.GetGlyphOutline
             return new GlyphRun(typeface, emSize, new[] { '\0' }, [info]).BuildGeometry();

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.IO;
 using Avalonia.Media.Fonts;
 using Avalonia.Metadata;
 
@@ -18,7 +16,7 @@ namespace Avalonia.Media
     /// also supports retrieving culture-specific names for font families and faces,  accessing OpenType features, and
     /// obtaining glyph metrics for precise text shaping and rendering. </para> <para> Implementations of this interface
     /// are expected to be disposable, as they may hold unmanaged resources  related to font handling. </para></remarks>
-    [Unstable]
+    [NotClientImplementable]
     public interface IGlyphTypeface : IDisposable
     {
         /// <summary>

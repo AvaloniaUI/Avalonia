@@ -48,7 +48,7 @@ namespace Avalonia.Media.Fonts
         }
 
         public override bool TryGetGlyphTypeface(string familyName, FontStyle style, FontWeight weight,
-            FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
+            FontStretch stretch, [NotNullWhen(true)] out GlyphTypeface? glyphTypeface)
         {
             var typeface = GetImplicitTypeface(new Typeface(familyName, style, weight, stretch), out familyName);
 
@@ -105,7 +105,7 @@ namespace Avalonia.Media.Fonts
 
         public override IEnumerator<FontFamily> GetEnumerator() => _fontFamilies.GetEnumerator();
 
-        private void AddGlyphTypeface(IGlyphTypeface glyphTypeface)
+        private void AddGlyphTypeface(GlyphTypeface glyphTypeface)
         {
             //Add the TypographicFamilyName to the cache
             if (!string.IsNullOrEmpty(glyphTypeface.TypographicFamilyName))
@@ -120,14 +120,14 @@ namespace Avalonia.Media.Fonts
 
             return;
 
-            void AddGlyphTypefaceByFamilyName(string familyName, IGlyphTypeface glyphTypeface)
+            void AddGlyphTypefaceByFamilyName(string familyName, GlyphTypeface glyphTypeface)
             {
                 var typefaces = _glyphTypefaceCache.GetOrAdd(familyName,
                     x =>
                     {
                         _fontFamilies.Add(new FontFamily(_key, familyName));
 
-                        return new ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>();
+                        return new ConcurrentDictionary<FontCollectionKey, GlyphTypeface?>();
                     });
 
                 typefaces.TryAdd(

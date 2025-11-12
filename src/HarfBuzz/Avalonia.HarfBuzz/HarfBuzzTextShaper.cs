@@ -24,7 +24,7 @@ namespace Avalonia.Harfbuzz
         {
             var textSpan = text.Span;
 
-            var glyphTypeface = options.Typeface;
+            var glyphTypeface = options.GlyphTypeface;
 
             if (glyphTypeface.TextShaperTypeface is not HarfBuzzTypeface harfBuzzTypeface)
             {
