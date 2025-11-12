@@ -66,6 +66,21 @@ namespace Avalonia.Platform
     internal interface IFontManagerImpl2 : IFontManagerImpl
     {
         /// <summary>
+        ///     Tries to match a specified character to a typeface that supports specified font properties.
+        /// </summary>
+        /// <param name="codepoint">The codepoint to match against.</param>
+        /// <param name="fontStyle">The font style.</param>
+        /// <param name="fontWeight">The font weight.</param>
+        /// <param name="fontStretch">The font stretch.</param>
+        /// <param name="culture">The culture.</param>
+        /// <param name="typeface">The matching typeface.</param>
+        /// <returns>
+        ///     <c>True</c>, if the <see cref="IFontManagerImpl"/> could match the character to specified parameters, <c>False</c> otherwise.
+        /// </returns>
+        bool TryMatchCharacter(int codepoint, FontStyle fontStyle,
+            FontWeight fontWeight, FontStretch fontStretch, CultureInfo? culture, [NotNullWhen(true)] out IGlyphTypeface? typeface);
+
+        /// <summary>
         /// Tries to get a list of typefaces for the specified family name.
         /// </summary>
         /// <param name="familyName">The family name.</param>
