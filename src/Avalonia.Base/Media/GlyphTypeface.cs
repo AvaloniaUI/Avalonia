@@ -18,7 +18,7 @@ namespace Avalonia.Media
     /// character-to-glyph mappings, and supported OpenType features. It supports platform-specific typefaces and
     /// applies optional font simulations such as bold or oblique. This class is typically used in text rendering and
     /// shaping scenarios.</remarks>
-    internal class GlyphTypeface : IGlyphTypeface
+    public sealed class GlyphTypeface : IGlyphTypeface
     {
         private bool _isDisposed;
 
@@ -265,11 +265,9 @@ namespace Avalonia.Media
 
         public FontSimulations FontSimulations { get; }
 
-        public int ReplacementCodepoint { get; }
-
         public FontMetrics Metrics { get; }
 
-        public uint GlyphCount { get; }
+        public int GlyphCount { get; }
 
         public string FamilyName { get; }
 

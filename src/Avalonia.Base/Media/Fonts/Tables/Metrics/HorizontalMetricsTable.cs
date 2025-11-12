@@ -11,14 +11,14 @@ namespace Avalonia.Media.Fonts.Tables.Metrics
         private readonly ushort _numOfHMetrics;
         private readonly uint _numGlyphs;
 
-        private HorizontalMetricsTable(ReadOnlyMemory<byte> data, ushort numOfHMetrics, uint numGlyphs)
+        private HorizontalMetricsTable(ReadOnlyMemory<byte> data, ushort numOfHMetrics, int numGlyphs)
         {
             _data = data;
             _numOfHMetrics = numOfHMetrics;
             _numGlyphs = numGlyphs;
         }
 
-        internal static HorizontalMetricsTable? Load(IGlyphTypeface glyphTypeface, ushort numberOfHMetrics, uint glyphCount)
+        internal static HorizontalMetricsTable? Load(IGlyphTypeface glyphTypeface, ushort numberOfHMetrics, int glyphCount)
         {
             if (glyphTypeface.PlatformTypeface.TryGetTable(Tag, out var table))
             {

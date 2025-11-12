@@ -87,7 +87,7 @@ namespace Avalonia.Media
         /// <summary>
         ///     Gets the number of glyphs held by this <see cref="IGlyphTypeface"/> object.
         /// </summary>
-        uint GlyphCount { get; }
+        int GlyphCount { get; }
 
         /// <summary>
         ///     Gets the algorithmic style simulations applied to <see cref="IGlyphTypeface"/> object.
@@ -134,48 +134,5 @@ namespace Avalonia.Media
         ///   <c>true</c> if an glyph's metrics was found, <c>false</c> otherwise.
         /// </returns>
         bool TryGetGlyphMetrics(ushort glyph, out GlyphMetrics metrics);
-    }
-
-    public interface IPlatformTypeface : IFontMemory
-    {
-        /// <summary>
-        /// Gets the designed weight of the font represented by the <see cref="IPlatformTypeface"/> object.
-        /// </summary>
-        FontWeight Weight { get; }
-
-        /// <summary>
-        /// Gets the style for the <see cref="IPlatformTypeface"/> object.
-        /// </summary>
-        FontStyle Style { get; }
-
-        /// <summary>
-        /// Gets the <see cref="FontStretch"/> value for the <see cref="IPlatformTypeface"/> object.
-        /// </summary>
-        FontStretch Stretch { get; }
-
-        /// <summary>
-        /// Returns the font file stream represented by the <see cref="IGlyphTypeface"/>.
-        /// </summary>
-        /// <param name="stream">The stream.</param>
-        /// <returns>Returns <c>true</c> if the stream can be obtained, otherwise <c>false</c>.</returns>
-        bool TryGetStream([NotNullWhen(true)] out Stream? stream);
-    }
-
-    public interface ITextShaperTypeface : IDisposable
-    {
-
-    }
-
-    public interface IFontMemory : IDisposable
-    {
-        /// <summary>
-        /// Attempts to retrieve the memory block associated with the specified OpenType table tag.
-        /// </summary>
-        /// <param name="tag">The OpenType table tag identifying the table to retrieve.</param>
-        /// <param name="table">When this method returns, contains the memory block of the specified table if the operation succeeds;
-        /// otherwise, contains an empty memory block. This parameter is passed uninitialized.</param>
-        /// <returns><see langword="true"/> if the memory block for the specified table tag was successfully retrieved;
-        /// otherwise, <see langword="false"/>.</returns>
-        bool TryGetTable(OpenTypeTag tag, out ReadOnlyMemory<byte> table);
     }
 }
