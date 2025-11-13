@@ -1,21 +1,14 @@
-﻿using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
+﻿using Avalonia.Controls;
 using ControlCatalog.ViewModels;
 
 namespace ControlCatalog.Pages
 {
-    public class SplitViewPage : UserControl
+    public partial class SplitViewPage : UserControl
     {
         public SplitViewPage()
         {
-            this.InitializeComponent();
+            InitializeComponent();
             DataContext = new SplitViewPageViewModel();
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
         }
     }
 }

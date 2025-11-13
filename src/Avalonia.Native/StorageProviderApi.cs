@@ -155,7 +155,7 @@ internal class StorageProviderApi(IAvnStorageProvider native, bool sandboxEnable
 
     public async Task<IReadOnlyList<IStorageFile>> OpenFileDialog(TopLevelImpl? topLevel, FilePickerOpenOptions options)
     {
-        using var fileTypes = new FilePickerFileTypesWrapper(options.FileTypeFilter, null);
+        using var fileTypes = new FilePickerFileTypesWrapper(options.FileTypeFilter, null, options.SuggestedFileType);
         var suggestedDirectory = options.SuggestedStartLocation?.Path.AbsoluteUri ?? string.Empty;
 
         var (items, _) = await OpenDialogAsync(events =>
@@ -174,7 +174,7 @@ internal class StorageProviderApi(IAvnStorageProvider native, bool sandboxEnable
 
     public async Task<(IStorageFile? file, FilePickerFileType? selectedType)> SaveFileDialog(TopLevelImpl? topLevel, FilePickerSaveOptions options)
     {
-        using var fileTypes = new FilePickerFileTypesWrapper(options.FileTypeChoices, options.DefaultExtension);
+        using var fileTypes = new FilePickerFileTypesWrapper(options.FileTypeChoices, options.DefaultExtension, options.SuggestedFileType);
         var suggestedDirectory = options.SuggestedStartLocation?.Path.AbsoluteUri ?? string.Empty;
 
         var (items, selectedFilterIndex) = await OpenDialogAsync(events =>
@@ -237,15 +237,25 @@ internal class StorageProviderApi(IAvnStorageProvider native, bool sandboxEnable
 
     internal class FilePickerFileTypesWrapper(
         IReadOnlyList<FilePickerFileType>? types,
-        string? defaultExtension)
+        string? defaultExtension,
+        FilePickerFileType? suggestedType)
         : NativeCallbackBase, IAvnFilePickerFileTypes
     {
         private readonly List<IDisposable> _disposables = new();
 
         public int Count => types?.Count ?? 0;
 
-        public int IsDefaultType(int index) => (defaultExtension is not null &&
-            types![index].TryGetExtensions()?.Any(defaultExtension.EndsWith) == true).AsComBool();
+        public int IsDefaultType(int index)
+        {
+            if (types is null)
+                return false.AsComBool();
+
+            if (suggestedType is not null && ReferenceEquals(types[index], suggestedType))
+                return true.AsComBool();
+
+            return (defaultExtension is not null &&
+                    types[index].TryGetExtensions()?.Any(defaultExtension.EndsWith) == true).AsComBool();
+        }
 
         public int IsAnyType(int index) =>
             (types![index].Patterns?.Contains("*.*") == true || types[index].MimeTypes?.Contains("*.*") == true)

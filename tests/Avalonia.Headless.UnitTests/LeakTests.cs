@@ -42,7 +42,8 @@ public class LeakTests
         GC.WaitForPendingFinalizers();
         GC.Collect();
 
-        if (s_previousFontManager is not null)
+        // Either previous font manager is collected (IsAlive == false), or it is the same as current (shared isolation mode).
+        if (s_previousFontManager is not null && s_previousFontManager.Target != fontManager.Target)
         {
             Assert.False(s_previousFontManager.IsAlive);
         }

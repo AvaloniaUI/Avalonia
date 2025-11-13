@@ -15,7 +15,6 @@
           <Grid RowDefinitions="auto *">
             <ContentPresenter Name="PART_HeaderPresenter"
                               Content="{TemplateBinding Header}"
-                              RecognizesAccessKey="True"
                               ContentTemplate="{TemplateBinding HeaderTemplate}"
                               HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                               VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
@@ -23,7 +22,6 @@
             <ContentPresenter Name="PART_ContentPresenter"
                               ContentTemplate="{TemplateBinding ContentTemplate}"
                               Content="{TemplateBinding Content}"
-                              RecognizesAccessKey="True"
                               VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                               HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                               Grid.Row="1" />
@@ -31,5 +29,14 @@
         </Border>
       </ControlTemplate>
     </Setter>
+
+    <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="RecognizesAccessKey" Value="True" />
+    </Style>
+
+    <Style Selector="^ /template/ ContentPresenter#PART_HeaderPresenter">
+      <Setter Property="RecognizesAccessKey" Value="True" />
+    </Style> 
+
   </ControlTheme>
 </ResourceDictionary>

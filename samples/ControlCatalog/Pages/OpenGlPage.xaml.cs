@@ -1,9 +1,7 @@
-using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
-using Avalonia.Markup.Xaml;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Controls;
 using Avalonia.Rendering.Composition;
@@ -13,21 +11,20 @@ using ControlCatalog.Pages.OpenGl;
 
 namespace ControlCatalog.Pages
 {
-    public class OpenGlPage : UserControl
+    public partial class OpenGlPage : UserControl
     {
         public OpenGlPage()
         {
-            AvaloniaXamlLoader.Load(this);
-            this.FindControl<OpenGlPageControl>("GL")
-                !.Init(this.FindControl<GlPageKnobs>("Knobs")!);
-            
+            InitializeComponent();
+            GL.Init(Knobs);
+
             AttachedToVisualTree += delegate
             {
                 if (TopLevel.GetTopLevel(this) is Window)
-                    this.FindControl<Button>("Snapshot")!.IsVisible = true;
+                    Snapshot.IsVisible = true;
             };
         }
-        
+
         private async void SnapshotClick(object sender, RoutedEventArgs e)
         {
             var v = ElementComposition.GetElementVisual(this)!;
@@ -66,7 +63,7 @@ namespace ControlCatalog.Pages
                 || change.Property == GlPageKnobs.DiscoProperty)
                 RequestNextFrameRendering();
         }
-        
+
         protected override unsafe void OnOpenGlInit(GlInterface GL) => _content.Init(GL, GlVersion);
 
         protected override void OnOpenGlDeinit(GlInterface GL) => _content.Deinit(GL);
