@@ -13,15 +13,24 @@ namespace Avalonia.Data.Converters
     /// <typeparam name="TOut">The output type.</typeparam>
     public class FuncMultiValueConverter<TIn, TOut> : IMultiValueConverter
     {
-        private readonly Func<IEnumerable<TIn?>, TOut> _convert;
+        private readonly Func<IReadOnlyList<TIn?>, TOut> _convert;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="FuncValueConverter{TIn, TOut}"/> class.
+        /// Initializes a new instance of the <see cref="FuncMultiValueConverter{TIn, TOut}"/> class.
+        /// </summary>
+        /// <param name="convert">The convert function.</param>
+        public FuncMultiValueConverter(Func<IReadOnlyList<TIn?>, TOut> convert)
+        {
+            _convert = convert;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FuncMultiValueConverter{TIn, TOut}"/> class.
         /// </summary>
         /// <param name="convert">The convert function.</param>
         public FuncMultiValueConverter(Func<IEnumerable<TIn?>, TOut> convert)
+            : this(new Func<IReadOnlyList<TIn?>, TOut>(convert))
         {
-            _convert = convert;
         }
 
         /// <inheritdoc/>
