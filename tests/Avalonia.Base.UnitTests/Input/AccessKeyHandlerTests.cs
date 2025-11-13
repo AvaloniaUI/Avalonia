@@ -223,6 +223,71 @@ namespace Avalonia.Base.UnitTests.Input
             }
         }
 
+        [Fact]
+        public void Should_Handle_Numeric_AccessKey()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+            var button = new Button();
+            var root = new TestRoot(button);
+            var target = new AccessKeyHandler();
+            var raised = 0;
+
+            KeyboardDevice.Instance?.SetFocusedElement(button, NavigationMethod.Unspecified, KeyModifiers.None);
+
+            target.SetOwner(root);
+            target.Register('1', button);
+            button.AddHandler(AccessKeyHandler.AccessKeyPressedEvent, (s, e) => ++raised);
+
+            KeyboardDevice.Instance?
+                .ProcessRawEvent(new Avalonia.Input.Raw.RawKeyEventArgs(KeyboardDevice.Instance!,
+                    0,
+                    root, 
+                    Avalonia.Input.Raw.RawKeyEventType.KeyDown,
+                    Key.LeftAlt,
+                    RawInputModifiers.None,
+                    PhysicalKey.AltLeft,
+                    default
+                    ));
+            Assert.Equal(0, raised);
+
+            KeyboardDevice.Instance?
+                .ProcessRawEvent(new Avalonia.Input.Raw.RawKeyEventArgs(KeyboardDevice.Instance!,
+                    0,
+                    root,
+                    Avalonia.Input.Raw.RawKeyEventType.KeyDown,
+                    Key.D1,
+                    RawInputModifiers.Alt,
+                    PhysicalKey.Digit1,
+                    "1"
+                    ));
+
+            Assert.Equal(1, raised);
+
+            KeyboardDevice.Instance?
+                .ProcessRawEvent(new Avalonia.Input.Raw.RawKeyEventArgs(KeyboardDevice.Instance!,
+                    0,
+                    root,
+                    Avalonia.Input.Raw.RawKeyEventType.KeyUp,
+                    Key.D1,
+                    RawInputModifiers.Alt,
+                    PhysicalKey.Digit1,
+                    "1"
+                    ));
+
+            KeyboardDevice.Instance?
+                .ProcessRawEvent(new Avalonia.Input.Raw.RawKeyEventArgs(KeyboardDevice.Instance!,
+                    0,
+                    root,
+                    Avalonia.Input.Raw.RawKeyEventType.KeyUp,
+                    Key.LeftAlt,
+                    RawInputModifiers.None,
+                    PhysicalKey.AltLeft,
+                    default
+                    ));
+
+            Assert.Equal(1, raised);
+        }
+
         private static void KeyDown(IInputElement target, Key key, KeyModifiers modifiers = KeyModifiers.None)
         {
             target.RaiseEvent(new KeyEventArgs
