@@ -135,11 +135,15 @@ internal class GlSkiaImportedImage : IPlatformRenderInterfaceImportedImage
         
         
         IBitmapImpl rv;
-        using (var surf = TryCreateSurface(textureType, textureId, internalFormat, width, height, topLeft))
+        // HACK: We lie to skia to force it to create a snapshot immediately. This is needed because
+        // otherwise Skia will assume that the textureId can outlive SkSurface and doesn't
+        // actually perform a copy in Snapshot();
+        // This is a behavior change that happened between SkiaSharp 2.88 and 3.x.
+        using (var surf = TryCreateSurface(textureType, textureId, internalFormat, width * 2, height * 2, topLeft))
         {
             if (surf == null)
                 throw new OpenGlException("Unable to consume provided texture");
-            var snapshot = surf.Snapshot();
+            var snapshot = surf.Snapshot(new(0, 0, width, height));
             var context = _gpu.GlContext;
             
             rv = new ImmutableBitmap(snapshot, () =>
