@@ -4,6 +4,7 @@ using System.IO;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Avalonia.Controls.Utils;
 using Avalonia.Platform.Storage;
 using Avalonia.Platform.Storage.FileIO;
 using Avalonia.Win32.Interop;
@@ -13,7 +14,7 @@ using Avalonia.Logging;
 
 namespace Avalonia.Win32
 {
-    internal class Win32StorageProvider : BclStorageProvider
+    internal class Win32StorageProvider(WindowImpl windowImpl) : BclStorageProvider
     {
         private const uint SIGDN_DESKTOPABSOLUTEPARSING = 0x80028000;
 
@@ -21,13 +22,6 @@ namespace Avalonia.Win32
             FILEOPENDIALOGOPTIONS.FOS_PATHMUSTEXIST | FILEOPENDIALOGOPTIONS.FOS_FORCEFILESYSTEM |
             FILEOPENDIALOGOPTIONS.FOS_NOVALIDATE | FILEOPENDIALOGOPTIONS.FOS_NOTESTFILECREATE |
             FILEOPENDIALOGOPTIONS.FOS_DONTADDTORECENT;
-
-        private readonly WindowImpl _windowImpl;
-
-        public Win32StorageProvider(WindowImpl windowImpl)
-        {
-            _windowImpl = windowImpl;
-        }
 
         public override bool CanOpen => true;
 
@@ -37,44 +31,65 @@ namespace Avalonia.Win32
 
         public override async Task<IReadOnlyList<IStorageFolder>> OpenFolderPickerAsync(FolderPickerOpenOptions options)
         {
-            return await ShowFilePicker(
+            var (folders, _) = await ShowFilePicker(
                 true, true,
                 options.AllowMultiple, false,
-                options.Title, options.SuggestedFileName, options.SuggestedStartLocation, null, null,
+                options.Title, options.SuggestedFileName, null, options.SuggestedStartLocation, null, null,
                 f => new BclStorageFolder(new DirectoryInfo(f)))
                 .ConfigureAwait(false);
+            return folders;
         }
 
         public override async Task<IReadOnlyList<IStorageFile>> OpenFilePickerAsync(FilePickerOpenOptions options)
         {
-            return await ShowFilePicker(
+            var (files, _) = await ShowFilePicker(
                 true, false,
                 options.AllowMultiple, false,
-                options.Title, options.SuggestedFileName, options.SuggestedStartLocation,
+                options.Title, options.SuggestedFileName, options.SuggestedFileType, options.SuggestedStartLocation,
                 null, options.FileTypeFilter,
                 f => new BclStorageFile(new FileInfo(f)))
                 .ConfigureAwait(false);
+            return files;
         }
 
         public override async Task<IStorageFile?> SaveFilePickerAsync(FilePickerSaveOptions options)
         {
-            var files = await ShowFilePicker(
+            var (files, _) = await ShowFilePicker(
                 false, false,
                 false, options.ShowOverwritePrompt,
-                options.Title, options.SuggestedFileName, options.SuggestedStartLocation,
+                options.Title, options.SuggestedFileName, options.SuggestedFileType, options.SuggestedStartLocation,
                 options.DefaultExtension, options.FileTypeChoices,
                 f => new BclStorageFile(new FileInfo(f)))
                 .ConfigureAwait(false);
             return files.Count > 0 ? files[0] : null;
         }
 
-        private unsafe Task<IReadOnlyList<TStorageItem>> ShowFilePicker<TStorageItem>(
+        public override async Task<SaveFilePickerResult> SaveFilePickerWithResultAsync(FilePickerSaveOptions options)
+        {
+            var (files, index) = await ShowFilePicker(
+                    false, false,
+                    false, options.ShowOverwritePrompt,
+                    options.Title, options.SuggestedFileName, options.SuggestedFileType, options.SuggestedStartLocation,
+                    options.DefaultExtension, options.FileTypeChoices,
+                    f => new BclStorageFile(new FileInfo(f)))
+                .ConfigureAwait(false);
+            var file = files.Count > 0 ? files[0] : null;
+            var selectedFileType = options.FileTypeChoices?.Count > 0
+                                   && (index > 0 && index <= options.FileTypeChoices.Count) ?
+                options.FileTypeChoices[index - 1] :
+                null;
+
+            return new SaveFilePickerResult(file) { SelectedFileType = selectedFileType };
+        }
+
+        private unsafe Task<(IReadOnlyList<TStorageItem> items, int typeIndex)> ShowFilePicker<TStorageItem>(
             bool isOpenFile,
             bool openFolder,
             bool allowMultiple,
             bool? showOverwritePrompt,
             string? title,
             string? suggestedFileName,
+            FilePickerFileType? suggestedFileType,
             IStorageFolder? folder,
             string? defaultExtension,
             IReadOnlyList<FilePickerFileType>? filters,
@@ -83,7 +98,7 @@ namespace Avalonia.Win32
         {
             return Task.Factory.StartNew(() =>
             {
-                IReadOnlyList<TStorageItem> result = Array.Empty<TStorageItem>();
+                IReadOnlyList<TStorageItem> result = [];
                 try
                 {
                     var clsid = isOpenFile ? UnmanagedMethods.ShellIds.OpenFileDialog : UnmanagedMethods.ShellIds.SaveFileDialog;
@@ -105,12 +120,10 @@ namespace Avalonia.Win32
                     {
                         options &= ~FILEOPENDIALOGOPTIONS.FOS_OVERWRITEPROMPT;
                     }
+
                     frm.SetOptions(options);
 
-                    if (defaultExtension is null)
-                    {
-                        defaultExtension = string.Empty;
-                    }
+                    defaultExtension ??= string.Empty;
 
                     fixed (char* pExt = defaultExtension)
                     {
@@ -136,9 +149,16 @@ namespace Avalonia.Win32
                             frm.SetFileTypes((ushort)count, pFilters);
                             if (count > 0)
                             {
-                                frm.SetFileTypeIndex(0);
+                                // FileTypeIndex is one based, not zero based.
+                                frm.SetFileTypeIndex(1);
                             }
                         }
+                    }
+
+                    if (suggestedFileType != null &&
+                        filters?.IndexOf(suggestedFileType) is { } fi and > -1)
+                    { 
+                        frm.SetFileTypeIndex((uint)(fi + 1));
                     }
 
                     if (folder?.TryGetLocalPath() is { } folderPath)
@@ -153,11 +173,13 @@ namespace Avalonia.Win32
                         }
                     }
 
-                    var showResult = frm.Show(_windowImpl.Handle.Handle);
+                    var showResult = frm.Show(windowImpl.Handle.Handle);
+
+                    var typeIndex = (int)frm.FileTypeIndex;
 
                     if ((uint)showResult == (uint)UnmanagedMethods.HRESULT.E_CANCELLED)
                     {
-                        return result;
+                        return (result, typeIndex);
                     }
                     else if ((uint)showResult != (uint)UnmanagedMethods.HRESULT.S_OK)
                     {
@@ -185,10 +207,10 @@ namespace Avalonia.Win32
                     else if (frm.Result is { } shellItem
                         && GetParsingName(shellItem) is { } singleResult)
                     {
-                        result = new[] { convert(singleResult) };
+                        result = [convert(singleResult)];
                     }
 
-                    return result;
+                    return (result, typeIndex);
                 }
                 catch (COMException ex)
                 {
@@ -197,7 +219,6 @@ namespace Avalonia.Win32
                 }
             }, TaskCreationOptions.LongRunning);
         }
-
 
         private static string? GetParsingName(IShellItem shellItem)
         {
@@ -218,7 +239,7 @@ namespace Avalonia.Win32
                     Marshal.FreeCoTaskMem((IntPtr)pszString);
                 }
             }
-            return default;
+            return null;
         }
 
         private byte[] FiltersToPointer(IReadOnlyList<FilePickerFileType>? filters, out int length)

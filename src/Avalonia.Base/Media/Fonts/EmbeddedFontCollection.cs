@@ -71,9 +71,15 @@ namespace Avalonia.Media.Fonts
 
                     if(matchedKey != key)
                     {
+                        //Create a synthetic glyph typeface. The successfull result will be cached.
                         if (TryCreateSyntheticGlyphTypeface(glyphTypeface, style, weight, stretch, out var syntheticGlyphTypeface))
                         {
                             glyphTypeface = syntheticGlyphTypeface;
+                        }
+                        else
+                        {
+                            //Add the matched glyph typeface to the cache
+                            glyphTypefaces.TryAdd(key, glyphTypeface);
                         }
                     }
 

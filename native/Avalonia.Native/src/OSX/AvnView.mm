@@ -456,13 +456,12 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
     switch(event.buttonNumber)
     {
         case 2:
-        case 3:
             [self mouseEvent:event withType:MiddleButtonDown];
             break;
-        case 4:
+        case 3:
             [self mouseEvent:event withType:XButton1Down];
             break;
-        case 5:
+        case 4:
             [self mouseEvent:event withType:XButton2Down];
             break;
 
@@ -487,13 +486,12 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
     switch(event.buttonNumber)
     {
         case 2:
-        case 3:
             [self mouseEvent:event withType:MiddleButtonUp];
             break;
-        case 4:
+        case 3:
             [self mouseEvent:event withType:XButton1Up];
             break;
-        case 5:
+        case 4:
             [self mouseEvent:event withType:XButton2Up];
             break;
 

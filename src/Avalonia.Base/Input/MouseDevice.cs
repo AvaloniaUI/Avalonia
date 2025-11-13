@@ -18,6 +18,9 @@ namespace Avalonia.Input
     [PrivateApi]
     public class MouseDevice : IMouseDevice, IDisposable
     {
+        private static MouseDevice? _primary;
+        internal static MouseDevice Primary => _primary ??= new MouseDevice();
+
         private int _clickCount;
         private Rect _lastClickRect;
         private ulong _lastClickTime;
@@ -29,6 +32,16 @@ namespace Avalonia.Input
         public MouseDevice(Pointer? pointer = null)
         {
             _pointer = pointer ?? new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
+        }
+
+        internal static TMouseDevice GetOrCreatePrimary<TMouseDevice>() where TMouseDevice : MouseDevice, new()
+        {
+            if (_primary is TMouseDevice device)
+                return device;
+
+            device = new TMouseDevice();
+            _primary = device;
+            return device;
         }
 
         public void ProcessRawEvent(RawInputEventArgs e)
@@ -300,6 +313,8 @@ namespace Avalonia.Input
 
         public void Dispose()
         {
+            System.Diagnostics.Debug.Assert(this != _primary, "Disposing primary mouse device.");
+
             _disposed = true;
             _pointer?.Dispose();
         }

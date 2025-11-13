@@ -6,7 +6,6 @@ using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Rendering.Composition;
@@ -25,15 +24,14 @@ public partial class CompositionPage : UserControl
     public CompositionPage()
     {
         InitializeComponent();
-        AttachAnimatedSolidVisual(this.FindControl<Control>("SolidVisualHost")!);
-        AttachCustomVisual(this.FindControl<Control>("CustomVisualHost")!);
+        AttachAnimatedSolidVisual(SolidVisualHost);
+        AttachCustomVisual(CustomVisualHost);
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
-        this.Get<ItemsControl>("Items").ItemsSource = CreateColorItems();
-
+        Items.ItemsSource = CreateColorItems();
     }
 
     private static List<CompositionPageColorItem> CreateColorItems()

@@ -1,29 +1,21 @@
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
+using Avalonia.Interactivity;
 
 namespace ControlCatalog.Pages
 {
-    public class ButtonsPage : UserControl
+    public partial class ButtonsPage : UserControl
     {
         private int repeatButtonClickCount = 0;
 
         public ButtonsPage()
         {
             InitializeComponent();
-
-            this.Get<RepeatButton>("RepeatButton").Click += OnRepeatButtonClick;
         }
 
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
-
-        public void OnRepeatButtonClick(object? sender, object args)
+        public void OnRepeatButtonClick(object? sender, RoutedEventArgs args)
         {
             repeatButtonClickCount++;
-            var textBlock = this.Get<TextBlock>("RepeatButtonTextBlock");
-            textBlock.Text = $"Repeat Button: {repeatButtonClickCount}";
+            RepeatButtonTextBlock.Text = $"Repeat Button: {repeatButtonClickCount}";
         }
     }
 }
