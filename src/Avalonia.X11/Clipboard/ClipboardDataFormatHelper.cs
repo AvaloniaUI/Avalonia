@@ -67,6 +67,8 @@ internal static class ClipboardDataFormatHelper
 
             if (preferredFormat != null)
                 return atoms.GetAtom(preferredFormat.ToSystemName(AppPrefix));
+            else
+                return IntPtr.Zero;
         }
 
         var systemName = format.ToSystemName(AppPrefix);

@@ -43,7 +43,7 @@ internal sealed class ClipDataItemToDataTransferItemWrapper(ClipData.Item item, 
 
             if (file is AndroidStorageFile storageFile)
             {
-                using var stream = storageFile.OpenReadAsync().Result;
+                using var stream = storageFile.OpenRead();
 
                 if (stream != null)
                 {
