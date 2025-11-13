@@ -43,10 +43,7 @@ namespace Avalonia.Animation
             {
                 return new Cue(res / 100d);
             }
-            else
-            {
-                throw new FormatException($"Invalid Cue string \"{value}\"");
-            }
+            throw new FormatException($"Invalid Cue string \"{value}\"");
         }
 
         /// <summary>
