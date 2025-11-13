@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Avalonia.Media.Imaging;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition;
@@ -83,6 +82,8 @@ internal class GlSkiaImportedImage : IPlatformRenderInterfaceImportedImage
     private readonly GlSkiaGpu _gpu;
     private readonly IGlExternalImageTexture? _image;
 
+    private SnapshotBuffer? _snapshotBuffer;
+
     public GlSkiaImportedImage(GlSkiaGpu gpu, IGlExternalImageTexture image)
     {
         _gpu = gpu;
@@ -97,6 +98,9 @@ internal class GlSkiaImportedImage : IPlatformRenderInterfaceImportedImage
 
     public void Dispose()
     {
+        _snapshotBuffer?.Dispose();
+        _snapshotBuffer = null;
+
         _image?.Dispose();
         _sharedTexture?.Dispose(_gpu.GlContext);
     }
@@ -109,19 +113,21 @@ internal class GlSkiaImportedImage : IPlatformRenderInterfaceImportedImage
             _ => SKColorType.Rgba8888
         };
 
-    SKSurface? TryCreateSurface(int target, int textureId, int format, int width, int height, bool topLeft)
+    SKImage? TryCreateImage(int target, int textureId, int format, int width, int height, bool topLeft)
     {
-        var origin = topLeft ? GRSurfaceOrigin.TopLeft : GRSurfaceOrigin.BottomLeft; 
+        var origin = topLeft ? GRSurfaceOrigin.TopLeft : GRSurfaceOrigin.BottomLeft;
+
         using var texture = new GRBackendTexture(width, height, false,
             new GRGlTextureInfo((uint)target, (uint)textureId, (uint)format));
-        var surf = SKSurface.Create(_gpu.GrContext, texture, origin, SKColorType.Rgba8888);
-        if (surf != null)
-            return surf;
-        
+
+        var image = SKImage.FromTexture(_gpu.GrContext, texture, origin, SKColorType.Rgba8888);
+        if (image is not null)
+            return image;
+
         using var unformatted = new GRBackendTexture(width, height, false,
             new GRGlTextureInfo((uint)GlConsts.GL_TEXTURE_2D, (uint)textureId));
-        
-        return SKSurface.Create(_gpu.GrContext, unformatted, origin, SKColorType.Rgba8888);
+
+        return SKImage.FromTexture(_gpu.GrContext, unformatted, origin, SKColorType.Rgba8888);
     }
     
     IBitmapImpl TakeSnapshot()
@@ -132,40 +138,71 @@ internal class GlSkiaImportedImage : IPlatformRenderInterfaceImportedImage
         var textureId = _image?.TextureId ?? _sharedTexture!.TextureId;
         var topLeft = _image?.Properties.TopLeftOrigin ?? false;
         var textureType = _image?.TextureType ?? GlConsts.GL_TEXTURE_2D;
-        
-        
-        IBitmapImpl rv;
-        using (var surf = TryCreateSurface(textureType, textureId, internalFormat, width, height, topLeft))
-        {
-            if (surf == null)
-                throw new OpenGlException("Unable to consume provided texture");
-            var snapshot = surf.Snapshot();
-            var context = _gpu.GlContext;
-            
-            rv = new ImmutableBitmap(snapshot, () =>
-            {
-                IDisposable? restoreContext = null;
-                try
-                {
-                    restoreContext = context.EnsureCurrent();
-                }
-                catch
-                {
-                    // Ignore, context is likely dead
-                }
 
-                using (restoreContext)
-                {
-                    snapshot.Dispose();
-                }
-            });
-        }
+        using var image = TryCreateImage(textureType, textureId, internalFormat, width, height, topLeft);
+        if (image is null)
+            throw new OpenGlException("Unable to consume provided texture");
+
+        var snapshotBuffer = RentSnapshotBuffer(width, height);
+
+        var snapshotCanvas = snapshotBuffer.Surface.Canvas;
+        snapshotCanvas.Clear();
+        snapshotCanvas.DrawImage(image, SKRect.Create(width, height));
+        snapshotCanvas.Flush();
+
+        var snapshotImage = snapshotBuffer.Surface.Snapshot();
+        var context = _gpu.GlContext;
+
+        var rv = new ImmutableBitmap(snapshotImage, () =>
+        {
+            IDisposable? restoreContext = null;
+            try
+            {
+                restoreContext = context.EnsureCurrent();
+            }
+            catch
+            {
+                // Ignore, context is likely dead
+            }
+
+            using (restoreContext)
+            {
+                snapshotImage.Dispose();
+                ReturnSnapshotBuffer(snapshotBuffer);
+            }
+        });
 
         _gpu.GrContext.Flush();
         _gpu.GlContext.GlInterface.Flush();
         return rv;
     }
-    
+
+    private SnapshotBuffer RentSnapshotBuffer(int width, int height)
+    {
+        if (_snapshotBuffer is not null && (_snapshotBuffer.Width != width || _snapshotBuffer.Height != height))
+        {
+            _snapshotBuffer.Dispose();
+            _snapshotBuffer = null;
+        }
+
+        if (_snapshotBuffer is not null)
+        {
+            var result = _snapshotBuffer;
+            _snapshotBuffer = null;
+            return result;
+        }
+
+        return new SnapshotBuffer(width, height, SKSurface.Create(new SKImageInfo(width, height, SKColorType.Bgra8888)));
+    }
+
+    private void ReturnSnapshotBuffer(SnapshotBuffer buffer)
+    {
+        if (_snapshotBuffer is null)
+            _snapshotBuffer = buffer;
+        else
+            buffer.Dispose();
+    }
+
     public IBitmapImpl SnapshotWithKeyedMutex(uint acquireIndex, uint releaseIndex)
     {
         if (_image is null)
@@ -239,5 +276,16 @@ internal class GlSkiaImportedImage : IPlatformRenderInterfaceImportedImage
     {
         using (_gpu.EnsureCurrent())
             return TakeSnapshot();
+    }
+
+    private sealed class SnapshotBuffer(int width, int height, SKSurface surface)
+        : IDisposable
+    {
+        public int Width { get; } = width;
+        public int Height { get; } = height;
+        public SKSurface Surface { get; } = surface;
+
+        public void Dispose()
+            => Surface.Dispose();
     }
 }
