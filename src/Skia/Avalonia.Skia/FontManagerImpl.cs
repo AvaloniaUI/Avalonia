@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
-using System.Text.RegularExpressions;
 using Avalonia.Media;
 using Avalonia.Platform;
 using SkiaSharp;
@@ -35,9 +34,9 @@ namespace Avalonia.Skia
         [ThreadStatic] private static string[]? t_languageTagBuffer;
 
         public bool TryMatchCharacter(int codepoint, FontStyle fontStyle,
-            FontWeight fontWeight, FontStretch fontStretch, CultureInfo? culture, out Typeface fontKey)
+            FontWeight fontWeight, FontStretch fontStretch, string? familyName, CultureInfo? culture, out Typeface fontKey)
         {
-            if (!TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, culture, out SKTypeface? skTypeface))
+            if (!TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, familyName, culture, out SKTypeface? skTypeface))
             {
                 fontKey = default;
 
@@ -61,10 +60,11 @@ namespace Avalonia.Skia
             FontStyle fontStyle,
             FontWeight fontWeight,
             FontStretch fontStretch,
+            string? familyName,
             CultureInfo? culture,
             [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
         {
-            if (!TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, culture, out SKTypeface? skTypeface))
+            if (!TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, familyName, culture, out SKTypeface? skTypeface))
             {
                 glyphTypeface = null;
 
@@ -81,6 +81,7 @@ namespace Avalonia.Skia
             FontStyle fontStyle,
             FontWeight fontWeight,
             FontStretch fontStretch,
+            string? familyName,
             CultureInfo? culture,
             [NotNullWhen(true)] out SKTypeface? skTypeface)
         {
@@ -110,7 +111,7 @@ namespace Avalonia.Skia
             t_languageTagBuffer ??= new string[1];
             t_languageTagBuffer[0] = culture.Name;
 
-            skTypeface = _skFontManager.MatchCharacter(null, skFontStyle, t_languageTagBuffer, codepoint);
+            skTypeface = _skFontManager.MatchCharacter(string.IsNullOrEmpty(familyName) ? null : familyName, skFontStyle, t_languageTagBuffer, codepoint);
 
             return skTypeface != null;
         }

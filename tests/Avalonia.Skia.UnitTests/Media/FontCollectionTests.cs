@@ -18,33 +18,12 @@ namespace Avalonia.Skia.UnitTests.Media
         private const string NotoMono =
           "resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests";
 
-        [InlineData("Hello World 6", "Hello World 6", FontStyle.Normal, FontWeight.Normal)]
-        [InlineData("Hello World Italic", "Hello World", FontStyle.Italic, FontWeight.Normal)]
-        [InlineData("Hello World Italic Bold", "Hello World", FontStyle.Italic, FontWeight.Bold)]
-        [InlineData("FontAwesome 6 Free Regular", "FontAwesome 6 Free", FontStyle.Normal, FontWeight.Normal)]
-        [InlineData("FontAwesome 6 Free Solid", "FontAwesome 6 Free", FontStyle.Normal, FontWeight.Solid)]
-        [InlineData("FontAwesome 6 Brands", "FontAwesome 6 Brands", FontStyle.Normal, FontWeight.Normal)]
-        [Theory]
-        public void Should_Get_Implicit_Typeface(string input, string familyName, FontStyle style, FontWeight weight)
-        {
-            var typeface = new Typeface(input);
-
-            var result = FontCollectionBase.GetImplicitTypeface(typeface, out var normalizedFamilyName);
-
-            Assert.Equal(familyName, normalizedFamilyName);
-            Assert.Equal(style, result.Style);
-            Assert.Equal(weight, result.Weight);
-            Assert.Equal(FontStretch.Normal, result.Stretch);
-        }
-
         [Win32Fact("Relies on some installed font family")]
         public void Should_Cache_Nearest_Match()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
             {
-                var fontManager = FontManager.Current;
-
-                var fontCollection = new TestSystemFontCollection(FontManager.Current);
+                var fontCollection = new TestSystemFontCollection(FontManager.Current.PlatformImpl);
 
                 Assert.True(fontCollection.TryGetGlyphTypeface("Arial", FontStyle.Normal, FontWeight.ExtraBlack, FontStretch.Normal, out var glyphTypeface));
 
@@ -62,9 +41,8 @@ namespace Avalonia.Skia.UnitTests.Media
 
         private class TestSystemFontCollection : SystemFontCollection
         {
-            public TestSystemFontCollection(FontManager fontManager) : base(fontManager)
+            public TestSystemFontCollection(IFontManagerImpl platformImpl) : base(platformImpl)
             {
-                
             }
 
             public IDictionary<string, ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>> GlyphTypefaceCache => _glyphTypefaceCache;
@@ -80,8 +58,6 @@ namespace Avalonia.Skia.UnitTests.Media
                 var fallback = new FontFallback { FontFamily = new FontFamily("Arial"), UnicodeRange = new UnicodeRange('A', 'A') };
 
                 var fontCollection = new CustomizableFontCollection(source, source, new[] { fallback  });
-
-                fontCollection.Initialize(FontManager.Current.PlatformImpl);
 
                 Assert.True(fontCollection.TryMatchCharacter('A', FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, null, null, out var match));
 
@@ -99,8 +75,6 @@ namespace Avalonia.Skia.UnitTests.Media
                 var ignorable = new FontFamily(new Uri(NotoMono, UriKind.Absolute), "Noto Mono");
 
                 var fontCollection = new CustomizableFontCollection(key, key, null, new[] { ignorable });
-
-                fontCollection.Initialize(FontManager.Current.PlatformImpl);
 
                 var typeface = new Typeface(ignorable);
 

@@ -120,29 +120,29 @@ namespace Avalonia.Skia
 
                 foreach (var nameRecord in _nameTable)
                 {
-                    if(nameRecord.NameID == KnownNameIds.FontFamilyName)
+                    var languageId = nameRecord.LanguageID == 0 ?
+                        (ushort)CultureInfo.InvariantCulture.LCID :
+                        nameRecord.LanguageID;
+                    
+                    switch (nameRecord.NameID)
                     {
-                        if (nameRecord.Platform != PlatformIDs.Windows || nameRecord.LanguageID == 0)
+                        case KnownNameIds.FontFamilyName:
                         {
-                            continue;
-                        }
+                            if (!familyNames.ContainsKey(languageId))
+                            {
+                                familyNames[languageId] = nameRecord.Value;
+                            }
 
-                        if (!familyNames.ContainsKey(nameRecord.LanguageID))
-                        {
-                            familyNames[nameRecord.LanguageID] = nameRecord.Value;
+                            break;
                         }
-                    }
-
-                    if(nameRecord.NameID == KnownNameIds.FontSubfamilyName)
-                    {
-                        if (nameRecord.Platform != PlatformIDs.Windows || nameRecord.LanguageID == 0)
+                        case KnownNameIds.FontSubfamilyName:
                         {
-                            continue;
-                        }
+                            if (!faceNames.ContainsKey(languageId))
+                            {
+                                faceNames[languageId] = nameRecord.Value;
+                            }
 
-                        if (!faceNames.ContainsKey(nameRecord.LanguageID))
-                        {
-                            faceNames[nameRecord.LanguageID] = nameRecord.Value;
+                            break;
                         }
                     }
                 }

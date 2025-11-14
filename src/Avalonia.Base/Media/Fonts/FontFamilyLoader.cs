@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Avalonia.Platform;
 using Avalonia.Utilities;
@@ -8,6 +9,11 @@ namespace Avalonia.Media.Fonts
 {
     public static class FontFamilyLoader
     {
+        private static readonly HashSet<string> FontExtensions = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ".ttf", ".otf", ".ttc"
+        };
+
         /// <summary>
         /// Loads all font assets that belong to the specified <see cref="FontFamilyKey"/>
         /// </summary>
@@ -17,7 +23,7 @@ namespace Avalonia.Media.Fonts
         {
             if (source.IsAvares() || source.IsAbsoluteResm())
             {
-                return IsFontTtfOrOtf(source) ?
+                return IsFontSource(source) ?
                     GetFontAssetsByExpression(source) :
                     GetFontAssetsBySource(source);
             }
@@ -25,6 +31,10 @@ namespace Avalonia.Media.Fonts
             return Enumerable.Empty<Uri>();
         }
 
+        public static bool IsFontFile(string filePath)
+        {
+            return FontExtensions.Contains(Path.GetExtension(filePath));
+        }
 
         /// <summary>
         /// Searches for font assets at a given location and returns a quantity of found assets
@@ -35,7 +45,7 @@ namespace Avalonia.Media.Fonts
         {
             var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
             var availableAssets = assetLoader.GetAssets(source, null);
-            return availableAssets.Where(x => IsFontTtfOrOtf(x));
+            return availableAssets.Where(x => IsFontSource(x));
         }
 
         /// <summary>
@@ -97,11 +107,10 @@ namespace Avalonia.Media.Fonts
                    && path.EndsWith(fileExtension, StringComparison.OrdinalIgnoreCase);
         }
 
-        private static bool IsFontTtfOrOtf(Uri uri)
+        internal static bool IsFontSource(Uri uri)
         {
             var sourceWithoutArguments = GetSubString(uri.OriginalString, '?');
-            return sourceWithoutArguments.EndsWith(".ttf", StringComparison.OrdinalIgnoreCase)
-                   || sourceWithoutArguments.EndsWith(".otf", StringComparison.OrdinalIgnoreCase);
+            return IsFontFile(sourceWithoutArguments);
         }
 
         private static (string fileNameWithoutExtension, string extension) GetFileNameAndExtension(
