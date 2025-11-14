@@ -1,10 +1,13 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using Android.App;
 using Android.Content;
 using Avalonia.Android.Platform.Storage;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.Logging;
 using Avalonia.Media.Imaging;
+using Avalonia.Platform.Storage;
 
 namespace Avalonia.Android.Platform;
 
@@ -16,61 +19,30 @@ namespace Avalonia.Android.Platform;
 internal sealed class ClipDataItemToDataTransferItemWrapper(ClipData.Item item, ClipDataToDataTransferWrapper owner)
     : PlatformDataTransferItem
 {
-    private readonly ClipDataToDataTransferWrapper _owner = owner;
-
     protected override DataFormat[] ProvideFormats()
-        => _owner.Formats; // There's no "format per item", assume each item handle all formats
+        => owner.Formats; // There's no "format per item", assume each item handle all formats
 
     protected override object? TryGetRawCore(DataFormat format)
     {
         if (DataFormat.Text.Equals(format))
-            return item.CoerceToText(_owner.Context);
+            return item.CoerceToText(owner.Context);
 
         if (format is DataFormat<string>)
-            return TryGetAsString();
+            return TryGetString();
 
         if (DataFormat.File.Equals(format))
-        {
-            return item.Uri is { Scheme: "file" or "content" } fileUri && _owner.Context is Activity activity ?
-                    AndroidStorageFile.CreateItem(activity, fileUri) :
-                    null;
-        }
-        else if (DataFormat.Bitmap.Equals(format))
-        {
-            var file = item.Uri is { Scheme: "file" or "content" } fileUri && _owner.Context is Activity activity ?
-                    AndroidStorageFile.CreateItem(activity, fileUri) :
-                    null;
+            return TryGetStorageItem();
 
-            if (file is AndroidStorageFile storageFile)
-            {
-                using var stream = storageFile.OpenRead();
+        if (DataFormat.Bitmap.Equals(format))
+            return TryGetBitmap();
 
-                if (stream != null)
-                {
-                    return new Bitmap(stream);
-                }
-            }
-        }
-        else if (format is DataFormat<byte[]>)
-        {
-            var file = item.Uri is { Scheme: "file" or "content" } fileUri && _owner.Context is Activity activity ?
-                    AndroidStorageFile.CreateItem(activity, fileUri) :
-                    null;
-
-            if (file is AndroidStorageFile storageFile)
-            {
-                using var stream = storageFile.OpenRead();
-
-                using var mem = new MemoryStream();
-                stream.CopyTo(mem);
-                return mem.ToArray();
-            }
-        }
+        if (format is DataFormat<byte[]>)
+            return TryGetBytes();
 
         return null;
     }
 
-    private string? TryGetAsString()
+    private string? TryGetString()
     {
         if (item.Text is { } text)
             return text;
@@ -83,6 +55,53 @@ internal sealed class ClipDataItemToDataTransferItemWrapper(ClipData.Item item, 
 
         if (item.Intent is { } intent)
             return intent.ToUri(IntentUriType.Scheme);
+
+        return null;
+    }
+
+    private IStorageItem? TryGetStorageItem()
+        => item.Uri is { Scheme: "file" or "content" } fileUri && owner.Context is Activity activity ?
+            AndroidStorageItem.CreateItem(activity, fileUri) :
+            null;
+
+    private object? TryGetBitmap()
+    {
+        try
+        {
+            if (TryGetStorageItem() is AndroidStorageFile storageFile)
+            {
+                using var stream = storageFile.OpenRead();
+
+                return new Bitmap(stream);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.TryGet(LogEventLevel.Warning, LogArea.AndroidPlatform)
+                ?.Log(this, "Could not get bitmap from clipboard: {Error}", ex.Message);
+        }
+
+        return null;
+    }
+
+    private object? TryGetBytes()
+    {
+        try
+        {
+            if (TryGetStorageItem() is AndroidStorageFile storageFile)
+            {
+                using var stream = storageFile.OpenRead();
+
+                using var mem = new MemoryStream();
+                stream.CopyTo(mem);
+                return mem.ToArray();
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.TryGet(LogEventLevel.Warning, LogArea.AndroidPlatform)
+                ?.Log(this, "Could not get bytes from clipboard: {Error}", ex.Message);
+        }
 
         return null;
     }
