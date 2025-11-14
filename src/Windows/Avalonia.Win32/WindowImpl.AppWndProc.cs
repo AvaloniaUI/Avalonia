@@ -60,9 +60,13 @@ namespace Avalonia.Win32
                     {
                         if (ToInt32(wParam) == 1 && (_windowProperties.Decorations == SystemDecorations.None || _isClientAreaExtended))
                         {
-                            return IntPtr.Zero;
+                            // Only extend into the header, making sure resize works with left/right/bottom borders
+                            var paramsObj = Marshal.PtrToStructure<NCCALCSIZE_PARAMS>(lParam);
+                            var rect = paramsObj.rgrc[0];
+                            rect.top -= (int)_extendedMargins.Top;
+                            paramsObj.rgrc[0] = rect;
+                            Marshal.StructureToPtr(paramsObj, lParam, false);
                         }
-
                         break;
                     }
 
