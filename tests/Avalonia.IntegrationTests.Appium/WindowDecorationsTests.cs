@@ -1,5 +1,6 @@
 using System;
 using System.Threading;
+using OpenQA.Selenium.Appium.Android;
 using Xunit;
 
 namespace Avalonia.IntegrationTests.Appium;
@@ -51,7 +52,7 @@ public class WindowDecorationsTests : TestBase, IDisposable
         var systemChrome = currentWindow.GetSystemChromeButtons();
         var clientChrome = currentWindow.GetClientChromeButtons();
 
-        AssertSystemChrome(systemChrome, clientChrome, false);
+        AssertSystemChrome(systemChrome, clientChrome, 20, false);
 
         var props = Session.FindElementByAccessibilityId("WindowDecorationProperties");
         Assert.Equal($"0 0 False", props.Text);
@@ -98,7 +99,7 @@ public class WindowDecorationsTests : TestBase, IDisposable
         var systemChrome = currentWindow.GetSystemChromeButtons();
         var clientChrome = currentWindow.GetClientChromeButtons();
 
-        AssertSystemChrome(systemChrome, clientChrome, true);
+        AssertSystemChrome(systemChrome, clientChrome, titleBarHeight, true);
 
         var props = Session.FindElementByAccessibilityId("WindowDecorationProperties");
         if (titleBarHeight > 0)
@@ -143,7 +144,7 @@ public class WindowDecorationsTests : TestBase, IDisposable
             var systemChrome = secondaryWindow.GetSystemChromeButtons();
             var clientChrome = secondaryWindow.GetClientChromeButtons();
 
-            AssertSystemChrome(systemChrome, clientChrome, true);
+            AssertSystemChrome(systemChrome, clientChrome, titleBarHeight, true);
         }
     }
 
@@ -167,7 +168,7 @@ public class WindowDecorationsTests : TestBase, IDisposable
         }
     }
 
-    private void AssertSystemChrome(WindowChrome systemChrome, WindowChrome clientChrome, bool isExtended)
+    private void AssertSystemChrome(WindowChrome systemChrome, WindowChrome clientChrome, int titleBarHeight, bool isExtended)
     {
         // At least some server chrome buttons are shown.
         Assert.True(systemChrome.IsAnyButtonEnabled);
@@ -180,7 +181,15 @@ public class WindowDecorationsTests : TestBase, IDisposable
         // System chrome is always 0px height, when client area is extended.
         if (isExtended)
         {
-            Assert.True(systemChrome.TitleBarHeight is -1 or 0);
+            if (titleBarHeight is > 0 and < 28)
+            {
+                var expected = 28 - titleBarHeight;
+                Assert.Equal(expected, systemChrome.TitleBarHeight);
+            }
+            else
+            {
+                Assert.True(systemChrome.TitleBarHeight is -1 or 0);
+            }
         }
         // Can't get titlebar height on macOS.
         else if (!OperatingSystem.IsMacOS())

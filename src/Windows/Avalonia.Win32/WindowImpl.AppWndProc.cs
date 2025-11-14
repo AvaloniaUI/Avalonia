@@ -63,7 +63,7 @@ namespace Avalonia.Win32
                             // Only extend into the header, making sure resize works with left/right/bottom borders
                             var paramsObj = Marshal.PtrToStructure<NCCALCSIZE_PARAMS>(lParam);
                             var rect = paramsObj.rgrc[0];
-                            rect.top -= (int)_extendedMargins.Top;
+                            rect.top -= (int)Math.Min(_extendedMargins.Top * RenderScaling, (int)(32 * RenderScaling));
                             paramsObj.rgrc[0] = rect;
                             Marshal.StructureToPtr(paramsObj, lParam, false);
                         }

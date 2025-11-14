@@ -27,6 +27,11 @@
                   IsChecked="{Binding SystemTitleBarEnabled}"
                   DockPanel.Dock="Left" />
 
+        <TextBlock Text="{Binding TitleBarHeight, StringFormat=' {0:F0}'}"
+                   VerticalAlignment="Center"
+                   DockPanel.Dock="Right"
+                   MinWidth="30"/>
+
         <Slider Minimum="-1"
                 Maximum="200"
                 Value="{Binding TitleBarHeight}"
