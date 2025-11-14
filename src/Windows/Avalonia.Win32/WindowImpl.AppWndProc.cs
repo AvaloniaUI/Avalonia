@@ -60,6 +60,12 @@ namespace Avalonia.Win32
                     {
                         if (ToInt32(wParam) == 1 && (_windowProperties.Decorations == SystemDecorations.None || _isClientAreaExtended))
                         {
+                            // Keep previous behavior for less than title bar size.
+                            if (_extendedMargins.Top is >= 0 and < 32)
+                            {
+                                return IntPtr.Zero;
+                            }
+
                             // Only extend into the header, making sure resize works with left/right/bottom borders
                             var paramsObj = Marshal.PtrToStructure<NCCALCSIZE_PARAMS>(lParam);
                             var rect = paramsObj.rgrc[0];
