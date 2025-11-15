@@ -411,12 +411,9 @@ namespace Avalonia.Controls.Primitives
         {
             control.TemplatedParent = templatedParent;
 
-            var children = control.LogicalChildren;
-            var count = children.Count;
-
-            for (var i = 0; i < count; i++)
+            foreach (var s in control.LogicalChildren)
             {
-                if (children[i] is StyledElement child && child.TemplatedParent is null)
+                if (s is StyledElement child && child.TemplatedParent is null)
                 {
                     ApplyTemplatedParent(child, templatedParent);
                 }
