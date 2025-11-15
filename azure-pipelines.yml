@@ -2,12 +2,12 @@ jobs:
 
 - job: GetPRNumber
   pool:
-    vmImage: 'ubuntu-22.04'
+    vmImage: 'ubuntu-24.04'
   variables:
     SolutionDir: '$(Build.SourcesDirectory)'
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET 8.0 SDK'
+    displayName: 'Use .NET 10.0 SDK'
     inputs:
       packageType: sdk
       useGlobalJson: true
@@ -23,16 +23,16 @@ jobs:
       
 - job: Linux
   pool:
-    vmImage: 'ubuntu-22.04'
+    vmImage: 'ubuntu-24.04'
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET 6.0 Runtime'
+    displayName: 'Use .NET 8.0 Runtime'
     inputs:
       packageType: runtime
-      version: 6.0.x
+      version: 8.0.x
 
   - task: UseDotNet@2
-    displayName: 'Use .NET 8.0 SDK'
+    displayName: 'Use .NET 10.0 SDK'
     inputs:
       packageType: sdk
       useGlobalJson: true
@@ -62,16 +62,16 @@ jobs:
   variables:
     SolutionDir: '$(Build.SourcesDirectory)'
   pool:
-    vmImage: 'macos-13'
+    vmImage: 'macos-15'
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET 6.0 Runtime'
+    displayName: 'Use .NET 8.0 Runtime'
     inputs:
       packageType: runtime
-      version: 6.0.x
+      version: 8.0.x
 
   - task: UseDotNet@2
-    displayName: 'Use .NET 8.0 SDK'
+    displayName: 'Use .NET 10.0 SDK'
     inputs:
       packageType: sdk
       useGlobalJson: true
@@ -95,11 +95,11 @@ jobs:
     inputs:
       actions: 'build'
       scheme: ''
-      sdk: 'macosx14.2'
+      sdk: 'macosx26.0'
       configuration: 'Release'
       xcWorkspacePath: '**/*.xcodeproj/project.xcworkspace'
       xcodeVersion: 'specifyPath' # Options: 8, 9, default, specifyPath
-      xcodeDeveloperDir: '/Applications/Xcode_15.2.app/Contents/Developer'
+      xcodeDeveloperDir: '/Applications/Xcode_26.0.app/Contents/Developer'
       args: '-derivedDataPath ./'
 
   - task: CmdLine@2
@@ -134,18 +134,18 @@ jobs:
 
 - job: Windows
   pool:
-    vmImage: 'windows-2022'
+    vmImage: 'windows-2025'
   variables:
     SolutionDir: '$(Build.SourcesDirectory)'
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET 6.0 Runtime'
+    displayName: 'Use .NET 8.0 Runtime'
     inputs:
       packageType: runtime
-      version: 6.0.x
+      version: 8.0.x
 
   - task: UseDotNet@2
-    displayName: 'Use .NET 8.0 SDK'
+    displayName: 'Use .NET 10.0 SDK'
     inputs:
       packageType: sdk
       useGlobalJson: true
@@ -160,7 +160,7 @@ jobs:
     displayName: 'Install Nuke'
     inputs:
       script: |
-       dotnet tool install --global Nuke.GlobalTool --version 6.2.1 
+       dotnet tool install --global Nuke.GlobalTool --version 9.0.4 
 
   - task: CmdLine@2
     displayName: 'Run Nuke'

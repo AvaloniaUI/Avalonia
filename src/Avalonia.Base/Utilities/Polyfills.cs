@@ -33,11 +33,11 @@ namespace System.Diagnostics.CodeAnalysis
     
     struct S
     {
-        int field; 
+        int _field;
 
         // Okay: `field` has the ref-safe-to-escape of `this` which is *calling method* because 
         // it is a `ref`
-        [UnscopedRef] ref int Prop1 => ref field;
+        [UnscopedRef] ref int Prop1 => ref _field;
     }
 }
 #endif

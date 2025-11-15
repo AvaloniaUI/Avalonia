@@ -16,6 +16,7 @@
     <Compile Include="..\..\..\src\Markup\Avalonia.Markup.Xaml.Loader\CompilerDynamicDependencies.cs" />
     <Compile Include="..\..\..\src\Avalonia.Base\Compatibility\NullableAttributes.cs" Link="Compatibility\NullableAttributes.cs" />
     <Compile Include="..\..\..\src\Avalonia.Base\Compatibility\TrimmingAttributes.cs" Link="Compatibility\TrimmingAttributes.cs" />
+    <Compile Include="..\..\..\src\Avalonia.Base\Diagnostics\TrimmingMessages.cs" Link="Diagnostics/AvaloniaTrimmingMessages.cs" />
     <Compile Include="..\..\Shared\StringCompatibilityExtensions.cs" Link="Compatibility\StringCompatibilityExtensions.cs" />
     <Compile Include="..\..\..\src\Shared\IsExternalInit.cs" Link="Compatibility\IsExternalInit.cs" />
   </ItemGroup>

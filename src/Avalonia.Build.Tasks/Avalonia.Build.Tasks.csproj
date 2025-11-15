@@ -128,6 +128,7 @@
       <Compile Include="../Avalonia.Base/Compatibility/NullableAttributes.cs" Link="Compatibility/NullableAttributes.cs" />
       <Compile Include="../Avalonia.Base/Compatibility/TrimmingAttributes.cs" Link="Compatibility/TrimmingAttributes.cs" />
       <Compile Include="../Avalonia.Base/Utilities/SpanHelpers.cs" Link="Utilities/SpanHelpers.cs" />
+      <Compile Include="../Avalonia.Base/Diagnostics/TrimmingMessages.cs" Link="Diagnostics/TrimmingMessages.cs" />
       <Compile Include="../Shared/StringCompatibilityExtensions.cs" Link="Compatibility/StringCompatibilityExtensions.cs" />
       <Compile Include="../Shared/IsExternalInit.cs" Link="Compatibility/IsExternalInit.cs" />
       <PackageReference Include="Mono.Cecil" Version="0.11.5" />

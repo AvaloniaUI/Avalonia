@@ -241,7 +241,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
                 => RootObject;
 
             public IEnumerable<object> Parents
-                => _parentResourceNodes.Reverse();
+                => _parentResourceNodes.AsEnumerable().Reverse();
 
             public IReadOnlyList<object> DirectParentsStack
                 => _parentResourceNodes;

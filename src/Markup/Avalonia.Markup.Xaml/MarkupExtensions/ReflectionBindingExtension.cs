@@ -9,6 +9,9 @@ using System.Globalization;
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
     [RequiresUnreferencedCode(TrimmingMessages.ReflectionBindingRequiresUnreferencedCodeMessage)]
+#if NET8_0_OR_GREATER
+    [RequiresDynamicCode(TrimmingMessages.ReflectionBindingRequiresDynamicCodeMessage)]
+#endif
     public class ReflectionBindingExtension
     {
         public ReflectionBindingExtension()

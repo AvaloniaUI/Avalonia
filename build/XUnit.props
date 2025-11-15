@@ -8,7 +8,7 @@
     <PackageReference Include="xunit.runner.console" Version="2.9.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" Condition="'$(TargetFramework)' != 'netstandard2.0'" />
     <PackageReference Include="Xunit.SkippableFact" Version="1.4.13" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.0" />
   </ItemGroup>
   <PropertyGroup>
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)\avalonia.snk</AssemblyOriginatorKeyFile>
