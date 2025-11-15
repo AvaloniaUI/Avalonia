@@ -42,7 +42,7 @@ namespace Avalonia.Media.Fonts
         }
 
         public override bool TryGetGlyphTypeface(string familyName, FontStyle style, FontWeight weight,
-            FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
+            FontStretch stretch, [NotNullWhen(true)] out GlyphTypeface? glyphTypeface)
         {
             glyphTypeface = null;
 
@@ -65,19 +65,21 @@ namespace Avalonia.Media.Fonts
             }
 
             glyphTypefaces ??= _glyphTypefaceCache.GetOrAdd(familyName,
-                (_) => new ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>());
+                (_) => new ConcurrentDictionary<FontCollectionKey, GlyphTypeface?>());
 
             //Try to create the glyph typeface via system font manager
             if (!_fontManager.PlatformImpl.TryCreateGlyphTypeface(familyName, style, weight, stretch,
-                    out glyphTypeface))
+                    out var platformTypeface))
             {
                 glyphTypefaces.TryAdd(key, null);
 
                 return false;
             }
 
+            glyphTypeface = new GlyphTypeface(platformTypeface, FontSimulations.None);
+
             var createdKey =
-                new FontCollectionKey(glyphTypeface.Style, glyphTypeface.Weight, glyphTypeface.Stretch);
+                new FontCollectionKey(platformTypeface.Style, platformTypeface.Weight, platformTypeface.Stretch);
 
             //No exact match
             if (createdKey != key)
@@ -130,15 +132,17 @@ namespace Avalonia.Media.Fonts
             {
                 var stream = assetLoader.Open(fontAsset);
 
-                if (!fontManager.TryCreateGlyphTypeface(stream, FontSimulations.None, out var glyphTypeface))
+                if (!fontManager.TryCreateGlyphTypeface(stream, FontSimulations.None, out var platformTypeface))
                 {
                     continue;
                 }
 
+                var glyphTypeface = new GlyphTypeface(platformTypeface, FontSimulations.None);
+
                 //Add TypographicFamilyName to the cache
-                if (glyphTypeface is IGlyphTypeface2 glyphTypeface2 && !string.IsNullOrEmpty(glyphTypeface2.TypographicFamilyName))
+                if (!string.IsNullOrEmpty(glyphTypeface.TypographicFamilyName))
                 {
-                    AddGlyphTypefaceByFamilyName(glyphTypeface2.TypographicFamilyName, glyphTypeface);
+                    AddGlyphTypefaceByFamilyName(glyphTypeface.TypographicFamilyName, glyphTypeface);
                 }
 
                 AddGlyphTypefaceByFamilyName(glyphTypeface.FamilyName, glyphTypeface);
@@ -147,45 +151,47 @@ namespace Avalonia.Media.Fonts
             return;
         }
 
-        public bool TryGetFamilyTypefaces(string familyName, [NotNullWhen(true)] out IReadOnlyList<Typeface>? familyTypefaces)
-        {
-            familyTypefaces = null;
+        public bool TryGetFamilyTypefaces(string familyName, [NotNullWhen(true)] out IReadOnlyList<Typeface>? familyTypefaces) =>
+            _fontManager.PlatformImpl.TryGetFamilyTypefaces(familyName, out familyTypefaces);
 
-            if (_fontManager.PlatformImpl is IFontManagerImpl2 fontManagerImpl2)
+        public override bool TryMatchCharacter(int codepoint, FontStyle style, FontWeight weight, FontStretch stretch, string? familyName, CultureInfo? culture, out Typeface typeface)
+        {
+            if (base.TryMatchCharacter(codepoint, style, weight, stretch, familyName, culture, out typeface))
             {
-                return fontManagerImpl2.TryGetFamilyTypefaces(familyName, out familyTypefaces);
+                return true;
+            }
+
+            if (_fontManager.PlatformImpl.TryMatchCharacter(codepoint, style, weight, stretch, culture, out var match))
+            {
+                var createdKey =
+                  new FontCollectionKey(match.Style, match.Weight, match.Stretch);
+
+                var glyphTypeface = new GlyphTypeface(match, FontSimulations.None);
+
+                if (_glyphTypefaceCache.TryGetValue(glyphTypeface.FamilyName, out var glyphTypefaces))
+                {
+                    if (!glyphTypefaces.TryAdd(createdKey, glyphTypeface))
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    if (!_glyphTypefaceCache.TryAdd(glyphTypeface.FamilyName, new ConcurrentDictionary<FontCollectionKey, GlyphTypeface?>() { [createdKey] = glyphTypeface }))
+                    {
+                        return false;
+                    }
+                }
+
+                typeface = new Typeface(glyphTypeface.FamilyName, match.Style, match.Weight, match.Stretch);
+
+                return true;
             }
 
             return false;
         }
 
-        public override bool TryMatchCharacter(int codepoint, FontStyle style, FontWeight weight, FontStretch stretch, string? familyName,
-            CultureInfo? culture, out Typeface match)
-        {
-            //TODO12: Think about removing familyName parameter
-            match = default;
-
-            if (_fontManager.PlatformImpl is IFontManagerImpl2 fontManagerImpl2)
-            {
-                if (fontManagerImpl2.TryMatchCharacter(codepoint, style, weight, stretch, culture, out var glyphTypeface))
-                {
-                    AddGlyphTypefaceByFamilyName(glyphTypeface.FamilyName, glyphTypeface);
-
-                    match = new Typeface(glyphTypeface.FamilyName, glyphTypeface.Style, glyphTypeface.Weight,
-                        glyphTypeface.Stretch);
-
-                    return true;
-                }
-
-                return false;
-            }
-            else
-            {
-                return _fontManager.PlatformImpl.TryMatchCharacter(codepoint, style, weight, stretch, culture, out match);
-            }
-        }
-
-        private void AddGlyphTypefaceByFamilyName(string familyName, IGlyphTypeface glyphTypeface)
+        private void AddGlyphTypefaceByFamilyName(string familyName, GlyphTypeface glyphTypeface)
         {
             // Add family name to the collection if not exists
             if (!_familyNames.Contains(familyName))
@@ -196,7 +202,14 @@ namespace Avalonia.Media.Fonts
             // Get or create the typefaces dictionary for the family name
             if (!_glyphTypefaceCache.TryGetValue(familyName, out var typefaces))
             {
-                _glyphTypefaceCache[familyName] = typefaces = new ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>();
+                typefaces = new ConcurrentDictionary<FontCollectionKey, GlyphTypeface?>();
+
+                // Add the new dictionary to the cache
+                if (!_glyphTypefaceCache.TryAdd(familyName, typefaces))
+                {
+                    // Failed to add the new dictionary
+                    return;
+                }
             }
 
             // Add the glyph typeface to the cache

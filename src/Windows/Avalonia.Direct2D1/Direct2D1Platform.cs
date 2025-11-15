@@ -9,8 +9,8 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Platform;
-using GlyphRun = Avalonia.Media.GlyphRun;
 using SharpDX.Mathematics.Interop;
+using GlyphRun = Avalonia.Media.GlyphRun;
 
 namespace Avalonia
 {
@@ -111,8 +111,7 @@ namespace Avalonia.Direct2D1
             InitializeDirect2D();
             AvaloniaLocator.CurrentMutable
                 .Bind<IPlatformRenderInterface>().ToConstant(s_instance)
-                .Bind<IFontManagerImpl>().ToConstant(new FontManagerImpl())
-                .Bind<ITextShaperImpl>().ToConstant(new TextShaperImpl());
+                .Bind<IFontManagerImpl>().ToConstant(new FontManagerImpl());
             SharpDX.Configuration.EnableReleaseOnFinalizer = true;
         }
 
@@ -192,7 +191,7 @@ namespace Avalonia.Direct2D1
 
         public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun)
         {
-            if (glyphRun.GlyphTypeface is not GlyphTypefaceImpl glyphTypeface)
+            if (glyphRun.GlyphTypeface.PlatformTypeface is not DWriteTypeface glyphTypeface)
             {
                 throw new InvalidOperationException("PlatformImpl can't be null.");
             }

@@ -11,7 +11,7 @@ namespace Avalonia.Direct2D1.Media
 {
     internal class GlyphRunImpl : IGlyphRunImpl
     {
-        private readonly GlyphTypefaceImpl _glyphTypefaceImpl;
+        private readonly DWriteTypeface _glyphTypefaceImpl;
 
         private readonly short[] _glyphIndices;
         private readonly float[] _glyphAdvances;
@@ -22,7 +22,7 @@ namespace Avalonia.Direct2D1.Media
         public GlyphRunImpl(IGlyphTypeface glyphTypeface, double fontRenderingEmSize,
             IReadOnlyList<GlyphInfo> glyphInfos, Point baselineOrigin)
         {
-            _glyphTypefaceImpl = (GlyphTypefaceImpl)glyphTypeface;
+            _glyphTypefaceImpl = (DWriteTypeface)glyphTypeface.PlatformTypeface;
 
             FontRenderingEmSize = fontRenderingEmSize;
             BaselineOrigin = baselineOrigin;
@@ -64,14 +64,14 @@ namespace Avalonia.Direct2D1.Media
                     AscenderOffset = (float)y
                 };
 
-                if (_glyphTypefaceImpl.TryGetGlyphMetrics(glyphInfos[i].GlyphIndex, out var metrics))
+                if (glyphTypeface.TryGetGlyphMetrics(glyphInfos[i].GlyphIndex, out var metrics))
                 {
                     // Found metrics with negative height, prefer to adjust it to positive.
                     var ybearing = metrics.YBearing;
                     var height = metrics.Height;
                     if (height < 0)
                     {
-                        height = -height;
+                        height = (ushort)-height;
                     }
 
                     // Not entirely sure about why we need to do this, but it seems to work
@@ -110,8 +110,6 @@ namespace Avalonia.Direct2D1.Media
                 return _glyphRun;
             }
         }
-
-        public IGlyphTypeface GlyphTypeface => _glyphTypefaceImpl;
 
         public double FontRenderingEmSize { get; }
 

@@ -1,6 +1,5 @@
 using System;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
@@ -9,7 +8,6 @@ using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Skia;
 using Avalonia.Threading;
-using Avalonia.Utilities;
 using SkiaSharp;
 
 namespace RenderDemo.Pages
@@ -21,7 +19,7 @@ namespace RenderDemo.Pages
         {
             ClipToBounds = true;
             var text = "Current rendering API is not Skia";
-            var glyphs = text.Select(ch => Typeface.Default.GlyphTypeface.GetGlyph(ch)).ToArray();
+            var glyphs = text.Select(ch => Typeface.Default.GlyphTypeface.CharacterToGlyphMap[ch]).ToArray();
             _noSkia = new GlyphRun(Typeface.Default.GlyphTypeface, 12, text.AsMemory(), glyphs);
         }
         

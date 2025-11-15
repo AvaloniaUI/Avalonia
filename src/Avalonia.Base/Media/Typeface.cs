@@ -81,7 +81,7 @@ namespace Avalonia.Media
         /// <value>
         /// The glyph typeface.
         /// </value>
-        public IGlyphTypeface GlyphTypeface
+        public GlyphTypeface GlyphTypeface
         {
             get
             {
