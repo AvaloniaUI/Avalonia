@@ -393,18 +393,6 @@ namespace Avalonia.Controls
             SetCurrentValue(ValueProperty, IsSnapToTickEnabled ? SnapToTick(finalValue) : finalValue);
         }
 
-        /// <inheritdoc />
-        protected override void UpdateDataValidation(
-            AvaloniaProperty property,
-            BindingValueType state,
-            Exception? error)
-        {
-            if (property == ValueProperty)
-            {
-                DataValidationErrors.SetError(this, error);
-            }
-        }
-
         protected override AutomationPeer OnCreateAutomationPeer()
         {
             return new SliderAutomationPeer(this);

@@ -1884,17 +1884,6 @@ namespace Avalonia.Controls
             return new TextBoxAutomationPeer(this);
         }
 
-        protected override void UpdateDataValidation(
-            AvaloniaProperty property,
-            BindingValueType state,
-            Exception? error)
-        {
-            if (property == TextProperty)
-            {
-                DataValidationErrors.SetError(this, error);
-            }
-        }
-
         internal static int CoerceCaretIndex(AvaloniaObject sender, int value)
         {
             var text = sender.GetValue(TextProperty); // method also used by TextPresenter and SelectableTextBlock

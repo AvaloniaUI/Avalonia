@@ -407,13 +407,5 @@ namespace Avalonia.Controls
         {
             SetCurrentValue(SelectedTimeProperty, null);
         }
-
-        protected override void UpdateDataValidation(AvaloniaProperty property, BindingValueType state, Exception? error)
-        {
-            base.UpdateDataValidation(property, state, error);
-
-            if (property == SelectedTimeProperty)
-                DataValidationErrors.SetError(this, error);
-        }
     }
 }

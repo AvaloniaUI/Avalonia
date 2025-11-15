@@ -653,24 +653,6 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Called to update the validation state for properties for which data validation is
-        /// enabled.
-        /// </summary>
-        /// <param name="property">The property.</param>
-        /// <param name="state">The current data binding state.</param>
-        /// <param name="error">The current data binding error, if any.</param>
-        protected override void UpdateDataValidation(
-            AvaloniaProperty property,
-            BindingValueType state,
-            Exception? error)
-        {
-            if (property == TextProperty || property == SelectedItemProperty)
-            {
-                DataValidationErrors.SetError(this, error);
-            }
-        }
-
-        /// <summary>
         /// Provides handling for the
         /// <see cref="E:Avalonia.InputElement.KeyDown" /> event.
         /// </summary>
