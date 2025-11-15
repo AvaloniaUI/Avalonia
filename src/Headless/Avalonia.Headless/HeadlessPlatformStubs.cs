@@ -210,8 +210,7 @@ namespace Avalonia.Headless
         }
 
         public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight,
-            FontStretch fontStretch,
-            CultureInfo? culture, out Typeface fontKey)
+            FontStretch fontStretch, string? familyName, CultureInfo? culture, out Typeface fontKey)
         {
             fontKey = new Typeface(_defaultFamilyName);
 
@@ -275,8 +274,7 @@ namespace Avalonia.Headless
         }
 
         public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight,
-            FontStretch fontStretch,
-            CultureInfo? culture, out Typeface fontKey)
+            FontStretch fontStretch, string? familyName, CultureInfo? culture, out Typeface fontKey)
         {
             fontKey = new Typeface(_defaultFamilyName);
 

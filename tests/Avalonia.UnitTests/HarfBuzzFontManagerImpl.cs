@@ -37,7 +37,7 @@ namespace Avalonia.UnitTests
         }
 
         public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight,
-            FontStretch fontStretch, CultureInfo culture, out Typeface fontKey)
+            FontStretch fontStretch, string? familyName, CultureInfo? culture, out Typeface fontKey)
         {
             foreach (var customTypeface in _customTypefaces)
             {
