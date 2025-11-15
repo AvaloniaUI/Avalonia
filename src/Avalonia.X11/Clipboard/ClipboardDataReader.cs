@@ -3,6 +3,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Input;
+using Avalonia.Media.Imaging;
 using static Avalonia.X11.XLib;
 
 namespace Avalonia.X11.Clipboard;
@@ -14,7 +15,8 @@ internal sealed class ClipboardDataReader(
     X11Info x11,
     AvaloniaX11Platform platform,
     IntPtr[] textFormatAtoms,
-    IntPtr owner)
+    IntPtr owner,
+    DataFormat[] dataFormats)
     : IDisposable
 {
     private readonly X11Info _x11 = x11;
@@ -30,7 +32,7 @@ internal sealed class ClipboardDataReader(
         if (!IsOwnerStillValid())
             return null;
 
-        var formatAtom = ClipboardDataFormatHelper.ToAtom(format, _textFormatAtoms, _x11.Atoms);
+        var formatAtom = ClipboardDataFormatHelper.ToAtom(format, _textFormatAtoms, _x11.Atoms, dataFormats);
         if (formatAtom == IntPtr.Zero)
             return null;
 
@@ -49,6 +51,13 @@ internal sealed class ClipboardDataReader(
             return ClipboardDataFormatHelper.TryGetStringEncoding(result.TypeAtom, _x11.Atoms) is { } textEncoding ?
                 textEncoding.GetString(result.AsBytes()) :
                 null;
+        }
+
+        if(DataFormat.Bitmap.Equals(format))
+        {
+            using var data = result.AsStream();
+
+            return new Bitmap(data);
         }
 
         if (DataFormat.File.Equals(format))

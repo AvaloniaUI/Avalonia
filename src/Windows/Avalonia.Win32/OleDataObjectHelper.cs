@@ -1,16 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using Avalonia.Input;
 using Avalonia.Logging;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 using Avalonia.Platform.Storage.FileIO;
 using Avalonia.Utilities;
+using Avalonia.Win32.Interop;
+using static Avalonia.Win32.Interop.UnmanagedMethods;
 using FORMATETC = Avalonia.Win32.Interop.UnmanagedMethods.FORMATETC;
 using STGMEDIUM = Avalonia.Win32.Interop.UnmanagedMethods.STGMEDIUM;
-using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia.Win32;
 
@@ -19,6 +22,8 @@ namespace Avalonia.Win32;
 /// </summary>
 internal static class OleDataObjectHelper
 {
+    private const int SRCCOPY = 0x00CC0020;
+
     public static FORMATETC ToFormatEtc(this DataFormat format)
         => new()
         {
@@ -37,15 +42,36 @@ internal static class OleDataObjectHelper
             return null;
 
         var medium = new STGMEDIUM();
-        if (oleDataObject.GetData(&formatEtc, &medium) != (uint)HRESULT.S_OK)
-            return null;
+        var result = oleDataObject.GetData(&formatEtc, &medium);
+        if (result != (uint)HRESULT.S_OK)
+        {
+            if (result == DV_E_TYMED)
+            {
+                formatEtc.tymed = TYMED.TYMED_GDI;
+
+                if (oleDataObject.GetData(&formatEtc, &medium) != (uint)HRESULT.S_OK)
+                {
+                    return null;
+                }
+            }
+            else
+                return null;
+        }
 
         try
         {
-            if (medium.tymed == TYMED.TYMED_HGLOBAL && medium.unionmember != IntPtr.Zero)
+            if (medium.unionmember != IntPtr.Zero)
             {
-                var hGlobal = medium.unionmember;
-                return ReadDataFromHGlobal(format, hGlobal);
+                if (medium.tymed == TYMED.TYMED_HGLOBAL)
+                {
+                    var hGlobal = medium.unionmember;
+                    return ReadDataFromHGlobal(format, hGlobal, formatEtc);
+                }
+                else if (medium.tymed == TYMED.TYMED_GDI)
+                {
+                    var bitmapHandle = medium.unionmember;
+                    return ReadDataFromGdi(bitmapHandle);
+                }
             }
         }
         finally
@@ -56,7 +82,84 @@ internal static class OleDataObjectHelper
         return null;
     }
 
-    public static object? ReadDataFromHGlobal(DataFormat format, IntPtr hGlobal)
+    private static unsafe object? ReadDataFromGdi(nint bitmapHandle)
+    {
+        var bitmap = new BITMAP();
+        unsafe
+        {
+            var pBitmap = &bitmap;
+            if ((uint)GetObject(bitmapHandle, Marshal.SizeOf(bitmap), (IntPtr)pBitmap) == 0)
+                return null;
+
+            var bitmapInfoHeader = new BITMAPINFOHEADER()
+            {
+                biWidth = bitmap.bmWidth,
+                biHeight = bitmap.bmHeight,
+                biPlanes = bitmap.bmPlanes,
+                biBitCount = 32,
+                biCompression = 0,
+                biSizeImage = (uint)(bitmap.bmWidth * 4 * Math.Abs(bitmap.bmHeight))
+            };
+
+            bitmapInfoHeader.Init();
+
+            IntPtr destHdc = IntPtr.Zero, compatDc = IntPtr.Zero, section = IntPtr.Zero, sourceHdc = IntPtr.Zero, srcCompatHdc = IntPtr.Zero;
+
+            try
+            {
+                destHdc = GetDC(IntPtr.Zero);
+                if (destHdc == IntPtr.Zero)
+                    return null;
+
+                compatDc = CreateCompatibleDC(destHdc);
+                if (compatDc == IntPtr.Zero)
+                    return null;
+
+                section = CreateDIBSection(compatDc, ref bitmapInfoHeader, 0, out var lbBits, IntPtr.Zero, 0);
+                if (section == IntPtr.Zero)
+                    return null;
+
+                SelectObject(compatDc, section);
+                sourceHdc = GetDC(IntPtr.Zero);
+                if (sourceHdc == IntPtr.Zero)
+                    return null;
+
+                srcCompatHdc = CreateCompatibleDC(sourceHdc);
+                if (srcCompatHdc == IntPtr.Zero)
+                    return null;
+
+                SelectObject(srcCompatHdc, bitmapHandle);
+
+                if (StretchBlt(compatDc, 0, bitmapInfoHeader.biHeight, bitmapInfoHeader.biWidth, -bitmapInfoHeader.biHeight, srcCompatHdc, 0, 0, bitmap.bmWidth, bitmap.bmHeight, SRCCOPY) != 0)
+                    return new Bitmap(Platform.PixelFormats.Bgra8888,
+                        Platform.AlphaFormat.Opaque,
+                        lbBits,
+                        new PixelSize(bitmapInfoHeader.biWidth, bitmapInfoHeader.biHeight),
+                        new Vector(96, 96),
+                        bitmapInfoHeader.biWidth * 4);
+            }
+            finally
+            {
+                if (sourceHdc != IntPtr.Zero)
+                    ReleaseDC(IntPtr.Zero, sourceHdc);
+
+                if (srcCompatHdc != IntPtr.Zero)
+                    ReleaseDC(IntPtr.Zero, srcCompatHdc);
+
+                if (compatDc != IntPtr.Zero)
+                    ReleaseDC(IntPtr.Zero, compatDc);
+
+                if (destHdc != IntPtr.Zero)
+                    ReleaseDC(IntPtr.Zero, destHdc);
+
+                if (section != IntPtr.Zero)
+                    DeleteObject(section);
+            }
+            return null;
+        }
+    }
+
+    public unsafe static object? ReadDataFromHGlobal(DataFormat format, IntPtr hGlobal, FORMATETC formatEtc)
     {
         if (DataFormat.Text.Equals(format))
             return ReadStringFromHGlobal(hGlobal);
@@ -67,6 +170,85 @@ internal static class OleDataObjectHelper
                 .Select(fileName => StorageProviderHelpers.TryCreateBclStorageItem(fileName) as IStorageItem)
                 .Where(f => f is not null)
                 .ToArray();
+        }
+
+        if (DataFormat.Bitmap.Equals(format))
+        {
+            if (formatEtc.cfFormat == (ushort)ClipboardFormat.CF_DIB)
+            {
+                var data = ReadBytesFromHGlobal(hGlobal);
+                fixed (byte* ptr = data)
+                {
+                    var bitmapInfo = Marshal.PtrToStructure<BITMAPINFO>((IntPtr)ptr);
+
+                    var bitmapInfoHeader = new BITMAPINFOHEADER()
+                    {
+                        biWidth = bitmapInfo.biWidth,
+                        biHeight = bitmapInfo.biHeight,
+                        biPlanes = bitmapInfo.biPlanes,
+                        biBitCount = 32,
+                        biCompression = 0,
+                        biSizeImage = (uint)(bitmapInfo.biWidth * 4 * Math.Abs(bitmapInfo.biHeight))
+                    };
+
+                    bitmapInfoHeader.Init();
+
+                    IntPtr hdc = IntPtr.Zero, compatDc = IntPtr.Zero, section = IntPtr.Zero;
+                    try
+                    {
+                        hdc = GetDC(IntPtr.Zero);
+                        if (hdc == IntPtr.Zero)
+                            return null;
+
+                        compatDc = CreateCompatibleDC(hdc);
+                        if (compatDc == IntPtr.Zero)
+                            return null;
+
+                        section = CreateDIBSection(compatDc, ref bitmapInfoHeader, 0, out var lbBits, IntPtr.Zero, 0);
+                        if (section == IntPtr.Zero)
+                            return null;
+
+                        SelectObject(compatDc, section);
+                        if (StretchDIBits(compatDc,
+                                0,
+                                bitmapInfo.biHeight,
+                                bitmapInfo.biWidth,
+                                -bitmapInfo.biHeight,
+                                0,
+                                0,
+                                bitmapInfoHeader.biWidth,
+                                bitmapInfoHeader.biHeight,
+                                (IntPtr)(ptr + bitmapInfo.biSize),
+                                ref bitmapInfo,
+                                0,
+                                SRCCOPY
+                                ) != 0)
+                            return new Bitmap(Platform.PixelFormats.Bgra8888,
+                                Platform.AlphaFormat.Opaque,
+                                lbBits,
+                                new PixelSize(bitmapInfoHeader.biWidth, bitmapInfoHeader.biHeight),
+                                new Vector(96, 96),
+                                bitmapInfoHeader.biWidth * 4);
+                    }
+                    finally
+                    {
+                        if (section != IntPtr.Zero)
+                            DeleteObject(section);
+
+                        if (compatDc != IntPtr.Zero)
+                            ReleaseDC(IntPtr.Zero, compatDc);
+
+                        if (hdc != IntPtr.Zero)
+                            ReleaseDC(IntPtr.Zero, hdc);
+                    }
+                }
+            }
+            else
+            {
+                var data = ReadBytesFromHGlobal(hGlobal);
+                var stream = new MemoryStream(data);
+                return new Bitmap(stream);
+            }
         }
 
         if (format is DataFormat<string>)
@@ -126,7 +308,7 @@ internal static class OleDataObjectHelper
         }
     }
 
-    public static uint WriteDataToHGlobal(IDataTransfer dataTransfer, DataFormat format, ref IntPtr hGlobal)
+    public unsafe static uint WriteDataToHGlobal(IDataTransfer dataTransfer, DataFormat format, ref IntPtr hGlobal)
     {
         if (DataFormat.Text.Equals(format))
         {
@@ -143,6 +325,42 @@ internal static class OleDataObjectHelper
                 .Where(path => path is not null)!;
 
             return WriteFileNamesToHGlobal(ref hGlobal, fileNames);
+        }
+
+        if (DataFormat.Bitmap.Equals(format))
+        {
+            var bitmap = dataTransfer.TryGetValue(DataFormat.Bitmap);
+            if (bitmap != null)
+            {
+                var pixelSize = bitmap.PixelSize;
+                var stride = ((bitmap.Format?.BitsPerPixel ?? 0) / 8) * pixelSize.Width;
+                var buffer = new byte[stride * pixelSize.Height];
+                fixed (byte* bytes = buffer)
+                {
+                    bitmap.CopyPixels(new PixelRect(pixelSize), (IntPtr)bytes, buffer.Length, stride);
+
+                    var infoHeader = new BITMAPINFOHEADER()
+                    {
+                        biSizeImage = (uint)buffer.Length,
+                        biWidth = pixelSize.Width,
+                        biHeight = -pixelSize.Height,
+                        biBitCount = (ushort)(bitmap.Format?.BitsPerPixel ?? 0),
+                        biPlanes = 1,
+                        biCompression = (uint)BitmapCompressionMode.BI_RGB
+                    };
+                    infoHeader.Init();
+
+                    var imageData = new byte[infoHeader.biSize + infoHeader.biSizeImage];
+
+                    fixed (byte* image = imageData)
+                    {
+                        Marshal.StructureToPtr(infoHeader, (IntPtr)image, false);
+                        new Span<byte>(bytes, buffer.Length).CopyTo(new Span<byte>((image + infoHeader.biSize), buffer.Length));
+
+                        return WriteBytesToHGlobal(ref hGlobal, imageData);
+                    }
+                }
+            }
         }
 
         if (format is DataFormat<string> stringFormat)

@@ -1,4 +1,5 @@
 ﻿using System;
+using Avalonia.Media.Imaging;
 using Avalonia.Metadata;
 using Avalonia.Platform.Storage;
 using Avalonia.Utilities;
@@ -31,6 +32,12 @@ public abstract class DataFormat : IEquatable<DataFormat>
     /// Its data type is <see cref="string"/>.
     /// </summary>
     public static DataFormat<string> Text { get; } = CreateUniversalFormat<string>("Text");
+
+    /// <summary>
+    /// Gets a data format representing a bitmap.
+    /// Its data type is <see cref="Media.Imaging.Bitmap"/>.
+    /// </summary>
+    public static DataFormat<Bitmap> Bitmap { get; } = CreateUniversalFormat<Bitmap>("Bitmap");
 
     /// <summary>
     /// Gets a data format representing a single file.

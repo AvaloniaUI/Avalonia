@@ -3,7 +3,9 @@ using System.Text;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.iOS.Storage;
+using Avalonia.Media.Imaging;
 using Foundation;
+using UIKit;
 
 namespace Avalonia.iOS.Clipboard;
 
@@ -23,6 +25,45 @@ internal sealed class PasteboardItemToDataTransferItemWrapper(NSDictionary item)
 
     protected override object? TryGetRawCore(DataFormat format)
     {
+        // Handle images specially without ToSystemType, as we may have multiple UTI types for images.
+        if (DataFormat.Bitmap.Equals(format))
+        {
+            NSObject? imageValue;
+
+            if (_item.TryGetValue((NSString)ClipboardDataFormatHelper.UTTypePng, out imageValue)
+                || _item.TryGetValue((NSString)ClipboardDataFormatHelper.UTTypeJpeg, out imageValue))
+            {
+                // keep imageValue as is, it can be either UIImage or NSData, in either case Bitmap can handle it directly.
+            }
+            else if (_item.TryGetValue((NSString)ClipboardDataFormatHelper.UTTypeImage, out imageValue)
+                     || _item.TryGetValue((NSString)ClipboardDataFormatHelper.UTTypeTiff, out imageValue))
+            {
+                // if it's NSData, we need to convert it to UIImage first, as TIFF is not directly supported by Bitmap.
+                if (imageValue is NSData imageData)
+                {
+                    imageValue = UIImage.LoadFromData(imageData);
+                    imageData.Dispose();
+                }
+            }
+
+            switch (imageValue)
+            {
+                case UIImage image:
+                {
+                    using var pngData = image.AsPNG()!;
+                    using var pngStream = pngData.AsStream();
+                    return new Bitmap(pngStream);
+                }
+                case NSData data:
+                {
+                    using var dataStream = data.AsStream();
+                    return new Bitmap(dataStream);
+                }
+                default:
+                    return null;
+            }
+        }
+
         var type = ClipboardDataFormatHelper.ToSystemType(format);
         if (!_item.TryGetValue((NSString)type, out var value))
             return null;
@@ -42,7 +83,7 @@ internal sealed class PasteboardItemToDataTransferItemWrapper(NSDictionary item)
         return null;
     }
 
-    private static unsafe string? TryConvertToString(NSObject value)
+    private static unsafe string? TryConvertToString(NSObject? value)
         => value switch
         {
             NSString str => str,
@@ -50,7 +91,7 @@ internal sealed class PasteboardItemToDataTransferItemWrapper(NSDictionary item)
             _ => null
         };
 
-    private static byte[]? TryConvertToBytes(NSObject value)
+    private static byte[]? TryConvertToBytes(NSObject? value)
         => value switch
         {
             NSData data => data.ToArray(),
