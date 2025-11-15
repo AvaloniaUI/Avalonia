@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows.Input;
 using Avalonia.Automation.Peers;
@@ -552,6 +553,26 @@ namespace Avalonia.Controls
 
         protected override AutomationPeer OnCreateAutomationPeer() => new ButtonAutomationPeer(this);
 
+        /// <inheritdoc/>
+        protected override void UpdateDataValidation(
+            AvaloniaProperty property,
+            BindingValueType state,
+            Exception? error)
+        {
+            base.UpdateDataValidation(property, state, error);
+            if (property == CommandProperty)
+            {
+                if (state == BindingValueType.BindingError)
+                {
+                    if (_commandCanExecute)
+                    {
+                        _commandCanExecute = false;
+                        UpdateIsEffectivelyEnabled();
+                    }
+                }
+            }
+        }
+        
         internal void PerformClick() => OnClick();
 
         private static void OnAccessKeyPressed(Button sender, AccessKeyPressedEventArgs e)
