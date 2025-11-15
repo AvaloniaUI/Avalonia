@@ -10,6 +10,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Fonts.Inter;
 using Avalonia.Headless;
 using Avalonia.LinuxFramebuffer.Output;
+using Avalonia.Logging;
 using Avalonia.LogicalTree;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
@@ -42,6 +43,30 @@ namespace ControlCatalog.NetCore
             }
 
             var builder = BuildAvaloniaApp();
+
+            if (args.FirstOrDefault(x => x.StartsWith("--log-level=")) is { } logLevelArg)
+            {
+                var levelStr = logLevelArg.Substring("--log-level=".Length);
+                if (Enum.TryParse<LogEventLevel>(levelStr, true, out var level))
+                {
+                    string[] areas = [];
+                    if (args.FirstOrDefault(x => x.StartsWith("--log-areas=")) is { } logAreasArg)
+                    {
+                        var areasStr = logAreasArg.Substring("--log-areas=".Length);
+                        areas = areasStr.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                    }
+
+                    var l = new object();
+                    builder.LogToDelegate(s =>
+                    {
+                        lock (l)
+                            Console.WriteLine(s);
+                    }, level, areas);
+                }
+            }
+            else 
+                builder.LogToTrace();
+            
 
             double GetScaling()
             {
@@ -134,13 +159,19 @@ namespace ControlCatalog.NetCore
                     EnableMultiTouch = true,
                     UseDBusMenu = true,
                     EnableIme = true,
+                    RenderingMode = new []{X11RenderingMode.OffscreenGbmEgl}
                 })
 
                 .With(new VulkanOptions
                 {
-                    VulkanInstanceCreationOptions = new ()
+                    VulkanInstanceCreationOptions = new()
                     {
-                        UseDebug = true
+                        UseDebug = true,
+                        VulkanVersion = new Version(1, 3 )
+                    },
+                    VulkanDeviceCreationOptions =
+                    {
+                        AllowDevicesWithoutKhrSurfaces = true
                     }
                 })
                 .With(new CompositionOptions()
@@ -163,8 +194,7 @@ namespace ControlCatalog.NetCore
                         : OperatingSystem.IsMacOS() ? new EmbedSampleMac()
                         : OperatingSystem.IsLinux() ? new EmbedSampleGtk()
                         : null;
-                })
-                .LogToTrace();
+                });
 
         static void SilenceConsole()
         {

@@ -215,7 +215,7 @@ namespace Avalonia.X11
                    depth, _platform.Options.UseRetainedFramebuffer ?? false)
             };
             
-            if (egl != null)
+            if (egl != null && AvaloniaX11Platform.RenderingMode == X11RenderingMode.Egl)
                 surfaces.Insert(0,
                     new EglGlPlatformSurface(new SurfaceInfo(this, _x11.DeferredDisplay, _handle, _renderHandle)));
             if (glx != null)

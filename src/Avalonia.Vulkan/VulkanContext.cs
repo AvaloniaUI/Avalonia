@@ -54,7 +54,7 @@ internal class VulkanContext : IVulkanPlatformGraphicsContext
 
     public VulkanInstanceApi InstanceApi { get; }
     public VulkanDeviceApi DeviceApi { get; }
-    public IVulkanRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
+    public IVulkanRenderTarget? CreateRenderTarget(IEnumerable<object> surfaces)
     {
         foreach (var surf in surfaces)
         {
@@ -68,6 +68,6 @@ internal class VulkanContext : IVulkanPlatformGraphicsContext
             return new VulkanKhrRenderTarget(khrSurface, this);
         }
 
-        throw new VulkanException("Unable to find a suitable platform surface");
+        return null;
     }
 }
