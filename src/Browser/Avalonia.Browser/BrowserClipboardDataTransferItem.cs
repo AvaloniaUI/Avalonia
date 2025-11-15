@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Runtime.InteropServices.JavaScript;
 using System.Threading.Tasks;
 using Avalonia.Browser.Interop;
@@ -22,8 +23,10 @@ internal sealed class BrowserClipboardDataTransferItem(JSObject readableDataItem
 
     protected override async Task<object?> TryGetRawCoreAsync(DataFormat format)
     {
-        var formatString = BrowserDataFormatHelper.ToBrowserFormat(format);
-        var value = await InputHelper.TryGetReadableDataItemValueAsync(_readableDataItem, formatString).ConfigureAwait(false);
+        string formatString = BrowserDataFormatHelper.ToBrowserFormat(format);
+
+        var value = await InputHelper.TryGetReadableDataItemValueAsync(_readableDataItem, formatString)
+            .ConfigureAwait(false);
         return BrowserDataTransferHelper.TryGetValue(value, format);
     }
 
