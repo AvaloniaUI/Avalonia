@@ -2141,12 +2141,11 @@ namespace Avalonia.Controls.UnitTests
             };
             target.ApplyTemplate();
 
-            // The differences between Avalonia.Headless.HeadlessTextShaperStub and Avalonia.Skia.TextShaperImpl can lead to inconsistencies between test and actual behavior.
             // (First\r\nSecond)
             RaiseKeyEvent(target, Key.Back, KeyModifiers.None);
             // (FirstSecond)
 
-            // Assert.Equal("FirstSecond", target.Text);
+            Assert.Equal("FirstSecond", target.Text);
         }
 
         private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
