@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -141,23 +142,63 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_NCMOUSEMOVE when !IsMouseInPointerEnabled:
                 case WindowsMessage.WM_NCLBUTTONDOWN when !IsMouseInPointerEnabled:
                 case WindowsMessage.WM_NCLBUTTONUP when !IsMouseInPointerEnabled:
-                    if (lRet == IntPtr.Zero
-                        && ShouldRedirectNonClientInput(hWnd, wParam, lParam))
+                    if (lRet == IntPtr.Zero)
                     {
-                        e = new RawPointerEventArgs(
-                            _mouseDevice,
-                            unchecked((uint)GetMessageTime()),
-                            Owner,
-                            (WindowsMessage)msg switch
+                        var shouldRedirect = ShouldRedirectNonClientInput(hWnd, wParam, lParam);
+
+                        if (shouldRedirect)
+                        {
+                            // Track non-client mouse to receive WM_NCMOUSELEAVE
+                            if (!_trackingNonClientMouse)
                             {
-                                WindowsMessage.WM_NCMOUSEMOVE => RawPointerEventType.Move,
-                                WindowsMessage.WM_NCLBUTTONDOWN => RawPointerEventType.LeftButtonDown,
-                                WindowsMessage.WM_NCLBUTTONUP => RawPointerEventType.LeftButtonUp,
-                                _ => throw new ArgumentOutOfRangeException(nameof(msg), msg, null)
-                            },
-                            PointToClient(PointFromLParam(lParam)),
-                            RawInputModifiers.None);
+                                var tm = new TRACKMOUSEEVENT
+                                {
+                                    cbSize = Marshal.SizeOf<TRACKMOUSEEVENT>(),
+                                    dwFlags = TME_LEAVE | TME_NONCLIENT,
+                                    hwndTrack = _hwnd,
+                                    dwHoverTime = 0,
+                                };
+                                TrackMouseEvent(ref tm);
+                                _trackingNonClientMouse = true;
+                            }
+
+                            e = new RawPointerEventArgs(
+                                _mouseDevice,
+                                unchecked((uint)GetMessageTime()),
+                                Owner,
+                                (WindowsMessage)msg switch
+                                {
+                                    WindowsMessage.WM_NCMOUSEMOVE => RawPointerEventType.Move,
+                                    WindowsMessage.WM_NCLBUTTONDOWN => RawPointerEventType.LeftButtonDown,
+                                    WindowsMessage.WM_NCLBUTTONUP => RawPointerEventType.LeftButtonUp,
+                                    _ => throw new ArgumentOutOfRangeException(nameof(msg), msg, null)
+                                },
+                                PointToClient(PointFromLParam(lParam)),
+                                RawInputModifiers.None);
+                        }
+                        else if (_trackingNonClientMouse && (WindowsMessage)msg == WindowsMessage.WM_NCMOUSEMOVE)
+                        {
+                            // Mouse moved in NC area but not over caption buttons - send leave event
+                            _trackingNonClientMouse = false;
+                            e = new RawPointerEventArgs(
+                                _mouseDevice,
+                                unchecked((uint)GetMessageTime()),
+                                Owner,
+                                RawPointerEventType.LeaveWindow,
+                                new Point(-1, -1),
+                                RawInputModifiers.None);
+                        }
                     }
+                    break;
+                case WindowsMessage.WM_NCMOUSELEAVE when !IsMouseInPointerEnabled:
+                    _trackingNonClientMouse = false;
+                    e = new RawPointerEventArgs(
+                        _mouseDevice,
+                        unchecked((uint)GetMessageTime()),
+                        Owner,
+                        RawPointerEventType.LeaveWindow,
+                        new Point(-1, -1),
+                        RawInputModifiers.None);
                     break;
                 case WindowsMessage.WM_NCPOINTERUPDATE when _wmPointerEnabled:
                 case WindowsMessage.WM_NCPOINTERDOWN when _wmPointerEnabled:

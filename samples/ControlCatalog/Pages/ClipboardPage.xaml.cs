@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Documents;
 using Avalonia.Controls.Notifications;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
-using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 
@@ -26,18 +26,19 @@ namespace ControlCatalog.Pages
 
         private readonly DispatcherTimer _clipboardLastDataObjectChecker;
         private DataTransfer? _storedDataTransfer;
+
+        private bool _checkingClipboardDataTransfer;
+        private Bitmap _defaultImage;
+
         public ClipboardPage()
         {
+            InitializeComponent();
             _clipboardLastDataObjectChecker =
                 new DispatcherTimer(TimeSpan.FromSeconds(0.5), default, CheckLastDataObject);
-            InitializeComponent();
-        }
 
-        private TextBox ClipboardContent => this.Get<TextBox>("ClipboardContent");
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
+            using var asset = AssetLoader.Open(new Uri("avares://ControlCatalog/Assets/image1.jpg"));
+            _defaultImage = new Bitmap(asset);
+            ClipboardImage.Source = _defaultImage;
         }
 
         private async void CopyText(object? sender, RoutedEventArgs args)
@@ -46,11 +47,31 @@ namespace ControlCatalog.Pages
                 await clipboard.SetTextAsync(ClipboardContent.Text ?? string.Empty);
         }
 
+        private async void CopyImage(object? sender, RoutedEventArgs args)
+        {
+            if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
+                await clipboard.SetValueAsync(DataFormat.Bitmap, _defaultImage);
+        }
+
         private async void PasteText(object? sender, RoutedEventArgs args)
         {
             if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
             {
                 ClipboardContent.Text = await clipboard.TryGetTextAsync();
+            }
+        }
+
+        private async void PasteImage(object? sender, RoutedEventArgs args)
+        {
+            if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
+            {
+                using var data = await clipboard.TryGetDataAsync();
+                Bitmap? source = null;
+                if (data != null)
+                {
+                    source = await data!.TryGetValueAsync(DataFormat.Bitmap);
+                }
+                ClipboardImage.Source = source;
             }
         }
 
@@ -163,11 +184,9 @@ namespace ControlCatalog.Pages
             base.OnDetachedFromVisualTree(e);
         }
 
-        private Run OwnsClipboardDataObject => this.Get<Run>("OwnsClipboardDataObject");
-        private bool _checkingClipboardDataTransfer;
         private async void CheckLastDataObject(object? sender, EventArgs e)
         {
-            if(_checkingClipboardDataTransfer)
+            if (_checkingClipboardDataTransfer)
                 return;
             try
             {

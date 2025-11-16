@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Runtime.InteropServices.JavaScript;
 using System.Threading.Tasks;
 using Avalonia.Input;
@@ -48,6 +49,21 @@ internal sealed class ClipboardImpl : IClipboardImpl
                     var text = await dataTransferItem.TryGetValueAsync(DataFormat.Text) ?? string.Empty;
                     writeableItem ??= CreateWriteableClipboardItem(source);
                     AddStringToWriteableClipboardItem(writeableItem, formatString, text);
+                    continue;
+                }
+
+                if(DataFormat.Bitmap.Equals(format))
+                {
+                    var bitmap = await dataTransferItem.TryGetValueAsync(DataFormat.Bitmap);
+                    if (bitmap != null)
+                    {
+                        using var stream = new MemoryStream();
+                        bitmap.Save(stream);
+
+                        writeableItem ??= CreateWriteableClipboardItem(source);
+                        AddBytesToWriteableClipboardItem(writeableItem, formatString, stream.ToArray());
+                    }
+
                     continue;
                 }
 

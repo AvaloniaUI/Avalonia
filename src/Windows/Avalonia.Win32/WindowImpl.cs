@@ -89,6 +89,7 @@ namespace Avalonia.Win32
         private IconImpl? _iconImpl;
         private readonly Dictionary<(Icons type, uint dpi), Win32Icon> _iconCache = new();
         private bool _trackingMouse;//ToDo - there is something missed. Needs investigation @Steven Kirk
+        private bool _trackingNonClientMouse;
         private bool _topmost;
         private double _scaling = 1;
         private uint _dpi = 96;
@@ -119,7 +120,7 @@ namespace Avalonia.Win32
         public WindowImpl()
         {
             _touchDevice = new TouchDevice();
-            _mouseDevice = new WindowsMouseDevice();
+            _mouseDevice = Avalonia.Input.MouseDevice.GetOrCreatePrimary<WindowsMouseDevice>();
             _penDevice = new PenDevice();
 
 #if USE_MANAGED_DRAG
@@ -177,7 +178,9 @@ namespace Avalonia.Win32
             _nativeControlHost = new Win32NativeControlHost(this, !UseRedirectionBitmap);
             _defaultTransparencyLevel = UseRedirectionBitmap ? WindowTransparencyLevel.None : WindowTransparencyLevel.Transparent;
             _transparencyLevel = _defaultTransparencyLevel;
-            s_instances.Add(this);
+
+            lock (s_instances)
+                s_instances.Add(this);
         }
 
         internal IInputRoot Owner

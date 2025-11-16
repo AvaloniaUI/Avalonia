@@ -9,9 +9,9 @@
     <Compile Update="**\*.xaml.cs">
       <DependentUpon>%(Filename)</DependentUpon>
     </Compile>
-    <AvaloniaResource Include="**\*.xaml">
+    <AvaloniaXaml Include="**\*.xaml">
       <SubType>Designer</SubType>
-    </AvaloniaResource>
+    </AvaloniaXaml>
     <AvaloniaResource Include="Assets\*" />
     <AvaloniaResource Include="Assets\Fonts\*" />
   </ItemGroup>

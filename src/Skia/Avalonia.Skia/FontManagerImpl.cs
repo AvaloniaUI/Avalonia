@@ -1,8 +1,11 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
+using System.Text.RegularExpressions;
 using Avalonia.Media;
 using Avalonia.Platform;
 using SkiaSharp;
@@ -15,6 +18,7 @@ namespace Avalonia.Skia
 
         public string GetDefaultFontFamilyName()
         {
+
             return SKTypeface.Default.FamilyName;
         }
 
@@ -32,6 +36,53 @@ namespace Avalonia.Skia
 
         public bool TryMatchCharacter(int codepoint, FontStyle fontStyle,
             FontWeight fontWeight, FontStretch fontStretch, CultureInfo? culture, out Typeface fontKey)
+        {
+            if (!TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, culture, out SKTypeface? skTypeface))
+            {
+                fontKey = default;
+
+                return false;
+            }
+
+            fontKey = new Typeface(
+                skTypeface.FamilyName, 
+                skTypeface.FontStyle.Slant.ToAvalonia(), 
+                (FontWeight)skTypeface.FontStyle.Weight, 
+                (FontStretch)skTypeface.FontStyle.Width);
+
+            skTypeface.Dispose();
+
+            return true;
+
+        }
+
+        public bool TryMatchCharacter(
+            int codepoint,
+            FontStyle fontStyle,
+            FontWeight fontWeight,
+            FontStretch fontStretch,
+            CultureInfo? culture,
+            [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
+        {
+            if (!TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, culture, out SKTypeface? skTypeface))
+            {
+                glyphTypeface = null;
+
+                return false;
+            }
+
+            glyphTypeface = new GlyphTypefaceImpl(skTypeface, FontSimulations.None);
+
+            return true;
+        }
+
+        private bool TryMatchCharacter(
+            int codepoint,
+            FontStyle fontStyle,
+            FontWeight fontWeight,
+            FontStretch fontStretch,
+            CultureInfo? culture,
+            [NotNullWhen(true)] out SKTypeface? skTypeface)
         {
             SKFontStyle skFontStyle;
 
@@ -59,23 +110,9 @@ namespace Avalonia.Skia
             t_languageTagBuffer ??= new string[1];
             t_languageTagBuffer[0] = culture.Name;
 
-            using var skTypeface = _skFontManager.MatchCharacter(null, skFontStyle, t_languageTagBuffer, codepoint);
+            skTypeface = _skFontManager.MatchCharacter(null, skFontStyle, t_languageTagBuffer, codepoint);
 
-            if (skTypeface != null)
-            {
-                // ToDo: create glyph typeface here to get the correct style/weight/stretch
-                fontKey = new Typeface(
-                    skTypeface.FamilyName,
-                    skTypeface.FontStyle.Slant.ToAvalonia(),
-                    (FontWeight)skTypeface.FontStyle.Weight,
-                    (FontStretch)skTypeface.FontStyle.Width);
-
-                return true;
-            }
-
-            fontKey = default;
-
-            return false;
+            return skTypeface != null;
         }
 
         public bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight,

@@ -13,14 +13,26 @@ namespace Avalonia.Data.Converters
     public class FuncValueConverter<TIn, TOut> : IValueConverter
     {
         private readonly Func<TIn?, TOut> _convert;
+        private readonly Func<TOut?, TIn>? _convertBack;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FuncValueConverter{TIn, TOut}"/> class.
         /// </summary>
-        /// <param name="convert">The convert function.</param>
+        /// <param name="convert">The function to convert TIn to TOut.</param>
         public FuncValueConverter(Func<TIn?, TOut> convert)
         {
             _convert = convert;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FuncValueConverter{TIn, TOut}"/> class.
+        /// </summary>
+        /// <param name="convert">The function to convert TIn to TOut.</param>
+        /// <param name="convertBack">The function to convert TOut back to In.</param>
+        public FuncValueConverter(Func<TIn?, TOut> convert, Func<TOut?, TIn>? convertBack)
+        {
+            _convert = convert;
+            _convertBack = convertBack;
         }
 
         /// <inheritdoc/>
@@ -39,7 +51,19 @@ namespace Avalonia.Data.Converters
         /// <inheritdoc/>
         public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
-            throw new NotImplementedException();
+            if (_convertBack == null)
+            {
+                throw new NotImplementedException();
+            }
+
+            if (TypeUtilities.CanCast<TOut>(value))
+            {
+                return _convertBack((TOut?)value);
+            }
+            else
+            {
+                return AvaloniaProperty.UnsetValue;
+            }
         }
     }
 
@@ -53,14 +77,26 @@ namespace Avalonia.Data.Converters
     public class FuncValueConverter<TIn, TParam, TOut> : IValueConverter
     {
         private readonly Func<TIn?, TParam?, TOut> _convert;
+        private readonly Func<TOut?, TParam?, TIn>? _convertBack;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FuncValueConverter{TIn, TParam, TOut}"/> class.
         /// </summary>
-        /// <param name="convert">The convert function.</param>
+        /// <param name="convert">The function to convert TIn to TOut.</param>
         public FuncValueConverter(Func<TIn?, TParam?, TOut> convert)
         {
             _convert = convert;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FuncValueConverter{TIn, TParam, TOut}"/> class.
+        /// </summary>
+        /// <param name="convert">The function to convert TIn to TOut.</param>
+        /// <param name="convertBack">The function to convert TOut back to In.</param>
+        public FuncValueConverter(Func<TIn?, TParam?, TOut> convert, Func<TOut?, TParam?, TIn>? convertBack = null)
+        {
+            _convert = convert;
+            _convertBack = convertBack;
         }
 
         /// <inheritdoc/>
@@ -79,7 +115,19 @@ namespace Avalonia.Data.Converters
         /// <inheritdoc/>
         public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
-            throw new NotImplementedException();
+            if (_convertBack == null)
+            {
+                throw new NotImplementedException();
+            }
+
+            if (TypeUtilities.CanCast<TOut>(value) && TypeUtilities.CanCast<TParam>(parameter))
+            {
+                return _convertBack((TOut?)value, (TParam?)parameter);
+            }
+            else
+            {
+                return AvaloniaProperty.UnsetValue;
+            }
         }
     }
 }

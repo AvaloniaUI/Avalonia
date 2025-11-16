@@ -95,7 +95,14 @@ namespace Avalonia.X11.Clipboard
                 }
                 else if (ClipboardDataFormatHelper.ToDataFormat(target, _x11.Atoms) is { } dataFormat)
                 {
-                    if (_storedDataTransfer is null || !_storedDataTransfer.Contains(dataFormat))
+                    if (_storedDataTransfer is null)
+                        return IntPtr.Zero;
+
+                    // Our default bitmap format is image/png
+                    if (dataFormat.Identifier is "image/png" && _storedDataTransfer.Contains(DataFormat.Bitmap))
+                        dataFormat = DataFormat.Bitmap;
+
+                    if (!_storedDataTransfer.Contains(dataFormat))
                         return IntPtr.Zero;
 
                     if (TryGetDataAsBytes(_storedDataTransfer, dataFormat, target) is not { } bytes)
@@ -144,6 +151,17 @@ namespace Avalonia.X11.Clipboard
                 return ClipboardDataFormatHelper.TryGetStringEncoding(targetFormatAtom, _x11.Atoms) is { } encoding ?
                     encoding.GetBytes(text ?? string.Empty) :
                     null;
+            }
+
+            if (DataFormat.Bitmap.Equals(format))
+            {
+                if (dataTransfer.TryGetValueAsync(DataFormat.Bitmap).GetAwaiter().GetResult() is not { } bitmap)
+                    return null;
+
+                using var stream = new MemoryStream();
+                bitmap.Save(stream);
+
+                return stream.ToArray();
             }
             
             if (DataFormat.File.Equals(format))
@@ -286,7 +304,7 @@ namespace Avalonia.X11.Clipboard
                 return null;
 
             // Get the items while we're in an async method. This does not get values, except for DataFormat.File.
-            var reader = new ClipboardDataReader(_x11, _platform, textFormatAtoms, owner);
+            var reader = new ClipboardDataReader(_x11, _platform, textFormatAtoms, owner, dataFormats);
             var items = await CreateItemsAsync(reader, dataFormats);
             return new ClipboardDataTransfer(reader, dataFormats, items);
         }
@@ -301,6 +319,8 @@ namespace Avalonia.X11.Clipboard
 
             var formats = new List<DataFormat>(formatAtoms.Length);
             List<IntPtr>? textFormatAtoms = null;
+
+            var hasImage = false;
 
             foreach (var formatAtom in formatAtoms)
             {
@@ -317,8 +337,19 @@ namespace Avalonia.X11.Clipboard
                     textFormatAtoms.Add(formatAtom);
                 }
                 else
+                {
                     formats.Add(format);
+
+                    if(!hasImage)
+                    {
+                        if (format.Identifier is ClipboardDataFormatHelper.JpegFormatMimeType or ClipboardDataFormatHelper.PngFormatMimeType)
+                            hasImage = true;
+                    }
+                }
             }
+
+            if (hasImage)
+                formats.Add(DataFormat.Bitmap);
 
             return (formats.ToArray(), textFormatAtoms?.ToArray() ?? []);
         }

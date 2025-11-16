@@ -6,9 +6,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
+using MicroCom.Runtime;
 using Windows.Win32;
 using Windows.Win32.Graphics.Gdi;
-using MicroCom.Runtime;
 
 // ReSharper disable InconsistentNaming
 #pragma warning disable 169, 649
@@ -1074,6 +1074,17 @@ namespace Avalonia.Win32.Interop
             public byte rgbReserved;
         }
 
+        public struct BITMAP
+        {
+            public int bmType;
+            public int bmWidth;
+            public int bmHeight;
+            public int bmWidthBytes;
+            public ushort bmPlanes;
+            public short bmBitsPixel;
+            public IntPtr bmBits;
+        }
+
         [StructLayout(LayoutKind.Sequential)]
         public struct BITMAPINFOHEADER
         {
@@ -1688,6 +1699,10 @@ namespace Avalonia.Win32.Interop
         [DllImport("gdi32.dll")]
         public static extern IntPtr CreateBitmap(int width, int height, int planes, int bitCount, IntPtr data);
         [DllImport("gdi32.dll")]
+        public static extern int GetObject(IntPtr h, int c, IntPtr pv);
+        [DllImport("gdi32.dll")]
+        public static extern int GetBitmapDimensionEx(IntPtr hbit, ref SIZE lpsize);
+        [DllImport("gdi32.dll")]
         public static extern int DeleteObject(IntPtr hObject);
         [DllImport("gdi32.dll", SetLastError = true)]
         public static extern IntPtr CreateCompatibleDC(IntPtr hdc);
@@ -1703,9 +1718,14 @@ namespace Avalonia.Win32.Interop
         [DllImport("gdi32.dll")]
         public static extern int SetPixelFormat(IntPtr hdc, int iPixelFormat, ref PixelFormatDescriptor pfd);
 
-
         [DllImport("gdi32.dll")]
         public static extern int DescribePixelFormat(IntPtr hdc, int iPixelFormat, int bytes, ref PixelFormatDescriptor pfd);
+
+        [DllImport("gdi32.dll")]
+        public static extern int StretchDIBits(IntPtr hdc, int xDest, int yDest, int DestWidth, int DestHeight, int xSrc, int ySrc, int SrcWidth, int SrcHeight, IntPtr lpBits, [In] ref BITMAPINFO lpbmi, uint iUsage, uint rop);
+
+        [DllImport("gdi32.dll")]
+        public static extern int StretchBlt(IntPtr hdc, int xDest, int yDest, int DestWidth, int DestHeight, IntPtr hdcSrc, int xSrc, int ySrc, int SrcWidth, int SrcHeight, uint rop);
 
         [DllImport("gdi32.dll")]
         public static extern bool SwapBuffers(IntPtr hdc);
@@ -2193,7 +2213,7 @@ namespace Avalonia.Win32.Interop
             /// <summary>
             /// A memory object containing a BITMAPINFO structure followed by the bitmap bits.
             /// </summary>
-            CF_DIB = 3,
+            CF_DIB = 8,
             /// <summary>
             /// Unicode text format. Each line ends with a carriage return/linefeed (CR-LF) combination. A null character signals the end of the data.
             /// </summary>
@@ -2297,6 +2317,13 @@ namespace Avalonia.Win32.Interop
             public IntPtr hwndTrack;
             public int dwHoverTime;
         }
+
+        // TrackMouseEvent flags
+        public const uint TME_HOVER = 0x00000001;
+        public const uint TME_LEAVE = 0x00000002;
+        public const uint TME_NONCLIENT = 0x00000010;
+        public const uint TME_QUERY = 0x40000000;
+        public const uint TME_CANCEL = 0x80000000;
 
         [Flags]
         public enum WindowPlacementFlags : uint

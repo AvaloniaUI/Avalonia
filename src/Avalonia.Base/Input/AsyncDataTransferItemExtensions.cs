@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 
 namespace Avalonia.Input;
@@ -41,7 +42,7 @@ public static class AsyncDataTransferItemExtensions
     /// <summary>
     /// Returns a text, if available, from a <see cref="IAsyncDataTransferItem"/> instance.
     /// </summary>
-    /// <param name="dataTransferItem">The data transfer instance.</param>
+    /// <param name="dataTransferItem">The <see cref="IAsyncDataTransferItem"/> instance.</param>
     /// <returns>A string, or null if the format isn't available.</returns>
     /// <seealso cref="DataFormat.Text"/>.
     public static Task<string?> TryGetTextAsync(this IAsyncDataTransferItem dataTransferItem)
@@ -50,9 +51,18 @@ public static class AsyncDataTransferItemExtensions
     /// <summary>
     /// Returns a file, if available, from a <see cref="IAsyncDataTransferItem"/> instance.
     /// </summary>
-    /// <param name="dataTransferItem">The data transfer instance.</param>
+    /// <param name="dataTransferItem">The <see cref="IAsyncDataTransferItem"/> instance.</param>
     /// <returns>An <see cref="IStorageItem"/> (file or folder), or null if the format isn't available.</returns>
     /// <seealso cref="DataFormat.File"/>.
     public static Task<IStorageItem?> TryGetFileAsync(this IAsyncDataTransferItem dataTransferItem)
         => dataTransferItem.TryGetValueAsync(DataFormat.File);
+
+    /// <summary>
+    /// Returns a bitmap, if available, from a <see cref="IAsyncDataTransferItem"/> instance.
+    /// </summary>
+    /// <param name="dataTransferItem">The <see cref="IAsyncDataTransferItem"/> instance.</param>
+    /// <returns>A <see cref="Bitmap"/>, or null if the format isn't available.</returns>
+    /// <seealso cref="DataFormat.Bitmap"/>.
+    public static Task<Bitmap?> TryGetBitmapAsync(this IAsyncDataTransferItem dataTransferItem)
+        => dataTransferItem.TryGetValueAsync(DataFormat.Bitmap);
 }
