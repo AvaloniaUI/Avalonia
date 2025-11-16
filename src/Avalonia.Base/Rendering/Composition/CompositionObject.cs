@@ -89,6 +89,16 @@ namespace Avalonia.Rendering.Composition
             }
         }
 
+        public void StopAnimation(string propertyName)
+        {
+            if (propertyName is null)
+                throw new ArgumentNullException(nameof(propertyName));
+            if (Server is not ServerObject srv)
+                return;
+            var prop = srv.GetCompositionProperty(propertyName);
+            srv.Animations?.RemoveAnimationForProperty(prop);
+        }
+
         bool StartAnimationGroupPart(CompositionAnimation animation, string target, ExpressionVariant finalValue)
         {
             if(animation.Target == null)
