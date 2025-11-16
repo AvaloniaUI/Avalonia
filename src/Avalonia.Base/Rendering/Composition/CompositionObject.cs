@@ -102,6 +102,25 @@ namespace Avalonia.Rendering.Composition
             srv.Animations?.RemoveAnimationForProperty(prop);
         }
 
+        public void StopAnimationGroup(ICompositionAnimationBase grp)
+        {
+            if (grp is CompositionAnimation animation)
+            {
+                if (animation.Target == null)
+                    throw new ArgumentException("Animation Target can't be null");
+                StopAnimation(animation.Target);
+            }
+            else if (grp is CompositionAnimationGroup group)
+            {
+                foreach (var a in group.Animations)
+                {
+                    if (a.Target == null)
+                        throw new ArgumentException("Animation Target can't be null");
+                    StopAnimation(a.Target);
+                }
+            }
+        }
+
         bool StartAnimationGroupPart(CompositionAnimation animation, string target, ExpressionVariant finalValue)
         {
             if(animation.Target == null)
