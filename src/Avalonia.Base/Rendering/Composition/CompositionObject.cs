@@ -98,7 +98,7 @@ namespace Avalonia.Rendering.Composition
                 throw new ArgumentNullException(nameof(propertyName));
             if (Server is not ServerObject srv)
                 return;
-            var prop = srv.GetCompositionProperty(propertyName);
+            var prop = srv.GetCompositionProperty(propertyName) ?? throw new ArgumentException("Unknown property " + propertyName);
             srv.Animations?.RemoveAnimationForProperty(prop);
         }
 
