@@ -88,7 +88,10 @@ namespace Avalonia.Rendering.Composition
                 }
             }
         }
-
+        
+        /// <summary>
+        /// Stops any running animation associated with the specified property name.
+        /// </summary>
         public void StopAnimation(string propertyName)
         {
             if (propertyName is null)
