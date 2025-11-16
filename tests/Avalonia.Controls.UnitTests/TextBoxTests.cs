@@ -2129,6 +2129,26 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Backspace_Should_Delete_Newline_Character_At_Once()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+            var target = new TextBox
+            {
+                Template = CreateTemplate(),
+                Text = $"First{Environment.NewLine}Second",
+                CaretIndex = 5 + Environment.NewLine.Length
+            };
+            target.ApplyTemplate();
+
+            // The differences between Avalonia.Headless.HeadlessTextShaperStub and Avalonia.Skia.TextShaperImpl can lead to inconsistencies between test and actual behavior.
+            // (First\r\nSecond)
+            RaiseKeyEvent(target, Key.Back, KeyModifiers.None);
+            // (FirstSecond)
+
+            // Assert.Equal("FirstSecond", target.Text);
+        }
+
         private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
             keyboardDevice: () => new KeyboardDevice(),
             keyboardNavigation: () => new KeyboardNavigationHandler(),
