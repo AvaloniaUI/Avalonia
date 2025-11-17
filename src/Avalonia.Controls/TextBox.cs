@@ -1496,7 +1496,7 @@ namespace Avalonia.Controls
 
                                 var backspacePosition = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
 
-                                var lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(caretIndex, false);
+                                var lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(caretIndex, true);
 
                                 var backspaceCharacterHit = _presenter.TextLayout.TextLines[lineIndex]
                                     .GetBackspaceCaretCharacterHit(new CharacterHit(caretIndex));
