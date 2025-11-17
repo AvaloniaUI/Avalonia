@@ -1,17 +1,18 @@
 using System;
 using System.Collections.Generic;
-using Avalonia.Media.Imaging;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition;
 using SkiaSharp;
+using static Avalonia.OpenGL.GlConsts;
 
 namespace Avalonia.Skia;
 
-internal class GlSkiaExternalObjectsFeature : IExternalObjectsRenderInterfaceContextFeature
+internal class GlSkiaExternalObjectsFeature : IExternalObjectsRenderInterfaceContextFeature, IGlSkiaFboProvider
 {
     private readonly GlSkiaGpu _gpu;
     private readonly IGlContextExternalObjectsFeature? _feature;
+    private int _fbo;
 
     public GlSkiaExternalObjectsFeature(GlSkiaGpu gpu, IGlContextExternalObjectsFeature? feature)
     {
@@ -32,7 +33,7 @@ internal class GlSkiaExternalObjectsFeature : IExternalObjectsRenderInterfaceCon
         using (_gpu.EnsureCurrent())
         {
             var image = _feature.ImportImage(handle, properties);
-            return new GlSkiaImportedImage(_gpu, image);
+            return new GlSkiaImportedImage(_gpu, this, image);
         }
     }
 
@@ -42,7 +43,7 @@ internal class GlSkiaExternalObjectsFeature : IExternalObjectsRenderInterfaceCon
         if (!img.Context.IsSharedWith(_gpu.GlContext))
             throw new InvalidOperationException("Contexts do not belong to the same share group");
         
-        return new GlSkiaImportedImage(_gpu, img);
+        return new GlSkiaImportedImage(_gpu, this, img);
     }
 
     public IPlatformRenderInterfaceImportedSemaphore ImportSemaphore(IPlatformHandle handle)
@@ -59,8 +60,24 @@ internal class GlSkiaExternalObjectsFeature : IExternalObjectsRenderInterfaceCon
     public CompositionGpuImportedImageSynchronizationCapabilities GetSynchronizationCapabilities(string imageHandleType)
         => _feature?.GetSynchronizationCapabilities(imageHandleType) ?? default;
 
+    public int Fbo
+    {
+        get
+        {
+            if (_fbo == 0)
+                _fbo = _gpu.GlContext.GlInterface.GenFramebuffer();
+
+            return _fbo;
+        }
+    }
+
     public byte[]? DeviceUuid => _feature?.DeviceUuid;
     public byte[]? DeviceLuid => _feature?.DeviceLuid;
+}
+
+internal interface IGlSkiaFboProvider
+{
+    int Fbo { get; }
 }
 
 internal class GlSkiaImportedSemaphore : IPlatformRenderInterfaceImportedSemaphore
@@ -81,17 +98,20 @@ internal class GlSkiaImportedImage : IPlatformRenderInterfaceImportedImage
 {
     private readonly GlSkiaSharedTextureForComposition? _sharedTexture;
     private readonly GlSkiaGpu _gpu;
+    private readonly IGlSkiaFboProvider _fboProvider;
     private readonly IGlExternalImageTexture? _image;
 
-    public GlSkiaImportedImage(GlSkiaGpu gpu, IGlExternalImageTexture image)
+    public GlSkiaImportedImage(GlSkiaGpu gpu, IGlSkiaFboProvider fboProvider, IGlExternalImageTexture image)
     {
         _gpu = gpu;
+        _fboProvider = fboProvider;
         _image = image;
     }
 
-    public GlSkiaImportedImage(GlSkiaGpu gpu, GlSkiaSharedTextureForComposition sharedTexture)
+    public GlSkiaImportedImage(GlSkiaGpu gpu, IGlSkiaFboProvider fboProvider, GlSkiaSharedTextureForComposition sharedTexture)
     {
         _gpu = gpu;
+        _fboProvider = fboProvider;
         _sharedTexture = sharedTexture;
     }
 
@@ -109,21 +129,23 @@ internal class GlSkiaImportedImage : IPlatformRenderInterfaceImportedImage
             _ => SKColorType.Rgba8888
         };
 
-    SKSurface? TryCreateSurface(int target, int textureId, int format, int width, int height, bool topLeft)
+    SKImage? TryCreateImage(int target, int textureId, int format, int width, int height, bool topLeft)
     {
-        var origin = topLeft ? GRSurfaceOrigin.TopLeft : GRSurfaceOrigin.BottomLeft; 
+        var origin = topLeft ? GRSurfaceOrigin.TopLeft : GRSurfaceOrigin.BottomLeft;
+
         using var texture = new GRBackendTexture(width, height, false,
             new GRGlTextureInfo((uint)target, (uint)textureId, (uint)format));
-        var surf = SKSurface.Create(_gpu.GrContext, texture, origin, SKColorType.Rgba8888);
-        if (surf != null)
-            return surf;
-        
+
+        var image = SKImage.FromAdoptedTexture(_gpu.GrContext, texture, origin, SKColorType.Rgba8888);
+        if (image is not null)
+            return image;
+
         using var unformatted = new GRBackendTexture(width, height, false,
-            new GRGlTextureInfo((uint)GlConsts.GL_TEXTURE_2D, (uint)textureId));
-        
-        return SKSurface.Create(_gpu.GrContext, unformatted, origin, SKColorType.Rgba8888);
+            new GRGlTextureInfo((uint)target, (uint)textureId));
+
+        return SKImage.FromAdoptedTexture(_gpu.GrContext, unformatted, origin, SKColorType.Rgba8888);
     }
-    
+
     IBitmapImpl TakeSnapshot()
     {
         var width = _image?.Properties.Width ?? _sharedTexture!.Size.Width;
@@ -131,41 +153,41 @@ internal class GlSkiaImportedImage : IPlatformRenderInterfaceImportedImage
         var internalFormat = _image?.InternalFormat ?? _sharedTexture!.InternalFormat;
         var textureId = _image?.TextureId ?? _sharedTexture!.TextureId;
         var topLeft = _image?.Properties.TopLeftOrigin ?? false;
-        var textureType = _image?.TextureType ?? GlConsts.GL_TEXTURE_2D;
-        
-        
-        IBitmapImpl rv;
-        using (var surf = TryCreateSurface(textureType, textureId, internalFormat, width, height, topLeft))
-        {
-            if (surf == null)
-                throw new OpenGlException("Unable to consume provided texture");
-            var snapshot = surf.Snapshot();
-            var context = _gpu.GlContext;
-            
-            rv = new ImmutableBitmap(snapshot, () =>
-            {
-                IDisposable? restoreContext = null;
-                try
-                {
-                    restoreContext = context.EnsureCurrent();
-                }
-                catch
-                {
-                    // Ignore, context is likely dead
-                }
+        var textureType = _image?.TextureType ?? GL_TEXTURE_2D;
 
-                using (restoreContext)
-                {
-                    snapshot.Dispose();
-                }
-            });
+        var context = _gpu.GlContext;
+        var snapshotTextureId = CopyToNewTexture(textureType, textureId, internalFormat, width, height);
+        var snapshotImage = TryCreateImage(textureType, snapshotTextureId, internalFormat, width, height, topLeft);
+
+        if (snapshotImage is null)
+        {
+            context.GlInterface.DeleteTexture(snapshotTextureId);
+            throw new OpenGlException("Unable to consume provided texture");
         }
 
+        var rv = new ImmutableBitmap(snapshotImage, () =>
+        {
+            IDisposable? restoreContext = null;
+            try
+            {
+                restoreContext = context.EnsureCurrent();
+            }
+            catch
+            {
+                // Ignore, context is likely dead
+            }
+
+            using (restoreContext)
+            {
+                snapshotImage.Dispose();
+            }
+        });
+
         _gpu.GrContext.Flush();
-        _gpu.GlContext.GlInterface.Flush();
+        context.GlInterface.Flush();
         return rv;
     }
-    
+
     public IBitmapImpl SnapshotWithKeyedMutex(uint acquireIndex, uint releaseIndex)
     {
         if (_image is null)
@@ -239,5 +261,40 @@ internal class GlSkiaImportedImage : IPlatformRenderInterfaceImportedImage
     {
         using (_gpu.EnsureCurrent())
             return TakeSnapshot();
+    }
+
+    private int CopyToNewTexture(int textureType, int sourceTextureId, int internalFormat, int width, int height)
+    {
+        var gl = _gpu.GlContext.GlInterface;
+
+        using var _ = _gpu.EnsureCurrent();
+
+        // Snapshot current values
+        gl.GetIntegerv(GL_FRAMEBUFFER_BINDING, out var oldFbo);
+        gl.GetIntegerv(GL_SCISSOR_TEST, out var oldScissorTest);
+
+        // Bind source texture
+        gl.BindFramebuffer(GL_FRAMEBUFFER, _fboProvider.Fbo);
+        gl.Disable(GL_SCISSOR_TEST);
+        gl.FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, textureType, sourceTextureId, 0);
+
+        // Create destination texture
+        var destTextureId = gl.GenTexture();
+        gl.BindTexture(textureType, destTextureId);
+        gl.TexImage2D(textureType, 0, internalFormat, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, IntPtr.Zero);
+
+        // Copy
+        gl.CopyTexSubImage2D(textureType, 0, 0, 0, 0, 0, width, height);
+
+        // Flush
+        gl.FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, textureType, 0, 0);
+        gl.Flush();
+
+        // Restore old values
+        gl.BindFramebuffer(GL_FRAMEBUFFER, oldFbo);
+        if (oldScissorTest != 0)
+            gl.Enable(GL_SCISSOR_TEST);
+
+        return destTextureId;
     }
 }
