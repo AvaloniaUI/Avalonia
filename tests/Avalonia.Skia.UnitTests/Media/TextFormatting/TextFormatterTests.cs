@@ -448,6 +448,51 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Theory]
+        [InlineData("one 🎻 two 🎺 three 🎸 four", "…three 🎸 four", false)]
+        [InlineData("one 🎻 two 🎺 three 🎸 four", "one 🎻 t… four", true)]
+        [InlineData("אחת שתיים שלוש ארבע 🎺 חמש", "…וש ארבע 🎺 חמש", false)]
+        public void TextLeadingPrefix_Should_Trim_Correctly(string text, string trimmed, bool prefixEllipses)
+        {
+            const double Width = 160.0;
+            const double EmSize = 20.0;
+
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default, EmSize);
+
+                var paragraphProperties = new GenericTextParagraphProperties(FlowDirection.LeftToRight, TextAlignment.Start, true,
+                                                                             true, defaultProperties, TextWrapping.NoWrap, 0, 0, 0);
+
+                var textSource = new SimpleTextSource(text, defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine = formatter.FormatLine(textSource, 0, double.PositiveInfinity, paragraphProperties);
+
+                Assert.NotNull(textLine);
+
+                var prefixTrimming = prefixEllipses ? TextTrimming.PrefixCharacterEllipsis : TextTrimming.LeadingCharacterEllipsis;
+
+                var collapsingProperties = prefixTrimming.CreateCollapsingProperties(new TextCollapsingCreateInfo(Width, defaultProperties, FlowDirection.LeftToRight));
+
+                var collapsedLine = textLine.Collapse(collapsingProperties);
+
+                Assert.NotNull(collapsedLine);
+
+                var e = new LogicalTextRunEnumerator(collapsedLine);
+                List<ReadOnlyMemory<char>> trimmedRes = [];
+                while(e.MoveNext(out var run))
+                {
+                    trimmedRes.Add(run.Text);
+                }
+
+                var trimmedResult = string.Concat(trimmedRes);
+
+                Assert.Equal(trimmed, trimmedResult);
+            }
+        }
+
         [InlineData("Whether to turn off HTTPS. This option only applies if Individual, " +
                     "IndividualB2C, SingleOrg, or MultiOrg aren't used for &#8209;&#8209;auth."
             , "Noto Sans", 40)]
