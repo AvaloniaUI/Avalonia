@@ -997,7 +997,7 @@ namespace Avalonia.Win32
                 }
 
                 // sorting is required to ensure points are in order from oldest to newest
-                s_sortedPoints.Sort((a, b) => a.Time.CompareTo(b.Time));
+                s_sortedPoints.Sort(static (a, b) => a.Time.CompareTo(b.Time));
 
                 foreach (var p in s_sortedPoints)
                 {
