@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
+using Avalonia.Compatibility;
 using Avalonia.Media;
 using Avalonia.Platform;
 using SkiaSharp;
@@ -123,6 +124,17 @@ namespace Avalonia.Skia
             var fontStyle = new SKFontStyle((SKFontStyleWeight)weight, (SKFontStyleWidth)stretch, style.ToSkia());
 
             var skTypeface = _skFontManager.MatchFamily(familyName, fontStyle);
+
+            // SkiaSharp 2.88 can return the default family name (Helvetica) on macOS here.
+            // On Windows and Linux, this returns null instead. Adjust the behavior on macOS to return null instead.
+            // (With SkiaSharp 3.119, all platforms return null).
+            if (OperatingSystemEx.IsMacOS()
+                && skTypeface is not null
+                && skTypeface.FamilyName != familyName
+                && skTypeface.FamilyName == GetDefaultFontFamilyName())
+            {
+                return false;
+            }
 
             if (skTypeface is null)
             {
