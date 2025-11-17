@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-      <PackageReference Include="Avalonia.BuildServices" Version="11.3.1" />
+      <PackageReference Include="Avalonia.BuildServices" Version="11.3.2" />
       <ProjectReference Include="../../src/Avalonia.Remote.Protocol/Avalonia.Remote.Protocol.csproj" />
       <ProjectReference Include="../../src/Avalonia.Build.Tasks/Avalonia.Build.Tasks.csproj"
                         PrivateAssets="all" />
