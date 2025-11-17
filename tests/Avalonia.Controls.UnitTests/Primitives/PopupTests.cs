@@ -1114,6 +1114,65 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void Child_Margin_Should_Not_Affect_Popup_Position()
+        {
+            using var services = CreateServices();
+
+            var placementTarget = new Panel
+            {
+                Width = 10,
+                Height = 10,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+
+            var popupChild = new Border
+            {
+                Width = 10,
+                Height = 10,
+            };
+
+            var popup = new Popup
+            {
+                PlacementTarget = placementTarget,
+                Placement = PlacementMode.BottomEdgeAlignedLeft,
+                Child = popupChild,
+            };
+            ((ISetLogicalParent)popup).SetParent(popup.PlacementTarget);
+
+            var window = PreparedWindow(placementTarget);
+            window.Show();
+            popup.Open();
+            Dispatcher.UIThread.RunJobs();
+
+            Point GetPopupPosition()
+            {
+                if (UsePopupHost)
+                {
+                    return Assert.IsAssignableFrom<OverlayPopupHost>(popup.Host).TranslatePoint(default, window)!.Value;
+                }
+                else
+                {
+                    var impl = Assert.IsAssignableFrom<PopupRoot>(popup.Host).PlatformImpl;
+                    return impl.Position.ToPoint(impl.RenderScaling);
+                }
+            }
+
+            var initialPosition = GetPopupPosition();
+
+            const int ChildMarginLength = 20;
+
+            popupChild.Margin = new(ChildMarginLength);
+
+            // The popup's bounds will now include the child's margin, but the positioning system should have substracted this
+            // to keep the child's bounds stable. Thus the popup as a whole should have moved upwards and to the left.
+            var expected = initialPosition - new Point(ChildMarginLength, ChildMarginLength);
+            
+            Dispatcher.UIThread.RunJobs();
+            Assert.Equal(expected, GetPopupPosition());
+        }
+
+        [Fact]
         public void Events_Should_Be_Routed_To_Popup_Parent()
         {
             using (CreateServices())
