@@ -175,7 +175,7 @@ namespace Avalonia.Headless
                 var codepoint = Codepoint.ReadAt(textSpan, i, out var count);
 
                 // Handle CRLF as a single cluster
-                if (codepoint.Value == 0x0D && i + count < textSpan.Length && Codepoint.ReadAt(textSpan, i + count, out var lfCount).Value == 0x0A)
+                if (codepoint.Value == 0x0D && Codepoint.ReadAt(textSpan, i + count, out var lfCount).Value == 0x0A)
                 {
                     count += lfCount;
                 }

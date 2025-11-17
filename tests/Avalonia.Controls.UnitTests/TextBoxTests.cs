@@ -2130,14 +2130,14 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Backspace_Should_Delete_Newline_Character_At_Once()
+        public void Backspace_Should_Delete_CRLFNewline_Character_At_Once()
         {
             using var _ = UnitTestApplication.Start(Services);
             var target = new TextBox
             {
                 Template = CreateTemplate(),
-                Text = $"First{Environment.NewLine}Second",
-                CaretIndex = 5 + Environment.NewLine.Length
+                Text = $"First\r\nSecond",
+                CaretIndex = 7
             };
             target.ApplyTemplate();
 
