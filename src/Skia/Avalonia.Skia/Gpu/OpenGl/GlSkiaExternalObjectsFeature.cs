@@ -8,10 +8,11 @@ using static Avalonia.OpenGL.GlConsts;
 
 namespace Avalonia.Skia;
 
-internal class GlSkiaExternalObjectsFeature : IExternalObjectsRenderInterfaceContextFeature
+internal class GlSkiaExternalObjectsFeature : IExternalObjectsRenderInterfaceContextFeature, IGlSkiaFboProvider
 {
     private readonly GlSkiaGpu _gpu;
     private readonly IGlContextExternalObjectsFeature? _feature;
+    private int _fbo;
 
     public GlSkiaExternalObjectsFeature(GlSkiaGpu gpu, IGlContextExternalObjectsFeature? feature)
     {
@@ -32,7 +33,7 @@ internal class GlSkiaExternalObjectsFeature : IExternalObjectsRenderInterfaceCon
         using (_gpu.EnsureCurrent())
         {
             var image = _feature.ImportImage(handle, properties);
-            return new GlSkiaImportedImage(_gpu, image);
+            return new GlSkiaImportedImage(_gpu, this, image);
         }
     }
 
@@ -42,7 +43,7 @@ internal class GlSkiaExternalObjectsFeature : IExternalObjectsRenderInterfaceCon
         if (!img.Context.IsSharedWith(_gpu.GlContext))
             throw new InvalidOperationException("Contexts do not belong to the same share group");
         
-        return new GlSkiaImportedImage(_gpu, img);
+        return new GlSkiaImportedImage(_gpu, this, img);
     }
 
     public IPlatformRenderInterfaceImportedSemaphore ImportSemaphore(IPlatformHandle handle)
@@ -59,8 +60,24 @@ internal class GlSkiaExternalObjectsFeature : IExternalObjectsRenderInterfaceCon
     public CompositionGpuImportedImageSynchronizationCapabilities GetSynchronizationCapabilities(string imageHandleType)
         => _feature?.GetSynchronizationCapabilities(imageHandleType) ?? default;
 
+    public int Fbo
+    {
+        get
+        {
+            if (_fbo == 0)
+                _fbo = _gpu.GlContext.GlInterface.GenFramebuffer();
+
+            return _fbo;
+        }
+    }
+
     public byte[]? DeviceUuid => _feature?.DeviceUuid;
     public byte[]? DeviceLuid => _feature?.DeviceLuid;
+}
+
+internal interface IGlSkiaFboProvider
+{
+    int Fbo { get; }
 }
 
 internal class GlSkiaImportedSemaphore : IPlatformRenderInterfaceImportedSemaphore
@@ -81,29 +98,25 @@ internal class GlSkiaImportedImage : IPlatformRenderInterfaceImportedImage
 {
     private readonly GlSkiaSharedTextureForComposition? _sharedTexture;
     private readonly GlSkiaGpu _gpu;
+    private readonly IGlSkiaFboProvider _fboProvider;
     private readonly IGlExternalImageTexture? _image;
-    private int _fbo;
 
-    public GlSkiaImportedImage(GlSkiaGpu gpu, IGlExternalImageTexture image)
+    public GlSkiaImportedImage(GlSkiaGpu gpu, IGlSkiaFboProvider fboProvider, IGlExternalImageTexture image)
     {
         _gpu = gpu;
+        _fboProvider = fboProvider;
         _image = image;
     }
 
-    public GlSkiaImportedImage(GlSkiaGpu gpu, GlSkiaSharedTextureForComposition sharedTexture)
+    public GlSkiaImportedImage(GlSkiaGpu gpu, IGlSkiaFboProvider fboProvider, GlSkiaSharedTextureForComposition sharedTexture)
     {
         _gpu = gpu;
+        _fboProvider = fboProvider;
         _sharedTexture = sharedTexture;
     }
 
     public void Dispose()
     {
-        if (_fbo != 0)
-        {
-            _gpu.GlContext.GlInterface.DeleteFramebuffer(_fbo);
-            _fbo = 0;
-        }
-
         _image?.Dispose();
         _sharedTexture?.Dispose(_gpu.GlContext);
     }
@@ -260,12 +273,8 @@ internal class GlSkiaImportedImage : IPlatformRenderInterfaceImportedImage
         gl.GetIntegerv(GL_FRAMEBUFFER_BINDING, out var oldFbo);
         gl.GetIntegerv(GL_SCISSOR_TEST, out var oldScissorTest);
 
-        // Create FBO if needed
-        if (_fbo == 0)
-            _fbo = gl.GenFramebuffer();
-
         // Bind source texture
-        gl.BindFramebuffer(GL_FRAMEBUFFER, _fbo);
+        gl.BindFramebuffer(GL_FRAMEBUFFER, _fboProvider.Fbo);
         gl.Disable(GL_SCISSOR_TEST);
         gl.FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, textureType, sourceTextureId, 0);
 
