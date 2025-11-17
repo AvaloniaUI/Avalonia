@@ -48,6 +48,8 @@
                 Margin="5"
                 Padding="50"
                 Background="{DynamicResource SystemAccentColor}"
+                PointerPressed="Border_PointerPressed" PointerReleased="Border_PointerReleased" PointerCaptureLost="Border_PointerCaptureLost"
+                PointerMoved="Border_PointerUpdated" PointerEntered="Border_PointerUpdated" PointerExited="Border_PointerUpdated"
                 ToolTip.Placement="Bottom">
           <TextBlock>Capture 1</TextBlock>
         </Border>
@@ -57,6 +59,8 @@
                 Margin="5"
                 Padding="50"
                 Background="{DynamicResource SystemAccentColor}"
+                PointerPressed="Border_PointerPressed" PointerReleased="Border_PointerReleased" PointerCaptureLost="Border_PointerCaptureLost"
+                PointerMoved="Border_PointerUpdated" PointerEntered="Border_PointerUpdated" PointerExited="Border_PointerUpdated"
                 ToolTip.Placement="Bottom">
           <TextBlock>Capture 2</TextBlock>
         </Border>

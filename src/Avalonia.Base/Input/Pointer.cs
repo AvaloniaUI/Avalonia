@@ -6,6 +6,13 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Input
 {
+    internal enum CaptureSource
+    {
+        Explicit,
+        Implicit,
+        Platform
+    }
+
     public class Pointer : IPointer, IDisposable
     {
         private static int s_NextFreePointerId = 1000;
@@ -30,29 +37,60 @@ namespace Avalonia.Input
 
         protected virtual void PlatformCapture(IInputElement? element)
         {
-            
+
         }
-        
+
+        internal void PlatformCaptureLost()
+        {
+            if (Captured != null)
+                Capture(null, CaptureSource.Platform);
+        }
+
         public void Capture(IInputElement? control)
         {
-            if (Captured is Visual v1)
-                v1.DetachedFromVisualTree -= OnCaptureDetached;
+            Capture(control, CaptureSource.Explicit);
+        }
+
+        internal void Capture(IInputElement? control, CaptureSource source)
+        {
             var oldCapture = Captured;
-            Captured = control;
-            PlatformCapture(control);
-            if (oldCapture is Visual v2)
+            if (oldCapture == control)
+                return;
+
+            var oldVisual = oldCapture as Visual;
+
+            IInputElement? commonParent = null;
+            if (oldVisual != null)
             {
-                var commonParent = FindCommonParent(control, oldCapture);
-                foreach (var notifyTarget in v2.GetSelfAndVisualAncestors().OfType<IInputElement>())
+                commonParent = FindCommonParent(control, oldCapture);
+                foreach (var notifyTarget in oldVisual.GetSelfAndVisualAncestors().OfType<IInputElement>())
+                {
+                    if (notifyTarget == commonParent)
+                        break;
+                    var args = new PointerCaptureChangingEventArgs(notifyTarget, this, control, source);
+                    notifyTarget.RaiseEvent(args);
+                    if (args.Handled)
+                        return;
+                }
+            }
+
+            if (oldVisual != null)
+                oldVisual.DetachedFromVisualTree -= OnCaptureDetached;
+            Captured = control;
+
+            if (source != CaptureSource.Platform)
+                PlatformCapture(control);
+
+            if (oldVisual != null)
+                foreach (var notifyTarget in oldVisual.GetSelfAndVisualAncestors().OfType<IInputElement>())
                 {
                     if (notifyTarget == commonParent)
                         break;
                     notifyTarget.RaiseEvent(new PointerCaptureLostEventArgs(notifyTarget, this));
                 }
-            }
 
-            if (Captured is Visual v3)
-                v3.DetachedFromVisualTree += OnCaptureDetached;
+            if (Captured is Visual newVisual)
+                newVisual.DetachedFromVisualTree += OnCaptureDetached;
 
             if (Captured != null)
                 CaptureGestureRecognizer(null);
@@ -75,7 +113,7 @@ namespace Avalonia.Input
 
 
         public IInputElement? Captured { get; private set; }
-            
+
         public PointerType Type { get; }
         public bool IsPrimary { get; }
 

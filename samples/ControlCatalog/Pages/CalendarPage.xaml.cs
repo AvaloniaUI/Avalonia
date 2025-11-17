@@ -1,28 +1,20 @@
-using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
 using System;
+using Avalonia.Controls;
 
 namespace ControlCatalog.Pages
 {
-    public class CalendarPage : UserControl
+    public partial class CalendarPage : UserControl
     {
         public CalendarPage()
         {
-            this.InitializeComponent();
+            InitializeComponent();
 
-            var today = DateTime.Today; 
-            var cal1 = this.Get<Calendar>("DisplayDatesCalendar");
-            cal1.DisplayDateStart = today.AddDays(-25);
-            cal1.DisplayDateEnd = today.AddDays(25);
+            var today = DateTime.Today;
+            DisplayDatesCalendar.DisplayDateStart = today.AddDays(-25);
+            DisplayDatesCalendar.DisplayDateEnd = today.AddDays(25);
 
-            var cal2 = this.Get<Calendar>("BlackoutDatesCalendar");
-            cal2.BlackoutDates.AddDatesInPast();
-            cal2.BlackoutDates.Add(new CalendarDateRange(today.AddDays(6)));
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
+            BlackoutDatesCalendar.BlackoutDates.AddDatesInPast();
+            BlackoutDatesCalendar.BlackoutDates.Add(new CalendarDateRange(today.AddDays(6)));
         }
     }
 }

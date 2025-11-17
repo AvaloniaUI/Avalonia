@@ -1259,7 +1259,7 @@ namespace Avalonia.Controls
             {
                 try
                 {
-                    text = await clipboard.GetTextAsync();
+                    text = await clipboard.TryGetTextAsync();
                 }
                 catch (TimeoutException)
                 {
@@ -1867,6 +1867,8 @@ namespace Avalonia.Controls
                     SetCurrentValue(SelectionStartProperty, caretIndex);
                     SetCurrentValue(SelectionEndProperty, caretIndex);
                 }
+
+                _presenter.TextSelectionHandleCanvas?.Show();
 
                 if (SelectionStart != SelectionEnd)
                 {
