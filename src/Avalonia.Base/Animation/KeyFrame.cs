@@ -18,6 +18,7 @@ namespace Avalonia.Animation
     /// </summary>
     public sealed class KeyFrame : AvaloniaObject
     {
+        private KeyFrameTimingMode _timingMode;
         private TimeSpan _ktimeSpan;
         private Cue _kCue;
         private KeySpline? _kKeySpline;
@@ -32,7 +33,7 @@ namespace Avalonia.Animation
         [Content]
         public AvaloniaList<IAnimationSetter> Setters { get; } = new AvaloniaList<IAnimationSetter>();
 
-        internal KeyFrameTimingMode TimingMode { get; private set; }
+        internal KeyFrameTimingMode TimingMode => _timingMode;
 
         /// <summary>
         /// Gets or sets the key time of this <see cref="KeyFrame"/>.
@@ -50,7 +51,7 @@ namespace Avalonia.Animation
                 {
                     throw new InvalidOperationException($"You can only set either {nameof(KeyTime)} or {nameof(Cue)}.");
                 }
-                TimingMode = KeyFrameTimingMode.TimeSpan;
+                _timingMode = KeyFrameTimingMode.TimeSpan;
                 _ktimeSpan = value;
             }
         }
@@ -71,7 +72,7 @@ namespace Avalonia.Animation
                 {
                     throw new InvalidOperationException($"You can only set either {nameof(KeyTime)} or {nameof(Cue)}.");
                 }
-                TimingMode = KeyFrameTimingMode.Cue;
+                _timingMode = KeyFrameTimingMode.Cue;
                 _kCue = value;
             }
         }
