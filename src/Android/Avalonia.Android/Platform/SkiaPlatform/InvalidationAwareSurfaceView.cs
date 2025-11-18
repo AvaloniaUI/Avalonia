@@ -42,26 +42,26 @@ namespace Avalonia.Android
 
         public virtual void SurfaceChanged(ISurfaceHolder holder, Format format, int width, int height)
         {
-            CacheSurfaceProperties(holder);
             Logger.TryGet(LogEventLevel.Verbose, LogArea.AndroidPlatform)?
-                .Log(this, "InvalidationAwareSurfaceView Changed");
+                .Log(this, $"InvalidationAwareSurfaceView Changed. Format:{format} Size:{width} x {height}");
+            CacheSurfaceProperties(holder);
         }
 
         public void SurfaceCreated(ISurfaceHolder holder)
         {
-            CacheSurfaceProperties(holder);
             Logger.TryGet(LogEventLevel.Verbose, LogArea.AndroidPlatform)?
                 .Log(this, "InvalidationAwareSurfaceView Created");
+            CacheSurfaceProperties(holder);
             SurfaceWindowCreated?.Invoke(this, EventArgs.Empty);
         }
 
         public void SurfaceDestroyed(ISurfaceHolder holder)
         {
+            Logger.TryGet(LogEventLevel.Verbose, LogArea.AndroidPlatform)?
+                .Log(this, "InvalidationAwareSurfaceView Destroyed");
             ReleaseNativeWindowHandle();
             _size = new PixelSize(1, 1);
             _scaling = 1;
-            Logger.TryGet(LogEventLevel.Verbose, LogArea.AndroidPlatform)?
-                .Log(this, "InvalidationAwareSurfaceView Destroyed");
         }
 
         public virtual void SurfaceRedrawNeeded(ISurfaceHolder holder)
