@@ -32,7 +32,7 @@ public class WinFormsAvaloniaControlHost : WinFormsControl
     {
         SetStyle(ControlStyles.AllPaintingInWmPaint, true);
 
-        var inputManager = AvaloniaLocator.Current.GetRequiredService<IInputManager>();
+        var inputManager = AvaloniaLocator.Current.GetService<IInputManager>();
 
         if(inputManager != null )
         {
