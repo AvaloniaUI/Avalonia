@@ -17,6 +17,7 @@ namespace WindowsInteropTest
             AppBuilder.Configure<App>()
                 .UseWin32()
                 .UseSkia()
+                .UsePlatformDetect()
                 .SetupWithoutStarting();
             System.Windows.Forms.Application.Run(new EmbedToWinFormsDemo());
         }
