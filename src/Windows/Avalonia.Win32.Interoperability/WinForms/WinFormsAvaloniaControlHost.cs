@@ -141,21 +141,21 @@ public class WinFormsAvaloniaControlHost : WinFormsControl, IMessageFilter
 
     public bool PreFilterMessage(ref Message m)
     {
-        if (_root?.PlatformImpl is WindowImpl impl && !impl.IsOurWindow(m.HWnd))
-        {
-            var message = (UnmanagedMethods.WindowsMessage)m.Msg;
+        var message = (UnmanagedMethods.WindowsMessage)m.Msg;
 
-            switch (message)
-            {
-                case UnmanagedMethods.WindowsMessage.WM_LBUTTONDOWN:
-                case UnmanagedMethods.WindowsMessage.WM_MBUTTONDOWN:
-                case UnmanagedMethods.WindowsMessage.WM_RBUTTONDOWN:
-                case UnmanagedMethods.WindowsMessage.WM_NCLBUTTONDOWN:
-                case UnmanagedMethods.WindowsMessage.WM_NCMBUTTONDOWN:
-                case UnmanagedMethods.WindowsMessage.WM_NCRBUTTONDOWN:
+        switch (message)
+        {
+            case UnmanagedMethods.WindowsMessage.WM_LBUTTONDOWN:
+            case UnmanagedMethods.WindowsMessage.WM_MBUTTONDOWN:
+            case UnmanagedMethods.WindowsMessage.WM_RBUTTONDOWN:
+            case UnmanagedMethods.WindowsMessage.WM_NCLBUTTONDOWN:
+            case UnmanagedMethods.WindowsMessage.WM_NCMBUTTONDOWN:
+            case UnmanagedMethods.WindowsMessage.WM_NCRBUTTONDOWN:
+                if (_root?.PlatformImpl is WindowImpl impl && !impl.IsOurWindow(m.HWnd))
+                {
                     impl.Deactivated?.Invoke();
-                    break;
-            }
+                }
+                break;
         }
 
         return false;
