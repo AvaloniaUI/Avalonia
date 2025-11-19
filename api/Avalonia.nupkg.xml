@@ -2,6 +2,30 @@
 <!-- https://learn.microsoft.com/dotnet/fundamentals/package-validation/diagnostic-ids -->
 <Suppressions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Media.Fonts.FontFamilyLoader</Target>
+    <Left>baseline/Avalonia/lib/net6.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net6.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Media.Fonts.FontFamilyLoader</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Media.Fonts.FontFamilyLoader</Target>
+    <Left>baseline/Avalonia/lib/netstandard2.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/netstandard2.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>F:Avalonia.Media.Fonts.FontCollectionBase._glyphTypefaceCache</Target>
+    <Left>baseline/Avalonia/lib/net6.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net6.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Media.Fonts.FontCollectionBase.Initialize(Avalonia.Platform.IFontManagerImpl)</Target>
     <Left>baseline/Avalonia/lib/net6.0/Avalonia.Base.dll</Left>
@@ -27,6 +51,12 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>F:Avalonia.Media.Fonts.FontCollectionBase._glyphTypefaceCache</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Media.Fonts.FontCollectionBase.Initialize(Avalonia.Platform.IFontManagerImpl)</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
@@ -48,6 +78,12 @@
     <Target>M:Avalonia.Dialogs.Internal.ManagedFileChooserFilterViewModel.#ctor(Avalonia.Platform.Storage.FilePickerFileType)</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Dialogs.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Dialogs.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>F:Avalonia.Media.Fonts.FontCollectionBase._glyphTypefaceCache</Target>
+    <Left>baseline/Avalonia/lib/netstandard2.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/netstandard2.0/Avalonia.Base.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
