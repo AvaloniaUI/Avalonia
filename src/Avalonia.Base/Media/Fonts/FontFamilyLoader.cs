@@ -25,6 +25,24 @@ namespace Avalonia.Media.Fonts
             return Enumerable.Empty<Uri>();
         }
 
+        /// <summary>
+        /// Determines whether the specified URI refers to a font file source.
+        /// </summary>
+        /// <param name="uri">The URI to evaluate as a potential font file source. Must not be null.</param>
+        /// <returns>true if the URI points to a recognized font file source; otherwise, false.</returns>
+        public static bool IsFontSource(Uri uri)
+        {
+            var sourceWithoutArguments = GetSubString(uri.OriginalString, '?');
+            return IsFontFile(sourceWithoutArguments);
+        }
+
+        /// <summary>
+        /// Determines whether the specified file path refers to a supported font file type.
+        /// </summary>
+        /// <remarks>This method performs a case-insensitive check for common font file extensions. It
+        /// does not verify the existence or validity of the file at the specified path.</remarks>
+        /// <param name="filePath">The path of the file to check. Can be a relative or absolute path. If null, the method returns false.</param>
+        /// <returns>true if the file path ends with ".ttf", ".otf", or ".ttc" (case-insensitive); otherwise, false.</returns>
         public static bool IsFontFile(string filePath)
         {
             if (filePath is null)
@@ -106,12 +124,6 @@ namespace Avalonia.Media.Fonts
             var path = x.GetUnescapeAbsolutePath();
             return path.IndexOf(filePattern, StringComparison.Ordinal) >= 0
                    && path.EndsWith(fileExtension, StringComparison.OrdinalIgnoreCase);
-        }
-
-        internal static bool IsFontSource(Uri uri)
-        {
-            var sourceWithoutArguments = GetSubString(uri.OriginalString, '?');
-            return IsFontFile(sourceWithoutArguments);
         }
 
         private static (string fileNameWithoutExtension, string extension) GetFileNameAndExtension(
