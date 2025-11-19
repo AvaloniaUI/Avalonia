@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection.Emit;
 using Avalonia.Data.Core.Parsers;
@@ -135,6 +136,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             return node.Property.Getter?.ReturnType;
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2122", Justification = TrimmingMessages.TypesInCoreOrAvaloniaAssembly)]
         private static XamlIlBindingPathNode TransformBindingPath(AstTransformationContext context, IXamlLineInfo lineInfo, Func<IXamlType> startTypeResolver, IXamlType selfType, IEnumerable<BindingExpressionGrammar.INode> bindingExpression)
         {
             List<IXamlIlBindingPathElementNode> transformNodes = new List<IXamlIlBindingPathElementNode>();
@@ -741,6 +743,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
             public IXamlType Type { get; }
 
+            [UnconditionalSuppressMessage("Trimming", "IL2122", Justification = TrimmingMessages.TypesInCoreOrAvaloniaAssembly)]
+            [UnconditionalSuppressMessage("Trimming", "IL2062", Justification = "All Action<> and Func<> types are explicitly preserved.")]
             public void Emit(XamlIlEmitContext context, IXamlILEmitter codeGen)
             {
                 IXamlTypeBuilder<IXamlILEmitter>? newDelegateTypeBuilder = null;
@@ -822,6 +826,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
             public IXamlType Type { get; }
 
+            [UnconditionalSuppressMessage("Trimming", "IL2122", Justification = TrimmingMessages.TypesInCoreOrAvaloniaAssembly)]
             public void Emit(XamlIlEmitContext context, IXamlILEmitter codeGen)
             {
                 var trampolineBuilder = context.Configuration.GetExtra<XamlIlTrampolineBuilder>();
@@ -892,6 +897,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 _isNotifyingCollection = isNotifyingCollection;
             }
 
+            [UnconditionalSuppressMessage("Trimming", "IL2122", Justification = TrimmingMessages.TypesInCoreOrAvaloniaAssembly)]
             public void Emit(XamlIlEmitContext context, IXamlILEmitter codeGen)
             {
                 var intType = context.Configuration.TypeSystem.GetType("System.Int32");
@@ -938,6 +944,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 }
             }
 
+            [UnconditionalSuppressMessage("Trimming", "IL2122", Justification = TrimmingMessages.TypesInCoreOrAvaloniaAssembly)]
             public void Emit(XamlIlEmitContext context, IXamlILEmitter codeGen)
             {
                 var intType = context.Configuration.TypeSystem.GetType("System.Int32");
@@ -1000,6 +1007,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
             public List<IXamlIlBindingPathElementNode> Elements { get; }
 
+            [UnconditionalSuppressMessage("Trimming", "IL2122", Justification = TrimmingMessages.TypesInCoreOrAvaloniaAssembly)]
             public XamlILNodeEmitResult Emit(XamlIlEmitContext context, IXamlILEmitter codeGen)
             {
                 var intType = context.Configuration.TypeSystem.GetType("System.Int32");

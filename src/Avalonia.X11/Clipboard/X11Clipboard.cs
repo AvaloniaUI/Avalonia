@@ -3,27 +3,28 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
-using Avalonia.X11.Clipboard;
+using Avalonia.Logging;
+using Avalonia.Platform.Storage;
 using static Avalonia.X11.XLib;
-namespace Avalonia.X11
+
+namespace Avalonia.X11.Clipboard
 {
-    internal class X11Clipboard : IClipboard
+    internal sealed class X11ClipboardImpl : IOwnedClipboardImpl
     {
         private readonly AvaloniaX11Platform _platform;
         private readonly X11Info _x11;
-        private IDataObject? _storedDataObject;
-        private IntPtr _handle;
+        private IAsyncDataTransfer? _storedDataTransfer;
+        private readonly IntPtr _handle;
         private TaskCompletionSource<bool>? _storeAtomTcs;
         private readonly IntPtr[] _textAtoms;
         private readonly IntPtr _avaloniaSaveTargetsAtom;
-        private int _maximumPropertySize;
+        private readonly int _maximumPropertySize;
 
-        public X11Clipboard(AvaloniaX11Platform platform)
+        public X11ClipboardImpl(AvaloniaX11Platform platform)
         {
             _platform = platform;
             _x11 = platform.Info;
@@ -45,22 +46,11 @@ namespace Avalonia.X11
                     : extendedMaxRequestSize).ToInt64() - 0x100);
         }
         
-        private Encoding? GetStringEncoding(IntPtr atom)
-        {
-            return (atom == _x11.Atoms.XA_STRING
-                    || atom == _x11.Atoms.OEMTEXT)
-                ? Encoding.ASCII
-                : atom == _x11.Atoms.UTF8_STRING
-                    ? Encoding.UTF8
-                    : atom == _x11.Atoms.UTF16_STRING
-                        ? Encoding.Unicode
-                        : null;
-        }
-
         private unsafe void OnEvent(ref XEvent ev)
         {
             if (ev.type == XEventName.SelectionClear)
             {
+                _storedDataTransfer = null;
                 _storeAtomTcs?.TrySetResult(true);
                 return;
             }
@@ -92,10 +82,9 @@ namespace Avalonia.X11
 
             IntPtr WriteTargetToProperty(IntPtr target, IntPtr window, IntPtr property)
             {
-                Encoding? textEnc;
                 if (target == _x11.Atoms.TARGETS)
                 {
-                    var atoms = ConvertDataObject(_storedDataObject);
+                    var atoms = ConvertDataTransfer(_storedDataTransfer);
                     XChangeProperty(_x11.Display, window, property,
                         _x11.Atoms.XA_ATOM, 32, PropertyMode.Replace, atoms, atoms.Length);
                     return property;
@@ -104,15 +93,22 @@ namespace Avalonia.X11
                 {
                     return property;
                 }
-                else if ((textEnc = GetStringEncoding(target)) != null
-                         && _storedDataObject?.Contains(DataFormats.Text) == true)
+                else if (ClipboardDataFormatHelper.ToDataFormat(target, _x11.Atoms) is { } dataFormat)
                 {
-                    var text = _storedDataObject.GetText();
-                    if (text == null)
+                    if (_storedDataTransfer is null)
                         return IntPtr.Zero;
-                    var data = textEnc.GetBytes(text);
-                    SendDataToClient(window, property, target, data);
 
+                    // Our default bitmap format is image/png
+                    if (dataFormat.Identifier is "image/png" && _storedDataTransfer.Contains(DataFormat.Bitmap))
+                        dataFormat = DataFormat.Bitmap;
+
+                    if (!_storedDataTransfer.Contains(dataFormat))
+                        return IntPtr.Zero;
+
+                    if (TryGetDataAsBytes(_storedDataTransfer, dataFormat, target) is not { } bytes)
+                        return IntPtr.Zero;
+
+                    _ = SendDataToClientAsync(window, property, target, bytes);
                     return property;
                 }
                 else if (target == _x11.Atoms.MULTIPLE && _x11.Atoms.MULTIPLE != IntPtr.Zero)
@@ -140,29 +136,59 @@ namespace Avalonia.X11
 
                     return property;
                 }
-                else if (_x11.Atoms.GetAtomName(target) is { } atomName &&
-                         _storedDataObject?.Contains(atomName) == true)
-                {
-                    var objValue = _storedDataObject.Get(atomName);
-
-                    if (!(objValue is byte[] bytes))
-                    {
-                        if (objValue is string s)
-                            bytes = Encoding.UTF8.GetBytes(s);
-                        else
-                            return IntPtr.Zero;
-                    }
-
-                    SendDataToClient(window, property, target, bytes);
-                    return property;
-                }
                 else
                     return IntPtr.Zero;
             }
 
         }
 
-        async void SendIncrDataToClient(IntPtr window, IntPtr property, IntPtr target, Stream data)
+        private byte[]? TryGetDataAsBytes(IAsyncDataTransfer dataTransfer, DataFormat format, IntPtr targetFormatAtom)
+        {
+            if (DataFormat.Text.Equals(format))
+            {
+                var text = dataTransfer.TryGetValueAsync(DataFormat.Text).GetAwaiter().GetResult();
+
+                return ClipboardDataFormatHelper.TryGetStringEncoding(targetFormatAtom, _x11.Atoms) is { } encoding ?
+                    encoding.GetBytes(text ?? string.Empty) :
+                    null;
+            }
+
+            if (DataFormat.Bitmap.Equals(format))
+            {
+                if (dataTransfer.TryGetValueAsync(DataFormat.Bitmap).GetAwaiter().GetResult() is not { } bitmap)
+                    return null;
+
+                using var stream = new MemoryStream();
+                bitmap.Save(stream);
+
+                return stream.ToArray();
+            }
+            
+            if (DataFormat.File.Equals(format))
+            {
+                if (dataTransfer.TryGetValuesAsync(DataFormat.File).GetAwaiter().GetResult() is not { } files)
+                    return null;
+
+                return ClipboardUriListHelper.FileUriListToUtf8Bytes(files);
+            }
+
+            if (format is DataFormat<string> stringFormat)
+            {
+                return dataTransfer.TryGetValueAsync(stringFormat).GetAwaiter().GetResult() is { } stringValue ?
+                    Encoding.UTF8.GetBytes(stringValue) :
+                    null;
+            }
+
+            if (format is DataFormat<byte[]> bytesFormat)
+                return dataTransfer.TryGetValueAsync(bytesFormat).GetAwaiter().GetResult();
+
+            Logger.TryGet(LogEventLevel.Warning, LogArea.X11Platform)
+                ?.Log(this, "Unsupported data format {Format}", format);
+
+            return null;
+        }
+
+        private async Task SendIncrDataToClientAsync(IntPtr window, IntPtr property, IntPtr target, Stream data)
         {
             data.Position = 0;
             using var events = new EventStreamWindow(_platform, window);
@@ -188,182 +214,188 @@ namespace Avalonia.X11
             XChangeProperty(_x11.Display, window, property, target, 8, PropertyMode.Replace, IntPtr.Zero, 0);
         }
 
-        void SendDataToClient(IntPtr window, IntPtr property, IntPtr target, byte[] bytes)
+        private Task SendDataToClientAsync(IntPtr window, IntPtr property, IntPtr target, byte[] bytes)
         {
             if (bytes.Length < _maximumPropertySize)
             {
                 XChangeProperty(_x11.Display, window, property, target, 8,
                     PropertyMode.Replace,
                     bytes, bytes.Length);
+                return Task.CompletedTask;
             }
-            else
-                SendIncrDataToClient(window, property, target, new MemoryStream(bytes));
+
+            return SendIncrDataToClientAsync(window, property, target, new MemoryStream(bytes));
         }
 
-        private bool HasOwner => XGetSelectionOwner(_x11.Display, _x11.Atoms.CLIPBOARD) != IntPtr.Zero;
+        private IntPtr GetOwner()
+            => XGetSelectionOwner(_x11.Display, _x11.Atoms.CLIPBOARD);
         
         private ClipboardReadSession OpenReadSession() => new(_platform);
 
-        public async Task<string?> GetTextAsync()
+        private IntPtr[] ConvertDataTransfer(IAsyncDataTransfer? dataTransfer)
         {
-            if (!HasOwner)
-                return null;
-            if (TryGetInProcessDataObject() is { } inProc)
-                return inProc.GetText();
-            
-            using var session = OpenReadSession();
-            var res = await session.SendFormatRequest();
-            var target = _x11.Atoms.UTF8_STRING;
-            if (res != null)
+            var atoms = new List<IntPtr> { _x11.Atoms.TARGETS, _x11.Atoms.MULTIPLE };
+
+            if (dataTransfer is not null)
             {
-                var preferredFormats = new[] {_x11.Atoms.UTF16_STRING, _x11.Atoms.UTF8_STRING, _x11.Atoms.XA_STRING};
-                foreach (var pf in preferredFormats)
-                    if (res.Contains(pf))
-                    {
-                        target = pf;
-                        break;
-                    }
-            }
-
-            return ConvertData(await session.SendDataRequest(target)) as string;
-        }
-
-        private object? ConvertData(ClipboardReadSession.GetDataResult? result)
-        {
-            if (result == null)
-                return null;
-            if (GetStringEncoding(result.TypeAtom) is { } textEncoding)
-                return textEncoding.GetString(result.AsBytes());
-            // TODO: image encoding
-            return result.AsBytes();
-        }
-
-
-        private IntPtr[] ConvertDataObject(IDataObject? data)
-        {
-            var atoms = new HashSet<IntPtr> { _x11.Atoms.TARGETS, _x11.Atoms.MULTIPLE };
-
-            if (data is not null)
-            {
-                foreach (var fmt in data.GetDataFormats())
+                foreach (var format in dataTransfer.Formats)
                 {
-                    if (fmt == DataFormats.Text)
-                        foreach (var ta in _textAtoms)
-                            atoms.Add(ta);
-                    else
-                        atoms.Add(_x11.Atoms.GetAtom(fmt));
+                    foreach (var atom in ClipboardDataFormatHelper.ToAtoms(format, _textAtoms, _x11.Atoms))
+                        atoms.Add(atom);
                 }
             }
 
             return atoms.ToArray();
         }
 
-        private Task StoreAtomsInClipboardManager(IDataObject data)
+        private Task StoreAtomsInClipboardManager(IAsyncDataTransfer dataTransfer)
         {
-            // Skip storing atoms if the data object contains any non-trivial formats or trivial formats are too big
-            if (data.GetDataFormats().Any(f => f != DataFormats.Text)
-                || data.GetText()?.Length * 2 > 64 * 1024
-               )
+            if (_x11.Atoms.CLIPBOARD_MANAGER == IntPtr.Zero || _x11.Atoms.SAVE_TARGETS == IntPtr.Zero)
                 return Task.CompletedTask;
-            
-            if (_x11.Atoms.CLIPBOARD_MANAGER != IntPtr.Zero && _x11.Atoms.SAVE_TARGETS != IntPtr.Zero)
+
+            var clipboardManager = XGetSelectionOwner(_x11.Display, _x11.Atoms.CLIPBOARD_MANAGER);
+            if (clipboardManager == IntPtr.Zero)
+                return Task.CompletedTask;
+
+            // Skip storing atoms if the data object contains any non-trivial formats
+            if (dataTransfer.Formats.Any(f => !DataFormat.Text.Equals(f)))
+                return Task.CompletedTask;
+
+            return StoreTextCoreAsync();
+
+            async Task StoreTextCoreAsync()
             {
-                var clipboardManager = XGetSelectionOwner(_x11.Display, _x11.Atoms.CLIPBOARD_MANAGER);
-                if (clipboardManager != IntPtr.Zero)
-                {          
-                    if (_storeAtomTcs == null || _storeAtomTcs.Task.IsCompleted)
-                        _storeAtomTcs = new TaskCompletionSource<bool>();   
-                           
-                    var atoms = ConvertDataObject(data);
-                    XChangeProperty(_x11.Display, _handle, _avaloniaSaveTargetsAtom, _x11.Atoms.XA_ATOM, 32,
-                        PropertyMode.Replace,
-                        atoms, atoms.Length);
-                    XConvertSelection(_x11.Display, _x11.Atoms.CLIPBOARD_MANAGER, _x11.Atoms.SAVE_TARGETS,
-                        _avaloniaSaveTargetsAtom, _handle, IntPtr.Zero);
-                    return _storeAtomTcs.Task;
-                }
+                // Skip storing atoms if the trivial formats are too big
+                var text = await dataTransfer.TryGetTextAsync();
+                if (text is null || text.Length * 2 > 64 * 1024)
+                    return;
+
+                if (_storeAtomTcs is null || _storeAtomTcs.Task.IsCompleted)
+                    _storeAtomTcs = new TaskCompletionSource<bool>();
+
+                var atoms = ConvertDataTransfer(dataTransfer);
+                XChangeProperty(_x11.Display, _handle, _avaloniaSaveTargetsAtom, _x11.Atoms.XA_ATOM, 32,
+                    PropertyMode.Replace, atoms, atoms.Length);
+                XConvertSelection(_x11.Display, _x11.Atoms.CLIPBOARD_MANAGER, _x11.Atoms.SAVE_TARGETS,
+                    _avaloniaSaveTargetsAtom, _handle, IntPtr.Zero);
+                await _storeAtomTcs.Task;
             }
-            return Task.CompletedTask;
-        }
-
-        public Task SetTextAsync(string? text)
-        {
-            var data = new DataObject();
-
-            if (text is not null)
-                data.Set(DataFormats.Text, text);
-
-            return SetDataObjectAsync(data);
         }
 
         public Task ClearAsync()
         {
-            return SetTextAsync(string.Empty);
+            _storedDataTransfer = null;
+            XSetSelectionOwner(_x11.Display, _x11.Atoms.CLIPBOARD, IntPtr.Zero, IntPtr.Zero);
+            return Task.CompletedTask;
         }
 
-        public Task SetDataObjectAsync(IDataObject data)
+        public async Task<IAsyncDataTransfer?> TryGetDataAsync()
         {
-            _storedDataObject = data;
-            XSetSelectionOwner(_x11.Display, _x11.Atoms.CLIPBOARD, _handle, IntPtr.Zero);
-            return StoreAtomsInClipboardManager(data);
+            var owner = GetOwner();
+            if (owner == IntPtr.Zero)
+                return null;
+
+            if (owner == _handle && _storedDataTransfer is { } storedDataTransfer)
+                return storedDataTransfer;
+
+            // Get the formats while we're in an async method, since IAsyncDataTransfer.GetFormats() is synchronous.
+            var (dataFormats, textFormatAtoms) = await GetDataFormatsCoreAsync().ConfigureAwait(false);
+            if (dataFormats.Length == 0)
+                return null;
+
+            // Get the items while we're in an async method. This does not get values, except for DataFormat.File.
+            var reader = new ClipboardDataReader(_x11, _platform, textFormatAtoms, owner, dataFormats);
+            var items = await CreateItemsAsync(reader, dataFormats);
+            return new ClipboardDataTransfer(reader, dataFormats, items);
         }
 
-        private IDataObject? TryGetInProcessDataObject()
+        private async Task<(DataFormat[] DataFormats, IntPtr[] TextFormatAtoms)> GetDataFormatsCoreAsync()
         {
-            if (XGetSelectionOwner(_x11.Display, _x11.Atoms.CLIPBOARD) == _handle)
-                return _storedDataObject;
-            return null;
-        }
-
-        public Task<IDataObject?> TryGetInProcessDataObjectAsync() => Task.FromResult(TryGetInProcessDataObject());
-
-        public async Task<string[]> GetFormatsAsync()
-        {
-            if (!HasOwner)
-                return [];
-            if (TryGetInProcessDataObject() is { } inProc)
-                return inProc.GetDataFormats().ToArray();
-            
             using var session = OpenReadSession();
-            var res = await session.SendFormatRequest();
-            if (res == null)
-                return [];
 
-            var rv = new List<string>();
-            if (_textAtoms.Any(res.Contains))
-                rv.Add(DataFormats.Text);
+            var formatAtoms = await session.SendFormatRequest();
+            if (formatAtoms is null)
+                return ([], []);
 
-            foreach (var t in res)
+            var formats = new List<DataFormat>(formatAtoms.Length);
+            List<IntPtr>? textFormatAtoms = null;
+
+            var hasImage = false;
+
+            foreach (var formatAtom in formatAtoms)
             {
-                if (_x11.Atoms.GetAtomName(t) is { } atomName)
-                    rv.Add(atomName);
+                if (ClipboardDataFormatHelper.ToDataFormat(formatAtom, _x11.Atoms) is not { } format)
+                    continue;
+
+                if (DataFormat.Text.Equals(format))
+                {
+                    if (textFormatAtoms is null)
+                    {
+                        formats.Add(format);
+                        textFormatAtoms = [];
+                    }
+                    textFormatAtoms.Add(formatAtom);
+                }
+                else
+                {
+                    formats.Add(format);
+
+                    if(!hasImage)
+                    {
+                        if (format.Identifier is ClipboardDataFormatHelper.JpegFormatMimeType or ClipboardDataFormatHelper.PngFormatMimeType)
+                            hasImage = true;
+                    }
+                }
             }
 
-            return rv.ToArray();
+            if (hasImage)
+                formats.Add(DataFormat.Bitmap);
+
+            return (formats.ToArray(), textFormatAtoms?.ToArray() ?? []);
         }
 
-        public async Task<object?> GetDataAsync(string format)
+        private static async Task<IAsyncDataTransferItem[]> CreateItemsAsync(ClipboardDataReader reader, DataFormat[] formats)
         {
-            if (!HasOwner)
-                return null;
-            
-            if(TryGetInProcessDataObject() is {} inProc)
-                return inProc.Get(format);
-            
-            if (format == DataFormats.Text)
-                return await GetTextAsync();
+            List<DataFormat>? nonFileFormats = null;
+            var items = new List<IAsyncDataTransferItem>();
+            var hasFiles = false;
 
-            var formatAtom = _x11.Atoms.GetAtom(format);
-            using var session = OpenReadSession();
-            var res = await session.SendFormatRequest();
-            if (res is null || !res.Contains(formatAtom))
-                return null;
+            foreach (var format in formats)
+            {
+                if (DataFormat.File.Equals(format))
+                {
+                    if (hasFiles)
+                        continue;
 
-            return ConvertData(await session.SendDataRequest(formatAtom));
+                    // We're reading the filenames ahead of time to generate the appropriate items.
+                    // This is async, so it should be fine.
+                    if (await reader.TryGetAsync(format) is IEnumerable<IStorageItem> storageItems)
+                    {
+                        hasFiles = true;
+
+                        foreach (var storageItem in storageItems)
+                            items.Add(PlatformDataTransferItem.Create(DataFormat.File, storageItem));
+                    }
+                }
+                else
+                    (nonFileFormats ??= new()).Add(format);
+            }
+
+            // Single item containing all formats except for DataFormat.File.
+            if (nonFileFormats is not null)
+                items.Add(new ClipboardDataTransferItem(reader, formats));
+
+            return items.ToArray();
         }
 
-        /// <inheritdoc />
-        public Task FlushAsync() =>
-            Task.CompletedTask;
+        public Task SetDataAsync(IAsyncDataTransfer dataTransfer)
+        {
+            _storedDataTransfer = dataTransfer;
+            XSetSelectionOwner(_x11.Display, _x11.Atoms.CLIPBOARD, _handle, IntPtr.Zero);
+            return StoreAtomsInClipboardManager(dataTransfer);
+        }
+
+        public Task<bool> IsCurrentOwnerAsync()
+            => Task.FromResult(GetOwner() == _handle);
     }
 }

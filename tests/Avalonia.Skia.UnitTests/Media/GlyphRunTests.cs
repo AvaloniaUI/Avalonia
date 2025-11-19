@@ -70,7 +70,7 @@ namespace Avalonia.Skia.UnitTests.Media
                 var rects = BuildRects(glyphRun);
 
                 rects.Reverse();
-                
+
                 if (glyphRun.IsLeftToRight)
                 {
                     foreach (var rect in rects)
@@ -95,7 +95,7 @@ namespace Avalonia.Skia.UnitTests.Media
                 }
             }
         }
-        
+
         [InlineData("ABC012345", 0)] //LeftToRight
         [InlineData("זה כיף סתם לשמוע איך תנצח קרפד עץ טוב בגן", 1)] //RightToLeft
         [Theory]
@@ -113,19 +113,19 @@ namespace Avalonia.Skia.UnitTests.Media
                 {
                     var characterHit =
                         glyphRun.GetCharacterHitFromDistance(glyphRun.Bounds.Width, out _);
-                    
+
                     Assert.Equal(glyphRun.Characters.Length, characterHit.FirstCharacterIndex + characterHit.TrailingLength);
                 }
                 else
                 {
-                     var characterHit =
-                        glyphRun.GetCharacterHitFromDistance(0, out _);
-                    
+                    var characterHit =
+                       glyphRun.GetCharacterHitFromDistance(0, out _);
+
                     Assert.Equal(glyphRun.Characters.Length, characterHit.FirstCharacterIndex + characterHit.TrailingLength);
                 }
-                
+
                 var rects = BuildRects(glyphRun);
-                
+
                 var lastCluster = -1;
                 var index = 0;
 
@@ -379,12 +379,31 @@ namespace Avalonia.Skia.UnitTests.Media
             }
         }
 
+        [Fact]
+        public void Should_Add_Half_LineGap_To_Baseline()
+        {
+            using (Start())
+            {
+                var typeface = new Typeface("resm:Avalonia.Skia.UnitTests.Fonts?assembly=Avalonia.Skia.UnitTests#Inter");
+                var options = new TextShaperOptions(typeface.GlyphTypeface, 14);
+                var shapedBuffer = TextShaper.Current.ShapeText("F", options);
+
+                var textMetrics = new TextMetrics(shapedBuffer.GlyphTypeface, 14);
+
+                var glyphRun = CreateGlyphRun(shapedBuffer);
+
+                var expectedBaseline = -textMetrics.Ascent + textMetrics.LineGap / 2;
+
+                Assert.Equal(expectedBaseline, glyphRun.Metrics.Baseline);
+            }
+        }
+
         private static List<Rect> BuildRects(GlyphRun glyphRun)
         {
             var height = glyphRun.Bounds.Height;
 
             var currentX = glyphRun.IsLeftToRight ? 0d : glyphRun.Bounds.Width;
-            
+
             var rects = new List<Rect>(glyphRun.GlyphInfos!.Count);
 
             var lastCluster = -1;
@@ -392,7 +411,7 @@ namespace Avalonia.Skia.UnitTests.Media
             for (var index = 0; index < glyphRun.GlyphInfos.Count; index++)
             {
                 var currentCluster = glyphRun.GlyphInfos[index].GlyphCluster;
-                
+
                 var advance = glyphRun.GlyphInfos[index].GlyphAdvance;
 
                 if (lastCluster != currentCluster)
@@ -412,11 +431,11 @@ namespace Avalonia.Skia.UnitTests.Media
 
                     rects.Remove(rect);
 
-                    rect = glyphRun.IsLeftToRight ? 
-                        rect.WithWidth(rect.Width + advance) : 
+                    rect = glyphRun.IsLeftToRight ?
+                        rect.WithWidth(rect.Width + advance) :
                         new Rect(rect.X - advance, 0, rect.Width + advance, height);
-                    
-                   rects.Add(rect);
+
+                    rects.Add(rect);
                 }
 
                 if (glyphRun.IsLeftToRight)
@@ -436,14 +455,14 @@ namespace Avalonia.Skia.UnitTests.Media
 
         private static GlyphRun CreateGlyphRun(ShapedBuffer shapedBuffer)
         {
-            var glyphRun =  new GlyphRun(
+            var glyphRun = new GlyphRun(
                 shapedBuffer.GlyphTypeface,
                 shapedBuffer.FontRenderingEmSize,
                 shapedBuffer.Text,
                 shapedBuffer,
                 biDiLevel: shapedBuffer.BidiLevel);
 
-            if(shapedBuffer.BidiLevel == 1)
+            if (shapedBuffer.BidiLevel == 1)
             {
                 shapedBuffer.Reverse();
             }

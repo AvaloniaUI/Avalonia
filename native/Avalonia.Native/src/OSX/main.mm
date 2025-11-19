@@ -312,18 +312,7 @@ public:
         
         @autoreleasepool
         {
-            *ppv = ::CreateClipboard (nil, nil);
-            return S_OK;
-        }
-    }
-    
-    virtual HRESULT CreateDndClipboard(IAvnClipboard** ppv) override
-    {
-        START_COM_CALL;
-        
-        @autoreleasepool
-        {
-            *ppv = ::CreateClipboard (nil, [NSPasteboardItem new]);
+            *ppv = ::CreateClipboard(nil);
             return S_OK;
         }
     }
@@ -478,6 +467,22 @@ public:
             return S_OK;
         }
     }
+    
+    virtual HRESULT ImportMTLSharedEvent(void* event, IAvnMTLSharedEvent** ppv) override
+    {
+        START_COM_CALL;
+        *ppv = ::ImportMTLSharedEvent(event);
+        return *ppv != nullptr ? S_OK : E_FAIL;
+    }
+    
+    HRESULT CreateMemoryManagementHelper(IAvnNativeObjectsMemoryManagement **ppv) override { 
+        START_COM_CALL;
+        *ppv = ::CreateMemoryManagementHelper();
+        return S_OK;
+    }
+    
+    
+    
 };
 
 extern "C" IAvaloniaNativeFactory* CreateAvaloniaNative()

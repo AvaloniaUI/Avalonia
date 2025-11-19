@@ -58,6 +58,10 @@ internal class FallbackStorageProvider : IStorageProvider
         return await (await GetFor(p => p.CanSave)).SaveFilePickerAsync(options);
     }
 
+    public async Task<SaveFilePickerResult> SaveFilePickerWithResultAsync(FilePickerSaveOptions options)
+    {
+        return await (await GetFor(p => p.CanSave)).SaveFilePickerWithResultAsync(options);
+    }
 
     public async Task<IReadOnlyList<IStorageFolder>> OpenFolderPickerAsync(FolderPickerOpenOptions options)
     {

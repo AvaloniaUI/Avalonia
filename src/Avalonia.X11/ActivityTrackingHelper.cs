@@ -81,6 +81,7 @@ internal class WindowActivationTrackingHelper : IDisposable
     public void Dispose()
     {
         _platform.Globals.NetActiveWindowPropertyChanged -= OnNetActiveWindowChanged;
+        _platform.Globals.WindowActivationTrackingModeChanged -= OnWindowActivationTrackingModeChanged;
     }
 
     public void OnNetWmStateChanged(IntPtr[] atoms)

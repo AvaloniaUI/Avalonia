@@ -10,7 +10,8 @@ internal class CompositionInterop : ICompositionGpuInterop
     private readonly Compositor _compositor;
     private readonly IPlatformRenderInterfaceContext _context;
     private readonly IExternalObjectsRenderInterfaceContextFeature _externalObjects;
-    
+    private readonly IExternalObjectsHandleWrapRenderInterfaceContextFeature? _externalObjectsWithHandleWrap;
+
 
     public CompositionInterop(
         Compositor compositor,
@@ -21,6 +22,7 @@ internal class CompositionInterop : ICompositionGpuInterop
         DeviceLuid = externalObjects.DeviceLuid;
         DeviceUuid = externalObjects.DeviceUuid;
         _externalObjects = externalObjects;
+        _externalObjectsWithHandleWrap = _context.TryGetFeature<IExternalObjectsHandleWrapRenderInterfaceContextFeature>();
     }
 
     public IReadOnlyList<string> SupportedImageHandleTypes => _externalObjects.SupportedImageHandleTypes;
@@ -31,17 +33,23 @@ internal class CompositionInterop : ICompositionGpuInterop
 
     public ICompositionImportedGpuImage ImportImage(IPlatformHandle handle,
         PlatformGraphicsExternalImageProperties properties)
-        => new CompositionImportedGpuImage(_compositor, _context, _externalObjects, 
-            () => _externalObjects.ImportImage(handle, properties));
+    {
+        handle = _externalObjectsWithHandleWrap?.WrapImageHandleOnAnyThread(handle, properties) ?? handle;
+        return new CompositionImportedGpuImage(_compositor, _context, _externalObjects,
+            () => _externalObjects.ImportImage(handle, properties), handle);
+    }
 
     public ICompositionImportedGpuImage ImportImage(ICompositionImportableSharedGpuContextImage image)
     {
         return new CompositionImportedGpuImage(_compositor, _context, _externalObjects,
-            () => _externalObjects.ImportImage(image));
+            () => _externalObjects.ImportImage(image), null);
     }
 
     public ICompositionImportedGpuSemaphore ImportSemaphore(IPlatformHandle handle)
-        => new CompositionImportedGpuSemaphore(handle, _compositor, _context, _externalObjects);
+    {
+        handle = _externalObjectsWithHandleWrap?.WrapSemaphoreHandleOnAnyThread(handle) ?? handle;
+        return new CompositionImportedGpuSemaphore(handle, _compositor, _context, _externalObjects);
+    }
 
     public ICompositionImportedGpuImage ImportSemaphore(ICompositionImportableSharedGpuContextSemaphore image)
     {
@@ -61,13 +69,17 @@ abstract class CompositionGpuImportedObjectBase : ICompositionGpuImportedObject
 
     public CompositionGpuImportedObjectBase(Compositor compositor,
         IPlatformRenderInterfaceContext context,
-        IExternalObjectsRenderInterfaceContextFeature feature)
+        IExternalObjectsRenderInterfaceContextFeature feature, IPlatformHandle? handle)
     {
         Compositor = compositor;
         Context = context;
         Feature = feature;
         
-        ImportCompleted = Compositor.InvokeServerJobAsync(Import);
+        ImportCompleted = Compositor.InvokeServerJobAsync(() =>
+        {
+            using var _ = handle as IExternalObjectsWrappedGpuHandle;
+            Import();
+        });
     }
     
     protected abstract void Import();
@@ -93,7 +105,7 @@ class CompositionImportedGpuImage : CompositionGpuImportedObjectBase, ICompositi
     public CompositionImportedGpuImage(Compositor compositor,
         IPlatformRenderInterfaceContext context,
         IExternalObjectsRenderInterfaceContextFeature feature,
-        Func<IPlatformRenderInterfaceImportedImage> importer): base(compositor, context, feature)
+        Func<IPlatformRenderInterfaceImportedImage> importer, IPlatformHandle? handle): base(compositor, context, feature, handle)
     {
         _importer = importer;
     }
@@ -128,7 +140,7 @@ class CompositionImportedGpuSemaphore : CompositionGpuImportedObjectBase, ICompo
 
     public CompositionImportedGpuSemaphore(IPlatformHandle handle,
         Compositor compositor, IPlatformRenderInterfaceContext context,
-        IExternalObjectsRenderInterfaceContextFeature feature) : base(compositor, context, feature)
+        IExternalObjectsRenderInterfaceContextFeature feature) : base(compositor, context, feature, handle)
     {
         _handle = handle;
     }

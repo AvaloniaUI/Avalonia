@@ -141,7 +141,7 @@
             Padding="15">
       <StackPanel Orientation="Vertical"
                   Spacing="8">
-        <RepeatButton Name="RepeatButton">
+        <RepeatButton Name="RepeatButton" Click="OnRepeatButtonClick">
           <TextBlock Name="RepeatButtonTextBlock"
                      Text="Repeat Button: 0" />
         </RepeatButton>

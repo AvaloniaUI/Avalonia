@@ -48,7 +48,8 @@ namespace Avalonia.Media
             FontStyle style = FontStyle.Normal,
             FontWeight weight = FontWeight.Normal,
             FontStretch stretch = FontStretch.Normal)
-            : this(fontFamilyName == null ? FontFamily.Default : new FontFamily(fontFamilyName), style, weight, stretch)
+            : this(string.IsNullOrEmpty(fontFamilyName) ? FontFamily.Default : new FontFamily(fontFamilyName),
+                  style, weight, stretch)
         {
         }
 

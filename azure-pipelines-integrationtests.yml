@@ -5,13 +5,13 @@ jobs:
 
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET 6.0 Runtime'
+    displayName: 'Use .NET 8.0 Runtime'
     inputs:
       packageType: runtime
-      version: 6.0.x
+      version: 8.0.x
 
   - task: UseDotNet@2
-    displayName: 'Use .NET 8.0 SDK'
+    displayName: 'Use .NET 10.0 SDK'
     inputs:
       packageType: sdk
       useGlobalJson: true
@@ -25,16 +25,16 @@ jobs:
       arch="arm64"
       fi
       git clean -ffdx
-      sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
       pkill node
       pkill testmanagerd
       appium > appium.out &
       pkill IntegrationTestApp
+      sudo xcode-select -s /Applications/Xcode_15.2.app/Contents/Developer        
       ./build.sh CompileNative
       rm -rf $(osascript -e "POSIX path of (path to application id \"net.avaloniaui.avalonia.integrationtestapp\")")
       pkill IntegrationTestApp
       ./samples/IntegrationTestApp/bundle.sh
-      open -n ./samples/IntegrationTestApp/bin/Debug/net8.0/osx-$arch/publish/IntegrationTestApp.app
+      open -n ./samples/IntegrationTestApp/bin/Debug/net10.0/osx-$arch/publish/IntegrationTestApp.app
       pkill IntegrationTestApp
     displayName: 'Build IntegrationTestApp'
 
@@ -56,17 +56,17 @@ jobs:
 
 - job: Windows
   pool:
-    vmImage: 'windows-2022'
+    vmImage: 'windows-2025'
 
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET 6.0 Runtime'
+    displayName: 'Use .NET 8.0 Runtime'
     inputs:
       packageType: runtime
-      version: 6.0.x
+      version: 8.0.x
 
   - task: UseDotNet@2
-    displayName: 'Use .NET 8.0 SDK'
+    displayName: 'Use .NET 10.0 SDK'
     inputs:
       packageType: sdk
       useGlobalJson: true

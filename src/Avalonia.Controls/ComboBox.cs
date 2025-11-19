@@ -276,6 +276,10 @@ namespace Avalonia.Controls
                 SetCurrentValue(IsDropDownOpenProperty, false);
                 e.Handled = true;
             }
+            else if (IsDropDownOpen && e.Key == Key.Tab)
+            {
+                SetCurrentValue(IsDropDownOpenProperty, false);
+            }
             // Ignore key buttons, if they are used for XY focus.
             else if (!IsDropDownOpen
                      && !XYFocusHelpers.IsAllowedXYNavigationMode(this, e.KeyDeviceType))
@@ -717,6 +721,11 @@ namespace Avalonia.Controls
             {
                 _skipNextTextChanged = false;
             }
+
+            //when changing the SelectedIndex it will call: KeyboardNavigation.SetTabOnceActiveElement(this, [combo box item]);
+            //this will then break tab navigation back into this combobox as it will try to focus the combo box item
+            //rather than the combobox or editable text box, so we need to SetTabOnceActiveElement to null
+            KeyboardNavigation.SetTabOnceActiveElement(this, null);
         }
 
         private string GetItemTextValue(object? item) 
