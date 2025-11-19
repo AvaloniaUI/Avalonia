@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
@@ -37,6 +38,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             return EmitCreateAccessorFactoryDelegate(context, codeGen);
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2122", Justification = TrimmingMessages.TypesInCoreOrAvaloniaAssembly)]
         private void EmitLoadPropertyAccessorFactory(XamlIlEmitContext context, IXamlILEmitter codeGen, IXamlType type, string accessorFactoryName, bool isStatic = true)
         {
             var types = context.GetAvaloniaTypes();
@@ -48,6 +50,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             codeGen.Ldftn(type.GetMethod(accessorFactorySignature));
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2122", Justification = TrimmingMessages.TypesInCoreOrAvaloniaAssembly)]
         public IXamlType EmitLoadIndexerAccessorFactory(XamlIlEmitContext context, IXamlILEmitter codeGen, IXamlAstValueNode value)
         {
             var intType = context.Configuration.TypeSystem.GetType("System.Int32");
@@ -62,6 +65,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             return EmitCreateAccessorFactoryDelegate(context, codeGen);
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2122", Justification = TrimmingMessages.TypesInCoreOrAvaloniaAssembly)]
         private IXamlType InitializeClosureType(XamlIlEmitContext context)
         {
             var types = context.GetAvaloniaTypes();
@@ -101,6 +105,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             return _indexerClosureTypeBuilder.CreateType();
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2122", Justification = TrimmingMessages.TypesInCoreOrAvaloniaAssembly)]
         private IXamlType EmitCreateAccessorFactoryDelegate(XamlIlEmitContext context, IXamlILEmitter codeGen)
         {
             var types = context.GetAvaloniaTypes();
