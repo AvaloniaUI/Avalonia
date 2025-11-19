@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Avalonia.Platform;
 using Avalonia.Utilities;
 
 namespace Avalonia.Media.Fonts
 {
-    public static class FontFamilyLoader
+    internal static class FontFamilyLoader
     {
         /// <summary>
         /// Loads all font assets that belong to the specified <see cref="FontFamilyKey"/>
