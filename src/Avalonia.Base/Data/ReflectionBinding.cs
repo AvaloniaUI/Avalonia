@@ -16,6 +16,9 @@ namespace Avalonia.Data
     /// A binding that uses reflection to access members.
     /// </summary>
     [RequiresUnreferencedCode(TrimmingMessages.ReflectionBindingRequiresUnreferencedCodeMessage)]
+#if NET8_0_OR_GREATER
+    [RequiresDynamicCode(TrimmingMessages.ReflectionBindingRequiresDynamicCodeMessage)]
+#endif
     public class ReflectionBinding : BindingBase
     {
         /// <summary>

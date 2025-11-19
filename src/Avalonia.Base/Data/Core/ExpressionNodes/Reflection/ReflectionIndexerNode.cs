@@ -40,6 +40,8 @@ internal sealed class ReflectionIndexerNode : CollectionNodeBase, ISettableNode
         builder.Append(']');
     }
 
+    public override ExpressionNode Clone() => new ReflectionIndexerNode(Arguments);
+
     public bool WriteValueToSource(object? value, IReadOnlyList<ExpressionNode> nodes)
     {
         if (Source is null || _setter is null)

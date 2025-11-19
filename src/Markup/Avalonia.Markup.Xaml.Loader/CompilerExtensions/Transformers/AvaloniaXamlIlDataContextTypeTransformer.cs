@@ -142,7 +142,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             IXamlType? itemsCollectionType = null;
             if (context.GetAvaloniaTypes().BindingBase.IsAssignableFrom(parentItemsValue.Type.GetClrType()))
             {
-                if (parentItemsValue.Type.GetClrType().Equals(context.GetAvaloniaTypes().CompiledBindingExtension)
+                if (parentItemsValue.Type.GetClrType().Equals(context.GetAvaloniaTypes().CompiledBinding)
                     && parentItemsValue is XamlMarkupExtensionNode ext && ext.Value is XamlAstConstructableObjectNode parentItemsBinding)
                 {
                     var parentItemsDataContext = context.ParentNodes().SkipWhile(n => n != parentObject).OfType<AvaloniaXamlIlDataContextTypeMetadataNode>().FirstOrDefault();

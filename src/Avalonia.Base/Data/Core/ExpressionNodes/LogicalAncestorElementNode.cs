@@ -39,6 +39,8 @@ internal sealed class LogicalAncestorElementNode : SourceNode
         }
     }
 
+    public override ExpressionNode Clone() => new LogicalAncestorElementNode(_ancestorType, _ancestorLevel);
+
     public override object? SelectSource(object? source, object target, object? anchor)
     {
         if (source != AvaloniaProperty.UnsetValue)

@@ -37,6 +37,8 @@ internal sealed class DynamicPluginPropertyAccessorNode : ExpressionNode, IPrope
         builder.Append(PropertyName);
     }
 
+    public override ExpressionNode Clone() => new DynamicPluginPropertyAccessorNode(PropertyName, _acceptsNull);
+
     public void EnableDataValidation() => _enableDataValidation = true;
 
     public bool WriteValueToSource(object? value, IReadOnlyList<ExpressionNode> nodes)

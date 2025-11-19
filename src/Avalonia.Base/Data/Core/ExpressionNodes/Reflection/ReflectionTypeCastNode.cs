@@ -19,6 +19,8 @@ internal sealed class ReflectionTypeCastNode : ExpressionNode
         builder.Append(')');
     }
 
+    public override ExpressionNode Clone() => new ReflectionTypeCastNode(_targetType);
+
     protected override void OnSourceChanged(object? source, Exception? dataValidationError)
     {
         if (!ValidateNonNullSource(source))
