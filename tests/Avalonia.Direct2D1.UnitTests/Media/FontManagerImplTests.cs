@@ -12,7 +12,7 @@ namespace Avalonia.Direct2D1.UnitTests.Media
         [Fact]
         public void Should_Create_Typeface_From_Fallback()
         {
-            using (AvaloniaLocator.EnterScope())
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
                 Direct2D1Platform.Initialize();
 
@@ -27,7 +27,7 @@ namespace Avalonia.Direct2D1.UnitTests.Media
         [Fact]
         public void Should_Create_Typeface_From_Fallback_Bold()
         {
-            using (AvaloniaLocator.EnterScope())
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
                 Direct2D1Platform.Initialize();
 
@@ -46,7 +46,7 @@ namespace Avalonia.Direct2D1.UnitTests.Media
         [Fact]
         public void Should_Create_Typeface_For_Unknown_Font()
         {
-            using (AvaloniaLocator.EnterScope())
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
                 Direct2D1Platform.Initialize();
 

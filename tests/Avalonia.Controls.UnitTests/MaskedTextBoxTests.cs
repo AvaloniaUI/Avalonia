@@ -980,7 +980,7 @@ namespace Avalonia.Controls.UnitTests
         private static IDisposable Start(TestServices services = null)
         {
             CultureInfo.CurrentCulture = CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("en-US");
-            return UnitTestApplication.Start(services ?? Services);
+            return UnitTestApplication.Start((services ?? Services).With(assetLoader: new StandardAssetLoader()));
         }
 
         private class Class1 : NotifyingBase
