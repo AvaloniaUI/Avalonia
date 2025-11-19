@@ -15,7 +15,7 @@ internal class VulkanSupport
     public static VulkanPlatformGraphics? TryInitialize(VulkanOptions options) =>
         VulkanPlatformGraphics.TryCreate(options ?? new(), new VulkanPlatformSpecificOptions
         {
-            RequiredInstanceExtensions = { "VK_KHR_win32_surface" },
+            RequiredKhrSurfaceExtensions = { "VK_KHR_win32_surface" },
             GetProcAddressDelegate = vkGetInstanceProcAddr,
             DeviceCheckSurfaceFactory = instance => CreateHwndSurface(OffscreenParentWindow.Handle, instance),
             PlatformFeatures = new Dictionary<Type, object>

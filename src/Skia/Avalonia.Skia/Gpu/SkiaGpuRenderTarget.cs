@@ -53,7 +53,10 @@ namespace Avalonia.Skia
         }
 
         public bool IsCorrupted => _renderTarget.IsCorrupted;
-        public RenderTargetProperties Properties { get; }
+
+        public RenderTargetProperties Properties => _renderTarget is ISkiaGpuRenderTargetWithProperties withProps
+            ? withProps.Properties
+            : default;
 
 
     }

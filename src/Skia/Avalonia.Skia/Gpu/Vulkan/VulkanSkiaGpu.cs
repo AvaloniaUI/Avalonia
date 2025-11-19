@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Vulkan;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -81,7 +83,16 @@ internal class VulkanSkiaGpu : ISkiaGpuWithPlatformGraphicsContext
     public ISkiaGpuRenderTarget TryCreateRenderTarget(IEnumerable<object> surfaces)
     {
         var target = Vulkan.CreateRenderTarget(surfaces);
-        return new VulkanSkiaRenderTarget(this, target);
+        if (target != null)
+            return new VulkanSkiaRenderTarget(this, target);
+
+        var fb = surfaces.OfType<IFramebufferPlatformSurface>().FirstOrDefault();
+        if (fb != null)
+        {
+            return new GpuToCpuCopyRenderTarget(GrContext, fb.CreateFramebufferRenderTarget(),
+                () => IsLost, null, null);
+        }
+        throw new VulkanException("Unable to find a suitable platform surface");
     }
 
     

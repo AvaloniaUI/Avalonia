@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Avalonia.Platform;
 using Avalonia.Vulkan;
@@ -22,7 +23,7 @@ internal class VulkanSupport
 
         return VulkanPlatformGraphics.TryCreate(options ?? new(), new VulkanPlatformSpecificOptions
         {
-            RequiredInstanceExtensions = { "VK_KHR_xlib_surface" },
+            RequiredKhrSurfaceExtensions = { "VK_KHR_xlib_surface" },
             GetProcAddressDelegate = vkGetInstanceProcAddr,
             DeviceCheckSurfaceFactory = instance => CreateDummySurface(info.DeferredDisplay, instance),
             PlatformFeatures = new Dictionary<Type, object>
@@ -41,8 +42,12 @@ internal class VulkanSupport
             _display = display;
         }
         
-        public bool CanRenderToSurface(IVulkanPlatformGraphicsContext context, object surface) =>
-            surface is INativePlatformHandleSurface handle && handle.HandleDescriptor == "XID";
+        public bool CanRenderToSurface(IVulkanPlatformGraphicsContext context, object surface)
+        {
+            if (!context.Instance.EnabledExtensions.Contains("VK_KHR_xlib_surface"))
+                return false;
+            return surface is INativePlatformHandleSurface handle && handle.HandleDescriptor == "XID";
+        }
 
         public IVulkanKhrSurfacePlatformSurface CreateSurface(IVulkanPlatformGraphicsContext context, object handle) => 
             new XidSurface(_display, (INativePlatformHandleSurface)handle);

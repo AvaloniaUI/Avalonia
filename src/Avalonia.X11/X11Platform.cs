@@ -190,6 +190,7 @@ namespace Avalonia.X11
             return false;
         }
         
+        internal static X11RenderingMode? RenderingMode { get; private set; }
         private static IPlatformGraphics? InitializeGraphics(X11PlatformOptions opts, X11Info info)
         {
             if (opts.RenderingMode is null || !opts.RenderingMode.Any())
@@ -197,8 +198,10 @@ namespace Avalonia.X11
                 throw new InvalidOperationException($"{nameof(X11PlatformOptions)}.{nameof(X11PlatformOptions.RenderingMode)} must not be empty or null");
             }
 
-            foreach (var renderingMode in opts.RenderingMode)
+            
+            IPlatformGraphics? TryMode(X11RenderingMode renderingMode, out bool success)
             {
+                success = true;
                 if (renderingMode == X11RenderingMode.Software)
                 {
                     return null;
@@ -220,12 +223,33 @@ namespace Avalonia.X11
                     }
                 }
 
+                if (renderingMode == X11RenderingMode.OffscreenGbmEgl)
+                {
+                    if (GbmPlatformGraphics.TryCreate(opts.OffscreenEglGbmDevicePath) is { } egl)
+                        return egl;
+                }
+
                 if (renderingMode == X11RenderingMode.Vulkan)
                 {
                     var vulkan = VulkanSupport.TryInitialize(info,
                         AvaloniaLocator.Current.GetService<VulkanOptions>() ?? new());
                     if (vulkan != null)
+                    {
                         return vulkan;
+                    }
+                }
+
+                success = false;
+                return null;
+            }
+
+            foreach (var renderingMode in opts.RenderingMode)
+            {
+                var graphics = TryMode(renderingMode, out var success);
+                if (success)
+                {
+                    RenderingMode = renderingMode;
+                    return graphics;
                 }
             }
 
@@ -259,7 +283,13 @@ namespace Avalonia
         /// <summary>
         /// Enables Vulkan rendering
         /// </summary>
-        Vulkan = 4
+        Vulkan = 4,
+        
+        /// <summary>
+        /// Uses EGL with GBM platform to render offscreen and then perform GPU->CPU->X11 copy.
+        /// Don't use unless you are have broken drivers without proper EGL/X11 support.
+        /// </summary>
+        OffscreenGbmEgl = 5
     }
     
     /// <summary>
@@ -390,6 +420,12 @@ namespace Avalonia
         /// This property allows to inspect such exceptions before they will be ignored
         /// </summary>
         public Action<Exception>? ExternalGLibMainLoopExceptionLogger { get; set; }
+        
+        /// <summary>
+        /// Device path to use with X11RenderingMode.OffscreenGbmEgl rendering mode.
+        /// Default is "/dev/dri/card0".
+        /// </summary>
+        public string OffscreenEglGbmDevicePath { get; set; } = "/dev/dri/card0";
 
         public X11PlatformOptions()
         {
