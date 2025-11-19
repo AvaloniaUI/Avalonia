@@ -536,6 +536,16 @@ namespace Avalonia.Controls.Primitives
                         (x, handler) => x.Closed -= handler).DisposeWith(handlerCleanup);
                 }
             }
+            else if (topLevel is { } wtl && wtl.PlatformImpl is IWindowBaseImpl wimpl)
+            {
+                SubscribeToEventHandler<ITopLevelImpl, Action>(wimpl, TopLevelLostPlatformFocus,
+                    (x, handler) => x.LostFocus += handler,
+                    (x, handler) => x.LostFocus -= handler).DisposeWith(handlerCleanup);
+
+                SubscribeToEventHandler<IWindowBaseImpl, Action>(wimpl, WindowBaseDeactivated,
+                    (x, handler) => x.Deactivated += handler,
+                    (x, handler) => x.Deactivated -= handler).DisposeWith(handlerCleanup);
+            }
             else if (topLevel is { } tl && tl.PlatformImpl is ITopLevelImpl pimpl)
             {
                 SubscribeToEventHandler<ITopLevelImpl, Action>(pimpl, TopLevelLostPlatformFocus,
@@ -980,6 +990,14 @@ namespace Avalonia.Controls.Primitives
         public bool IsPointerOverPopup => ((IInputElement?)_openState?.PopupHost)?.IsPointerOver ?? false;
 
         private void WindowDeactivated(object? sender, EventArgs e)
+        {
+            if (IsLightDismissEnabled)
+            {
+                Close();
+            }
+        }
+
+        private void WindowBaseDeactivated()
         {
             if (IsLightDismissEnabled)
             {

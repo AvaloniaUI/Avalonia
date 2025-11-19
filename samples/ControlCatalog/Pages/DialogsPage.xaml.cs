@@ -37,6 +37,8 @@ namespace ControlCatalog.Pages
             var openedFileContent = OpenedFileContent;
             var openMultiple = OpenMultiple;
             var currentFolderBox = CurrentFolderBox;
+            var useSuggestedFilter = UseSuggestedFilter;
+            var suggestedFilterSelector = SuggestedFilterSelector;
 
             currentFolderBox.TextChanged += async (sender, args) =>
             {
@@ -76,7 +78,7 @@ namespace ControlCatalog.Pages
                 }).ToList() ?? new List<FileDialogFilter>();
             }
 
-            List<FilePickerFileType>? GetFileTypes()
+            List<FilePickerFileType>? BuildFileTypes()
             {
                 var selectedItem = (FilterSelector.SelectedItem as ComboBoxItem)?.Content
                     ?? "None";
@@ -114,6 +116,64 @@ namespace ControlCatalog.Pages
                     _ => null
                 };
             }
+
+            List<FilePickerFileType>? GetFileTypes()
+            {
+                var types = BuildFileTypes();
+                UpdateSuggestedFilterSelector(types);
+                return types;
+            }
+
+            void UpdateSuggestedFilterSelector(IReadOnlyList<FilePickerFileType>? types)
+            {
+                var previouslySelected = (suggestedFilterSelector.SelectedItem as ComboBoxItem)?.Tag as FilePickerFileType;
+                suggestedFilterSelector.Items.Clear();
+                suggestedFilterSelector.Items.Add(new ComboBoxItem { Content = "First filter", Tag = null });
+
+                var desiredIndex = 0;
+                if (types is { Count: > 0 })
+                {
+                    for (var i = 0; i < types.Count; i++)
+                    {
+                        var type = types[i];
+                        var item = new ComboBoxItem { Content = type.Name, Tag = type };
+                        suggestedFilterSelector.Items.Add(item);
+
+                        if (previouslySelected is not null && ReferenceEquals(previouslySelected, type))
+                        {
+                            desiredIndex = i + 1;
+                        }
+                    }
+                }
+
+                suggestedFilterSelector.SelectedIndex = desiredIndex;
+            }
+
+            FilePickerFileType? GetSuggestedFileType(IReadOnlyList<FilePickerFileType>? types)
+            {
+                if (useSuggestedFilter.IsChecked == true && types is { Count: > 0 })
+                {
+                    if (suggestedFilterSelector.SelectedItem is ComboBoxItem { Tag: FilePickerFileType selectedType }
+                        && types.Any(t => ReferenceEquals(t, selectedType)))
+                    {
+                        return selectedType;
+                    }
+
+                    return types.FirstOrDefault();
+                }
+
+                return null;
+            }
+
+            void UpdateSuggestedFilterSelectorState() =>
+                suggestedFilterSelector.IsEnabled = useSuggestedFilter.IsChecked == true;
+
+            useSuggestedFilter.Checked += (_, _) => UpdateSuggestedFilterSelectorState();
+            useSuggestedFilter.Unchecked += (_, _) => UpdateSuggestedFilterSelectorState();
+            UpdateSuggestedFilterSelectorState();
+
+            FilterSelector.SelectionChanged += (_, _) => UpdateSuggestedFilterSelector(BuildFileTypes());
+            UpdateSuggestedFilterSelector(BuildFileTypes());
 
             OpenFile.Click += async delegate
             {
@@ -229,10 +289,12 @@ namespace ControlCatalog.Pages
 
             OpenFilePicker.Click += async delegate
             {
+                var fileTypes = GetFileTypes();
                 var result = await GetStorageProvider().OpenFilePickerAsync(new FilePickerOpenOptions()
                 {
                     Title = "Open file",
-                    FileTypeFilter = GetFileTypes(),
+                    FileTypeFilter = fileTypes,
+                    SuggestedFileType = GetSuggestedFileType(fileTypes),
                     SuggestedFileName = "FileName",
                     SuggestedStartLocation = lastSelectedDirectory,
                     AllowMultiple = openMultiple.IsChecked == true
@@ -243,10 +305,12 @@ namespace ControlCatalog.Pages
             SaveFilePicker.Click += async delegate
             {
                 var fileTypes = GetFileTypes();
+                var suggestedType = GetSuggestedFileType(fileTypes);
                 var file = await GetStorageProvider().SaveFilePickerAsync(new FilePickerSaveOptions()
                 {
                     Title = "Save file",
                     FileTypeChoices = fileTypes,
+                    SuggestedFileType = suggestedType,
                     SuggestedStartLocation = lastSelectedDirectory,
                     SuggestedFileName = "FileName",
                     ShowOverwritePrompt = true
@@ -278,10 +342,12 @@ namespace ControlCatalog.Pages
             };
             SaveFilePickerWithResult.Click += async delegate
             {
+                var saveFileTypes = new[] { FilePickerFileTypes.Json, FilePickerFileTypes.Xml };
                 var result = await GetStorageProvider().SaveFilePickerWithResultAsync(new FilePickerSaveOptions()
                 {
                     Title = "Save file",
-                    FileTypeChoices = [FilePickerFileTypes.Json, FilePickerFileTypes.Xml],
+                    FileTypeChoices = saveFileTypes,
+                    SuggestedFileType = GetSuggestedFileType(saveFileTypes),
                     SuggestedStartLocation = lastSelectedDirectory,
                     SuggestedFileName = "FileName",
                     ShowOverwritePrompt = true

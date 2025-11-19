@@ -63,8 +63,13 @@ namespace Avalonia.FreeDesktop
             ObjectPath objectPath;
             var chooserOptions = new Dictionary<string, VariantValue>();
 
-            if (TryParseFilters(options.FileTypeFilter, out var filters))
+            if (TryParseFilters(options.FileTypeFilter, options.SuggestedFileType, out var filters,
+                    out var currentFilter))
+            {
                 chooserOptions.Add("filters", filters);
+                if (currentFilter is { } filter)
+                    chooserOptions.Add("current_filter", filter);
+            }
 
             if (options.SuggestedStartLocation?.TryGetLocalPath() is { } folderPath)
                 chooserOptions.Add("current_folder", VariantValue.Array(Encoding.UTF8.GetBytes(folderPath + "\0")));
@@ -106,8 +111,13 @@ namespace Avalonia.FreeDesktop
             var parentWindow = $"x11:{_handle.Handle:X}";
             ObjectPath objectPath;
             var chooserOptions = new Dictionary<string, VariantValue>();
-            if (TryParseFilters(options.FileTypeChoices, out var filters))
+            if (TryParseFilters(options.FileTypeChoices, options.SuggestedFileType, out var filters,
+                    out var currentFilter))
+            {
                 chooserOptions.Add("filters", filters);
+                if (currentFilter is { } filter)
+                    chooserOptions.Add("current_filter", filter);
+            }
 
             if (options.SuggestedFileName is { } currentName)
                 chooserOptions.Add("current_name", VariantValue.String(currentName));
@@ -203,7 +213,10 @@ namespace Avalonia.FreeDesktop
                 .Select(static path => new BclStorageFolder(new DirectoryInfo(path))).ToList();
         }
 
-        private static bool TryParseFilters(IReadOnlyList<FilePickerFileType>? fileTypes, out VariantValue result)
+        private static bool TryParseFilters(IReadOnlyList<FilePickerFileType>? fileTypes,
+            FilePickerFileType? suggestedFileType,
+            out VariantValue result,
+            out VariantValue? currentFilter)
         {
             const uint GlobStyle = 0u;
             const uint MimeStyle = 1u;
@@ -212,10 +225,12 @@ namespace Avalonia.FreeDesktop
             if (fileTypes is null)
             {
                 result = default;
+                currentFilter = null;
                 return false;
             }
 
             var filters = new Array<Struct<string, Array<Struct<uint, string>>>>();
+            currentFilter = null;
 
             foreach (var fileType in fileTypes)
             {
@@ -228,7 +243,15 @@ namespace Avalonia.FreeDesktop
                 else
                     continue;
 
-                filters.Add(Struct.Create(fileType.Name, new Array<Struct<uint, string>>(extensions)));
+                var filterStruct = Struct.Create(fileType.Name, new Array<Struct<uint, string>>(extensions));
+                filters.Add(filterStruct);
+
+                if (suggestedFileType is not null && ReferenceEquals(fileType, suggestedFileType))
+                {
+                    currentFilter = VariantValue.Struct(
+                        VariantValue.String(filterStruct.Item1),
+                        filterStruct.Item2.AsVariantValue());
+                }
             }
 
             result = filters.AsVariantValue();

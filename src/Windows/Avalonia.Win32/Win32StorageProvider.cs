@@ -4,6 +4,7 @@ using System.IO;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Avalonia.Controls.Utils;
 using Avalonia.Platform.Storage;
 using Avalonia.Platform.Storage.FileIO;
 using Avalonia.Win32.Interop;
@@ -33,7 +34,7 @@ namespace Avalonia.Win32
             var (folders, _) = await ShowFilePicker(
                 true, true,
                 options.AllowMultiple, false,
-                options.Title, options.SuggestedFileName, options.SuggestedStartLocation, null, null,
+                options.Title, options.SuggestedFileName, null, options.SuggestedStartLocation, null, null,
                 f => new BclStorageFolder(new DirectoryInfo(f)))
                 .ConfigureAwait(false);
             return folders;
@@ -44,7 +45,7 @@ namespace Avalonia.Win32
             var (files, _) = await ShowFilePicker(
                 true, false,
                 options.AllowMultiple, false,
-                options.Title, options.SuggestedFileName, options.SuggestedStartLocation,
+                options.Title, options.SuggestedFileName, options.SuggestedFileType, options.SuggestedStartLocation,
                 null, options.FileTypeFilter,
                 f => new BclStorageFile(new FileInfo(f)))
                 .ConfigureAwait(false);
@@ -56,7 +57,7 @@ namespace Avalonia.Win32
             var (files, _) = await ShowFilePicker(
                 false, false,
                 false, options.ShowOverwritePrompt,
-                options.Title, options.SuggestedFileName, options.SuggestedStartLocation,
+                options.Title, options.SuggestedFileName, options.SuggestedFileType, options.SuggestedStartLocation,
                 options.DefaultExtension, options.FileTypeChoices,
                 f => new BclStorageFile(new FileInfo(f)))
                 .ConfigureAwait(false);
@@ -68,7 +69,7 @@ namespace Avalonia.Win32
             var (files, index) = await ShowFilePicker(
                     false, false,
                     false, options.ShowOverwritePrompt,
-                    options.Title, options.SuggestedFileName, options.SuggestedStartLocation,
+                    options.Title, options.SuggestedFileName, options.SuggestedFileType, options.SuggestedStartLocation,
                     options.DefaultExtension, options.FileTypeChoices,
                     f => new BclStorageFile(new FileInfo(f)))
                 .ConfigureAwait(false);
@@ -88,6 +89,7 @@ namespace Avalonia.Win32
             bool? showOverwritePrompt,
             string? title,
             string? suggestedFileName,
+            FilePickerFileType? suggestedFileType,
             IStorageFolder? folder,
             string? defaultExtension,
             IReadOnlyList<FilePickerFileType>? filters,
@@ -118,6 +120,7 @@ namespace Avalonia.Win32
                     {
                         options &= ~FILEOPENDIALOGOPTIONS.FOS_OVERWRITEPROMPT;
                     }
+
                     frm.SetOptions(options);
 
                     defaultExtension ??= string.Empty;
@@ -150,6 +153,12 @@ namespace Avalonia.Win32
                                 frm.SetFileTypeIndex(1);
                             }
                         }
+                    }
+
+                    if (suggestedFileType != null &&
+                        filters?.IndexOf(suggestedFileType) is { } fi and > -1)
+                    { 
+                        frm.SetFileTypeIndex((uint)(fi + 1));
                     }
 
                     if (folder?.TryGetLocalPath() is { } folderPath)
