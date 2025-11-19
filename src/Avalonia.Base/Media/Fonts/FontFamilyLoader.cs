@@ -9,11 +9,6 @@ namespace Avalonia.Media.Fonts
 {
     public static class FontFamilyLoader
     {
-        private static readonly HashSet<string> FontExtensions = new(StringComparer.OrdinalIgnoreCase)
-        {
-            ".ttf", ".otf", ".ttc"
-        };
-
         /// <summary>
         /// Loads all font assets that belong to the specified <see cref="FontFamilyKey"/>
         /// </summary>
@@ -33,7 +28,14 @@ namespace Avalonia.Media.Fonts
 
         public static bool IsFontFile(string filePath)
         {
-            return FontExtensions.Contains(Path.GetExtension(filePath));
+            if (filePath is null)
+            {
+                return false;
+            }
+
+            return filePath.EndsWith(".ttf", StringComparison.OrdinalIgnoreCase)
+                || filePath.EndsWith(".otf", StringComparison.OrdinalIgnoreCase)
+                || filePath.EndsWith(".ttc", StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
