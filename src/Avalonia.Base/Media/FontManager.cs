@@ -83,7 +83,8 @@ namespace Avalonia.Media
                     return fontCollection;
                 }
 
-                throw new InvalidOperationException("System font collection could not be found.");
+                // Fallback to an empty system font collection
+                return new EmptySystemFontCollection();
             }
         }
 
@@ -376,13 +377,6 @@ namespace Avalonia.Media
                 
                 if (fontCollection != null)
                 {
-                    if (fontCollection.Count == 0)
-                    {
-                        fontCollection = null;
-
-                        return false;
-                    }
-
                     return _fontCollections.TryAdd(fontCollection.Key, fontCollection);
                 }
             }

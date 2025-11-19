@@ -127,23 +127,15 @@ namespace Avalonia.Skia
                     switch (nameRecord.NameID)
                     {
                         case KnownNameIds.FontFamilyName:
-                        {
-                            if (!familyNames.ContainsKey(languageId))
                             {
-                                familyNames[languageId] = nameRecord.Value;
+                                familyNames.TryAdd(languageId, nameRecord.Value);
+                                break;
                             }
-
-                            break;
-                        }
                         case KnownNameIds.FontSubfamilyName:
-                        {
-                            if (!faceNames.ContainsKey(languageId))
                             {
-                                faceNames[languageId] = nameRecord.Value;
+                                faceNames.TryAdd(languageId, nameRecord.Value);
+                                break;
                             }
-
-                            break;
-                        }
                     }
                 }
 

@@ -6,6 +6,7 @@ using System.Linq;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
+using Avalonia.Platform;
 using Avalonia.UnitTests;
 using Avalonia.Utilities;
 using Xunit;
@@ -1353,6 +1354,9 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     textShaperImpl: new TextShaperImpl()));
 
             var customFontManagerImpl = new CustomFontManagerImpl();
+
+            AvaloniaLocator.CurrentMutable
+                .Bind<IFontManagerImpl>().ToConstant(customFontManagerImpl);
 
             var fontManager = new FontManager(customFontManagerImpl);
 

@@ -12,12 +12,21 @@ namespace Avalonia.Media.Fonts
     public abstract class FontCollectionBase : IFontCollection2
     {
         private static readonly Comparer<FontFamily> FontFamilyNameComparer =
-            Comparer<FontFamily>.Create((a, b) => string.Compare(a.Name, b.Name, StringComparison.InvariantCultureIgnoreCase));
+            Comparer<FontFamily>.Create((a, b) => string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase));
 
-        protected readonly ConcurrentDictionary<string, ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>> _glyphTypefaceCache = new();
+        // Make this internal for testing purposes
+        internal readonly ConcurrentDictionary<string, ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>> _glyphTypefaceCache = new();
 
         private readonly object _fontFamiliesLock = new();
         private volatile FontFamily[] _fontFamilies = Array.Empty<FontFamily>();
+        private readonly IFontManagerImpl _fontManagerImpl;
+        private readonly IAssetLoader _assetLoader;
+
+        protected FontCollectionBase()
+        {
+            _fontManagerImpl = AvaloniaLocator.Current.GetRequiredService<IFontManagerImpl>();
+            _assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
+        }
 
         public abstract Uri Key { get; }
 
@@ -88,8 +97,6 @@ namespace Avalonia.Media.Fonts
                 return false;
             }
 
-            var fontManager = FontManager.Current.PlatformImpl;
-
             var key = new FontCollectionKey(style, weight, stretch);
 
             var currentKey =
@@ -121,7 +128,7 @@ namespace Avalonia.Media.Fonts
             {
                 using (stream)
                 {
-                    if (fontManager.TryCreateGlyphTypeface(stream, fontSimulations, out syntheticGlyphTypeface))
+                    if (_fontManagerImpl.TryCreateGlyphTypeface(stream, fontSimulations, out syntheticGlyphTypeface))
                     {
                         //Add the TypographicFamilyName to the cache
                         if (!string.IsNullOrEmpty(glyphTypeface2.TypographicFamilyName))
@@ -168,13 +175,16 @@ namespace Avalonia.Media.Fonts
 
             if (_glyphTypefaceCache.TryGetValue(familyName, out var glyphTypefaces))
             {
-                var typefaces = new Typeface[glyphTypefaces.Count];
+                // Take a snapshot of the entries to avoid issues with concurrent modifications
+                var entries = glyphTypefaces.ToArray();
 
-                var i = 0;
+                var typefaces = new Typeface[entries.Length];
 
-                foreach (var key in glyphTypefaces.Keys)
+                for (var i = 0; i < entries.Length; i++)
                 {
-                    typefaces[i++] = new Typeface(new FontFamily(Key + "#" + familyName), key.Style, key.Weight, key.Stretch);
+                    var key = entries[i].Key;
+
+                    typefaces[i] = new Typeface(new FontFamily(Key + "#" + familyName), key.Style, key.Weight, key.Stretch);
                 }
 
                 familyTypefaces = typefaces;
@@ -185,22 +195,6 @@ namespace Avalonia.Media.Fonts
             return false;
         }
 
-        /// <summary>
-        /// Attempts to retrieve the glyph typeface that most closely matches the specified font family name, style,
-        /// weight, and stretch.
-        /// </summary>
-        /// <remarks>This method searches for a glyph typeface in the font collection cache that matches
-        /// the specified parameters. If an exact match is not found, fallback mechanisms are applied to find the
-        /// closest available match based on the specified style, weight, and stretch. If no suitable match is found,
-        /// the method returns <see langword="false"/> and <paramref name="glyphTypeface"/> is set to <see
-        /// langword="null"/>.</remarks>
-        /// <param name="familyName">The name of the font family to search for. This parameter cannot be <see langword="null"/> or empty.</param>
-        /// <param name="style">The desired font style.</param>
-        /// <param name="weight">The desired font weight.</param>
-        /// <param name="stretch">The desired font stretch.</param>
-        /// <param name="glyphTypeface">When this method returns, contains the <see cref="IGlyphTypeface"/> that most closely matches the specified
-        /// parameters, if a match is found; otherwise, <see langword="null"/>. This parameter is passed uninitialized.</param>
-        /// <returns><see langword="true"/> if a matching glyph typeface is found; otherwise, <see langword="false"/>.</returns>
         public bool TryGetNearestMatch(string familyName, FontStyle style, FontWeight weight, FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
         {
             if (!_glyphTypefaceCache.TryGetValue(familyName, out var glyphTypefaces))
@@ -277,7 +271,7 @@ namespace Avalonia.Media.Fonts
         /// langword="false"/>.</returns>
         public bool TryAddGlyphTypeface(Stream stream, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
         {
-            if (!FontManager.Current.PlatformImpl.TryCreateGlyphTypeface(stream, FontSimulations.None, out glyphTypeface))
+            if (!_fontManagerImpl.TryCreateGlyphTypeface(stream, FontSimulations.None, out glyphTypeface))
             {
                 return false;
             }
@@ -310,15 +304,13 @@ namespace Avalonia.Media.Fonts
                 case "avares":
                 case "resm":
                     {
-                        var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
-
                         var fontAssets = FontFamilyLoader.LoadFontAssets(source);
 
                         foreach (var fontAsset in fontAssets)
                         {
-                            var stream = assetLoader.Open(fontAsset);
+                            var stream = _assetLoader.Open(fontAsset);
 
-                            if (!FontManager.Current.PlatformImpl.TryCreateGlyphTypeface(stream, FontSimulations.None, out var glyphTypeface))
+                            if (!_fontManagerImpl.TryCreateGlyphTypeface(stream, FontSimulations.None, out var glyphTypeface))
                             {
                                 continue;
                             }
@@ -354,7 +346,7 @@ namespace Avalonia.Media.Fonts
 
                             using var stream = File.OpenRead(source.LocalPath);
 
-                            if (FontManager.Current.PlatformImpl.TryCreateGlyphTypeface(stream, FontSimulations.None, out var glyphTypeface))
+                            if (_fontManagerImpl.TryCreateGlyphTypeface(stream, FontSimulations.None, out var glyphTypeface))
                             {
                                 if (TryAddGlyphTypeface(glyphTypeface))
                                 {
@@ -376,7 +368,7 @@ namespace Avalonia.Media.Fonts
                                 {
                                     using var stream = File.OpenRead(file);
 
-                                    if (FontManager.Current.PlatformImpl.TryCreateGlyphTypeface(stream, FontSimulations.None, out var glyphTypeface))
+                                    if (_fontManagerImpl.TryCreateGlyphTypeface(stream, FontSimulations.None, out var glyphTypeface))
                                     {
                                         if (TryAddGlyphTypeface(glyphTypeface))
                                         {
@@ -406,17 +398,25 @@ namespace Avalonia.Media.Fonts
         /// <param name="fontFamily">The font family to add to the collection. Cannot be null.</param>
         protected void AddFontFamily(FontFamily fontFamily)
         {
-            if (fontFamily == null) throw new ArgumentNullException(nameof(fontFamily));
+            if (fontFamily == null)
+            {
+                throw new ArgumentNullException(nameof(fontFamily));
+            }
 
             lock (_fontFamiliesLock)
             {
                 var current = _fontFamilies;
                 int index = Array.BinarySearch(current, fontFamily, FontFamilyNameComparer);
 
-                if (index < 0)
+                // If an existing family with the same name is present, do nothing
+                if (index >= 0)
                 {
-                    index = ~index;
+                    // BinarySearch found an equal entry, so avoid
+                    // allocating a new array and inserting a duplicate.
+                    return;
                 }
+
+                index = ~index;
 
                 var copy = new FontFamily[current.Length + 1];
 
@@ -490,20 +490,39 @@ namespace Avalonia.Media.Fonts
             {
                 int mid = (left + right) / 2;
 
-                var compare = string.Compare(snapshot[mid].Name, familyName, StringComparison.InvariantCultureIgnoreCase);
+                var compare = string.Compare(snapshot[mid].Name, familyName, StringComparison.OrdinalIgnoreCase);
 
-                if (snapshot[mid].Name.StartsWith(familyName, StringComparison.InvariantCultureIgnoreCase))
-                {
-                    firstMatch = mid;
-                    right = mid - 1; // Continue searching to the left for the first match
-                }
-                else if (compare < 0)
+                // If the current name is lexicographically less than the search name, move right
+                if (compare < 0)
                 {
                     left = mid + 1;
                 }
+                else if (compare == 0)
+                {
+                    // Exact match found in snapshot. Use the exact family name for lookup
+                    if (_glyphTypefaceCache.TryGetValue(snapshot[mid].Name, out var exactGlyphTypefaces) &&
+                        TryGetNearestMatch(exactGlyphTypefaces, key, out glyphTypeface))
+                    {
+                        return true;
+                    }
+
+                    // Exact family present but no matching typeface found.
+                    return false;
+                }
                 else
                 {
-                    right = mid - 1;
+                    // Only check for prefix when snapshot[mid].Name is > familyName. This
+                    // avoids the more expensive StartsWith call for names that are definitely
+                    // ordered before the search term.
+                    if (snapshot[mid].Name.StartsWith(familyName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        firstMatch = mid;
+                        right = mid - 1; // Continue searching to the left for the first match
+                    }
+                    else
+                    {
+                        right = mid - 1;
+                    }
                 }
             }
 
@@ -514,7 +533,7 @@ namespace Avalonia.Media.Fonts
                 {
                     var fontFamily = snapshot[i];
 
-                    if (!fontFamily.Name.StartsWith(familyName, StringComparison.InvariantCultureIgnoreCase))
+                    if (!fontFamily.Name.StartsWith(familyName, StringComparison.OrdinalIgnoreCase))
                     {
                         break;
                     }
@@ -615,23 +634,42 @@ namespace Avalonia.Media.Fonts
                 return false;
             }
 
-            // Get or create the dictionary for the specified family name
-            var glyphTypefaces = _glyphTypefaceCache.GetOrAdd(familyName, _ =>
+            // Check if the family already exists
+            if (_glyphTypefaceCache.TryGetValue(familyName, out var glyphTypefaces))
             {
-                var dict = new ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>();
+                if (glyphTypefaces.TryGetValue(key, out var existing))
+                {
+                    if (ReferenceEquals(existing, glyphTypeface) || (existing is null && glyphTypeface is null))
+                    {
+                        return true;
+                    }
 
-                // Add the font family to the collection
+                    return false;
+                }
+
+                return glyphTypefaces.TryAdd(key, glyphTypeface);
+            }
+
+            // Family doesn't exist yet. Create a new dictionary instance and try to install it.
+            var newDict = new ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>();
+
+            // GetOrAdd will return the instance that ended up in the dictionary. If it's our
+            // newDict instance then we won the race to add the family and should publish it.
+            var dict = _glyphTypefaceCache.GetOrAdd(familyName, newDict);
+
+            if (ReferenceEquals(dict, newDict))
+            {
+                // We successfully installed the dictionary; publish the FontFamily once.
                 var fontFamily = new FontFamily(Key + "#" + familyName);
 
+                // Add the font family to the sorted array
                 AddFontFamily(fontFamily);
+            }
 
-                return dict;
-            });
-
-            // Try to add the glyph typeface to the family's dictionary
-            if (glyphTypefaces.TryGetValue(key, out var existing))
+            // Add or compare the glyphTypeface in the resulting dictionary.
+            if (dict.TryGetValue(key, out var existingAfter))
             {
-                if (ReferenceEquals(existing, glyphTypeface) || (existing is null && glyphTypeface is null))
+                if (ReferenceEquals(existingAfter, glyphTypeface) || (existingAfter is null && glyphTypeface is null))
                 {
                     return true;
                 }
@@ -639,7 +677,7 @@ namespace Avalonia.Media.Fonts
                 return false;
             }
 
-            return glyphTypefaces.TryAdd(key, glyphTypeface);
+            return dict.TryAdd(key, glyphTypeface);
         }
 
         /// <summary>
