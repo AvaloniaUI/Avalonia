@@ -35,7 +35,6 @@
     <ProjectReference Include="..\..\..\src\Avalonia.Desktop\Avalonia.Desktop.csproj"/>
     <ProjectReference Condition="'$(Configuration)' == 'Debug'" Include="..\..\..\src\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj"/>
     <ProjectReference Include="..\..\..\src\Avalonia.Fonts.Inter\Avalonia.Fonts.Inter.csproj"/>
-    <ProjectReference Include="..\..\..\src\Avalonia.ReactiveUI\Avalonia.ReactiveUI.csproj"/>
     <ProjectReference Include="..\..\..\src\Avalonia.Themes.Fluent\Avalonia.Themes.Fluent.csproj"/>
     <ProjectReference Include="..\..\..\src\Markup\Avalonia.Markup.Xaml.Loader\Avalonia.Markup.Xaml.Loader.csproj"/>
   </ItemGroup>
