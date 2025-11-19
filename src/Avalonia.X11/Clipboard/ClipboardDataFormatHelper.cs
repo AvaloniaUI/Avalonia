@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using Avalonia.Controls;
 using Avalonia.Input;
 
 namespace Avalonia.X11.Clipboard;
@@ -8,6 +9,8 @@ internal static class ClipboardDataFormatHelper
 {
     private const string MimeTypeTextUriList = "text/uri-list";
     private const string AppPrefix = "application/avn-fmt.";
+    public const string PngFormatMimeType = "image/png";
+    public const string JpegFormatMimeType = "image/jpeg";
 
     public static DataFormat? ToDataFormat(IntPtr formatAtom, X11Atoms atoms)
     {
@@ -32,20 +35,41 @@ internal static class ClipboardDataFormatHelper
         if (atoms.GetAtomName(formatAtom) is { } atomName)
         {
             return atomName == MimeTypeTextUriList ?
-                DataFormat.File :
-                DataFormat.FromSystemName<byte[]>(atomName, AppPrefix);
+                DataFormat.File : DataFormat.FromSystemName<byte[]>(atomName, AppPrefix);
         }
 
         return null;
     }
 
-    public static IntPtr ToAtom(DataFormat format, IntPtr[] textFormatAtoms, X11Atoms atoms)
+    public static IntPtr ToAtom(DataFormat format, IntPtr[] textFormatAtoms, X11Atoms atoms, DataFormat[] dataFormats)
     {
         if (DataFormat.Text.Equals(format))
             return GetPreferredStringFormatAtom(textFormatAtoms, atoms);
 
         if (DataFormat.File.Equals(format))
             return atoms.GetAtom(MimeTypeTextUriList);
+
+        if (DataFormat.Bitmap.Equals(format))
+        {
+            DataFormat? pngFormat = null, jpegFormat = null;
+            foreach (var imageFormat in dataFormats)
+            {
+                if (imageFormat.Identifier is PngFormatMimeType)
+                    pngFormat = imageFormat;
+                else if (imageFormat.Identifier is JpegFormatMimeType)
+                    jpegFormat = imageFormat;
+
+                if (pngFormat != null && jpegFormat != null)
+                    break;
+            }
+
+            var preferredFormat = pngFormat ?? jpegFormat ?? null;
+
+            if (preferredFormat != null)
+                return atoms.GetAtom(preferredFormat.ToSystemName(AppPrefix));
+            else
+                return IntPtr.Zero;
+        }
 
         var systemName = format.ToSystemName(AppPrefix);
         return atoms.GetAtom(systemName);
@@ -58,6 +82,9 @@ internal static class ClipboardDataFormatHelper
 
         if (DataFormat.File.Equals(format))
             return [atoms.GetAtom(MimeTypeTextUriList)];
+
+        if (DataFormat.Bitmap.Equals(format))
+            return [atoms.GetAtom(PngFormatMimeType)];
 
         var systemName = format.ToSystemName(AppPrefix);
         return [atoms.GetAtom(systemName)];
