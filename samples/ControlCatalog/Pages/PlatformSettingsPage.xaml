@@ -1,0 +1,142 @@
+<UserControl x:Class="ControlCatalog.Pages.PlatformSettingsPage"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="using:ControlCatalog.ViewModels"
+             d:DesignHeight="800"
+             d:DesignWidth="600"
+             mc:Ignorable="d"
+             x:DataType="viewModels:PlatformSettingsViewModel">
+  
+  <ScrollViewer>
+    <StackPanel Spacing="20" Margin="20">
+      
+      <TextBlock Text="Platform Settings Information" 
+                 FontSize="20" 
+                 FontWeight="Bold" />
+
+      <TextBlock Text="This page displays IPlatformSettings values which may change at runtime based on system settings."
+                 TextWrapping="Wrap"
+                 Opacity="0.7" />
+
+      <GroupBox Header="System Color Values">
+        <StackPanel Spacing="15">
+          <Grid ColumnDefinitions="180,*" RowDefinitions="Auto,Auto,Auto">
+            <TextBlock Grid.Column="0" Grid.Row="0" Text="Theme Variant:" VerticalAlignment="Center" />
+            <TextBlock Grid.Column="1" Grid.Row="0" Text="{Binding ThemeVariant}" FontWeight="Bold" VerticalAlignment="Center" />
+
+            <TextBlock Grid.Column="0" Grid.Row="1" Text="Contrast Preference:" VerticalAlignment="Center" Margin="0,10,0,0" />
+            <TextBlock Grid.Column="1" Grid.Row="1" Text="{Binding ContrastPreference}" FontWeight="Bold" VerticalAlignment="Center" Margin="0,10,0,0" />
+          </Grid>
+
+          <StackPanel Spacing="10">
+            <Grid ColumnDefinitions="180,120,*">
+              <TextBlock Grid.Column="0" Text="Accent Color 1:" VerticalAlignment="Center" />
+              <Border Grid.Column="1" 
+                      Width="100" 
+                      Height="40"
+                      BorderBrush="Black"
+                      BorderThickness="1"
+                      CornerRadius="4"
+                      HorizontalAlignment="Left">
+                <Border.Background>
+                  <SolidColorBrush Color="{Binding AccentColor1}" />
+                </Border.Background>
+              </Border>
+              <TextBlock Grid.Column="2" 
+                         Text="{Binding AccentColor1}" 
+                         VerticalAlignment="Center"
+                         Margin="10,0,0,0" />
+            </Grid>
+
+            <Grid ColumnDefinitions="180,120,*">
+              <TextBlock Grid.Column="0" Text="Accent Color 2:" VerticalAlignment="Center" />
+              <Border Grid.Column="1" 
+                      Width="100" 
+                      Height="40" 
+                      BorderBrush="Black"
+                      BorderThickness="1"
+                      CornerRadius="4"
+                      HorizontalAlignment="Left">
+                <Border.Background>
+                  <SolidColorBrush Color="{Binding AccentColor2}" />
+                </Border.Background>
+              </Border>
+              <TextBlock Grid.Column="2" 
+                         Text="{Binding AccentColor2}" 
+                         VerticalAlignment="Center"
+                         Margin="10,0,0,0" />
+            </Grid>
+
+            <Grid ColumnDefinitions="180,120,*">
+              <TextBlock Grid.Column="0" Text="Accent Color 3:" VerticalAlignment="Center" />
+              <Border Grid.Column="1" 
+                      Width="100" 
+                      Height="40" 
+                      BorderBrush="Black"
+                      BorderThickness="1"
+                      CornerRadius="4"
+                      HorizontalAlignment="Left">
+                <Border.Background>
+                  <SolidColorBrush Color="{Binding AccentColor3}" />
+                </Border.Background>
+              </Border>
+              <TextBlock Grid.Column="2" 
+                         Text="{Binding AccentColor3}" 
+                         VerticalAlignment="Center"
+                         Margin="10,0,0,0" />
+            </Grid>
+          </StackPanel>
+        </StackPanel>
+      </GroupBox>
+
+      <GroupBox Header="Language Settings">
+        <StackPanel Spacing="10">
+          <TextBlock Text="This reflects the preferred application language as specified in OS settings."
+                     TextWrapping="Wrap"
+                     Opacity="0.7"
+                     FontSize="12" />
+          <Grid ColumnDefinitions="180,*">
+            <TextBlock Grid.Column="0" Text="Preferred Language:" VerticalAlignment="Center" />
+            <TextBlock Grid.Column="1" Text="{Binding PreferredLanguage}" FontWeight="Bold" VerticalAlignment="Center" />
+          </Grid>
+        </StackPanel>
+      </GroupBox>
+
+      <GroupBox Header="Other Platform Settings">
+        <StackPanel Spacing="10">
+          <TextBlock Text="These settings are less commonly changed and are platform-specific."
+                     TextWrapping="Wrap"
+                     Opacity="0.7"
+                     FontSize="12" />
+          
+          <Grid ColumnDefinitions="180,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+            <TextBlock Grid.Column="0" Grid.Row="0" Text="Hold Wait Duration:" VerticalAlignment="Center" />
+            <TextBlock Grid.Column="1" Grid.Row="0" Text="{Binding HoldWaitDuration}" VerticalAlignment="Center" />
+
+            <TextBlock Grid.Column="0" Grid.Row="1" Text="Tap Size (Touch):" VerticalAlignment="Center" Margin="0,5,0,0" />
+            <TextBlock Grid.Column="1" Grid.Row="1" Text="{Binding TapSizeTouch}" VerticalAlignment="Center" Margin="0,5,0,0" />
+
+            <TextBlock Grid.Column="0" Grid.Row="2" Text="Tap Size (Mouse):" VerticalAlignment="Center" Margin="0,5,0,0" />
+            <TextBlock Grid.Column="1" Grid.Row="2" Text="{Binding TapSizeMouse}" VerticalAlignment="Center" Margin="0,5,0,0" />
+
+            <TextBlock Grid.Column="0" Grid.Row="3" Text="Double-Tap Size (Touch):" VerticalAlignment="Center" Margin="0,5,0,0" />
+            <TextBlock Grid.Column="1" Grid.Row="3" Text="{Binding DoubleTapSizeTouch}" VerticalAlignment="Center" Margin="0,5,0,0" />
+
+            <TextBlock Grid.Column="0" Grid.Row="4" Text="Double-Tap Size (Mouse):" VerticalAlignment="Center" Margin="0,5,0,0" />
+            <TextBlock Grid.Column="1" Grid.Row="4" Text="{Binding DoubleTapSizeMouse}" VerticalAlignment="Center" Margin="0,5,0,0" />
+
+            <TextBlock Grid.Column="0" Grid.Row="5" Text="Double-Tap Time (Touch):" VerticalAlignment="Center" Margin="0,5,0,0" />
+            <TextBlock Grid.Column="1" Grid.Row="5" Text="{Binding DoubleTapTimeTouch}" VerticalAlignment="Center" Margin="0,5,0,0" />
+
+            <TextBlock Grid.Column="0" Grid.Row="6" Text="Double-Tap Time (Mouse):" VerticalAlignment="Center" Margin="0,5,0,0" />
+            <TextBlock Grid.Column="1" Grid.Row="6" Text="{Binding DoubleTapTimeMouse}" VerticalAlignment="Center" Margin="0,5,0,0" />
+          </Grid>
+        </StackPanel>
+      </GroupBox>
+
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>
+
