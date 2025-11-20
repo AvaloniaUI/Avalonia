@@ -2129,6 +2129,25 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Backspace_Should_Delete_CRLFNewline_Character_At_Once()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+            var target = new TextBox
+            {
+                Template = CreateTemplate(),
+                Text = $"First\r\nSecond",
+                CaretIndex = 7
+            };
+            target.ApplyTemplate();
+
+            // (First\r\nSecond)
+            RaiseKeyEvent(target, Key.Back, KeyModifiers.None);
+            // (FirstSecond)
+
+            Assert.Equal("FirstSecond", target.Text);
+        }
+
         private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
             focusManager: new FocusManager(),
             keyboardDevice: () => new KeyboardDevice(),
