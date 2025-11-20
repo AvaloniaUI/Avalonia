@@ -12,7 +12,7 @@ internal class IOSLauncher : ILauncher
     {
         _ = uri ?? throw new ArgumentNullException(nameof(uri));
 
-        if (uri.IsAbsoluteUri && UIApplication.SharedApplication.CanOpenUrl(uri))
+        if (uri.IsAbsoluteUri && UIApplication.SharedApplication.CanOpenUrl(uri!))
         {
             return UIApplication.SharedApplication.OpenUrlAsync(uri!, new UIApplicationOpenUrlOptions());
         }
