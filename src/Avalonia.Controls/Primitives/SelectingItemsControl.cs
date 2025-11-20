@@ -865,12 +865,12 @@ namespace Avalonia.Controls.Primitives
             return false;
         }
         
-        /// <inheritdoc cref="SelectionEventLogic.EventSelectionTrigger(InputElement, PointerEventArgs)"/>
+        /// <inheritdoc cref="ItemSelectionEventTriggers.EventSelectionTrigger(InputElement, PointerEventArgs)"/>
         /// <seealso cref="UpdateSelectionFromEvent"/>
-        protected virtual InputSelectionTrigger EventSelectionTrigger(InputElement selectable, PointerEventArgs eventArgs) => SelectionEventLogic.EventSelectionTrigger(selectable, eventArgs);
+        protected virtual bool EventSelectionTrigger(InputElement selectable, PointerEventArgs eventArgs) => ItemSelectionEventTriggers.EventSelectionTrigger(selectable, eventArgs);
         
-        /// <inheritdoc cref="SelectionEventLogic.EventSelectionTrigger(InputElement, KeyEventArgs)"/>
-        protected virtual InputSelectionTrigger EventSelectionTrigger(InputElement selectable, KeyEventArgs eventArgs) => SelectionEventLogic.EventSelectionTrigger(selectable, eventArgs);
+        /// <inheritdoc cref="ItemSelectionEventTriggers.EventSelectionTrigger(InputElement, KeyEventArgs)"/>
+        protected virtual bool EventSelectionTrigger(InputElement selectable, KeyEventArgs eventArgs) => ItemSelectionEventTriggers.EventSelectionTrigger(selectable, eventArgs);
 
         /// <summary>
         /// Updates the selection based on an event that may have originated in a container that
@@ -894,16 +894,12 @@ namespace Avalonia.Controls.Primitives
 
             switch (eventArgs)
             {
-                case PointerPressedEventArgs pointerPressedEvent when EventSelectionTrigger(container, pointerPressedEvent) == InputSelectionTrigger.Press:
-                case PointerReleasedEventArgs pointerReleasedEvent when EventSelectionTrigger(container, pointerReleasedEvent) == InputSelectionTrigger.Release:
-                
-                case KeyEventArgs keyDownEvent when keyDownEvent.RoutedEvent == KeyDownEvent && EventSelectionTrigger(container, keyDownEvent) == InputSelectionTrigger.Press:
-                case KeyEventArgs keyUpEvent when keyUpEvent.RoutedEvent == KeyUpEvent && EventSelectionTrigger(container, keyUpEvent) == InputSelectionTrigger.Release:
-
+                case PointerEventArgs pointerEvent when EventSelectionTrigger(container, pointerEvent):
+                case KeyEventArgs keyEvent when EventSelectionTrigger(container, keyEvent):
                 case GotFocusEventArgs:
                     UpdateSelection(containerIndex, true,
-                        SelectionEventLogic.HasRangeSelectionModifier(container, eventArgs),
-                        SelectionEventLogic.HasToggleSelectionModifier(container, eventArgs),
+                        ItemSelectionEventTriggers.HasRangeSelectionModifier(container, eventArgs),
+                        ItemSelectionEventTriggers.HasToggleSelectionModifier(container, eventArgs),
                         eventArgs is PointerEventArgs { Properties.IsRightButtonPressed: true },
                         eventArgs is GotFocusEventArgs);
 

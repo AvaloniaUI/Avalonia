@@ -194,15 +194,8 @@ namespace Avalonia.Controls
             UpdateSelectedContent();
         }
 
-        protected override InputSelectionTrigger EventSelectionTrigger(InputElement selectable, PointerEventArgs eventArgs)
-        {
-            if (eventArgs.Properties.PointerUpdateKind is not (PointerUpdateKind.LeftButtonPressed or PointerUpdateKind.LeftButtonReleased))
-            {
-                return InputSelectionTrigger.None;
-            }
-
-            return base.EventSelectionTrigger(selectable, eventArgs);
-        }
+        protected override bool EventSelectionTrigger(InputElement selectable, PointerEventArgs eventArgs) =>
+            eventArgs.Properties.PointerUpdateKind is PointerUpdateKind.LeftButtonPressed or PointerUpdateKind.LeftButtonReleased && base.EventSelectionTrigger(selectable, eventArgs);
 
         public override bool UpdateSelectionFromEvent(Control container, RoutedEventArgs eventArgs)
         {
