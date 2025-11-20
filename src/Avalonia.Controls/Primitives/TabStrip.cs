@@ -27,15 +27,8 @@ namespace Avalonia.Controls.Primitives
             return NeedsContainer<TabStripItem>(item, out recycleKey);
         }
 
-        protected override InputSelectionTrigger EventSelectionTrigger(InputElement selectable, PointerEventArgs e)
-        {
-            if (e.Properties.PointerUpdateKind is not (PointerUpdateKind.LeftButtonPressed or PointerUpdateKind.LeftButtonReleased))
-            {
-                return InputSelectionTrigger.None;
-            }
-
-            return base.EventSelectionTrigger(selectable, e);
-        }
+        protected override bool EventSelectionTrigger(InputElement selectable, PointerEventArgs e) =>
+            e.Properties.PointerUpdateKind is PointerUpdateKind.LeftButtonPressed or PointerUpdateKind.LeftButtonReleased && base.EventSelectionTrigger(selectable, e);
 
         public override bool UpdateSelectionFromEvent(Control container, RoutedEventArgs eventArgs)
         {
