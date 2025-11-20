@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>$(AvsCurrentTargetFramework)</TargetFrameworks>
+    <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsLegacyTargetFrameworks)</TargetFrameworks>
     <DefineConstants>$(DefineConstants);XAMLX_INTERNAL</DefineConstants>
     <IsAotCompatible>false</IsAotCompatible>
   </PropertyGroup>
