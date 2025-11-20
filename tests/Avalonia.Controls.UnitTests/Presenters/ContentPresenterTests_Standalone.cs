@@ -333,5 +333,75 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             Assert.NotNull(target.Child);
         }
+
+        [Fact]
+        public void ContentPresenter_LetterSpacing_Default_Value_Is_Zero()
+        {
+            var presenter = new ContentPresenter();
+            Assert.Equal(0, presenter.LetterSpacing);
+        }
+
+        [Fact]
+        public void ContentPresenter_LetterSpacing_Can_Be_Set_And_Retrieved()
+        {
+            var presenter = new ContentPresenter { LetterSpacing = 3.5 };
+            Assert.Equal(3.5, presenter.LetterSpacing);
+        }
+
+        [Fact]
+        public void ContentPresenter_LetterSpacing_Can_Be_Negative()
+        {
+            var presenter = new ContentPresenter { LetterSpacing = -2.0 };
+            Assert.Equal(-2.0, presenter.LetterSpacing);
+        }
+
+        [Fact]
+        public void ContentPresenter_LetterSpacing_Propagates_To_TextBlock_Child()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var presenter = new ContentPresenter
+                {
+                    Content = "Test Content",
+                    LetterSpacing = 4.0
+                };
+                var root = new TestRoot { Child = presenter };
+
+                presenter.UpdateChild();
+
+                var textBlock = presenter.Child as TextBlock;
+                Assert.NotNull(textBlock);
+                Assert.Equal(4.0, textBlock.LetterSpacing);
+            }
+        }
+
+        [Fact]
+        public void ContentPresenter_LetterSpacing_Updates_TextBlock_When_Changed()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var presenter = new ContentPresenter
+                {
+                    Content = "Test Content",
+                    LetterSpacing = 1.0
+                };
+                var root = new TestRoot { Child = presenter };
+
+                presenter.UpdateChild();
+                var textBlock = presenter.Child as TextBlock;
+
+                presenter.LetterSpacing = 6.0;
+
+                Assert.NotNull(textBlock);
+                Assert.Equal(6.0, textBlock.LetterSpacing);
+            }
+        }
+
+        [Fact]
+        public void ContentPresenter_LetterSpacing_Property_Inherits_From_TextBlock()
+        {
+            // Verify that ContentPresenter's LetterSpacing uses TextBlock.LetterSpacingProperty
+            Assert.Same(TextBlock.LetterSpacingProperty, ContentPresenter.LetterSpacingProperty);
+        }
     }
 }

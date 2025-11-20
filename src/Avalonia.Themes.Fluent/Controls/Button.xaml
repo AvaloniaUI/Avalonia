@@ -37,7 +37,8 @@
                           ContentTemplate="{TemplateBinding ContentTemplate}"
                           Padding="{TemplateBinding Padding}"
                           HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                          LetterSpacing="{TemplateBinding LetterSpacing}" />
       </ControlTemplate>
     </Setter>
 
