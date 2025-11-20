@@ -52,7 +52,7 @@ namespace Avalonia.Platform
         }
 
         public virtual event EventHandler<PlatformColorValues>? ColorValuesChanged;
-        public event EventHandler? PreferredApplicationLanguageChanged;
+        public virtual event EventHandler? PreferredApplicationLanguageChanged;
 
         protected void OnColorValuesChanged(PlatformColorValues colorValues)
         {
