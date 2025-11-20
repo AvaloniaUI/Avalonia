@@ -139,6 +139,11 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             Resized?.Invoke(size, WindowResizeReason.Layout);
         }
 
+        internal void DoPaint()
+        {
+            Paint?.Invoke(new Rect(new Point(), ClientSize));
+        }
+
         sealed class SurfaceViewImpl : InvalidationAwareSurfaceView
         {
             private readonly TopLevelImpl _tl;
