@@ -46,8 +46,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{A689DE
 		src\Shared\StreamCompatibilityExtensions.cs = src\Shared\StreamCompatibilityExtensions.cs
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.ReactiveUI", "src\Avalonia.ReactiveUI\Avalonia.ReactiveUI.csproj", "{6417B24E-49C2-4985-8DB2-3AB9D898EC91}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Markup", "src\Markup\Avalonia.Markup\Avalonia.Markup.csproj", "{6417E941-21BC-467B-A771-0DE389353CE6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Markup.UnitTests", "tests\Avalonia.Markup.UnitTests\Avalonia.Markup.UnitTests.csproj", "{8EF392D5-1416-45AA-9956-7CBBC3229E8A}"
@@ -108,7 +106,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Props", "Props", "{F3AC8BC1
 		build\NetCore.props = build\NetCore.props
 		build\NetFX.props = build\NetFX.props
 		build\NullableEnable.props = build\NullableEnable.props
-		build\ReactiveUI.props = build\ReactiveUI.props
 		build\ReferenceCoreLibraries.props = build\ReferenceCoreLibraries.props
 		build\Rx.props = build\Rx.props
 		build\SampleApp.props = build\SampleApp.props
@@ -171,8 +168,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.X11", "src\Avaloni
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PlatformSanityChecks", "samples\PlatformSanityChecks\PlatformSanityChecks.csproj", "{D775DECB-4E00-4ED5-A75A-5FCE58ADFF0B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.ReactiveUI.UnitTests", "tests\Avalonia.ReactiveUI.UnitTests\Avalonia.ReactiveUI.UnitTests.csproj", "{AF915D5C-AB00-4EA0-B5E6-001F4AE84E68}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Dialogs", "src\Avalonia.Dialogs\Avalonia.Dialogs.csproj", "{4D55985A-1EE2-4F25-AD39-6EA8BC04F8FB}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.FreeDesktop", "src\Avalonia.FreeDesktop\Avalonia.FreeDesktop.csproj", "{4D36CEC8-53F2-40A5-9A37-79AAE356E2DA}"
@@ -222,8 +217,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControlCatalog.Browser", "samples\ControlCatalog.Browser\ControlCatalog.Browser.csproj", "{15B93A4C-1B46-43F6-B534-7B25B6E99932}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControlCatalog.Browser.Blazor", "samples\ControlCatalog.Browser.Blazor\ControlCatalog.Browser.Blazor.csproj", "{90B08091-9BBD-4362-B712-E9F2CC62B218}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReactiveUIDemo", "samples\ReactiveUIDemo\ReactiveUIDemo.csproj", "{75C47156-C5D8-44BC-A5A7-E8657C2248D6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GpuInterop", "samples\GpuInterop\GpuInterop.csproj", "{C810060E-3809-4B74-A125-F11533AF9C1B}"
 EndProject
@@ -360,10 +353,6 @@ Global
 		{3E53A01A-B331-47F3-B828-4A5717E77A24}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3E53A01A-B331-47F3-B828-4A5717E77A24}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3E53A01A-B331-47F3-B828-4A5717E77A24}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6417B24E-49C2-4985-8DB2-3AB9D898EC91}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6417B24E-49C2-4985-8DB2-3AB9D898EC91}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6417B24E-49C2-4985-8DB2-3AB9D898EC91}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6417B24E-49C2-4985-8DB2-3AB9D898EC91}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6417E941-21BC-467B-A771-0DE389353CE6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6417E941-21BC-467B-A771-0DE389353CE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6417E941-21BC-467B-A771-0DE389353CE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -496,10 +485,6 @@ Global
 		{D775DECB-4E00-4ED5-A75A-5FCE58ADFF0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D775DECB-4E00-4ED5-A75A-5FCE58ADFF0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D775DECB-4E00-4ED5-A75A-5FCE58ADFF0B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AF915D5C-AB00-4EA0-B5E6-001F4AE84E68}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AF915D5C-AB00-4EA0-B5E6-001F4AE84E68}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AF915D5C-AB00-4EA0-B5E6-001F4AE84E68}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AF915D5C-AB00-4EA0-B5E6-001F4AE84E68}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4D55985A-1EE2-4F25-AD39-6EA8BC04F8FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{4D55985A-1EE2-4F25-AD39-6EA8BC04F8FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4D55985A-1EE2-4F25-AD39-6EA8BC04F8FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -596,10 +581,6 @@ Global
 		{90B08091-9BBD-4362-B712-E9F2CC62B218}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{90B08091-9BBD-4362-B712-E9F2CC62B218}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{90B08091-9BBD-4362-B712-E9F2CC62B218}.Release|Any CPU.Build.0 = Release|Any CPU
-		{75C47156-C5D8-44BC-A5A7-E8657C2248D6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{75C47156-C5D8-44BC-A5A7-E8657C2248D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{75C47156-C5D8-44BC-A5A7-E8657C2248D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{75C47156-C5D8-44BC-A5A7-E8657C2248D6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C810060E-3809-4B74-A125-F11533AF9C1B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C810060E-3809-4B74-A125-F11533AF9C1B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C810060E-3809-4B74-A125-F11533AF9C1B}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -757,7 +738,6 @@ Global
 		{3C471044-3640-45E3-B1B2-16D2FF8399EE} = {E870DCD7-F46A-498D-83FC-D0FD13E0A11C}
 		{41B02319-965D-4945-8005-C1A3D1224165} = {86C53C40-57AA-45B8-AD42-FAE0EFDF0F2B}
 		{D775DECB-4E00-4ED5-A75A-5FCE58ADFF0B} = {9B9E3891-2366-4253-A952-D08BCEB71098}
-		{AF915D5C-AB00-4EA0-B5E6-001F4AE84E68} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 		{4D36CEC8-53F2-40A5-9A37-79AAE356E2DA} = {86C53C40-57AA-45B8-AD42-FAE0EFDF0F2B}
 		{8C89950F-F5D9-47FC-8066-CBC1EC3DF8FC} = {FF237916-7150-496B-89ED-6CA3292896E7}
 		{B859AE7C-F34F-4A9E-88AE-E0E7229FDE1E} = {FF237916-7150-496B-89ED-6CA3292896E7}
@@ -778,7 +758,6 @@ Global
 		{47F8530C-F19B-4B1A-B4D6-EB231522AE5D} = {86A3F706-DC3C-43C6-BE1B-B98F5BAAA268}
 		{15B93A4C-1B46-43F6-B534-7B25B6E99932} = {9B9E3891-2366-4253-A952-D08BCEB71098}
 		{90B08091-9BBD-4362-B712-E9F2CC62B218} = {9B9E3891-2366-4253-A952-D08BCEB71098}
-		{75C47156-C5D8-44BC-A5A7-E8657C2248D6} = {9B9E3891-2366-4253-A952-D08BCEB71098}
 		{C810060E-3809-4B74-A125-F11533AF9C1B} = {9B9E3891-2366-4253-A952-D08BCEB71098}
 		{C692FE73-43DB-49CE-87FC-F03ED61F25C9} = {4ED8B739-6F4E-4CD4-B993-545E6B5CE637}
 		{DDA28789-C21A-4654-86CE-D01E81F095C5} = {4ED8B739-6F4E-4CD4-B993-545E6B5CE637}
