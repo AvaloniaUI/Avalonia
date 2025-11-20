@@ -13,11 +13,7 @@ using Path = System.IO.Path;
 
 #pragma warning disable CS0649
 
-#if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests
-#else
-namespace Avalonia.Direct2D1.RenderTests.Media
-#endif
 {
     public class BitmapTests : TestBase
     {
