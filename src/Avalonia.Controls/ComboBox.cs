@@ -383,15 +383,10 @@ namespace Avalonia.Controls
             return false;
         }
 
-        protected override InputSelectionTrigger EventSelectionTrigger(InputElement selectable, PointerEventArgs eventArgs)
-        {
-            return base.EventSelectionTrigger(selectable, eventArgs) switch
-            {
-                InputSelectionTrigger.None => InputSelectionTrigger.None,
-                InputSelectionTrigger.Press or InputSelectionTrigger.Release => InputSelectionTrigger.Release, // never select on press
-                _ => throw new NotImplementedException(),
-            };
-        }
+        protected override bool EventSelectionTrigger(InputElement selectable, PointerEventArgs eventArgs) =>
+            ItemSelectionEventTriggers.IsPointerEventWithinBounds(selectable, eventArgs) &&
+            eventArgs is { Properties.PointerUpdateKind: PointerUpdateKind.LeftButtonReleased or PointerUpdateKind.RightButtonReleased } &&
+            eventArgs.RoutedEvent == PointerReleasedEvent;
 
         /// <inheritdoc/>
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
