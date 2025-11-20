@@ -1,6 +1,5 @@
 ﻿using System;
 using Avalonia.Media;
-using Avalonia.Platform;
 
 namespace Avalonia.Rendering.Composition.Server
 {
@@ -30,15 +29,15 @@ namespace Avalonia.Rendering.Composition.Server
             return maxHeight;
         }
 
-        public DiagnosticTextRenderer(IGlyphTypeface typeface, double fontRenderingEmSize)
+        public DiagnosticTextRenderer(GlyphTypeface glyphTypeface, double fontRenderingEmSize)
         {
             var chars = new char[LastChar - FirstChar + 1];
             for (var c = FirstChar; c <= LastChar; c++)
             {
                 var index = c - FirstChar;
                 chars[index] = c;
-                var glyph = typeface.GetGlyph(c);
-                _runs[index] = new GlyphRun(typeface, fontRenderingEmSize, chars.AsMemory(index, 1), new[] { glyph });
+                var glyph = glyphTypeface.CharacterToGlyphMap[c];
+                _runs[index] = new GlyphRun(glyphTypeface, fontRenderingEmSize, chars.AsMemory(index, 1), new[] { glyph });
             }
         }
 

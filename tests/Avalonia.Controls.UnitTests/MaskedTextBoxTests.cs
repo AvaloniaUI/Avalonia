@@ -6,6 +6,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Harfbuzz;
 using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
@@ -926,13 +927,13 @@ namespace Avalonia.Controls.UnitTests
             inputManager: new InputManager(),
             renderInterface: new HeadlessPlatformRenderInterface(),
             fontManagerImpl: new HeadlessFontManagerStub(),
-            textShaperImpl: new HeadlessTextShaperStub(),
+            textShaperImpl: new HarfBuzzTextShaper(),
             standardCursorFactory: Mock.Of<ICursorFactory>());
 
         private static TestServices Services => TestServices.MockThreadingInterface.With(
             renderInterface: new HeadlessPlatformRenderInterface(),
-            standardCursorFactory: Mock.Of<ICursorFactory>(),     
-            textShaperImpl: new HeadlessTextShaperStub(), 
+            standardCursorFactory: Mock.Of<ICursorFactory>(),
+            textShaperImpl: new HarfBuzzTextShaper(),
             fontManagerImpl: new HeadlessFontManagerStub());
 
         private static IControlTemplate CreateTemplate()

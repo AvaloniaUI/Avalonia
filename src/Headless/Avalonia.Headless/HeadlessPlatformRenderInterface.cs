@@ -5,11 +5,9 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Avalonia.Media;
-using Avalonia.Platform;
-using Avalonia.Rendering.SceneGraph;
-using Avalonia.Utilities;
 using Avalonia.Media.Imaging;
 using Avalonia.Media.TextFormatting;
+using Avalonia.Platform;
 
 namespace Avalonia.Headless
 {
@@ -19,8 +17,7 @@ namespace Avalonia.Headless
         {
             AvaloniaLocator.CurrentMutable
                 .Bind<IPlatformRenderInterface>().ToConstant(new HeadlessPlatformRenderInterface())
-                .Bind<IFontManagerImpl>().ToConstant(new HeadlessFontManagerStub())
-                .Bind<ITextShaperImpl>().ToConstant(new HeadlessTextShaperStub());
+                .Bind<IFontManagerImpl>().ToConstant(new HeadlessFontManagerStub());
         }
 
         public IPlatformRenderInterfaceContext CreateBackendContext(IPlatformGraphicsContext? graphicsContext) => this;

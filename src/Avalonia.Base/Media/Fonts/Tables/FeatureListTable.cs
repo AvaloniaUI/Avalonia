@@ -3,7 +3,6 @@
 // Ported from: https://github.com/SixLabors/Fonts/blob/034a440aece357341fcc6b02db58ffbe153e54ef/src/SixLabors.Fonts
 
 using System.Collections.Generic;
-using System.IO;
 
 namespace Avalonia.Media.Fonts.Tables
 {
@@ -17,8 +16,8 @@ namespace Avalonia.Media.Fonts.Tables
     /// </summary>
     internal class FeatureListTable
     {
-        private static OpenTypeTag GSubTag = OpenTypeTag.Parse("GSUB");
-        private static OpenTypeTag GPosTag = OpenTypeTag.Parse("GPOS");
+        private static OpenTypeTag GSubTag { get; } = OpenTypeTag.Parse("GSUB");
+        private static OpenTypeTag GPosTag { get; } = OpenTypeTag.Parse("GPOS");
 
         private FeatureListTable(IReadOnlyList<OpenTypeTag> features)
         {
@@ -29,26 +28,24 @@ namespace Avalonia.Media.Fonts.Tables
 
         public static FeatureListTable? LoadGSub(IGlyphTypeface glyphTypeface)
         {
-            if (!glyphTypeface.TryGetTable(GSubTag, out var gPosTable))
+            if (!glyphTypeface.PlatformTypeface.TryGetTable(GSubTag, out var gPosTable))
             {
                 return null;
             }
 
-            using var stream = new MemoryStream(gPosTable);
-            using var reader = new BigEndianBinaryReader(stream, false);
+            var reader = new BigEndianBinaryReader(gPosTable.Span);
 
             return Load(reader);
 
         }
         public static FeatureListTable? LoadGPos(IGlyphTypeface glyphTypeface)
         {
-            if (!glyphTypeface.TryGetTable(GPosTag, out var gSubTable))
+            if (!glyphTypeface.PlatformTypeface.TryGetTable(GPosTag, out var gSubTable))
             {
                 return null;
             }
 
-            using var stream = new MemoryStream(gSubTable);
-            using var reader = new BigEndianBinaryReader(stream, false);
+            var reader = new BigEndianBinaryReader(gSubTable.Span);
 
             return Load(reader);
 
@@ -73,14 +70,14 @@ namespace Avalonia.Media.Fonts.Tables
 
             reader.ReadUInt16();
             reader.ReadUInt16();
-
             reader.ReadOffset16();
+
             var featureListOffset = reader.ReadOffset16();
 
             return Load(reader, featureListOffset);
         }
 
-        private static FeatureListTable Load(BigEndianBinaryReader reader, long offset)
+        private static FeatureListTable Load(BigEndianBinaryReader reader, int offset)
         {
             // FeatureList
             // +---------------+------------------------------+-----------------------------------------------------------------------------------------------------------------+
@@ -90,7 +87,7 @@ namespace Avalonia.Media.Fonts.Tables
             // +---------------+------------------------------+-----------------------------------------------------------------------------------------------------------------+
             // | FeatureRecord | featureRecords[featureCount] | Array of FeatureRecords — zero-based (first feature has FeatureIndex = 0), listed alphabetically by feature tag |
             // +---------------+------------------------------+-----------------------------------------------------------------------------------------------------------------+
-            reader.Seek(offset, SeekOrigin.Begin);
+            reader.Seek(offset);
 
             var featureCount = reader.ReadUInt16();
 

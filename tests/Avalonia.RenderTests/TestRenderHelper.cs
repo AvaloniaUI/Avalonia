@@ -21,6 +21,8 @@ using Avalonia.UnitTests;
 using Avalonia.Utilities;
 using SixLabors.ImageSharp.PixelFormats;
 using Image = SixLabors.ImageSharp.Image;
+using Avalonia.Harfbuzz;
+
 #if AVALONIA_SKIA
 using Avalonia.Skia;
 #else
@@ -50,6 +52,7 @@ static class TestRenderHelper
             .ToConstant(s_dispatcherImpl);
         
         AvaloniaLocator.CurrentMutable.Bind<IAssetLoader>().ToConstant(new StandardAssetLoader());
+        AvaloniaLocator.CurrentMutable.Bind<ITextShaperImpl>().ToConstant(new HarfBuzzTextShaper());
     }
     
     

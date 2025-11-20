@@ -701,7 +701,7 @@ namespace Avalonia.Media.TextFormatting
             var flowDirection = paragraphProperties.FlowDirection;
             var properties = paragraphProperties.DefaultTextRunProperties;
             var glyphTypeface = properties.CachedGlyphTypeface;
-            var glyph = glyphTypeface.GetGlyph(s_empty[0]);
+            var glyph = glyphTypeface.CharacterToGlyphMap[s_empty[0]];
             var glyphInfos = new[] { new GlyphInfo(glyph, firstTextSourceIndex, 0.0) };
 
             var shapedBuffer = new ShapedBuffer(s_empty.AsMemory(), glyphInfos, glyphTypeface, properties.FontRenderingEmSize,

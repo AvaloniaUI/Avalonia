@@ -1,4 +1,6 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using Avalonia.Media;
@@ -33,7 +35,7 @@ namespace Avalonia.Direct2D1.Media
         }
 
         public bool TryMatchCharacter(int codepoint, FontStyle fontStyle,
-            FontWeight fontWeight, FontStretch fontStretch, CultureInfo culture, out Typeface typeface)
+            FontWeight fontWeight, FontStretch fontStretch, CultureInfo culture, out IPlatformTypeface platformTypeface)
         {
             var familyCount = Direct2D1FontCollectionCache.InstalledFontCollection.FontFamilyCount;
 
@@ -51,18 +53,18 @@ namespace Avalonia.Direct2D1.Media
 
                 var fontFamilyName = font.FontFamily.FamilyNames.GetString(0);
 
-                typeface = new Typeface(fontFamilyName, fontStyle, fontWeight, fontStretch);
+                platformTypeface = new DWriteTypeface(font);
 
                 return true;
             }
 
-            typeface = default;
+            platformTypeface = default;
 
             return false;
         }
 
         public bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight,
-            FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface glyphTypeface)
+            FontStretch stretch, [NotNullWhen(true)] out IPlatformTypeface? platformTypeface)
         {
             var systemFonts = Direct2D1FontCollectionCache.InstalledFontCollection;
 
@@ -78,17 +80,17 @@ namespace Avalonia.Direct2D1.Media
                     (SharpDX.DirectWrite.FontStretch)stretch,
                     (SharpDX.DirectWrite.FontStyle)style);
 
-                glyphTypeface = new GlyphTypefaceImpl(font);
+                platformTypeface = new DWriteTypeface(font);
 
                 return true;
             }
 
-            glyphTypeface = null;
+            platformTypeface = null;
 
             return false;
         }
 
-        public bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, out IGlyphTypeface glyphTypeface)
+        public bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, [NotNullWhen(returnValue: true)] out IPlatformTypeface? platformTypeface)
         {
             var fontLoader = new DWriteResourceFontLoader(Direct2D1Platform.DirectWriteFactory, new[] { stream });
 
@@ -102,15 +104,20 @@ namespace Avalonia.Direct2D1.Media
                 {
                     var font = fontFamily.GetFont(0);
 
-                    glyphTypeface = new GlyphTypefaceImpl(font);
+                    platformTypeface = new DWriteTypeface(font);
 
                     return true;
                 }
             }
 
-            glyphTypeface = null;
+            platformTypeface = null;
 
             return false;
+        }
+
+        public bool TryGetFamilyTypefaces(string familyName, [NotNullWhen(true)] out IReadOnlyList<Typeface> familyTypefaces)
+        {
+            throw new NotSupportedException();
         }
     }
 }

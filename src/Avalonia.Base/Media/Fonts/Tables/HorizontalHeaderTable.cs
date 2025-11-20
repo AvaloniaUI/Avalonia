@@ -2,16 +2,18 @@
 // Licensed under the Apache License, Version 2.0.
 // Ported from: https://github.com/SixLabors/Fonts/blob/034a440aece357341fcc6b02db58ffbe153e54ef/src/SixLabors.Fonts
 
-using System.IO;
-
 namespace Avalonia.Media.Fonts.Tables
 {
-    internal class HorizontalHeadTable
+    internal class HorizontalHeaderTable
     {
         internal const string TableName = "hhea";
-        internal static OpenTypeTag Tag = OpenTypeTag.Parse(TableName);
 
-        public HorizontalHeadTable(
+        /// <summary>
+        /// Gets the OpenType tag identifying this table ("hhea").
+        /// </summary>
+        internal static OpenTypeTag Tag { get; } = OpenTypeTag.Parse(TableName);
+
+        public HorizontalHeaderTable(
             short ascender,
             short descender,
             short lineGap,
@@ -37,43 +39,74 @@ namespace Avalonia.Media.Fonts.Tables
             NumberOfHMetrics = numberOfHMetrics;
         }
 
+        /// <summary>
+        /// Gets the maximum advance width value for all glyphs in the font.
+        /// </summary>
         public ushort AdvanceWidthMax { get; }
 
+        /// <summary>
+        /// Distance from the baseline to the highest ascender.
+        /// </summary>
         public short Ascender { get; }
 
+        /// <summary>
+        /// Offset of the caret for slanted fonts. Set to 0 for non-slanted fonts.
+        /// </summary>
         public short CaretOffset { get; }
 
+        /// <summary>
+        /// Rise component used to calculate the slope of the caret (rise/run).
+        /// </summary>
         public short CaretSlopeRise { get; }
 
+        /// <summary>
+        /// Run component used to calculate the slope of the caret (rise/run).
+        /// </summary>
         public short CaretSlopeRun { get; }
 
+        /// <summary>
+        /// Distance from the baseline to the lowest descender.
+        /// </summary>
         public short Descender { get; }
 
+        /// <summary>
+        /// Typographic line gap.
+        /// </summary>
         public short LineGap { get; }
 
+        /// <summary>
+        /// Minimum left side bearing value. Must be consistent with horizontal metrics.
+        /// </summary>
         public short MinLeftSideBearing { get; }
 
+        /// <summary>
+        /// Minimum right side bearing value. Must be consistent with horizontal metrics.
+        /// </summary>
         public short MinRightSideBearing { get; }
 
+        /// <summary>
+        /// Number of advance widths in the horizontal metrics table (numOfLongHorMetrics).
+        /// </summary>
         public ushort NumberOfHMetrics { get; }
 
+        /// <summary>
+        /// Maximum horizontal extent: max(lsb + (xMax - xMin)).
+        /// </summary>
         public short XMaxExtent { get; }
 
-        public static HorizontalHeadTable? Load(IGlyphTypeface glyphTypeface)
+        public static HorizontalHeaderTable? Load(IGlyphTypeface fontFace)
         {
-            if (!glyphTypeface.TryGetTable(Tag, out var table))
+            if (!fontFace.PlatformTypeface.TryGetTable(Tag, out var table))
             {
                 return null;
             }
 
-            using var stream = new MemoryStream(table);
-            using var binaryReader = new BigEndianBinaryReader(stream, false);
+            var binaryReader = new BigEndianBinaryReader(table.Span);
 
-            // Move to start of table.
             return Load(binaryReader);
         }
 
-        public static HorizontalHeadTable Load(BigEndianBinaryReader reader)
+        private static HorizontalHeaderTable Load(BigEndianBinaryReader reader)
         {
             // +--------+---------------------+---------------------------------------------------------------------------------+
             // | Type   | Name                | Description                                                                     |
@@ -136,7 +169,7 @@ namespace Avalonia.Media.Fonts.Tables
 
             ushort numberOfHMetrics = reader.ReadUInt16();
 
-            return new HorizontalHeadTable(
+            return new HorizontalHeaderTable(
                 ascender,
                 descender,
                 lineGap,
