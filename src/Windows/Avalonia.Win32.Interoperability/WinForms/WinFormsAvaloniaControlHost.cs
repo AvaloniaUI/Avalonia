@@ -14,7 +14,7 @@ namespace Avalonia.Win32.Interoperability;
 /// An element that allows you to host a Avalonia control on a Windows Forms page.
 /// </summary>
 [ToolboxItem(true)]
-public class WinFormsAvaloniaControlHost : WinFormsControl
+public class WinFormsAvaloniaControlHost : WinFormsControl, IMessageFilter
 {
     private AvControl? _content;
     private EmbeddableControlRoot? _root;
@@ -32,6 +32,7 @@ public class WinFormsAvaloniaControlHost : WinFormsControl
     /// <summary>
     /// Gets or sets the Avalonia control hosted by the <see cref="WinFormsAvaloniaControlHost"/> element.
     /// </summary>
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public AvControl? Content
     {
         get => _content;
@@ -66,11 +67,14 @@ public class WinFormsAvaloniaControlHost : WinFormsControl
         }
 
         base.OnHandleCreated(e);
+
+        System.Windows.Forms.Application.AddMessageFilter(this);
     }
 
     /// <inheritdoc />
     protected override void OnHandleDestroyed(EventArgs e)
     {
+        System.Windows.Forms.Application.RemoveMessageFilter(this);
         _root?.StopRendering();
         _root?.Dispose();
         _root = null;
@@ -134,5 +138,27 @@ public class WinFormsAvaloniaControlHost : WinFormsControl
             var messageArea = new RectangleF(messageLocation, messageSize);
             e.Graphics.DrawString(message, Font, SystemBrushes.ControlText, messageArea);
         }
+    }
+
+    public bool PreFilterMessage(ref Message m)
+    {
+        var message = (UnmanagedMethods.WindowsMessage)m.Msg;
+
+        switch (message)
+        {
+            case UnmanagedMethods.WindowsMessage.WM_LBUTTONDOWN:
+            case UnmanagedMethods.WindowsMessage.WM_MBUTTONDOWN:
+            case UnmanagedMethods.WindowsMessage.WM_RBUTTONDOWN:
+            case UnmanagedMethods.WindowsMessage.WM_NCLBUTTONDOWN:
+            case UnmanagedMethods.WindowsMessage.WM_NCMBUTTONDOWN:
+            case UnmanagedMethods.WindowsMessage.WM_NCRBUTTONDOWN:
+                if (_root?.PlatformImpl is WindowImpl impl && !impl.IsOurWindow(m.HWnd))
+                {
+                    impl.Deactivated?.Invoke();
+                }
+                break;
+        }
+
+        return false;
     }
 }
