@@ -19,30 +19,40 @@ namespace Avalonia.Android.Previewer
 {
     internal class PreviewerConnection(PreviewPresentation previewPresentation) : IDisposable
     {
-        private IAvaloniaRemoteTransportConnection? _transport;
+        private IDisposable? _listener;
+        private IAvaloniaRemoteTransportConnection? _connection;
         private readonly string _sessionId = Guid.NewGuid().ToString();
 
         public void Dispose()
         {
-            if (_transport != null)
+            if (_connection != null)
             {
-                _transport.OnMessage -= Transport_OnMessage;
-                _transport.OnException -= Transport_OnException;
-                _transport.Dispose();
+                _connection.OnMessage -= Transport_OnMessage;
+                _connection.OnException -= Transport_OnException;
+                _connection.Dispose();
             }
-            _transport = null;
+            _listener?.Dispose();
+            _connection = null;
+            _listener = null;
         }
 
         [RequiresUnreferencedCode("Calls Avalonia.Remote.Protocol.BsonTcpTransport.BsonTcpTransport()")]
         public async void Listen(int port)
         {
-            _transport = await new BsonTcpTransport().Connect(System.Net.IPAddress.Loopback, port);
-
-            _transport.OnMessage += Transport_OnMessage;
-            _transport.OnException += Transport_OnException;
-
-            _transport.Start();
-            await _transport.Send(new StartDesignerSessionMessage { SessionId = _sessionId });
+            _listener = new BsonTcpTransport().Listen(System.Net.IPAddress.Loopback, port,
+            async t =>
+            {
+                try
+                {
+                    _connection = t;
+                    _connection.OnMessage += Transport_OnMessage;
+                    _connection.OnException += Transport_OnException;
+                    await _connection.Send(new StartDesignerSessionMessage { SessionId = _sessionId });
+                }
+                catch (Exception ex)
+                {
+                }
+            });
         }
 
         private void Transport_OnException(IAvaloniaRemoteTransportConnection arg1, Exception arg2)
@@ -53,7 +63,7 @@ namespace Avalonia.Android.Previewer
 
         public void Send(object obj)
         {
-            _transport?.Send(obj);
+            _connection?.Send(obj);
         }
 
         private void Transport_OnMessage(IAvaloniaRemoteTransportConnection transport, object arg2) => Dispatcher.UIThread.Post(async arg =>
@@ -69,11 +79,11 @@ namespace Avalonia.Android.Previewer
                     try
                     {
                         await previewPresentation.UpdateXaml(xaml.Xaml);
-                        _transport?.Send(new UpdateXamlResultMessage() { Handle = previewPresentation.View?.TopLevel?.PlatformImpl?.Handle?.ToString() });
+                        _connection?.Send(new UpdateXamlResultMessage() { Handle = previewPresentation.View?.TopLevel?.PlatformImpl?.Handle?.ToString() });
                     }
                     catch (Exception e)
                     {
-                        _transport?.Send(new UpdateXamlResultMessage
+                        _connection?.Send(new UpdateXamlResultMessage
                         {
                             Error = e.ToString(),
                             Exception = new ExceptionDetails(e),

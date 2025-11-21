@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Net;
+using System.Net.Sockets;
 using System.Reflection;
 using Android.App;
 using Android.Content;
@@ -16,7 +18,7 @@ namespace Avalonia.Android.Previewer
             if (OperatingSystem.IsAndroidVersionAtLeast(26))
             {
                 var currentIntent = this.Intent;
-                var port = currentIntent?.GetIntExtra("port", 0) ?? 0;
+                var port = FreeTcpPort();
                 if (port != 0)
                 {
                     var metrics = this.Resources?.DisplayMetrics;
@@ -33,10 +35,22 @@ namespace Avalonia.Android.Previewer
                             presentation.Show();
                         }
                     }
+
+                    global::Android.Util.Log.Info("AVALONIA_PREVIEW", $"Previewer started at port-{port}");
                 }
             }
 
             Finish();
+        }
+
+        protected static int FreeTcpPort()
+        {
+            var l = new TcpListener(IPAddress.Loopback, 0);
+            l.Start();
+            int port = ((IPEndPoint)l.LocalEndpoint).Port;
+            l.Stop();
+            l.Dispose();
+            return port;
         }
     }
 }
