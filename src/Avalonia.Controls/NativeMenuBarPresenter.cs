@@ -25,6 +25,7 @@ internal class NativeMenuBarPresenter : Menu
                     nativeItem.GetObservable(NativeMenuItem.HeaderProperty).ToBinding(),
                 [!MenuItem.IconProperty] = nativeItem.GetObservable(NativeMenuItem.IconProperty)
                     .Select(i => i is { } bitmap ? new Image { Source = bitmap } : null).ToBinding(),
+                [!!MenuItem.IsCheckedProperty] = nativeItem[!!NativeMenuItem.IsCheckedProperty],
                 [!MenuItem.IsEnabledProperty] = nativeItem.GetObservable(NativeMenuItem.IsEnabledProperty).ToBinding(),
                 [!MenuItem.IsVisibleProperty] = nativeItem.GetObservable(NativeMenuItem.IsVisibleProperty).ToBinding(),
                 [!MenuItem.CommandProperty] = nativeItem.GetObservable(NativeMenuItem.CommandProperty).ToBinding(),
@@ -37,10 +38,6 @@ internal class NativeMenuBarPresenter : Menu
                 [!ToolTip.TipProperty] =
                     nativeItem.GetObservable(NativeMenuItem.ToolTipProperty).ToBinding(),
             };
-
-            BindingOperations.Apply(newItem, MenuItem.IsCheckedProperty, InstancedBinding.TwoWay(
-                nativeItem.GetObservable(NativeMenuItem.IsCheckedProperty).Select(v => (object)v),
-                new AnonymousObserver<object?>(v => nativeItem.SetValue(NativeMenuItem.IsCheckedProperty, v))));
 
             newItem.Click += MenuItemOnClick;
 

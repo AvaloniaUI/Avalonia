@@ -98,7 +98,7 @@ namespace Avalonia
         /// Gets or sets a binding for a <see cref="AvaloniaProperty"/>.
         /// </summary>
         /// <param name="binding">The binding information.</param>
-        public IBinding this[IndexerDescriptor binding]
+        public BindingBase this[IndexerDescriptor binding]
         {
             get { return new IndexerBinding(this, binding.Property!, binding.Mode); }
             set { this.Bind(binding.Property!, value); }
@@ -417,14 +417,14 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Binds a <see cref="AvaloniaProperty"/> to an <see cref="IBinding"/>.
+        /// Binds a <see cref="AvaloniaProperty"/> to an <see cref="BindingBase"/>.
         /// </summary>
         /// <param name="property">The property.</param>
         /// <param name="binding">The binding.</param>
         /// <returns>
         /// The binding expression which represents the binding instance on this object.
         /// </returns>
-        public BindingExpressionBase Bind(AvaloniaProperty property, IBinding binding)
+        public BindingExpressionBase Bind(AvaloniaProperty property, BindingBase binding)
         {
             return Bind(property, binding, null);
         }
@@ -474,9 +474,9 @@ namespace Avalonia
             VerifyAccess();
             ValidatePriority(priority);
 
-            if (source is IBinding2 b)
+            if (source is BindingBase b)
             {
-                if (b.Instance(this, property, null) is not UntypedBindingExpressionBase expression)
+                if (b.CreateInstance(this, property, null) is not UntypedBindingExpressionBase expression)
                     throw new NotSupportedException($"Binding returned unsupported {nameof(BindingExpressionBase)}.");
 
                 if (priority != expression.Priority)
@@ -574,9 +574,9 @@ namespace Avalonia
                 throw new ArgumentException($"The property {property.Name} is readonly.");
             }
 
-            if (source is IBinding2 b)
+            if (source is BindingBase b)
             {
-                if (b.Instance(this, property, null) is not UntypedBindingExpressionBase expression)
+                if (b.CreateInstance(this, property, null) is not UntypedBindingExpressionBase expression)
                     throw new NotSupportedException($"Binding returned unsupported {nameof(BindingExpressionBase)}.");
                 return GetValueStore().AddBinding(property, expression);
             }
@@ -643,7 +643,7 @@ namespace Avalonia
         public void CoerceValue(AvaloniaProperty property) => _values.CoerceValue(property);
 
         /// <summary>
-        /// Binds a <see cref="AvaloniaProperty"/> to an <see cref="IBinding"/>.
+        /// Binds a <see cref="AvaloniaProperty"/> to an <see cref="BindingBase"/>.
         /// </summary>
         /// <param name="property">The property.</param>
         /// <param name="binding">The binding.</param>
@@ -656,11 +656,9 @@ namespace Avalonia
         /// <returns>
         /// The binding expression which represents the binding instance on this object.
         /// </returns>
-        internal BindingExpressionBase Bind(AvaloniaProperty property, IBinding binding, object? anchor)
+        internal BindingExpressionBase Bind(AvaloniaProperty property, BindingBase binding, object? anchor)
         {
-            if (binding is not IBinding2 b)
-                throw new NotSupportedException($"Unsupported IBinding implementation '{binding}'.");
-            if (b.Instance(this, property, anchor) is not UntypedBindingExpressionBase expression)
+            if (binding.CreateInstance(this, property, anchor) is not UntypedBindingExpressionBase expression)
                 throw new NotSupportedException($"Binding returned unsupported {nameof(BindingExpressionBase)}.");
 
             return GetValueStore().AddBinding(property, expression);

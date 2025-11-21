@@ -74,8 +74,8 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="SelectedValueBinding"/> property
         /// </summary>
-        public static readonly StyledProperty<IBinding?> SelectedValueBindingProperty =
-            AvaloniaProperty.Register<SelectingItemsControl, IBinding?>(nameof(SelectedValueBinding));
+        public static readonly StyledProperty<BindingBase?> SelectedValueBindingProperty =
+            AvaloniaProperty.Register<SelectingItemsControl, BindingBase?>(nameof(SelectedValueBinding));
 
         /// <summary>
         /// Defines the <see cref="SelectedItems"/> property.
@@ -245,12 +245,12 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
-        /// Gets the <see cref="IBinding"/> instance used to obtain the 
+        /// Gets the <see cref="BindingBase"/> instance used to obtain the 
         /// <see cref="SelectedValue"/> property
         /// </summary>
         [AssignBinding]
         [InheritDataTypeFromItems(nameof(ItemsSource))]
-        public IBinding? SelectedValueBinding
+        public BindingBase? SelectedValueBinding
         {
             get => GetValue(SelectedValueBindingProperty);
             set => SetValue(SelectedValueBindingProperty, value);
@@ -662,7 +662,7 @@ namespace Avalonia.Controls.Primitives
                     return;
                 }
 
-                var value = change.GetNewValue<IBinding?>();
+                var value = change.GetNewValue<BindingBase?>();
                 if (value is null)
                 {
                     // Clearing SelectedValueBinding makes the SelectedValue the item itself
@@ -1382,7 +1382,7 @@ namespace Avalonia.Controls.Primitives
             return -1;
         }
 
-        private BindingEvaluator<object?> GetSelectedValueBindingEvaluator(IBinding binding)
+        private BindingEvaluator<object?> GetSelectedValueBindingEvaluator(BindingBase binding)
         {
             _selectedValueBindingEvaluator ??= new();
             _selectedValueBindingEvaluator.UpdateBinding(binding);
