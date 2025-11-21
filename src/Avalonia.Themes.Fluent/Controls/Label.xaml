@@ -15,7 +15,8 @@
                           Content="{TemplateBinding Content}"
                           Padding="{TemplateBinding Padding}"
                           VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                          TextBlock.LetterSpacing="{TemplateBinding LetterSpacing}"/>
       </ControlTemplate>
     </Setter>
 

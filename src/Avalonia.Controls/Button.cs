@@ -93,12 +93,6 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<FlyoutBase?> FlyoutProperty =
             AvaloniaProperty.Register<Button, FlyoutBase?>(nameof(Flyout));
 
-        /// <summary>
-        /// Defines the <see cref="LetterSpacing"/> property.
-        /// </summary>
-        public static readonly StyledProperty<double> LetterSpacingProperty =
-            TextBlock.LetterSpacingProperty.AddOwner<Button>();
-
         private bool _commandCanExecute = true;
         private KeyGesture? _hotkey;
         private bool _isFlyoutOpen = false;
@@ -201,15 +195,6 @@ namespace Avalonia.Controls
         {
             get => GetValue(FlyoutProperty);
             set => SetValue(FlyoutProperty, value);
-        }
-
-        /// <summary>
-        /// Gets or sets the letter spacing for the button's text content.
-        /// </summary>
-        public double LetterSpacing
-        {
-            get => GetValue(LetterSpacingProperty);
-            set => SetValue(LetterSpacingProperty, value);
         }
 
         /// <inheritdoc/>

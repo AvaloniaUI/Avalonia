@@ -36,7 +36,8 @@
                             Margin="4,0,0,0"
                             VerticalAlignment="Center"
                             Content="{TemplateBinding Content}"
-                            ContentTemplate="{TemplateBinding ContentTemplate}" />
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            TextBlock.LetterSpacing="{TemplateBinding LetterSpacing}" />
         </Grid>
       </ControlTemplate>
     </Setter>

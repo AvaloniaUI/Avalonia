@@ -597,5 +597,46 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             return result;
         }
+
+        [Fact]
+        public void TemplatedControl_LetterSpacing_Default_Value_Is_Zero()
+        {
+            var target = new TestTemplatedControl();
+            Assert.Equal(0, target.LetterSpacing);
+        }
+
+        [Fact]
+        public void TemplatedControl_LetterSpacing_Can_Be_Set_And_Retrieved()
+        {
+            var target = new TestTemplatedControl { LetterSpacing = 2.5 };
+            Assert.Equal(2.5, target.LetterSpacing);
+        }
+
+        [Fact]
+        public void TemplatedControl_LetterSpacing_Can_Be_Negative()
+        {
+            var target = new TestTemplatedControl { LetterSpacing = -1.5 };
+            Assert.Equal(-1.5, target.LetterSpacing);
+        }
+
+        [Fact]
+        public void TemplatedControl_LetterSpacing_Inherits_To_ContentPresenter()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var target = new ContentControl
+                {
+                    LetterSpacing = 3.0,
+                    Content = "Test",
+                };
+                var root = new TestRoot { Child = target };
+
+                target.ApplyTemplate();
+
+                var presenter = target.Presenter;
+                Assert.NotNull(presenter);
+                Assert.Equal(3.0, presenter.LetterSpacing);
+            }
+        }
     }
 }
