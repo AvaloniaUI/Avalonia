@@ -1,5 +1,4 @@
-﻿global using System.Reactive.Disposables;
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Logging;
 using Avalonia.Vulkan;
 

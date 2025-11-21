@@ -9,13 +9,15 @@ using Avalonia.Vulkan;
 using Silk.NET.Core;
 using Silk.NET.Core.Contexts;
 using Silk.NET.Core.Loader;
+using Silk.NET.Core.Native;
+using Silk.NET.Direct3D11;
+using Silk.NET.DXGI;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.EXT;
 using Silk.NET.Vulkan.Extensions.KHR;
 using SilkNetDemo;
 using SkiaSharp;
-using D3DDevice = SharpDX.Direct3D11.Device;
-#pragma warning disable CS0162 // Unreachable code detected
+
 
 namespace GpuInterop.VulkanDemo;
 
@@ -30,7 +32,7 @@ public unsafe class VulkanContext : IDisposable
     public required VulkanCommandBufferPool Pool { get; init; }
     public required GRContext? GrContext { get; init; }
     public required DescriptorPool DescriptorPool { get; init; }
-    public required D3DDevice? D3DDevice { get; init; }
+    public required ComPtr<ID3D11Device> D3DDevice { get; init; }
 
     public static (VulkanContext? result, string info) TryCreate(ICompositionGpuInterop gpuInterop)
     {
@@ -273,13 +275,13 @@ public unsafe class VulkanContext : IDisposable
                             return (null, "Can't create Skia GrContext, device is likely broken");
                     }
 
-                    D3DDevice? d3dDevice = null;
+                    ComPtr<ID3D11Device> d3dDevice = null;
                     if (physicalDeviceIDProperties.DeviceLuidvalid &&
                         RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
                         !gpuInterop.SupportedImageHandleTypes.Contains(KnownPlatformGraphicsExternalImageHandleTypes.VulkanOpaqueNtHandle)
                         )
                         d3dDevice = D3DMemoryHelper.CreateDeviceByLuid(
-                            new Span<byte>(physicalDeviceIDProperties.DeviceLuid, 8));
+                            MemoryMarshal.Read<Luid>(new Span<byte>(physicalDeviceIDProperties.DeviceLuid, 8)));
                     success = true;
                     return (new VulkanContext
                     {
@@ -354,20 +356,14 @@ public unsafe class VulkanContext : IDisposable
 
 
     private const string MacVulkanSdkGlobalPath = "/usr/local/lib/libvulkan.dylib";
-    class MacLibraryNameContainer : SearchPathContainer
-    {
-        public override string Windows64 { get; }
-        public override string Windows86 { get; }
-        public override string Linux { get; }
-        public override string MacOS { get; } = MacVulkanSdkGlobalPath;
-    }
+
     private static Vk GetApi()
     {
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX) || !File.Exists(MacVulkanSdkGlobalPath))
             return Vk.GetApi();
         var ctx = new MultiNativeContext(new INativeContext[2]
         {
-            Vk.CreateDefaultContext(new MacLibraryNameContainer().GetLibraryName()),
+            Vk.CreateDefaultContext([MacVulkanSdkGlobalPath]),
             null!
         });
         var ret = new Vk(ctx);
@@ -383,7 +379,7 @@ public unsafe class VulkanContext : IDisposable
     
     public void Dispose()
     {
-        D3DDevice?.Dispose();
+        D3DDevice.Dispose();
         GrContext?.Dispose();
         Pool.Dispose();
         Api.DestroyDescriptorPool(Device, DescriptorPool, null);

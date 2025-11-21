@@ -25,10 +25,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Silk.NET.Vulkan" Version="2.16.0" />
-    <PackageReference Include="Silk.NET.Vulkan.Extensions.EXT" Version="2.16.0" />
-    <PackageReference Include="Silk.NET.Vulkan.Extensions.KHR" Version="2.16.0" />
-    <PackageReference Include="System.Reactive" Version="5.0.0" />
+    <PackageReference Include="Silk.NET.Direct3D11" Version="2.22.0" />
+    <PackageReference Include="Silk.NET.Direct3D.Compilers" Version="2.22.0" />
+    <PackageReference Include="Silk.NET.Vulkan" Version="2.22.0" />
+    <PackageReference Include="Silk.NET.Vulkan.Extensions.EXT" Version="2.22.0" />
+    <PackageReference Include="Silk.NET.Vulkan.Extensions.KHR" Version="2.22.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -37,15 +38,16 @@
 
   <ItemGroup>
     <Compile Include="..\..\src\Avalonia.Base\Rendering\SwapchainBase.cs" />
+    <Compile Include="..\..\src\Avalonia.Base\Reactive\Disposable.cs" />
     <None Remove="VulkanDemo\Assets\Shaders\frag.spirv" />
     <EmbeddedResource Include="VulkanDemo\Assets\Shaders\frag.spirv" />
     <None Remove="VulkanDemo\Assets\Shaders\vert.spirv" />
     <EmbeddedResource Include="VulkanDemo\Assets\Shaders\vert.spirv" />
     <EmbeddedResource Include="../ControlCatalog/Pages/teapot.bin" />
+    <Compile Remove="VulkanDemo/**" />
   </ItemGroup>
   
   <Import Project="..\..\build\SampleApp.props" />
   <Import Project="..\..\build\ReferenceCoreLibraries.props" />
   <Import Project="..\..\build\BuildTargets.targets" />
-  <Import Project="..\..\build\SharpDX.props" />
 </Project>
