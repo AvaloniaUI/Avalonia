@@ -27,6 +27,7 @@ namespace Avalonia.Skia
         private readonly Stack<(SKMatrix matrix, PaintWrapper paint)> _maskStack = new();
         private readonly Stack<double> _opacityStack = new();
         private readonly Stack<RenderOptions> _renderOptionsStack = new();
+        private readonly Stack<TextOptions> _textOptionsStack = new();
         private readonly Matrix? _postTransform;
         private double _currentOpacity = 1.0f;
         private readonly bool _disableSubpixelTextRendering;
@@ -223,6 +224,7 @@ namespace Avalonia.Skia
         public SKSurface? Surface { get; }
 
         public RenderOptions RenderOptions { get; set; }
+        public TextOptions TextOptions { get; set; }
 
         private void CheckLease()
         {
@@ -603,23 +605,22 @@ namespace Avalonia.Skia
             {
                 var glyphRunImpl = (GlyphRunImpl)glyphRun;
 
-                var textRenderOptions = RenderOptions;
+                // Determine effective TextOptions for text rendering. Start with current pushed TextOptions.
+                var effectiveTextOptions = TextOptions;
 
+                // If subpixel rendering is disabled globally, map subpixel modes to grayscale.
                 if (_disableSubpixelTextRendering)
                 {
-                    switch (textRenderOptions.TextRenderingMode)
+                    var mode = effectiveTextOptions.TextRenderingMode;
+
+                    if (mode == TextRenderingMode.SubpixelAntialias ||
+                        (mode == TextRenderingMode.Unspecified && (RenderOptions.EdgeMode == EdgeMode.Antialias || RenderOptions.EdgeMode == EdgeMode.Unspecified)))
                     {
-                        case TextRenderingMode.Unspecified
-                            when textRenderOptions.EdgeMode == EdgeMode.Antialias || textRenderOptions.EdgeMode == EdgeMode.Unspecified:
-                        case TextRenderingMode.SubpixelAntialias:
-                            {
-                                textRenderOptions = textRenderOptions with { TextRenderingMode = TextRenderingMode.Antialias };
-                                break;
-                            }
+                        effectiveTextOptions = effectiveTextOptions with { TextRenderingMode = TextRenderingMode.Antialias };
                     }
                 }
 
-                var textBlob = glyphRunImpl.GetTextBlob(textRenderOptions);
+                var textBlob = glyphRunImpl.GetTextBlob(effectiveTextOptions, RenderOptions);
 
                 Canvas.DrawText(textBlob, (float)glyphRun.BaselineOrigin.X,
                     (float)glyphRun.BaselineOrigin.Y, paintWrapper.Paint);
@@ -754,9 +755,23 @@ namespace Avalonia.Skia
             RenderOptions = RenderOptions.MergeWith(renderOptions);
         }
 
+        public void PushTextOptions(TextOptions textOptions)
+        {
+            CheckLease();
+
+            _textOptionsStack.Push(TextOptions);
+
+            TextOptions = TextOptions.MergeWith(textOptions);
+        }
+
         public void PopRenderOptions()
         {
             RenderOptions = _renderOptionsStack.Pop();
+        }
+
+        public void PopTextOptions()
+        {
+            TextOptions = _textOptionsStack.Pop();
         }
 
         /// <inheritdoc />

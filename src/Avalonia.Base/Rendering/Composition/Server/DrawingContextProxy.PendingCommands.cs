@@ -22,6 +22,7 @@ internal partial class CompositorDrawingContextProxy
         PushOpacityMask,
         PushGeometryClip,
         PushRenderOptions,
+        PushTextOptions,
         PushEffect
     }
 
@@ -43,6 +44,7 @@ internal partial class CompositorDrawingContextProxy
         [FieldOffset(0)] public Matrix Transform;
 
         [FieldOffset(0)] public RenderOptions RenderOptions;
+        [FieldOffset(0)] public TextOptions TextOptions;
 
         // PushClip/PushOpacityMask
         [FieldOffset(0)] public bool IsRoundRect;
@@ -144,6 +146,8 @@ internal partial class CompositorDrawingContextProxy
         }
         else if (cmd.Type == PendingCommandType.PushRenderOptions)
             _impl.PushRenderOptions(cmd.DataUnion.RenderOptions);
+        else if (cmd.Type == PendingCommandType.PushTextOptions)
+            _impl.PushTextOptions(cmd.DataUnion.TextOptions);
         else
             Debug.Assert(false);
     }

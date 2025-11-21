@@ -62,6 +62,12 @@ namespace Avalonia.Rendering.Composition.Server
 
             if (applyRenderOptions)
                 canvas.PushRenderOptions(RenderOptions);
+
+            var applyTextOptions = TextOptions != default;
+
+            if (applyTextOptions)
+                canvas.PushTextOptions(TextOptions);
+
             if (Effect != null)
                 canvas.PushEffect(Effect);
             
@@ -89,7 +95,9 @@ namespace Avalonia.Rendering.Composition.Server
             
             if (Effect != null)
                 canvas.PopEffect();
-            if(applyRenderOptions)
+            if (applyTextOptions)
+                canvas.PopTextOptions();
+            if (applyRenderOptions)
                 canvas.PopRenderOptions();
         }
 

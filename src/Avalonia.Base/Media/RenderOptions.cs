@@ -6,7 +6,6 @@ namespace Avalonia.Media
     {
         public BitmapInterpolationMode BitmapInterpolationMode { get; init; }
         public EdgeMode EdgeMode { get; init; }
-        public TextRenderingMode TextRenderingMode { get; init; }
         public BitmapBlendingMode BitmapBlendingMode { get; init; }
         public bool? RequiresFullOpacityHandling { get; init; }
 
@@ -71,26 +70,6 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Gets the value of the TextRenderingMode attached property for a visual.
-        /// </summary>
-        /// <param name="visual">The control.</param>
-        /// <returns>The value.</returns>
-        public static TextRenderingMode GetTextRenderingMode(Visual visual)
-        {
-            return visual.RenderOptions.TextRenderingMode;
-        }
-
-        /// <summary>
-        /// Sets the value of the TextRenderingMode attached property for a visual.
-        /// </summary>
-        /// <param name="visual">The control.</param>
-        /// <param name="value">The value.</param>
-        public static void SetTextRenderingMode(Visual visual, TextRenderingMode value)
-        {
-            visual.RenderOptions = visual.RenderOptions with { TextRenderingMode = value };
-        }
-
-        /// <summary>
         /// Gets the value of the RequiresFullOpacityHandling attached property for a visual.
         /// </summary>
         /// <param name="visual">The control.</param>
@@ -126,13 +105,6 @@ namespace Avalonia.Media
                 edgeMode = other.EdgeMode;
             }
 
-            var textRenderingMode = TextRenderingMode;
-
-            if (textRenderingMode == TextRenderingMode.Unspecified)
-            {
-                textRenderingMode = other.TextRenderingMode;
-            }
-
             var bitmapBlendingMode = BitmapBlendingMode;
 
             if (bitmapBlendingMode == BitmapBlendingMode.Unspecified)
@@ -151,7 +123,6 @@ namespace Avalonia.Media
             {
                 BitmapInterpolationMode = bitmapInterpolationMode,
                 EdgeMode = edgeMode,
-                TextRenderingMode = textRenderingMode,
                 BitmapBlendingMode = bitmapBlendingMode,
                 RequiresFullOpacityHandling = requiresFullOpacityHandling
             };

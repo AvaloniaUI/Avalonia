@@ -25,6 +25,7 @@ namespace Avalonia.Direct2D1.Media
         private readonly Action _finishedCallback;
 
         private readonly Stack<RenderOptions> _renderOptionsStack = new();
+        private readonly Stack<TextOptions> _textOptionsStack = new();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DrawingContextImpl"/> class.
@@ -492,6 +493,7 @@ namespace Avalonia.Direct2D1.Media
         readonly Stack<Layer> _layers = new Stack<Layer>();
         private readonly Stack<Layer> _layerPool = new Stack<Layer>();
         private RenderOptions _renderOptions;
+        private TextOptions _textOptions;
         private readonly Matrix? _postTransform;
         private Matrix _transform = Matrix.Identity;
 
@@ -542,9 +544,25 @@ namespace Avalonia.Direct2D1.Media
             RenderOptions = RenderOptions.MergeWith(renderOptions);
         }
 
+        public void PushTextOptions(TextOptions textOptions)
+        {
+            _textOptionsStack.Push(_textOptions);
+
+            // Merge current with pushed options so unspecified values are taken from the pushed options.
+            _textOptions = _textOptions.MergeWith(textOptions);
+
+            ApplyTextOptions(_renderOptions, _textOptions);
+        }
+
         public void PopRenderOptions()
         {
             RenderOptions = _renderOptionsStack.Pop();
+        }
+
+        public void PopTextOptions()
+        {
+            _textOptions = _textOptionsStack.Pop();
+            ApplyTextOptions(_renderOptions, _textOptions);
         }
 
         private void PopLayer()
@@ -716,21 +734,46 @@ namespace Avalonia.Direct2D1.Media
         private void ApplyRenderOptions(RenderOptions renderOptions)
         {
             _deviceContext.AntialiasMode = renderOptions.EdgeMode != EdgeMode.Aliased ? AntialiasMode.PerPrimitive : AntialiasMode.Aliased;
-            switch (renderOptions.TextRenderingMode)
-            {
-                case TextRenderingMode.Unspecified:
-                    _deviceContext.TextAntialiasMode = renderOptions.EdgeMode != EdgeMode.Aliased ? TextAntialiasMode.Default : TextAntialiasMode.Aliased;
-                    break;
-                case TextRenderingMode.Alias:
-                    _deviceContext.TextAntialiasMode = TextAntialiasMode.Aliased;
-                    break;
-                case TextRenderingMode.Antialias:
-                    _deviceContext.TextAntialiasMode = TextAntialiasMode.Grayscale;
-                    break;
-                case TextRenderingMode.SubpixelAntialias:
-                    _deviceContext.TextAntialiasMode = TextAntialiasMode.Cleartype;
-                    break;
-            }
         }
-    }
-}
+
+        /// <summary>
+        /// Applies text-related options to the Direct2D device context. Uses values from <paramref name="textOptions"/>
+        /// when specified; otherwise falls back to <paramref name="renderOptions"/> to choose sensible defaults.
+        /// </summary>
+        private void ApplyTextOptions(RenderOptions renderOptions, TextOptions textOptions)
+        {
+            // Determine TextAntialiasMode from TextRenderingMode if specified, otherwise fall back to EdgeMode.
+            var textRenderingMode = textOptions.TextRenderingMode;
+
+            TextAntialiasMode desired;
+
+            if (textRenderingMode == TextRenderingMode.Unspecified)
+            {
+                // Fallback: use EdgeMode to decide default behavior
+                desired = renderOptions.EdgeMode != EdgeMode.Aliased ? TextAntialiasMode.Default : TextAntialiasMode.Aliased;
+            }
+            else
+            {
+                switch (textRenderingMode)
+                {
+                    case TextRenderingMode.Alias:
+                        desired = TextAntialiasMode.Aliased;
+                        break;
+                    case TextRenderingMode.Antialias:
+                        desired = TextAntialiasMode.Grayscale;
+                        break;
+                    case TextRenderingMode.SubpixelAntialias:
+                        desired = TextAntialiasMode.Cleartype;
+                        break;
+                    default:
+                        desired = renderOptions.EdgeMode != EdgeMode.Aliased ? TextAntialiasMode.Default : TextAntialiasMode.Aliased;
+                        break;
+                }
+            }
+
+            _deviceContext.TextAntialiasMode = desired;
+
+            //ToDo: Implement TextHintingMode and BaselinePixelAlign
+        }
+     }
+ }

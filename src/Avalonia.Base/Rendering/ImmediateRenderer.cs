@@ -44,7 +44,8 @@ namespace Avalonia.Rendering
 
         public static void Render(DrawingContext context, Visual visual, Rect clipRect)
         {
-            using(visual.RenderOptions != default ? context.PushRenderOptions(visual.RenderOptions) : (DrawingContext.PushedState?)null)
+            using (visual.TextOptions != default ? context.PushTextOptions(visual.TextOptions) : (DrawingContext.PushedState?)null)
+            using (visual.RenderOptions != default ? context.PushRenderOptions(visual.RenderOptions) : (DrawingContext.PushedState?)null)
             {
                 var opacity = visual.Opacity;
                 var clipToBounds = visual.ClipToBounds;

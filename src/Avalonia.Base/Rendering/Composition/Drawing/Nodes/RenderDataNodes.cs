@@ -232,3 +232,18 @@ class RenderDataRenderOptionsNode : RenderDataPushNode
         context.Context.PopRenderOptions();
     }
 }
+
+class RenderDataTextOptionsNode : RenderDataPushNode
+{
+    public TextOptions TextOptions { get; set; }
+
+    public override void Push(ref RenderDataNodeRenderContext context)
+    {
+        context.Context.PushTextOptions(TextOptions);
+    }
+
+    public override void Pop(ref RenderDataNodeRenderContext context)
+    {
+        context.Context.PopTextOptions();
+    }
+}

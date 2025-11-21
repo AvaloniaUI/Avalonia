@@ -119,7 +119,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 [TextElement.ForegroundProperty] = new SolidColorBrush { Color = Colors.Black }
             };
 
-            RenderOptions.SetTextRenderingMode(control, TextRenderingMode.Alias);
+            TextOptions.SetTextRenderingMode(control, TextRenderingMode.Alias);
 
             Decorator target = new Decorator
             {
