@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-      <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsLegacyTargetFrameworks);netstandard2.0</TargetFrameworks>
+      <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsLegacyTargetFrameworks)</TargetFrameworks>
       <PackageId>Avalonia</PackageId>
   </PropertyGroup>
 
@@ -27,13 +27,13 @@
     <MSBuild Projects="$(DesignerHostAppPath)/Avalonia.Designer.HostApp/Avalonia.Designer.HostApp.csproj" Properties="Configuration=$(Configuration);&#xA;Platform=$(Platform)" />
 
     <ItemGroup>
-      <_PackageFiles Include="$(DesignerHostAppPath)/Avalonia.Designer.HostApp/bin/$(Configuration)/netstandard2.0/Avalonia.Designer.HostApp.dll">
-        <PackagePath>tools/netstandard2.0/designer</PackagePath>
+      <_PackageFiles Include="$(DesignerHostAppPath)/Avalonia.Designer.HostApp/bin/$(Configuration)/$(AvsCurrentTargetFramework)/Avalonia.Designer.HostApp.dll">
+        <PackagePath>tools/$(AvsCurrentTargetFramework)/designer</PackagePath>
         <Visible>false</Visible>
         <BuildAction>None</BuildAction>
       </_PackageFiles>
-      <_PackageFiles Include="$(DesignerHostAppPath)/Avalonia.Designer.HostApp/bin/$(Configuration)/net461/Avalonia.Designer.HostApp.exe">
-        <PackagePath>tools/net461/designer</PackagePath>
+      <_PackageFiles Include="$(DesignerHostAppPath)/Avalonia.Designer.HostApp/bin/$(Configuration)/$(AvsLegacyTargetFrameworks)/Avalonia.Designer.HostApp.dll">
+        <PackagePath>tools/$(AvsLegacyTargetFrameworks)/designer</PackagePath>
         <Visible>false</Visible>
         <BuildAction>None</BuildAction>
       </_PackageFiles>
