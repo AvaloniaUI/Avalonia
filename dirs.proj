@@ -13,7 +13,6 @@
     <ProjectReference Remove="samples/*.MacCatalyst/*.csproj" />
     <ProjectReference Remove="samples/*.Android/*.csproj" />
     <ProjectReference Remove="samples/*.Browser/*.csproj" />
-    <ProjectReference Remove="samples/*.Blazor/*.csproj" />
     <ProjectReference Remove="samples/SingleProjectSandbox/*.csproj" />
     <ProjectReference Remove="samples/ControlCatalog.Desktop/*.*proj" />
   </ItemGroup>

@@ -190,6 +190,9 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
     /// <param name="targetNullValue">The null target value.</param>
     /// <param name="allowReflection">Whether to allow reflection for target type conversion.</param>
     [RequiresUnreferencedCode(TrimmingMessages.ExpressionNodeRequiresUnreferencedCodeMessage)]
+#if NET8_0_OR_GREATER
+    [RequiresDynamicCode(TrimmingMessages.ExpressionNodeRequiresDynamicCodeMessage)]
+#endif
     internal static BindingExpression Create<TIn, TOut>(
         TIn source,
         Expression<Func<TIn, TOut>> expression,
