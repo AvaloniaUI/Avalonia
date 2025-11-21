@@ -8,7 +8,7 @@ using ControlCatalog.Pages;
 using MonoMac.Foundation;
 using MonoMac.WebKit;
 
-namespace ControlCatalog.NetCore;
+namespace ControlCatalog.Desktop;
 
 public class EmbedSampleMac : INativeDemoControl
 {

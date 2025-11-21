@@ -6,7 +6,7 @@ using Avalonia.Platform;
 
 using ControlCatalog.Pages;
 
-namespace ControlCatalog.NetCore;
+namespace ControlCatalog.Desktop;
 
 public class EmbedSampleWin : INativeDemoControl
 {

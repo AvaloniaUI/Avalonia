@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "ControlCatalog.NetCore": {
+    "ControlCatalog.Desktop": {
       "commandName": "Project"
     },
     "Dxgi": {

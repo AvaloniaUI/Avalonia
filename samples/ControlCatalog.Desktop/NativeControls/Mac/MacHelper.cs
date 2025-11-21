@@ -3,7 +3,7 @@ using System;
 using Avalonia.Controls.Platform;
 using MonoMac.AppKit;
 
-namespace ControlCatalog.NetCore;
+namespace ControlCatalog.Desktop;
 
 internal class MacHelper
 {

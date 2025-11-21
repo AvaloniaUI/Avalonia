@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace ControlCatalog.NetCore;
+namespace ControlCatalog.Desktop;
 
 internal unsafe class WinApi
 {
