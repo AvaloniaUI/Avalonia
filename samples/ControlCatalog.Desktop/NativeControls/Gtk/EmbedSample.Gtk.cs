@@ -5,7 +5,7 @@ using Avalonia.Controls.Platform;
 using System;
 using ControlCatalog.Pages;
 
-namespace ControlCatalog.NetCore;
+namespace ControlCatalog.Desktop;
 
 public class EmbedSampleGtk : INativeDemoControl
 {

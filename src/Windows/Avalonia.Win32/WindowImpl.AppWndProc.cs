@@ -901,7 +901,7 @@ namespace Avalonia.Win32
             return DefWindowProc(hWnd, msg, wParam, lParam);
         }
 
-        private bool IsOurWindow(IntPtr hwnd)
+        internal bool IsOurWindow(IntPtr hwnd)
         {
             if (hwnd == IntPtr.Zero)
                 return false;

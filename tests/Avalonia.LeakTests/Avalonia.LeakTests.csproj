@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net462</TargetFrameworks>
+    <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
   </PropertyGroup>
   <Import Project="..\..\build\JetBrains.dotMemoryUnit.props" />
   <Import Project="..\..\build\Moq.props" />
