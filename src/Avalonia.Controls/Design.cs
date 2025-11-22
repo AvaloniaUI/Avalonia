@@ -111,16 +111,16 @@ namespace Avalonia.Controls
         /// Sets a preview template for the specified <see cref="AvaloniaObject"/> at design-time.
         /// </summary>
         /// <remarks>
-        /// This method allows you to specify a substitute control template to be rendered in the previewer
+        /// This method allows you to specify a substitute control to be rendered in the previewer
         /// for a given object.
         /// </remarks>
         /// <param name="target">The target object.</param>
-        /// <param name="template">The preview template.</param>
+        /// <param name="control">The preview control.</param>
         // TODO12: Remove this overload in Avalonia 12
         [Obsolete("Use SetPreviewWith(AvaloniaObject, ITemplate<Control>) overload instead.", error: true)]
-        public static void SetPreviewWith(AvaloniaObject target, Control template)
+        public static void SetPreviewWith(AvaloniaObject target, Control? control)
         {
-            s_previewWith[target] = new FuncTemplate<Control>(() => template);
+            s_previewWith[target] = control is not null ? new FuncTemplate<Control>(() => control) : null;
         }
     
         /// <summary>
@@ -160,9 +160,9 @@ namespace Avalonia.Controls
         /// </remarks>
         /// <param name="target">The resource dictionary.</param>
         /// <param name="control">The preview control.</param>
-        public static void SetPreviewWith(ResourceDictionary target, Control control)
+        public static void SetPreviewWith(ResourceDictionary target, Control? control)
         {
-            s_previewWith[target] = new FuncTemplate<Control>(() => control);
+            s_previewWith[target] = control is not null ? new FuncTemplate<Control>(() => control) : null;
         } 
 
         /// <summary>
@@ -188,9 +188,9 @@ namespace Avalonia.Controls
         /// </remarks>
         /// <param name="target">The data template.</param>
         /// <param name="control">The preview control.</param>
-        public static void SetPreviewWith(IDataTemplate target, Control control)
+        public static void SetPreviewWith(IDataTemplate target, Control? control)
         {
-            s_previewWith[target] = new FuncTemplate<Control>(() => control);
+            s_previewWith[target] = control is not null ? new FuncTemplate<Control>(() => control) : null;
         }
 
         
@@ -218,9 +218,9 @@ namespace Avalonia.Controls
         /// </remarks>
         /// <param name="target">The data template.</param>
         /// <param name="control">The preview control.</param>
-        public static void SetPreviewWith(IStyle target, Control control)
+        public static void SetPreviewWith(IStyle target, Control? control)
         {
-            s_previewWith[target] = new FuncTemplate<Control>(() => control);
+            s_previewWith[target] = control is not null ? new FuncTemplate<Control>(() => control) : null;
         }
 
         
