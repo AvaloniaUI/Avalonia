@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Controls;
+using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
@@ -20,7 +21,9 @@ public class DesignModeTests : XamlTestBase
             var obj = (Control)AvaloniaRuntimeXamlLoader.Load(@"
 <Button xmlns='https://github.com/avaloniaui'>
     <Design.PreviewWith>
-        <Border />
+        <Template>
+            <Border />
+        </Template>
     </Design.PreviewWith>
 </Button>", designMode: false);
             var preview = Design.CreatePreviewWithControl(obj);
@@ -37,9 +40,11 @@ public class DesignModeTests : XamlTestBase
             var obj = (Control)AvaloniaRuntimeXamlLoader.Load(@"
 <Button xmlns='https://github.com/avaloniaui'>
     <Design.PreviewWith>
-        <Border>
-            <Button />
-        </Border>
+        <Template>
+            <Border>
+                <Button />
+            </Border>
+        </Template>
     </Design.PreviewWith>
 </Button>", designMode: true);
             var preview = Design.CreatePreviewWithControl(obj);
@@ -64,6 +69,7 @@ public class DesignModeTests : XamlTestBase
 </Style>", designMode: true);
             var preview = Design.CreatePreviewWithControl(obj);
             var previewBorder = Assert.IsType<Border>(preview);
+            previewBorder.ApplyStyling();
             Assert.Equal(Colors.Red, (previewBorder.Background as ISolidColorBrush)?.Color);
         }
     }
@@ -92,7 +98,7 @@ public class DesignModeTests : XamlTestBase
     {
         using (UnitTestApplication.Start(TestServices.MockWindowingPlatform))
         {
-            var obj = (ResourceDictionary)AvaloniaRuntimeXamlLoader.Load(@"
+            var obj = (DataTemplate)AvaloniaRuntimeXamlLoader.Load(@"
 <DataTemplate xmlns='https://github.com/avaloniaui'
               xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
               x:DataType='SolidColorBrush'>
@@ -107,6 +113,8 @@ public class DesignModeTests : XamlTestBase
 </DataTemplate>", designMode: true);
             var preview = Design.CreatePreviewWithControl(obj);
             var previewContentControl = Assert.IsType<ContentControl>(preview);
+            previewContentControl.ApplyTemplate();
+            previewContentControl.Presenter!.UpdateChild();
             var border = previewContentControl.FindDescendantOfType<Border>();
             Assert.NotNull(border);
             Assert.Equal(Colors.Red, (border.Background as ISolidColorBrush)?.Color);

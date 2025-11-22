@@ -135,6 +135,20 @@ namespace Avalonia.Controls
         } 
 
         /// <summary>
+        /// Sets a preview template for the specified <see cref="ResourceDictionary"/> at design-time.
+        /// </summary>
+        /// <remarks>
+        /// This method allows you to specify a substitute control to be rendered in the previewer.
+        /// ResourceDictionary is attached to that control, displaying real time changes on the control. 
+        /// </remarks>
+        /// <param name="target">The resource dictionary.</param>
+        /// <param name="control">The preview control.</param>
+        public static void SetPreviewWith(ResourceDictionary target, Control control)
+        {
+            s_previewWith[target] = new FuncTemplate<Control>(() => control);
+        } 
+
+        /// <summary>
         /// Sets a preview template for the specified <see cref="IDataTemplate"/> at design-time.
         /// </summary>
         /// <remarks>
@@ -148,6 +162,51 @@ namespace Avalonia.Controls
             s_previewWith[target] = template is not null ? new FuncTemplate<Control>(template.Build) : null;
         }
 
+        /// <summary>
+        /// Sets a preview template for the specified <see cref="IDataTemplate"/> at design-time.
+        /// </summary>
+        /// <remarks>
+        /// This method allows you to specify a substitute control to be rendered in the previewer.
+        /// Template must return ContentControl, and IDataTemplate will be set assigned to ContentControl.ContentTemplate property.
+        /// </remarks>
+        /// <param name="target">The data template.</param>
+        /// <param name="control">The preview control.</param>
+        public static void SetPreviewWith(IDataTemplate target, Control control)
+        {
+            s_previewWith[target] = new FuncTemplate<Control>(() => control);
+        }
+
+        
+        /// <summary>
+        /// Sets a preview template for the specified <see cref="IDataTemplate"/> at design-time.
+        /// </summary>
+        /// <remarks>
+        /// This method allows you to specify a substitute control template to be rendered in the previewer.
+        /// Template must return ContentControl, and IDataTemplate will be set assigned to ContentControl.ContentTemplate property.
+        /// </remarks>
+        /// <param name="target">The data template.</param>
+        /// <param name="template">The preview template.</param>
+        public static void SetPreviewWith(IStyle target, ITemplate<Control>? template)
+        {
+            s_previewWith[target] = template is not null ? new FuncTemplate<Control>(template.Build) : null;
+        }
+
+        
+        /// <summary>
+        /// Sets a preview template for the specified <see cref="IDataTemplate"/> at design-time.
+        /// </summary>
+        /// <remarks>
+        /// This method allows you to specify a substitute control to be rendered in the previewer.
+        /// Template must return ContentControl, and IDataTemplate will be set assigned to ContentControl.ContentTemplate property.
+        /// </remarks>
+        /// <param name="target">The data template.</param>
+        /// <param name="control">The preview control.</param>
+        public static void SetPreviewWith(IStyle target, Control control)
+        {
+            s_previewWith[target] = new FuncTemplate<Control>(() => control);
+        }
+
+        
         /// <summary>
         /// Gets the preview control for the specified <see cref="AvaloniaObject"/> at design-time.
         /// </summary>
@@ -174,6 +233,16 @@ namespace Avalonia.Controls
         /// <param name="target">The data template.</param>
         /// <returns>The preview control, or null.</returns>
         public static Control? GetPreviewWith(IDataTemplate target)
+        {
+            return s_previewWith.TryGetValue(target, out var template) ? template?.Build() : null;
+        }
+
+        /// <summary>
+        /// Gets the preview control for the specified <see cref="IStyle"/> at design-time.
+        /// </summary>
+        /// <param name="target">The style.</param>
+        /// <returns>The preview control, or null.</returns>
+        public static Control? GetPreviewWith(IStyle target)
         {
             return s_previewWith.TryGetValue(target, out var template) ? template?.Build() : null;
         }
