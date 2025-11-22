@@ -138,7 +138,7 @@ namespace Avalonia.Controls
         /// <param name="target">The target object.</param>
         /// <param name="control">The preview control.</param>
         // TODO12: Remove this overload in Avalonia 12
-        [Obsolete("Use SetPreviewWith(AvaloniaObject, ITemplate<Control>) overload instead.", error: true)]
+        [Obsolete("Use SetPreviewWith(AvaloniaObject, ITemplate<Control>) overload instead. Use <Template></Template> from XAML")]
         public static void SetPreviewWith(AvaloniaObject target, Control? control)
         {
             s_previewWith[target] = control is not null ? new FuncTemplate<Control>(() => control) : null;
