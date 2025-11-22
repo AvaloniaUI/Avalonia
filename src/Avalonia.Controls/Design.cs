@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Avalonia.Controls.Templates;
 using Avalonia.Layout;
@@ -106,6 +107,22 @@ namespace Avalonia.Controls
         public static readonly AttachedProperty<Control?> PreviewWithProperty = AvaloniaProperty
             .RegisterAttached<AvaloniaObject, Control?>("PreviewWith", typeof (Design));
 
+        /// <summary>
+        /// Sets a preview template for the specified <see cref="AvaloniaObject"/> at design-time.
+        /// </summary>
+        /// <remarks>
+        /// This method allows you to specify a substitute control template to be rendered in the previewer
+        /// for a given object.
+        /// </remarks>
+        /// <param name="target">The target object.</param>
+        /// <param name="template">The preview template.</param>
+        // TODO12: Remove this overload in Avalonia 12
+        [Obsolete("Use SetPreviewWith(AvaloniaObject, ITemplate<Control>) overload instead.", error: true)]
+        public static void SetPreviewWith(AvaloniaObject target, Control template)
+        {
+            s_previewWith[target] = new FuncTemplate<Control>(() => template);
+        }
+    
         /// <summary>
         /// Sets a preview template for the specified <see cref="AvaloniaObject"/> at design-time.
         /// </summary>

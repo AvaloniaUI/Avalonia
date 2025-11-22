@@ -33,7 +33,7 @@ public class DesignModeTests : XamlTestBase
     }
 
     [Fact]
-    public void Design_Mode_PreviewWith_Works_Control()
+    public void Design_Mode_PreviewWith_Works_With_Control_Template()
     {
         using (UnitTestApplication.Start(TestServices.MockWindowingPlatform))
         {
