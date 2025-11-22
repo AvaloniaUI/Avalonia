@@ -13,6 +13,7 @@ namespace Avalonia.Controls
     public static class Design
     {
         private static Dictionary<object, ITemplate<Control>?> s_previewWith = [];
+        private static Dictionary<object, object?> s_templateDataContext = [];
 
         /// <summary>
         /// Gets a value indicating whether the application is running in design mode.
@@ -99,6 +100,26 @@ namespace Avalonia.Controls
         public static object? GetDataContext(Control control)
         {
             return control.GetValue(DataContextProperty);
+        }
+
+        /// <summary>
+        /// Sets the design-time data context for a control.
+        /// </summary>
+        /// <param name="control">The control to set the data context for.</param>
+        /// <param name="value">The data context value.</param>
+        public static void SetDataContext(IDataTemplate control, object? value)
+        {
+            s_templateDataContext[control] = value;
+        }
+
+        /// <summary>
+        /// Gets the design-time data context for a control.
+        /// </summary>
+        /// <param name="control">The control to get the data context from.</param>
+        /// <returns>The data context value.</returns>
+        public static object? GetDataContext(IDataTemplate control)
+        {
+            return s_templateDataContext.TryGetValue(control, out var value) ? value : null;
         }
 
         /// <summary>
@@ -359,6 +380,21 @@ namespace Avalonia.Controls
                 if (GetPreviewWith(template) is ContentControl substitute)
                 {
                     substitute.ContentTemplate = template;
+                    if (!substitute.IsSet(DataContextProperty) && substitute.IsSet(StyledElement.DataContextProperty))
+                    {
+                        substitute.DataContext = substitute.GetValue(StyledElement.DataContextProperty);
+                    }
+                    return substitute;
+                }
+
+                if (GetDataContext(template) is { } dataContext)
+                {
+                    substitute = new ContentControl
+                    {
+                        ContentTemplate = template,
+                        DataContext = dataContext,
+                        Content = dataContext
+                    };
                     return substitute;
                 }
 

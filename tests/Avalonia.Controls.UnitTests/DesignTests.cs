@@ -48,6 +48,23 @@ public class DesignTests : ScopedTestBase
     }
 
     [Fact]
+    public void Should_Preview_DataTemplate_With_DataContext()
+    {
+        using var _ = UnitTestApplication.Start(TestServices.StyledWindow);
+
+        const string testData = "Test Data";
+        var dataTemplate = new FuncDataTemplate<string>((data, _) =>
+            new TextBlock { Text = data });
+        Design.SetDataContext(dataTemplate, testData);
+
+        var preview = Design.CreatePreviewWithControl(dataTemplate);
+
+        var previewContentControl = Assert.IsType<ContentControl>(preview);
+        Assert.Equal(testData, previewContentControl.Content);
+        Assert.Same(dataTemplate, previewContentControl.ContentTemplate);
+    }
+
+    [Fact]
     public void Should_Preview_Control_With_Another_Control()
     {
         using var _ = UnitTestApplication.Start(TestServices.StyledWindow);
