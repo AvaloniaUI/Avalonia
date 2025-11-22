@@ -278,8 +278,10 @@ namespace Avalonia
                 .Bind<IGlobalDataTemplates>().ToConstant(this)
                 .Bind<IGlobalStyles>().ToConstant(this)
                 .Bind<IThemeVariantHost>().ToConstant(this)
+                .Bind<FontManager>().ToLazy(() => new FontManager(
+                    AvaloniaLocator.Current.GetRequiredService<IFontManagerImpl>()))
                 .Bind<IInputManager>().ToConstant(InputManager)
-                .Bind< IToolTipService>().ToConstant(new ToolTipService(InputManager))
+                .Bind<IToolTipService>().ToConstant(new ToolTipService(InputManager))
                 .Bind<IKeyboardNavigationHandler>().ToTransient<KeyboardNavigationHandler>()
                 .Bind<IDragDropDevice>().ToConstant(DragDropDevice.Instance);
 
