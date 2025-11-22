@@ -38,7 +38,7 @@ public class DesignTests : ScopedTestBase
         var dataTemplate = new FuncDataTemplate<string>((data, _) =>
             new TextBlock { Text = data });
         Design.SetPreviewWith(dataTemplate,
-            new FuncTemplate<ContentControl>(static () => new ContentControl { Content = testData }));
+            new FuncTemplate<Control>(static () => new ContentControl { Content = testData }));
 
         var preview = Design.CreatePreviewWithControl(dataTemplate);
 
