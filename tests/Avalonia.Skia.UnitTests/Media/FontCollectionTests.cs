@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Avalonia.Media;
 using Avalonia.Media.Fonts;
+using Avalonia.Platform;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -72,7 +73,7 @@ namespace Avalonia.Skia.UnitTests.Media
         [Fact]
         public void Should_Use_Fallback()
         {
-            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new CustomFontManagerImpl())))
             {
                 var source = new Uri(NotoMono, UriKind.Absolute);
 
@@ -80,7 +81,7 @@ namespace Avalonia.Skia.UnitTests.Media
 
                 var fontCollection = new CustomizableFontCollection(source, source, new[] { fallback  });
 
-                fontCollection.Initialize(new CustomFontManagerImpl());
+                fontCollection.Initialize(FontManager.Current.PlatformImpl);
 
                 Assert.True(fontCollection.TryMatchCharacter('A', FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, null, null, out var match));
 
@@ -91,23 +92,25 @@ namespace Avalonia.Skia.UnitTests.Media
         [Fact]
         public void Should_Ignore_FontFamily()
         {
-            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new CustomFontManagerImpl())))
             {
-                var source = new Uri(NotoMono + "#Noto Mono", UriKind.Absolute);
+                var key = new Uri(NotoMono, UriKind.Absolute);
 
                 var ignorable = new FontFamily(new Uri(NotoMono, UriKind.Absolute), "Noto Mono");
 
+                var fontCollection = new CustomizableFontCollection(key, key, null, new[] { ignorable });
+
+                fontCollection.Initialize(FontManager.Current.PlatformImpl);
+
                 var typeface = new Typeface(ignorable);
 
-                var fontCollection = new CustomizableFontCollection(source, source, null, new[] { ignorable });
-
-                fontCollection.Initialize(new CustomFontManagerImpl());
+                var glyphTypeface = typeface.GlyphTypeface;
 
                 Assert.False(fontCollection.TryCreateSyntheticGlyphTypeface(
-                    typeface.GlyphTypeface, 
-                    FontStyle.Italic, 
-                    FontWeight.DemiBold, 
-                    FontStretch.Normal, 
+                    typeface.GlyphTypeface,
+                    FontStyle.Italic,
+                    FontWeight.DemiBold,
+                    FontStretch.Normal,
                     out var syntheticGlyphTypeface));
             }
         }

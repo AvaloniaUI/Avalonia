@@ -76,6 +76,17 @@ namespace Avalonia.iOS
             {
 #if !TVOS
                 MultipleTouchEnabled = true;
+                
+                if (OperatingSystem.IsIOSVersionAtLeast(13, 4) || OperatingSystem.IsMacCatalyst())
+                {
+                    var scrollGestureRecognizer = new UIPanGestureRecognizer(_input.HandleScrollWheel)
+                    {
+                        // Only respond to scroll events, not touches
+                        MaximumNumberOfTouches = 0,
+                        AllowedScrollTypesMask = UIScrollTypeMask.Discrete | UIScrollTypeMask.Continuous
+                    };
+                    AddGestureRecognizer(scrollGestureRecognizer);
+                }
 #endif
             }
         }
@@ -165,7 +176,7 @@ namespace Avalonia.iOS
                 _inputPane = null;
 #else
                 _storageProvider = new Storage.IOSStorageProvider(view);
-                _clipboard = new ClipboardImpl();
+                _clipboard = new Input.Platform.Clipboard(new Clipboard.ClipboardImpl(UIPasteboard.General));
                 _inputPane = UIKitInputPane.Instance;
 #endif
                 _insetsManager = new InsetsManager();

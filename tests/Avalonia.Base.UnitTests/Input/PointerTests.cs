@@ -36,5 +36,22 @@ namespace Avalonia.Base.UnitTests.Input
             pointer.Capture(null);
             Assert.True(receivers.SequenceEqual(new object[] { newCapture, newParent, el, root }));
         }
+
+        [Fact]
+        public void Capture_Captured_ShouldNot_Call_Platform()
+        {
+            var pointer = new TestPointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
+
+            Border capture = new Border();
+            pointer.Capture(capture);
+            pointer.Capture(capture);
+
+            Assert.Equal(1, pointer.PlatformCaptureCalled);
+
+            pointer.Capture(null);
+            pointer.Capture(null);
+
+            Assert.Equal(2, pointer.PlatformCaptureCalled);
+        }
     }
 }

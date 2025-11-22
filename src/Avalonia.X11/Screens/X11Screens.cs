@@ -15,7 +15,7 @@ namespace Avalonia.X11.Screens
             _impl = (info.RandrVersion != null && info.RandrVersion >= new Version(1, 5))
                 ? new Randr15ScreensImpl(platform)
                 : (IX11RawScreenInfoProvider)new FallbackScreensImpl(platform);
-            _impl.Changed += () => Changed?.Invoke();
+            _impl.Changed += OnChanged;
         }
 
         protected override int GetScreenCount() => _impl.ScreenKeys.Length;
@@ -24,6 +24,13 @@ namespace Avalonia.X11.Screens
 
         protected override X11Screen CreateScreenFromKey(nint key) => _impl.CreateScreenFromKey(key);
 
-        protected override void ScreenChanged(X11Screen screen) => screen.Refresh();
+        protected override void ScreenChanged(X11Screen screen)
+        {
+            var handle = screen.TryGetPlatformHandle()?.Handle;
+            if (handle != null)
+            {
+                screen.Refresh(_impl.GetMonitorInfoByKey(handle.Value));
+            }
+        }
     }
 }

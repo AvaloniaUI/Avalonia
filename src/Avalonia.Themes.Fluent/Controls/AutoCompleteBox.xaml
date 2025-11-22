@@ -42,6 +42,7 @@
                      BorderThickness="{TemplateBinding BorderThickness}"
                      CornerRadius="{TemplateBinding CornerRadius}"
                      CaretIndex="{TemplateBinding CaretIndex, Mode=TwoWay}"
+                     ClearSelectionOnLostFocus="{TemplateBinding ClearSelectionOnLostFocus}"
                      Padding="{TemplateBinding Padding}"
                      Margin="0"
                      DataValidationErrors.Errors="{TemplateBinding (DataValidationErrors.Errors)}"

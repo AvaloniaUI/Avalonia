@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia;
+using Avalonia.Media.Imaging;
 
 namespace CrossUI;
 
@@ -229,6 +230,7 @@ public class CrossControl
     public CrossPen? Outline;
     public List<CrossControl> Children = new();
     public Matrix RenderTransform = Matrix.Identity;
+    public BitmapInterpolationMode BitmapInterpolationMode;
     
     public virtual void Render(ICrossDrawingContext ctx)
     {

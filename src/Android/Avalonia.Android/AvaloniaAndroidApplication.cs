@@ -9,13 +9,13 @@ namespace Avalonia.Android
 {
     internal interface IAndroidApplication
     {
-        SingleViewLifetime? Lifetime { get; set; }
+        ApplicationLifetime? Lifetime { get; set; }
     }
 
     public class AvaloniaAndroidApplication<TApp> : global::Android.App.Application, IAndroidApplication
         where TApp : Application, new()
     {
-        SingleViewLifetime? IAndroidApplication.Lifetime { get; set; }
+        ApplicationLifetime? IAndroidApplication.Lifetime { get; set; }
 
         protected AvaloniaAndroidApplication(nint javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
         {
@@ -32,7 +32,7 @@ namespace Avalonia.Android
             var builder = CreateAppBuilder();
             builder = CustomizeAppBuilder(builder);
 
-            var lifetime = new SingleViewLifetime();
+            var lifetime = new ApplicationLifetime();
 
             ((IAndroidApplication)this).Lifetime = lifetime;
 

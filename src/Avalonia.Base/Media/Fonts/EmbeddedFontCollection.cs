@@ -15,8 +15,6 @@ namespace Avalonia.Media.Fonts
 
         private readonly Uri _source;
 
-        private IFontManagerImpl? _fontManager;
-
         public EmbeddedFontCollection(Uri key, Uri source)
         {
             _key = key;
@@ -32,8 +30,6 @@ namespace Avalonia.Media.Fonts
 
         public override void Initialize(IFontManagerImpl fontManager)
         {
-            _fontManager = fontManager;
-
             var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
 
             var fontAssets = FontFamilyLoader.LoadFontAssets(_source);
@@ -75,9 +71,15 @@ namespace Avalonia.Media.Fonts
 
                     if(matchedKey != key)
                     {
+                        //Create a synthetic glyph typeface. The successfull result will be cached.
                         if (TryCreateSyntheticGlyphTypeface(glyphTypeface, style, weight, stretch, out var syntheticGlyphTypeface))
                         {
                             glyphTypeface = syntheticGlyphTypeface;
+                        }
+                        else
+                        {
+                            //Add the matched glyph typeface to the cache
+                            glyphTypefaces.TryAdd(key, glyphTypeface);
                         }
                     }
 

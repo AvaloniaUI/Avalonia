@@ -3,6 +3,7 @@ using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Styling;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using JetBrains.dotMemoryUnit;
 using Xunit;
@@ -99,6 +100,9 @@ namespace Avalonia.LeakTests
 
                 var result = run();
 
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Button>()).ObjectsCount));
             }
@@ -140,6 +144,9 @@ namespace Avalonia.LeakTests
                 };
 
                 var result = run();
+
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Button>()).ObjectsCount));

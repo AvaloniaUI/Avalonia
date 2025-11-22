@@ -1,7 +1,8 @@
 using System;
+using Avalonia.Generators.Common;
 using Avalonia.Generators.Common.Domain;
 using Avalonia.Generators.NameGenerator;
-using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Avalonia.Generators;
 
@@ -18,58 +19,72 @@ internal enum BuildProperties
     // TODO add other generators properties here.
 }
 
-internal class GeneratorOptions
+internal record GeneratorOptions
 {
-    private readonly GeneratorExecutionContext _context;
-
-    public GeneratorOptions(GeneratorExecutionContext context) => _context = context;
-
-    public bool AvaloniaNameGeneratorIsEnabled => GetBoolProperty(
-        BuildProperties.AvaloniaNameGeneratorIsEnabled,
-        true);
-    
-    public Behavior AvaloniaNameGeneratorBehavior => GetEnumProperty(
-        BuildProperties.AvaloniaNameGeneratorBehavior,
-        Behavior.InitializeComponent);
-
-    public NamedFieldModifier AvaloniaNameGeneratorClassFieldModifier => GetEnumProperty(
-        BuildProperties.AvaloniaNameGeneratorDefaultFieldModifier,
-        NamedFieldModifier.Internal);
-
-    public ViewFileNamingStrategy AvaloniaNameGeneratorViewFileNamingStrategy => GetEnumProperty(
-        BuildProperties.AvaloniaNameGeneratorViewFileNamingStrategy,
-        ViewFileNamingStrategy.NamespaceAndClassName);
-
-    public string[] AvaloniaNameGeneratorFilterByPath => GetStringArrayProperty(
-        BuildProperties.AvaloniaNameGeneratorFilterByPath,
-        "*");
-
-    public string[] AvaloniaNameGeneratorFilterByNamespace => GetStringArrayProperty(
-        BuildProperties.AvaloniaNameGeneratorFilterByNamespace,
-        "*");
-
-    public bool AvaloniaNameGeneratorAttachDevTools => GetBoolProperty(
-        BuildProperties.AvaloniaNameGeneratorAttachDevTools,
-        true);
-
-    private string[] GetStringArrayProperty(BuildProperties name, string defaultValue)
+    public GeneratorOptions(AnalyzerConfigOptions options)
     {
-        var key = name.ToString();
-        var value = _context.GetMsBuildProperty(key, defaultValue);
-        return value.Contains(";") ? value.Split(';') : new[] {value};
+        AvaloniaNameGeneratorIsEnabled = GetBoolProperty(
+            options,
+            BuildProperties.AvaloniaNameGeneratorIsEnabled,
+            true);
+        AvaloniaNameGeneratorBehavior = GetEnumProperty(
+            options,
+            BuildProperties.AvaloniaNameGeneratorBehavior,
+            Behavior.InitializeComponent);
+        AvaloniaNameGeneratorClassFieldModifier = GetEnumProperty(
+            options,
+            BuildProperties.AvaloniaNameGeneratorDefaultFieldModifier,
+            NamedFieldModifier.Internal);
+        AvaloniaNameGeneratorViewFileNamingStrategy = GetEnumProperty(
+            options,
+            BuildProperties.AvaloniaNameGeneratorViewFileNamingStrategy,
+            ViewFileNamingStrategy.NamespaceAndClassName);
+        AvaloniaNameGeneratorFilterByPath = new GlobPatternGroup(GetStringArrayProperty(
+            options,
+            BuildProperties.AvaloniaNameGeneratorFilterByPath,
+            "*"));
+        AvaloniaNameGeneratorFilterByNamespace = new GlobPatternGroup(GetStringArrayProperty(
+            options,
+            BuildProperties.AvaloniaNameGeneratorFilterByNamespace,
+            "*"));
+        AvaloniaNameGeneratorAttachDevTools = GetBoolProperty(
+            options,
+            BuildProperties.AvaloniaNameGeneratorAttachDevTools,
+            true);
     }
 
-    private TEnum GetEnumProperty<TEnum>(BuildProperties name, TEnum defaultValue) where TEnum : struct
+    public bool AvaloniaNameGeneratorIsEnabled { get; }
+    
+    public Behavior AvaloniaNameGeneratorBehavior { get; }
+
+    public NamedFieldModifier AvaloniaNameGeneratorClassFieldModifier { get; }
+
+    public ViewFileNamingStrategy AvaloniaNameGeneratorViewFileNamingStrategy { get; }
+
+    public IGlobPattern AvaloniaNameGeneratorFilterByPath { get; }
+
+    public IGlobPattern AvaloniaNameGeneratorFilterByNamespace { get; }
+
+    public bool AvaloniaNameGeneratorAttachDevTools { get; }
+
+    private static string[] GetStringArrayProperty(AnalyzerConfigOptions options, BuildProperties name, string defaultValue)
     {
         var key = name.ToString();
-        var value = _context.GetMsBuildProperty(key, defaultValue.ToString());
+        var value = options.GetMsBuildProperty(key, defaultValue);
+        return value.Contains(";") ? value.Split(';') : [value];
+    }
+
+    private static TEnum GetEnumProperty<TEnum>(AnalyzerConfigOptions options, BuildProperties name, TEnum defaultValue) where TEnum : struct
+    {
+        var key = name.ToString();
+        var value = options.GetMsBuildProperty(key, defaultValue.ToString());
         return Enum.TryParse(value, true, out TEnum behavior) ? behavior : defaultValue;
     }
-    
-    private bool GetBoolProperty(BuildProperties name, bool defaultValue)
+
+    private static bool GetBoolProperty(AnalyzerConfigOptions options, BuildProperties name, bool defaultValue)
     {
         var key = name.ToString();
-        var value = _context.GetMsBuildProperty(key, defaultValue.ToString());
+        var value = options.GetMsBuildProperty(key, defaultValue.ToString());
         return bool.TryParse(value, out var result) ? result : defaultValue;
     }
 }

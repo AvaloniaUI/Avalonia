@@ -70,6 +70,10 @@ namespace Avalonia.Controls.Primitives
             _caretHandle.PointerReleased += Handle_PointerReleased;
             _endHandle.PointerReleased += Handle_PointerReleased;
 
+            _startHandle.Holding += Caret_Holding;
+            _caretHandle.Holding += Caret_Holding;
+            _endHandle.Holding += Caret_Holding;
+
             IsVisible = ShowHandles;
 
             ClipToBounds = false;
@@ -214,7 +218,12 @@ namespace Avalonia.Controls.Primitives
 
         public void MoveHandlesToSelection()
         {
-            if (_presenter == null || _textBox == null || _startHandle.IsDragging || _endHandle.IsDragging)
+            if (_presenter == null
+                || _textBox == null
+                || _startHandle.IsDragging
+                || _endHandle.IsDragging
+                || _textBox.ContextFlyout?.IsOpen == true
+                || _textBox.ContextMenu?.IsOpen == true)
             {
                 return;
             }
@@ -267,8 +276,6 @@ namespace Avalonia.Controls.Primitives
             {
                 _textBox.RemoveHandler(TextBox.TextChangingEvent, TextChanged);
                 _textBox.RemoveHandler(KeyDownEvent, TextBoxKeyDown);
-                _textBox.RemoveHandler(PointerReleasedEvent, TextBoxPointerReleased);
-                _textBox.RemoveHandler(Gestures.HoldingEvent, TextBoxHolding);
 
                 _textBox.PropertyChanged -= TextBoxPropertyChanged;
                 _textBox.EffectiveViewportChanged -= TextBoxEffectiveViewportChanged;
@@ -286,8 +293,6 @@ namespace Avalonia.Controls.Primitives
                 {
                     _textBox.AddHandler(TextBox.TextChangingEvent, TextChanged, handledEventsToo: true);
                     _textBox.AddHandler(KeyDownEvent, TextBoxKeyDown, handledEventsToo: true);
-                    _textBox.AddHandler(PointerReleasedEvent, TextBoxPointerReleased, handledEventsToo: true);
-                    _textBox.AddHandler(Gestures.HoldingEvent, TextBoxHolding, handledEventsToo: true);
 
                     _textBox.PropertyChanged += TextBoxPropertyChanged;
                     _textBox.EffectiveViewportChanged += TextBoxEffectiveViewportChanged;
@@ -310,7 +315,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private void TextBoxHolding(object? sender, HoldingRoutedEventArgs e)
+        private void Caret_Holding(object? sender, HoldingRoutedEventArgs e)
         {
             if (ShowContextMenu())
                 e.Handled = true;
@@ -364,15 +369,12 @@ namespace Avalonia.Controls.Primitives
             return false;
         }
 
-        private void TextBoxPointerReleased(object? sender, PointerReleasedEventArgs e)
+        internal void Show()
         {
-            if (e.Pointer.Type != PointerType.Mouse)
-            {
-                ShowHandles = true;
+            ShowHandles = true;
 
-                MoveHandlesToSelection();
-                EnsureVisible();
-            }
+            MoveHandlesToSelection();
+            EnsureVisible();
         }
 
         private void TextBoxPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)

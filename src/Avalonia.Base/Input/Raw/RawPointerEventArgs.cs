@@ -26,7 +26,8 @@ namespace Avalonia.Input.Raw
         TouchCancel,
         Magnify,
         Rotate,
-        Swipe
+        Swipe,
+        CancelCapture
     }
 
     /// <summary>

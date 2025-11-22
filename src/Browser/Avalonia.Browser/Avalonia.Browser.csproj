@@ -50,10 +50,6 @@
     <Exec Command="npm run build" WorkingDirectory="webapp" />
   </Target>
 
-  <ItemGroup Label="InternalsVisibleTo">
-    <InternalsVisibleTo Include="Avalonia.Browser.Blazor, PublicKey=$(AvaloniaPublicKey)" />
-  </ItemGroup>
-
   <ItemGroup>
     <Compile Include="..\..\Shared\RawEventGrouping.cs">
       <Link>RawEventGrouping.cs</Link>

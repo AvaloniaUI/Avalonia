@@ -1,10 +1,10 @@
 ﻿// Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using Avalonia.Data.Core;
-using Avalonia.Utilities;
 using System;
 using System.Collections.Generic;
+using Avalonia.Data.Core;
+using Avalonia.Utilities;
 
 namespace Avalonia.Markup.Parsers
 {
@@ -17,6 +17,12 @@ namespace Avalonia.Markup.Parsers
     internal static class BindingExpressionGrammar
     {
         private static readonly List<INode> s_pool = new();
+
+        public static (List<INode> Nodes, SourceMode Mode) Parse(string text)
+        {
+            var r = new CharacterReader(text.AsSpan());
+            return Parse(ref r);
+        }
 
         public static (List<INode> Nodes, SourceMode Mode) Parse(ref CharacterReader r)
         {

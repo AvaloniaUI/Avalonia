@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Metadata;
 using Avalonia.Threading;
@@ -42,7 +43,7 @@ namespace Avalonia.Platform
         private readonly Dictionary<TKey, TScreen> _allScreensByKey = screenKeyComparer is not null ?
             new Dictionary<TKey, TScreen>(screenKeyComparer) :
             new Dictionary<TKey, TScreen>();
-        private TScreen[]? _allScreens;
+        private IReadOnlyList<TScreen>? _allScreens;
         private int? _screenCount;
         private bool? _screenDetailsRequestGranted;
         private DispatcherOperation? _onChangeOperation;
@@ -134,12 +135,18 @@ namespace Avalonia.Platform
             if (_allScreens is not null)
                 return;
 
+            // We don't synchronize this method, as it is expected to be called on UI thread only.
+            Dispatcher.UIThread.VerifyAccess();
+
             var screens = GetAllScreenKeys();
             var screensSet = new HashSet<TKey>(screens, screenKeyComparer);
 
-            _allScreens = new TScreen[screens.Count];
-
+            // .ToList() is only necessary for .NET Framework apps.
+#if NET
             foreach (var oldScreenKey in _allScreensByKey.Keys)
+#else
+            foreach (var oldScreenKey in _allScreensByKey.Keys.ToList())
+#endif
             {
                 if (!screensSet.Contains(oldScreenKey))
                 {
@@ -151,24 +158,24 @@ namespace Avalonia.Platform
                 }
             }
 
-            int i = 0;
+            var tempScreens = new List<TScreen>(screens.Count);
             foreach (var newScreenKey in screens)
             {
                 if (_allScreensByKey.TryGetValue(newScreenKey, out var oldScreen))
                 {
                     ScreenChanged(oldScreen);
-                    _allScreens[i] = oldScreen;
+                    tempScreens.Add(oldScreen);
                 }
                 else
                 {
                     var newScreen = CreateScreenFromKey(newScreenKey);
                     ScreenAdded(newScreen);
                     _allScreensByKey[newScreenKey] = newScreen;
-                    _allScreens[i] = newScreen;
+                    tempScreens.Add(newScreen);
                 }
-
-                i++;
             }
+
+            _allScreens = tempScreens;
         }
     }
 }

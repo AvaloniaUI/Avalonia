@@ -672,7 +672,6 @@ namespace Avalonia.Controls.UnitTests
             windowImpl.Setup(x => x.TryGetFeature(It.Is<Type>(t => t == typeof(IScreenImpl)))).Returns(screenImpl.Object);
 
             var services = TestServices.StyledWindow.With(
-                                        focusManager: new FocusManager(),
                                         keyboardDevice: () => new KeyboardDevice(),
                                         inputManager: new InputManager(),
                                         windowImpl: windowImpl.Object,

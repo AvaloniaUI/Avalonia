@@ -271,6 +271,23 @@ namespace Avalonia.Automation.Peers
         public string GetHelpText() => GetHelpTextCore() ?? string.Empty;
 
         /// <summary>
+        /// Gets the heading level that is associated with this automation peer.
+        /// </summary>
+        /// <remarks>
+        /// <list type="table">
+        ///   <item>
+        ///     <term>Windows</term>
+        ///     <description><c>UIA_HeadingLevelPropertyId</c></description>
+        ///   </item>
+        ///   <item>
+        ///     <term>macOS</term>
+        ///     <description><c>NSAccessibilityProtocol.accessibilityValue</c></description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
+        public int GetHeadingLevel() => GetHeadingLevelCore();
+
+        /// <summary>
         /// Gets the <see cref="AutomationPeer"/> that is the parent of this <see cref="AutomationPeer"/>.
         /// </summary>
         /// <remarks>
@@ -503,6 +520,7 @@ namespace Avalonia.Automation.Peers
         protected abstract AutomationPeer? GetLabeledByCore();
         protected abstract string? GetNameCore();
         protected virtual string? GetHelpTextCore() => null;
+        protected virtual int GetHeadingLevelCore() => 0;
         protected abstract AutomationPeer? GetParentCore();
         protected abstract bool HasKeyboardFocusCore();
         protected abstract bool IsContentElementCore();

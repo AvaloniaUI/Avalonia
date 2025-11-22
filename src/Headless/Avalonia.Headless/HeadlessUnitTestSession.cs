@@ -5,6 +5,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Controls;
+using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.Reactive;
 using Avalonia.Threading;
@@ -16,7 +18,6 @@ namespace Avalonia.Headless;
 /// All UI tests are supposed to be executed from one of the <see cref="Dispatch"/> methods to keep execution flow on the UI thread.
 /// Disposing unit test session stops internal dispatcher loop. 
 /// </summary>
-[Unstable("This API is experimental and might be unstable. Use on your risk. API might or might not be changed in a minor update.")]
 public sealed class HeadlessUnitTestSession : IDisposable
 {
     private static readonly Dictionary<Assembly, HeadlessUnitTestSession> s_session = new();
@@ -25,19 +26,25 @@ public sealed class HeadlessUnitTestSession : IDisposable
     private readonly CancellationTokenSource _cancellationTokenSource;
     private readonly BlockingCollection<(Action, ExecutionContext?)> _queue;
     private readonly Task _dispatchTask;
+    private readonly bool _isolated;
+    // Only set and used with PerAssembly isolation
+    private SynchronizationContext? _sharedContext;
 
     internal const DynamicallyAccessedMemberTypes DynamicallyAccessed =
         DynamicallyAccessedMemberTypes.PublicMethods |
         DynamicallyAccessedMemberTypes.NonPublicMethods |
         DynamicallyAccessedMemberTypes.PublicParameterlessConstructor;
 
-    private HeadlessUnitTestSession(AppBuilder appBuilder, CancellationTokenSource cancellationTokenSource,
-        BlockingCollection<(Action, ExecutionContext?)> queue, Task dispatchTask)
+    private HeadlessUnitTestSession(
+        AppBuilder appBuilder, CancellationTokenSource cancellationTokenSource,
+        BlockingCollection<(Action, ExecutionContext?)> queue, Task dispatchTask,
+        bool isolated)
     {
         _appBuilder = appBuilder;
         _cancellationTokenSource = cancellationTokenSource;
         _queue = queue;
         _dispatchTask = dispatchTask;
+        _isolated = isolated;
     }
 
     /// <inheritdoc cref="DispatchCore{TResult}"/>
@@ -91,7 +98,9 @@ public sealed class HeadlessUnitTestSession : IDisposable
 
             try
             {
-                using var application = EnsureApplication();
+                using var application = _isolated
+                    ? EnsureIsolatedApplication()
+                    : EnsureSharedApplication();
                 var task = action();
                 if (task.Status != TaskStatus.RanToCompletion)
                 {
@@ -121,12 +130,33 @@ public sealed class HeadlessUnitTestSession : IDisposable
         return tcs.Task;
     }
 
-    private IDisposable EnsureApplication()
+    private IDisposable EnsureSharedApplication()
+    {
+        var oldContext = SynchronizationContext.Current;
+        if (Application.Current is null)
+        {
+            _appBuilder.SetupUnsafe();
+            _sharedContext = SynchronizationContext.Current;
+        }
+        else
+        {
+            SynchronizationContext.SetSynchronizationContext(_sharedContext);
+        }
+
+        return Disposable.Create(() =>
+        {
+            Dispatcher.UIThread.RunJobs();
+            SynchronizationContext.SetSynchronizationContext(oldContext);
+        });
+    }
+
+    private IDisposable EnsureIsolatedApplication()
     {
         var scope = AvaloniaLocator.EnterScope();
+        var oldContext = SynchronizationContext.Current;
         try
         {
-            Dispatcher.ResetForUnitTests();
+            Dispatcher.ResetBeforeUnitTests();
             _appBuilder.SetupUnsafe();
         }
         catch
@@ -137,9 +167,12 @@ public sealed class HeadlessUnitTestSession : IDisposable
 
         return Disposable.Create(() =>
         {
-            scope.Dispose();
+            ((ToolTipService?)AvaloniaLocator.Current.GetService<IToolTipService>())?.Dispose();
+            (AvaloniaLocator.Current.GetService<FontManager>() as IDisposable)?.Dispose();
             Dispatcher.ResetForUnitTests();
-            SynchronizationContext.SetSynchronizationContext(null);
+            scope.Dispose();
+            Dispatcher.ResetBeforeUnitTests();
+            SynchronizationContext.SetSynchronizationContext(oldContext);
         });
     }
 
@@ -162,6 +195,24 @@ public sealed class HeadlessUnitTestSession : IDisposable
         [DynamicallyAccessedMembers(DynamicallyAccessed)]
         Type entryPointType)
     {
+        // Cannot be optional parameter for ABI stability
+        // ReSharper disable once IntroduceOptionalParameters.Global
+        return StartNew(entryPointType, AvaloniaTestIsolationLevel.PerTest);
+    }
+
+    /// <summary>
+    /// Creates instance of <see cref="HeadlessUnitTestSession"/>. 
+    /// </summary>
+    /// <param name="entryPointType">
+    /// Parameter from which <see cref="AppBuilder"/> should be created.
+    /// It either needs to have BuildAvaloniaApp -> AppBuilder method or inherit Application.
+    /// </param>
+    /// <param name="isolationLevel">Defines the isolation level for headless unit tests</param>
+    public static HeadlessUnitTestSession StartNew(
+        [DynamicallyAccessedMembers(DynamicallyAccessed)]
+        Type entryPointType,
+        AvaloniaTestIsolationLevel isolationLevel)
+    {
         var tcs = new TaskCompletionSource<HeadlessUnitTestSession>();
         var cancellationTokenSource = new CancellationTokenSource();
         var queue = new BlockingCollection<(Action, ExecutionContext?)>();
@@ -172,6 +223,7 @@ public sealed class HeadlessUnitTestSession : IDisposable
             try
             {
                 var appBuilder = AppBuilder.Configure(entryPointType);
+                var runIsolated = isolationLevel == AvaloniaTestIsolationLevel.PerTest;
 
                 // If windowing subsystem wasn't initialized by user, force headless with default parameters.
                 if (appBuilder.WindowingSubsystemName != "Headless")
@@ -180,7 +232,7 @@ public sealed class HeadlessUnitTestSession : IDisposable
                 }
 
                 // ReSharper disable once AccessToModifiedClosure
-                tcs.SetResult(new HeadlessUnitTestSession(appBuilder, cancellationTokenSource, queue, task!));
+                tcs.SetResult(new HeadlessUnitTestSession(appBuilder, cancellationTokenSource, queue, task!, runIsolated));
             }
             catch (Exception e)
             {
@@ -228,9 +280,12 @@ public sealed class HeadlessUnitTestSession : IDisposable
                 var appBuilderEntryPointType = assembly.GetCustomAttribute<AvaloniaTestApplicationAttribute>()
                     ?.AppBuilderEntryPointType;
 
+                var isolationLevel = assembly.GetCustomAttribute<AvaloniaTestIsolationAttribute>()
+                    ?.IsolationLevel ?? AvaloniaTestIsolationLevel.PerTest;
+
                 session = appBuilderEntryPointType is not null ?
-                    StartNew(appBuilderEntryPointType) :
-                    StartNew(typeof(Application));
+                    StartNew(appBuilderEntryPointType, isolationLevel) :
+                    StartNew(typeof(Application), isolationLevel);
 
                 s_session.Add(assembly, session);
             }

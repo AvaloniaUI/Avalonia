@@ -305,6 +305,26 @@ public partial class BindingExpressionTests
             BindingErrorType.DataValidationError);
     }
 
+    [Fact]
+    public void Setting_Valid_Value_Should_Clear_Binding_Error()
+    {
+        var data = new ViewModel { DoubleValue = 5.6 };
+        var target = CreateTargetWithSource(
+            data,
+            o => o.DoubleValue,
+            enableDataValidation: true,
+            mode: BindingMode.TwoWay,
+            targetProperty: TargetClass.StringProperty);
+
+        target.String = "5.6";
+        target.String = "5.6a";
+        target.String = "5.6";
+
+        AssertNoError(target, TargetClass.StringProperty);
+
+        GC.KeepAlive(data);
+    }
+
     public class ExceptionViewModel : NotifyingBase
     {
         private int _mustBePositive;

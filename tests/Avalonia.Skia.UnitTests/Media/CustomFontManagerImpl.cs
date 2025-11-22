@@ -10,7 +10,7 @@ using System.IO;
 
 namespace Avalonia.Skia.UnitTests.Media
 {
-    public class CustomFontManagerImpl : IFontManagerImpl
+    public class CustomFontManagerImpl : IFontManagerImpl, IDisposable
     {
         private readonly string _defaultFamilyName;
         private readonly IFontCollection _customFonts;
@@ -18,9 +18,9 @@ namespace Avalonia.Skia.UnitTests.Media
 
         public CustomFontManagerImpl()
         {
-            _defaultFamilyName = "Noto Mono";
-
             var source = new Uri("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests");
+
+            _defaultFamilyName = source.AbsoluteUri + "#Noto Mono";
 
             _customFonts = new EmbeddedFontCollection(source, source);
         }
@@ -93,6 +93,11 @@ namespace Avalonia.Skia.UnitTests.Media
             glyphTypeface = new GlyphTypefaceImpl(skTypeface, fontSimulations);
 
             return true;
+        }
+
+        public void Dispose()
+        {
+            _customFonts.Dispose();
         }
     }
 }

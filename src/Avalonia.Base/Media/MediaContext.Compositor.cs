@@ -31,7 +31,7 @@ partial class MediaContext
         _pendingCompositionBatches[compositor] = commit;
         commit.Processed.ContinueWith(_ =>
             _dispatcher.Post(() => CompositionBatchFinished(compositor, commit), DispatcherPriority.Send),
-            TaskContinuationOptions.ExecuteSynchronously);
+            CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
         return commit;
     }
     
@@ -49,24 +49,12 @@ partial class MediaContext
         {
             _animationsAreWaitingForComposition = false;
 
-            // Check if we have uncommited changes
-            if (_requestedCommits.Count != 0)
-            {
-                if (!CommitCompositorsWithThrottling())
-                    ScheduleRenderForAnimationsIfNeeded();
-
-            }
-            // Check if there are active animations and schedule the next render
-            else
-                ScheduleRenderForAnimationsIfNeeded();
+            // Check if we have requested commits or active animations and schedule a new render pass 
+            if (_requestedCommits.Count != 0 || _clock.HasSubscriptions)
+                ScheduleRender(false);
         }
     }
 
-    void ScheduleRenderForAnimationsIfNeeded()
-    {
-        if (_clock.HasSubscriptions) 
-            ScheduleRender(false);
-    }
 
     /// <summary>
     /// Triggers a composition commit if any batches are waiting to be sent,

@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using Avalonia.Platform;
 
@@ -15,7 +16,7 @@ namespace Avalonia.Media.Fonts
         public SystemFontCollection(FontManager fontManager)
         {
             _fontManager = fontManager;
-            _familyNames = fontManager.PlatformImpl.GetInstalledFontFamilyNames().Where(x=> !string.IsNullOrEmpty(x)).ToList();
+            _familyNames = fontManager.PlatformImpl.GetInstalledFontFamilyNames().Where(x => !string.IsNullOrEmpty(x)).ToList();
         }
 
         public override Uri Key => FontManager.SystemFontsKey;
@@ -144,21 +145,6 @@ namespace Avalonia.Media.Fonts
             }
 
             return;
-
-            void AddGlyphTypefaceByFamilyName(string familyName, IGlyphTypeface glyphTypeface)
-            {
-                var typefaces = _glyphTypefaceCache.GetOrAdd(familyName,
-                    x =>
-                    {
-                        _familyNames.Insert(0, familyName);
-
-                        return new ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>();
-                    });
-
-                typefaces.TryAdd(
-                    new FontCollectionKey(glyphTypeface.Style, glyphTypeface.Weight, glyphTypeface.Stretch),
-                    glyphTypeface);
-            }
         }
 
         public bool TryGetFamilyTypefaces(string familyName, [NotNullWhen(true)] out IReadOnlyList<Typeface>? familyTypefaces)
@@ -171,6 +157,50 @@ namespace Avalonia.Media.Fonts
             }
 
             return false;
+        }
+
+        public override bool TryMatchCharacter(int codepoint, FontStyle style, FontWeight weight, FontStretch stretch, string? familyName,
+            CultureInfo? culture, out Typeface match)
+        {
+            //TODO12: Think about removing familyName parameter
+            match = default;
+
+            if (_fontManager.PlatformImpl is IFontManagerImpl2 fontManagerImpl2)
+            {
+                if (fontManagerImpl2.TryMatchCharacter(codepoint, style, weight, stretch, culture, out var glyphTypeface))
+                {
+                    AddGlyphTypefaceByFamilyName(glyphTypeface.FamilyName, glyphTypeface);
+
+                    match = new Typeface(glyphTypeface.FamilyName, glyphTypeface.Style, glyphTypeface.Weight,
+                        glyphTypeface.Stretch);
+
+                    return true;
+                }
+
+                return false;
+            }
+            else
+            {
+                return _fontManager.PlatformImpl.TryMatchCharacter(codepoint, style, weight, stretch, culture, out match);
+            }
+        }
+
+        private void AddGlyphTypefaceByFamilyName(string familyName, IGlyphTypeface glyphTypeface)
+        {
+            // Add family name to the collection if not exists
+            if (!_familyNames.Contains(familyName))
+            {
+                _familyNames.Add(familyName);
+            }
+
+            // Get or create the typefaces dictionary for the family name
+            if (!_glyphTypefaceCache.TryGetValue(familyName, out var typefaces))
+            {
+                _glyphTypefaceCache[familyName] = typefaces = new ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>();
+            }
+
+            // Add the glyph typeface to the cache
+            typefaces.TryAdd(new FontCollectionKey(glyphTypeface.Style, glyphTypeface.Weight, glyphTypeface.Stretch), glyphTypeface);
         }
     }
 }

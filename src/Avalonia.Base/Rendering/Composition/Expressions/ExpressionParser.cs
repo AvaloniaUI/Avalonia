@@ -145,7 +145,7 @@ namespace Avalonia.Rendering.Composition.Expressions
             };
 
             private static readonly ExpressionType[][] OperatorPrecedenceGroupsReversed =
-                OperatorPrecedenceGroups.Reverse().ToArray();
+                OperatorPrecedenceGroups.AsEnumerable().Reverse().ToArray();
 
             // a*b+c [a,b,c] [*,+], call with (0, 2)
             // ToExpression(a*b) + ToExpression(c)

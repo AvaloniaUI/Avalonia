@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Numerics;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Collections;
 using Avalonia.Collections.Pooled;
@@ -187,7 +188,7 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
             {
                 _queuedSceneInvalidation = false;
                 SceneInvalidated?.Invoke(this, new SceneInvalidatedEventArgs(_root, new Rect(_root.ClientSize)));
-            }, DispatcherPriority.Input), TaskContinuationOptions.ExecuteSynchronously);
+            }, DispatcherPriority.Input), CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
         }
     }
 

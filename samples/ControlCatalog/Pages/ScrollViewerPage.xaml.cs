@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
-using Avalonia.Markup.Xaml;
 using MiniMvvm;
 
 namespace ControlCatalog.Pages
@@ -93,18 +92,13 @@ namespace ControlCatalog.Pages
         public List<SnapPointsAlignment> AvailableSnapPointsAlignment { get; }
     }
 
-    public class ScrollViewerPage : UserControl
+    public partial class ScrollViewerPage : UserControl
     {
         public ScrollViewerPage()
         {
             InitializeComponent();
 
             DataContext = new ScrollViewerPageViewModel();
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
         }
     }
 }

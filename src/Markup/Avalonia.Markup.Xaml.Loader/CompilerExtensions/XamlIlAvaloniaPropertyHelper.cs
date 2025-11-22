@@ -64,7 +64,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
         {
             XamlAstNamePropertyReference forgedReference;
 
-            var parsedPropertyName = PropertyParser.Parse(new CharacterReader(propertyName.AsSpan()));
+            var parsedPropertyName = PropertyParser.Parse(propertyName);
             if(parsedPropertyName.owner == null)
                 forgedReference = new XamlAstNamePropertyReference(lineInfo, selectorTypeReference,
                     propertyName, selectorTypeReference);
@@ -224,6 +224,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             }
 
             Setters.Insert(0, new UnsetValueSetter(types, original.DeclaringType, field));
+            TypeConverters = original.TypeConverters;
         }
 
         abstract class AvaloniaPropertyCustomSetter : IXamlILOptimizedEmitablePropertySetter, IEquatable<AvaloniaPropertyCustomSetter>

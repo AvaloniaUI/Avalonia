@@ -1259,7 +1259,7 @@ namespace Avalonia.Controls
             {
                 try
                 {
-                    text = await clipboard.GetTextAsync();
+                    text = await clipboard.TryGetTextAsync();
                 }
                 catch (TimeoutException)
                 {
@@ -1791,8 +1791,6 @@ namespace Avalonia.Controls
 
             if (e.Pointer.Type != PointerType.Mouse && !_isDoubleTapped)
             {
-                _imClient.ShowInputPanel();
-
                 var text = Text;
                 var clickInfo = e.GetCurrentPoint(this);
                 if (text != null && !(clickInfo.Pointer?.Captured is Border))
@@ -1869,6 +1867,8 @@ namespace Avalonia.Controls
                     SetCurrentValue(SelectionStartProperty, caretIndex);
                     SetCurrentValue(SelectionEndProperty, caretIndex);
                 }
+
+                _presenter.TextSelectionHandleCanvas?.Show();
 
                 if (SelectionStart != SelectionEnd)
                 {

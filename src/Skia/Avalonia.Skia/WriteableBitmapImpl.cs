@@ -73,7 +73,8 @@ namespace Avalonia.Skia
 
                 if (bmp.Width != desired.Width || bmp.Height != desired.Height)
                 {
-                    var scaledBmp = bmp.Resize(desired, interpolationMode.ToSKFilterQuality());
+                    var isUpscaling = desired.Width > bmp.Width || desired.Height > bmp.Height;
+                    var scaledBmp = bmp.Resize(desired, interpolationMode.ToSKSamplingOptions(isUpscaling));
                     bmp.Dispose();
                     bmp = scaledBmp;
                 }
@@ -118,7 +119,7 @@ namespace Avalonia.Skia
         public int Version { get; private set; } = 1;
 
         /// <inheritdoc />
-        public void Draw(DrawingContextImpl context, SKRect sourceRect, SKRect destRect, SKPaint paint)
+        public void Draw(DrawingContextImpl context, SKRect sourceRect, SKRect destRect, SKSamplingOptions samplingOptions, SKPaint paint)
         {
             lock (_lock)
             {
@@ -132,7 +133,7 @@ namespace Avalonia.Skia
                     _image = GetSnapshot();
                     _imageValid = true;
                 }
-                context.Canvas.DrawImage(_image, sourceRect, destRect, paint);
+                context.Canvas.DrawImage(_image, sourceRect, destRect, samplingOptions, paint);
             }
         }
 

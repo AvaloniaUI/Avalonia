@@ -105,6 +105,7 @@ namespace Avalonia.Direct2D1.RenderTests.CrossUI
             Height = src.Bounds.Height;
             RenderTransform = new MatrixTransform(src.RenderTransform);
             RenderTransformOrigin = new RelativePoint(default, RelativeUnit.Relative);
+            RenderOptions = RenderOptions with { BitmapInterpolationMode = src.BitmapInterpolationMode };
             foreach (var ch in src.Children)
             {
                 var c = _children[ch];

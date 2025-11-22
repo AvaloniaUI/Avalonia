@@ -2,11 +2,7 @@ using System;
 
 namespace Avalonia.Utilities
 {
-    // TODO12: This should not be public
-#if !BUILDTASK
-    public
-#endif
-    ref struct CharacterReader
+    internal ref struct CharacterReader
     {
         private ReadOnlySpan<char> _s;
 

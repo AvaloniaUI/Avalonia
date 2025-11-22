@@ -167,7 +167,8 @@ namespace Avalonia.Vulkan
                 ReadOnlySpan<PipelineStageFlags> waitDstStageMask = default,
                 ReadOnlySpan<Semaphore> signalSemaphores = default,
                 Fence? fence = null,
-                KeyedMutexSubmitInfo? keyedMutex = null)
+                KeyedMutexSubmitInfo? keyedMutex = null,
+                IntPtr pNext = default)
             {
                 EndRecording();
 
@@ -189,7 +190,8 @@ namespace Avalonia.Vulkan
                         PReleaseKeys = &releaseKey,
                         PAcquireSyncs = &devMem,
                         PReleaseSyncs = &devMem,
-                        PAcquireTimeouts = &timeout
+                        PAcquireTimeouts = &timeout,
+                        PNext = (void*)pNext
                     };
                 
                 fixed (Semaphore* pWaitSemaphores = waitSemaphores, pSignalSemaphores = signalSemaphores)
@@ -199,7 +201,7 @@ namespace Avalonia.Vulkan
                         var commandBuffer = InternalHandle;
                         var submitInfo = new SubmitInfo
                         {
-                            PNext = keyedMutex != null ? &mutex : null,
+                            PNext = keyedMutex != null ? &mutex : (void*)pNext,
                             SType = StructureType.SubmitInfo,
                             WaitSemaphoreCount = waitSemaphores != null ? (uint)waitSemaphores.Length : 0,
                             PWaitSemaphores = pWaitSemaphores,

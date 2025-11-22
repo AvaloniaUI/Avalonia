@@ -8,6 +8,15 @@ namespace Avalonia.Platform.Storage;
 public class FilePickerOpenOptions : PickerOptions
 {
     /// <summary>
+    /// Gets or sets the file type that should be preselected when the dialog is opened.
+    /// </summary>
+    /// <remarks>
+    /// This value should reference one of the items in <see cref="FileTypeChoices"/>.
+    /// If not set, the first file type in <see cref="FileTypeChoices"/> may be selected by default.
+    /// </remarks>
+    public FilePickerFileType? SuggestedFileType { get; set; }
+
+    /// <summary>
     /// Gets or sets an option indicating whether open picker allows users to select multiple files.
     /// </summary>
     public bool AllowMultiple { get; set; }

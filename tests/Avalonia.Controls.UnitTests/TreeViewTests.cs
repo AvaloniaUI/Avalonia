@@ -1836,7 +1836,6 @@ namespace Avalonia.Controls.UnitTests
         {
             return UnitTestApplication.Start(
                 TestServices.MockThreadingInterface.With(
-                    focusManager: new FocusManager(),
                     fontManagerImpl: new HeadlessFontManagerStub(),
                     keyboardDevice: () => new KeyboardDevice(),
                     keyboardNavigation: () => new KeyboardNavigationHandler(),

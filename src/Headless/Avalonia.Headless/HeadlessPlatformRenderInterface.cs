@@ -23,8 +23,6 @@ namespace Avalonia.Headless
                 .Bind<ITextShaperImpl>().ToConstant(new HeadlessTextShaperStub());
         }
 
-        public IEnumerable<string> InstalledFontNames { get; } = new[] { "Tahoma" };
-
         public IPlatformRenderInterfaceContext CreateBackendContext(IPlatformGraphicsContext? graphicsContext) => this;
 
         public bool SupportsIndividualRoundRects => false;
@@ -452,8 +450,6 @@ namespace Avalonia.Headless
 
             public Matrix Transform { get; set; }
 
-            public RenderOptions RenderOptions { get; set; }
-
             public void Clear(Color color)
             {
 
@@ -517,16 +513,6 @@ namespace Avalonia.Headless
 
             }
 
-            public void PushBitmapBlendMode(BitmapBlendingMode blendingMode)
-            {
-                
-            }
-
-            public void PopBitmapBlendMode()
-            {
-                
-            }
-            
             public object? GetFeature(Type t)
             {
                 return null;
@@ -537,10 +523,6 @@ namespace Avalonia.Headless
             }
 
             public void DrawGeometry(IBrush? brush, IPen? pen, IGeometryImpl geometry)
-            {
-            }
-
-            public void DrawRectangle(IPen pen, Rect rect, float cornerRadius = 0)
             {
             }
 

@@ -41,7 +41,6 @@
                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                 Content="{TemplateBinding Header}"
                 ContentTemplate="{TemplateBinding HeaderTemplate}"
-                RecognizesAccessKey="True"
                 />
             <Border Name="PART_SelectedPipe"
                     Background="{DynamicResource TabItemHeaderSelectedPipeFill}"
@@ -51,6 +50,10 @@
         </Border>
       </ControlTemplate>
     </Setter>
+
+    <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="RecognizesAccessKey" Value="True" />
+    </Style>
 
     <!--  Selected state  -->
     <!--  We don't use selector to PART_LayoutRoot, so developer can override selected item background with TabStripItem.Background  -->

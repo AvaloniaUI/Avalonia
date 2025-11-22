@@ -20,7 +20,7 @@ namespace Avalonia.Reactive
         private List<IObserver<T>>? _observers = new List<IObserver<T>>();
 
         public bool HasObservers => _observers?.Count > 0;
-        
+
         public IDisposable Subscribe(IObserver<T> observer)
         {
             _ = observer ?? throw new ArgumentNullException(nameof(observer));
@@ -168,6 +168,8 @@ namespace Avalonia.Reactive
                     for(int i = 0; i < count; i++)
                     {
                         observers[i].OnNext(value);
+                        // Avoid memory leak by clearing the reference.
+                        observers[i] = null!;
                     }
 
                     ArrayPool<IObserver<T>>.Shared.Return(observers);

@@ -1,30 +1,33 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Media;
-using Avalonia.Platform;
 using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using SkiaSharp;
 
 namespace Avalonia.Skia
 {
     public static class SkiaSharpExtensions
     {
-        public static SKFilterQuality ToSKFilterQuality(this BitmapInterpolationMode interpolationMode)
+        public static SKSamplingOptions ToSKSamplingOptions(this BitmapInterpolationMode interpolationMode)
+            => ToSKSamplingOptions(interpolationMode, true);
+
+        internal static SKSamplingOptions ToSKSamplingOptions(this BitmapInterpolationMode interpolationMode, bool isUpscaling)
         {
-            switch (interpolationMode)
+            return interpolationMode switch
             {
-                case BitmapInterpolationMode.Unspecified:
-                case BitmapInterpolationMode.LowQuality:
-                    return SKFilterQuality.Low;
-                case BitmapInterpolationMode.MediumQuality:
-                    return SKFilterQuality.Medium;
-                case BitmapInterpolationMode.HighQuality:
-                    return SKFilterQuality.High;
-                case BitmapInterpolationMode.None:
-                    return SKFilterQuality.None;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(interpolationMode), interpolationMode, null);
-            }
+                BitmapInterpolationMode.None =>
+                    new SKSamplingOptions(SKFilterMode.Nearest, SKMipmapMode.None),
+                BitmapInterpolationMode.Unspecified or BitmapInterpolationMode.LowQuality =>
+                    new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.None),
+                BitmapInterpolationMode.MediumQuality =>
+                    new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear),
+                BitmapInterpolationMode.HighQuality =>
+                    isUpscaling ?
+                        new SKSamplingOptions(SKCubicResampler.Mitchell) :
+                        new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear),
+                _ => throw new ArgumentOutOfRangeException(nameof(interpolationMode), interpolationMode, null)
+            };
         }
 
         public static SKBlendMode ToSKBlendMode(this BitmapBlendingMode blendingMode)
@@ -67,7 +70,7 @@ namespace Avalonia.Skia
         {
             return new SKPoint((float)p.X, (float)p.Y);
         }
-        
+
         public static SKPoint ToSKPoint(this Vector p)
         {
             return new SKPoint((float)p.X, (float)p.Y);
@@ -77,17 +80,17 @@ namespace Avalonia.Skia
         {
             return new SKRect((float)r.X, (float)r.Y, (float)r.Right, (float)r.Bottom);
         }
-        
+
         internal static SKRect ToSKRect(this LtrbRect r)
         {
             return new SKRect((float)r.Left, (float)r.Right, (float)r.Right, (float)r.Bottom);
         }
-        
+
         public static SKRectI ToSKRectI(this PixelRect r)
         {
             return new SKRectI(r.X, r.Y, r.Right, r.Bottom);
         }
-        
+
         internal static SKRectI ToSKRectI(this LtrbPixelRect r)
         {
             return new SKRectI(r.Left, r.Top, r.Right, r.Bottom);
@@ -103,7 +106,7 @@ namespace Avalonia.Skia
                    {
                         r.RadiiTopLeft.ToSKPoint(), r.RadiiTopRight.ToSKPoint(),
                         r.RadiiBottomRight.ToSKPoint(), r.RadiiBottomLeft.ToSKPoint(),
-                   });            
+                   });
 
             return result;
         }
@@ -112,17 +115,17 @@ namespace Avalonia.Skia
         {
             return new Rect(r.Left, r.Top, r.Right - r.Left, r.Bottom - r.Top);
         }
-        
+
         internal static LtrbRect ToAvaloniaLtrbRect(this SKRect r)
         {
             return new LtrbRect(r.Left, r.Top, r.Right, r.Bottom);
         }
-        
+
         public static PixelRect ToAvaloniaPixelRect(this SKRectI r)
         {
             return new PixelRect(r.Left, r.Top, r.Right - r.Left, r.Bottom - r.Top);
         }
-        
+
         internal static LtrbPixelRect ToAvaloniaLtrbPixelRect(this SKRectI r)
         {
             return new LtrbPixelRect(r.Left, r.Top, r.Right, r.Bottom);
@@ -146,10 +149,40 @@ namespace Avalonia.Skia
             return sm;
         }
 
+        public static SKMatrix44 ToSKMatrix44(this Matrix m)
+        {
+            var sm = new SKMatrix44
+            {
+                M00 = (float)m.M11,
+                M01 = (float)m.M12,
+                M02 = 0,
+                M03 = (float)m.M13,
+                M10 = (float)m.M21,
+                M11 = (float)m.M22,
+                M12 = 0,
+                M13 = (float)m.M23,
+                M20 = 0,
+                M21 = 0,
+                M22 = 1,
+                M23 = 0,
+                M30 = (float)m.M31,
+                M31 = (float)m.M32,
+                M32 = 0,
+                M33 = (float)m.M33
+            };
+
+            return sm;
+        }
+
         internal static Matrix ToAvaloniaMatrix(this SKMatrix m) => new(
             m.ScaleX, m.SkewY, m.Persp0,
             m.SkewX, m.ScaleY, m.Persp1,
             m.TransX, m.TransY, m.Persp2);
+
+        internal static Matrix ToAvaloniaMatrix(this SKMatrix44 m) => new(
+            m.M00, m.M01, m.M03,
+            m.M10, m.M11, m.M13,
+            m.M30, m.M31, m.M33);
 
         public static SKColor ToSKColor(this Color c)
         {
@@ -220,9 +253,12 @@ namespace Avalonia.Skia
             switch (m)
             {
                 default:
-                case GradientSpreadMethod.Pad: return SKShaderTileMode.Clamp;
-                case GradientSpreadMethod.Reflect: return SKShaderTileMode.Mirror;
-                case GradientSpreadMethod.Repeat: return SKShaderTileMode.Repeat;
+                case GradientSpreadMethod.Pad:
+                    return SKShaderTileMode.Clamp;
+                case GradientSpreadMethod.Reflect:
+                    return SKShaderTileMode.Mirror;
+                case GradientSpreadMethod.Repeat:
+                    return SKShaderTileMode.Repeat;
             }
         }
 
@@ -231,9 +267,12 @@ namespace Avalonia.Skia
             switch (a)
             {
                 default:
-                case TextAlignment.Left: return SKTextAlign.Left;
-                case TextAlignment.Center: return SKTextAlign.Center;
-                case TextAlignment.Right: return SKTextAlign.Right;
+                case TextAlignment.Left:
+                    return SKTextAlign.Left;
+                case TextAlignment.Center:
+                    return SKTextAlign.Center;
+                case TextAlignment.Right:
+                    return SKTextAlign.Right;
             }
         }
 
@@ -262,9 +301,12 @@ namespace Avalonia.Skia
             switch (a)
             {
                 default:
-                case SKTextAlign.Left: return TextAlignment.Left;
-                case SKTextAlign.Center: return TextAlignment.Center;
-                case SKTextAlign.Right: return TextAlignment.Right;
+                case SKTextAlign.Left:
+                    return TextAlignment.Left;
+                case SKTextAlign.Center:
+                    return TextAlignment.Center;
+                case SKTextAlign.Right:
+                    return TextAlignment.Right;
             }
         }
 
@@ -275,7 +317,18 @@ namespace Avalonia.Skia
                 SKFontStyleSlant.Upright => FontStyle.Normal,
                 SKFontStyleSlant.Italic => FontStyle.Italic,
                 SKFontStyleSlant.Oblique => FontStyle.Oblique,
-                _ => throw new ArgumentOutOfRangeException(nameof (slant), slant, null)
+                _ => throw new ArgumentOutOfRangeException(nameof(slant), slant, null)
+            };
+        }
+
+        public static SKFontStyleSlant ToSkia(this FontStyle style)
+        {
+            return style switch
+            {
+                FontStyle.Normal => SKFontStyleSlant.Upright,
+                FontStyle.Italic => SKFontStyleSlant.Italic,
+                FontStyle.Oblique => SKFontStyleSlant.Oblique,
+                _ => throw new ArgumentOutOfRangeException(nameof(style), style, null)
             };
         }
 

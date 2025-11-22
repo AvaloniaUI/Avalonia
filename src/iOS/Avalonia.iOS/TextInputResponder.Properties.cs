@@ -81,7 +81,7 @@ partial class AvaloniaView
         [Export("smartInsertDeleteType")]
         public UITextSmartInsertDeleteType SmartInsertDeleteType { get; set; } = UITextSmartInsertDeleteType.Default;
 
-        [Export("passwordRules")] public UITextInputPasswordRules PasswordRules { get; set; } = null!;
+        [Export("passwordRules")] public UITextInputPasswordRules? PasswordRules { get; set; } = null!;
 
         public NSObject? WeakInputDelegate
         {

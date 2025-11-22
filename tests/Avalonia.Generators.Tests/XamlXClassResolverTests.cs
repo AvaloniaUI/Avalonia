@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Generators.Common;
 using Avalonia.Generators.Compiler;
@@ -23,17 +24,9 @@ public class XamlXClassResolverTests
     public async Task Should_Resolve_Base_Class_From_Xaml_File(string nameSpace, string className, string markup)
     {
         var xaml = await View.Load(markup);
-        var compilation = View
-            .CreateAvaloniaCompilation()
-            .WithCustomTextBox()
-            .WithBaseView();
+        var resolver = new XamlXViewResolver(MiniCompiler.CreateNoop());
 
-        var types = new RoslynTypeSystem(compilation);
-        var resolver = new XamlXViewResolver(
-            types,
-            MiniCompiler.CreateDefault(types, MiniCompiler.AvaloniaXmlnsDefinitionAttribute));
-
-        var resolvedClass = resolver.ResolveView(xaml);
+        var resolvedClass = resolver.ResolveView(xaml, CancellationToken.None);
         Assert.NotNull(resolvedClass);
         Assert.Equal(className, resolvedClass.ClassName);
         Assert.Equal(nameSpace, resolvedClass.Namespace);

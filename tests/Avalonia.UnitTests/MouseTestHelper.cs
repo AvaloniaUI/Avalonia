@@ -104,7 +104,8 @@ namespace Avalonia.UnitTests
             Point position = default, KeyModifiers modifiers = default)
         {
             Down(target, source, button, position, modifiers);
-            Up(target, source, button, position, modifiers);
+            var captured = (_pointer.Captured as Interactive) ?? source;
+            Up(captured, captured, button, position, modifiers);
         }
 
         public void DoubleClick(Interactive target, MouseButton button = MouseButton.Left, Point position = default,
@@ -115,7 +116,8 @@ namespace Avalonia.UnitTests
             Point position = default, KeyModifiers modifiers = default)
         {
             Down(target, source, button, position, modifiers, clickCount: 1);
-            Up(target, source, button, position, modifiers);
+            var captured = (_pointer.Captured as Interactive) ?? source;
+            Up(captured, captured, button, position, modifiers);
             Down(target, source, button, position, modifiers, clickCount: 2);
         }
 

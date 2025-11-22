@@ -15,6 +15,7 @@ namespace Avalonia.UnitTests
     public class TestRoot : Decorator, IFocusScope, ILayoutRoot, IInputRoot, IRenderRoot, IStyleHost, ILogicalRoot
     {
         private readonly NameScope _nameScope = new NameScope();
+        private FocusManager? _focusManager;
 
         public TestRoot()
         {
@@ -63,7 +64,7 @@ namespace Avalonia.UnitTests
         IHitTester IRenderRoot.HitTester => HitTester;
 
         public IKeyboardNavigationHandler KeyboardNavigationHandler => null;
-        public IFocusManager FocusManager => AvaloniaLocator.Current.GetService<IFocusManager>();
+        public IFocusManager FocusManager => _focusManager ??= new FocusManager(this);
         public IPlatformSettings PlatformSettings => AvaloniaLocator.Current.GetService<IPlatformSettings>();
 
         public IInputElement PointerOverElement { get; set; }
