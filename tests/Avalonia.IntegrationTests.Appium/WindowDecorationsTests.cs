@@ -180,7 +180,9 @@ public class WindowDecorationsTests : TestBase, IDisposable
         // System chrome is always 0px height, when client area is extended.
         if (isExtended)
         {
-            Assert.True(systemChrome.TitleBarHeight is -1 or 0);
+            Assert.True(systemChrome.TitleBarHeight is -1 or 0,
+                $"systemChrome.TitleBarHeight should be -1 or 0 but was {systemChrome.TitleBarHeight}"
+            );
         }
         // Can't get titlebar height on macOS.
         else if (!OperatingSystem.IsMacOS())
