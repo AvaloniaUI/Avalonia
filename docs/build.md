@@ -71,6 +71,9 @@ And run tests:
 Or if you need to create nuget packages as well (it will compile and run tests automatically):
 `nuke --target Package --configuration Release`
 
+Alternatively, you can run nuke build direclty without installing Nuke global tool:
+`dotnet run --project nukebuild/_build.csproj -- --configuration Debug`
+
 # Linux/macOS
 
 It's *not* possible to build the *whole* project on Linux/macOS. You can only build the subset targeting .NET Standard and .NET Core (which is, however, sufficient to get UI working on Linux/macOS). If you want to something that involves changing platform-specific APIs you'll need a Windows machine.
