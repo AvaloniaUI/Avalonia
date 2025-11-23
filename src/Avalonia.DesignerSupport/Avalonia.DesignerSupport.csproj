@@ -14,9 +14,13 @@
   <ItemGroup>
     <EmbeddedResource Include="Remote\HtmlTransport\webapp\build\**\*.gz" />
     <EmbeddedResource Condition="'$(Configuration)' == 'Debug'" Remove="Remote\HtmlTransport\webapp\build\**\*.map.gz" />
+    <Compile Include="..\Avalonia.Diagnostics\Diagnostics\SourceNavigator\RiderFileSelector.cs" Link="DesignerSelection\RiderFileSelector.cs" />
+    <Compile Include="..\Avalonia.Diagnostics\Diagnostics\SourceNavigator\VisualStudioFileSelector.cs" Link="DesignerSelection\VisualStudioFileSelector.cs" />
+    <Compile Include="..\Avalonia.Diagnostics\Diagnostics\SourceNavigator\VsCodeFileSelection.cs" Link="DesignerSelection\VsCodeFileSelection.cs" />
     <ProjectReference Include="..\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
     <ProjectReference Include="..\Markup\Avalonia.Markup\Avalonia.Markup.csproj" />
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj" />
+    <PackageReference Include="envdte" Version="17.14.40260" />
   </ItemGroup>
 </Project>
