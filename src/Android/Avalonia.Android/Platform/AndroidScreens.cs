@@ -32,11 +32,18 @@ internal class AndroidScreen(Display display) : PlatformScreen(new PlatformHandl
             var metrics = metricsCalc.ComputeMaximumWindowMetrics(displayContext);
             Bounds = new(metrics.Bounds.Left, metrics.Bounds.Top, metrics.Bounds.Width(), metrics.Bounds.Height());
 
-            var inset = metrics.WindowInsets.GetInsets(WindowInsetsCompat.Type.SystemBars());
-            WorkingArea = new(Bounds.X + inset.Left,
-                Bounds.Y + inset.Top,
-                Bounds.Width - (inset.Left + inset.Right),
-                Bounds.Height - (inset.Top + inset.Bottom));
+            var windowInsets = new WindowInsetsCompat.Builder().Build();
+            if (windowInsets?.GetInsets(WindowInsetsCompat.Type.SystemBars()) is { } inset)
+            {
+                WorkingArea = new(Bounds.X + inset.Left,
+                    Bounds.Y + inset.Top,
+                    Bounds.Width - (inset.Left + inset.Right),
+                    Bounds.Height - (inset.Top + inset.Bottom));
+            }
+            else
+            {
+                WorkingArea = Bounds;
+            }
 
             if (context.Resources?.Configuration is { } config)
             {

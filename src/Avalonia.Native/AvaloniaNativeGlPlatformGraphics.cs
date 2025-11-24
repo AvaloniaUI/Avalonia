@@ -236,7 +236,9 @@ namespace Avalonia.Native
             if (context.Context.GetIOKitRegistryId(&registryId) != 0)
             {
                 // We are reversing bytes to match MoltenVK (LUID is a Vulkan term after all)
-                DeviceLuid = BitConverter.GetBytes(registryId).Reverse().ToArray();
+                var bytes = BitConverter.GetBytes(registryId);
+                bytes.Reverse();
+                DeviceLuid = bytes;
             }
         }
 

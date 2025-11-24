@@ -1,70 +1,76 @@
-using System.Reactive;
-using ReactiveUI;
-using ReactiveUI.Validation.Extensions;
-using ReactiveUI.Validation.Helpers;
+using System;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace Generators.Sandbox.ViewModels;
 
-public class SignUpViewModel : ReactiveValidationObject
+public class SignUpViewModel : ObservableValidator
 {
-    private string _userName = string.Empty;
-    private string _password = string.Empty;
-    private string _confirmPassword = string.Empty;
-
     public SignUpViewModel()
     {
-        this.ValidationRule(
-            vm => vm.UserName,
-            name => !string.IsNullOrWhiteSpace(name),
-            "UserName is required.");
+        UserName = "Joseph!";
+        Password = "1234";
+        ConfirmPassword = "1234";
+        SignUp = new RelayCommand(() => { }, () => !HasErrors);
 
-        this.ValidationRule(
-            vm => vm.Password,
-            password => !string.IsNullOrWhiteSpace(password),
-            "Password is required.");
-
-        this.ValidationRule(
-            vm => vm.Password,
-            password => password?.Length > 2,
-            password => $"Password should be longer, current length: {password.Length}");
-
-        this.ValidationRule(
-            vm => vm.ConfirmPassword,
-            confirmation => !string.IsNullOrWhiteSpace(confirmation),
-            "Confirm password field is required.");
-
-        var passwordsObservable =
-            this.WhenAnyValue(
-                x => x.Password,
-                x => x.ConfirmPassword,
-                (password, confirmation) =>
-                    password == confirmation);
-
-        this.ValidationRule(
-            vm => vm.ConfirmPassword,
-            passwordsObservable,
-            "Passwords must match.");
-
-        SignUp = ReactiveCommand.Create(() => {}, this.IsValid());
+        ErrorsChanged += OnErrorsChanged;
     }
 
-    public ReactiveCommand<Unit, Unit> SignUp { get; }
+    public RelayCommand SignUp { get; }
 
-    public string UserName
-    {
-        get => _userName;
-        set => this.RaiseAndSetIfChanged(ref _userName, value);
+    [Required]
+    public string? UserName {
+        get;
+        set => SetProperty(ref field, value, validate: true);
     }
 
-    public string Password
+    public string? UserNameValidation
+        => GetValidationMessage(nameof(UserName));
+
+    [Required]
+    [MinLength(2)]
+    public string? Password
     {
-        get => _password;
-        set => this.RaiseAndSetIfChanged(ref _password, value);
+        get;
+        set
+        {
+            if (SetProperty(ref field, value, validate: true))
+                ValidateProperty(ConfirmPassword, nameof(ConfirmPassword));
+        }
     }
 
-    public string ConfirmPassword
+    public string? PasswordValidation
+        => GetValidationMessage(nameof(Password));
+
+    [Required]
+    [Compare(nameof(Password))]
+    public string? ConfirmPassword
     {
-        get => _confirmPassword;
-        set => this.RaiseAndSetIfChanged(ref _confirmPassword, value);
+        get;
+        set => SetProperty(ref field, value, validate: true);
+    }
+
+    public string? ConfirmPasswordValidation
+        => GetValidationMessage(nameof(ConfirmPassword));
+
+    public string? CompoundValidation
+        => GetValidationMessage(null);
+
+    private void OnErrorsChanged(object? sender, DataErrorsChangedEventArgs e)
+    {
+        if (e.PropertyName is not null)
+            OnPropertyChanged(e.PropertyName + "Validation");
+
+        OnPropertyChanged(CompoundValidation);
+        SignUp.NotifyCanExecuteChanged();
+    }
+
+    private string? GetValidationMessage(string? propertyName)
+    {
+        var message = string.Join(Environment.NewLine, GetErrors(propertyName).Select(v => v.ErrorMessage));
+        return string.IsNullOrEmpty(message) ? null : message;
     }
 }

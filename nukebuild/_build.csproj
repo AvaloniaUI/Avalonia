@@ -21,8 +21,8 @@
     <PackageReference Include="Mono.Cecil" Version="0.11.5" />
     <PackageReference Include="Microsoft.Build.Framework" Version="17.14.8" PrivateAssets="All" />
     <PackageReference Include="NuGet.Protocol" Version="6.14.0" />
-    <PackageDownload Include="Microsoft.DotNet.ApiCompat.Tool" Version="[10.0.100-preview.7.25380.108]" />
-    <PackageDownload Include="Microsoft.DotNet.ApiDiff.Tool" Version="[10.0.100-rc.1.25414.111]" />
+    <PackageDownload Include="Microsoft.DotNet.ApiCompat.Tool" Version="[10.0.100]" />
+    <PackageDownload Include="Microsoft.DotNet.ApiDiff.Tool" Version="[10.0.100-rtm.25531.102]" />
     <PackageDownload Include="dotnet-ilrepack" Version="[1.0.0]" />
   </ItemGroup>
 

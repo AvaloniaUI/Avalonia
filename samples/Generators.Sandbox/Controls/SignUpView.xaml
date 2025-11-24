@@ -1,45 +1,58 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="using:Generators.Sandbox.Controls"
-        x:Class="Generators.Sandbox.Controls.SignUpView">
-    <StackPanel>
+        xmlns:vm="clr-namespace:Generators.Sandbox.ViewModels"
+        x:Class="Generators.Sandbox.Controls.SignUpView"
+        x:DataType="vm:SignUpViewModel">
+        <UserControl.Styles>
+            <Style Selector="DataValidationErrors">
+                <Setter Property="ErrorTemplate">
+                  <Setter.Value>
+                    <DataTemplate />
+                  </Setter.Value>
+                </Setter>
+            </Style>
+        </UserControl.Styles>
+        <StackPanel>
         <controls:CustomTextBox Margin="0 10 0 0"
                  x:Name="UserNameTextBox"
+                 Text="{Binding UserName}"
                  Watermark="Please, enter user name..."
                  UseFloatingWatermark="True" />
-        <TextBlock x:Name="UserNameValidation" 
+        <TextBlock x:Name="UserNameValidation"
+                   Text="{Binding UserNameValidation}"
                    Foreground="Green"
                    FontSize="12" />
         <TextBox Margin="0 10 0 0"
                  x:Name="PasswordTextBox"
+                 Text="{Binding Password}"
                  Watermark="Please, enter your password..."
                  UseFloatingWatermark="True"
                  PasswordChar="*" />
-        <TextBlock x:Name="PasswordValidation" 
+        <TextBlock x:Name="PasswordValidation"
+                   Text="{Binding PasswordValidation}"
                    Foreground="Red"
                    FontSize="12" />
         <TextBox Margin="0 10 0 0"
                  x:Name="ConfirmPasswordTextBox"
+                 Text="{Binding ConfirmPassword}"
                  Watermark="Please, confirm the password..."
                  UseFloatingWatermark="True"
                  PasswordChar="*" />
         <TextBlock x:Name="ConfirmPasswordValidation"
+                   Text="{Binding ConfirmPasswordValidation}"
                    TextWrapping="Wrap"
                    Foreground="Red"
                    FontSize="12" />
-        <TextBlock>
-            <TextBlock.Inlines>
-                <InlineCollection>
-                    <Run x:Name="SignUpButtonDescription" />
-                </InlineCollection>
-            </TextBlock.Inlines>
-        </TextBlock>
+        <TextBlock Text="Press the button below to sign up." />
         <Button Margin="0 10 0 5"
                 Content="Sign up"
+                Command="{Binding SignUp}"
                 x:Name="SignUpButton" />
         <TextBlock x:Name="CompoundValidation"
                    TextWrapping="Wrap"
                    Foreground="Red"
-                   FontSize="12" />
+                   FontSize="12"
+                   Text="{Binding CompoundValidation}" />
     </StackPanel>
 </UserControl>

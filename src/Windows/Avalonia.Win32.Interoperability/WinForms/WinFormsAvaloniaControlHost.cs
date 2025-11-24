@@ -4,9 +4,12 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using Avalonia.Controls.Embedding;
+using Avalonia.Input;
+using Avalonia.Input.Raw;
+using Avalonia.Reactive;
 using Avalonia.Win32.Interop;
-using WinFormsControl = System.Windows.Forms.Control;
 using AvControl = Avalonia.Controls.Control;
+using WinFormsControl = System.Windows.Forms.Control;
 
 namespace Avalonia.Win32.Interoperability;
 
@@ -18,6 +21,7 @@ public class WinFormsAvaloniaControlHost : WinFormsControl, IMessageFilter
 {
     private AvControl? _content;
     private EmbeddableControlRoot? _root;
+    private IDisposable? _postProcessInputDisposable;
 
     private IntPtr WindowHandle => _root?.TryGetPlatformHandle()?.Handle ?? IntPtr.Zero;
 
@@ -27,11 +31,35 @@ public class WinFormsAvaloniaControlHost : WinFormsControl, IMessageFilter
     public WinFormsAvaloniaControlHost()
     {
         SetStyle(ControlStyles.AllPaintingInWmPaint, true);
+
+        var inputManager = AvaloniaLocator.Current.GetService<IInputManager>();
+
+        if(inputManager != null )
+        {
+            _postProcessInputDisposable = inputManager.PostProcess.Subscribe(new AnonymousObserver<RawInputEventArgs>(PostProcessInput));
+        }
+    }
+
+    private void PostProcessInput(RawInputEventArgs args)
+    {
+        if (_root?.IsKeyboardFocusWithin == false)
+            return;
+
+        if(!args.Handled && args is RawTextInputEventArgs textArgs)
+        {
+            var text = textArgs.Text;
+
+            if (!string.IsNullOrEmpty(text))
+            {
+                args.Handled = this.ProcessDialogChar(text[0]);
+            }
+        }
     }
 
     /// <summary>
     /// Gets or sets the Avalonia control hosted by the <see cref="WinFormsAvaloniaControlHost"/> element.
     /// </summary>
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public AvControl? Content
     {
         get => _content;
@@ -88,6 +116,8 @@ public class WinFormsAvaloniaControlHost : WinFormsControl, IMessageFilter
             _root?.Dispose();
             _root = null;
         }
+        _postProcessInputDisposable?.Dispose();
+        _postProcessInputDisposable = null;
         base.Dispose(disposing);
     }
 
@@ -137,6 +167,11 @@ public class WinFormsAvaloniaControlHost : WinFormsControl, IMessageFilter
             var messageArea = new RectangleF(messageLocation, messageSize);
             e.Graphics.DrawString(message, Font, SystemBrushes.ControlText, messageArea);
         }
+    }
+
+    protected override bool IsInputChar(char charCode)
+    {
+        return true;
     }
 
     public bool PreFilterMessage(ref Message m)
