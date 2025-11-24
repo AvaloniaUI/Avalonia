@@ -1,19 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Avalonia.Input;
-using Avalonia.Input.Raw;
+using Avalonia.Layout;
 using Avalonia.Logging;
-using Avalonia.Media;
 using Avalonia.Remote.Protocol;
 using Avalonia.Remote.Protocol.Designer;
 using Avalonia.Remote.Protocol.Input;
 using Avalonia.Remote.Protocol.Viewport;
 using Avalonia.Threading;
-using Java.Text;
 
 namespace Avalonia.Android.Previewer
 {
@@ -89,6 +82,21 @@ namespace Avalonia.Android.Previewer
                             Exception = new ExceptionDetails(e),
                         });
                     }
+                    break;
+
+                case MeasureViewportMessage measure:
+                    var root = previewPresentation.View?.TopLevelImpl.InputRoot as Layoutable;
+                    root?.Measure(new Size(measure.Width, measure.Height));
+                    var desiredSize = root?.DesiredSize ?? default;
+
+                    _connection?.Send(new MeasureViewportMessage
+                    {
+                        Width = desiredSize.Width,
+                        Height = desiredSize.Height
+                    });
+                    break;
+                case InputEventMessageBase inputEventMessage:
+                    previewPresentation?.SendInput(inputEventMessage);
                     break;
             }
         }, arg2);

@@ -87,10 +87,18 @@ namespace Avalonia.Android.Previewer
             }
             else if (root is TopLevel)
             {
+                // We can't host toplevels
                 topLevel!.Content = null;
             }
             else
             {
+                if(root is Visual visual)
+                {
+                    if (visual.IsSet(AvDesign.DataContextProperty))
+                    {
+                        visual.DataContext = visual.GetValue(AvDesign.DataContextProperty);
+                    }
+                }
                 topLevel!.Content = root;
             }
             return true;

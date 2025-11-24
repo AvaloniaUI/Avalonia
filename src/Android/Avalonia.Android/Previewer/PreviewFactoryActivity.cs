@@ -29,12 +29,12 @@ namespace Avalonia.Android.Previewer
                         display?.StartDisplay();
 
                         if (display != null)
-                        {
-                            var assembly = Assembly.GetAssembly(typeof(TApp));
-                            var presentation = new PreviewPresentation(this, display.Display, port, assembly);
-                            presentation.Show();
-                        }
+                         {
+                             var assembly = Assembly.GetAssembly(typeof(TApp));
+                             var presentation = new PreviewPresentation(this, display.Display, port, assembly);
+                             presentation.Show();
                     }
+                }
 
                     global::Android.Util.Log.Info("AVALONIA_PREVIEW", $"Previewer started at port-{port}");
                 }

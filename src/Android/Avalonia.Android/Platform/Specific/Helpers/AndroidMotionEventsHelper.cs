@@ -20,6 +20,12 @@ namespace Avalonia.Android.Platform.Specific.Helpers
         private readonly TopLevelImpl _view;
         private bool _disposed;
 
+        public MouseDevice MouseDevice => _mouseDevice;
+
+        public TouchDevice TouchDevice => _touchDevice;
+
+        public PenDevice PenDevice => _penDevice;
+
         public AndroidMotionEventsHelper(TopLevelImpl view)
         {
             _touchDevice = new TouchDevice();
