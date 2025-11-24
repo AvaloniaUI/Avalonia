@@ -16,30 +16,19 @@ using System.Threading;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Media;
 using Avalonia.Rendering.Composition;
+using Avalonia.Skia;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.Utilities;
 using SixLabors.ImageSharp.PixelFormats;
 using Image = SixLabors.ImageSharp.Image;
-#if AVALONIA_SKIA
-using Avalonia.Skia;
-#else
-using Avalonia.Direct2D1;
-#endif
 
-#if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests
-#else
-namespace Avalonia.Direct2D1.RenderTests
-#endif
 {
     public class TestBase : IDisposable
     {
-#if AVALONIA_SKIA
         private static string s_fontUri = "resm:Avalonia.Skia.RenderTests.Assets?assembly=Avalonia.Skia.RenderTests#Noto Mono";
-#else
-        private static string s_fontUri = "resm:Avalonia.Direct2D1.RenderTests.Assets?assembly=Avalonia.Direct2D1.RenderTests#Noto Mono";
-#endif
+
         public static FontFamily TestFontFamily = new FontFamily(s_fontUri);
 
         private const double AllowedError = 0.022;
@@ -49,12 +38,7 @@ namespace Avalonia.Direct2D1.RenderTests
             outputPath = outputPath.Replace('\\', Path.DirectorySeparatorChar);
             var testPath = GetTestsDirectory();
             var testFiles = Path.Combine(testPath, "TestFiles");
-#if AVALONIA_SKIA
-            var platform = "Skia";
-#else
-            var platform = "Direct2D1";
-#endif
-            OutputPath = Path.Combine(testFiles, platform, outputPath);
+            OutputPath = Path.Combine(testFiles, "Skia", outputPath);
 
             TestRenderHelper.BeginTest();
         }

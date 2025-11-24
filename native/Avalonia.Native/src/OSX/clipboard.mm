@@ -27,12 +27,11 @@ public:
         
         if (changeCount != [_pasteboard changeCount])
             return COR_E_OBJECTDISPOSED;
-        
-        auto types = [_pasteboard types];
-        *ret = types == nil ? nullptr : CreateAvnStringArray(types);
+
+        *ret = ConvertPasteboardTypes([_pasteboard types]);
         return S_OK;
     }
-    
+
     virtual HRESULT GetItemCount(int64_t changeCount, int* ret) override
     {
         START_COM_ARP_CALL;
@@ -57,13 +56,36 @@ public:
         
         if (changeCount != [_pasteboard changeCount])
             return COR_E_OBJECTDISPOSED;
-        
+
         auto item = [[_pasteboard pasteboardItems] objectAtIndex:index];
-        auto types = [item types];
-        *ret = types == nil ? nullptr : CreateAvnStringArray(types);
+        
+        *ret = ConvertPasteboardTypes([item types]);
         return S_OK;
     }
-    
+
+    static IAvnStringArray* ConvertPasteboardTypes(NSArray<NSPasteboardType> *types)
+    {
+        if (types != nil)
+        {
+            NSMutableArray<NSString *> *mutableTypes = [types mutableCopy];
+
+            // Add png if format list doesn't have PNG,
+            // but has any other image type that can be converter into PNG
+            if (![mutableTypes containsObject:NSPasteboardTypePNG])
+            {
+                if ([mutableTypes containsObject:NSPasteboardTypeTIFF]
+                    || [mutableTypes containsObject:@"public.jpeg"])
+                {
+                    [mutableTypes addObject: NSPasteboardTypePNG];
+                }
+            }
+
+            return CreateAvnStringArray(mutableTypes);
+        }
+
+        return nil;
+    }
+
     virtual HRESULT GetItemValueAsString(int index, int64_t changeCount, const char* format, IAvnString** ret) override
     {
         START_COM_ARP_CALL;
@@ -91,8 +113,45 @@ public:
             return COR_E_OBJECTDISPOSED;
         
         auto item = [[_pasteboard pasteboardItems] objectAtIndex:index];
-        auto value = [item dataForType:[NSString stringWithUTF8String:format]];
+        auto formatStr = [NSString stringWithUTF8String:format];
         
+        auto value = [item dataForType: formatStr];
+
+        // If PNG wasn't found, try to convert TIFF or JPEG to PNG
+        if (value == nil && [formatStr isEqualToString: NSPasteboardTypePNG])
+        {
+            NSData *imageData = nil;
+
+            // Try TIFF first
+            imageData = [item dataForType:NSPasteboardTypeTIFF];
+
+            // If no TIFF, try JPEG
+            if (imageData == nil) {
+                imageData = [item dataForType:@"public.jpeg"];
+            }
+
+            if (imageData != nil)
+            {
+                auto image = [[NSImage alloc] initWithData:imageData];
+
+                NSBitmapImageRep *bitmapRep = nil;
+                for (NSImageRep *rep in image.representations) {
+                    if ([rep isKindOfClass:[NSBitmapImageRep class]]) {
+                        bitmapRep = (NSBitmapImageRep *)rep;
+                        break;
+                    }
+                }
+
+                if (!bitmapRep) {
+                    [image lockFocus];
+                    bitmapRep = [[NSBitmapImageRep alloc] initWithFocusedViewRect:NSMakeRect(0, 0, image.size.width, image.size.height)];
+                    [image unlockFocus];
+                }
+
+                value = [bitmapRep representationUsingType:NSBitmapImageFileTypePNG properties:@{}];
+            }
+        }
+
         *ret = value == nil || [value length] == 0
             ? nullptr
             : CreateByteArray((void*)[value bytes], (int)[value length]);

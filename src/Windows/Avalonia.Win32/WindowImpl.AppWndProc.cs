@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls;
@@ -114,9 +115,9 @@ namespace Avalonia.Win32
                         //Window doesn't exist anymore
                         _hwnd = IntPtr.Zero;
                         //Remove root reference to this class, so unmanaged delegate can be collected
-                        s_instances.Remove(this);
+                        lock (s_instances)
+                            s_instances.Remove(this);
 
-                        _mouseDevice.Dispose();
                         _touchDevice.Dispose();
                         //Free other resources
                         Dispose();
@@ -280,14 +281,6 @@ namespace Avalonia.Win32
                             DipFromLParam(lParam), GetMouseModifiers(wParam));
                         break;
                     }
-                // Mouse capture is lost
-                case WindowsMessage.WM_CANCELMODE:
-                    if (!IsMouseInPointerEnabled)
-                    {
-                        _mouseDevice.Capture(null);
-                    }
-
-                    break;
 
                 case WindowsMessage.WM_MOUSEMOVE:
                     {
@@ -394,13 +387,14 @@ namespace Avalonia.Win32
                         break;
                     }
 
+                // covers WM_CANCELMODE which sends WM_CAPTURECHANGED in DefWindowProc
                 case WindowsMessage.WM_CAPTURECHANGED:
                     {
                         if (IsMouseInPointerEnabled)
                         {
                             break;
                         }
-                        if (_hwnd != lParam)
+                        if (!IsOurWindow(lParam))
                         {
                             _trackingMouse = false;
                             e = new RawPointerEventArgs(
@@ -907,6 +901,22 @@ namespace Avalonia.Win32
             return DefWindowProc(hWnd, msg, wParam, lParam);
         }
 
+        internal bool IsOurWindow(IntPtr hwnd)
+        {
+            if (hwnd == IntPtr.Zero)
+                return false;
+
+            if (hwnd == _hwnd)
+                return true;
+
+            lock (s_instances)
+                for (int i = 0; i < s_instances.Count; i++)
+                    if (s_instances[i]._hwnd == hwnd)
+                        return true;
+
+            return false;
+        }
+
         private void OnShowHideMessage(bool shown)
         {
             _shown = shown;
@@ -974,7 +984,8 @@ namespace Avalonia.Win32
             return null;
         }
 
-        private unsafe IReadOnlyList<RawPointerPoint> CreateIntermediatePoints(MOUSEMOVEPOINT movePoint, MOUSEMOVEPOINT prevMovePoint)
+        private unsafe IReadOnlyList<RawPointerPoint> CreateIntermediatePoints(MOUSEMOVEPOINT movePoint,
+            MOUSEMOVEPOINT prevMovePoint)
         {
             // To understand some of this code, please check MS docs:
             // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getmousemovepointsex#remarks
@@ -985,6 +996,7 @@ namespace Avalonia.Win32
             {
                 var movePointCopy = movePoint;
                 movePointCopy.time = 0; // empty "time" as otherwise WinAPI will always fail
+
                 int pointsCount = GetMouseMovePointsEx(
                     (uint)(Marshal.SizeOf(movePointCopy)),
                     &movePointCopy, movePoints, s_mouseHistoryInfos.Length,
@@ -992,47 +1004,46 @@ namespace Avalonia.Win32
 
                 // GetMouseMovePointsEx can return -1 if point wasn't found or there is so beeg delay that original points were erased from the buffer.
                 if (pointsCount <= 1)
-                {
                     return Array.Empty<RawPointerPoint>();
-                }
 
                 s_intermediatePointsPooledList.Clear();
-                s_intermediatePointsPooledList.Capacity = pointsCount;
-                for (int i = pointsCount - 1; i >= 1; i--)
+                s_sortedPoints.Clear();
+
+                s_sortedPoints.Capacity = pointsCount;
+
+                for (int i = 0; i < pointsCount; i++)
                 {
-                    var historyInfo = s_mouseHistoryInfos[i];
-                    // Skip points newer than current point.
-                    if (historyInfo.time > movePoint.time ||
-                        (historyInfo.time == movePoint.time &&
-                         historyInfo.x == movePoint.x &&
-                         historyInfo.y == movePoint.y))
-                    {
+                    var mp = movePoints[i];
+
+                    var x = mp.x > 32767 ? mp.x - 65536 : mp.x;
+                    var y = mp.y > 32767 ? mp.y - 65536 : mp.y;
+
+                    if(mp.time <= prevMovePoint.time || mp.time >= movePoint.time)
                         continue;
-                    }
-                    // Skip points older from previous WM_MOUSEMOVE point.
-                    if (historyInfo.time < prevMovePoint.time ||
-                        (historyInfo.time == prevMovePoint.time &&
-                            historyInfo.x == prevMovePoint.x &&
-                            historyInfo.y == prevMovePoint.y))
+
+                    s_sortedPoints.Add(new InternalPoint
                     {
-                        continue;
-                    }
-
-                    // To support multiple screens.
-                    if (historyInfo.x > 32767)
-                        historyInfo.x -= 65536;
-
-                    if (historyInfo.y > 32767)
-                        historyInfo.y -= 65536;
-
-                    var point = PointToClient(new PixelPoint(historyInfo.x, historyInfo.y));
-                    s_intermediatePointsPooledList.Add(new RawPointerPoint
-                    {
-                        Position = point
+                        Time = mp.time,
+                        Pt = new PixelPoint(x, y)
                     });
                 }
+
+                // sorting is required to ensure points are in order from oldest to newest
+                s_sortedPoints.Sort(static (a, b) => a.Time.CompareTo(b.Time));
+
+                foreach (var p in s_sortedPoints)
+                {
+                    var client = PointToClient(p.Pt);
+
+                    s_intermediatePointsPooledList.Add(new RawPointerPoint
+                    {
+                        Position = client
+                    });
+                }
+
                 return s_intermediatePointsPooledList;
             }
+
         }
 
         private RawPointerEventArgs CreatePointerArgs(IInputDevice device, ulong timestamp, RawPointerEventType eventType, RawPointerPoint point, RawInputModifiers modifiers, uint rawPointerId)

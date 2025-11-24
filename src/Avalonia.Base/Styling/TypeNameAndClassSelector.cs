@@ -143,7 +143,7 @@ namespace Avalonia.Styling
 
             if (_previous != null)
             {
-                builder.Append(_previous.ToString(owner));
+                builder.Append(_previous.ToString(owner, true));
             }
 
             if (TargetType != null)

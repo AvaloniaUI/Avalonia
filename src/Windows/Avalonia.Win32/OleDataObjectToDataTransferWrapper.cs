@@ -32,6 +32,25 @@ internal sealed class OleDataObjectToDataTransferWrapper(Win32Com.IDataObject ol
         while (Next(enumFormat) is { } format)
             formats.Add(format);
 
+        bool hasSupportedFormat = false;
+
+        foreach (var format in formats)
+        {
+            if (format.Identifier is ClipboardFormatRegistry.DibFormat 
+                or ClipboardFormatRegistry.BitmapFormat 
+                or ClipboardFormatRegistry.PngFormatMimeType 
+                or ClipboardFormatRegistry.JpegFormatMimeType)
+            {
+                hasSupportedFormat = true;
+                break;
+            }
+        }
+
+        if (hasSupportedFormat)
+        {
+            formats.Add(DataFormat.Bitmap);
+        }
+
         return formats.ToArray();
 
         static unsafe DataFormat? Next(IEnumFORMATETC enumFormat)
@@ -54,15 +73,21 @@ internal sealed class OleDataObjectToDataTransferWrapper(Win32Com.IDataObject ol
     {
         List<DataFormat>? nonFileFormats = null;
         var items = new List<PlatformDataTransferItem>();
+        var hasFiles = false;
 
         foreach (var format in Formats)
         {
             if (DataFormat.File.Equals(format))
             {
+                if (hasFiles)
+                    continue;
+
                 // This is not ideal as we're reading the filenames ahead of time to generate the appropriate items.
                 // However, it's unlikely to be a heavy operation.
                 if (_oleDataObject.TryGet(format) is IEnumerable<IStorageItem> storageItems)
                 {
+                    hasFiles = true;
+
                     foreach (var storageItem in storageItems)
                         items.Add(PlatformDataTransferItem.Create(DataFormat.File, storageItem));
                 }

@@ -64,7 +64,6 @@
                             Margin="{DynamicResource ToggleSwitchTopHeaderMargin}"
                             Content="{TemplateBinding Content}"
                             ContentTemplate="{TemplateBinding ContentTemplate}"
-                            RecognizesAccessKey="True"
                             VerticalAlignment="Top" />
 
           <Grid Grid.Row="1"
@@ -145,6 +144,10 @@
         </Grid>
       </ControlTemplate>
     </Setter>
+
+    <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="RecognizesAccessKey" Value="True" />
+    </Style>
 
     <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter:empty">
       <Setter Property="Margin" Value="0" />

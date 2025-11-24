@@ -1,8 +1,11 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
+using System.Text.RegularExpressions;
 using Avalonia.Media;
 using Avalonia.Platform;
 using SkiaSharp;
@@ -15,6 +18,7 @@ namespace Avalonia.Skia
 
         public string GetDefaultFontFamilyName()
         {
+
             return SKTypeface.Default.FamilyName;
         }
 
@@ -33,6 +37,53 @@ namespace Avalonia.Skia
         public bool TryMatchCharacter(int codepoint, FontStyle fontStyle,
             FontWeight fontWeight, FontStretch fontStretch, CultureInfo? culture, out Typeface fontKey)
         {
+            if (!TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, culture, out SKTypeface? skTypeface))
+            {
+                fontKey = default;
+
+                return false;
+            }
+
+            fontKey = new Typeface(
+                skTypeface.FamilyName, 
+                skTypeface.FontStyle.Slant.ToAvalonia(), 
+                (FontWeight)skTypeface.FontStyle.Weight, 
+                (FontStretch)skTypeface.FontStyle.Width);
+
+            skTypeface.Dispose();
+
+            return true;
+
+        }
+
+        public bool TryMatchCharacter(
+            int codepoint,
+            FontStyle fontStyle,
+            FontWeight fontWeight,
+            FontStretch fontStretch,
+            CultureInfo? culture,
+            [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
+        {
+            if (!TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, culture, out SKTypeface? skTypeface))
+            {
+                glyphTypeface = null;
+
+                return false;
+            }
+
+            glyphTypeface = new GlyphTypefaceImpl(skTypeface, FontSimulations.None);
+
+            return true;
+        }
+
+        private bool TryMatchCharacter(
+            int codepoint,
+            FontStyle fontStyle,
+            FontWeight fontWeight,
+            FontStretch fontStretch,
+            CultureInfo? culture,
+            [NotNullWhen(true)] out SKTypeface? skTypeface)
+        {
             SKFontStyle skFontStyle;
 
             switch (fontWeight)
@@ -50,7 +101,7 @@ namespace Avalonia.Skia
                     skFontStyle = SKFontStyle.BoldItalic;
                     break;
                 default:
-                    skFontStyle = new SKFontStyle((SKFontStyleWeight)fontWeight, (SKFontStyleWidth)fontStretch, (SKFontStyleSlant)fontStyle);
+                    skFontStyle = new SKFontStyle((SKFontStyleWeight)fontWeight, (SKFontStyleWidth)fontStretch, fontStyle.ToSkia());
                     break;
             }
 
@@ -59,18 +110,9 @@ namespace Avalonia.Skia
             t_languageTagBuffer ??= new string[1];
             t_languageTagBuffer[0] = culture.Name;
 
-            using var skTypeface = _skFontManager.MatchCharacter(null, skFontStyle, t_languageTagBuffer, codepoint);
+            skTypeface = _skFontManager.MatchCharacter(null, skFontStyle, t_languageTagBuffer, codepoint);
 
-            if (skTypeface != null)
-            {
-                fontKey = new Typeface(skTypeface.FamilyName, (FontStyle)skTypeface.FontStyle.Slant, (FontWeight)skTypeface.FontStyle.Weight, (FontStretch)skTypeface.FontStyle.Width);
-
-                return true;
-            }
-
-            fontKey = default;
-
-            return false;
+            return skTypeface != null;
         }
 
         public bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight,
@@ -78,8 +120,7 @@ namespace Avalonia.Skia
         {
             glyphTypeface = null;
 
-            var fontStyle = new SKFontStyle((SKFontStyleWeight)weight, (SKFontStyleWidth)stretch,
-                (SKFontStyleSlant)style);
+            var fontStyle = new SKFontStyle((SKFontStyleWeight)weight, (SKFontStyleWidth)stretch, style.ToSkia());
 
             var skTypeface = _skFontManager.MatchFamily(familyName, fontStyle);
 
@@ -127,7 +168,7 @@ namespace Avalonia.Skia
 
             var set = _skFontManager.GetFontStyles(familyName);
 
-            if(set.Count == 0)
+            if (set.Count == 0)
             {
                 return false;
             }

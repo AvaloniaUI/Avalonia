@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 using Avalonia.Utilities;
 
@@ -157,6 +158,16 @@ public sealed class DataTransferItem : IDataTransferItem, IAsyncDataTransferItem
     /// </param>
     public void SetFile(IStorageItem? value)
         => Set(DataFormat.File, value);
+
+    /// <summary>
+    /// Sets the value for the <see cref="DataFormat.Bitmap"/> format.
+    /// </summary>
+    /// <param name="value">
+    /// The value corresponding to the <see cref="DataFormat.Bitmap"/> format.
+    /// If null, the format won't be part of the <see cref="DataTransferItem"/>.
+    /// </param>
+    public void SetBitmap(Bitmap? value)
+        => Set(DataFormat.Bitmap, value);
 
     /// <summary>
     /// Creates a new <see cref="DataTransferItem"/> for a single format with a given value.

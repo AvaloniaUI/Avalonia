@@ -19,6 +19,8 @@ namespace Avalonia.Skia.UnitTests.Media
 
         private const string s_manrope = "resm:Avalonia.Skia.UnitTests.Fonts?assembly=Avalonia.Skia.UnitTests#Manrope";
 
+        private const string s_misans = "resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#MiSans";
+
 
         [InlineData(FontWeight.SemiLight, FontStyle.Normal)]
         [InlineData(FontWeight.Bold, FontStyle.Italic)]
@@ -117,6 +119,27 @@ namespace Avalonia.Skia.UnitTests.Media
                 fontCollection.TryGetGlyphTypeface("Manrope", FontStyle.Normal, FontWeight.ExtraBlack, FontStretch.Normal, out var otherGlyphTypeface);
 
                 Assert.Equal(glyphTypeface, otherGlyphTypeface);
+            }
+        }
+
+        [Fact]
+        public void Should_Cache_Nearest_Match_For_MiSans()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var source = new Uri(s_misans, UriKind.Absolute);
+
+                var fontCollection = new TestEmbeddedFontCollection(source, source);
+
+                fontCollection.Initialize(new CustomFontManagerImpl());
+
+                Assert.True(fontCollection.TryGetGlyphTypeface("MiSans", FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, out var regularGlyphTypeface));
+
+                Assert.True(fontCollection.TryGetGlyphTypeface("MiSans", FontStyle.Normal, FontWeight.Bold, FontStretch.Normal, out var boldGlyphTypeface));
+
+                Assert.True(fontCollection.GlyphTypefaceCache.TryGetValue("MiSans", out var glyphTypefaces));
+
+                Assert.Equal(3, glyphTypefaces.Count);
             }
         }
 

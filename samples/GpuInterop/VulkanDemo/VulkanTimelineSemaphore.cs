@@ -32,7 +32,7 @@ class VulkanTimelineSemaphore : IDisposable
             SType = StructureType.SemaphoreCreateInfo,
             PNext = &semaphoreTypeInfo,
         };
-        resources.Api.CreateSemaphore(resources.Device, semaphoreCreateInfo, null, out var semaphore).ThrowOnError();
+        resources.Api.CreateSemaphore(resources.Device, in semaphoreCreateInfo, null, out var semaphore).ThrowOnError();
         Handle = semaphore;
     }
 
