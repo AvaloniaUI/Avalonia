@@ -7,7 +7,6 @@
     <Nullable>enable</Nullable>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <UseD3DCompiler>true</UseD3DCompiler>
-    <UseSharpDXMathematics>true</UseSharpDXMathematics>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
@@ -44,7 +43,6 @@
     <None Remove="VulkanDemo\Assets\Shaders\vert.spirv" />
     <EmbeddedResource Include="VulkanDemo\Assets\Shaders\vert.spirv" />
     <EmbeddedResource Include="../ControlCatalog/Pages/teapot.bin" />
-    <Compile Remove="VulkanDemo/**" />
   </ItemGroup>
   
   <Import Project="..\..\build\SampleApp.props" />
