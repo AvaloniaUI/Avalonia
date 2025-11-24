@@ -42,44 +42,33 @@ namespace Avalonia.X11
 
         public unsafe IntPtr FindTopWindowUnderCursor(IntPtr root, int cursorX, int cursorY)
         {
-            var windowsChildren = GetWindowChildren(root);
-
-            var targets = new List<IntPtr>();
-
-            for (int i = windowsChildren.Count - 1; i >= 0; i--)
+            if (!XLib.XTranslateCoordinates(_display, root, root, cursorX, cursorY, out int lx, out int ly, out IntPtr target))
             {
-                IntPtr child = windowsChildren[i];
-                XWindowAttributes attrs = new();
-                lock (_windowRectCacheLock)
+                return IntPtr.Zero;
+            }
+
+            if (target != IntPtr.Zero && target != root)
+            {
+                IntPtr scr = root;
+                while (target != IntPtr.Zero)
                 {
-                    if (_windowRectCache.TryGetValue(child, out var cachedWindowRect))
+                    if (CheckXdndSupport(target))
                     {
-                        if (cachedWindowRect.map_state != MapState.IsViewable)
-                            continue;
-
-                        if (cachedWindowRect.rect.Contains(new Point(cursorX, cursorY)))
-                        {
-                            targets.Add(child);
-                        }
+                        return target;
                     }
-                    else if (XLib.XGetWindowAttributes(_display, child, ref attrs) != 0)
+
+                    if (!XLib.XTranslateCoordinates(_display, scr, target, lx, ly, out int ch_x, out int ch_y, out IntPtr child))
                     {
-                        var windowRect = new Rect(attrs.x, attrs.y, attrs.width, attrs.height);
-
-                        _windowRectCache[child] = (attrs.map_state, windowRect);
-
-                        if (attrs.map_state != MapState.IsViewable)
-                            continue;
-
-                        if (windowRect.Contains(new Point(cursorX, cursorY)))
-                        {
-                            targets.Add(child);
-                        }
+                        return IntPtr.Zero;
                     }
+
+                    lx = ch_x;
+                    ly = ch_y;
+                    target = child;
                 }
             }
 
-            return targets.FirstOrDefault();
+            return target;
         }
 
         private unsafe List<IntPtr> GetWindowChildren(IntPtr window)

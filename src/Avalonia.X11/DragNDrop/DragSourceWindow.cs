@@ -95,6 +95,9 @@ namespace Avalonia.X11
             state = DragState.InProgress;
             _targetWindow = IntPtr.Zero;
 
+            var grabResult = XLib.XGrabPointer(_display, _platform.Info.RootWindow, true, EventMask.PointerMotionMask | EventMask.ButtonReleaseMask, GrabMode.GrabModeAsync, GrabMode.GrabModeAsync, IntPtr.Zero, _platform.Info.DefaultCursor, IntPtr.Zero);
+
+
             if (XLib.XSetSelectionOwner(_display, _atoms.XdndSelection, _handle, IntPtr.Zero) == 0)
             {
                 state = DragState.Failed;
@@ -586,7 +589,16 @@ namespace Avalonia.X11
 
             if (!accepted)
             {
-                HandleDragFailure();
+                if (state == DragState.WaitingForFinish)
+                {
+                    HandleDragFailure();
+                }
+                else
+                {
+                    SetCursor(_cursorFactory.GetCursor(StandardCursorType.Cross));
+                }
+
+                return;
             }
 
             _effect = statusEvent.ptr5;
@@ -800,12 +812,14 @@ namespace Avalonia.X11
                 _innerTarget = _platform.GetDropTarget(window);
             }
 
-            if (_innerTarget != null)
+            var target = _innerTarget;
+
+            if (target != null)
             {
                 Task.Run(async () =>
                 {
                     var point = new PixelPoint(x, y);
-                    await _innerTarget.HandleDragLeave(point, _atoms.ConvertDropEffect(_dropEffect));
+                    await target.HandleDragLeave(point, _atoms.ConvertDropEffect(_dropEffect));
                 }).ConfigureAwait(false);
             }
 
@@ -820,7 +834,9 @@ namespace Avalonia.X11
                 _innerTarget = _platform.GetDropTarget(window);
             }
 
-            if (_innerTarget != null)
+            var target = _innerTarget;
+
+            if (target != null)
             {
                 state = DragState.WaitingForFinish;
                 SetupFinishTimeout(5500);
@@ -841,11 +857,11 @@ namespace Avalonia.X11
                             var point = new PixelPoint(_pendingSameAppDragOver.Value.x, _pendingSameAppDragOver.Value.y);
                             _pendingSameAppDragOver = null;
                             _effect = _atoms.ConvertDropEffect(
-                                        _innerTarget.HandleDragOver(point, _atoms.ConvertDropEffect(_dropEffect)));
+                                        target.HandleDragOver(point, _atoms.ConvertDropEffect(_dropEffect)));
 
                             UpdateDragCursor(_effect);
                         }
-                        DragDropEffects result = _innerTarget.HandleDrop(_atoms.ConvertDropEffect(_dropEffect));
+                        DragDropEffects result = target.HandleDrop(_atoms.ConvertDropEffect(_dropEffect));
 
                         
                         if (result == DragDropEffects.None)
@@ -881,10 +897,14 @@ namespace Avalonia.X11
         public void SetCursor(ICursorImpl? cursor)
         {
             if (cursor == null)
-                XLib.XDefineCursor(_display, _handle, _platform.Info.DefaultCursor);
+            {
+                XLib.XChangeActivePointerGrab(_display, EventMask.PointerMotionMask | EventMask.ButtonReleaseMask, _platform.Info.DefaultCursor, IntPtr.Zero);
+                XLib.XFlush(_display);
+            }
             else if (cursor is CursorImpl impl)
             {
-                XLib.XDefineCursor(_display, _handle, impl.Handle);
+                XLib.XChangeActivePointerGrab(_display, EventMask.PointerMotionMask | EventMask.ButtonReleaseMask, impl.Handle, IntPtr.Zero);
+                XLib.XFlush(_display);
             }
         }
 
