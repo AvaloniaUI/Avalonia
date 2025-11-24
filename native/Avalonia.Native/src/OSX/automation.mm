@@ -133,6 +133,22 @@
     }
 }
 
+- (NSAccessibilitySubrole)accessibilitySubrole
+{
+    auto landmarkType = _peer->GetLandmarkType();
+    switch (landmarkType) {
+        case LandmarkBanner: return @"AXLandmarkBanner";
+        case LandmarkComplementary: return @"AXLandmarkComplementary";
+        case LandmarkContentInfo: return @"AXLandmarkContentInfo";
+        case LandmarkRegion: return @"AXLandmarkRegion";
+        case LandmarkForm: return @"AXLandmarkForm";
+        case LandmarkMain: return @"AXLandmarkMain";
+        case LandmarkNavigation: return @"AXLandmarkNavigation";
+        case LandmarkSearch: return @"AXLandmarkSearch";
+        default: return NSAccessibilityUnknownSubrole;
+    }
+}
+
 - (NSString *)accessibilityIdentifier
 {
     return GetNSStringAndRelease(_peer->GetAutomationId());
