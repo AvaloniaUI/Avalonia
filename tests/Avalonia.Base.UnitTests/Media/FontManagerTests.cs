@@ -28,13 +28,17 @@ namespace Avalonia.Base.UnitTests.Media
         [Fact]
         public void Should_Throw_When_Default_FamilyName_Is_Null_And_Installed_Font_Family_Names_Is_Empty()
         {
-            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface
-               .With(fontManagerImpl: new HeadlessFontManagerWithMultipleSystemFontsStub(
-                   installedFontFamilyNames: new string[] { },
-                   defaultFamilyName: null))))
+            // Wrap whole UnitTestApplication in the Assert.Throws, because disposal will try to access FontManager.Current again.
+            Assert.Throws<InvalidOperationException>(() =>
             {
-                Assert.Throws<InvalidOperationException>(() => FontManager.Current);
-            }
+                using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface
+                           .With(fontManagerImpl: new HeadlessFontManagerWithMultipleSystemFontsStub(
+                               installedFontFamilyNames: new string[] { },
+                               defaultFamilyName: null))))
+                {
+                    Assert.NotNull(FontManager.Current);
+                }
+            });
         }
 
         [Fact]
