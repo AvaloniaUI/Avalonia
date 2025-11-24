@@ -29,6 +29,8 @@
     <PackageReference Include="Silk.NET.Vulkan" Version="2.22.0" />
     <PackageReference Include="Silk.NET.Vulkan.Extensions.EXT" Version="2.22.0" />
     <PackageReference Include="Silk.NET.Vulkan.Extensions.KHR" Version="2.22.0" />
+    <!-- Silk.NET 2.22 targets an obsolete System.Text.Json, update to avoid warnings. -->
+    <PackageReference Include="System.Text.Json" Version="10.0.0" />
   </ItemGroup>
 
   <ItemGroup>

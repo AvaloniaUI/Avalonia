@@ -81,7 +81,8 @@ public unsafe class VulkanContext : IDisposable
             enabledLayers.Clear();
             using var pRequiredExtensions = new ByteStringList(enabledExtensions);
             using var pEnabledLayers = new ByteStringList(enabledLayers);
-            api.CreateInstance(new InstanceCreateInfo
+
+            var instanceCreateInfo = new InstanceCreateInfo
             {
                 SType = StructureType.InstanceCreateInfo,
                 PApplicationInfo = &applicationInfo,
@@ -90,7 +91,9 @@ public unsafe class VulkanContext : IDisposable
                 PpEnabledLayerNames = pEnabledLayers,
                 EnabledLayerCount = pEnabledLayers.UCount,
                 Flags = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? InstanceCreateFlags.EnumeratePortabilityBitKhr : default
-            }, null, out var vkInstance).ThrowOnError();
+            };
+
+            api.CreateInstance(in instanceCreateInfo, null, out var vkInstance).ThrowOnError();
 
 
             if (api.TryGetInstanceExtension(vkInstance, out ExtDebugUtils debugUtils))
@@ -107,7 +110,7 @@ public unsafe class VulkanContext : IDisposable
                     PfnUserCallback = new PfnDebugUtilsMessengerCallbackEXT(LogCallback),
                 };
 
-                debugUtils.CreateDebugUtilsMessenger(vkInstance, debugCreateInfo, null, out _);
+                debugUtils.CreateDebugUtilsMessenger(vkInstance, in debugCreateInfo, null, out _);
             }
 
             var requireDeviceExtensions = new List<string>();

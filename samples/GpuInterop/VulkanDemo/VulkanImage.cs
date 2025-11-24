@@ -114,7 +114,7 @@ public unsafe class VulkanImage : IDisposable
             };
 
             Api
-                .CreateImage(_device, imageCreateInfo, null, out var image).ThrowOnError();
+                .CreateImage(_device, in imageCreateInfo, null, out var image).ThrowOnError();
             InternalHandle = image;
 
             if (!exportable || !RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
@@ -163,7 +163,7 @@ public unsafe class VulkanImage : IDisposable
                         memoryRequirements.MemoryTypeBits, MemoryPropertyFlags.DeviceLocalBit)
                 };
 
-                Api.AllocateMemory(_device, memoryAllocateInfo, null,
+                Api.AllocateMemory(_device, in memoryAllocateInfo, null,
                     out var imageMemory).ThrowOnError();
 
                 _imageMemory = imageMemory;
@@ -195,7 +195,7 @@ public unsafe class VulkanImage : IDisposable
             };
 
             Api
-                .CreateImageView(_device, imageViewCreateInfo, null, out var imageView)
+                .CreateImageView(_device, in imageViewCreateInfo, null, out var imageView)
                 .ThrowOnError();
 
             _imageView = imageView;
@@ -229,7 +229,7 @@ public unsafe class VulkanImage : IDisposable
                 SType = StructureType.MemoryGetFDInfoKhr,
                 HandleType = ExternalMemoryHandleTypeFlags.OpaqueFDBit
             };
-            ext.GetMemoryF(_device, info, out var fd).ThrowOnError();
+            ext.GetMemoryF(_device, in info, out var fd).ThrowOnError();
             return fd;
         }
         
@@ -243,7 +243,7 @@ public unsafe class VulkanImage : IDisposable
                 SType = StructureType.MemoryGetWin32HandleInfoKhr,
                 HandleType = ExternalMemoryHandleTypeFlags.OpaqueWin32Bit
             };
-            ext.GetMemoryWin32Handle(_device, info, out var fd).ThrowOnError();
+            ext.GetMemoryWin32Handle(_device, in info, out var fd).ThrowOnError();
             return fd;
         }
 
@@ -383,8 +383,7 @@ public unsafe class VulkanImage : IDisposable
                 }
             };
 
-            using (var backendTexture = new GRBackendRenderTarget(_image.Size.Width, _image.Size.Height, 1,
-                       imageInfo))
+            using (var backendTexture = new GRBackendRenderTarget(_image.Size.Width, _image.Size.Height, imageInfo))
             using (var surface = SKSurface.Create(_vk.GrContext, backendTexture,
                        GRSurfaceOrigin.TopLeft,
                        SKColorType.Rgba8888, SKColorSpace.CreateSrgb()))
