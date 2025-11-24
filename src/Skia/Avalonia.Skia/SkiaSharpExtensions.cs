@@ -1,8 +1,8 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Media;
-using Avalonia.Platform;
 using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -70,7 +70,7 @@ namespace Avalonia.Skia
         {
             return new SKPoint((float)p.X, (float)p.Y);
         }
-        
+
         public static SKPoint ToSKPoint(this Vector p)
         {
             return new SKPoint((float)p.X, (float)p.Y);
@@ -80,17 +80,17 @@ namespace Avalonia.Skia
         {
             return new SKRect((float)r.X, (float)r.Y, (float)r.Right, (float)r.Bottom);
         }
-        
+
         internal static SKRect ToSKRect(this LtrbRect r)
         {
             return new SKRect((float)r.Left, (float)r.Right, (float)r.Right, (float)r.Bottom);
         }
-        
+
         public static SKRectI ToSKRectI(this PixelRect r)
         {
             return new SKRectI(r.X, r.Y, r.Right, r.Bottom);
         }
-        
+
         internal static SKRectI ToSKRectI(this LtrbPixelRect r)
         {
             return new SKRectI(r.Left, r.Top, r.Right, r.Bottom);
@@ -106,7 +106,7 @@ namespace Avalonia.Skia
                    {
                         r.RadiiTopLeft.ToSKPoint(), r.RadiiTopRight.ToSKPoint(),
                         r.RadiiBottomRight.ToSKPoint(), r.RadiiBottomLeft.ToSKPoint(),
-                   });            
+                   });
 
             return result;
         }
@@ -115,17 +115,17 @@ namespace Avalonia.Skia
         {
             return new Rect(r.Left, r.Top, r.Right - r.Left, r.Bottom - r.Top);
         }
-        
+
         internal static LtrbRect ToAvaloniaLtrbRect(this SKRect r)
         {
             return new LtrbRect(r.Left, r.Top, r.Right, r.Bottom);
         }
-        
+
         public static PixelRect ToAvaloniaPixelRect(this SKRectI r)
         {
             return new PixelRect(r.Left, r.Top, r.Right - r.Left, r.Bottom - r.Top);
         }
-        
+
         internal static LtrbPixelRect ToAvaloniaLtrbPixelRect(this SKRectI r)
         {
             return new LtrbPixelRect(r.Left, r.Top, r.Right, r.Bottom);
@@ -173,7 +173,7 @@ namespace Avalonia.Skia
 
             return sm;
         }
-        
+
         internal static Matrix ToAvaloniaMatrix(this SKMatrix m) => new(
             m.ScaleX, m.SkewY, m.Persp0,
             m.SkewX, m.ScaleY, m.Persp1,
@@ -253,9 +253,12 @@ namespace Avalonia.Skia
             switch (m)
             {
                 default:
-                case GradientSpreadMethod.Pad: return SKShaderTileMode.Clamp;
-                case GradientSpreadMethod.Reflect: return SKShaderTileMode.Mirror;
-                case GradientSpreadMethod.Repeat: return SKShaderTileMode.Repeat;
+                case GradientSpreadMethod.Pad:
+                    return SKShaderTileMode.Clamp;
+                case GradientSpreadMethod.Reflect:
+                    return SKShaderTileMode.Mirror;
+                case GradientSpreadMethod.Repeat:
+                    return SKShaderTileMode.Repeat;
             }
         }
 
@@ -264,9 +267,12 @@ namespace Avalonia.Skia
             switch (a)
             {
                 default:
-                case TextAlignment.Left: return SKTextAlign.Left;
-                case TextAlignment.Center: return SKTextAlign.Center;
-                case TextAlignment.Right: return SKTextAlign.Right;
+                case TextAlignment.Left:
+                    return SKTextAlign.Left;
+                case TextAlignment.Center:
+                    return SKTextAlign.Center;
+                case TextAlignment.Right:
+                    return SKTextAlign.Right;
             }
         }
 
@@ -295,9 +301,12 @@ namespace Avalonia.Skia
             switch (a)
             {
                 default:
-                case SKTextAlign.Left: return TextAlignment.Left;
-                case SKTextAlign.Center: return TextAlignment.Center;
-                case SKTextAlign.Right: return TextAlignment.Right;
+                case SKTextAlign.Left:
+                    return TextAlignment.Left;
+                case SKTextAlign.Center:
+                    return TextAlignment.Center;
+                case SKTextAlign.Right:
+                    return TextAlignment.Right;
             }
         }
 
@@ -308,7 +317,18 @@ namespace Avalonia.Skia
                 SKFontStyleSlant.Upright => FontStyle.Normal,
                 SKFontStyleSlant.Italic => FontStyle.Italic,
                 SKFontStyleSlant.Oblique => FontStyle.Oblique,
-                _ => throw new ArgumentOutOfRangeException(nameof (slant), slant, null)
+                _ => throw new ArgumentOutOfRangeException(nameof(slant), slant, null)
+            };
+        }
+
+        public static SKFontStyleSlant ToSkia(this FontStyle style)
+        {
+            return style switch
+            {
+                FontStyle.Normal => SKFontStyleSlant.Upright,
+                FontStyle.Italic => SKFontStyleSlant.Italic,
+                FontStyle.Oblique => SKFontStyleSlant.Oblique,
+                _ => throw new ArgumentOutOfRangeException(nameof(style), style, null)
             };
         }
 
