@@ -13,9 +13,14 @@
     <ProjectReference Include="..\..\src\Avalonia.Controls\Avalonia.Controls.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Appium.WebDriver" Version="4.4.0" Condition="'$(IsRunningAppium2)' == 'false'" />
-    <PackageReference Include="Appium.WebDriver" Version="5.0.0-rc.8" Condition="'$(IsRunningAppium2)' == 'true'" />
+  <ItemGroup Condition="'$(IsRunningAppium2)' == 'false'">
+    <PackageReference Include="Appium.WebDriver" Version="4.4.5" />
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
+    <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(IsRunningAppium2)' == 'true'">
+    <PackageReference Include="Appium.WebDriver" Version="8.0.1"/>
   </ItemGroup>
 
   <Import Project="..\..\build\XUnit.props" />
