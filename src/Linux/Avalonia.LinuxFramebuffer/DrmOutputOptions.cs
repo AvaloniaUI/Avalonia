@@ -1,4 +1,5 @@
 using Avalonia.Media;
+using Avalonia.Platform;
 using Avalonia.Skia;
 
 namespace Avalonia.LinuxFramebuffer
@@ -18,14 +19,14 @@ namespace Avalonia.LinuxFramebuffer
         /// The orientation of the screen relative to the frame buffer memory orientation
         /// Default: Normal
         /// </summary>
-        public SurfaceOrientation Orientation { get; set; } = SurfaceOrientation.Normal;
+        public SurfaceOrientation Orientation { get; set; } = SurfaceOrientation.Rotation0;
 
         /// <summary>
         /// If true an two cycle buffer swapping is processed at init.
         /// Default: True
         /// </summary>
         public bool EnableInitialBufferSwapping { get; set; } = true;
-        
+
         /// <summary>
         /// Color for <see cref="EnableInitialBufferSwapping"/>
         /// Default: R0 G0 B0 A0

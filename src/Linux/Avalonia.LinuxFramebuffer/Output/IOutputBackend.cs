@@ -2,7 +2,7 @@ using Avalonia.Skia;
 
 namespace Avalonia.LinuxFramebuffer.Output
 {
-    public interface IOutputBackend : ISurfaceOrientation
+    public interface IOutputBackend
     {
         PixelSize PixelSize { get; }
         double Scaling { get; set; }

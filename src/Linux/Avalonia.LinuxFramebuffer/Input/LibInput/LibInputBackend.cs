@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Platform;
 using Avalonia.Skia;
 using static Avalonia.LinuxFramebuffer.Input.LibInput.LibInputNativeUnsafeMethods;
 namespace Avalonia.LinuxFramebuffer.Input.LibInput
@@ -33,21 +34,21 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
         {
             var fd = libinput_get_fd(ctx);
             IntPtr[] devices = [.. options.Events!.Select(f => libinput_path_add_device(ctx, f))];
-            SurfaceOrientation screenOrientation = SurfaceOrientation.Unknown;
+            SurfaceOrientation screenOrientation = SurfaceOrientation.Rotation0;
 
             while (true)
             {
                 IntPtr ev;
 
-                if (_screen!.Orientation != screenOrientation)
+                if (_screen is ISurfaceOrientation surfaceOrientationProvider && surfaceOrientationProvider.Orientation != screenOrientation)
                 {
-                    screenOrientation = _screen.Orientation;
+                    screenOrientation = surfaceOrientationProvider.Orientation;
 
                     float[] matrix = screenOrientation switch
                     {
-                        SurfaceOrientation.Rotated90 => [0, 1, 0, -1, 0, 1],
-                        SurfaceOrientation.Rotated180 => [-1, 0, 1, 0, -1, 1],
-                        SurfaceOrientation.Rotated270 => [0, -1, 1, 1, 0, 0],
+                        SurfaceOrientation.Rotation90 => [0, 1, 0, -1, 0, 1],
+                        SurfaceOrientation.Rotation180 => [-1, 0, 1, 0, -1, 1],
+                        SurfaceOrientation.Rotation270 => [0, -1, 1, 1, 0, 0],
                         _ => [1, 0, 0, 0, 1, 0],    // Normal
                     };
 

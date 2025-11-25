@@ -33,7 +33,7 @@ public class FbDevOutputOptions
     /// The orientation of the screen relative to the frame buffer memory orientation
     /// Default: Normal
     /// </summary>
-    public SurfaceOrientation Orientation { get; set; } = SurfaceOrientation.Normal;
+    public SurfaceOrientation Orientation { get; set; } = SurfaceOrientation.Rotation0;
 
     /// <summary>
     /// If set to true, FBIO_WAITFORVSYNC ioctl and following memcpy call will run on a dedicated thread

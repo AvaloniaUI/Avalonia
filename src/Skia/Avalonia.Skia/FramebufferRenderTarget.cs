@@ -21,7 +21,7 @@ namespace Avalonia.Skia
         private IFramebufferRenderTargetWithProperties? _renderTargetWithProperties;
         private bool _hadConversionShim;
 
-        protected SurfaceOrientation _orientation => _platformSurface is ISurfaceOrientation o ? o.Orientation : SurfaceOrientation.Normal;
+        private SurfaceOrientation Orientation => _platformSurface is ISurfaceOrientation o ? o.Orientation : SurfaceOrientation.Rotation0;
 
         /// <summary>
         /// Create new framebuffer render target using a target surface.
@@ -59,7 +59,7 @@ namespace Avalonia.Skia
         public IDrawingContextImpl CreateDrawingContext(PixelSize expectedPixelSize,
             out RenderTargetDrawingContextProperties properties)
             => CreateDrawingContextCore(false, out properties);
-        
+
         IDrawingContextImpl CreateDrawingContextCore(bool scaleDrawingToDpi,
             out RenderTargetDrawingContextProperties properties)
         {
@@ -92,7 +92,7 @@ namespace Avalonia.Skia
             {
                 PreviousFrameIsRetained = !_hadConversionShim && lockProperties.PreviousFrameIsRetained
             };
-            
+
             return new DrawingContextImpl(createInfo, _conversionShim?.SurfaceCopyHandler, canvas, framebuffer);
         }
 
@@ -119,21 +119,21 @@ namespace Avalonia.Skia
         [MemberNotNull(nameof(_framebufferSurface))]
         private void CreateSurface(SKImageInfo desiredImageInfo, ILockedFramebuffer framebuffer)
         {
-            var orientation = _orientation;
+            var orientation = Orientation;
 
-            if (_framebufferSurface != null && AreImageInfosCompatible(_currentImageInfo, desiredImageInfo) 
+            if (_framebufferSurface != null && AreImageInfosCompatible(_currentImageInfo, desiredImageInfo)
                 && _currentFramebufferAddress == framebuffer.Address && _conversionShim?.Orientation == orientation)
             {
                 return;
             }
-            
+
             FreeSurface();
-            
+
             _currentFramebufferAddress = framebuffer.Address;
 
             // Create a surface using the framebuffer address unless we need to rotate the display
             SKSurface? surface = null;
-            if (orientation == SurfaceOrientation.Normal)
+            if (orientation == SurfaceOrientation.Rotation0)
             {
                 surface = SKSurface.Create(desiredImageInfo, _currentFramebufferAddress,
                     framebuffer.RowBytes, new SKSurfaceProperties(SKPixelGeometry.RgbHorizontal));
@@ -185,8 +185,8 @@ namespace Avalonia.Skia
                 // Create bitmap using default platform settings
                 _bitmap = orientation switch
                 {
-                    SurfaceOrientation.Rotated90 => new SKBitmap(destinationInfo.Height, destinationInfo.Width),
-                    SurfaceOrientation.Rotated270 => new SKBitmap(destinationInfo.Height, destinationInfo.Width),
+                    SurfaceOrientation.Rotation90 => new SKBitmap(destinationInfo.Height, destinationInfo.Width),
+                    SurfaceOrientation.Rotation270 => new SKBitmap(destinationInfo.Height, destinationInfo.Width),
                     _ => new SKBitmap(destinationInfo.Width, destinationInfo.Height),
                 };
                 SKColorType bitmapColorType;
@@ -237,13 +237,13 @@ namespace Avalonia.Skia
             {
                 using (var snapshot = Surface.Snapshot())
                 {
-                    if (Orientation != SurfaceOrientation.Normal)
+                    if (Orientation != SurfaceOrientation.Rotation0)
                     {
                         // rotation or flipping required
                         int width;
                         int height;
 
-                        if (Orientation == SurfaceOrientation.Rotated180)
+                        if (Orientation == SurfaceOrientation.Rotation180)
                         {
                             width = snapshot.Width;
                             height = snapshot.Height;
@@ -261,16 +261,16 @@ namespace Avalonia.Skia
                         // Apply transformation
                         rotatedCanvas.RotateDegrees(Orientation switch
                         {
-                            SurfaceOrientation.Rotated90 => 90,
-                            SurfaceOrientation.Rotated180 => 180,
-                            SurfaceOrientation.Rotated270 => -90,
+                            SurfaceOrientation.Rotation90 => 90,
+                            SurfaceOrientation.Rotation180 => 180,
+                            SurfaceOrientation.Rotation270 => -90,
                             _ => 0
                         });
                         rotatedCanvas.Translate(Orientation switch
                         {
-                            SurfaceOrientation.Rotated90 => new SKPoint(0, -width),
-                            SurfaceOrientation.Rotated180 => new SKPoint(-width, -height),
-                            SurfaceOrientation.Rotated270 => new SKPoint(-height, 0),
+                            SurfaceOrientation.Rotation90 => new SKPoint(0, -width),
+                            SurfaceOrientation.Rotation180 => new SKPoint(-width, -height),
+                            SurfaceOrientation.Rotation270 => new SKPoint(-height, 0),
                             _ => new SKPoint(0, 0)
                         });
 

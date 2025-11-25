@@ -53,7 +53,7 @@ internal class AndroidScreen(Display display) : PlatformScreen(new PlatformHandl
             var orientation = displayContext.Resources?.Configuration?.Orientation;
             if (orientation == AndroidOrientation.Square)
                 naturalOrientation = ScreenOrientation.None;
-            else if (rotation is SurfaceOrientation.Rotation0 or SurfaceOrientation.Rotation180)
+            else if (rotation is global::Android.Views.SurfaceOrientation.Rotation0 or global::Android.Views.SurfaceOrientation.Rotation180)
                 naturalOrientation = orientation == AndroidOrientation.Landscape ?
                     ScreenOrientation.Landscape :
                     ScreenOrientation.Portrait;
@@ -73,14 +73,14 @@ internal class AndroidScreen(Display display) : PlatformScreen(new PlatformHandl
         CurrentOrientation = (display.Rotation, naturalOrientation) switch
         {
             (_, ScreenOrientation.None) => ScreenOrientation.None,
-            (SurfaceOrientation.Rotation0, ScreenOrientation.Landscape) => ScreenOrientation.Landscape,
-            (SurfaceOrientation.Rotation90, ScreenOrientation.Landscape) => ScreenOrientation.Portrait,
-            (SurfaceOrientation.Rotation180, ScreenOrientation.Landscape) => ScreenOrientation.LandscapeFlipped,
-            (SurfaceOrientation.Rotation270, ScreenOrientation.Landscape) => ScreenOrientation.PortraitFlipped,
-            (SurfaceOrientation.Rotation0, _) => ScreenOrientation.Portrait,
-            (SurfaceOrientation.Rotation90, _) => ScreenOrientation.Landscape,
-            (SurfaceOrientation.Rotation180, _) => ScreenOrientation.PortraitFlipped,
-            (SurfaceOrientation.Rotation270, _) => ScreenOrientation.LandscapeFlipped,
+            (global::Android.Views.SurfaceOrientation.Rotation0, ScreenOrientation.Landscape) => ScreenOrientation.Landscape,
+            (global::Android.Views.SurfaceOrientation.Rotation90, ScreenOrientation.Landscape) => ScreenOrientation.Portrait,
+            (global::Android.Views.SurfaceOrientation.Rotation180, ScreenOrientation.Landscape) => ScreenOrientation.LandscapeFlipped,
+            (global::Android.Views.SurfaceOrientation.Rotation270, ScreenOrientation.Landscape) => ScreenOrientation.PortraitFlipped,
+            (global::Android.Views.SurfaceOrientation.Rotation0, _) => ScreenOrientation.Portrait,
+            (global::Android.Views.SurfaceOrientation.Rotation90, _) => ScreenOrientation.Landscape,
+            (global::Android.Views.SurfaceOrientation.Rotation180, _) => ScreenOrientation.PortraitFlipped,
+            (global::Android.Views.SurfaceOrientation.Rotation270, _) => ScreenOrientation.LandscapeFlipped,
             _ => ScreenOrientation.Portrait
         };
     }

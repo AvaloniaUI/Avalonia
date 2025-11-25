@@ -12,7 +12,7 @@ using Avalonia.Threading;
 
 namespace Avalonia.LinuxFramebuffer
 {
-    class FramebufferToplevelImpl : ITopLevelImpl, IScreenInfoProvider
+    class FramebufferToplevelImpl : ITopLevelImpl, IScreenInfoProvider, ISurfaceOrientation
     {
         private readonly IOutputBackend _outputBackend;
         private readonly IInputBackend _inputBackend;
@@ -74,8 +74,8 @@ namespace Avalonia.LinuxFramebuffer
 
         public PixelSize RotatedSize => Orientation switch
         {
-            SurfaceOrientation.Rotated90 => new PixelSize(_outputBackend.PixelSize.Height, _outputBackend.PixelSize.Width),
-            SurfaceOrientation.Rotated270 => new PixelSize(_outputBackend.PixelSize.Height, _outputBackend.PixelSize.Width),
+            SurfaceOrientation.Rotation90 => new PixelSize(_outputBackend.PixelSize.Height, _outputBackend.PixelSize.Width),
+            SurfaceOrientation.Rotation270 => new PixelSize(_outputBackend.PixelSize.Height, _outputBackend.PixelSize.Width),
             _ => _outputBackend.PixelSize,
         };
 
@@ -89,13 +89,12 @@ namespace Avalonia.LinuxFramebuffer
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 1, 1);
 
-        // implements ISurfaceOrientation
         public SurfaceOrientation Orientation
         {
-            get => _outputBackend.Orientation;
+            get;
             set
             {
-                _outputBackend.Orientation = value;
+                field = value;
                 Resized?.Invoke(ScaledSize, WindowResizeReason.Unspecified);
             }
         }

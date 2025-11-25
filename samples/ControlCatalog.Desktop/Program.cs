@@ -9,8 +9,10 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Fonts.Inter;
 using Avalonia.Headless;
+using Avalonia.LinuxFramebuffer;
 using Avalonia.LinuxFramebuffer.Output;
 using Avalonia.LogicalTree;
+using Avalonia.Platform;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.Vulkan;
@@ -21,7 +23,7 @@ namespace ControlCatalog.Desktop
     static class Program
     {
         private static bool s_useFramebuffer;
-        
+
         [STAThread]
         static int Main(string[] args)
         {
@@ -51,12 +53,28 @@ namespace ControlCatalog.Desktop
                     return scaling;
                 return 1;
             }
+            SurfaceOrientation GetOrientation()
+            {
+                var idx = Array.IndexOf(args, "--orientation");
+                if (idx != 0 && args.Length > idx + 1 &&
+                    Enum.TryParse<SurfaceOrientation>(args[idx + 1], true, out var orientation))
+                    return orientation;
+                return SurfaceOrientation.Rotation0;
+            }
+            string GetCard()
+            {
+                var idx = Array.IndexOf(args, "--card");
+                if (idx != 0 && args.Length > idx + 1)
+                    return args[idx + 1];
+                return null;
+            }
             if (s_useFramebuffer)
             {
                  SilenceConsole();
                  return builder.StartLinuxFbDev(args, new FbDevOutputOptions()
                  {
-                     Scaling = GetScaling()
+                     Scaling = GetScaling(),
+                     Orientation = GetOrientation(),
                  });
             }
             else if (args.Contains("--vnc"))
@@ -109,7 +127,11 @@ namespace ControlCatalog.Desktop
             else if (args.Contains("--drm"))
             {
                 SilenceConsole();
-                return builder.StartLinuxDrm(args, scaling: GetScaling());
+                return builder.StartLinuxDrm(args, card: GetCard(), options: new DrmOutputOptions()
+                {
+                    Scaling = GetScaling(),
+                    Orientation = GetOrientation(),
+                });
             }
             else if (args.Contains("--dxgi"))
             {

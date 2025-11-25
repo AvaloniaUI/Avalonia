@@ -9,7 +9,7 @@ using Avalonia.Skia;
 
 namespace Avalonia.LinuxFramebuffer
 {
-    public sealed unsafe class FbdevOutput : IFramebufferPlatformSurface, IDisposable, IOutputBackend
+    public sealed unsafe class FbdevOutput : IFramebufferPlatformSurface, IDisposable, IOutputBackend, ISurfaceOrientation
     {
         private int _fd;
         private fb_fix_screeninfo _fixedInfo;
@@ -21,7 +21,6 @@ namespace Avalonia.LinuxFramebuffer
         private bool _lockedAtLeastOnce;
         public double Scaling { get; set; }
 
-        // implements ISurfaceOrientation
         public SurfaceOrientation Orientation { get; set; }
 
         /// <summary>
@@ -47,7 +46,7 @@ namespace Avalonia.LinuxFramebuffer
             PixelFormat = format
         })
         {
-            
+
         }
 
         /// <summary>
@@ -176,7 +175,7 @@ namespace Avalonia.LinuxFramebuffer
                 throw new ObjectDisposedException("LinuxFramebuffer");
 
             var dpi = new Vector(96, 96) * Scaling;
-            
+
             if (_options.RenderDirectlyToMappedMemory)
             {
                 properties = new FramebufferLockProperties(_lockedAtLeastOnce);
@@ -192,7 +191,7 @@ namespace Avalonia.LinuxFramebuffer
                     new FbDevBackBuffer(_fd, _fixedInfo, _varInfo, _mappedAddress, _options.UseAsyncFrontBufferBlit == true))
                 .Lock(new Vector(96, 96) * Scaling);
         }
-        
+
         public IFramebufferRenderTarget CreateFramebufferRenderTarget() => new FuncRetainedFramebufferRenderTarget(Lock);
 
 
