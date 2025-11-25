@@ -7,9 +7,10 @@ using Avalonia.LinuxFramebuffer.Input;
 using Avalonia.LinuxFramebuffer.Output;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition;
- using Avalonia.Threading;
+using Avalonia.Skia;
+using Avalonia.Threading;
 
- namespace Avalonia.LinuxFramebuffer
+namespace Avalonia.LinuxFramebuffer
 {
     class FramebufferToplevelImpl : ITopLevelImpl, IScreenInfoProvider
     {
@@ -71,7 +72,14 @@ using Avalonia.Rendering.Composition;
         public Action? Closed { get; set; }
         public Action? LostFocus { get; set; }
 
-        public Size ScaledSize => _outputBackend.PixelSize.ToSize(RenderScaling);
+        public PixelSize RotatedSize => Orientation switch
+        {
+            SurfaceOrientation.Rotated90 => new PixelSize(_outputBackend.PixelSize.Height, _outputBackend.PixelSize.Width),
+            SurfaceOrientation.Rotated270 => new PixelSize(_outputBackend.PixelSize.Height, _outputBackend.PixelSize.Width),
+            _ => _outputBackend.PixelSize,
+        };
+
+        public Size ScaledSize => RotatedSize.ToSize(RenderScaling);
 
         public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevel) { }
 
@@ -80,6 +88,18 @@ using Avalonia.Rendering.Composition;
         public void SetFrameThemeVariant(PlatformThemeVariant themeVariant) { }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 1, 1);
+
+        // implements ISurfaceOrientation
+        public SurfaceOrientation Orientation
+        {
+            get => _outputBackend.Orientation;
+            set
+            {
+                _outputBackend.Orientation = value;
+                Resized?.Invoke(ScaledSize, WindowResizeReason.Unspecified);
+            }
+        }
+
         public object? TryGetFeature(Type featureType) => null;
     }
 }

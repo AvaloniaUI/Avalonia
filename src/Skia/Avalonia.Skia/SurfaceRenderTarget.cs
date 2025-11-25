@@ -37,7 +37,7 @@ namespace Avalonia.Skia
                 _surface = null;
             }
         }
-        
+
         /// <summary>
         /// Create new surface render target.
         /// </summary>
@@ -153,10 +153,7 @@ namespace Avalonia.Skia
             }
             else
             {
-                var oldMatrix = context.Canvas.TotalMatrix;
-                context.Canvas.ResetMatrix();
                 _surface.Surface.Draw(context.Canvas, 0, 0, null);
-                context.Canvas.SetMatrix(oldMatrix);
             }
         }
 

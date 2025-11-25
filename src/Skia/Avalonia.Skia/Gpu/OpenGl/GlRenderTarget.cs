@@ -1,9 +1,6 @@
 using System;
-using Avalonia.Reactive;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Surfaces;
-using Avalonia.Platform;
-using Avalonia.Rendering;
 using SkiaSharp;
 using static Avalonia.OpenGL.GlConsts;
 
@@ -64,11 +61,11 @@ namespace Avalonia.Skia
         
         ISkiaGpuRenderSession BeginRenderingSessionCore(PixelSize? expectedSize)
         {
-            var glSession =
+            IGlPlatformSurfaceRenderingSession glSession =
                 expectedSize != null && _surface is IGlPlatformSurfaceRenderTarget2 surface2
                     ? surface2.BeginDraw(expectedSize.Value)
                     : _surface.BeginDraw();
-            
+
             bool success = false;
             try
             {
@@ -100,6 +97,29 @@ namespace Avalonia.Skia
                     var surface = SKSurface.Create(_grContext, renderTarget,
                         glSession.IsYFlipped ? GRSurfaceOrigin.TopLeft : GRSurfaceOrigin.BottomLeft,
                         colorType, _surfaceProperties);
+
+                    // Apply rotation to the canvas if supported bt the backend and it's not the native hardware orientation
+                    if (glSession is ISurfaceOrientation orientation && orientation.Orientation != SurfaceOrientation.Normal)
+                    { 
+                        var canvas = surface.Canvas;
+                        var width = size.Width;
+                        var height = size.Height;
+                        canvas.Translate(width / 2, height / 2);
+                        canvas.RotateDegrees(orientation.Orientation switch
+                        {
+                            SurfaceOrientation.Rotated90 => 90,
+                            SurfaceOrientation.Rotated180 => 180,
+                            SurfaceOrientation.Rotated270 => -90,
+                            _ => 0
+                        });
+                        canvas.Translate(orientation.Orientation switch
+                        {
+                            SurfaceOrientation.Rotated180 => new SKPoint(-width / 2, -height / 2),
+                            SurfaceOrientation.Rotated90 => new SKPoint(-height / 2, -width / 2),
+                            SurfaceOrientation.Rotated270 => new SKPoint(-height / 2, -width / 2),
+                            _ => new SKPoint()
+                        });
+                    }
 
                     success = true;
 

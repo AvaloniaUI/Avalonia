@@ -8,6 +8,7 @@ using Avalonia.OpenGL;
 using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
+using Avalonia.Skia;
 using static Avalonia.LinuxFramebuffer.NativeUnsafeMethods;
 using static Avalonia.LinuxFramebuffer.Output.LibDrm;
 
@@ -17,13 +18,21 @@ namespace Avalonia.LinuxFramebuffer.Output
     {
         private DrmOutputOptions _outputOptions = new();
         private DrmCard _card;
-        public PixelSize PixelSize => _mode.Resolution;
+         public PixelSize PixelSize => _mode.Resolution;
 
         public double Scaling
         {
             get => _outputOptions.Scaling;
             set => _outputOptions.Scaling = value;
         }
+
+        // implements ISurfaceOrientation
+        public SurfaceOrientation Orientation
+        {
+            get => _outputOptions.Orientation;
+            set => _outputOptions.Orientation = value;
+        }
+
 
         class SharedContextGraphics : IPlatformGraphics
         {
@@ -275,7 +284,7 @@ namespace Avalonia.LinuxFramebuffer.Output
                 // We are wrapping GBM buffer chain associated with CRTC, and don't free it on a whim
             }
 
-            class RenderSession : IGlPlatformSurfaceRenderingSession
+            class RenderSession : IGlPlatformSurfaceRenderingSession, ISurfaceOrientation
             {
                 private readonly DrmOutput _parent;
                 private readonly IDisposable _clearContext;
@@ -338,6 +347,8 @@ namespace Avalonia.LinuxFramebuffer.Output
                 public double Scaling => _parent.Scaling;
 
                 public bool IsYFlipped => false;
+
+                public SurfaceOrientation Orientation { get => _parent.Orientation; set => _parent.Orientation = value; }
             }
 
             public IGlPlatformSurfaceRenderingSession BeginDraw()
