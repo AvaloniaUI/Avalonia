@@ -120,30 +120,22 @@ namespace Avalonia.Skia
 
                 foreach (var nameRecord in _nameTable)
                 {
-                    if(nameRecord.NameID == KnownNameIds.FontFamilyName)
+                    var languageId = nameRecord.LanguageID == 0 ?
+                        (ushort)CultureInfo.InvariantCulture.LCID :
+                        nameRecord.LanguageID;
+                    
+                    switch (nameRecord.NameID)
                     {
-                        if (nameRecord.Platform != PlatformIDs.Windows || nameRecord.LanguageID == 0)
-                        {
-                            continue;
-                        }
-
-                        if (!familyNames.ContainsKey(nameRecord.LanguageID))
-                        {
-                            familyNames[nameRecord.LanguageID] = nameRecord.Value;
-                        }
-                    }
-
-                    if(nameRecord.NameID == KnownNameIds.FontSubfamilyName)
-                    {
-                        if (nameRecord.Platform != PlatformIDs.Windows || nameRecord.LanguageID == 0)
-                        {
-                            continue;
-                        }
-
-                        if (!faceNames.ContainsKey(nameRecord.LanguageID))
-                        {
-                            faceNames[nameRecord.LanguageID] = nameRecord.Value;
-                        }
+                        case KnownNameIds.FontFamilyName:
+                            {
+                                familyNames.TryAdd(languageId, nameRecord.Value);
+                                break;
+                            }
+                        case KnownNameIds.FontSubfamilyName:
+                            {
+                                faceNames.TryAdd(languageId, nameRecord.Value);
+                                break;
+                            }
                     }
                 }
 
