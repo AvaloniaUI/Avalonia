@@ -1,6 +1,7 @@
 ﻿#nullable enable
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -13,11 +14,12 @@ namespace Avalonia.Skia
 {
     internal class FontManagerImpl : IFontManagerImpl, IFontManagerImpl2
     {
+        private readonly ConcurrentDictionary<string, FontFamily> _fontFamilyMappings = new(StringComparer.OrdinalIgnoreCase);
         private SKFontManager _skFontManager = SKFontManager.Default;
+        private string[]? _installedFontFamilyNames;
 
         public string GetDefaultFontFamilyName()
         {
-
             return SKTypeface.Default.FamilyName;
         }
 
@@ -25,13 +27,18 @@ namespace Avalonia.Skia
         {
             if (checkForUpdates)
             {
+                _installedFontFamilyNames = null;
                 _skFontManager = SKFontManager.CreateDefault();
             }
 
-            return _skFontManager.GetFontFamilies();
+            _installedFontFamilyNames ??= _skFontManager.GetFontFamilies();
+
+            return _installedFontFamilyNames;
         }
 
         [ThreadStatic] private static string[]? t_languageTagBuffer;
+
+        public IReadOnlyDictionary<string, FontFamily> FontFamilyMappings => _fontFamilyMappings;
 
         public bool TryMatchCharacter(int codepoint, FontStyle fontStyle,
             FontWeight fontWeight, FontStretch fontStretch, string? familyName, CultureInfo? culture, out Typeface fontKey)
@@ -143,6 +150,12 @@ namespace Avalonia.Skia
             }
 
             glyphTypeface = new GlyphTypefaceImpl(skTypeface, fontSimulations);
+
+            if (!string.Equals(familyName, glyphTypeface.FamilyName, StringComparison.OrdinalIgnoreCase))
+            {
+                // The platform gave us a different font than we requested it might be an alias so we need to map it.
+                _fontFamilyMappings.TryAdd(familyName, new FontFamily(glyphTypeface.FamilyName));
+            }
 
             return true;
         }

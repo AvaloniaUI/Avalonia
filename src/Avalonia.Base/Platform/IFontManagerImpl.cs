@@ -65,6 +65,8 @@ namespace Avalonia.Platform
 
     internal interface IFontManagerImpl2 : IFontManagerImpl
     {
+        IReadOnlyDictionary<string, FontFamily> FontFamilyMappings { get; }
+
         /// <summary>
         ///     Tries to match a specified character to a typeface that supports specified font properties.
         /// </summary>

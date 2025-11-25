@@ -43,12 +43,6 @@ namespace Avalonia.Media.Fonts
 
             var key = new FontCollectionKey(style, weight, stretch);
 
-            //Check cache first to avoid unnecessary calls to the font manager
-            if (_glyphTypefaceCache.TryGetValue(familyName, out var glyphTypefaces) && glyphTypefaces.TryGetValue(key, out glyphTypeface))
-            {
-                return glyphTypeface != null;
-            }
-
             //Try to create the glyph typeface via system font manager
             if (!_platformImpl.TryCreateGlyphTypeface(familyName, style, weight, stretch, out glyphTypeface))
             {
@@ -62,6 +56,15 @@ namespace Avalonia.Media.Fonts
             if (!TryAddGlyphTypeface(glyphTypeface))
             {
                 return false;
+            }
+
+            if (_platformImpl is IFontManagerImpl2 fontManagerImpl2 && fontManagerImpl2.FontFamilyMappings.TryGetValue(familyName, out var mappedFontFamily))
+            {
+                if(base.TryGetGlyphTypeface(mappedFontFamily.Name, style, weight, stretch, out glyphTypeface))
+                {
+                    //Add to cache with mapped family name
+                    TryAddGlyphTypeface(familyName, key, glyphTypeface);
+                }
             }
 
             //Requested glyph typeface should be in cache now
