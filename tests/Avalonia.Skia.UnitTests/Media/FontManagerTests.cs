@@ -106,7 +106,7 @@ namespace Avalonia.Skia.UnitTests.Media
                     FontManager.Current.TryGetGlyphTypeface(new Typeface("Unknown"), out _);
                 }
 
-                Assert.Equal(fontManagerImpl.TryCreateGlyphTypefaceCount, 2);
+                Assert.Equal(2, fontManagerImpl.TryCreateGlyphTypefaceCount);
             }
         }
 

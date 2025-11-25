@@ -43,6 +43,12 @@ namespace Avalonia.Media.Fonts
 
             var key = new FontCollectionKey(style, weight, stretch);
 
+            // We need to check our cache first to be able to avoid multiple calls to platform font manager when a null value was cached before.
+            if (_glyphTypefaceCache.TryGetValue(familyName, out var glyphTypefaces) && glyphTypefaces.TryGetValue(key, out glyphTypeface))
+            {
+                return glyphTypeface != null;
+            }
+
             //Try to create the glyph typeface via system font manager
             if (!_platformImpl.TryCreateGlyphTypeface(familyName, style, weight, stretch, out glyphTypeface))
             {
