@@ -4,13 +4,17 @@
                       PrivateAssets="all"
                       ReferenceOutputAssembly="false"
                       OutputItemType="Analyzer" />
-    <ProjectReference Include="$(MSBuildThisFileDirectory)../src/tools/Avalonia.Analyzers/Avalonia.Analyzers.csproj"
+    <ProjectReference Include="$(MSBuildThisFileDirectory)../src/tools/Avalonia.Analyzers.CSharp/Avalonia.Analyzers.CSharp.csproj"
                       PrivateAssets="all"
                       ReferenceOutputAssembly="false"
                       OutputItemType="Analyzer" />
-    <ProjectReference Include="$(MSBuildThisFileDirectory)../src/tools/Avalonia.Analyzers.CodeFixes/Avalonia.Analyzers.CodeFixes.csproj"
+    <ProjectReference Include="$(MSBuildThisFileDirectory)../src/tools/Avalonia.Analyzers.CodeFixes.CSharp/Avalonia.Analyzers.CodeFixes.CSharp.csproj"
                       PrivateAssets="all"
                       ReferenceOutputAssembly="false"
+                      OutputItemType="Analyzer" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)../src/tools/Avalonia.Analyzers.VisualBasic/Avalonia.Analyzers.VisualBasic.csproj"
+                      ReferenceOutputAssembly="false"
+                      PrivateAssets="all"
                       OutputItemType="Analyzer" />
   </ItemGroup>
 </Project>
