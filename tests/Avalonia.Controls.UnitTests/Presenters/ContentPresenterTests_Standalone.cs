@@ -12,6 +12,7 @@ using Xunit;
 using Avalonia.Rendering;
 using Avalonia.Media;
 using Avalonia.Data;
+using Avalonia.Controls.Documents;
 
 namespace Avalonia.Controls.UnitTests.Presenters
 {
@@ -400,8 +401,8 @@ namespace Avalonia.Controls.UnitTests.Presenters
         [Fact]
         public void ContentPresenter_LetterSpacing_Property_Inherits_From_TextBlock()
         {
-            // Verify that ContentPresenter's LetterSpacing uses TextBlock.LetterSpacingProperty
-            Assert.Same(TextBlock.LetterSpacingProperty, ContentPresenter.LetterSpacingProperty);
+            // Verify that ContentPresenter's LetterSpacing uses the TextElement letter spacing definition
+            Assert.Same(TextElement.LetterSpacingProperty, ContentPresenter.LetterSpacingProperty);
         }
     }
 }

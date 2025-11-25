@@ -11,6 +11,7 @@ using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
 using Avalonia.Media;
+using Avalonia.Controls.Documents;
 
 namespace Avalonia.Controls.UnitTests.Primitives
 {
@@ -603,6 +604,12 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             var target = new TestTemplatedControl();
             Assert.Equal(0, target.LetterSpacing);
+        }
+
+        [Fact]
+        public void TemplatedControl_LetterSpacing_Uses_TextElement_Property()
+        {
+            Assert.Same(TextElement.LetterSpacingProperty, TemplatedControl.LetterSpacingProperty);
         }
 
         [Fact]

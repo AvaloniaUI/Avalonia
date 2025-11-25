@@ -122,7 +122,7 @@ namespace Avalonia.Controls.Presenters
         /// Defines the <see cref="LetterSpacing"/> property
         /// </summary>
         public static readonly StyledProperty<double> LetterSpacingProperty =
-            TextBlock.LetterSpacingProperty.AddOwner<ContentPresenter>();
+            TextElement.LetterSpacingProperty.AddOwner<ContentPresenter>();
 
         /// <summary>
         /// Defines the <see cref="MaxLines"/> property

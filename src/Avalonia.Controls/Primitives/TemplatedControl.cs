@@ -92,7 +92,7 @@ namespace Avalonia.Controls.Primitives
         /// Defines the <see cref="LetterSpacing"/> property.
         /// </summary>
         public static readonly StyledProperty<double> LetterSpacingProperty =
-            TextBlock.LetterSpacingProperty.AddOwner<TemplatedControl>();
+            TextElement.LetterSpacingProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
         /// Defines the <see cref="Padding"/> property.
