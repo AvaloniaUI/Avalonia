@@ -64,7 +64,7 @@
                           Margin="{TemplateBinding Padding}"
                           HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                           VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                          TextBlock.LetterSpacing="{TemplateBinding LetterSpacing}"
+                          TextElement.LetterSpacing="{TemplateBinding LetterSpacing}"
                           TextWrapping="Wrap"
                           Grid.Column="1" />
         </Grid>

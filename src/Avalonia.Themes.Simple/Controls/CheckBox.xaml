@@ -50,7 +50,7 @@
                             IsVisible="{TemplateBinding Content,
                                                         Converter={x:Static ObjectConverters.IsNotNull}}"
                             TextElement.Foreground="{TemplateBinding Foreground}"
-                            TextBlock.LetterSpacing="{TemplateBinding LetterSpacing}" />
+                            TextElement.LetterSpacing="{TemplateBinding LetterSpacing}" />
         </Grid>
       </ControlTemplate>
     </Setter>

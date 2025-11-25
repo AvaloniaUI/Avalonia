@@ -72,7 +72,7 @@
                 Content="{TemplateBinding Content}"
                 ContentTemplate="{TemplateBinding ContentTemplate}"
                 Foreground="{TemplateBinding Foreground}"
-                TextBlock.LetterSpacing="{TemplateBinding LetterSpacing}" />
+                TextElement.LetterSpacing="{TemplateBinding LetterSpacing}" />
           </Grid>
         </Border>
       </ControlTemplate>
