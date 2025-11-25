@@ -10,7 +10,7 @@ using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Avalonia.Analyzers;
+namespace Avalonia.Analyzers.CodeFixes;
 
 /// <summary>
 /// Provides a code fix for the BitmapAnalyzer diagnostic, which replaces "avares://" string arguments
@@ -24,7 +24,7 @@ public class BitmapAnalyzerCSCodeFixProvider : CodeFixProvider
 
     /// <inheritdoc />
     public override ImmutableArray<string> FixableDiagnosticIds { get; } =
-        ImmutableArray.Create(BitmapAnalyzer.DiagnosticId);
+        ImmutableArray.Create(DiagnosticIds.Bitmap);
 
     /// <inheritdoc />
     public override FixAllProvider? GetFixAllProvider()

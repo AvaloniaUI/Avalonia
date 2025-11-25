@@ -10,10 +10,8 @@ namespace Avalonia.Analyzers;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public class OnPropertyChangedOverrideAnalyzer : DiagnosticAnalyzer
 {
-    public const string DiagnosticId = "AVA2001";
-
     private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(
-        DiagnosticId,
+        DiagnosticIds.OnPropertyChangedOverride,
         "Missing invoke base.OnPropertyChanged",
         "Method '{0}' do not invoke base.{0}",
         "Potential issue",
