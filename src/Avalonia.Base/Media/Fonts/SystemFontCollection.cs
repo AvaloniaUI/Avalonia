@@ -60,15 +60,18 @@ namespace Avalonia.Media.Fonts
 
             if (_platformImpl is IFontManagerImpl2 fontManagerImpl2 && fontManagerImpl2.FontFamilyMappings.TryGetValue(familyName, out var mappedFontFamily))
             {
-                if(base.TryGetGlyphTypeface(mappedFontFamily.Name, style, weight, stretch, out glyphTypeface))
+                if (base.TryGetGlyphTypeface(mappedFontFamily.Name, style, weight, stretch, out glyphTypeface))
                 {
                     //Add to cache with mapped family name
                     TryAddGlyphTypeface(familyName, key, glyphTypeface);
+                    return true;
                 }
+                // If mapping lookup fails, fall through and return true for the created glyphTypeface
+                return true;
             }
 
-            //Requested glyph typeface should be in cache now
-            return base.TryGetGlyphTypeface(familyName, style, weight, stretch, out glyphTypeface);
+            // Successfully created and cached glyphTypeface, return true
+            return true;
         }
 
         public override bool TryGetFamilyTypefaces(string familyName, [NotNullWhen(true)] out IReadOnlyList<Typeface>? familyTypefaces)
