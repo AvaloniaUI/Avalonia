@@ -17,6 +17,7 @@ namespace Avalonia.Skia
         private readonly ConcurrentDictionary<string, FontFamily> _fontFamilyMappings = new(StringComparer.OrdinalIgnoreCase);
         private SKFontManager _skFontManager = SKFontManager.Default;
         private string[]? _installedFontFamilyNames;
+        private readonly object _installedFontLock = new();
 
         public string GetDefaultFontFamilyName()
         {
@@ -27,13 +28,27 @@ namespace Avalonia.Skia
         {
             if (checkForUpdates)
             {
-                _installedFontFamilyNames = null;
-                _skFontManager = SKFontManager.CreateDefault();
+                lock (_installedFontLock)
+                {
+                    _installedFontFamilyNames = null;
+                    _skFontManager = SKFontManager.CreateDefault();
+                }
             }
 
-            _installedFontFamilyNames ??= _skFontManager.GetFontFamilies();
+            // Fast path without locking
+            var result = _installedFontFamilyNames;
 
-            return _installedFontFamilyNames;
+            if (result == null)
+            {
+                lock (_installedFontLock)
+                {
+                    _installedFontFamilyNames ??= _skFontManager.GetFontFamilies();
+
+                    result = _installedFontFamilyNames;
+                }
+            }
+
+            return result;
         }
 
         [ThreadStatic] private static string[]? t_languageTagBuffer;

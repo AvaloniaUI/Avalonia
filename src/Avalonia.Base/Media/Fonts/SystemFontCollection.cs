@@ -64,10 +64,11 @@ namespace Avalonia.Media.Fonts
                 {
                     //Add to cache with mapped family name
                     TryAddGlyphTypeface(familyName, key, glyphTypeface);
+
                     return true;
                 }
-                // If mapping lookup fails, fall through and return true for the created glyphTypeface
-                return true;
+
+                return false;
             }
 
             // Successfully created and cached glyphTypeface, return true
