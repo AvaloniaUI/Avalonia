@@ -1,3 +1,5 @@
+#nullable enable
+
 using System.IO;
 using System.Runtime.CompilerServices;
 using Avalonia.Media.Imaging;

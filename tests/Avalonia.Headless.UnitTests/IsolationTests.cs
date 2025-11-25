@@ -15,6 +15,10 @@ public class IsolationTests
 #elif XUNIT
     [AvaloniaTheory]
     [InlineData(1), InlineData(2), InlineData(3)]
+    [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage(
+        "Usage",
+        "xUnit1026:Theory methods should use all of their parameters",
+        Justification = "Used to run the test several times with the proper isolation level")]
 #endif
     public void Application_Instance_Should_Match_Isolation_Level(int runIndex)
     {

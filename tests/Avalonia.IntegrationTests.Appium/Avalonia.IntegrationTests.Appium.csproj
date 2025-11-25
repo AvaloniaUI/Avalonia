@@ -7,6 +7,12 @@
     <IsRunningAppium2 Condition="'$(IsRunningAppium2)' == ''">false</IsRunningAppium2>
     <DefineConstants Condition="'$(IsRunningAppium2)' == 'false'">$(DefineConstants);APPIUM1</DefineConstants>
     <DefineConstants Condition="'$(IsRunningAppium2)' == 'true'">$(DefineConstants);APPIUM2</DefineConstants>
+
+    <!--
+      References to System.Net.Http and System.Text.RegularExpressions are explicitly added to
+      avoid deprecated versions, we don't care about them not being pruned.
+    -->
+    <NoWarn>$(NoWarn);NU1510</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

@@ -416,12 +416,6 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Finds the index of the text run and the offset within that run corresponding to the specified character
-        /// index.
-        /// </summary>
-        /// <remarks>If the specified character index does not fall within any run, the method returns
-
-        /// <summary>
         /// Calculates the total width of a specified segment within a sequence of text runs.
         /// </summary>
         /// <remarks>The method accounts for partial overlaps between the segment and individual text
