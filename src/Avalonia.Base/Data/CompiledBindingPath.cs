@@ -101,16 +101,12 @@ namespace Avalonia.Data
 
     public class CompiledBindingPathBuilder
     {
-        private readonly int _apiVersion;
         private readonly List<ICompiledBindingPathElement> _elements = new();
 
         public CompiledBindingPathBuilder()
         {
         }
 
-        // TODO12: Remove this constructor. apiVersion is only needed for compatibility with
-        // versions of Avalonia which used $self.Property() for building TemplatedParent bindings.
-        public CompiledBindingPathBuilder(int apiVersion) => _apiVersion = apiVersion;
 
         public CompiledBindingPathBuilder Not()
         {
@@ -120,22 +116,7 @@ namespace Avalonia.Data
 
         public CompiledBindingPathBuilder Property(IPropertyInfo info, Func<WeakReference<object?>, IPropertyInfo, IPropertyAccessor> accessorFactory)
         {
-            // Older versions of Avalonia used $self.Property() for building TemplatedParent bindings.
-            // Try to detect this and upgrade to using a TemplatedParentPathElement so that logging works
-            // correctly.
-            if (_apiVersion == 0 &&
-                info.Name == "TemplatedParent" &&
-                _elements.Count >= 1 &&
-                _elements[_elements.Count - 1] is SelfPathElement)
-            {
-                _elements.Add(new TemplatedParentPathElement());
-            }
-            else
-            {
-                return Property(info, accessorFactory, acceptsNull: false);
-            }
-
-            return this;
+            return Property(info, accessorFactory, acceptsNull: false);
         }
 
         public CompiledBindingPathBuilder Property(
