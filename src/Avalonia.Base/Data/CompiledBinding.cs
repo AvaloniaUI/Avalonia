@@ -6,6 +6,7 @@ using Avalonia.Controls;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.ExpressionNodes;
+using Avalonia.Data.Core.Parsers;
 
 namespace Avalonia.Data;
 
@@ -107,8 +108,14 @@ public class CompiledBinding : BindingBase
     {
         var enableDataValidation = targetProperty?.GetMetadata(target).EnableDataValidation ?? false;
         var nodes = new List<ExpressionNode>();
-        
-        Path?.BuildExpression(nodes, out _);
+        var isRooted = false;
+
+        Path?.BuildExpression(nodes, out isRooted);
+
+        // If the binding isn't rooted (i.e. doesn't have a Source or start with $parent, $self,
+        // #elementName etc.) then we need to add a data context source node.
+        if (Source == AvaloniaProperty.UnsetValue && !isRooted)
+            nodes.Insert(0, ExpressionNodeFactory.CreateDataContext(targetProperty));
 
         // If the first node is an ISourceNode then allow it to select the source; otherwise
         // use the binding source if specified, falling back to the target.
