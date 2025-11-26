@@ -11,21 +11,18 @@ using Avalonia.Rendering.Composition;
 
  namespace Avalonia.LinuxFramebuffer
 {
-    class FramebufferToplevelImpl : ITopLevelImpl, IScreenInfoProvider, ISurfaceOrientation
+    class FramebufferToplevelImpl : ITopLevelImpl, IScreenInfoProvider
     {
         private readonly IOutputBackend _outputBackend;
         private readonly IInputBackend _inputBackend;
         private readonly RawEventGrouper _inputQueue;
-        private readonly SurfaceOrientation _orientation = SurfaceOrientation.Rotation0;
+        private readonly SurfaceOrientation _orientation;
 
         public IInputRoot? InputRoot { get; private set; }
 
         public FramebufferToplevelImpl(IOutputBackend outputBackend, IInputBackend inputBackend)
         {
-            if (outputBackend is ISurfaceOrientation surfaceOrientation)
-            {
-                _orientation = surfaceOrientation.Orientation;
-            }
+            _orientation = outputBackend.Orientation;
             _outputBackend = outputBackend;
             _inputBackend = inputBackend;
             _inputQueue = new RawEventGrouper(groupedInput => Input?.Invoke(groupedInput),
@@ -92,9 +89,8 @@ using Avalonia.Rendering.Composition;
         public void SetFrameThemeVariant(PlatformThemeVariant themeVariant) { }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 1, 1);
-
         public object? TryGetFeature(Type featureType) => null;
-        
-        SurfaceOrientation ISurfaceOrientation.Orientation => _orientation;
+
+        SurfaceOrientation IScreenInfoProvider.Orientation => _orientation;
     }
 }

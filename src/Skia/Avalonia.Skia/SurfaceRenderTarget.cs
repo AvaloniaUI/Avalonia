@@ -38,12 +38,19 @@ namespace Avalonia.Skia
             }
         }
         
+        private readonly ISurfaceOrientation? _orientation;
+        
         /// <summary>
         /// Create new surface render target.
         /// </summary>
         /// <param name="createInfo">Create info.</param>
         public SurfaceRenderTarget(CreateInfo createInfo)
-        {
+        {            
+            if (createInfo.Session is ISurfaceOrientation orientation)
+            {
+                _orientation = orientation;
+            }
+            
             PixelSize = new PixelSize(createInfo.Width, createInfo.Height);
             Dpi = createInfo.Dpi;
 
@@ -141,6 +148,34 @@ namespace Avalonia.Skia
                 ImageSavingHelper.SaveImage(image, stream, quality);
             }
         }
+        
+        private SKMatrix ResetMatrix(SKCanvas canvas)
+        {
+            var matrix = canvas.TotalMatrix;
+            var width = PixelSize.Width;
+            var height = PixelSize.Height;
+            
+            canvas.ResetMatrix();
+            var orientation = _orientation?.Orientation ?? SurfaceOrientation.Rotation0;
+            if (orientation == SurfaceOrientation.Rotation0) {
+                return matrix;
+            }
+            canvas.RotateDegrees(orientation switch
+            {
+                SurfaceOrientation.Rotation90 => 90,
+                SurfaceOrientation.Rotation180 => 180,
+                SurfaceOrientation.Rotation270 => -90,
+                _ => 0
+            });
+            canvas.Translate(orientation switch
+            {
+                SurfaceOrientation.Rotation90 => new SKPoint(0, -height),
+                SurfaceOrientation.Rotation180 => new SKPoint(-width, -height),
+                SurfaceOrientation.Rotation270 => new SKPoint(-width, 0),
+                _ => new SKPoint()
+            });
+            return matrix;
+        }
 
         public void Blit(IDrawingContextImpl contextImpl)
         {
@@ -153,7 +188,9 @@ namespace Avalonia.Skia
             }
             else
             {
+                var oldMatrix = ResetMatrix(context.Canvas);
                 _surface.Surface.Draw(context.Canvas, 0, 0, null);
+                context.Canvas.SetMatrix(oldMatrix);
             }
         }
 

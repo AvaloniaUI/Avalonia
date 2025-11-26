@@ -23,7 +23,7 @@ namespace Avalonia.Skia
 
         public bool IsCorrupted => (_surface as IGlPlatformSurfaceRenderTargetWithCorruptionInfo)?.IsCorrupted == true;
 
-        class GlGpuSession : ISkiaGpuRenderSession
+        class GlGpuSession : ISkiaGpuRenderSession, ISurfaceOrientation
         {
             private readonly GRBackendRenderTarget _backendRenderTarget;
             private readonly SKSurface _surface;
@@ -55,6 +55,8 @@ namespace Avalonia.Skia
             public GRContext GrContext { get; }
             public SKSurface SkSurface => _surface;
             public double ScaleFactor => _glSession.Scaling;
+            
+            public SurfaceOrientation Orientation => _glSession is ISurfaceOrientation orientation ? orientation.Orientation : SurfaceOrientation.Rotation0;
         }
 
         public ISkiaGpuRenderSession BeginRenderingSession(PixelSize size) => BeginRenderingSessionCore(size);
@@ -98,28 +100,6 @@ namespace Avalonia.Skia
                     var surface = SKSurface.Create(_grContext, renderTarget,
                         glSession.IsYFlipped ? GRSurfaceOrigin.TopLeft : GRSurfaceOrigin.BottomLeft,
                         colorType, _surfaceProperties);
-
-                    // Apply rotation to the canvas if supported bt the backend and it's not the native hardware orientation
-                    if (glSession is ISurfaceOrientation orientation && orientation.Orientation != SurfaceOrientation.Rotation0)
-                    {
-                        var canvas = surface.Canvas;
-                        var width = size.Width;
-                        var height = size.Height;
-                        canvas.RotateDegrees(orientation.Orientation switch
-                        {
-                            SurfaceOrientation.Rotation90 => 90,
-                            SurfaceOrientation.Rotation180 => 180,
-                            SurfaceOrientation.Rotation270 => -90,
-                            _ => 0
-                        });
-                        canvas.Translate(orientation.Orientation switch
-                        {
-                            SurfaceOrientation.Rotation90 => new SKPoint(0, -width),
-                            SurfaceOrientation.Rotation180 => new SKPoint(-width, -height),
-                            SurfaceOrientation.Rotation270 => new SKPoint(-height, 0),
-                            _ => new SKPoint()
-                        });
-                    }
 
                     success = true;
 

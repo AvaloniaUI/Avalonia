@@ -13,7 +13,7 @@ using static Avalonia.LinuxFramebuffer.Output.LibDrm;
 
 namespace Avalonia.LinuxFramebuffer.Output
 {
-    public unsafe class DrmOutput : IGlOutputBackend, IGlPlatformSurface, ISurfaceOrientation
+    public unsafe class DrmOutput : IGlOutputBackend, IGlPlatformSurface
     {
         private DrmOutputOptions _outputOptions = new();
         private DrmCard _card;

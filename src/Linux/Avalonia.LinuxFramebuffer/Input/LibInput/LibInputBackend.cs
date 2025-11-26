@@ -33,30 +33,24 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
         {
             var fd = libinput_get_fd(ctx);
             IntPtr[] devices = [.. options.Events!.Select(f => libinput_path_add_device(ctx, f)).Where(d => d != IntPtr.Zero)];
-            SurfaceOrientation screenOrientation = SurfaceOrientation.Rotation0;
+            var screenOrientation = _screen?.Orientation ?? SurfaceOrientation.Rotation0;
+            
+            float[] matrix = screenOrientation switch
+            {
+                SurfaceOrientation.Rotation90 => [0, 1, 0, -1, 0, 1],
+                SurfaceOrientation.Rotation180 => [-1, 0, 1, 0, -1, 1],
+                SurfaceOrientation.Rotation270 => [0, -1, 1, 1, 0, 0],
+                _ => [1, 0, 0, 0, 1, 0],    // Normal
+            };
+
+            foreach (var device in devices)
+            {
+                libinput_device_config_calibration_set_matrix(device, matrix);
+            }
 
             while (true)
             {
                 IntPtr ev;
-
-                if (_screen is ISurfaceOrientation surfaceOrientationProvider && surfaceOrientationProvider.Orientation != screenOrientation)
-                {
-                    screenOrientation = surfaceOrientationProvider.Orientation;
-
-                    float[] matrix = screenOrientation switch
-                    {
-                        SurfaceOrientation.Rotation90 => [0, 1, 0, -1, 0, 1],
-                        SurfaceOrientation.Rotation180 => [-1, 0, 1, 0, -1, 1],
-                        SurfaceOrientation.Rotation270 => [0, -1, 1, 1, 0, 0],
-                        _ => [1, 0, 0, 0, 1, 0],    // Normal
-                    };
-
-                    foreach (var device in devices)
-                    {
-                        libinput_device_config_calibration_set_matrix(device, matrix);
-                    }
-                }
-
                 libinput_dispatch(ctx);
                 while ((ev = libinput_get_event(ctx)) != IntPtr.Zero)
                 {

@@ -30,7 +30,6 @@ namespace Avalonia.Skia
         private readonly Matrix? _postTransform;
         private double _currentOpacity = 1.0f;
         private readonly bool _disableSubpixelTextRendering;
-        private Matrix _baseTransform;  // default canvas rotation
         private Matrix? _currentTransform;
         private bool _disposed;
         private GRContext? _grContext;
@@ -188,7 +187,6 @@ namespace Avalonia.Skia
             Canvas = createInfo.Canvas ?? createInfo.Surface?.Canvas
                 ?? throw new ArgumentException("Invalid create info - no Canvas provided", nameof(createInfo));
 
-            _baseTransform = Canvas.TotalMatrix44.ToAvaloniaMatrix();
             _intermediateSurfaceDpi = createInfo.Dpi;
             _disposables = disposables;
             _disableSubpixelTextRendering = createInfo.DisableSubpixelTextRendering;
@@ -850,7 +848,7 @@ namespace Avalonia.Skia
         {
             // There is a Canvas.TotalMatrix (non 4x4 overload), but internally it still uses 4x4 matrix.
             // We want to avoid SKMatrix4x4 -> SKMatrix -> Matrix conversion by directly going SKMatrix4x4 -> Matrix.
-            get { return _currentTransform ??= _baseTransform.Invert() * Canvas.TotalMatrix44.ToAvaloniaMatrix(); }
+            get { return _currentTransform ??= Canvas.TotalMatrix44.ToAvaloniaMatrix(); }
             set
             {
                 CheckLease();
@@ -868,7 +866,7 @@ namespace Avalonia.Skia
 
                 // Canvas.SetMatrix internally uses 4x4 matrix, even with SKMatrix(3x3) overload.
                 // We want to avoid Matrix -> SKMatrix -> SKMatrix4x4 conversion by directly going Matrix -> SKMatrix4x4.
-                Canvas.SetMatrix((_baseTransform * transform).ToSKMatrix44());
+                Canvas.SetMatrix(transform.ToSKMatrix44());
             }
         }
 

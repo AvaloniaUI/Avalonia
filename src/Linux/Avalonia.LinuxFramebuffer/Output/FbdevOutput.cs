@@ -162,6 +162,8 @@ namespace Avalonia.LinuxFramebuffer
             }
         }
 
+        public SurfaceOrientation Orientation => SurfaceOrientation.Rotation0;
+
         public ILockedFramebuffer Lock() => Lock(out _);
 
         private ILockedFramebuffer Lock(out FramebufferLockProperties properties)
