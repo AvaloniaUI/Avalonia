@@ -37,8 +37,6 @@ internal sealed class PropertyAccessorNode : ExpressionNode, IPropertyAccessorNo
         builder.Append(PropertyName);
     }
 
-    public override ExpressionNode Clone() => new PropertyAccessorNode(PropertyName, _plugin, _acceptsNull);
-
     public void EnableDataValidation() => _enableDataValidation = true;
 
     public bool WriteValueToSource(object? value, IReadOnlyList<ExpressionNode> nodes)

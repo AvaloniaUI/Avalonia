@@ -10,8 +10,6 @@ internal sealed class TemplatedParentNode : SourceNode
         builder.Append("$templatedParent");
     }
 
-    public override ExpressionNode Clone() => new TemplatedParentNode();
-
     public override object? SelectSource(object? source, object target, object? anchor)
     {
         if (source != AvaloniaProperty.UnsetValue)

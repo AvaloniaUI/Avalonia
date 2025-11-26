@@ -25,8 +25,6 @@ internal sealed class AvaloniaPropertyAccessorNode :
         builder.Append(Property.Name);
     }
 
-    public override ExpressionNode Clone() => new AvaloniaPropertyAccessorNode(Property);
-
     public bool WriteValueToSource(object? value, IReadOnlyList<ExpressionNode> nodes)
     {
         if (Source is AvaloniaObject o)

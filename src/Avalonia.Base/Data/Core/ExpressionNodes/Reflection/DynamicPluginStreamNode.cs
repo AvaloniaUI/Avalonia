@@ -19,8 +19,6 @@ internal sealed class DynamicPluginStreamNode : ExpressionNode
         builder.Append('^');
     }
 
-    public override ExpressionNode Clone() => new DynamicPluginStreamNode();
-
     protected override void OnSourceChanged(object? source, Exception? dataValidationError)
     {
         if (!ValidateNonNullSource(source))

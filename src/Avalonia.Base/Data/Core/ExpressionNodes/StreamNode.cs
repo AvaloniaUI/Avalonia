@@ -19,8 +19,6 @@ internal sealed class StreamNode : ExpressionNode, IObserver<object?>
         builder.Append('^');
     }
 
-    public override ExpressionNode Clone() => new StreamNode(_plugin);
-
     void IObserver<object?>.OnCompleted() { }
     void IObserver<object?>.OnError(Exception error) { }
     void IObserver<object?>.OnNext(object? value) => SetValue(value);

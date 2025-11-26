@@ -62,11 +62,6 @@ internal abstract class ExpressionNode
     }
 
     /// <summary>
-    /// Performs a deep clone of the expression node.
-    /// </summary>
-    public abstract ExpressionNode Clone();
-
-    /// <summary>
     /// Sets the owner binding.
     /// </summary>
     /// <param name="owner">The owner binding.</param>
