@@ -609,135 +609,135 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             }
         }
 
-////        [Fact]
-////        public void InfersDataTypeFromParentDataGridItemsTypeInCaseOfControlInheritance()
-////        {
-////            using (UnitTestApplication.Start(TestServices.StyledWindow))
-////            {
-////                var window = (Window)AvaloniaRuntimeXamlLoader.Load(@"
-////<Window xmlns='https://github.com/avaloniaui'
-////        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-////        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
-////        x:DataType='local:TestItemsCollectionDataContext'>
-////    <local:DataGridLikeControlInheritor Items='{CompiledBinding Items}' Name='target'>
-////        <local:DataGridLikeControlInheritor.Columns>
-////            <local:DataGridLikeColumn Binding='{CompiledBinding StringProperty}'>
-////            </local:DataGridLikeColumn>
-////        </local:DataGridLikeControlInheritor.Columns>
-////    </local:DataGridLikeControlInheritor>
-////</Window>");
-////                var target = window.GetControl<DataGridLikeControl>("target");
-////                var column = target.Columns.Single();
+        [Fact]
+        public void InfersDataTypeFromParentDataGridItemsTypeInCaseOfControlInheritance()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestItemsCollectionDataContext'>
+    <local:DataGridLikeControlInheritor Items='{CompiledBinding Items}' Name='target'>
+        <local:DataGridLikeControlInheritor.Columns>
+            <local:DataGridLikeColumn Binding='{CompiledBinding StringProperty}'>
+            </local:DataGridLikeColumn>
+        </local:DataGridLikeControlInheritor.Columns>
+    </local:DataGridLikeControlInheritor>
+</Window>");
+                var target = window.GetControl<DataGridLikeControl>("target");
+                var column = target.Columns.Single();
 
-////                var dataContext = new TestItemsCollectionDataContext();
+                var dataContext = new TestItemsCollectionDataContext();
 
-////                dataContext.Items.Add(new TestData() { StringProperty = "Test" });
+                dataContext.Items.Add(new TestData() { StringProperty = "Test" });
 
-////                window.DataContext = dataContext;
+                window.DataContext = dataContext;
 
-////                window.ApplyTemplate();
-////                target.ApplyTemplate();
+                window.ApplyTemplate();
+                target.ApplyTemplate();
 
-////                // Assert DataGridLikeColumn.Binding data type.
-////                var compiledPath = ((CompiledBindingExtension)column.Binding!).Path;
-////                var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath.Elements));
+                // Assert DataGridLikeColumn.Binding data type.
+                var compiledPath = ((CompiledBinding)column.Binding!).Path;
+                var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath?.Elements ?? []));
 
-////                Assert.Equal(typeof(string), node.Property.PropertyType);
-////                Assert.Equal(nameof(TestData.StringProperty), node.Property.Name);
-////            }
-////        }
+                Assert.Equal(typeof(string), node.Property.PropertyType);
+                Assert.Equal(nameof(TestData.StringProperty), node.Property.Name);
+            }
+        }
 
-////        [Fact]
-////        public void InfersDataTemplateTypeFromParentDataGridItemsType()
-////        {
-////            using (UnitTestApplication.Start(TestServices.StyledWindow))
-////            {
-////                var window = (Window)AvaloniaRuntimeXamlLoader.Load(@"
-////<Window xmlns='https://github.com/avaloniaui'
-////        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-////        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
-////        x:DataType='local:TestDataContext'>
-////    <local:DataGridLikeControl Items='{CompiledBinding ListProperty}' Name='target'>
-////        <local:DataGridLikeControl.Columns>
-////            <local:DataGridLikeColumn Binding='{CompiledBinding Length}'>
-////                <local:DataGridLikeColumn.Template>
-////                    <DataTemplate>
-////                        <TextBlock Text='{CompiledBinding Length}' />
-////                    </DataTemplate>
-////                </local:DataGridLikeColumn.Template>
-////            </local:DataGridLikeColumn>
-////        </local:DataGridLikeControl.Columns>
-////    </local:DataGridLikeControl>
-////</Window>");
-////                var target = window.GetControl<DataGridLikeControl>("target");
-////                var column = target.Columns.Single();
+        [Fact]
+        public void InfersDataTemplateTypeFromParentDataGridItemsType()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'>
+    <local:DataGridLikeControl Items='{CompiledBinding ListProperty}' Name='target'>
+        <local:DataGridLikeControl.Columns>
+            <local:DataGridLikeColumn Binding='{CompiledBinding Length}'>
+                <local:DataGridLikeColumn.Template>
+                    <DataTemplate>
+                        <TextBlock Text='{CompiledBinding Length}' />
+                    </DataTemplate>
+                </local:DataGridLikeColumn.Template>
+            </local:DataGridLikeColumn>
+        </local:DataGridLikeControl.Columns>
+    </local:DataGridLikeControl>
+</Window>");
+                var target = window.GetControl<DataGridLikeControl>("target");
+                var column = target.Columns.Single();
 
-////                var dataContext = new TestDataContext();
+                var dataContext = new TestDataContext();
 
-////                dataContext.ListProperty.Add("Test");
+                dataContext.ListProperty.Add("Test");
 
-////                window.DataContext = dataContext;
+                window.DataContext = dataContext;
 
-////                window.ApplyTemplate();
-////                target.ApplyTemplate();
+                window.ApplyTemplate();
+                target.ApplyTemplate();
 
-////                // Assert DataGridLikeColumn.Binding data type.
-////                var compiledPath = ((CompiledBindingExtension)column.Binding!).Path;
-////                var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath.Elements));
-////                Assert.Equal(typeof(int), node.Property.PropertyType);
-                
-////                // Assert DataGridLikeColumn.Template data type by evaluating the template.
-////                var firstItem = dataContext.ListProperty[0];
-////                var textBlockFromTemplate = (TextBlock)column.Template!.Build(firstItem)!;
-////                textBlockFromTemplate.DataContext = firstItem;
-////                Assert.Equal(firstItem.Length.ToString(), textBlockFromTemplate.Text);
-////            }
-////        }
-        
-////        [Fact]
-////        public void ExplicitDataTypeStillWorksOnDataGridLikeControls()
-////        {
-////            using (UnitTestApplication.Start(TestServices.StyledWindow))
-////            {
-////                var window = (Window)AvaloniaRuntimeXamlLoader.Load(@"
-////<Window xmlns='https://github.com/avaloniaui'
-////        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-////        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
-////        x:DataType='local:TestDataContext'>
-////    <local:DataGridLikeControl Name='target'>
-////        <local:DataGridLikeControl.Columns>
-////            <local:DataGridLikeColumn Binding='{CompiledBinding Length}' x:DataType='x:String'>
-////                <local:DataGridLikeColumn.Template>
-////                    <DataTemplate x:DataType='x:String'>
-////                        <TextBlock Text='{CompiledBinding Length}' />
-////                    </DataTemplate>
-////                </local:DataGridLikeColumn.Template>
-////            </local:DataGridLikeColumn>
-////        </local:DataGridLikeControl.Columns>
-////    </local:DataGridLikeControl>
-////</Window>");
-////                var target = window.GetControl<DataGridLikeControl>("target");
-////                var column = target.Columns.Single();
+                // Assert DataGridLikeColumn.Binding data type.
+                var compiledPath = ((CompiledBinding)column.Binding!).Path;
+                var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath?.Elements ?? []));
+                Assert.Equal(typeof(int), node.Property.PropertyType);
 
-////                var dataContext = new TestDataContext();
-////                dataContext.ListProperty.Add("Test");
-////                target.Items = dataContext.ListProperty;
+                // Assert DataGridLikeColumn.Template data type by evaluating the template.
+                var firstItem = dataContext.ListProperty[0];
+                var textBlockFromTemplate = (TextBlock)column.Template!.Build(firstItem)!;
+                textBlockFromTemplate.DataContext = firstItem;
+                Assert.Equal(firstItem.Length.ToString(), textBlockFromTemplate.Text);
+            }
+        }
 
-////                window.ApplyTemplate();
-////                target.ApplyTemplate();
+        [Fact]
+        public void ExplicitDataTypeStillWorksOnDataGridLikeControls()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'>
+    <local:DataGridLikeControl Name='target'>
+        <local:DataGridLikeControl.Columns>
+            <local:DataGridLikeColumn Binding='{CompiledBinding Length}' x:DataType='x:String'>
+                <local:DataGridLikeColumn.Template>
+                    <DataTemplate x:DataType='x:String'>
+                        <TextBlock Text='{CompiledBinding Length}' />
+                    </DataTemplate>
+                </local:DataGridLikeColumn.Template>
+            </local:DataGridLikeColumn>
+        </local:DataGridLikeControl.Columns>
+    </local:DataGridLikeControl>
+</Window>");
+                var target = window.GetControl<DataGridLikeControl>("target");
+                var column = target.Columns.Single();
 
-////                // Assert DataGridLikeColumn.Binding data type.
-////                var compiledPath = ((CompiledBindingExtension)column.Binding!).Path;
-////                var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath.Elements));
-////                Assert.Equal(typeof(int), node.Property.PropertyType);
-                
-////                // Assert DataGridLikeColumn.Template data type by evaluating the template.
-////                var firstItem = dataContext.ListProperty[0];
-////                var textBlockFromTemplate = (TextBlock)column.Template!.Build(firstItem)!;
-////                textBlockFromTemplate.DataContext = firstItem;
-////                Assert.Equal(firstItem.Length.ToString(), textBlockFromTemplate.Text);
-////            }
-////        }
+                var dataContext = new TestDataContext();
+                dataContext.ListProperty.Add("Test");
+                target.Items = dataContext.ListProperty;
+
+                window.ApplyTemplate();
+                target.ApplyTemplate();
+
+                // Assert DataGridLikeColumn.Binding data type.
+                var compiledPath = ((CompiledBinding)column.Binding!).Path;
+                var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath?.Elements ?? []));
+                Assert.Equal(typeof(int), node.Property.PropertyType);
+
+                // Assert DataGridLikeColumn.Template data type by evaluating the template.
+                var firstItem = dataContext.ListProperty[0];
+                var textBlockFromTemplate = (TextBlock)column.Template!.Build(firstItem)!;
+                textBlockFromTemplate.DataContext = firstItem;
+                Assert.Equal(firstItem.Length.ToString(), textBlockFromTemplate.Text);
+            }
+        }
 
         [Fact]
         public void ThrowsOnUninferrableDataTemplateInItemsControlWithoutItemsBinding()
@@ -2048,62 +2048,62 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             }
         }
 
-////        [Fact]
-////        public void ResolvesDataTypeForAssignBinding()
-////        {
-////            using (UnitTestApplication.Start(TestServices.StyledWindow))
-////            {
-////                var xaml = @"
-////<local:AssignBindingControl xmlns='https://github.com/avaloniaui'
-////        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-////        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
-////        x:DataType='local:TestDataContext'
-////        X='{CompiledBinding StringProperty}' />";
-////                var control = (AssignBindingControl)AvaloniaRuntimeXamlLoader.Load(xaml);
-////                var compiledPath = ((CompiledBindingExtension)control.X!).Path;
+        [Fact]
+        public void ResolvesDataTypeForAssignBinding()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<local:AssignBindingControl xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'
+        X='{CompiledBinding StringProperty}' />";
+                var control = (AssignBindingControl)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var compiledPath = ((CompiledBinding)control.X!).Path;
 
-////                var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath.Elements));
-////                Assert.Equal(typeof(string), node.Property.PropertyType);
-////            }
-////        }
-        
-////        [Fact]
-////        public void ResolvesDataTypeForAssignBinding_FromBindingProperty()
-////        {
-////            using (UnitTestApplication.Start(TestServices.StyledWindow))
-////            {
-////                var xaml = @"
-////<local:AssignBindingControl xmlns='https://github.com/avaloniaui'
-////        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-////        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
-////        X='{CompiledBinding StringProperty, DataType=local:TestDataContext}' />";
-////                var control = (AssignBindingControl)AvaloniaRuntimeXamlLoader.Load(xaml);
-////                var compiledPath = ((CompiledBindingExtension)control.X!).Path;
+                var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath?.Elements ?? []));
+                Assert.Equal(typeof(string), node.Property.PropertyType);
+            }
+        }
 
-////                var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath.Elements));
-////                Assert.Equal(typeof(string), node.Property.PropertyType);
-////            }
-////        }
-        
-////        [Fact]
-////        public void Uses_RuntimeLoader_Configuration_To_Enabled_Compiled()
-////        {
-////            using (UnitTestApplication.Start(TestServices.StyledWindow))
-////            {
-////                var xaml = @"
-////<local:AssignBindingControl xmlns='https://github.com/avaloniaui'
-////        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-////        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
-////        X='{CompiledBinding StringProperty, DataType=local:TestDataContext}' />";
-////                var control = (AssignBindingControl)AvaloniaRuntimeXamlLoader.Load(new RuntimeXamlLoaderDocument(xaml),
-////                    new RuntimeXamlLoaderConfiguration { UseCompiledBindingsByDefault = true });
-////                var compiledPath = ((CompiledBindingExtension)control.X!).Path;
+        [Fact]
+        public void ResolvesDataTypeForAssignBinding_FromBindingProperty()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<local:AssignBindingControl xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        X='{CompiledBinding StringProperty, DataType=local:TestDataContext}' />";
+                var control = (AssignBindingControl)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var compiledPath = ((CompiledBinding)control.X!).Path;
 
-////                var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath.Elements));
-////                Assert.Equal(typeof(string), node.Property.PropertyType);
-////            }
-////        }
-        
+                var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath?.Elements ?? []));
+                Assert.Equal(typeof(string), node.Property.PropertyType);
+            }
+        }
+
+        [Fact]
+        public void Uses_RuntimeLoader_Configuration_To_Enabled_Compiled()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<local:AssignBindingControl xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        X='{CompiledBinding StringProperty, DataType=local:TestDataContext}' />";
+                var control = (AssignBindingControl)AvaloniaRuntimeXamlLoader.Load(new RuntimeXamlLoaderDocument(xaml),
+                    new RuntimeXamlLoaderConfiguration { UseCompiledBindingsByDefault = true });
+                var compiledPath = ((CompiledBinding)control.X!).Path;
+
+                var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath?.Elements ?? []));
+                Assert.Equal(typeof(string), node.Property.PropertyType);
+            }
+        }
+
         [Fact]
         public void Should_Bind_To_Nested_Generic_Property()
         {
