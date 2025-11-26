@@ -18,36 +18,22 @@ namespace Avalonia.Win32
             // Get the window rectangle.
             GetWindowRect(hWnd, out var rcWindow);
 
-            var scaling = (uint)(RenderScaling * StandardDpi);
-            var relativeScaling = RenderScaling / PrimaryScreenRenderScaling;
-
             // Get the frame rectangle, adjusted for the style without a caption.
             var rcFrame = new RECT();
             var borderThickness = new RECT();
-            if (Win32Platform.WindowsVersion < PlatformConstants.Windows10_1607)
+
+            var isMaximized = GetWindowPlacement(hWnd, out var placement) && placement.ShowCmd == ShowWindowCommand.ShowMaximized;
+            if (!isMaximized)
             {
-                AdjustWindowRectEx(ref rcFrame, (uint)(WindowStyles.WS_OVERLAPPEDWINDOW & ~WindowStyles.WS_CAPTION), false, 0);
+                var style = (WindowStyles)GetWindowLong(_hwnd, (int)WindowLongParam.GWL_STYLE);
 
-                rcFrame.top = (int)(rcFrame.top * relativeScaling);
-                rcFrame.right = (int)(rcFrame.right * relativeScaling);
-                rcFrame.left = (int)(rcFrame.left * relativeScaling);
-                rcFrame.bottom = (int)(rcFrame.bottom * relativeScaling);
+                var adjuster = CreateWindowRectAdjuster();
+                adjuster.Adjust(ref rcFrame, style & ~WindowStyles.WS_CAPTION, 0);
+                adjuster.Adjust(ref borderThickness, style, 0);
 
-                AdjustWindowRectEx(ref borderThickness, (uint)GetStyle(), false, 0);
-
-                borderThickness.top = (int)(borderThickness.top * relativeScaling);
-                borderThickness.right = (int)(borderThickness.right * relativeScaling);
-                borderThickness.left = (int)(borderThickness.left * relativeScaling);
-                borderThickness.bottom = (int)(borderThickness.bottom * relativeScaling);
+                borderThickness.left *= -1;
+                borderThickness.top *= -1;
             }
-            else
-            {
-                AdjustWindowRectExForDpi(ref rcFrame, WindowStyles.WS_OVERLAPPEDWINDOW & ~WindowStyles.WS_CAPTION, false, 0, scaling);
-                AdjustWindowRectExForDpi(ref borderThickness, GetStyle(), false, 0, scaling);
-            }
-
-            borderThickness.left *= -1;
-            borderThickness.top *= -1;
 
             if (_extendTitleBarHint >= 0)
             {

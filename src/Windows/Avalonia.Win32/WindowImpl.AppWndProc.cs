@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls;
@@ -57,13 +58,79 @@ namespace Avalonia.Win32
                         return IntPtr.Zero;
                     }
 
-                case WindowsMessage.WM_NCCALCSIZE:
+                case WindowsMessage.WM_NCCALCSIZE when ToInt32(wParam) == 1:
                     {
-                        if (ToInt32(wParam) == 1 && (_windowProperties.Decorations == SystemDecorations.None || _isClientAreaExtended))
+                        if (_windowProperties.Decorations == SystemDecorations.None)
+                            return IntPtr.Zero;
+
+                        // When the client area is extended into the frame, we are still requesting the standard styles matching
+                        // the wanted decorations (such as WS_CAPTION or WS_BORDER) along with window bounds larger than the client size.
+                        // This allows the window to have the standard resize borders *outside* of the client area.
+                        // The logic for this lies in the Resize() method.
+                        //
+                        // After this happens, WM_NCCALCSIZE provides us with a new window area matching those requested bounds.
+                        // We need to adjust that area back to our preferred client area, keeping the resize borders around it.
+                        //
+                        // The same logic applies when the window gets maximized, the only difference being that Windows chose
+                        // the final bounds instead of us.
+                        if (_isClientAreaExtended)
                         {
+                            GetWindowPlacement(hWnd, out var placement);
+                            if (placement.ShowCmd == ShowWindowCommand.ShowMinimized)
+                                break;
+
+                            var paramsObj = Marshal.PtrToStructure<NCCALCSIZE_PARAMS>(lParam);
+                            ref var rect = ref paramsObj.rgrc[0];
+
+                            var style = (WindowStyles)GetWindowLong(_hwnd, (int)WindowLongParam.GWL_STYLE);
+                            var adjuster = CreateWindowRectAdjuster();
+                            var borderThickness = new RECT();
+
+                            // We told Windows we have a caption, but since we're actually extending into it, it should not be taken into account.
+                            if (style.HasAllFlags(WindowStyles.WS_CAPTION))
+                            {
+                                if (placement.ShowCmd == ShowWindowCommand.ShowMaximized)
+                                {
+                                    adjuster.Adjust(ref borderThickness, style & ~WindowStyles.WS_CAPTION | WindowStyles.WS_BORDER, 0);
+                                }
+                                else
+                                {
+                                    adjuster.Adjust(ref borderThickness, style, 0);
+
+                                    var thinBorderThickness = new RECT();
+                                    adjuster.Adjust(ref thinBorderThickness, style & ~(WindowStyles.WS_CAPTION | WindowStyles.WS_THICKFRAME) | WindowStyles.WS_BORDER, 0);
+                                    borderThickness.top = thinBorderThickness.top;
+                                }
+                            }
+                            else if (style.HasAllFlags(WindowStyles.WS_BORDER))
+                            {
+                                if (placement.ShowCmd == ShowWindowCommand.ShowMaximized)
+                                {
+                                    adjuster.Adjust(ref borderThickness, style & ~(WindowStyles.WS_BORDER | WindowStyles.WS_THICKFRAME), 0);
+                                }
+                                else
+                                {
+                                    adjuster.Adjust(ref borderThickness, style, 0);
+
+                                    var thinBorderThickness = new RECT();
+                                    adjuster.Adjust(ref thinBorderThickness, style & ~WindowStyles.WS_THICKFRAME, 0);
+                                    borderThickness.top = thinBorderThickness.top;
+                                }
+                            }
+                            else
+                            {
+                                adjuster.Adjust(ref borderThickness, style, 0);
+                            }
+
+                            rect.left -= borderThickness.left;
+                            rect.top -= borderThickness.top;
+                            rect.right -= borderThickness.right;
+                            rect.bottom -= borderThickness.bottom;
+
+                            Marshal.StructureToPtr(paramsObj, lParam, false);
+
                             return IntPtr.Zero;
                         }
-
                         break;
                     }
 
