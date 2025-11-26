@@ -569,24 +569,6 @@ namespace Avalonia.Controls.Primitives
             EndUpdating();
         }
 
-        /// <summary>
-        /// Called to update the validation state for properties for which data validation is
-        /// enabled.
-        /// </summary>
-        /// <param name="property">The property.</param>
-        /// <param name="state">The current data binding state.</param>
-        /// <param name="error">The current data binding error, if any.</param>
-        protected override void UpdateDataValidation(
-            AvaloniaProperty property,
-            BindingValueType state,
-            Exception? error)
-        {
-            if (property == SelectedItemProperty)
-            {
-                DataValidationErrors.SetError(this, error);
-            }
-        }
-
         /// <inheritdoc />
         protected override void OnInitialized()
         {
