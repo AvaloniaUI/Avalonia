@@ -132,7 +132,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TextBox
                 {
                     DataContext = new ExceptionTest(),
-                    [!TextBox.TextProperty] = new CompiledBindingExtension
+                    [!TextBox.TextProperty] = new CompiledBinding
                     {
                         Source = new ExceptionTest(),
                         Path = path,
