@@ -105,7 +105,6 @@ namespace Avalonia.Skia
                         var canvas = surface.Canvas;
                         var width = size.Width;
                         var height = size.Height;
-                        canvas.Translate(width / 2, height / 2);
                         canvas.RotateDegrees(orientation.Orientation switch
                         {
                             SurfaceOrientation.Rotation90 => 90,
@@ -115,9 +114,9 @@ namespace Avalonia.Skia
                         });
                         canvas.Translate(orientation.Orientation switch
                         {
-                            SurfaceOrientation.Rotation180 => new SKPoint(-width / 2, -height / 2),
-                            SurfaceOrientation.Rotation90 => new SKPoint(-height / 2, -width / 2),
-                            SurfaceOrientation.Rotation270 => new SKPoint(-height / 2, -width / 2),
+                            SurfaceOrientation.Rotation90 => new SKPoint(0, -width),
+                            SurfaceOrientation.Rotation180 => new SKPoint(-width, -height),
+                            SurfaceOrientation.Rotation270 => new SKPoint(-height, 0),
                             _ => new SKPoint()
                         });
                     }

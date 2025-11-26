@@ -32,7 +32,7 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
         private unsafe void InputThread(IntPtr ctx, LibInputBackendOptions options)
         {
             var fd = libinput_get_fd(ctx);
-            IntPtr[] devices = [.. options.Events!.Select(f => libinput_path_add_device(ctx, f))];
+            IntPtr[] devices = [.. options.Events!.Select(f => libinput_path_add_device(ctx, f)).Where(d => d != IntPtr.Zero)];
             SurfaceOrientation screenOrientation = SurfaceOrientation.Rotation0;
 
             while (true)

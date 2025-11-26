@@ -2,5 +2,5 @@
 
 internal interface ISurfaceOrientation
 {
-    SurfaceOrientation Orientation { get; set; }
+    SurfaceOrientation Orientation { get; }
 }
