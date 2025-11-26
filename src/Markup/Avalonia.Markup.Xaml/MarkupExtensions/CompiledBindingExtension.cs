@@ -112,7 +112,5 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
         /// <see cref="BindingMode.TwoWay"/> and <see cref="BindingMode.OneWayToSource"/> bindings.
         /// </summary>
         public UpdateSourceTrigger UpdateSourceTrigger { get; set; }
-
-        internal WeakReference? DefaultAnchor { get; set; }
     }
 }
