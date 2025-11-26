@@ -23,13 +23,18 @@ namespace ControlCatalog.Desktop
     static class Program
     {
         private static bool s_useFramebuffer;
-
+        private static bool s_useDrm;
+        
         [STAThread]
         static int Main(string[] args)
         {
             if (args.Contains("--fbdev"))
             {
                 s_useFramebuffer = true;
+            }
+            if (args.Contains("--drm"))
+            {
+                s_useDrm = true;
             }
 
             if (args.Contains("--wait-for-attach"))
@@ -124,7 +129,7 @@ namespace ControlCatalog.Desktop
                     })
                     .StartWithClassicDesktopLifetime(args);
             }
-            else if (args.Contains("--drm"))
+            else if (s_useDrm)
             {
                 SilenceConsole();
                 return builder.StartLinuxDrm(args, card: GetCard(), options: new DrmOutputOptions()
@@ -173,7 +178,7 @@ namespace ControlCatalog.Desktop
                 .WithInterFont()
                 .AfterSetup(builder =>
                 {
-                    if (!s_useFramebuffer)
+                    if (!s_useFramebuffer && !s_useDrm)
                     {
                         builder.Instance!.AttachDevTools(new Avalonia.Diagnostics.DevToolsOptions()
                         {

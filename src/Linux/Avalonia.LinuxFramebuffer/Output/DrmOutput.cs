@@ -8,7 +8,6 @@ using Avalonia.OpenGL;
 using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
-using Avalonia.Skia;
 using static Avalonia.LinuxFramebuffer.NativeUnsafeMethods;
 using static Avalonia.LinuxFramebuffer.Output.LibDrm;
 
@@ -18,7 +17,7 @@ namespace Avalonia.LinuxFramebuffer.Output
     {
         private DrmOutputOptions _outputOptions = new();
         private DrmCard _card;
-         public PixelSize PixelSize => _mode.Resolution;
+        public PixelSize PixelSize => _mode.Resolution;
 
         public double Scaling
         {
@@ -31,7 +30,6 @@ namespace Avalonia.LinuxFramebuffer.Output
             get => _outputOptions.Orientation;
             set => _outputOptions.Orientation = value;
         }
-
 
         class SharedContextGraphics : IPlatformGraphics
         {

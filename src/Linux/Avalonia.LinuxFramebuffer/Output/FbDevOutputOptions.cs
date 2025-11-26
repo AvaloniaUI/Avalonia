@@ -1,5 +1,4 @@
 using Avalonia.Platform;
-using Avalonia.Skia;
 
 namespace Avalonia.LinuxFramebuffer.Output;
 

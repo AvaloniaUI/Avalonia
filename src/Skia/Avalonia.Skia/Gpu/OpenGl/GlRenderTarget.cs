@@ -38,7 +38,7 @@ namespace Avalonia.Skia
                 _backendRenderTarget = backendRenderTarget;
                 _surface = surface;
                 _glSession = glSession;
-
+                
                 SurfaceOrigin = glSession.IsYFlipped ? GRSurfaceOrigin.TopLeft : GRSurfaceOrigin.BottomLeft;
             }
             public void Dispose()
@@ -49,7 +49,7 @@ namespace Avalonia.Skia
                 GrContext.Flush();
                 _glSession.Dispose();
             }
-
+            
             public GRSurfaceOrigin SurfaceOrigin { get; }
 
             public GRContext GrContext { get; }
@@ -59,14 +59,14 @@ namespace Avalonia.Skia
 
         public ISkiaGpuRenderSession BeginRenderingSession(PixelSize size) => BeginRenderingSessionCore(size);
         public ISkiaGpuRenderSession BeginRenderingSession() => BeginRenderingSessionCore(null);
-
+        
         ISkiaGpuRenderSession BeginRenderingSessionCore(PixelSize? expectedSize)
         {
-            IGlPlatformSurfaceRenderingSession glSession =
+            var glSession =
                 expectedSize != null && _surface is IGlPlatformSurfaceRenderTarget2 surface2
                     ? surface2.BeginDraw(expectedSize.Value)
                     : _surface.BeginDraw();
-
+            
             bool success = false;
             try
             {

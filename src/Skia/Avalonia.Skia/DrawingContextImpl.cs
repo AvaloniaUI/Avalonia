@@ -63,7 +63,7 @@ namespace Avalonia.Skia
             /// Makes DPI to be applied as a hidden matrix transform
             /// </summary>
             public bool ScaleDrawingToDpi;
-
+            
             /// <summary>
             /// Dpi for intermediate surfaces
             /// </summary>
@@ -157,7 +157,7 @@ namespace Avalonia.Skia
                         Context = context;
                         _parent._leased = true;
                     }
-
+                    
                     public void Dispose()
                     {
                         _parent._leased = false;
@@ -166,7 +166,7 @@ namespace Avalonia.Skia
 
                     public IPlatformGraphicsContext Context { get; }
                 }
-
+                
                 public ISkiaSharpPlatformGraphicsApiLease? TryLeasePlatformGraphicsApi()
                 {
                     CheckLease();
@@ -177,7 +177,7 @@ namespace Avalonia.Skia
                 }
             }
         }
-
+        
         /// <summary>
         /// Create new drawing context.
         /// </summary>
@@ -188,7 +188,7 @@ namespace Avalonia.Skia
             Canvas = createInfo.Canvas ?? createInfo.Surface?.Canvas
                 ?? throw new ArgumentException("Invalid create info - no Canvas provided", nameof(createInfo));
 
-            _baseTransform = Canvas.TotalMatrix.ToAvaloniaMatrix();
+            _baseTransform = Canvas.TotalMatrix44.ToAvaloniaMatrix();
             _intermediateSurfaceDpi = createInfo.Dpi;
             _disposables = disposables;
             _disableSubpixelTextRendering = createInfo.DisableSubpixelTextRendering;
@@ -200,7 +200,7 @@ namespace Avalonia.Skia
 
             _session = createInfo.CurrentSession;
 
-
+            
             if (createInfo.ScaleDrawingToDpi && !createInfo.Dpi.NearlyEquals(SkiaPlatform.DefaultDpi))
             {
                 _postTransform =
@@ -217,7 +217,7 @@ namespace Avalonia.Skia
                 _useOpacitySaveLayer = options.UseOpacitySaveLayer;
             }
         }
-
+        
         /// <summary>
         /// Skia canvas.
         /// </summary>
@@ -231,7 +231,7 @@ namespace Avalonia.Skia
             if (_leased)
                 throw new InvalidOperationException("The underlying graphics API is currently leased");
         }
-
+        
         /// <inheritdoc />
         public void Clear(Color color)
         {
@@ -314,7 +314,7 @@ namespace Avalonia.Skia
                 return 0.0f;
             return 0.288675f * (float)radius + 0.5f;
         }
-
+        
         private struct BoxShadowFilter : IDisposable
         {
             public readonly SKPaint Paint;
@@ -378,7 +378,7 @@ namespace Avalonia.Skia
             if (rect.Rect.Height <= 0 || rect.Rect.Width <= 0)
                 return;
             CheckLease();
-
+            
             var rc = rect.Rect.ToSKRect();
             SKRoundRect? skRoundRect = null;
 
@@ -451,7 +451,7 @@ namespace Avalonia.Skia
                                 shadowRect.Inflate(spread, spread);
                             Canvas.ClipRoundRect(skRoundRect,
                                 shadow.ClipOperation, true);
-
+                            
                             var oldTransform = Transform;
                             Transform = oldTransform * Matrix.CreateTranslation(boxShadow.OffsetX, boxShadow.OffsetY);
                             Canvas.DrawRoundRect(shadowRect, shadow.Paint);
@@ -507,7 +507,7 @@ namespace Avalonia.Skia
                             shadowRect.Deflate(spread, spread);
                         Canvas.ClipRoundRect(skRoundRect,
                             shadow.ClipOperation, true);
-
+                        
                         var oldTransform = Transform;
                         Transform = oldTransform * Matrix.CreateTranslation(boxShadow.OffsetX, boxShadow.OffsetY);
                         using (var outerRRect = new SKRoundRect(outerRect))
@@ -546,7 +546,7 @@ namespace Avalonia.Skia
             if(r.IsEmpty)
                 return;
             CheckLease();
-
+            
             if (brush != null)
             {
                 using (var fill = CreatePaint(_fillPaint, brush, r.Bounds.ToRectUnscaled()))
@@ -571,7 +571,7 @@ namespace Avalonia.Skia
             if (rect.Height <= 0 || rect.Width <= 0)
                 return;
             CheckLease();
-
+            
             var rc = rect.ToSKRect();
 
             if (brush != null)
@@ -591,7 +591,7 @@ namespace Avalonia.Skia
                 }
             }
         }
-
+       
         /// <inheritdoc />
         public void DrawGlyphRun(IBrush? foreground, IGlyphRunImpl glyphRun)
         {
@@ -681,7 +681,7 @@ namespace Avalonia.Skia
             _currentTransform = null;
             Canvas.Restore();
         }
-
+        
         /// <inheritdoc />
         public void PopClip()
         {
@@ -827,10 +827,10 @@ namespace Avalonia.Skia
 
             var paint = SKPaintCache.Shared.Get();
             paint.BlendMode = SKBlendMode.DstIn;
-
+            
             Canvas.SaveLayer(paint);
             SKPaintCache.Shared.ReturnReset(paint);
-
+            
             var (transform, paintWrapper) = _maskStack.Pop();
             Canvas.SetMatrix(transform);
             using (paintWrapper)
@@ -1007,7 +1007,7 @@ namespace Avalonia.Skia
                                     reversedStops[reversedIndex] = (float)offset;
                                     reversedColors[reversedIndex] = stopColors[i];
                                 }
-
+                               
                                 stopColors = reversedColors;
                                 stopOffsets = reversedStops;
                             }
@@ -1082,9 +1082,9 @@ namespace Avalonia.Skia
                 context.Clear(Colors.Transparent);
                 context.PushClip(calc.IntermediateClip);
                 context.PushRenderOptions(RenderOptions);
-
+                
                 context.Transform = calc.IntermediateTransform;
-
+                
                 context.DrawBitmap(
                     tileBrushImage,
                     1,
@@ -1152,7 +1152,7 @@ namespace Avalonia.Skia
             else
                 ConfigureSceneBrushContentWithSurface(ref paintWrapper, content, targetRect);
         }
-
+        
         private void ConfigureSceneBrushContentWithSurface(ref PaintWrapper paintWrapper, ISceneBrushContent content,
             Rect targetRect)
         {
@@ -1175,15 +1175,15 @@ namespace Avalonia.Skia
                 ConfigureTileBrush(ref paintWrapper, targetRect, content.Brush, intermediate);
             }
         }
-
+        
         private void ConfigureSceneBrushContentWithPicture(ref PaintWrapper paintWrapper, ISceneBrushContent content,
             Rect targetRect)
         {
             // To understand what happens here, read
             // https://learn.microsoft.com/en-us/dotnet/api/system.windows.media.tilebrush
             // and the rest of the docs
-
-            // Avalonia follows WPF and WPF's brushes completely ignore whatever layout bounds visuals have,
+            
+            // Avalonia follows WPF and WPF's brushes completely ignore whatever layout bounds visuals have, 
             // and instead are using content bounds, e. g.
             // ╔════════════════════════════════════╗  <--- target control
             // ║                                    ║       layout bounds
@@ -1197,10 +1197,10 @@ namespace Avalonia.Skia
             // ╚════════════════════════════════════╝
             //
             // Source Rect (aka ViewBox) is relative to the content bounds, not to the visual/drawing
-
+            
             var contentRect = content.Rect;
             var sourceRect = content.Brush.SourceRect.ToPixels(contentRect);
-
+            
             // Early escape
             if (contentRect.Size.Width <= 0 || contentRect.Size.Height <= 0
                 || sourceRect.Size.Width <= 0 || sourceRect.Size.Height <= 0)
@@ -1208,17 +1208,17 @@ namespace Avalonia.Skia
                 paintWrapper.Paint.Color = SKColor.Empty;
                 return;
             }
-
+            
             // We are moving the render area to make the top-left corner of the SourceRect (ViewBox) to be at (0,0)
             // of the tile
             var contentRenderTransform = Matrix.CreateTranslation(-sourceRect.X, -sourceRect.Y);
-
+            
             // DestinationRect (aka Viewport) is specified relative to the target rect
             var destinationRect = content.Brush.DestinationRect.ToPixels(targetRect);
-
+            
             // Tile size matches the destination rect size
             var tileSize = destinationRect.Size;
-
+            
             // Apply transforms to stretch content to match the tile
             if (sourceRect.Size != tileSize)
             {
@@ -1233,7 +1233,7 @@ namespace Avalonia.Skia
                 contentRenderTransform = contentRenderTransform * Matrix.CreateScale(scale) *
                                          Matrix.CreateTranslation(alignmentTranslate);
             }
-
+            
             // Pre-rasterize the tile into SKPicture
             using var pictureTarget = new PictureRenderTarget(_gpu, _grContext, _intermediateSurfaceDpi);
             using (var ctx = pictureTarget.CreateDrawingContext(tileSize, false))
@@ -1243,14 +1243,14 @@ namespace Avalonia.Skia
                 ctx.PopRenderOptions();
             }
             using var tile = pictureTarget.GetPicture();
-
+            
             // If there is no BrushTransform and destinationRect is at (0,0) we don't need any transforms
             Matrix shaderTransform = Matrix.Identity;
-
+            
             // Apply Brush.Transform to SKShader
             if (content.Transform != null)
             {
-
+                
                 var transformOrigin = content.TransformOrigin.ToPixels(targetRect);
                 var offset = Matrix.CreateTranslation(transformOrigin);
                 shaderTransform = (-offset) * content.Transform.Value * (offset);
@@ -1259,10 +1259,10 @@ namespace Avalonia.Skia
             // Apply destinationRect position
             if (destinationRect.Position != default)
                 shaderTransform *= Matrix.CreateTranslation(destinationRect.X, destinationRect.Y);
-
+            
             // Create shader
             var (tileX, tileY) = GetTileModes(content.Brush.TileMode);
-            using(var shader = tile.ToShader(tileX, tileY, shaderTransform.ToSKMatrix(),
+            using(var shader = tile.ToShader(tileX, tileY, shaderTransform.ToSKMatrix(), 
                       new SKRect(0, 0, tile.CullRect.Width, tile.CullRect.Height)))
             {
                 paintWrapper.Paint.Shader = shader;
@@ -1483,7 +1483,7 @@ namespace Avalonia.Skia
             };
 
             return new SurfaceRenderTarget(createInfo);
-        }
+        }        
 
         /// <summary>
         /// Skia cached paint state.
@@ -1493,7 +1493,7 @@ namespace Avalonia.Skia
             private readonly SKColor _color;
             private readonly SKShader _shader;
             private readonly SKPaint _paint;
-
+            
             public PaintState(SKPaint paint, SKColor color, SKShader shader)
             {
                 _paint = paint;
@@ -1557,7 +1557,7 @@ namespace Avalonia.Skia
                         "PaintWrapper disposable object limit reached. You need to add extra struct fields to support more disposables.");
                 }
             }
-
+            
             /// <inheritdoc />
             public void Dispose()
             {

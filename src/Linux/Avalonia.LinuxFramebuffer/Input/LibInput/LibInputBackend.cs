@@ -5,7 +5,6 @@ using System.Threading;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
-using Avalonia.Skia;
 using static Avalonia.LinuxFramebuffer.Input.LibInput.LibInputNativeUnsafeMethods;
 namespace Avalonia.LinuxFramebuffer.Input.LibInput
 {

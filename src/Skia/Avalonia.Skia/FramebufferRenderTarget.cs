@@ -59,7 +59,7 @@ namespace Avalonia.Skia
         public IDrawingContextImpl CreateDrawingContext(PixelSize expectedPixelSize,
             out RenderTargetDrawingContextProperties properties)
             => CreateDrawingContextCore(false, out properties);
-
+        
         IDrawingContextImpl CreateDrawingContextCore(bool scaleDrawingToDpi,
             out RenderTargetDrawingContextProperties properties)
         {
@@ -92,7 +92,7 @@ namespace Avalonia.Skia
             {
                 PreviousFrameIsRetained = !_hadConversionShim && lockProperties.PreviousFrameIsRetained
             };
-
+            
             return new DrawingContextImpl(createInfo, _conversionShim?.SurfaceCopyHandler, canvas, framebuffer);
         }
 
@@ -126,9 +126,9 @@ namespace Avalonia.Skia
             {
                 return;
             }
-
+            
             FreeSurface();
-
+            
             _currentFramebufferAddress = framebuffer.Address;
 
             // Create a surface using the framebuffer address unless we need to rotate the display

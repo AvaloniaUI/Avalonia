@@ -1,6 +1,5 @@
 using Avalonia.Media;
 using Avalonia.Platform;
-using Avalonia.Skia;
 
 namespace Avalonia.LinuxFramebuffer
 {
@@ -26,7 +25,7 @@ namespace Avalonia.LinuxFramebuffer
         /// Default: True
         /// </summary>
         public bool EnableInitialBufferSwapping { get; set; } = true;
-
+        
         /// <summary>
         /// Color for <see cref="EnableInitialBufferSwapping"/>
         /// Default: R0 G0 B0 A0

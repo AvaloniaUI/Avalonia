@@ -37,7 +37,7 @@ namespace Avalonia.Skia
                 _surface = null;
             }
         }
-
+        
         /// <summary>
         /// Create new surface render target.
         /// </summary>

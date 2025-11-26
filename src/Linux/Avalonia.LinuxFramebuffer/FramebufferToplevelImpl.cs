@@ -7,10 +7,9 @@ using Avalonia.LinuxFramebuffer.Input;
 using Avalonia.LinuxFramebuffer.Output;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition;
-using Avalonia.Skia;
-using Avalonia.Threading;
+ using Avalonia.Threading;
 
-namespace Avalonia.LinuxFramebuffer
+ namespace Avalonia.LinuxFramebuffer
 {
     class FramebufferToplevelImpl : ITopLevelImpl, IScreenInfoProvider, ISurfaceOrientation
     {

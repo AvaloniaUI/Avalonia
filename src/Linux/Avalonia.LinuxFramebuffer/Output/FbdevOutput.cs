@@ -5,7 +5,6 @@ using System.Text;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.LinuxFramebuffer.Output;
 using Avalonia.Platform;
-using Avalonia.Skia;
 
 namespace Avalonia.LinuxFramebuffer
 {
@@ -46,7 +45,7 @@ namespace Avalonia.LinuxFramebuffer
             PixelFormat = format
         })
         {
-
+            
         }
 
         /// <summary>
@@ -175,7 +174,7 @@ namespace Avalonia.LinuxFramebuffer
                 throw new ObjectDisposedException("LinuxFramebuffer");
 
             var dpi = new Vector(96, 96) * Scaling;
-
+            
             if (_options.RenderDirectlyToMappedMemory)
             {
                 properties = new FramebufferLockProperties(_lockedAtLeastOnce);
@@ -191,7 +190,7 @@ namespace Avalonia.LinuxFramebuffer
                     new FbDevBackBuffer(_fd, _fixedInfo, _varInfo, _mappedAddress, _options.UseAsyncFrontBufferBlit == true))
                 .Lock(new Vector(96, 96) * Scaling);
         }
-
+        
         public IFramebufferRenderTarget CreateFramebufferRenderTarget() => new FuncRetainedFramebufferRenderTarget(Lock);
 
 

@@ -1,5 +1,3 @@
-using Avalonia.Skia;
-
 namespace Avalonia.LinuxFramebuffer.Output
 {
     public interface IOutputBackend
