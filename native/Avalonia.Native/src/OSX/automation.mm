@@ -155,9 +155,9 @@
     switch (landmarkType) {
         case LandmarkBanner: return @"banner";
         case LandmarkComplementary: return @"complementary";
-        case LandmarkContentInfo: return @"footer";
+        case LandmarkContentInfo: return @"content";
         case LandmarkRegion: return @"region";
-        case LandmarkForm: return @"content";
+        case LandmarkForm: return @"form";
         case LandmarkMain: return @"main";
         case LandmarkNavigation: return @"navigation";
         case LandmarkSearch: return @"search";
