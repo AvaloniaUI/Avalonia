@@ -46,6 +46,7 @@
         </ListBox.ItemsPanel>
       </ListBox>
       <Decorator Name="PagerContent"
+                 AutomationProperties.AccessibilityView="Control"
                  AutomationProperties.LandmarkType="Main"/>
     </DockPanel>
     
