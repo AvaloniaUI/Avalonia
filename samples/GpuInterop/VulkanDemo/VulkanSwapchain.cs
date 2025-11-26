@@ -119,7 +119,7 @@ class VulkanSwapchainImage : ISwapchainImage
             buffer.Submit();
         }
         else
-            buffer.Submit(new[] { _semaphorePair.ImageAvailableSemaphore },
+            buffer.Submit(new[] { _semaphorePair!.ImageAvailableSemaphore },
                 new[]
                 {
                     PipelineStageFlags.AllGraphicsBit
@@ -160,7 +160,7 @@ class VulkanSwapchainImage : ISwapchainImage
             }
         }
         else
-            buffer.Submit(null, null, new[] { _semaphorePair.RenderFinishedSemaphore });
+            buffer.Submit(null, null, new[] { _semaphorePair!.RenderFinishedSemaphore });
 
         if (_timelineSemaphore != null)
         {
@@ -168,9 +168,9 @@ class VulkanSwapchainImage : ISwapchainImage
         }
         else if (!_image.IsDirectXBacked)
         {
-            _availableSemaphore ??= _interop.ImportSemaphore(_semaphorePair.Export(false));
+            _availableSemaphore ??= _interop.ImportSemaphore(_semaphorePair!.Export(false));
             
-            _renderCompletedSemaphore ??= _interop.ImportSemaphore(_semaphorePair.Export(true));
+            _renderCompletedSemaphore ??= _interop.ImportSemaphore(_semaphorePair!.Export(true));
         }
 
         _importedImage ??= _interop.ImportImage(_image.Export(),
