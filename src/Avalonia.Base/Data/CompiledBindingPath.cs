@@ -94,9 +94,6 @@ namespace Avalonia.Data
 
         internal IEnumerable<ICompiledBindingPathElement> Elements => _elements;
 
-        internal SourceMode SourceMode => Array.Exists(_elements, e => e is IControlSourceBindingPathElement)
-            ? SourceMode.Control : SourceMode.Data;
-
         /// <inheritdoc />
         public override string ToString()
             => string.Concat((IEnumerable<ICompiledBindingPathElement>)_elements);
