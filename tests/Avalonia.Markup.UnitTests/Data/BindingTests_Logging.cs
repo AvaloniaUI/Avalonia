@@ -380,7 +380,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 var bindingPath = new CompiledBindingPathBuilder()
                     .Property(stringLengthProperty, PropertyInfoAccessorFactory.CreateInpcPropertyAccessor)
                     .Build();
-                var binding = new CompiledBindingExtension(bindingPath);
+                var binding = new Avalonia.Data.CompiledBinding(bindingPath);
 
                 using (AssertLog(
                        target,
@@ -388,7 +388,7 @@ namespace Avalonia.Markup.UnitTests.Data
                        "Unable to cast object of type 'System.Int32' to type 'System.String'.",
                        "Length"))
                 {
-                    target.Bind(Control.TagProperty, binding.ProvideValue(null));
+                    target.Bind(Control.TagProperty, binding);
                 }
             }
         }
