@@ -8,7 +8,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.LinuxFramebuffer
 {
-    public sealed unsafe class FbdevOutput : IFramebufferPlatformSurface, IDisposable, IOutputBackend, ISurfaceOrientation
+    public sealed unsafe class FbdevOutput : IFramebufferPlatformSurface, IDisposable, IOutputBackend
     {
         private int _fd;
         private fb_fix_screeninfo _fixedInfo;
@@ -19,8 +19,6 @@ namespace Avalonia.LinuxFramebuffer
         private readonly FbDevOutputOptions _options;
         private bool _lockedAtLeastOnce;
         public double Scaling { get; set; }
-
-        public SurfaceOrientation Orientation { get; set; }
 
         /// <summary>
         /// Create a Linux frame buffer device output
@@ -60,8 +58,6 @@ namespace Avalonia.LinuxFramebuffer
                 throw new Exception("Error: " + Marshal.GetLastWin32Error());
             _options = options;
             Scaling = options.Scaling;
-            Orientation = options.Orientation;
-
             try
             {
                 Init(options.PixelFormat);

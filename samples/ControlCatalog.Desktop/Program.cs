@@ -78,8 +78,7 @@ namespace ControlCatalog.Desktop
                  SilenceConsole();
                  return builder.StartLinuxFbDev(args, new FbDevOutputOptions()
                  {
-                     Scaling = GetScaling(),
-                     Orientation = GetOrientation(),
+                     Scaling = GetScaling()
                  });
             }
             else if (args.Contains("--vnc"))
