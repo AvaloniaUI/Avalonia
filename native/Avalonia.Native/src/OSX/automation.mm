@@ -149,6 +149,22 @@
     }
 }
 
+- (NSString *)accessibilityRoleDescription
+{
+    auto landmarkType = _peer->GetLandmarkType();
+    switch (landmarkType) {
+        case LandmarkBanner: return @"banner";
+        case LandmarkComplementary: return @"complementary";
+        case LandmarkContentInfo: return @"footer";
+        case LandmarkRegion: return @"region";
+        case LandmarkForm: return @"content";
+        case LandmarkMain: return @"main";
+        case LandmarkNavigation: return @"navigation";
+        case LandmarkSearch: return @"search";
+    }
+    return NSAccessibilityRoleDescription([self accessibilityRole], [self accessibilitySubrole]);
+}
+
 - (NSString *)accessibilityIdentifier
 {
     return GetNSStringAndRelease(_peer->GetAutomationId());
