@@ -46,6 +46,8 @@ internal sealed class ExpressionTreeIndexerNode : CollectionNodeBase, ISettableN
         builder.Append(']');
     }
 
+    public override ExpressionNode Clone() => throw new NotImplementedException(); //new ExpressionTreeIndexerNode(_expression);
+
     public bool WriteValueToSource(object? value, IReadOnlyList<ExpressionNode> nodes)
     {
         if (Source is null)

@@ -39,6 +39,8 @@ internal sealed class VisualAncestorElementNode : SourceNode
         }
     }
 
+    public override ExpressionNode Clone() => new VisualAncestorElementNode(_ancestorType, _ancestorLevel);
+
     public override object? SelectSource(object? source, object target, object? anchor)
     {
         if (source != AvaloniaProperty.UnsetValue)

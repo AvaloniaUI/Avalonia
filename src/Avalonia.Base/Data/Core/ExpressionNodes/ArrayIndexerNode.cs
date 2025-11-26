@@ -33,6 +33,8 @@ internal sealed class ArrayIndexerNode : ExpressionNode, ISettableNode
         builder.Append(']');
     }
 
+    public override ExpressionNode Clone() => new ArrayIndexerNode(_indexes);
+
     public bool WriteValueToSource(object? value, IReadOnlyList<ExpressionNode> nodes)
     {
         if (Source is Array array)

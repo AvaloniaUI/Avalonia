@@ -384,11 +384,11 @@ namespace Avalonia.Markup.UnitTests.Data
 
                 using (AssertLog(
                        target,
-                       bindingPath.ToString(),
+                       "Length",
                        "Unable to cast object of type 'System.Int32' to type 'System.String'.",
                        "Length"))
                 {
-                    target.Bind(Control.TagProperty, binding);
+                    target.Bind(Control.TagProperty, binding.ProvideValue(null));
                 }
             }
         }

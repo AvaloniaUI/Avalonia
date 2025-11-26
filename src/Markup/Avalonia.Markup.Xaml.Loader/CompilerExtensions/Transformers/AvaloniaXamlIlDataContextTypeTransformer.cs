@@ -142,7 +142,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             IXamlType? itemsCollectionType = null;
             if (context.GetAvaloniaTypes().BindingBase.IsAssignableFrom(parentItemsValue.Type.GetClrType()))
             {
-                if (parentItemsValue.Type.GetClrType().Equals(context.GetAvaloniaTypes().CompiledBindingExtension)
+                if (parentItemsValue.Type.GetClrType().Equals(context.GetAvaloniaTypes().CompiledBinding)
                     && parentItemsValue is XamlMarkupExtensionNode ext && ext.Value is XamlAstConstructableObjectNode parentItemsBinding)
                 {
                     var parentItemsDataContext = context.ParentNodes().SkipWhile(n => n != parentObject).OfType<AvaloniaXamlIlDataContextTypeMetadataNode>().FirstOrDefault();
@@ -171,12 +171,14 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             }
             
             return null;
-        }
+        } 
 
         private static AvaloniaXamlIlDataContextTypeMetadataNode ParseDataContext(AstTransformationContext context, XamlAstConstructableObjectNode on, XamlAstConstructableObjectNode obj)
         {
             var bindingType = context.GetAvaloniaTypes().BindingBase;
-            if (!bindingType.IsAssignableFrom(obj.Type.GetClrType()) && !obj.Type.GetClrType().Equals(context.GetAvaloniaTypes().ReflectionBindingExtension))
+            if (!bindingType.IsAssignableFrom(obj.Type.GetClrType()) && 
+                !(obj.Type.GetClrType().Equals(context.GetAvaloniaTypes().ReflectionBindingExtension) ||
+                  obj.Type.GetClrType().Equals(context.GetAvaloniaTypes().CompiledBindingExtension)))
             {
                 return new AvaloniaXamlIlDataContextTypeMetadataNode(on, obj.Type.GetClrType());
             }

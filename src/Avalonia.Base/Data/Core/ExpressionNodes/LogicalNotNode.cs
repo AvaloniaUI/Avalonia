@@ -28,6 +28,8 @@ internal sealed class LogicalNotNode : ExpressionNode, ISettableNode
         return false;
     }
 
+    public override ExpressionNode Clone() => new LogicalNotNode();
+
     protected override void OnSourceChanged(object? source, Exception? dataValidationError)
     {
         var v = BindingNotification.ExtractValue(source);

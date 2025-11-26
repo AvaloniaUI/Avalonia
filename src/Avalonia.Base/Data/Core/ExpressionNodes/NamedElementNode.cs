@@ -24,6 +24,11 @@ internal sealed class NamedElementNode : SourceNode
         builder.Append(_name);
     }
 
+    public override ExpressionNode Clone()
+    {
+        return new NamedElementNode(_nameScope.TryGetTarget(out var scope) ? scope : null, _name);
+    }
+
     public override bool ShouldLogErrors(object target)
     {
         // We don't log errors when the target element isn't rooted.

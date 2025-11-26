@@ -4,6 +4,8 @@ namespace Avalonia.Data.Core.ExpressionNodes;
 
 internal sealed class DataContextNode : DataContextNodeBase
 {
+    public override ExpressionNode Clone() => new DataContextNode();
+
     protected override void OnSourceChanged(object? source, Exception? dataValidationError)
     {
         if (!ValidateNonNullSource(source))

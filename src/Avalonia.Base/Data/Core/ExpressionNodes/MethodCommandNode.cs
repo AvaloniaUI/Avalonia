@@ -39,6 +39,12 @@ internal sealed class MethodCommandNode : ExpressionNode, IWeakEventSubscriber<P
         builder.Append("()");
     }
 
+    public override ExpressionNode Clone() => new MethodCommandNode(
+        _methodName,
+        _execute,
+        _canExecute,
+        _dependsOnProperties);
+
     protected override void OnSourceChanged(object? source, Exception? dataValidationError)
     {
         if (!ValidateNonNullSource(source))
