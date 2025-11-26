@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using Avalonia.Controls;
@@ -22,7 +23,7 @@ public class CompiledBinding : BindingBase
     /// Initializes a new instance of the <see cref="CompiledBinding"/> class.
     /// </summary>
     /// <param name="path">The binding path.</param>
-    public CompiledBinding(BindingPath path) => Path = path;
+    public CompiledBinding(CompiledBindingPath path) => Path = path;
     
     /// <summary>
     /// Gets or sets the amount of time, in milliseconds, to wait before updating the binding 
@@ -68,7 +69,7 @@ public class CompiledBinding : BindingBase
     /// <summary>
     /// Gets or sets the binding path.
     /// </summary>
-    public BindingPath? Path { get; set; }
+    public CompiledBindingPath? Path { get; set; }
 
     /// <summary>
     /// Gets or sets the binding priority.
@@ -105,7 +106,9 @@ public class CompiledBinding : BindingBase
         object? anchor)
     {
         var enableDataValidation = targetProperty?.GetMetadata(target).EnableDataValidation ?? false;
-        var nodes = BindingPath.BuildExpressionNodes(Path, Source, targetProperty);
+        var nodes = new List<ExpressionNode>();
+        
+        Path?.BuildExpression(nodes, out _);
 
         // If the first node is an ISourceNode then allow it to select the source; otherwise
         // use the binding source if specified, falling back to the target.
