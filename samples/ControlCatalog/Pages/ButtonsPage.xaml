@@ -92,7 +92,7 @@
           </Button>
           <Button Classes="accent">Accent</Button>
           <Button LetterSpacing="0">Normal Spacing</Button>
-          <Button LetterSpacing="2.0">L o o s e   S p a c i n g</Button>
+          <Button LetterSpacing="2.0">Loose Spacing</Button>
         </StackPanel>
 
         <StackPanel Orientation="Vertical"
