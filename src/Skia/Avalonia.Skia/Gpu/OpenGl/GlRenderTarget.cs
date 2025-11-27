@@ -1,7 +1,9 @@
 using System;
+using Avalonia.Reactive;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 using SkiaSharp;
 using static Avalonia.OpenGL.GlConsts;
 
@@ -23,7 +25,7 @@ namespace Avalonia.Skia
 
         public bool IsCorrupted => (_surface as IGlPlatformSurfaceRenderTargetWithCorruptionInfo)?.IsCorrupted == true;
 
-        class GlGpuSession : ISkiaGpuRenderSession, ISurfaceOrientation
+        class GlGpuSession : ISkiaGpuRenderSession
         {
             private readonly GRBackendRenderTarget _backendRenderTarget;
             private readonly SKSurface _surface;
@@ -55,8 +57,6 @@ namespace Avalonia.Skia
             public GRContext GrContext { get; }
             public SKSurface SkSurface => _surface;
             public double ScaleFactor => _glSession.Scaling;
-            
-            public SurfaceOrientation Orientation => _glSession is ISurfaceOrientation orientation ? orientation.Orientation : SurfaceOrientation.Rotation0;
         }
 
         public ISkiaGpuRenderSession BeginRenderingSession(PixelSize size) => BeginRenderingSessionCore(size);

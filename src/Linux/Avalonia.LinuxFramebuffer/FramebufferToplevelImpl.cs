@@ -16,13 +16,11 @@ using Avalonia.Rendering.Composition;
         private readonly IOutputBackend _outputBackend;
         private readonly IInputBackend _inputBackend;
         private readonly RawEventGrouper _inputQueue;
-        private readonly SurfaceOrientation _orientation;
 
         public IInputRoot? InputRoot { get; private set; }
 
         public FramebufferToplevelImpl(IOutputBackend outputBackend, IInputBackend inputBackend)
         {
-            _orientation = outputBackend is ISurfaceOrientation surfaceOrientation ? surfaceOrientation.Orientation : SurfaceOrientation.Rotation0;
             _outputBackend = outputBackend;
             _inputBackend = inputBackend;
             _inputQueue = new RawEventGrouper(groupedInput => Input?.Invoke(groupedInput),
@@ -73,14 +71,7 @@ using Avalonia.Rendering.Composition;
         public Action? Closed { get; set; }
         public Action? LostFocus { get; set; }
 
-        public PixelSize RotatedSize => _orientation switch
-        {
-            SurfaceOrientation.Rotation90 => new PixelSize(_outputBackend.PixelSize.Height, _outputBackend.PixelSize.Width),
-            SurfaceOrientation.Rotation270 => new PixelSize(_outputBackend.PixelSize.Height, _outputBackend.PixelSize.Width),
-            _ => _outputBackend.PixelSize,
-        };
-
-        public Size ScaledSize => RotatedSize.ToSize(RenderScaling);
+        public Size ScaledSize => _outputBackend.PixelSize.ToSize(RenderScaling);
 
         public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevel) { }
 
@@ -91,6 +82,6 @@ using Avalonia.Rendering.Composition;
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 1, 1);
         public object? TryGetFeature(Type featureType) => null;
 
-        SurfaceOrientation ISurfaceOrientation.Orientation => _orientation;
+        SurfaceOrientation ISurfaceOrientation.Orientation => _outputBackend is ISurfaceOrientation surfaceOrientation ? surfaceOrientation.Orientation : SurfaceOrientation.Rotation0;
     }
 }
