@@ -33,7 +33,7 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
         {
             var fd = libinput_get_fd(ctx);
             IntPtr[] devices = [.. options.Events!.Select(f => libinput_path_add_device(ctx, f)).Where(d => d != IntPtr.Zero)];
-            var screenOrientation = _screen?.Orientation ?? SurfaceOrientation.Rotation0;
+            var screenOrientation = _screen is ISurfaceOrientation surfaceOrientation ? surfaceOrientation.Orientation : SurfaceOrientation.Rotation0;
             
             float[] matrix = screenOrientation switch
             {
