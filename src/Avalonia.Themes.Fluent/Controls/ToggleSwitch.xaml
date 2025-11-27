@@ -45,7 +45,6 @@
               VerticalAlignment="Top"
               Content="{TemplateBinding Content}"
               ContentTemplate="{TemplateBinding ContentTemplate}"
-              TextElement.LetterSpacing="{TemplateBinding LetterSpacing}"
               Margin="{DynamicResource ToggleSwitchTopHeaderMargin}" />
 
           <Grid
@@ -81,8 +80,7 @@
                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                 Content="{TemplateBinding OffContent}"
-                ContentTemplate="{TemplateBinding OffContentTemplate}"
-                TextElement.LetterSpacing="{TemplateBinding LetterSpacing}" />
+                ContentTemplate="{TemplateBinding OffContentTemplate}" />
 
             <ContentPresenter
                 x:Name="PART_OnContentPresenter"
@@ -91,8 +89,7 @@
                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                 Content="{TemplateBinding OnContent}"
-                ContentTemplate="{TemplateBinding OnContentTemplate}"
-                TextElement.LetterSpacing="{TemplateBinding LetterSpacing}" />
+                ContentTemplate="{TemplateBinding OnContentTemplate}" />
 
             <Border
                 x:Name="OuterBorder"

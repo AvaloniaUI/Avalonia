@@ -71,8 +71,7 @@
                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                 Content="{TemplateBinding Content}"
                 ContentTemplate="{TemplateBinding ContentTemplate}"
-                Foreground="{TemplateBinding Foreground}"
-                TextElement.LetterSpacing="{TemplateBinding LetterSpacing}" />
+                Foreground="{TemplateBinding Foreground}" />
           </Grid>
         </Border>
       </ControlTemplate>
