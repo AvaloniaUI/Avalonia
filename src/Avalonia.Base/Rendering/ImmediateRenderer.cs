@@ -19,12 +19,21 @@ internal class ImmediateRenderer
     /// <param name="context">The drawing context.</param>
     public static void Render(Visual visual, DrawingContext context)
     {
-        Render(context, visual, new Rect(visual.Bounds.Size));
+        RenderInternal(context, visual, new Rect(visual.Bounds.Size));
     }
 
-    public static void Render(DrawingContext context, Visual visual, Rect bounds)
+    public static void Render(DrawingContext context, Visual visual, Rect clipRect)
     {
-        if (!visual.IsVisible || visual.Opacity is not ({ } opacity and > 0))
+        using (context.PushTransform(new TranslateTransform(-clipRect.Position.X, -clipRect.Position.Y).Value))
+        using (context.PushClip(clipRect))
+        {
+            Render(visual, context);
+        }
+    }
+
+    private static void RenderInternal(DrawingContext context, Visual visual, Rect bounds)
+    {
+        if (!visual.IsVisible || visual.Opacity is not (var opacity and > 0))
         {
             return;
         }
@@ -61,7 +70,7 @@ internal class ImmediateRenderer
 
             foreach (var child in childrenEnumerable)
             {
-                Render(context, child, child.Bounds);
+                RenderInternal(context, child, child.Bounds);
             }
         }
     }
