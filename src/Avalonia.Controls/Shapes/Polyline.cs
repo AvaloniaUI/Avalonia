@@ -31,6 +31,9 @@ namespace Avalonia.Controls.Shapes
             set => SetValue(PointsProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets how the interior of the polyline is determined when a <see cref="Shape.Fill"/> is applied.
+        /// </summary>
         public FillRule FillRule
         {
             get => GetValue(FillRuleProperty);
