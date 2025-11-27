@@ -42,6 +42,7 @@ namespace Avalonia.Controls.Shapes
 
         protected override Geometry CreateDefiningGeometry()
         {
+            // Polyline must be treated as filled to apply FillRule correctly.
             return new PolylineGeometry(Points, isFilled: true, fillRule: FillRule);
         }
     }
