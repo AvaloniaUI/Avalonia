@@ -2,12 +2,7 @@ using Avalonia.Rendering;
 using System.Threading.Tasks;
 using System;
 
-
-#if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests
-#else
-namespace Avalonia.Direct2D1.RenderTests
-#endif
 {
     public class ManualRenderTimer : IRenderTimer
     {

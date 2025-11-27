@@ -2285,6 +2285,29 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Fact]
+        public void Backspace_Should_Treat_CRLF_As_A_Unit()
+        {
+            using (Start())
+            {
+                var typeface = new Typeface(FontFamily.Parse("resm:Avalonia.Skia.UnitTests.Fonts?assembly=Avalonia.Skia.UnitTests#Manrope"));
+                var defaultProperties = new GenericTextRunProperties(typeface);
+                var textSource = new SingleBufferTextSource("one\r\n", defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
+
+                var backspaceHit = textLine.GetBackspaceCaretCharacterHit(new CharacterHit(5));
+
+                Assert.Equal(3, backspaceHit.FirstCharacterIndex);
+            }
+        }
+
         private class FixedRunsTextSource : ITextSource
         {
             private readonly IReadOnlyList<TextRun> _textRuns;
