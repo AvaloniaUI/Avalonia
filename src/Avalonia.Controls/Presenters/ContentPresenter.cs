@@ -10,8 +10,6 @@ using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
-using Avalonia.Platform;
-using Avalonia.Styling;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Presenters
@@ -177,6 +175,7 @@ namespace Avalonia.Controls.Presenters
         private Control? _child;
         private bool _createdChild;
         private IRecyclingDataTemplate? _recyclingDataTemplate;
+        private bool _deferUpdateChild;
         private (bool IsSet, object? Value) _overrideDataContext;
         private readonly BorderRenderHelper _borderRenderer = new BorderRenderHelper();
 
@@ -422,6 +421,27 @@ namespace Avalonia.Controls.Presenters
         internal IContentPresenterHost? Host { get; private set; }
 
         /// <summary>
+        /// Begins a batch update where multiple property changes won't trigger UpdateChild.
+        /// Call EndBatchUpdate to apply changes.
+        /// </summary>
+        internal void BeginBatchUpdate()
+        {
+            _deferUpdateChild = true;
+        }
+
+        /// <summary>
+        /// Ends a batch update and triggers UpdateChild to apply all property changes.
+        /// </summary>
+        internal void EndBatchUpdate()
+        {
+            _deferUpdateChild = false;
+            if (((ILogical)this).IsAttachedToLogicalTree)
+            {
+                UpdateChild();
+            }
+        }
+
+        /// <summary>
         /// Sets the <see cref="Content"/> and <see cref="StyledElement.DataContext"/> properties atomically,
         /// ensuring that the content's DataContext is never temporarily set to an incorrect value.
         /// </summary>
@@ -503,13 +523,13 @@ namespace Avalonia.Controls.Presenters
         {
             var contentTemplate = ContentTemplate;
             var oldChild = Child;
+
             var newChild = CreateChild(content, oldChild, contentTemplate);
             var logicalChildren = GetEffectiveLogicalChildren();
 
             // Remove the old child if we're not recycling it.
             if (newChild != oldChild)
             {
-
                 if (oldChild != null)
                 {
                     VisualChildren.Remove(oldChild);
@@ -637,6 +657,8 @@ namespace Avalonia.Controls.Presenters
                             : FuncDataTemplate.Default
                     );
 
+                // Use instance-based recycling (IRecyclingDataTemplate)
+                // Container-level virtualization handles pooling via VirtualizingStackPanel
                 if (dataTemplate is IRecyclingDataTemplate rdt)
                 {
                     var toRecycle = rdt == _recyclingDataTemplate ? oldChild : null;
@@ -749,6 +771,10 @@ namespace Avalonia.Controls.Presenters
         private void ContentChanged(AvaloniaPropertyChangedEventArgs e)
         {
             _createdChild = false;
+
+            // Don't update child if we're in batch update mode
+            if (_deferUpdateChild)
+                return;
 
             if (((ILogical)this).IsAttachedToLogicalTree)
             {
