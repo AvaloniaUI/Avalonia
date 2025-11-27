@@ -1,0 +1,530 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:viewModels="using:ControlCatalog.ViewModels"
+             x:Class="ControlCatalog.Pages.ComplexVirtualizationPage"
+             x:DataType="viewModels:ComplexVirtualizationPageViewModel">
+  <DockPanel>
+    <StackPanel DockPanel.Dock="Top" Margin="8">
+      <TextBlock Classes="h1" Margin="0,0,0,8">Content Virtualization Demo</TextBlock>
+      <TextBlock TextWrapping="Wrap" Margin="0,0,0,4">
+        This page demonstrates content-level virtualization with 4 different data types.
+        Each type has a complex nested layout with different controls (TextBox, CheckBox, ItemsControl, Image).
+        Toggle virtualization on/off and scroll to see the difference in performance.
+      </TextBlock>
+      <TextBlock TextWrapping="Wrap" FontStyle="Italic" Foreground="Gray">
+        5000 heterogeneous items (Person, Task, Product, Photo)
+      </TextBlock>    
+      <CheckBox IsChecked="{Binding EnableVirtualization}" Margin="0,0,0,8">
+        Enable Content Virtualization
+      </CheckBox>
+    </StackPanel>
+
+  <!--  <StackPanel DockPanel.Dock="Right" Margin="8" Width="200">
+      <TextBlock Classes="h3" Margin="0,0,0,8">Settings</TextBlock>
+      <CheckBox IsChecked="{Binding EnableVirtualization}" Margin="0,0,0,8">
+        Enable Content Virtualization
+      </CheckBox>
+
+      <Separator Margin="0,8"/>
+
+      <TextBlock Classes="h3" Margin="0,8,0,4">Pool Statistics</TextBlock>
+      <Border BorderBrush="{DynamicResource SystemAccentColor}"
+              BorderThickness="2"
+              Padding="8"
+              CornerRadius="4">
+        <TextBlock x:Name="CacheStatsText"
+                   TextWrapping="Wrap"
+                   FontSize="11"
+                   FontFamily="Consolas,Courier New,monospace"
+                   Foreground="{DynamicResource SystemAccentColor}"
+                   Text="Scroll to populate cache..."/>
+      </Border>
+    </StackPanel>-->
+
+    <ListBox x:Name="MainListBox"
+             ItemsSource="{Binding Items}"
+             Margin="8"
+             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+
+      <!-- DataTemplate for PersonItem -->
+      <ListBox.DataTemplates>
+        <DataTemplate DataType="viewModels:PersonItem"
+                      EnableVirtualization="True"
+                      MaxPoolSizePerKey="15">
+          <Border BorderBrush="#2196F3" BorderThickness="3" CornerRadius="6"
+                  Padding="14" Margin="4">
+            <StackPanel>
+              <!-- Outer StackPanel > Grid wrapper for header -->
+              <Grid RowDefinitions="Auto,Auto">
+                <StackPanel Grid.Row="0" Orientation="Vertical">
+                  <DockPanel Margin="0,0,0,8">
+                    <TextBlock Text="👤 PERSON"
+                               FontSize="11"
+                               Foreground="#2196F3"
+                               FontWeight="{DynamicResource ButtonFontWeightBold}"
+                               DockPanel.Dock="Left"/>
+                    <TextBlock Text="{Binding YearsExperience, StringFormat='{}{0} years exp'}"
+                               FontSize="10"
+                               Foreground="{DynamicResource SystemAccentColor}"
+                               HorizontalAlignment="Right"
+                               VerticalAlignment="Center"/>
+                  </DockPanel>
+                </StackPanel>
+
+                <!-- Nested Grid > StackPanel > Grid for main content -->
+                <StackPanel Grid.Row="1">
+                  <Grid>
+                    <StackPanel>
+                      <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="Name:" FontWeight="Bold" Margin="0,0,12,6"/>
+                <TextBox Grid.Row="0" Grid.Column="1"
+                         Text="{Binding Name}"
+                         Margin="0,0,0,6"
+                         BorderBrush="{DynamicResource SystemAccentColor}"
+                         BorderThickness="1"/>
+
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="Email:" FontWeight="Bold" Margin="0,0,12,6"/>
+                <TextBlock Grid.Row="1" Grid.Column="1"
+                           Text="{Binding Email}"
+                           Margin="0,0,0,6"
+                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="Phone:" FontWeight="Bold" Margin="0,0,12,6"/>
+                <TextBlock Grid.Row="2" Grid.Column="1"
+                           Text="{Binding PhoneNumber}"
+                           Margin="0,0,0,6"
+                           FontFamily="Consolas,monospace"/>
+
+                <TextBlock Grid.Row="3" Grid.Column="0" Text="Dept:" FontWeight="Bold" Margin="0,0,12,6"/>
+                <Border Grid.Row="3" Grid.Column="1"
+                        Background="{DynamicResource SystemAccentColor}"
+                        CornerRadius="3"
+                        Padding="6,2"
+                        HorizontalAlignment="Left"
+                        Margin="0,0,0,6">
+                  <TextBlock Text="{Binding Department}"
+                             Foreground="White"
+                             FontSize="11"
+                             FontWeight="Bold"/>
+                </Border>
+
+                <TextBlock Grid.Row="4" Grid.Column="0" Text="Status:" FontWeight="Bold" Margin="0,0,12,6"/>
+                <StackPanel Grid.Row="4" Grid.Column="1" Orientation="Horizontal" Margin="0,0,0,6">
+                  <Ellipse Width="8" Height="8" VerticalAlignment="Center" Margin="0,0,6,0">
+                    <Ellipse.Fill>
+                      <SolidColorBrush Color="Blue"/>
+                    </Ellipse.Fill>
+                  </Ellipse>
+                  <TextBlock Text="{Binding LastActivity, StringFormat='Last seen: {0:MMM dd}'}" FontSize="11"/>
+                </StackPanel>
+
+                <TextBlock Grid.Row="5" Grid.Column="0" Text="Bio:" FontWeight="Bold" Margin="0,0,12,0" VerticalAlignment="Top"
+                           IsVisible="{Binding Bio, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                <TextBlock Grid.Row="5" Grid.Column="1"
+                           Text="{Binding Bio}"
+                           TextWrapping="Wrap"
+                           FontStyle="Italic"
+                           Opacity="0.8"
+                           IsVisible="{Binding Bio, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+              </Grid>
+
+                      <!-- Skills section - only shown if Skills list has items -->
+                      <StackPanel IsVisible="{Binding Skills.Count}" Margin="0,12,0,0">
+                        <Grid>
+                          <StackPanel>
+                            <TextBlock Text="Skills:" FontWeight="Bold" FontSize="11" Margin="0,0,0,6"/>
+                            <ItemsControl ItemsSource="{Binding Skills}">
+                              <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                  <WrapPanel/>
+                                </ItemsPanelTemplate>
+                              </ItemsControl.ItemsPanel>
+                              <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                  <Border Background="#2196F3"
+                                          BorderBrush="#1976D2"
+                                          BorderThickness="1"
+                                          CornerRadius="3"
+                                          Padding="6,3"
+                                          Margin="2">
+                                    <TextBlock Text="{Binding}"
+                                               Foreground="White"
+                                               FontSize="10"
+                                               FontWeight="Bold"/>
+                                  </Border>
+                                </DataTemplate>
+                              </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                          </StackPanel>
+                        </Grid>
+                      </StackPanel>
+                    </StackPanel>
+                  </Grid>
+                </StackPanel>
+              </Grid>
+            </StackPanel>
+          </Border>
+        </DataTemplate>
+
+        <!-- DataTemplate for TaskItem -->
+        <DataTemplate DataType="viewModels:TaskItem"
+                      EnableVirtualization="True"
+                      MaxPoolSizePerKey="15">
+          <Border BorderBrush="#4CAF50" BorderThickness="3" CornerRadius="6"
+                  Padding="14" Margin="4">
+            <Grid>
+              <StackPanel>
+                <Grid RowDefinitions="Auto,*">
+                  <StackPanel Grid.Row="0">
+                    <DockPanel Margin="0,0,0,8">
+                      <TextBlock Text="✓ TASK"
+                                 FontSize="11"
+                                 Foreground="#4CAF50"
+                                 FontWeight="{DynamicResource ButtonFontWeightBold}"
+                                 DockPanel.Dock="Left"/>
+                      <TextBlock Text="{Binding DueDate, StringFormat='Due: {0:MMM dd}'}"
+                                 FontSize="10"
+                                 Foreground="{DynamicResource SystemAccentColor}"
+                                 HorizontalAlignment="Right"
+                                 VerticalAlignment="Center"/>
+                    </DockPanel>
+                  </StackPanel>
+
+                  <Grid Grid.Row="1">
+                    <StackPanel>
+                      <DockPanel Margin="0,0,0,8">
+                <CheckBox IsChecked="{Binding IsCompleted}"
+                          DockPanel.Dock="Left"
+                          Margin="0,0,12,0"
+                          BorderBrush="{DynamicResource SystemAccentColor}"/>
+                <TextBlock Text="{Binding Title}"
+                           FontWeight="Bold"
+                           FontSize="15"
+                           VerticalAlignment="Center"
+                           TextWrapping="Wrap"/>
+              </DockPanel>
+
+              <TextBlock Text="{Binding Description}"
+                         TextWrapping="Wrap"
+                         Margin="0,0,0,8"
+                         Opacity="0.8"
+                         LineHeight="20"/>
+
+              <DockPanel Margin="0,0,0,8">
+                <Border BorderBrush="#4CAF50"
+                        BorderThickness="2"
+                        CornerRadius="3"
+                        Padding="6,3"
+                        HorizontalAlignment="Left"
+                        DockPanel.Dock="Left"
+                        Margin="0,0,8,0">
+                  <TextBlock Text="{Binding Priority, StringFormat='Priority: {0}'}"
+                             FontSize="11"
+                             Foreground="#4CAF50"
+                             FontWeight="Bold"/>
+                </Border>
+
+                <Border Background="{DynamicResource SystemAccentColor}"
+                        CornerRadius="3"
+                        Padding="6,3"
+                        HorizontalAlignment="Left">
+                  <TextBlock Text="{Binding Assignee}"
+                             FontSize="11"
+                             Foreground="White"
+                             FontWeight="Bold"/>
+                </Border>
+              </DockPanel>
+
+              <!-- Progress bar -->
+              <StackPanel Margin="0,0,0,8">
+                <DockPanel Margin="0,0,0,4">
+                  <TextBlock Text="Progress:" FontSize="11" DockPanel.Dock="Left" Margin="0,0,8,0"/>
+                  <TextBlock Text="{Binding ProgressPercentage, StringFormat='{}{0}%'}"
+                             FontSize="11"
+                             FontWeight="Bold"
+                             Foreground="#4CAF50"
+                             HorizontalAlignment="Right"/>
+                </DockPanel>
+                <Border BorderBrush="#4CAF50" BorderThickness="1" CornerRadius="2" Height="8">
+                  <Border Background="#4CAF50"
+                          HorizontalAlignment="Left"
+                          />
+                </Border>
+              </StackPanel>
+
+                      <!-- Subtasks section - only shown if Subtasks list has items -->
+                      <Grid>
+                        <StackPanel IsVisible="{Binding Subtasks.Count}" Margin="0,0,0,0">
+                          <Grid>
+                            <StackPanel>
+                              <TextBlock Text="Subtasks:" FontWeight="Bold" FontSize="11" Margin="0,0,0,6"/>
+                              <ItemsControl ItemsSource="{Binding Subtasks}">
+                                <ItemsControl.ItemTemplate>
+                                  <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" Margin="0,2">
+                                      <TextBlock Text="• " Foreground="#4CAF50" FontWeight="Bold" Margin="0,0,4,0"/>
+                                      <TextBlock Text="{Binding}" FontSize="11" Opacity="0.8"/>
+                                    </StackPanel>
+                                  </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                              </ItemsControl>
+                            </StackPanel>
+                          </Grid>
+                        </StackPanel>
+                      </Grid>
+                    </StackPanel>
+                  </Grid>
+                </Grid>
+              </StackPanel>
+            </Grid>
+          </Border>
+        </DataTemplate>
+
+        <!-- DataTemplate for ProductItem -->
+        <DataTemplate DataType="viewModels:ProductItem"
+                      EnableVirtualization="True"
+                      MaxPoolSizePerKey="15">
+          <Border BorderBrush="#FF9800" BorderThickness="3" CornerRadius="6"
+                  Padding="14" Margin="4">
+            <Grid>
+              <StackPanel>
+                <Grid RowDefinitions="Auto,*">
+                  <StackPanel Grid.Row="0">
+                    <DockPanel Margin="0,0,0,8">
+                      <TextBlock Text="🛒 PRODUCT"
+                                 FontSize="11"
+                                 Foreground="#FF9800"
+                                 FontWeight="{DynamicResource ButtonFontWeightBold}"
+                                 DockPanel.Dock="Left"/>
+                      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <TextBlock Text="★"
+                                   Foreground="#FFB300"
+                                   FontSize="14"
+                                   Margin="0,0,4,0"/>
+                        <TextBlock Text="{Binding Rating, StringFormat='{}{0}/5'}"
+                                   FontSize="10"
+                                   Foreground="{DynamicResource SystemAccentColor}"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,8,0"/>
+                        <TextBlock Text="{Binding ReviewCount, StringFormat='({0} reviews)'}"
+                                   FontSize="9"
+                                   Opacity="0.7"
+                                   VerticalAlignment="Center"/>
+                      </StackPanel>
+                    </DockPanel>
+                  </StackPanel>
+
+                  <Grid Grid.Row="1">
+                    <StackPanel>
+                      <DockPanel Margin="0,0,0,8">
+                <StackPanel DockPanel.Dock="Left" VerticalAlignment="Center">
+                  <TextBlock Text="{Binding ProductName}"
+                             FontWeight="Bold"
+                             FontSize="15"
+                             Margin="0,0,0,4"/>
+                  <TextBlock Text="{Binding Category}"
+                             FontSize="10"
+                             Opacity="0.7"
+                             FontStyle="Italic"/>
+                </StackPanel>
+                <StackPanel HorizontalAlignment="Right">
+                  <TextBlock Text="{Binding Price, StringFormat='${0:F2}'}"
+                             FontWeight="Bold"
+                             FontSize="18"
+                             Foreground="#FF9800"
+                             HorizontalAlignment="Right"/>
+                  <Border Background="#E53935"
+                          CornerRadius="2"
+                          Padding="4,2"
+                          HorizontalAlignment="Right"
+                          Margin="0,2,0,0"
+                          IsVisible="{Binding Discount}">
+                    <TextBlock Text="{Binding Discount, StringFormat='-{0}% OFF'}"
+                               FontSize="10"
+                               Foreground="White"
+                               FontWeight="Bold"/>
+                  </Border>
+                </StackPanel>
+              </DockPanel>
+
+              <TextBlock Text="{Binding Description}"
+                         TextWrapping="Wrap"
+                         Margin="0,0,0,8"
+                         FontSize="12"
+                         Opacity="0.8"
+                         LineHeight="18"
+                         IsVisible="{Binding Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+
+              <Border BorderBrush="#FF9800"
+                      BorderThickness="2"
+                      CornerRadius="3"
+                      Padding="6,3"
+                      HorizontalAlignment="Left"
+                      Margin="0,0,0,8">
+                <StackPanel Orientation="Horizontal">
+                  <TextBlock Text="✓ " FontSize="13" Margin="0,0,4,0" Foreground="#4CAF50"/>
+                  <TextBlock Text="{Binding InStock, StringFormat='In Stock: {0}'}"
+                             FontSize="11"
+                             Foreground="#FF9800"
+                             FontWeight="Bold"/>
+                </StackPanel>
+              </Border>
+
+                      <Grid>
+                        <StackPanel>
+                          <TextBlock Text="Tags:" FontSize="11" Margin="0,0,0,4" FontWeight="Bold"/>
+                          <ItemsControl ItemsSource="{Binding Tags}">
+                            <ItemsControl.ItemsPanel>
+                              <ItemsPanelTemplate>
+                                <WrapPanel/>
+                              </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                              <DataTemplate>
+                                <Border Background="{DynamicResource SystemAccentColor}"
+                                        CornerRadius="3"
+                                        Padding="6,3"
+                                        Margin="2">
+                                  <TextBlock Text="{Binding}"
+                                             Foreground="White"
+                                             FontSize="10"
+                                             FontWeight="Bold"/>
+                                </Border>
+                              </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                          </ItemsControl>
+                        </StackPanel>
+                      </Grid>
+                    </StackPanel>
+                  </Grid>
+                </Grid>
+              </StackPanel>
+            </Grid>
+          </Border>
+        </DataTemplate>
+
+        <!-- DataTemplate for PhotoItem -->
+        <DataTemplate DataType="viewModels:PhotoItem"
+                      EnableVirtualization="True"
+                      MaxPoolSizePerKey="15">
+          <Border BorderBrush="#9C27B0" BorderThickness="3" CornerRadius="6"
+                  Padding="14" Margin="4">
+            <Grid ColumnDefinitions="Auto,*">
+              <Border Grid.Column="0"
+                      BorderBrush="{DynamicResource SystemAccentColor}"
+                      BorderThickness="2"
+                      CornerRadius="4"
+                      Margin="0,0,12,0">
+              </Border>
+
+              <Grid Grid.Column="1">
+                <StackPanel>
+                  <Grid RowDefinitions="Auto,*">
+                    <StackPanel Grid.Row="0">
+                      <DockPanel Margin="0,0,0,6">
+                        <TextBlock Text="📷 PHOTO"
+                                   FontSize="11"
+                                   Foreground="#9C27B0"
+                                   FontWeight="{DynamicResource ButtonFontWeightBold}"
+                                   DockPanel.Dock="Left"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                          <TextBlock Text="❤"
+                                     Foreground="#E91E63"
+                                     FontSize="12"
+                                     Margin="0,0,4,0"/>
+                          <TextBlock Text="{Binding Likes, StringFormat='{}{0:N0}'}"
+                                     FontSize="10"
+                                     Foreground="{DynamicResource SystemAccentColor}"
+                                     VerticalAlignment="Center"/>
+                        </StackPanel>
+                      </DockPanel>
+                    </StackPanel>
+
+                    <Grid Grid.Row="1">
+                      <StackPanel>
+                        <TextBlock Text="{Binding Title}"
+                           FontWeight="Bold"
+                           FontSize="15"
+                           Margin="0,0,0,6"
+                           TextWrapping="Wrap"/>
+
+                <DockPanel Margin="0,0,0,4">
+                  <TextBlock Text="📍 " DockPanel.Dock="Left" FontSize="12"/>
+                  <TextBlock Text="{Binding Location}"
+                             FontStyle="Italic"
+                             Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                </DockPanel>
+
+                <TextBlock Text="{Binding Caption}"
+                           TextWrapping="Wrap"
+                           Margin="0,0,0,8"
+                           Opacity="0.8"
+                           FontSize="12"
+                           LineHeight="18"
+                           IsVisible="{Binding Caption, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+
+                <DockPanel Margin="0,0,0,8">
+                  <Border BorderBrush="#9C27B0"
+                          BorderThickness="2"
+                          CornerRadius="3"
+                          Padding="6,3"
+                          DockPanel.Dock="Left"
+                          Margin="0,0,6,0">
+                    <TextBlock Text="{Binding DateTaken, StringFormat='Taken: {0:MMM dd, yyyy}'}"
+                               FontSize="10"
+                               Foreground="#9C27B0"
+                               FontWeight="Bold"/>
+                  </Border>
+                  <Border Background="{DynamicResource SystemAccentColor}"
+                          CornerRadius="3"
+                          Padding="6,3"
+                          IsVisible="{Binding IsPublic}">
+                    <TextBlock Text="Public"
+                               FontSize="10"
+                               Foreground="White"
+                               FontWeight="Bold"/>
+                  </Border>
+                </DockPanel>
+
+                <TextBlock Text="{Binding CameraModel}"
+                           FontSize="11"
+                           FontFamily="Consolas,monospace"
+                           Margin="0,0,0,8"
+                           Opacity="0.7"
+                           IsVisible="{Binding CameraModel, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+
+                        <!-- Comments section - only shown if Comments list has items -->
+                        <Grid>
+                          <StackPanel IsVisible="{Binding Comments.Count}">
+                            <Grid>
+                              <StackPanel>
+                                <TextBlock Text="Comments:" FontWeight="Bold" FontSize="11" Margin="0,0,0,6"/>
+                                <Border BorderBrush="#9C27B0" BorderThickness="1" CornerRadius="3" Padding="8">
+                                  <ItemsControl ItemsSource="{Binding Comments}">
+                                    <ItemsControl.ItemTemplate>
+                                      <DataTemplate>
+                                        <TextBlock Text="{Binding}"
+                                                   FontSize="11"
+                                                   Opacity="0.8"
+                                                   Margin="0,2"
+                                                   TextWrapping="Wrap"/>
+                                      </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                  </ItemsControl>
+                                </Border>
+                              </StackPanel>
+                            </Grid>
+                          </StackPanel>
+                        </Grid>
+                      </StackPanel>
+                    </Grid>
+                  </Grid>
+                </StackPanel>
+              </Grid>
+            </Grid>
+          </Border>
+        </DataTemplate>
+      </ListBox.DataTemplates>
+    </ListBox>
+  </DockPanel>
+</UserControl>

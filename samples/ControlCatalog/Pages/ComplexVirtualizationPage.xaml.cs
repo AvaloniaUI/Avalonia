@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
+using System.Text;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
@@ -8,15 +9,15 @@ using ControlCatalog.ViewModels;
 
 namespace ControlCatalog.Pages
 {
-    public class ListBoxPage : UserControl
+    public class ComplexVirtualizationPage : UserControl
     {
         private DispatcherTimer? _statsTimer;
-        private ListBoxPageViewModel? _viewModel;
+        private ComplexVirtualizationPageViewModel? _viewModel;
 
-        public ListBoxPage()
+        public ComplexVirtualizationPage()
         {
             InitializeComponent();
-            _viewModel = new ListBoxPageViewModel();
+            _viewModel = new ComplexVirtualizationPageViewModel();
             DataContext = _viewModel;
 
             // Set initial virtualization state
@@ -25,8 +26,8 @@ namespace ControlCatalog.Pages
             // Listen to EnableVirtualization changes
             _viewModel.PropertyChanged += OnViewModelPropertyChanged;
 
-            // Update cache stats every second
-            _statsTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+            // Update cache stats every 500ms for more responsive feedback
+            _statsTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
             _statsTimer.Tick += UpdateCacheStats;
             _statsTimer.Start();
         }
@@ -38,7 +39,7 @@ namespace ControlCatalog.Pages
 
         private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(ListBoxPageViewModel.EnableVirtualization))
+            if (e.PropertyName == nameof(ComplexVirtualizationPageViewModel.EnableVirtualization))
             {
                 // Control virtualization globally via diagnostics API
                 ContentVirtualizationDiagnostics.IsEnabled = _viewModel!.EnableVirtualization;
@@ -55,12 +56,28 @@ namespace ControlCatalog.Pages
                 var stats = ContentVirtualizationDiagnostics.GetPoolStats(listBox);
                 if (stats != null && stats.PoolEntries.Any())
                 {
-                    var entry = stats.PoolEntries.First();
-                    statsText.Text = $"Cache: {entry.PooledCount} controls pooled\nType: {entry.RecycleKey}";
+                    var sb = new StringBuilder();
+                    sb.AppendLine("POOL STATISTICS:");
+                    sb.AppendLine();
+
+                    var totalPooled = 0;
+                    foreach (var entry in stats.PoolEntries.OrderBy(e => e.RecycleKey.ToString()))
+                    {
+                        var typeName = entry.RecycleKey.ToString()?.Split('.').LastOrDefault() ?? "Unknown";
+                        sb.AppendLine($"{typeName}:");
+                        sb.AppendLine($"  Pooled: {entry.PooledCount}");
+                        totalPooled += entry.PooledCount;
+                    }
+
+                    sb.AppendLine();
+                    sb.AppendLine($"Total: {totalPooled} controls");
+                    sb.AppendLine($"Types: {stats.PoolEntries.Count}");
+
+                    statsText.Text = sb.ToString();
                 }
                 else
                 {
-                    statsText.Text = "Cache: Empty (virtualization disabled or no scrolling yet)";
+                    statsText.Text = "Virtualization: OFF\n\nEnable virtualization and scroll to see pooled controls.";
                 }
             }
         }
