@@ -251,6 +251,7 @@ namespace Avalonia.Skia
 
             paint.Color = new SKColor(255, 255, 255, (byte)(255 * opacity * _currentOpacity));
             paint.BlendMode = RenderOptions.BitmapBlendingMode.ToSKBlendMode();
+            paint.IsAntialias = RenderOptions.EdgeMode != EdgeMode.Aliased;
 
             drawableImage.Draw(this, s, d, samplingOptions, paint);
             SKPaintCache.Shared.ReturnReset(paint);

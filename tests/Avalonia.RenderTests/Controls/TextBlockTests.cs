@@ -8,11 +8,7 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Xunit;
 
-#if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests
-#else
-namespace Avalonia.Direct2D1.RenderTests.Controls
-#endif
 {
     public class TextBlockTests : TestBase
     {
@@ -299,7 +295,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             };
             target.Children.Add(CreateText("aaaa"));
             target.Children.Add(CreateText("a a "));
-            target.Children.Add(CreateText("    ")); // This one does not render correctly on Direct2D1
+            target.Children.Add(CreateText("    "));
             target.Children.Add(CreateText("LLLL"));
 
             var testName = $"Should_Keep_TrailingWhiteSpace";
@@ -343,11 +339,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             await RenderToFile(target, testName);
             CompareImages(testName);
 
-#if AVALONIA_SKIA
             const string symbolsFont = "resm:Avalonia.Skia.RenderTests.Assets?assembly=Avalonia.Skia.RenderTests#Source Serif 4 36pt";
-#else
-            const string symbolsFont = "resm:Avalonia.Direct2D1.RenderTests.Assets?assembly=Avalonia.Direct2D1.RenderTests#Source Serif 4 36pt";
-#endif
             static TextBlock CreateText(string text) => new TextBlock
             {
                 ClipToBounds = false,
@@ -380,11 +372,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             await RenderToFile(target, testName);
             CompareImages(testName);
 
-#if AVALONIA_SKIA
             const string symbolsFont = "resm:Avalonia.Skia.RenderTests.Assets?assembly=Avalonia.Skia.RenderTests#Source Serif 4 36pt";
-#else
-            const string symbolsFont = "resm:Avalonia.Direct2D1.RenderTests.Assets?assembly=Avalonia.Direct2D1.RenderTests#Source Serif 4 36pt";
-#endif
             static TextBlock CreateText(string text) => new TextBlock
             {
                 HorizontalAlignment = HorizontalAlignment.Center,

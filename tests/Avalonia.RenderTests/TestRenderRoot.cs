@@ -6,11 +6,7 @@ using Avalonia.Controls;
 using Avalonia.Platform;
 
 
-#if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests
-#else
-namespace Avalonia.Direct2D1.RenderTests
-#endif
 {
     public class TestRenderRoot : Decorator, IRenderRoot
     {

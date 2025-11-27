@@ -654,6 +654,19 @@ enum AvnAutomationControlType
     AutomationSeparator,
 }
 
+enum AvnLandmarkType
+{
+    LandmarkNone = -1,
+    LandmarkBanner,
+    LandmarkComplementary,
+    LandmarkContentInfo,
+    LandmarkRegion,
+    LandmarkForm,
+    LandmarkMain,
+    LandmarkNavigation,
+    LandmarkSearch,
+}
+
 enum AvnWindowTransparencyMode
 {
     Opaque,
@@ -1307,6 +1320,8 @@ interface IAvnAutomationPeer : IUnknown
      void ValueProvider_SetValue(char* value);
 
      IAvnString* GetHelpText();
+
+     AvnLandmarkType GetLandmarkType();
      int GetHeadingLevel();
 }
 

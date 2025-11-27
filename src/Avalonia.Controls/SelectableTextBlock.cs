@@ -197,7 +197,7 @@ namespace Avalonia.Controls
                 LineSpacing = LineSpacing
             };
 
-            IReadOnlyList<ValueSpan<TextRunProperties>>? textStyleOverrides = null;
+            List<ValueSpan<TextRunProperties>>? textStyleOverrides = null;
             var selectionStart = SelectionStart;
             var selectionEnd = SelectionEnd;
             var start = Math.Min(selectionStart, selectionEnd);
@@ -205,12 +205,52 @@ namespace Avalonia.Controls
 
             if (length > 0 && SelectionForegroundBrush != null)
             {
-                textStyleOverrides = new[]
+                if (_textRuns != null)
                 {
+                    // Apply selection foreground color without changing the original text formatting.
+                    // The built-in SelectableTextBlock selection logic recreates TextRunProperties,
+                    // which overwrites run-specific Typeface/FontFeatures/FontSize and breaks bold/italic.
+                    // Here we reuse each run's existing properties and only override the foreground brush.
+
+                    var accumulatedLength = 0;
+                    foreach (var textRun in _textRuns)
+                    {
+                        var runLength = textRun.Text.Length;
+                        if (accumulatedLength + runLength <= start ||
+                            accumulatedLength >= start + length)
+                        {
+                            accumulatedLength += runLength;
+                            continue;
+                        }
+
+                        var overlapStart = Math.Max(start, accumulatedLength);
+                        var overlapEnd = Math.Min(start + length, accumulatedLength + runLength);
+                        var overlapLength = overlapEnd - overlapStart;
+
+                        textStyleOverrides ??= [];
+
+                        textStyleOverrides.Add(
+                            new ValueSpan<TextRunProperties>(
+                                overlapStart,
+                                overlapLength,
+                                new GenericTextRunProperties(
+                                    textRun.Properties?.Typeface ?? typeface,
+                                    textRun.Properties?.FontFeatures ?? FontFeatures,
+                                    FontSize,
+                                    foregroundBrush: SelectionForegroundBrush)));
+
+                        accumulatedLength += runLength;
+                    }
+                }
+                else
+                {
+                    textStyleOverrides =
+                    [
                         new ValueSpan<TextRunProperties>(start, length,
-                        new GenericTextRunProperties(typeface, FontFeatures, FontSize,
-                            foregroundBrush: SelectionForegroundBrush))
-                    };
+                            new GenericTextRunProperties(typeface, FontFeatures, FontSize,
+                                foregroundBrush: SelectionForegroundBrush))
+                    ];
+                }
             }
 
             ITextSource textSource;

@@ -7,7 +7,6 @@
     <Nullable>enable</Nullable>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <UseD3DCompiler>true</UseD3DCompiler>
-    <UseSharpDXMathematics>true</UseSharpDXMathematics>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
@@ -25,10 +24,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Silk.NET.Vulkan" Version="2.16.0" />
-    <PackageReference Include="Silk.NET.Vulkan.Extensions.EXT" Version="2.16.0" />
-    <PackageReference Include="Silk.NET.Vulkan.Extensions.KHR" Version="2.16.0" />
-    <PackageReference Include="System.Reactive" Version="5.0.0" />
+    <PackageReference Include="Silk.NET.Direct3D11" Version="2.22.0" />
+    <PackageReference Include="Silk.NET.Direct3D.Compilers" Version="2.22.0" />
+    <PackageReference Include="Silk.NET.Vulkan" Version="2.22.0" />
+    <PackageReference Include="Silk.NET.Vulkan.Extensions.EXT" Version="2.22.0" />
+    <PackageReference Include="Silk.NET.Vulkan.Extensions.KHR" Version="2.22.0" />
+    <!-- Silk.NET 2.22 targets an obsolete System.Text.Json, update to avoid warnings. -->
+    <PackageReference Include="System.Text.Json" Version="10.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -37,6 +39,7 @@
 
   <ItemGroup>
     <Compile Include="..\..\src\Avalonia.Base\Rendering\SwapchainBase.cs" />
+    <Compile Include="..\..\src\Avalonia.Base\Reactive\Disposable.cs" />
     <None Remove="VulkanDemo\Assets\Shaders\frag.spirv" />
     <EmbeddedResource Include="VulkanDemo\Assets\Shaders\frag.spirv" />
     <None Remove="VulkanDemo\Assets\Shaders\vert.spirv" />
@@ -47,5 +50,4 @@
   <Import Project="..\..\build\SampleApp.props" />
   <Import Project="..\..\build\ReferenceCoreLibraries.props" />
   <Import Project="..\..\build\BuildTargets.targets" />
-  <Import Project="..\..\build\SharpDX.props" />
 </Project>

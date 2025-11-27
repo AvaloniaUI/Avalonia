@@ -6,7 +6,7 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Media.Fonts
 {
-    public static class FontFamilyLoader
+    internal static class FontFamilyLoader
     {
         /// <summary>
         /// Loads all font assets that belong to the specified <see cref="FontFamilyKey"/>
@@ -17,7 +17,7 @@ namespace Avalonia.Media.Fonts
         {
             if (source.IsAvares() || source.IsAbsoluteResm())
             {
-                return IsFontTtfOrOtf(source) ?
+                return IsFontSource(source) ?
                     GetFontAssetsByExpression(source) :
                     GetFontAssetsBySource(source);
             }
@@ -25,6 +25,35 @@ namespace Avalonia.Media.Fonts
             return Enumerable.Empty<Uri>();
         }
 
+        /// <summary>
+        /// Determines whether the specified URI refers to a font file source.
+        /// </summary>
+        /// <param name="uri">The URI to evaluate as a potential font file source. Must not be null.</param>
+        /// <returns>true if the URI points to a recognized font file source; otherwise, false.</returns>
+        public static bool IsFontSource(Uri uri)
+        {
+            var sourceWithoutArguments = GetSubString(uri.OriginalString, '?');
+            return IsFontFile(sourceWithoutArguments);
+        }
+
+        /// <summary>
+        /// Determines whether the specified file path refers to a supported font file type.
+        /// </summary>
+        /// <remarks>This method performs a case-insensitive check for common font file extensions. It
+        /// does not verify the existence or validity of the file at the specified path.</remarks>
+        /// <param name="filePath">The path of the file to check. Can be a relative or absolute path. If null, the method returns false.</param>
+        /// <returns>true if the file path ends with ".ttf", ".otf", or ".ttc" (case-insensitive); otherwise, false.</returns>
+        public static bool IsFontFile(string filePath)
+        {
+            if (filePath is null)
+            {
+                return false;
+            }
+
+            return filePath.EndsWith(".ttf", StringComparison.OrdinalIgnoreCase)
+                || filePath.EndsWith(".otf", StringComparison.OrdinalIgnoreCase)
+                || filePath.EndsWith(".ttc", StringComparison.OrdinalIgnoreCase);
+        }
 
         /// <summary>
         /// Searches for font assets at a given location and returns a quantity of found assets
@@ -35,7 +64,7 @@ namespace Avalonia.Media.Fonts
         {
             var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
             var availableAssets = assetLoader.GetAssets(source, null);
-            return availableAssets.Where(x => IsFontTtfOrOtf(x));
+            return availableAssets.Where(x => IsFontSource(x));
         }
 
         /// <summary>
@@ -95,13 +124,6 @@ namespace Avalonia.Media.Fonts
             var path = x.GetUnescapeAbsolutePath();
             return path.IndexOf(filePattern, StringComparison.Ordinal) >= 0
                    && path.EndsWith(fileExtension, StringComparison.OrdinalIgnoreCase);
-        }
-
-        private static bool IsFontTtfOrOtf(Uri uri)
-        {
-            var sourceWithoutArguments = GetSubString(uri.OriginalString, '?');
-            return sourceWithoutArguments.EndsWith(".ttf", StringComparison.OrdinalIgnoreCase)
-                   || sourceWithoutArguments.EndsWith(".otf", StringComparison.OrdinalIgnoreCase);
         }
 
         private static (string fileNameWithoutExtension, string extension) GetFileNameAndExtension(

@@ -3,7 +3,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using Avalonia.Media;
-using Avalonia.Media.Fonts;
 using Avalonia.Metadata;
 
 namespace Avalonia.Platform
@@ -29,13 +28,14 @@ namespace Avalonia.Platform
         /// <param name="fontStyle">The font style.</param>
         /// <param name="fontWeight">The font weight.</param>
         /// <param name="fontStretch">The font stretch.</param>
+        /// <param name="familyName">The family name. This is optional and can be used as an initial hint for matching.</param>
         /// <param name="culture">The culture.</param>
         /// <param name="typeface">The matching typeface.</param>
         /// <returns>
         ///     <c>True</c>, if the <see cref="IFontManagerImpl"/> could match the character to specified parameters, <c>False</c> otherwise.
         /// </returns>
         bool TryMatchCharacter(int codepoint, FontStyle fontStyle,
-            FontWeight fontWeight, FontStretch fontStretch, CultureInfo? culture, out Typeface typeface);
+            FontWeight fontWeight, FontStretch fontStretch, string? familyName, CultureInfo? culture, out Typeface typeface);
 
         /// <summary>
         ///     Tries to get a glyph typeface for specified parameters.
@@ -72,13 +72,14 @@ namespace Avalonia.Platform
         /// <param name="fontStyle">The font style.</param>
         /// <param name="fontWeight">The font weight.</param>
         /// <param name="fontStretch">The font stretch.</param>
+        /// <param name="familyName">The family name. This is optional and can be used as an initial hint for matching.</param>
         /// <param name="culture">The culture.</param>
         /// <param name="typeface">The matching typeface.</param>
         /// <returns>
         ///     <c>True</c>, if the <see cref="IFontManagerImpl"/> could match the character to specified parameters, <c>False</c> otherwise.
         /// </returns>
         bool TryMatchCharacter(int codepoint, FontStyle fontStyle,
-            FontWeight fontWeight, FontStretch fontStretch, CultureInfo? culture, [NotNullWhen(true)] out IGlyphTypeface? typeface);
+            FontWeight fontWeight, FontStretch fontStretch, string? familyName, CultureInfo? culture, [NotNullWhen(true)] out IGlyphTypeface? typeface);
 
         /// <summary>
         /// Tries to get a list of typefaces for the specified family name.

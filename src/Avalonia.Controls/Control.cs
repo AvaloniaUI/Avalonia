@@ -4,6 +4,7 @@ using System.ComponentModel;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
@@ -562,6 +563,13 @@ namespace Avalonia.Controls
                     OnSizeChanged(sizeChangedEventArgs);
                 }
             }
+        }
+        
+        /// <inheritdoc />
+        protected override void UpdateDataValidation(AvaloniaProperty property, BindingValueType state, Exception? error)
+        {
+            DataValidationErrors.SetError(this, error);
+            base.UpdateDataValidation(property, state, error);
         }
 
         // Since we are resetting the dispatcher instance, the callback might never arrive

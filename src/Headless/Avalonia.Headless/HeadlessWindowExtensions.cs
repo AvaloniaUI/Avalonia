@@ -138,11 +138,25 @@ public static class HeadlessWindowExtensions
 
     private static void RunJobsOnImpl(this TopLevel topLevel, Action<IHeadlessWindow> action)
     {
-        Dispatcher.UIThread.RunJobs();
-        AvaloniaHeadlessPlatform.ForceRenderTimerTick();
-        Dispatcher.UIThread.RunJobs();
+        RunJobsAndRender();
         action(GetImpl(topLevel));
-        Dispatcher.UIThread.RunJobs();
+        RunJobsAndRender();
+
+        void RunJobsAndRender()
+        {
+            var count = 0;
+            var dispatcher = Dispatcher.UIThread;
+
+            while (dispatcher.HasJobsWithPriority(DispatcherPriority.MinimumActiveValue))
+            {
+                if (count >= 10)
+                    throw new InvalidOperationException("Dispatcher job loop detected");
+
+                dispatcher.RunJobs();
+                AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+                ++count;
+            }
+        }
     }
 
     private static IHeadlessWindow GetImpl(this TopLevel topLevel)

@@ -134,6 +134,7 @@ namespace Avalonia.Automation.Peers
 
             return result;
         }
+        protected override AutomationLandmarkType? GetLandmarkTypeCore() => AutomationProperties.GetLandmarkType(Owner);
         protected override int GetHeadingLevelCore() => AutomationProperties.GetHeadingLevel(Owner);
         protected override AutomationPeer? GetParentCore()
         {

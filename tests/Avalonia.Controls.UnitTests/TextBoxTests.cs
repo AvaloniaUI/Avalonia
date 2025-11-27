@@ -749,7 +749,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void TextBox_CaretIndex_Persists_When_Focus_Lost()
         {
-            using (UnitTestApplication.Start(FocusServices))
+            using (UnitTestApplication.Start(FocusServices.With(assetLoader: new StandardAssetLoader())))
             {
                 var target1 = new TextBox
                 {
@@ -2160,7 +2160,8 @@ namespace Avalonia.Controls.UnitTests
             standardCursorFactory: Mock.Of<ICursorFactory>(),
             renderInterface: new HeadlessPlatformRenderInterface(),
             textShaperImpl: new HeadlessTextShaperStub(), 
-            fontManagerImpl: new HeadlessFontManagerStub());
+            fontManagerImpl: new HeadlessFontManagerStub(),
+            assetLoader: new StandardAssetLoader());
 
         internal static IControlTemplate CreateTemplate()
         {
