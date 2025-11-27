@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Avalonia.Layout;
+using Avalonia.Logging;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Utils
@@ -383,6 +384,29 @@ namespace Avalonia.Controls.Utils
         }
 
         /// <summary>
+        /// Nullifies an element at the specified index without recycling it.
+        /// The element slot becomes null so that RecycleAllElements will skip it.
+        /// </summary>
+        /// <param name="index">The index in the source collection.</param>
+        /// <returns>The element and its size, or null if not found.</returns>
+        public (Control element, double sizeU)? NullifyElement(int index)
+        {
+            if (_elements is null || _elements.Count == 0)
+                return null;
+
+            var i = index - FirstIndex;
+            if (i < 0 || i >= _elements.Count)
+                return null;
+
+            if (_elements[i] is not Control element)
+                return null;
+
+            var sizeU = _sizes![i];
+            _elements[i] = null;
+            return (element, sizeU);
+        }
+
+        /// <summary>
         /// Recycles all realized elements.
         /// </summary>
         /// <param name="recycleElement">A method used to recycle elements.</param>
@@ -421,28 +445,172 @@ namespace Avalonia.Controls.Utils
         /// </summary>
         /// <param name="orientation">The panel orientation.</param>
         /// <remarks>
-        /// If the U size of any element in the realized elements has changed, then the value of
-        /// <see cref="StartU"/> should be considered unstable.
+        /// Checks if any realized element's DesiredSize differs from the stored size.
+        /// - Small changes (&lt; 1px): absorbed silently by updating stored sizes. StartU stays stable.
+        ///   This prevents layout cycles with complex items that produce slightly different sizes each measure.
+        /// - Large changes (&gt;= 1px): genuine resize — marks StartU as unstable.
         /// </remarks>
-        public void ValidateStartU(Orientation orientation)
+        /// <summary>
+        /// Checks whether any realized element's DesiredSize has changed from the stored size.
+        /// Returns true if a significant (>= 1px) change was detected.
+        /// When <paramref name="anchorIndex"/> is provided and only items OUTSIDE the viewport
+        /// changed size (the anchor item itself is stable), compensates StartU by the accumulated
+        /// pre-anchor delta to prevent scroll jumping from async content loading.
+        /// If the anchor item itself changed, marks StartU as unstable (global resize scenario).
+        /// Updates stored sizes in-place unless <paramref name="lockSizes"/> is true.
+        /// When lockSizes is true (during extent oscillation), stored sizes are NOT updated for
+        /// significant changes, preventing item position shifts within the viewport.
+        /// </summary>
+        public bool ValidateStartU(Orientation orientation, int anchorIndex, out double preDelta, bool lockSizes = false)
         {
+            preDelta = 0;
+
             if (_elements is null || _sizes is null || _startUUnstable)
-                return;
+                return false;
+
+            var hasSignificantChange = false;
+            var anchorChanged = false;
+            var anchorMeasurePending = false;
+            var otherItemsChanged = false;
+            var otherItemsPendingMeasure = false;
 
             for (var i = 0; i < _elements.Count; ++i)
             {
                 if (_elements[i] is not { } element)
                     continue;
 
+                var itemIndex = _firstIndex + i;
+
+                // Detect partial layout manager state: elements whose data changed
+                // but the layout manager hasn't re-measured them yet.
+                if (!element.IsMeasureValid)
+                {
+                    if (itemIndex == anchorIndex)
+                        anchorMeasurePending = true;
+                    else
+                        otherItemsPendingMeasure = true;
+                }
+
                 var sizeU = orientation == Orientation.Horizontal ?
                     element.DesiredSize.Width : element.DesiredSize.Height;
 
-                if (sizeU != _sizes[i])
+                var diff = sizeU - _sizes[i];
+                if (diff == 0)
+                    continue;
+
+                if (Math.Abs(diff) >= 1.0)
                 {
-                    _startUUnstable = true;
-                    break;
+                    if (Logger.TryGet(LogEventLevel.Warning, LogArea.Control) is { } log)
+                    {
+                        var dc = (element as StyledElement)?.DataContext;
+                        log.Log(element,
+                            "Item template size changed significantly during layout. " +
+                            "This typically means the item template produces non-deterministic sizes " +
+                            "(e.g., async image loading, text wrapping). Consider using fixed-size templates. " +
+                            "DataContext='{DataContext}', OldSize='{OldSize}', NewSize='{NewSize}', Diff='{Diff}' " +
+                            "(#{HashCode} idx={ItemIndex})",
+                            dc?.GetType().FullName ?? "(null)", _sizes[i], sizeU, diff,
+                            element.GetHashCode(), itemIndex);
+                    }
+
+                    // During extent oscillation (lockSizes=true), still track size
+                    // changes for position compensation — if an item before the
+                    // viewport anchor shrinks/grows, StartU must be adjusted to
+                    // keep visible items at their current positions. Update stored
+                    // sizes so future passes don't re-detect the same change.
+                    // But don't set hasSignificantChange — that would invalidate
+                    // the estimate cache and cause extent oscillation.
+                    if (lockSizes)
+                    {
+                        if (anchorIndex >= 0 && itemIndex <= anchorIndex)
+                            preDelta += diff;
+                        _sizes[i] = sizeU;
+                        continue;
+                    }
+
+                    hasSignificantChange = true;
+
+                    if (anchorIndex >= 0 && itemIndex < anchorIndex)
+                    {
+                        preDelta += diff;
+                        otherItemsChanged = true;
+                    }
+                    else if (itemIndex == anchorIndex)
+                    {
+                        anchorChanged = true;
+                    }
+                    else
+                    {
+                        otherItemsChanged = true;
+                    }
+
+                    // Update stored size so the next pass won't re-detect this change
+                    _sizes[i] = sizeU;
+                }
+                else
+                {
+                    // Minor fluctuation (< 1px) — absorb by updating stored size.
+                    _sizes[i] = sizeU;
                 }
             }
+
+            if (!hasSignificantChange && !anchorMeasurePending)
+            {
+                // No significant (non-locked) changes detected. But we may have
+                // accumulated preDelta from locked-size items before the anchor.
+                // Compensate StartU to keep visible items stable.
+                if (Math.Abs(preDelta) >= 1.0)
+                {
+                    _startU -= preDelta;
+                    return true;
+                }
+                return false;
+            }
+
+            if (anchorMeasurePending ||
+                (anchorChanged && (otherItemsChanged || otherItemsPendingMeasure)))
+            {
+                // Either the anchor hasn't been re-measured yet (partial layout state),
+                // or the anchor changed AND other items also changed or are pending
+                // re-measure (uniform resize scenario). Mark unstable so the layout
+                // re-evaluates positions from scratch.
+                _startUUnstable = true;
+            }
+            else if (anchorChanged)
+            {
+                // Only the anchor itself changed size and no other items are affected
+                // (e.g., async content loading on the visible item). The anchor's
+                // START position is still correct — only items after it shift.
+                // Return false: the stored size is already updated (preventing
+                // re-detection), and the normal realization flow will handle
+                // the shifted positions. Returning false avoids resetting the
+                // estimate cache in MeasureOverride, which would cause the estimate
+                // to oscillate when items alternate between loaded/unloaded sizes
+                // (e.g., async images cycling between 84px placeholder and 306px loaded).
+                return false;
+            }
+            else if (Math.Abs(preDelta) >= 1.0)
+            {
+                // Only items before the anchor changed (async content loading).
+                // Subtract preDelta from StartU to keep the anchor at its visual position:
+                //   anchor_pos = startU + sum_of_sizes_before_anchor
+                // If sizes_before grew by preDelta, decrease startU by the same amount.
+                _startU -= preDelta;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Adjusts StartU to compensate for extent changes outside the realized range.
+        /// This prevents scroll jumping by maintaining the visual position of realized elements.
+        /// </summary>
+        public void CompensateStartU(double delta)
+        {
+            if (_startUUnstable || double.IsNaN(_startU))
+                return;
+
+            _startU += delta;
         }
     }
 }
