@@ -35,6 +35,7 @@ public class PolylineTests : ScopedTestBase
         var target = new Polyline
         {
             Points = new Points { new Point(0, 0), new Point(10, 10), new Point(20, 0) },
+            Fill = Brushes.Red,
             FillRule = FillRule.NonZero
         };
 
@@ -53,12 +54,14 @@ public class PolylineTests : ScopedTestBase
         var evenOdd = new Polyline
         {
             Points = new Points { new Point(0, 0), new Point(10, 10), new Point(20, 0) },
+            Fill = Brushes.Red,
             FillRule = FillRule.EvenOdd
         };
 
         var nonZero = new Polyline
         {
             Points = new Points { new Point(0, 0), new Point(10, 10), new Point(20, 0) },
+            Fill = Brushes.Red,
             FillRule = FillRule.NonZero
         };
 
@@ -67,5 +70,22 @@ public class PolylineTests : ScopedTestBase
 
         Assert.Equal(FillRule.EvenOdd, Assert.IsType<PolylineGeometry>(evenOdd.DefiningGeometry).FillRule);
         Assert.Equal(FillRule.NonZero, Assert.IsType<PolylineGeometry>(nonZero.DefiningGeometry).FillRule);
+    }
+
+    [Fact]
+    public void When_Fill_Is_Null_Polyline_Geometry_Is_Not_Filled()
+    {
+        using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+        var target = new Polyline
+        {
+            Points = new Points { new Point(0, 0), new Point(10, 10), new Point(20, 0) },
+            FillRule = FillRule.NonZero,
+            Fill = null
+        };
+
+        target.Measure(Size.Infinity);
+        var geometry = Assert.IsType<PolylineGeometry>(target.DefiningGeometry);
+        Assert.False(geometry.IsFilled);
     }
 }
