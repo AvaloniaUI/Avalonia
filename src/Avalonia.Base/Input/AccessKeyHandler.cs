@@ -132,7 +132,7 @@ namespace Avalonia.Input
                 var registration = _registrations[i];
                 if (registration.Key == key && registration.GetInputElement() == null)
                 {
-                    _registrations.RemoveAt(i);    
+                    _registrations.RemoveAt(i);
                 }
             }
 
@@ -224,7 +224,7 @@ namespace Avalonia.Input
                 MainMenu?.IsOpen != true)
                 return;
 
-            e.Handled = ProcessKey(e.Key.ToString(), e.Source as IInputElement);
+            e.Handled = ProcessKey(e.KeySymbol ?? e.Key.ToString(), e.Source as IInputElement);
         }
 
 
@@ -249,7 +249,6 @@ namespace Avalonia.Input
                     {
                         MainMenu.Open();
                     }
-
                     break;
             }
         }
