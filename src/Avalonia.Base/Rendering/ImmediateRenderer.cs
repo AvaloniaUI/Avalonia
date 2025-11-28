@@ -18,60 +18,77 @@ internal class ImmediateRenderer
     /// <param name="visual">The visual.</param>
     /// <param name="context">The drawing context.</param>
     public static void Render(Visual visual, DrawingContext context)
-    {
-        RenderInternal(context, visual, new Rect(visual.Bounds.Size));
-    }
+        => Render(context, visual, new Rect(visual.Bounds.Size));
 
     public static void Render(DrawingContext context, Visual visual, Rect clipRect)
     {
-        using (context.PushTransform(new TranslateTransform(-clipRect.Position.X, -clipRect.Position.Y).Value))
+        using (context.PushTransform(Matrix.CreateTranslation(-clipRect.Position.X, -clipRect.Position.Y)))
         using (context.PushClip(clipRect))
         {
-            Render(visual, context);
+            RenderInternal(context, visual, new Rect(visual.Bounds.Size), GetRenderTransformMatrix(visual), Matrix.Identity, new Rect(clipRect.Size));
         }
     }
 
-    private static void RenderInternal(DrawingContext context, Visual visual, Rect bounds)
+    private static void RenderInternal(DrawingContext context, Visual visual, Rect bounds, Matrix renderTransform, Matrix parentTransform, Rect clipRect)
     {
         if (!visual.IsVisible || visual.Opacity is not (var opacity and > 0))
         {
             return;
         }
 
-        var renderTransform = default(Matrix?);
-        if (visual.RenderTransform != null)
-        {
-            var origin = visual.RenderTransformOrigin.ToPixels(new Size(visual.Bounds.Width, visual.Bounds.Height));
-            var offset = Matrix.CreateTranslation(origin);
-            renderTransform = (-offset) * visual.RenderTransform.Value * (offset);
-        }
-
-        var clipBounds = new Rect(bounds.Size);
+        var rect = new Rect(bounds.Size);
+        var transform = renderTransform * Matrix.CreateTranslation(bounds.Position);
 
         using (visual.RenderOptions != default ? context.PushRenderOptions(visual.RenderOptions) : default(DrawingContext.PushedState?))
-        using (context.PushTransform(new TranslateTransform(bounds.Position.X, bounds.Position.Y).Value))
-        using (renderTransform is { } matrix ? context.PushTransform(matrix) : default(DrawingContext.PushedState?))
+        using (context.PushTransform(transform))
         using (visual.HasMirrorTransform ? context.PushTransform(new Matrix(-1.0, 0.0, 0.0, 1.0, visual.Bounds.Width, 0)) : default(DrawingContext.PushedState?))
         using (context.PushOpacity(opacity))
         using (visual switch
         {
-            { ClipToBounds: true } and IVisualWithRoundRectClip roundClipVisual => context.PushClip(new RoundedRect(clipBounds, roundClipVisual.ClipToBoundsRadius)),
-            { ClipToBounds: true } => context.PushClip(clipBounds),
+            { ClipToBounds: true } and IVisualWithRoundRectClip roundClipVisual => context.PushClip(new RoundedRect(rect, roundClipVisual.ClipToBoundsRadius)),
+            { ClipToBounds: true } => context.PushClip(rect),
             _ => default(DrawingContext.PushedState?)
         })
-        using (visual.Clip != null ? context.PushGeometryClip(visual.Clip) : default(DrawingContext.PushedState?))
-        using (visual.OpacityMask != null ? context.PushOpacityMask(visual.OpacityMask, clipBounds) : default(DrawingContext.PushedState?))
+        using (visual.Clip is { } clip ? context.PushGeometryClip(clip) : default(DrawingContext.PushedState?))
+        using (visual.OpacityMask is { } opctMask ? context.PushOpacityMask(opctMask, rect) : default(DrawingContext.PushedState?))
         {
-            visual.Render(context);
+            var totalTransform = transform * parentTransform;
+            var visualBounds = rect.TransformToAABB(totalTransform);
+
+            if (visualBounds.Intersects(clipRect))
+            {
+                visual.Render(context);
+            }
 
             IEnumerable<Visual> childrenEnumerable = visual.HasNonUniformZIndexChildren
                 ? visual.VisualChildren.OrderBy(x => x, ZIndexComparer.Instance)
                 : visual.VisualChildren;
 
+            if (visual.ClipToBounds)
+            {
+                totalTransform = Matrix.Identity;
+                clipRect = rect;
+            }
+
             foreach (var child in childrenEnumerable)
             {
-                RenderInternal(context, child, child.Bounds);
+                var childRenderTransform = GetRenderTransformMatrix(child);
+                RenderInternal(context, child, child.Bounds, childRenderTransform, totalTransform, clipRect);
             }
+        }
+    }
+
+    private static Matrix GetRenderTransformMatrix(Visual visual)
+    {
+        if (visual.RenderTransform?.Value is { } rt)
+        {
+            var origin = visual.RenderTransformOrigin.ToPixels(visual.Bounds.Size);
+            var offset = Matrix.CreateTranslation(origin);
+            return (-offset) * rt * (offset);
+        }
+        else
+        {
+            return Matrix.Identity;
         }
     }
 }
