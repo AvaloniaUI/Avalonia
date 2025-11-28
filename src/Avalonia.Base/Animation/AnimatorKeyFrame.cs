@@ -14,6 +14,7 @@ namespace Avalonia.Animation
     /// </summary>
     internal class AnimatorKeyFrame : AvaloniaObject
     {
+        private AvaloniaProperty? _property;
         public static readonly DirectProperty<AnimatorKeyFrame, object?> ValueProperty =
             AvaloniaProperty.RegisterDirect<AnimatorKeyFrame, object?>(nameof(Value), k => k.Value, (k, v) => k.Value = v);
 
@@ -31,7 +32,7 @@ namespace Avalonia.Animation
         public KeySpline? KeySpline { get; }
         public bool FillBefore { get; set; }
         public bool FillAfter { get; set; }
-        public AvaloniaProperty? Property { get; private set; }
+        public AvaloniaProperty? Property => _property;
 
         private object? _value;
 
@@ -43,7 +44,7 @@ namespace Avalonia.Animation
 
         public IDisposable BindSetter(IAnimationSetter setter, Animatable targetControl)
         {
-            Property = setter.Property;
+            _property = setter.Property;
             var value = setter.Value;
 
             if (value is IBinding binding)
