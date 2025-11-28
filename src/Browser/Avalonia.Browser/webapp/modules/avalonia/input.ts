@@ -371,8 +371,7 @@ export class InputHelper {
                 start = 2;
                 end = start + 2;
             }
-
-            JsExports.InputHelper.OnBeforeInput(topLevelId, args.inputType, start, end);
+            JsExports.InputHelper.OnBeforeInput(topLevelId, args.inputType, start, end, args.data ?? "");
         };
         element.addEventListener("beforeinput", beforeInputHandler);
 
@@ -389,6 +388,7 @@ export class InputHelper {
 
         return () => {
             element.removeEventListener("compositionstart", compositionStartHandler);
+            element.removeEventListener("beforeinput", beforeInputHandler);
             element.removeEventListener("compositionupdate", compositionUpdateHandler);
             element.removeEventListener("compositionend", compositionEndHandler);
         };

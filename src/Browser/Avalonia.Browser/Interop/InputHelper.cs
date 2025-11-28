@@ -31,8 +31,8 @@ internal static partial class InputHelper
         RedirectInputRetunAsync(topLevelId, t => t.InputHandler.OnKeyUp(code, key, modifier), false);
 
     [JSExport]
-    public static Task OnBeforeInput(int topLevelId, string inputType, int start, int end) =>
-        RedirectInputAsync(topLevelId, t => t.InputHandler.TextInputMethod.OnBeforeInput(inputType, start, end));
+    public static Task OnBeforeInput(int topLevelId, string inputType, int start, int end, string data) =>
+        RedirectInputAsync(topLevelId, t => t.InputHandler.TextInputMethod.OnBeforeInput(inputType, start, end, data));
 
     [JSExport]
     public static Task OnCompositionStart(int topLevelId) =>
