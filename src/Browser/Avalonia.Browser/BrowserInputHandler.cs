@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices.JavaScript;
 using Avalonia.Browser.Interop;
 using Avalonia.Collections.Pooled;
+using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 
@@ -40,7 +41,7 @@ internal class BrowserInputHandler
         TextInputMethod = new BrowserTextInputMethod(this, container, inputElement);
         InputPane = new BrowserInputPane();
 
-        InputHelper.SubscribeInputEvents(container, topLevelId);
+        InputHelper.SubscribeInputEvents(container, inputElement, topLevelId);
     }
 
     public BrowserTextInputMethod TextInputMethod { get; }
@@ -229,6 +230,14 @@ internal class BrowserInputHandler
 
     public bool OnKeyDown(string code, string key, int modifier)
     {
+        //If we are processing beforeInput we must not process Backspace
+        //but onBeforeInput itself calls OnKeyBackspace, so filtering must be done at the same level.
+        //onBeforeInput will call RawKeyboardEvent.
+        if (key == "Backspace")
+        {
+            //return true;  //why?
+        }
+
         var handled = RawKeyboardEvent(RawKeyEventType.KeyDown, code, key, (RawInputModifiers)modifier);
 
         if (!handled && key.Length == 1)
@@ -303,7 +312,7 @@ internal class BrowserInputHandler
         return false;
     }
 
-    private bool RawKeyboardEvent(RawKeyEventType type, string domCode, string domKey, RawInputModifiers modifiers)
+    internal bool RawKeyboardEvent(RawKeyEventType type, string domCode, string domKey, RawInputModifiers modifiers)
     {
         if (_inputRoot is null)
             return false;

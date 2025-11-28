@@ -1,6 +1,8 @@
 using System;
 using System.Runtime.InteropServices.JavaScript;
 using Avalonia.Browser.Interop;
+using Avalonia.Input;
+using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 
 namespace Avalonia.Browser;
@@ -29,12 +31,14 @@ internal class BrowserTextInputMethod(
         if (_client != null)
         {
             _client.SurroundingTextChanged -= SurroundingTextChanged;
+            _client.SelectionChanged -= SelectionCHanged;
             _client.InputPaneActivationRequested -= InputPaneActivationRequested;
         }
 
         if (client != null)
         {
             client.SurroundingTextChanged += SurroundingTextChanged;
+            client.SelectionChanged += SelectionCHanged;
             client.InputPaneActivationRequested += InputPaneActivationRequested;
         }
 
@@ -81,6 +85,17 @@ internal class BrowserTextInputMethod(
             InputHelper.SetSurroundingText(_inputElement, surroundingText, selection.Start, selection.End);
         }
     }
+    private void SelectionCHanged(object? sender, EventArgs e)
+    {
+        if (_client != null)
+        {
+            var surroundingText = _client.SurroundingText ?? "";
+            var selection = _client.Selection;
+
+            InputHelper.SetSurroundingText(_inputElement, surroundingText, selection.Start, selection.End);
+        }
+    }
+
 
     public void SetCursorRect(Rect rect)
     {
@@ -100,8 +115,11 @@ internal class BrowserTextInputMethod(
         InputHelper.SetSurroundingText(_inputElement, "", 0, 0);
     }
 
-    public void OnBeforeInput(string inputType, int start, int end)
+    public void OnBeforeInput(string inputType, int start, int end, string data)
     {
+        bool handled;
+
+        /*
         if (inputType != "deleteByComposition")
         {
             if (inputType == "deleteContentBackward")
@@ -115,11 +133,29 @@ internal class BrowserTextInputMethod(
                 end = -1;
             }
         }
+        */
 
         if (start != -1 && end != -1 && _client != null)
         {
             _client.Selection = new TextSelection(start, end);
         }
+
+        if ((inputType == "insertText") && (data.Length > 0))
+        {
+            handled = _inputHandler.RawTextEvent(data);
+        }
+
+        if (inputType == "deleteContentBackward")
+        {
+            handled = _inputHandler.RawKeyboardEvent(RawKeyEventType.KeyDown, "Backspace", "Backspace", (RawInputModifiers)0);
+        }
+
+        if ((inputType == "insertCompositionText") && (data.Length > 0))
+        {
+            handled = _inputHandler.RawTextEvent(data);
+        }
+
+
     }
 
     public void OnCompositionStart()
@@ -150,7 +186,7 @@ internal class BrowserTextInputMethod(
         
         if (data != null)
         {
-            _inputHandler.RawTextEvent(data);
+            //_inputHandler.RawTextEvent(data);  //handled on beforeinput event
         }
     }
 }

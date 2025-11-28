@@ -73,6 +73,7 @@ export class InputHelper {
     static clipboardState: ClipboardState = ClipboardState.None;
     static resolveClipboard?: (value: readonly ReadableDataItem[]) => void;
     static rejectClipboard?: (reason?: any) => void;
+    static enableIME: boolean = false; // hack, once turned on, stays on
 
     public static initializeBackgroundHandlers() {
         if (this.clipboardState !== ClipboardState.None) {
@@ -302,10 +303,10 @@ export class InputHelper {
             : new Uint8Array(await blob.arrayBuffer());
     }
 
-    public static subscribeInputEvents(element: HTMLInputElement, topLevelId: number) {
-        const keySub = this.subscribeKeyEvents(element, topLevelId);
+    public static subscribeInputEvents(element: HTMLInputElement, inputElement: HTMLInputElement, topLevelId: number) {
+        const keySub = this.subscribeKeyEvents(element, inputElement, topLevelId);
         const pointerSub = this.subscribePointerEvents(element, topLevelId);
-        const textSub = this.subscribeTextEvents(element, topLevelId);
+        const textSub = this.subscribeTextEvents(element, inputElement, topLevelId);
         const dndSub = this.subscribeDropEvents(element, topLevelId);
         const paneSub = this.subscribeKeyboardGeometryChange(element, topLevelId);
 
@@ -318,11 +319,22 @@ export class InputHelper {
         };
     }
 
-    public static subscribeKeyEvents(element: HTMLInputElement, topLevelId: number) {
+    public static subscribeKeyEvents(element: HTMLInputElement, inputElement: HTMLInputElement, topLevelId: number) {
         const keyDownHandler = (args: KeyboardEvent) => {
+            if (args.keyCode === 229) {
+                InputHelper.enableIME = true;
+            }
+
+            if (InputHelper.enableIME) {
+                if (args.key === "Backspace") {
+                    return;
+                }
+            }
+
             JsExports.InputHelper.OnKeyDown(topLevelId, args.code, args.key, this.getModifiers(args))
                 .then((handled: boolean) => {
-                    if (!handled || this.clipboardState !== ClipboardState.Pending) {
+                    // if (!handled || this.clipboardState !== ClipboardState.Pending) {
+                    if (!handled) {
                         args.preventDefault();
                     }
                 });
@@ -352,6 +364,7 @@ export class InputHelper {
 
     public static subscribeTextEvents(
         element: HTMLInputElement,
+        inputElement: HTMLInputElement,
         topLevelId: number) {
         const compositionStartHandler = (args: CompositionEvent) => {
             JsExports.InputHelper.OnCompositionStart(topLevelId);
@@ -359,6 +372,12 @@ export class InputHelper {
         element.addEventListener("compositionstart", compositionStartHandler);
 
         const beforeInputHandler = (args: InputEvent) => {
+            if (!InputHelper.enableIME) {
+                args.preventDefault(); // we modified the _input, so do not modify it twice
+                return; // do not process beforeInput
+            }
+
+            // this has no chance of working, since we have input type=text
             const ranges = args.getTargetRanges();
             let start = -1;
             let end = -1;
@@ -367,12 +386,21 @@ export class InputHelper {
                 end = ranges[0].endOffset;
             }
 
-            if (args.inputType === "insertCompositionText") {
-                start = 2;
-                end = start + 2;
-            }
+            // wtf
+            // if (args.inputType === "insertCompositionText") {
+            //    start = 2;
+            //    end = start + 2;
+            // }
 
-            JsExports.InputHelper.OnBeforeInput(topLevelId, args.inputType, start, end);
+            // start and end here are uninitialized, <input type=text never sends targetRanges, see mdn
+            JsExports.InputHelper.OnBeforeInput(topLevelId, args.inputType, start, end, args.data ?? "");
+
+            // cancel events that were processed
+            if ((args.inputType === "insertText") ||
+                (args.inputType === "deleteContentBackward") ||
+                (args.inputType === "insertCompositionText")) {
+                args.preventDefault();
+            }
         };
         element.addEventListener("beforeinput", beforeInputHandler);
 
@@ -389,6 +417,7 @@ export class InputHelper {
 
         return () => {
             element.removeEventListener("compositionstart", compositionStartHandler);
+            element.removeEventListener("beforeinput", beforeInputHandler);
             element.removeEventListener("compositionupdate", compositionUpdateHandler);
             element.removeEventListener("compositionend", compositionEndHandler);
         };
