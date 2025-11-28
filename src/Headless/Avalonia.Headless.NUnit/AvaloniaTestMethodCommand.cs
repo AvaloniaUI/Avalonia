@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia.Threading;
@@ -14,7 +15,7 @@ internal class AvaloniaTestMethodCommand : TestCommand
     private readonly HeadlessUnitTestSession _session;
     private readonly TestCommand _innerCommand;
     private readonly List<Action> _beforeTest;
-    private readonly List<Action> _afterTest;
+    private readonly List<Action<TestExecutionContext>> _afterTest;
 
     // There are multiple problems with NUnit integration at the moment when we wrote this integration.
     // NUnit doesn't have extensibility API for running on custom dispatcher/sync-context.
@@ -29,12 +30,16 @@ internal class AvaloniaTestMethodCommand : TestCommand
         .GetField("BeforeTest", BindingFlags.Instance | BindingFlags.NonPublic)!;
     private static FieldInfo s_afterTest = typeof(BeforeAndAfterTestCommand)
         .GetField("AfterTest", BindingFlags.Instance | BindingFlags.NonPublic)!;
+    private static FieldInfo s_setUpMethods = typeof(SetUpTearDownItem)
+        .GetField("_setUpMethods", BindingFlags.Instance | BindingFlags.NonPublic)!;
+    private static FieldInfo s_tearDownMethods = typeof(SetUpTearDownItem)
+        .GetField("_tearDownMethods", BindingFlags.Instance | BindingFlags.NonPublic)!;
 
     private AvaloniaTestMethodCommand(
         HeadlessUnitTestSession session,
         TestCommand innerCommand,
         List<Action> beforeTest,
-        List<Action> afterTest)
+        List<Action<TestExecutionContext>> afterTest)
         : base(innerCommand.Test)
     {
         _session = session;
@@ -45,22 +50,75 @@ internal class AvaloniaTestMethodCommand : TestCommand
 
     public static TestCommand ProcessCommand(HeadlessUnitTestSession session, TestCommand command)
     {
-        return ProcessCommand(session, command, new List<Action>(), new List<Action>());
+        return ProcessCommand(session, command, [], []);
     }
 
-    private static TestCommand ProcessCommand(HeadlessUnitTestSession session, TestCommand command, List<Action> before, List<Action> after)
+    private static TestCommand ProcessCommand(HeadlessUnitTestSession session, TestCommand command, List<Action> before, List<Action<TestExecutionContext>> after)
     {
         if (command is BeforeAndAfterTestCommand beforeAndAfterTestCommand)
         {
             if (s_beforeTest.GetValue(beforeAndAfterTestCommand) is Action<TestExecutionContext> beforeTest)
             {
-                Action<TestExecutionContext> beforeAction = c => before.Add(() => beforeTest(c));
-                s_beforeTest.SetValue(beforeAndAfterTestCommand, beforeAction);
+                var setUpTearDownInfo = beforeTest.Target?.GetType()
+                    .GetField("setUpTearDown", BindingFlags.Instance | BindingFlags.Public);
+                if (setUpTearDownInfo != null && setUpTearDownInfo.GetValue(beforeTest.Target) is SetUpTearDownItem setUpTearDown
+                    && s_setUpMethods.GetValue(setUpTearDown) is List<IMethodInfo> setUpMethods)
+                {
+                    Action<TestExecutionContext> beforeAction = c =>
+                    {
+                        before.AddRange(setUpMethods.Select<IMethodInfo, Action>(m => async void () =>
+                        {
+                            var result = m.Invoke(c.TestObject, []);
+                            if (result is Task task)
+                            {
+                                await task;
+                            }
+                            else if (result is ValueTask valueTask)
+                            {
+                                await valueTask;
+                            }
+                        }));
+                    };
+                    s_beforeTest.SetValue(beforeAndAfterTestCommand, beforeAction);
+                }
+                else
+                {
+                    Action<TestExecutionContext> beforeAction = c => before.Add(() => beforeTest(c));
+                    s_beforeTest.SetValue(beforeAndAfterTestCommand, beforeAction);
+                }
             }
+            
+            // Experimentally, after test methods are called after the ExecuteTestMethod has run
+            // So we handle them differently than the before methods
             if (s_afterTest.GetValue(beforeAndAfterTestCommand) is Action<TestExecutionContext> afterTest)
             {
-                Action<TestExecutionContext> afterAction = c => after.Add(() => afterTest(c));
-                s_afterTest.SetValue(beforeAndAfterTestCommand, afterAction);
+                var setUpTearDownInfo = afterTest.Target?.GetType()
+                    .GetField("setUpTearDown", BindingFlags.Instance | BindingFlags.Public);
+                if (setUpTearDownInfo != null && setUpTearDownInfo.GetValue(afterTest.Target) is SetUpTearDownItem setUpTearDown
+                    && s_tearDownMethods.GetValue(setUpTearDown) is List<IMethodInfo> tearDownMethods)
+                {
+                    after.Add(c =>
+                    {
+                        tearDownMethods.ForEach(async void (m) =>
+                        {
+                            var result = m.Invoke(c.TestObject, []);
+                            if (result is Task task)
+                            {
+                                await task;
+                            }
+                            else if (result is ValueTask valueTask)
+                            {
+                                await valueTask;
+                            }
+                        });
+                    });
+                    s_afterTest.SetValue(beforeAndAfterTestCommand, (TestExecutionContext _) => { });
+                }
+                else
+                {
+                    after.Add(c => afterTest(c));
+                    s_afterTest.SetValue(beforeAndAfterTestCommand, (TestExecutionContext _) => { });
+                }
             }
         }
         
@@ -108,7 +166,7 @@ internal class AvaloniaTestMethodCommand : TestCommand
 
         if (context.ExecutionStatus != TestExecutionStatus.AbortRequested)
         {
-            _afterTest.ForEach(a => a());
+            _afterTest.ForEach(a => a(context));
             Dispatcher.UIThread.RunJobs();
         }
         
