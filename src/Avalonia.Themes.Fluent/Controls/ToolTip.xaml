@@ -46,6 +46,7 @@
                             MaxWidth="{TemplateBinding MaxWidth}"
                             Content="{TemplateBinding Content}"
                             ContentTemplate="{TemplateBinding ContentTemplate}"
+                            TextBlock.LetterSpacing="{TemplateBinding LetterSpacing}"
                             TextBlock.TextWrapping="Wrap"/>
         </Border>
       </ControlTemplate>

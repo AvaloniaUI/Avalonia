@@ -89,6 +89,12 @@ namespace Avalonia.Controls.Primitives
             TextElement.ForegroundProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
+        /// Defines the <see cref="LetterSpacing"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> LetterSpacingProperty =
+            TextElement.LetterSpacingProperty.AddOwner<TemplatedControl>();
+
+        /// <summary>
         /// Defines the <see cref="Padding"/> property.
         /// </summary>
         public static readonly StyledProperty<Thickness> PaddingProperty =
@@ -240,6 +246,15 @@ namespace Avalonia.Controls.Primitives
         {
             get => GetValue(ForegroundProperty);
             set => SetValue(ForegroundProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the letter spacing for the control's text content.
+        /// </summary>
+        public double LetterSpacing
+        {
+            get => GetValue(LetterSpacingProperty);
+            set => SetValue(LetterSpacingProperty, value);
         }
 
         /// <summary>
