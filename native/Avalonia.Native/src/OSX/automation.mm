@@ -122,7 +122,7 @@
         case AutomationSplitButton: return NSAccessibilityPopUpButtonRole;
         case AutomationWindow: return NSAccessibilityWindowRole;
         case AutomationPane: return NSAccessibilityGroupRole;
-        case AutomationHeader: return NSAccessibilityGroupRole;
+        case AutomationHeader: return @"AXHeading";
         case AutomationHeaderItem:  return NSAccessibilityButtonRole;
         case AutomationTable: return NSAccessibilityTableRole;
         case AutomationTitleBar: return NSAccessibilityGroupRole;
@@ -131,6 +131,38 @@
        // reader focus on the item instead of passing focus to child items.
         default: return NSAccessibilityGroupRole;
     }
+}
+
+- (NSAccessibilitySubrole)accessibilitySubrole
+{
+    auto landmarkType = _peer->GetLandmarkType();
+    switch (landmarkType) {
+        case LandmarkBanner: return @"AXLandmarkBanner";
+        case LandmarkComplementary: return @"AXLandmarkComplementary";
+        case LandmarkContentInfo: return @"AXLandmarkContentInfo";
+        case LandmarkRegion: return @"AXLandmarkRegion";
+        case LandmarkForm: return @"AXLandmarkForm";
+        case LandmarkMain: return @"AXLandmarkMain";
+        case LandmarkNavigation: return @"AXLandmarkNavigation";
+        case LandmarkSearch: return @"AXLandmarkSearch";
+        default: return NSAccessibilityUnknownSubrole;
+    }
+}
+
+- (NSString *)accessibilityRoleDescription
+{
+    auto landmarkType = _peer->GetLandmarkType();
+    switch (landmarkType) {
+        case LandmarkBanner: return @"banner";
+        case LandmarkComplementary: return @"complementary";
+        case LandmarkContentInfo: return @"content";
+        case LandmarkRegion: return @"region";
+        case LandmarkForm: return @"form";
+        case LandmarkMain: return @"main";
+        case LandmarkNavigation: return @"navigation";
+        case LandmarkSearch: return @"search";
+    }
+    return NSAccessibilityRoleDescription([self accessibilityRole], [self accessibilitySubrole]);
 }
 
 - (NSString *)accessibilityIdentifier
@@ -175,6 +207,10 @@
     else if (_peer->GetAutomationControlType() == AutomationText)
     {
         return GetNSStringAndRelease(_peer->GetName());
+    }
+    else if (_peer->GetAutomationControlType() == AutomationHeader)
+    {
+        return [NSNumber numberWithInt:_peer->GetHeadingLevel()];
     }
 
     return [super accessibilityValue];

@@ -58,6 +58,7 @@ namespace Avalonia.FreeDesktop
             _statusNotifierItemDbusObj = new StatusNotifierItemDbusObj(_connection, dbusMenuPath);
             _pathHandler.Add(_statusNotifierItemDbusObj);
             _connection.AddMethodHandler(_pathHandler);
+            _statusNotifierItemDbusObj.ActivationDelegate += () => OnClicked?.Invoke();
 
             WatchAsync();
         }
@@ -112,13 +113,19 @@ namespace Avalonia.FreeDesktop
 #endif
             var tid = s_trayIconInstanceId++;
 
+            // make sure not to add the path handle and connection method handler twice
+            if (_statusNotifierItemDbusObj!.PathHandler is null)
+                _pathHandler.Add(_statusNotifierItemDbusObj!);
+
+            _connection.RemoveMethodHandler(_pathHandler.Path);
+            _connection.AddMethodHandler(_pathHandler);
+
             _sysTrayServiceName = FormattableString.Invariant($"org.kde.StatusNotifierItem-{pid}-{tid}");
             await _dBus!.RequestNameAsync(_sysTrayServiceName, 0);
             await _statusNotifierWatcher.RegisterStatusNotifierItemAsync(_sysTrayServiceName);
 
             _statusNotifierItemDbusObj!.SetTitleAndTooltip(_tooltipText);
             _statusNotifierItemDbusObj.SetIcon(_icon);
-            _statusNotifierItemDbusObj.ActivationDelegate += OnClicked;
         }
 
         private void DestroyTrayIcon()

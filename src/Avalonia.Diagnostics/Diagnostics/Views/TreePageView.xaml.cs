@@ -1,3 +1,4 @@
+using System.Text;
 using Avalonia.Controls;
 using Avalonia.Diagnostics.ViewModels;
 using Avalonia.Input;
@@ -79,11 +80,13 @@ namespace Avalonia.Diagnostics.Views
         {
             if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
             {
-                var @do = new DataObject();
-                var text = ToText(selector);
-                @do.Set(DataFormats.Text, text);
-                @do.Set(Constants.DataFormats.Avalonia_DevTools_Selector, selector);
-                clipboard.SetDataObjectAsync(@do);
+                var dataTransferItem = new DataTransferItem();
+                dataTransferItem.SetText(ToText(selector));
+                dataTransferItem.Set(DevToolsDataFormats.Selector, selector);
+
+                var dataTransfer = new DataTransfer();
+                dataTransfer.Add(dataTransferItem);
+                clipboard.SetDataAsync(dataTransfer);
             }
         }
 

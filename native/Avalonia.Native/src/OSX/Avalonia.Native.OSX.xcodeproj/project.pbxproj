@@ -31,6 +31,8 @@
 		1A3E5EAE23E9FB1300EDE661 /* cgl.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1A3E5EAD23E9FB1300EDE661 /* cgl.mm */; };
 		1A3E5EB023E9FE8300EDE661 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A3E5EAF23E9FE8300EDE661 /* QuartzCore.framework */; };
 		1A465D10246AB61600C5858B /* dnd.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1A465D0F246AB61600C5858B /* dnd.mm */; };
+		1AC7F1432DCA0C2E003A161B /* crapium.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1AC7F1422DCA0C2E003A161B /* crapium.mm */; };
+		1AE55B8C2DC1060E00FD0BB3 /* memhelp.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1AE55B8B2DC1060E00FD0BB3 /* memhelp.mm */; };
 		1AFD334123E03C4F0042899B /* controlhost.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1AFD334023E03C4F0042899B /* controlhost.mm */; };
 		37155CE4233C00EB0034DCE9 /* menu.h in Headers */ = {isa = PBXBuildFile; fileRef = 37155CE3233C00EB0034DCE9 /* menu.h */; };
 		37A517B32159597E00FBA241 /* Screens.mm in Sources */ = {isa = PBXBuildFile; fileRef = 37A517B22159597E00FBA241 /* Screens.mm */; };
@@ -63,6 +65,7 @@
 		EDF8CDCD2964CB01001EE34F /* PlatformSettings.mm in Sources */ = {isa = PBXBuildFile; fileRef = EDF8CDCC2964CB01001EE34F /* PlatformSettings.mm */; };
 		F10084842BFF1F9E0024303E /* TopLevelImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = F10084832BFF1F9E0024303E /* TopLevelImpl.h */; };
 		F10084862BFF1FB40024303E /* TopLevelImpl.mm in Sources */ = {isa = PBXBuildFile; fileRef = F10084852BFF1FB40024303E /* TopLevelImpl.mm */; };
+		F931F8682E2D43A7004E081E /* clipboard.h in Headers */ = {isa = PBXBuildFile; fileRef = F931F8672E2D43A4004E081E /* clipboard.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -90,6 +93,9 @@
 		1A3E5EAD23E9FB1300EDE661 /* cgl.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = cgl.mm; sourceTree = "<group>"; };
 		1A3E5EAF23E9FE8300EDE661 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		1A465D0F246AB61600C5858B /* dnd.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = dnd.mm; sourceTree = "<group>"; };
+		1AC7F1422DCA0C2E003A161B /* crapium.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objcpp; path = crapium.mm; sourceTree = "<group>"; };
+		1AC7F1442DCA0D6A003A161B /* crapium.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = crapium.h; sourceTree = "<group>"; };
+		1AE55B8B2DC1060E00FD0BB3 /* memhelp.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = memhelp.mm; sourceTree = "<group>"; };
 		1AFD334023E03C4F0042899B /* controlhost.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = controlhost.mm; sourceTree = "<group>"; };
 		37155CE3233C00EB0034DCE9 /* menu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = menu.h; sourceTree = "<group>"; };
 		379860FE214DA0C000CD0246 /* KeyTransform.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KeyTransform.h; sourceTree = "<group>"; };
@@ -130,6 +136,7 @@
 		EDF8CDCC2964CB01001EE34F /* PlatformSettings.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = PlatformSettings.mm; sourceTree = "<group>"; };
 		F10084832BFF1F9E0024303E /* TopLevelImpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TopLevelImpl.h; sourceTree = "<group>"; };
 		F10084852BFF1FB40024303E /* TopLevelImpl.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = TopLevelImpl.mm; sourceTree = "<group>"; };
+		F931F8672E2D43A4004E081E /* clipboard.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = clipboard.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -169,6 +176,9 @@
 		AB7A61E62147C814003C5833 = {
 			isa = PBXGroup;
 			children = (
+				1AC7F1442DCA0D6A003A161B /* crapium.h */,
+				1AC7F1422DCA0C2E003A161B /* crapium.mm */,
+				1AE55B8B2DC1060E00FD0BB3 /* memhelp.mm */,
 				F10084852BFF1FB40024303E /* TopLevelImpl.mm */,
 				BC7C33832C066F1100945A48 /* AvnAccessibility.h */,
 				BC7C33812C066DBF00945A48 /* AvnAutomationNode.h */,
@@ -189,6 +199,7 @@
 				1AFD334023E03C4F0042899B /* controlhost.mm */,
 				5BF943652167AD1D009CAE35 /* cursor.h */,
 				5B21A981216530F500CEE36E /* cursor.mm */,
+				F931F8672E2D43A4004E081E /* clipboard.h */,
 				5B8BD94E215BFEA6005ED2A7 /* clipboard.mm */,
 				1A465D0F246AB61600C5858B /* dnd.mm */,
 				AB8F7D6A21482D7F0057DBA5 /* platformthreading.mm */,
@@ -246,6 +257,7 @@
 			files = (
 				37155CE4233C00EB0034DCE9 /* menu.h in Headers */,
 				F10084842BFF1F9E0024303E /* TopLevelImpl.h in Headers */,
+				F931F8682E2D43A7004E081E /* clipboard.h in Headers */,
 				BC11A5BE2608D58F0017BAD0 /* automation.h in Headers */,
 				183916173528EC2737DBE5E1 /* WindowBaseImpl.h in Headers */,
 				1839171DCC651B0638603AC4 /* INSWindowHolder.h in Headers */,
@@ -329,6 +341,7 @@
 				523484CA26EA688F00EA0C2C /* trayicon.mm in Sources */,
 				AB8F7D6B21482D7F0057DBA5 /* platformthreading.mm in Sources */,
 				1A3E5EA823E9E83B00EDE661 /* rendertarget.mm in Sources */,
+				1AE55B8C2DC1060E00FD0BB3 /* memhelp.mm in Sources */,
 				1A3E5EAE23E9FB1300EDE661 /* cgl.mm in Sources */,
 				BC11A5BF2608D58F0017BAD0 /* automation.mm in Sources */,
 				37E2330F21583241000CB7E2 /* KeyTransform.mm in Sources */,
@@ -349,6 +362,7 @@
 				ED754D262A97306B0078B4DF /* PlatformRenderTimer.mm in Sources */,
 				1839151F32D1BB1AB51A7BB6 /* AvnPanelWindow.mm in Sources */,
 				18391AC16726CBC45856233B /* AvnWindow.mm in Sources */,
+				1AC7F1432DCA0C2E003A161B /* crapium.mm in Sources */,
 				18391D8CD1756DC858DC1A09 /* PopupImpl.mm in Sources */,
 				EDF8CDCD2964CB01001EE34F /* PlatformSettings.mm in Sources */,
 				64B1EA48E308E574685AFB07 /* metal.mm in Sources */,
@@ -471,6 +485,7 @@
 				DYLIB_CURRENT_VERSION = 1;
 				EXECUTABLE_PREFIX = lib;
 				HEADER_SEARCH_PATHS = ../../inc;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -482,6 +497,7 @@
 				DYLIB_CURRENT_VERSION = 1;
 				EXECUTABLE_PREFIX = lib;
 				HEADER_SEARCH_PATHS = ../../inc;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

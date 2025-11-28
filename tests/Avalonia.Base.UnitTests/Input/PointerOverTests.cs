@@ -24,7 +24,6 @@ namespace Avalonia.Base.UnitTests.Input
         {
             using var app = UnitTestApplication.Start(new TestServices(
                 inputManager: new InputManager(),
-                focusManager: new FocusManager(),
                 renderInterface: new HeadlessPlatformRenderInterface()));
 
             var renderer = new Mock<IHitTester>();

@@ -1,6 +1,4 @@
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
 
 namespace ControlCatalog.Pages
 {
@@ -9,11 +7,6 @@ namespace ControlCatalog.Pages
         public TransitioningContentControlPage()
         {
             InitializeComponent();
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
         }
     }
 }

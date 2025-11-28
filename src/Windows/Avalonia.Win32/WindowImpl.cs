@@ -89,6 +89,7 @@ namespace Avalonia.Win32
         private IconImpl? _iconImpl;
         private readonly Dictionary<(Icons type, uint dpi), Win32Icon> _iconCache = new();
         private bool _trackingMouse;//ToDo - there is something missed. Needs investigation @Steven Kirk
+        private bool _trackingNonClientMouse;
         private bool _topmost;
         private double _scaling = 1;
         private uint _dpi = 96;
@@ -110,6 +111,7 @@ namespace Avalonia.Win32
 
         private const int MaxPointerHistorySize = 512;
         private static readonly PooledList<RawPointerPoint> s_intermediatePointsPooledList = new();
+        private static readonly List<InternalPoint> s_sortedPoints = new(64);
         private static POINTER_TOUCH_INFO[]? s_historyTouchInfos;
         private static POINTER_PEN_INFO[]? s_historyPenInfos;
         private static POINTER_INFO[]? s_historyInfos;
@@ -119,7 +121,7 @@ namespace Avalonia.Win32
         public WindowImpl()
         {
             _touchDevice = new TouchDevice();
-            _mouseDevice = new WindowsMouseDevice();
+            _mouseDevice = Avalonia.Input.MouseDevice.GetOrCreatePrimary<WindowsMouseDevice>();
             _penDevice = new PenDevice();
 
 #if USE_MANAGED_DRAG
@@ -136,6 +138,8 @@ namespace Avalonia.Win32
             {
                 ShowInTaskbar = false,
                 IsResizable = true,
+                IsMinimizable = true,
+                IsMaximizable = true,
                 Decorations = SystemDecorations.Full
             };
 
@@ -175,7 +179,9 @@ namespace Avalonia.Win32
             _nativeControlHost = new Win32NativeControlHost(this, !UseRedirectionBitmap);
             _defaultTransparencyLevel = UseRedirectionBitmap ? WindowTransparencyLevel.None : WindowTransparencyLevel.Transparent;
             _transparencyLevel = _defaultTransparencyLevel;
-            s_instances.Add(this);
+
+            lock (s_instances)
+                s_instances.Add(this);
         }
 
         internal IInputRoot Owner
@@ -858,6 +864,24 @@ namespace Avalonia.Win32
             UpdateWindowProperties(newWindowProperties);
         }
 
+        public void SetCanMinimize(bool value)
+        {
+            var newWindowProperties = _windowProperties;
+
+            newWindowProperties.IsMinimizable = value;
+
+            UpdateWindowProperties(newWindowProperties);
+        }
+
+        public void SetCanMaximize(bool value)
+        {
+            var newWindowProperties = _windowProperties;
+
+            newWindowProperties.IsMaximizable = value;
+
+            UpdateWindowProperties(newWindowProperties);
+        }
+
         public void SetSystemDecorations(SystemDecorations value)
         {
             var newWindowProperties = _windowProperties;
@@ -1080,8 +1104,30 @@ namespace Avalonia.Win32
             RECT borderThickness = new RECT();
             RECT borderCaptionThickness = new RECT();
 
-            AdjustWindowRectEx(ref borderCaptionThickness, (uint)(GetStyle()), false, 0);
-            AdjustWindowRectEx(ref borderThickness, (uint)(GetStyle() & ~WindowStyles.WS_CAPTION), false, 0);
+            var scaling = (uint)(RenderScaling * StandardDpi);
+            var relativeScaling = RenderScaling / PrimaryScreenRenderScaling;
+
+            if (Win32Platform.WindowsVersion < PlatformConstants.Windows10_1607)
+            {
+                AdjustWindowRectEx(ref borderCaptionThickness, (uint)GetStyle(), false, 0);
+                AdjustWindowRectEx(ref borderThickness, (uint)(GetStyle() & ~WindowStyles.WS_CAPTION), false, 0);
+
+                borderCaptionThickness.top = (int)(borderCaptionThickness.top * relativeScaling);
+                borderCaptionThickness.right = (int)(borderCaptionThickness.right * relativeScaling);
+                borderCaptionThickness.left = (int)(borderCaptionThickness.left * relativeScaling);
+                borderCaptionThickness.bottom = (int)(borderCaptionThickness.bottom * relativeScaling);
+
+                borderThickness.top = (int)(borderThickness.top * relativeScaling);
+                borderThickness.right = (int)(borderThickness.right * relativeScaling);
+                borderThickness.left = (int)(borderThickness.left * relativeScaling);
+                borderThickness.bottom = (int)(borderThickness.bottom * relativeScaling);
+            }
+            else
+            {
+                AdjustWindowRectExForDpi(ref borderCaptionThickness, GetStyle(), false, 0, scaling);
+                AdjustWindowRectExForDpi(ref borderThickness, GetStyle() & ~WindowStyles.WS_CAPTION, false, 0, scaling);
+            }
+
             borderThickness.left *= -1;
             borderThickness.top *= -1;
             borderCaptionThickness.left *= -1;
@@ -1112,7 +1158,7 @@ namespace Avalonia.Win32
             if (WindowState == WindowState.Maximized)
             {
                 _extendedMargins = new Thickness(0, (borderCaptionThickness.top - borderThickness.top) / RenderScaling, 0, 0);
-                _offScreenMargin = new Thickness(borderThickness.left / PrimaryScreenRenderScaling, borderThickness.top / PrimaryScreenRenderScaling, borderThickness.right / PrimaryScreenRenderScaling, borderThickness.bottom / PrimaryScreenRenderScaling);
+                _offScreenMargin = new Thickness(borderThickness.left / RenderScaling, borderThickness.top / RenderScaling, borderThickness.right / RenderScaling, borderThickness.bottom / RenderScaling);
             }
             else
             {
@@ -1425,17 +1471,21 @@ namespace Avalonia.Win32
                     style |= WindowStyles.WS_VISIBLE;
 
                 if (newProperties.IsResizable || newProperties.WindowState == WindowState.Maximized)
-                {
                     style |= WindowStyles.WS_THICKFRAME;
-                    style |= WindowStyles.WS_MAXIMIZEBOX;
-                }
                 else
-                {
                     style &= ~WindowStyles.WS_THICKFRAME;
-                    style &= ~WindowStyles.WS_MAXIMIZEBOX;
-                }
 
-                const WindowStyles fullDecorationFlags = WindowStyles.WS_CAPTION | WindowStyles.WS_SYSMENU | WindowStyles.WS_BORDER;
+                if (newProperties.IsMinimizable)
+                    style |= WindowStyles.WS_MINIMIZEBOX;
+                else
+                    style &= ~WindowStyles.WS_MINIMIZEBOX;
+
+                if (newProperties.IsMaximizable || (newProperties.WindowState == WindowState.Maximized && newProperties.IsResizable))
+                    style |= WindowStyles.WS_MAXIMIZEBOX;
+                else
+                    style &= ~WindowStyles.WS_MAXIMIZEBOX;
+
+                const WindowStyles fullDecorationFlags = WindowStyles.WS_CAPTION | WindowStyles.WS_BORDER | WindowStyles.WS_SYSMENU;
 
                 if (newProperties.Decorations == SystemDecorations.Full)
                 {
@@ -1448,6 +1498,10 @@ namespace Avalonia.Win32
                     if (newProperties.Decorations == SystemDecorations.BorderOnly && newProperties.WindowState != WindowState.Maximized && newProperties.IsResizable)
                     {
                         style |= WindowStyles.WS_THICKFRAME | WindowStyles.WS_BORDER;
+                    }
+                    else if(newProperties.WindowState == WindowState.Maximized && _isClientAreaExtended)
+                    {
+                        style |= WindowStyles.WS_THICKFRAME;
                     }
                 }
 
@@ -1656,6 +1710,8 @@ namespace Avalonia.Win32
         {
             public bool ShowInTaskbar;
             public bool IsResizable;
+            public bool IsMinimizable;
+            public bool IsMaximizable;
             public SystemDecorations Decorations;
             public bool IsFullScreen;
             public WindowState WindowState;
@@ -1685,6 +1741,12 @@ namespace Avalonia.Win32
             public PixelSize Size => PixelSize.FromSize(_owner.ClientSize, Scaling);
 
             public double Scaling => _owner.RenderScaling;
+        }
+
+        private struct InternalPoint
+        {
+            public int Time;
+            public PixelPoint Pt;
         }
     }
 }

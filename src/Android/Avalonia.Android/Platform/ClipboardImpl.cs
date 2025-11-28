@@ -1,65 +1,145 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Android.Content;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.Logging;
+using AndroidUri = Android.Net.Uri;
 
 namespace Avalonia.Android.Platform
 {
-    internal class ClipboardImpl : IClipboard
+    internal sealed class ClipboardImpl(ClipboardManager? clipboardManager, Context? context)
+        : IClipboardImpl
     {
-        private readonly ClipboardManager? _clipboardManager;
+        private readonly ClipboardManager? _clipboardManager = clipboardManager;
+        private readonly Context? _context = context;
 
-        internal ClipboardImpl(ClipboardManager? value)
+        public Task<IAsyncDataTransfer?> TryGetDataAsync()
         {
-            _clipboardManager = value;
+            try
+            {
+                return Task.FromResult<IAsyncDataTransfer?>(TryGetData());
+            }
+            catch (Exception ex)
+            {
+                return Task.FromException<IAsyncDataTransfer?>(ex);
+            }
         }
 
-        public Task<string?> GetTextAsync()
+        private ClipDataToDataTransferWrapper? TryGetData()
+            => _clipboardManager?.PrimaryClip is { } clipData ?
+                new ClipDataToDataTransferWrapper(clipData, _context) :
+                null;
+
+        public async Task SetDataAsync(IAsyncDataTransfer dataTransfer)
         {
-            if (_clipboardManager?.HasPrimaryClip == true)
+            if (_clipboardManager is null)
+                return;
+
+            var mimeTypes = dataTransfer.Formats
+                .Select(AndroidDataFormatHelper.DataFormatToMimeType)
+                .ToArray();
+
+            ClipData.Item? firstItem = null;
+            List<ClipData.Item>? additionalItems = null;
+
+            foreach (var dataTransferItem in dataTransfer.Items)
             {
-                return Task.FromResult(_clipboardManager.PrimaryClip?.GetItemAt(0)?.Text);
+                if (await TryCreateDataItemAsync(dataTransferItem) is not { } clipDataItem)
+                    continue;
+
+                if (firstItem is null)
+                    firstItem = clipDataItem;
+                else
+                    (additionalItems ??= new()).Add(clipDataItem);
             }
 
-            return Task.FromResult<string?>(null);
+            if (firstItem is null)
+            {
+                Clear();
+                return;
+            }
+
+            var clipData = new ClipData((string?)null, mimeTypes, firstItem);
+
+            if (additionalItems is not null)
+            {
+                foreach (var additionalItem in additionalItems)
+                    clipData.AddItem(additionalItem);
+            }
+
+            _clipboardManager.PrimaryClip = clipData;
         }
 
-        public Task SetTextAsync(string? text)
+        private async Task<ClipData.Item?> TryCreateDataItemAsync(IAsyncDataTransferItem item)
         {
-            if(_clipboardManager == null)
+            var hasFormats = false;
+
+            // Create the item from the first format returning a supported value.
+            foreach (var dataFormat in item.Formats)
             {
-                return Task.CompletedTask;
+                hasFormats = true;
+
+                if (DataFormat.Text.Equals(dataFormat))
+                {
+                    var text = await item.TryGetValueAsync(DataFormat.Text);
+                    return new ClipData.Item(text);
+                }
+
+                if (DataFormat.File.Equals(dataFormat))
+                {
+                    var storageItem = await item.TryGetValueAsync(DataFormat.File);
+                    if (storageItem is null)
+                        continue;
+
+                    return new ClipData.Item(AndroidUri.Parse(storageItem.Path.OriginalString));
+                }
+
+                if (dataFormat is DataFormat<string> stringFormat)
+                {
+                    var stringValue = await item.TryGetValueAsync(stringFormat);
+                    if (stringValue is null)
+                        continue;
+
+                    return new ClipData.Item(stringValue);
+                }
             }
 
-            var clip = ClipData.NewPlainText("text", text);
-            _clipboardManager.PrimaryClip = clip;
+            if (hasFormats)
+            {
+                Logger.TryGet(LogEventLevel.Warning, LogArea.AndroidPlatform)?.Log(
+                    this,
+                    "No compatible value found for data transfer item with formats {Formats}",
+                    string.Join(", ", item.Formats));
+            }
 
-            return Task.CompletedTask;
+            return null;
         }
 
         public Task ClearAsync()
         {
-            if (_clipboardManager == null)
+            try
             {
+                Clear();
                 return Task.CompletedTask;
             }
-
-            _clipboardManager.PrimaryClip = null;
-
-            return Task.CompletedTask;
+            catch (Exception ex)
+            {
+                return Task.FromException(ex);
+            }
         }
 
-        public Task SetDataObjectAsync(IDataObject data) => throw new PlatformNotSupportedException();
+        private void Clear()
+        {
+            if (_clipboardManager is null)
+                return;
 
-        public Task<string[]> GetFormatsAsync() => throw new PlatformNotSupportedException();
-
-        public Task<object?> GetDataAsync(string format) => throw new PlatformNotSupportedException();
-
-        public Task<IDataObject?> TryGetInProcessDataObjectAsync() => Task.FromResult<IDataObject?>(null);
-
-        /// <inheritdoc />
-        public Task FlushAsync() =>
-            Task.CompletedTask;
+            if (OperatingSystem.IsAndroidVersionAtLeast(28))
+                _clipboardManager.ClearPrimaryClip();
+            else
+                _clipboardManager.PrimaryClip = ClipData.NewPlainText(null, string.Empty);
+        }
     }
 }

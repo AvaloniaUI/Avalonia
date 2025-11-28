@@ -249,6 +249,7 @@
       <StaticResource x:Key="TextControlBackgroundDisabled" ResourceKey="SystemControlBackgroundBaseLowBrush" />
       <StaticResource x:Key="TextControlBorderBrushFocused" ResourceKey="SystemControlHighlightAccentBrush" />
       <StaticResource x:Key="TextControlBorderBrushDisabled" ResourceKey="SystemControlDisabledBaseLowBrush" />
+      <x:Double x:Key="TextControlPlaceholderOpacity">0.5</x:Double>
       <StaticResource x:Key="TextControlPlaceholderForeground" ResourceKey="SystemControlPageTextBaseMediumBrush" />
       <StaticResource x:Key="TextControlPlaceholderForegroundPointerOver"
                       ResourceKey="SystemControlPageTextBaseMediumBrush" />

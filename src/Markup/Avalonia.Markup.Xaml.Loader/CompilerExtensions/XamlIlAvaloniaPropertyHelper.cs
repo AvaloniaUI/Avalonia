@@ -224,6 +224,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             }
 
             Setters.Insert(0, new UnsetValueSetter(types, original.DeclaringType, field));
+            TypeConverters = original.TypeConverters;
         }
 
         abstract class AvaloniaPropertyCustomSetter : IXamlILOptimizedEmitablePropertySetter, IEquatable<AvaloniaPropertyCustomSetter>

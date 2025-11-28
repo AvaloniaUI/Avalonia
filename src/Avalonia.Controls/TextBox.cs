@@ -1259,7 +1259,7 @@ namespace Avalonia.Controls
             {
                 try
                 {
-                    text = await clipboard.GetTextAsync();
+                    text = await clipboard.TryGetTextAsync();
                 }
                 catch (TimeoutException)
                 {
@@ -1868,6 +1868,8 @@ namespace Avalonia.Controls
                     SetCurrentValue(SelectionEndProperty, caretIndex);
                 }
 
+                _presenter.TextSelectionHandleCanvas?.Show();
+
                 if (SelectionStart != SelectionEnd)
                 {
                     _presenter.TextSelectionHandleCanvas?.ShowContextMenu();
@@ -1880,17 +1882,6 @@ namespace Avalonia.Controls
         protected override AutomationPeer OnCreateAutomationPeer()
         {
             return new TextBoxAutomationPeer(this);
-        }
-
-        protected override void UpdateDataValidation(
-            AvaloniaProperty property,
-            BindingValueType state,
-            Exception? error)
-        {
-            if (property == TextProperty)
-            {
-                DataValidationErrors.SetError(this, error);
-            }
         }
 
         internal static int CoerceCaretIndex(AvaloniaObject sender, int value)

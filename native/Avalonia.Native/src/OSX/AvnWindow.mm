@@ -35,6 +35,7 @@
     bool _canBecomeKeyWindow;
     bool _isExtended;
     bool _isTransitioningToFullScreen;
+    bool _isTitlebarSession;
     AvnMenu* _menu;
     IAvnAutomationPeer* _automationPeer;
     AvnAutomationNode* _automationNode;
@@ -435,23 +436,28 @@
                 return;
             }
 
-            // If the window has been moved into a position where it's "zoomed"
-            // Then it should be set as Maximized.
-            if (window->WindowState() != Maximized && window->IsZoomed())
+            // Don't adjust window state during fullscreen transitions
+            // as this can interfere with proper decoration restoration
+            if(!window->IsTransitioningWindowState())
             {
-                window->SetWindowState(Maximized, false);
-            }
-            // We should only return the window state to normal if
-            // the internal window state is maximized, and macOS says
-            // the window is no longer zoomed (I.E, the user has moved it)
-            // Stage Manager will "move" the window when repositioning it
-            // So if the window was "maximized" before, it should stay maximized
-            else if(window->WindowState() == Maximized && !window->IsZoomed())
-            {
-                // If we're moving the window while maximized,
-                // we need to let macOS handle if it should be resized
-                // And not handle it ourselves.
-                window->SetWindowState(Normal, false);
+                // If the window has been moved into a position where it's "zoomed"
+                // Then it should be set as Maximized.
+                if (window->WindowState() != Maximized && window->IsZoomed())
+                {
+                    window->SetWindowState(Maximized, false);
+                }
+                // We should only return the window state to normal if
+                // the internal window state is maximized, and macOS says
+                // the window is no longer zoomed (I.E, the user has moved it)
+                // Stage Manager will "move" the window when repositioning it
+                // So if the window was "maximized" before, it should stay maximized
+                else if(window->WindowState() == Maximized && !window->IsZoomed())
+                {
+                    // If we're moving the window while maximized,
+                    // we need to let macOS handle if it should be resized
+                    // And not handle it ourselves.
+                    window->SetWindowState(Normal, false);
+                }
             }
         }
 
@@ -501,68 +507,10 @@
     return NO;
 }
 
-- (void)forwardToAvnView:(NSEvent *)event
-{
-    auto parent = _parent.tryGetWithCast<WindowImpl>();
-    if (!parent) {
-        return;
-    }
-    
-    switch(event.type) {
-        case NSEventTypeLeftMouseDown:
-            [parent->View mouseDown:event];
-            break;
-        case NSEventTypeLeftMouseUp:
-            [parent->View mouseUp:event];
-            break;
-        case NSEventTypeLeftMouseDragged:
-            [parent->View mouseDragged:event];
-            break;
-        case NSEventTypeRightMouseDown:
-            [parent->View rightMouseDown:event];
-            break;
-        case NSEventTypeRightMouseUp:
-            [parent->View rightMouseUp:event];
-            break;
-        case NSEventTypeRightMouseDragged:
-            [parent->View rightMouseDragged:event];
-            break;
-        case NSEventTypeOtherMouseDown:
-            [parent->View otherMouseDown:event];
-            break;
-        case NSEventTypeOtherMouseUp:
-            [parent->View otherMouseUp:event];
-            break;
-        case NSEventTypeOtherMouseDragged:
-            [parent->View otherMouseDragged:event];
-            break;
-        case NSEventTypeMouseMoved:
-            [parent->View mouseMoved:event];
-            break;
-        default:
-            break;
-    }
-}
-
 - (void)sendEvent:(NSEvent *_Nonnull)event
 {
-    // Event-tracking loop for thick titlebar mouse events
-    if (event.type == NSEventTypeLeftMouseDown && [self isPointInTitlebar:event.locationInWindow])
-    {
-        NSEventMask mask = NSEventMaskLeftMouseDragged | NSEventMaskLeftMouseUp;
-        NSEvent *ev = event;
-        while (ev.type != NSEventTypeLeftMouseUp)
-        {
-            [self forwardToAvnView:ev];
-            [super sendEvent:ev]; 
-            ev = [NSApp nextEventMatchingMask:mask
-                                     untilDate:[NSDate distantFuture]
-                                        inMode:NSEventTrackingRunLoopMode
-                                       dequeue:YES];
-        }
-        [self forwardToAvnView:ev];
-        [super sendEvent:ev];
-        return;
+    if (event.type == NSEventTypeLeftMouseDown) {
+        _isTitlebarSession = [self isPointInTitlebar:event.locationInWindow];
     }
     
     [super sendEvent:event];
@@ -603,6 +551,37 @@
             }
             break;
 
+            case NSEventTypeLeftMouseDragged:
+            case NSEventTypeMouseMoved:
+            case NSEventTypeLeftMouseUp:
+            {
+                // Usually NSToolbar events are passed natively to AvnView when the mouse is inside the control.
+                // When a drag operation started in NSToolbar leaves the control region, the view does not get any 
+                // events. We will detect this scenario and pass events ourselves. 
+                
+                if(!_isTitlebarSession || [self isPointInTitlebar:event.locationInWindow]) 
+                    break;
+
+                AvnView* view = parent->View;
+                
+                if(!view) 
+                    break;
+                
+                if(event.type == NSEventTypeLeftMouseDragged)
+                {
+                    [view mouseDragged:event];
+                }
+                else if(event.type == NSEventTypeMouseMoved)
+                {
+                    [view mouseMoved:event];
+                }
+                else if(event.type == NSEventTypeLeftMouseUp)
+                {
+                    [view mouseUp:event];
+                }
+            }
+            break;
+
             case NSEventTypeMouseEntered:
             {
                 parent->UpdateCursor();
@@ -618,6 +597,10 @@
             default:
                 break;
         }
+        
+        if(event.type == NSEventTypeLeftMouseUp) {
+            _isTitlebarSession = NO;
+        }
     }
 }
 
@@ -627,21 +610,30 @@
 
 - (id _Nullable) accessibilityFocusedUIElement
 {
-    if (![self automationPeer]->IsRootProvider())
+    auto automationPeer = [self automationPeer];
+    if (automationPeer == nullptr || !automationPeer->IsRootProvider())
         return nil;
-    auto focusedPeer = [self automationPeer]->RootProvider_GetFocus();
+
+    auto focusedPeer = automationPeer->RootProvider_GetFocus();
+    if (focusedPeer == nullptr)
+        return nil;
+
     return [AvnAccessibilityElement acquire:focusedPeer];
 }
 
 - (NSString * _Nullable) accessibilityIdentifier
 {
-    return GetNSStringAndRelease([self automationPeer]->GetAutomationId());
+    auto automationPeer = [self automationPeer];
+    if (automationPeer == nullptr)
+        return nil;
+
+    return GetNSStringAndRelease(automationPeer->GetAutomationId());
 }
 
 - (IAvnAutomationPeer* _Nonnull) automationPeer
 {
     auto parent = _parent.tryGet();
-    if (_automationPeer == nullptr)
+    if (parent && _automationPeer == nullptr)
     {
         _automationPeer = parent->BaseEvents->GetAutomationPeer();
         _automationNode = new AvnAutomationNode(self);
@@ -654,7 +646,8 @@
 - (void)raiseChildrenChanged
 {
     auto parent = _parent.tryGet();
-    [parent->View raiseAccessibilityChildrenChanged];
+    if(parent)
+        [parent->View raiseAccessibilityChildrenChanged];
 }
 
 - (void)raiseFocusChanged

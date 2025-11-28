@@ -15,6 +15,7 @@ using Avalonia.Input.Platform;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml.Templates;
+using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
@@ -1836,13 +1837,13 @@ namespace Avalonia.Controls.UnitTests
         {
             return UnitTestApplication.Start(
                 TestServices.MockThreadingInterface.With(
-                    focusManager: new FocusManager(),
                     fontManagerImpl: new HeadlessFontManagerStub(),
                     keyboardDevice: () => new KeyboardDevice(),
                     keyboardNavigation: () => new KeyboardNavigationHandler(),
                     inputManager: new InputManager(),
                     renderInterface: new HeadlessPlatformRenderInterface(),
-                    textShaperImpl: new HeadlessTextShaperStub()));
+                    textShaperImpl: new HeadlessTextShaperStub(),
+                    assetLoader: new StandardAssetLoader()));
         }
 
         private class Node : NotifyingBase

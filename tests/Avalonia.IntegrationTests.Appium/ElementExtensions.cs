@@ -239,6 +239,11 @@ namespace Avalonia.IntegrationTests.Appium
             // does. On Windows, Click() seems to fail with the WindowState checkbox for some reason.
             new Actions(element.WrappedDriver).MoveToElement(element).Click().Perform();
         }
+        
+        public static void SendDoubleClick(this AppiumWebElement element)
+        {
+            new Actions(element.WrappedDriver).MoveToElement(element).DoubleClick().Perform();
+        }
 
         public static void MovePointerOver(this AppiumWebElement element)
         {

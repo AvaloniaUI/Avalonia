@@ -33,10 +33,13 @@ namespace Avalonia
         }
 
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        public static AvaloniaProperty GetClassProperty(string className) =>
-            s_RegisteredProperties.TryGetValue(ClassPropertyPrefix + className, out var property)
-                ? property 
-                : s_RegisteredProperties[className] = RegisterClassProxyProperty(className);
+        public static AvaloniaProperty GetClassProperty(string className)
+        {
+            var prefixedClassName = ClassPropertyPrefix + className;
+            return s_RegisteredProperties.TryGetValue(prefixedClassName, out var property)
+                ? property
+                : s_RegisteredProperties[prefixedClassName] = RegisterClassProxyProperty(className);
+        }
 
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static bool IsClassesBindingProperty(AvaloniaProperty property, [NotNullWhen(true)] out string? classPropertyName)

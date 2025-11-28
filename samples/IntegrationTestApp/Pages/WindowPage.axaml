@@ -30,14 +30,16 @@
       </ComboBox>
       <CheckBox Name="ShowWindowExtendClientAreaToDecorationsHint">ExtendClientAreaToDecorationsHint</CheckBox>
       <CheckBox Name="ShowWindowCanResize" IsChecked="True">Can Resize</CheckBox>
+      <CheckBox Name="ShowWindowCanMinimize" IsChecked="True">Can Minimize</CheckBox>
+      <CheckBox Name="ShowWindowCanMaximize" IsChecked="True">Can Maximize</CheckBox>
+    </StackPanel>
+    <StackPanel Grid.Column="2">
       <Button Name="ShowWindow" Click="ShowWindow_Click">Show Window</Button>
       <Button Name="SendToBack" Click="SendToBack_Click">Send to Back</Button>
       <Button Name="EnterFullscreen" Click="EnterFullscreen_Click">Enter Fullscreen</Button>
       <Button Name="ExitFullscreen" Click="ExitFullscreen_Click">Exit Fullscreen</Button>
       <Button Name="RestoreAll" Click="RestoreAll_Click">Restore All</Button>
       <Button Name="ShowTopmostWindow" Click="ShowTopmostWindow_Click">Show Topmost Window</Button>
-    </StackPanel>
-    <StackPanel Grid.Column="2">
       <Button Name="ShowTransparentWindow" Click="ShowTransparentWindow_Click">Transparent Window</Button>
       <Button Name="ShowTransparentPopup" Click="ShowTransparentPopup_Click">Transparent Popup</Button>
     </StackPanel>
