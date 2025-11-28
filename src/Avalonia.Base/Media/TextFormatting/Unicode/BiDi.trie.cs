@@ -18,7 +18,7 @@ internal static class BidiTrie
         get => new(Data, 0x00100000, 0x00000000);
     } 
     
-    private static ReadOnlySpan<uint> Data => new uint[]
+    private static readonly uint[] Data = new uint[]
     {
         0x0000038D, 0x00000395, 0x0000039D, 0x000003A5, 0x000003BD, 0x000003C5, 0x000003CD, 0x000003D5, 0x000003AD, 0x000003B5, 0x000003AD, 0x000003B5, 
         0x000003AD, 0x000003B5, 0x000003AD, 0x000003B5, 0x000003AD, 0x000003B5, 0x000003AD, 0x000003B5, 0x000003DB, 0x000003E3, 0x000003EB, 0x000003F3, 

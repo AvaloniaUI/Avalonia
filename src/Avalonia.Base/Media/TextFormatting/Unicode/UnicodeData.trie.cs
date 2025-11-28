@@ -18,7 +18,7 @@ internal static class UnicodeDataTrie
         get => new(Data, 0x00100000, 0x00000000);
     } 
     
-    private static ReadOnlySpan<uint> Data => new uint[]
+    private static readonly uint[] Data = new uint[]
     {
         0x00000482, 0x0000048A, 0x00000492, 0x0000049A, 0x000004B2, 0x000004BA, 0x000004C2, 0x000004CA, 0x000004D2, 0x000004DA, 0x000004E0, 0x000004E8, 
         0x000004F0, 0x000004F8, 0x00000500, 0x00000508, 0x0000050E, 0x00000516, 0x0000051E, 0x00000526, 0x00000529, 0x00000531, 0x00000539, 0x00000541, 
