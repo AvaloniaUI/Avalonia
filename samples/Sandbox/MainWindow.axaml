@@ -11,5 +11,6 @@
     <TextBlock TextTrimming="PathSegmentEllipsis" Text="D:\very\long\path\with\many\segments\and\files\name.ext" />
     <TextBlock TextTrimming="PathSegmentEllipsis" Text="relative/path/with/many/segments/to/check/behavior" />
     <TextBlock TextTrimming="PathSegmentEllipsis" Text="C:\a\b\c\this_is_a_very_long_filename_with_numbers_1234567890.txt" />
+   <TextBlock TextTrimming="PathSegmentEllipsis" Text="\this_is_a_very_long_filename_with_numbers_1234567890.txt" />
   </StackPanel>
 </Window>
