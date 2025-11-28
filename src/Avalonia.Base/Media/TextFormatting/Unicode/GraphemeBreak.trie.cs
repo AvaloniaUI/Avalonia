@@ -18,7 +18,7 @@ internal static class GraphemeBreakTrie
         get => new(Data, 0x000E1000, 0x00000000);
     } 
     
-    private static ReadOnlySpan<uint> Data => new uint[]
+    private static readonly uint[] Data = new uint[]
     {
         0x0000035A, 0x00000362, 0x0000036A, 0x00000372, 0x0000038A, 0x00000392, 0x00000362, 0x0000036A, 0x00000362, 0x0000036A, 0x00000362, 0x0000036A, 
         0x00000362, 0x0000036A, 0x00000362, 0x0000036A, 0x00000362, 0x0000036A, 0x00000362, 0x0000036A, 0x00000362, 0x0000036A, 0x00000362, 0x0000036A, 

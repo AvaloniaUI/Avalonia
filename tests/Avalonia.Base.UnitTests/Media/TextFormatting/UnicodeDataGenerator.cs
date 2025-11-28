@@ -92,7 +92,7 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
                           get => new(Data, 0x{{trie.HighStart:X8}}, 0x{{trie.ErrorValue:X8}});
                       } 
                       
-                      private static ReadOnlySpan<uint> Data => new uint[]
+                      private static readonly uint[] Data = new uint[]
                       {
                   """);
 
