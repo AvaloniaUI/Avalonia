@@ -36,6 +36,11 @@ namespace Avalonia.Media
         public static TextTrimming LeadingCharacterEllipsis { get; } = new TextLeadingPrefixTrimming(DefaultEllipsisChar, 0);
 
         /// <summary>
+        /// Text is trimmed at a character boundary starting from the beginning. An ellipsis (...) is drawn in place of remaining text.
+        /// </summary>
+        public static TextTrimming PathSegmentEllipsis { get; } = new TextPathSegmentTrimming(DefaultEllipsisChar);
+
+        /// <summary>
         /// Creates properties that will be used for collapsing lines of text.
         /// </summary>
         /// <param name="createInfo">Contextual info about text that will be collapsed.</param>
@@ -68,6 +73,10 @@ namespace Avalonia.Media
             else if (Matches(nameof(PrefixCharacterEllipsis)))
             {
                 return PrefixCharacterEllipsis;
+            }
+            else if (Matches(nameof(PathSegmentEllipsis)))
+            {
+                return PathSegmentEllipsis;
             }
 
             throw new FormatException($"Invalid text trimming string: '{s}'.");
