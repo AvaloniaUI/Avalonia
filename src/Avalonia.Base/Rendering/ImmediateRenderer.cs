@@ -60,7 +60,7 @@ internal class ImmediateRenderer
             _ => default(DrawingContext.PushedState?)
         })
         using (visual.Clip != null ? context.PushGeometryClip(visual.Clip) : default(DrawingContext.PushedState?))
-        using (visual.OpacityMask != null ? context.PushOpacityMask(visual.OpacityMask, bounds) : default(DrawingContext.PushedState?))
+        using (visual.OpacityMask != null ? context.PushOpacityMask(visual.OpacityMask, clipBounds) : default(DrawingContext.PushedState?))
         {
             visual.Render(context);
 
