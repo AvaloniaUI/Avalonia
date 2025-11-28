@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Avalonia.Media;
@@ -13,18 +14,28 @@ namespace Avalonia.Skia.UnitTests.Media
     public class CustomFontManagerImpl : IFontManagerImpl, IDisposable
     {
         private readonly string _defaultFamilyName;
-        private readonly IFontCollection _customFonts;
-        private bool _isInitialized;
+        private readonly string[] _bcp47 = { CultureInfo.CurrentCulture.ThreeLetterISOLanguageName, CultureInfo.CurrentCulture.TwoLetterISOLanguageName };
+        private IFontCollection? _systemFonts;
 
         public CustomFontManagerImpl()
         {
-            var source = new Uri("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests");
-
-            _defaultFamilyName = source.AbsoluteUri + "#Noto Mono";
-
-            _customFonts = new EmbeddedFontCollection(source, source);
+            _defaultFamilyName = FontManager.SystemFontsKey + "#Noto Mono";
         }
 
+        public IFontCollection SystemFonts
+        {
+            get
+            {
+                if(_systemFonts is null)
+                {
+                    var source = new Uri("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests");
+
+                    _systemFonts = new EmbeddedFontCollection(FontManager.SystemFontsKey, source);
+                }
+
+                return _systemFonts;
+            }
+        }
         public string GetDefaultFontFamilyName()
         {
             return _defaultFamilyName;
@@ -32,27 +43,46 @@ namespace Avalonia.Skia.UnitTests.Media
 
         public string[] GetInstalledFontFamilyNames(bool checkForUpdates = false)
         {
-            if (!_isInitialized)
+            // Directly load from assets to avoid creating the full font collection
+            try
             {
-                _customFonts.Initialize(this);
+                var key = new Uri("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests");
 
-                _isInitialized = true;
+                var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
+
+                var fontAssets = FontFamilyLoader.LoadFontAssets(key);
+                var names = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
+
+                foreach (var fontAsset in fontAssets)
+                {
+                    try
+                    {
+                        using var stream = assetLoader.Open(fontAsset);
+                        using var sk = SKTypeface.FromStream(stream);
+
+                        if (sk != null && !string.IsNullOrEmpty(sk.FamilyName))
+                        {
+                            names.Add(sk.FamilyName);
+                        }
+                    }
+                    catch
+                    {
+                        // Ignore faulty assets
+                    }
+                }
+
+                return names.ToArray();
             }
-
-            return _customFonts.Select(x=> x.Name).ToArray();
+            catch
+            {
+                return Array.Empty<string>();
+            }
         }
 
-        private readonly string[] _bcp47 = { CultureInfo.CurrentCulture.ThreeLetterISOLanguageName, CultureInfo.CurrentCulture.TwoLetterISOLanguageName };
-
         public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight, FontStretch fontStretch,
-            CultureInfo culture, out Typeface typeface)
+            string? familyName, CultureInfo? culture, out Typeface typeface)
         {
-            if (!_isInitialized)
-            {
-                _customFonts.Initialize(this);
-            }
-
-            if(_customFonts.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, null, culture, out typeface))
+            if(SystemFonts.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, familyName, culture, out typeface))
             {
                 return true;
             }
@@ -68,12 +98,7 @@ namespace Avalonia.Skia.UnitTests.Media
         public bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight,
             FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface glyphTypeface)
         {
-            if (!_isInitialized)
-            {
-                _customFonts.Initialize(this);
-            }
-
-            if (_customFonts.TryGetGlyphTypeface(familyName, style, weight, stretch, out glyphTypeface))
+            if (SystemFonts.TryGetGlyphTypeface(familyName, style, weight, stretch, out glyphTypeface))
             {
                 return true;
             }
@@ -97,7 +122,7 @@ namespace Avalonia.Skia.UnitTests.Media
 
         public void Dispose()
         {
-            _customFonts.Dispose();
+            _systemFonts?.Dispose();
         }
     }
 }

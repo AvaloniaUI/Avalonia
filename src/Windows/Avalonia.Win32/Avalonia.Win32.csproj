@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsLegacyTargetFrameworks);netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsLegacyTargetFrameworks)</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <EnableRuntimeMarshalling>true</EnableRuntimeMarshalling>
     <!-- We still keep BinaryFormatter for WinForms compatibility. -->
@@ -38,7 +38,6 @@
   </PropertyGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Avalonia.Win32.Interoperability, PublicKey=$(AvaloniaPublicKey)" />
-    <InternalsVisibleTo Include="Avalonia.Direct2D1, PublicKey=$(AvaloniaPublicKey)" />
   </ItemGroup>
   <ItemGroup>
     <!-- By default, any projects supports Windows, Linux, MacOS platforms. -->
