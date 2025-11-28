@@ -32,11 +32,24 @@ namespace Avalonia.Media
 
         public override TextRun[]? Collapse(TextLine textLine)
         {
+            if (textLine.TextRuns.Count == 0)
+            {
+                return null;
+            }
+
             var objectPool = FormattingObjectPool.Instance;
 
             var shapedSymbol = TextFormatter.CreateSymbol(Symbol, FlowDirection.LeftToRight);
 
             if (Width < shapedSymbol.GlyphRun.Bounds.Width)
+            {
+                // Nothing to collapse
+                return null;
+            }
+
+            double totalWidth = textLine.Width;
+
+            if (totalWidth <= Width)
             {
                 // Nothing to collapse
                 return null;
@@ -56,35 +69,8 @@ namespace Avalonia.Media
                     logicalRuns.Add(r);
                 }
 
-                if (logicalRuns.Count == 0)
-                {
-                    // Nothing to collapse
-                    return null;
-                }
-
-                double totalWidth = 0;
-
-                foreach (var run in logicalRuns)
-                {
-                    switch (run)
-                    {
-                        case ShapedTextRun shaped:
-                            totalWidth += shaped.Size.Width;
-                            break;
-                        case DrawableTextRun d:
-                            totalWidth += d.Size.Width;
-                            break;
-                    }
-                }
-
-                if (totalWidth <= Width)
-                {
-                    // Nothing to collapse
-                    return null;
-                }
-
                 // Segment ranges
-                var segments = new List<(int Start, int Length)>();
+                var segments = new List<(int Start, int Length, bool IsSeperator)>();
                 var globalIndex = 0;
                 var currentSegStart = 0;
                 var inSeparator = false;
@@ -109,11 +95,11 @@ namespace Avalonia.Media
                                 // finish previous non-separator segment
                                 if (!inSeparator && globalIndex - currentSegStart > 0)
                                 {
-                                    segments.Add((currentSegStart, globalIndex - currentSegStart));
+                                    segments.Add((currentSegStart, globalIndex - currentSegStart, false));
                                 }
 
                                 // separator as its own segment
-                                segments.Add((globalIndex, 1));
+                                segments.Add((globalIndex, 1, true));
 
                                 // next segment starts after separator
                                 currentSegStart = globalIndex + 1;
@@ -149,7 +135,7 @@ namespace Avalonia.Media
                 // Add last pending segment if any
                 if (globalIndex - currentSegStart > 0)
                 {
-                    segments.Add((currentSegStart, globalIndex - currentSegStart));
+                    segments.Add((currentSegStart, globalIndex - currentSegStart, false));
                 }
 
                 if (segments.Count == 0)
@@ -160,56 +146,30 @@ namespace Avalonia.Media
 
                 // Compute width for every segment once and prefix sums for O(1) range width.
                 var segmentWidths = new double[segments.Count];
-
-                for (int si = 0; si < segments.Count; ++si)
-                {
-                    var seg = segments[si];
-
-                    segmentWidths[si] = TextPathSegmentEllipsis.MeasureSegmentWidth(logicalRuns, seg.Start, seg.Length, objectPool);
-                }
-
+                var candidateSegmentIndices = new List<int>();
+                var smallestWidth = double.MaxValue;
                 var prefix = new double[segmentWidths.Length + 1];
 
-                for (int i = 0; i < segmentWidths.Length; i++)
+                // Measure segment widths and track smallest non-separator segment width
+                for (int i = 0; i < segments.Count; i++)
                 {
-                    prefix[i + 1] = prefix[i] + segmentWidths[i];
-                }   
+                    var (Start, Length, IsSeperator) = segments[i];
 
-                // Collect indices of non-separator segments (candidate segments).
-                var candidateSegmentIndices = new List<int>();
+                    var segmentWidth = TextPathSegmentEllipsis.MeasureSegmentWidth(logicalRuns, Start, Length);
 
-                for (int si = 0; si < segments.Count; ++si)
-                {
-                    var seg = segments[si];
-
-                    if (seg.Length <= 0)
+                    if (!IsSeperator)
                     {
-                        continue;
-                    }
-
-                    // Check the character at seg.Start: if it's a separator, skip
-                    var (foundRunIndex, foundRunOffset) = FindRunAtCharacterIndex(logicalRuns, seg.Start);
-                    var isSeparatorSegment = false;
-
-                    if (foundRunIndex >= 0)
-                    {
-                        var runAt = logicalRuns[foundRunIndex] as ShapedTextRun;
-
-                        if (runAt != null && foundRunOffset < runAt.Text.Span.Length)
+                        if (segmentWidth < smallestWidth)
                         {
-                            var ch = runAt.Text.Span[foundRunOffset];
-
-                            if (IsSeparator(ch))
-                            {
-                                isSeparatorSegment = true;
-                            }                               
+                            smallestWidth = segmentWidth;
                         }
+
+                        candidateSegmentIndices.Add(i);
                     }
 
-                    if (!isSeparatorSegment)
-                    {
-                        candidateSegmentIndices.Add(si);
-                    }
+                    segmentWidths[i] = segmentWidth;
+
+                    prefix[i + 1] = prefix[i] + segmentWidth;
                 }
 
                 if (candidateSegmentIndices.Count == 0)
@@ -225,16 +185,16 @@ namespace Avalonia.Media
                 int centerCandidateIdx = 0;
                 long bestDist = long.MaxValue;
 
-                for (int ci = 0; ci < candidateSegmentIndices.Count; ++ci)
+                for (int i = 0; i < candidateSegmentIndices.Count; ++i)
                 {
-                    var seg = segments[candidateSegmentIndices[ci]];
-                    var segCenter = seg.Start + seg.Length / 2;
+                    var (Start, Length, IsSeperator) = segments[candidateSegmentIndices[i]];
+                    var segCenter = Start + Length / 2;
                     var dist = Math.Abs(segCenter - midChar);
 
                     if (dist < bestDist)
                     {
                         bestDist = dist;
-                        centerCandidateIdx = ci;
+                        centerCandidateIdx = i;
                     }
                 }
 
@@ -257,14 +217,14 @@ namespace Avalonia.Media
 
                     // Left side first
                     for (int s = start; s >= minStart; s--)
-                    { 
-                        windowStarts.Add(s); 
+                    {
+                        windowStarts.Add(s);
                     }
 
                     // Right side next
                     for (int s = start + 1; s <= maxStart; s++)
-                    { 
-                        windowStarts.Add(s); 
+                    {
+                        windowStarts.Add(s);
                     }
 
                     foreach (var ws in windowStarts)
@@ -360,10 +320,23 @@ namespace Avalonia.Media
 
                 foreach (var si in candidateSegmentIndices)
                 {
-                    singleCandidates.Add((si, segmentWidths[si]));
+                    var segmentWidth = segmentWidths[si];
+
+                    singleCandidates.Add((si, segmentWidth));
                 }
 
+                // Sort candidates by width (smallest first)
                 singleCandidates.Sort((a, b) => a.Width.CompareTo(b.Width));
+
+                // Ensure the original last segment is tried last: if it's a candidate, move it to the end.
+                var originalLastSegmentIndex = segments.Count - 1;
+                var moveIdx = singleCandidates.FindIndex(x => x.SegIndex == originalLastSegmentIndex);
+                if (moveIdx >= 0 && moveIdx != singleCandidates.Count - 1)
+                {
+                    var lastEntry = singleCandidates[moveIdx];
+                    singleCandidates.RemoveAt(moveIdx);
+                    singleCandidates.Add(lastEntry);
+                }
 
                 foreach (var cand in singleCandidates)
                 {
@@ -393,8 +366,18 @@ namespace Avalonia.Media
 
                             (middle, last) = TextFormatterImpl.SplitTextRuns(remainder, removeLength, objectPool);
 
+                            var count = (first?.Count ?? 0) + 1 + (last?.Count ?? 0);
+
+                            var isLastSegmentTrimmed = cand.SegIndex == originalLastSegmentIndex;
+
+                            // Special case: if the last segment is trimmed but has larger width than available, add an extra run for the trimmed last segment
+                            if (isLastSegmentTrimmed)
+                            {
+                                count++; // extra run for trimmed last segment
+                            }
+
                             // Build resulting runs: first + shapedSymbol + last
-                            var result = new TextRun[(first?.Count ?? 0) + 1 + (last?.Count ?? 0)];
+                            var result = new TextRun[count];
                             var idx = 0;
 
                             if (first != null)
@@ -406,6 +389,36 @@ namespace Avalonia.Media
                             }
 
                             result[idx++] = shapedSymbol;
+
+                            if (isLastSegmentTrimmed)
+                            {
+                                var (RunIndex, Offset) = FindRunAtCharacterIndex(logicalRuns, removeStart);
+
+                                for (var i = logicalRuns.Count - 1; i >= RunIndex; i--)
+                                {
+                                    var shapedTextRun = logicalRuns[i] as ShapedTextRun;
+
+                                    if (shapedTextRun is null)
+                                    {
+                                        continue;
+                                    }
+
+                                    var measureWidth = Width - shapedSymbol.Size.Width - newTotal;
+
+                                    if (shapedTextRun.TryMeasureCharactersBackwards(measureWidth, out var length, out _))
+                                    {
+                                        if (length > 0)
+                                        {
+                                            var (_, remaining) = shapedTextRun.Split(shapedTextRun.Length - length);
+
+                                            if (remaining is not null)
+                                            {
+                                                result[idx++] = remaining;
+                                            }
+                                        } 
+                                    }
+                                }
+                            }
 
                             if (last != null)
                             {
@@ -443,12 +456,24 @@ namespace Avalonia.Media
                 if (s == ch)
                 {
                     return true;
-                } 
+                }
             }
 
             return false;
         }
 
+        /// <summary>
+        /// Finds the index of the text run and the offset within that run corresponding to the specified character
+        /// index.
+        /// </summary>
+        /// <remarks>If the specified character index does not fall within any run, the method returns
+        /// (-1, -1). This method does not validate whether the character index is within the bounds of the combined
+        /// runs; callers should ensure valid input.</remarks>
+        /// <param name="runs">A read-only list of text runs to search. Each run represents a contiguous segment of text.</param>
+        /// <param name="characterIndex">The zero-based character index to locate within the combined text runs. Must be greater than or equal to
+        /// zero and less than the total length of all runs.</param>
+        /// <returns>A tuple containing the index of the run and the offset within that run for the specified character index.
+        /// Returns (-1, -1) if the character index is out of range.</returns>
         private static (int RunIndex, int Offset) FindRunAtCharacterIndex(IReadOnlyList<TextRun> runs, int characterIndex)
         {
             var current = 0;
@@ -470,7 +495,17 @@ namespace Avalonia.Media
             return (-1, -1);
         }
 
-        private static double MeasureSegmentWidth(IReadOnlyList<TextRun> runs, int segmentStart, int segmentLength, FormattingObjectPool objectPool)
+        /// <summary>
+        /// Calculates the total width of a specified segment within a sequence of text runs.
+        /// </summary>
+        /// <remarks>The method accounts for partial overlaps between the segment and individual text
+        /// runs. Drawable runs are measured as a whole if any part overlaps the segment.</remarks>
+        /// <param name="runs">The collection of text runs to measure. Each run represents a contiguous sequence of formatted text.</param>
+        /// <param name="segmentStart">The zero-based index of the first character in the segment to measure, relative to the combined text runs.</param>
+        /// <param name="segmentLength">The number of characters in the segment to measure. Must be non-negative.</param>
+        /// <returns>The total width, in device-independent units, of the specified text segment. Returns 0.0 if the segment is
+        /// empty or does not overlap any runs.</returns>
+        private static double MeasureSegmentWidth(IReadOnlyList<TextRun> runs, int segmentStart, int segmentLength)
         {
             // segment range in global character indices
             var segmentEnd = segmentStart + segmentLength;
@@ -509,50 +544,50 @@ namespace Avalonia.Media
                 switch (run)
                 {
                     case ShapedTextRun shaped:
-                    {
-                        var buffer = shaped.ShapedBuffer;
-                        if (buffer.Length == 0)
+                        {
+                            var buffer = shaped.ShapedBuffer;
+                            if (buffer.Length == 0)
+                            {
+                                break;
+                            }
+
+                            // local char offsets inside this run
+                            var localStart = overlapStart - runStart;
+                            var localEnd = overlapEnd - runStart;
+
+                            // base cluster used by this buffer (see ShapedBuffer.Split logic)
+                            var baseCluster = buffer[0].GlyphCluster;
+
+                            // glyph clusters are increasing — stop once we passed localEnd
+                            for (var gi = 0; gi < buffer.Length; gi++)
+                            {
+                                var g = buffer[gi];
+                                var clusterLocal = g.GlyphCluster - baseCluster;
+
+                                if (clusterLocal < localStart)
+                                    continue;
+
+                                if (clusterLocal >= localEnd)
+                                    break;
+
+                                width += g.GlyphAdvance;
+                            }
+
+                            break;
+                        }
+                    case DrawableTextRun d:
+                        {
+                            // A drawable run can't be split; if any overlap exists, count its full width.
+                            if (overlapLen > 0)
+                            {
+                                width += d.Size.Width;
+                            }
+                            break;
+                        }
+                    default:
                         {
                             break;
                         }
-
-                        // local char offsets inside this run
-                        var localStart = overlapStart - runStart;
-                        var localEnd = overlapEnd - runStart;
-
-                        // base cluster used by this buffer (see ShapedBuffer.Split logic)
-                        var baseCluster = buffer[0].GlyphCluster;
-
-                        // glyph clusters are increasing — stop once we passed localEnd
-                        for (var gi = 0; gi < buffer.Length; gi++)
-                        {
-                            var g = buffer[gi];
-                            var clusterLocal = g.GlyphCluster - baseCluster;
-
-                            if (clusterLocal < localStart)
-                                continue;
-
-                            if (clusterLocal >= localEnd)
-                                break;
-
-                            width += g.GlyphAdvance;
-                        }
-
-                        break;
-                    }
-                    case DrawableTextRun d:
-                    {
-                        // A drawable run can't be split; if any overlap exists, count its full width.
-                        if (overlapLen > 0)
-                        {
-                            width += d.Size.Width;
-                        }
-                        break;
-                    }
-                    default:
-                    {
-                        break;
-                    }
                 }
 
                 currentChar = runEnd;

@@ -1,4 +1,15 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         x:Class="Sandbox.MainWindow">
+  <StackPanel>
+    <TextBlock TextTrimming="PathSegmentEllipsis" Text="left/middle/right"/>
+    <TextBlock TextTrimming="PathSegmentEllipsis" Text="C:\Users\Alice\Documents\Projects\Avalonia\src\Controls\Button.cs" />
+    <TextBlock TextTrimming="PathSegmentEllipsis" Text="/usr/local/bin/some/really/long/path/to/executable" />
+    <TextBlock TextTrimming="PathSegmentEllipsis" Text="C:\Program Files\Company\Product\bin\tool.exe" />
+    <TextBlock TextTrimming="PathSegmentEllipsis" Text="\\server\share\folder\subfolder\file.txt" />
+    <TextBlock TextTrimming="PathSegmentEllipsis" Text="/home/bob/.config/some/app/settings/config.yaml" />
+    <TextBlock TextTrimming="PathSegmentEllipsis" Text="D:\very\long\path\with\many\segments\and\files\name.ext" />
+    <TextBlock TextTrimming="PathSegmentEllipsis" Text="relative/path/with/many/segments/to/check/behavior" />
+    <TextBlock TextTrimming="PathSegmentEllipsis" Text="C:\a\b\c\this_is_a_very_long_filename_with_numbers_1234567890.txt" />
+  </StackPanel>
 </Window>
