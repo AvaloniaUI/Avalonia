@@ -66,6 +66,12 @@ namespace Avalonia.Platform
     internal interface IFontManagerImpl2 : IFontManagerImpl
     {
         /// <summary>
+        /// Gets a read-only dictionary that maps requested font family names to actual font family names.
+        /// This is typically populated when the platform resolves font aliases or provides different font families than requested.
+        /// </summary>
+        IReadOnlyDictionary<string, FontFamily> FontFamilyMappings { get; }
+
+        /// <summary>
         ///     Tries to match a specified character to a typeface that supports specified font properties.
         /// </summary>
         /// <param name="codepoint">The codepoint to match against.</param>

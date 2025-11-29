@@ -43,7 +43,7 @@ namespace Avalonia.Media.Fonts
 
             var key = new FontCollectionKey(style, weight, stretch);
 
-            //Check cache first to avoid unnecessary calls to the font manager
+            // We need to check our cache first to be able to avoid multiple calls to platform font manager when a null value was cached before.
             if (_glyphTypefaceCache.TryGetValue(familyName, out var glyphTypefaces) && glyphTypefaces.TryGetValue(key, out glyphTypeface))
             {
                 return glyphTypeface != null;
@@ -64,8 +64,21 @@ namespace Avalonia.Media.Fonts
                 return false;
             }
 
-            //Requested glyph typeface should be in cache now
-            return base.TryGetGlyphTypeface(familyName, style, weight, stretch, out glyphTypeface);
+            if (_platformImpl is IFontManagerImpl2 fontManagerImpl2 && fontManagerImpl2.FontFamilyMappings.TryGetValue(familyName, out var mappedFontFamily))
+            {
+                if (base.TryGetGlyphTypeface(mappedFontFamily.Name, style, weight, stretch, out glyphTypeface))
+                {
+                    //Add to cache with mapped family name
+                    TryAddGlyphTypeface(familyName, key, glyphTypeface);
+
+                    return true;
+                }
+
+                return false;
+            }
+
+            // Successfully created and cached glyphTypeface, return true
+            return true;
         }
 
         public override bool TryGetFamilyTypefaces(string familyName, [NotNullWhen(true)] out IReadOnlyList<Typeface>? familyTypefaces)
