@@ -21,7 +21,9 @@ namespace Avalonia.Rendering.Composition.Expressions
         Matrix3x2,
         Matrix4x4,
         Quaternion,
-        Color
+        Color,
+        RelativePoint,
+        RelativeScalar
     }
 
     /// <summary>
@@ -45,7 +47,8 @@ namespace Avalonia.Rendering.Composition.Expressions
         [FieldOffset(4)] public Matrix4x4 Matrix4x4;
         [FieldOffset(4)] public Quaternion Quaternion;
         [FieldOffset(4)] public Color Color;
-        
+        [FieldOffset(4)] public RelativePoint RelativePoint;
+        [FieldOffset(4)] public RelativeScalar RelativeScalar;
 
         public ExpressionVariant GetProperty(string property)
         {
@@ -57,7 +60,7 @@ namespace Avalonia.Rendering.Composition.Expressions
                     return Vector2.Y;
                 return default;
             }
-            
+
             if (Type == VariantType.Vector)
             {
                 if (ReferenceEquals(property, "X"))
@@ -75,21 +78,21 @@ namespace Avalonia.Rendering.Composition.Expressions
                     return Vector3.Y;
                 if (ReferenceEquals(property, "Z"))
                     return Vector3.Z;
-                if(ReferenceEquals(property, "XY"))
+                if (ReferenceEquals(property, "XY"))
                     return new Vector2(Vector3.X, Vector3.Y);
-                if(ReferenceEquals(property, "YX"))
+                if (ReferenceEquals(property, "YX"))
                     return new Vector2(Vector3.Y, Vector3.X);
-                if(ReferenceEquals(property, "XZ"))
+                if (ReferenceEquals(property, "XZ"))
                     return new Vector2(Vector3.X, Vector3.Z);
-                if(ReferenceEquals(property, "ZX"))
+                if (ReferenceEquals(property, "ZX"))
                     return new Vector2(Vector3.Z, Vector3.X);
-                if(ReferenceEquals(property, "YZ"))
+                if (ReferenceEquals(property, "YZ"))
                     return new Vector2(Vector3.Y, Vector3.Z);
-                if(ReferenceEquals(property, "ZY"))
+                if (ReferenceEquals(property, "ZY"))
                     return new Vector2(Vector3.Z, Vector3.Y);
                 return default;
             }
-            
+
             if (Type == VariantType.Vector3D)
             {
                 if (ReferenceEquals(property, "X"))
@@ -98,17 +101,17 @@ namespace Avalonia.Rendering.Composition.Expressions
                     return Vector3D.Y;
                 if (ReferenceEquals(property, "Z"))
                     return Vector3D.Z;
-                if(ReferenceEquals(property, "XY"))
+                if (ReferenceEquals(property, "XY"))
                     return new Vector(Vector3D.X, Vector3D.Y);
-                if(ReferenceEquals(property, "YX"))
+                if (ReferenceEquals(property, "YX"))
                     return new Vector(Vector3D.Y, Vector3D.X);
-                if(ReferenceEquals(property, "XZ"))
+                if (ReferenceEquals(property, "XZ"))
                     return new Vector(Vector3D.X, Vector3D.Z);
-                if(ReferenceEquals(property, "ZX"))
+                if (ReferenceEquals(property, "ZX"))
                     return new Vector(Vector3D.Z, Vector3D.X);
-                if(ReferenceEquals(property, "YZ"))
+                if (ReferenceEquals(property, "YZ"))
                     return new Vector(Vector3D.Y, Vector3D.Z);
-                if(ReferenceEquals(property, "ZY"))
+                if (ReferenceEquals(property, "ZY"))
                     return new Vector(Vector3D.Z, Vector3D.Y);
                 return default;
             }
@@ -142,7 +145,7 @@ namespace Avalonia.Rendering.Composition.Expressions
                     return Matrix3x2.M32;
                 return default;
             }
-            
+
             if (Type == VariantType.AvaloniaMatrix)
             {
                 if (ReferenceEquals(property, "M11"))
@@ -215,7 +218,7 @@ namespace Avalonia.Rendering.Composition.Expressions
                     return Quaternion.W;
                 return default;
             }
-            
+
             if (Type == VariantType.Color)
             {
                 if (ReferenceEquals(property, "A"))
@@ -226,6 +229,15 @@ namespace Avalonia.Rendering.Composition.Expressions
                     return Color.G;
                 if (ReferenceEquals(property, "B"))
                     return Color.B;
+                return default;
+            }
+
+            if (Type == VariantType.RelativePoint)
+            {
+                if (ReferenceEquals(property, "X"))
+                    return (float)RelativePoint.Point.X;
+                if (ReferenceEquals(property, "Y"))
+                    return (float)RelativePoint.Point.Y;
                 return default;
             }
 
@@ -245,7 +257,7 @@ namespace Avalonia.Rendering.Composition.Expressions
                 Type = VariantType.Scalar,
                 Scalar = scalar
             };
-        
+
         public static implicit operator ExpressionVariant(double d) =>
             new ExpressionVariant
             {
@@ -260,7 +272,7 @@ namespace Avalonia.Rendering.Composition.Expressions
                 Type = VariantType.Vector2,
                 Vector2 = value
             };
-        
+
         public static implicit operator ExpressionVariant(Vector value) =>
             new ExpressionVariant
             {
@@ -274,7 +286,7 @@ namespace Avalonia.Rendering.Composition.Expressions
                 Type = VariantType.Vector3,
                 Vector3 = value
             };
-        
+
         public static implicit operator ExpressionVariant(Vector3D value) =>
             new ExpressionVariant
             {
@@ -296,7 +308,7 @@ namespace Avalonia.Rendering.Composition.Expressions
                 Type = VariantType.Matrix3x2,
                 Matrix3x2 = value
             };
-        
+
         public static implicit operator ExpressionVariant(Matrix value) =>
             new ExpressionVariant
             {
@@ -317,7 +329,7 @@ namespace Avalonia.Rendering.Composition.Expressions
                 Type = VariantType.Quaternion,
                 Quaternion = value
             };
-        
+
         public static implicit operator ExpressionVariant(Avalonia.Media.Color value) =>
             new ExpressionVariant
             {
@@ -325,6 +337,21 @@ namespace Avalonia.Rendering.Composition.Expressions
                 Color = value
             };
 
+        public static implicit operator ExpressionVariant(RelativePoint value) =>
+            new ExpressionVariant
+            {
+                Type = VariantType.RelativePoint,
+                RelativePoint = value
+            };
+
+        public static implicit operator ExpressionVariant(RelativeScalar value) =>
+            new ExpressionVariant
+            {
+                Type = VariantType.RelativeScalar,
+                RelativeScalar = value
+            };
+
+        //TODO: RelativePoint/Scalar operators
         public static ExpressionVariant operator +(ExpressionVariant left, ExpressionVariant right)
         {
             if (left.Type != right.Type || left.Type == VariantType.Invalid)
@@ -332,13 +359,13 @@ namespace Avalonia.Rendering.Composition.Expressions
 
             if (left.Type == VariantType.Scalar)
                 return left.Scalar + right.Scalar;
-            
+
             if (left.Type == VariantType.Double)
                 return left.Double + right.Double;
 
             if (left.Type == VariantType.Vector2)
                 return left.Vector2 + right.Vector2;
-            
+
             if (left.Type == VariantType.Vector)
                 return left.Vector + right.Vector;
 
@@ -350,16 +377,16 @@ namespace Avalonia.Rendering.Composition.Expressions
 
             if (left.Type == VariantType.Vector4)
                 return left.Vector4 + right.Vector4;
-            
+
             if (left.Type == VariantType.Matrix3x2)
                 return left.Matrix3x2 + right.Matrix3x2;
-            
+
             if (left.Type == VariantType.Matrix4x4)
                 return left.Matrix4x4 + right.Matrix4x4;
-            
+
             if (left.Type == VariantType.Quaternion)
                 return left.Quaternion + right.Quaternion;
-            
+
             return default;
         }
 
@@ -370,13 +397,13 @@ namespace Avalonia.Rendering.Composition.Expressions
 
             if (left.Type == VariantType.Scalar)
                 return left.Scalar - right.Scalar;
-            
+
             if (left.Type == VariantType.Double)
                 return left.Double - right.Double;
 
             if (left.Type == VariantType.Vector2)
                 return left.Vector2 - right.Vector2;
-            
+
             if (left.Type == VariantType.Vector)
                 return left.Vector - right.Vector;
 
@@ -388,13 +415,13 @@ namespace Avalonia.Rendering.Composition.Expressions
 
             if (left.Type == VariantType.Vector4)
                 return left.Vector4 - right.Vector4;
-            
+
             if (left.Type == VariantType.Matrix3x2)
                 return left.Matrix3x2 - right.Matrix3x2;
-            
+
             if (left.Type == VariantType.Matrix4x4)
                 return left.Matrix4x4 - right.Matrix4x4;
-            
+
             if (left.Type == VariantType.Quaternion)
                 return left.Quaternion - right.Quaternion;
 
@@ -406,31 +433,31 @@ namespace Avalonia.Rendering.Composition.Expressions
 
             if (left.Type == VariantType.Scalar)
                 return -left.Scalar;
-            
+
             if (left.Type == VariantType.Double)
                 return -left.Double;
 
             if (left.Type == VariantType.Vector2)
                 return -left.Vector2;
-            
+
             if (left.Type == VariantType.Vector)
                 return -left.Vector;
 
             if (left.Type == VariantType.Vector3)
                 return -left.Vector3;
-            
+
             if (left.Type == VariantType.Vector3D)
                 return -left.Vector3D;
 
             if (left.Type == VariantType.Vector4)
                 return -left.Vector4;
-            
+
             if (left.Type == VariantType.Matrix3x2)
                 return -left.Matrix3x2;
-            
+
             if (left.Type == VariantType.AvaloniaMatrix)
                 return -left.AvaloniaMatrix;
-            
+
             if (left.Type == VariantType.Matrix4x4)
                 return -left.Matrix4x4;
 
@@ -447,7 +474,7 @@ namespace Avalonia.Rendering.Composition.Expressions
 
             if (left.Type == VariantType.Scalar && right.Type == VariantType.Scalar)
                 return left.Scalar * right.Scalar;
-            
+
             if (left.Type == VariantType.Double && right.Type == VariantType.Double)
                 return left.Double * right.Double;
 
@@ -459,22 +486,22 @@ namespace Avalonia.Rendering.Composition.Expressions
 
             if (left.Type == VariantType.Vector2 && right.Type == VariantType.Scalar)
                 return left.Vector2 * right.Scalar;
-            
+
             if (left.Type == VariantType.Vector && right.Type == VariantType.Scalar)
                 return left.Vector * right.Scalar;
-            
+
             if (left.Type == VariantType.Vector && right.Type == VariantType.Double)
                 return left.Vector * right.Double;
 
             if (left.Type == VariantType.Vector3 && right.Type == VariantType.Vector3)
                 return left.Vector3 * right.Vector3;
-            
+
             if (left.Type == VariantType.Vector3D && right.Type == VariantType.Vector3D)
                 return Vector3D.Multiply(left.Vector3D, right.Vector3D);
 
             if (left.Type == VariantType.Vector3 && right.Type == VariantType.Scalar)
                 return left.Vector3 * right.Scalar;
-            
+
             if (left.Type == VariantType.Vector3D && right.Type == VariantType.Scalar)
                 return Vector3D.Multiply(left.Vector3D, right.Scalar);
 
@@ -483,22 +510,22 @@ namespace Avalonia.Rendering.Composition.Expressions
 
             if (left.Type == VariantType.Vector4 && right.Type == VariantType.Scalar)
                 return left.Vector4 * right.Scalar;
-            
+
             if (left.Type == VariantType.Matrix3x2 && right.Type == VariantType.Matrix3x2)
                 return left.Matrix3x2 * right.Matrix3x2;
 
             if (left.Type == VariantType.Matrix3x2 && right.Type == VariantType.Scalar)
                 return left.Matrix3x2 * right.Scalar;
-            
+
             if (left.Type == VariantType.AvaloniaMatrix && right.Type == VariantType.AvaloniaMatrix)
                 return left.AvaloniaMatrix * right.AvaloniaMatrix;
-            
+
             if (left.Type == VariantType.Matrix4x4 && right.Type == VariantType.Matrix4x4)
                 return left.Matrix4x4 * right.Matrix4x4;
 
             if (left.Type == VariantType.Matrix4x4 && right.Type == VariantType.Scalar)
                 return left.Matrix4x4 * right.Scalar;
-            
+
             if (left.Type == VariantType.Quaternion && right.Type == VariantType.Quaternion)
                 return left.Quaternion * right.Quaternion;
 
@@ -515,7 +542,7 @@ namespace Avalonia.Rendering.Composition.Expressions
 
             if (left.Type == VariantType.Scalar && right.Type == VariantType.Scalar)
                 return left.Scalar / right.Scalar;
-            
+
             if (left.Type == VariantType.Double && right.Type == VariantType.Double)
                 return left.Double / right.Double;
 
@@ -527,10 +554,10 @@ namespace Avalonia.Rendering.Composition.Expressions
 
             if (left.Type == VariantType.Vector2 && right.Type == VariantType.Scalar)
                 return left.Vector2 / right.Scalar;
-            
+
             if (left.Type == VariantType.Vector && right.Type == VariantType.Scalar)
                 return left.Vector / right.Scalar;
-            
+
             if (left.Type == VariantType.Vector && right.Type == VariantType.Double)
                 return left.Vector / right.Scalar;
 
@@ -545,7 +572,7 @@ namespace Avalonia.Rendering.Composition.Expressions
 
             if (left.Type == VariantType.Vector3D && right.Type == VariantType.Scalar)
                 return Avalonia.Vector3D.Divide(left.Vector3D, right.Scalar);
-            
+
             if (left.Type == VariantType.Vector3D && right.Type == VariantType.Double)
                 return Avalonia.Vector3D.Divide(left.Vector3D, right.Double);
 
@@ -554,7 +581,7 @@ namespace Avalonia.Rendering.Composition.Expressions
 
             if (left.Type == VariantType.Vector4 && right.Type == VariantType.Scalar)
                 return left.Vector4 / right.Scalar;
-            
+
             if (left.Type == VariantType.Quaternion && right.Type == VariantType.Quaternion)
                 return left.Quaternion / right.Quaternion;
 
@@ -568,20 +595,20 @@ namespace Avalonia.Rendering.Composition.Expressions
 
             if (Type == VariantType.Scalar)
                 return Scalar == right.Scalar;
-            
-            
+
+
             if (Type == VariantType.Double)
                 return Double == right.Double;
 
             if (Type == VariantType.Vector2)
                 return Vector2 == right.Vector2;
-            
+
             if (Type == VariantType.Vector)
                 return Vector == right.Vector;
-            
+
             if (Type == VariantType.Vector3)
                 return Vector3 == right.Vector3;
-            
+
             if (Type == VariantType.Vector3D)
                 return Vector3D == right.Vector3D;
 
@@ -593,7 +620,7 @@ namespace Avalonia.Rendering.Composition.Expressions
 
             if (Type == VariantType.Matrix3x2)
                 return Matrix3x2 == right.Matrix3x2;
-            
+
             if (Type == VariantType.AvaloniaMatrix)
                 return AvaloniaMatrix == right.AvaloniaMatrix;
 
@@ -602,7 +629,13 @@ namespace Avalonia.Rendering.Composition.Expressions
 
             if (Type == VariantType.Quaternion)
                 return Quaternion == right.Quaternion;
-            
+
+            if (Type == VariantType.RelativePoint)
+                return RelativePoint == right.RelativePoint;
+
+            if (Type == VariantType.RelativeScalar)
+                return RelativeScalar == right.RelativeScalar;
+
             return default;
         }
 
@@ -643,7 +676,7 @@ namespace Avalonia.Rendering.Composition.Expressions
         {
             if (left.Type == VariantType.Scalar && right.Type == VariantType.Scalar)
                 return left.Scalar > right.Scalar;
-            
+
             if (left.Type == VariantType.Double && right.Type == VariantType.Double)
                 return left.Double > right.Double;
             return default;
@@ -669,7 +702,7 @@ namespace Avalonia.Rendering.Composition.Expressions
             {
                 if (Type == VariantType.Boolean)
                 {
-                    res = (T) (object) Boolean;
+                    res = (T)(object)Boolean;
                     return true;
                 }
             }
@@ -678,27 +711,27 @@ namespace Avalonia.Rendering.Composition.Expressions
             {
                 if (Type == VariantType.Scalar)
                 {
-                    res = (T) (object) Scalar;
+                    res = (T)(object)Scalar;
                     return true;
                 }
                 if (Type == VariantType.Double)
                 {
-                    res = (T)(object)Scalar;
+                    res = (T)(object)(float)Double;
                     return true;
                 }
             }
-            
+
             if (typeof(T) == typeof(double))
             {
                 if (Type == VariantType.Double)
                 {
-                    res = (T) (object) Double;
+                    res = (T)(object)Double;
                     return true;
                 }
 
                 if (Type == VariantType.Scalar)
                 {
-                    res = (T)(object)(float)Double;
+                    res = (T)(object)(double)Scalar;
                     return true;
                 }
             }
@@ -707,22 +740,22 @@ namespace Avalonia.Rendering.Composition.Expressions
             {
                 if (Type == VariantType.Vector2)
                 {
-                    res = (T) (object) Vector2;
+                    res = (T)(object)Vector2;
                     return true;
                 }
 
                 if (Type == VariantType.Vector)
                 {
-                    res = (T) (object) Vector.ToVector2();
+                    res = (T)(object)Vector.ToVector2();
                     return true;
                 }
             }
-            
+
             if (typeof(T) == typeof(Vector))
             {
                 if (Type == VariantType.Vector)
                 {
-                    res = (T) (object) Vector;
+                    res = (T)(object)Vector;
                     return true;
                 }
 
@@ -737,24 +770,24 @@ namespace Avalonia.Rendering.Composition.Expressions
             {
                 if (Type == VariantType.Vector3)
                 {
-                    res = (T) (object) Vector3;
+                    res = (T)(object)Vector3;
                     return true;
                 }
                 if (Type == VariantType.Vector3D)
                 {
-                    res = (T) (object) Vector3D.ToVector3();
+                    res = (T)(object)Vector3D.ToVector3();
                     return true;
                 }
             }
-            
+
             if (typeof(T) == typeof(Vector3D))
             {
                 if (Type == VariantType.Vector3D)
                 {
-                    res = (T) (object) Vector3D;
+                    res = (T)(object)Vector3D;
                     return true;
                 }
-                
+
                 if (Type == VariantType.Vector3)
                 {
                     res = (T)(object)new Vector3D(Vector3);
@@ -766,7 +799,7 @@ namespace Avalonia.Rendering.Composition.Expressions
             {
                 if (Type == VariantType.Vector4)
                 {
-                    res = (T) (object) Vector4;
+                    res = (T)(object)Vector4;
                     return true;
                 }
             }
@@ -775,16 +808,16 @@ namespace Avalonia.Rendering.Composition.Expressions
             {
                 if (Type == VariantType.Matrix3x2)
                 {
-                    res = (T) (object) Matrix3x2;
+                    res = (T)(object)Matrix3x2;
                     return true;
                 }
             }
-            
+
             if (typeof(T) == typeof(Matrix))
             {
                 if (Type == VariantType.AvaloniaMatrix)
                 {
-                    res = (T) (object) Matrix3x2;
+                    res = (T)(object)Matrix3x2;
                     return true;
                 }
             }
@@ -793,7 +826,7 @@ namespace Avalonia.Rendering.Composition.Expressions
             {
                 if (Type == VariantType.Matrix4x4)
                 {
-                    res = (T) (object) Matrix4x4;
+                    res = (T)(object)Matrix4x4;
                     return true;
                 }
             }
@@ -802,16 +835,35 @@ namespace Avalonia.Rendering.Composition.Expressions
             {
                 if (Type == VariantType.Quaternion)
                 {
-                    res = (T) (object) Quaternion;
+                    res = (T)(object)Quaternion;
                     return true;
                 }
             }
-            
+
             if (typeof(T) == typeof(Avalonia.Media.Color))
             {
                 if (Type == VariantType.Color)
                 {
-                    res = (T) (object) Color;
+                    res = (T)(object)Color;
+                    return true;
+                }
+            }
+
+            if (typeof(T) == typeof(RelativePoint))
+            {
+                if (Type == VariantType.RelativePoint)
+                {
+                    res = (T)(object)RelativePoint;
+                    return true;
+                }
+            }
+
+
+            if (typeof(T) == typeof(RelativeScalar))
+            {
+                if (Type == VariantType.RelativeScalar)
+                {
+                    res = (T)(object)RelativeScalar;
                     return true;
                 }
             }
@@ -823,40 +875,49 @@ namespace Avalonia.Rendering.Composition.Expressions
         public static ExpressionVariant Create<T>(T v) where T : struct
         {
             if (typeof(T) == typeof(bool))
-                return (bool) (object) v;
+                return (bool)(object)v;
 
             if (typeof(T) == typeof(float))
-                return (float) (object) v;
+                return (float)(object)v;
+
+            if (typeof(T) == typeof(double))
+                return (double)(object)v;
 
             if (typeof(T) == typeof(Vector2))
-                return (Vector2) (object) v;
-            
+                return (Vector2)(object)v;
+
             if (typeof(T) == typeof(Vector))
-                return (Vector) (object) v;
+                return (Vector)(object)v;
 
             if (typeof(T) == typeof(Vector3))
-                return (Vector3) (object) v;
-            
+                return (Vector3)(object)v;
+
             if (typeof(T) == typeof(Vector3D))
-                return (Vector3D) (object) v;
+                return (Vector3D)(object)v;
 
             if (typeof(T) == typeof(Vector4))
-                return (Vector4) (object) v;
+                return (Vector4)(object)v;
 
             if (typeof(T) == typeof(Matrix3x2))
-                return (Matrix3x2) (object) v;
-            
+                return (Matrix3x2)(object)v;
+
             if (typeof(T) == typeof(Matrix))
-                return (Matrix) (object) v;
+                return (Matrix)(object)v;
 
             if (typeof(T) == typeof(Matrix4x4))
-                return (Matrix4x4) (object) v;
+                return (Matrix4x4)(object)v;
 
             if (typeof(T) == typeof(Quaternion))
-                return (Quaternion) (object) v;
-            
+                return (Quaternion)(object)v;
+
             if (typeof(T) == typeof(Avalonia.Media.Color))
-                return (Avalonia.Media.Color) (object) v;
+                return (Avalonia.Media.Color)(object)v;
+
+            if (typeof(T) == typeof(RelativePoint))
+                return (RelativePoint)(object)v;
+
+            if (typeof(T) == typeof(RelativeScalar))
+                return (RelativeScalar)(object)v;
 
             throw new ArgumentException("Invalid variant type: " + typeof(T));
         }
@@ -895,6 +956,10 @@ namespace Avalonia.Rendering.Composition.Expressions
                 return Matrix4x4.ToString();
             if (Type == VariantType.Color)
                 return Color.ToString();
+            if (Type == VariantType.RelativePoint)
+                return RelativePoint.ToString();
+            if (Type == VariantType.RelativeScalar)
+                return RelativeScalar.ToString();
             if (Type == VariantType.Invalid)
                 return "Invalid";
             return "Unknown";

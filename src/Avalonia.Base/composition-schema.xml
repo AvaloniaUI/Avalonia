@@ -67,6 +67,8 @@
     <KeyFrameAnimation Type="Vector3D"/>
     <KeyFrameAnimation Type="Vector4"/>
     <KeyFrameAnimation Type="Quaternion"/>
+    <KeyFrameAnimation Name="RelativePoint" Type="Avalonia.RelativePoint"/>
+    <KeyFrameAnimation Name="RelativeScalar" Type="Avalonia.RelativeScalar"/>
     <Object Name="CompositionSimpleTransform" Internal="true" ServerOnly="true" ServerBase="SimpleServerRenderResource">
         <Property Name="Value" Type="Avalonia.Matrix" />
     </Object>
@@ -108,5 +110,40 @@
         <Property Name="SourceRect" Type="Avalonia.RelativeRect" />
         <Property Name="Stretch" Type="Avalonia.Media.Stretch" />
         <Property Name="TileMode" Type="Avalonia.Media.TileMode" />
+    </Object>
+    <Object Name="CompositionBrush" ServerBase="ServerRenderResource">
+        <Property Name="Opacity" Type="double" Animated="true" DefaultValue="1"/>
+        <Property Name="TransformOrigin" Type="RelativePoint" />
+        <Property Name="Transform" Type="Avalonia.Media.ITransform?" />
+    </Object>
+    <Object Name="CompositionSolidColorBrush" Inherits="CompositionBrush" ServerBase="ServerCompositionBrush">
+        <Property Name="Color" Type="Avalonia.Media.Color" Animated="true"/>
+    </Object>
+    <Manual Name="CompositionGradientBrush" />
+    <Object Name="CompositionConicGradientBrush" Inherits="CompositionGradientBrush" ServerBase="ServerCompositionGradientBrush">
+        <Property Name="Angle" Type="double" Animated="true"/>
+        <Property Name="Center" Type="Avalonia.RelativePoint"  Animated="true"/>
+    </Object>
+    <Object Name="CompositionRadialGradientBrush" Inherits="CompositionGradientBrush" ServerBase="ServerCompositionGradientBrush">
+        <Property Name="Center" Type="Avalonia.RelativePoint" Animated="true"/>
+        <Property Name="GradientOrigin" Type="Avalonia.RelativePoint"  Animated="true"/>
+        <Property Name="RadiusX" Type="Avalonia.RelativeScalar" Animated="true" DefaultValue="RelativeScalar.Middle"/>
+        <Property Name="RadiusY" Type="Avalonia.RelativeScalar" Animated="true" DefaultValue="RelativeScalar.Middle"/>
+    </Object>
+    <Object Name="CompositionLinearGradientBrush" Inherits="CompositionGradientBrush" ServerBase="ServerCompositionGradientBrush">
+        <Property Name="StartPoint" Type="Avalonia.RelativePoint" Animated="true"/>
+        <Property Name="EndPoint" Type="Avalonia.RelativePoint" Animated="true"/>
+    </Object>
+    <Object Name="CompositionTileBrush" Internal="true" ServerOnly="true" ServerBase="ServerCompositionBrush">
+        <Property Name="AlignmentX" Type="Avalonia.Media.AlignmentX" />
+        <Property Name="AlignmentY" Type="Avalonia.Media.AlignmentY" />
+        <Property Name="DestinationRect" Type="Avalonia.RelativeRect" />
+        <Property Name="SourceRect" Type="Avalonia.RelativeRect" />
+        <Property Name="Stretch" Type="Avalonia.Media.Stretch" />
+        <Property Name="TileMode" Type="Avalonia.Media.TileMode" />
+    </Object>
+    <Object Name="CompositionGradientStop" ServerBase="ServerRenderResource">
+        <Property Name="Color" Type="Avalonia.Media.Color" Animated="true"/>
+        <Property Name="Offset" Type="double" Animated="true"/>
     </Object>
 </NComposition>

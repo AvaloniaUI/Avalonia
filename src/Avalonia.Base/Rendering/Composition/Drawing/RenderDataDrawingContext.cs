@@ -27,13 +27,13 @@ internal class RenderDataDrawingContext : DrawingContext
             return _renderData ??= new(_compositor);
         }
     }
-    
+
     struct ParentStackItem
     {
         public RenderDataPushNode? Node;
         public List<IRenderDataItem> Items;
     }
-    
+
     private List<IRenderDataItem>? _currentItemList;
     private static readonly ThreadSafeObjectPool<List<IRenderDataItem>> s_listPool = new();
 
@@ -59,7 +59,7 @@ internal class RenderDataDrawingContext : DrawingContext
         {
             (_parentNodeStack ??= s_parentStackPool.Get()).Push(default);
             return;
-        }    
+        }
         Add(node);
         (_parentNodeStack ??= s_parentStackPool.Get()).Push(new ParentStackItem
         {
@@ -72,7 +72,7 @@ internal class RenderDataDrawingContext : DrawingContext
     void Pop<T>() where T : IRenderDataItem
     {
         var parent = _parentNodeStack!.Pop();
-        
+
         // No-op node
         if (parent.Node == null)
             return;
@@ -98,11 +98,12 @@ internal class RenderDataDrawingContext : DrawingContext
     {
         if (_compositor == null)
             return;
-        
+
         if (resource == null
             || resource is IImmutableBrush
             || resource is ImmutablePen
-            || resource is ImmutableTransform)
+            || resource is ImmutableTransform
+            || resource is CompositionBrush)
             return;
         
         if (resource is ICompositionRenderResource renderResource)
