@@ -162,6 +162,48 @@ namespace Avalonia.DesignerSupport.Tests
 
         }
 
+        [Fact]
+        [SuppressMessage("Usage", "xUnit1031:Do not use blocking task operations in test method", Justification = "Sync context is explicitly disabled")]
+        void BsonSerializationIsThreadSafe()
+        {
+            Init();
+            // This test verifies that concurrent serialization doesn't cause infinite loops
+            // or corruption in the TypeHelper cache
+            var messages = Enumerable.Range(0, 100).Select(i => new MeasureViewportMessage
+            {
+                Width = i,
+                Height = i * 2
+            }).ToArray();
+
+            var tasks = new List<Task>();
+            var exceptions = new ConcurrentBag<Exception>();
+
+            // Spawn multiple threads that all try to serialize messages concurrently
+            for (int i = 0; i < 10; i++)
+            {
+                var task = Task.Run(() =>
+                {
+                    try
+                    {
+                        foreach (var message in messages)
+                        {
+                            _client.Send(message).Wait(TimeoutInMs);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        exceptions.Add(ex);
+                    }
+                });
+                tasks.Add(task);
+            }
+
+            Task.WaitAll(tasks.ToArray(), TimeoutInMs * messages.Length * 10);
+            
+            // Verify no exceptions occurred
+            Assert.Empty(exceptions);
+        }
+
         public void Dispose()
         {
             _disposables.ForEach(d => d.Dispose());
