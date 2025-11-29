@@ -34,14 +34,15 @@
         <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.1" />
       </Transitions>
     </Setter>
+    <Setter Property="CompositionAnimation.ImplictionAnimations" Value="{DynamicResource ThumbOffsetAnimation}"/>
 
     <Style Selector="^:pointerover /template/ Border">
       <Setter Property="Background" Value="{DynamicResource ScrollBarThumbFillPointerOver}" />
     </Style>
-    <Style Selector="^:pressed  /template/ Border">
+    <Style Selector="^:pressed /template/ Border">
       <Setter Property="Background" Value="{DynamicResource ScrollBarThumbFillPressed}" />
     </Style>
-    <Style Selector="^:disabled  /template/ Border">
+    <Style Selector="^:disabled /template/ Border">
       <Setter Property="Background" Value="{DynamicResource ScrollBarThumbFillDisabled}" />
     </Style>
   </ControlTheme>
@@ -281,6 +282,9 @@
       <Style Selector="^ /template/ RepeatButton">
         <Setter Property="Opacity" Value="1" />
       </Style>
+    </Style>
+    <Style Selector="^ /template/ Thumb:pressed">
+      <Setter Property="CompositionAnimation.EnableAnimations" Value="False" />
     </Style>
   </ControlTheme>
 
