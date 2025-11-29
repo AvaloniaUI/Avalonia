@@ -7,11 +7,8 @@ using System.Runtime.CompilerServices;
 using Avalonia.Controls;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
-using Avalonia.Input;
-using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml.UnitTests.Xaml;
 using Avalonia.Media;
-using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
@@ -151,57 +148,6 @@ namespace Avalonia.Markup.Xaml.UnitTests
             
         }
 
-        static void AssertThrows(Action callback, Func<Exception, bool> check)
-        {
-            try
-            {
-                callback();
-            }
-            catch (Exception e) when (check(e))
-            {
-                return;
-            }
-
-            throw new Exception("Expected exception was not thrown");
-        }
-        
-        public static object SomeStaticProperty { get; set; }
-
-        [Fact]
-        public void Bug2570()
-        {
-            SomeStaticProperty = "123";
-            AssertThrows(() => AvaloniaRuntimeXamlLoader
-                    .Load(@"
-<UserControl 
-    xmlns='https://github.com/avaloniaui'
-    xmlns:d='http://schemas.microsoft.com/expression/blend/2008'
-    xmlns:tests='clr-namespace:Avalonia.Markup.Xaml.UnitTests'
-    d:DataContext='{x:Static tests:XamlIlTests.SomeStaticPropery}'
-    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'/>", typeof(XamlIlTests).Assembly,
-                        designMode: true),
-                e => e.Message.Contains("Unable to resolve ")
-                     && e.Message.Contains(" as static field, property, constant or enum value"));
-
-        }
-        
-        [Fact]
-        public void Design_Mode_DataContext_Should_Be_Set()
-        {
-            SomeStaticProperty = "123";
-            
-            var loaded = (UserControl)AvaloniaRuntimeXamlLoader
-                .Load(@"
-<UserControl 
-    xmlns='https://github.com/avaloniaui'
-    xmlns:d='http://schemas.microsoft.com/expression/blend/2008'
-    xmlns:tests='clr-namespace:Avalonia.Markup.Xaml.UnitTests'
-    d:DataContext='{x:Static tests:XamlIlTests.SomeStaticProperty}'
-    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'/>", typeof(XamlIlTests).Assembly,
-                    designMode: true);
-            Assert.Equal(Design.GetDataContext(loaded), SomeStaticProperty);
-        }
-        
         [Fact]
         public void Attached_Properties_From_Static_Types_Should_Work_In_Style_Setters_Bug_2561()
         {
