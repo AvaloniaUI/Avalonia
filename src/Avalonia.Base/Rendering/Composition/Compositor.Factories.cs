@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Avalonia.Media;
 using Avalonia.Rendering.Composition.Animations;
 using Avalonia.Rendering.Composition.Server;
 
@@ -38,4 +39,12 @@ public partial class Compositor
     public CompositionSurfaceVisual CreateSurfaceVisual() => new(this, new ServerCompositionSurfaceVisual(_server));
 
     public CompositionDrawingSurface CreateDrawingSurface() => new(this);
+
+    public CompositionSolidColorBrush CreateSolidColorBrush() => new(this, new ServerCompositionSolidColorBrush(Server));
+    public CompositionSolidColorBrush CreateSolidColorBrush(Color color) => new(this, new ServerCompositionSolidColorBrush(Server), color);
+    public CompositionLinearGradientBrush CreateLinearGradientBrush() => new(this, new ServerCompositionLinearGradientBrush(Server));
+    public CompositionConicGradientBrush CreateConicGradientBrush() => new(this, new ServerCompositionConicGradientBrush(Server));
+    public CompositionRadialGradientBrush CreateRadialGradientBrush() => new(this, new ServerCompositionRadialGradientBrush(Server));
+    public CompositionGradientStop CreateCompositionGradientStop(double offset, Color color) => new(this, new ServerCompositionGradientStop(Server), offset, color);
+    public CompositionGradientStop CreateCompositionGradientStop() => new(this, new ServerCompositionGradientStop(Server));
 }
