@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls;
 using Avalonia.Controls.Embedding;
 using Avalonia.Controls.Platform;
@@ -31,9 +32,11 @@ namespace Avalonia.iOS
             => _inputRoot ?? throw new InvalidOperationException($"{nameof(IWindowImpl.SetInputRoot)} must have been called");
         internal TopLevel TopLevel => _topLevel;
 
+        private readonly AutomationPeerWrapper _accessWrapper;
         private readonly TopLevelImpl _topLevelImpl;
         private readonly EmbeddableControlRoot _topLevel;
         private readonly InputHandler _input;
+
         private TextInputMethodClient? _client;
         private IAvaloniaViewController? _controller;
         private IInputRoot? _inputRoot;
@@ -45,6 +48,7 @@ namespace Avalonia.iOS
             _topLevelImpl = new TopLevelImpl(this);
             _input = new InputHandler(this, _topLevelImpl);
             _topLevel = new EmbeddableControlRoot(_topLevelImpl);
+            _accessWrapper = new(this, ControlAutomationPeer.CreatePeerForElement(_topLevel));
 
             _topLevel.Prepare();
 
