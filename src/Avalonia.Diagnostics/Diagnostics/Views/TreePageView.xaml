@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Avalonia.Diagnostics.ViewModels"
+             xmlns:sourceInfo="using:Avalonia.Markup.Xaml.SourceInfo"
              x:Class="Avalonia.Diagnostics.Views.TreePageView"
              x:DataType="vm:TreePageViewModel">
   <Grid ColumnDefinitions="0.35*,4,0.65*">
@@ -17,6 +18,40 @@
             <TextBlock Text="{Binding Type}" FontWeight="{Binding FontWeight}"/>
             <TextBlock Text="{Binding Classes}"/>
             <TextBlock Foreground="Gray" Text="{Binding ElementName}"/>
+            <Button Command="{Binding JumpToSource}" 
+              IsVisible="{Binding HasSourceInfo}"
+              IsEnabled="{Binding Source={x:Static sourceInfo:SourceNavigatorRegistry.Instance}, Path=IsEnabled}"
+              ToolTip.Tip="Jump to source"
+              Background="Transparent"
+              BorderThickness="0"
+              Padding="2"
+              Cursor="Hand"
+              VerticalAlignment="Center"
+              HorizontalAlignment="Center">
+
+              <TextBlock Text="&lt;&gt;"
+               FontSize="10"
+               FontWeight="Bold"/>
+                <Button.Styles>
+                    <!-- Normal -->
+                    <Style Selector="Button">
+                        <Setter Property="Background" Value="Transparent" />
+                        <Setter Property="BorderBrush" Value="Transparent" />
+                    </Style>
+
+                    <!-- Hover -->
+                    <Style Selector="Button:pointerover">
+                        <Setter Property="Background" Value="#10FFFFFF" /> <!-- faint glow -->
+                        <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}" />
+                        <Setter Property="BorderThickness" Value="1" />
+                    </Style>
+
+                    <!-- Pressed -->
+                    <Style Selector="Button:pressed">
+                        <Setter Property="Background" Value="#20FFFFFF" />
+                    </Style>
+                </Button.Styles>
+              </Button>
           </StackPanel>
         </TreeDataTemplate>
       </TreeView.DataTemplates>
