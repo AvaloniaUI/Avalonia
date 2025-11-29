@@ -1055,7 +1055,7 @@ namespace Avalonia.Controls.UnitTests
 
         private static ItemsControl CreateTarget(
             object? dataContext = null,
-            IBinding? displayMemberBinding = null,
+            BindingBase? displayMemberBinding = null,
             IList? items = null,
             IList? itemsSource = null,
             ControlTheme? itemContainerTheme = null,
@@ -1078,7 +1078,7 @@ namespace Avalonia.Controls.UnitTests
 
         private static T CreateTarget<T>(
             object? dataContext = null,
-            IBinding? displayMemberBinding = null,
+            BindingBase? displayMemberBinding = null,
             IList? items = null,
             IList? itemsSource = null,
             ControlTheme? itemContainerTheme = null,

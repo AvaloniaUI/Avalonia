@@ -291,7 +291,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             var viewModel = new TestViewModel { Content = "foo" };
             var dataContexts = new List<object>();
 
-            target.Bind(ContentPresenter.ContentProperty, (IBinding)new TemplateBinding(ContentControl.ContentProperty));
+            target.Bind(ContentPresenter.ContentProperty, (BindingBase)new TemplateBinding(ContentControl.ContentProperty));
             canvas.GetObservable(ContentPresenter.DataContextProperty).Subscribe(x => dataContexts.Add(x));
 
             host.DataTemplates.Add(new FuncDataTemplate<string>((_, __) => canvas));

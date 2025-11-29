@@ -1,7 +1,6 @@
 ﻿using Avalonia.Data;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.ExpressionNodes;
-using Avalonia.Markup.Parsers;
 using Avalonia.Utilities;
 using System;
 using System.Collections.Generic;
@@ -11,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Avalonia.UnitTests;
 using Xunit;
+using Avalonia.Data.Core.Parsers;
 
 namespace Avalonia.Markup.UnitTests.Parsers
 {

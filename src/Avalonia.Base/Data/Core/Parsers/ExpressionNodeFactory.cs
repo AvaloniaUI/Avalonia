@@ -7,7 +7,7 @@ using Avalonia.Data;
 using Avalonia.Data.Core.ExpressionNodes;
 using Avalonia.Data.Core.ExpressionNodes.Reflection;
 
-namespace Avalonia.Markup.Parsers
+namespace Avalonia.Data.Core.Parsers
 {
     /// <summary>
     /// Creates <see cref="ExpressionNode"/>s from a <see cref="BindingExpressionGrammar"/>.

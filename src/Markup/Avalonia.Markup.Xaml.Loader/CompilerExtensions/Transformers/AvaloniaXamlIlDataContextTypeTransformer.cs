@@ -140,7 +140,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             }
 
             IXamlType? itemsCollectionType = null;
-            if (context.GetAvaloniaTypes().IBinding.IsAssignableFrom(parentItemsValue.Type.GetClrType()))
+            if (context.GetAvaloniaTypes().BindingBase.IsAssignableFrom(parentItemsValue.Type.GetClrType()))
             {
                 if (parentItemsValue.Type.GetClrType().Equals(context.GetAvaloniaTypes().CompiledBindingExtension)
                     && parentItemsValue is XamlMarkupExtensionNode ext && ext.Value is XamlAstConstructableObjectNode parentItemsBinding)
@@ -175,7 +175,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
         private static AvaloniaXamlIlDataContextTypeMetadataNode ParseDataContext(AstTransformationContext context, XamlAstConstructableObjectNode on, XamlAstConstructableObjectNode obj)
         {
-            var bindingType = context.GetAvaloniaTypes().IBinding;
+            var bindingType = context.GetAvaloniaTypes().BindingBase;
             if (!bindingType.IsAssignableFrom(obj.Type.GetClrType()) && !obj.Type.GetClrType().Equals(context.GetAvaloniaTypes().ReflectionBindingExtension))
             {
                 return new AvaloniaXamlIlDataContextTypeMetadataNode(on, obj.Type.GetClrType());

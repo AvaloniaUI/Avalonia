@@ -283,7 +283,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
         public static void ApplyNonMatchingMarkupExtensionV1(object target, object property, IServiceProvider prov,
             object value)
         {
-            if (value is IBinding b)
+            if (value is BindingBase b)
             {
                 if (property is AvaloniaProperty p)
                     ((AvaloniaObject)target).Bind(p, b);
