@@ -44,7 +44,7 @@ internal class SimpleServerRenderResource : SimpleServerObject, IServerRenderRes
 
         if (field is IServerRenderResource oldChild)
             oldChild.RemoveObserver(this);
-        else if (field is IServerRenderResource[] oldChildren)
+        else if (field is IEnumerable<IServerRenderResource> oldChildren)
         {
             foreach (var ch in oldChildren)
                 ch?.RemoveObserver(this);
@@ -52,7 +52,7 @@ internal class SimpleServerRenderResource : SimpleServerObject, IServerRenderRes
         field = value;
         if (field is IServerRenderResource newChild)
             newChild.AddObserver(this);
-        else if (field is IServerRenderResource[] newChildren)
+        else if (field is IEnumerable<IServerRenderResource> newChildren)
         {
             foreach (var ch in newChildren)
                 ch.AddObserver(this);
@@ -148,7 +148,7 @@ internal class ServerRenderResource : ServerObject, IServerRenderResource, IDisp
 
         if (field is IServerRenderResource oldChild)
             oldChild.RemoveObserver(this);
-        else if (field is IServerRenderResource[] oldChildren)
+        else if (field is IEnumerable<IServerRenderResource> oldChildren)
         {
             foreach (var ch in oldChildren)
                 ch?.RemoveObserver(this);
@@ -156,7 +156,7 @@ internal class ServerRenderResource : ServerObject, IServerRenderResource, IDisp
         field = value;
         if (field is IServerRenderResource newChild)
             newChild.AddObserver(this);
-        else if (field is IServerRenderResource[] newChildren)
+        else if (field is IEnumerable<IServerRenderResource> newChildren)
         {
             foreach (var ch in newChildren)
                 ch.AddObserver(this);

@@ -11,26 +11,55 @@ internal partial class ServerCompositionBrush : IBrush
     ITransform? IBrush.Transform => Transform;
 }
 
-internal class ServerCompositionGradientBrush : ServerCompositionBrush, IGradientBrush
+internal partial class ServerCompositionGradientBrush : ServerCompositionBrush, IGradientBrush
 {
-
     internal ServerCompositionGradientBrush(ServerCompositor compositor) : base(compositor)
     {
 
     }
 
-    private readonly List<IGradientStop> _gradientStops = new();
-    public IReadOnlyList<IGradientStop> GradientStops => _gradientStops;
+    internal static CompositionProperty<List<IGradientStop>> s_IdOfGradientStopsProperty = CompositionProperty.Register<ServerCompositionGradientBrush, List<IGradientStop>>("GradientStops", obj => ((ServerCompositionGradientBrush)obj)._gradientStops, (obj, v) => ((ServerCompositionGradientBrush)obj)._gradientStops = v, null);
+    private List<IGradientStop> _gradientStops = new();
+    IReadOnlyList<IGradientStop> IGradientBrush.GradientStops => GradientStops;
+    public List<IGradientStop> GradientStops
+    {
+        get
+        {
+            return _gradientStops;
+        }
+
+        set
+        {
+            var changed = false;
+            if (_gradientStops != value)
+            {
+                OnGradientStopsChanging();
+                changed = true;
+            }
+
+            SetValue(s_IdOfGradientStopsProperty, ref _gradientStops, value);
+            if (changed)
+                OnGradientStopsChanged();
+        }
+    }
+
+    partial void OnGradientStopsChanged();
+    partial void OnGradientStopsChanging();
+
     public GradientSpreadMethod SpreadMethod { get; private set; }
 
     protected override void DeserializeChangesCore(BatchStreamReader reader, TimeSpan committedAt)
     {
         base.DeserializeChangesCore(reader, committedAt);
         SpreadMethod = reader.Read<GradientSpreadMethod>();
-        _gradientStops.Clear();
+        var stops = new List<IGradientStop>();
         var count = reader.Read<int>();
         for (var c = 0; c < count; c++)
-            _gradientStops.Add(reader.ReadObject<ImmutableGradientStop>());
+        {
+            var read = reader.ReadObject<IGradientStop>();
+            stops.Add(read);
+        }
+        GradientStops = stops;
     }
 }
 
