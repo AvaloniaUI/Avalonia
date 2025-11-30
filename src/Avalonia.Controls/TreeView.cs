@@ -663,12 +663,12 @@ namespace Avalonia.Controls
             return result;
         }
 
-        /// <inheritdoc cref="ItemSelectionEventTriggers.EventSelectionTrigger(InputElement, PointerEventArgs)"/>
+        /// <inheritdoc cref="ItemSelectionEventTriggers.ShouldTriggerSelection(Visual, PointerEventArgs)"/>
         /// <seealso cref="UpdateSelectionFromEvent"/>
-        protected virtual bool EventSelectionTrigger(InputElement selectable, PointerEventArgs eventArgs) => ItemSelectionEventTriggers.EventSelectionTrigger(selectable, eventArgs);
+        protected virtual bool ShouldTriggerSelection(Visual selectable, PointerEventArgs eventArgs) => ItemSelectionEventTriggers.ShouldTriggerSelection(selectable, eventArgs);
 
-        /// <inheritdoc cref="ItemSelectionEventTriggers.EventSelectionTrigger(InputElement, PointerEventArgs)"/>
-        protected virtual bool EventSelectionTrigger(InputElement selectable, KeyEventArgs eventArgs) => ItemSelectionEventTriggers.EventSelectionTrigger(selectable, eventArgs);
+        /// <inheritdoc cref="ItemSelectionEventTriggers.ShouldTriggerSelection(Visual, PointerEventArgs)"/>
+        protected virtual bool ShouldTriggerSelection(Visual selectable, KeyEventArgs eventArgs) => ItemSelectionEventTriggers.ShouldTriggerSelection(selectable, eventArgs);
 
         /// <inheritdoc cref="SelectingItemsControl.UpdateSelectionFromEvent"/>
         /// <seealso cref="SelectingItemsControl.UpdateSelectionFromEvent"/>
@@ -681,8 +681,8 @@ namespace Avalonia.Controls
 
             switch (eventArgs)
             {
-                case PointerEventArgs pointerEvent when EventSelectionTrigger(container, pointerEvent):
-                case KeyEventArgs keyEvent when EventSelectionTrigger(container, keyEvent):
+                case PointerEventArgs pointerEvent when ShouldTriggerSelection(container, pointerEvent):
+                case KeyEventArgs keyEvent when ShouldTriggerSelection(container, keyEvent):
                     UpdateSelectionFromContainer(container, true,
                         ItemSelectionEventTriggers.HasRangeSelectionModifier(container, eventArgs),
                         ItemSelectionEventTriggers.HasToggleSelectionModifier(container, eventArgs),

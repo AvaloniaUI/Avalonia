@@ -14,7 +14,7 @@ public static class ItemSelectionEventTriggers
     /// </summary>
     /// <param name="selectable">The selectable element which is processing the event.</param>
     /// <param name="eventArgs">The event to analyse.</param>
-    public static bool EventSelectionTrigger(InputElement selectable, PointerEventArgs eventArgs)
+    public static bool ShouldTriggerSelection(Visual selectable, PointerEventArgs eventArgs)
     {
         if (!IsPointerEventWithinBounds(selectable, eventArgs))
         {
@@ -48,13 +48,13 @@ public static class ItemSelectionEventTriggers
         };
     }
 
-    public static bool IsPointerEventWithinBounds(InputElement selectable, PointerEventArgs eventArgs) =>
+    internal static bool IsPointerEventWithinBounds(Visual selectable, PointerEventArgs eventArgs) =>
         new Rect(selectable.Bounds.Size).Contains(eventArgs.GetPosition(selectable));
 
-    /// <inheritdoc cref="EventSelectionTrigger(InputElement, PointerEventArgs)"/>
-    public static bool EventSelectionTrigger(InputElement selectable, KeyEventArgs eventArgs)
+    /// <inheritdoc cref="ShouldTriggerSelection(Visual, PointerEventArgs)"/>
+    public static bool ShouldTriggerSelection(Visual selectable, KeyEventArgs eventArgs)
     {
-        // Only accept space/enter key presses directly from the selectable
+        // Only accept space/enter key presses directly from the selectable, otherwise key input can become unpredictable
         return eventArgs.Source == selectable && eventArgs.Key is Key.Space or Key.Enter ? eventArgs.RoutedEvent == InputElement.KeyDownEvent : false;
     }
 
@@ -64,7 +64,7 @@ public static class ItemSelectionEventTriggers
     /// <param name="selectable">The selectable element which is processing the event.</param>
     /// <param name="eventArgs">The event to analyse.</param>
     /// <seealso cref="PlatformHotkeyConfiguration.SelectionModifiers"/>
-    public static bool HasRangeSelectionModifier(InputElement selectable, RoutedEventArgs eventArgs) => HasModifiers(eventArgs, Hotkeys(selectable)?.SelectionModifiers);
+    public static bool HasRangeSelectionModifier(Visual selectable, RoutedEventArgs eventArgs) => HasModifiers(eventArgs, Hotkeys(selectable)?.SelectionModifiers);
 
     /// <summary>
     /// Analyses an input event received by a selectable element, and determines whether the action should trigger toggle selection.
@@ -72,9 +72,9 @@ public static class ItemSelectionEventTriggers
     /// <param name="selectable">The selectable element which is processing the event.</param>
     /// <param name="eventArgs">The event to analyse.</param>
     /// <seealso cref="PlatformHotkeyConfiguration.CommandModifiers"/>
-    public static bool HasToggleSelectionModifier(InputElement selectable, RoutedEventArgs eventArgs) => HasModifiers(eventArgs, Hotkeys(selectable)?.CommandModifiers);
+    public static bool HasToggleSelectionModifier(Visual selectable, RoutedEventArgs eventArgs) => HasModifiers(eventArgs, Hotkeys(selectable)?.CommandModifiers);
 
-    private static PlatformHotkeyConfiguration? Hotkeys(InputElement element) =>
+    private static PlatformHotkeyConfiguration? Hotkeys(Visual element) =>
         (TopLevel.GetTopLevel(element)?.PlatformSettings ?? Application.Current?.PlatformSettings)?.HotkeyConfiguration;
 
     private static bool HasModifiers(RoutedEventArgs eventArgs, KeyModifiers? modifiers) =>
