@@ -86,7 +86,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                         .Ldloc(bloc.Local)
                         // TODO: provide anchor?
                         .Ldnull();
-                emitter.EmitCall(_types.ClassesBindMethod, true);
+                emitter.EmitCall(_types.BindClassMethod, true);
             }
 
             public IXamlType TargetType => _types.StyledElement;

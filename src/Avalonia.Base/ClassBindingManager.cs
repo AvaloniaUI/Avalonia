@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Avalonia.Data;
 using Avalonia.Reactive;
 
@@ -12,7 +13,44 @@ namespace Avalonia
         private static readonly Dictionary<string, AvaloniaProperty> s_RegisteredProperties =
             new Dictionary<string, AvaloniaProperty>();
 
-        public static IDisposable Bind(StyledElement target, string className, BindingBase source, object anchor)
+        public static readonly AttachedProperty<string> ClassesProperty =
+            AvaloniaProperty.RegisterAttached<StyledElement, string>(
+                "Classes", typeof(ClassBindingManager), "");
+
+        public static void SetClasses(StyledElement element, string value)
+        {
+            _ = element ?? throw new ArgumentNullException(nameof(element));
+            element.SetValue(ClassesProperty, value);
+        }
+
+        public static string GetClasses(StyledElement element)
+        {
+            _ = element ?? throw new ArgumentNullException(nameof(element));
+            return element.GetValue(ClassesProperty);
+        }
+
+        static ClassBindingManager()
+        {
+            ClassesProperty.Changed.AddClassHandler<StyledElement, string>(ClassesPropertyChanged);
+        }
+
+        private static void ClassesPropertyChanged(StyledElement sender, AvaloniaPropertyChangedEventArgs<string> e)
+        {
+            var newValue = e.GetNewValue<string?>() ?? "";
+            var newValues = newValue.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            var currentValues = sender.Classes.Where(c => !c.StartsWith(":", StringComparison.Ordinal));
+            if (currentValues.SequenceEqual(newValues))
+                return;
+
+            sender.Classes.Replace(newValues);
+        }
+
+        public static IDisposable BindClasses(StyledElement target, BindingBase source, object anchor)
+        {
+            return target.Bind(ClassesProperty, source);
+        }
+
+        public static IDisposable BindClass(StyledElement target, string className, BindingBase source, object anchor)
         {
             var prop = GetClassProperty(className);
             return target.Bind(prop, source);
