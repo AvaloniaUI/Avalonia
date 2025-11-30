@@ -215,7 +215,7 @@ namespace Avalonia.Base.UnitTests
             var ctx = CreateDrawingContext();
             control.Measure(Size.Infinity);
             control.Arrange(new Rect(control.DesiredSize));
-            ImmediateRenderer.Render(control, ctx);
+            ImmediateRenderer.Render(ctx, control);
         }
 
         private DrawingContext CreateDrawingContext()

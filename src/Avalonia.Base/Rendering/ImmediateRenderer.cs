@@ -17,7 +17,7 @@ internal class ImmediateRenderer
     /// </summary>
     /// <param name="visual">The visual.</param>
     /// <param name="context">The drawing context.</param>
-    public static void Render(Visual visual, DrawingContext context)
+    public static void Render(DrawingContext context, Visual visual)
         => Render(context, visual, new Rect(visual.Bounds.Size));
 
     public static void Render(DrawingContext context, Visual visual, Rect clipRect)
