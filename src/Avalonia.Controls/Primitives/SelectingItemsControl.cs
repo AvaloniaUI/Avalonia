@@ -865,20 +865,20 @@ namespace Avalonia.Controls.Primitives
             return false;
         }
         
-        /// <inheritdoc cref="ItemSelectionEventTriggers.EventSelectionTrigger(InputElement, PointerEventArgs)"/>
+        /// <inheritdoc cref="ItemSelectionEventTriggers.ShouldTriggerSelection(Visual, PointerEventArgs)"/>
         /// <seealso cref="UpdateSelectionFromEvent"/>
-        protected virtual bool EventSelectionTrigger(InputElement selectable, PointerEventArgs eventArgs) => ItemSelectionEventTriggers.EventSelectionTrigger(selectable, eventArgs);
+        protected virtual bool ShouldTriggerSelection(Visual selectable, PointerEventArgs eventArgs) => ItemSelectionEventTriggers.ShouldTriggerSelection(selectable, eventArgs);
         
-        /// <inheritdoc cref="ItemSelectionEventTriggers.EventSelectionTrigger(InputElement, KeyEventArgs)"/>
-        protected virtual bool EventSelectionTrigger(InputElement selectable, KeyEventArgs eventArgs) => ItemSelectionEventTriggers.EventSelectionTrigger(selectable, eventArgs);
+        /// <inheritdoc cref="ItemSelectionEventTriggers.ShouldTriggerSelection(Visual, KeyEventArgs)"/>
+        protected virtual bool ShouldTriggerSelection(Visual selectable, KeyEventArgs eventArgs) => ItemSelectionEventTriggers.ShouldTriggerSelection(selectable, eventArgs);
 
         /// <summary>
         /// Updates the selection based on an event that may have originated in a container that
         /// belongs to the control.
         /// </summary>
         /// <returns>True if the event was accepted and handled, otherwise false.</returns>
-        /// <seealso cref="EventSelectionTrigger(InputElement, PointerEventArgs)"/>
-        /// <seealso cref="EventSelectionTrigger(InputElement, KeyEventArgs)"/>
+        /// <seealso cref="ShouldTriggerSelection(Visual, PointerEventArgs)"/>
+        /// <seealso cref="ShouldTriggerSelection(Visual, KeyEventArgs)"/>
         public virtual bool UpdateSelectionFromEvent(Control container, RoutedEventArgs eventArgs)
         {
             if (eventArgs.Handled)
@@ -894,8 +894,8 @@ namespace Avalonia.Controls.Primitives
 
             switch (eventArgs)
             {
-                case PointerEventArgs pointerEvent when EventSelectionTrigger(container, pointerEvent):
-                case KeyEventArgs keyEvent when EventSelectionTrigger(container, keyEvent):
+                case PointerEventArgs pointerEvent when ShouldTriggerSelection(container, pointerEvent):
+                case KeyEventArgs keyEvent when ShouldTriggerSelection(container, keyEvent):
                 case GotFocusEventArgs:
                     UpdateSelection(containerIndex, true,
                         ItemSelectionEventTriggers.HasRangeSelectionModifier(container, eventArgs),

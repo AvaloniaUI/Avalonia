@@ -383,7 +383,7 @@ namespace Avalonia.Controls
             return false;
         }
 
-        protected override bool EventSelectionTrigger(InputElement selectable, PointerEventArgs eventArgs) =>
+        protected override bool ShouldTriggerSelection(Visual selectable, PointerEventArgs eventArgs) =>
             ItemSelectionEventTriggers.IsPointerEventWithinBounds(selectable, eventArgs) &&
             eventArgs is { Properties.PointerUpdateKind: PointerUpdateKind.LeftButtonReleased or PointerUpdateKind.RightButtonReleased } &&
             eventArgs.RoutedEvent == PointerReleasedEvent;
