@@ -15,6 +15,9 @@ namespace Avalonia
         public static IDisposable BindClass(this StyledElement target, string className, BindingBase source, object anchor) =>
             ClassBindingManager.BindClass(target, className, source, anchor);
 
+        public static void SetClass(this StyledElement target, string className, bool value) =>
+            ClassBindingManager.SetClass(target, className, value);
+
         public static AvaloniaProperty GetClassProperty(string className) =>
             ClassBindingManager.GetClassProperty(className);
 

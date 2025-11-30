@@ -102,6 +102,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType ColumnDefinitions { get; }
         public IXamlType Classes { get; }
         public IXamlMethod BindClassMethod { get; }
+        public IXamlMethod SetClassMethod { get; }
         public IXamlMethod BindClassesMethod { get; }
         public IXamlMethod SetClassesMethod { get; }
         public IXamlProperty StyledElementClassesProperty { get; }
@@ -302,8 +303,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 StyledElement.Properties.First(x => x.Name == "Classes" && x.PropertyType.Equals(Classes));
             BindClassMethod = cfg.TypeSystem.GetType("Avalonia.StyledElementExtensions")
                 .GetMethod("BindClass", IDisposable, false, StyledElement,
-                cfg.WellKnownTypes.String,
-                BindingBase, cfg.WellKnownTypes.Object);
+                cfg.WellKnownTypes.String, BindingBase, cfg.WellKnownTypes.Object);
+            SetClassMethod = cfg.TypeSystem.GetType("Avalonia.StyledElementExtensions")
+                .GetMethod("SetClass", cfg.WellKnownTypes.Void, false, StyledElement,
+                cfg.WellKnownTypes.String, cfg.WellKnownTypes.Boolean);
             BindClassesMethod = cfg.TypeSystem.GetType("Avalonia.StyledElementExtensions")
                 .GetMethod("BindClasses", IDisposable, false, StyledElement,
                 BindingBase, cfg.WellKnownTypes.Object);
