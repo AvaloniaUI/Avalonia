@@ -63,8 +63,13 @@ namespace Avalonia.Rendering.Composition.Server
             if (applyRenderOptions)
                 canvas.PushRenderOptions(RenderOptions);
             if (Effect != null)
-                canvas.PushEffect(Effect);
-            
+            {
+                var oldMatrix = canvas.Transform;
+                canvas.Transform = Matrix.Identity;
+                canvas.PushEffect(TransformedOwnContentBounds.ToRect(), Effect);
+                canvas.Transform = oldMatrix;
+            }
+
             if (Opacity != 1)
                 canvas.PushOpacity(Opacity, ClipToBounds ? boundsRect : null);
             if (ClipToBounds && !HandlesClipToBounds)
