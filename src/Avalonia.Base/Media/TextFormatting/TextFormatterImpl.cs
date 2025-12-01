@@ -165,7 +165,10 @@ namespace Avalonia.Media.TextFormatting
                             first.Add(split.First);
                         }
 
-                        second.Add(split.Second!);
+                        if (split.Second != null)
+                        {
+                            second.Add(split.Second);
+                        }
                     }
 
                     for (var j = 1; j < secondCount; j++)
@@ -1037,7 +1040,7 @@ namespace Avalonia.Media.TextFormatting
                     {
                         lineTextRuns.AddRange(textRuns);
                     }
-                  
+
                     lineTextRuns.AddRange(trailingWhitespaceRuns);
                 }
             }

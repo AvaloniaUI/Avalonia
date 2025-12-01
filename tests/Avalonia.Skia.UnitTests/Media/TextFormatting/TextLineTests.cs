@@ -2319,7 +2319,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 var typeface = Typeface.Default;
 
                 var defaultProperties = new GenericTextRunProperties(typeface);
-                var shaperOption = new TextShaperOptions(typeface.GlyphTypeface);
+
 
                 var textSource = new SingleBufferTextSource(text, defaultProperties);
 
@@ -2384,7 +2384,6 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             using (Start())
             {
                 var defaultProperties = new GenericTextRunProperties(typeface);
-                var shaperOption = new TextShaperOptions(typeface.GlyphTypeface);
 
                 var textSource = new SingleBufferTextSource(path, defaultProperties);
 
@@ -2452,7 +2451,6 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 var typeface = Typeface.Default;
 
                 var defaultProperties = new GenericTextRunProperties(typeface);
-                var shaperOption = new TextShaperOptions(typeface.GlyphTypeface);
 
                 var textSource = new SingleBufferTextSource(text, defaultProperties);
 

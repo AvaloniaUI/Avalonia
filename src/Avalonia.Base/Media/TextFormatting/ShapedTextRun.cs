@@ -186,7 +186,16 @@ namespace Avalonia.Media.TextFormatting
                 throw new InvalidOperationException("Split length too small.");
             }
 
-            var second = new ShapedTextRun(splitBuffer.Second!, Properties);
+            if (splitBuffer.Second == null)
+            {
+                // If there's no second part, return the entire run as the second in reversed mode, or throw
+                if (isReversed)
+                {
+                    return new SplitResult<ShapedTextRun>(null, first);
+                }
+                throw new InvalidOperationException($"Cannot split: requested length {length} consumes entire run.");
+            }
+            var second = new ShapedTextRun(splitBuffer.Second, Properties);
 
             if (isReversed)
             {
