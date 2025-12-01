@@ -39,9 +39,9 @@ namespace Avalonia.Media
 
             var objectPool = FormattingObjectPool.Instance;
 
-            var shapedSymbol = TextFormatter.CreateSymbol(Symbol, FlowDirection.LeftToRight);
+            var shapedSymbol = TextFormatter.CreateSymbol(Symbol, FlowDirection);
 
-            if (Width < shapedSymbol.GlyphRun.Bounds.Width)
+            if (Width < shapedSymbol.Size.Width)
             {
                 // Nothing to collapse
                 return null;
@@ -70,7 +70,7 @@ namespace Avalonia.Media
                 }
 
                 // Segment ranges
-                var segments = new List<(int Start, int Length, double Width, bool IsSeperator)>();
+                var segments = new List<(int Start, int Length, double Width, bool IsSeparator)>();
                 var candidateSegmentIndices = new List<int>();
                 var globalIndex = 0;
                 var currentSegStart = 0;
@@ -156,9 +156,9 @@ namespace Avalonia.Media
                 // Measure segment widths 
                 for (int i = 0; i < segments.Count; i++)
                 {
-                    var (Start, Length, SegmentWidth, IsSeperator) = segments[i];
+                    var (Start, Length, SegmentWidth, IsSeparator) = segments[i];
 
-                    if (!IsSeperator)
+                    if (!IsSeparator)
                     {
                         candidateSegmentIndices.Add(i);
                     }
@@ -175,7 +175,7 @@ namespace Avalonia.Media
 
                 for (int i = 0; i < candidateSegmentIndices.Count; ++i)
                 {
-                    var (Start, Length, SegmentWidth, IsSeperator) = segments[candidateSegmentIndices[i]];
+                    var (Start, Length, SegmentWidth, IsSeparator) = segments[candidateSegmentIndices[i]];
                     var segCenter = Start + Length / 2;
                     var dist = Math.Abs(segCenter - midChar);
 
@@ -189,116 +189,120 @@ namespace Avalonia.Media
                 // Expand windows around centerCandidateIdx, up to _maxCollapsedSegments segments.
                 var candidateCount = candidateSegmentIndices.Count;
 
-                for (int windowSize = 1; windowSize <= candidateCount; windowSize++)
+                if (candidateCount > 0)
                 {
-                    // For a given windowSize, try all windows of that size centered as close as possible to centerCandidateIdx.
-                    // Compute start index of window such that center is as near as possible.
-                    int half = (windowSize - 1) / 2;
-                    int start = centerCandidateIdx - half;
-                    // For even window sizes, prefer left-leaning start, also try shifting the window across the center.
-                    var windowStarts = new List<int>();
-
-                    // clamp start range
-                    int minStart = Math.Max(0, centerCandidateIdx - (windowSize - 1));
-                    int maxStart = Math.Min(candidateCount - windowSize, centerCandidateIdx + (windowSize - 1));
-
-                    // Left side first
-                    for (int s = start; s >= minStart; s--)
+                    for (int windowSize = 1; windowSize <= candidateCount; windowSize++)
                     {
-                        windowStarts.Add(s);
-                    }
+                        // For a given windowSize, try all windows of that size centered as close as possible to centerCandidateIdx.
+                        // Compute start index of window such that center is as near as possible.
+                        int half = (windowSize - 1) / 2;
+                        int start = centerCandidateIdx - half;
+                        // For even window sizes, prefer left-leaning start, also try shifting the window across the center.
+                        var windowStarts = new List<int>();
 
-                    // Right side next
-                    for (int s = start + 1; s <= maxStart; s++)
-                    {
-                        windowStarts.Add(s);
-                    }
+                        // clamp start range
+                        int minStart = Math.Max(0, centerCandidateIdx - (windowSize - 1));
+                        int maxStart = Math.Min(candidateCount - windowSize, centerCandidateIdx + (windowSize - 1));
 
-                    foreach (var windowStart in windowStarts)
-                    {
-                        if (windowStart < 0 || windowStart + windowSize > candidateCount)
+                        // Left side first
+                        for (int s = start; s >= minStart; s--)
                         {
-                            continue;
+                            windowStarts.Add(s);
                         }
 
-                        int leftCand = windowStart;
-                        int rightCand = windowStart + windowSize - 1;
-
-                        // Map candidate window to segments range (in segments list)
-                        int segStartIndex = candidateSegmentIndices[leftCand];
-                        int segEndIndex = candidateSegmentIndices[rightCand];
-
-                        // Ensure that we leave at least one character on each side (prefer middle-only removal)
-                        var leftRemaining = segments[segStartIndex].Start;
-                        var rightRemaining = globalIndex - (segments[segEndIndex].Start + segments[segEndIndex].Length);
-
-                        if (leftRemaining <= 0 || rightRemaining <= 0)
+                        // Right side next
+                        for (int s = start + 1; s <= maxStart; s++)
                         {
-                            continue;
+                            windowStarts.Add(s);
                         }
 
-                        var trimmedWidth = prefix[segEndIndex + 1] - prefix[segStartIndex];
-
-                        if (totalWidth - trimmedWidth + shapedSymbol.Size.Width <= Width)
+                        foreach (var windowStart in windowStarts)
                         {
-                            // perform split using character indices
-                            var removeStart = segments[segStartIndex].Start;
-                            var removeLength = (segments[segEndIndex].Start + segments[segEndIndex].Length) - removeStart;
-
-                            FormattingObjectPool.RentedList<TextRun>? first = null;
-                            FormattingObjectPool.RentedList<TextRun>? remainder = null;
-                            FormattingObjectPool.RentedList<TextRun>? middle = null;
-                            FormattingObjectPool.RentedList<TextRun>? last = null;
-
-                            try
+                            if (windowStart < 0 || windowStart + windowSize > candidateCount)
                             {
-                                (first, remainder) = TextFormatterImpl.SplitTextRuns(logicalRuns, removeStart, objectPool);
-
-                                if (remainder == null)
-                                {
-                                    // We reached the end
-                                    return null;
-                                }
-
-                                (middle, last) = TextFormatterImpl.SplitTextRuns(remainder, removeLength, objectPool);
-
-                                // Build resulting runs
-                                // first + shapedSymbol + last
-                                var result = new TextRun[(first?.Count ?? 0) + 1 + (last?.Count ?? 0)];
-                                var index = 0;
-
-                                if (first != null)
-                                {
-                                    foreach (var run in first)
-                                    {
-                                        result[index++] = run;
-                                    }
-                                }
-
-                                result[index++] = shapedSymbol;
-
-                                if (last != null)
-                                {
-                                    foreach (var run in last)
-                                    {
-                                        result[index++] = run;
-                                    }
-                                }
-
-                                return result;
+                                continue;
                             }
-                            finally
+
+                            int leftCand = windowStart;
+                            int rightCand = windowStart + windowSize - 1;
+
+                            // Map candidate window to segments range (in segments list)
+                            int segStartIndex = candidateSegmentIndices[leftCand];
+                            int segEndIndex = candidateSegmentIndices[rightCand];
+
+                            // Ensure that we leave at least one character on each side (prefer middle-only removal)
+                            var leftRemaining = segments[segStartIndex].Start;
+                            var rightRemaining = globalIndex - (segments[segEndIndex].Start + segments[segEndIndex].Length);
+
+                            if (leftRemaining <= 0 || rightRemaining <= 0)
                             {
-                                objectPool.TextRunLists.Return(ref first);
-                                objectPool.TextRunLists.Return(ref remainder);
-                                objectPool.TextRunLists.Return(ref middle);
-                                objectPool.TextRunLists.Return(ref last);
+                                continue;
+                            }
+
+                            var trimmedWidth = prefix[segEndIndex + 1] - prefix[segStartIndex];
+
+                            if (totalWidth - trimmedWidth + shapedSymbol.Size.Width <= Width)
+                            {
+                                // perform split using character indices
+                                var removeStart = segments[segStartIndex].Start;
+                                var removeLength = (segments[segEndIndex].Start + segments[segEndIndex].Length) - removeStart;
+
+                                FormattingObjectPool.RentedList<TextRun>? first = null;
+                                FormattingObjectPool.RentedList<TextRun>? remainder = null;
+                                FormattingObjectPool.RentedList<TextRun>? middle = null;
+                                FormattingObjectPool.RentedList<TextRun>? last = null;
+
+                                try
+                                {
+                                    (first, remainder) = TextFormatterImpl.SplitTextRuns(logicalRuns, removeStart, objectPool);
+
+                                    if (remainder == null)
+                                    {
+                                        // We reached the end
+                                        return null;
+                                    }
+
+                                    (middle, last) = TextFormatterImpl.SplitTextRuns(remainder, removeLength, objectPool);
+
+                                    // Build resulting runs
+                                    // first + shapedSymbol + last
+                                    var result = new TextRun[(first?.Count ?? 0) + 1 + (last?.Count ?? 0)];
+                                    var index = 0;
+
+                                    if (first != null)
+                                    {
+                                        foreach (var run in first)
+                                        {
+                                            result[index++] = run;
+                                        }
+                                    }
+
+                                    result[index++] = shapedSymbol;
+
+                                    if (last != null)
+                                    {
+                                        foreach (var run in last)
+                                        {
+                                            result[index++] = run;
+                                        }
+                                    }
+
+                                    return result;
+                                }
+                                finally
+                                {
+                                    // Return rented lists
+                                    objectPool.TextRunLists.Return(ref first);
+                                    objectPool.TextRunLists.Return(ref remainder);
+                                    objectPool.TextRunLists.Return(ref middle);
+                                    objectPool.TextRunLists.Return(ref last);
+                                }
                             }
                         }
                     }
                 }
 
-                // Fallback
+                // Fallback - try to trim at segment boundaries from start
                 var currentLength = 0;
                 var remainingWidth = textLine.WidthIncludingTrailingWhitespace;
 
@@ -344,19 +348,10 @@ namespace Avalonia.Media
                             }
                         }
 
-                        var runCount = /*(first?.Count ?? 0) + */ (trimmedRun != null ? 1 : 0) + 1 + remainingRunCount;
+                        var runCount = (trimmedRun != null ? 1 : 0) + 1 + remainingRunCount;
 
                         var result = new TextRun[runCount];
                         var index = 0;
-
-                        // Append first runs
-                        //if (first != null)
-                        //{
-                        //    foreach (var run in first)
-                        //    {
-                        //        result[index++] = run;
-                        //    }
-                        //}
 
                         // Append symbol
                         result[index++] = shapedSymbol;
@@ -383,6 +378,7 @@ namespace Avalonia.Media
                     }
                     finally
                     {
+                        // Return rented lists
                         objectPool.TextRunLists.Return(ref first);
                         objectPool.TextRunLists.Return(ref second);
                     }
@@ -525,8 +521,8 @@ namespace Avalonia.Media
                         }
                     case DrawableTextRun d:
                         {
-                            // A drawable run can't be split; if any overlap exists, count its full width.
-                            if (overlapLen > 0)
+                            // For drawable runs, count full width they fully overlap
+                            if (overlapLen >= d.Length)
                             {
                                 width += d.Size.Width;
                             }
