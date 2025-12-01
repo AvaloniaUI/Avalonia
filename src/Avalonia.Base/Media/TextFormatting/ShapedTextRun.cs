@@ -170,23 +170,22 @@ namespace Avalonia.Media.TextFormatting
 
                 length = Length - length;
             }
-#if DEBUG
+
             if (length == 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(length), "length must be greater than zero.");
             }
-#endif          
+       
             var splitBuffer = ShapedBuffer.Split(length);
 
-            var first = new ShapedTextRun(splitBuffer.First, Properties);
-
-#if DEBUG
+            // first cannot be null as length > 0
+            var first = new ShapedTextRun(splitBuffer.First!, Properties);
 
             if (first.Length < length)
             {
                 throw new InvalidOperationException("Split length too small.");
             }
-#endif
+
             var second = new ShapedTextRun(splitBuffer.Second!, Properties);
 
             if (isReversed)
