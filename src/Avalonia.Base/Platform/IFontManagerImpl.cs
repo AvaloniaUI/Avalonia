@@ -28,13 +28,14 @@ namespace Avalonia.Platform
         /// <param name="fontStyle">The font style.</param>
         /// <param name="fontWeight">The font weight.</param>
         /// <param name="fontStretch">The font stretch.</param>
+        /// <param name="familyName">The family name. This is optional and can be used as an initial hint for matching.</param>
         /// <param name="culture">The culture.</param>
         /// <param name="platformTypeface">The matching platform typeface.</param>
         /// <returns>
         ///     <c>True</c>, if the <see cref="IFontManagerImpl"/> could match the character to specified parameters, <c>False</c> otherwise.
         /// </returns>
         bool TryMatchCharacter(int codepoint, FontStyle fontStyle,
-            FontWeight fontWeight, FontStretch fontStretch, CultureInfo? culture, [NotNullWhen(returnValue: true)] out IPlatformTypeface? platformTypeface);
+            FontWeight fontWeight, FontStretch fontStretch, string? familyName, CultureInfo? culture, [NotNullWhen(returnValue: true)] out IPlatformTypeface? platformTypeface);
 
         /// <summary>
         ///     Tries to get a glyph typeface for specified parameters.

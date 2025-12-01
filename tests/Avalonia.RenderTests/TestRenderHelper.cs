@@ -22,18 +22,9 @@ using Avalonia.Utilities;
 using SixLabors.ImageSharp.PixelFormats;
 using Image = SixLabors.ImageSharp.Image;
 using Avalonia.Harfbuzz;
-
-#if AVALONIA_SKIA
 using Avalonia.Skia;
-#else
-using Avalonia.Direct2D1;
-#endif
 
-#if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests;
-#else
-namespace Avalonia.Direct2D1.RenderTests;
-#endif
 
 static class TestRenderHelper
 {
@@ -42,11 +33,7 @@ static class TestRenderHelper
 
     static TestRenderHelper()
     {
-#if AVALONIA_SKIA
         SkiaPlatform.Initialize();
-#else
-            Direct2D1Platform.Initialize();
-#endif
         AvaloniaLocator.CurrentMutable
             .Bind<IDispatcherImpl>()
             .ToConstant(s_dispatcherImpl);

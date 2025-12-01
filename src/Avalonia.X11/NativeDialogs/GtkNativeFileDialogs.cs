@@ -40,7 +40,7 @@ namespace Avalonia.X11.NativeDialogs
             return await await RunOnGlibThread(async () =>
             {
                 var (files, _) = await ShowDialog(options.Title, _window, GtkFileChooserAction.Open,
-                        options.AllowMultiple, options.SuggestedStartLocation, null, options.FileTypeFilter, null, false)
+                        options.AllowMultiple, options.SuggestedStartLocation, null, options.SuggestedFileType, options.FileTypeFilter, null, false)
                     .ConfigureAwait(false);
                 return files?.Where(f => File.Exists(f)).Select(f => new BclStorageFile(new FileInfo(f))).ToArray() ??
                        Array.Empty<IStorageFile>();
@@ -53,7 +53,7 @@ namespace Avalonia.X11.NativeDialogs
             {
                 var (folders, _) = await ShowDialog(options.Title, _window, GtkFileChooserAction.SelectFolder,
                         options.AllowMultiple, options.SuggestedStartLocation, null,
-                        null, null, false)
+                        null, null, null, false)
                     .ConfigureAwait(false);
                 return folders?.Select(f => new BclStorageFolder(new DirectoryInfo(f))).ToArray() ??
                        Array.Empty<IStorageFolder>();
@@ -65,7 +65,7 @@ namespace Avalonia.X11.NativeDialogs
             return await await RunOnGlibThread(async () =>
             {
                 var (files, _) = await ShowDialog(options.Title, _window, GtkFileChooserAction.Save,
-                        false, options.SuggestedStartLocation, options.SuggestedFileName, options.FileTypeChoices,
+                        false, options.SuggestedStartLocation, options.SuggestedFileName,options.SuggestedFileType, options.FileTypeChoices,
                         options.DefaultExtension, options.ShowOverwritePrompt ?? false)
                     .ConfigureAwait(false);
                 return files?.FirstOrDefault() is { } file
@@ -79,7 +79,7 @@ namespace Avalonia.X11.NativeDialogs
             return await await RunOnGlibThread(async () =>
             {
                 var (files, selectedFilter) = await ShowDialog(options.Title, _window, GtkFileChooserAction.Save,
-                        false, options.SuggestedStartLocation, options.SuggestedFileName, options.FileTypeChoices,
+                        false, options.SuggestedStartLocation, options.SuggestedFileName, options.SuggestedFileType, options.FileTypeChoices, 
                         options.DefaultExtension, options.ShowOverwritePrompt ?? false)
                     .ConfigureAwait(false);
                 var file = files?.FirstOrDefault() is { } path
@@ -92,7 +92,7 @@ namespace Avalonia.X11.NativeDialogs
 
         private unsafe Task<(string[]? files, FilePickerFileType? selectedFilter)> ShowDialog(string? title,
             IWindowImpl parent, GtkFileChooserAction action,
-            bool multiSelect, IStorageFolder? initialFolder, string? initialFileName,
+            bool multiSelect, IStorageFolder? initialFolder, string? initialFileName, FilePickerFileType? suggestedFileType,
             IEnumerable<FilePickerFileType>? filters, string? defaultExtension, bool overwritePrompt)
         {
             IntPtr dlg;
@@ -165,8 +165,14 @@ namespace Avalonia.X11.NativeDialogs
                         }
 
                         gtk_file_chooser_add_filter(dlg, filter);
+
+                        if (suggestedFileType != null && suggestedFileType == f)
+                        {
+                            gtk_file_chooser_set_filter(dlg, filter);
+                        }
                     }
                 }
+
             }
 
             disposables = new List<IDisposable>

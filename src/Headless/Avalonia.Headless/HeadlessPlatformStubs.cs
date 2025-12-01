@@ -171,6 +171,7 @@ internal class HeadlessFontManagerStub : IFontManagerImpl
         FontStyle fontStyle,
         FontWeight fontWeight,
         FontStretch fontStretch,
+        string? familyName,
         CultureInfo? culture,
         out IPlatformTypeface platformTypeface)
     {
@@ -253,7 +254,8 @@ internal class HeadlessFontManagerWithMultipleSystemFontsStub : IFontManagerImpl
         throw new NotImplementedException();
     }
 
-    public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight, FontStretch fontStretch, CultureInfo? culture, [NotNullWhen(true)] out IPlatformTypeface? platformTypeface)
+    public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight, FontStretch fontStretch, 
+        string? familyName, CultureInfo? culture, [NotNullWhen(true)] out IPlatformTypeface? platformTypeface)
     {
         throw new NotImplementedException();
     }

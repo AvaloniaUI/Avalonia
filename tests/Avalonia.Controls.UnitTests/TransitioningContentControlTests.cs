@@ -9,6 +9,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Harfbuzz;
 using Avalonia.Headless;
 using Avalonia.Layout;
+using Avalonia.Platform;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
@@ -326,7 +327,8 @@ namespace Avalonia.Controls.UnitTests
                 TestServices.MockThreadingInterface.With(
                     fontManagerImpl: new HeadlessFontManagerStub(),
                     renderInterface: new HeadlessPlatformRenderInterface(),
-                    textShaperImpl: new HarfBuzzTextShaper()));
+                    textShaperImpl: new HarfBuzzTextShaper(),
+                    assetLoader: new StandardAssetLoader()));
         }
 
         private static (TransitioningContentControl, TestTransition) CreateTarget(object content)

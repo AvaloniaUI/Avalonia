@@ -16,6 +16,7 @@ using Avalonia.Input.Platform;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml.Templates;
+using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
@@ -1465,7 +1466,7 @@ namespace Avalonia.Controls.UnitTests
             var target = CreateTarget(
                 data: data,
                 expandAll: false,
-                itemContainerTheme: itemTheme,
+                itemContainerTheme: itemTheme, 
                 multiSelect: true);
 
             var rootContainer = Assert.IsType<TreeViewItem>(target.ContainerFromIndex(0));
@@ -1842,7 +1843,8 @@ namespace Avalonia.Controls.UnitTests
                     keyboardNavigation: () => new KeyboardNavigationHandler(),
                     inputManager: new InputManager(),
                     renderInterface: new HeadlessPlatformRenderInterface(),
-                    textShaperImpl: new HarfBuzzTextShaper()));
+                    textShaperImpl: new HarfBuzzTextShaper(),
+                    assetLoader: new StandardAssetLoader()));
         }
 
         private class Node : NotifyingBase

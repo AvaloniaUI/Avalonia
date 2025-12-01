@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Text;
+using Avalonia.Utilities;
 
 namespace Avalonia.Media
 {
@@ -126,6 +128,82 @@ namespace Avalonia.Media
                 hashCode = (hashCode * 397) ^ (int)Stretch;
                 return hashCode;
             }
+        }
+
+        /// <summary>
+        /// Normalizes the typeface by extracting and removing style, weight, and stretch information from the font
+        /// family name, and returns a new <see cref="Typeface"/> instance with the updated properties.
+        /// </summary>
+        /// <remarks>This method analyzes the font family name to identify and extract any style, weight,
+        /// or stretch information embedded within it. If such information is found, it is removed from the family name,
+        /// and the corresponding properties of the returned <see cref="Typeface"/> are updated accordingly. If no such
+        /// information is found, the method returns the current instance without modification.</remarks>
+        /// <param name="normalizedFamilyName">When this method returns, contains the normalized font family name with style, weight, and stretch
+        /// information removed. This parameter is passed uninitialized.</param>
+        /// <returns>A new <see cref="Typeface"/> instance with the updated <see cref="FontStyle"/>, <see cref="FontWeight"/>,
+        /// and <see cref="FontStretch"/> properties, or the current instance if no normalization was performed.</returns>
+        public Typeface Normalize(out string normalizedFamilyName)
+        {
+            normalizedFamilyName = FontFamily.FamilyNames.PrimaryFamilyName;
+
+            //Return early if no separator is present.
+            if (!normalizedFamilyName.Contains(' '))
+            {
+                return this;
+            }
+
+            var style = Style;
+            var weight = Weight;
+            var stretch = Stretch;
+
+            StringBuilder? normalizedFamilyNameBuilder = null;
+            var totalCharsRemoved = 0;
+
+            var tokenizer = new SpanStringTokenizer(normalizedFamilyName, ' ');
+
+            // Skip initial family name.
+            tokenizer.ReadSpan();
+
+            while (tokenizer.TryReadSpan(out var token))
+            {
+                // Don't try to match numbers.
+                if (new SpanStringTokenizer(token).TryReadInt32(out _))
+                {
+                    continue;
+                }
+
+                // Try match with font style, weight or stretch and update accordingly.
+                var match = false;
+                if (EnumHelper.TryParse<FontStyle>(token, true, out var newStyle))
+                {
+                    style = newStyle;
+                    match = true;
+                }
+                else if (EnumHelper.TryParse<FontWeight>(token, true, out var newWeight))
+                {
+                    weight = newWeight;
+                    match = true;
+                }
+                else if (EnumHelper.TryParse<FontStretch>(token, true, out var newStretch))
+                {
+                    stretch = newStretch;
+                    match = true;
+                }
+
+                if (match)
+                {
+                    // Carve out matched word from the normalized name.
+                    normalizedFamilyNameBuilder ??= new StringBuilder(normalizedFamilyName);
+                    normalizedFamilyNameBuilder.Remove(tokenizer.CurrentTokenIndex - totalCharsRemoved, token.Length);
+                    totalCharsRemoved += token.Length;
+                }
+            }
+
+            // Get rid of any trailing spaces.
+            normalizedFamilyName = (normalizedFamilyNameBuilder?.ToString() ?? normalizedFamilyName).TrimEnd();
+
+            //Preserve old font source
+            return new Typeface(FontFamily, style, weight, stretch);
         }
     }
 }

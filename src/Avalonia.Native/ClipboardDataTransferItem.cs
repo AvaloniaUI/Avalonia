@@ -1,10 +1,12 @@
 #nullable enable
 
 using System;
+using System.IO;
 using System.Text;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 
 namespace Avalonia.Native;
@@ -36,6 +38,9 @@ internal sealed class ClipboardDataTransferItem(ClipboardReadSession session, in
         if (DataFormat.File.Equals(format))
             return TryGetFile(nativeFormat);
 
+        if (DataFormat.Bitmap.Equals(format))
+            return TryGetBitmap(nativeFormat);
+
         if (format is DataFormat<string>)
         {
             if (TryGetString(nativeFormat) is { } stringValue)
@@ -57,6 +62,12 @@ internal sealed class ClipboardDataTransferItem(ClipboardReadSession session, in
         return null;
     }
 
+    private Bitmap? TryGetBitmap(string nativeFormat)
+    {
+        using var bytes = _session.GetItemValueAsBytes(_itemIndex, nativeFormat);
+        return bytes is null ? null : new Bitmap(new MemoryStream(bytes.Bytes, false));
+    }
+    
     private string? TryGetString(string nativeFormat)
     {
         using var text = _session.GetItemValueAsString(_itemIndex, nativeFormat);

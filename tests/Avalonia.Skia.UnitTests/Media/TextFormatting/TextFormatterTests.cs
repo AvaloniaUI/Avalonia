@@ -6,6 +6,7 @@ using System.Linq;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
+using Avalonia.Platform;
 using Avalonia.UnitTests;
 using Avalonia.Utilities;
 using Xunit;
@@ -1351,8 +1352,17 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             var disposable = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface
                 .With(renderInterface: new PlatformRenderInterface()));
 
+            var customFontManagerImpl = new CustomFontManagerImpl();
+
             AvaloniaLocator.CurrentMutable
-                .Bind<FontManager>().ToConstant(new FontManager(new CustomFontManagerImpl()));
+                .Bind<IFontManagerImpl>().ToConstant(customFontManagerImpl);
+
+            var fontManager = new FontManager(customFontManagerImpl);
+
+            AvaloniaLocator.CurrentMutable
+                .Bind<FontManager>().ToConstant(fontManager);
+
+            fontManager.AddFontCollection(customFontManagerImpl.SystemFonts);
 
             return disposable;
         }

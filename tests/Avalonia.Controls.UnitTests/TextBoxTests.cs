@@ -750,7 +750,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void TextBox_CaretIndex_Persists_When_Focus_Lost()
         {
-            using (UnitTestApplication.Start(FocusServices))
+            using (UnitTestApplication.Start(FocusServices.With(assetLoader: new StandardAssetLoader())))
             {
                 var target1 = new TextBox
                 {
@@ -2130,6 +2130,25 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Backspace_Should_Delete_CRLFNewline_Character_At_Once()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+            var target = new TextBox
+            {
+                Template = CreateTemplate(),
+                Text = $"First\r\nSecond",
+                CaretIndex = 7
+            };
+            target.ApplyTemplate();
+
+            // (First\r\nSecond)
+            RaiseKeyEvent(target, Key.Back, KeyModifiers.None);
+            // (FirstSecond)
+
+            Assert.Equal("FirstSecond", target.Text);
+        }
+
         private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
             keyboardDevice: () => new KeyboardDevice(),
             keyboardNavigation: () => new KeyboardNavigationHandler(),
@@ -2141,8 +2160,9 @@ namespace Avalonia.Controls.UnitTests
         private static TestServices Services => TestServices.MockThreadingInterface.With(
             standardCursorFactory: Mock.Of<ICursorFactory>(),
             renderInterface: new HeadlessPlatformRenderInterface(),
-            textShaperImpl: new HarfBuzzTextShaper(),
-            fontManagerImpl: new HeadlessFontManagerStub());
+            textShaperImpl: new HarfBuzzTextShaper(), 
+            fontManagerImpl: new HeadlessFontManagerStub(),
+            assetLoader: new StandardAssetLoader());
 
         internal static IControlTemplate CreateTemplate()
         {

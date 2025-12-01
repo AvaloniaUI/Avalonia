@@ -31,8 +31,6 @@ namespace Avalonia.Media
         {
             PlatformImpl = platformImpl;
 
-            AddFontCollection(new SystemFontCollection(this));
-
             var options = AvaloniaLocator.Current.GetService<FontManagerOptions>();
             _fontFallbacks = options?.FontFallbacks;
             _fontFamilyMappings = options?.FontFamilyMappings;
@@ -76,7 +74,19 @@ namespace Avalonia.Media
         /// <summary>
         ///     Get all system fonts.
         /// </summary>
-        public IFontCollection SystemFonts => _fontCollections[SystemFontsKey];
+        public IFontCollection SystemFonts
+        {
+            get
+            {
+                if (TryGetFontCollection(SystemFontsKey, out var fontCollection))
+                {
+                    return fontCollection;
+                }
+
+                // Fallback to an empty system font collection
+                return new EmptySystemFontCollection();
+            }
+        }
 
         internal IFontManagerImpl PlatformImpl { get; }
 
@@ -93,11 +103,12 @@ namespace Avalonia.Media
             glyphTypeface = null;
 
             var fontFamily = GetMappedFontFamily(typeface.FontFamily);
-            
+
             if (typeface.FontFamily.Name == FontFamily.DefaultFontFamilyName)
             {
                 return TryGetGlyphTypeface(new Typeface(DefaultFontFamily, typeface.Style, typeface.Weight, typeface.Stretch), out glyphTypeface);
             }
+
 
             if (fontFamily.Key != null)
             {
@@ -167,7 +178,7 @@ namespace Avalonia.Media
 
             FontFamily GetMappedFontFamily(FontFamily fontFamily)
             {
-                if (_fontFamilyMappings == null ||!_fontFamilyMappings.TryGetValue(fontFamily.FamilyNames.PrimaryFamilyName, out var mappedFontFamily))
+                if (_fontFamilyMappings == null || !_fontFamilyMappings.TryGetValue(fontFamily.FamilyNames.PrimaryFamilyName, out var mappedFontFamily))
                 {
                     return fontFamily;
                 }
@@ -222,8 +233,6 @@ namespace Avalonia.Media
 
                 return fontCollection;
             });
-
-            fontCollection.Initialize(PlatformImpl);
         }
 
         /// <summary>
@@ -288,7 +297,7 @@ namespace Avalonia.Media
 
                         if (TryGetFontCollection(source, out var fontCollection) &&
                             // With composite fonts we need to first check if the font collection contains the family if not we skip it
-                            fontCollection.TryGetGlyphTypeface(familyName, fontStyle, fontWeight, fontStretch, out _) && 
+                            fontCollection.TryGetGlyphTypeface(familyName, fontStyle, fontWeight, fontStretch, out _) &&
                             fontCollection.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, familyName, culture, out typeface))
                         {
                             if (typeface.FontFamily.Name == DefaultFontFamily.Name && i + 1 < compositeKey.Keys.Count)
@@ -324,24 +333,18 @@ namespace Avalonia.Media
 
             if (key == null)
             {
-                if(SystemFonts is IFontCollection2 fontCollection2)
+                if (SystemFonts.TryGetFamilyTypefaces(fontFamily.Name, out var familyTypefaces))
                 {
-                    if (fontCollection2.TryGetFamilyTypefaces(fontFamily.Name, out var familyTypefaces))
-                    {
-                        return familyTypefaces;
-                    }
+                    return familyTypefaces;
                 }
             }
             else
             {
                 var source = key.Source.EnsureAbsolute(key.BaseUri);
 
-                if (TryGetFontCollection(source, out var fontCollection) && fontCollection is IFontCollection2 fontCollection2)
+                if (TryGetFontCollection(source, out var fontCollection) && fontCollection.TryGetFamilyTypefaces(fontFamily.Name, out var familyTypefaces))
                 {
-                    if (fontCollection2.TryGetFamilyTypefaces(fontFamily.Name, out var familyTypefaces))
-                    {
-                        return familyTypefaces;
-                    }
+                    return familyTypefaces;
                 }
             }
 
@@ -357,15 +360,23 @@ namespace Avalonia.Media
                 source = SystemFontsKey;
             }
 
-            if (!_fontCollections.TryGetValue(source, out fontCollection) && (source.IsAbsoluteResm() || source.IsAvares()))
+            if (!_fontCollections.TryGetValue(source, out fontCollection))
             {
-                var embeddedFonts = new EmbeddedFontCollection(source, source);
-
-                embeddedFonts.Initialize(PlatformImpl);
-
-                if (embeddedFonts.Count > 0 && _fontCollections.TryAdd(source, embeddedFonts))
+                if (source == SystemFontsKey)
                 {
-                    fontCollection = embeddedFonts;
+                    fontCollection = new SystemFontCollection(PlatformImpl);
+                }
+                else
+                {
+                    if (source.IsAbsoluteResm() || source.IsAvares())
+                    {
+                        fontCollection = new EmbeddedFontCollection(source, source);
+                    }
+                }
+
+                if (fontCollection != null)
+                {
+                    return _fontCollections.TryAdd(fontCollection.Key, fontCollection);
                 }
             }
 
