@@ -469,4 +469,16 @@
     <Left>baseline/Avalonia/lib/netstandard2.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/netstandard2.0/Avalonia.Base.dll</Right>
   </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Platform.IDrawingContextImplWithEffects.PopEffect</Target>
+    <Left>baseline/netstandard2.0/Avalonia.Base.dll</Left>
+    <Right>target/netstandard2.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Platform.IDrawingContextImplWithEffects.PushEffect(Avalonia.Media.IEffect)</Target>
+    <Left>baseline/netstandard2.0/Avalonia.Base.dll</Left>
+    <Right>target/netstandard2.0/Avalonia.Base.dll</Right>
+  </Suppression>
 </Suppressions>
