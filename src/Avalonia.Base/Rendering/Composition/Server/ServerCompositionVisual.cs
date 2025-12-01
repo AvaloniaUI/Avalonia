@@ -62,13 +62,7 @@ namespace Avalonia.Rendering.Composition.Server
 
             if (applyRenderOptions)
                 canvas.PushRenderOptions(RenderOptions);
-            if (Effect != null)
-            {
-                var oldMatrix = canvas.Transform;
-                canvas.Transform = Matrix.Identity;
-                canvas.PushEffect(TransformedOwnContentBounds.ToRect(), Effect);
-                canvas.Transform = oldMatrix;
-            }
+            var needPopEffect = PushEffect(canvas);          
 
             if (Opacity != 1)
                 canvas.PushOpacity(Opacity, ClipToBounds ? boundsRect : null);
@@ -92,10 +86,26 @@ namespace Avalonia.Rendering.Composition.Server
             if (Opacity != 1)
                 canvas.PopOpacity();
             
-            if (Effect != null)
+            if (needPopEffect)
                 canvas.PopEffect();
             if(applyRenderOptions)
                 canvas.PopRenderOptions();
+        }
+
+        protected virtual LtrbRect GetEffectBounds() => TransformedOwnContentBounds;
+        
+        private bool PushEffect(CompositorDrawingContextProxy canvas)
+        {
+            if (Effect == null)
+                return false;
+            var clip = GetEffectBounds();
+            if (clip.IsZeroSize)
+                return false;
+            var oldMatrix = canvas.Transform;
+            canvas.Transform = Matrix.Identity;
+            canvas.PushEffect(GetEffectBounds().ToRect(), Effect!);
+            canvas.Transform = oldMatrix;
+            return true;
         }
 
         protected virtual bool HandlesClipToBounds => false;
