@@ -2042,7 +2042,6 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var defaultProperties = new GenericTextRunProperties(typeface);
                 var text = "a\u202C\u202C\u202C\u202Cb";
-                var shaperOption = new TextShaperOptions(typeface.GlyphTypeface);
 
                 var textSource = new SingleBufferTextSource(text, defaultProperties);
 
@@ -2315,11 +2314,9 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
             using (Start())
             {
-
                 var typeface = Typeface.Default;
 
                 var defaultProperties = new GenericTextRunProperties(typeface);
-
 
                 var textSource = new SingleBufferTextSource(text, defaultProperties);
 
@@ -2337,6 +2334,11 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var collapsedLine = textLine.Collapse(collapsingProperties);
 
+                Assert.NotNull(collapsedLine);
+
+                var result = ExtractTextFromRuns(collapsedLine);
+
+                Assert.Equal("*o", result);
             }
         }
 
@@ -2350,7 +2352,6 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 var typeface = Typeface.Default;
 
                 var defaultProperties = new GenericTextRunProperties(typeface);
-                var shaperOption = new TextShaperOptions(typeface.GlyphTypeface);
 
                 var textSource = new SingleBufferTextSource(text, defaultProperties);
 
@@ -2367,6 +2368,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 var collapsingProperties = trimming.CreateCollapsingProperties(new TextCollapsingCreateInfo(8, defaultProperties, FlowDirection.LeftToRight));
 
                 var collapsedLine = textLine.Collapse(collapsingProperties);
+
+                Assert.NotNull(collapsedLine);
 
                 var result = ExtractTextFromRuns(collapsedLine);
 
@@ -2401,6 +2404,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var collapsedLine = textLine.Collapse(collapsingProperties);
 
+                Assert.NotNull(collapsedLine);
+
                 var result = ExtractTextFromRuns(collapsedLine);
 
                 Assert.True(result.Contains("ory"));
@@ -2416,7 +2421,6 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             using (Start())
             {
                 var defaultProperties = new GenericTextRunProperties(typeface);
-                var shaperOption = new TextShaperOptions(typeface.GlyphTypeface);
 
                 var textSource = new SingleBufferTextSource(path, defaultProperties);
 
@@ -2433,6 +2437,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 var collapsingProperties = trimming.CreateCollapsingProperties(new TextCollapsingCreateInfo(8, defaultProperties, FlowDirection.LeftToRight));
 
                 var collapsedLine = textLine.Collapse(collapsingProperties);
+
+                Assert.NotNull(collapsedLine);
 
                 var result = ExtractTextFromRuns(collapsedLine);
 
@@ -2467,6 +2473,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 var collapsingProperties = trimming.CreateCollapsingProperties(new TextCollapsingCreateInfo(40, defaultProperties, FlowDirection.LeftToRight));
 
                 var collapsedLine = textLine.Collapse(collapsingProperties);
+
+                Assert.NotNull(collapsedLine);
 
                 var result = ExtractTextFromRuns(collapsedLine);
 

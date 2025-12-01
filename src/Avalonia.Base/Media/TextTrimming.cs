@@ -36,8 +36,11 @@ namespace Avalonia.Media
         public static TextTrimming LeadingCharacterEllipsis { get; } = new TextLeadingPrefixTrimming(DefaultEllipsisChar, 0);
 
         /// <summary>
-        /// Text is trimmed at a character boundary starting from the beginning. An ellipsis (...) is drawn in place of remaining text.
+        /// Gets a text trimming strategy that inserts an ellipsis to indicate omitted segments in a path string.
         /// </summary>
+        /// <remarks>Use this property to display long file or directory paths in a shortened form, with
+        /// an ellipsis representing omitted segments. This is useful for UI scenarios where space is limited and the
+        /// full path cannot be shown.</remarks>
         public static TextTrimming PathSegmentEllipsis { get; } = new TextPathSegmentTrimming(DefaultEllipsisChar);
 
         /// <summary>

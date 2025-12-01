@@ -17,6 +17,15 @@ namespace Avalonia.Media
     {
         private readonly char[] _separators = new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar, '/', '\\' };
 
+        /// <summary>
+        /// Initializes a new instance of the TextPathSegmentEllipsis class that represents an ellipsis segment in a
+        /// text path with the specified symbol, width, text formatting properties, and flow direction.
+        /// </summary>
+        /// <param name="ellipsis">The string to use as the ellipsis symbol in the text path segment. Cannot be null.</param>
+        /// <param name="width">The width.</param>
+        /// <param name="textRunProperties">The text formatting properties to apply to the ellipsis symbol. Cannot be null.</param>
+        /// <param name="flowDirection">The flow direction for rendering the ellipsis segment. Specifies whether text flows left-to-right or
+        /// right-to-left.</param>
         public TextPathSegmentEllipsis(string ellipsis, double width, TextRunProperties textRunProperties, FlowDirection flowDirection)
         {
             Width = width;
