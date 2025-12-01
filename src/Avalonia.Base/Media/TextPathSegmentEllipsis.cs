@@ -7,22 +7,21 @@ using Avalonia.Media.TextFormatting;
 namespace Avalonia.Media
 {
     /// <summary>
-    /// Collapsing properties that attempt to collapse a file path by replacing
-    /// the smallest path segment (between separators) with an ellipsis so the
-    /// whole path fits into the available width.
+    /// Provides text collapsing properties that replace the middle segments of a file path with an ellipsis symbol when
+    /// the rendered width exceeds a specified limit.
     /// </summary>
+    /// <remarks>This class is typically used to display file paths in a compact form by collapsing segments
+    /// near the center and inserting an ellipsis, ensuring that the most significant parts of the path remain visible.
+    /// </remarks>
     public sealed class TextPathSegmentEllipsis : TextCollapsingProperties
     {
         private readonly char[] _separators = new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar, '/', '\\' };
 
-        private readonly int _maxCollapsedSegments;
-
-        public TextPathSegmentEllipsis(string ellipsis, double width, TextRunProperties textRunProperties, FlowDirection flowDirection, int maxCollapsedSegments = int.MaxValue)
+        public TextPathSegmentEllipsis(string ellipsis, double width, TextRunProperties textRunProperties, FlowDirection flowDirection)
         {
             Width = width;
             Symbol = new TextCharacters(ellipsis, textRunProperties);
             FlowDirection = flowDirection;
-            _maxCollapsedSegments = maxCollapsedSegments <= 0 ? int.MaxValue : maxCollapsedSegments;
         }
 
         public override double Width { get; }
@@ -189,9 +188,8 @@ namespace Avalonia.Media
 
                 // Expand windows around centerCandidateIdx, up to _maxCollapsedSegments segments.
                 var candidateCount = candidateSegmentIndices.Count;
-                var maxSegmentsToTry = Math.Min(_maxCollapsedSegments, candidateCount);
 
-                for (int windowSize = 1; windowSize <= maxSegmentsToTry; windowSize++)
+                for (int windowSize = 1; windowSize <= candidateCount; windowSize++)
                 {
                     // For a given windowSize, try all windows of that size centered as close as possible to centerCandidateIdx.
                     // Compute start index of window such that center is as near as possible.
@@ -302,21 +300,18 @@ namespace Avalonia.Media
 
                 // Fallback
                 var currentLength = 0;
-                var coveredWidth = 0.0;
+                var remainingWidth = textLine.WidthIncludingTrailingWhitespace;
 
-                foreach (var segment in segments)
+                for (var segmentIndex = 0; segmentIndex < segments.Count; segmentIndex++)
                 {
-                    if (coveredWidth + segment.Width < Width)
+                    var segment = segments[segmentIndex];
+
+                    if (segmentIndex < segments.Count - 1 && remainingWidth - segment.Width > Width)
                     {
-                        coveredWidth += segment.Width;
+                        remainingWidth -= segment.Width;
                         currentLength += segment.Length;
 
                         continue;
-                    }
-
-                    if (segment.IsSeperator)
-                    {
-                        break;
                     }
 
                     FormattingObjectPool.RentedList<TextRun>? first = null;
@@ -338,28 +333,30 @@ namespace Avalonia.Media
 
                             if (run is ShapedTextRun shapedRun)
                             {
-                                var measureWidth = Width - shapedSymbol.Size.Width - coveredWidth;
+                                var measureWidth = Width - shapedSymbol.Size.Width;
 
                                 if (shapedRun.TryMeasureCharactersBackwards(measureWidth, out var length, out _))
                                 {
-                                    (_, trimmedRun) = shapedRun.Split(shapedRun.Length - length);
+                                    var splitAt = shapedRun.Length - length;
+
+                                    (_, trimmedRun) = shapedRun.Split(splitAt);
                                 }
                             }
                         }
 
-                        var runCount = (first?.Count ?? 0) + (trimmedRun != null ? 1 : 0) + 1 + remainingRunCount;
+                        var runCount = /*(first?.Count ?? 0) + */ (trimmedRun != null ? 1 : 0) + 1 + remainingRunCount;
 
                         var result = new TextRun[runCount];
                         var index = 0;
 
                         // Append first runs
-                        if (first != null)
-                        {
-                            foreach (var run in first)
-                            {
-                                result[index++] = run;
-                            }
-                        }
+                        //if (first != null)
+                        //{
+                        //    foreach (var run in first)
+                        //    {
+                        //        result[index++] = run;
+                        //    }
+                        //}
 
                         // Append symbol
                         result[index++] = shapedSymbol;
