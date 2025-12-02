@@ -9,8 +9,6 @@
     <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
     <!-- See https://github.com/nuke-build/nuke/issues/818 -->
     <EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
-    <!-- Necessary for Microsoft.DotNet.ApiDiff.Tool -->
-    <RestoreAdditionalProjectSources>https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet10-transport/nuget/v3/index.json</RestoreAdditionalProjectSources>
   </PropertyGroup>
 
   <Import Project="..\build\JetBrains.dotMemoryUnit.props" />
