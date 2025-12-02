@@ -313,13 +313,18 @@ namespace Avalonia.Skia.UnitTests.Media
                         new Uri(s_fontUri, UriKind.Absolute)));
 
                     Assert.True(FontManager.Current.TryGetGlyphTypeface(new Typeface("Noto Mono", FontStyle.Italic, FontWeight.Bold),
-                        out var glyphTypeface));
+                        out var italicBoldTypeface));
 
-                    Assert.Equal("Noto Mono", glyphTypeface.FamilyName);
+                    Assert.Equal("Noto Mono", italicBoldTypeface.FamilyName);
 
-                    Assert.Equal(FontWeight.Bold, glyphTypeface.Weight);
+                    Assert.True(italicBoldTypeface.PlatformTypeface.FontSimulations.HasFlag(FontSimulations.Bold));
 
-                    Assert.Equal(FontStyle.Italic, glyphTypeface.Style);
+                    Assert.True(italicBoldTypeface.PlatformTypeface.FontSimulations.HasFlag(FontSimulations.Oblique));
+
+                    Assert.True(FontManager.Current.TryGetGlyphTypeface(new Typeface("Noto Mono", FontStyle.Normal, FontWeight.Normal),
+                       out var regularTypeface));
+
+                    Assert.NotEqual(((SkiaTypeface)regularTypeface.PlatformTypeface).SKTypeface, ((SkiaTypeface)italicBoldTypeface.PlatformTypeface).SKTypeface);
                 }
             }
         }

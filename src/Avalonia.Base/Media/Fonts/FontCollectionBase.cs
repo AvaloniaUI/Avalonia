@@ -15,7 +15,7 @@ namespace Avalonia.Media.Fonts
             Comparer<FontFamily>.Create((a, b) => string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase));
 
         // Make this internal for testing purposes
-        internal readonly ConcurrentDictionary<string, ConcurrentDictionary<FontCollectionKey, GlyphTypeface?>> _glyphTypefaceCache = new();
+        internal readonly ConcurrentDictionary<string, ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>> _glyphTypefaceCache = new();
 
         private readonly object _fontFamiliesLock = new();
         private volatile FontFamily[] _fontFamilies = Array.Empty<FontFamily>();
@@ -87,11 +87,11 @@ namespace Avalonia.Media.Fonts
         }
 
         public virtual bool TryCreateSyntheticGlyphTypeface(
-            GlyphTypeface glyphTypeface,
+            IGlyphTypeface glyphTypeface,
             FontStyle style,
             FontWeight weight,
             FontStretch stretch,
-            [NotNullWhen(true)] out GlyphTypeface? syntheticGlyphTypeface)
+            [NotNullWhen(true)] out IGlyphTypeface? syntheticGlyphTypeface)
         {
             syntheticGlyphTypeface = null;
 
@@ -154,7 +154,7 @@ namespace Avalonia.Media.Fonts
         public IEnumerator<FontFamily> GetEnumerator() => ((IEnumerable<FontFamily>)_fontFamilies).GetEnumerator();
 
         public virtual bool TryGetGlyphTypeface(string familyName, FontStyle style, FontWeight weight,
-                    FontStretch stretch, [NotNullWhen(true)] out GlyphTypeface? glyphTypeface)
+                    FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
         {
             var typeface = new Typeface(familyName, style, weight, stretch).Normalize(out familyName);
 
@@ -189,7 +189,7 @@ namespace Avalonia.Media.Fonts
             return false;
         }
 
-        public bool TryGetNearestMatch(string familyName, FontStyle style, FontWeight weight, FontStretch stretch, [NotNullWhen(true)] out GlyphTypeface? glyphTypeface)
+        public bool TryGetNearestMatch(string familyName, FontStyle style, FontWeight weight, FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
         {
             if (!_glyphTypefaceCache.TryGetValue(familyName, out var glyphTypefaces))
             {
@@ -206,15 +206,15 @@ namespace Avalonia.Media.Fonts
         /// <summary>
         /// Attempts to add the specified <see cref="IGlyphTypeface"/> to the font collection.
         /// </summary>
-        /// <remarks>This method checks the <see cref="GlyphTypeface.FamilyName"/> and, if applicable,
-        /// the typographic family name and other family names provided by the <see cref="GlyphTypeface"/> interface.
+        /// <remarks>This method checks the <see cref="IGlyphTypeface.FamilyName"/> and, if applicable,
+        /// the typographic family name and other family names provided by the <see cref="IGlyphTypeface"/> interface.
         /// If any of these names can be associated with the glyph typeface, the typeface is added to the collection.
         /// The method ensures that duplicate entries are not added.</remarks>
         /// <param name="glyphTypeface">The glyph typeface to add. Must not be <see langword="null"/> and must have a non-empty <see
         /// cref="IGlyphTypeface.FamilyName"/>.</param>
         /// <returns><see langword="true"/> if the glyph typeface was successfully added to the collection; otherwise, <see
         /// langword="false"/>.</returns>
-        public bool TryAddGlyphTypeface(GlyphTypeface glyphTypeface)
+        public bool TryAddGlyphTypeface(IGlyphTypeface glyphTypeface)
         {
             if (glyphTypeface == null || string.IsNullOrEmpty(glyphTypeface.FamilyName))
             {
@@ -263,7 +263,7 @@ namespace Avalonia.Media.Fonts
         /// succeeds; otherwise, <see langword="null"/>.</param>
         /// <returns><see langword="true"/> if the glyph typeface was successfully created and added; otherwise, <see
         /// langword="false"/>.</returns>
-        public bool TryAddGlyphTypeface(Stream stream, [NotNullWhen(true)] out GlyphTypeface? glyphTypeface)
+        public bool TryAddGlyphTypeface(Stream stream, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
         {
             glyphTypeface = null;
 
@@ -272,7 +272,7 @@ namespace Avalonia.Media.Fonts
                 return false;
             }
 
-            glyphTypeface = new GlyphTypeface(platformTypeface, FontSimulations.None);
+            glyphTypeface = new GlyphTypeface(platformTypeface);
 
             return TryAddGlyphTypeface(glyphTypeface);
         }
@@ -313,7 +313,7 @@ namespace Avalonia.Media.Fonts
                                 continue;
                             }
 
-                            var glyphTypeface = new GlyphTypeface(platformTypeface, FontSimulations.None);
+                            var glyphTypeface = new GlyphTypeface(platformTypeface);
 
                             var key = glyphTypeface.ToFontCollectionKey();
 
@@ -348,7 +348,7 @@ namespace Avalonia.Media.Fonts
 
                             if (_fontManagerImpl.TryCreateGlyphTypeface(stream, FontSimulations.None, out var platformTypeface))
                             {
-                                var glyphTypeface = new GlyphTypeface(platformTypeface, FontSimulations.None);
+                                var glyphTypeface = new GlyphTypeface(platformTypeface);
 
                                 if (TryAddGlyphTypeface(glyphTypeface))
                                 {
@@ -372,7 +372,7 @@ namespace Avalonia.Media.Fonts
 
                                     if (_fontManagerImpl.TryCreateGlyphTypeface(stream, FontSimulations.None, out var platformTypeface))
                                     {
-                                        var glyphTypeface = new GlyphTypeface(platformTypeface, FontSimulations.None);
+                                        var glyphTypeface = new GlyphTypeface(platformTypeface);
 
                                         if (TryAddGlyphTypeface(glyphTypeface))
                                         {
@@ -452,7 +452,7 @@ namespace Avalonia.Media.Fonts
         /// <param name="glyphTypeface">When this method returns, contains the matching <see cref="IGlyphTypeface"/> if a match is found; otherwise,
         /// <see langword="null"/>.</param>
         /// <returns><see langword="true"/> if a matching glyph typeface is found; otherwise, <see langword="false"/>.</returns>
-        protected bool TryGetGlyphTypeface(string familyName, FontCollectionKey key, [NotNullWhen(true)] out GlyphTypeface? glyphTypeface)
+        protected bool TryGetGlyphTypeface(string familyName, FontCollectionKey key, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
         {
             glyphTypeface = null;
 
@@ -558,7 +558,8 @@ namespace Avalonia.Media.Fonts
         /// provided collection of glyph typefaces.
         /// </summary>
         /// <remarks>This method attempts to find the best match for the specified font key by considering
-        /// various fallback strategies, such as normalizing the font style, stretch, and weight. If no suitable match is found, the method will return the first available non-null <see cref="IGlyphTypeface"/> from the
+        /// various fallback strategies, such as normalizing the font style, stretch, and weight. 
+        /// If no suitable match is found, the method will return the first available non-null <see cref="IGlyphTypeface"/> from the
         /// collection, if any.</remarks>
         /// <param name="glyphTypefaces">A collection of glyph typefaces, indexed by <see cref="FontCollectionKey"/>.</param>
         /// <param name="key">The <see cref="FontCollectionKey"/> representing the desired font attributes.</param>
@@ -566,7 +567,8 @@ namespace Avalonia.Media.Fonts
         /// key, if a match is found; otherwise, <see langword="null"/>.</param>
         /// <returns><see langword="true"/> if a matching <see cref="IGlyphTypeface"/> is found; otherwise, <see
         /// langword="false"/>.</returns>
-        protected bool TryGetNearestMatch(IDictionary<FontCollectionKey, GlyphTypeface?> glyphTypefaces, FontCollectionKey key, [NotNullWhen(true)] out GlyphTypeface? glyphTypeface)
+        protected bool TryGetNearestMatch(IDictionary<FontCollectionKey, IGlyphTypeface?> glyphTypefaces, 
+            FontCollectionKey key, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
         {
             if (glyphTypefaces.TryGetValue(key, out glyphTypeface) && glyphTypeface != null)
             {
@@ -631,7 +633,7 @@ namespace Avalonia.Media.Fonts
         /// <param name="glyphTypeface">The glyph typeface to add to the cache. Can be null.</param>
         /// <returns><see langword="true"/> if the glyph typeface was successfully added to the cache; otherwise, <see
         /// langword="false"/>.</returns>
-        protected bool TryAddGlyphTypeface(string familyName, FontCollectionKey key, GlyphTypeface? glyphTypeface)
+        protected bool TryAddGlyphTypeface(string familyName, FontCollectionKey key, IGlyphTypeface? glyphTypeface)
         {
             if (string.IsNullOrEmpty(familyName))
             {
@@ -655,7 +657,7 @@ namespace Avalonia.Media.Fonts
             }
 
             // Family doesn't exist yet. Create a new dictionary instance and try to install it.
-            var newDict = new ConcurrentDictionary<FontCollectionKey, GlyphTypeface?>();
+            var newDict = new ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>();
 
             // GetOrAdd will return the instance that ended up in the dictionary. If it's our
             // newDict instance then we won the race to add the family and should publish it.
@@ -697,9 +699,9 @@ namespace Avalonia.Media.Fonts
         /// null.</param>
         /// <returns>true if a suitable fallback glyph typeface is found; otherwise, false.</returns>
         private static bool TryFindStretchFallback(
-           IDictionary<FontCollectionKey, GlyphTypeface?> glyphTypefaces,
+           IDictionary<FontCollectionKey, IGlyphTypeface?> glyphTypefaces,
            FontCollectionKey key,
-           [NotNullWhen(true)] out GlyphTypeface? glyphTypeface)
+           [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
         {
             glyphTypeface = null;
 
@@ -744,9 +746,9 @@ namespace Avalonia.Media.Fonts
         /// null.</param>
         /// <returns>true if a fallback glyph typeface matching the requested weight is found; otherwise, false.</returns>
         private static bool TryFindWeightFallback(
-            IDictionary<FontCollectionKey, GlyphTypeface?> glyphTypefaces,
+            IDictionary<FontCollectionKey, IGlyphTypeface?> glyphTypefaces,
             FontCollectionKey key,
-            [NotNullWhen(true)] out GlyphTypeface? glyphTypeface)
+            [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
         {
             glyphTypeface = null;
             var weight = (int)key.Weight;

@@ -29,7 +29,7 @@ namespace Avalonia.Rendering.Composition.Server
             return maxHeight;
         }
 
-        public DiagnosticTextRenderer(GlyphTypeface glyphTypeface, double fontRenderingEmSize)
+        public DiagnosticTextRenderer(IGlyphTypeface glyphTypeface, double fontRenderingEmSize)
         {
             var chars = new char[LastChar - FirstChar + 1];
             for (var c = FirstChar; c <= LastChar; c++)

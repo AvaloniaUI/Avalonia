@@ -22,7 +22,7 @@ namespace RenderDemo.Pages
 
     public class GlyphRunControl : Control
     {
-        private GlyphTypeface _glyphTypeface = Typeface.Default.GlyphTypeface;
+        private IGlyphTypeface _glyphTypeface = Typeface.Default.GlyphTypeface;
         private readonly Random _rand = new Random();
         private ushort[] _glyphIndices = new ushort[1];
         private char[] _characters = new char[1];
@@ -81,7 +81,7 @@ namespace RenderDemo.Pages
 
     public class GlyphRunGeometryControl : Control
     {
-        private GlyphTypeface _glyphTypeface = Typeface.Default.GlyphTypeface;
+        private IGlyphTypeface _glyphTypeface = Typeface.Default.GlyphTypeface;
         private readonly Random _rand = new Random();
         private ushort[] _glyphIndices = new ushort[1];
         private char[] _characters = new char[1];

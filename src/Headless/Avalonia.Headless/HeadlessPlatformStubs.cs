@@ -76,7 +76,7 @@ namespace Avalonia.Headless
         {
             _fontMemory = UnmanagedFontMemory.LoadFromStream(stream);
 
-            var dummy = new GlyphTypeface(this, FontSimulations.None);
+            var dummy = new GlyphTypeface(this);
 
             FamilyName = familyName;
             Weight = dummy.Weight;
@@ -91,6 +91,8 @@ namespace Avalonia.Headless
         public FontStyle Style { get; }
 
         public FontStretch Stretch { get; }
+
+        public FontSimulations FontSimulations => FontSimulations.None;
 
         public void Dispose()
         {

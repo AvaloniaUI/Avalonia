@@ -32,6 +32,11 @@ namespace Avalonia.Media
         FontStretch Stretch { get; }
 
         /// <summary>
+        ///     Gets the algorithmic style simulations applied to <see cref="IPlatformTypeface"/> object.
+        /// </summary>
+        FontSimulations FontSimulations { get; }
+
+        /// <summary>
         /// Returns the font file stream represented by the <see cref="IGlyphTypeface"/>.
         /// </summary>
         /// <param name="stream">The stream.</param>

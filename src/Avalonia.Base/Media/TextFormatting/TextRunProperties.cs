@@ -12,7 +12,7 @@ namespace Avalonia.Media.TextFormatting
     /// </remarks>
     public abstract class TextRunProperties : IEquatable<TextRunProperties>
     {
-        private GlyphTypeface? _cachedGlyphTypeFace;
+        private IGlyphTypeface? _cachedGlyphTypeFace;
 
         /// <summary>
         /// Run typeface
@@ -54,7 +54,7 @@ namespace Avalonia.Media.TextFormatting
         /// </summary>
         public virtual BaselineAlignment BaselineAlignment => BaselineAlignment.Baseline;
 
-        internal GlyphTypeface CachedGlyphTypeface
+        internal IGlyphTypeface CachedGlyphTypeface
             => _cachedGlyphTypeFace ??= Typeface.GlyphTypeface;
 
         public bool Equals(TextRunProperties? other)

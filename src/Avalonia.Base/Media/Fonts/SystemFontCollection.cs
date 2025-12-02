@@ -26,7 +26,7 @@ namespace Avalonia.Media.Fonts
         public override Uri Key => FontManager.SystemFontsKey;
 
         public override bool TryGetGlyphTypeface(string familyName, FontStyle style, FontWeight weight,
-            FontStretch stretch, [NotNullWhen(true)] out GlyphTypeface? glyphTypeface)
+            FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
         {
             var typeface = new Typeface(familyName, style, weight, stretch).Normalize(out familyName);
 
@@ -86,13 +86,34 @@ namespace Avalonia.Media.Fonts
 
             if (_platformImpl.TryMatchCharacter(codepoint, style, weight, stretch, familyName, culture, out var platformTypeface))
             {
-                var glyphTypeface = new GlyphTypeface(platformTypeface);
-
+                // Construct the resulting Typeface
                 match = new Typeface(platformTypeface.FamilyName, platformTypeface.Style, platformTypeface.Weight,
                        platformTypeface.Stretch);
 
-                // Add to cache if not already present
-                return TryAddGlyphTypeface(glyphTypeface);
+                // Compute the key for cache lookup this can be different from the requested key
+                var key = match.ToFontCollectionKey();
+
+                // Check cache first: if an entry exists and is non-null, match succeeded and we can return true.
+                if (_glyphTypefaceCache.TryGetValue(platformTypeface.FamilyName, out var glyphTypefaces) && glyphTypefaces.TryGetValue(key, out var existing))
+                {
+                    return existing != null;
+                }
+
+                // Not in cache yet: create glyph typeface and try to add it.
+                var glyphTypeface = new GlyphTypeface(platformTypeface);
+
+                if (TryAddGlyphTypeface(platformTypeface.FamilyName, key, glyphTypeface))
+                {
+                    return true;
+                }
+
+                // TryAddGlyphTypeface failed: another thread may have added an entry. Re-check the cache.
+                if (_glyphTypefaceCache.TryGetValue(platformTypeface.FamilyName, out glyphTypefaces) && glyphTypefaces.TryGetValue(key, out existing))
+                {
+                    return existing != null;
+                }
+
+                return false;
             }
 
             return false;

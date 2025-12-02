@@ -90,6 +90,8 @@ namespace Avalonia.Base.UnitTests.Media
 
             public string FamilyName { get; }
 
+            public FontSimulations FontSimulations => FontSimulations.None;
+
             public void Dispose()
             {
                 _fontMemory.Dispose();
