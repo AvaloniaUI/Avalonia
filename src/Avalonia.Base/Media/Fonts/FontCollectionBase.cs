@@ -216,21 +216,28 @@ namespace Avalonia.Media.Fonts
         /// langword="false"/>.</returns>
         public bool TryAddGlyphTypeface(IGlyphTypeface glyphTypeface)
         {
+            var key = glyphTypeface.ToFontCollectionKey();
+
+            return TryAddGlyphTypeface(glyphTypeface, key);
+        }
+
+        /// <summary>
+        /// Attempts to add the specified glyph typeface to the collection using the provided key.
+        /// </summary>
+        /// <remarks>The method adds the glyph typeface using both its typographic family name and all
+        /// available family names. If the glyph typeface or its family name is invalid, the method returns false and
+        /// does not add the typeface.</remarks>
+        /// <param name="glyphTypeface">The glyph typeface to add. Cannot be null, and its FamilyName property must not be null or empty.</param>
+        /// <param name="key">The key that identifies the font collection to which the glyph typeface will be added.</param>
+        /// <returns>true if the glyph typeface was successfully added to the collection; otherwise, false.</returns>
+        public bool TryAddGlyphTypeface(IGlyphTypeface glyphTypeface, FontCollectionKey key)
+        {
             if (glyphTypeface == null || string.IsNullOrEmpty(glyphTypeface.FamilyName))
             {
                 return false;
             }
 
-            var platformTypeface = glyphTypeface.PlatformTypeface;
-
-            var key = glyphTypeface.ToFontCollectionKey();
-
             var result = false;
-
-            if(!string.Equals(platformTypeface.FamilyName, glyphTypeface.FamilyName, StringComparison.OrdinalIgnoreCase))
-            {
-                TryAddGlyphTypeface(platformTypeface.FamilyName, platformTypeface.ToFontCollectionKey(), glyphTypeface);
-            }
 
             //Add the TypographicFamilyName to the cache
             if (!string.IsNullOrEmpty(glyphTypeface.TypographicFamilyName))

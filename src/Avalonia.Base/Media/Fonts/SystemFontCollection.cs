@@ -54,9 +54,21 @@ namespace Avalonia.Media.Fonts
 
             glyphTypeface = new GlyphTypeface(platformTypeface);
 
+            //Add to cache with platform typeface family name first
+            TryAddGlyphTypeface(platformTypeface.FamilyName, key, glyphTypeface);
+
             //Add to cache
             if (!TryAddGlyphTypeface(glyphTypeface))
             {
+                // Another thread may have added an entry for this key while we were creating the glyph typeface.
+                // Re-check the cache and yield the existing glyph typeface if present.
+                if (_glyphTypefaceCache.TryGetValue(familyName, out var existingMap) && existingMap.TryGetValue(key, out var existingTypeface) && existingTypeface != null)
+                {
+                    glyphTypeface = existingTypeface;
+
+                    return true;
+                }
+
                 return false;
             }
 
@@ -102,7 +114,11 @@ namespace Avalonia.Media.Fonts
                 // Not in cache yet: create glyph typeface and try to add it.
                 var glyphTypeface = new GlyphTypeface(platformTypeface);
 
-                if (TryAddGlyphTypeface(platformTypeface.FamilyName, key, glyphTypeface))
+                // Try adding with the platform typeface family name first.
+                TryAddGlyphTypeface(platformTypeface.FamilyName, key, glyphTypeface);
+
+                // Try adding the glyph typeface with the matched key.
+                if (TryAddGlyphTypeface(glyphTypeface, key))
                 {
                     return true;
                 }
