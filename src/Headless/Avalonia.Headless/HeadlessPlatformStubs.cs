@@ -72,16 +72,19 @@ namespace Avalonia.Headless
     {
         private readonly UnmanagedFontMemory _fontMemory;
 
-        public HeadlessPlatformTypeface(Stream stream)
+        public HeadlessPlatformTypeface(Stream stream, string familyName = "Custom")
         {
             _fontMemory = UnmanagedFontMemory.LoadFromStream(stream);
 
             var dummy = new GlyphTypeface(this, FontSimulations.None);
 
+            FamilyName = familyName;
             Weight = dummy.Weight;
             Style = dummy.Style;
             Stretch = dummy.Stretch;
         }
+
+        public string FamilyName { get; }
 
         public FontWeight Weight { get; }
 

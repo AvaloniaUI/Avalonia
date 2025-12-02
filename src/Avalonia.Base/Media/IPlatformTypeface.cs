@@ -8,6 +8,15 @@ namespace Avalonia.Media
     public interface IPlatformTypeface : IFontMemory
     {
         /// <summary>
+        /// Gets the font family name.
+        /// </summary>
+        /// <remarks>
+        /// The family name should be the same as the one used to create the typeface via the platform font manager. 
+        /// It can be different from the actaual family name because an alias or a fallback name could have been used.
+        /// </remarks>
+        string FamilyName { get; }
+
+        /// <summary>
         /// Gets the designed weight of the font represented by the <see cref="IPlatformTypeface"/> object.
         /// </summary>
         FontWeight Weight { get; }

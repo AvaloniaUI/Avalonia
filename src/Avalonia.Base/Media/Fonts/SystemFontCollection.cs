@@ -35,13 +35,7 @@ namespace Avalonia.Media.Fonts
                 return true;
             }
 
-            style = typeface.Style;
-
-            weight = typeface.Weight;
-
-            stretch = typeface.Stretch;
-
-            var key = new FontCollectionKey(style, weight, stretch);
+            var key = typeface.ToFontCollectionKey();
 
             //Check cache first to avoid unnecessary calls to the font manager
             if (_glyphTypefaceCache.TryGetValue(familyName, out var glyphTypefaces) && glyphTypefaces.TryGetValue(key, out glyphTypeface))
@@ -82,7 +76,7 @@ namespace Avalonia.Media.Fonts
 
             if (base.TryMatchCharacter(codepoint, style, weight, stretch, familyName, culture, out match))
             {
-                var matchKey = new FontCollectionKey { Style = match.Style, Weight = match.Weight, Stretch = match.Stretch };
+                var matchKey = match.ToFontCollectionKey();
 
                 if (requestedKey == matchKey)
                 {
@@ -94,16 +88,11 @@ namespace Avalonia.Media.Fonts
             {
                 var glyphTypeface = new GlyphTypeface(platformTypeface);
 
-                // ToDo: Add FamilyName to IPlatformTypeface and cache by platform family name as well
-                match = new Typeface(glyphTypeface.FamilyName, platformTypeface.Style, platformTypeface.Weight,
+                match = new Typeface(platformTypeface.FamilyName, platformTypeface.Style, platformTypeface.Weight,
                        platformTypeface.Stretch);
 
-                var matchKey = new FontCollectionKey { Style = match.Style, Weight = match.Weight, Stretch = match.Stretch };
-
                 // Add to cache if not already present
-                TryAddGlyphTypeface(glyphTypeface.FamilyName, matchKey, glyphTypeface);
-
-                return true;
+                return TryAddGlyphTypeface(glyphTypeface);
             }
 
             return false;

@@ -39,10 +39,12 @@ namespace Avalonia.Media.Fonts
         {
             match = default;
 
+            var key = new FontCollectionKey { Style = style, Weight = weight, Stretch = stretch };
+
             //If a font family is defined we try to find a match inside that family first
             if (familyName != null && _glyphTypefaceCache.TryGetValue(familyName, out var glyphTypefaces))
             {
-                if (TryGetNearestMatch(glyphTypefaces, new FontCollectionKey { Style = style, Weight = weight, Stretch = stretch }, out var glyphTypeface))
+                if (TryGetNearestMatch(glyphTypefaces, key, out var glyphTypeface))
                 {
                     if (glyphTypeface.CharacterToGlyphMap.TryGetValue(codepoint, out _))
                     {
@@ -64,7 +66,7 @@ namespace Avalonia.Media.Fonts
 
                 glyphTypefaces = pair.Value;
 
-                if (TryGetNearestMatch(glyphTypefaces, new FontCollectionKey { Style = style, Weight = weight, Stretch = stretch }, out var glyphTypeface))
+                if (TryGetNearestMatch(glyphTypefaces, key, out var glyphTypeface))
                 {
                     if (glyphTypeface.CharacterToGlyphMap.TryGetValue(codepoint, out _))
                     {
@@ -101,9 +103,8 @@ namespace Avalonia.Media.Fonts
 
             var key = new FontCollectionKey(style, weight, stretch);
 
-            var currentKey =
-                new FontCollectionKey(glyphTypeface.Style, glyphTypeface.Weight, glyphTypeface.Stretch);
-
+            var currentKey = glyphTypeface.ToFontCollectionKey();
+                
             if (currentKey == key)
             {
                 return false;
@@ -157,13 +158,7 @@ namespace Avalonia.Media.Fonts
         {
             var typeface = new Typeface(familyName, style, weight, stretch).Normalize(out familyName);
 
-            style = typeface.Style;
-
-            weight = typeface.Weight;
-
-            stretch = typeface.Stretch;
-
-            var key = new FontCollectionKey(style, weight, stretch);
+            var key = typeface.ToFontCollectionKey();
 
             return TryGetGlyphTypeface(familyName, key, out glyphTypeface);
         }
@@ -228,9 +223,14 @@ namespace Avalonia.Media.Fonts
 
             var platformTypeface = glyphTypeface.PlatformTypeface;
 
-            var key = new FontCollectionKey(platformTypeface.Style, platformTypeface.Weight, platformTypeface.Stretch);
+            var key = glyphTypeface.ToFontCollectionKey();
 
             var result = false;
+
+            if(!string.Equals(platformTypeface.FamilyName, glyphTypeface.FamilyName, StringComparison.OrdinalIgnoreCase))
+            {
+                TryAddGlyphTypeface(platformTypeface.FamilyName, platformTypeface.ToFontCollectionKey(), glyphTypeface);
+            }
 
             //Add the TypographicFamilyName to the cache
             if (!string.IsNullOrEmpty(glyphTypeface.TypographicFamilyName))
@@ -315,7 +315,7 @@ namespace Avalonia.Media.Fonts
 
                             var glyphTypeface = new GlyphTypeface(platformTypeface, FontSimulations.None);
 
-                            var key = new FontCollectionKey(glyphTypeface.Style, glyphTypeface.Weight, glyphTypeface.Stretch);
+                            var key = glyphTypeface.ToFontCollectionKey();
 
                             //Add TypographicFamilyName to the cache
                             if (!string.IsNullOrEmpty(glyphTypeface.TypographicFamilyName))
@@ -465,7 +465,7 @@ namespace Avalonia.Media.Fonts
 
                 if (TryGetNearestMatch(glyphTypefaces, key, out glyphTypeface))
                 {
-                    var matchedKey = new FontCollectionKey(glyphTypeface.Style, glyphTypeface.Weight, glyphTypeface.Stretch);
+                    var matchedKey = glyphTypeface.ToFontCollectionKey();
 
                     if (matchedKey != key)
                     {

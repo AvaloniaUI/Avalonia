@@ -76,9 +76,10 @@ namespace Avalonia.Base.UnitTests.Media
         {
             private readonly UnmanagedFontMemory _fontMemory;
 
-            public CustomPlatformTypeface(Stream stream)
+            public CustomPlatformTypeface(Stream stream, string fontFamily = "Custom")
             {
                 _fontMemory = UnmanagedFontMemory.LoadFromStream(stream);
+                FamilyName = fontFamily;
             }
 
             public FontWeight Weight => FontWeight.Normal;
@@ -86,6 +87,8 @@ namespace Avalonia.Base.UnitTests.Media
             public FontStyle Style => FontStyle.Normal;
 
             public FontStretch Stretch => FontStretch.Normal;
+
+            public string FamilyName { get; }
 
             public void Dispose()
             {

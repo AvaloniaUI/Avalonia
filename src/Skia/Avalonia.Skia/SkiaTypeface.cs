@@ -22,6 +22,8 @@ namespace Avalonia.Skia
 
         public FontSimulations FontSimulations { get; }
 
+        public string FamilyName => SKTypeface.FamilyName;
+
         public FontWeight Weight { get; }
 
         public FontStyle Style { get; }
