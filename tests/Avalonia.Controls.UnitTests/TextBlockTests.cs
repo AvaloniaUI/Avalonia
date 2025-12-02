@@ -27,6 +27,12 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void LetterSpacing_Property_Uses_TextElement_Definition()
+        {
+            Assert.Same(TextElement.LetterSpacingProperty, TextBlock.LetterSpacingProperty);
+        }
+
+        [Fact]
         public void Calling_Measure_Should_Update_TextLayout()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
