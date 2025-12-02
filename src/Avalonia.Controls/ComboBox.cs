@@ -22,7 +22,7 @@ namespace Avalonia.Controls
     [TemplatePart("PART_Popup", typeof(Popup), IsRequired = true)]
     [TemplatePart("PART_EditableTextBox", typeof(TextBox), IsRequired = false)]
     [PseudoClasses(pcDropdownOpen, pcPressed)]
-    public class ComboBox : SelectingItemsControl
+    public class ComboBox : HeaderedSelectingItemsControl
     {
         internal const string pcDropdownOpen = ":dropdownopen";
         internal const string pcPressed = ":pressed";

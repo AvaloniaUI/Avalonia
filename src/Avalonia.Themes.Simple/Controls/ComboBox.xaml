@@ -1,6 +1,8 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     x:ClassModifier="internal">
+  <Thickness x:Key="ComboBoxTopHeaderMargin">0,0,0,4</Thickness>
+
   <ControlTheme x:Key="{x:Type ComboBox}"
                 TargetType="ComboBox">
     <Setter Property="Background" Value="Transparent" />
@@ -15,91 +17,109 @@
     <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
     <Setter Property="Template">
       <ControlTemplate>
-        <Border Name="border"
-                Background="{TemplateBinding Background}"
-                BorderBrush="{TemplateBinding BorderBrush}"
-                BorderThickness="{TemplateBinding BorderThickness}"
-                CornerRadius="{TemplateBinding CornerRadius}">
-          <Grid ColumnDefinitions="*,Auto">
-            <TextBlock Name="PlaceholderTextBlock"
+        <Grid RowDefinitions="Auto,*">
+          <ContentPresenter x:Name="PART_HeaderPresenter"
+                            Grid.Row="0"
+                            Margin="{DynamicResource ComboBoxTopHeaderMargin}"
+                            Content="{TemplateBinding Header}"
+                            ContentTemplate="{TemplateBinding HeaderTemplate}">
+            <ContentPresenter.IsVisible>
+              <Binding Path="Header"
+                       RelativeSource="{RelativeSource TemplatedParent}"
+                       Converter="{x:Static ObjectConverters.IsNotNull}" />
+            </ContentPresenter.IsVisible>
+          </ContentPresenter>
+          <Border Name="border"
+                  Grid.Row="1"
+                  Background="{TemplateBinding Background}"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  CornerRadius="{TemplateBinding CornerRadius}">
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBlock Name="PlaceholderTextBlock"
+                         Grid.Column="0"
+                         Margin="{TemplateBinding Padding}"
+                         HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                         VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                         Foreground="{TemplateBinding PlaceholderForeground}"
+                         Text="{TemplateBinding PlaceholderText}">
+                <TextBlock.IsVisible>
+                  <MultiBinding Converter="{x:Static BoolConverters.And}">
+                    <Binding Path="SelectionBoxItem" RelativeSource="{RelativeSource TemplatedParent}" Converter="{x:Static ObjectConverters.IsNull}" />
+                    <Binding Path="!IsEditable" RelativeSource="{RelativeSource TemplatedParent}" />
+                  </MultiBinding>
+                </TextBlock.IsVisible>
+              </TextBlock>
+              <ContentControl Margin="{TemplateBinding Padding}"
+                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                              Content="{TemplateBinding SelectionBoxItem}"
+                              ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                              IsVisible="{TemplateBinding IsEditable, Converter={x:Static BoolConverters.Not}}">
+              </ContentControl>
+              <TextBox Name="PART_EditableTextBox"
                        Grid.Column="0"
-                       Margin="{TemplateBinding Padding}"
+                       Padding="{TemplateBinding Padding}"
                        HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                        VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                       Foreground="{TemplateBinding PlaceholderForeground}"
-                       Text="{TemplateBinding PlaceholderText}">
-              <TextBlock.IsVisible>
-                <MultiBinding Converter="{x:Static BoolConverters.And}">
-                  <Binding Path="SelectionBoxItem" RelativeSource="{RelativeSource TemplatedParent}" Converter="{x:Static ObjectConverters.IsNull}" />
-                  <Binding Path="!IsEditable" RelativeSource="{RelativeSource TemplatedParent}" />
-                </MultiBinding>
-              </TextBlock.IsVisible>
-            </TextBlock>
-            <ContentControl Margin="{TemplateBinding Padding}"
-                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                            Content="{TemplateBinding SelectionBoxItem}"
-                            ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
-                            IsVisible="{TemplateBinding IsEditable, Converter={x:Static BoolConverters.Not}}">
-            </ContentControl>
-            <TextBox Name="PART_EditableTextBox"
-                     Grid.Column="0"
-                     Padding="{TemplateBinding Padding}"
-                     HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                     VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                     Foreground="{TemplateBinding Foreground}"
-                     Background="Transparent"
-                     Text="{TemplateBinding Text, Mode=TwoWay}"
-                     BorderThickness="0"
-                     IsVisible="{TemplateBinding IsEditable}">
-              <TextBox.Resources>
-                <SolidColorBrush x:Key="TextControlBackgroundFocused">Transparent</SolidColorBrush>
-                <SolidColorBrush x:Key="TextControlBackgroundPointerOver">Transparent</SolidColorBrush>
-                <Thickness x:Key="TextControlBorderThemeThicknessFocused">0</Thickness>
-              </TextBox.Resources>
-            </TextBox>
-            <ToggleButton Name="toggle"
-                          Grid.Column="1"
-                          Background="Transparent"
-                          BorderThickness="0"
-                          ClickMode="Press"
-                          Focusable="False"
-                          IsChecked="{TemplateBinding IsDropDownOpen,
+                       Foreground="{TemplateBinding Foreground}"
+                       Background="Transparent"
+                       Text="{TemplateBinding Text, Mode=TwoWay}"
+                       BorderThickness="0"
+                       IsVisible="{TemplateBinding IsEditable}">
+                <TextBox.Resources>
+                  <SolidColorBrush x:Key="TextControlBackgroundFocused">Transparent</SolidColorBrush>
+                  <SolidColorBrush x:Key="TextControlBackgroundPointerOver">Transparent</SolidColorBrush>
+                  <Thickness x:Key="TextControlBorderThemeThicknessFocused">0</Thickness>
+                </TextBox.Resources>
+              </TextBox>
+              <ToggleButton Name="toggle"
+                            Grid.Column="1"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            ClickMode="Press"
+                            Focusable="False"
+                            IsChecked="{TemplateBinding IsDropDownOpen,
                                                       Mode=TwoWay}">
-              <Path Width="8"
-                    Height="4"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Data="F1 M 301.14,-189.041L 311.57,-189.041L 306.355,-182.942L 301.14,-189.041 Z"
-                    Fill="{DynamicResource ThemeForegroundBrush}"
-                    Stretch="Uniform" />
-            </ToggleButton>
-            <Popup Name="PART_Popup"
-                   MinWidth="{Binding Bounds.Width, RelativeSource={RelativeSource TemplatedParent}}"
-                   MaxHeight="{TemplateBinding MaxDropDownHeight}"
-                   IsLightDismissEnabled="True"
-                   IsOpen="{TemplateBinding IsDropDownOpen,
-                                            Mode=TwoWay}"
-                   PlacementTarget="{TemplateBinding}"
-                   InheritsTransform="True">
-              <Border Background="{DynamicResource ThemeBackgroundBrush}"
-                      BorderBrush="{DynamicResource ThemeBorderMidBrush}"
-                      BorderThickness="1">
-                <ScrollViewer HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
-                              VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
-                              IsDeferredScrollingEnabled="{TemplateBinding (ScrollViewer.IsDeferredScrollingEnabled)}">
-                  <ItemsPresenter Name="PART_ItemsPresenter"
-                                  ItemsPanel="{TemplateBinding ItemsPanel}" />
-                </ScrollViewer>
-              </Border>
-            </Popup>
-          </Grid>
-        </Border>
+                <Path Width="8"
+                      Height="4"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Center"
+                      Data="F1 M 301.14,-189.041L 311.57,-189.041L 306.355,-182.942L 301.14,-189.041 Z"
+                      Fill="{DynamicResource ThemeForegroundBrush}"
+                      Stretch="Uniform" />
+              </ToggleButton>
+              <Popup Name="PART_Popup"
+                     MinWidth="{Binding Bounds.Width, RelativeSource={RelativeSource TemplatedParent}}"
+                     MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                     IsLightDismissEnabled="True"
+                     IsOpen="{TemplateBinding IsDropDownOpen,
+                                              Mode=TwoWay}"
+                     PlacementTarget="{TemplateBinding}"
+                     InheritsTransform="True">
+                <Border Background="{DynamicResource ThemeBackgroundBrush}"
+                        BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+                        BorderThickness="1">
+                  <ScrollViewer HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                                VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
+                                IsDeferredScrollingEnabled="{TemplateBinding (ScrollViewer.IsDeferredScrollingEnabled)}">
+                    <ItemsPresenter Name="PART_ItemsPresenter"
+                                    ItemsPanel="{TemplateBinding ItemsPanel}" />
+                  </ScrollViewer>
+                </Border>
+              </Popup>
+            </Grid>
+          </Border>
+        </Grid>
       </ControlTemplate>
     </Setter>
 
     <Style Selector="^:pointerover /template/ Border#border">
       <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderHighBrush}" />
+    </Style>
+
+    <Style Selector="^ /template/ ContentPresenter#PART_HeaderPresenter">
+      <Setter Property="RecognizesAccessKey" Value="True" />
     </Style>
 
     <Style Selector="^:disabled /template/ Border#border">

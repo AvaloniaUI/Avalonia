@@ -6,6 +6,18 @@
     xmlns:sys="using:System"
     xmlns:viewModels="using:ControlCatalog.ViewModels"
     x:DataType="viewModels:ComboBoxPageViewModel">
+    <UserControl.Resources>
+        <DataTemplate x:Key="ComboBoxHeaderTemplate">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+                <Path Width="12"
+                      Height="12"
+                      Stretch="Uniform"
+                      Fill="{DynamicResource SystemAccentColor}"
+                      Data="M10,0 L20,10 10,20 0,10Z" />
+                <TextBlock Text="{Binding}" />
+            </StackPanel>
+        </DataTemplate>
+    </UserControl.Resources>
     <StackPanel Orientation="Vertical" Spacing="4">
         <TextBlock Classes="h2">A drop-down list.</TextBlock>
 
@@ -30,6 +42,16 @@
                     <ComboBoxItem>Inline Item 2</ComboBoxItem>
                     <ComboBoxItem>Inline Item 3</ComboBoxItem>
                     <ComboBoxItem>Inline Item 4</ComboBoxItem>
+                </ComboBox>
+
+                <ComboBox AutomationProperties.AutomationId="HeaderedComboBox"
+                          Header="Country"
+                          PlaceholderText="Select a country"
+                          WrapSelection="{Binding WrapSelection}">
+                    <ComboBoxItem>USA</ComboBoxItem>
+                    <ComboBoxItem>Germany</ComboBoxItem>
+                    <ComboBoxItem>Japan</ComboBoxItem>
+                    <ComboBoxItem>Brazil</ComboBoxItem>
                 </ComboBox>
 
                 <ComboBox WrapSelection="{Binding WrapSelection}">
@@ -78,6 +100,27 @@
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>
+
+                <ComboBox AutomationProperties.AutomationId="HeaderTemplateComboBox"
+                          Header="Destination"
+                          HeaderTemplate="{StaticResource ComboBoxHeaderTemplate}"
+                          ItemsSource="{Binding Values}"
+                          DisplayMemberBinding="{Binding Name}"
+                          WrapSelection="{Binding WrapSelection}" />
+
+                <ComboBox Header="Header sample"
+                          PlaceholderText="Select an option"
+                          WrapSelection="{Binding WrapSelection}">
+                    <ComboBoxItem>Option 1</ComboBoxItem>
+                    <ComboBoxItem>Option 2</ComboBoxItem>
+                    <ComboBoxItem>Option 3</ComboBoxItem>
+                </ComboBox>
+
+                <ComboBox Header="Templated header"
+                          HeaderTemplate="{StaticResource ComboBoxHeaderTemplate}"
+                          ItemsSource="{Binding Values}"
+                          DisplayMemberBinding="{Binding Name}"
+                          WrapSelection="{Binding WrapSelection}" />
 
                 <ComboBox PlaceholderText="Pick an Item" WrapSelection="{Binding WrapSelection}">
                     <ComboBoxItem>Inline Items</ComboBoxItem>
@@ -135,17 +178,30 @@
                     </ComboBox.ItemTemplate>
                 </ComboBox>
 
-              <StackPanel Spacing="5">
-                <ComboBox WrapSelection="{Binding WrapSelection}" PlaceholderText="Editable" 
-                          ItemsSource="{Binding Values}" DisplayMemberBinding="{Binding Name}"
-                          IsEditable="True" Text="{Binding TextValue}"
-                          TextSearch.TextBinding="{Binding SearchText, DataType=viewModels:IdAndName}"
-                          SelectedItem="{Binding SelectedItem}" />
+                <StackPanel Spacing="5">
+                    <ComboBox WrapSelection="{Binding WrapSelection}" PlaceholderText="Editable" 
+                              ItemsSource="{Binding Values}" DisplayMemberBinding="{Binding Name}"
+                              IsEditable="True" Text="{Binding TextValue}"
+                              TextSearch.TextBinding="{Binding SearchText, DataType=viewModels:IdAndName}"
+                              SelectedItem="{Binding SelectedItem}" />
 
-                <TextBlock Text="Editable text is bound to SearchText. Display is bound to Name" />
-                <TextBlock Text="{Binding TextValue, StringFormat=Text Value: {0}}" />
-                <TextBlock Text="{Binding SelectedItem.Name, StringFormat=Selected Item: {0}}" />
-              </StackPanel>
+                    <TextBlock Text="Editable text is bound to SearchText. Display is bound to Name" />
+                    <TextBlock Text="{Binding TextValue, StringFormat=Text Value: {0}}" />
+                    <TextBlock Text="{Binding SelectedItem.Name, StringFormat=Selected Item: {0}}" />
+                </StackPanel>
+
+                <StackPanel Spacing="5" Margin="0,10,0,0">
+                    <ComboBox AutomationProperties.AutomationId="EditableHeaderComboBox"
+                              Header="Editable header"
+                              PlaceholderText="Type to search"
+                              WrapSelection="{Binding WrapSelection}"
+                              ItemsSource="{Binding Values}"
+                              DisplayMemberBinding="{Binding Name}"
+                              IsEditable="True"
+                              Text="{Binding TextValue}"
+                              SelectedItem="{Binding SelectedItem}" />
+                    <TextBlock Text="Header stays visible while typing in editable mode." />
+                </StackPanel>
             </WrapPanel>
         </StackPanel>
     </StackPanel>

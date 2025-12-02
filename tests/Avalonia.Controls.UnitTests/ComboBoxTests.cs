@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Subjects;
 using Avalonia.Controls.Presenters;
@@ -180,6 +181,149 @@ namespace Avalonia.Controls.UnitTests
             Assert.False(((ILogical)rectangle).IsAttachedToLogicalTree);
         }
 
+        [Fact]
+        public void Header_Control_Joins_Logical_Tree()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var header = new TextBlock();
+            var target = new ComboBox
+            {
+                Header = header,
+                Template = GetTemplate(),
+            };
+
+            var root = new TestRoot { Child = target };
+
+            target.ApplyTemplate();
+
+            Assert.Same(target, ((ILogical)header).LogicalParent);
+        }
+
+        [Fact]
+        public void HeaderPresenter_Uses_Header_And_Template()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var target = new ComboBox
+            {
+                Header = "Header",
+                HeaderTemplate = new FuncDataTemplate<string>((_, _) => new TextBlock { Text = "Templated header" }),
+                Template = GetTemplate(),
+            };
+
+            var root = new TestRoot { Child = target };
+
+            target.ApplyTemplate();
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            Assert.Equal("Header", target.HeaderPresenter?.Content);
+            Assert.Equal("Templated header", (target.HeaderPresenter?.Child as TextBlock)?.Text);
+        }
+
+        [Fact]
+        public void Changing_Header_Replaces_Logical_Child()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var oldHeader = new TextBlock();
+            var newHeader = new TextBlock();
+            var target = new ComboBox
+            {
+                Header = oldHeader,
+                Template = GetTemplate(),
+            };
+
+            var root = new TestRoot { Child = target };
+
+            target.ApplyTemplate();
+            Assert.Same(target, ((ILogical)oldHeader).LogicalParent);
+
+            target.Header = newHeader;
+
+            Assert.Same(target, ((ILogical)newHeader).LogicalParent);
+            Assert.Null(((ILogical)oldHeader).LogicalParent);
+            Assert.False(((ILogical)oldHeader).IsAttachedToLogicalTree);
+        }
+
+        [Fact]
+        public void Clearing_Header_Detaches_Logical_Child()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var header = new TextBlock();
+            var target = new ComboBox
+            {
+                Header = header,
+                Template = GetTemplate(),
+            };
+
+            var root = new TestRoot { Child = target };
+
+            target.ApplyTemplate();
+            Assert.Same(target, ((ILogical)header).LogicalParent);
+
+            target.Header = null;
+
+            Assert.Null(((ILogical)header).LogicalParent);
+            Assert.False(((ILogical)header).IsAttachedToLogicalTree);
+            Assert.Null(target.HeaderPresenter?.Content);
+        }
+
+        [Fact]
+        public void Changing_HeaderTemplate_Rebuilds_HeaderPresenter_Content()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var firstTemplate = new FuncDataTemplate<string>((_, _) => new TextBlock { Text = "Templated header" });
+            var secondTemplate = new FuncDataTemplate<string>((_, _) => new TextBlock { Text = "Updated header" });
+            var target = new ComboBox
+            {
+                Header = "Header",
+                HeaderTemplate = firstTemplate,
+                Template = GetTemplate(),
+            };
+
+            var root = new TestRoot { Child = target };
+
+            target.ApplyTemplate();
+            root.LayoutManager.ExecuteInitialLayoutPass();
+            Assert.Equal("Templated header", (target.HeaderPresenter?.Child as TextBlock)?.Text);
+
+            target.HeaderTemplate = secondTemplate;
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.Equal("Updated header", (target.HeaderPresenter?.Child as TextBlock)?.Text);
+        }
+
+        [Fact]
+        public void Header_Binding_Follows_DataContext()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var viewModel = new HeaderViewModel { HeaderValue = "Header 1" };
+            var target = new ComboBox
+            {
+                Template = GetTemplate(),
+            };
+
+            target.Bind(ComboBox.HeaderProperty, new Binding("HeaderValue"));
+
+            var root = new TestRoot
+            {
+                Child = target,
+                DataContext = viewModel
+            };
+
+            target.ApplyTemplate();
+            root.LayoutManager.ExecuteInitialLayoutPass();
+            Assert.Equal("Header 1", target.HeaderPresenter?.Content);
+
+            viewModel.HeaderValue = "Header 2";
+
+            Assert.Equal("Header 2", target.HeaderPresenter?.Content);
+        }
+
         private static FuncControlTemplate GetTemplate()
         {
             return new FuncControlTemplate<ComboBox>((parent, scope) =>
@@ -189,6 +333,12 @@ namespace Avalonia.Controls.UnitTests
                     Name = "container",
                     Children =
                     {
+                        new ContentPresenter
+                        {
+                            Name = "PART_HeaderPresenter",
+                            [!ContentPresenter.ContentProperty] = parent[!ComboBox.HeaderProperty],
+                            [!ContentPresenter.ContentTemplateProperty] = parent[!ComboBox.HeaderTemplateProperty],
+                        }.RegisterInNameScope(scope),
                         new ContentControl
                         {
                             [!ContentControl.ContentProperty] = parent[!ComboBox.SelectionBoxItemProperty],
@@ -635,6 +785,27 @@ namespace Avalonia.Controls.UnitTests
         }
 
         private sealed record Item(string Value, string Display);
+
+        private sealed class HeaderViewModel : INotifyPropertyChanged
+        {
+            private string _headerValue = string.Empty;
+            public string HeaderValue
+            {
+                get => _headerValue;
+                set
+                {
+                    if (_headerValue == value)
+                    {
+                        return;
+                    }
+
+                    _headerValue = value;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HeaderValue)));
+                }
+            }
+
+            public event PropertyChangedEventHandler? PropertyChanged;
+        }
 
         [Fact]
         public void When_Editable_Input_Text_Matches_An_Item_It_Is_Selected()
