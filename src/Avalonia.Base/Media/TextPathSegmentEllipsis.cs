@@ -110,10 +110,10 @@ namespace Avalonia.Media
                                     segments.Add((currentSegStart, globalIndex - currentSegStart, segmentWidth, false));
                                 }
 
-                                var seperatorWidth = TextPathSegmentEllipsis.MeasureSegmentWidth(logicalRuns, globalIndex, 1);
+                                var separatorWidth = TextPathSegmentEllipsis.MeasureSegmentWidth(logicalRuns, globalIndex, 1);
 
                                 // separator as its own segment
-                                segments.Add((globalIndex, 1, seperatorWidth, true));
+                                segments.Add((globalIndex, 1, separatorWidth, true));
 
                                 // next segment starts after separator
                                 currentSegStart = globalIndex + 1;
@@ -420,33 +420,6 @@ namespace Avalonia.Media
         /// index.
         /// </summary>
         /// <remarks>If the specified character index does not fall within any run, the method returns
-        /// (-1, -1). This method does not validate whether the character index is within the bounds of the combined
-        /// runs; callers should ensure valid input.</remarks>
-        /// <param name="runs">A read-only list of text runs to search. Each run represents a contiguous segment of text.</param>
-        /// <param name="characterIndex">The zero-based character index to locate within the combined text runs. Must be greater than or equal to
-        /// zero and less than the total length of all runs.</param>
-        /// <returns>A tuple containing the index of the run and the offset within that run for the specified character index.
-        /// Returns (-1, -1) if the character index is out of range.</returns>
-        private static (int RunIndex, int Offset) FindRunAtCharacterIndex(IReadOnlyList<TextRun> runs, int characterIndex)
-        {
-            var current = 0;
-
-            for (var i = 0; i < runs.Count; i++)
-            {
-                var run = runs[i];
-
-                if (characterIndex < current + run.Length)
-                {
-                    var offset = characterIndex - current;
-
-                    return (i, offset);
-                }
-
-                current += run.Length;
-            }
-
-            return (-1, -1);
-        }
 
         /// <summary>
         /// Calculates the total width of a specified segment within a sequence of text runs.
@@ -530,7 +503,7 @@ namespace Avalonia.Media
                         }
                     case DrawableTextRun d:
                         {
-                            // For drawable runs, count full width they fully overlap
+                            // For drawable runs, count full width if they completely overlap
                             if (overlapLen >= d.Length)
                             {
                                 width += d.Size.Width;
