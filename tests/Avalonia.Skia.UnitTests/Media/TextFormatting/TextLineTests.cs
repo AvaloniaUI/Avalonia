@@ -2330,7 +2330,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var trimming = new TextPathSegmentTrimming("*");
 
-                var collapsingProperties = trimming.CreateCollapsingProperties(new TextCollapsingCreateInfo(12, defaultProperties, FlowDirection.LeftToRight));
+                var collapsingProperties = trimming.CreateCollapsingProperties(new TextCollapsingCreateInfo(15, defaultProperties, FlowDirection.LeftToRight));
 
                 var collapsedLine = textLine.Collapse(collapsingProperties);
 
