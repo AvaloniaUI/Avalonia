@@ -1208,6 +1208,12 @@ namespace Avalonia.Win32.Interop
             uint uStartScan, uint cScanLines,
            IntPtr lpvBits, [In] ref BITMAPINFO lpbmi, uint fuColorUse);
 
+        [DllImport("gdi32.dll")]
+        public static extern int SetDIBits(IntPtr hdc, IntPtr hbm, uint start, uint cLines, IntPtr lpBits, [In] ref BITMAPINFO lpbmi, uint fuColorUse);
+
+        [DllImport("gdi32.dll")]
+        public static extern int SetDIBits(IntPtr hdc, IntPtr hbm, uint start, uint cLines, IntPtr lpBits, [In] ref BITMAPINFOHEADER lpbmi, uint fuColorUse);
+
         [DllImport("gdi32.dll", SetLastError = false, ExactSpelling = true)]
         public static extern IntPtr CreateRectRgn(int x1, int y1, int x2, int y2);
 
@@ -1704,6 +1710,8 @@ namespace Avalonia.Win32.Interop
         public static extern bool CloseHandle(IntPtr hObject);
         [DllImport("gdi32.dll")]
         public static extern IntPtr CreateDIBSection(IntPtr hDC, ref BITMAPINFOHEADER pBitmapInfo, int un, out IntPtr lplpVoid, IntPtr handle, int dw);
+        [DllImport("gdi32.dll")]
+        public static extern IntPtr CreateCompatibleBitmap(IntPtr hDC, int cx, int cy);
         [DllImport("gdi32.dll")]
         public static extern IntPtr CreateBitmap(int width, int height, int planes, int bitCount, IntPtr data);
         [DllImport("gdi32.dll")]
