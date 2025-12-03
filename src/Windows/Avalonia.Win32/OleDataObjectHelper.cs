@@ -7,6 +7,7 @@ using System.Runtime.InteropServices.ComTypes;
 using Avalonia.Input;
 using Avalonia.Logging;
 using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using Avalonia.Platform.Storage.FileIO;
 using Avalonia.Utilities;
@@ -22,6 +23,7 @@ namespace Avalonia.Win32;
 internal static class OleDataObjectHelper
 {
     private const int SRCCOPY = 0x00CC0020;
+    private const int CBM_INIT = 4;
 
     public static FORMATETC ToFormatEtc(this DataFormat format, bool isGdi = false)
         => new()
@@ -326,44 +328,79 @@ internal static class OleDataObjectHelper
             return WriteFileNamesToHGlobal(ref hGlobal, fileNames);
         }
 
-        if (ClipboardFormatRegistry.DibDataFormat.Equals(format))
+        if (ClipboardFormatRegistry.DibDataFormat.Equals(format) 
+            || ClipboardFormatRegistry.DibV5DataFormat.Equals(format))
         {
             var bitmap = dataTransfer.TryGetValue(DataFormat.Bitmap);
             if (bitmap != null)
             {
+                bool isV5 = ClipboardFormatRegistry.DibV5DataFormat.Equals(format);
                 var pixelSize = bitmap.PixelSize;
+                var bpp = bitmap.Format?.BitsPerPixel ?? 0;
                 var stride = ((bitmap.Format?.BitsPerPixel ?? 0) / 8) * pixelSize.Width;
                 var buffer = new byte[stride * pixelSize.Height];
                 fixed (byte* bytes = buffer)
                 {
                     bitmap.CopyPixels(new PixelRect(pixelSize), (IntPtr)bytes, buffer.Length, stride);
 
-                    var infoHeader = new BITMAPINFOHEADER()
+                    if (!isV5)
                     {
-                        biSizeImage = (uint)buffer.Length,
-                        biWidth = pixelSize.Width,
-                        biHeight = -pixelSize.Height,
-                        biBitCount = (ushort)(bitmap.Format?.BitsPerPixel ?? 0),
-                        biPlanes = 1,
-                        biCompression = (uint)BitmapCompressionMode.BI_RGB
-                    };
-                    infoHeader.Init();
+                        var infoHeader = new BITMAPINFOHEADER()
+                        {
+                            biSizeImage = (uint)buffer.Length,
+                            biWidth = pixelSize.Width,
+                            biHeight = -pixelSize.Height,
+                            biBitCount = (ushort)bpp,
+                            biPlanes = 1,
+                            biCompression = BitmapCompressionMode.BI_RGB,
+                        };
+                        infoHeader.Init();
 
-                    var imageData = new byte[infoHeader.biSize + infoHeader.biSizeImage];
+                        var imageData = new byte[infoHeader.biSize + infoHeader.biSizeImage];
 
-                    fixed (byte* image = imageData)
+                        fixed (byte* image = imageData)
+                        {
+                            Marshal.StructureToPtr(infoHeader, (IntPtr)image, false);
+                            new Span<byte>(bytes, buffer.Length).CopyTo(new Span<byte>((image + infoHeader.biSize), buffer.Length));
+
+                            return WriteBytesToHGlobal(ref hGlobal, imageData);
+                        }
+                    }
+                    else
                     {
-                        Marshal.StructureToPtr(infoHeader, (IntPtr)image, false);
-                        new Span<byte>(bytes, buffer.Length).CopyTo(new Span<byte>((image + infoHeader.biSize), buffer.Length));
+                        var infoHeader = new BITMAPV5HEADER()
+                        {
+                            bV5Width = pixelSize.Width,
+                            bV5Height = -pixelSize.Height,
+                            bV5Planes = 1,
+                            bV5BitCount = (ushort)bpp,
+                            bV5Compression = BitmapCompressionMode.BI_BITFIELDS,
+                            bV5SizeImage = (uint)buffer.Length,
+                            bV5RedMask = GetRedMask(bitmap),
+                            bV5BlueMask = GetBlueMask(bitmap),
+                            bV5GreenMask = GetGreenMask(bitmap),
+                            bV5AlphaMask = GetAlphaMask(bitmap),
+                            bV5CSType = BitmapColorSpace.LCS_sRGB,
+                            bV5Intent = BitmapIntent.LCS_GM_ABS_COLORIMETRIC
+                        };
+                        infoHeader.Init();
 
-                        return WriteBytesToHGlobal(ref hGlobal, imageData);
+                        var imageData = new byte[infoHeader.bV5Size + infoHeader.bV5SizeImage];
+
+                        fixed (byte* image = imageData)
+                        {
+                            Marshal.StructureToPtr(infoHeader, (IntPtr)image, false);
+                            new Span<byte>(bytes, buffer.Length).CopyTo(new Span<byte>((image + infoHeader.bV5Size), buffer.Length));
+
+                            return WriteBytesToHGlobal(ref hGlobal, imageData);
+                        }
                     }
                 }
             }
         }
 
         if (ClipboardFormatRegistry.PngSystemDataFormat.Equals(format)
-            || ClipboardFormatRegistry.PngDataFormat.Equals(format))
+            || ClipboardFormatRegistry.PngMimeDataFormat.Equals(format))
         {
             var bitmap = dataTransfer.TryGetValue(DataFormat.Bitmap);
             if (bitmap != null)
@@ -396,6 +433,50 @@ internal static class OleDataObjectHelper
         return DV_E_FORMATETC;
     }
 
+    private static uint GetAlphaMask(Bitmap? bitmap)
+    {
+        return bitmap?.Format?.FormatEnum switch
+        {
+            PixelFormatEnum.Rgba8888 => 0xff000000,
+            PixelFormatEnum.Bgra8888 => 0xff000000,
+            PixelFormatEnum.Rgb565 => 0,
+            _ => throw new NotSupportedException()
+        };
+    }
+
+    private static uint GetGreenMask(Bitmap? bitmap)
+    {
+        return bitmap?.Format?.FormatEnum switch
+        {
+            PixelFormatEnum.Rgba8888 => 0x0000ff00,
+            PixelFormatEnum.Bgra8888 => 0x0000ff00,
+            PixelFormatEnum.Rgb565 => 0b0000011111100000,
+            _ => throw new NotSupportedException()
+        };
+    }
+
+    private static uint GetBlueMask(Bitmap? bitmap)
+    {
+        return bitmap?.Format?.FormatEnum switch
+        {
+            PixelFormatEnum.Rgba8888 => 0x00ff0000,
+            PixelFormatEnum.Bgra8888 => 0x000000ff,
+            PixelFormatEnum.Rgb565 => 0b1111100000000000,
+            _ => throw new NotSupportedException()
+        };
+    }
+
+    private static uint GetRedMask(Bitmap? bitmap)
+    {
+        return bitmap?.Format?.FormatEnum switch
+        {
+            PixelFormatEnum.Rgba8888 => 0x000000ff,
+            PixelFormatEnum.Bgra8888 => 0x00ff0000,
+            PixelFormatEnum.Rgb565 => 0b0000000000011111,
+            _ => throw new NotSupportedException()
+        };
+    }
+
     public unsafe static uint WriteDataToGdi(IDataTransfer dataTransfer, DataFormat format, ref IntPtr hGlobalBitmap)
     {
         if (ClipboardFormatRegistry.HBitmapDataFormat.Equals(format))
@@ -404,7 +485,8 @@ internal static class OleDataObjectHelper
             if (bitmap != null)
             {
                 var pixelSize = bitmap.PixelSize;
-                var stride = ((bitmap.Format?.BitsPerPixel ?? 0) / 8) * pixelSize.Width;
+                var bpp = bitmap.Format?.BitsPerPixel ?? 0;
+                var stride = (bpp / 8) * pixelSize.Width;
                 var buffer = new byte[stride * pixelSize.Height];
                 fixed (byte* bytes = buffer)
                 {
@@ -421,32 +503,44 @@ internal static class OleDataObjectHelper
                         if (compatDc == IntPtr.Zero)
                             return DV_E_FORMATETC;
 
-                        hbitmap = CreateCompatibleBitmap(compatDc, pixelSize.Width, pixelSize.Height);
-                        if (hbitmap == IntPtr.Zero)
-                            return DV_E_FORMATETC;
-
-                        SelectObject(compatDc, hbitmap);
-
-                        var bitmapInfoHeader = new BITMAPINFOHEADER()
+                        var bitmapInfoHeader = new BITMAPV5HEADER()
                         {
-                            biWidth = pixelSize.Width,
-                            biHeight = pixelSize.Height,
-                            biPlanes = 1,
-                            biBitCount = (ushort)(bitmap.Format?.BitsPerPixel ?? 0),
-                            biCompression = 0,
-                            biSizeImage = (uint)(pixelSize.Width * 4 * Math.Abs(pixelSize.Height))
+                            bV5Width = pixelSize.Width,
+                            bV5Height = -pixelSize.Height,
+                            bV5Planes = 1,
+                            bV5BitCount = (ushort)bpp,
+                            bV5Compression = BitmapCompressionMode.BI_BITFIELDS,
+                            bV5SizeImage = (uint)buffer.Length,
+                            bV5RedMask = GetRedMask(bitmap),
+                            bV5BlueMask = GetBlueMask(bitmap),
+                            bV5GreenMask = GetGreenMask(bitmap),
+                            bV5AlphaMask = GetAlphaMask(bitmap),
+                            bV5CSType = BitmapColorSpace.LCS_sRGB,
+                            bV5Intent = BitmapIntent.LCS_GM_BUSINESS,
                         };
 
                         bitmapInfoHeader.Init();
+                        var header = new BITMAPINFO()
+                        {
+                            biWidth = pixelSize.Width,
+                            biHeight = -pixelSize.Height,
+                            biPlanes = 1,
+                            biBitCount = (ushort)bpp,
+                            biCompression = BitmapCompressionMode.BI_BITFIELDS,
+                            biSizeImage = (uint)buffer.Length,
+                            biClrUsed = 0,
+                            biRedMask = GetRedMask(bitmap),
+                            biBlueMask = GetBlueMask(bitmap),
+                            biGreenMask = GetGreenMask(bitmap)
+                        };
 
-                        var ret = SetDIBits(compatDc, hbitmap, 0, (uint)pixelSize.Height, (IntPtr)bytes, ref bitmapInfoHeader, 0);
+                        header.biSize = (uint)sizeof(BITMAPINFOHEADER);
 
-                        SelectObject(compatDc, IntPtr.Zero);
+                        hbitmap = CreateDIBitmap(compatDc, bitmapInfoHeader, CBM_INIT, (nint)bytes, header, DIBColorTable.DIB_RGB_COLORS);
 
                         hGlobalBitmap = hbitmap;
 
                         return (uint)HRESULT.S_OK;
-
                     }
                     finally
                     {

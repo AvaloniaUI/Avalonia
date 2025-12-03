@@ -13,16 +13,19 @@ namespace Avalonia.Win32
         private const int MaxFormatNameLength = 260;
         private const string AppPrefix = "avn-app-fmt:";
         public const string PngFormatMimeType = "image/png";
+        public const string PngFormatSystemType = "PNG";
         public const string BitmapFormat = "CF_BITMAP";
         public const string DibFormat = "CF_DIB";
+        public const string DibV5Format = "CF_DIBV5";
         private static readonly List<(DataFormat Format, ushort Id)> s_formats = [];
 
-        public static DataFormat PngSystemDataFormat = DataFormat.FromSystemName<Bitmap>("PNG" , AppPrefix);
-        public static DataFormat PngDataFormat = DataFormat.FromSystemName<Bitmap>(PngFormatMimeType , AppPrefix);
+        public static DataFormat PngSystemDataFormat = DataFormat.FromSystemName<Bitmap>(PngFormatSystemType, AppPrefix);
+        public static DataFormat PngMimeDataFormat = DataFormat.FromSystemName<Bitmap>(PngFormatMimeType, AppPrefix);
         public static DataFormat HBitmapDataFormat = DataFormat.FromSystemName<Bitmap>(BitmapFormat, AppPrefix);
         public static DataFormat DibDataFormat = DataFormat.FromSystemName<Bitmap>(DibFormat, AppPrefix);
+        public static DataFormat DibV5DataFormat = DataFormat.FromSystemName<Bitmap>(DibV5Format, AppPrefix);
 
-        public static DataFormat[] ImageFormats = [PngDataFormat, PngSystemDataFormat, DibDataFormat, HBitmapDataFormat]; 
+        public static DataFormat[] ImageFormats = [PngMimeDataFormat, PngSystemDataFormat, DibDataFormat, DibV5DataFormat, HBitmapDataFormat];
 
         static ClipboardFormatRegistry()
         {
@@ -30,6 +33,7 @@ namespace Avalonia.Win32
             AddDataFormat(DataFormat.Text, (ushort)UnmanagedMethods.ClipboardFormat.CF_TEXT);
             AddDataFormat(DataFormat.File, (ushort)UnmanagedMethods.ClipboardFormat.CF_HDROP);
             AddDataFormat(DibDataFormat, (ushort)UnmanagedMethods.ClipboardFormat.CF_DIB);
+            AddDataFormat(DibV5DataFormat, (ushort)UnmanagedMethods.ClipboardFormat.CF_DIBV5);
             AddDataFormat(HBitmapDataFormat, (ushort)UnmanagedMethods.ClipboardFormat.CF_BITMAP);
         }
 
