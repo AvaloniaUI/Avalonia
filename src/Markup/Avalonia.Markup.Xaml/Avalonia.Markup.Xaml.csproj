@@ -39,6 +39,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RuntimeXamlLoaderConfiguration.cs" />
     <Compile Include="RuntimeXamlLoaderDocument.cs" />
+    <Compile Include="SourceInfo\SourceNavigatorRegistry.cs" />
+    <Compile Include="SourceInfo\SourceInfo.cs" />
     <Compile Include="Styling\MergeResourceInclude.cs" />
     <Compile Include="Styling\ResourceInclude.cs" />
     <Compile Include="Styling\StyleInclude.cs" />

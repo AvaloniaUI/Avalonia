@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Controls;
+using Avalonia.Diagnostics.SourceNavigator;
 using Avalonia.Diagnostics.Views;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
+using Avalonia.Markup.Xaml.SourceInfo;
 using Avalonia.Reactive;
 
 namespace Avalonia.Diagnostics
@@ -127,6 +129,11 @@ namespace Avalonia.Diagnostics
             window.SelectedControl(focusedControl);
             window.Closed += DevToolsClosed;
             s_open.Add(topLevelGroup, window);
+
+            SourceNavigatorRegistry.RegisterIfNotExists(() => new VisualStudioSourceNavigator());
+            SourceNavigatorRegistry.RegisterIfNotExists(() => new RiderSourceNavigator());
+            SourceNavigatorRegistry.RegisterIfNotExists(() => new VsCodeSourceNavigator());
+
             if (options.ShowAsChildWindow && owner is not null)
             {
                 window.Show(owner);

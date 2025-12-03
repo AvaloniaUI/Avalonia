@@ -31,6 +31,11 @@
                 Description="Allow debug XAML compilation"
                 Category="Debug" />
 
+  <BoolProperty Name="AvaloniaXamlCreateSourceInfo"
+                DisplayName="Generate XAML Source Info"
+                Description="When enabled, the XAML compiler embeds SourceInfo metadata (file path, line, and column) into generated code. This allows tools and debuggers to locate the original .axaml source position of a selected element at runtime or in the designer."
+                Category="Debug" />
+
   <BoolProperty Name="AvaloniaXamlVerboseExceptions"
                 DisplayName="Report verbose internal exceptions with stack traces"
                 Description="Also includes inner exceptions"
