@@ -10,7 +10,6 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 using Avalonia.Platform.Storage.FileIO;
 using Avalonia.Utilities;
-using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 using FORMATETC = Avalonia.Win32.Interop.UnmanagedMethods.FORMATETC;
 using STGMEDIUM = Avalonia.Win32.Interop.UnmanagedMethods.STGMEDIUM;
@@ -24,14 +23,14 @@ internal static class OleDataObjectHelper
 {
     private const int SRCCOPY = 0x00CC0020;
 
-    public static FORMATETC ToFormatEtc(this DataFormat format)
+    public static FORMATETC ToFormatEtc(this DataFormat format, bool isGdi = false)
         => new()
         {
             cfFormat = ClipboardFormatRegistry.GetFormatId(format),
             dwAspect = DVASPECT.DVASPECT_CONTENT,
             ptd = IntPtr.Zero,
             lindex = -1,
-            tymed = TYMED.TYMED_HGLOBAL
+            tymed = isGdi ? TYMED.TYMED_GDI : TYMED.TYMED_HGLOBAL
         };
 
     public static unsafe object? TryGet(this Win32Com.IDataObject oleDataObject, DataFormat format)
@@ -327,7 +326,7 @@ internal static class OleDataObjectHelper
             return WriteFileNamesToHGlobal(ref hGlobal, fileNames);
         }
 
-        if (DataFormat.Bitmap.Equals(format))
+        if (ClipboardFormatRegistry.DibDataFormat.Equals(format))
         {
             var bitmap = dataTransfer.TryGetValue(DataFormat.Bitmap);
             if (bitmap != null)
@@ -363,6 +362,20 @@ internal static class OleDataObjectHelper
             }
         }
 
+        if (ClipboardFormatRegistry.PngSystemDataFormat.Equals(format)
+            || ClipboardFormatRegistry.PngDataFormat.Equals(format))
+        {
+            var bitmap = dataTransfer.TryGetValue(DataFormat.Bitmap);
+            if (bitmap != null)
+            {
+                using var stream = new MemoryStream();
+                bitmap.Save(stream);
+
+                return WriteBytesToHGlobal(ref hGlobal, stream.ToArray().AsSpan());
+            }
+            return DV_E_FORMATETC;
+        }
+
         if (format is DataFormat<string> stringFormat)
         {
             return dataTransfer.TryGetValue(stringFormat) is { } stringValue ?
@@ -379,6 +392,76 @@ internal static class OleDataObjectHelper
 
         Logger.TryGet(LogEventLevel.Warning, LogArea.Win32Platform)
             ?.Log(null, "Unsupported data format {Format}", format);
+
+        return DV_E_FORMATETC;
+    }
+
+    public unsafe static uint WriteDataToGdi(IDataTransfer dataTransfer, DataFormat format, ref IntPtr hGlobalBitmap)
+    {
+        if (ClipboardFormatRegistry.HBitmapDataFormat.Equals(format))
+        {
+            var bitmap = dataTransfer.TryGetValue(DataFormat.Bitmap);
+            if (bitmap != null)
+            {
+                var pixelSize = bitmap.PixelSize;
+                var stride = ((bitmap.Format?.BitsPerPixel ?? 0) / 8) * pixelSize.Width;
+                var buffer = new byte[stride * pixelSize.Height];
+                fixed (byte* bytes = buffer)
+                {
+                    bitmap.CopyPixels(new PixelRect(pixelSize), (IntPtr)bytes, buffer.Length, stride);
+
+                    IntPtr hdc = IntPtr.Zero, compatDc = IntPtr.Zero, hbitmap = IntPtr.Zero;
+                    try
+                    {
+                        hdc = GetDC(IntPtr.Zero);
+                        if (hdc == IntPtr.Zero)
+                            return DV_E_FORMATETC;
+
+                        compatDc = CreateCompatibleDC(hdc);
+                        if (compatDc == IntPtr.Zero)
+                            return DV_E_FORMATETC;
+
+                        hbitmap = CreateCompatibleBitmap(compatDc, pixelSize.Width, pixelSize.Height);
+                        if (hbitmap == IntPtr.Zero)
+                            return DV_E_FORMATETC;
+
+                        SelectObject(compatDc, hbitmap);
+
+                        var bitmapInfoHeader = new BITMAPINFOHEADER()
+                        {
+                            biWidth = pixelSize.Width,
+                            biHeight = pixelSize.Height,
+                            biPlanes = 1,
+                            biBitCount = (ushort)(bitmap.Format?.BitsPerPixel ?? 0),
+                            biCompression = 0,
+                            biSizeImage = (uint)(pixelSize.Width * 4 * Math.Abs(pixelSize.Height))
+                        };
+
+                        bitmapInfoHeader.Init();
+
+                        var ret = SetDIBits(compatDc, hbitmap, 0, (uint)pixelSize.Height, (IntPtr)bytes, ref bitmapInfoHeader, 0);
+
+                        SelectObject(compatDc, IntPtr.Zero);
+
+                        hGlobalBitmap = hbitmap;
+
+                        return (uint)HRESULT.S_OK;
+
+                    }
+                    finally
+                    {
+                        if (compatDc != IntPtr.Zero)
+                            ReleaseDC(IntPtr.Zero, compatDc);
+
+                        if (hdc != IntPtr.Zero)
+                            ReleaseDC(IntPtr.Zero, hdc);
+                    }
+                }
+            }
+        }
+
+        Logger.TryGet(LogEventLevel.Warning, LogArea.Win32Platform)
+            ?.Log(null, "Unsupported gdi data format {Format}", format);
 
         return DV_E_FORMATETC;
     }
