@@ -87,7 +87,7 @@ namespace Avalonia.Controls.Presenters
         /// Defines the <see cref="LetterSpacing"/> property.
         /// </summary>
         public static readonly StyledProperty<double> LetterSpacingProperty =
-            TextBlock.LetterSpacingProperty.AddOwner<TextPresenter>();
+            TextElement.LetterSpacingProperty.AddOwner<TextPresenter>();
 
         /// <summary>
         /// Defines the <see cref="Background"/> property.
