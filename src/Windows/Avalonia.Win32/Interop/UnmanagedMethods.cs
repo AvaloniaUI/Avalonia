@@ -895,6 +895,23 @@ namespace Avalonia.Win32.Interop
             BI_PNG = 5
         }
 
+        public enum BitmapColorSpace : uint
+        {
+            LCS_CALIBRATED_RGB = 0,
+            LCS_sRGB = 0x73524742,
+            LCS_WINDOWS_COLOR_SPACE = 0x57696E20,
+            PROFILE_LINKED = 0x4C494E4B,
+            PROFILE_EMBEDDED = 0x4D424544
+        }
+
+        public enum BitmapIntent : uint
+        {
+            LCS_GM_ABS_COLORIMETRIC = 1,
+            LCS_GM_BUSINESS = 2,
+            LCS_GM_GRAPHICS = 4,
+            LCS_GM_IMAGES = 8,
+        }
+
         public enum DIBColorTable
         {
             DIB_RGB_COLORS = 0,     /* color table in RGBs */
@@ -1101,7 +1118,7 @@ namespace Avalonia.Win32.Interop
             public int biHeight;
             public ushort biPlanes;
             public ushort biBitCount;
-            public uint biCompression;
+            public BitmapCompressionMode biCompression;
             public uint biSizeImage;
             public int biXPelsPerMeter;
             public int biYPelsPerMeter;
@@ -1112,6 +1129,56 @@ namespace Avalonia.Win32.Interop
             {
                 biSize = (uint)sizeof(BITMAPINFOHEADER);
             }
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct BITMAPV5HEADER
+        {
+            public uint bV5Size;
+            public int bV5Width;
+            public int bV5Height;
+            public ushort bV5Planes;
+            public ushort bV5BitCount;
+            public BitmapCompressionMode bV5Compression;
+            public uint bV5SizeImage;
+            public int bV5XPelsPerMeter;
+            public int bV5YPelsPerMeter;
+            public uint bV5ClrUsed;
+            public uint bV5ClrImportant;
+            public uint bV5RedMask;
+            public uint bV5GreenMask;
+            public uint bV5BlueMask;
+            public uint bV5AlphaMask;
+            public BitmapColorSpace bV5CSType;
+            public CIEXYZTRIPLE bV5Endpoints;
+            public uint bV5GammaRed;
+            public uint bV5GammaGreen;
+            public uint bV5GammaBlue;
+            public BitmapIntent bV5Intent;
+            public uint bV5ProfileData;
+            public uint bV5ProfileSize;
+            public uint bV5Reserved;
+
+            public void Init()
+            {
+                bV5Size = (uint)sizeof(BITMAPV5HEADER);
+            }
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct CIEXYZTRIPLE
+        {
+            public CIEXYZ ciexyzRed;
+            public CIEXYZ ciexyzGreen;
+            public CIEXYZ ciexyzBlue;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct CIEXYZ
+        {
+            public int ciexyzX;
+            public int ciexyzY;
+            public int ciexyzZ;
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -1134,9 +1201,10 @@ namespace Avalonia.Win32.Interop
             public uint biClrUsed;
             public uint biClrImportant;
             //}
+            public uint biRedMask;
+            public uint biGreenMask;
+            public uint biBlueMask;
 
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 256)]
-            public uint[] cols;
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -1209,10 +1277,13 @@ namespace Avalonia.Win32.Interop
            IntPtr lpvBits, [In] ref BITMAPINFO lpbmi, uint fuColorUse);
 
         [DllImport("gdi32.dll")]
-        public static extern int SetDIBits(IntPtr hdc, IntPtr hbm, uint start, uint cLines, IntPtr lpBits, [In] ref BITMAPINFO lpbmi, uint fuColorUse);
+        public static extern int SetDIBits(IntPtr hdc, IntPtr hbm, uint start, uint cLines, IntPtr lpBits, in BITMAPINFO lpbmi, uint fuColorUse);
 
         [DllImport("gdi32.dll")]
-        public static extern int SetDIBits(IntPtr hdc, IntPtr hbm, uint start, uint cLines, IntPtr lpBits, [In] ref BITMAPINFOHEADER lpbmi, uint fuColorUse);
+        public static extern int SetDIBits(IntPtr hdc, IntPtr hbm, uint start, uint cLines, IntPtr lpBits, in BITMAPINFOHEADER lpbmi, uint fuColorUse);
+
+        [DllImport("gdi32.dll")]
+        public static extern int SetDIBits(IntPtr hdc, IntPtr hbm, uint start, uint cLines, IntPtr lpBits, in BITMAPV5HEADER lpbmi, uint fuColorUse);
 
         [DllImport("gdi32.dll", SetLastError = false, ExactSpelling = true)]
         public static extern IntPtr CreateRectRgn(int x1, int y1, int x2, int y2);
@@ -1703,13 +1774,18 @@ namespace Avalonia.Win32.Interop
         [DllImport("gdi32.dll")]
         public static extern int SetDIBitsToDevice(IntPtr hdc, int XDest, int YDest, uint
                 dwWidth, uint dwHeight, int XSrc, int YSrc, uint uStartScan, uint cScanLines,
-            IntPtr lpvBits, [In] ref BITMAPINFOHEADER lpbmi, uint fuColorUse);
+            IntPtr lpvBits, [In] ref BITMAPINFOHEADER lpbmi, DIBColorTable fuColorUse);
 
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool CloseHandle(IntPtr hObject);
         [DllImport("gdi32.dll")]
-        public static extern IntPtr CreateDIBSection(IntPtr hDC, ref BITMAPINFOHEADER pBitmapInfo, int un, out IntPtr lplpVoid, IntPtr handle, int dw);
+        public static extern IntPtr CreateDIBSection(IntPtr hDC, ref BITMAPINFOHEADER pBitmapInfo, DIBColorTable usage, out IntPtr lplpVoid, IntPtr handle, int dw);
+        [DllImport("gdi32.dll")]
+        public static extern IntPtr CreateDIBitmap(IntPtr hDC, in BITMAPV5HEADER pBitmapInfo, int flInit, IntPtr lplpVoid, in BITMAPINFO pbmi, DIBColorTable iUsage);
+        [DllImport("gdi32.dll")]
+        public static extern bool GdiFlush();
+
         [DllImport("gdi32.dll")]
         public static extern IntPtr CreateCompatibleBitmap(IntPtr hDC, int cx, int cy);
         [DllImport("gdi32.dll")]
@@ -2238,6 +2314,7 @@ namespace Avalonia.Win32.Interop
             /// A handle to type HDROP that identifies a list of files.
             /// </summary>
             CF_HDROP = 15,
+            CF_DIBV5 = 17,
         }
 
         public struct MSG

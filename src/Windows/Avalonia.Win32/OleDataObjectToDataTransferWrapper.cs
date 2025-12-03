@@ -38,7 +38,8 @@ internal sealed class OleDataObjectToDataTransferWrapper(Win32Com.IDataObject ol
         {
             if (format.Identifier is ClipboardFormatRegistry.DibFormat 
                 or ClipboardFormatRegistry.BitmapFormat 
-                or ClipboardFormatRegistry.PngFormatMimeType)
+                or ClipboardFormatRegistry.PngFormatMimeType
+                or ClipboardFormatRegistry.PngFormatSystemType)
             {
                 hasSupportedImageFormat = true;
                 break;
