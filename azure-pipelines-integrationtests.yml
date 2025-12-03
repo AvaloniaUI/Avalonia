@@ -90,7 +90,12 @@ jobs:
       projects: 'tests\Avalonia.IntegrationTests.Appium\Avalonia.IntegrationTests.Appium.csproj'
 
   - task: VSTest@2
-    displayName: 'Run Integration Tests'
+    displayName: 'Run Win32 Integration Tests'
+    inputs:
+      testAssemblyVer2: '**\bin\**\Avalonia.IntegrationTests.Win32.dll'
+
+  - task: VSTest@2
+    displayName: 'Run Appium Integration Tests'
     inputs:
       testAssemblyVer2: '**\bin\**\Avalonia.IntegrationTests.Appium.dll'
       runSettingsFile: 'tests\Avalonia.IntegrationTests.Appium\record-video.runsettings'
