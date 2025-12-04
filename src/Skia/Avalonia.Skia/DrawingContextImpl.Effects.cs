@@ -7,13 +7,16 @@ namespace Avalonia.Skia;
 partial class DrawingContextImpl
 {
     
-    public void PushEffect(IEffect effect)
+    public void PushEffect(Rect? effectClipRect, IEffect effect)
     {
         CheckLease();
         using var filter = CreateEffect(effect);
         var paint = SKPaintCache.Shared.Get();
         paint.ImageFilter = filter;
-        Canvas.SaveLayer(paint);
+        if (effectClipRect.HasValue)
+            Canvas.SaveLayer(effectClipRect.Value.ToSKRect(), paint);
+        else
+            Canvas.SaveLayer(paint);
         SKPaintCache.Shared.ReturnReset(paint);
     }
 

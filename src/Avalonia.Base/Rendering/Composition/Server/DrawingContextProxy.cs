@@ -285,14 +285,18 @@ internal partial class CompositorDrawingContextProxy : IDrawingContextImpl,
             _impl.DrawRectangle(new ImmutableSolidColorBrush(material.FallbackColor), null, rect);
     }
 
-    public void PushEffect(IEffect effect)
+    public void PushEffect(Rect? clipRect, IEffect effect)
     {
         AddCommand(new()
         {
             Type = PendingCommandType.PushEffect,
             ObjectUnion =
             {
-                Effect = effect
+                Effect = effect,
+            },
+            DataUnion =
+            {
+                EffectClipRect = clipRect
             }
         });
     }
