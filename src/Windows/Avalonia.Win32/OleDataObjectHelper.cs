@@ -519,7 +519,7 @@ internal static class OleDataObjectHelper
                             bV5GreenMask = GetGreenMask(bitmap),
                             bV5AlphaMask = GetAlphaMask(bitmap),
                             bV5CSType = BitmapColorSpace.LCS_sRGB,
-                            bV5Intent = BitmapIntent.LCS_GM_BUSINESS,
+                            bV5Intent = BitmapIntent.LCS_GM_ABS_COLORIMETRIC,
                         };
 
                         bitmapInfoHeader.Init();
