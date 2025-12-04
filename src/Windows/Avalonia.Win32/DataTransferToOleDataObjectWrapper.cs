@@ -37,10 +37,10 @@ internal class DataTransferToOleDataObjectWrapper(IDataTransfer dataTransfer)
             if (dataFormats.Contains(DataFormat.Bitmap))
             {
                 // We add extra formats for bitmaps
-                /*formats.Add(OleDataObjectHelper.ToFormatEtc(ClipboardFormatRegistry.PngDataFormat));
+                formats.Add(OleDataObjectHelper.ToFormatEtc(ClipboardFormatRegistry.PngMimeDataFormat));
                 formats.Add(OleDataObjectHelper.ToFormatEtc(ClipboardFormatRegistry.PngSystemDataFormat));
                 formats.Add(OleDataObjectHelper.ToFormatEtc(ClipboardFormatRegistry.DibDataFormat));
-                formats.Add(OleDataObjectHelper.ToFormatEtc(ClipboardFormatRegistry.DibV5DataFormat));*/
+                formats.Add(OleDataObjectHelper.ToFormatEtc(ClipboardFormatRegistry.DibV5DataFormat));
                 formats.Add(OleDataObjectHelper.ToFormatEtc(ClipboardFormatRegistry.HBitmapDataFormat, true));
             }
             else

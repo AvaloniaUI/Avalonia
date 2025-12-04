@@ -23,7 +23,6 @@ namespace Avalonia.Win32;
 internal static class OleDataObjectHelper
 {
     private const int SRCCOPY = 0x00CC0020;
-    private const int CBM_INIT = 4;
 
     public static FORMATETC ToFormatEtc(this DataFormat format, bool isGdi = false)
         => new()
@@ -374,7 +373,7 @@ internal static class OleDataObjectHelper
                             bV5Height = -pixelSize.Height,
                             bV5Planes = 1,
                             bV5BitCount = (ushort)bpp,
-                            bV5Compression = BitmapCompressionMode.BI_BITFIELDS,
+                            bV5Compression = bpp > 16 ? BitmapCompressionMode.BI_BITFIELDS : BitmapCompressionMode.BI_RGB,
                             bV5SizeImage = (uint)buffer.Length,
                             bV5RedMask = GetRedMask(bitmap),
                             bV5BlueMask = GetBlueMask(bitmap),
@@ -492,7 +491,7 @@ internal static class OleDataObjectHelper
                 {
                     bitmap.CopyPixels(new PixelRect(pixelSize), (IntPtr)bytes, buffer.Length, stride);
 
-                    IntPtr hdc = IntPtr.Zero, compatDc = IntPtr.Zero, hbitmap = IntPtr.Zero;
+                    IntPtr hdc = IntPtr.Zero, compatDc = IntPtr.Zero, desDc = IntPtr.Zero, hbitmap = IntPtr.Zero, section = IntPtr.Zero;
                     try
                     {
                         hdc = GetDC(IntPtr.Zero);
@@ -501,6 +500,10 @@ internal static class OleDataObjectHelper
 
                         compatDc = CreateCompatibleDC(hdc);
                         if (compatDc == IntPtr.Zero)
+                            return DV_E_FORMATETC;
+
+                        desDc = CreateCompatibleDC(hdc);
+                        if (desDc == IntPtr.Zero)
                             return DV_E_FORMATETC;
 
                         var bitmapInfoHeader = new BITMAPV5HEADER()
@@ -520,30 +523,38 @@ internal static class OleDataObjectHelper
                         };
 
                         bitmapInfoHeader.Init();
-                        var header = new BITMAPINFO()
+
+                        section = CreateDIBSection(compatDc, bitmapInfoHeader, 0, out var lbBits, IntPtr.Zero, 0);
+                        if (section == IntPtr.Zero)
+                            return DV_E_FORMATETC;
+
+                        SelectObject(compatDc, section);
+
+                        Marshal.Copy(buffer, 0, lbBits, buffer.Length);
+
+                        hbitmap = CreateCompatibleBitmap(desDc, pixelSize.Width, pixelSize.Height);
+
+                        SelectObject(desDc, hbitmap);
+
+                        if (!BitBlt(desDc, 0, 0, pixelSize.Width, pixelSize.Height, compatDc, 0, 0, SRCCOPY))
                         {
-                            biWidth = pixelSize.Width,
-                            biHeight = -pixelSize.Height,
-                            biPlanes = 1,
-                            biBitCount = (ushort)bpp,
-                            biCompression = BitmapCompressionMode.BI_BITFIELDS,
-                            biSizeImage = (uint)buffer.Length,
-                            biClrUsed = 0,
-                            biRedMask = GetRedMask(bitmap),
-                            biBlueMask = GetBlueMask(bitmap),
-                            biGreenMask = GetGreenMask(bitmap)
-                        };
-
-                        header.biSize = (uint)sizeof(BITMAPINFOHEADER);
-
-                        hbitmap = CreateDIBitmap(compatDc, bitmapInfoHeader, CBM_INIT, (nint)bytes, header, DIBColorTable.DIB_RGB_COLORS);
+                            return DV_E_FORMATETC;
+                        }
 
                         hGlobalBitmap = hbitmap;
+
+                        GdiFlush();
 
                         return (uint)HRESULT.S_OK;
                     }
                     finally
                     {
+                        SelectObject(compatDc, IntPtr.Zero);
+                        SelectObject(desDc, IntPtr.Zero);
+
+                        if (desDc != IntPtr.Zero)
+                            ReleaseDC(IntPtr.Zero, desDc);
+
                         if (compatDc != IntPtr.Zero)
                             ReleaseDC(IntPtr.Zero, compatDc);
 
