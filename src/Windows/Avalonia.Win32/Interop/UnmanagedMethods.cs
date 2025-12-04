@@ -1782,9 +1782,14 @@ namespace Avalonia.Win32.Interop
         [DllImport("gdi32.dll")]
         public static extern IntPtr CreateDIBSection(IntPtr hDC, ref BITMAPINFOHEADER pBitmapInfo, DIBColorTable usage, out IntPtr lplpVoid, IntPtr handle, int dw);
         [DllImport("gdi32.dll")]
+        public static extern IntPtr CreateDIBSection(IntPtr hDC, in BITMAPV5HEADER pBitmapInfo, DIBColorTable usage, out IntPtr lplpVoid, IntPtr handle, int dw);
+        [DllImport("gdi32.dll")]
         public static extern IntPtr CreateDIBitmap(IntPtr hDC, in BITMAPV5HEADER pBitmapInfo, int flInit, IntPtr lplpVoid, in BITMAPINFO pbmi, DIBColorTable iUsage);
         [DllImport("gdi32.dll")]
         public static extern bool GdiFlush();
+
+        [DllImport("gdi32.dll")]
+        public static extern bool BitBlt(IntPtr hDC, int x, int y, int cx, int cy, IntPtr hdcSrc, int x1, int y1, uint rop);
 
         [DllImport("gdi32.dll")]
         public static extern IntPtr CreateCompatibleBitmap(IntPtr hDC, int cx, int cy);
