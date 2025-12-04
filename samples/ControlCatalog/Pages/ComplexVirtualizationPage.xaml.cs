@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using ControlCatalog.ViewModels;
@@ -80,6 +81,11 @@ namespace ControlCatalog.Pages
                     statsText.Text = "Virtualization: OFF\n\nEnable virtualization and scroll to see pooled controls.";
                 }
             }
+        }
+
+        private void Button_OnClick(object? sender, RoutedEventArgs e)
+        {
+            _viewModel!.RecycleList();
         }
     }
 }

@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
+using System.Windows.Input;
 using MiniMvvm;
 
 namespace ControlCatalog.ViewModels
@@ -13,7 +15,7 @@ namespace ControlCatalog.ViewModels
         public ComplexVirtualizationPageViewModel()
         {
             // Create a mixed collection of different item types
-            var items = new List<object>();
+            _items = new List<object>();
             var random = new Random(42); // Fixed seed for consistent data
 
             for (int i = 0; i < 5000; i++)
@@ -51,7 +53,7 @@ namespace ControlCatalog.ViewModels
                                 skills.Add(Skills[random.Next(Skills.Length)]);
                             }
                         }
-                        items.Add(new PersonItem
+                        _items.Add(new PersonItem
                         {
                             Id = i,
                             Name = $"{FirstNames[random.Next(FirstNames.Length)]} {LastNames[random.Next(LastNames.Length)]}",
@@ -86,7 +88,7 @@ namespace ControlCatalog.ViewModels
                                 subtasks.Add($"{TaskActions[random.Next(TaskActions.Length)]} {TaskObjects[random.Next(TaskObjects.Length)]}");
                             }
                         }
-                        items.Add(new TaskItem
+                        _items.Add(new TaskItem
                         {
                             Id = i,
                             Title = $"{TaskActions[random.Next(TaskActions.Length)]} {TaskObjects[random.Next(TaskObjects.Length)]}",
@@ -117,7 +119,7 @@ namespace ControlCatalog.ViewModels
                             7 or 8 => random.Next(6, 9)         // 22% - Long
                         };
                         var productDesc = productDescLength > 0 ? string.Join(" ", Enumerable.Range(0, productDescLength).Select(_ => SampleText[random.Next(SampleText.Length)])) : "";
-                        items.Add(new ProductItem
+                        _items.Add(new ProductItem
                         {
                             Id = i,
                             ProductName = $"{Adjectives[random.Next(Adjectives.Length)]} {ProductTypes[random.Next(ProductTypes.Length)]}",
@@ -152,7 +154,7 @@ namespace ControlCatalog.ViewModels
                                 comments.Add($"{FirstNames[random.Next(FirstNames.Length)]}: {SampleText[random.Next(SampleText.Length)]}");
                             }
                         }
-                        items.Add(new PhotoItem
+                        _items.Add(new PhotoItem
                         {
                             Id = i,
                             Title = $"{PhotoAdjectives[random.Next(PhotoAdjectives.Length)]} {PhotoSubjects[random.Next(PhotoSubjects.Length)]}",
@@ -169,10 +171,33 @@ namespace ControlCatalog.ViewModels
                 }
             }
 
-            Items = new ObservableCollection<object>(items);
+            Items = new BulkObservableCollection<object>(_items);
         }
 
-        public ObservableCollection<object> Items { get; }
+        private bool _many = false;
+        private readonly List<object> _items;
+
+        public void RecycleList()
+        {
+            Items.BeginUpdate();
+            Items.Clear();
+            
+            if(_many)
+            {    
+                foreach(var elt in _items)
+                    Items.Add(elt);
+            }
+            else
+            {
+                Items.Add(_items.First());
+            }
+
+            _many = !_many;
+
+            Items.EndUpdate();
+        }
+        
+        public BulkObservableCollection<object> Items { get; }
 
         public bool EnableVirtualization
         {
@@ -291,5 +316,54 @@ namespace ControlCatalog.ViewModels
         public List<string> Comments { get; set; } = new();
         public string CameraModel { get; set; } = string.Empty;
         public bool IsPublic { get; set; }
+    }
+
+    /// <summary>
+    /// Represents a dynamic data collection that provides notifications when items get added, removed, or when the whole list is refreshed.
+    /// Supports suspending notifications during bulk operations via BeginUpdate/EndUpdate.
+    /// </summary>
+    /// <typeparam name="T">The type of elements in the collection.</typeparam>
+    public class BulkObservableCollection<T> : ObservableCollection<T>
+    {
+        private bool _suppressNotification;
+
+        public BulkObservableCollection()
+        {
+            
+        }
+
+        public BulkObservableCollection(IEnumerable<T> enumerable)
+        :base(enumerable)
+        {
+            
+        }
+        
+        /// <summary>
+        /// Begins a bulk update operation. CollectionChanged events are suppressed until EndUpdate is called.
+        /// </summary>
+        public void BeginUpdate()
+        {
+            _suppressNotification = true;
+        }
+
+        /// <summary>
+        /// Ends a bulk update operation and raises a Reset notification to refresh all listeners.
+        /// </summary>
+        public void EndUpdate()
+        {
+            _suppressNotification = false;
+            OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+        }
+
+        /// <summary>
+        /// Raises the CollectionChanged event with the provided arguments.
+        /// Events are suppressed when a bulk update is in progress.
+        /// </summary>
+        /// <param name="e">Arguments that describe the change.</param>
+        protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
+        {
+            if (!_suppressNotification)
+                base.OnCollectionChanged(e);
+        }
     }
 }

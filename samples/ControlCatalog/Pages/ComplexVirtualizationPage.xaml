@@ -17,6 +17,7 @@
       <CheckBox IsChecked="{Binding EnableVirtualization}" Margin="0,0,0,8">
         Enable Content Virtualization
       </CheckBox>
+      <Button Content="Recycle" Click="Button_OnClick"/>
     </StackPanel>
 
   <!--  <StackPanel DockPanel.Dock="Right" Margin="8" Width="200">

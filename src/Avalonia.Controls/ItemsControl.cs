@@ -87,6 +87,7 @@ namespace Avalonia.Controls
         private EventHandler<ChildIndexChangedEventArgs>? _childIndexChanged;
         private IDataTemplate? _displayMemberItemTemplate;
         private ItemsPresenter? _itemsPresenter;
+        private Dictionary<Type, IDataTemplate?>? _templateCache;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemsControl"/> class.
@@ -392,14 +393,8 @@ namespace Avalonia.Controls
             else if (container is ContentControl cc)
             {
                 // Find the actual template that will be used (handles DataTemplates collection)
-                // Use this ItemsControl's effective template first (respects ItemTemplate property)
-                var actualTemplate = itemTemplate;
-
-                // Only if no ItemTemplate is set, search up the tree for DataTemplates
-                if (actualTemplate == null)
-                {
-                    actualTemplate = container.FindDataTemplate(item, null);
-                }
+                // Use cached lookup to avoid repeated FindDataTemplate calls during measure (prevents layout cycles)
+                var actualTemplate = GetCachedDataTemplate(container, item, itemTemplate);
 
                 // Begin batch update to ensure both Content and ContentTemplate are set together
                 if (cc.Presenter != null)
@@ -422,20 +417,14 @@ namespace Avalonia.Controls
             else if (container is ContentPresenter p)
             {
                 // Find the actual template that will be used (handles DataTemplates collection)
-                // Use this ItemsControl's effective template first (respects ItemTemplate property)
-                var actualTemplate = itemTemplate;
-
-                // Only if no ItemTemplate is set, search up the tree for DataTemplates
-                if (actualTemplate == null)
-                {
-                    actualTemplate = container.FindDataTemplate(item, null);
-                }
+                // Use cached lookup to avoid repeated FindDataTemplate calls during measure (prevents layout cycles)
+                var actualTemplate = GetCachedDataTemplate(container, item, itemTemplate);
 
                 // Begin batch update to ensure both Content and ContentTemplate are set together
                 p.BeginBatchUpdate();
 
                 SetIfUnsetOrDifferent(p, ContentPresenter.ContentProperty, item);
-                
+
                 // Set the resolved template (avoids FindDataTemplate in ContentPresenter.CreateChild)
                 if (actualTemplate is not null)
                     SetIfUnsetOrDifferent(p, ContentPresenter.ContentTemplateProperty, actualTemplate);
@@ -625,14 +614,9 @@ namespace Avalonia.Controls
             // Child rebuilds in ContentPresenter when the data type changes.
             if (ContentVirtualizationDiagnostics.IsEnabled)
             {
-                // First try ItemTemplate property, otherwise search DataTemplates collection
+                // Only check ItemTemplate property if set (avoid FindDataTemplate during measure)
+                // For DataTemplates collections, we rely on item type matching template DataType
                 var template = GetEffectiveItemTemplate();
-                if (template == null)
-                {
-                    // No ItemTemplate - need to search DataTemplates collection for matching template
-                    // This is critical for heterogeneous lists where each data type has its own template
-                    template = this.FindDataTemplate(item, null);
-                }
 
                 if (template != null)
                 {
@@ -654,7 +638,10 @@ namespace Avalonia.Controls
                     }
                 }
 
-                // Fallback: use item type as key for type-safe container pooling
+                // For DataTemplates collections: use item type as recycle key
+                // This works because DataTemplate.Match uses DataType.IsInstanceOfType(data)
+                // so items of same type always match the same template
+                // Example: typeof(TaskItem) key → TaskItem pool → template with DataType=TaskItem
                 recycleKey = item?.GetType() ?? DefaultRecycleKey;
                 return true;
             }
@@ -663,7 +650,7 @@ namespace Avalonia.Controls
                 recycleKey = null;
                 return false;
             }
-            
+
             recycleKey = DefaultRecycleKey;
             return true;
         }
@@ -754,6 +741,7 @@ namespace Avalonia.Controls
             {
                 if (change.NewValue is not null && DisplayMemberBinding is not null)
                     throw new InvalidOperationException("Cannot set both DisplayMemberBinding and ItemTemplate.");
+                _templateCache?.Clear(); // Clear template cache when ItemTemplate changes
                 RefreshContainers();
             }
             else if (change.Property == DisplayMemberBindingProperty)
@@ -761,6 +749,7 @@ namespace Avalonia.Controls
                 if (change.NewValue is not null && ItemTemplate is not null)
                     throw new InvalidOperationException("Cannot set both DisplayMemberBinding and ItemTemplate.");
                 _displayMemberItemTemplate = null;
+                _templateCache?.Clear(); // Clear template cache when DisplayMemberBinding changes
                 RefreshContainers();
             }
         }
@@ -959,6 +948,38 @@ namespace Avalonia.Controls
             return _displayMemberItemTemplate;
         }
 
+        /// <summary>
+        /// Gets a data template for the item, using cache to avoid repeated FindDataTemplate calls during measure.
+        /// This is critical for avoiding layout cycles when using DataTemplates collections.
+        /// </summary>
+        private IDataTemplate? GetCachedDataTemplate(Control container, object? item, IDataTemplate? effectiveTemplate)
+        {
+            // If there's an ItemTemplate property, use it directly (no need for cache)
+            if (effectiveTemplate != null)
+                return effectiveTemplate;
+
+            // For DataTemplates collections, cache by item type to avoid repeated tree walks during measure
+            if (item == null)
+                return null;
+
+            var itemType = item.GetType();
+
+            // Initialize cache if needed
+            _templateCache ??= new Dictionary<Type, IDataTemplate?>();
+
+            // Check cache first
+            if (_templateCache.TryGetValue(itemType, out var cachedTemplate))
+                return cachedTemplate;
+
+            // Not in cache - need to find it (this may walk the tree)
+            var template = container.FindDataTemplate(item, null);
+
+            // Cache the result for this type
+            _templateCache[itemType] = template;
+
+            return template;
+        }
+
         private void UpdatePseudoClasses()
         {
             PseudoClasses.Set(":empty", ItemCount == 0);
@@ -1036,8 +1057,6 @@ namespace Avalonia.Controls
         /// Default is true. Set to false for debugging.
         /// </summary>
         public static bool IsEnabled { get; set; } = true;
-
-        public static bool IsTracingEnabled { get; set; } = false;
 
         /// <summary>
         /// Gets pool statistics for the specified ItemsControl.

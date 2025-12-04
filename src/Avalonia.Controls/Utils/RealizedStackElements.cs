@@ -421,8 +421,8 @@ namespace Avalonia.Controls.Utils
         /// </summary>
         /// <param name="orientation">The panel orientation.</param>
         /// <remarks>
-        /// If the U size of any element in the realized elements has changed, then the value of
-        /// <see cref="StartU"/> should be considered unstable.
+        /// If the U size of any element in the realized elements has changed, we update the stored size.
+        /// This prevents StartU from becoming unstable with heterogeneous items whose sizes may fluctuate.
         /// </remarks>
         public void ValidateStartU(Orientation orientation)
         {
@@ -439,10 +439,23 @@ namespace Avalonia.Controls.Utils
 
                 if (sizeU != _sizes[i])
                 {
-                    _startUUnstable = true;
-                    break;
+                    // Update the stored size instead of marking unstable
+                    // This prevents the cascade of instability with heterogeneous items
+                    _sizes[i] = sizeU;
                 }
             }
+        }
+
+        /// <summary>
+        /// Adjusts StartU to compensate for extent changes outside the realized range.
+        /// This prevents scroll jumping by maintaining the visual position of realized elements.
+        /// </summary>
+        public void CompensateStartU(double delta)
+        {
+            if (_startUUnstable || double.IsNaN(_startU))
+                return;
+
+            _startU += delta;
         }
     }
 }
