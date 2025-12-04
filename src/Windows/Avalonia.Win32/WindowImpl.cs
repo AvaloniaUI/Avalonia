@@ -1352,6 +1352,7 @@ namespace Avalonia.Win32
 
         private void MaximizeWithoutCoveringTaskbar()
         {
+            // Note: we should be able to override WM_GETMINMAXINFO instead of using this method
             var screen = Screen.ScreenFromHwnd(Hwnd, MONITOR.MONITOR_DEFAULTTONEAREST);
             if (screen?.WorkingArea is { } workingArea)
             {
@@ -1361,7 +1362,7 @@ namespace Avalonia.Win32
                 var cy = workingArea.Height;
                 var style = (WindowStyles)GetWindowLong(_hwnd, (int)WindowLongParam.GWL_STYLE);
 
-                if (!style.HasFlag(WindowStyles.WS_THICKFRAME))
+                if (!style.HasFlag(WindowStyles.WS_THICKFRAME) && !_isClientAreaExtended)
                 {
                     // When calling SetWindowPos on a maximized window it automatically adjusts
                     // for "hidden" borders which are placed offscreen, EVEN IF THE WINDOW HAS
@@ -1518,11 +1519,8 @@ namespace Avalonia.Win32
                         break;
                 }
 
-                if (newProperties.Decorations != SystemDecorations.None
-                    && (newProperties.IsResizable || newProperties.WindowState == WindowState.Maximized))
-                {
+                if (newProperties.Decorations != SystemDecorations.None && newProperties.IsResizable)
                     style |= WindowStyles.WS_THICKFRAME;
-                }
 
                 var windowStates = GetWindowStateStyles();
                 style &= ~WindowStateMask;

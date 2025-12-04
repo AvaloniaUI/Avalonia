@@ -91,7 +91,10 @@ namespace Avalonia.Win32
                             {
                                 if (placement.ShowCmd == ShowWindowCommand.ShowMaximized)
                                 {
-                                    adjuster.Adjust(ref borderThickness, style & ~WindowStyles.WS_CAPTION | WindowStyles.WS_BORDER, 0);
+                                    if (style.HasAllFlags(WindowStyles.WS_THICKFRAME))
+                                        adjuster.Adjust(ref borderThickness, style & ~WindowStyles.WS_CAPTION | WindowStyles.WS_BORDER, 0);
+                                    else
+                                        adjuster.Adjust(ref borderThickness, style & ~WindowStyles.WS_CAPTION, 0);
                                 }
                                 else
                                 {

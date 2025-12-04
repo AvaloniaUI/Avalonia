@@ -39,12 +39,16 @@ public abstract class ExtendClientAreaTests : IDisposable
 
     protected abstract SystemDecorations Decorations { get; }
 
-    private async Task InitWindowAsync(WindowState state)
+    public static MatrixTheoryData<bool, WindowState> States
+        => new([true, false], Enum.GetValues<WindowState>());
+
+    private async Task InitWindowAsync(WindowState state, bool canResize)
     {
         Assert.Null(_window);
 
         _window = new Window
         {
+            CanResize = canResize,
             WindowState = state,
             SystemDecorations = Decorations,
             ExtendClientAreaToDecorationsHint = true,
@@ -103,13 +107,10 @@ public abstract class ExtendClientAreaTests : IDisposable
     }
 
     [Theory]
-    [InlineData(WindowState.Normal)]
-    [InlineData(WindowState.Minimized)]
-    [InlineData(WindowState.Maximized)]
-    [InlineData(WindowState.FullScreen)]
-    public async Task Normal_State_Respects_Client_Size(WindowState initialState)
+    [MemberData(nameof(States))]
+    public async Task Normal_State_Respects_Client_Size(bool canResize, WindowState initialState)
     {
-        await InitWindowAsync(initialState);
+        await InitWindowAsync(initialState, canResize);
 
         if (initialState != WindowState.Normal)
             Window.WindowState = WindowState.Normal;
@@ -119,19 +120,16 @@ public abstract class ExtendClientAreaTests : IDisposable
         var clientSize = GetClientSize();
         Assert.Equal(expected, clientSize);
 
-        VerifyNormalState();
+        VerifyNormalState(canResize);
     }
 
-    protected abstract void VerifyNormalState();
+    protected abstract void VerifyNormalState(bool canResize);
 
     [Theory]
-    [InlineData(WindowState.Normal)]
-    [InlineData(WindowState.Minimized)]
-    [InlineData(WindowState.Maximized)]
-    [InlineData(WindowState.FullScreen)]
-    public async Task Maximized_State_Fills_Screen_Working_Area(WindowState initialState)
+    [MemberData(nameof(States))]
+    public async Task Maximized_State_Fills_Screen_Working_Area(bool canResize, WindowState initialState)
     {
-        await InitWindowAsync(initialState);
+        await InitWindowAsync(initialState, canResize);
 
         if (initialState != WindowState.Maximized)
             Window.WindowState = WindowState.Maximized;
@@ -147,13 +145,10 @@ public abstract class ExtendClientAreaTests : IDisposable
     protected abstract void VerifyMaximizedState();
 
     [Theory]
-    [InlineData(WindowState.Normal)]
-    [InlineData(WindowState.Minimized)]
-    [InlineData(WindowState.Maximized)]
-    [InlineData(WindowState.FullScreen)]
-    public async Task FullScreen_State_Fills_Screen(WindowState initialState)
+    [MemberData(nameof(States))]
+    public async Task FullScreen_State_Fills_Screen(bool canResize, WindowState initialState)
     {
-        await InitWindowAsync(initialState);
+        await InitWindowAsync(initialState, canResize);
 
         if (initialState != WindowState.FullScreen)
             Window.WindowState = WindowState.FullScreen;
@@ -214,17 +209,14 @@ public abstract class ExtendClientAreaTests : IDisposable
         protected override SystemDecorations Decorations
             => SystemDecorations.Full;
 
-        protected override void VerifyNormalState()
+        protected override void VerifyNormalState(bool canResize)
         {
             AssertHasBorder();
             AssertLargeTitleBarWithButtons();
         }
 
         protected override void VerifyMaximizedState()
-        {
-            AssertHasBorder();
-            AssertLargeTitleBarWithButtons();
-        }
+            => AssertLargeTitleBarWithButtons();
 
         private void AssertLargeTitleBarWithButtons()
         {
@@ -239,10 +231,14 @@ public abstract class ExtendClientAreaTests : IDisposable
         protected override SystemDecorations Decorations
             => SystemDecorations.BorderOnly;
 
-        protected override void VerifyNormalState()
+        protected override void VerifyNormalState(bool canResize)
         {
             AssertHasBorder();
-            AssertSmallTitleBarWithoutButtons();
+
+            if (canResize)
+                AssertSmallTitleBarWithoutButtons();
+            else
+                AssertNoTitleBar();
         }
 
         protected override void VerifyMaximizedState()
@@ -265,7 +261,7 @@ public abstract class ExtendClientAreaTests : IDisposable
         protected override SystemDecorations Decorations
             => SystemDecorations.None;
 
-        protected override void VerifyNormalState()
+        protected override void VerifyNormalState(bool canResize)
         {
             AssertNoBorder();
             AssertNoTitleBar();

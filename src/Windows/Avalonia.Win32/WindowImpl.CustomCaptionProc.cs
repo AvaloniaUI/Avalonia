@@ -26,13 +26,15 @@ namespace Avalonia.Win32
             if (!isMaximized)
             {
                 var style = (WindowStyles)GetWindowLong(_hwnd, (int)WindowLongParam.GWL_STYLE);
+                if (style.HasAllFlags(WindowStyles.WS_THICKFRAME))
+                {
+                    var adjuster = CreateWindowRectAdjuster();
+                    adjuster.Adjust(ref rcFrame, style & ~WindowStyles.WS_CAPTION, 0);
+                    adjuster.Adjust(ref borderThickness, style, 0);
 
-                var adjuster = CreateWindowRectAdjuster();
-                adjuster.Adjust(ref rcFrame, style & ~WindowStyles.WS_CAPTION, 0);
-                adjuster.Adjust(ref borderThickness, style, 0);
-
-                borderThickness.left *= -1;
-                borderThickness.top *= -1;
+                    borderThickness.left *= -1;
+                    borderThickness.top *= -1;
+                }
             }
 
             if (_extendTitleBarHint >= 0)
