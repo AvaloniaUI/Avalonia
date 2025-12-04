@@ -150,6 +150,8 @@ namespace Avalonia.Win32
 
             _wmPointerEnabled = Win32Platform.WindowsVersion >= PlatformConstants.Windows8;
 
+            Screen = Win32Platform.Instance.Screen;
+
             CreateWindow();
             _framebuffer = new FramebufferManager(_hwnd);
 
@@ -173,7 +175,6 @@ namespace Avalonia.Win32
                 }
             }
 
-            Screen = Win32Platform.Instance.Screen;
             _storageProvider = new Win32StorageProvider(this);
             _inputPane = WindowsInputPane.TryCreate(this);
             _nativeControlHost = new Win32NativeControlHost(this, !UseRedirectionBitmap);
@@ -1303,11 +1304,6 @@ namespace Avalonia.Win32
                 UnmanagedMethods.ShowWindow(_hwnd, command.Value);
             }
 
-            if (state == WindowState.Maximized)
-            {
-                MaximizeWithoutCoveringTaskbar();
-            }
-
             if (!Design.IsDesignMode && activate)
             {
                 SetFocus(_hwnd);
@@ -1350,34 +1346,6 @@ namespace Avalonia.Win32
             }
         }
 
-        private void MaximizeWithoutCoveringTaskbar()
-        {
-            // Note: we should be able to override WM_GETMINMAXINFO instead of using this method
-            var screen = Screen.ScreenFromHwnd(Hwnd, MONITOR.MONITOR_DEFAULTTONEAREST);
-            if (screen?.WorkingArea is { } workingArea)
-            {
-                var x = workingArea.X;
-                var y = workingArea.Y;
-                var cx = workingArea.Width;
-                var cy = workingArea.Height;
-                var style = (WindowStyles)GetWindowLong(_hwnd, (int)WindowLongParam.GWL_STYLE);
-
-                if (!style.HasFlag(WindowStyles.WS_THICKFRAME) && !_isClientAreaExtended)
-                {
-                    // When calling SetWindowPos on a maximized window it automatically adjusts
-                    // for "hidden" borders which are placed offscreen, EVEN IF THE WINDOW HAS
-                    // NO BORDERS, meaning that the window is placed wrong when we have CanResize
-                    // == false. Account for this here.
-                    var borderThickness = BorderThickness;
-                    x -= (int)borderThickness.Left;
-                    cx += (int)borderThickness.Left + (int)borderThickness.Right;
-                    cy += (int)borderThickness.Bottom;
-                }
-
-                SetWindowPos(_hwnd, WindowPosZOrder.HWND_NOTOPMOST, x, y, cx, cy, SetWindowPosFlags.SWP_SHOWWINDOW | SetWindowPosFlags.SWP_FRAMECHANGED);
-            }
-        }
-
         private WindowStyles GetWindowStateStyles()
         {
             return GetStyle() & WindowStateMask;
@@ -1407,10 +1375,8 @@ namespace Avalonia.Win32
             }
         }
 
-        private void SetStyle(WindowStyles style, bool save = true, [CallerMemberName] string? caller = null)
+        private void SetStyle(WindowStyles style, bool save = true)
         {
-            var didSomething = false;
-
             if (save)
             {
                 _savedWindowInfo.Style = style;

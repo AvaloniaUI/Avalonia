@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Avalonia.IntegrationTests.Win32;
 
-public abstract class ExtendClientAreaTests : IDisposable
+public abstract class ExtendClientAreaWindowTests : IDisposable
 {
     private const double ClientWidth = 200;
     private const double ClientHeight = 200;
@@ -24,16 +24,6 @@ public abstract class ExtendClientAreaTests : IDisposable
         {
             Assert.NotNull(_window);
             return _window;
-        }
-    }
-
-    private IntPtr Handle
-    {
-        get
-        {
-            var platformHandle = Window.TryGetPlatformHandle();
-            Assert.NotNull(platformHandle);
-            return platformHandle.Handle;
         }
     }
 
@@ -67,43 +57,7 @@ public abstract class ExtendClientAreaTests : IDisposable
 
         _window.Show();
 
-        await WhenWindowLoadedAsync();
-    }
-
-    private Task WhenWindowLoadedAsync()
-    {
-        var window = Window;
-        if (window.IsLoaded)
-            return Task.CompletedTask;
-
-        var tcs = new TaskCompletionSource();
-        window.Loaded += OnLoaded;
-        return tcs.Task;
-
-        void OnLoaded(object? sender, RoutedEventArgs e)
-        {
-            window.Loaded -= OnLoaded;
-            tcs.TrySetResult();
-        }
-    }
-
-    private Screen GetScreen()
-    {
-        var screen = Window.Screens.ScreenFromWindow(Window);
-        Assert.NotNull(screen);
-        return screen;
-    }
-
-    private PixelSize GetClientSize()
-    {
-        Assert.True(UnmanagedMethods.GetClientRect(Handle, out var rect));
-        return rect.ToPixelRect().Size;
-    }
-
-    private PixelRect GetWindowBounds()
-    {
-        Assert.True(UnmanagedMethods.GetWindowRect(Handle, out var rect));
-        return rect.ToPixelRect();
+        await Window.WhenLoadedAsync();
     }
 
     [Theory]
@@ -117,7 +71,7 @@ public abstract class ExtendClientAreaTests : IDisposable
 
         // The client size should have been kept
         var expected = PixelSize.FromSize(new Size(ClientWidth, ClientHeight), Window.RenderScaling);
-        var clientSize = GetClientSize();
+        var clientSize = Window.GetClientSize();
         Assert.Equal(expected, clientSize);
 
         VerifyNormalState(canResize);
@@ -135,8 +89,8 @@ public abstract class ExtendClientAreaTests : IDisposable
             Window.WindowState = WindowState.Maximized;
 
         // The client size should match the screen working area
-        var clientSize = GetClientSize();
-        var screenWorkingArea = GetScreen().WorkingArea;
+        var clientSize = Window.GetClientSize();
+        var screenWorkingArea = Window.GetScreen().WorkingArea;
         Assert.Equal(screenWorkingArea.Size, clientSize);
 
         VerifyMaximizedState();
@@ -154,13 +108,13 @@ public abstract class ExtendClientAreaTests : IDisposable
             Window.WindowState = WindowState.FullScreen;
 
         // The client size should match the screen bounds
-        var clientSize = GetClientSize();
-        var screenBounds = GetScreen().Bounds;
+        var clientSize = Window.GetClientSize();
+        var screenBounds = Window.GetScreen().Bounds;
         Assert.Equal(screenBounds.Width, clientSize.Width);
         Assert.Equal(screenBounds.Height, clientSize.Height);
 
         // The window size should also match the screen bounds
-        var windowBounds = GetWindowBounds();
+        var windowBounds = Window.GetWindowBounds();
         Assert.Equal(screenBounds, windowBounds);
 
         // And no visible title bar
@@ -169,16 +123,16 @@ public abstract class ExtendClientAreaTests : IDisposable
 
     protected void AssertHasBorder()
     {
-        var clientSize = GetClientSize();
-        var windowBounds = GetWindowBounds();
+        var clientSize = Window.GetClientSize();
+        var windowBounds = Window.GetWindowBounds();
         Assert.NotEqual(clientSize.Width, windowBounds.Width);
         Assert.NotEqual(clientSize.Height, windowBounds.Height);
     }
 
     protected void AssertNoBorder()
     {
-        var clientSize = GetClientSize();
-        var windowBounds = GetWindowBounds();
+        var clientSize = Window.GetClientSize();
+        var windowBounds = Window.GetWindowBounds();
         Assert.Equal(clientSize.Width, windowBounds.Width);
         Assert.Equal(clientSize.Height, windowBounds.Height);
     }
@@ -204,7 +158,7 @@ public abstract class ExtendClientAreaTests : IDisposable
     public void Dispose()
         => _window?.Close();
 
-    public sealed class DecorationsFull : ExtendClientAreaTests
+    public sealed class DecorationsFull : ExtendClientAreaWindowTests
     {
         protected override SystemDecorations Decorations
             => SystemDecorations.Full;
@@ -226,7 +180,7 @@ public abstract class ExtendClientAreaTests : IDisposable
         }
     }
 
-    public sealed class DecorationsBorderOnly : ExtendClientAreaTests
+    public sealed class DecorationsBorderOnly : ExtendClientAreaWindowTests
     {
         protected override SystemDecorations Decorations
             => SystemDecorations.BorderOnly;
@@ -242,10 +196,7 @@ public abstract class ExtendClientAreaTests : IDisposable
         }
 
         protected override void VerifyMaximizedState()
-        {
-            AssertNoBorder();
-            AssertNoTitleBar();
-        }
+            => AssertNoTitleBar();
 
         private void AssertSmallTitleBarWithoutButtons()
         {
@@ -256,7 +207,7 @@ public abstract class ExtendClientAreaTests : IDisposable
         }
     }
 
-    public sealed class DecorationsNone : ExtendClientAreaTests
+    public sealed class DecorationsNone : ExtendClientAreaWindowTests
     {
         protected override SystemDecorations Decorations
             => SystemDecorations.None;
@@ -268,9 +219,6 @@ public abstract class ExtendClientAreaTests : IDisposable
         }
 
         protected override void VerifyMaximizedState()
-        {
-            AssertNoBorder();
-            AssertNoTitleBar();
-        }
+            => AssertNoTitleBar();
     }
 }

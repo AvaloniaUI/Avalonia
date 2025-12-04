@@ -91,10 +91,7 @@ namespace Avalonia.Win32
                             {
                                 if (placement.ShowCmd == ShowWindowCommand.ShowMaximized)
                                 {
-                                    if (style.HasAllFlags(WindowStyles.WS_THICKFRAME))
-                                        adjuster.Adjust(ref borderThickness, style & ~WindowStyles.WS_CAPTION | WindowStyles.WS_BORDER, 0);
-                                    else
-                                        adjuster.Adjust(ref borderThickness, style & ~WindowStyles.WS_CAPTION, 0);
+                                    adjuster.Adjust(ref borderThickness, style & ~WindowStyles.WS_CAPTION | WindowStyles.WS_BORDER | WindowStyles.WS_THICKFRAME, 0);
                                 }
                                 else
                                 {
@@ -109,7 +106,7 @@ namespace Avalonia.Win32
                             {
                                 if (placement.ShowCmd == ShowWindowCommand.ShowMaximized)
                                 {
-                                    adjuster.Adjust(ref borderThickness, style & ~(WindowStyles.WS_BORDER | WindowStyles.WS_THICKFRAME), 0);
+                                    adjuster.Adjust(ref borderThickness, style, 0);
                                 }
                                 else
                                 {
@@ -769,11 +766,6 @@ namespace Avalonia.Win32
 
                             UpdateWindowProperties(newWindowProperties);
 
-                            if (windowState == WindowState.Maximized)
-                            {
-                                MaximizeWithoutCoveringTaskbar();
-                            }
-
                             WindowStateChanged?.Invoke(windowState);
 
                             if (_isClientAreaExtended)
@@ -808,6 +800,44 @@ namespace Avalonia.Win32
                         MINMAXINFO mmi = Marshal.PtrToStructure<MINMAXINFO>(lParam);
 
                         _maxTrackSize = mmi.ptMaxTrackSize;
+
+                        // A window without a caption (i.e. None and BorderOnly decorations) maximizes to the whole screen
+                        // by default. Adjust that to the screen's working area instead.
+                        var style = GetStyle();
+                        if (!style.HasAllFlags(WindowStyles.WS_CAPTION | WindowStyles.WS_THICKFRAME))
+                        {
+                            var screen = Screen.ScreenFromHwnd(Hwnd, MONITOR.MONITOR_DEFAULTTONEAREST);
+                            if (screen?.WorkingArea is { } workingArea)
+                            {
+                                var x = workingArea.X;
+                                var y = workingArea.Y;
+                                var cx = workingArea.Width;
+                                var cy = workingArea.Height;
+
+                                var adjuster = CreateWindowRectAdjuster();
+                                var borderThickness = new RECT();
+
+                                var adjustedStyle = style & ~WindowStyles.WS_CAPTION;
+
+                                if (style.HasAllFlags(WindowStyles.WS_BORDER))
+                                    adjustedStyle |= WindowStyles.WS_BORDER;
+
+                                if (style.HasAllFlags(WindowStyles.WS_CAPTION))
+                                    adjustedStyle |= WindowStyles.WS_THICKFRAME;
+
+                                adjuster.Adjust(ref borderThickness, adjustedStyle, 0);
+
+                                x += borderThickness.left;
+                                y += borderThickness.top;
+                                cx += -borderThickness.left + borderThickness.right;
+                                cy += -borderThickness.top + borderThickness.bottom;
+
+                                mmi.ptMaxPosition.X = x;
+                                mmi.ptMaxPosition.Y = y;
+                                mmi.ptMaxSize.X = cx;
+                                mmi.ptMaxSize.Y = cy;
+                            }
+                        }
 
                         if (_minSize.Width > 0)
                         {
