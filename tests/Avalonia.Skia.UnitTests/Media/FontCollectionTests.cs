@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.IO;
 using Avalonia.Media;
 using Avalonia.Media.Fonts;
 using Avalonia.Platform;
@@ -115,6 +116,61 @@ namespace Avalonia.Skia.UnitTests.Media
             }
         }
 
+        [Fact]
+        public void SystemFontCollection_Only_Calls_Platform_TryMatchCharacter_Once_On_Success()
+        {
+            var countingImpl = new CustomFontManagerImpl();
+
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: countingImpl)))
+            {
+                var fontManager = FontManager.Current;
+
+                var systemFonts = fontManager.SystemFonts as SystemFontCollection;
+
+                Assert.NotNull(systemFonts);
+
+                // First call should invoke platform TryMatchCharacter and populate cache
+                Assert.True(systemFonts.TryMatchCharacter('A', FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, null, null, out var match1));
+
+                // Second call should be served from cache and should not call platform TryMatchCharacter again
+                Assert.True(systemFonts.TryMatchCharacter('A', FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, null, null, out var match2));
+
+                Assert.Equal(1, countingImpl.TryMatchCharacterCount);
+
+                Assert.Equal(match1.FontFamily.Name, match2.FontFamily.Name);
+            }
+        }
+
+        [Fact]
+        public void Should_Cache_Font_By_Normalized_Name_When_Platform_Returns_Regular_Suffix()
+        {
+            var impl = new RegularSuffixFontManagerImpl("Default");
+
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: impl)))
+            {
+                var fontManager = FontManager.Current;
+
+                var systemFonts = new TestSystemFontCollection(fontManager);
+
+                Assert.NotNull(systemFonts);
+
+                // Call TryMatchCharacter which should invoke platform TryMatchCharacter and add to cache
+                Assert.True(systemFonts.TryMatchCharacter('A', FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, null, null, out var match));
+
+                var normalized = fontManager.DefaultFontFamily.Name;
+
+                // Ensure the cache contains the normalized name (without 'Regular')
+                Assert.True(systemFonts.GlyphTypefaceCache.ContainsKey(normalized));
+
+                // Ensure the raw returned name with ' Regular' is not used as cache key
+                Assert.False(systemFonts.GlyphTypefaceCache.ContainsKey(normalized + " Regular"));
+
+                Assert.True(systemFonts.TryGetGlyphTypeface(normalized + " Regular", FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, out var cachedGlyphTypeface));
+
+                Assert.Equal(match.FontFamily.Name, cachedGlyphTypeface.FamilyName);
+            }
+        }
+
         private class CustomizableFontCollection : EmbeddedFontCollection
         {
             private readonly IReadOnlyList<FontFallback>? _fallbacks;
@@ -172,6 +228,129 @@ namespace Avalonia.Skia.UnitTests.Media
                 }
 
                 return base.TryCreateSyntheticGlyphTypeface(glyphTypeface, style, weight, stretch, out syntheticGlyphTypeface);
+            }
+        }
+
+        private class RegularSuffixFontManagerImpl : IFontManagerImpl2
+        {
+            private readonly string _defaultFamilyName;
+
+            public RegularSuffixFontManagerImpl(string defaultFamilyName)
+            {
+                _defaultFamilyName = defaultFamilyName;
+            }
+
+            public int TryMatchCharacterCount { get; private set; }
+
+            public string GetDefaultFontFamilyName() => _defaultFamilyName;
+
+            public string[] GetInstalledFontFamilyNames(bool checkForUpdates = false) => new[] { _defaultFamilyName };
+
+            public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight, FontStretch fontStretch, CultureInfo? culture, out Typeface typeface)
+            {
+                if (TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, culture, out IGlyphTypeface? glyphTypeface))
+                {
+                    typeface = new Typeface(glyphTypeface.FamilyName, fontStyle, fontWeight);
+
+                    return true;
+                }
+
+                typeface = default;
+
+                return false;
+            }
+
+            public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight, FontStretch fontStretch, CultureInfo? culture, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
+            {
+                TryMatchCharacterCount++;
+
+                // Return a glyph typeface with ' Regular' appended so it will be normalized
+                glyphTypeface = new SimpleGlyphTypeface(_defaultFamilyName + " Regular", fontStyle, fontWeight, fontStretch);
+
+                return true;
+            }
+
+            public bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight, FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
+            {
+                glyphTypeface = null;
+                return false;
+            }
+
+            public bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
+            {
+                glyphTypeface = null;
+                return false;
+            }
+
+            public bool TryGetFamilyTypefaces(string familyName, [NotNullWhen(true)] out IReadOnlyList<Typeface>? familyTypefaces)
+            {
+                familyTypefaces = null;
+
+                return false;
+            }
+        }
+
+        // Minimal IGlyphTypeface implementation for testing
+        private class SimpleGlyphTypeface : IGlyphTypeface
+        {
+            public SimpleGlyphTypeface(string familyName, FontStyle style, FontWeight weight, FontStretch stretch)
+            {
+                FamilyName = familyName;
+                Style = style;
+                Weight = weight;
+                Stretch = stretch;
+            }
+
+            public FontMetrics Metrics => new FontMetrics { DesignEmHeight = 10, Ascent = 5, Descent = 3, LineGap = 0, IsFixedPitch = false };
+
+            public int GlyphCount => 1;
+
+            public FontSimulations FontSimulations => FontSimulations.None;
+
+            public string FamilyName { get; }
+
+            public FontWeight Weight { get; }
+
+            public FontStyle Style { get; }
+
+            public FontStretch Stretch { get; }
+
+            public void Dispose() { }
+
+            public ushort GetGlyph(uint codepoint) => 1;
+
+            public bool TryGetGlyph(uint codepoint, out ushort glyph)
+            {
+                glyph = 1;
+                return true;
+            }
+
+            public int GetGlyphAdvance(ushort glyph) => 1;
+
+            public int[] GetGlyphAdvances(ReadOnlySpan<ushort> glyphs)
+            {
+                var arr = new int[glyphs.Length];
+                for (var i = 0; i < arr.Length; i++) arr[i] = 1;
+                return arr;
+            }
+
+            public ushort[] GetGlyphs(ReadOnlySpan<uint> codepoints)
+            {
+                var arr = new ushort[codepoints.Length];
+                for (var i = 0; i < arr.Length; i++) arr[i] = 1;
+                return arr;
+            }
+
+            public bool TryGetTable(uint tag, out byte[] table)
+            {
+                table = null!;
+                return false;
+            }
+
+            public bool TryGetGlyphMetrics(ushort glyph, out GlyphMetrics metrics)
+            {
+                metrics = new GlyphMetrics { Width = 1, Height = 1 };
+                return true;
             }
         }
     }

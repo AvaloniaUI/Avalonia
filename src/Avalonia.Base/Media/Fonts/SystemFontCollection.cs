@@ -162,17 +162,20 @@ namespace Avalonia.Media.Fonts
         public override bool TryMatchCharacter(int codepoint, FontStyle style, FontWeight weight, FontStretch stretch, string? familyName,
             CultureInfo? culture, out Typeface match)
         {
-            //TODO12: Think about removing familyName parameter
-            match = default;
+            // First try to match via base implementation
+            if (base.TryMatchCharacter(codepoint, style, weight, stretch, familyName, culture, out match))
+            {
+                return true;
+            }
 
             if (_fontManager.PlatformImpl is IFontManagerImpl2 fontManagerImpl2)
             {
                 if (fontManagerImpl2.TryMatchCharacter(codepoint, style, weight, stretch, culture, out var glyphTypeface))
                 {
-                    AddGlyphTypefaceByFamilyName(glyphTypeface.FamilyName, glyphTypeface);
+                    match = GetImplicitTypeface(new Typeface(glyphTypeface.FamilyName, glyphTypeface.Style, glyphTypeface.Weight,
+                        glyphTypeface.Stretch), out var matchedFamilyName);
 
-                    match = new Typeface(glyphTypeface.FamilyName, glyphTypeface.Style, glyphTypeface.Weight,
-                        glyphTypeface.Stretch);
+                    AddGlyphTypefaceByFamilyName(matchedFamilyName, glyphTypeface);
 
                     return true;
                 }

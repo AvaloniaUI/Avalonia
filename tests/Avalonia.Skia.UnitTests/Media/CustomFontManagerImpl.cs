@@ -7,14 +7,16 @@ using Avalonia.Platform;
 using SkiaSharp;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Collections.Generic;
 
 namespace Avalonia.Skia.UnitTests.Media
 {
-    public class CustomFontManagerImpl : IFontManagerImpl, IDisposable
+    public class CustomFontManagerImpl : IFontManagerImpl2, IDisposable
     {
-        private readonly string _defaultFamilyName;
+        protected readonly string _defaultFamilyName;
         private readonly IFontCollection _customFonts;
         private bool _isInitialized;
+        protected int _tryMatchCharacterCount;
 
         public CustomFontManagerImpl()
         {
@@ -24,6 +26,8 @@ namespace Avalonia.Skia.UnitTests.Media
 
             _customFonts = new EmbeddedFontCollection(source, source);
         }
+
+        public int TryMatchCharacterCount => _tryMatchCharacterCount;
 
         public string GetDefaultFontFamilyName()
         {
@@ -39,7 +43,7 @@ namespace Avalonia.Skia.UnitTests.Media
                 _isInitialized = true;
             }
 
-            return _customFonts.Select(x=> x.Name).ToArray();
+            return _customFonts.Select(x => x.Name).ToArray();
         }
 
         private readonly string[] _bcp47 = { CultureInfo.CurrentCulture.ThreeLetterISOLanguageName, CultureInfo.CurrentCulture.TwoLetterISOLanguageName };
@@ -47,12 +51,14 @@ namespace Avalonia.Skia.UnitTests.Media
         public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight, FontStretch fontStretch,
             CultureInfo culture, out Typeface typeface)
         {
+            _tryMatchCharacterCount++;
+
             if (!_isInitialized)
             {
                 _customFonts.Initialize(this);
             }
 
-            if(_customFonts.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, null, culture, out typeface))
+            if (_customFonts.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, null, culture, out typeface))
             {
                 return true;
             }
@@ -98,6 +104,44 @@ namespace Avalonia.Skia.UnitTests.Media
         public void Dispose()
         {
             _customFonts.Dispose();
+        }
+
+        public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight, FontStretch fontStretch, CultureInfo culture, [NotNullWhen(true)] out IGlyphTypeface glyphTypeface)
+        {
+            _tryMatchCharacterCount++;
+
+            if (!_isInitialized)
+            {
+                _customFonts.Initialize(this);
+            }
+
+            if (_customFonts.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, null, culture, out var typeface))
+            {
+                glyphTypeface = typeface.GlyphTypeface;
+
+                return true;
+            }
+
+            var fallback = SKFontManager.Default.MatchCharacter(null, (SKFontStyleWeight)fontWeight,
+                (SKFontStyleWidth)fontStretch, (SKFontStyleSlant)fontStyle, _bcp47, codepoint);
+
+            if (fallback == null)
+            {
+                glyphTypeface = null;
+
+                return false;
+            }
+
+            glyphTypeface = new GlyphTypefaceImpl(fallback, FontSimulations.None);
+
+            return true;
+        }
+
+        public bool TryGetFamilyTypefaces(string familyName, [NotNullWhen(true)] out IReadOnlyList<Typeface> familyTypefaces)
+        {
+            familyTypefaces = null;
+
+            return false;
         }
     }
 }
