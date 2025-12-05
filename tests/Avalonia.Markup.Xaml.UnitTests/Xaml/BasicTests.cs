@@ -569,7 +569,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
             Assert.Equal(BoolConverters.And, target.Converter);
 
-            var bindings = target.Bindings.Cast<Binding>().ToArray();
+            var bindings = target.Bindings.Cast<ReflectionBinding>().ToArray();
 
             Assert.Equal("Foo", bindings[0].Path);
             Assert.Equal("Bar", bindings[1].Path);

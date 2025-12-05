@@ -2596,7 +2596,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
     public class AssignBindingControl : Control
     {
-        [AssignBinding] public IBinding? X { get; set; }
+        [AssignBinding] public BindingBase? X { get; set; }
     }
 
     public class DataGridLikeControl : Control
@@ -2622,7 +2622,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     {
         [AssignBinding]
         [InheritDataTypeFromItems(nameof(DataGridLikeControl.Items), AncestorType = typeof(DataGridLikeControl))]
-        public IBinding? Binding { get; set; }
+        public BindingBase? Binding { get; set; }
         
         [InheritDataTypeFromItems(nameof(DataGridLikeControl.Items), AncestorType = typeof(DataGridLikeControl))]
         public IDataTemplate? Template { get; set; }

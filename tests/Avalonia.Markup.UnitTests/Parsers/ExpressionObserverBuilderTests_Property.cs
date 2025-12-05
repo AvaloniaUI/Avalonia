@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Avalonia.Data;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.ExpressionNodes;
-using Avalonia.Markup.Parsers;
+using Avalonia.Data.Core.Parsers;
 using Avalonia.UnitTests;
 using Avalonia.Utilities;
 using Xunit;
