@@ -45,9 +45,20 @@ namespace Avalonia.Media
         }
 
         /// <summary>
+        /// <summary>
         /// Initializes a new instance of the <see cref="PolylineGeometry"/> class.
         /// </summary>
-        public PolylineGeometry(IEnumerable<Point> points, bool isFilled, FillRule fillRule = FillRule.EvenOdd)
+        public PolylineGeometry(IEnumerable<Point> points, bool isFilled)
+        {
+            _points = new Points(points);
+            IsFilled = isFilled;
+            _fillRule = FillRule.EvenOdd;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PolylineGeometry"/> class.
+        /// </summary>
+        public PolylineGeometry(IEnumerable<Point> points, bool isFilled, FillRule fillRule)
         {
             _points = new Points(points);
             IsFilled = isFilled;
