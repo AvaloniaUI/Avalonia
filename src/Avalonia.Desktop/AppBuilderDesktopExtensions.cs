@@ -1,5 +1,4 @@
 using Avalonia.Compatibility;
-using Avalonia.Controls;
 using Avalonia.Logging;
 
 namespace Avalonia
@@ -8,6 +7,9 @@ namespace Avalonia
     {
         public static AppBuilder UsePlatformDetect(this AppBuilder builder)
         {
+            // Always load HarfBuzz on desktop platforms
+            LoadHarfBuzz(builder);
+
             // We don't have the ability to load every assembly right now, so we are
             // stuck with manual configuration here
             // Helpers are extracted to separate methods to take the advantage of the fact
@@ -20,7 +22,7 @@ namespace Avalonia
                 LoadWin32(builder);
                 LoadSkia(builder);
             }
-            else if(OperatingSystemEx.IsMacOS())
+            else if (OperatingSystemEx.IsMacOS())
             {
                 LoadAvaloniaNative(builder);
                 LoadSkia(builder);
@@ -49,5 +51,8 @@ namespace Avalonia
 
         static void LoadSkia(AppBuilder builder)
              => builder.UseSkia();
+
+        static void LoadHarfBuzz(AppBuilder builder)
+             => builder.UseHarfBuzz();
     }
 }

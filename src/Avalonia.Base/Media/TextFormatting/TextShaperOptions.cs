@@ -30,7 +30,7 @@ namespace Avalonia.Media.TextFormatting
             double incrementalTabWidth = 0,
             double letterSpacing = 0)
         {
-            Typeface = typeface;
+            GlyphTypeface = typeface;
             FontRenderingEmSize = fontRenderingEmSize;
             BidiLevel = bidiLevel;
             Culture = culture;
@@ -42,7 +42,7 @@ namespace Avalonia.Media.TextFormatting
         /// <summary>
         /// Get the typeface.
         /// </summary>
-        public IGlyphTypeface Typeface { get; }
+        public IGlyphTypeface GlyphTypeface { get; }
         /// <summary>
         /// Get the font rendering em size.
         /// </summary>

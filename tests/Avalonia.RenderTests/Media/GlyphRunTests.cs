@@ -136,7 +136,7 @@ namespace Avalonia.Skia.RenderTests
             {
                 var glyphTypeface = new Typeface(TestFontFamily).GlyphTypeface;
 
-                var glyphIndices = new[] { glyphTypeface.GetGlyph('A'), glyphTypeface.GetGlyph('B'), glyphTypeface.GetGlyph('C') };
+                var glyphIndices = new[] { glyphTypeface.CharacterToGlyphMap['A'], glyphTypeface.CharacterToGlyphMap['B'], glyphTypeface.CharacterToGlyphMap['C'] };
 
                 var characters = new[] { 'A', 'B', 'C' };
 
@@ -161,7 +161,7 @@ namespace Avalonia.Skia.RenderTests
             {
                 var glyphTypeface = new Typeface(TestFontFamily).GlyphTypeface;
 
-                var glyphIndices = new[] { glyphTypeface.GetGlyph('A'), glyphTypeface.GetGlyph('B'), glyphTypeface.GetGlyph('C') };
+                var glyphIndices = new[] { glyphTypeface.CharacterToGlyphMap['A'], glyphTypeface.CharacterToGlyphMap['B'], glyphTypeface.CharacterToGlyphMap['C'] };
 
                 var characters = new[] { 'A', 'B', 'C' };
 
@@ -184,7 +184,7 @@ namespace Avalonia.Skia.RenderTests
             {
                 var glyphTypeface = new Typeface(TestFontFamily).GlyphTypeface;
 
-                var glyphIndices = new[] { glyphTypeface.GetGlyph('A'), glyphTypeface.GetGlyph('B'), glyphTypeface.GetGlyph('C') };
+                var glyphIndices = new[] { glyphTypeface.CharacterToGlyphMap['A'], glyphTypeface.CharacterToGlyphMap['B'], glyphTypeface.CharacterToGlyphMap['C'] };
 
                 var scale = 100.0 / glyphTypeface.Metrics.DesignEmHeight;
 

@@ -11,7 +11,7 @@ namespace Avalonia.Skia
 {
     internal class GlyphRunImpl : IGlyphRunImpl
     {
-        private readonly GlyphTypefaceImpl _glyphTypefaceImpl;
+        private readonly SkiaTypeface _glyphTypefaceImpl;
         private readonly ushort[] _glyphIndices;
         private readonly SKPoint[] _glyphPositions;
 
@@ -36,7 +36,7 @@ namespace Avalonia.Skia
                 throw new ArgumentNullException(nameof(glyphInfos));
             }
 
-            _glyphTypefaceImpl = (GlyphTypefaceImpl)glyphTypeface;
+            _glyphTypefaceImpl = (SkiaTypeface)glyphTypeface.PlatformTypeface;
             FontRenderingEmSize = fontRenderingEmSize;
 
             var count = glyphInfos.Count;
@@ -85,8 +85,6 @@ namespace Avalonia.Skia
             BaselineOrigin = baselineOrigin;
             Bounds = runBounds.Translate(new Vector(baselineOrigin.X, baselineOrigin.Y));
         }
-
-        public IGlyphTypeface GlyphTypeface => _glyphTypefaceImpl;
 
         public double FontRenderingEmSize { get; }
 

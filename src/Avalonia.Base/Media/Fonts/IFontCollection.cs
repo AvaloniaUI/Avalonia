@@ -5,6 +5,12 @@ using System.Globalization;
 
 namespace Avalonia.Media.Fonts
 {
+    /// <summary>
+    /// Represents a collection of font families and provides methods for querying and managing font typefaces
+    /// within the collection.
+    /// </summary>
+    /// <remarks>Implementations of this interface allow applications to retrieve font families, match
+    /// characters to typefaces, and obtain glyph typefaces based on specific font properties.</remarks>
     public interface IFontCollection : IReadOnlyList<FontFamily>, IDisposable
     {
         /// <summary>
@@ -39,17 +45,14 @@ namespace Avalonia.Media.Fonts
         /// </returns>
         bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight,
             FontStretch fontStretch, string? familyName, CultureInfo? culture, out Typeface typeface);
-    }
 
-    internal interface IFontCollection2 : IFontCollection
-    {
         /// <summary>
         /// Tries to get a list of typefaces for the specified family name.
         /// </summary>
         /// <param name="familyName">The family name.</param>
         /// <param name="familyTypefaces">The list of typefaces.</param>
         /// <returns>
-        ///     <c>True</c>, if the <see cref="IFontCollection2"/> could get the list of typefaces, <c>False</c> otherwise.
+        ///     <c>True</c>, if the <see cref="IFontCollection"/> could get the list of typefaces, <c>False</c> otherwise.
         /// </returns>
         bool TryGetFamilyTypefaces(string familyName, [NotNullWhen(true)] out IReadOnlyList<Typeface>? familyTypefaces);
 
@@ -62,7 +65,8 @@ namespace Avalonia.Media.Fonts
         /// <param name="stretch">The font stretch.</param>
         /// <param name="syntheticGlyphTypeface"></param>
         /// <returns>Returns <c>true</c> if a synthetic glyph typface can be created; otherwise, <c>false</c></returns>
-        bool TryCreateSyntheticGlyphTypeface(IGlyphTypeface glyphTypeface, FontStyle style, FontWeight weight, FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface? syntheticGlyphTypeface);
+        bool TryCreateSyntheticGlyphTypeface(IGlyphTypeface glyphTypeface, FontStyle style, FontWeight weight, FontStretch stretch,
+            [NotNullWhen(true)] out IGlyphTypeface? syntheticGlyphTypeface);
 
         /// <summary>
         /// Attempts to retrieve the glyph typeface that most closely matches the specified font family name, style,
@@ -80,6 +84,7 @@ namespace Avalonia.Media.Fonts
         /// <param name="glyphTypeface">When this method returns, contains the <see cref="IGlyphTypeface"/> that most closely matches the specified
         /// parameters, if a match is found; otherwise, <see langword="null"/>. This parameter is passed uninitialized.</param>
         /// <returns><see langword="true"/> if a matching glyph typeface is found; otherwise, <see langword="false"/>.</returns>
-        bool TryGetNearestMatch(string familyName, FontStyle style, FontWeight weight, FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface);
+        bool TryGetNearestMatch(string familyName, FontStyle style, FontWeight weight, FontStretch stretch, 
+            [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface);
     }
 }
