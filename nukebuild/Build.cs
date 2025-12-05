@@ -15,7 +15,6 @@ using Nuke.Common.Tools.Npm;
 using Nuke.Common.Utilities;
 using static Nuke.Common.EnvironmentInfo;
 using static Nuke.Common.IO.PathConstruction;
-using static Nuke.Common.Tools.DotMemoryUnit.DotMemoryUnitTasks;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 using static Serilog.Log;
 using MicroCom.CodeGenerator;
@@ -194,23 +193,6 @@ partial class Build : NukeBuild
         });
     }
 
-    void RunCoreDotMemoryUnit(string projectName)
-    {
-        RunCoreTest(projectName, (project, tfm) =>
-        {
-            var testSettings = ApplySetting(new DotNetTestSettings(), project, tfm);
-            var testToolPath = GetToolPathInternal(new DotNetTasks(), testSettings);
-            var testArgs = GetArguments(testSettings).JoinSpace();
-            DotMemoryUnit($"{testToolPath} --propagate-exit-code -- {testArgs:nq}");
-        });
-
-        [UnsafeAccessor(UnsafeAccessorKind.Method, Name = nameof(GetToolPathInternal))]
-        extern static string GetToolPathInternal(ToolTasks tasks, ToolOptions options);
-
-        [UnsafeAccessor(UnsafeAccessorKind.Method, Name = nameof(GetArguments))]
-        extern static IEnumerable<string> GetArguments(ToolOptions options);
-    }
-
     void RunCoreTest(string projectName, Action<string, string> runTest)
     {
         Information($"Running tests from {projectName}");
@@ -325,11 +307,7 @@ partial class Build : NukeBuild
         .DependsOn(Compile)
         .Executes(() =>
         {
-            void DoMemoryTest()
-            {
-                RunCoreDotMemoryUnit("Avalonia.LeakTests");
-            }
-            ControlFlow.ExecuteWithRetry(DoMemoryTest, delay: TimeSpan.FromMilliseconds(3));
+            RunCoreTest("Avalonia.LeakTests");
         });
 
     Target ZipFiles => _ => _
@@ -418,8 +396,8 @@ partial class Build : NukeBuild
         .DependsOn(RunCoreLibsTests)
         .DependsOn(RunRenderTests)
         .DependsOn(RunToolsTests)
-        .DependsOn(RunHtmlPreviewerTests);
-        //.DependsOn(RunLeakTests); // dotMemory Unit doesn't support modern .NET versions, see https://youtrack.jetbrains.com/issue/DMU-300/
+        .DependsOn(RunHtmlPreviewerTests)
+        .DependsOn(RunLeakTests);
 
     Target Package => _ => _
         .DependsOn(RunTests)

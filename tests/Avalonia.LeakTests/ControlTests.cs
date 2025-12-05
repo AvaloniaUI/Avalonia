@@ -1,95 +1,80 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive.Disposables;
-using System.Threading.Tasks;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
-using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Diagnostics;
 using Avalonia.Input;
-using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
-using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
-using JetBrains.dotMemoryUnit;
 using Moq;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Avalonia.LeakTests
 {
-    [DotMemoryUnit(FailIfRunWithoutSupport = false)]
-    public class ControlTests
+    public class ControlTests : ScopedTestBase
     {
-        // Need to have the collection as field, so GC will not free it
-        private readonly ObservableCollection<string> _observableCollection = new();
-        
-        public ControlTests(ITestOutputHelper atr)
-        {
-            DotMemoryUnitTestOutput.SetOutputMethod(atr.WriteLine);
-        }
-
-        [Fact]
+        [ReleaseFact]
         public void Canvas_Is_Freed()
         {
             using (Start())
             {
-                Func<Window> run = () =>
+                static WeakReference Run()
                 {
+                    var canvas = new Canvas();
                     var window = new Window
                     {
-                        Content = new Canvas()
+                        Content = canvas
                     };
 
                     window.Show();
 
                     // Do a layout and make sure that Canvas gets added to visual tree.
                     window.LayoutManager.ExecuteInitialLayoutPass();
-                    Assert.IsType<Canvas>(window.Presenter.Child);
+                    Assert.IsType<Canvas>(window.Presenter!.Child);
 
                     // Clear the content and ensure the Canvas is removed.
                     window.Content = null;
                     window.LayoutManager.ExecuteLayoutPass();
                     Assert.Null(window.Presenter.Child);
 
-                    return window;
-                };
+                    return new WeakReference(canvas);
+                }
 
-                var result = run();
+                var weakCanvas = Run();
+                Assert.True(weakCanvas.IsAlive);
 
-                // Process all Loaded events to free control reference(s)
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+                CollectGarbage();
 
-                dotMemory.Check(memory =>
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Canvas>()).ObjectsCount));
+                Assert.False(weakCanvas.IsAlive);
             }
         }
 
-        [Fact]
+        [ReleaseFact]
         public void Named_Canvas_Is_Freed()
         {
             using (Start())
             {
-                Func<Window> run = () =>
+                static WeakReference Run()
                 {
                     var scope = new NameScope();
+                    var canvas = new Canvas { Name = "foo" };
                     var window = new Window
                     {
-                        Content = new Canvas
-                        {
-                            Name = "foo"
-                        }.RegisterInNameScope(scope)
+                        Content = canvas.RegisterInNameScope(scope)
                     };
                     NameScope.SetNameScope(window, scope);
 
@@ -98,7 +83,7 @@ namespace Avalonia.LeakTests
                     // Do a layout and make sure that Canvas gets added to visual tree.
                     window.LayoutManager.ExecuteInitialLayoutPass();
                     Assert.IsType<Canvas>(window.Find<Canvas>("foo"));
-                    Assert.IsType<Canvas>(window.Presenter.Child);
+                    Assert.IsType<Canvas>(window.Presenter!.Child);
 
                     // Clear the content and ensure the Canvas is removed.
                     window.Content = null;
@@ -107,72 +92,70 @@ namespace Avalonia.LeakTests
                     window.LayoutManager.ExecuteLayoutPass();
                     Assert.Null(window.Presenter.Child);
 
-                    return window;
-                };
+                    return new WeakReference(canvas);
+                }
 
-                var result = run();
+                var weakCanvas = Run();
+                Assert.True(weakCanvas.IsAlive);
 
-                // Process all Loaded events to free control reference(s)
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+                CollectGarbage();
 
-                dotMemory.Check(memory =>
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Canvas>()).ObjectsCount));
+                Assert.False(weakCanvas.IsAlive);
             }
         }
 
-        [Fact]
+        [ReleaseFact]
         public void ScrollViewer_With_Content_Is_Freed()
         {
             using (Start())
             {
-                Func<Window> run = () =>
+                static WeakReference Run()
                 {
+                    var canvas = new Canvas();
                     var window = new Window
                     {
                         Content = new ScrollViewer
                         {
-                            Content = new Canvas()
+                            Content = canvas
                         }
                     };
 
                     window.Show();
 
-                    // Do a layout and make sure that ScrollViewer gets added to visual tree and its 
+                    // Do a layout and make sure that ScrollViewer gets added to visual tree and its
                     // template applied.
                     window.LayoutManager.ExecuteInitialLayoutPass();
-                    Assert.IsType<ScrollViewer>(window.Presenter.Child);
-                    Assert.IsType<Canvas>(((ScrollViewer)window.Presenter.Child).Presenter.Child);
+                    Assert.IsType<ScrollViewer>(window.Presenter!.Child);
+                    Assert.IsType<Canvas>(((ScrollViewer)window.Presenter!.Child).Presenter!.Child);
 
                     // Clear the content and ensure the ScrollViewer is removed.
                     window.Content = null;
                     window.LayoutManager.ExecuteLayoutPass();
                     Assert.Null(window.Presenter.Child);
 
-                    return window;
-                };
+                    return new WeakReference(canvas);
+                }
 
-                var result = run();
+                var weakCanvas = Run();
+                Assert.True(weakCanvas.IsAlive);
 
-                // Process all Loaded events to free control reference(s)
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+                CollectGarbage();
 
-                dotMemory.Check(memory =>
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TextBox>()).ObjectsCount));
-                dotMemory.Check(memory =>
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Canvas>()).ObjectsCount));
+                Assert.False(weakCanvas.IsAlive);
             }
         }
 
-        [Fact]
+        [ReleaseFact]
         public void TextBox_Is_Freed()
         {
             using (Start())
             {
-                Func<Window> run = () =>
+                static WeakReference Run()
                 {
+                    var textBox = new TextBox();
                     var window = new Window
                     {
-                        Content = new TextBox()
+                        Content = textBox
                     };
 
                     window.Show();
@@ -180,7 +163,7 @@ namespace Avalonia.LeakTests
                     // Do a layout and make sure that TextBox gets added to visual tree and its 
                     // template applied.
                     window.LayoutManager.ExecuteInitialLayoutPass();
-                    Assert.IsType<TextBox>(window.Presenter.Child);
+                    Assert.IsType<TextBox>(window.Presenter!.Child);
                     Assert.NotEmpty(window.Presenter.Child.GetVisualChildren());
 
                     // Clear the content and ensure the TextBox is removed.
@@ -188,33 +171,33 @@ namespace Avalonia.LeakTests
                     window.LayoutManager.ExecuteLayoutPass();
                     Assert.Null(window.Presenter.Child);
 
-                    return window;
-                };
+                    return new WeakReference(textBox);
+                }
 
-                var result = run();
+                var weakTextBox = Run();
+                Assert.True(weakTextBox.IsAlive);
 
-                // Process all Loaded events to free control reference(s)
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+                CollectGarbage();
 
-                dotMemory.Check(memory =>
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TextBox>()).ObjectsCount));
+                Assert.False(weakTextBox.IsAlive);
             }
         }
 
-        [Fact]
+        [ReleaseFact]
         public void TextBox_With_Xaml_Binding_Is_Freed()
         {
             using (Start())
             {
-                Func<Window> run = () =>
+                static (WeakReference, WeakReference) Run()
                 {
+                    var node = new Node { Name = "foo" };
                     var window = new Window
                     {
-                        DataContext = new Node { Name = "foo" },
+                        DataContext = node,
                         Content = new TextBox()
                     };
 
-                    var binding = new Avalonia.Data.Binding
+                    var binding = new Binding
                     {
                         Path = "Name"
                     };
@@ -224,10 +207,10 @@ namespace Avalonia.LeakTests
 
                     window.Show();
 
-                    // Do a layout and make sure that TextBox gets added to visual tree and its 
+                    // Do a layout and make sure that TextBox gets added to visual tree and its
                     // Text property set.
                     window.LayoutManager.ExecuteInitialLayoutPass();
-                    Assert.IsType<TextBox>(window.Presenter.Child);
+                    Assert.IsType<TextBox>(window.Presenter!.Child);
                     Assert.Equal("foo", ((TextBox)window.Presenter.Child).Text);
 
                     // Clear the content and DataContext and ensure the TextBox is removed.
@@ -236,18 +219,17 @@ namespace Avalonia.LeakTests
                     window.LayoutManager.ExecuteLayoutPass();
                     Assert.Null(window.Presenter.Child);
 
-                    return window;
-                };
+                    return (new WeakReference(node), new WeakReference(textBox));
+                }
 
-                var result = run();
+                var (weakNode, weakTextBox) = Run();
+                Assert.True(weakNode.IsAlive);
+                Assert.True(weakTextBox.IsAlive);
 
-                // Process all Loaded events to free control reference(s)
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+                CollectGarbage();
 
-                dotMemory.Check(memory =>
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TextBox>()).ObjectsCount));
-                dotMemory.Check(memory =>
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Node>()).ObjectsCount));
+                Assert.False(weakNode.IsAlive);
+                Assert.False(weakTextBox.IsAlive);
             }
         }
 
@@ -268,7 +250,7 @@ namespace Avalonia.LeakTests
                 // Do a layout and make sure that TextBox gets added to visual tree and its 
                 // template applied.
                 window.LayoutManager.ExecuteInitialLayoutPass();
-                Assert.Same(textBox, window.Presenter.Child);
+                Assert.Same(textBox, window.Presenter!.Child);
 
                 // Get the border from the TextBox template.
                 var border = textBox.GetTemplateChildren().FirstOrDefault(x => x.Name == "border");
@@ -287,12 +269,12 @@ namespace Avalonia.LeakTests
             }
         }
 
-        [Fact]
+        [ReleaseFact]
         public void TreeView_Is_Freed()
         {
             using (Start())
             {
-                Func<Window> run = () =>
+                static WeakReference Run()
                 {
                     var nodes = new[]
                     {
@@ -327,69 +309,69 @@ namespace Avalonia.LeakTests
                     // Clear the content and ensure the TreeView is removed.
                     window.Content = null;
                     window.LayoutManager.ExecuteLayoutPass();
-                    Assert.Null(window.Presenter.Child);
+                    Assert.Null(window.Presenter!.Child);
 
-                    return window;
-                };
+                    return new WeakReference(target);
+                }
 
-                var result = run();
+                var weakTreeView = Run();
+                Assert.True(weakTreeView.IsAlive);
 
-                // Process all Loaded events to free control reference(s)
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+                CollectGarbage();
 
-                dotMemory.Check(memory =>
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TreeView>()).ObjectsCount));
+                Assert.False(weakTreeView.IsAlive);
             }
         }
 
-        [Fact]
+        [ReleaseFact]
         public void Slider_Is_Freed()
         {
             using (Start())
             {
-                Func<Window> run = () =>
+                static WeakReference Run()
                 {
+                    var slider = new Slider();
                     var window = new Window
                     {
-                        Content = new Slider()
+                        Content = slider
                     };
 
                     window.Show();
 
                     // Do a layout and make sure that Slider gets added to visual tree.
                     window.LayoutManager.ExecuteInitialLayoutPass();
-                    Assert.IsType<Slider>(window.Presenter.Child);
+                    Assert.IsType<Slider>(window.Presenter!.Child);
 
                     // Clear the content and ensure the Slider is removed.
                     window.Content = null;
                     window.LayoutManager.ExecuteLayoutPass();
                     Assert.Null(window.Presenter.Child);
 
-                    return window;
-                };
+                    return new WeakReference(slider);
+                }
 
-                var result = run();
+                var weakSlider = Run();
+                Assert.True(weakSlider.IsAlive);
 
-                // Process all Loaded events to free control reference(s)
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+                CollectGarbage();
 
-                dotMemory.Check(memory =>
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Slider>()).ObjectsCount));
+                Assert.False(weakSlider.IsAlive);
             }
         }
 
-        [Fact]
+        [ReleaseFact]
         public void TabItem_Is_Freed()
         {
             using (Start())
             {
-                Func<Window> run = () =>
+                static WeakReference Run()
                 {
+                    var tabItem = new TabItem();
                     var window = new Window
                     {
                         Content = new TabControl
                         {
-                            ItemsSource = new[] { new TabItem() }
+                            ItemsSource = new[] { tabItem }
                         }
                     };
 
@@ -397,24 +379,23 @@ namespace Avalonia.LeakTests
 
                     // Do a layout and make sure that TabControl and TabItem gets added to visual tree.
                     window.LayoutManager.ExecuteInitialLayoutPass();
-                    var tabControl = Assert.IsType<TabControl>(window.Presenter.Child);
-                    Assert.IsType<TabItem>(tabControl.Presenter.Panel.Children[0]);
+                    var tabControl = Assert.IsType<TabControl>(window.Presenter!.Child);
+                    Assert.IsType<TabItem>(tabControl.Presenter!.Panel!.Children[0]);
 
                     // Clear the items and ensure the TabItem is removed.
                     tabControl.ItemsSource = null;
                     window.LayoutManager.ExecuteLayoutPass();
                     Assert.Empty(tabControl.Presenter.Panel.Children);
 
-                    return window;
-                };
+                    return new WeakReference(tabItem);
+                }
 
-                var result = run();
+                var weakTabItem = Run();
+                Assert.True(weakTabItem.IsAlive);
 
-                // Process all Loaded events to free control reference(s)
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+                CollectGarbage();
 
-                dotMemory.Check(memory =>
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TabItem>()).ObjectsCount));
+                Assert.False(weakTabItem.IsAlive);
             }
         }
 
@@ -432,7 +413,7 @@ namespace Avalonia.LeakTests
                 impl.SetupGet(x => x.RenderScaling).Returns(1);
                 impl.SetupProperty(x => x.Closed);
                 impl.Setup(x => x.Compositor).Returns(RendererMocks.CreateDummyCompositor());
-                impl.Setup(x => x.Dispose()).Callback(() => impl.Object.Closed());
+                impl.Setup(x => x.Dispose()).Callback(() => impl.Object.Closed!());
                 impl.Setup(x => x.TryGetFeature(It.Is<Type>(t => t == typeof(IScreenImpl)))).Returns(screens.Object);
 
                 AvaloniaLocator.CurrentMutable.Bind<IWindowingPlatform>()
@@ -447,13 +428,13 @@ namespace Avalonia.LeakTests
             }
         }
 
-        [Fact]
+        [ReleaseFact]
         public void Control_With_Style_RenderTransform_Is_Freed()
         {
             // # Issue #3545
             using (Start())
             {
-                Func<Window> run = () =>
+                static WeakReference Run()
                 {
                     var window = new Window
                     {
@@ -479,7 +460,7 @@ namespace Avalonia.LeakTests
                     // Do a layout and make sure that Canvas gets added to visual tree with
                     // its render transform.
                     window.LayoutManager.ExecuteInitialLayoutPass();
-                    var canvas = Assert.IsType<Canvas>(window.Presenter.Child);
+                    var canvas = Assert.IsType<Canvas>(window.Presenter!.Child);
                     Assert.IsType<RotateTransform>(canvas.RenderTransform);
 
                     // Clear the content and ensure the Canvas is removed.
@@ -487,32 +468,33 @@ namespace Avalonia.LeakTests
                     window.LayoutManager.ExecuteLayoutPass();
                     Assert.Null(window.Presenter.Child);
 
-                    return window;
-                };
+                    return new WeakReference(canvas);
+                }
 
-                var result = run();
+                var weakCanvas = Run();
+                Assert.True(weakCanvas.IsAlive);
 
-                // Process all Loaded events to free control reference(s)
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+                CollectGarbage();
 
-                dotMemory.Check(memory =>
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Canvas>()).ObjectsCount));
+                Assert.False(weakCanvas.IsAlive);
             }
         }
 
-        [Fact]
+        [ReleaseFact]
         public void Attached_ContextMenu_Is_Freed()
         {
             using (Start())
             {
-                void AttachShowAndDetachContextMenu(Control control)
+                (WeakReference, WeakReference, WeakReference) AttachShowAndDetachContextMenu(Control control)
                 {
+                    var menuItem1 = new MenuItem { Header = "Foo" };
+                    var menuItem2 = new MenuItem { Header = "Foo" };
                     var contextMenu = new ContextMenu
                     {
                         Items =
                         {
-                            new MenuItem { Header = "Foo" },
-                            new MenuItem { Header = "Foo" },
+                            menuItem1,
+                            menuItem2
                         }
                     };
 
@@ -520,208 +502,203 @@ namespace Avalonia.LeakTests
                     contextMenu.Open(control);
                     contextMenu.Close();
                     control.ContextMenu = null;
+
+                    return (new WeakReference(menuItem1), new WeakReference(menuItem2), new WeakReference(contextMenu));
                 }
 
                 var window = new Window { Focusable = true };
                 window.Show();
 
-                Assert.Same(window, window.FocusManager.GetFocusedElement());
+                Assert.Same(window, window.FocusManager!.GetFocusedElement());
 
-                // Context menu in resources means the baseline may not be 0.
-                var initialMenuCount = 0;
-                var initialMenuItemCount = 0;
-                dotMemory.Check(memory =>
-                {
-                    initialMenuCount = memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount;
-                    initialMenuItemCount = memory.GetObjects(where => where.Type.Is<MenuItem>()).ObjectsCount;
-                });
-
-                AttachShowAndDetachContextMenu(window);
-
-                // Process all Loaded events to free control reference(s)
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+                var (weakMenuItem1, weakMenuItem2, weakContextMenu) = AttachShowAndDetachContextMenu(window);
+                Assert.True(weakMenuItem1.IsAlive);
+                Assert.True(weakMenuItem2.IsAlive);
+                Assert.True(weakContextMenu.IsAlive);
 
                 Mock.Get(window.PlatformImpl).Invocations.Clear();
-                dotMemory.Check(memory =>
-                    Assert.Equal(initialMenuCount, memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount));
-                dotMemory.Check(memory =>
-                    Assert.Equal(initialMenuItemCount, memory.GetObjects(where => where.Type.Is<MenuItem>()).ObjectsCount));
+                CollectGarbage();
+
+                Assert.False(weakMenuItem1.IsAlive);
+                Assert.False(weakMenuItem2.IsAlive);
+                Assert.False(weakContextMenu.IsAlive);
             }
         }
         
-        [Fact]
+        [ReleaseFact]
         public void Attached_Control_From_ContextMenu_Is_Freed()
         {
             using (Start())
             {
                 var contextMenu = new ContextMenu();
-                Func<Window> run = () =>
+
+                WeakReference Run()
                 {
+                    var textBlock = new TextBlock
+                    {
+                        ContextMenu = contextMenu
+                    };
                     var window = new Window
                     {
-                        Content = new TextBlock
-                        {
-                            ContextMenu = contextMenu
-                        }
+                        Content = textBlock
                     };
 
                     window.Show();
 
                     // Do a layout and make sure that TextBlock gets added to visual tree.
                     window.LayoutManager.ExecuteInitialLayoutPass();
-                    Assert.IsType<TextBlock>(window.Presenter.Child);
+                    Assert.IsType<TextBlock>(window.Presenter!.Child);
 
                     // Clear the content and ensure the TextBlock is removed.
                     window.Content = null;
                     window.LayoutManager.ExecuteLayoutPass();
                     Assert.Null(window.Presenter.Child);
 
-                    return window;
-                };
+                    return new WeakReference(textBlock);
+                }
 
-                var result = run();
+                var weakTextBlock = Run();
+                Assert.True(weakTextBlock.IsAlive);
 
-                // Process all Loaded events to free control reference(s)
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+                CollectGarbage();
 
-                dotMemory.Check(memory =>
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TextBlock>()).ObjectsCount));
+                Assert.False(weakTextBlock.IsAlive);
             }
         }
 
-        [Fact]
+        [ReleaseFact]
         public void Standalone_ContextMenu_Is_Freed()
         {
             using (Start())
             {
-                void BuildAndShowContextMenu(Control control)
+                (WeakReference, WeakReference, WeakReference) BuildAndShowContextMenu(Control control)
                 {
+                    var menuItem1 = new MenuItem { Header = "Foo" };
+                    var menuItem2 = new MenuItem { Header = "Foo" };
                     var contextMenu = new ContextMenu
                     {
                         Items =
                         {
-                            new MenuItem { Header = "Foo" },
-                            new MenuItem { Header = "Foo" },
+                            menuItem1,
+                            menuItem2
                         }
                     };
 
                     contextMenu.Open(control);
                     contextMenu.Close();
+
+                    return (new WeakReference(menuItem1), new WeakReference(menuItem2), new WeakReference(contextMenu));
                 }
 
                 var window = new Window { Focusable = true };
                 window.Show();
 
-                Assert.Same(window, window.FocusManager.GetFocusedElement());
+                Assert.Same(window, window.FocusManager!.GetFocusedElement());
 
-                // Context menu in resources means the baseline may not be 0.
-                var initialMenuCount = 0;
-                var initialMenuItemCount = 0;
-                dotMemory.Check(memory =>
-                {
-                    initialMenuCount = memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount;
-                    initialMenuItemCount = memory.GetObjects(where => where.Type.Is<MenuItem>()).ObjectsCount;
-                });
+                var (weakMenuItem1, weakMenuItem2, weakContextMenu1) = BuildAndShowContextMenu(window);
+                var (weakMenuItem3, weakMenuItem4, weakContextMenu2) = BuildAndShowContextMenu(window);
 
-                BuildAndShowContextMenu(window);
-                BuildAndShowContextMenu(window);
-
-                // Process all Loaded events to free control reference(s)
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+                Assert.True(weakMenuItem1.IsAlive);
+                Assert.True(weakMenuItem2.IsAlive);
+                Assert.True(weakContextMenu1.IsAlive);
+                Assert.True(weakMenuItem3.IsAlive);
+                Assert.True(weakMenuItem4.IsAlive);
+                Assert.True(weakContextMenu2.IsAlive);
 
                 Mock.Get(window.PlatformImpl).Invocations.Clear();
-                dotMemory.Check(memory =>
-                    Assert.Equal(initialMenuCount, memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount));
-                dotMemory.Check(memory =>
-                    Assert.Equal(initialMenuItemCount, memory.GetObjects(where => where.Type.Is<MenuItem>()).ObjectsCount));
+                CollectGarbage();
+
+                Assert.False(weakMenuItem1.IsAlive);
+                Assert.False(weakMenuItem2.IsAlive);
+                Assert.False(weakContextMenu1.IsAlive);
+                Assert.False(weakMenuItem3.IsAlive);
+                Assert.False(weakMenuItem4.IsAlive);
+                Assert.False(weakContextMenu2.IsAlive);
             }
         }
 
-        [Fact]
+        [ReleaseFact]
         public void Path_Is_Freed()
         {
             using (Start())
             {
                 var geometry = new EllipseGeometry { Rect = new Rect(0, 0, 10, 10) };
 
-                Func<Window> run = () =>
+                WeakReference Run()
                 {
+                    var path = new Path
+                    {
+                        Data = geometry
+                    };
                     var window = new Window
                     {
-                        Content = new Path
-                        {
-                            Data = geometry
-                        }
+                        Content = path
                     };
 
                     window.Show();
 
                     window.LayoutManager.ExecuteInitialLayoutPass();
-                    Assert.IsType<Path>(window.Presenter.Child);
+                    Assert.IsType<Path>(window.Presenter!.Child);
 
                     window.Content = null;
                     window.LayoutManager.ExecuteLayoutPass();
                     Assert.Null(window.Presenter.Child);
 
-                    return window;
-                };
+                    return new WeakReference(path);
+                }
 
-                var result = run();
+                var weakPath = Run();
+                Assert.True(weakPath.IsAlive);
 
-                // Process all Loaded events to free control reference(s)
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+                CollectGarbage();
 
-                dotMemory.Check(memory =>
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Path>()).ObjectsCount));
-
-                // We are keeping geometry alive to simulate a resource that outlives the control.
-                GC.KeepAlive(geometry);
+                Assert.False(weakPath.IsAlive);
             }
         }
         
-        [Fact]
+        [ReleaseFact]
         public void Polyline_WithObservableCollectionPointsBinding_Is_Freed()
         {
             using (Start())
             {
                 var observableCollection = new ObservableCollection<Point>(){new()};
 
-                Func<Window> run = () =>
+                WeakReference Run()
                 {
+                    var polyline = new Polyline
+                    {
+                        Points = observableCollection
+                    };
                     var window = new Window
                     {
-                        Content = new Polyline()
-                        {
-                            Points = observableCollection
-                        }
+                        Content = polyline
                     };
 
                     window.Show();
 
                     window.LayoutManager.ExecuteInitialLayoutPass();
-                    Assert.IsType<Polyline>(window.Presenter.Child);
+                    Assert.IsType<Polyline>(window.Presenter!.Child);
 
                     window.Content = null;
                     window.LayoutManager.ExecuteLayoutPass();
                     Assert.Null(window.Presenter.Child);
 
-                    return window;
-                };
+                    return new WeakReference(polyline);
+                }
 
-                var result = run();
+                var weakPolyline = Run();
+                Assert.True(weakPolyline.IsAlive);
 
-                // Process all Loaded events to free control reference(s)
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+                CollectGarbage();
 
-                dotMemory.Check(memory =>
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Polyline>()).ObjectsCount));
+                Assert.False(weakPolyline.IsAlive);
 
                 // We are keeping collection alive to simulate a resource that outlives the control.
                 GC.KeepAlive(observableCollection);
             }
         }
 
-        [Fact]
+        [ReleaseFact]
         public void ElementName_Binding_In_DataTemplate_Is_Freed()
         {
             using (Start())
@@ -734,6 +711,9 @@ namespace Avalonia.LeakTests
                 NameScope ns;
                 TextBox tb;
                 ListBox lb;
+
+                var weakCanvases = new List<WeakReference>();
+
                 var window = new Window
                 {
                     [NameScope.NameScopeProperty] = ns = new NameScope(),
@@ -754,7 +734,8 @@ namespace Avalonia.LeakTests
                             {
                                 ItemsSource = items,
                                 ItemTemplate = new FuncDataTemplate<int>((_, _) =>
-                                    new Canvas
+                                {
+                                    var canvas = new Canvas
                                     {
                                         Width = 10,
                                         Height = 10,
@@ -762,11 +743,14 @@ namespace Avalonia.LeakTests
                                         {
                                             ElementName = "tb",
                                             Path = "Text",
-                                            NameScope = new WeakReference<INameScope>(ns),
+                                            NameScope = new WeakReference<INameScope?>(ns),
                                         }
-                                    }),
+                                    };
+                                    weakCanvases.Add(new WeakReference(canvas));
+                                    return canvas;
+                                }),
                                 Padding = new Thickness(0),
-                            }),
+                            })
                         }
                     }
                 };
@@ -779,7 +763,7 @@ namespace Avalonia.LeakTests
                 void AssertInitialItemState()
                 {
                     var item0 = (ListBoxItem)lb.GetRealizedContainers().First();
-                    var canvas0 = (Canvas)item0.Presenter.Child;
+                    var canvas0 = (Canvas)item0.Presenter!.Child!;
                     Assert.Equal("foo", canvas0.Tag);
                 }
 
@@ -790,21 +774,24 @@ namespace Avalonia.LeakTests
                 window.LayoutManager.ExecuteLayoutPass();
 
                 Assert.Empty(lb.GetRealizedContainers());
+                Assert.Equal(10, weakCanvases.Count);
 
-                // Process all Loaded events to free control reference(s)
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+                foreach (var weakReference in weakCanvases)
+                    Assert.True(weakReference.IsAlive);
 
-                dotMemory.Check(memory =>
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Canvas>()).ObjectsCount));
+                CollectGarbage();
+
+                foreach (var weakReference in weakCanvases)
+                    Assert.False(weakReference.IsAlive);
             }
         }
 
-        [Fact]
+        [ReleaseFact]
         public void HotKeyManager_Should_Release_Reference_When_Control_Detached()
         {
             using (Start())
             {
-                Func<Window> run = () =>
+                static WeakReference Run()
                 {
                     var gesture1 = new KeyGesture(Key.A, KeyModifiers.Control);
                     var tl = new Window
@@ -818,32 +805,31 @@ namespace Avalonia.LeakTests
                     tl.Content = button;
                     tl.Template = CreateWindowTemplate();
                     tl.ApplyTemplate();
-                    tl.Presenter.ApplyTemplate();
+                    tl.Presenter!.ApplyTemplate();
                     HotKeyManager.SetHotKey(button, gesture1);
 
                     // Detach the button from the logical tree, so there is no reference to it
                     tl.Content = null;
                     tl.ApplyTemplate();
 
-                    return tl;
-                };
+                    return new WeakReference(button);
+                }
 
-                var result = run();
+                var weakButton = Run();
+                Assert.True(weakButton.IsAlive);
 
-                // Process all Loaded events to free control reference(s)
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+                CollectGarbage();
 
-                dotMemory.Check(memory =>
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Button>()).ObjectsCount));
+                Assert.False(weakButton.IsAlive);
             }
         }
 
-        [Fact]
+        [ReleaseFact]
         public void HotKeyManager_Should_Release_Reference_When_Control_In_Item_Template_Detached()
         {
             using (Start())
             {
-                Func<Window> run = () =>
+                static List<WeakReference> Run()
                 {
                     var gesture1 = new KeyGesture(Key.A, KeyModifiers.Control);
 
@@ -852,19 +838,22 @@ namespace Avalonia.LeakTests
                     tl.Show();
 
                     var keyGestures = new AvaloniaList<KeyGesture> { gesture1 };
+                    var weakButtons = new List<WeakReference>();
                     var listBox = new ListBox
                     {
                         Width = 100,
                         Height = 100,
                         // Create a button with binding to the KeyGesture in the template and add it to references list
-                        ItemTemplate = new FuncDataTemplate(typeof(KeyGesture), (o, scope) =>
+                        ItemTemplate = new FuncDataTemplate(typeof(KeyGesture), (o, _) =>
                         {
                             var keyGesture = o as KeyGesture;
-                            return new Button
+                            var button = new Button
                             {
                                 DataContext = keyGesture,
                                 [!Button.HotKeyProperty] = new Binding("")
                             };
+                            weakButtons.Add(new WeakReference(button));
+                            return button;
                         })
                     };
                     // Add the listbox and render it
@@ -884,37 +873,47 @@ namespace Avalonia.LeakTests
                     keyGestures.Clear();
                     lm.ExecuteLayoutPass();
 
-                    return tl;
-                };
+                    return weakButtons;
+                }
 
-                var result = run();
+                var weakButtons = Run();
 
-                // Process all Loaded events to free control reference(s)
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+                Assert.NotEmpty(weakButtons);
 
-                dotMemory.Check(memory =>
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Button>()).ObjectsCount));
+                foreach (var weakReference in weakButtons)
+                    Assert.True(weakReference.IsAlive);
+
+                CollectGarbage();
+
+                foreach (var weakReference in weakButtons)
+                    Assert.False(weakReference.IsAlive);
             }
         }
 
-        [Fact]
+        [ReleaseFact]
         public void ToolTip_Is_Freed()
         {
             using (Start())
             {
-                Func<Window> run = () =>
+                static (WeakReference, WeakReference) Run()
                 {
                     var window = new Window();
+                    TextBlock? textBlock = null;
                     var source = new Button
                     {
-                        Template = new FuncControlTemplate<Button>((parent, _) =>
-                            new Decorator
+                        Template = new FuncControlTemplate<Button>((_, _) =>
+                        {
+                            Assert.Null(textBlock);
+                            textBlock = new TextBlock
                             {
-                                [ToolTip.TipProperty] = new TextBlock
-                                {
-                                    [~TextBlock.TextProperty] = new TemplateBinding(ContentControl.ContentProperty)
-                                }
-                            }),
+                                [~TextBlock.TextProperty] =
+                                    new TemplateBinding(ContentControl.ContentProperty)
+                            };
+                            return new Decorator
+                            {
+                                [ToolTip.TipProperty] = textBlock
+                            };
+                        }),
                     };
 
                     window.Content = source;
@@ -922,6 +921,8 @@ namespace Avalonia.LeakTests
 
                     var templateChild = (Decorator)source.GetVisualChildren().Single();
                     ToolTip.SetIsOpen(templateChild, true);
+                    var toolTip = templateChild.GetValue(ToolTip.ToolTipProperty);
+                    Assert.NotNull(toolTip);
 
                     ToolTip.SetIsOpen(templateChild, false);
 
@@ -931,33 +932,31 @@ namespace Avalonia.LeakTests
                     // Mock keep reference on a Popup via InvocationsCollection. So let's clear it before. 
                     Mock.Get(window.PlatformImpl).Invocations.Clear();
                     
-                    return window;
-                };
+                    return (new WeakReference(toolTip), new WeakReference(textBlock));
+                }
 
-                var result = run();
+                var (weakTooltip, weakTextBlock) = Run();
+                Assert.True(weakTooltip.IsAlive);
+                Assert.True(weakTextBlock.IsAlive);
 
-                // Process all Loaded events to free control reference(s)
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+                CollectGarbage();
 
-                dotMemory.Check(memory =>
-                {
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TextBlock>()).ObjectsCount);
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<ToolTip>()).ObjectsCount);
-                });
+                Assert.False(weakTooltip.IsAlive);
+                Assert.False(weakTextBlock.IsAlive);
             }
         }
         
-        [Fact]
+        [ReleaseFact]
         public void Flyout_Is_Freed()
         {
             using (Start())
             {
-                Func<Window> run = () =>
+                static (WeakReference, WeakReference) Run()
                 {
                     var window = new Window();
                     var source = new Button
                     {
-                        Template = new FuncControlTemplate<Button>((parent, _) =>
+                        Template = new FuncControlTemplate<Button>((_, _) =>
                             new Button
                             {
                                 Flyout = new Flyout
@@ -974,9 +973,12 @@ namespace Avalonia.LeakTests
                     window.Show();
 
                     var templateChild = (Button)source.GetVisualChildren().Single();
-                    templateChild.Flyout!.ShowAt(templateChild);
+                    var flyout = Assert.IsType<Flyout>(templateChild.Flyout);
+                    var textBlock = Assert.IsType<TextBlock>(flyout.Content);
+
+                    flyout.ShowAt(templateChild);
                     
-                    templateChild.Flyout!.Hide();
+                    flyout.Hide();
 
                     // Detach the button from the logical tree, so there is no reference to it
                     window.Content = null;
@@ -984,46 +986,45 @@ namespace Avalonia.LeakTests
                     // Mock keep reference on a Popup via InvocationsCollection. So let's clear it before. 
                     Mock.Get(window.PlatformImpl).Invocations.Clear();
                     
-                    return window;
-                };
+                    return (new WeakReference(flyout), new WeakReference(textBlock));
+                }
 
-                var result = run();
+                var (weakFlyout, weakTextBlock) = Run();
+                Assert.True(weakFlyout.IsAlive);
+                Assert.True(weakTextBlock.IsAlive);
 
-                // Process all Loaded events to free control reference(s)
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+                CollectGarbage();
 
-                dotMemory.Check(memory =>
-                {
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TextBlock>()).ObjectsCount);
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Flyout>()).ObjectsCount);
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Popup>()).ObjectsCount);
-                });
+                Assert.False(weakFlyout.IsAlive);
+                Assert.False(weakTextBlock.IsAlive);
             }
         }
         
-        [Fact]
+        [ReleaseFact]
         public void LayoutTransformControl_Is_Freed()
         {
             using (Start())
             {
                 var transform = new RotateTransform { Angle = 90 };
 
-                Func<Window> run = () =>
+                (WeakReference, WeakReference) Run()
                 {
+                    var canvas = new Canvas();
+                    var layoutTransformControl = new LayoutTransformControl
+                    {
+                        LayoutTransform = transform,
+                        Child = canvas
+                    };
                     var window = new Window
                     {
-                        Content = new LayoutTransformControl
-                        {
-                            LayoutTransform = transform,
-                            Child = new Canvas()
-                        }
+                        Content = layoutTransformControl
                     };
 
                     window.Show();
 
                     // Do a layout and make sure that LayoutTransformControl gets added to visual tree
                     window.LayoutManager.ExecuteInitialLayoutPass();
-                    Assert.IsType<LayoutTransformControl>(window.Presenter.Child);
+                    Assert.IsType<LayoutTransformControl>(window.Presenter!.Child);
                     Assert.NotEmpty(window.Presenter.Child.GetVisualChildren());
 
                     // Clear the content and ensure the LayoutTransformControl is removed.
@@ -1031,25 +1032,24 @@ namespace Avalonia.LeakTests
                     window.LayoutManager.ExecuteLayoutPass();
                     Assert.Null(window.Presenter.Child);
 
-                    return window;
-                };
+                    return (new WeakReference(layoutTransformControl), new WeakReference(canvas));
+                }
 
-                var result = run();
+                var (weakLayoutTransformControl, weakCanvas) = Run();
+                Assert.True(weakLayoutTransformControl.IsAlive);
+                Assert.True(weakCanvas.IsAlive);
 
-                // Process all Loaded events to free control reference(s)
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+                CollectGarbage();
 
-                dotMemory.Check(memory =>
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<LayoutTransformControl>()).ObjectsCount));
-                dotMemory.Check(memory =>
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Canvas>()).ObjectsCount));
+                Assert.False(weakLayoutTransformControl.IsAlive);
+                Assert.False(weakCanvas.IsAlive);
 
                 // We are keeping transform alive to simulate a resource that outlives the control.
                 GC.KeepAlive(transform);
             }
         }
 
-        private FuncControlTemplate CreateWindowTemplate()
+        private static FuncControlTemplate CreateWindowTemplate()
         {
             return new FuncControlTemplate<Window>((parent, scope) =>
             {
@@ -1066,7 +1066,7 @@ namespace Avalonia.LeakTests
             static void Cleanup()
             {
                 // KeyboardDevice holds a reference to the focused item.
-                KeyboardDevice.Instance.SetFocusedElement(null, NavigationMethod.Unspecified, KeyModifiers.None);
+                KeyboardDevice.Instance?.SetFocusedElement(null, NavigationMethod.Unspecified, KeyModifiers.None);
                 
                 // Empty the dispatcher queue.
                 Dispatcher.UIThread.RunJobs();
@@ -1081,6 +1081,15 @@ namespace Avalonia.LeakTests
             };
         }
 
+        private static void CollectGarbage()
+        {
+            // Process all Loaded events to free control reference(s)
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+            GC.Collect();
+
+            Dispatcher.UIThread.RunJobs();
+            GC.Collect();
+        }
 
         private class Node
         {

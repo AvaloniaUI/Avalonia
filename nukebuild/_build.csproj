@@ -11,7 +11,6 @@
     <EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
   </PropertyGroup>
 
-  <Import Project="..\build\JetBrains.dotMemoryUnit.props" />
   <ItemGroup>
     <PackageReference Include="Nuke.Common" Version="9.0.4" />
     <PackageReference Include="MicroCom.CodeGenerator" Version="0.11.0" />
