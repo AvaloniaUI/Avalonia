@@ -71,7 +71,7 @@ public abstract class StandardWindowTests : IDisposable
             Window.WindowState = WindowState.Maximized;
 
         // The client size should match the screen working area
-        var clientSize = Window.GetClientSize();
+        var clientSize = Window.GetWin32ClientSize();
         var screenWorkingArea = Window.GetScreen().WorkingArea;
 
         if (HasCaption)
@@ -93,13 +93,13 @@ public abstract class StandardWindowTests : IDisposable
             Window.WindowState = WindowState.FullScreen;
 
         // The client size should match the screen bounds
-        var clientSize = Window.GetClientSize();
+        var clientSize = Window.GetWin32ClientSize();
         var screenBounds = Window.GetScreen().Bounds;
         Assert.Equal(screenBounds.Width, clientSize.Width);
         Assert.Equal(screenBounds.Height, clientSize.Height);
 
         // The window size should also match the screen bounds
-        var windowBounds = Window.GetWindowBounds();
+        var windowBounds = Window.GetWin32WindowBounds();
         Assert.Equal(screenBounds, windowBounds);
     }
 

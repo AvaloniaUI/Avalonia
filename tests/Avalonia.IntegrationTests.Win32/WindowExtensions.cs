@@ -34,7 +34,7 @@ internal static class WindowExtensions
         return screen;
     }
 
-    public static PixelSize GetClientSize(this Window window)
+    public static PixelSize GetWin32ClientSize(this Window window)
     {
         var platformHandle = window.TryGetPlatformHandle();
         Assert.NotNull(platformHandle);
@@ -43,7 +43,7 @@ internal static class WindowExtensions
         return rect.ToPixelRect().Size;
     }
 
-    public static PixelRect GetWindowBounds(this Window window)
+    public static PixelRect GetWin32WindowBounds(this Window window)
     {
         var platformHandle = window.TryGetPlatformHandle();
         Assert.NotNull(platformHandle);

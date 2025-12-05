@@ -71,7 +71,7 @@ public abstract class ExtendClientAreaWindowTests : IDisposable
 
         // The client size should have been kept
         var expected = PixelSize.FromSize(new Size(ClientWidth, ClientHeight), Window.RenderScaling);
-        var clientSize = Window.GetClientSize();
+        var clientSize = Window.GetWin32ClientSize();
         Assert.Equal(expected, clientSize);
 
         VerifyNormalState(canResize);
@@ -89,7 +89,7 @@ public abstract class ExtendClientAreaWindowTests : IDisposable
             Window.WindowState = WindowState.Maximized;
 
         // The client size should match the screen working area
-        var clientSize = Window.GetClientSize();
+        var clientSize = Window.GetWin32ClientSize();
         var screenWorkingArea = Window.GetScreen().WorkingArea;
         Assert.Equal(screenWorkingArea.Size, clientSize);
 
@@ -108,13 +108,13 @@ public abstract class ExtendClientAreaWindowTests : IDisposable
             Window.WindowState = WindowState.FullScreen;
 
         // The client size should match the screen bounds
-        var clientSize = Window.GetClientSize();
+        var clientSize = Window.GetWin32ClientSize();
         var screenBounds = Window.GetScreen().Bounds;
         Assert.Equal(screenBounds.Width, clientSize.Width);
         Assert.Equal(screenBounds.Height, clientSize.Height);
 
         // The window size should also match the screen bounds
-        var windowBounds = Window.GetWindowBounds();
+        var windowBounds = Window.GetWin32WindowBounds();
         Assert.Equal(screenBounds, windowBounds);
 
         // And no visible title bar
@@ -123,16 +123,16 @@ public abstract class ExtendClientAreaWindowTests : IDisposable
 
     protected void AssertHasBorder()
     {
-        var clientSize = Window.GetClientSize();
-        var windowBounds = Window.GetWindowBounds();
+        var clientSize = Window.GetWin32ClientSize();
+        var windowBounds = Window.GetWin32WindowBounds();
         Assert.NotEqual(clientSize.Width, windowBounds.Width);
         Assert.NotEqual(clientSize.Height, windowBounds.Height);
     }
 
     protected void AssertNoBorder()
     {
-        var clientSize = Window.GetClientSize();
-        var windowBounds = Window.GetWindowBounds();
+        var clientSize = Window.GetWin32ClientSize();
+        var windowBounds = Window.GetWin32WindowBounds();
         Assert.Equal(clientSize.Width, windowBounds.Width);
         Assert.Equal(clientSize.Height, windowBounds.Height);
     }
