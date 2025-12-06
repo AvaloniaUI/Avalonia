@@ -869,6 +869,14 @@ namespace Avalonia.Win32.Interop
             DWMWCP_ROUNDSMALL
         }
 
+        public enum DwmNCRenderingPolicy : uint
+        {
+            DWMNCRP_USEWINDOWSTYLE,
+            DWMNCRP_DISABLED,
+            DWMNCRP_ENABLED,
+            DWMNCRP_LAST
+        }
+
         public enum MapVirtualKeyMapTypes : uint
         {
             MAPVK_VK_TO_VSC = 0x00,
