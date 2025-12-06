@@ -31,6 +31,18 @@ namespace Avalonia.FreeDesktop.DBusIme
                     return factory;
             }
 
+            var modifiers = Environment.GetEnvironmentVariable("XMODIFIERS");
+            if (modifiers is not null && modifiers.Contains("@im="))
+            {
+                foreach (var pair in KnownMethods)
+                {
+                    if (modifiers.Contains($"@im={pair.Key}"))
+                    {
+                        return pair.Value;
+                    }
+                }
+            }
+
             return null;
         }
 
