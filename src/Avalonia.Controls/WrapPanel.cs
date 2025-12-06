@@ -4,6 +4,7 @@
 // Licensed to The Avalonia Project under MIT License, courtesy of The .NET Foundation.
 
 using System;
+using System.Collections.Generic;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Utilities;
@@ -28,6 +29,11 @@ namespace Avalonia.Controls
         /// Items are laid out so the last one in each column/row touches the bottom/right of the panel.
         /// </summary>
         End,
+
+        /// <summary>
+        /// Items are laid out with equal spacing between them within each column/row.
+        /// </summary>
+        Justify
     }
 
     /// <summary>
@@ -258,86 +264,124 @@ namespace Avalonia.Controls
             var orientation = Orientation;
             bool isHorizontal = orientation == Orientation.Horizontal;
             var children = Children;
-            int firstInLine = 0;
-            double accumulatedV = 0;
-            double itemU = isHorizontal ? itemWidth : itemHeight;
-            var curLineSize = new UVSize(orientation);
             var uvFinalSize = new UVSize(orientation, finalSize.Width, finalSize.Height);
             bool itemWidthSet = !double.IsNaN(itemWidth);
             bool itemHeightSet = !double.IsNaN(itemHeight);
+
+            double GetChildU(Control child) => (isHorizontal ? itemWidthSet : itemHeightSet)
+                ? (isHorizontal ? itemWidth : itemHeight)
+                : (isHorizontal ? child.DesiredSize.Width : child.DesiredSize.Height);
+
+            double GetChildV(Control child) => (isHorizontal ? itemHeightSet : itemWidthSet)
+                ? (isHorizontal ? itemHeight : itemWidth)
+                : (isHorizontal ? child.DesiredSize.Height : child.DesiredSize.Width);
+
+            void ArrangeLine(double lineV, int start, int end, double totalU, double spacing, double accumulatedV)
+            {
+                double u = 0;
+
+                if (ItemsAlignment == WrapPanelItemsAlignment.Justify)
+                {
+                    u = 0;
+                    for (var i = start; i < end; ++i)
+                    {
+                        var layoutSlotU = GetChildU(children[i]);
+                        children[i].Arrange(isHorizontal ? new Rect(u, accumulatedV, layoutSlotU, lineV) : new Rect(accumulatedV, u, lineV, layoutSlotU));
+                        u += layoutSlotU + spacing;
+                    }
+                }
+                else
+                {
+                    if (ItemsAlignment != WrapPanelItemsAlignment.Start)
+                    {
+                        u = ItemsAlignment switch
+                        {
+                            WrapPanelItemsAlignment.Center => (uvFinalSize.U - totalU) / 2,
+                            WrapPanelItemsAlignment.End => uvFinalSize.U - totalU,
+                            _ => 0,
+                        };
+                    }
+
+                    for (var i = start; i < end; ++i)
+                    {
+                        var layoutSlotU = GetChildU(children[i]);
+                        children[i].Arrange(isHorizontal ? new Rect(u, accumulatedV, layoutSlotU, lineV) : new Rect(accumulatedV, u, lineV, layoutSlotU));
+                        u += layoutSlotU + (!children[i].IsVisible ? 0 : itemSpacing);
+                    }
+                }
+            }
+
+            var lineBreaks = new List<int>();
+            var childrenTotalUByLine = new List<double>();
+            var curLineSize = new UVSize(orientation);
             bool itemExists = false;
-            bool lineExists = false;
 
             for (int i = 0; i < children.Count; ++i)
             {
                 var child = children[i];
-                var childSize = new UVSize(orientation,
-                    itemWidthSet ? itemWidth : child.DesiredSize.Width,
-                    itemHeightSet ? itemHeight : child.DesiredSize.Height);
+                var childU = GetChildU(child);
+                var childV = GetChildV(child);
 
                 var nextSpacing = itemExists && child.IsVisible ? itemSpacing : 0;
-                if (MathUtilities.GreaterThan(curLineSize.U + childSize.U + nextSpacing, uvFinalSize.U)) // Need to switch to another line
+                if (MathUtilities.GreaterThan(curLineSize.U + childU + nextSpacing, uvFinalSize.U))
                 {
-                    accumulatedV += lineExists ? lineSpacing : 0; // add spacing to arrange line first
-                    ArrangeLine(curLineSize.V, firstInLine, i);
-                    accumulatedV += curLineSize.V; // add the height of the line just arranged
-                    curLineSize = childSize;
-
-                    firstInLine = i;
-
+                    lineBreaks.Add(i);
+                    childrenTotalUByLine.Add(curLineSize.U - (lineBreaks.Count == 1 ? 0 : itemSpacing));
+                    curLineSize.U = childU;
+                    curLineSize.V = childV;
                     itemExists = child.IsVisible;
-                    lineExists = true;
                 }
-                else // Continue to accumulate a line
+                else
                 {
-                    curLineSize.U += childSize.U + nextSpacing;
-                    curLineSize.V = Max(childSize.V, curLineSize.V);
+                    curLineSize.U += childU + nextSpacing;
+                    curLineSize.V = Math.Max(curLineSize.V, childV);
+                    itemExists |= child.IsVisible;
+                }
+            }
+            lineBreaks.Add(children.Count);
+            childrenTotalUByLine.Add(curLineSize.U - (lineBreaks.Count > 1 ? 0 : itemSpacing));
 
-                    itemExists |= child.IsVisible; // keep true
+            double gridSpacing = itemSpacing;
+            if (children.Count > 0 && lineBreaks.Count > 1)
+            {
+                var firstRowChildrenCount = lineBreaks[0];
+                if (firstRowChildrenCount > 1)
+                {
+                    double firstRowTotalWidth = 0;
+                    for (int i = 0; i < firstRowChildrenCount; i++)
+                    {
+                        firstRowTotalWidth += GetChildU(children[i]);
+                    }
+                    gridSpacing = (uvFinalSize.U - firstRowTotalWidth) / (firstRowChildrenCount - 1);
                 }
             }
 
-            // Arrange the last line, if any
-            if (firstInLine < children.Count)
+            int currentLineStart = 0;
+            double accumulatedV = 0;
+            for (int i = 0; i < lineBreaks.Count; i++)
             {
-                accumulatedV += lineExists ? lineSpacing : 0; // add spacing to arrange line first
-                ArrangeLine(curLineSize.V, firstInLine, children.Count);
+                int lineEnd = lineBreaks[i];
+
+                double currentLineU = -itemSpacing;
+                double currentLineV = 0;
+                for (int j = currentLineStart; j < lineEnd; j++)
+                {
+                    var child = children[j];
+                    var childU = GetChildU(child);
+                    currentLineU += childU + (!child.IsVisible ? 0 : itemSpacing);
+                    currentLineV = Math.Max(currentLineV, GetChildV(child));
+                }
+
+                double spacingToUse = ItemsAlignment == WrapPanelItemsAlignment.Justify
+                    ? gridSpacing : itemSpacing;
+
+                ArrangeLine(currentLineV, currentLineStart, lineEnd, currentLineU, spacingToUse, accumulatedV);
+
+                accumulatedV += currentLineV + (i < lineBreaks.Count - 1 ? lineSpacing : 0);
+                currentLineStart = lineEnd;
             }
 
             return finalSize;
-
-            void ArrangeLine(double lineV, int start, int end)
-            {
-                bool useItemU = isHorizontal ? itemWidthSet : itemHeightSet;
-                double u = 0;
-                if (ItemsAlignment != WrapPanelItemsAlignment.Start)
-                {
-                    double totalU = -itemSpacing;
-                    for (int i = start; i < end; ++i)
-                    {
-                        totalU += GetChildU(i) + (!children[i].IsVisible ? 0 : itemSpacing);
-                    }
-
-                    u = ItemsAlignment switch
-                    {
-                        WrapPanelItemsAlignment.Center => (uvFinalSize.U - totalU) / 2,
-                        WrapPanelItemsAlignment.End => uvFinalSize.U - totalU,
-                        WrapPanelItemsAlignment.Start => 0,
-                        _ => throw new ArgumentOutOfRangeException(nameof(ItemsAlignment), ItemsAlignment, null),
-                    };
-                }
-
-                for (int i = start; i < end; ++i)
-                {
-                    double layoutSlotU = GetChildU(i);
-                    children[i].Arrange(isHorizontal ? new(u, accumulatedV, layoutSlotU, lineV) : new(accumulatedV, u, lineV, layoutSlotU));
-                    u += layoutSlotU + (!children[i].IsVisible ? 0 : itemSpacing);
-                }
-
-                return;
-                double GetChildU(int i) => useItemU ? itemU :
-                    isHorizontal ? children[i].DesiredSize.Width : children[i].DesiredSize.Height;
-            }
         }
 
         private struct UVSize
