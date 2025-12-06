@@ -32,21 +32,21 @@ internal sealed class OleDataObjectToDataTransferWrapper(Win32Com.IDataObject ol
         while (Next(enumFormat) is { } format)
             formats.Add(format);
 
-        bool hasSupportedFormat = false;
+        bool hasSupportedImageFormat = false;
 
         foreach (var format in formats)
         {
             if (format.Identifier is ClipboardFormatRegistry.DibFormat 
                 or ClipboardFormatRegistry.BitmapFormat 
-                or ClipboardFormatRegistry.PngFormatMimeType 
-                or ClipboardFormatRegistry.JpegFormatMimeType)
+                or ClipboardFormatRegistry.PngFormatMimeType
+                or ClipboardFormatRegistry.PngFormatSystemType)
             {
-                hasSupportedFormat = true;
+                hasSupportedImageFormat = true;
                 break;
             }
         }
 
-        if (hasSupportedFormat)
+        if (hasSupportedImageFormat)
         {
             formats.Add(DataFormat.Bitmap);
         }
