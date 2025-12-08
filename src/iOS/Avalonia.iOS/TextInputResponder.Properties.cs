@@ -34,9 +34,6 @@ partial class AvaloniaView
                     _ => UIKeyboardType.Default
                 };
 
-        [Export("keyboardAppearance")]
-        public UIKeyboardAppearance KeyboardAppearance => UIKeyboardAppearance.Alert;
-
         [Export("returnKeyType")]
         public UIReturnKeyType ReturnKeyType
         {
@@ -84,7 +81,7 @@ partial class AvaloniaView
         [Export("smartInsertDeleteType")]
         public UITextSmartInsertDeleteType SmartInsertDeleteType { get; set; } = UITextSmartInsertDeleteType.Default;
 
-        [Export("passwordRules")] public UITextInputPasswordRules PasswordRules { get; set; } = null!;
+        [Export("passwordRules")] public UITextInputPasswordRules? PasswordRules { get; set; } = null!;
 
         public NSObject? WeakInputDelegate
         {

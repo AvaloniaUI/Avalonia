@@ -109,6 +109,7 @@ namespace Avalonia.Controls.Presenters
         static ScrollContentPresenter()
         {
             ClipToBoundsProperty.OverrideDefaultValue(typeof(ScrollContentPresenter), true);
+            AffectsMeasure<ScrollContentPresenter>(CanHorizontallyScrollProperty, CanVerticallyScrollProperty);
         }
 
         /// <summary>
@@ -201,7 +202,7 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         public SnapPointsAlignment VerticalSnapPointsAlignment
         {
-            get => GetValue(VerticalSnapPointsAlignmentProperty); 
+            get => GetValue(VerticalSnapPointsAlignmentProperty);
             set => SetValue(VerticalSnapPointsAlignmentProperty, value);
         }
 
@@ -250,35 +251,21 @@ namespace Avalonia.Controls.Presenters
                 return scrollable.BringIntoView(control, targetRect);
             }
 
-            var transform = target.TransformToVisual(Child);
+            var transform = target.TransformToVisual(this);
 
             if (transform == null)
             {
                 return false;
             }
 
-            var rect = targetRect.TransformToAABB(transform.Value);
-            var offset = Offset;
+            transform *= Matrix.CreateTranslation(Offset);
 
-            if (rect.Bottom > offset.Y + Viewport.Height)
-            {
-                offset = offset.WithY((rect.Bottom - Viewport.Height) + Child.Margin.Top);
-            }
+            var rectangle = targetRect.TransformToAABB(transform.Value);
+            Rect viewport = new Rect(Offset.X, Offset.Y, Viewport.Width, Viewport.Height);
 
-            if (rect.Y < offset.Y)
-            {
-                offset = offset.WithY(rect.Y);
-            }
-
-            if (rect.Right > offset.X + Viewport.Width)
-            {
-                offset = offset.WithX((rect.Right - Viewport.Width) + Child.Margin.Left);
-            }
-
-            if (rect.X < offset.X)
-            {
-                offset = offset.WithX(rect.X);
-            }
+            double minX = ComputeScrollOffsetWithMinimalScroll(viewport.Left, viewport.Right, rectangle.Left, rectangle.Right);
+            double minY = ComputeScrollOffsetWithMinimalScroll(viewport.Top, viewport.Bottom, rectangle.Top, rectangle.Bottom);
+            var offset = new Vector(minX, minY);
 
             if (Offset.NearlyEquals(offset))
             {
@@ -291,6 +278,47 @@ namespace Avalonia.Controls.Presenters
             // It's possible that the Offset coercion has changed the offset back to its previous value,
             // this is common for floating point rounding errors.
             return !Offset.NearlyEquals(oldOffset);
+        }
+
+        /// <summary>
+        /// Computes the closest offset to ensure most of the child is visible in the viewport along an axis.
+        /// </summary>
+        /// <param name="viewportStart">The left or top of the viewport</param>
+        /// <param name="viewportEnd">The right or bottom of the viewport</param>
+        /// <param name="childStart">The left or top of the child</param>
+        /// <param name="childEnd">The right or bottom of the child</param>
+        /// <returns></returns>
+        internal static double ComputeScrollOffsetWithMinimalScroll(
+            double viewportStart,
+            double viewportEnd,
+            double childStart,
+            double childEnd)
+        {
+            // If child is at least partially above viewport, i.e. top of child is above viewport top and bottom of child is above viewport bottom.
+            bool isChildAbove = MathUtilities.LessThan(childStart, viewportStart) && MathUtilities.LessThan(childEnd, viewportEnd);
+
+            // If child is at least partially below viewport, i.e. top of child is below viewport top and bottom of child is below viewport bottom.
+            bool isChildBelow = MathUtilities.GreaterThan(childEnd, viewportEnd) && MathUtilities.GreaterThan(childStart, viewportStart);
+            bool isChildLarger = (childEnd - childStart) > (viewportEnd - viewportStart);
+
+            // Value if no updates is needed. The child is fully visible in the viewport, or the viewport is completely within the child's bounds
+            var res = viewportStart;
+
+            // The child is above the viewport and is smaller than the viewport, or if the child's top is below the viewport top
+            // and is larger than the viewport, we align the child top to the top of the viewport
+            if ((isChildAbove && !isChildLarger)
+               || (isChildBelow && isChildLarger))
+            {
+                res = childStart;
+            }
+            // The child is above the viewport and is larger than the viewport, or if the child's smaller but is below the viewport,
+            // we align the child's bottom to the bottom of the viewport
+            else if (isChildAbove || isChildBelow)
+            {
+                res = (childEnd - (viewportEnd - viewportStart));
+            }
+
+            return res;
         }
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -486,7 +514,7 @@ namespace Avalonia.Controls.Presenters
             if (Child.UseLayoutRounding)
             {
                 var scale = LayoutHelper.GetLayoutScale(Child);
-                childMargin = LayoutHelper.RoundLayoutThickness(childMargin, scale, scale);
+                childMargin = LayoutHelper.RoundLayoutThickness(childMargin, scale);
             }
 
             var extent = Child!.Bounds.Size.Inflate(childMargin);
@@ -514,7 +542,7 @@ namespace Avalonia.Controls.Presenters
                 Vector delta = default;
                 if (isLogical)
                     _activeLogicalGestureScrolls?.TryGetValue(e.Id, out delta);
-                delta += e.Delta;
+                delta += AdjustDeltaForFlowDirection(e.Delta, FlowDirection);
 
                 if (isLogical && scrollable is object)
                 {
@@ -673,7 +701,11 @@ namespace Avalonia.Controls.Presenters
                 {
                     delta = new Vector(delta.Y, delta.X);
                 }
-                
+                else
+                {
+                    delta = AdjustDeltaForFlowDirection(delta, FlowDirection);
+                }
+
                 if (Extent.Height > Viewport.Height)
                 {
                     double height = isLogical ? scrollable!.ScrollSize.Height : 50;
@@ -954,7 +986,7 @@ namespace Avalonia.Controls.Presenters
                     midPoint = (previousSnapPoint + nextSnapPoint) / 2;
                 }
 
-                var nearestSnapPoint = snapToNext ? (direction.Y > 0 ? previousSnapPoint : nextSnapPoint ) :
+                var nearestSnapPoint = snapToNext ? (direction.Y > 0 ? previousSnapPoint : nextSnapPoint) :
                     estimatedOffset.Y < midPoint ? previousSnapPoint : nextSnapPoint;
 
                 offset = new Vector(offset.X, nearestSnapPoint - diff.Y);
@@ -977,7 +1009,7 @@ namespace Avalonia.Controls.Presenters
                     midPoint = (previousSnapPoint + nextSnapPoint) / 2;
                 }
 
-                var nearestSnapPoint = snapToNext ? (direction.X > 0 ? previousSnapPoint : nextSnapPoint) : 
+                var nearestSnapPoint = snapToNext ? (direction.X > 0 ? previousSnapPoint : nextSnapPoint) :
                     estimatedOffset.X < midPoint ? previousSnapPoint : nextSnapPoint;
 
                 offset = new Vector(nearestSnapPoint - diff.X, offset.Y);
@@ -1046,9 +1078,9 @@ namespace Avalonia.Controls.Presenters
 
             var snapPointsInfo = scrollable as IScrollSnapPointsInfo;
 
-            if(snapPointsInfo != _scrollSnapPointsInfo)
+            if (snapPointsInfo != _scrollSnapPointsInfo)
             {
-                if(_scrollSnapPointsInfo != null)
+                if (_scrollSnapPointsInfo != null)
                 {
                     _scrollSnapPointsInfo.VerticalSnapPointsChanged -= ScrollSnapPointsInfoSnapPointsChanged;
                     _scrollSnapPointsInfo.HorizontalSnapPointsChanged -= ScrollSnapPointsInfoSnapPointsChanged;
@@ -1056,7 +1088,7 @@ namespace Avalonia.Controls.Presenters
 
                 _scrollSnapPointsInfo = snapPointsInfo;
 
-                if(_scrollSnapPointsInfo != null)
+                if (_scrollSnapPointsInfo != null)
                 {
                     _scrollSnapPointsInfo.VerticalSnapPointsChanged += ScrollSnapPointsInfoSnapPointsChanged;
                     _scrollSnapPointsInfo.HorizontalSnapPointsChanged += ScrollSnapPointsInfoSnapPointsChanged;
@@ -1064,6 +1096,15 @@ namespace Avalonia.Controls.Presenters
             }
 
             return snapPointsInfo;
+        }
+
+        private static Vector AdjustDeltaForFlowDirection(Vector delta, Media.FlowDirection flowDirection)
+        {
+            if (flowDirection == Media.FlowDirection.RightToLeft)
+            {
+                return delta.WithX(-delta.X);
+            }
+            return delta;
         }
     }
 }

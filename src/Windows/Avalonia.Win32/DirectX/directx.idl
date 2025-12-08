@@ -19,7 +19,7 @@
 @clr-map INT16 short
 @clr-map INT32 int
 @clr-map INT64 long
-@clr-map UINT ushort
+@clr-map UINT uint
 @clr-map UINT16 ushort
 @clr-map ULONG uint
 @clr-map UINT32 uint

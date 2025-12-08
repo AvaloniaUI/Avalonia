@@ -611,17 +611,6 @@ namespace Avalonia.Controls.UnitTests
                 }.RegisterInNameScope(scope));
         }
 
-        private static FuncControlTemplate ListBoxItemTemplate()
-        {
-            return new FuncControlTemplate<ListBoxItem>((parent, scope) =>
-                new ContentPresenter
-                {
-                    Name = "PART_ContentPresenter",
-                    [!ContentPresenter.ContentProperty] = parent[!ListBoxItem.ContentProperty],
-                    [!ContentPresenter.ContentTemplateProperty] = parent[!ListBoxItem.ContentTemplateProperty],
-                }.RegisterInNameScope(scope));
-        }
-
         private static FuncControlTemplate ScrollViewerTemplate()
         {
             return new FuncControlTemplate<ScrollViewer>((parent, scope) =>
@@ -645,21 +634,7 @@ namespace Avalonia.Controls.UnitTests
         private static void Prepare(ListBox target)
         {
             target.Width = target.Height = 100;
-
-            var root = new TestRoot(target)
-            {
-                Resources =
-                {
-                    { 
-                        typeof(ListBoxItem),
-                        new ControlTheme(typeof(ListBoxItem))
-                        {
-                            Setters = { new Setter(ListBoxItem.TemplateProperty, ListBoxItemTemplate()) }
-                        }
-                    }
-                }
-            };
-
+            var root = new TestRoot(target);
             root.LayoutManager.ExecuteInitialLayoutPass();
         }
 
@@ -1127,7 +1102,6 @@ namespace Avalonia.Controls.UnitTests
         public void Tab_Navigation_Should_Move_To_First_Item_When_No_Anchor_Element_Selected()
         {
             var services = TestServices.StyledWindow.With(
-                focusManager: new FocusManager(),
                 keyboardDevice: () => new KeyboardDevice());
             using var app = UnitTestApplication.Start(services);
 
@@ -1171,7 +1145,6 @@ namespace Avalonia.Controls.UnitTests
         public void Tab_Navigation_Should_Move_To_Anchor_Element()
         {
             var services = TestServices.StyledWindow.With(
-                focusManager: new FocusManager(),
                 keyboardDevice: () => new KeyboardDevice());
             using var app = UnitTestApplication.Start(services);
 
@@ -1263,7 +1236,6 @@ namespace Avalonia.Controls.UnitTests
                     {
                         new ListBoxItem()
                         {
-                            Template = ListBoxItemTemplate(),
                             Content = target,
                         }
                     }

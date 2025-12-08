@@ -11,7 +11,7 @@ using System.Globalization;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class CalendarDatePickerTests
+    public class CalendarDatePickerTests : ScopedTestBase
     {
         private static bool CompareDates(DateTime first, DateTime second)
         {

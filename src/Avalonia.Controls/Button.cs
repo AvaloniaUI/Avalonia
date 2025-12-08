@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows.Input;
 using Avalonia.Automation.Peers;
@@ -571,7 +572,7 @@ namespace Avalonia.Controls
                 }
             }
         }
-
+        
         internal void PerformClick() => OnClick();
 
         private static void OnAccessKeyPressed(Button sender, AccessKeyPressedEventArgs e)
@@ -678,7 +679,7 @@ namespace Avalonia.Controls
         /// <param name="e">The event args.</param>
         private void RootDefaultKeyDown(object? sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Enter && IsVisible && IsEnabled)
+            if (e.Key == Key.Enter && IsEffectivelyVisible && IsEffectivelyEnabled)
             {
                 OnClick();
                 e.Handled = true;
@@ -692,7 +693,7 @@ namespace Avalonia.Controls
         /// <param name="e">The event args.</param>
         private void RootCancelKeyDown(object? sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Escape && IsVisible && IsEnabled)
+            if (e.Key == Key.Escape && IsEffectivelyVisible && IsEffectivelyEnabled)
             {
                 OnClick();
                 e.Handled = true;

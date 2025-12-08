@@ -16,7 +16,6 @@ namespace Avalonia.Skia
     internal class GlyphTypefaceImpl : IGlyphTypeface2
     {
         private bool _isDisposed;
-        private readonly SKTypeface _typeface;
         private readonly NameTable? _nameTable;
         private readonly OS2Table? _os2Table;
         private readonly HorizontalHeadTable? _hhTable;
@@ -24,7 +23,7 @@ namespace Avalonia.Skia
 
         public GlyphTypefaceImpl(SKTypeface typeface, FontSimulations fontSimulations)
         {
-            _typeface = typeface ?? throw new ArgumentNullException(nameof(typeface));
+            SKTypeface = typeface ?? throw new ArgumentNullException(nameof(typeface));
 
             Face = new Face(GetTable) { UnitsPerEm = typeface.UnitsPerEm };
 
@@ -90,13 +89,22 @@ namespace Avalonia.Skia
 
             FontSimulations = fontSimulations;
 
-            Weight = (fontSimulations & FontSimulations.Bold) != 0 ? FontWeight.Bold : (FontWeight)typeface.FontWeight;
+            var fontWeight = _os2Table != null ? (FontWeight)_os2Table.WeightClass : FontWeight.Normal;
 
-            Style = (fontSimulations & FontSimulations.Oblique) != 0 ?
-                FontStyle.Italic :
-                typeface.FontSlant.ToAvalonia();
+            Weight = (fontSimulations & FontSimulations.Bold) != 0 ? FontWeight.Bold : fontWeight;
 
-            Stretch = (FontStretch)typeface.FontStyle.Width;
+            var style = _os2Table != null ? GetFontStyle(_os2Table.FontStyle) : FontStyle.Normal;
+
+            if (typeface.FontStyle.Slant == SKFontStyleSlant.Oblique)
+            {
+                style = FontStyle.Oblique;
+            }
+
+            Style = (fontSimulations & FontSimulations.Oblique) != 0 ? FontStyle.Italic : style;
+
+            var stretch = _os2Table != null ? (FontStretch)_os2Table.WidthClass : FontStretch.Normal;
+
+            Stretch = stretch;
 
             _nameTable = NameTable.Load(this);
 
@@ -107,24 +115,45 @@ namespace Avalonia.Skia
 
             if(_nameTable != null)
             {
-                var familyNames = new Dictionary<ushort, string>(_nameTable.Languages.Count);
+                var familyNames = new Dictionary<ushort, string>(1);
+                var faceNames = new Dictionary<ushort, string>(1);
 
-                foreach (var language in _nameTable.Languages)
+                foreach (var nameRecord in _nameTable)
                 {
-                    familyNames.Add(language, _nameTable.FontFamilyName(language));
+                    var languageId = nameRecord.LanguageID == 0 ?
+                        (ushort)CultureInfo.InvariantCulture.LCID :
+                        nameRecord.LanguageID;
+                    
+                    switch (nameRecord.NameID)
+                    {
+                        case KnownNameIds.FontFamilyName:
+                            {
+                                familyNames.TryAdd(languageId, nameRecord.Value);
+                                break;
+                            }
+                        case KnownNameIds.FontSubfamilyName:
+                            {
+                                faceNames.TryAdd(languageId, nameRecord.Value);
+                                break;
+                            }
+                    }
                 }
 
                 FamilyNames = familyNames;
+                FaceNames = faceNames;
             }
             else
             {
                 FamilyNames = new Dictionary<ushort, string> { { (ushort)CultureInfo.InvariantCulture.LCID, FamilyName } };
+                FaceNames = new Dictionary<ushort, string> { { (ushort)CultureInfo.InvariantCulture.LCID, Weight.ToString() } };
             }
         }
 
         public string TypographicFamilyName { get; }
 
         public IReadOnlyDictionary<ushort, string> FamilyNames { get; }
+
+        public IReadOnlyDictionary<ushort, string> FaceNames { get; }
 
         public IReadOnlyList<OpenTypeTag> SupportedFeatures
         {
@@ -171,6 +200,8 @@ namespace Avalonia.Skia
                 return supportedFeatures;
             }
         }
+
+        public SKTypeface SKTypeface { get; }
 
         public Face Face { get; }
 
@@ -265,20 +296,35 @@ namespace Avalonia.Skia
             return Font.GetHorizontalGlyphAdvances(glyphIndices);
         }
 
+        private static FontStyle GetFontStyle(OS2Table.FontStyleSelection styleSelection)
+        {
+            if ((styleSelection & OS2Table.FontStyleSelection.ITALIC) != 0)
+            {
+                return FontStyle.Italic;
+            }
+
+            if ((styleSelection & OS2Table.FontStyleSelection.OBLIQUE) != 0)
+            {
+                return FontStyle.Oblique;
+            }
+
+            return FontStyle.Normal;
+        }
+
         private Blob? GetTable(Face face, Tag tag)
         {
-            var size = _typeface.GetTableSize(tag);
+            var size = SKTypeface.GetTableSize(tag);
 
             var data = Marshal.AllocCoTaskMem(size);
 
             var releaseDelegate = new ReleaseDelegate(() => Marshal.FreeCoTaskMem(data));
 
-            return _typeface.TryGetTableData(tag, 0, size, data) ?
+            return SKTypeface.TryGetTableData(tag, 0, size, data) ?
                 new Blob(data, size, MemoryMode.ReadOnly, releaseDelegate) : null;
         }
 
         public SKFont CreateSKFont(float size)
-            => new(_typeface, size, skewX: (FontSimulations & FontSimulations.Oblique) != 0 ? -0.3f : 0.0f)
+            => new(SKTypeface, size, skewX: (FontSimulations & FontSimulations.Oblique) != 0 ? -0.3f : 0.0f)
             {
                 LinearMetrics = true,
                 Embolden = (FontSimulations & FontSimulations.Bold) != 0
@@ -300,7 +346,7 @@ namespace Avalonia.Skia
 
             Font.Dispose();
             Face.Dispose();
-            _typeface.Dispose();
+            SKTypeface.Dispose();
         }
 
         public void Dispose()
@@ -311,14 +357,14 @@ namespace Avalonia.Skia
 
         public bool TryGetTable(uint tag, out byte[] table)
         {
-            return _typeface.TryGetTableData(tag, out table);
+            return SKTypeface.TryGetTableData(tag, out table);
         }
 
         public bool TryGetStream([NotNullWhen(true)] out Stream? stream)
         {
             try
             {
-                var asset = _typeface.OpenStream();
+                var asset = SKTypeface.OpenStream();
                 var size = asset.Length;
                 var buffer = new byte[size];
 

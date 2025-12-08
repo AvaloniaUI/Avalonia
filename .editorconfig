@@ -220,6 +220,8 @@ avalonia_xaml_diagnostic.AVLN2205.severity = error
 avalonia_xaml_diagnostic.AVLN2206.severity = info
 # TemplatePartWrongType
 avalonia_xaml_diagnostic.AVLN2207.severity = error
+# ItemContainerInsideTemplate
+avalonia_xaml_diagnostic.AVLN2208.severity = error
 # Obsolete
 avalonia_xaml_diagnostic.AVLN5001.severity = error
 

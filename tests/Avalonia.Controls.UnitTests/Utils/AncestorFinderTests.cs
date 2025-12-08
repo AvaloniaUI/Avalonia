@@ -4,12 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Controls.Utils;
+using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Utils
 {
-    public class AncestorFinderTests
+    public class AncestorFinderTests : ScopedTestBase
     {
         [Fact]
         public void SanityCheck()

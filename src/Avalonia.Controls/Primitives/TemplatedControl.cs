@@ -89,6 +89,12 @@ namespace Avalonia.Controls.Primitives
             TextElement.ForegroundProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
+        /// Defines the <see cref="LetterSpacing"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> LetterSpacingProperty =
+            TextElement.LetterSpacingProperty.AddOwner<TemplatedControl>();
+
+        /// <summary>
         /// Defines the <see cref="Padding"/> property.
         /// </summary>
         public static readonly StyledProperty<Thickness> PaddingProperty =
@@ -243,6 +249,15 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
+        /// Gets or sets the letter spacing for the control's text content.
+        /// </summary>
+        public double LetterSpacing
+        {
+            get => GetValue(LetterSpacingProperty);
+            set => SetValue(LetterSpacingProperty, value);
+        }
+
+        /// <summary>
         /// Gets or sets the padding placed between the border of the control and its content.
         /// </summary>
         public Thickness Padding
@@ -291,7 +306,6 @@ namespace Avalonia.Controls.Primitives
         public sealed override void ApplyTemplate()
         {
             var template = Template;
-            var logical = (ILogical)this;
 
             // Apply the template if it is not the same as the template already applied - except
             // for in the case that the template is null and we're not attached to the logical 
@@ -299,7 +313,7 @@ namespace Avalonia.Controls.Primitives
             // the template has been detached, so we want to wait until it's re-attached to the 
             // logical tree as if it's re-attached to the same tree the template will be the same
             // and we don't need to do anything.
-            if (_appliedTemplate != template && (template != null || logical.IsAttachedToLogicalTree))
+            if (_appliedTemplate != template && (template != null || ((ILogical)this).IsAttachedToLogicalTree))
             {
                 if (VisualChildren.Count > 0)
                 {
@@ -348,7 +362,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <inheritdoc />
-        internal sealed override void NotifyChildResourcesChanged(ResourcesChangedEventArgs e)
+        internal sealed override void NotifyChildResourcesChanged(ResourcesChangedToken token)
         {
             var count = VisualChildren.Count;
 
@@ -356,11 +370,11 @@ namespace Avalonia.Controls.Primitives
             {
                 if (VisualChildren[i] is ILogical logical)
                 {
-                    logical.NotifyResourcesChanged(e);
+                    logical.NotifyResourcesChanged(token);
                 }
             }
 
-            base.NotifyChildResourcesChanged(e);
+            base.NotifyChildResourcesChanged(token);
         }
 
         /// <inheritdoc/>

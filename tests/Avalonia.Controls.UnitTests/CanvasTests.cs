@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class CanvasTests
+    public class CanvasTests : ScopedTestBase
     {
         [Fact]
         public void Left_Property_Should_Work()

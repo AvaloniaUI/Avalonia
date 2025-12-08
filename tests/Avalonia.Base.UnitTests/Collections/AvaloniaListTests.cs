@@ -554,7 +554,7 @@ namespace Avalonia.Base.UnitTests.Collections
         }
 
         /// <summary>
-        /// Assert that <see cref="items"/> emits <see cref="expectedEvents"/> when performing <see cref="action"/>.
+        ///  Assert that <paramref name="items"/> emits <paramref name="expectedEvents"/> when performing <paramref name="action"/>.
         /// </summary>
         /// <param name="items">The event source.</param>
         /// <param name="action">The action to perform.</param>

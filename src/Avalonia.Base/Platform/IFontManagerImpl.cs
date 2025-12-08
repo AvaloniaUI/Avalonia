@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using Avalonia.Media;
@@ -27,13 +28,14 @@ namespace Avalonia.Platform
         /// <param name="fontStyle">The font style.</param>
         /// <param name="fontWeight">The font weight.</param>
         /// <param name="fontStretch">The font stretch.</param>
+        /// <param name="familyName">The family name. This is optional and can be used as an initial hint for matching.</param>
         /// <param name="culture">The culture.</param>
         /// <param name="typeface">The matching typeface.</param>
         /// <returns>
         ///     <c>True</c>, if the <see cref="IFontManagerImpl"/> could match the character to specified parameters, <c>False</c> otherwise.
         /// </returns>
         bool TryMatchCharacter(int codepoint, FontStyle fontStyle,
-            FontWeight fontWeight, FontStretch fontStretch, CultureInfo? culture, out Typeface typeface);
+            FontWeight fontWeight, FontStretch fontStretch, string? familyName, CultureInfo? culture, out Typeface typeface);
 
         /// <summary>
         ///     Tries to get a glyph typeface for specified parameters.
@@ -59,5 +61,34 @@ namespace Avalonia.Platform
         ///     <c>True</c>, if the <see cref="IFontManagerImpl"/> could create the glyph typeface, <c>False</c> otherwise.
         /// </returns>
         bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, [NotNullWhen(returnValue: true)] out IGlyphTypeface? glyphTypeface);
+    }
+
+    internal interface IFontManagerImpl2 : IFontManagerImpl
+    {
+        /// <summary>
+        ///     Tries to match a specified character to a typeface that supports specified font properties.
+        /// </summary>
+        /// <param name="codepoint">The codepoint to match against.</param>
+        /// <param name="fontStyle">The font style.</param>
+        /// <param name="fontWeight">The font weight.</param>
+        /// <param name="fontStretch">The font stretch.</param>
+        /// <param name="familyName">The family name. This is optional and can be used as an initial hint for matching.</param>
+        /// <param name="culture">The culture.</param>
+        /// <param name="typeface">The matching typeface.</param>
+        /// <returns>
+        ///     <c>True</c>, if the <see cref="IFontManagerImpl"/> could match the character to specified parameters, <c>False</c> otherwise.
+        /// </returns>
+        bool TryMatchCharacter(int codepoint, FontStyle fontStyle,
+            FontWeight fontWeight, FontStretch fontStretch, string? familyName, CultureInfo? culture, [NotNullWhen(true)] out IGlyphTypeface? typeface);
+
+        /// <summary>
+        /// Tries to get a list of typefaces for the specified family name.
+        /// </summary>
+        /// <param name="familyName">The family name.</param>
+        /// <param name="familyTypefaces">The list of typefaces.</param>
+        /// <returns>
+        ///     <c>True</c>, if the <see cref="IFontManagerImpl"/> could get the list of typefaces, <c>False</c> otherwise.
+        /// </returns>
+        bool TryGetFamilyTypefaces(string familyName, [NotNullWhen(true)] out IReadOnlyList<Typeface>? familyTypefaces);
     }
 }

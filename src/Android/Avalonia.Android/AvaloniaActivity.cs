@@ -7,19 +7,20 @@ using Android.Content.PM;
 using Android.OS;
 using Android.Runtime;
 using Android.Views;
+using Android.Window;
 using AndroidX.AppCompat.App;
-using Avalonia.Platform;
 using Avalonia.Android.Platform;
 using Avalonia.Android.Platform.Storage;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Platform;
 
 namespace Avalonia.Android;
 
 /// <summary>
 /// Common implementation of android activity that is integrated with Avalonia views.
-/// If you need a base class for main activity of Avalonia app, see <see cref="AvaloniaMainActivity"/> or <see cref="AvaloniaMainActivity{TApp}"/>.  
+/// If you need a base class for main activity of Avalonia app, see <see cref="AvaloniaMainActivity"/>.  
 /// </summary>
-public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity
+public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity, IOnBackInvokedCallback
 {
     private EventHandler<ActivatedEventArgs>? _onActivated, _onDeactivated;
     private GlobalLayoutListener? _listener;
@@ -48,6 +49,9 @@ public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity
 
                         SetContentView(_view);
 
+                        // By default, the view isn't focused if the activity is created anew, so we force focus.
+                        _view.RequestFocus();
+
                         _listener = new GlobalLayoutListener(_view);
 
                         _view.ViewTreeObserver?.AddOnGlobalLayoutListener(_listener);
@@ -74,6 +78,9 @@ public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity
     [ObsoletedOSPlatform("android33.0")]
     public override void OnBackPressed()
     {
+        if (OperatingSystem.IsAndroidVersionAtLeast(33))
+            return;
+
         var eventArgs = new AndroidBackRequestedEventArgs();
 
         BackRequested?.Invoke(this, eventArgs);
@@ -117,12 +124,22 @@ public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity
     protected override void OnStop()
     {
         _onDeactivated?.Invoke(this, new ActivatedEventArgs(ActivationKind.Background));
+
+        if (OperatingSystem.IsAndroidVersionAtLeast(33))
+        {
+            OnBackInvokedDispatcher.UnregisterOnBackInvokedCallback(this);
+        }
         base.OnStop();
     }
 
     protected override void OnStart()
     {
         _onActivated?.Invoke(this, new ActivatedEventArgs(ActivationKind.Background));
+
+        if (OperatingSystem.IsAndroidVersionAtLeast(33))
+        {
+            OnBackInvokedDispatcher.RegisterOnBackInvokedCallback(IOnBackInvokedDispatcher.PriorityDefault, this);
+        }
         base.OnStart();
     }
 
@@ -181,6 +198,13 @@ public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity
         }
 
         _view = new AvaloniaView(this) { Content = initialContent };
+    }
+
+    public void OnBackInvoked()
+    {
+        var eventArgs = new AndroidBackRequestedEventArgs();
+
+        BackRequested?.Invoke(this, eventArgs);
     }
 
     private class GlobalLayoutListener : Java.Lang.Object, ViewTreeObserver.IOnGlobalLayoutListener

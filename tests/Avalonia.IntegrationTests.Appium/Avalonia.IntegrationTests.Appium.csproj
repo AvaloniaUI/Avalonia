@@ -16,7 +16,6 @@
   <ItemGroup>
     <PackageReference Include="Appium.WebDriver" Version="4.4.0" Condition="'$(IsRunningAppium2)' == 'false'" />
     <PackageReference Include="Appium.WebDriver" Version="5.0.0-rc.8" Condition="'$(IsRunningAppium2)' == 'true'" />
-    <PackageReference Include="Xunit.Extensions.Ordering" Version="1.4.5" />
   </ItemGroup>
 
   <Import Project="..\..\build\XUnit.props" />

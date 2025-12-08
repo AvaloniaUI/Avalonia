@@ -15,6 +15,7 @@ using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Media;
+using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
@@ -24,7 +25,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class ItemsControlTests
+    public class ItemsControlTests : ScopedTestBase
     {
         [Fact]
         public void Setting_ItemsSource_Should_Populate_Items()
@@ -1233,13 +1234,13 @@ namespace Avalonia.Controls.UnitTests
         {
             return UnitTestApplication.Start(
                 TestServices.MockThreadingInterface.With(
-                    focusManager: new FocusManager(),
                     fontManagerImpl: new HeadlessFontManagerStub(),
                     keyboardDevice: () => new KeyboardDevice(),
                     keyboardNavigation: () => new KeyboardNavigationHandler(),
                     inputManager: new InputManager(),
                     renderInterface: new HeadlessPlatformRenderInterface(),
-                    textShaperImpl: new HeadlessTextShaperStub()));
+                    textShaperImpl: new HeadlessTextShaperStub(),
+                    assetLoader: new StandardAssetLoader()));
         }
 
         private class ItemsControlWithContainer : ItemsControl

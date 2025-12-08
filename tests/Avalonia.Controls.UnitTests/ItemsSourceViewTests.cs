@@ -5,11 +5,12 @@ using System.Collections.Specialized;
 using System.Text;
 using Avalonia.Collections;
 using Avalonia.Diagnostics;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class ItemsSourceViewTests
+    public class ItemsSourceViewTests : ScopedTestBase
     {
         [Fact]
         public void Only_Subscribes_To_Source_CollectionChanged_When_CollectionChanged_Subscribed()

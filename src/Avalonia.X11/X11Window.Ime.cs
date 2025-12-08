@@ -88,15 +88,26 @@ namespace Avalonia.X11
             var x11Key = (X11Key)forwardedKey.KeyVal;
             var keySymbol = _x11.HasXkb ? GetKeySymbolXkb(x11Key) : GetKeySymbolXCore(x11Key);
 
-            ScheduleInput(new RawKeyEventArgs(
-                _keyboard,
-                (ulong)_x11.LastActivityTimestamp.ToInt64(),
-                InputRoot,
-                forwardedKey.Type,
-                X11KeyTransform.KeyFromX11Key(x11Key),
-                (RawInputModifiers)forwardedKey.Modifiers,
-                PhysicalKey.None,
-                keySymbol));
+            ScheduleInput(forwardedKey.WithText ?
+                new RawKeyEventArgsWithText(
+                    _keyboard,
+                    (ulong)_x11.LastActivityTimestamp.ToInt64(),
+                    InputRoot,
+                    forwardedKey.Type,
+                    X11KeyTransform.KeyFromX11Key(x11Key),
+                    (RawInputModifiers)forwardedKey.Modifiers,
+                    PhysicalKey.None,
+                    keySymbol,
+                    keySymbol) :
+                new RawKeyEventArgs(
+                    _keyboard,
+                    (ulong)_x11.LastActivityTimestamp.ToInt64(),
+                    InputRoot,
+                    forwardedKey.Type,
+                    X11KeyTransform.KeyFromX11Key(x11Key),
+                    (RawInputModifiers)forwardedKey.Modifiers,
+                    PhysicalKey.None,
+                    keySymbol));
         }
 
         private void UpdateImePosition() => _imeControl?.UpdateWindowInfo(_position ?? default, RenderScaling);

@@ -70,13 +70,14 @@ internal unsafe class ScreenImpl : ScreensBase<nint, WinScreen>
 
     protected override Screen? ScreenFromRectCore(PixelRect rect)
     {
-        var monitor = MonitorFromRect(new RECT
+        var r = new RECT
         {
-            left = rect.TopLeft.X,
-            top = rect.TopLeft.Y,
-            right = rect.TopRight.X,
-            bottom = rect.BottomRight.Y
-        }, UnmanagedMethods.MONITOR.MONITOR_DEFAULTTONULL);
+            left = rect.X,
+            top = rect.Y,
+            right = rect.Right,
+            bottom = rect.Bottom
+        };
+        var monitor = MonitorFromRect(&r, MONITOR.MONITOR_DEFAULTTONULL);
 
         return ScreenFromHMonitor(monitor);
     }

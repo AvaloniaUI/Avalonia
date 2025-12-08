@@ -14,7 +14,7 @@ using Xunit;
 namespace Avalonia.Controls.UnitTests
 {
     
-    public class DesktopStyleApplicationLifetimeTests
+    public class DesktopStyleApplicationLifetimeTests : ScopedTestBase
     {
         IDispatcherImpl CreateDispatcherWithInstantMainLoop()
         {

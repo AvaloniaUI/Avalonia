@@ -51,14 +51,9 @@ namespace Avalonia.Media.TextFormatting
         {
             var textRuns = textLine.TextRuns;
 
-            if (textRuns.Count == 0)
-            {
-                return null;
-            }
-
             var runIndex = 0;
             var currentWidth = 0.0;
-            var shapedSymbol = TextFormatterImpl.CreateSymbol(Symbol, FlowDirection.LeftToRight);
+            var shapedSymbol = TextFormatter.CreateSymbol(Symbol, FlowDirection.LeftToRight);
 
             if (Width < shapedSymbol.GlyphRun.Bounds.Width)
             {
@@ -103,7 +98,8 @@ namespace Avalonia.Media.TextFormatting
 
                                             effectivePostSplitRuns = rentedPostSplitRuns;
 
-                                            foreach (var preSplitRun in rentedPreSplitRuns)
+                                            // rentedPreSplitRuns cannot be null here as _prefixLength > 0 and measuredLength > 0
+                                            foreach (var preSplitRun in rentedPreSplitRuns!)
                                             {
                                                 collapsedRuns.Add(preSplitRun);
                                             }

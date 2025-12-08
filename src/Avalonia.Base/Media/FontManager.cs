@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Linq;
 using Avalonia.Logging;
 using Avalonia.Media.Fonts;
 using Avalonia.Platform;
@@ -16,7 +15,7 @@ namespace Avalonia.Media
     ///     The font manager is used to query the system's installed fonts and is responsible for caching loaded fonts.
     ///     It is also responsible for the font fallback.
     /// </summary>
-    public sealed class FontManager
+    public sealed class FontManager : IDisposable
     {
         internal static Uri SystemFontsKey = new Uri("fonts:SystemFonts", UriKind.Absolute);
 
@@ -31,8 +30,6 @@ namespace Avalonia.Media
         public FontManager(IFontManagerImpl platformImpl)
         {
             PlatformImpl = platformImpl;
-
-            AddFontCollection(new SystemFontCollection(this));
 
             var options = AvaloniaLocator.Current.GetService<FontManagerOptions>();
             _fontFallbacks = options?.FontFallbacks;
@@ -77,7 +74,19 @@ namespace Avalonia.Media
         /// <summary>
         ///     Get all system fonts.
         /// </summary>
-        public IFontCollection SystemFonts => _fontCollections[SystemFontsKey];
+        public IFontCollection SystemFonts
+        {
+            get
+            {
+                if (TryGetFontCollection(SystemFontsKey, out var fontCollection))
+                {
+                    return fontCollection;
+                }
+
+                // Fallback to an empty system font collection
+                return new EmptySystemFontCollection();
+            }
+        }
 
         internal IFontManagerImpl PlatformImpl { get; }
 
@@ -94,12 +103,13 @@ namespace Avalonia.Media
             glyphTypeface = null;
 
             var fontFamily = GetMappedFontFamily(typeface.FontFamily);
-            
+
             if (typeface.FontFamily.Name == FontFamily.DefaultFontFamilyName)
             {
                 return TryGetGlyphTypeface(new Typeface(DefaultFontFamily, typeface.Style, typeface.Weight, typeface.Stretch), out glyphTypeface);
             }
 
+            
             if (fontFamily.Key != null)
             {
                 if (fontFamily.Key is CompositeFontFamilyKey compositeKey)
@@ -110,9 +120,9 @@ namespace Avalonia.Media
 
                         var familyName = fontFamily.FamilyNames[i];
 
-                        if(_fontFamilyMappings != null && _fontFamilyMappings.TryGetValue(familyName, out var mappedFontFamily))
+                        if (_fontFamilyMappings != null && _fontFamilyMappings.TryGetValue(familyName, out var mappedFontFamily))
                         {
-                            if(mappedFontFamily.Key != null)
+                            if (mappedFontFamily.Key != null)
                             {
                                 key = mappedFontFamily.Key;
                             }
@@ -122,6 +132,11 @@ namespace Avalonia.Media
                             }
 
                             familyName = mappedFontFamily.FamilyNames.PrimaryFamilyName;
+                        }
+
+                        if (familyName == FontFamily.DefaultFontFamilyName)
+                        {
+                            return TryGetGlyphTypeface(new Typeface(DefaultFontFamily, typeface.Style, typeface.Weight, typeface.Stretch), out glyphTypeface);
                         }
 
                         if (TryGetGlyphTypefaceByKeyAndName(typeface, key, familyName, out glyphTypeface) &&
@@ -159,11 +174,11 @@ namespace Avalonia.Media
             }
 
             //Nothing was found so use the default
-            return TryGetGlyphTypeface(new Typeface(FontFamily.DefaultFontFamilyName, typeface.Style, typeface.Weight, typeface.Stretch), out glyphTypeface);
+            return TryGetGlyphTypeface(new Typeface(DefaultFontFamily, typeface.Style, typeface.Weight, typeface.Stretch), out glyphTypeface);
 
             FontFamily GetMappedFontFamily(FontFamily fontFamily)
             {
-                if (_fontFamilyMappings == null ||!_fontFamilyMappings.TryGetValue(fontFamily.FamilyNames.PrimaryFamilyName, out var mappedFontFamily))
+                if (_fontFamilyMappings == null || !_fontFamilyMappings.TryGetValue(fontFamily.FamilyNames.PrimaryFamilyName, out var mappedFontFamily))
                 {
                     return fontFamily;
                 }
@@ -218,8 +233,6 @@ namespace Avalonia.Media
 
                 return fontCollection;
             });
-
-            fontCollection.Initialize(PlatformImpl);
         }
 
         /// <summary>
@@ -267,76 +280,76 @@ namespace Avalonia.Media
             }
 
             //Try to match against fallbacks first
-            if (fontFamily != null && fontFamily.Key is CompositeFontFamilyKey compositeKey)
+            if (fontFamily?.Key != null)
             {
-                for (int i = 0; i < compositeKey.Keys.Count; i++)
+                if (fontFamily.Key is CompositeFontFamilyKey compositeKey)
                 {
-                    var key = compositeKey.Keys[i];
-                    var familyName = fontFamily.FamilyNames[i];
-                    var source = key.Source.EnsureAbsolute(key.BaseUri);
+                    for (int i = 0; i < compositeKey.Keys.Count; i++)
+                    {
+                        var key = compositeKey.Keys[i];
+                        var familyName = fontFamily.FamilyNames[i];
+                        var source = key.Source.EnsureAbsolute(key.BaseUri);
 
-                    if (TryGetFontCollection(source, out var fontCollection) &&
-                        fontCollection.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, familyName, culture, out typeface))
+                        if (familyName == FontFamily.DefaultFontFamilyName)
+                        {
+                            familyName = DefaultFontFamily.Name;
+                        }
+
+                        if (TryGetFontCollection(source, out var fontCollection) &&
+                            // With composite fonts we need to first check if the font collection contains the family if not we skip it
+                            fontCollection.TryGetGlyphTypeface(familyName, fontStyle, fontWeight, fontStretch, out _) &&
+                            fontCollection.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, familyName, culture, out typeface))
+                        {
+                            return true;
+                        }
+                    }
+                }
+
+                var fontUri = fontFamily.Key.Source.EnsureAbsolute(fontFamily.Key.BaseUri);
+
+                if (fontUri.IsFontCollection())
+                {
+                    if (TryGetFontCollection(fontUri, out var fontCollection) &&
+                            fontCollection.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, fontFamily.Name, culture, out typeface))
                     {
                         return true;
                     }
                 }
             }
 
-            //Try to find a match with the system font manager
-            return PlatformImpl.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, culture, out typeface);
+            //Try to find a match with the system font collection
+            return SystemFonts.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, fontFamily?.Name,
+                culture, out typeface);
         }
 
-        /// <summary>
-        /// Tries to create a synthetic glyph typefacefor specified source glyph typeface and font properties.
-        /// </summary>
-        /// <param name="fontManager">The font manager implementation.</param>
-        /// <param name="glyphTypeface">The source glyph typeface.</param>
-        /// <param name="style">The requested font style.</param>
-        /// <param name="weight">The requested font weight.</param>
-        /// <param name="syntheticGlyphTypeface">The created synthetic glyph typeface.</param>
-        /// <returns>
-        ///     <c>True</c>, if the <see cref="FontManager"/> could create a synthetic glyph typeface, <c>False</c> otherwise.
-        /// </returns>
-        internal static bool TryCreateSyntheticGlyphTypeface(IFontManagerImpl fontManager, IGlyphTypeface glyphTypeface, FontStyle style, FontWeight weight,
-           [NotNullWhen(true)] out IGlyphTypeface? syntheticGlyphTypeface)
+        internal IReadOnlyList<Typeface> GetFamilyTypefaces(FontFamily fontFamily)
         {
-            if (fontManager == null)
+            var key = fontFamily.Key;
+
+            if (key == null)
             {
-                syntheticGlyphTypeface = null;
-
-                return false;
-            }
-
-            if (glyphTypeface is IGlyphTypeface2 glyphTypeface2)
-            {
-                var fontSimulations = FontSimulations.None;
-
-                if (style != FontStyle.Normal && glyphTypeface2.Style != style)
+                if (SystemFonts is IFontCollection2 fontCollection2)
                 {
-                    fontSimulations |= FontSimulations.Oblique;
-                }
-
-                if ((int)weight >= 600 && glyphTypeface2.Weight < weight)
-                {
-                    fontSimulations |= FontSimulations.Bold;
-                }
-
-                if (fontSimulations != FontSimulations.None && glyphTypeface2.TryGetStream(out var stream))
-                {
-                    using (stream)
+                    if (fontCollection2.TryGetFamilyTypefaces(fontFamily.Name, out var familyTypefaces))
                     {
-                        fontManager.TryCreateGlyphTypeface(stream, fontSimulations,
-                            out syntheticGlyphTypeface);
+                        return familyTypefaces;
+                    }
+                }
+            }
+            else
+            {
+                var source = key.Source.EnsureAbsolute(key.BaseUri);
 
-                        return syntheticGlyphTypeface != null;
+                if (TryGetFontCollection(source, out var fontCollection) && fontCollection is IFontCollection2 fontCollection2)
+                {
+                    if (fontCollection2.TryGetFamilyTypefaces(fontFamily.Name, out var familyTypefaces))
+                    {
+                        return familyTypefaces;
                     }
                 }
             }
 
-            syntheticGlyphTypeface = null;
-
-            return false;
+            return [];
         }
 
         private bool TryGetFontCollection(Uri source, [NotNullWhen(true)] out IFontCollection? fontCollection)
@@ -348,15 +361,23 @@ namespace Avalonia.Media
                 source = SystemFontsKey;
             }
 
-            if (!_fontCollections.TryGetValue(source, out fontCollection) && (source.IsAbsoluteResm() || source.IsAvares()))
+            if (!_fontCollections.TryGetValue(source, out fontCollection))
             {
-                var embeddedFonts = new EmbeddedFontCollection(source, source);
-
-                embeddedFonts.Initialize(PlatformImpl);
-
-                if (embeddedFonts.Count > 0 && _fontCollections.TryAdd(source, embeddedFonts))
+                if (source == SystemFontsKey)
                 {
-                    fontCollection = embeddedFonts;
+                    fontCollection = new SystemFontCollection(PlatformImpl);
+                }
+                else
+                {
+                    if (source.IsAbsoluteResm() || source.IsAvares())
+                    {
+                        fontCollection = new EmbeddedFontCollection(source, source);
+                    }
+                }
+                
+                if (fontCollection != null)
+                {
+                    return _fontCollections.TryAdd(fontCollection.Key, fontCollection);
                 }
             }
 
@@ -379,7 +400,22 @@ namespace Avalonia.Media
                     "Default font family name can't be null or empty.");
             }
 
+            if (defaultFontFamilyName == FontFamily.DefaultFontFamilyName)
+            {
+                throw new InvalidOperationException(
+                    $"'{FontFamily.DefaultFontFamilyName}' is a placeholder and cannot be used as the default font family name. Provide a concrete font family name via {nameof(FontManagerOptions)} or the platform implementation.");
+            }
+
             return defaultFontFamilyName;
+        }
+
+        void IDisposable.Dispose()
+        {
+            foreach (var pair in _fontCollections)
+                pair.Value.Dispose();
+
+            _fontCollections.Clear();
+            (PlatformImpl as IDisposable)?.Dispose();
         }
     }
 }

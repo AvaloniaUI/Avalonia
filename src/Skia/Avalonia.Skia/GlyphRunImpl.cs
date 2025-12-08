@@ -76,20 +76,14 @@ namespace Avalonia.Skia
                 var gBounds = glyphBounds[i];
                 var advance = glyphInfos[i].GlyphAdvance;
 
-                runBounds = runBounds.Union(new Rect(currentX + gBounds.Left, baselineOrigin.Y + gBounds.Top, gBounds.Width, gBounds.Height));
+                runBounds = runBounds.Union(new Rect(currentX + gBounds.Left, gBounds.Top, gBounds.Width, gBounds.Height));
 
                 currentX += advance;
             }
-
-            if (runBounds.Left < 0)
-            {
-                runBounds = runBounds.Translate(new Vector(-runBounds.Left, 0));
-            }
-
             ArrayPool<SKRect>.Shared.Return(glyphBounds);
 
             BaselineOrigin = baselineOrigin;
-            Bounds = runBounds.Translate(new Vector(baselineOrigin.X, 0));
+            Bounds = runBounds.Translate(new Vector(baselineOrigin.X, baselineOrigin.Y));
         }
 
         public IGlyphTypeface GlyphTypeface => _glyphTypefaceImpl;

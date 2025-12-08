@@ -129,14 +129,22 @@ public:
         }
     }
     
-    virtual HRESULT SetShowInDock(int show)  override
+    virtual HRESULT SetShowInDock(int show) override
     {
         START_COM_CALL;
         
         @autoreleasepool
         {
-            AvnDesiredActivationPolicy = show
-                ? NSApplicationActivationPolicyRegular : NSApplicationActivationPolicyAccessory;
+            NSApplication* app = [NSApplication sharedApplication];
+            NSApplicationActivationPolicy requestedPolicy = show
+                ? NSApplicationActivationPolicyRegular
+                : NSApplicationActivationPolicyAccessory;
+            
+            if ([app activationPolicy] != requestedPolicy)
+            {
+                [app setActivationPolicy:requestedPolicy];
+            }
+            
             return S_OK;
         }
     }
@@ -304,18 +312,7 @@ public:
         
         @autoreleasepool
         {
-            *ppv = ::CreateClipboard (nil, nil);
-            return S_OK;
-        }
-    }
-    
-    virtual HRESULT CreateDndClipboard(IAvnClipboard** ppv) override
-    {
-        START_COM_CALL;
-        
-        @autoreleasepool
-        {
-            *ppv = ::CreateClipboard (nil, [NSPasteboardItem new]);
+            *ppv = ::CreateClipboard(nil);
             return S_OK;
         }
     }
@@ -470,6 +467,22 @@ public:
             return S_OK;
         }
     }
+    
+    virtual HRESULT ImportMTLSharedEvent(void* event, IAvnMTLSharedEvent** ppv) override
+    {
+        START_COM_CALL;
+        *ppv = ::ImportMTLSharedEvent(event);
+        return *ppv != nullptr ? S_OK : E_FAIL;
+    }
+    
+    HRESULT CreateMemoryManagementHelper(IAvnNativeObjectsMemoryManagement **ppv) override { 
+        START_COM_CALL;
+        *ppv = ::CreateMemoryManagementHelper();
+        return S_OK;
+    }
+    
+    
+    
 };
 
 extern "C" IAvaloniaNativeFactory* CreateAvaloniaNative()

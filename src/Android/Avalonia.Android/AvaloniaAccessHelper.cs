@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using Android.Content.PM;
 using Android.OS;
 using AndroidX.Core.View.Accessibility;
 using AndroidX.CustomView.Widget;
@@ -15,20 +13,6 @@ namespace Avalonia.Android
 {
     internal class AvaloniaAccessHelper : ExploreByTouchHelper
     {
-        private const string AUTOMATION_PROVIDER_NAMESPACE = "Avalonia.Automation.Provider";
-
-        private static readonly IReadOnlyDictionary<string, NodeInfoProviderInitializer>
-            s_providerTypeInitializers = new Dictionary<string, NodeInfoProviderInitializer>()
-            {
-                { typeof(IExpandCollapseProvider).FullName!, (owner, peer, id) => new ExpandCollapseNodeInfoProvider(owner, peer, id) },
-                { typeof(IInvokeProvider).FullName!, (owner, peer, id) => new InvokeNodeInfoProvider(owner, peer, id) },
-                { typeof(IRangeValueProvider).FullName!, (owner, peer, id) => new RangeValueNodeInfoProvider(owner, peer, id) },
-                { typeof(IScrollProvider).FullName!, (owner, peer, id) => new ScrollNodeInfoProvider(owner, peer, id) },
-                { typeof(ISelectionItemProvider).FullName!, (owner, peer, id) => new SelectionItemNodeInfoProvider(owner, peer, id) },
-                { typeof(IToggleProvider).FullName!, (owner, peer, id) => new ToggleNodeInfoProvider(owner, peer, id) },
-                { typeof(IValueProvider).FullName!, (owner, peer, id) => new ValueNodeInfoProvider(owner, peer, id) },
-            };
-
         private readonly Dictionary<int, AutomationPeer> _peers;
         private readonly Dictionary<AutomationPeer, int> _peerIds;
 
@@ -96,17 +80,20 @@ namespace Avalonia.Android
                     }
                 };
 
-                Type peerType = peer.GetType();
-                IEnumerable<Type> providerTypes = peerType.GetInterfaces()
-                    .Where(x => x.Namespace!.StartsWith(AUTOMATION_PROVIDER_NAMESPACE));
-                foreach (Type providerType in providerTypes)
-                {
-                    if (s_providerTypeInitializers.TryGetValue(providerType.FullName!, out NodeInfoProviderInitializer? ctor))
-                    {
-                        INodeInfoProvider nodeInfoProvider = ctor(this, peer, peerViewId);
-                        nodeInfoProviders.Add(nodeInfoProvider);
-                    }
-                }
+                if (peer is IExpandCollapseProvider)
+                    nodeInfoProviders.Add(new ExpandCollapseNodeInfoProvider(this, peer, peerViewId));
+                if (peer is IInvokeProvider)
+                    nodeInfoProviders.Add(new InvokeNodeInfoProvider(this, peer, peerViewId));
+                if (peer is IRangeValueProvider)
+                    nodeInfoProviders.Add(new RangeValueNodeInfoProvider(this, peer, peerViewId));
+                if (peer is IScrollProvider)
+                    nodeInfoProviders.Add(new ScrollNodeInfoProvider(this, peer, peerViewId));
+                if (peer is ISelectionItemProvider)
+                    nodeInfoProviders.Add(new SelectionItemNodeInfoProvider(this, peer, peerViewId));
+                if (peer is IToggleProvider)
+                    nodeInfoProviders.Add(new ToggleNodeInfoProvider(this, peer, peerViewId));
+                if (peer is IValueProvider)
+                    nodeInfoProviders.Add(new ValueNodeInfoProvider(this, peer, peerViewId));
             }
 
             virtualViewId = peerViewId;
@@ -151,9 +138,9 @@ namespace Avalonia.Android
                 .Aggregate(false, (a, b) => a | b);
         }
 
-        protected override void OnPopulateNodeForVirtualView(int virtualViewId, AccessibilityNodeInfoCompat nodeInfo)
+        protected override void OnPopulateNodeForVirtualView(int virtualViewId, AccessibilityNodeInfoCompat? nodeInfo)
         {
-            if (!_peers.TryGetValue(virtualViewId, out AutomationPeer? peer))
+            if (nodeInfo is null || !_peers.TryGetValue(virtualViewId, out AutomationPeer? peer))
             {
                 return; // BAIL!! No work to be done
             }

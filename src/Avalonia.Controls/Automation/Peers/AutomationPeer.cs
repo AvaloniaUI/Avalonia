@@ -49,6 +49,18 @@ namespace Avalonia.Automation.Peers
         Separator,
     }
 
+    public enum AutomationLandmarkType
+    {
+        Banner,
+        Complementary,
+        ContentInfo,
+        Region,
+        Form,
+        Main,
+        Navigation,
+        Search,
+    }
+
     /// <summary>
     /// Provides a base class that exposes an element to UI Automation.
     /// </summary>
@@ -271,6 +283,42 @@ namespace Avalonia.Automation.Peers
         public string GetHelpText() => GetHelpTextCore() ?? string.Empty;
 
         /// <summary>
+        /// Gets the control type for the element that is associated with the UI Automation peer.
+        /// </summary>
+        /// <remarks>
+        /// Gets the type of the element.
+        /// 
+        /// <list type="table">
+        ///   <item>
+        ///     <term>Windows</term>
+        ///     <description><c>UIA_LandmarkTypePropertyId</c>, <c>UIA_LocalizedLandmarkTypePropertyId</c></description>
+        ///   </item>
+        ///   <item>
+        ///     <term>macOS</term>
+        ///     <description><c>NSAccessibilityProtocol.accessibilityRole</c>, <c>NSAccessibilityProtocol.accessibilitySubrole</c></description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
+        public AutomationLandmarkType? GetLandmarkType() => GetLandmarkTypeCore();
+
+        /// <summary>
+        /// Gets the heading level that is associated with this automation peer.
+        /// </summary>
+        /// <remarks>
+        /// <list type="table">
+        ///   <item>
+        ///     <term>Windows</term>
+        ///     <description><c>UIA_HeadingLevelPropertyId</c></description>
+        ///   </item>
+        ///   <item>
+        ///     <term>macOS</term>
+        ///     <description><c>NSAccessibilityProtocol.accessibilityValue</c></description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
+        public int GetHeadingLevel() => GetHeadingLevelCore();
+
+        /// <summary>
         /// Gets the <see cref="AutomationPeer"/> that is the parent of this <see cref="AutomationPeer"/>.
         /// </summary>
         /// <remarks>
@@ -488,6 +536,7 @@ namespace Avalonia.Automation.Peers
                 AutomationControlType.SplitButton => "split button",
                 AutomationControlType.HeaderItem => "header item",
                 AutomationControlType.TitleBar => "title bar",
+                AutomationControlType.None => (GetLandmarkType()?.ToString() ?? controlType.ToString()).ToLowerInvariant(),
                 _ => controlType.ToString().ToLowerInvariant(),
             };
         }
@@ -503,6 +552,8 @@ namespace Avalonia.Automation.Peers
         protected abstract AutomationPeer? GetLabeledByCore();
         protected abstract string? GetNameCore();
         protected virtual string? GetHelpTextCore() => null;
+        protected virtual AutomationLandmarkType? GetLandmarkTypeCore() => null;
+        protected virtual int GetHeadingLevelCore() => 0;
         protected abstract AutomationPeer? GetParentCore();
         protected abstract bool HasKeyboardFocusCore();
         protected abstract bool IsContentElementCore();

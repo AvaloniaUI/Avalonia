@@ -3,10 +3,7 @@ using System.Globalization;
 
 namespace Avalonia.Utilities
 {
-#if !BUILDTASK
-    public
-#endif
-    static class StyleClassParser
+    internal static class StyleClassParser
     {
         public static ReadOnlySpan<char> ParseStyleClass(this ref CharacterReader r)
         {

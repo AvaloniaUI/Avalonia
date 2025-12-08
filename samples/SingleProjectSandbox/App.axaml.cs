@@ -21,6 +21,10 @@ public class App : Application
         {
             desktopLifetime.MainWindow = new MainWindow();
         }
+        else if (ApplicationLifetime is IActivityApplicationLifetime singleViewFactoryApplicationLifetime)
+        {
+            singleViewFactoryApplicationLifetime.MainViewFactory = () => new MainView();
+        }
         else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewLifetime)
         {
             singleViewLifetime.MainView = new MainView();

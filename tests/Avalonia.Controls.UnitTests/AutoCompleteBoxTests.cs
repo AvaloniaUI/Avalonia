@@ -16,7 +16,7 @@ using Moq;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class AutoCompleteBoxTests
+    public class AutoCompleteBoxTests : ScopedTestBase
     {
         [Fact]
         public void Search_Filters()
@@ -418,6 +418,28 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.Equal(DataValidationErrors.GetHasErrors(control), true);
                 Assert.Equal(DataValidationErrors.GetErrors(control).SequenceEqual(new[] { exception }), true);
+            });
+        }
+        
+        [Fact]
+        public void Text_Validation_TextBox_Errors_Binding()
+        {
+            RunTest((control, textbox) =>
+            {
+                // simulate the TemplateBinding that would be used within the AutoCompleteBox control theme for the inner PART_TextBox
+                //      DataValidationErrors.Errors="{TemplateBinding (DataValidationErrors.Errors)}"
+                textbox.Bind(DataValidationErrors.ErrorsProperty, control.GetBindingObservable(DataValidationErrors.ErrorsProperty));
+                
+                var exception = new InvalidCastException("failed validation");
+                var textObservable = new BehaviorSubject<BindingNotification>(new BindingNotification(exception, BindingErrorType.DataValidationError));
+                control.Bind(AutoCompleteBox.TextProperty, textObservable);
+                Dispatcher.UIThread.RunJobs();
+                
+                Assert.True(DataValidationErrors.GetHasErrors(control));
+                Assert.Equal([exception], DataValidationErrors.GetErrors(control));
+                
+                Assert.True(DataValidationErrors.GetHasErrors(textbox));
+                Assert.Equal([exception], DataValidationErrors.GetErrors(textbox));
             });
         }
         
@@ -1239,7 +1261,6 @@ namespace Avalonia.Controls.UnitTests
         }
 
         private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
-            focusManager: new FocusManager(),
             keyboardDevice: () => new KeyboardDevice(),
             keyboardNavigation: () => new KeyboardNavigationHandler(),
             inputManager: new InputManager(),

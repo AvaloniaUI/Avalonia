@@ -23,14 +23,14 @@ namespace BindingDemo.ViewModels
 
         public MainWindowViewModel()
         {
-            Items = new ObservableCollection<TestItem>(
-                Enumerable.Range(0, 20).Select(x => new TestItem
+            Items = new ObservableCollection<TestItem<string>>(
+                Enumerable.Range(0, 20).Select(x => new TestItem<string>
                 {
-                    StringValue = "Item " + x,
+                    Value = "Item " + x,
                     Detail = "Item " + x + " details",
                 }));
 
-            Selection = new SelectionModel<TestItem> { SingleSelect = false };
+            Selection = new SelectionModel<TestItem<string>> { SingleSelect = false };
 
             ShuffleItems = MiniCommand.Create(() =>
             {
@@ -58,8 +58,8 @@ namespace BindingDemo.ViewModels
                 .Select(x => DateTimeOffset.Now);
         }
 
-        public ObservableCollection<TestItem> Items { get; }
-        public SelectionModel<TestItem> Selection { get; }
+        public ObservableCollection<TestItem<string>> Items { get; }
+        public SelectionModel<TestItem<string>> Selection { get; }
         public MiniCommand ShuffleItems { get; }
 
         public string BooleanString
@@ -117,15 +117,15 @@ namespace BindingDemo.ViewModels
         }
 
         // Nested class, jsut so we can test it in XAML
-        public class TestItem : ViewModelBase
+        public class TestItem<T> : ViewModelBase
         {
-            private string _stringValue = "String Value";
+            private T _value;
             private string _detail;
 
-            public string StringValue
+            public T Value
             {
-                get { return _stringValue; }
-                set { this.RaiseAndSetIfChanged(ref this._stringValue, value); }
+                get { return _value; }
+                set { this.RaiseAndSetIfChanged(ref this._value, value); }
             }
 
             public string Detail

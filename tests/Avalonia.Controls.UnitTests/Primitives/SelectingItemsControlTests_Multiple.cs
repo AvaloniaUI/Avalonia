@@ -13,6 +13,7 @@ using Avalonia.Data;
 using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Layout;
+using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
@@ -22,7 +23,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Primitives
 {
-    public class SelectingItemsControlTests_Multiple
+    public class SelectingItemsControlTests_Multiple : ScopedTestBase
     {
         [Fact]
         public void Setting_SelectedIndex_Should_Add_To_SelectedItems()
@@ -1346,13 +1347,13 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             return UnitTestApplication.Start(
                 TestServices.MockThreadingInterface.With(
-                    focusManager: new FocusManager(),
                     fontManagerImpl: new HeadlessFontManagerStub(),
                     keyboardDevice: () => new KeyboardDevice(),
                     keyboardNavigation: () => new KeyboardNavigationHandler(),
                     inputManager: new InputManager(),
                     renderInterface: new HeadlessPlatformRenderInterface(),
-                    textShaperImpl: new HeadlessTextShaperStub()));
+                    textShaperImpl: new HeadlessTextShaperStub(),
+                    assetLoader: new StandardAssetLoader()));
         }
 
         private class TestSelector : SelectingItemsControl

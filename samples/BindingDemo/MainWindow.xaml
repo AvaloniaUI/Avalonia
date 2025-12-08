@@ -3,6 +3,7 @@
         x:Class="BindingDemo.MainWindow"
         xmlns:vm="using:BindingDemo.ViewModels" 
         xmlns:local="using:BindingDemo"
+        xmlns:system="clr-namespace:System;assembly=System.Runtime"
         Title="AvaloniaUI Bindings Test"
         Width="800"
         Height="600"
@@ -29,7 +30,7 @@
           </StackPanel>
           <StackPanel Margin="18" Spacing="4" Width="200">
             <TextBlock FontSize="16" Text="Collection Bindings"/>
-            <TextBox Watermark="Items[1].StringValue" UseFloatingWatermark="True" Text="{Binding Path=Items[1].StringValue}"/>
+            <TextBox Watermark="Items[1].Value" UseFloatingWatermark="True" Text="{Binding Path=Items[1].Value}"/>
             <Button Command="{Binding ShuffleItems}">Shuffle</Button>
           </StackPanel>
           <StackPanel Margin="18" Spacing="4" Width="200">
@@ -51,9 +52,9 @@
             <TextBox Watermark="Value of first TextBox" UseFloatingWatermark="True" 
                      Text="{Binding #first.Text, Mode=TwoWay}"/>
             <TextBox Watermark="Value of SharedItem.StringValue" UseFloatingWatermark="True"
-                     Text="{Binding StringValue, Source={StaticResource SharedItem}, Mode=TwoWay, DataType=vm:MainWindowViewModel+TestItem}"/>
+                     Text="{Binding Value, Source={StaticResource SharedItem}, Mode=TwoWay, DataType={x:Type vm:MainWindowViewModel+TestItem, x:TypeArguments=x:String}}"/>
             <TextBox Watermark="Value of SharedItem.StringValue (duplicate)" UseFloatingWatermark="True"
-                     Text="{Binding StringValue, Source={StaticResource SharedItem}, Mode=TwoWay, DataType=vm:MainWindowViewModel+TestItem}"/>
+                     Text="{Binding Value, Source={StaticResource SharedItem}, Mode=TwoWay, DataType={x:Type vm:MainWindowViewModel+TestItem, x:TypeArguments=x:String}}"/>
           </StackPanel>
           <StackPanel Margin="18" Spacing="4" Width="200" HorizontalAlignment="Left">
             <TextBlock FontSize="16" Text="Scheduler"/>
@@ -67,8 +68,8 @@
     <TabItem Header="ListBox">
       <StackPanel Orientation="Horizontal">
         <StackPanel.DataTemplates>
-          <DataTemplate DataType="vm:MainWindowViewModel+TestItem">
-            <TextBlock Text="{Binding StringValue}"/>
+          <DataTemplate x:DataType="{x:Type vm:MainWindowViewModel+TestItem, x:TypeArguments=x:String}">
+            <TextBlock Text="{Binding Value}"/>
           </DataTemplate>
         </StackPanel.DataTemplates>
         <StackPanel Margin="18" Spacing="4" Width="200">
@@ -81,7 +82,7 @@
         </StackPanel>
         <ContentControl Content="{ReflectionBinding Selection.SelectedItems[0]}">
           <ContentControl.DataTemplates>
-            <DataTemplate DataType="vm:MainWindowViewModel+TestItem">
+            <DataTemplate x:DataType="{x:Type vm:MainWindowViewModel+TestItem, x:TypeArguments=x:String}">
               <local:TestItemView></local:TestItemView>
             </DataTemplate>
           </ContentControl.DataTemplates>

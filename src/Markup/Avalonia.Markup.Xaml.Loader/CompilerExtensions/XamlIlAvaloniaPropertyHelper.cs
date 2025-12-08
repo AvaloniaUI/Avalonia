@@ -64,7 +64,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
         {
             XamlAstNamePropertyReference forgedReference;
 
-            var parsedPropertyName = PropertyParser.Parse(new CharacterReader(propertyName.AsSpan()));
+            var parsedPropertyName = PropertyParser.Parse(propertyName);
             if(parsedPropertyName.owner == null)
                 forgedReference = new XamlAstNamePropertyReference(lineInfo, selectorTypeReference,
                     propertyName, selectorTypeReference);
@@ -204,12 +204,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
         public IXamlField AvaloniaProperty { get; }
         public XamlIlAvaloniaProperty(XamlAstClrProperty original, IXamlField field,
             AvaloniaXamlIlWellKnownTypes types)
-            :base(original, original.Name, original.DeclaringType, original.Getter, original.Setters)
+            :base(original, original.Name, original.DeclaringType, original.Getter, original.Setters, original.CustomAttributes)
         {
             var assignBinding = original.CustomAttributes.Any(ca => ca.Type.Equals(types.AssignBindingAttribute));
 
             AvaloniaProperty = field;
-            CustomAttributes = original.CustomAttributes;
             if (!assignBinding)
                 Setters.Insert(0, new BindingSetter(types, original.DeclaringType, field));
 
@@ -225,6 +224,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             }
 
             Setters.Insert(0, new UnsetValueSetter(types, original.DeclaringType, field));
+            TypeConverters = original.TypeConverters;
         }
 
         abstract class AvaloniaPropertyCustomSetter : IXamlILOptimizedEmitablePropertySetter, IEquatable<AvaloniaPropertyCustomSetter>
@@ -459,7 +459,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
         public XamlIlAvaloniaClassProperty(AvaloniaXamlIlWellKnownTypes types,
             string className,
-            IXamlLineInfo lineInfo) : base(lineInfo, className, types.Classes, null, null, null)
+            IXamlLineInfo lineInfo) : base(lineInfo, className, types.Classes, null)
         {
             Parameters = [types.XamlIlTypes.String];
             _method = types.GetClassProperty;

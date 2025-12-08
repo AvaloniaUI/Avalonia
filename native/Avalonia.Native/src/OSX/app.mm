@@ -30,8 +30,6 @@ ComPtr<IAvnApplicationEvents> _events;
             break;
         }
         
-        [[NSApplication sharedApplication] setActivationPolicy: AvnDesiredActivationPolicy];
-        
         [[NSUserDefaults standardUserDefaults] setBool:NO forKey:@"NSFullScreenMenuItemEverywhere"];
         
         [[NSApplication sharedApplication] setHelpMenu: [[NSMenu new] initWithTitle:@""]];

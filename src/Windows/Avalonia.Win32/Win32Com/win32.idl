@@ -17,7 +17,7 @@
 @clr-map INT16 short
 @clr-map INT32 int
 @clr-map INT64 long
-@clr-map UINT ushort
+@clr-map UINT uint
 @clr-map UINT16 ushort
 @clr-map ULONG uint
 @clr-map UINT32 uint
@@ -27,8 +27,8 @@
 @clr-map REFGUID System.Guid*
 @clr-map REFIID System.Guid*
 @clr-map WCHAR System.Char
-@clr-map STGMEDIUM Avalonia.Win32.Interop.STGMEDIUM
-@clr-map FORMATETC Avalonia.Win32.Interop.FORMATETC
+@clr-map STGMEDIUM Avalonia.Win32.Interop.UnmanagedMethods.STGMEDIUM
+@clr-map FORMATETC Avalonia.Win32.Interop.UnmanagedMethods.FORMATETC
 
 [flags]
 enum FILEOPENDIALOGOPTIONS

@@ -28,6 +28,7 @@ internal static class AvaloniaXamlDiagnosticCodes
     public const string RequiredTemplatePartMissing = "AVLN2205";
     public const string OptionalTemplatePartMissing = "AVLN2206";
     public const string TemplatePartWrongType = "AVLN2207";
+    public const string ItemContainerInsideTemplate = "AVLN2208";
 
     // XAML emit errors 3000-3999.
     public const string EmitError = "AVLN3000";

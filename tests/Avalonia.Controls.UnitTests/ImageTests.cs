@@ -1,11 +1,12 @@
 using Moq;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class ImageTests
+    public class ImageTests : ScopedTestBase
     {
         [Fact]
         public void Measure_Should_Return_Correct_Size_For_No_Stretch()

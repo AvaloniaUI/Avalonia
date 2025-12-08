@@ -17,5 +17,7 @@
     <WarningsNotAsErrors>$(WarningsNotAsErrors);AVLN2205</WarningsNotAsErrors>
     <!-- AVLN2207: TemplatePartWrongType -->
     <WarningsNotAsErrors>$(WarningsNotAsErrors);AVLN2207</WarningsNotAsErrors>
+    <!-- AVLN2208: ItemContainerInsideTemplate -->
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);AVLN2208</WarningsNotAsErrors>
   </PropertyGroup>
 </Project>

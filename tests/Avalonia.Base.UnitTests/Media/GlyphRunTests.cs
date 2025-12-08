@@ -29,7 +29,7 @@ namespace Avalonia.Base.UnitTests.Media
         }
 
         [InlineData(new double[] { 30, 0, 0 }, new int[] { 0, 0, 0 }, 26.0, 0, 3, true)]
-        [InlineData(new double[] { 10, 10, 10 }, new int[] { 0, 1, 2 }, 20.0, 1, 1, true)]
+        [InlineData(new double[] { 10, 10, 10 }, new int[] { 0, 1, 2 }, 20.0, 2, 0, true)]
         [InlineData(new double[] { 10, 10, 10 }, new int[] { 0, 1, 2 }, 26.0, 2, 1, true)]
         [InlineData(new double[] { 10, 10, 10 }, new int[] { 0, 1, 2 }, 35.0, 2, 1, false)]
         [Theory]

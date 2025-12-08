@@ -2,6 +2,8 @@
 using Avalonia.Utilities;
 using Xunit;
 
+#pragma warning disable CS0618 // Type or member is obsolete
+
 namespace Avalonia.Base.UnitTests.Utilities
 {
     public class StringTokenizerTests

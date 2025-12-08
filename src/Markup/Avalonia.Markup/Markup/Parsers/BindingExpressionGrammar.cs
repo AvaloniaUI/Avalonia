@@ -1,10 +1,10 @@
 ﻿// Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using Avalonia.Data.Core;
-using Avalonia.Utilities;
 using System;
 using System.Collections.Generic;
+using Avalonia.Data.Core;
+using Avalonia.Utilities;
 
 namespace Avalonia.Markup.Parsers
 {
@@ -17,6 +17,12 @@ namespace Avalonia.Markup.Parsers
     internal static class BindingExpressionGrammar
     {
         private static readonly List<INode> s_pool = new();
+
+        public static (List<INode> Nodes, SourceMode Mode) Parse(string text)
+        {
+            var r = new CharacterReader(text.AsSpan());
+            return Parse(ref r);
+        }
 
         public static (List<INode> Nodes, SourceMode Mode) Parse(ref CharacterReader r)
         {
@@ -52,11 +58,19 @@ namespace Avalonia.Markup.Parsers
                         break;
 
                     case State.BeforeMember:
-                        state = ParseBeforeMember(ref r, nodes);
+                        state = ParseBeforeMember(ref r, nodes, false);
+                        break;
+
+                    case State.BeforeMemberNullable:
+                        state = ParseBeforeMember(ref r, nodes, true);
                         break;
 
                     case State.AttachedProperty:
-                        state = ParseAttachedProperty(ref r, nodes);
+                        state = ParseAttachedProperty(ref r, nodes, false);
+                        break;
+
+                    case State.AttachedPropertyNullable:
+                        state = ParseAttachedProperty(ref r, nodes, true);
                         break;
 
                     case State.Indexer:
@@ -84,7 +98,7 @@ namespace Avalonia.Markup.Parsers
                 throw new ExpressionParseException(r.Position, "Expected end of expression.");
             }
 
-            if (state == State.BeforeMember)
+            if (state is State.BeforeMember or State.BeforeMemberNullable)
             {
                 throw new ExpressionParseException(r.Position, "Unexpected end of expression.");
             }
@@ -142,9 +156,9 @@ namespace Avalonia.Markup.Parsers
 
         private static State ParseAfterMember(ref CharacterReader r, IList<INode> nodes)
         {
-            if (ParseMemberAccessor(ref r))
+            if (ParseMemberAccessor(ref r, out var acceptsNull))
             {
-                return State.BeforeMember;
+                return acceptsNull ? State.BeforeMemberNullable : State.BeforeMember;
             }
             else if (ParseStreamOperator(ref r))
             {
@@ -163,7 +177,7 @@ namespace Avalonia.Markup.Parsers
             return State.End;
         }
 
-        private static State ParseBeforeMember(ref CharacterReader r, IList<INode> nodes)
+        private static State ParseBeforeMember(ref CharacterReader r, IList<INode> nodes, bool acceptsNull)
         {
             if (ParseOpenBrace(ref r))
             {
@@ -172,7 +186,7 @@ namespace Avalonia.Markup.Parsers
                     return State.TypeCast;
                 }
 
-                return State.AttachedProperty;
+                return acceptsNull ? State.AttachedPropertyNullable : State.AttachedProperty;
             }
             else
             {
@@ -180,7 +194,11 @@ namespace Avalonia.Markup.Parsers
 
                 if (!identifier.IsEmpty)
                 {
-                    nodes.Add(new PropertyNameNode { PropertyName = identifier.ToString() });
+                    nodes.Add(new PropertyNameNode 
+                    { 
+                        AcceptsNull = acceptsNull,
+                        PropertyName = identifier.ToString() 
+                    });
                     return State.AfterMember;
                 }
 
@@ -192,7 +210,7 @@ namespace Avalonia.Markup.Parsers
 #if NET7SDK
             scoped
 #endif
-            ref CharacterReader r, List<INode> nodes)
+            ref CharacterReader r, List<INode> nodes, bool acceptsNull)
         {
             var (ns, owner) = ParseTypeName(ref r);
 
@@ -221,6 +239,7 @@ namespace Avalonia.Markup.Parsers
 
             nodes.Add(new AttachedPropertyNameNode
             {
+                AcceptsNull = acceptsNull,
                 Namespace = ns,
                 TypeName = owner,
                 PropertyName = name.ToString()
@@ -256,9 +275,9 @@ namespace Avalonia.Markup.Parsers
                     throw new ExpressionParseException(r.Position, "Expected ')'.");
                 }
 
-                result = ParseBeforeMember(ref r, nodes);
+                result = ParseBeforeMember(ref r, nodes, false);
                 if (result == State.AttachedProperty)
-                    result = ParseAttachedProperty(ref r, nodes);
+                    result = ParseAttachedProperty(ref r, nodes, false);
 
                 if (r.Peek == '[')
                 {
@@ -372,9 +391,28 @@ namespace Avalonia.Markup.Parsers
             return !r.End && r.TakeIf('!');
         }
 
-        private static bool ParseMemberAccessor(ref CharacterReader r)
+        private static bool ParseMemberAccessor(ref CharacterReader r, out bool acceptsNull)
         {
-            return !r.End && r.TakeIf('.');
+            if (r.End)
+            {
+                acceptsNull = false;
+                return false;
+            }
+
+            if (r.TakeIf('.'))
+            {
+                acceptsNull = false;
+                return true;
+            }
+
+            if (r.TakeIf("?."))
+            {
+                acceptsNull = true;
+                return true;
+            }
+
+            acceptsNull = false;
+            return false;
         }
 
         private static bool ParseOpenBrace(ref CharacterReader r)
@@ -424,7 +462,9 @@ namespace Avalonia.Markup.Parsers
             ElementName,
             AfterMember,
             BeforeMember,
+            BeforeMemberNullable,
             AttachedProperty,
+            AttachedPropertyNullable,
             Indexer,
             TypeCast,
             End,
@@ -456,11 +496,13 @@ namespace Avalonia.Markup.Parsers
 
         public class PropertyNameNode : INode
         {
+            public bool AcceptsNull { get; set; }
             public string PropertyName { get; set; } = string.Empty;
         }
 
         public class AttachedPropertyNameNode : INode
         {
+            public bool AcceptsNull { get; set; }
             public string Namespace { get; set; } = string.Empty;
             public string TypeName { get; set; } = string.Empty;
             public string PropertyName { get; set; } = string.Empty;

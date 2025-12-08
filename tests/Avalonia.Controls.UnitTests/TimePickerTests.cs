@@ -15,7 +15,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class TimePickerTests
+    public class TimePickerTests : ScopedTestBase
     {
         [Fact]
         public void SelectedTimeChanged_Should_Fire_When_SelectedTime_Set()
@@ -275,6 +275,40 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Theory]
+        [InlineData("PART_HourSelector")]
+        [InlineData("PART_MinuteSelector")]
+        [InlineData("PART_SecondSelector")]
+        public void Selector_ScrollUp_Should_Work(string selectorName)
+            => TestSelectorScrolling(selectorName, panel => panel.ScrollUp());
+
+        [Theory]
+        [InlineData("PART_HourSelector")]
+        [InlineData("PART_MinuteSelector")]
+        [InlineData("PART_SecondSelector")]
+        public void Selector_ScrollDown_Should_Work(string selectorName)
+            => TestSelectorScrolling(selectorName, panel => panel.ScrollDown());
+
+        private static void TestSelectorScrolling(string selectorName, Action<DateTimePickerPanel> scroll)
+        {
+            using var app = UnitTestApplication.Start(Services);
+
+            var presenter = new TimePickerPresenter { Template = CreatePickerTemplate() };
+            presenter.ApplyTemplate();
+            presenter.Measure(new Size(1000, 1000));
+
+            var panel = presenter
+                .GetVisualDescendants()
+                .OfType<DateTimePickerPanel>()
+                .FirstOrDefault(panel => panel.Name == selectorName);
+
+            Assert.NotNull(panel);
+
+            var previousOffset = panel.Offset;
+            scroll(panel);
+            Assert.NotEqual(previousOffset, panel.Offset);
+        }
+
         private static TestServices Services => TestServices.MockThreadingInterface.With(
             fontManagerImpl: new HeadlessFontManagerStub(),
             standardCursorFactory: Mock.Of<ICursorFactory>(),
@@ -398,12 +432,14 @@ namespace Avalonia.Controls.UnitTests
                 {
                     Name = "PART_HourSelector",
                     PanelType = DateTimePickerPanelType.Hour,
+                    ShouldLoop = true
                 }.RegisterInNameScope(scope);
 
                 var minuteSelector = new DateTimePickerPanel
                 {
                     Name = "PART_MinuteSelector",
                     PanelType = DateTimePickerPanelType.Minute,
+                    ShouldLoop = true
                 }.RegisterInNameScope(scope);
 
                 var secondHost = new Panel
@@ -415,6 +451,7 @@ namespace Avalonia.Controls.UnitTests
                 {
                     Name = "PART_SecondSelector",
                     PanelType = DateTimePickerPanelType.Second,
+                    ShouldLoop = true
                 }.RegisterInNameScope(scope);
 
                 var periodHost = new Panel
@@ -443,7 +480,7 @@ namespace Avalonia.Controls.UnitTests
                     Name = "PART_ThirdSpacer"
                 }.RegisterInNameScope(scope);
 
-                var contentPanel = new StackPanel();
+                var contentPanel = new Panel();
                 contentPanel.Children.AddRange(new Control[] { acceptButton, hourSelector, minuteSelector, secondHost, secondSelector, periodHost, periodSelector, pickerContainer, secondSpacer, thirdSpacer });
                 return contentPanel;
             });

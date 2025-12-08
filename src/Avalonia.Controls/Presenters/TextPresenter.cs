@@ -87,7 +87,7 @@ namespace Avalonia.Controls.Presenters
         /// Defines the <see cref="LetterSpacing"/> property.
         /// </summary>
         public static readonly StyledProperty<double> LetterSpacingProperty =
-            TextBlock.LetterSpacingProperty.AddOwner<TextPresenter>();
+            TextElement.LetterSpacingProperty.AddOwner<TextPresenter>();
 
         /// <summary>
         /// Defines the <see cref="Background"/> property.
@@ -455,13 +455,13 @@ namespace Avalonia.Controls.Presenters
 
         internal (Point, Point) GetCaretPoints()
         {
-            var x = Math.Floor(_caretBounds.X) + 0.5;
-            var y = Math.Floor(_caretBounds.Y) + 0.5;
-            var b = Math.Ceiling(_caretBounds.Bottom) - 0.5;
-
             var caretIndex = _lastCharacterHit.FirstCharacterIndex + _lastCharacterHit.TrailingLength;
             var lineIndex = TextLayout.GetLineIndexFromCharacterIndex(caretIndex, _lastCharacterHit.TrailingLength > 0);
             var textLine = TextLayout.TextLines[lineIndex];
+
+            var x = Math.Floor(_caretBounds.X) + 0.5;
+            var y = Math.Floor(_caretBounds.Y) + 0.5;
+            var b = Math.Ceiling(_caretBounds.Bottom) - 0.5;
 
             if (_caretBounds.X > 0 && _caretBounds.X >= textLine.WidthIncludingTrailingWhitespace)
             {
@@ -627,16 +627,17 @@ namespace Avalonia.Controls.Presenters
 
             InvalidateArrange();
 
-            var textWidth = Math.Ceiling(TextLayout.MinTextWidth);
-
+            // The textWidth used here is matching that TextBlock uses to measure the text.
+            var textWidth = TextLayout.OverhangLeading + TextLayout.WidthIncludingTrailingWhitespace + TextLayout.OverhangTrailing;
             return new Size(textWidth, TextLayout.Height);
         }
 
         protected override Size ArrangeOverride(Size finalSize)
         {
-            var textWidth = Math.Ceiling(TextLayout.MinTextWidth);
-            
             var finalWidth = finalSize.Width;
+
+            var textWidth = TextLayout.OverhangLeading + TextLayout.WidthIncludingTrailingWhitespace + TextLayout.OverhangTrailing;
+            textWidth = Math.Ceiling(textWidth);
 
             if (finalSize.Width < textWidth)
             {

@@ -117,16 +117,25 @@ namespace Avalonia.Automation.Peers
             return result;
         }
         protected override string? GetHelpTextCore()
-        {          
+        {
             var result = AutomationProperties.GetHelpText(Owner);
+
+            if (string.IsNullOrWhiteSpace(result))
+            {
+                var errors = DataValidationErrors.GetErrors(Owner);
+                var errorsStringList = errors?.Select(x => x.ToString());
+                result = errorsStringList != null ? string.Join(Environment.NewLine, errorsStringList.ToArray()) : null;
+            }
 
             if (string.IsNullOrWhiteSpace(result))
             {
                 result = ToolTip.GetTip(Owner) as string;
             }
 
-            return result;          
+            return result;
         }
+        protected override AutomationLandmarkType? GetLandmarkTypeCore() => AutomationProperties.GetLandmarkType(Owner);
+        protected override int GetHeadingLevelCore() => AutomationProperties.GetHeadingLevel(Owner);
         protected override AutomationPeer? GetParentCore()
         {
             EnsureConnected();

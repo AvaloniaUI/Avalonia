@@ -18,7 +18,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class FlyoutTests
+    public class FlyoutTests : ScopedTestBase
     {
         protected bool UseOverlayPopups { get; set; }
 
@@ -647,7 +647,6 @@ namespace Avalonia.Controls.UnitTests
             return UnitTestApplication.Start(TestServices.StyledWindow.With(windowingPlatform:
                 new MockWindowingPlatform(null,
                     x => UseOverlayPopups ? null : MockWindowingPlatform.CreatePopupMock(x).Object),
-                    focusManager: new FocusManager(),
                     keyboardDevice: () => new KeyboardDevice()));
         }
 

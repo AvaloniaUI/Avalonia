@@ -8,10 +8,11 @@ using Xunit;
 using Avalonia.Markup.Parsers;
 using Avalonia.Utilities;
 using Avalonia.Data.Core.ExpressionNodes;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Markup.UnitTests.Parsers
 {
-    public class ExpressionObserverBuilderTests_AttachedProperty
+    public class ExpressionObserverBuilderTests_AttachedProperty : ScopedTestBase
     {
         private readonly Func<string, string, Type> _typeResolver;
 

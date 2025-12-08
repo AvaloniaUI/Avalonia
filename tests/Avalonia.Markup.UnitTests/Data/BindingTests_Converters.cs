@@ -4,12 +4,13 @@ using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
+using Avalonia.UnitTests;
 using Moq;
 using Xunit;
 
 namespace Avalonia.Markup.UnitTests.Data
 {
-    public class BindingTests_Converters
+    public class BindingTests_Converters : ScopedTestBase
     {
         [Fact]
         public void Converter_Should_Be_Used()

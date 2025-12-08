@@ -8,6 +8,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Headless;
 using Avalonia.Layout;
+using Avalonia.Platform;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
@@ -16,7 +17,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class TransitioningContentControlTests
+    public class TransitioningContentControlTests : ScopedTestBase
     {
         [Fact]
         public void Transition_Should_Not_Be_Run_When_First_Shown()
@@ -325,7 +326,8 @@ namespace Avalonia.Controls.UnitTests
                 TestServices.MockThreadingInterface.With(
                     fontManagerImpl: new HeadlessFontManagerStub(),
                     renderInterface: new HeadlessPlatformRenderInterface(),
-                    textShaperImpl: new HeadlessTextShaperStub()));
+                    textShaperImpl: new HeadlessTextShaperStub(),
+                    assetLoader: new StandardAssetLoader()));
         }
 
         private static (TransitioningContentControl, TestTransition) CreateTarget(object content)

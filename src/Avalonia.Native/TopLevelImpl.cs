@@ -52,7 +52,7 @@ internal class MacOSTopLevelHandle : IPlatformHandle, IMacOSTopLevelPlatformHand
     {
         return Native.ObtainNSViewHandleRetained();
     }
-    
+
     public IntPtr NSWindow => (Native as IAvnWindowBase)?.ObtainNSWindowHandle() ?? IntPtr.Zero;
 
     public IntPtr GetNSWindowRetained()
@@ -68,6 +68,8 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
     private PlatformBehaviorInhibition? _platformBehaviorInhibition;
 
     private readonly MouseDevice? _mouse;
+    private readonly PenDevice? _pen;
+
     private readonly IKeyboardDevice? _keyboard;
     private readonly ICursorFactory? _cursorFactory;
 
@@ -87,7 +89,8 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
         Factory = factory;
 
         _keyboard = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
-        _mouse = new MouseDevice();
+        _mouse = Avalonia.Input.MouseDevice.Primary;
+        _pen = new PenDevice();
         _cursorFactory = AvaloniaLocator.Current.GetService<ICursorFactory>();
     }
 
@@ -95,11 +98,21 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
     {
         _handle = handle;
         _savedLogicalSize = ClientSize;
-        _savedScaling = Native?.Scaling ?? 1;;
+        _savedScaling = Native?.Scaling ?? 1;
         _nativeControlHost = new NativeControlHostImpl(Native!.CreateNativeControlHost());
         _platformBehaviorInhibition = new PlatformBehaviorInhibition(Factory.CreatePlatformBehaviorInhibition());
         _surfaces = new object[] { new GlPlatformSurface(Native), new MetalPlatformSurface(Native), this };
         InputMethod = new AvaloniaNativeTextInputMethod(Native);
+    }
+
+    internal void BeginDraggingSession(
+        AvnDragDropEffects effects,
+        AvnPoint point,
+        IAvnClipboardDataSource source,
+        IAvnDndResultCallback callback,
+        IntPtr sourceHandle)
+    {
+        Native?.BeginDragAndDropOperation(effects, point, source, callback, sourceHandle);
     }
 
     public double DesktopScaling => 1;
@@ -115,7 +128,7 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
             {
                 return default;
             }
-            
+
             var s = Native.ClientSize;
             return new Size(s.Width, s.Height);
 
@@ -132,7 +145,7 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
     public Compositor Compositor => AvaloniaNativePlatform.Compositor;
     public Action? Closed { get; set; }
     public Action? LostFocus { get; set; }
-    
+
     public WindowTransparencyLevel TransparencyLevel
     {
         get => _transparencyLevel;
@@ -213,7 +226,7 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
         return args.Handled;
     }
 
-    public void RawMouseEvent(AvnRawMouseEventType type, ulong timeStamp, AvnInputModifiers modifiers, AvnPoint point, AvnVector delta)
+    public void RawMouseEvent(AvnRawMouseEventType type, AvnPointerDeviceType deviceType, ulong timeStamp, AvnInputModifiers modifiers, AvnPoint point, AvnVector delta, float pressure, float xTilt, float yTilt)
     {
         if (_inputRoot is null)
             return;
@@ -248,8 +261,15 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
                 break;
 
             default:
-                var e = new RawPointerEventArgs(_mouse, timeStamp, _inputRoot, (RawPointerEventType)type,
-                    point.ToAvaloniaPoint(), (RawInputModifiers)modifiers);
+                IInputDevice device = deviceType == AvnPointerDeviceType.Pen && _pen != null ? _pen : _mouse;
+                var e = new RawPointerEventArgs(device, timeStamp, _inputRoot, (RawPointerEventType)type,
+                    new RawPointerPoint
+                    {
+                        Position = point.ToAvaloniaPoint(),
+                        Pressure = pressure,
+                        XTilt = xTilt,
+                        YTilt = yTilt
+                    }, (RawInputModifiers)modifiers);
 
                 if (!ChromeHitTest(e))
                 {
@@ -367,8 +387,6 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
 
         _nativeControlHost?.Dispose();
         _nativeControlHost = null;
-
-        _mouse?.Dispose();
     }
 
     protected virtual bool ChromeHitTest(RawPointerEventArgs e)
@@ -387,7 +405,7 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
         {
             throw new RenderTargetNotReadyException();
         }
-        
+
         return new FramebufferRenderTarget(this, nativeRenderTarget);
     }
 
@@ -429,15 +447,15 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
             {
                 return;
             }
-            
+
             var s = new Size(size->Width, size->Height);
             _parent._savedLogicalSize = s;
             _parent.Resized?.Invoke(s, (WindowResizeReason)reason);
         }
 
-        void IAvnTopLevelEvents.RawMouseEvent(AvnRawMouseEventType type, ulong timeStamp, AvnInputModifiers modifiers, AvnPoint point, AvnVector delta)
+        void IAvnTopLevelEvents.RawMouseEvent(AvnRawMouseEventType type, AvnPointerDeviceType pointerDeviceType, ulong timeStamp, AvnInputModifiers modifiers, AvnPoint point, AvnVector delta, float pressure, float xTilt, float yTilt)
         {
-            _parent.RawMouseEvent(type, timeStamp, modifiers, point, delta);
+            _parent.RawMouseEvent(type, pointerDeviceType, timeStamp, modifiers, point, delta, pressure, xTilt, yTilt);
         }
 
         int IAvnTopLevelEvents.RawKeyEvent(AvnRawKeyEventType type, ulong timeStamp, AvnInputModifiers modifiers, AvnKey key, AvnPhysicalKey physicalKey, string keySymbol)
@@ -469,7 +487,7 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
         AvnDragDropEffects IAvnTopLevelEvents.DragEvent(AvnDragEventType type, AvnPoint position,
             AvnInputModifiers modifiers,
             AvnDragDropEffects effects,
-            IAvnClipboard clipboard, IntPtr dataObjectHandle)
+            IAvnClipboard clipboard, IntPtr dataTransferHandle)
         {
             var device = AvaloniaLocator.Current.GetService<IDragDropDevice>();
 
@@ -482,22 +500,25 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
             {
                 return AvnDragDropEffects.None;
             }
-            
-            IDataObject? dataObject = null;
-            if (dataObjectHandle != IntPtr.Zero)
-                dataObject = GCHandle.FromIntPtr(dataObjectHandle).Target as IDataObject;
 
-            using (var clipboardDataObject = new ClipboardDataObject(clipboard))
-            {
-                if (dataObject == null)
-                    dataObject = clipboardDataObject;
+            IDataTransfer? dataTransfer = null;
+            if (dataTransferHandle != IntPtr.Zero)
+                dataTransfer = GCHandle.FromIntPtr(dataTransferHandle).Target as IDataTransfer;
 
-                var args = new RawDragEvent(device, (RawDragEventType)type,
-                    _parent._inputRoot, position.ToAvaloniaPoint(), dataObject, (DragDropEffects)effects,
-                    (RawInputModifiers)modifiers);
-                _parent.Input?.Invoke(args);
-                return (AvnDragDropEffects)args.Effects;
-            }
+            using var clipboardDataTransfer = new ClipboardDataTransfer(
+                new ClipboardReadSession(clipboard, clipboard.ChangeCount, ownsNative: true));
+            dataTransfer ??= clipboardDataTransfer;
+
+            var args = new RawDragEvent(
+                device,
+                (RawDragEventType)type,
+                _parent._inputRoot,
+                position.ToAvaloniaPoint(),
+                dataTransfer,
+                (DragDropEffects)effects,
+                (RawInputModifiers)modifiers);
+            _parent.Input?.Invoke(args);
+            return (AvnDragDropEffects)args.Effects;
         }
 
         IAvnAutomationPeer? IAvnTopLevelEvents.AutomationPeer

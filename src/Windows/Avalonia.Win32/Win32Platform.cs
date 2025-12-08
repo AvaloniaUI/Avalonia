@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -86,9 +86,12 @@ namespace Avalonia.Win32
             SetDpiAwareness();
 
             var renderTimer = options.ShouldRenderOnUIThread ? new UiThreadRenderTimer(60) : new DefaultRenderTimer(60);
+            var clipboardImpl = new ClipboardImpl();
+            var clipboard = new Clipboard(clipboardImpl);
 
             AvaloniaLocator.CurrentMutable
-                .Bind<IClipboard>().ToSingleton<ClipboardImpl>()
+                .Bind<IClipboardImpl>().ToConstant(clipboardImpl)
+                .Bind<IClipboard>().ToConstant(clipboard)
                 .Bind<ICursorFactory>().ToConstant(CursorFactory.Instance)
                 .Bind<IKeyboardDevice>().ToConstant(WindowsKeyboardDevice.Instance)
                 .Bind<IPlatformSettings>().ToSingleton<Win32PlatformSettings>()
@@ -148,11 +151,22 @@ namespace Avalonia.Win32
             {
                 if (ShutdownRequested != null)
                 {
-                    var e = new ShutdownRequestedEventArgs();
+                    // https://learn.microsoft.com/en-us/windows/win32/shutdown/wm-queryendsession
+                    // > LPARAM lParam   // logoff option
+                    // >
+                    // > This parameter can be one or more of the following values. If this parameter is 0, the system is shutting down or restarting (it is not possible to determine which event is occurring).
+                    // >
+                    // > - ENDSESSION_CLOSEAPP 0x00000001 The application is using a file that must be replaced, the system is being serviced, or system resources are exhausted. For more information, see Guidelines for Applications.
+                    // > - ENDSESSION_CRITICAL 0x40000000 The application is forced to shut down.
+                    // > - ENDSESSION_LOGOFF 0x80000000 The user is logging off.
+                    var e = new ShutdownRequestedEventArgs()
+                    {
+                        IsOSShutdown = lParam == IntPtr.Zero,
+                    };
 
                     ShutdownRequested(this, e);
 
-                    if(e.Cancel)
+                    if (e.Cancel)
                     {
                         return IntPtr.Zero;
                     }
@@ -207,6 +221,8 @@ namespace Avalonia.Win32
             {
                 throw new Win32Exception();
             }
+
+            TrayIconImpl.ChangeWindowMessageFilter(_hwnd);
         }
 
         public ITrayIconImpl CreateTrayIcon()
@@ -224,7 +240,7 @@ namespace Avalonia.Win32
         public IWindowImpl CreateEmbeddableWindow()
         {
             var embedded = new EmbeddedWindowImpl();
-            embedded.Show(true, false);
+            embedded.Show(false, false);
             return embedded;
         }
 

@@ -30,7 +30,7 @@ public class CompileAvaloniaXamlTaskTest
             ProjectDirectory = Directory.GetCurrentDirectory(),
             VerifyIl = true
         }.Execute();
-        Assert.Equal(0, engine.Errors.Count);
+        Assert.Empty(engine.Errors);
     }
 
 

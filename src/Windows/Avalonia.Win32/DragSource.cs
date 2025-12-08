@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Threading;
@@ -7,26 +8,35 @@ using MicroCom.Runtime;
 
 namespace Avalonia.Win32
 {
-    class DragSource : IPlatformDragSource
+    internal sealed class DragSource : IPlatformDragSource
     {
-        public unsafe Task<DragDropEffects> DoDragDrop(PointerEventArgs triggerEvent,
-            IDataObject data, DragDropEffects allowedEffects)
+        [Obsolete($"Use {nameof(DoDragDropAsync)} instead.")]
+        Task<DragDropEffects> IPlatformDragSource.DoDragDrop(
+            PointerEventArgs triggerEvent,
+            IDataObject data,
+            DragDropEffects allowedEffects)
+            => DoDragDropAsync(triggerEvent, new DataObjectToDataTransferWrapper(data), allowedEffects);
+
+        public Task<DragDropEffects> DoDragDropAsync(
+            PointerEventArgs triggerEvent,
+            IDataTransfer dataTransfer,
+            DragDropEffects allowedEffects)
         {
             Dispatcher.UIThread.VerifyAccess();
 
             triggerEvent.Pointer.Capture(null);
             
-            using var dataObject = new DataObject(data);
+            using var dataObject = new DataTransferToOleDataObjectWrapper(dataTransfer);
             using var src = new OleDragSource();
             var allowed = OleDropTarget.ConvertDropEffect(allowedEffects);
             
-            var objPtr = MicroComRuntime.GetNativeIntPtr<Win32Com.IDataObject>(dataObject);
-            var srcPtr = MicroComRuntime.GetNativeIntPtr<Win32Com.IDropSource>(src);
+            var objPtr = dataObject.GetNativeIntPtr<Win32Com.IDataObject>();
+            var srcPtr = src.GetNativeIntPtr<Win32Com.IDropSource>();
 
             UnmanagedMethods.DoDragDrop(objPtr, srcPtr, (int)allowed, out var finalEffect);
             
             // Force releasing of internal wrapper to avoid memory leak, if drop target keeps com reference.
-            dataObject.ReleaseWrapped();
+            dataObject.ReleaseDataTransfer();
 
             return Task.FromResult(OleDropTarget.ConvertDropEffect((Win32Com.DropEffect)finalEffect));
         }

@@ -118,7 +118,7 @@ public partial class XYFocus
         return !visibleBounds.Intersects(elementBounds);
     }
 
-    private static Rect? GetBoundsForRanking(InputElement element, bool ignoreClipping)
+    internal static Rect? GetBoundsForRanking(InputElement element, bool ignoreClipping)
     {
         if (element.GetTransformedBounds() is { } bounds)
         {

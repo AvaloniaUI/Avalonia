@@ -59,7 +59,9 @@ internal partial class RenderWorker
         [DynamicDependency(DynamicallyAccessedMemberTypes.All, "System.Runtime.InteropServices.JavaScript.JSHostImplementation", 
             "System.Runtime.InteropServices.JavaScript")]
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Private runtime API")]
+        [UnconditionalSuppressMessage("Trimming", "IL2036", Justification = "Private runtime API")]
         [UnconditionalSuppressMessage("Trimming", "IL2075", Justification = "Private runtime API")]
+        [UnconditionalSuppressMessage("Trimming", "IL2111", Justification = "Private runtime API")]
         static JSWebWorkerClone()
         {
             var syncContext = typeof(System.Runtime.InteropServices.JavaScript.JSHost)
@@ -107,13 +109,15 @@ internal partial class RenderWorker
     }
     
     // TODO: Use this class instead of JSWebWorkerClone once https://github.com/dotnet/runtime/issues/102010 is fixed
+    // TODO12: It was fixed in .NET 10
     class JSWebWorkerWrapper
     {
         [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, "System.Runtime.InteropServices.JavaScript.JSWebWorker", 
             "System.Runtime.InteropServices.JavaScript")]
-        [UnconditionalSuppressMessage("Trimming", 
-            "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-            Justification = "Private runtime API")]
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Private runtime API")]
+        [UnconditionalSuppressMessage("Trimming", "IL2036", Justification = "Private runtime API")]
+        [UnconditionalSuppressMessage("Trimming", "IL2075", Justification = "Private runtime API")]
+        [UnconditionalSuppressMessage("Trimming", "IL2111", Justification = "Private runtime API")]
         static JSWebWorkerWrapper()
         {
             var type = typeof(System.Runtime.InteropServices.JavaScript.JSHost)

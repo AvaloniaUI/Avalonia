@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using Avalonia.Media.TextFormatting.Unicode;
@@ -18,6 +19,7 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
 
         [Theory(Skip = "Only run when the Unicode spec changes.")]
         [ClassData(typeof(BiDiClassTestDataGenerator))]
+        [SuppressMessage("Usage", "xUnit1026:Theory methods should use all of their parameters", Justification = "Parameters match BiDi fields")]
         public void Should_Resolve(
             int lineNumber,
             int[] codePoints,

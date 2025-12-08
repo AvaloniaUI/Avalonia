@@ -750,6 +750,24 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// This is an optimized path for <see cref="RaisePropertyChanged{T}(Avalonia.DirectPropertyBase{T},T,T)"/>.
+        /// This will reuse the event args in situations where many allocations would otherwise happen.
+        /// </summary>
+        /// <param name="args">Avalonia property change args</param>
+        /// <param name="inpcArgs">INPC event args/</param>
+        internal void RaisePropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> args, PropertyChangedEventArgs? inpcArgs)
+        {
+            OnPropertyChangedCore(args);
+
+            if (args.IsEffectiveValueChange && inpcArgs is not null)
+            {
+                args.Property.NotifyChanged(args);
+                _propertyChanged?.Invoke(this, args);
+                _inpcChanged?.Invoke(this, inpcArgs);
+            }
+        }
+
+        /// <summary>
         /// Raises the <see cref="PropertyChanged"/> event.
         /// </summary>
         /// <param name="property">The property that has changed.</param>

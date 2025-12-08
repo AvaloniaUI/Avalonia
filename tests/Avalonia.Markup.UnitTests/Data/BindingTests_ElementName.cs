@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Avalonia.Markup.UnitTests.Data
 {
-    public class BindingTests_ElementName
+    public class BindingTests_ElementName : ScopedTestBase
     {
         [Fact]
         public void Should_Bind_To_Element_Path()

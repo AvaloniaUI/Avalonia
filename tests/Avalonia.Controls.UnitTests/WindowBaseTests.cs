@@ -17,7 +17,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class WindowBaseTests
+    public class WindowBaseTests : ScopedTestBase
     {
         [Fact]
         public void Activate_Should_Call_Impl_Activate()
@@ -239,6 +239,7 @@ namespace Avalonia.Controls.UnitTests
             var renderer = new Mock<IWindowBaseImpl>();
             if (setupAllProperties)
                 renderer.SetupAllProperties();
+            renderer.Setup(x => x.RenderScaling).Returns(1.0);
             renderer.Setup(x => x.Compositor).Returns(RendererMocks.CreateDummyCompositor());
             return renderer;
         }
@@ -248,16 +249,8 @@ namespace Avalonia.Controls.UnitTests
             public bool IsClosed { get; private set; }
 
             public TestWindowBase()
-                : base(CreateWindowsBaseImplMock())
+                : base(CreateMockWindowBaseImpl().Object)
             {
-            }
-
-            private static IWindowBaseImpl CreateWindowsBaseImplMock()
-            {
-                var compositor = RendererMocks.CreateDummyCompositor();
-                return Mock.Of<IWindowBaseImpl>(x =>
-                    x.RenderScaling == 1 &&
-                    x.Compositor == compositor);
             }
 
             public TestWindowBase(IWindowBaseImpl impl)

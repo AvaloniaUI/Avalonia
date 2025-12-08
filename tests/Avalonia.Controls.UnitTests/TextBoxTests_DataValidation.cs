@@ -18,7 +18,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class TextBoxTests_DataValidation
+    public class TextBoxTests_DataValidation : ScopedTestBase
     {
         [Fact]
         public void Setter_Exceptions_Should_Set_Error_Pseudoclass()

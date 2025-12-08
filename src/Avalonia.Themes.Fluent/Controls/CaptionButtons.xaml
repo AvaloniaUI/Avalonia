@@ -112,7 +112,7 @@
     <Style Selector="^:fullscreen /template/ Button#PART_MinimizeButton">
       <Setter Property="IsVisible" Value="False" />
     </Style>
-    <Style Selector="^ /template/ Button#PART_RestoreButton:disabled">
+    <Style Selector="^ /template/ Button:disabled">
       <Setter Property="Opacity" Value="0.2"/>
     </Style>
   </ControlTheme>

@@ -1,6 +1,7 @@
 ﻿using System;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
@@ -123,17 +124,39 @@ public static class HeadlessWindowExtensions
     /// <summary>
     /// Simulates a drag and drop target event on the headless window/toplevel. This event simulates a user moving files from another app to the current app.
     /// </summary>
+    [Obsolete($"Use the overload accepting a {nameof(IDataTransfer)} instance instead.")]
     public static void DragDrop(this TopLevel topLevel, Point point, RawDragEventType type, IDataObject data,
+        DragDropEffects effects, RawInputModifiers modifiers = RawInputModifiers.None) =>
+        RunJobsOnImpl(topLevel, w => w.DragDrop(point, type, data, effects, modifiers));
+
+    /// <summary>
+    /// Simulates a drag and drop target event on the headless window/toplevel. This event simulates a user moving files from another app to the current app.
+    /// </summary>
+    public static void DragDrop(this TopLevel topLevel, Point point, RawDragEventType type, IDataTransfer data,
         DragDropEffects effects, RawInputModifiers modifiers = RawInputModifiers.None) =>
         RunJobsOnImpl(topLevel, w => w.DragDrop(point, type, data, effects, modifiers));
 
     private static void RunJobsOnImpl(this TopLevel topLevel, Action<IHeadlessWindow> action)
     {
-        Dispatcher.UIThread.RunJobs();
-        AvaloniaHeadlessPlatform.ForceRenderTimerTick();
-        Dispatcher.UIThread.RunJobs();
+        RunJobsAndRender();
         action(GetImpl(topLevel));
-        Dispatcher.UIThread.RunJobs();
+        RunJobsAndRender();
+
+        void RunJobsAndRender()
+        {
+            var count = 0;
+            var dispatcher = Dispatcher.UIThread;
+
+            while (dispatcher.HasJobsWithPriority(DispatcherPriority.MinimumActiveValue))
+            {
+                if (count >= 10)
+                    throw new InvalidOperationException("Dispatcher job loop detected");
+
+                dispatcher.RunJobs();
+                AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+                ++count;
+            }
+        }
     }
 
     private static IHeadlessWindow GetImpl(this TopLevel topLevel)

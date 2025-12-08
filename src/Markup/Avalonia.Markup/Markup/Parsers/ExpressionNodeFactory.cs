@@ -15,6 +15,9 @@ namespace Avalonia.Markup.Parsers
     internal static class ExpressionNodeFactory
     {
         [RequiresUnreferencedCode(TrimmingMessages.ReflectionBindingRequiresUnreferencedCodeMessage)]
+#if NET8_0_OR_GREATER
+        [RequiresDynamicCode(TrimmingMessages.ReflectionBindingRequiresDynamicCodeMessage)]
+#endif
         public static List<ExpressionNode>? CreateFromAst(
             List<BindingExpressionGrammar.INode> astNodes,
             Func<string?, string, Type>? typeResolver,
@@ -52,7 +55,7 @@ namespace Avalonia.Markup.Parsers
                         ++negated;
                         break;
                     case BindingExpressionGrammar.PropertyNameNode propName:
-                        node = new DynamicPluginPropertyAccessorNode(propName.PropertyName);
+                        node = new DynamicPluginPropertyAccessorNode(propName.PropertyName, propName.AcceptsNull);
                         break;
                     case BindingExpressionGrammar.SelfNode:
                         node = null;

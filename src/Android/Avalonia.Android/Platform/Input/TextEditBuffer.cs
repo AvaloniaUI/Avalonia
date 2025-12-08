@@ -96,7 +96,7 @@ namespace Avalonia.Android.Platform.Input
             SelectionStart = Selection.Start,
             SelectionEnd = Selection.End,
             StartOffset = 0,
-            Text = new SpannableString(Text)
+            Text = new Java.Lang.String(Text)
         };
 
         internal void Remove(int index, int length)

@@ -6,11 +6,12 @@ using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Avalonia.Layout;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Markup.UnitTests.Data
 {
-    public class MultiBindingTests_Converters
+    public class MultiBindingTests_Converters : ScopedTestBase
     {
         [Fact]
         public void StringFormat_Should_Be_Applied()

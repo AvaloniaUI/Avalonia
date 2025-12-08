@@ -3,11 +3,12 @@ using System.Reactive.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class ScrollContentPresenterTests_ILogicalScrollable
+    public class ScrollContentPresenterTests_ILogicalScrollable : ScopedTestBase
     {
         [Fact]
         public void Measure_Should_Pass_Unchanged_Bounds_To_ILogicalScrollable()

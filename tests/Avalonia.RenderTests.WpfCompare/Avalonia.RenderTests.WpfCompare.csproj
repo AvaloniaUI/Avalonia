@@ -12,6 +12,9 @@
     <Compile Include="..\Avalonia.RenderTests\CrossTests\**\*.cs"/>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="../Avalonia.RenderTests/**/*.png" CopyToOutputDirectory="Always" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Xunit.StaFact" Version="1.2.46-alpha" />
   </ItemGroup>
   <Import Project="..\..\build\Moq.props" />

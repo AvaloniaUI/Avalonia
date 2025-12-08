@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
-using Avalonia.Interactivity;
-using Avalonia.Layout;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -198,7 +196,7 @@ namespace Avalonia.Controls.Presenters
                 return v.GetRealizedContainers();
             return Panel?.Children;
         }
-
+        
         internal int IndexFromContainer(Control container)
         {
             if (Panel is VirtualizingPanel v)

@@ -10,8 +10,6 @@
         {
             if(progress >= 1d)
                 return newValue;
-            if(progress >= 0)
-                return oldValue;
             return oldValue;
         }
     }

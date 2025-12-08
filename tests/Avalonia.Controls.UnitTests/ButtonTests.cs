@@ -334,13 +334,12 @@ namespace Avalonia.Controls.UnitTests
                     })
                 },
             };
-            kd.SetFocusedElement(target, NavigationMethod.Unspecified, KeyModifiers.None);
-            
 
             root.ApplyTemplate();
             root.Presenter.UpdateChild();
             target.ApplyTemplate();
             target.Presenter.UpdateChild();
+            kd.SetFocusedElement(target, NavigationMethod.Unspecified, KeyModifiers.None);
 
             Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
@@ -455,6 +454,27 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(2, raised);
             }
         }
+        
+        [Fact]
+        public void Button_IsDefault_Should_Not_Work_When_Button_Is_Not_Effectively_Visible()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var raised = 0;
+                var panel = new Panel();
+                var target = new Button();
+                panel.Children.Add(target);
+                var window = new Window { Content = panel };
+                window.Show();
+
+                target.Click += (s, e) => ++raised;
+                
+                target.IsDefault = true;
+                panel.IsVisible = false;
+                window.RaiseEvent(CreateKeyDownEvent(Key.Enter));
+                Assert.Equal(0, raised);
+            }
+        }
 
         [Fact]
         public void Button_IsCancel_Works()
@@ -487,6 +507,27 @@ namespace Avalonia.Controls.UnitTests
                 window.Content = null;
                 window.RaiseEvent(CreateKeyDownEvent(Key.Escape, target));
                 Assert.Equal(2, raised);
+            }
+        }
+        
+        [Fact]
+        public void Button_IsCancel_Should_Not_Work_When_Button_Is_Not_Effectively_Visible()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var raised = 0;
+                var panel = new Panel();
+                var target = new Button();
+                panel.Children.Add(target);
+                var window = new Window { Content = panel };
+                window.Show();
+
+                target.Click += (s, e) => ++raised;
+                
+                target.IsCancel = true;
+                panel.IsVisible = false;
+                window.RaiseEvent(CreateKeyDownEvent(Key.Escape));
+                Assert.Equal(0, raised);
             }
         }
 
@@ -577,6 +618,140 @@ namespace Avalonia.Controls.UnitTests
         }
 
 
+
+        [Fact]
+        public void Button_LetterSpacing_Default_Value_Is_Zero()
+        {
+            var button = new Button();
+            Assert.Equal(0, button.LetterSpacing);
+        }
+
+        [Fact]
+        public void Button_LetterSpacing_Can_Be_Set_And_Retrieved()
+        {
+            var button = new Button { LetterSpacing = 2.5 };
+            Assert.Equal(2.5, button.LetterSpacing);
+        }
+
+        [Fact]
+        public void Button_LetterSpacing_Can_Be_Set_To_Negative_Value()
+        {
+            var button = new Button { LetterSpacing = -1.5 };
+            Assert.Equal(-1.5, button.LetterSpacing);
+        }
+
+        [Fact]
+        public void Button_LetterSpacing_Can_Be_Set_To_Zero()
+        {
+            var button = new Button { LetterSpacing = 5.0 };
+            button.LetterSpacing = 0;
+            Assert.Equal(0, button.LetterSpacing);
+        }
+
+        [Fact]
+        public void Button_LetterSpacing_Propagates_To_ContentPresenter()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var button = new Button
+                {
+                    Content = "Test",
+                    LetterSpacing = 3.0
+                };
+                var root = new TestRoot { Child = button };
+
+                button.ApplyTemplate();
+
+                var presenter = button.Presenter;
+                Assert.NotNull(presenter);
+                Assert.Equal(3.0, presenter.LetterSpacing);
+            }
+        }
+
+        [Fact]
+        public void Button_LetterSpacing_Updates_ContentPresenter_When_Changed()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var button = new Button
+                {
+                    Content = "Test",
+                    LetterSpacing = 1.0
+                };
+                var root = new TestRoot { Child = button };
+
+                button.ApplyTemplate();
+                var presenter = button.Presenter;
+
+                button.LetterSpacing = 5.0;
+
+                Assert.Equal(5.0, presenter.LetterSpacing);
+            }
+        }
+
+        [Fact]
+        public void Button_LetterSpacing_Works_With_Large_Values()
+        {
+            var button = new Button { LetterSpacing = 100.0 };
+            Assert.Equal(100.0, button.LetterSpacing);
+        }
+
+        [Fact]
+        public void Button_LetterSpacing_Property_Inherits_Through_Visual_Tree()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var button = new Button
+                {
+                    Content = "Test",
+                    LetterSpacing = 2.0
+                };
+                var root = new TestRoot { Child = button };
+
+                button.ApplyTemplate();
+                button.Presenter?.UpdateChild();
+
+                // Verify the property value is accessible on the presenter
+                var presenter = button.Presenter;
+                Assert.NotNull(presenter);
+                Assert.Equal(2.0, presenter.LetterSpacing);
+            }
+        }
+
+        [Fact]
+        public void Button_LetterSpacing_Affects_TextBlock_Child_In_ContentPresenter()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var button = new Button
+                {
+                    Content = "Test Text",
+                    LetterSpacing = 3.5
+                };
+                var root = new TestRoot { Child = button };
+
+                button.ApplyTemplate();
+                button.Presenter?.UpdateChild();
+
+                // Find the TextBlock that was created by ContentPresenter
+                var presenter = button.Presenter;
+                Assert.NotNull(presenter);
+
+                var textBlock = presenter.Child as TextBlock;
+                Assert.NotNull(textBlock);
+
+                // Verify LetterSpacing inherited to the TextBlock
+                Assert.Equal(3.5, textBlock.LetterSpacing);
+
+                // Force a measure to create TextLayout
+                textBlock.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+
+                // Verify the TextLayout actually has the LetterSpacing value
+                var textLayout = textBlock.TextLayout;
+                Assert.NotNull(textLayout);
+                Assert.Equal(3.5, textLayout.LetterSpacing);
+            }
+        }
 
         private class TestTopLevel : TopLevel
         {

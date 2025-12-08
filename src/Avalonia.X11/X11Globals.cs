@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Runtime.InteropServices;
 using static Avalonia.X11.XLib;
 
@@ -15,11 +16,21 @@ namespace Avalonia.X11
         private string? _wmName;
         private IntPtr _compositionAtomOwner;
         private bool _isCompositionEnabled;
+        private WindowActivationTrackingMode _activationTrackingMode;
 
         public event Action? WindowManagerChanged;
         public event Action? CompositionChanged;
         public event Action<IntPtr>? RootPropertyChanged;
+        public event Action? NetActiveWindowPropertyChanged;
         public event Action? RootGeometryChangedChanged;
+        public event Action? WindowActivationTrackingModeChanged;
+        
+        public enum WindowActivationTrackingMode
+        {
+            FocusEvents,
+            _NET_ACTIVE_WINDOW,
+            _NET_WM_STATE_FOCUSED
+        }
 
         public X11Globals(AvaloniaX11Platform plat)
         {
@@ -31,7 +42,7 @@ namespace Avalonia.X11
             XSelectInput(_x11.Display, _rootWindow,
                 new IntPtr((int)(EventMask.StructureNotifyMask | EventMask.PropertyChangeMask)));
             _compositingAtom = XInternAtom(_x11.Display, "_NET_WM_CM_S" + _screenNumber, false);
-            UpdateWmName();
+            OnNewWindowManager();
             UpdateCompositingAtomOwner();
         }
         
@@ -70,6 +81,19 @@ namespace Avalonia.X11
                 {
                     _isCompositionEnabled = value;
                     CompositionChanged?.Invoke();
+                }
+            }
+        }
+        
+        public WindowActivationTrackingMode ActivationTrackingMode
+        {
+            get => _activationTrackingMode;
+            set
+            {
+                if (_activationTrackingMode != value)
+                {
+                    _activationTrackingMode = value;
+                    WindowActivationTrackingModeChanged?.Invoke();
                 }
             }
         }
@@ -128,12 +152,15 @@ namespace Avalonia.X11
                 UpdateCompositingAtomOwner();
         }
 
-        private void UpdateWmName() => WmName = GetWmName();
-
-        private string? GetWmName()
+        IntPtr GetActiveWm() => GetSupportingWmCheck(_rootWindow) is { } wmWindow
+                                && wmWindow != IntPtr.Zero
+                                && wmWindow == GetSupportingWmCheck(wmWindow)
+            ? wmWindow
+            : IntPtr.Zero;
+        
+        private string? GetWmName(IntPtr wm)
         {
-            var wm = GetSupportingWmCheck(_rootWindow);
-            if (wm == IntPtr.Zero || wm != GetSupportingWmCheck(wm))
+            if (wm == IntPtr.Zero)
                 return null;
             XGetWindowProperty(_x11.Display, wm, _x11.Atoms._NET_WM_NAME,
                 IntPtr.Zero, new IntPtr(0x7fffffff),
@@ -152,13 +179,47 @@ namespace Avalonia.X11
                 XFree(prop);
             }
         }
+
+        private WindowActivationTrackingMode GetWindowActivityTrackingMode(IntPtr wm)
+        {
+            if (Environment.GetEnvironmentVariable("AVALONIA_DEBUG_FORCE_X11_ACTIVATION_TRACKING_MODE") is
+                    { } forcedModeString
+                && Enum.TryParse<WindowActivationTrackingMode>(forcedModeString, true, out var forcedMode))
+                return forcedMode;
+            
+            if (wm == IntPtr.Zero)
+                return WindowActivationTrackingMode.FocusEvents;
+            var supportedFeatures = XGetWindowPropertyAsIntPtrArray(_x11.Display, _x11.RootWindow,
+                _x11.Atoms._NET_SUPPORTED, _x11.Atoms.XA_ATOM) ?? [];
+
+            if (supportedFeatures.Contains(_x11.Atoms._NET_WM_STATE_FOCUSED))
+                return WindowActivationTrackingMode._NET_WM_STATE_FOCUSED;
+            
+            if (supportedFeatures.Contains(_x11.Atoms._NET_ACTIVE_WINDOW))
+                return WindowActivationTrackingMode._NET_ACTIVE_WINDOW;
+            
+            return WindowActivationTrackingMode.FocusEvents;
+        }
+
+        private void OnNewWindowManager()
+        {
+            var wm = GetActiveWm();
+            WmName = GetWmName(wm);
+            ActivationTrackingMode = GetWindowActivityTrackingMode(wm);
+        }
         
         private void OnRootWindowEvent(ref XEvent ev)
         {
             if (ev.type == XEventName.PropertyNotify)
             {
-                if(ev.PropertyEvent.atom == _x11.Atoms._NET_SUPPORTING_WM_CHECK)
-                    UpdateWmName();
+                if (ev.PropertyEvent.atom == _x11.Atoms._NET_SUPPORTING_WM_CHECK)
+                {
+                    OnNewWindowManager();
+                }
+
+                if (ev.PropertyEvent.atom == _x11.Atoms._NET_ACTIVE_WINDOW)
+                    NetActiveWindowPropertyChanged?.Invoke();
+
                 RootPropertyChanged?.Invoke(ev.PropertyEvent.atom);
             }
 

@@ -20,26 +20,26 @@
       <Border Background="{DynamicResource SystemAccentColorDark1}" 
               BorderBrush="{DynamicResource SemiTransparentSystemAccentBrush}" 
               BackgroundSizing="CenterBorder"
-              BorderThickness="8" 
+              BorderThickness="8"
               Padding="12">
         <TextBlock>Background And CenterBorder</TextBlock>
       </Border>
       <Border Background="{DynamicResource SystemAccentColorDark1}" 
               BorderBrush="{DynamicResource SemiTransparentSystemAccentBrush}" 
               BackgroundSizing="InnerBorderEdge"
-              BorderThickness="8" 
+              BorderThickness="8"
               Padding="12">
-        <TextBlock>Background And InnerBorder</TextBlock>
+        <TextBlock>Background And InnerBorderEdge</TextBlock>
       </Border>
       <Border Background="{DynamicResource SystemAccentColorDark1}" 
               BorderBrush="{DynamicResource SemiTransparentSystemAccentBrush}" 
               BackgroundSizing="OuterBorderEdge"
-              BorderThickness="8" 
+              BorderThickness="8"
               Padding="12">
         <TextBlock>Background And OuterBorderEdge</TextBlock>
       </Border>
       <Border BorderBrush="{DynamicResource SystemAccentColor}"
-              BorderThickness="4" 
+              BorderThickness="4"
               CornerRadius="8"
               Padding="16">
         <TextBlock>Rounded Corners</TextBlock>
@@ -56,6 +56,6 @@
         <Image Source="/Assets/maple-leaf-888807_640.jpg" Stretch="UniformToFill" />
       </Border>
       <TextBlock Text="Border with Clipping" HorizontalAlignment="Center" />
-    </StackPanel>    
+    </StackPanel>
   </StackPanel>
 </UserControl>

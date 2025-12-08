@@ -1,9 +1,12 @@
-﻿using Avalonia.Controls.Primitives;
+﻿using System;
+using Avalonia.Controls.Primitives;
+using Avalonia.UnitTests;
+using Avalonia.Utilities;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Primitives
 {
-    public class UniformGridTests
+    public class UniformGridTests : ScopedTestBase
     {
         [Fact]
         public void Grid_Columns_Equals_Rows_For_Auto_Columns_And_Rows()
@@ -267,6 +270,62 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal(new Size(105, 145), target.Bounds.Size);
         }
 
+        [Fact]
+        public void Grid_Ensures_Consistent_Cell_Width_When_UseLayoutRounding()
+        {
+            // Test scenario: 800x600 resolution, 21 children, 3 rows, 7 columns, 1 pixel spacing
+            // Verifies that all cells have consistent width when UseLayoutRounding is enabled
+            var target = new UniformGrid
+            {
+                Rows = 3,
+                Columns = 7,
+                RowSpacing = 1,
+                ColumnSpacing = 1,
+                UseLayoutRounding = true
+            };
+
+            // Add 21 children
+            for (int i = 0; i < 21; i++)
+            {
+                target.Children.Add(new Border());
+            }
+
+            // Arrange at 800x600 resolution
+            target.Measure(new Size(800, 600));
+            target.Arrange(new Rect(0, 0, 800, 600));
+
+            // Calculate expected cell width
+            // Available width = 800, column spacing takes up 6 pixels (7 columns - 1 = 6 gaps)
+            // Available width for cells = 800 - 6 = 794
+            // Width per cell = 794 / 7 = 113.428...
+            // With layout rounding, this should be rounded to ensure consistent cell sizes
+            double expectedCellWidth = Math.Round((800 - 6) / 7.0); // 794 / 7 ≈ 113.43 → rounds to 113
+
+            // Verify all children have the same width
+            double? firstChildWidth = null;
+            for (int i = 0; i < target.Children.Count; i++)
+            {
+                var child = target.Children[i] as Border;
+                Assert.NotNull(child);
+
+                if (firstChildWidth == null)
+                {
+                    firstChildWidth = child.Bounds.Width;
+                }
+                else
+                {
+                    // All children should have the same width (allowing for minor floating point differences)
+                    Assert.True(Math.Abs(child.Bounds.Width - firstChildWidth.Value) < 0.01,
+                        $"Child {i} has width {child.Bounds.Width}, expected {firstChildWidth.Value}");
+                }
+            }
+
+            // Verify the calculated width matches expected
+            Assert.NotNull(firstChildWidth);
+            Assert.True(Math.Abs(firstChildWidth.Value - expectedCellWidth) < 0.01,
+                $"Child width {firstChildWidth.Value} does not match expected {expectedCellWidth}");
+        }
+
         /// <summary>
         ///  Exposes MeasureOverride for testing inherited classes
         /// </summary>
@@ -302,7 +361,77 @@ namespace Avalonia.Controls.UnitTests.Primitives
             // Expected: (0, 0)
             Assert.Equal(0, desiredSize.Width);
             Assert.Equal(0, desiredSize.Height);
-        
+
+        }
+
+        [Fact]
+        public void Arrange_Does_Not_Throw_InvalidOperationException_When_Row_Spacing_Takes_All_Available_Height()
+        {
+            // Minimum required height = 20 (2 row gaps size 10)
+            // Provide height of 19 so that row gaps take all available space
+            // thus, available height for children may be negative.
+            // In that case, UniformGrid should arrange its children with rects of height 0.
+            var target = new UniformGrid
+            {
+                Columns = 1,
+                RowSpacing = 10,
+                Children =
+                {
+                    new Border(),
+                    new Border(),
+                    new Border()
+                }
+            };
+
+            var availableSize = new Size(100, 19);
+
+            target.Measure(Size.Infinity);
+
+            // Fail case:
+            // Invalid operation will be thrown if any child rect contains a negative dimension
+            try
+            {
+                target.Arrange(new Rect(availableSize));
+            }
+            catch (InvalidOperationException exception)
+            {
+                Assert.Fail("Arrange threw InvalidOperationException: " + exception.Message);
+            }
+        }
+
+        [Fact]
+        public void Arrange_Does_Not_Throw_InvalidOperationException_When_Column_Spacing_Takes_All_Available_Width()
+        {
+            // Minimum required width = 20 (2 row gaps size 10)
+            // Provide width of 19 so that column gaps take all available space
+            // thus, available width for children may be negative.
+            // In that case, UniformGrid should arrange its children with rects of width 0.
+            var target = new UniformGrid
+            {
+                Rows = 1,
+                ColumnSpacing = 10,
+                Children =
+                {
+                    new Border(),
+                    new Border(),
+                    new Border()
+                }
+            };
+
+            var availableSize = new Size(19, 100);
+
+            target.Measure(Size.Infinity);
+
+            // Fail case:
+            // Invalid operation will be thrown if any child rect contains a negative dimension
+            try
+            {
+                target.Arrange(new Rect(availableSize));
+            }
+            catch (InvalidOperationException exception)
+            {
+                Assert.Fail("Arrange threw InvalidOperationException: " + exception.Message);
+            }
         }
     }
 }

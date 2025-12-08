@@ -29,5 +29,11 @@ namespace Avalonia.Media
         /// Gets supported font features.
         /// </summary>
         IReadOnlyList<OpenTypeTag> SupportedFeatures { get; }
+
+        /// <summary>
+        /// Gets the localized face names.
+        /// <para>Keys are culture identifiers.</para>
+        /// </summary>
+        IReadOnlyDictionary<ushort, string> FaceNames { get; }
     }
 }

@@ -25,6 +25,9 @@ body:
     id: avalonia-version
     attributes:
       label: Avalonia version
+      description: |
+          Let us know which version you have tested. Please make sure to test latest stable version available. 
+          If you could test [nightly builds](https://github.com/AvaloniaUI/Avalonia/wiki/Using-nightly-build-feed) in addition, this would be of great help. 
       placeholder: e.g. 11.2.0, 11.1.0
     validations:
       required: true

@@ -244,14 +244,16 @@ namespace Avalonia.Skia
             var drawableImage = (IDrawableBitmapImpl)source;
             var s = sourceRect.ToSKRect();
             var d = destRect.ToSKRect();
+            var isUpscaling = d.Width > s.Width || d.Height > s.Height;
 
             var paint = SKPaintCache.Shared.Get();
+            var samplingOptions = RenderOptions.BitmapInterpolationMode.ToSKSamplingOptions(isUpscaling);
 
             paint.Color = new SKColor(255, 255, 255, (byte)(255 * opacity * _currentOpacity));
-            paint.FilterQuality = RenderOptions.BitmapInterpolationMode.ToSKFilterQuality();
             paint.BlendMode = RenderOptions.BitmapBlendingMode.ToSKBlendMode();
+            paint.IsAntialias = RenderOptions.EdgeMode != EdgeMode.Aliased;
 
-            drawableImage.Draw(this, s, d, paint);
+            drawableImage.Draw(this, s, d, samplingOptions, paint);
             SKPaintCache.Shared.ReturnReset(paint);
         }
 
@@ -844,7 +846,9 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public Matrix Transform
         {
-            get { return _currentTransform ??= Canvas.TotalMatrix.ToAvaloniaMatrix(); }
+            // There is a Canvas.TotalMatrix (non 4x4 overload), but internally it still uses 4x4 matrix.
+            // We want to avoid SKMatrix4x4 -> SKMatrix -> Matrix conversion by directly going SKMatrix4x4 -> Matrix.
+            get { return _currentTransform ??= Canvas.TotalMatrix44.ToAvaloniaMatrix(); }
             set
             {
                 CheckLease();
@@ -860,7 +864,9 @@ namespace Avalonia.Skia
                     transform *= _postTransform.Value;
                 }
 
-                Canvas.SetMatrix(transform.ToSKMatrix());
+                // Canvas.SetMatrix internally uses 4x4 matrix, even with SKMatrix(3x3) overload.
+                // We want to avoid Matrix -> SKMatrix -> SKMatrix4x4 conversion by directly going Matrix -> SKMatrix4x4.
+                Canvas.SetMatrix(transform.ToSKMatrix44());
             }
         }
 
@@ -963,39 +969,43 @@ namespace Avalonia.Skia
                                     (originPoint.Y - centerPoint.Y) * radiusX / radiusY + centerPoint.Y);
 
                             var origin = originPoint.ToSKPoint();
-                            var endOffset = 0.0;
 
-                            // and then reverse the reference point of the stops
-                            var reversedStops = new float[stopOffsets.Length];
-
-                            for (var i = 0; i < stopOffsets.Length; i++)
-                            {
-                                var offset = stopOffsets[i];
-                                if (endOffset < offset)
-                                {
-                                    endOffset = offset;
-                                }
-                                reversedStops[i] = offset;
-                                if (reversedStops[i] > 0 && reversedStops[i] < 1)
-                                {
-                                    reversedStops[i] = Math.Abs(1 - offset);
-                                }
-                            }
+                            var endOffset = stopOffsets[stopOffsets.Length - 1];
 
                             var start = origin;
                             var radiusStart = 0f;
                             var end = center;
                             var radiusEnd = (float)radiusX;
-                            var reverse = MathUtilities.AreClose(1, endOffset);
+                            var reverse = (centerPoint.X != originPoint.X  || centerPoint.Y != originPoint.Y) && endOffset == 1;
 
                             if (reverse)
                             {
+                                // reverse the order of the stops to match D2D
                                 (start, radiusStart, end, radiusEnd) = (end, radiusEnd, start, radiusStart);
 
-                                // reverse the order of the stops to match D2D
+                                var count = stopOffsets.Length;
+
                                 var reversedColors = new SKColor[stopColors.Length];
-                                Array.Copy(stopColors, reversedColors, stopColors.Length);
-                                Array.Reverse(reversedColors);
+                                // and then reverse the reference point of the stops
+                                var reversedStops = new float[count];
+
+                                for (var i = 0; i < count; i++)
+                                {
+                                    var offset = radialGradient.GradientStops[i].Offset;
+
+                                    offset = 1 - offset;
+
+                                    if (MathUtilities.IsZero(offset))
+                                    {
+                                        offset = 0;
+                                    }
+
+                                    var reversedIndex = count - 1 - i;
+
+                                    reversedStops[reversedIndex] = (float)offset;
+                                    reversedColors[reversedIndex] = stopColors[i];
+                                }
+                               
                                 stopColors = reversedColors;
                                 stopOffsets = reversedStops;
                             }
@@ -1253,7 +1263,6 @@ namespace Avalonia.Skia
             using(var shader = tile.ToShader(tileX, tileY, shaderTransform.ToSKMatrix(), 
                       new SKRect(0, 0, tile.CullRect.Width, tile.CullRect.Height)))
             {
-                paintWrapper.Paint.FilterQuality = SKFilterQuality.None;
                 paintWrapper.Paint.Shader = shader;
             }
         }
@@ -1298,18 +1307,6 @@ namespace Avalonia.Skia
             var ab = rightAlpha / 255d;
             var r = (ca * aa + cb * ab * (1 - aa)) / (aa + ab * (1 - aa));
             return (byte)(r * 255);
-        }
-
-        private static Color Blend(Color left, Color right)
-        {
-            var aa = left.A / 255d;
-            var ab = right.A / 255d;
-            return new Color(
-                (byte)((aa + ab * (1 - aa)) * 255),
-                Blend(left.R, left.A, right.R, right.A),
-                Blend(left.G, left.A, right.G, right.A),
-                Blend(left.B, left.A, right.B, right.A)                
-            );
         }
 
         internal PaintWrapper CreateAcrylicPaint (SKPaint paint, IExperimentalAcrylicMaterial material)
@@ -1529,16 +1526,6 @@ namespace Avalonia.Skia
                 _disposable1 = null;
                 _disposable2 = null;
                 _disposable3 = null;
-            }
-
-            public IDisposable ApplyTo(SKPaint paint)
-            {
-                var state = new PaintState(paint, paint.Color, paint.Shader);
-
-                paint.Color = Paint.Color;
-                paint.Shader = Paint.Shader;
-
-                return state;
             }
 
             /// <summary>

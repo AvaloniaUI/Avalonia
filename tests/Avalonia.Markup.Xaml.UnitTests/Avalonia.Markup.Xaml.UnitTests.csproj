@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
-    <TargetFrameworks>$(AvsCurrentTargetFramework);net47</TargetFrameworks>
+    <TargetFrameworks>$(AvsCurrentTargetFramework)</TargetFrameworks>
     <OutputType>Library</OutputType>
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
@@ -35,6 +35,7 @@
     <Compile Include="..\Avalonia.IntegrationTests.Appium\PlatformFactAttribute.cs">
       <Link>PlatformFactAttribute.cs</Link>
     </Compile>
+    <Compile Include="../Shared/ScopedSanityCheck.cs"/>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Update="xunit.runner.console" Version="2.9.2">

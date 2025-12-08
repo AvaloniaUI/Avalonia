@@ -71,7 +71,7 @@ namespace Avalonia.Controls.UnitTests
         }
     }
 
-    public class HotKeyedControlsTests
+    public class HotKeyedControlsTests : ScopedTestBase
     {
         private static Window PreparedWindow(object content = null)
         {
@@ -90,7 +90,6 @@ namespace Avalonia.Controls.UnitTests
                     windowingPlatform: new MockWindowingPlatform(
                         null,
                         window => MockWindowingPlatform.CreatePopupMock(window).Object),
-                focusManager: new FocusManager(),
                 keyboardDevice: () => new KeyboardDevice()));
         }
         

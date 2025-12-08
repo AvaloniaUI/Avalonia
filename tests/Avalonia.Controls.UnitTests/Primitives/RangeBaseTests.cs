@@ -12,7 +12,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Primitives
 {
-    public class RangeBaseTests
+    public class RangeBaseTests : ScopedTestBase
     {
         [Fact]
         public void Maximum_Should_Be_Coerced_To_Minimum()

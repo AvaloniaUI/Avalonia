@@ -36,7 +36,7 @@ namespace Avalonia.Media.TextFormatting
 
         public TextMetrics TextMetrics { get; }
 
-        public override double Baseline => -TextMetrics.Ascent;
+        public override double Baseline => -TextMetrics.Ascent + TextMetrics.LineGap * 0.5;
 
         public override Size Size => GlyphRun.Bounds.Size;
 
@@ -170,24 +170,32 @@ namespace Avalonia.Media.TextFormatting
 
                 length = Length - length;
             }
-#if DEBUG
+
             if (length == 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(length), "length must be greater than zero.");
             }
-#endif          
+       
             var splitBuffer = ShapedBuffer.Split(length);
 
-            var first = new ShapedTextRun(splitBuffer.First, Properties);
+            // first cannot be null as length > 0
+            var first = new ShapedTextRun(splitBuffer.First!, Properties);
 
-#if DEBUG
-
-            if (first.Length != length)
+            if (first.Length < length)
             {
-                throw new InvalidOperationException("Split length mismatch.");
+                throw new InvalidOperationException("Split length too small.");
             }
-#endif
-            var second = new ShapedTextRun(splitBuffer.Second!, Properties);
+
+            if (splitBuffer.Second == null)
+            {
+                // If there's no second part, return the entire run as the second in reversed mode, or throw
+                if (isReversed)
+                {
+                    return new SplitResult<ShapedTextRun>(null, first);
+                }
+                throw new InvalidOperationException($"Cannot split: requested length {length} consumes entire run.");
+            }
+            var second = new ShapedTextRun(splitBuffer.Second, Properties);
 
             if (isReversed)
             {

@@ -6,77 +6,52 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Avalonia.Controls;
-using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Media;
-using Avalonia.Media.Fonts;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Platform;
-using Avalonia.Platform.Storage;
-using Avalonia.Platform.Storage.FileIO;
-using Avalonia.Utilities;
 
 namespace Avalonia.Headless
 {
-    internal class HeadlessClipboardStub : IClipboard
+    internal sealed class HeadlessClipboardImplStub : IOwnedClipboardImpl
     {
-        private string? _text;
-        private IDataObject? _data;
+        private IAsyncDataTransfer? _data;
 
-        public Task<string?> GetTextAsync()
-        {
-            return Task.Run(() => _text);
-        }
+        public Task<IAsyncDataTransfer?> TryGetDataAsync()
+            // Return an instance that won't be disposed (we're keeping the ownership).
+            => Task.FromResult<IAsyncDataTransfer?>(_data is null ? null : new NonDisposingDataTransfer(_data));
 
-        public Task SetTextAsync(string? text)
+        public Task SetDataAsync(IAsyncDataTransfer dataTransfer)
         {
-            return Task.Run(() => _text = text);
+            _data = dataTransfer;
+            return Task.CompletedTask;
         }
 
         public Task ClearAsync()
         {
-            return Task.Run(() => _text = null);
+            _data?.Dispose();
+            _data = null;
+            return Task.CompletedTask;
         }
 
-        public Task SetDataObjectAsync(IDataObject data)
-        {
-            return Task.Run(() => _data = data);
-        }
+        public Task<bool> IsCurrentOwnerAsync()
+            => Task.FromResult(_data is not null);
 
-        public Task<string[]> GetFormatsAsync()
+        private sealed class NonDisposingDataTransfer(IAsyncDataTransfer wrapped) : IAsyncDataTransfer
         {
-            return Task.Run(() =>
+            private readonly IAsyncDataTransfer _wrapped = wrapped;
+
+            public IReadOnlyList<DataFormat> Formats
+                => _wrapped.Formats;
+
+            public IReadOnlyList<IAsyncDataTransferItem> Items
+                => _wrapped.Items;
+
+            void IDisposable.Dispose()
             {
-                if (_data is not null)
-                {
-                    return _data.GetDataFormats().ToArray();
-                }
-
-                if (_text is not null)
-                {
-                    return new[] { DataFormats.Text };
-                }
-
-                return Array.Empty<string>();
-            });
-        }
-
-        public async Task<object?> GetDataAsync(string format)
-        {
-            return await Task.Run(() =>
-            {
-                if (format == DataFormats.Text)
-                    return _text;
-                if (format == DataFormats.Files && _data is not null)
-                    return _data.GetFiles();
-                if (format == DataFormats.FileNames && _data is not null)
-                    return _data.GetFileNames();
-                else
-                    return (object?)_data;
-            });
+            }
         }
     }
 
@@ -199,6 +174,12 @@ namespace Avalonia.Headless
 
                 var codepoint = Codepoint.ReadAt(textSpan, i, out var count);
 
+                // Handle CRLF as a single cluster
+                if (codepoint.Value == 0x0D && Codepoint.ReadAt(textSpan, i + count, out var lfCount).Value == 0x0A)
+                {
+                    count += lfCount;
+                }
+
                 var glyphIndex = typeface.GetGlyph(codepoint);
 
                 for (var j = 0; j < count; ++j)
@@ -235,15 +216,14 @@ namespace Avalonia.Headless
         }
 
         public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight,
-            FontStretch fontStretch,
-            CultureInfo? culture, out Typeface fontKey)
+            FontStretch fontStretch, string? familyName, CultureInfo? culture, out Typeface fontKey)
         {
             fontKey = new Typeface(_defaultFamilyName);
 
             return false;
         }
 
-        public virtual bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight, 
+        public virtual bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight,
             FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
         {
             glyphTypeface = null;
@@ -262,7 +242,11 @@ namespace Avalonia.Headless
 
         public virtual bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, out IGlyphTypeface glyphTypeface)
         {
-            glyphTypeface = new HeadlessGlyphTypefaceImpl(FontFamily.DefaultFontFamilyName, FontStyle.Normal, FontWeight.Normal, FontStretch.Normal);
+            glyphTypeface = new HeadlessGlyphTypefaceImpl(
+                FontFamily.DefaultFontFamilyName,
+                fontSimulations.HasFlag(FontSimulations.Oblique) ? FontStyle.Italic : FontStyle.Normal,
+                fontSimulations.HasFlag(FontSimulations.Bold) ? FontWeight.Bold : FontWeight.Normal,
+                FontStretch.Normal);
 
             TryCreateGlyphTypefaceCount++;
 
@@ -296,8 +280,7 @@ namespace Avalonia.Headless
         }
 
         public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight,
-            FontStretch fontStretch,
-            CultureInfo? culture, out Typeface fontKey)
+            FontStretch fontStretch, string? familyName, CultureInfo? culture, out Typeface fontKey)
         {
             fontKey = new Typeface(_defaultFamilyName);
 

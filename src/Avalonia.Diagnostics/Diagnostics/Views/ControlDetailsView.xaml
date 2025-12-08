@@ -261,13 +261,7 @@
                             <StackPanel Orientation="Horizontal" Spacing="2" HorizontalAlignment="Left">
                               <TextBlock Classes="property-name" PointerPressed="PropertyNamePressed" Text="{Binding Name}" />
                               <TextBlock Text=":" />
-                              <ContentControl Content="{Binding Value}">
-                                <ContentControl.ContentTemplate>
-                                  <DataTemplate x:DataType="system:Object">
-                                    <TextBlock Text="{Binding}" />
-                                  </DataTemplate>
-                                </ContentControl.ContentTemplate>
-                              </ContentControl>
+                              <TextBlock Text="{Binding Value}" />
                               <TextBlock>(</TextBlock>
                               <Ellipse Height="8" Width="8" VerticalAlignment="Center" Fill="{Binding Tint}" ToolTip.Tip="{Binding ValueTypeTooltip}"/>
                               <TextBlock FontStyle="Italic" Text="{Binding Key}" />
@@ -288,13 +282,7 @@
                             <StackPanel Orientation="Horizontal" Spacing="2">
                               <TextBlock Classes="property-name" PointerPressed="PropertyNamePressed" Text="{Binding Name}" />
                               <TextBlock Text=":" />
-                              <ContentControl Content="{Binding Value}">
-                                <ContentControl.ContentTemplate>
-                                  <DataTemplate x:DataType="system:Object">
-                                    <TextBlock Text="{Binding}" />
-                                  </DataTemplate>
-                                </ContentControl.ContentTemplate>
-                              </ContentControl>
+                              <TextBlock Text="{Binding Value}" />
                             </StackPanel>
                             <Rectangle Classes="property-inactive" IsVisible="{Binding !IsActive}" />
                           </Panel>

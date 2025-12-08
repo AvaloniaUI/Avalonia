@@ -7,6 +7,9 @@
     
     <ShouldIncludeNativeSkiaSharp Condition=" '$(ShouldIncludeNativeSkiaSharp)' == '' ">true</ShouldIncludeNativeSkiaSharp>
     <ShouldIncludeNativeHarfBuzzSharp Condition=" '$(ShouldIncludeNativeHarfBuzzSharp)' == '' ">true</ShouldIncludeNativeHarfBuzzSharp>
+
+    <_AvaloniaRuntimeAssetsLocation>$(WasmRuntimeAssetsLocation)</_AvaloniaRuntimeAssetsLocation>
+    <_AvaloniaRuntimeAssetsLocation Condition="'$(_AvaloniaRuntimeAssetsLocation)' == ''">_framework</_AvaloniaRuntimeAssetsLocation>
   </PropertyGroup>
 
   <Import Project="$(MSBuildThisFileDirectory)/../build/Microsoft.AspNetCore.StaticWebAssets.props" />

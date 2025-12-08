@@ -96,7 +96,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
-        /// Called before the <see cref="ColorChanged"/> event occurs.
+        /// Raises the <see cref="ColorChanged"/> event.
         /// </summary>
         /// <param name="e">The <see cref="ColorChangedEventArgs"/> defining old/new colors.</param>
         protected virtual void OnColorChanged(ColorChangedEventArgs e)

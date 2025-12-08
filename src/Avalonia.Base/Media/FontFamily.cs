@@ -36,21 +36,30 @@ namespace Avalonia.Media
                 throw new ArgumentNullException(nameof(name));
             }
 
+            if (baseUri != null && !baseUri.IsAbsoluteUri)
+            {
+                throw new ArgumentException("Base uri must be an absolute uri.", nameof(baseUri));
+            }
+
             var fontSources = GetFontSourceIdentifier(name);
 
             FamilyNames = new FamilyNameCollection(fontSources);
 
             if (fontSources.Count == 1)
             {
-                if(fontSources[0].Source is Uri source)
-                {
-                    if (baseUri != null && !baseUri.IsAbsoluteUri)
-                    {
-                        throw new ArgumentException("Base uri must be an absolute uri.", nameof(baseUri));
-                    }
+                var singleSource = fontSources[0];
 
-                    Key = new FontFamilyKey(source, baseUri);
-                }
+                if (singleSource.Source is Uri source)
+                {
+                    if (source.IsAbsoluteUri)
+                    {
+                        Key = new FontFamilyKey(source);
+                    }
+                    else
+                    {
+                        Key = new FontFamilyKey(source, baseUri);
+                    }
+                }               
             }
             else
             {
@@ -105,6 +114,11 @@ namespace Avalonia.Media
         public FontFamilyKey? Key { get; }
 
         /// <summary>
+        /// Gets the typefaces for this font family.
+        /// </summary>
+        public IReadOnlyList<Typeface> FamilyTypefaces => FontManager.Current.GetFamilyTypefaces(this);
+
+        /// <summary>
         /// Implicit conversion of string to FontFamily
         /// </summary>
         /// <param name="s"></param>
@@ -124,7 +138,7 @@ namespace Avalonia.Media
                 var segment = segments[i];
                 var innerSegments = segment.Split('#');
 
-                FontSourceIdentifier identifier;
+                FontSourceIdentifier identifier = new FontSourceIdentifier(name, null);
 
                 switch (innerSegments.Length)
                 {
@@ -136,18 +150,28 @@ namespace Avalonia.Media
 
                     case 2:
                         {
-                            var source = innerSegments[0].StartsWith("/", StringComparison.Ordinal)
-                                ? new Uri(innerSegments[0], UriKind.Relative)
-                                : new Uri(innerSegments[0], UriKind.RelativeOrAbsolute);
+                            var path = innerSegments[0].Trim();
+                            var innerName = innerSegments[1].Trim();
 
-                            identifier = new FontSourceIdentifier(innerSegments[1].Trim(), source);
+                            if (string.IsNullOrEmpty(path))
+                            {
+                                identifier = new FontSourceIdentifier(innerName, null);
+                            }
+                            else
+                            {
+                                if (path.Contains('/') && Uri.TryCreate(path, UriKind.Relative, out var source))
+                                {
+                                    identifier = new FontSourceIdentifier(innerName, source);
+                                }
+                                else
+                                {
+                                    if (Uri.TryCreate(path, UriKind.Absolute, out source))
+                                    {
+                                        identifier = new FontSourceIdentifier(innerName, source);
+                                    }
+                                }
+                            }
 
-                            break;
-                        }
-
-                    default:
-                        {
-                            identifier = new FontSourceIdentifier(name, null);
                             break;
                         }
                 }

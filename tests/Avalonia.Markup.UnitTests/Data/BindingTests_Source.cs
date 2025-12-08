@@ -5,10 +5,11 @@ using Avalonia.Markup.Data;
 using Xunit;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Markup.UnitTests.Data
 {
-    public class BindingTests_Source
+    public class BindingTests_Source : ScopedTestBase
     {
         [Fact]
         public void Source_Should_Be_Used()

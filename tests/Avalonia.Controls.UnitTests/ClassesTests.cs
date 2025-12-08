@@ -1,9 +1,10 @@
 using System;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class ClassesTests
+    public class ClassesTests : ScopedTestBase
     {
         [Fact]
         public void Duplicates_Should_Not_Be_Added()

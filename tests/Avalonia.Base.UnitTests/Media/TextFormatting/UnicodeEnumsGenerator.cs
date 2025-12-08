@@ -447,11 +447,11 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
 
             writer.WriteLine($"        public static string GetTag({typeName} {typeName.ToLower()})");
             writer.WriteLine("        {");
-            writer.WriteLine($"            if(!s_{typeName.ToLower()}ToTag.ContainsKey({typeName.ToLower()}))");
+            writer.WriteLine($"            if (!s_{typeName.ToLower()}ToTag.TryGetValue({typeName.ToLower()}, out var value))");
             writer.WriteLine("            {");
             writer.WriteLine($"                return \"{defaultValue}\";");
             writer.WriteLine("            }");
-            writer.WriteLine($"            return s_{typeName.ToLower()}ToTag[{typeName.ToLower()}];");
+            writer.WriteLine($"            return value;");
             writer.WriteLine("        }");
 
             writer.WriteLine();
@@ -474,11 +474,11 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
 
             writer.WriteLine($"        public static {typeName} Get{typeName}(string tag)");
             writer.WriteLine("        {");
-            writer.WriteLine($"            if(!s_tagTo{typeName}.ContainsKey(tag))");
+            writer.WriteLine($"            if (!s_tagTo{typeName}.TryGetValue(tag, out var value))");
             writer.WriteLine("            {");
             writer.WriteLine($"                return {typeName}.{defaultValue};");
             writer.WriteLine("            }");
-            writer.WriteLine($"            return s_tagTo{typeName}[tag];");
+            writer.WriteLine($"            return value;");
             writer.WriteLine("        }");
 
             writer.WriteLine();

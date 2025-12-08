@@ -5,11 +5,12 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.LogicalTree;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Primitives
 {
-    public class TabStripTests
+    public class TabStripTests : ScopedTestBase
     {
         [Fact]
         public void First_Tab_Should_Be_Selected_By_Default()

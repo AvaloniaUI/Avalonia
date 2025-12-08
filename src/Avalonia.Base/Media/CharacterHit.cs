@@ -35,6 +35,10 @@ namespace Avalonia.Media
         /// <summary>
         ///     Gets the trailing length value for the character that got hit.
         /// </summary>
+        /// <remarks>
+        /// In the case of a leading edge, this value is 0. In the case of a trailing edge,
+        /// this value is the number of code points until the next valid caret position.
+        /// </remarks>
         public int TrailingLength { get; }
 
         public bool Equals(CharacterHit other)
