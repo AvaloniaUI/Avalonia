@@ -11,13 +11,18 @@ namespace Avalonia.X11
     {
         private static readonly XiEventType[] DefaultEventTypes = new XiEventType[]
         {
-            XiEventType.XI_Motion, XiEventType.XI_ButtonPress, XiEventType.XI_ButtonRelease, XiEventType.XI_Leave,
+            XiEventType.XI_Motion, 
+            XiEventType.XI_ButtonPress, 
+            XiEventType.XI_ButtonRelease, 
+            XiEventType.XI_Leave,
             XiEventType.XI_Enter,
         };
 
         private static readonly XiEventType[] MultiTouchEventTypes = new XiEventType[]
         {
-            XiEventType.XI_TouchBegin, XiEventType.XI_TouchUpdate, XiEventType.XI_TouchEnd
+            XiEventType.XI_TouchBegin, 
+            XiEventType.XI_TouchUpdate, 
+            XiEventType.XI_TouchEnd
         };
 
         private X11Info _x11;
@@ -126,7 +131,7 @@ namespace Avalonia.X11
                 UpdateKnownValuator();
             }
 
-            public bool HasPenEvaluators()
+            public bool HasPressureValuator()
             {
                 return PressureXIValuatorClassInfo is not null;
             }
@@ -369,7 +374,7 @@ namespace Avalonia.X11
             {
                 Vector scrollDelta = default;
                 var rawPointerPoint = new RawPointerPoint() { Position = ev.Position };
-                IInputDevice device = _pointerDevice.HasPenEvaluators() ? client.PenDevice : client.MouseDevice;
+                IInputDevice device = _pointerDevice.HasPressureValuator() ? client.PenDevice : client.MouseDevice;
 
                 foreach (var v in ev.Valuators)
                 {
@@ -432,7 +437,7 @@ namespace Avalonia.X11
 
                 if (type.HasValue)
                 {
-                    IInputDevice device = _pointerDevice.HasPenEvaluators() ? client.PenDevice : client.MouseDevice;
+                    IInputDevice device = _pointerDevice.HasPressureValuator() ? client.PenDevice : client.MouseDevice;
                     var pointerPoint = new RawPointerPoint() { Position = ev.Position };
 
                     SetPenSpecificValues(ev, ref pointerPoint);
