@@ -12,17 +12,17 @@ namespace Avalonia.X11
     {
         private static readonly XiEventType[] DefaultEventTypes = new XiEventType[]
         {
-            XiEventType.XI_Motion, 
-            XiEventType.XI_ButtonPress, 
-            XiEventType.XI_ButtonRelease, 
+            XiEventType.XI_Motion,
+            XiEventType.XI_ButtonPress,
+            XiEventType.XI_ButtonRelease,
             XiEventType.XI_Leave,
             XiEventType.XI_Enter,
         };
 
         private static readonly XiEventType[] MultiTouchEventTypes = new XiEventType[]
         {
-            XiEventType.XI_TouchBegin, 
-            XiEventType.XI_TouchUpdate, 
+            XiEventType.XI_TouchBegin,
+            XiEventType.XI_TouchUpdate,
             XiEventType.XI_TouchEnd
         };
 
