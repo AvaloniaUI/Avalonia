@@ -171,11 +171,11 @@ namespace Avalonia.Controls.PullToRefresh
 
             if(_scrollViewer != null)
             {
-                var scollContentComposition = ElementComposition.GetElementVisual(_scrollViewer);
+                var scrollContentComposition = ElementComposition.GetElementVisual(_scrollViewer);
 
-                if(scollContentComposition != null)
+                if(scrollContentComposition != null)
                 {
-                    var compositor = scollContentComposition.Compositor;
+                    var compositor = scrollContentComposition.Compositor;
 
                     var offsetAnimation = compositor.CreateVector3KeyFrameAnimation();
                     offsetAnimation.Target = "Offset";
@@ -184,7 +184,7 @@ namespace Avalonia.Controls.PullToRefresh
 
                     var animation = compositor.CreateImplicitAnimationCollection();
                     animation["Offset"] = offsetAnimation;
-                    scollContentComposition.ImplicitAnimations = animation;
+                    scrollContentComposition.ImplicitAnimations = animation;
                 }
             }
         }
