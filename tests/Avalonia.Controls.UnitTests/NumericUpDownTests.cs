@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reactive.Subjects;
 using Avalonia.Controls.Templates;
@@ -77,6 +78,26 @@ namespace Avalonia.Controls.UnitTests
                 // Check that FormatString is applied.
                 control.FormatString = "F2";
                 Assert.Equal(value.ToString("F2"), control.Text);
+            });
+        }
+
+        [Fact]
+        public void NumberFormat_Is_Applied_Immediately()
+        {
+            RunTest((control, textbox) =>
+            {
+                const decimal value = 10.11m;
+                var initialNumberFormat = new NumberFormatInfo { NumberDecimalSeparator = "." };
+                var newNumberFormat = new NumberFormatInfo { NumberDecimalSeparator = ";" };
+
+                // Establish and verify initial conditions.
+                control.NumberFormat = initialNumberFormat;
+                control.Value = value;
+                Assert.Equal(value.ToString(initialNumberFormat), control.Text);
+
+                // Check that NumberFormat is applied.
+                control.NumberFormat = newNumberFormat;
+                Assert.Equal(value.ToString(newNumberFormat), control.Text);
             });
         }
 
