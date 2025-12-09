@@ -1,11 +1,5 @@
 {
   "name": "avalonia.browser",
-  "scripts": {
-    "typecheck": "npx tsc -noEmit",
-    "eslint": "npx eslint . --fix",
-    "prebuild": "npm-run-all typecheck eslint",
-    "build": "node build.js"
-  },
   "devDependencies": {
     "@types/emscripten": "^1.39.6",
     "@types/offscreencanvas": "2019.7.1",

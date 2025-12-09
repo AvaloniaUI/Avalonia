@@ -49,7 +49,7 @@
     <Touch Files="$(WebAppDir)/node_modules/.install-stamp" AlwaysCreate="true" />
   </Target>
   <Target Name="BunRunBuild" DependsOnTargets="BunInstall" BeforeTargets="DispatchToInnerBuilds">
-    <Exec Command="dnx Bun.Unofficial.Tool run build" WorkingDirectory="$(WebAppDir)" />
+    <Exec Command="dnx Bun.Unofficial.Tool build.js" WorkingDirectory="$(WebAppDir)" />
   </Target>
 
   <ItemGroup>
