@@ -48,6 +48,95 @@ namespace Avalonia.Skia.UnitTests.Media
             public IDictionary<string, ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>> GlyphTypefaceCache => _glyphTypefaceCache;
         }
 
+        /// <summary>
+        /// Verifies no leak when the returned typeface's FamilyName differs from requested.
+        /// This happens with fonts like "Segoe UI Variable Text" returning FamilyName="Segoe UI Variable".
+        /// </summary>
+        [Fact]
+        public void Should_Not_Leak_When_Typeface_FamilyName_Differs_From_Requested()
+        {
+            var fontManager = new MockFontManagerImpl(returnDifferentFamilyName: true);
+            
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: fontManager)))
+            {
+                var fontCollection = new TestSystemFontCollection(fontManager);
+                
+                // First request creates the typeface
+                fontCollection.TryGetGlyphTypeface("TestFont", FontStyle.Normal, FontWeight.Bold, FontStretch.Normal, out _);
+                var countAfterFirst = fontManager.CreateCount;
+                
+                // Subsequent requests should hit cache, not create new typefaces
+                for (int i = 0; i < 100; i++)
+                {
+                    fontCollection.TryGetGlyphTypeface("TestFont", FontStyle.Normal, FontWeight.Bold, FontStretch.Normal, out _);
+                }
+                
+                Assert.Equal(countAfterFirst, fontManager.CreateCount);
+            }
+        }
+
+        private class MockFontManagerImpl : IFontManagerImpl
+        {
+            public int CreateCount { get; private set; }
+            private readonly bool _returnDifferentFamilyName;
+            
+            public MockFontManagerImpl(bool returnDifferentFamilyName) => _returnDifferentFamilyName = returnDifferentFamilyName;
+            
+            public string GetDefaultFontFamilyName() => "TestFont";
+            public string[] GetInstalledFontFamilyNames(bool checkForUpdates = false) => new[] { "TestFont" };
+            
+            public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight, 
+                FontStretch fontStretch, string? familyName, CultureInfo? culture, out Typeface typeface)
+            {
+                typeface = new Typeface("TestFont");
+                return true;
+            }
+            
+            public bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight,
+                FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
+            {
+                CreateCount++;
+                var returnedName = _returnDifferentFamilyName ? familyName + " UI" : familyName;
+                glyphTypeface = new MockGlyphTypeface(returnedName, style, weight, stretch);
+                return true;
+            }
+            
+            public bool TryCreateGlyphTypeface(System.IO.Stream stream, FontSimulations fontSimulations, 
+                [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
+            {
+                glyphTypeface = new MockGlyphTypeface("TestFont", FontStyle.Normal, FontWeight.Normal, FontStretch.Normal);
+                return true;
+            }
+        }
+        
+        private class MockGlyphTypeface : IGlyphTypeface
+        {
+            public MockGlyphTypeface(string familyName, FontStyle style, FontWeight weight, FontStretch stretch)
+            {
+                FamilyName = familyName;
+                Style = style;
+                Weight = weight;
+                Stretch = stretch;
+            }
+            
+            public string FamilyName { get; }
+            public FontStyle Style { get; }
+            public FontWeight Weight { get; }
+            public FontStretch Stretch { get; }
+            public int GlyphCount => 1;
+            public FontMetrics Metrics => new FontMetrics { DesignEmHeight = 1000, Ascent = -800, Descent = 200 };
+            public FontSimulations FontSimulations => FontSimulations.None;
+            
+            public ushort GetGlyph(uint codepoint) => 1;
+            public bool TryGetGlyph(uint codepoint, out ushort glyph) { glyph = 1; return true; }
+            public int GetGlyphAdvance(ushort glyph) => 500;
+            public int[] GetGlyphAdvances(ReadOnlySpan<ushort> glyphs) => new int[glyphs.Length];
+            public ushort[] GetGlyphs(ReadOnlySpan<uint> codepoints) => new ushort[codepoints.Length];
+            public bool TryGetGlyphMetrics(ushort glyph, out GlyphMetrics metrics) { metrics = default; return true; }
+            public bool TryGetTable(uint tag, out byte[] table) { table = Array.Empty<byte>(); return false; }
+            public void Dispose() { }
+        }
+
         [Fact]
         public void Should_Use_Fallback()
         {
