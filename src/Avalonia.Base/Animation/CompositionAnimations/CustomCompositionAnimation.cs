@@ -21,7 +21,7 @@ namespace Avalonia.Animation
         }
     }
 
-    public class CompositionScalerImplicitAnimation : CustomCompositionAnimation
+    public class CompositionScalerAnimation : CustomCompositionAnimation
     {
         public override Rendering.Composition.Animations.CompositionAnimation? GetCompositionAnimation(Visual parent)
         {
@@ -38,7 +38,7 @@ namespace Avalonia.Animation
         }
     }
 
-    public class CompositionVector3ImplicitAnimation : CustomCompositionAnimation
+    public class CompositionVector3Animation : CustomCompositionAnimation
     {
         public override Rendering.Composition.Animations.CompositionAnimation? GetCompositionAnimation(Visual parent)
         {
@@ -55,7 +55,7 @@ namespace Avalonia.Animation
         }
     }
 
-    public class CompositionDoubleImplicitAnimation : CustomCompositionAnimation
+    public class CompositionDoubleAnimation : CustomCompositionAnimation
     {
         public override Rendering.Composition.Animations.CompositionAnimation? GetCompositionAnimation(Visual parent)
         {
@@ -72,7 +72,7 @@ namespace Avalonia.Animation
         }
     }
 
-    public class CompositionQuaternionImplicitAnimation : CustomCompositionAnimation
+    public class CompositionQuaternionAnimation : CustomCompositionAnimation
     {
         public override Rendering.Composition.Animations.CompositionAnimation? GetCompositionAnimation(Visual parent)
         {
@@ -89,7 +89,7 @@ namespace Avalonia.Animation
         }
     }
 
-    public class CompositionVector2ImplicitAnimation : CustomCompositionAnimation
+    public class CompositionVector2Animation : CustomCompositionAnimation
     {
         public override Rendering.Composition.Animations.CompositionAnimation? GetCompositionAnimation(Visual parent)
         {
@@ -106,7 +106,7 @@ namespace Avalonia.Animation
         }
     }
 
-    public class CompositionVector3DImplicitAnimation : CustomCompositionAnimation
+    public class CompositionVector3DAnimation : CustomCompositionAnimation
     {
         public override Rendering.Composition.Animations.CompositionAnimation? GetCompositionAnimation(Visual parent)
         {
@@ -123,7 +123,7 @@ namespace Avalonia.Animation
         }
     }
 
-    public class CompositionVectorImplicitAnimation : CustomCompositionAnimation
+    public class CompositionVectorAnimation : CustomCompositionAnimation
     {
         public override Rendering.Composition.Animations.CompositionAnimation? GetCompositionAnimation(Visual parent)
         {
@@ -140,7 +140,7 @@ namespace Avalonia.Animation
         }
     }
 
-    public class CompositionVector4ImplicitAnimation : CustomCompositionAnimation
+    public class CompositionVector4Animation : CustomCompositionAnimation
     {
         public override Rendering.Composition.Animations.CompositionAnimation? GetCompositionAnimation(Visual parent)
         {
@@ -157,7 +157,7 @@ namespace Avalonia.Animation
         }
     }
 
-    public class CompositionBooleanImplicitAnimation : CustomCompositionAnimation
+    public class CompositionBooleanAnimation : CustomCompositionAnimation
     {
         public override Rendering.Composition.Animations.CompositionAnimation? GetCompositionAnimation(Visual parent)
         {
@@ -174,7 +174,7 @@ namespace Avalonia.Animation
         }
     }
 
-    public class CompositionColorImplicitAnimation : CustomCompositionAnimation
+    public class CompositionColorAnimation : CustomCompositionAnimation
     {
         public override Rendering.Composition.Animations.CompositionAnimation? GetCompositionAnimation(Visual parent)
         {
