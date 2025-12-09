@@ -20,7 +20,7 @@
 
   <Target Name="BunInstall" Inputs="$(WebAppDir)\package.json" Outputs="$(WebAppDir)\node_modules\.install-stamp">
     <!-- We use bun packages as .NET tool, to avoid preinstalled node.js dependency -->
-    <Exec Command="dnx Bun.Unofficial.Tool install --silent" WorkingDirectory="$(WebAppDir)" />
+    <Exec Command="dnx Bun.Unofficial.Tool --yes -- install --silent" WorkingDirectory="$(WebAppDir)" />
     <!-- Write the stamp file, so incremental builds work -->
     <Touch Files="$(WebAppDir)/node_modules/.install-stamp" AlwaysCreate="true" />
   </Target>
