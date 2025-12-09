@@ -13,6 +13,7 @@ using Avalonia.Data;
 using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Layout;
+using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
@@ -1351,7 +1352,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     keyboardNavigation: () => new KeyboardNavigationHandler(),
                     inputManager: new InputManager(),
                     renderInterface: new HeadlessPlatformRenderInterface(),
-                    textShaperImpl: new HeadlessTextShaperStub()));
+                    textShaperImpl: new HeadlessTextShaperStub(),
+                    assetLoader: new StandardAssetLoader()));
         }
 
         private class TestSelector : SelectingItemsControl
