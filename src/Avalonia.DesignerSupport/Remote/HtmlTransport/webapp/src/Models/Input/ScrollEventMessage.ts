@@ -5,8 +5,8 @@ export class ScrollEventMessage extends PointerEventMessageBase {
     public readonly deltaX: number;
     public readonly deltaY: number;
 
-    constructor(e: React.WheelEvent) {
-        super(e);
+    constructor(e: React.WheelEvent, scale: number) {
+        super(e, scale);
         this.deltaX = -e.deltaX;
         this.deltaY = -e.deltaY;
     }

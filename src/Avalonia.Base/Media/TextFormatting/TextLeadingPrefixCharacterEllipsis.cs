@@ -98,7 +98,8 @@ namespace Avalonia.Media.TextFormatting
 
                                             effectivePostSplitRuns = rentedPostSplitRuns;
 
-                                            foreach (var preSplitRun in rentedPreSplitRuns)
+                                            // rentedPreSplitRuns cannot be null here as _prefixLength > 0 and measuredLength > 0
+                                            foreach (var preSplitRun in rentedPreSplitRuns!)
                                             {
                                                 collapsedRuns.Add(preSplitRun);
                                             }
