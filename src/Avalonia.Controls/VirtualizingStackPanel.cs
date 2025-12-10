@@ -56,8 +56,29 @@ namespace Avalonia.Controls
         /// Defines the <see cref="CacheLength"/> property.
         /// </summary>
         public static readonly StyledProperty<double> CacheLengthProperty =
-            AvaloniaProperty.Register<VirtualizingStackPanel, double>(nameof(CacheLength), 0.0, 
+            AvaloniaProperty.Register<VirtualizingStackPanel, double>(nameof(CacheLength), 0.0,
                 validate: v => v is >= 0 and <= 2);
+
+        /// <summary>
+        /// Gets or sets whether container warmup is enabled.
+        /// When enabled, containers are pre-created during initialization to improve first-scroll performance.
+        /// Default: false (opt-in).
+        /// </summary>
+        public static readonly StyledProperty<bool> EnableWarmupProperty =
+            AvaloniaProperty.Register<VirtualizingStackPanel, bool>(
+                nameof(EnableWarmup),
+                defaultValue: false);
+
+        /// <summary>
+        /// Gets or sets the number of items to sample for template discovery during warmup.
+        /// Higher values discover more template types but take longer to analyze.
+        /// Default: 50 items.
+        /// </summary>
+        public static readonly StyledProperty<int> WarmupSampleSizeProperty =
+            AvaloniaProperty.Register<VirtualizingStackPanel, int>(
+                nameof(WarmupSampleSize),
+                defaultValue: 50,
+                validate: v => v > 0 && v <= 1000);
 
         private static readonly AttachedProperty<object?> RecycleKeyProperty =
             AvaloniaProperty.RegisterAttached<VirtualizingStackPanel, Control, object?>("RecycleKey");
@@ -81,6 +102,7 @@ namespace Avalonia.Controls
         private Control? _realizingElement;
         private int _realizingIndex = -1;
         private double _bufferFactor;
+        private bool _isWarmupComplete = false;
 
         private bool _hasReachedStart = false;
         private bool _hasReachedEnd = false;
@@ -186,6 +208,26 @@ namespace Avalonia.Controls
         {
             get => GetValue(CacheLengthProperty);
             set => SetValue(CacheLengthProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets whether container warmup is enabled.
+        /// When enabled, containers are pre-created during initialization to improve first-scroll performance.
+        /// </summary>
+        public bool EnableWarmup
+        {
+            get => GetValue(EnableWarmupProperty);
+            set => SetValue(EnableWarmupProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the number of items to sample for template discovery during warmup.
+        /// Higher values discover more template types but take longer to analyze.
+        /// </summary>
+        public int WarmupSampleSize
+        {
+            get => GetValue(WarmupSampleSizeProperty);
+            set => SetValue(WarmupSampleSizeProperty, value);
         }
 
         /// <summary>
@@ -350,6 +392,12 @@ namespace Avalonia.Controls
         {
             base.OnAttachedToVisualTree(e);
             _scrollAnchorProvider = this.FindAncestorOfType<IScrollAnchorProvider>();
+
+            // Schedule warmup after initial render if enabled
+            if (EnableWarmup && !_isWarmupComplete)
+            {
+                Threading.Dispatcher.UIThread.Post(PerformWarmup, Threading.DispatcherPriority.Background);
+            }
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
@@ -361,6 +409,18 @@ namespace Avalonia.Controls
         protected override void OnItemsChanged(IReadOnlyList<object?> items, NotifyCollectionChangedEventArgs e)
         {
             InvalidateMeasure();
+
+            // Handle async collection loading - trigger warmup when first items become available
+            if (EnableWarmup && !_isWarmupComplete && items.Count > 0 && e.Action == NotifyCollectionChangedAction.Add)
+            {
+                if (_recyclePool == null || _recyclePool.Count == 0)
+                {
+                    System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                        $"[VSP-WARMUP] First items added to collection, triggering warmup");
+
+                    Threading.Dispatcher.UIThread.Post(PerformWarmup, Threading.DispatcherPriority.Background);
+                }
+            }
 
             if (_realizedElements is null)
                 return;
@@ -456,6 +516,46 @@ namespace Avalonia.Controls
                         _lastEstimateFirstIndex = -1;
                         _lastEstimateLastIndex = -1;
                     }
+
+                    // WARMUP OPTIMIZATION: After reset, clear only obsolete keys and top-up if needed
+                    if (EnableWarmup && _isWarmupComplete && !shouldPreserveRealizedElements && items.Count > 0)
+                    {
+                        // Clear only containers whose keys are no longer in the new collection
+                        ClearObsoleteWarmupContainers();
+
+                        // Discover what keys we need now
+                        var currentKeys = DiscoverTemplateKeys();
+
+                        // Check if we need to warm up any new keys or top-up existing ones
+                        bool needsWarmup = false;
+                        foreach (var kvp in currentKeys)
+                        {
+                            var existingCount = _recyclePool?.TryGetValue(kvp.Key, out var pool) == true
+                                ? pool.Count
+                                : 0;
+
+                            if (existingCount < kvp.Value)
+                            {
+                                needsWarmup = true;
+                                break;
+                            }
+                        }
+
+                        if (needsWarmup)
+                        {
+                            System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                                $"[VSP-WARMUP] Reset detected need for warmup, scheduling background warmup");
+
+                            _isWarmupComplete = false;
+                            Threading.Dispatcher.UIThread.Post(PerformWarmup, Threading.DispatcherPriority.Background);
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                                $"[VSP-WARMUP] Reset completed, existing warmup sufficient");
+                        }
+                    }
+
                     break;
             }
         }
@@ -1348,8 +1448,8 @@ namespace Avalonia.Controls
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
-                        $"[VSP-CLIP-FIX] SAFETY NET: Item 0 already at U=0, pre-emptive fix succeeded ✓");
+                    // System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                    //     $"[VSP-CLIP-FIX] SAFETY NET: Item 0 already at U=0, pre-emptive fix succeeded ✓");
                 }
             }
 
@@ -1449,7 +1549,6 @@ namespace Avalonia.Controls
                 recycled.SetCurrentValue(Visual.IsVisibleProperty, true);
                 generator.PrepareItemContainer(recycled, item, index);
                 generator.ItemContainerPrepared(recycled, item, index);
-                // System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled, $"[VSP] recycling {recycleKey} for {item} ([{index}])");
                 return recycled;
             }
 
@@ -1467,7 +1566,7 @@ namespace Avalonia.Controls
             generator.PrepareItemContainer(container, item, index);
             AddInternalChild(container);
             generator.ItemContainerPrepared(container, item, index);
-            // System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled, $"[VSP] creating new {recycleKey} for {item} ([{index}])");
+
             return container;
         }
 
@@ -1713,7 +1812,7 @@ namespace Avalonia.Controls
         private void OnItemsControlPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
             if (_focusedElement is not null &&
-                e.Property == KeyboardNavigation.TabOnceActiveElementProperty && 
+                e.Property == KeyboardNavigation.TabOnceActiveElementProperty &&
                 e.GetOldValue<IInputElement?>() == _focusedElement)
             {
                 // TabOnceActiveElement has moved away from _focusedElement so we can recycle it.
@@ -1721,17 +1820,297 @@ namespace Avalonia.Controls
                 _focusedElement = null;
                 _focusedIndex = -1;
             }
+
+            // Handle ItemTemplate changes - invalidate warmup and re-trigger if enabled
+            if (e.Property == ItemsControl.ItemTemplateProperty)
+            {
+                if (EnableWarmup && _isWarmupComplete)
+                {
+                    System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                        $"[VSP-WARMUP] ItemTemplate changed, clearing warmup containers");
+
+                    ClearWarmupContainers();
+                    _isWarmupComplete = false;
+
+                    Threading.Dispatcher.UIThread.Post(PerformWarmup, Threading.DispatcherPriority.Background);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Clears unused warmup containers from the recycle pool.
+        /// Only removes containers that haven't been used yet (null DataContext and invisible).
+        /// </summary>
+        private void ClearWarmupContainers()
+        {
+            if (_recyclePool == null)
+                return;
+
+            int clearedCount = 0;
+
+            foreach (var pool in _recyclePool.Values)
+            {
+                for (int i = pool.Count - 1; i >= 0; i--)
+                {
+                    var container = pool[i];
+                    if (container.DataContext == null && !container.IsVisible)
+                    {
+                        RemoveInternalChild(container);
+                        pool.RemoveAt(i);
+                        clearedCount++;
+                    }
+                }
+            }
+
+            System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                $"[VSP-WARMUP] Cleared {clearedCount} unused warmup containers");
+        }
+
+        /// <summary>
+        /// Clears only obsolete warmup containers from the recycle pool.
+        /// Preserves containers whose recycleKey is still active in the current collection.
+        /// </summary>
+        private void ClearObsoleteWarmupContainers()
+        {
+            if (_recyclePool == null)
+                return;
+
+            // Get currently needed keys from the new collection
+            var activeKeys = new HashSet<object>(DiscoverTemplateKeys().Keys);
+
+            var keysToRemove = new List<object>();
+            int clearedCount = 0;
+
+            foreach (var kvp in _recyclePool)
+            {
+                var recycleKey = kvp.Key;
+                var pool = kvp.Value;
+
+                // Only clear pools for obsolete keys (not in new collection)
+                if (!activeKeys.Contains(recycleKey))
+                {
+                    for (int i = pool.Count - 1; i >= 0; i--)
+                    {
+                        var container = pool[i];
+                        if (container.DataContext == null && !container.IsVisible)
+                        {
+                            RemoveInternalChild(container);
+                            pool.RemoveAt(i);
+                            clearedCount++;
+                        }
+                    }
+
+                    if (pool.Count == 0)
+                        keysToRemove.Add(recycleKey);
+                }
+            }
+
+            // Remove empty pools
+            foreach (var key in keysToRemove)
+                _recyclePool.Remove(key);
+
+            System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                $"[VSP-WARMUP] Cleared {clearedCount} obsolete containers for {keysToRemove.Count} unused keys");
         }
 
         private void OnCacheLengthChanged(AvaloniaPropertyChangedEventArgs e)
         {
             var newValue = e.GetNewValue<double>();
             _bufferFactor = newValue;
-    
+
             // Force a recalculation of the extended viewport on the next layout pass
             InvalidateMeasure();
         }
-        
+
+        /// <summary>
+        /// Discovers unique template types/keys by sampling items from the collection.
+        /// Returns a dictionary mapping recycle keys to target warmup counts.
+        /// </summary>
+        private Dictionary<object, int> DiscoverTemplateKeys()
+        {
+            var templateKeys = new Dictionary<object, int>();
+            var items = Items;
+
+            if (items == null || items.Count == 0 || ItemContainerGenerator == null)
+                return templateKeys;
+
+            System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                $"[VSP-WARMUP] Starting template discovery, ItemCount={items.Count}");
+
+            // Sample first N items to discover template types
+            int sampleSize = Math.Min(WarmupSampleSize, items.Count);
+
+            for (int i = 0; i < sampleSize; i++)
+            {
+                var item = items[i];
+
+                // Use ItemContainerGenerator to determine recycle key without creating container
+                if (ItemContainerGenerator.NeedsContainer(item, i, out var recycleKey) && recycleKey != null)
+                {
+                    if (!templateKeys.ContainsKey(recycleKey))
+                    {
+                        templateKeys[recycleKey] = 0;
+                    }
+                    templateKeys[recycleKey]++;
+                }
+            }
+
+            // Query MaxPoolSizePerKey from IVirtualizingDataTemplate if available
+            if (ItemsControl?.ItemTemplate is Templates.IVirtualizingDataTemplate vdt)
+            {
+                foreach (var key in templateKeys.Keys.ToList())
+                {
+                    templateKeys[key] = vdt.MinPoolSizePerKey;
+                }
+
+                System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                    $"[VSP-WARMUP] Using MaxPoolSizePerKey={vdt.MinPoolSizePerKey} from IVirtualizingDataTemplate");
+            }
+            else
+            {
+                // Default to 3 containers per type if no MaxPoolSizePerKey available
+                foreach (var key in templateKeys.Keys.ToList())
+                {
+                    templateKeys[key] = 3;
+                }
+            }
+
+            System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                $"[VSP-WARMUP] Discovered {templateKeys.Count} template types from {sampleSize} items");
+
+            return templateKeys;
+        }
+
+        /// <summary>
+        /// Pre-creates containers with their content for each discovered template type.
+        /// Containers are stored in the recycle pool with their Child controls already attached,
+        /// ready to be reused during scrolling. This eliminates the expensive template instantiation
+        /// cost during the first scroll.
+        /// </summary>
+        private void PerformWarmup()
+        {
+            if (_isWarmupComplete || Items == null || Items.Count == 0)
+                return;
+
+            System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                $"[VSP-WARMUP] Starting warmup");
+
+            var startTime = System.Diagnostics.Stopwatch.StartNew();
+            var templateKeys = DiscoverTemplateKeys();
+
+            if (templateKeys.Count == 0)
+            {
+                System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                    $"[VSP-WARMUP] No templates discovered, skipping warmup");
+                _isWarmupComplete = true;
+                return;
+            }
+
+            _recyclePool ??= new Dictionary<object, List<Control>>();
+            
+            var orientation = Orientation;
+            var availableSize = orientation == Orientation.Horizontal
+                ? new Size(double.PositiveInfinity, Bounds.Height > 0 ? Bounds.Height : _lastEstimatedElementSizeU)
+                : new Size(Bounds.Width > 0 ? Bounds.Width : double.PositiveInfinity, double.PositiveInfinity);
+            
+            int totalCreated = 0;
+
+            int alreadyRealized = _realizedElements?.Elements?.Count ?? 0;
+            Dictionary<object, List<Control?>> realizedElementsLookup = new();
+            if(_realizedElements is { Elements: not null } realizedElements)
+            {
+                realizedElementsLookup = realizedElements.Elements.Where(re => re != null)
+                    .GroupBy(re => re!.GetValue(RecycleKeyProperty))
+                    .ToDictionary(g => g.Key??new object(), g => g.ToList());
+                
+            }
+
+            foreach (var kvp in templateKeys)
+            {
+                var recycleKey = kvp.Key;
+                var targetCount = kvp.Value;
+
+                // OPTIMIZATION: Check existing pool size
+                var existingCount = _recyclePool.TryGetValue(recycleKey, out var existingPool)
+                    ? existingPool.Count
+                    : 0;
+                // OPTIMIZATION 2: Check realized elements
+                if (realizedElementsLookup.TryGetValue(recycleKey, out var realized))
+                    existingCount += realized.Count;
+
+                var neededCount = Math.Max(0, targetCount - existingCount);
+
+                if (neededCount == 0)
+                {
+                    System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                        $"[VSP-WARMUP] Pool for {recycleKey} already has {existingCount}/{targetCount} containers, skipping");
+                    continue;
+                }
+
+                System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                    $"[VSP-WARMUP] Creating {neededCount} containers for key: {recycleKey} " +
+                    $"(existing: {existingCount}, target: {targetCount})");
+
+                // Collect actual items from the ItemsSource that match this recycle key
+                // CHANGED: Only collect neededCount items, not targetCount
+                var matchingItems = new List<(object item, int index)>();
+                var startIndex = Math.Max(alreadyRealized - 1, 0);
+                for (int i = startIndex; i < Math.Min(WarmupSampleSize+alreadyRealized, Items.Count); i++)
+                {
+                    var item = Items[i];
+                    if (ItemContainerGenerator!.NeedsContainer(item, i, out var key) &&
+                        Equals(key, recycleKey) && item is not null)
+                    {
+                        matchingItems.Add((item, i));
+                        if (matchingItems.Count >= neededCount)  // CHANGED: from targetCount
+                            break;
+                    }
+                }
+
+                if (matchingItems.Count == 0)
+                    continue;
+
+                // Create containers for real items (but only those not yet realized)
+                for (int i = 0; i < matchingItems.Count; i++)
+                {
+                    var (item, index) = matchingItems[i];
+
+                    try
+                    {
+                        // Create container with real item - this creates the Container + Child together
+                        // PrepareContainerForItemOverride is called, which creates the Child control
+                        var container = CreateElement(item, index, recycleKey);
+                        
+                        // Pre-measure with typical available size to cache layout
+                        container.Measure(availableSize);
+                        
+                        // IMPORTANT: Do NOT clear the container!
+                        // The Child control should stay attached with its template instantiated.
+                        // When reused, only the data binding will update (cheap operation).
+
+                        // Push to recycle pool - container + child are pooled together
+                        PushToRecyclePool(recycleKey, container);
+                        container.SetCurrentValue(Visual.IsVisibleProperty, false);
+
+                        totalCreated++;
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                            $"[VSP-WARMUP] Error creating container for key {recycleKey}: {ex.Message}");
+                        break;
+                    }
+                }
+            }
+
+            _isWarmupComplete = true;
+            startTime.Stop();
+
+            System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                $"[VSP-WARMUP] Completed: {templateKeys.Count} template types, " +
+                $"{totalCreated} containers pre-created in {startTime.ElapsedMilliseconds}ms");
+        }
+
         /// <inheritdoc/>
         public IReadOnlyList<double> GetIrregularSnapPoints(Orientation orientation, SnapPointsAlignment snapPointsAlignment)
         {

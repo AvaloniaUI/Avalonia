@@ -23,5 +23,12 @@ namespace Avalonia.Controls.Templates
         /// for each key. Default is 5.
         /// </summary>
         int MaxPoolSizePerKey { get; }
+        
+        /// <summary>
+        /// Gets the minimum number of controls to keep in the recycle pool
+        /// for each key. Default is 0.
+        /// This is only used when warmup is enabled
+        /// </summary>
+        int MinPoolSizePerKey { get; }
     }
 }

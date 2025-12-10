@@ -27,6 +27,13 @@ namespace Avalonia.Markup.Xaml.Templates
         /// </summary>
         public int MaxPoolSizePerKey { get; set; } = 5;
 
+        /// <summary>
+        /// Gets the minimum number of controls to keep in the recycle pool
+        /// for each key. Default is 2.
+        /// This is only used when warmup is enabled
+        /// </summary>
+        public int MinPoolSizePerKey { get; } = 2;
+
         public bool Match(object? data)
         {
             if (DataType == null)
