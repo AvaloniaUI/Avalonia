@@ -312,6 +312,12 @@ namespace Avalonia.Controls
             set => SetValue(IsCheckedProperty, value);
         }
 
+        bool IMenuItem.IsChecked
+        {
+            get => IsChecked;
+            set => SetCurrentValue(IsCheckedProperty, value);
+        }
+
         bool IRadioButton.IsChecked
         {
             get => IsChecked;

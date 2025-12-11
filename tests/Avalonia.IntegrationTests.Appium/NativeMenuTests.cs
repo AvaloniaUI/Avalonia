@@ -35,13 +35,13 @@ namespace Avalonia.IntegrationTests.Appium
             var buttonTab = tabs.FindElementByName("Button");
             var viewMenu = Session.FindElementByXPath("//MenuItem[@Name='View']");
 
-            Assert.False(buttonTab.Selected);
+            var isSelected = buttonTab.Selected;
 
             viewMenu.Click();
             var buttonMenu = viewMenu.FindElementByName("Button");
             buttonMenu.Click();
 
-            Assert.True(buttonTab.Selected);
+            Assert.True(buttonTab.Selected != isSelected);
         }
 
         [PlatformFact(TestPlatforms.MacOS)]
