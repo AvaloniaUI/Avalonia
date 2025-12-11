@@ -28,7 +28,7 @@ namespace ControlCatalog.ViewModels
 
         public FlexViewModel()
         {
-            _numbers = new ObservableCollection<FlexItemViewModel>(Enumerable.Range(1, 3).Select(x => new FlexItemViewModel(x)));
+            _numbers = new ObservableCollection<FlexItemViewModel>(Enumerable.Range(1, 40).Select(x => new FlexItemViewModel(x)));
 
             Numbers = new ReadOnlyObservableCollection<FlexItemViewModel>(_numbers);
 
