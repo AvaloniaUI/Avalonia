@@ -1317,7 +1317,7 @@ interface IAvnAutomationPeer : IUnknown
      
      bool IsValueProvider();
      IAvnString* ValueProvider_GetValue();
-     void ValueProvider_SetValue(char* value);
+     void ValueProvider_SetValue([const] char* value);
 
      IAvnString* GetHelpText();
 
