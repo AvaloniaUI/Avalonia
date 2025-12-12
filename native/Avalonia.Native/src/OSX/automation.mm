@@ -184,6 +184,22 @@
     return [super accessibilityValue];
 }
 
+- (void)setAccessibilityValue:(id)newValue
+{
+    if (_peer->IsValueProvider())
+    {
+        if (newValue == nil)
+            _peer->ValueProvider_SetValue(nil);
+        else if ([newValue isKindOfClass:[NSString class]])
+            _peer->ValueProvider_SetValue([(NSString*)newValue UTF8String]);
+    }
+    else if (_peer->IsRangeValueProvider())
+    {
+        if ([newValue isKindOfClass:[NSNumber class]])
+            _peer->RangeValueProvider_SetValue([(NSNumber*)newValue doubleValue]);
+    }
+}
+
 - (id)accessibilityMinValue
 {
     if (_peer->IsRangeValueProvider())
