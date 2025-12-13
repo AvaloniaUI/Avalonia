@@ -146,16 +146,21 @@ namespace Avalonia.VisualTree
                 return null;
             }
 
-            Visual? parent = includeSelf ? visual : visual.VisualParent;
-
-            while (parent != null)
+            if (includeSelf)
             {
-                if (parent is T result)
+                foreach (var v in visual.EnumerateSelfAndAncestors())
                 {
-                    return result;
+                    if (v is T result)
+                        return result;
                 }
-
-                parent = parent.VisualParent;
+            }
+            else
+            {
+                foreach (var v in visual.EnumerateAncestors())
+                {
+                    if (v is T result)
+                        return result;
+                }
             }
 
             return null;
@@ -378,14 +383,9 @@ namespace Avalonia.VisualTree
         /// <returns>The visual's ancestors.</returns>
         public static IEnumerable<Visual> GetVisualDescendants(this Visual visual)
         {
-            foreach (Visual child in visual.VisualChildren)
+            foreach (var descendant in visual.EnumerateDescendants())
             {
-                yield return child;
-
-                foreach (Visual descendant in child.GetVisualDescendants())
-                {
-                    yield return descendant;
-                }
+                yield return descendant;
             }
         }
 
@@ -484,15 +484,19 @@ namespace Avalonia.VisualTree
 
         public static IEnumerable<Visual> SortByZIndex(this IEnumerable<Visual> elements)
         {
-            return elements
-                .Select((element, index) => new ZOrderElement
-                {
-                    Element = element,
-                    Index = index,
-                    ZIndex = element.ZIndex,
-                })
-                .OrderBy(x => x, ZOrderElement.Comparer)
-                .Select(x => x.Element!);
+            // Fast path for IReadOnlyList
+            if (elements is IReadOnlyList<Visual> list)
+            {
+                var output = new List<Visual>(list.Count);
+                list.SortByZIndexInto(output);
+                return output;
+            }
+
+            // Fallback for other enumerables
+            var materializedList = elements.ToList();
+            var result = new List<Visual>(materializedList.Count);
+            ((IReadOnlyList<Visual>)materializedList).SortByZIndexInto(result);
+            return result;
         }
 
         /// <summary>
