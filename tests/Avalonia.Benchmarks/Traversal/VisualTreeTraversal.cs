@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls;
@@ -9,16 +9,20 @@ using BenchmarkDotNet.Attributes;
 namespace Avalonia.Benchmarks.Traversal
 {
     [MemoryDiagnoser]
-    public class VisualTreeTraversal
+    public class VisualTreeTraversal : IDisposable
     {
-        private readonly TestRoot _root;
-        private readonly List<Control> _controls = new List<Control>();
-        private readonly List<Control> _shuffledControls;
+        private IDisposable _app = null!;
+        private TestRoot _root = null!;
+        private List<Control> _controls = new List<Control>();
+        private List<Control> _shuffledControls = null!;
 
-        public VisualTreeTraversal()
+        [GlobalSetup]
+        public void Setup()
         {
+            _app = UnitTestApplication.Start(TestServices.StyledWindow);
+
             var panel = new StackPanel();
-            _root = new TestRoot { Child = panel, Renderer = new NullRenderer()};
+            _root = new TestRoot { Child = panel, Renderer = new NullRenderer() };
             _controls.Add(panel);
             _controls = ControlHierarchyCreator.CreateChildren(_controls, panel, 3, 5, 4);
 
@@ -29,19 +33,13 @@ namespace Avalonia.Benchmarks.Traversal
             _root.LayoutManager.ExecuteInitialLayoutPass();
         }
 
-        [Benchmark]
-        public void FindAncestorOfType_Linq()
+        public void Dispose()
         {
-            foreach (Control control in _controls)
-            {
-                control.GetSelfAndVisualAncestors()
-                    .OfType<TestRoot>()
-                    .FirstOrDefault();
-            }
+            _app?.Dispose();
         }
 
         [Benchmark]
-        public void FindAncestorOfType_Optimized()
+        public void FindAncestorOfType()
         {
             foreach (Control control in _controls)
             {
@@ -59,6 +57,34 @@ namespace Avalonia.Benchmarks.Traversal
                     first.FindCommonVisualAncestor(second);
                 }
             }
+        }
+
+        [Benchmark]
+        public void IsVisualAncestorOf()
+        {
+            foreach (Visual first in _controls)
+            {
+                foreach (Control second in _shuffledControls)
+                {
+                    first.IsVisualAncestorOf(second);
+                }
+            }
+        }
+
+        [Benchmark]
+        public void GetVisualDescendants()
+        {
+            var count = 0;
+            foreach (var descendant in _root.GetVisualDescendants())
+            {
+                count++;
+            }
+        }
+
+        [Benchmark]
+        public void SortByZIndex()
+        {
+            var sorted = _root.VisualChildren.SortByZIndex().ToList();
         }
     }
 }
