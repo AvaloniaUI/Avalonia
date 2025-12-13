@@ -46,19 +46,9 @@ namespace Avalonia.VisualTree
         /// </returns>
         public static int CalculateDistanceFromRoot(Visual visual)
         {
-            Visual? v = visual ?? throw new ArgumentNullException(nameof(visual));
-            var result = 0;
-
-            v = v.VisualParent;
-
-            while (v != null)
-            {
-                v = v.VisualParent;
-
-                result++;
-            }
-
-            return result;
+            _ = visual ?? throw new ArgumentNullException(nameof(visual));
+            // Use the cached visual level for O(1) lookup
+            return visual.VisualLevel;
         }
 
         /// <summary>
@@ -74,51 +64,34 @@ namespace Avalonia.VisualTree
                 return null;
             }
 
-            void GoUpwards(ref Visual? node, int count)
-            {
-                for (int i = 0; i < count; ++i)
-                {
-                    node = node?.VisualParent;
-                }
-            }
-
             Visual? v = visual;
             Visual? t = target;
 
-            // We want to find lowest node first, then make sure that both nodes are at the same height.
-            // By doing that we can sometimes find out that other node is our lowest common ancestor.
-            var firstHeight = CalculateDistanceFromRoot(v);
-            var secondHeight = CalculateDistanceFromRoot(t);
+            // Use cached visual levels for O(1) depth lookup instead of O(d) traversal
+            var firstLevel = v.VisualLevel;
+            var secondLevel = t.VisualLevel;
 
-            if (firstHeight > secondHeight)
+            // Move the deeper node up to match levels
+            while (firstLevel > secondLevel)
             {
-                GoUpwards(ref v, firstHeight - secondHeight);
-            }
-            else
-            {
-                GoUpwards(ref t, secondHeight - firstHeight);
+                v = v!.VisualParent;
+                firstLevel--;
             }
 
-            if (v == t)
+            while (secondLevel > firstLevel)
             {
-                return v;
+                t = t!.VisualParent;
+                secondLevel--;
             }
 
-            while (v != null && t != null)
+            // Now both are at the same level, walk up together until we find common ancestor
+            while (v != t)
             {
-                Visual? firstParent = v.VisualParent;
-                Visual? secondParent = t.VisualParent;
-
-                if (firstParent == secondParent)
-                {
-                    return firstParent;
-                }
-
-                v = v.VisualParent;
-                t = t.VisualParent;
+                v = v?.VisualParent;
+                t = t?.VisualParent;
             }
 
-            return null;
+            return v;
         }
 
         /// <summary>
@@ -137,6 +110,26 @@ namespace Avalonia.VisualTree
                 yield return v;
                 v = v.VisualParent;
             }
+        }
+
+        /// <summary>
+        /// Returns a struct-based enumerable for ancestors that doesn't allocate.
+        /// </summary>
+        /// <param name="visual">The visual.</param>
+        /// <returns>A struct enumerable for the visual's ancestors.</returns>
+        public static VisualAncestorsEnumerable EnumerateAncestors(this Visual visual)
+        {
+            return new VisualAncestorsEnumerable(visual);
+        }
+
+        /// <summary>
+        /// Returns a struct-based enumerable for self and ancestors that doesn't allocate.
+        /// </summary>
+        /// <param name="visual">The visual.</param>
+        /// <returns>A struct enumerable for the visual and its ancestors.</returns>
+        public static SelfAndAncestorsEnumerable EnumerateSelfAndAncestors(this Visual visual)
+        {
+            return new SelfAndAncestorsEnumerable(visual);
         }
 
         /// <summary>
@@ -464,19 +457,29 @@ namespace Avalonia.VisualTree
         /// </returns>
         public static bool IsVisualAncestorOf(this Visual? visual, Visual? target)
         {
-            Visual? current = target?.VisualParent;
-
-            while (current != null)
+            if (visual is null || target is null)
             {
-                if (current == visual)
-                {
-                    return true;
-                }
-
-                current = current.VisualParent;
+                return false;
             }
 
-            return false;
+            // Quick check: ancestor must be at a lower level (closer to root)
+            if (visual.VisualLevel >= target.VisualLevel)
+            {
+                return false;
+            }
+
+            // Walk up from target until we reach visual's level
+            Visual? current = target.VisualParent;
+            var targetLevel = target.VisualLevel - 1;
+            var visualLevel = visual.VisualLevel;
+
+            while (current != null && targetLevel > visualLevel)
+            {
+                current = current.VisualParent;
+                targetLevel--;
+            }
+
+            return current == visual;
         }
 
         public static IEnumerable<Visual> SortByZIndex(this IEnumerable<Visual> elements)
@@ -490,6 +493,61 @@ namespace Avalonia.VisualTree
                 })
                 .OrderBy(x => x, ZOrderElement.Comparer)
                 .Select(x => x.Element!);
+        }
+
+        /// <summary>
+        /// Sorts the given visuals by ZIndex using a pooled list to reduce allocations.
+        /// </summary>
+        /// <param name="elements">The elements to sort.</param>
+        /// <param name="output">The output list that will be populated with sorted elements.</param>
+        public static void SortByZIndexInto(this IReadOnlyList<Visual> elements, List<Visual> output)
+        {
+            output.Clear();
+            var count = elements.Count;
+
+            if (count == 0)
+                return;
+
+            // For small lists, use simple insertion sort to avoid allocations
+            if (count <= 8)
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    var element = elements[i];
+                    var zIndex = element.ZIndex;
+                    var insertIndex = output.Count;
+
+                    // Find insertion point (stable sort - maintain order for same ZIndex)
+                    for (int j = 0; j < output.Count; j++)
+                    {
+                        if (output[j].ZIndex > zIndex)
+                        {
+                            insertIndex = j;
+                            break;
+                        }
+                    }
+
+                    output.Insert(insertIndex, element);
+                }
+                return;
+            }
+
+            // For larger lists, copy and sort
+            for (int i = 0; i < count; i++)
+                output.Add(elements[i]);
+
+            // Stable sort by ZIndex using custom comparer
+            output.Sort((a, b) => a.ZIndex.CompareTo(b.ZIndex));
+        }
+
+        /// <summary>
+        /// Returns a struct-based enumerable for descendants using depth-first traversal that minimizes allocations.
+        /// </summary>
+        /// <param name="visual">The visual.</param>
+        /// <returns>A struct enumerable for the visual's descendants.</returns>
+        public static VisualDescendantsEnumerable EnumerateDescendants(this Visual visual)
+        {
+            return new VisualDescendantsEnumerable(visual);
         }
 
         private static T? FindDescendantOfTypeCore<T>(Visual visual) where T : class
@@ -551,6 +609,210 @@ namespace Avalonia.VisualTree
                 {
                     return other.Index - Index;
                 }
+            }
+        }
+    }
+
+    /// <summary>
+    /// A struct-based enumerable for visual ancestors that doesn't allocate.
+    /// </summary>
+    public readonly struct VisualAncestorsEnumerable
+    {
+        private readonly Visual? _visual;
+
+        internal VisualAncestorsEnumerable(Visual? visual)
+        {
+            _visual = visual;
+        }
+
+        /// <summary>
+        /// Gets the enumerator.
+        /// </summary>
+        public VisualAncestorsEnumerator GetEnumerator() => new(_visual);
+
+        /// <summary>
+        /// A struct-based enumerator for visual ancestors.
+        /// </summary>
+        public struct VisualAncestorsEnumerator
+        {
+            private Visual? _current;
+
+            internal VisualAncestorsEnumerator(Visual? visual)
+            {
+                _current = visual;
+            }
+
+            /// <summary>
+            /// Gets the current visual.
+            /// </summary>
+            public Visual Current => _current!;
+
+            /// <summary>
+            /// Moves to the next ancestor.
+            /// </summary>
+            public bool MoveNext()
+            {
+                _current = _current?.VisualParent;
+                return _current != null;
+            }
+        }
+    }
+
+    /// <summary>
+    /// A struct-based enumerable for self and visual ancestors that doesn't allocate.
+    /// </summary>
+    public readonly struct SelfAndAncestorsEnumerable
+    {
+        private readonly Visual? _visual;
+
+        internal SelfAndAncestorsEnumerable(Visual? visual)
+        {
+            _visual = visual;
+        }
+
+        /// <summary>
+        /// Gets the enumerator.
+        /// </summary>
+        public SelfAndAncestorsEnumerator GetEnumerator() => new(_visual);
+
+        /// <summary>
+        /// A struct-based enumerator for self and visual ancestors.
+        /// </summary>
+        public struct SelfAndAncestorsEnumerator
+        {
+            private Visual? _current;
+            private bool _started;
+
+            internal SelfAndAncestorsEnumerator(Visual? visual)
+            {
+                _current = visual;
+                _started = false;
+            }
+
+            /// <summary>
+            /// Gets the current visual.
+            /// </summary>
+            public Visual Current => _current!;
+
+            /// <summary>
+            /// Moves to the next visual (self first, then ancestors).
+            /// </summary>
+            public bool MoveNext()
+            {
+                if (!_started)
+                {
+                    _started = true;
+                    return _current != null;
+                }
+
+                _current = _current?.VisualParent;
+                return _current != null;
+            }
+        }
+    }
+
+    /// <summary>
+    /// A struct-based enumerable for visual descendants using depth-first traversal.
+    /// Note: This allocates a stack internally but avoids iterator state machine overhead.
+    /// </summary>
+    public struct VisualDescendantsEnumerable
+    {
+        private readonly Visual? _root;
+
+        internal VisualDescendantsEnumerable(Visual? visual)
+        {
+            _root = visual;
+        }
+
+        /// <summary>
+        /// Gets the enumerator.
+        /// </summary>
+        public VisualDescendantsEnumerator GetEnumerator() => new(_root);
+
+        /// <summary>
+        /// A struct-based enumerator for visual descendants using depth-first traversal.
+        /// </summary>
+        public struct VisualDescendantsEnumerator
+        {
+            private readonly Stack<(Visual parent, int index)>? _stack;
+            private Visual? _current;
+            private Visual? _currentParent;
+            private int _currentIndex;
+
+            internal VisualDescendantsEnumerator(Visual? root)
+            {
+                _current = null;
+                _currentParent = root;
+                _currentIndex = 0;
+
+                if (root != null && root.VisualChildren.Count > 0)
+                {
+                    _stack = new Stack<(Visual, int)>(16);
+                }
+                else
+                {
+                    _stack = null;
+                }
+            }
+
+            /// <summary>
+            /// Gets the current visual.
+            /// </summary>
+            public Visual Current => _current!;
+
+            /// <summary>
+            /// Moves to the next descendant using depth-first traversal.
+            /// </summary>
+            public bool MoveNext()
+            {
+                if (_currentParent == null)
+                    return false;
+
+                var children = _currentParent.VisualChildren;
+
+                // Try to get next child at current level
+                while (_currentIndex < children.Count)
+                {
+                    var child = children[_currentIndex];
+                    _currentIndex++;
+                    _current = child;
+
+                    // If this child has children, push current state and descend
+                    if (child.VisualChildren.Count > 0)
+                    {
+                        _stack?.Push((_currentParent, _currentIndex));
+                        _currentParent = child;
+                        _currentIndex = 0;
+                    }
+
+                    return true;
+                }
+
+                // Pop back up the stack
+                while (_stack != null && _stack.Count > 0)
+                {
+                    (_currentParent, _currentIndex) = _stack.Pop();
+                    children = _currentParent.VisualChildren;
+
+                    while (_currentIndex < children.Count)
+                    {
+                        var child = children[_currentIndex];
+                        _currentIndex++;
+                        _current = child;
+
+                        if (child.VisualChildren.Count > 0)
+                        {
+                            _stack.Push((_currentParent, _currentIndex));
+                            _currentParent = child;
+                            _currentIndex = 0;
+                        }
+
+                        return true;
+                    }
+                }
+
+                _currentParent = null;
+                return false;
             }
         }
     }

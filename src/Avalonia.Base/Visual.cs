@@ -123,6 +123,7 @@ namespace Avalonia
         private IRenderRoot? _visualRoot;
         private Visual? _visualParent;
         private bool _hasMirrorTransform;
+        private int _visualLevel;
         private TargetWeakEventSubscriber<Visual, EventArgs>? _affectsRenderWeakSubscriber;
 
         /// <summary>
@@ -681,6 +682,10 @@ namespace Avalonia
             var old = _visualParent;
             _visualParent = value;
 
+            // Update cached visual level and propagate to children
+            var newLevel = value != null ? value._visualLevel + 1 : 0;
+            UpdateVisualLevel(newLevel);
+
             if (_visualRoot is not null && old is not null)
             {
                 var e = new VisualTreeAttachmentEventArgs(old, _visualRoot);
@@ -696,6 +701,35 @@ namespace Avalonia
             }
 
             OnVisualParentChanged(old, value);
+        }
+
+        /// <summary>
+        /// Gets the cached depth of this visual in the tree (0 = root).
+        /// </summary>
+        internal int VisualLevel => _visualLevel;
+
+        /// <summary>
+        /// Updates the visual level for this visual and all its descendants.
+        /// </summary>
+        /// <param name="newLevel">The new visual level.</param>
+        private void UpdateVisualLevel(int newLevel)
+        {
+            if (_visualLevel == newLevel)
+                return;
+
+            _visualLevel = newLevel;
+
+            // Propagate to children
+            var children = VisualChildren;
+            var count = children.Count;
+            if (count > 0)
+            {
+                var childLevel = newLevel + 1;
+                for (var i = 0; i < count; i++)
+                {
+                    children[i].UpdateVisualLevel(childLevel);
+                }
+            }
         }
 
         /// <summary>
