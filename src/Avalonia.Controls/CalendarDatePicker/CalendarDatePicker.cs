@@ -55,7 +55,7 @@ namespace Avalonia.Controls
         /// Occurs when the drop-down
         /// <see cref="T:Avalonia.Controls.Calendar" /> is closed.
         /// </summary>
-        public event EventHandler? CalendarClosed;
+        public event EventHandler? ;
 
         /// <summary>
         /// Occurs when the drop-down
@@ -231,7 +231,7 @@ namespace Avalonia.Controls
                             _isPressed = false;
 
                             UpdatePseudoClasses();
-                            OnCalendarClosed(new RoutedEventArgs());
+                            On(new RoutedEventArgs());
                         }
                     }
                 }
@@ -521,6 +521,24 @@ namespace Avalonia.Controls
         private void OnCalendarClosed(EventArgs e)
         {
             CalendarClosed?.Invoke(this, e);
+
+            //there is a problem with the calendar, after you first select an element and the popup closes
+            //, the internal field _isMouseLeftButtonDown from inside CalendarItem remains trul
+            //and because of this the folowing time we open the popup it will trigger selection just by hovering over items
+            //to sove this I wrote the following code here
+            if(_calendar != null)
+            {
+                var calendarItem = _calendar?.GetType().GetProperty("MonthControl", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                    .GetValue(calendar) as CalendarItem;
+                if (calendarItem != null)
+                {
+                    var isMouseLeftButtonDownProperty = calendarItem.GetType().GetField("_isMouseLeftButtonDown", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                    if (isMouseLeftButtonDownProperty != null)
+                    {
+                        isMouseLeftButtonDownProperty.SetValue(calendarItem, false);
+                    }
+                }
+            }
         }
 
         private void OnCalendarOpened(EventArgs e)
