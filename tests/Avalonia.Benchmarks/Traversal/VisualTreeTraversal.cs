@@ -48,22 +48,6 @@ namespace Avalonia.Benchmarks.Traversal
         }
 
         [Benchmark]
-        public void FindAncestorOfType_StructEnumerator()
-        {
-            foreach (Control control in _controls)
-            {
-                foreach (var ancestor in control.EnumerateSelfAndAncestors())
-                {
-                    if (ancestor is TestRoot root)
-                    {
-                        _ = root;
-                        break;
-                    }
-                }
-            }
-        }
-
-        [Benchmark]
         public void FindCommonVisualAncestor()
         {
             foreach (Visual first in _controls)
@@ -98,26 +82,9 @@ namespace Avalonia.Benchmarks.Traversal
         }
 
         [Benchmark]
-        public void GetVisualDescendants_StructEnumerator()
-        {
-            var count = 0;
-            foreach (var descendant in _root.EnumerateDescendants())
-            {
-                count++;
-            }
-        }
-
-        [Benchmark]
         public void SortByZIndex()
         {
             var sorted = _root.VisualChildren.SortByZIndex().ToList();
-        }
-
-        [Benchmark]
-        public void SortByZIndex_Optimized()
-        {
-            var output = new List<Visual>();
-            _root.VisualChildren.SortByZIndexInto(output);
         }
     }
 }
