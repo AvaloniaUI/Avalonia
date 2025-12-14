@@ -40,6 +40,7 @@ namespace Avalonia
         /// Initializes a new instance of the <see cref="Thickness"/> structure.
         /// </summary>
         /// <param name="uniformLength">The length that should be applied to all sides.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Thickness(double uniformLength)
         {
             _left = _top = _right = _bottom = uniformLength;
@@ -50,6 +51,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="horizontal">The thickness on the left and right.</param>
         /// <param name="vertical">The thickness on the top and bottom.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Thickness(double horizontal, double vertical)
         {
             _left = _right = horizontal;
@@ -63,6 +65,7 @@ namespace Avalonia
         /// <param name="top">The thickness on the top.</param>
         /// <param name="right">The thickness on the right.</param>
         /// <param name="bottom">The thickness on the bottom.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Thickness(double left, double top, double right, double bottom)
         {
             _left = left;
@@ -102,6 +105,7 @@ namespace Avalonia
         /// <param name="a">The first thickness.</param>
         /// <param name="b">The second thickness.</param>
         /// <returns>The equality.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(Thickness a, Thickness b)
         {
             return a.Equals(b);
@@ -113,6 +117,7 @@ namespace Avalonia
         /// <param name="a">The first thickness.</param>
         /// <param name="b">The second thickness.</param>
         /// <returns>The inequality.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator !=(Thickness a, Thickness b)
         {
             return !a.Equals(b);
@@ -229,6 +234,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="other">The other thickness to test equality against.</param>
         /// <returns>True if this thickness is equal to other; False otherwise.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Equals(Thickness other)
         {
             // ReSharper disable CompareOfFloatsByEqualityOperator

@@ -36,6 +36,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="width">The width.</param>
         /// <param name="height">The height.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Size(double width, double height)
         {
             _width = width;
@@ -74,6 +75,7 @@ namespace Avalonia
         /// <param name="left">The first size.</param>
         /// <param name="right">The second size.</param>
         /// <returns>True if the sizes are equal; otherwise false.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(Size left, Size right)
         {
             return left.Equals(right);
@@ -85,6 +87,7 @@ namespace Avalonia
         /// <param name="left">The first size.</param>
         /// <param name="right">The second size.</param>
         /// <returns>True if the sizes are unequal; otherwise false.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator !=(Size left, Size right)
         {
             return !(left == right);
@@ -96,6 +99,7 @@ namespace Avalonia
         /// <param name="size">The size</param>
         /// <param name="scale">The scaling factor.</param>
         /// <returns>The scaled size.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Size operator *(Size size, Vector scale)
         {
             return new Size(size._width * scale.X, size._height * scale.Y);
@@ -107,6 +111,7 @@ namespace Avalonia
         /// <param name="size">The size</param>
         /// <param name="scale">The scaling factor.</param>
         /// <returns>The scaled size.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Size operator /(Size size, Vector scale)
         {
             return new Size(size._width / scale.X, size._height / scale.Y);
@@ -118,6 +123,7 @@ namespace Avalonia
         /// <param name="left">The first size</param>
         /// <param name="right">The second size.</param>
         /// <returns>The scaled size.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector operator /(Size left, Size right)
         {
             return new Vector(left._width / right._width, left._height / right._height);
@@ -129,6 +135,7 @@ namespace Avalonia
         /// <param name="size">The size</param>
         /// <param name="scale">The scaling factor.</param>
         /// <returns>The scaled size.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Size operator *(Size size, double scale)
         {
             return new Size(size._width * scale, size._height * scale);
@@ -140,16 +147,19 @@ namespace Avalonia
         /// <param name="size">The size</param>
         /// <param name="scale">The scaling factor.</param>
         /// <returns>The scaled size.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Size operator /(Size size, double scale)
         {
             return new Size(size._width / scale, size._height / scale);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Size operator +(Size size, Size toAdd)
         {
             return new Size(size._width + toAdd._width, size._height + toAdd._height);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Size operator -(Size size, Size toSubtract)
         {
             return new Size(size._width - toSubtract._width, size._height - toSubtract._height);
@@ -175,6 +185,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="constraint">The size to constrain to.</param>
         /// <returns>The constrained size.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Size Constrain(Size constraint)
         {
             return new Size(
@@ -207,6 +218,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="other">The other size to test equality against.</param>
         /// <returns>True if this size is equal to other; False otherwise.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Equals(Size other)
         {
             // ReSharper disable CompareOfFloatsByEqualityOperator
@@ -220,6 +232,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="other">The other size to test equality against.</param>
         /// <returns>True if this size is equal to other; False otherwise.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool NearlyEquals(Size other)
         {
             return MathUtilities.AreClose(_width, other._width) && 

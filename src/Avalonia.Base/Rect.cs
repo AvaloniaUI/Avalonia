@@ -39,6 +39,7 @@ namespace Avalonia
         /// <param name="y">The Y position.</param>
         /// <param name="width">The width.</param>
         /// <param name="height">The height.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Rect(double x, double y, double width, double height)
         {
             _x = x;
@@ -51,6 +52,7 @@ namespace Avalonia
         /// Initializes a new instance of the <see cref="Rect"/> structure.
         /// </summary>
         /// <param name="size">The size of the rectangle.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Rect(Size size)
         {
             _x = 0;
@@ -64,6 +66,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="position">The position of the rectangle.</param>
         /// <param name="size">The size of the rectangle.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Rect(Point position, Size size)
         {
             _x = position.X;
@@ -77,6 +80,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="topLeft">The top left position of the rectangle.</param>
         /// <param name="bottomRight">The bottom right position of the rectangle.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Rect(Point topLeft, Point bottomRight)
         {
             _x = topLeft.X;
@@ -166,6 +170,7 @@ namespace Avalonia
         /// <param name="left">The first rect.</param>
         /// <param name="right">The second rect.</param>
         /// <returns>True if the rects are equal; otherwise false.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(Rect left, Rect right)
         {
             return left.Equals(right);
@@ -177,6 +182,7 @@ namespace Avalonia
         /// <param name="left">The first rect.</param>
         /// <param name="right">The second rect.</param>
         /// <returns>True if the rects are unequal; otherwise false.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator !=(Rect left, Rect right)
         {
             return !(left == right);
@@ -188,6 +194,7 @@ namespace Avalonia
         /// <param name="rect">The rectangle.</param>
         /// <param name="scale">The vector scale.</param>
         /// <returns>The scaled rectangle.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Rect operator *(Rect rect, Vector scale)
         {
             return new Rect(
@@ -203,6 +210,7 @@ namespace Avalonia
         /// <param name="rect">The rectangle.</param>
         /// <param name="scale">The scale.</param>
         /// <returns>The scaled rectangle.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Rect operator *(Rect rect, double scale)
         {
             return new Rect(
@@ -218,6 +226,7 @@ namespace Avalonia
         /// <param name="rect">The rectangle.</param>
         /// <param name="scale">The vector scale.</param>
         /// <returns>The scaled rectangle.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Rect operator /(Rect rect, Vector scale)
         {
             return new Rect(
@@ -331,6 +340,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="other">The other rect to test equality against.</param>
         /// <returns>True if this rect is equal to other; False otherwise.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Equals(Rect other)
         {
             // ReSharper disable CompareOfFloatsByEqualityOperator

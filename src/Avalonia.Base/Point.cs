@@ -32,6 +32,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="x">The X position.</param>
         /// <param name="y">The Y position.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Point(double x, double y)
         {
             _x = x;
@@ -52,6 +53,7 @@ namespace Avalonia
         /// Converts the <see cref="Point"/> to a <see cref="Vector"/>.
         /// </summary>
         /// <param name="p">The point.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator Vector(Point p)
         {
             return new Vector(p._x, p._y);
@@ -62,6 +64,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="a">The point.</param>
         /// <returns>The negated point.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Point operator -(Point a)
         {
             return new Point(-a._x, -a._y);
@@ -73,6 +76,7 @@ namespace Avalonia
         /// <param name="left">The first point.</param>
         /// <param name="right">The second point.</param>
         /// <returns>True if the points are equal; otherwise false.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(Point left, Point right)
         {
             return left.Equals(right);
@@ -84,6 +88,7 @@ namespace Avalonia
         /// <param name="left">The first point.</param>
         /// <param name="right">The second point.</param>
         /// <returns>True if the points are unequal; otherwise false.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator !=(Point left, Point right)
         {
             return !(left == right);
@@ -95,6 +100,7 @@ namespace Avalonia
         /// <param name="a">The first point.</param>
         /// <param name="b">The second point.</param>
         /// <returns>A point that is the result of the addition.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Point operator +(Point a, Point b)
         {
             return new Point(a._x + b._x, a._y + b._y);
@@ -106,6 +112,7 @@ namespace Avalonia
         /// <param name="a">The point.</param>
         /// <param name="b">The vector.</param>
         /// <returns>A point that is the result of the addition.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Point operator +(Point a, Vector b)
         {
             return new Point(a._x + b.X, a._y + b.Y);
@@ -117,6 +124,7 @@ namespace Avalonia
         /// <param name="a">The first point.</param>
         /// <param name="b">The second point.</param>
         /// <returns>A point that is the result of the subtraction.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Point operator -(Point a, Point b)
         {
             return new Point(a._x - b._x, a._y - b._y);
@@ -128,6 +136,7 @@ namespace Avalonia
         /// <param name="a">The point.</param>
         /// <param name="b">The vector.</param>
         /// <returns>A point that is the result of the subtraction.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Point operator -(Point a, Vector b)
         {
             return new Point(a._x - b.X, a._y - b.Y);
@@ -139,6 +148,7 @@ namespace Avalonia
         /// <param name="p">Point to multiply</param>
         /// <param name="k">Factor</param>
         /// <returns>Points having its coordinates multiplied</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Point operator *(Point p, double k) => new Point(p.X * k, p.Y * k);
 
         /// <summary>
@@ -147,6 +157,7 @@ namespace Avalonia
         /// <param name="p">Point to multiply</param>
         /// <param name="k">Factor</param>
         /// <returns>Points having its coordinates multiplied</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Point operator *(double k, Point p) => new Point(p.X * k, p.Y * k);
 
         /// <summary>
@@ -155,6 +166,7 @@ namespace Avalonia
         /// <param name="p">Point to divide by</param>
         /// <param name="k">Factor</param>
         /// <returns>Points having its coordinates divided</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Point operator /(Point p, double k) => new Point(p.X / k, p.Y / k);
 
         /// <summary>
@@ -163,6 +175,7 @@ namespace Avalonia
         /// <param name="point">The point.</param>
         /// <param name="matrix">The matrix.</param>
         /// <returns>The resulting point.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Point operator *(Point point, Matrix matrix) => matrix.Transform(point);
 
         /// <summary>
@@ -171,6 +184,7 @@ namespace Avalonia
         /// <param name="value1">The first point.</param>
         /// <param name="value2">The second point.</param>
         /// <returns>The Euclidean distance.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static double Distance(Point value1, Point value2)
         {
             double distanceSquared = ((value2.X - value1.X) * (value2.X - value1.X)) +
@@ -199,6 +213,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="other">The other point to test equality against.</param>
         /// <returns>True if this point is equal to other; False otherwise.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Equals(Point other)
         {
             // ReSharper disable CompareOfFloatsByEqualityOperator
@@ -213,6 +228,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="other">The other point to test equality against.</param>
         /// <returns>True if this point is equal to other; False otherwise.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool NearlyEquals(Point other)
         {
             return MathUtilities.AreClose(_x, other._x) &&
