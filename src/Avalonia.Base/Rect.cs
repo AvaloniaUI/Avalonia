@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using Avalonia.Animation.Animators;
 using Avalonia.Utilities;
 
@@ -278,6 +279,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="thickness">The thickness to be subtracted for each side of the rectangle.</param>
         /// <returns>The inflated rectangle.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Rect Inflate(double thickness)
         {
             return Inflate(new Thickness(thickness));
@@ -288,6 +290,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="thickness">The thickness to be subtracted for each side of the rectangle.</param>
         /// <returns>The inflated rectangle.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Rect Inflate(Thickness thickness)
         {
             return new Rect(
@@ -300,6 +303,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="thickness">The thickness to be subtracted for each side of the rectangle.</param>
         /// <returns>The deflated rectangle.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Rect Deflate(double thickness)
         {
             return Deflate(new Thickness(thickness));
@@ -310,6 +314,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="thickness">The thickness to be subtracted for each side of the rectangle.</param>
         /// <returns>The deflated rectangle.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Rect Deflate(Thickness thickness)
         {
             return new Rect(
@@ -535,6 +540,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="x">The x position.</param>
         /// <returns>The new <see cref="Rect"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Rect WithX(double x)
         {
             return new Rect(x, _y, _width, _height);
@@ -545,6 +551,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="y">The y position.</param>
         /// <returns>The new <see cref="Rect"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Rect WithY(double y)
         {
             return new Rect(_x, y, _width, _height);
@@ -555,6 +562,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="width">The width.</param>
         /// <returns>The new <see cref="Rect"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Rect WithWidth(double width)
         {
             return new Rect(_x, _y, width, _height);
@@ -565,6 +573,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="height">The height.</param>
         /// <returns>The new <see cref="Rect"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Rect WithHeight(double height)
         {
             return new Rect(_x, _y, _width, height);

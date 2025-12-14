@@ -268,6 +268,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="width">The width.</param>
         /// <returns>The new <see cref="Size"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Size WithWidth(double width)
         {
             return new Size(width, _height);
@@ -278,6 +279,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="height">The height.</param>
         /// <returns>The new <see cref="Size"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Size WithHeight(double height)
         {
             return new Size(_width, height);
