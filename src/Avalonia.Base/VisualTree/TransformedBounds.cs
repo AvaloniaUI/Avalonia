@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 
 namespace Avalonia.VisualTree
 {
@@ -13,6 +14,7 @@ namespace Avalonia.VisualTree
         /// <param name="bounds">The control's bounds.</param>
         /// <param name="clip">The control's clip rectangle.</param>
         /// <param name="transform">The control's transform.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public TransformedBounds(Rect bounds, Rect clip, Matrix transform)
         {
             Bounds = bounds;
@@ -35,6 +37,7 @@ namespace Avalonia.VisualTree
         /// </summary>
         public Matrix Transform { get; }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(Point point)
         {
             if (Transform.HasInverse)
@@ -49,6 +52,7 @@ namespace Avalonia.VisualTree
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Equals(TransformedBounds other)
         {
             return Bounds == other.Bounds && Clip == other.Clip && Transform == other.Transform;

@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using Avalonia.Animation.Animators;
 
 namespace Avalonia
@@ -24,6 +25,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="x">The X vector.</param>
         /// <param name="y">The Y vector.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public PixelVector(int x, int y)
         {
             _x = x;
@@ -44,6 +46,7 @@ namespace Avalonia
         /// Converts the <see cref="PixelVector"/> to a <see cref="PixelPoint"/>.
         /// </summary>
         /// <param name="a">The vector.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static explicit operator PixelPoint(PixelVector a)
         {
             return new PixelPoint(a._x, a._y);
@@ -55,6 +58,7 @@ namespace Avalonia
         /// <param name="a">First vector</param>
         /// <param name="b">Second vector</param>
         /// <returns>The dot product</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int operator *(PixelVector a, PixelVector b)
         {
             return a.X * b.X + a.Y * b.Y;
@@ -66,6 +70,7 @@ namespace Avalonia
         /// <param name="vector">The vector</param>
         /// <param name="scale">The scaling factor.</param>
         /// <returns>The scaled vector.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static PixelVector operator *(PixelVector vector, int scale)
         {
             return new PixelVector(vector._x * scale, vector._y * scale);
@@ -77,6 +82,7 @@ namespace Avalonia
         /// <param name="vector">The vector</param>
         /// <param name="scale">The divisor.</param>
         /// <returns>The scaled vector.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static PixelVector operator /(PixelVector vector, int scale)
         {
             return new PixelVector(vector._x / scale, vector._y / scale);
@@ -92,6 +98,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="a">The vector.</param>
         /// <returns>The negated vector.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static PixelVector operator -(PixelVector a)
         {
             return new PixelVector(-a._x, -a._y);
@@ -103,6 +110,7 @@ namespace Avalonia
         /// <param name="a">The first vector.</param>
         /// <param name="b">The second vector.</param>
         /// <returns>A vector that is the result of the addition.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static PixelVector operator +(PixelVector a, PixelVector b)
         {
             return new PixelVector(a._x + b._x, a._y + b._y);
@@ -114,6 +122,7 @@ namespace Avalonia
         /// <param name="a">The first vector.</param>
         /// <param name="b">The second vector.</param>
         /// <returns>A vector that is the result of the subtraction.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static PixelVector operator -(PixelVector a, PixelVector b)
         {
             return new PixelVector(a._x - b._x, a._y - b._y);
@@ -124,6 +133,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Equals(PixelVector other)
         {
             return _x == other._x && _y == other._y;

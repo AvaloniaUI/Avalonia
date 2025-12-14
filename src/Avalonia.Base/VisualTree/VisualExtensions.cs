@@ -624,6 +624,7 @@ namespace Avalonia.VisualTree
     {
         private readonly Visual? _visual;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal VisualAncestorsEnumerable(Visual? visual)
         {
             _visual = visual;
@@ -632,6 +633,7 @@ namespace Avalonia.VisualTree
         /// <summary>
         /// Gets the enumerator.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public VisualAncestorsEnumerator GetEnumerator() => new(_visual);
 
         /// <summary>
@@ -641,6 +643,7 @@ namespace Avalonia.VisualTree
         {
             private Visual? _current;
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             internal VisualAncestorsEnumerator(Visual? visual)
             {
                 _current = visual;
@@ -649,11 +652,16 @@ namespace Avalonia.VisualTree
             /// <summary>
             /// Gets the current visual.
             /// </summary>
-            public Visual Current => _current!;
+            public Visual Current
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => _current!;
+            }
 
             /// <summary>
             /// Moves to the next ancestor.
             /// </summary>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool MoveNext()
             {
                 _current = _current?.VisualParent;
@@ -669,6 +677,7 @@ namespace Avalonia.VisualTree
     {
         private readonly Visual? _visual;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal SelfAndAncestorsEnumerable(Visual? visual)
         {
             _visual = visual;
@@ -677,6 +686,7 @@ namespace Avalonia.VisualTree
         /// <summary>
         /// Gets the enumerator.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public SelfAndAncestorsEnumerator GetEnumerator() => new(_visual);
 
         /// <summary>
@@ -687,6 +697,7 @@ namespace Avalonia.VisualTree
             private Visual? _current;
             private bool _started;
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             internal SelfAndAncestorsEnumerator(Visual? visual)
             {
                 _current = visual;
@@ -696,11 +707,16 @@ namespace Avalonia.VisualTree
             /// <summary>
             /// Gets the current visual.
             /// </summary>
-            public Visual Current => _current!;
+            public Visual Current
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => _current!;
+            }
 
             /// <summary>
             /// Moves to the next visual (self first, then ancestors).
             /// </summary>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool MoveNext()
             {
                 if (!_started)
@@ -723,6 +739,7 @@ namespace Avalonia.VisualTree
     {
         private readonly Visual? _root;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal VisualDescendantsEnumerable(Visual? visual)
         {
             _root = visual;
@@ -731,6 +748,7 @@ namespace Avalonia.VisualTree
         /// <summary>
         /// Gets the enumerator.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public VisualDescendantsEnumerator GetEnumerator() => new(_root);
 
         /// <summary>
@@ -762,7 +780,11 @@ namespace Avalonia.VisualTree
             /// <summary>
             /// Gets the current visual.
             /// </summary>
-            public Visual Current => _current!;
+            public Visual Current
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => _current!;
+            }
 
             /// <summary>
             /// Moves to the next descendant using depth-first traversal.
