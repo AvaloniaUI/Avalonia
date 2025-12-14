@@ -397,43 +397,64 @@ namespace Avalonia.Layout
         private Rect CalculateEffectiveViewport(Visual control)
         {
             var viewport = new Rect(0, 0, double.PositiveInfinity, double.PositiveInfinity);
-            CalculateEffectiveViewport(control, control, ref viewport);
+            CalculateEffectiveViewportIterative(control, ref viewport);
             return viewport;
         }
 
-        private void CalculateEffectiveViewport(Visual target, Visual control, ref Rect viewport)
+        private void CalculateEffectiveViewportIterative(Visual target, ref Rect viewport)
         {
-            // Recurse until the top level control.
-            if (control.VisualParent is object)
+            // Collect ancestors using cached VisualLevel for efficient array sizing
+            var depth = target.VisualLevel + 1;
+            var pool = ArrayPool<Visual>.Shared;
+            var ancestors = pool.Rent(depth);
+            
+            try
             {
-                CalculateEffectiveViewport(target, control.VisualParent, ref viewport);
-            }
-            else
-            {
-                viewport = new Rect(control.Bounds.Size);
-            }
-
-            // Apply the control clip bounds if it's not the target control. We don't apply it to
-            // the target control because it may itself be clipped to bounds and if so the viewport
-            // we calculate would be of no use.
-            if (control != target && control.ClipToBounds)
-            {
-                viewport = control.Bounds.Intersect(viewport);
-            }
-
-            // Translate the viewport into this control's coordinate space.
-            viewport = viewport.Translate(-control.Bounds.Position);
-
-            if (control != target && control.RenderTransform is { } transform)
-            {
-                if (transform.Value.TryInvert(out var invertedMatrix))
+                // Walk up to root, storing ancestors
+                var current = target;
+                var index = depth - 1;
+                while (current != null)
                 {
-                    var origin = control.RenderTransformOrigin.ToPixels(control.Bounds.Size);
-                    var offset = Matrix.CreateTranslation(origin);
-                    viewport = viewport.TransformToAABB(-offset * invertedMatrix * offset);
+                    ancestors[index--] = current;
+                    current = current.VisualParent;
                 }
-                else
-                    viewport = default;
+
+                // Now iterate from root to target (top-down)
+                var root = ancestors[0];
+                viewport = new Rect(root.Bounds.Size);
+
+                for (var i = 1; i < depth; i++)
+                {
+                    var control = ancestors[i];
+                    
+                    // Apply the control clip bounds if it's not the target control
+                    if (control != target && control.ClipToBounds)
+                    {
+                        viewport = control.Bounds.Intersect(viewport);
+                    }
+
+                    // Translate the viewport into this control's coordinate space
+                    viewport = viewport.Translate(-control.Bounds.Position);
+
+                    if (control != target && control.RenderTransform is { } transform)
+                    {
+                        if (transform.Value.TryInvert(out var invertedMatrix))
+                        {
+                            var origin = control.RenderTransformOrigin.ToPixels(control.Bounds.Size);
+                            var offset = Matrix.CreateTranslation(origin);
+                            viewport = viewport.TransformToAABB(-offset * invertedMatrix * offset);
+                        }
+                        else
+                        {
+                            viewport = default;
+                            return;
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                pool.Return(ancestors, clearArray: true);
             }
         }
 
