@@ -1412,6 +1412,74 @@ This eliminates dictionary allocation overhead, particularly effective for grids
 
 ---
 
+### Appendix I: Comprehensive Benchmark Allocation Analysis (Post-Optimization)
+
+This appendix documents the allocation status of all layout benchmarks after Phase 5 optimizations.
+
+#### Zero-Allocation Benchmarks (Excellent)
+
+| Benchmark | Status | Notes |
+|-----------|--------|-------|
+| SingleInvalidateMeasure | 0 B | Core layout invalidation is allocation-free |
+| SingleInvalidateArrange | 0 B | Core arrange invalidation is allocation-free |
+| Canvas_Measure | 0 B | Canvas layout is allocation-free |
+| Canvas_FullLayout | 0 B | Full Canvas invalidation is allocation-free |
+| SimpleDockPanel_Measure | 0 B | DockPanel layout is allocation-free |
+| SimpleDockPanel_FullLayout | 0 B | DockPanel full layout is allocation-free |
+| VerticalStackPanel_Measure | 32 B | Minimal allocations |
+| BatchedInvalidations | 0 B | Batched invalidations are allocation-free |
+| FormLayout_FullLayout | 0 B | Form-like layouts are allocation-free |
+| DashboardLayout_FullLayout | 0 B | Dashboard layouts are allocation-free |
+
+#### Property System Allocations (Expected, Outside Layout System Scope)
+
+| Benchmark | Allocated | Source |
+|-----------|-----------|--------|
+| Canvas_MoveChild | 576 B | Attached property SetLeft/SetTop (property system) |
+| Canvas_MoveManyChildren | 11,864 B | 20x attached property changes (property system) |
+| DockPanel_ChangeDockProperty | 1,408 B | Dock attached property changes (property system) |
+| VerticalStackPanel_SingleChildChange | 12-62 KB | Width property changes trigger boxing/observers |
+| MultiplePropertyChanges_Sequential | 28,944 B | 10 property changes × property system overhead |
+| ChildDesiredSizeChanged_Propagation | 120,976 B | 20 child Width changes × property system |
+
+These allocations are inherent to the Avalonia property system (boxing, observers, change notifications) and are outside the scope of layout system optimization.
+
+#### Layout Queue Allocations (Acceptable)
+
+| Benchmark | Allocated | Notes |
+|-----------|-----------|-------|
+| SequentialSingleInvalidations | 2,048 B | Dictionary entries for 20 sequential layout passes |
+| RepeatedEnqueues | 136 B | Dictionary entry for repeated control |
+
+The LayoutQueue dictionary allocations are necessary for cycle detection and prevent infinite layout loops.
+
+#### Grid Layout Allocations (Post-Optimization)
+
+| Benchmark | Size | Allocated | Notes |
+|-----------|------|-----------|-------|
+| SimpleGrid_Measure | 5-20 | 96-184 B | Minimal overhead |
+| StarGrid_Measure | 5-20 | 528 B | Star resolution arrays |
+| SpanGrid_Measure | 5-20 | 352-1,464 B | **60%+ reduction from Phase 5** |
+| ComplexGrid_Measure | 5-20 | 36-363 KB | Mostly Button/TextBlock measurement |
+
+#### Analysis Summary
+
+**Completed Optimizations (Layout System):**
+1. ✅ LayoutQueue O(1) dequeue
+2. ✅ Grid span dictionary pooling (60%+ reduction)
+3. ✅ IComparer<int> for Grid comparers
+4. ✅ RoutedEventArgs pooling
+5. ✅ ToList() removal in hot paths
+
+**Remaining Allocations (Outside Scope):**
+- Property system allocations are inherent to Avalonia's reactive architecture
+- Control measurement allocations (Button, TextBlock) are per-control costs
+- Dictionary cycle detection in LayoutQueue is necessary for correctness
+
+**Conclusion:** The layout system itself is now highly optimized with near-zero allocations for core operations. Remaining allocations come from the property system and control-specific measurement, which are architectural concerns beyond layout optimization scope.
+
+---
+
 ## Document History
 
 | Version | Date | Author | Changes |
@@ -1421,6 +1489,7 @@ This eliminates dictionary allocation overhead, particularly effective for grids
 | 1.2 | Dec 2024 | Performance Team | Added Appendix G: Memory Allocation Analysis |
 | 1.3 | Dec 2024 | Performance Team | Phase 4 complete: RoutedEventArgs pooling, ToList removal, Grid comparers |
 | 1.4 | Dec 2024 | Performance Team | Phase 5 complete: Grid span Dictionary pooling (60%+ reduction for span grids) |
+| 1.5 | Dec 2024 | Performance Team | Added Appendix I: Comprehensive allocation analysis post-optimization |
 
 ---
 
