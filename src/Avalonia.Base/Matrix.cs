@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using Avalonia.Utilities;
 
 namespace Avalonia
@@ -156,6 +157,7 @@ namespace Avalonia
         /// <param name="value1">The first source matrix.</param>
         /// <param name="value2">The second source matrix.</param>
         /// <returns>The product matrix.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Matrix operator *(Matrix value1, Matrix value2)
         {
             return new Matrix(
@@ -410,6 +412,7 @@ namespace Avalonia
         /// <summary>
         ///  Determines if the current matrix contains perspective (non-affine) transforms (true) or only (affine) transforms that could be mapped into an 2x3 matrix (false).
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool ContainsPerspective()
         {
 
