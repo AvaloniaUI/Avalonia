@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using Avalonia.Utilities;
 
 namespace Avalonia
@@ -72,6 +73,7 @@ namespace Avalonia
         /// <param name="a">The first point.</param>
         /// <param name="b">The second point.</param>
         /// <returns>A point that is the result of the addition.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static PixelPoint operator +(PixelPoint a, PixelPoint b)
         {
             return new PixelPoint(a.X + b.X, a.Y + b.Y);
@@ -94,6 +96,7 @@ namespace Avalonia
         /// <param name="a">The first point.</param>
         /// <param name="b">The second point.</param>
         /// <returns>A point that is the result of the subtraction.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static PixelPoint operator -(PixelPoint a, PixelPoint b)
         {
             return new PixelPoint(a.X - b.X, a.Y - b.Y);
@@ -181,6 +184,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="scale">The scaling factor.</param>
         /// <returns>The device-independent point.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Point ToPoint(double scale) => new Point(X / scale, Y / scale);
 
         /// <summary>

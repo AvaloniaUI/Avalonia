@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using Avalonia.Utilities;
 
 namespace Avalonia
@@ -157,6 +158,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="scale">The scaling factor.</param>
         /// <returns>The device-independent size.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Size ToSize(double scale) => new Size(Width / scale, Height / scale);
 
         /// <summary>
@@ -165,6 +167,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="scale">The scaling factor.</param>
         /// <returns>The device-independent size.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Size ToSize(Vector scale) => new Size(Width / scale.X, Height / scale.Y);
 
         /// <summary>

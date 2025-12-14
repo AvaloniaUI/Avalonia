@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using Avalonia.Utilities;
 
 namespace Avalonia
@@ -142,6 +143,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="size">The size of the visual.</param>
         /// <returns>The origin point in pixels.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Rect ToPixels(Size size)
         {
             return Unit == RelativeUnit.Absolute ?
@@ -158,6 +160,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="boundingBox">The bounding box of the visual.</param>
         /// <returns>The origin point in pixels.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Rect ToPixels(Rect boundingBox)
         {
             return Unit == RelativeUnit.Absolute ?

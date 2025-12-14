@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using Avalonia.Utilities;
 
 namespace Avalonia
@@ -345,6 +346,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="scale">The scaling factor.</param>
         /// <returns>The device-independent rect.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Rect ToRect(double scale) => new Rect(Position.ToPoint(scale), Size.ToSize(scale));
 
         /// <summary>
@@ -353,6 +355,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="scale">The scaling factor.</param>
         /// <returns>The device-independent rect.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Rect ToRect(Vector scale) => new Rect(Position.ToPoint(scale), Size.ToSize(scale));
 
         /// <summary>
