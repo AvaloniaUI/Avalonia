@@ -26,6 +26,7 @@ namespace Avalonia.Utilities
         /// </summary> 
         /// <param name="value1"> The first double to compare. </param>
         /// <param name="value2"> The second double to compare. </param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool AreClose(double value1, double value2)
         {
             //in case they are Infinities (then epsilon check does not work)
@@ -166,6 +167,7 @@ namespace Avalonia.Utilities
         /// but this is faster.
         /// </summary>
         /// <param name="value"> The double to compare to 1. </param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsOne(double value)
         {
             return Math.Abs(value - 1.0) < 10.0 * DoubleEpsilon;
@@ -186,6 +188,7 @@ namespace Avalonia.Utilities
         /// but this is faster.
         /// </summary>
         /// <param name="value"> The double to compare to 0. </param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsZero(double value)
         {
             return Math.Abs(value) < 10.0 * DoubleEpsilon;

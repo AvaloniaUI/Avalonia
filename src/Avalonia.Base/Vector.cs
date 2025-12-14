@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 #if !BUILDTASK
 using Avalonia.Animation.Animators;
 #endif
@@ -238,6 +239,7 @@ namespace Avalonia
         /// <param name="a">The first vector.</param>
         /// <param name="b">The second vector.</param>
         /// <returns>The dot product.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static double Dot(Vector a, Vector b)
             => a._x * b._x + a._y * b._y;
 
@@ -291,6 +293,7 @@ namespace Avalonia
         /// <param name="vector">The vector</param>
         /// <param name="scalar">The scalar value</param>
         /// <returns>The scaled vector.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector Multiply(Vector vector, double scalar)
             => new Vector(vector._x * scalar, vector._y * scalar);
 
@@ -300,6 +303,7 @@ namespace Avalonia
         /// <param name="a">The first vector.</param>
         /// <param name="b">The second vector.</param>
         /// <returns>The summed vector.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector Add(Vector a, Vector b)
             => new Vector(a._x + b._x, a._y + b._y);
 
@@ -309,6 +313,7 @@ namespace Avalonia
         /// <param name="a">The first vector.</param>
         /// <param name="b">The second vector.</param>
         /// <returns>The difference vector.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector Subtract(Vector a, Vector b)
             => new Vector(a._x - b._x, a._y - b._y);
 
