@@ -2,19 +2,21 @@
 
 namespace Avalonia.Layout;
 
-internal struct MinMax
+internal readonly struct MinMax
 {
-    public double MinWidth;
-    public double MaxWidth;
-    public double MinHeight;
-    public double MaxHeight;
+    public readonly double MinWidth;
+    public readonly double MaxWidth;
+    public readonly double MinHeight;
+    public readonly double MaxHeight;
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public MinMax(Layoutable e)
     {
         (MinWidth, MaxWidth) = CalcMinMax(e.Width, e.MinWidth, e.MaxWidth);
         (MinHeight, MaxHeight) = CalcMinMax(e.Height, e.MinHeight, e.MaxHeight);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static (double Min, double Max) CalcMinMax(double value, double min, double max)
     {
         double v0, v1;
