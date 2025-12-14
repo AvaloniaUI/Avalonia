@@ -38,14 +38,15 @@ The analysis covers:
 
 ### 1.3 Key Findings Summary
 
-| Category | Finding | Severity | Estimated Impact |
-|----------|---------|----------|------------------|
-| Tree Traversal | Recursive upward traversal on every measure/arrange | Medium-High | 15-25% improvement potential |
-| Memory | Dictionary allocations in LayoutQueue cycle detection | Medium | 5-10% improvement potential |
-| Boxing | Hashtable usage in Grid with struct keys | Medium | 10-15% improvement potential in Grid-heavy UIs |
-| Virtualization | O(n) insertions in RealizedStackElements | High | 30-50% improvement for fast scroll-up |
-| Viewport Calculation | Recursive transform chain calculation | Medium | 10-20% improvement for nested layouts |
-| Invalidation | No batching for rapid property changes | Low-Medium | 5-15% improvement in animation scenarios |
+| Category | Finding | Severity | Estimated Impact | Status |
+|----------|---------|----------|------------------|--------|
+| Tree Traversal | Recursive upward traversal on every measure/arrange | Medium-High | 15-25% improvement potential | ✅ Optimized with VisualLevel caching |
+| Memory | Dictionary allocations in LayoutQueue cycle detection | Medium | 5-10% improvement potential | ✅ Original queue optimized |
+| Boxing | Hashtable usage in Grid with struct keys | Medium | 10-15% improvement potential in Grid-heavy UIs | ✅ Converted to Dictionary<SpanKey, double> |
+| Virtualization | O(n) insertions in RealizedStackElements | High | 30-50% improvement for fast scroll-up | ✅ Implemented Deque<T> |
+| Viewport Calculation | Recursive transform chain calculation | Medium | 10-20% improvement for nested layouts | ✅ Iterative with ArrayPool |
+| Invalidation | No batching for rapid property changes | Low-Medium | 5-15% improvement in animation scenarios | ⏳ Future consideration |
+| Layout Queue Dequeue | O(n) RemoveAt(0) in OptimizedLayoutQueue | Medium | 5-15% for large invalidations | ✅ Index-based O(1) amortized |
 
 ---
 
@@ -942,50 +943,50 @@ public class ParallelLayoutManager : LayoutManager
 
 ## 7. Implementation Plan
 
-### 7.1 Phase 1: Low-Risk Optimizations (2-3 weeks)
+### 7.1 Phase 1: Low-Risk Optimizations (2-3 weeks) ✅ COMPLETED
 
-| ID | Task | Files | Risk | Effort |
-|----|------|-------|------|--------|
-| P1-1 | Replace Hashtable with Dictionary in Grid | `Grid.cs` | Low | 1 day |
-| P1-2 | Implement IEquatable on SpanKey | `Grid.cs` | Low | 0.5 day |
-| P1-3 | Add ArrayPool usage in more locations | Multiple | Low | 2 days |
-| P1-4 | Pool EffectiveViewportChangedEventArgs | `LayoutManager.cs` | Low | 1 day |
-| P1-5 | Add benchmarks for all changes | `tests/` | None | 3 days |
-
-**Deliverables:**
-- Updated Grid.cs with generic collections
-- Extended benchmark suite
-- Performance baseline measurements
-
-### 7.2 Phase 2: Core Algorithm Improvements (3-4 weeks)
-
-| ID | Task | Files | Risk | Effort |
-|----|------|-------|------|--------|
-| P2-1 | Implement Deque for virtualization | New file + `VirtualizingStackPanel.cs` | Medium | 3 days |
-| P2-2 | Implement topological sort option | `LayoutManager.cs`, `LayoutQueue.cs` | Medium | 5 days |
-| P2-3 | Add viewport transform caching | `Visual.cs`, `LayoutManager.cs` | Medium | 4 days |
-| P2-4 | Implement invalidation batching | `Layoutable.cs` | Medium | 3 days |
+| ID | Task | Files | Risk | Effort | Status |
+|----|------|-------|------|--------|--------|
+| P1-1 | Replace Hashtable with Dictionary in Grid | `Grid.cs` | Low | 1 day | ✅ Done |
+| P1-2 | Implement IEquatable on SpanKey | `Grid.cs` | Low | 0.5 day | ✅ Done |
+| P1-3 | Add ArrayPool usage in more locations | Multiple | Low | 2 days | ✅ Done |
+| P1-4 | Pool EffectiveViewportChangedEventArgs | `LayoutManager.cs` | Low | 1 day | ✅ Done |
+| P1-5 | Add benchmarks for all changes | `tests/` | None | 3 days | ✅ Done |
 
 **Deliverables:**
-- New Deque<T> collection class
-- Optional topological layout mode
-- Transform caching system
-- Batched invalidation API
+- ✅ Updated Grid.cs with generic collections
+- ✅ Extended benchmark suite
+- ✅ Performance baseline measurements
 
-### 7.3 Phase 3: Structural Improvements (4-6 weeks)
+### 7.2 Phase 2: Core Algorithm Improvements (3-4 weeks) ✅ COMPLETED
 
-| ID | Task | Files | Risk | Effort |
-|----|------|-------|------|--------|
-| P3-1 | Hierarchical dirty tracking | `Layoutable.cs`, `Visual.cs` | High | 1 week |
-| P3-2 | Layout slot caching for panels | Panel classes | High | 1 week |
-| P3-3 | Object pooling infrastructure | New infrastructure | Medium | 1 week |
-| P3-4 | Incremental layout system | Core layout classes | High | 2 weeks |
+| ID | Task | Files | Risk | Effort | Status |
+|----|------|-------|------|--------|--------|
+| P2-1 | Implement Deque for virtualization | New file + `VirtualizingStackPanel.cs` | Medium | 3 days | ✅ Done |
+| P2-2 | Implement topological sort option | `LayoutManager.cs`, `LayoutQueue.cs` | Medium | 5 days | ✅ OptimizedLayoutQueue with VisualLevel |
+| P2-3 | Add viewport transform caching | `Visual.cs`, `LayoutManager.cs` | Medium | 4 days | ✅ Iterative with ArrayPool |
+| P2-4 | Implement invalidation batching | `Layoutable.cs` | Medium | 3 days | ⏳ Deferred |
 
 **Deliverables:**
-- Hierarchical invalidation system
-- Panel caching base class
-- Layout object pool
-- Incremental layout capability
+- ✅ New Deque<T> collection class
+- ✅ OptimizedLayoutQueue with depth-sorted processing
+- ✅ Iterative viewport calculation with ArrayPool
+- ⏳ Batched invalidation API (deferred - low priority)
+
+### 7.3 Phase 3: Structural Improvements (4-6 weeks) 🔄 PARTIAL
+
+| ID | Task | Files | Risk | Effort | Status |
+|----|------|-------|------|--------|--------|
+| P3-1 | Hierarchical dirty tracking | `Layoutable.cs`, `Visual.cs` | High | 1 week | ✅ SubtreeNeedsMeasure implemented |
+| P3-2 | Layout slot caching for panels | Panel classes | High | 1 week | ⏳ Existing _previousMeasure is sufficient |
+| P3-3 | Object pooling infrastructure | New infrastructure | Medium | 1 week | ✅ ArrayPool + EventArgs pooling |
+| P3-4 | Incremental layout system | Core layout classes | High | 2 weeks | ⏳ Future consideration |
+
+**Deliverables:**
+- ✅ Hierarchical invalidation via SubtreeNeedsMeasure
+- ✅ Layout object pooling (ArrayPool, EventArgs)
+- ⏳ Panel caching base class (existing _previousMeasure sufficient)
+- ⏳ Incremental layout capability (future work)
 
 ### 7.4 Phase 4: Advanced Optimizations (Optional, 4-8 weeks)
 
@@ -1204,13 +1205,44 @@ internal Action<ViewportCalculationEventArgs>? ViewportCalculated { get; set; }
 6. **Unsafe.As** - Fast casting in release builds
 7. **List pooling in MediaContext** - Callback list reuse
 
-### 10.4 Appendix D: Related Documentation
+### 10.4 Appendix D: Implementation Summary (perf/visual-tree-optimizations branch)
+
+**Commits in this optimization branch:**
+
+| Commit | Description | Impact |
+|--------|-------------|--------|
+| perf(Layout): Optimize LayoutQueue dequeue | O(n) → O(1) amortized dequeue | Medium |
+| perf(Primitives): AggressiveInlining | Size, Point, Vector, Thickness, Rect, CornerRadius, RelativePoint/Rect | Low-Medium |
+| perf(MathUtilities): AggressiveInlining | All comparison and clamp methods | Low |
+| perf(Rect): AggressiveInlining | Contains/Intersect/Union methods | Low |
+| perf(VisualTree): Struct enumerators | Zero-allocation visual tree traversal | Medium |
+| perf(Matrix): AggressiveInlining | Hot path matrix operations | Low |
+| perf(Grid): Dictionary<SpanKey, double> | Eliminate boxing, IEquatable | Medium |
+| perf(Grid): ArrayPool for min sizes | Reduce allocations | Low |
+| perf(Layout): Hierarchical dirty tracking | SubtreeNeedsMeasure flag | Medium |
+| P1-4: Pool EventArgs | EffectiveViewportChangedEventArgs pooling | Low |
+| OPT-004: Iterative viewport calc | Replace recursion with ArrayPool | Medium |
+| P2-1: Deque for virtualization | O(1) scroll-up prepend | High |
+| perf(WrapPanel): UVSize inlining | Struct optimization | Low |
+| perf(Layout): MinMax readonly struct | Struct optimization | Low |
+
+**Big-O Complexity Improvements:**
+
+| Operation | Before | After |
+|-----------|--------|-------|
+| OptimizedLayoutQueue.Dequeue() | O(n) | O(1) amortized |
+| RealizedStackElements scroll-up | O(n) per item | O(1) per item |
+| Grid span storage | O(1) + boxing | O(1) no boxing |
+| Viewport calculation | O(d) recursive | O(d) iterative |
+| VisualLevel lookup | O(d) traversal | O(1) cached |
+
+### 10.5 Appendix E: Related Documentation
 
 - [Avalonia Layout System Overview](https://docs.avaloniaui.net/docs/concepts/layout)
 - [WPF Layout Architecture](https://docs.microsoft.com/en-us/dotnet/desktop/wpf/advanced/layout)
 - [BenchmarkDotNet Documentation](https://benchmarkdotnet.org/)
 
-### 10.5 Appendix E: Glossary
+### 10.6 Appendix F: Glossary
 
 | Term | Definition |
 |------|------------|
@@ -1228,6 +1260,7 @@ internal Action<ViewportCalculationEventArgs>? ViewportCalculated { get; set; }
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
 | 1.0 | Dec 2024 | Performance Team | Initial comprehensive analysis |
+| 1.1 | Dec 2024 | Performance Team | Updated with implementation status for perf/visual-tree-optimizations branch |
 
 ---
 
