@@ -139,6 +139,12 @@ namespace Avalonia.Layout
         private EventHandler<EffectiveViewportChangedEventArgs>? _effectiveViewportChanged;
         private EventHandler? _layoutUpdated;
         private bool _isAttachingToVisualTree;
+        
+        /// <summary>
+        /// Tracks whether this element or any descendant needs measure.
+        /// Used for hierarchical dirty tracking to skip clean subtrees.
+        /// </summary>
+        private bool _subtreeNeedsMeasure;
 
         /// <summary>
         /// Initializes static members of the <see cref="Layoutable"/> class.
@@ -331,6 +337,20 @@ namespace Avalonia.Layout
         }
 
         /// <summary>
+        /// Gets a value indicating whether this element or any of its descendants needs measure.
+        /// </summary>
+        /// <remarks>
+        /// This is used for hierarchical dirty tracking. When a control is invalidated,
+        /// this flag is set on the control and propagated up to all ancestors, allowing
+        /// the layout system to skip entire clean subtrees during layout passes.
+        /// </remarks>
+        internal bool SubtreeNeedsMeasure
+        {
+            get => _subtreeNeedsMeasure;
+            private set => _subtreeNeedsMeasure = value;
+        }
+
+        /// <summary>
         /// Gets or sets a value that determines whether the element should be snapped to pixel
         /// boundaries at layout time.
         /// </summary>
@@ -386,6 +406,8 @@ namespace Avalonia.Layout
                 finally
                 {
                     _measuring = false;
+                    // Clear subtree dirty flag after measuring self and all children
+                    SubtreeNeedsMeasure = false;
                 }
 
                 if (IsInvalidSize(desiredSize))
@@ -445,6 +467,9 @@ namespace Avalonia.Layout
 
                 IsMeasureValid = false;
                 IsArrangeValid = false;
+                
+                // Propagate subtree dirty flag up to ancestors
+                PropagateSubtreeDirty();
 
                 if (IsAttachedToVisualTree)
                 {
@@ -452,6 +477,21 @@ namespace Avalonia.Layout
                     InvalidateVisual();
                 }
                 OnMeasureInvalidated();
+            }
+        }
+        
+        /// <summary>
+        /// Propagates the SubtreeNeedsMeasure flag up to all ancestors.
+        /// </summary>
+        private void PropagateSubtreeDirty()
+        {
+            SubtreeNeedsMeasure = true;
+            
+            var parent = VisualParent as Layoutable;
+            while (parent != null && !parent.SubtreeNeedsMeasure)
+            {
+                parent.SubtreeNeedsMeasure = true;
+                parent = parent.VisualParent as Layoutable;
             }
         }
 
