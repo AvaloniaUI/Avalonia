@@ -4,6 +4,7 @@
 // Licensed to The Avalonia Project under MIT License, courtesy of The .NET Foundation.
 
 using System;
+using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -483,30 +484,43 @@ namespace Avalonia.Controls
                                 bool hasDesiredSizeUChanged = false;
                                 int cnt = 0;
 
-                                // Cache Group2MinWidths & Group3MinHeights
-                                double[] group2MinSizes = CacheMinSizes(extData.CellGroup2, false);
-                                double[] group3MinSizes = CacheMinSizes(extData.CellGroup3, true);
-
-                                MeasureCellsGroup(extData.CellGroup2, false, true);
-
-                                do
+                                // Cache Group2MinWidths & Group3MinHeights using pooled arrays
+                                int group2Length = DefinitionsU.Count;
+                                int group3Length = DefinitionsV.Count;
+                                double[] group2MinSizes = ArrayPool<double>.Shared.Rent(group2Length);
+                                double[] group3MinSizes = ArrayPool<double>.Shared.Rent(group3Length);
+                                
+                                try
                                 {
-                                    if (hasDesiredSizeUChanged)
+                                    CacheMinSizes(group2MinSizes, group2Length, extData.CellGroup2, false);
+                                    CacheMinSizes(group3MinSizes, group3Length, extData.CellGroup3, true);
+
+                                    MeasureCellsGroup(extData.CellGroup2, false, true);
+
+                                    do
                                     {
-                                        // Reset cached Group3Heights
-                                        ApplyCachedMinSizes(group3MinSizes, true);
+                                        if (hasDesiredSizeUChanged)
+                                        {
+                                            // Reset cached Group3Heights
+                                            ApplyCachedMinSizes(group3MinSizes, group3Length, true);
+                                        }
+
+                                        if (HasStarCellsU) { ResolveStar(DefinitionsU, innerAvailableSize.Width); }
+                                        MeasureCellsGroup(extData.CellGroup3, false, false);
+
+                                        // Reset cached Group2Widths
+                                        ApplyCachedMinSizes(group2MinSizes, group2Length, false);
+
+                                        if (HasStarCellsV) { ResolveStar(DefinitionsV, innerAvailableSize.Height); }
+                                        MeasureCellsGroup(extData.CellGroup2, cnt == c_layoutLoopMaxCount, false, out hasDesiredSizeUChanged);
                                     }
-
-                                    if (HasStarCellsU) { ResolveStar(DefinitionsU, innerAvailableSize.Width); }
-                                    MeasureCellsGroup(extData.CellGroup3, false, false);
-
-                                    // Reset cached Group2Widths
-                                    ApplyCachedMinSizes(group2MinSizes, false);
-
-                                    if (HasStarCellsV) { ResolveStar(DefinitionsV, innerAvailableSize.Height); }
-                                    MeasureCellsGroup(extData.CellGroup2, cnt == c_layoutLoopMaxCount, false, out hasDesiredSizeUChanged);
+                                    while (hasDesiredSizeUChanged && ++cnt <= c_layoutLoopMaxCount);
                                 }
-                                while (hasDesiredSizeUChanged && ++cnt <= c_layoutLoopMaxCount);
+                                finally
+                                {
+                                    ArrayPool<double>.Shared.Return(group2MinSizes);
+                                    ArrayPool<double>.Shared.Return(group3MinSizes);
+                                }
                             }
                         }
                     }
@@ -932,11 +946,9 @@ namespace Avalonia.Controls
             }
         }
 
-        private double[] CacheMinSizes(int cellsHead, bool isRows)
+        private void CacheMinSizes(double[] minSizes, int length, int cellsHead, bool isRows)
         {
-            double[] minSizes = isRows ? new double[DefinitionsV.Count] : new double[DefinitionsU.Count];
-
-            for (int j = 0; j < minSizes.Length; j++)
+            for (int j = 0; j < length; j++)
             {
                 minSizes[j] = -1;
             }
@@ -955,13 +967,11 @@ namespace Avalonia.Controls
 
                 i = PrivateCells[i].Next;
             } while (i < PrivateCells.Length);
-
-            return minSizes;
         }
 
-        private void ApplyCachedMinSizes(double[] minSizes, bool isRows)
+        private void ApplyCachedMinSizes(double[] minSizes, int length, bool isRows)
         {
-            for (int i = 0; i < minSizes.Length; i++)
+            for (int i = 0; i < length; i++)
             {
                 if (MathUtilities.GreaterThanOrClose(minSizes[i], 0))
                 {
