@@ -4,6 +4,7 @@
 // Licensed to The Avalonia Project under MIT License, courtesy of The .NET Foundation.
 
 using System;
+using System.Runtime.CompilerServices;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Utilities;
@@ -342,6 +343,7 @@ namespace Avalonia.Controls
 
         private struct UVSize
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             internal UVSize(Orientation orientation, double width, double height)
             {
                 U = V = 0d;
@@ -350,6 +352,7 @@ namespace Avalonia.Controls
                 Height = height;
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             internal UVSize(Orientation orientation)
             {
                 U = V = 0d;
@@ -358,16 +361,20 @@ namespace Avalonia.Controls
 
             internal double U;
             internal double V;
-            private Orientation _orientation;
+            private readonly Orientation _orientation;
 
             internal double Width
             {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 get => _orientation == Orientation.Horizontal ? U : V;
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 set { if (_orientation == Orientation.Horizontal) U = value; else V = value; }
             }
             internal double Height
             {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 get => _orientation == Orientation.Horizontal ? V : U;
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 set { if (_orientation == Orientation.Horizontal) V = value; else U = value; }
             }
         }
