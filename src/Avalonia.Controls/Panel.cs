@@ -138,7 +138,7 @@ namespace Avalonia.Controls
                 case NotifyCollectionChangedAction.Add:
                     if (!IsItemsHost)
                     {
-                        LogicalChildren.InsertRange(e.NewStartingIndex, e.NewItems!.OfType<Control>().ToList());
+                        LogicalChildren.InsertRange(e.NewStartingIndex, e.NewItems!.OfType<Control>());
                     }
                     VisualChildren.InsertRange(e.NewStartingIndex, e.NewItems!.OfType<Visual>());
                     break;
@@ -154,7 +154,7 @@ namespace Avalonia.Controls
                 case NotifyCollectionChangedAction.Remove:
                     if (!IsItemsHost)
                     {
-                        LogicalChildren.RemoveAll(e.OldItems!.OfType<Control>().ToList());
+                        LogicalChildren.RemoveAll(e.OldItems!.OfType<Control>());
                     }
                     VisualChildren.RemoveAll(e.OldItems!.OfType<Visual>());
                     break;

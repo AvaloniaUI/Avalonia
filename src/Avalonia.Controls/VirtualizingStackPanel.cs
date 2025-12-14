@@ -52,6 +52,13 @@ namespace Avalonia.Controls
             RoutedEvent.Register<VirtualizingStackPanel, RoutedEventArgs>(
                 nameof(VerticalSnapPointsChanged),
                 RoutingStrategies.Bubble);
+
+        // Thread-static pooled RoutedEventArgs instances to avoid per-arrange allocations
+        [ThreadStatic]
+        private static RoutedEventArgs? t_horizontalSnapPointsChangedArgs;
+        [ThreadStatic]
+        private static RoutedEventArgs? t_verticalSnapPointsChangedArgs;
+
         /// <summary>
         /// Defines the <see cref="CacheLength"/> property.
         /// </summary>
@@ -287,7 +294,29 @@ namespace Avalonia.Controls
             {
                 _isInLayout = false;
 
-                RaiseEvent(new RoutedEventArgs(Orientation == Orientation.Horizontal ? HorizontalSnapPointsChangedEvent : VerticalSnapPointsChangedEvent));
+                RaiseSnapPointsChangedEvent(Orientation == Orientation.Horizontal);
+            }
+        }
+
+        /// <summary>
+        /// Raises the appropriate snap points changed event using pooled event args to avoid allocations.
+        /// </summary>
+        /// <param name="horizontal">True for horizontal, false for vertical.</param>
+        private void RaiseSnapPointsChangedEvent(bool horizontal)
+        {
+            if (horizontal)
+            {
+                var args = t_horizontalSnapPointsChangedArgs ??= new RoutedEventArgs(HorizontalSnapPointsChangedEvent);
+                args.Source = null;
+                args.Handled = false;
+                RaiseEvent(args);
+            }
+            else
+            {
+                var args = t_verticalSnapPointsChangedArgs ??= new RoutedEventArgs(VerticalSnapPointsChangedEvent);
+                args.Source = null;
+                args.Handled = false;
+                RaiseEvent(args);
             }
         }
 

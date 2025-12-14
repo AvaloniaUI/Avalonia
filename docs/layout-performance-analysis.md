@@ -1253,6 +1253,68 @@ internal Action<ViewportCalculationEventArgs>? ViewportCalculated { get; set; }
 | **Dirty Flag** | Boolean indicating need for recalculation |
 | **Topological Sort** | Ordering by dependency (parents before children) |
 
+### 10.7 Appendix G: Memory Allocation Analysis (Phase 4)
+
+**Analysis Date:** December 2024
+
+This appendix documents memory allocation patterns identified in hot paths that can be optimized to reduce GC pressure.
+
+#### High Priority Allocations
+
+| Location | Pattern | Impact | Status |
+|----------|---------|--------|--------|
+| StackPanel.ArrangeOverride L344 | `new RoutedEventArgs()` per arrange | HIGH | ⏳ Pending |
+| VirtualizingStackPanel.ArrangeOverrideImpl L290 | `new RoutedEventArgs()` per arrange | HIGH | ⏳ Pending |
+| Panel.ChildrenChanged L141,157 | `.ToList()` on LINQ | MEDIUM | ⏳ Pending |
+
+#### Medium Priority Allocations
+
+| Location | Pattern | Impact | Status |
+|----------|---------|--------|--------|
+| Grid.SetFinalSizeMaxDiscrepancy L1926-2190 | 4 comparer class allocations per arrange | MEDIUM | ⏳ Pending |
+| StackPanel.GetIrregularSnapPoints L361 | `new List<double>()` | LOW | ⏳ Pending |
+| VirtualizingStackPanel.GetIrregularSnapPoints L1124 | `new List<double>()` | LOW | ⏳ Pending |
+
+#### Comparer Boxing in Grid (Non-Generic IComparer)
+
+The following comparers use non-generic `IComparer` which causes boxing of `int` indices:
+
+- `MinRatioIndexComparer` (L3148)
+- `MaxRatioIndexComparer` (L3188)
+- `StarWeightIndexComparer` (L3228)
+- `RoundingErrorIndexComparer` (L3059)
+- `DistributionOrderIndexComparer` (L3017)
+- `StarDistributionOrderIndexComparer` (L2977)
+
+**Solution:** Convert to `IComparer<int>` to eliminate int boxing.
+
+#### Already Optimized Patterns ✓
+
+| Location | Pattern | Status |
+|----------|---------|--------|
+| EffectiveViewportChangedEventArgs | ThreadStatic pooling | ✅ Done |
+| Layoutable.AffectsMeasure | Static lambda (no closure) | ✅ Done |
+| Grid span storage | Dictionary<SpanKey, double> | ✅ Done |
+| Primitive structs | Size, Rect, Point - no boxing | ✅ N/A |
+
+#### Phase 4 Implementation Plan
+
+1. **StackPanel/VirtualizingStackPanel EventArgs Pooling**
+   - Track if snap points changed before raising event
+   - Pool RoutedEventArgs or use static empty instance
+   
+2. **Panel.ChildrenChanged Optimization**
+   - Replace `.ToList()` with direct iteration
+   - Avoid LINQ materialization
+   
+3. **Grid Comparer Generic Conversion**
+   - Convert all index comparers to `IComparer<int>`
+   - Consider struct comparers where beneficial
+   
+4. **GetIrregularSnapPoints ArrayPool**
+   - Return ArrayPool-backed collection
+   - Or use stackalloc for small lists
+
 ---
 
 ## Document History
@@ -1261,6 +1323,7 @@ internal Action<ViewportCalculationEventArgs>? ViewportCalculated { get; set; }
 |---------|------|--------|---------|
 | 1.0 | Dec 2024 | Performance Team | Initial comprehensive analysis |
 | 1.1 | Dec 2024 | Performance Team | Updated with implementation status for perf/visual-tree-optimizations branch |
+| 1.2 | Dec 2024 | Performance Team | Added Appendix G: Memory Allocation Analysis |
 
 ---
 

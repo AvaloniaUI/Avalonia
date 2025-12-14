@@ -2973,8 +2973,9 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// StarDistributionOrderIndexComparer.
+        /// Compares definition indices by their SizeCache (ascending order).
         /// </summary>
-        private class StarDistributionOrderIndexComparer : IComparer
+        private sealed class StarDistributionOrderIndexComparer : IComparer<int>
         {
             private readonly IReadOnlyList<DefinitionBase> definitions;
 
@@ -2983,38 +2984,20 @@ namespace Avalonia.Controls
                 this.definitions = definitions ?? throw new ArgumentNullException(nameof(definitions));
             }
 
-            public int Compare(object? x, object? y)
+            public int Compare(int indexX, int indexY)
             {
-                int? indexX = x as int?;
-                int? indexY = y as int?;
-
-                DefinitionBase? definitionX = null;
-                DefinitionBase? definitionY = null;
-
-                if (indexX != null)
-                {
-                    definitionX = definitions[indexX.Value];
-                }
-                if (indexY != null)
-                {
-                    definitionY = definitions[indexY.Value];
-                }
-
-                int result;
-
-                if (!CompareNullRefs(definitionX, definitionY, out result))
-                {
-                    result = definitionX.SizeCache.CompareTo(definitionY.SizeCache);
-                }
-
-                return result;
+                var definitionX = definitions[indexX];
+                var definitionY = definitions[indexY];
+                
+                return definitionX.SizeCache.CompareTo(definitionY.SizeCache);
             }
         }
 
         /// <summary>
-        /// DistributionOrderComparer.
+        /// DistributionOrderIndexComparer.
+        /// Compares definition indices by their SizeCache minus MinSizeForArrange.
         /// </summary>
-        private class DistributionOrderIndexComparer : IComparer
+        private sealed class DistributionOrderIndexComparer : IComparer<int>
         {
             private readonly IReadOnlyList<DefinitionBase> definitions;
 
@@ -3023,40 +3006,22 @@ namespace Avalonia.Controls
                 this.definitions = definitions ?? throw new ArgumentNullException(nameof(definitions));
             }
 
-            public int Compare(object? x, object? y)
+            public int Compare(int indexX, int indexY)
             {
-                int? indexX = x as int?;
-                int? indexY = y as int?;
+                var definitionX = definitions[indexX];
+                var definitionY = definitions[indexY];
 
-                DefinitionBase? definitionX = null;
-                DefinitionBase? definitionY = null;
-
-                if (indexX != null)
-                {
-                    definitionX = definitions[indexX.Value];
-                }
-                if (indexY != null)
-                {
-                    definitionY = definitions[indexY.Value];
-                }
-
-                int result;
-
-                if (!CompareNullRefs(definitionX, definitionY, out result))
-                {
-                    double xprime = definitionX.SizeCache - definitionX.MinSizeForArrange;
-                    double yprime = definitionY.SizeCache - definitionY.MinSizeForArrange;
-                    result = xprime.CompareTo(yprime);
-                }
-
-                return result;
+                double xprime = definitionX.SizeCache - definitionX.MinSizeForArrange;
+                double yprime = definitionY.SizeCache - definitionY.MinSizeForArrange;
+                return xprime.CompareTo(yprime);
             }
         }
 
         /// <summary>
         /// RoundingErrorIndexComparer.
+        /// Compares indices by their corresponding rounding errors.
         /// </summary>
-        private class RoundingErrorIndexComparer : IComparer
+        private sealed class RoundingErrorIndexComparer : IComparer<int>
         {
             private readonly double[] errors;
 
@@ -3065,21 +3030,11 @@ namespace Avalonia.Controls
                 this.errors = errors ?? throw new ArgumentNullException(nameof(errors));
             }
 
-            public int Compare(object? x, object? y)
+            public int Compare(int indexX, int indexY)
             {
-                int? indexX = x as int?;
-                int? indexY = y as int?;
-
-                int result;
-
-                if (!CompareNullRefs(indexX, indexY, out result))
-                {
-                    double errorX = errors[indexX.Value];
-                    double errorY = errors[indexY.Value];
-                    result = errorX.CompareTo(errorY);
-                }
-
-                return result;
+                double errorX = errors[indexX];
+                double errorY = errors[indexY];
+                return errorX.CompareTo(errorY);
             }
         }
 
@@ -3144,8 +3099,9 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// MinRatioIndexComparer.
+        /// Compares definition indices by their MeasureSize (descending order).
         /// </summary>
-        private class MinRatioIndexComparer : IComparer
+        private sealed class MinRatioIndexComparer : IComparer<int>
         {
             private readonly IReadOnlyList<DefinitionBase> definitions;
 
@@ -3154,38 +3110,21 @@ namespace Avalonia.Controls
                 this.definitions = definitions ?? throw new ArgumentNullException(nameof(definitions));
             }
 
-            public int Compare(object? x, object? y)
+            public int Compare(int indexX, int indexY)
             {
-                int? indexX = x as int?;
-                int? indexY = y as int?;
-
-                DefinitionBase? definitionX = null;
-                DefinitionBase? definitionY = null;
-
-                if (indexX != null)
-                {
-                    definitionX = definitions[indexX.Value];
-                }
-                if (indexY != null)
-                {
-                    definitionY = definitions[indexY.Value];
-                }
-
-                int result;
-
-                if (!CompareNullRefs(definitionY, definitionX, out result))
-                {
-                    result = definitionY.MeasureSize.CompareTo(definitionX.MeasureSize);
-                }
-
-                return result;
+                var definitionX = definitions[indexX];
+                var definitionY = definitions[indexY];
+                
+                // Descending order by MeasureSize
+                return definitionY.MeasureSize.CompareTo(definitionX.MeasureSize);
             }
         }
 
         /// <summary>
         /// MaxRatioIndexComparer.
+        /// Compares definition indices by their SizeCache (ascending order).
         /// </summary>
-        private class MaxRatioIndexComparer : IComparer
+        private sealed class MaxRatioIndexComparer : IComparer<int>
         {
             private readonly IReadOnlyList<DefinitionBase> definitions;
 
@@ -3194,38 +3133,21 @@ namespace Avalonia.Controls
                 this.definitions = definitions ?? throw new ArgumentNullException(nameof(definitions));
             }
 
-            public int Compare(object? x, object? y)
+            public int Compare(int indexX, int indexY)
             {
-                int? indexX = x as int?;
-                int? indexY = y as int?;
-
-                DefinitionBase? definitionX = null;
-                DefinitionBase? definitionY = null;
-
-                if (indexX != null)
-                {
-                    definitionX = definitions[indexX.Value];
-                }
-                if (indexY != null)
-                {
-                    definitionY = definitions[indexY.Value];
-                }
-
-                int result;
-
-                if (!CompareNullRefs(definitionX, definitionY, out result))
-                {
-                    result = definitionX.SizeCache.CompareTo(definitionY.SizeCache);
-                }
-
-                return result;
+                var definitionX = definitions[indexX];
+                var definitionY = definitions[indexY];
+                
+                // Ascending order by SizeCache
+                return definitionX.SizeCache.CompareTo(definitionY.SizeCache);
             }
         }
 
         /// <summary>
-        /// MaxRatioIndexComparer.
+        /// StarWeightIndexComparer.
+        /// Compares definition indices by their MeasureSize (ascending order).
         /// </summary>
-        private class StarWeightIndexComparer : IComparer
+        private sealed class StarWeightIndexComparer : IComparer<int>
         {
             private readonly IReadOnlyList<DefinitionBase> definitions;
 
@@ -3234,31 +3156,13 @@ namespace Avalonia.Controls
                 this.definitions = definitions ?? throw new ArgumentNullException(nameof(definitions));
             }
 
-            public int Compare(object? x, object? y)
+            public int Compare(int indexX, int indexY)
             {
-                int? indexX = x as int?;
-                int? indexY = y as int?;
-
-                DefinitionBase? definitionX = null;
-                DefinitionBase? definitionY = null;
-
-                if (indexX != null)
-                {
-                    definitionX = definitions[indexX.Value];
-                }
-                if (indexY != null)
-                {
-                    definitionY = definitions[indexY.Value];
-                }
-
-                int result;
-
-                if (!CompareNullRefs(definitionX, definitionY, out result))
-                {
-                    result = definitionX.MeasureSize.CompareTo(definitionY.MeasureSize);
-                }
-
-                return result;
+                var definitionX = definitions[indexX];
+                var definitionY = definitions[indexY];
+                
+                // Ascending order by MeasureSize  
+                return definitionX.MeasureSize.CompareTo(definitionY.MeasureSize);
             }
         }
 
