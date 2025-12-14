@@ -1263,30 +1263,30 @@ This appendix documents memory allocation patterns identified in hot paths that 
 
 | Location | Pattern | Impact | Status |
 |----------|---------|--------|--------|
-| StackPanel.ArrangeOverride L344 | `new RoutedEventArgs()` per arrange | HIGH | ⏳ Pending |
-| VirtualizingStackPanel.ArrangeOverrideImpl L290 | `new RoutedEventArgs()` per arrange | HIGH | ⏳ Pending |
-| Panel.ChildrenChanged L141,157 | `.ToList()` on LINQ | MEDIUM | ⏳ Pending |
+| StackPanel.ArrangeOverride L344 | `new RoutedEventArgs()` per arrange | HIGH | ✅ ThreadStatic pooling |
+| VirtualizingStackPanel.ArrangeOverrideImpl L290 | `new RoutedEventArgs()` per arrange | HIGH | ✅ ThreadStatic pooling |
+| Panel.ChildrenChanged L141,157 | `.ToList()` on LINQ | MEDIUM | ✅ Removed ToList() |
 
 #### Medium Priority Allocations
 
 | Location | Pattern | Impact | Status |
 |----------|---------|--------|--------|
-| Grid.SetFinalSizeMaxDiscrepancy L1926-2190 | 4 comparer class allocations per arrange | MEDIUM | ⏳ Pending |
-| StackPanel.GetIrregularSnapPoints L361 | `new List<double>()` | LOW | ⏳ Pending |
-| VirtualizingStackPanel.GetIrregularSnapPoints L1124 | `new List<double>()` | LOW | ⏳ Pending |
+| Grid.SetFinalSizeMaxDiscrepancy L1926-2190 | 4 comparer class allocations per arrange | MEDIUM | ✅ Converted to IComparer<int> |
+| StackPanel.GetIrregularSnapPoints L361 | `new List<double>()` | LOW | ⏳ Low priority |
+| VirtualizingStackPanel.GetIrregularSnapPoints L1124 | `new List<double>()` | LOW | ⏳ Low priority |
 
 #### Comparer Boxing in Grid (Non-Generic IComparer)
 
-The following comparers use non-generic `IComparer` which causes boxing of `int` indices:
+The following comparers were converted from non-generic `IComparer` to `IComparer<int>`:
 
-- `MinRatioIndexComparer` (L3148)
-- `MaxRatioIndexComparer` (L3188)
-- `StarWeightIndexComparer` (L3228)
-- `RoundingErrorIndexComparer` (L3059)
-- `DistributionOrderIndexComparer` (L3017)
-- `StarDistributionOrderIndexComparer` (L2977)
+- `MinRatioIndexComparer` - ✅ Converted
+- `MaxRatioIndexComparer` - ✅ Converted
+- `StarWeightIndexComparer` - ✅ Converted
+- `RoundingErrorIndexComparer` - ✅ Converted
+- `DistributionOrderIndexComparer` - ✅ Converted
+- `StarDistributionOrderIndexComparer` - ✅ Converted
 
-**Solution:** Convert to `IComparer<int>` to eliminate int boxing.
+**Result:** Eliminated int boxing during Array.Sort operations in Grid arrange.
 
 #### Already Optimized Patterns ✓
 
@@ -1296,24 +1296,27 @@ The following comparers use non-generic `IComparer` which causes boxing of `int`
 | Layoutable.AffectsMeasure | Static lambda (no closure) | ✅ Done |
 | Grid span storage | Dictionary<SpanKey, double> | ✅ Done |
 | Primitive structs | Size, Rect, Point - no boxing | ✅ N/A |
+| StackPanel/VirtualizingStackPanel snap events | ThreadStatic RoutedEventArgs | ✅ Done |
+| Panel.ChildrenChanged | Removed .ToList() | ✅ Done |
+| Grid index comparers | IComparer<int> | ✅ Done |
 
-#### Phase 4 Implementation Plan
+#### Phase 4 Implementation Summary
 
-1. **StackPanel/VirtualizingStackPanel EventArgs Pooling**
-   - Track if snap points changed before raising event
-   - Pool RoutedEventArgs or use static empty instance
+1. **StackPanel/VirtualizingStackPanel EventArgs Pooling** ✅ 
+   - Implemented ThreadStatic caching for RoutedEventArgs
+   - Avoids allocation per ArrangeOverride call
    
-2. **Panel.ChildrenChanged Optimization**
-   - Replace `.ToList()` with direct iteration
-   - Avoid LINQ materialization
+2. **Panel.ChildrenChanged Optimization** ✅
+   - Removed unnecessary `.ToList()` calls
+   - Pass IEnumerable directly to InsertRange/RemoveAll
    
-3. **Grid Comparer Generic Conversion**
-   - Convert all index comparers to `IComparer<int>`
-   - Consider struct comparers where beneficial
+3. **Grid Comparer Generic Conversion** ✅
+   - Converted all 6 index comparers to `IComparer<int>`
+   - Eliminated boxing of int indices during Array.Sort
+   - Made comparers `sealed` for devirtualization
    
-4. **GetIrregularSnapPoints ArrayPool**
-   - Return ArrayPool-backed collection
-   - Or use stackalloc for small lists
+4. **GetIrregularSnapPoints ArrayPool** ⏳
+   - Deferred - low impact since list is cached by ScrollContentPresenter
 
 ---
 
@@ -1324,6 +1327,7 @@ The following comparers use non-generic `IComparer` which causes boxing of `int`
 | 1.0 | Dec 2024 | Performance Team | Initial comprehensive analysis |
 | 1.1 | Dec 2024 | Performance Team | Updated with implementation status for perf/visual-tree-optimizations branch |
 | 1.2 | Dec 2024 | Performance Team | Added Appendix G: Memory Allocation Analysis |
+| 1.3 | Dec 2024 | Performance Team | Phase 4 complete: RoutedEventArgs pooling, ToList removal, Grid comparers |
 
 ---
 
