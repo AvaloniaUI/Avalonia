@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 #if !BUILDTASK
 using Avalonia.Animation.Animators;
 #endif
@@ -269,6 +270,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="x">The X coordinate.</param>
         /// <returns>The new point.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Point WithX(double x)
         {
             return new Point(x, _y);
@@ -279,6 +281,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="y">The Y coordinate.</param>
         /// <returns>The new point.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Point WithY(double y)
         {
             return new Point(_x, y);

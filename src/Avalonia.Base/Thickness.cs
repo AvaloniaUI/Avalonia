@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 #if !BUILDTASK
 using Avalonia.Animation.Animators;
 #endif
@@ -123,6 +124,7 @@ namespace Avalonia
         /// <param name="a">The first thickness.</param>
         /// <param name="b">The second thickness.</param>
         /// <returns>The equality.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Thickness operator +(Thickness a, Thickness b)
         {
             return new Thickness(
@@ -138,6 +140,7 @@ namespace Avalonia
         /// <param name="a">The first thickness.</param>
         /// <param name="b">The second thickness.</param>
         /// <returns>The equality.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Thickness operator -(Thickness a, Thickness b)
         {
             return new Thickness(
@@ -153,6 +156,7 @@ namespace Avalonia
         /// <param name="a">The thickness.</param>
         /// <param name="b">The scalar.</param>
         /// <returns>The equality.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Thickness operator *(Thickness a, double b)
         {
             return new Thickness(
@@ -168,6 +172,7 @@ namespace Avalonia
         /// <param name="size">The size.</param>
         /// <param name="thickness">The thickness.</param>
         /// <returns>The equality.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Size operator +(Size size, Thickness thickness)
         {
             return new Size(
@@ -181,6 +186,7 @@ namespace Avalonia
         /// <param name="size">The size.</param>
         /// <param name="thickness">The thickness.</param>
         /// <returns>The equality.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Size operator -(Size size, Thickness thickness)
         {
             return new Size(
