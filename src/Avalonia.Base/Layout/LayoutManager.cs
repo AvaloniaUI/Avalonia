@@ -380,7 +380,9 @@ namespace Avalonia.Layout
 
                         if (viewport != l.Viewport)
                         {
-                            l.Listener.RaiseEffectiveViewportChanged(new EffectiveViewportChangedEventArgs(viewport));
+                            var args = EffectiveViewportChangedEventArgs.GetPooled(viewport);
+                            l.Listener.RaiseEffectiveViewportChanged(args);
+                            args.ReturnToPool();
                             l.Viewport = viewport;
                         }
                     }
