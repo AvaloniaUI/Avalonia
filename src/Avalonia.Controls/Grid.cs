@@ -2647,11 +2647,11 @@ namespace Avalonia.Controls
         private const int c_layoutLoopMaxCount = 5;
 
         private static readonly LocalDataStoreSlot s_tempDefinitionsDataSlot = Thread.AllocateDataSlot();
-        private static readonly IComparer<DefinitionBase> s_spanPreferredDistributionOrderComparer = new SpanPreferredDistributionOrderComparer();
-        private static readonly IComparer<DefinitionBase> s_spanMaxDistributionOrderComparer = new SpanMaxDistributionOrderComparer();
-        private static readonly IComparer<DefinitionBase> s_minRatioComparer = new MinRatioComparer();
-        private static readonly IComparer<DefinitionBase> s_maxRatioComparer = new MaxRatioComparer();
-        private static readonly IComparer<DefinitionBase> s_starWeightComparer = new StarWeightComparer();
+        private static readonly IComparer<DefinitionBase?> s_spanPreferredDistributionOrderComparer = new SpanPreferredDistributionOrderComparer();
+        private static readonly IComparer<DefinitionBase?> s_spanMaxDistributionOrderComparer = new SpanMaxDistributionOrderComparer();
+        private static readonly IComparer<DefinitionBase?> s_minRatioComparer = new MinRatioComparer();
+        private static readonly IComparer<DefinitionBase?> s_maxRatioComparer = new MaxRatioComparer();
+        private static readonly IComparer<DefinitionBase?> s_starWeightComparer = new StarWeightComparer();
 
         /// <summary>
         /// Extended data instantiated on demand, when grid handles non-trivial case.
@@ -2886,7 +2886,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// SpanPreferredDistributionOrderComparer.
         /// </summary>
-        private class SpanPreferredDistributionOrderComparer : IComparer<DefinitionBase>
+        private class SpanPreferredDistributionOrderComparer : IComparer<DefinitionBase?>
         {
             public int Compare(DefinitionBase? definitionX, DefinitionBase? definitionY)
             {
@@ -2925,7 +2925,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// SpanMaxDistributionOrderComparer.
         /// </summary>
-        private class SpanMaxDistributionOrderComparer : IComparer<DefinitionBase>
+        private class SpanMaxDistributionOrderComparer : IComparer<DefinitionBase?>
         {
             public int Compare(DefinitionBase? definitionX, DefinitionBase? definitionY)
             {
@@ -3078,7 +3078,7 @@ namespace Avalonia.Controls
         /// Sort by w/min (stored in MeasureSize), descending.
         /// We query the list from the back, i.e. in ascending order of w/min.
         /// </summary>
-        private class MinRatioComparer : IComparer<DefinitionBase>
+        private class MinRatioComparer : IComparer<DefinitionBase?>
         {
             public int Compare(DefinitionBase? definitionX, DefinitionBase? definitionY)
             {
@@ -3098,7 +3098,7 @@ namespace Avalonia.Controls
         /// Sort by w/max (stored in SizeCache), ascending.
         /// We query the list from the back, i.e. in descending order of w/max.
         /// </summary>
-        private class MaxRatioComparer : IComparer<DefinitionBase>
+        private class MaxRatioComparer : IComparer<DefinitionBase?>
         {
             public int Compare(DefinitionBase? definitionX, DefinitionBase? definitionY)
             {
@@ -3117,7 +3117,7 @@ namespace Avalonia.Controls
         /// StarWeightComparer.
         /// Sort by *-weight (stored in MeasureSize), ascending.
         /// </summary>
-        private class StarWeightComparer : IComparer<DefinitionBase>
+        private class StarWeightComparer : IComparer<DefinitionBase?>
         {
             public int Compare(DefinitionBase? definitionX, DefinitionBase? definitionY)
             {
