@@ -1018,8 +1018,11 @@ namespace Avalonia.Controls
             }
 
             var children = Children;
-            Dictionary<SpanKey, double>? spanStore = null;
+            bool hasSpans = false;
             bool ignoreDesiredSizeV = forceInfinityV;
+
+            // Use pooled dictionary for span storage to avoid allocations
+            var spanStore = t_spanDictionary ??= new Dictionary<SpanKey, double>();
 
             int i = cellsHead;
             do
@@ -1039,11 +1042,12 @@ namespace Avalonia.Controls
                     else
                     {
                         RegisterSpan(
-                            ref spanStore,
+                            spanStore,
                             PrivateCells[i].ColumnIndex,
                             PrivateCells[i].ColumnSpan,
                             true,
                             children[i].DesiredSize.Width);
+                        hasSpans = true;
                     }
                 }
 
@@ -1056,18 +1060,19 @@ namespace Avalonia.Controls
                     else
                     {
                         RegisterSpan(
-                            ref spanStore,
+                            spanStore,
                             PrivateCells[i].RowIndex,
                             PrivateCells[i].RowSpan,
                             false,
                             children[i].DesiredSize.Height);
+                        hasSpans = true;
                     }
                 }
 
                 i = PrivateCells[i].Next;
             } while (i < PrivateCells.Length);
 
-            if (spanStore != null)
+            if (hasSpans)
             {
                 foreach (var e in spanStore)
                 {
@@ -1081,26 +1086,27 @@ namespace Avalonia.Controls
                         key.U ? ColumnSpacing : RowSpacing,
                         desiredSize);
                 }
+
+                // Clear the pooled dictionary for reuse
+                spanStore.Clear();
             }
         }
 
         /// <summary>
         /// Helper method to register a span information for delayed processing.
         /// </summary>
-        /// <param name="store">Reference to a dictionary object used as storage.</param>
+        /// <param name="store">Dictionary object used as storage.</param>
         /// <param name="start">Span starting index.</param>
         /// <param name="count">Span count.</param>
         /// <param name="u"><c>true</c> if this is a column span. <c>false</c> if this is a row span.</param>
         /// <param name="value">Value to store. If an entry already exists the biggest value is stored.</param>
         private static void RegisterSpan(
-            ref Dictionary<SpanKey, double>? store,
+            Dictionary<SpanKey, double> store,
             int start,
             int count,
             bool u,
             double value)
         {
-            store ??= new Dictionary<SpanKey, double>();
-
             var key = new SpanKey(start, count, u);
 
             if (!store.TryGetValue(key, out double existing) || value > existing)
@@ -2662,6 +2668,10 @@ namespace Avalonia.Controls
         private static readonly IComparer<DefinitionBase?> s_minRatioComparer = new MinRatioComparer();
         private static readonly IComparer<DefinitionBase?> s_maxRatioComparer = new MaxRatioComparer();
         private static readonly IComparer<DefinitionBase?> s_starWeightComparer = new StarWeightComparer();
+
+        // ThreadStatic pool for span dictionary to avoid allocations during MeasureCellsGroup
+        [ThreadStatic]
+        private static Dictionary<SpanKey, double>? t_spanDictionary;
 
         /// <summary>
         /// Extended data instantiated on demand, when grid handles non-trivial case.

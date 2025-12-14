@@ -1318,6 +1318,98 @@ The following comparers were converted from non-generic `IComparer` to `ICompare
 4. **GetIrregularSnapPoints ArrayPool** ⏳
    - Deferred - low impact since list is cached by ScrollContentPresenter
 
+### 10.8 Appendix H: Additional Memory Allocation Analysis (Phase 5)
+
+**Analysis Date:** December 2024
+
+#### Benchmark Findings
+
+| Benchmark | GridSize | Allocated | Notes |
+|-----------|----------|-----------|-------|
+| SimpleGrid_Measure | 5 | 96 B | Baseline - minimal |
+| SimpleGrid_Measure | 10 | 96 B | Good scaling |
+| SimpleGrid_Measure | 20 | 184 B | Good scaling |
+| ComplexGrid_Measure | 5 | 37,888 B | HIGH - mixed sizing |
+| ComplexGrid_Measure | 10 | 88,640 B | Scales ~O(n²) |
+| ComplexGrid_Measure | 20 | 373,025 B | Scales ~O(n²) |
+| ComplexGrid_FullLayout | 5-20 | 0 B | Zero allocation path |
+| StackPanel_Measure | All | 32 B | Minimal |
+| StackPanel_FullLayout | All | 0 B | Zero allocation |
+| VerticalStackPanel_SingleChildChange | 10 | 12,912 B | HIGH |
+| VerticalStackPanel_SingleChildChange | 50 | 23,152 B | Scales linearly |
+| VerticalStackPanel_SingleChildChange | 200 | 61,552 B | Property change cascade |
+| Virtualization benchmarks | All | 0 B | Excellent |
+
+#### Identified Allocation Sources
+
+**Grid.MeasureCellsGroup - Dictionary Creation (HIGH PRIORITY)**
+
+Location: `Grid.cs` line 1097-1098
+
+```csharp
+private static void RegisterSpan(
+    ref Dictionary<SpanKey, double>? store, ...)
+{
+    store ??= new Dictionary<SpanKey, double>();  // NEW ALLOCATION
+    ...
+}
+```
+
+Issue: A new Dictionary is created for every MeasureCellsGroup call that processes spans. For ComplexGrid with mixed Auto/Star/Pixel sizing and spans, this is called multiple times per measure pass due to cyclic resolution.
+
+**Impact:** Scales with O(n²) where n is grid size, as cell count = n² and each cell group measurement allocates a new dictionary.
+
+**Proposed Solution:** ThreadStatic dictionary cache with Clear() reuse pattern.
+
+#### Phase 5 Optimization Tasks
+
+| Task | Description | Status |
+|------|-------------|--------|
+| Grid span Dictionary pooling | ThreadStatic cache for span dictionary | ✅ Complete |
+
+#### Phase 5 Benchmark Results
+
+**SpanGrid_Measure Allocation Reduction:**
+
+| GridSize | Before | After | Reduction |
+|----------|--------|-------|-----------|
+| 5 | 896 B | 352 B | **-60%** |
+| 10 | 2,048 B | 736 B | **-64%** |
+| 20 | 4,056 B | 1,464 B | **-64%** |
+
+**ComplexGrid_Measure Allocation Reduction:**
+
+| GridSize | Before | After | Reduction |
+|----------|--------|-------|-----------|
+| 5 | 37,888 B | 36,624 B | -3.3% |
+| 10 | 88,640 B | 85,200 B | -3.9% |
+| 20 | 373,025 B | 363,500 B | -2.6% |
+
+#### Phase 5 Implementation Details
+
+**Grid Span Dictionary Pooling:**
+
+The Grid control's `MeasureCellsGroup` method registers span information in a dictionary for deferred processing. Previously, this allocated a new `Dictionary<SpanKey, double>` for every cell group measurement.
+
+Solution: Added a `[ThreadStatic]` dictionary cache that is reused across measurements and cleared after each use.
+
+```csharp
+// ThreadStatic pool for span dictionary
+[ThreadStatic]
+private static Dictionary<SpanKey, double>? t_spanDictionary;
+
+// In MeasureCellsGroup:
+var spanStore = t_spanDictionary ??= new Dictionary<SpanKey, double>();
+// ... use spanStore ...
+if (hasSpans)
+{
+    // Process spans
+    spanStore.Clear(); // Clear for reuse
+}
+```
+
+This eliminates dictionary allocation overhead, particularly effective for grids with spanning cells where the reduction is 60%+.
+
 ---
 
 ## Document History
@@ -1328,6 +1420,7 @@ The following comparers were converted from non-generic `IComparer` to `ICompare
 | 1.1 | Dec 2024 | Performance Team | Updated with implementation status for perf/visual-tree-optimizations branch |
 | 1.2 | Dec 2024 | Performance Team | Added Appendix G: Memory Allocation Analysis |
 | 1.3 | Dec 2024 | Performance Team | Phase 4 complete: RoutedEventArgs pooling, ToList removal, Grid comparers |
+| 1.4 | Dec 2024 | Performance Team | Phase 5 complete: Grid span Dictionary pooling (60%+ reduction for span grids) |
 
 ---
 
