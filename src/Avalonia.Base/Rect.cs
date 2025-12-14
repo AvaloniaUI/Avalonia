@@ -232,6 +232,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="p">The point.</param>
         /// <returns>true if the point is in the bounds of the rectangle; otherwise false.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(Point p)
         {
             return p.X >= _x && p.X <= _x + _width &&
@@ -244,6 +245,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="p">The point.</param>
         /// <returns>true if the point is in the bounds of the rectangle; otherwise false.</returns>    
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool ContainsExclusive(Point p)
         {
             return p.X >= _x && p.X < _x + _width &&
@@ -255,6 +257,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="r">The rectangle.</param>
         /// <returns>true if the rectangle is fully contained; otherwise false.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(Rect r)
         {
             return Contains(r.TopLeft) && Contains(r.BottomRight);
@@ -265,6 +268,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="rect">The rectangle to center.</param>
         /// <returns>The centered rectangle.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Rect CenterRect(Rect rect)
         {
             return new Rect(
@@ -366,6 +370,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="rect">The other rectangle.</param>
         /// <returns>The intersection.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Rect Intersect(Rect rect)
         {
             var newLeft = (rect.X > X) ? rect.X : X;
@@ -390,6 +395,7 @@ namespace Avalonia
         /// <returns>
         /// True if the specified rectangle intersects with this one; otherwise false.
         /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Intersects(Rect rect)
         {
             return (rect.X < Right) && (X < rect.Right) && (rect.Y < Bottom) && (Y < rect.Bottom);
@@ -505,6 +511,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="rect">The other rectangle.</param>
         /// <returns>The union.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Rect Union(Rect rect)
         {
             if (Width == 0 && Height == 0)
