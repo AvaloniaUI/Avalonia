@@ -25,6 +25,7 @@ namespace Avalonia
         /// <param name="width">The width.</param>
         /// <param name="height">The height.</param>
         /// <param name="unit">The unit of the rect.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public RelativeRect(double x, double y, double width, double height, RelativeUnit unit)
         {
             Rect = new Rect(x, y, width, height);
@@ -36,6 +37,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="rect">The rectangle.</param>
         /// <param name="unit">The unit of the rect.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public RelativeRect(Rect rect, RelativeUnit unit)
         {
             Rect = rect;
@@ -47,6 +49,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="size">The size of the rectangle.</param>
         /// <param name="unit">The unit of the rect.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public RelativeRect(Size size, RelativeUnit unit)
         {
             Rect = new Rect(size);
@@ -59,6 +62,7 @@ namespace Avalonia
         /// <param name="position">The position of the rectangle.</param>
         /// <param name="size">The size of the rectangle.</param>
         /// <param name="unit">The unit of the rect.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public RelativeRect(Point position, Size size, RelativeUnit unit)
         {
             Rect = new Rect(position, size);
@@ -71,6 +75,7 @@ namespace Avalonia
         /// <param name="topLeft">The top left position of the rectangle.</param>
         /// <param name="bottomRight">The bottom right position of the rectangle.</param>
         /// <param name="unit">The unit of the rect.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public RelativeRect(Point topLeft, Point bottomRight, RelativeUnit unit)
         {
             Rect = new Rect(topLeft, bottomRight);
@@ -93,6 +98,7 @@ namespace Avalonia
         /// <param name="left">The first rectangle.</param>
         /// <param name="right">The second rectangle.</param>
         /// <returns>True if the rectangles are equal; otherwise false.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(RelativeRect left, RelativeRect right)
         {
             return left.Equals(right);
@@ -104,6 +110,7 @@ namespace Avalonia
         /// <param name="left">The first rectangle.</param>
         /// <param name="right">The second rectangle.</param>
         /// <returns>True if the rectangles are unequal; otherwise false.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator !=(RelativeRect left, RelativeRect right)
         {
             return !left.Equals(right);
@@ -121,6 +128,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="p">The other rectangle.</param>
         /// <returns>True if the objects are equal, otherwise false.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Equals(RelativeRect p)
         {
             return Unit == p.Unit && Rect == p.Rect;

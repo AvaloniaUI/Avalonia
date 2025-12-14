@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 #if !BUILDTASK
 using Avalonia.Animation.Animators;
 #endif
@@ -15,16 +16,19 @@ namespace Avalonia
 #endif
     readonly struct CornerRadius : IEquatable<CornerRadius>
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public CornerRadius(double uniformRadius)
         {
             TopLeft = TopRight = BottomLeft = BottomRight = uniformRadius;
 
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public CornerRadius(double top, double bottom)
         {
             TopLeft = TopRight = top;
             BottomLeft = BottomRight = bottom;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public CornerRadius(double topLeft, double topRight, double bottomRight, double bottomLeft)
         {
             TopLeft = topLeft;
@@ -63,6 +67,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="other">The other corner radius to test equality against.</param>
         /// <returns>True if this corner radius is equal to other; False otherwise.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Equals(CornerRadius other)
         {
             // ReSharper disable CompareOfFloatsByEqualityOperator
@@ -115,11 +120,13 @@ namespace Avalonia
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(CornerRadius left, CornerRadius right)
         {
             return left.Equals(right);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator !=(CornerRadius left, CornerRadius right)
         {
             return !(left == right);

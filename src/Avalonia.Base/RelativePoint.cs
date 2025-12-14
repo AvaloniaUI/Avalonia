@@ -61,6 +61,7 @@ namespace Avalonia
         /// <param name="x">The X point.</param>
         /// <param name="y">The Y point</param>
         /// <param name="unit">The unit.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public RelativePoint(double x, double y, RelativeUnit unit)
             : this(new Point(x, y), unit)
         {
@@ -71,6 +72,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="point">The point.</param>
         /// <param name="unit">The unit.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public RelativePoint(Point point, RelativeUnit unit)
         {
             _point = point;
@@ -93,6 +95,7 @@ namespace Avalonia
         /// <param name="left">The first point.</param>
         /// <param name="right">The second point.</param>
         /// <returns>True if the points are equal; otherwise false.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(RelativePoint left, RelativePoint right)
         {
             return left.Equals(right);
@@ -104,6 +107,7 @@ namespace Avalonia
         /// <param name="left">The first point.</param>
         /// <param name="right">The second point.</param>
         /// <returns>True if the points are unequal; otherwise false.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator !=(RelativePoint left, RelativePoint right)
         {
             return !left.Equals(right);
@@ -121,6 +125,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="p">The other point.</param>
         /// <returns>True if the objects are equal, otherwise false.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Equals(RelativePoint p)
         {
             return Unit == p.Unit && Point == p.Point;
