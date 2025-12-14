@@ -1008,7 +1008,7 @@ namespace Avalonia.Controls
             }
 
             var children = Children;
-            Hashtable? spanStore = null;
+            Dictionary<SpanKey, double>? spanStore = null;
             bool ignoreDesiredSizeV = forceInfinityV;
 
             int i = cellsHead;
@@ -1059,10 +1059,10 @@ namespace Avalonia.Controls
 
             if (spanStore != null)
             {
-                foreach (DictionaryEntry e in spanStore)
+                foreach (var e in spanStore)
                 {
-                    SpanKey key = (SpanKey)e.Key;
-                    double desiredSize = (double)e.Value!;
+                    var key = e.Key;
+                    double desiredSize = e.Value;
 
                     EnsureMinSizeInDefinitionRange(
                         key.U ? DefinitionsU : DefinitionsV,
@@ -1077,28 +1077,23 @@ namespace Avalonia.Controls
         /// <summary>
         /// Helper method to register a span information for delayed processing.
         /// </summary>
-        /// <param name="store">Reference to a hashtable object used as storage.</param>
+        /// <param name="store">Reference to a dictionary object used as storage.</param>
         /// <param name="start">Span starting index.</param>
         /// <param name="count">Span count.</param>
         /// <param name="u"><c>true</c> if this is a column span. <c>false</c> if this is a row span.</param>
         /// <param name="value">Value to store. If an entry already exists the biggest value is stored.</param>
         private static void RegisterSpan(
-            ref Hashtable? store,
+            ref Dictionary<SpanKey, double>? store,
             int start,
             int count,
             bool u,
             double value)
         {
-            if (store == null)
-            {
-                store = new Hashtable();
-            }
+            store ??= new Dictionary<SpanKey, double>();
 
-            SpanKey key = new SpanKey(start, count, u);
-            object? o = store[key];
+            var key = new SpanKey(start, count, u);
 
-            if (o == null
-                || value > (double)o)
+            if (!store.TryGetValue(key, out double existing) || value > existing)
             {
                 store[key] = value;
             }
@@ -2838,10 +2833,26 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Helper class for representing a key for a span in hashtable.
+        /// Helper struct for representing a key for a span in dictionary.
         /// </summary>
-        private class SpanKey
+        private readonly struct SpanKey : IEquatable<SpanKey>
         {
+            /// <summary>
+            /// Returns start index of the span.
+            /// </summary>
+            internal readonly int Start;
+
+            /// <summary>
+            /// Returns span count.
+            /// </summary>
+            internal readonly int Count;
+
+            /// <summary>
+            /// Returns <c>true</c> if this is a column span.
+            /// <c>false</c> if this is a row span.
+            /// </summary>
+            internal readonly bool U;
+
             /// <summary>
             /// Constructor.
             /// </summary>
@@ -2850,55 +2861,26 @@ namespace Avalonia.Controls
             /// <param name="u"><c>true</c> for columns; <c>false</c> for rows.</param>
             internal SpanKey(int start, int count, bool u)
             {
-                _start = start;
-                _count = count;
-                _u = u;
+                Start = start;
+                Count = count;
+                U = u;
             }
 
             /// <summary>
             /// <see cref="object.GetHashCode"/>
             /// </summary>
-            public override int GetHashCode()
-            {
-                int hash = (_start ^ (_count << 2));
+            public override int GetHashCode() => HashCode.Combine(Start, Count, U);
 
-                if (_u) hash &= 0x7ffffff;
-                else hash |= 0x8000000;
-
-                return (hash);
-            }
+            /// <summary>
+            /// <see cref="IEquatable{T}.Equals(T)"/>
+            /// </summary>
+            public bool Equals(SpanKey other) =>
+                Start == other.Start && Count == other.Count && U == other.U;
 
             /// <summary>
             /// <see cref="object.Equals(object)"/>
             /// </summary>
-            public override bool Equals(object? obj)
-            {
-                SpanKey? sk = obj as SpanKey;
-                return (sk != null
-                        && sk._start == _start
-                        && sk._count == _count
-                        && sk._u == _u);
-            }
-
-            /// <summary>
-            /// Returns start index of the span.
-            /// </summary>
-            internal int Start { get => (_start); }
-
-            /// <summary>
-            /// Returns span count.
-            /// </summary>
-            internal int Count { get => (_count); }
-
-            /// <summary>
-            /// Returns <c>true</c> if this is a column span.
-            /// <c>false</c> if this is a row span.
-            /// </summary>
-            internal bool U { get => (_u); }
-
-            private int _start;
-            private int _count;
-            private bool _u;
+            public override bool Equals(object? obj) => obj is SpanKey other && Equals(other);
         }
 
         /// <summary>
