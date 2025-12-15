@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Avalonia.Input.GestureRecognizers;
 using Avalonia.VisualTree;
 
@@ -31,8 +30,24 @@ namespace Avalonia.Input
         {
             if (control1 is not Visual c1 || control2 is not Visual c2)
                 return null;
-            var seen = new HashSet<IInputElement>(c1.GetSelfAndVisualAncestors().OfType<IInputElement>());
-            return c2.GetSelfAndVisualAncestors().OfType<IInputElement>().FirstOrDefault(seen.Contains);
+            
+            // Walk the ancestor chain directly without LINQ allocation
+            // First, mark all ancestors of c1
+            var seen = new HashSet<Visual>();
+            for (var current = c1; current != null; current = current.VisualParent)
+            {
+                if (current is IInputElement)
+                    seen.Add(current);
+            }
+            
+            // Then find first common ancestor in c2's chain
+            for (var current = c2; current != null; current = current.VisualParent)
+            {
+                if (current is IInputElement element && seen.Contains(current))
+                    return element;
+            }
+            
+            return null;
         }
 
         protected virtual void PlatformCapture(IInputElement? element)
@@ -63,8 +78,11 @@ namespace Avalonia.Input
             if (oldVisual != null)
             {
                 commonParent = FindCommonParent(control, oldCapture);
-                foreach (var notifyTarget in oldVisual.GetSelfAndVisualAncestors().OfType<IInputElement>())
+                // Walk ancestor chain directly instead of OfType<IInputElement>() LINQ allocation
+                for (Visual? current = oldVisual; current != null; current = current.VisualParent)
                 {
+                    if (current is not IInputElement notifyTarget)
+                        continue;
                     if (notifyTarget == commonParent)
                         break;
                     var args = new PointerCaptureChangingEventArgs(notifyTarget, this, control, source);
@@ -82,12 +100,17 @@ namespace Avalonia.Input
                 PlatformCapture(control);
 
             if (oldVisual != null)
-                foreach (var notifyTarget in oldVisual.GetSelfAndVisualAncestors().OfType<IInputElement>())
+            {
+                // Walk ancestor chain directly instead of OfType<IInputElement>() LINQ allocation
+                for (Visual? current = oldVisual; current != null; current = current.VisualParent)
                 {
+                    if (current is not IInputElement notifyTarget)
+                        continue;
                     if (notifyTarget == commonParent)
                         break;
                     notifyTarget.RaiseEvent(new PointerCaptureLostEventArgs(notifyTarget, this));
                 }
+            }
 
             if (Captured is Visual newVisual)
                 newVisual.DetachedFromVisualTree += OnCaptureDetached;
