@@ -226,8 +226,9 @@ namespace Avalonia.Input.Navigation
             {
                 if (e is Visual elementAsVisual)
                 {
-                    var children = FocusHelpers.GetInputElementChildren(elementAsVisual).ToArray();
-                    var count = children.Length;
+                    // Use struct enumerable to avoid ToArray() allocation
+                    var children = FocusHelpers.GetInputElementChildren(elementAsVisual);
+                    var count = children.Count;
 
                     for (int i = 0; i < count; i++)
                     {
@@ -262,8 +263,9 @@ namespace Avalonia.Input.Navigation
             {
                 if (e is Visual elementAsVisual)
                 {
-                    var children = FocusHelpers.GetInputElementChildren(elementAsVisual).ToArray();
-                    var count = children.Length;
+                    // Use struct enumerable to avoid ToArray() allocation
+                    var children = FocusHelpers.GetInputElementChildren(elementAsVisual);
+                    var count = children.Count;
 
                     for (int i = count - 1; i >= 0; i--)
                     {
@@ -373,7 +375,8 @@ namespace Avalonia.Input.Navigation
         {
             if (GetParent(e) is Visual parentAsVisual && e is Visual elementAsVisual)
             {
-                var children = FocusHelpers.GetInputElementChildren(parentAsVisual).ToList();
+                // Use struct enumerable to avoid ToList() allocation
+                var children = FocusHelpers.GetInputElementChildren(parentAsVisual);
                 var count = children.Count;
                 var i = 0;
 
@@ -577,7 +580,8 @@ namespace Avalonia.Input.Navigation
         {
             if (GetParent(e) is Visual parentAsVisual && e is Visual elementAsVisual)
             {
-                var children = FocusHelpers.GetInputElementChildren(parentAsVisual).ToList();
+                // Use struct enumerable to avoid ToList() allocation
+                var children = FocusHelpers.GetInputElementChildren(parentAsVisual);
                 var count = children.Count;
                 IInputElement? prev = null;
                 
