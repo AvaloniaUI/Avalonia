@@ -20,32 +20,63 @@ namespace Avalonia.Styling.Activators
 
         public static bool AreClassesMatching(IReadOnlyList<string> classes, IList<string> toMatch)
         {
-            int remainingMatches = toMatch.Count;
+            int toMatchCount = toMatch.Count;
             int classesCount = classes.Count;
 
             // Early bail out - we can't match if control does not have enough classes.
-            if (classesCount < remainingMatches)
+            if (classesCount < toMatchCount)
             {
                 return false;
             }
 
-            for (var i = 0; i < classesCount; i++)
+            // For small toMatch lists (common case), linear search is faster than HashSet overhead.
+            // Threshold of 4 balances HashSet allocation cost vs O(n*m) search cost.
+            if (toMatchCount <= 4)
             {
-                var c = classes[i];
-
-                if (toMatch.Contains(c))
+                int remainingMatches = toMatchCount;
+                
+                for (var i = 0; i < classesCount; i++)
                 {
-                    --remainingMatches;
+                    var c = classes[i];
 
-                    // Already matched so we can skip checking other classes.
-                    if (remainingMatches == 0)
+                    // Linear search through toMatch - O(m) but m <= 4
+                    for (var j = 0; j < toMatchCount; j++)
                     {
-                        break;
+                        if (toMatch[j] == c)
+                        {
+                            --remainingMatches;
+                            if (remainingMatches == 0)
+                            {
+                                return true;
+                            }
+                            break;
+                        }
                     }
                 }
-            }
 
-            return remainingMatches == 0;
+                return remainingMatches == 0;
+            }
+            else
+            {
+                // For larger toMatch lists, use HashSet for O(1) lookups.
+                // This converts O(n*m) to O(n+m).
+                var toMatchSet = new HashSet<string>(toMatch);
+                int remainingMatches = toMatchSet.Count;
+
+                for (var i = 0; i < classesCount; i++)
+                {
+                    if (toMatchSet.Remove(classes[i]))
+                    {
+                        --remainingMatches;
+                        if (remainingMatches == 0)
+                        {
+                            return true;
+                        }
+                    }
+                }
+
+                return remainingMatches == 0;
+            }
         }
 
         void IClassesChangedListener.Changed() => ReevaluateIsActive();
