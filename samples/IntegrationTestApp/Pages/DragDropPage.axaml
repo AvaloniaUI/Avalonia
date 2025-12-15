@@ -30,6 +30,7 @@
                 Background="CornflowerBlue"
                 Margin="10"
                 CornerRadius="8"
+                AutomationProperties.AccessibilityView="Content"
                 PointerPressed="DragSource_PointerPressed">
           <TextBlock HorizontalAlignment="Center"
                      VerticalAlignment="Center"
@@ -44,6 +45,7 @@
                 Background="LightGreen"
                 Margin="10"
                 CornerRadius="8"
+                AutomationProperties.AccessibilityView="Content"
                 DragDrop.AllowDrop="True">
           <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
             <TextBlock Text="Drop Target"
