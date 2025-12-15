@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
@@ -301,7 +300,7 @@ namespace Avalonia.Input
 
         private static ProcessKeyResult ProcessKey(string key, List<IInputElement> targets)
         {
-            if (!targets.Any())
+            if (targets.Count == 0)
                 return ProcessKeyResult.NoMatch;
 
             var isSingleTarget = true;
@@ -350,7 +349,7 @@ namespace Avalonia.Input
         {
             var possibleElements = CopyMatchingAndPurgeDead(key);
 
-            if (!possibleElements.Any())
+            if (possibleElements.Count == 0)
                 return possibleElements;
 
             var finalTargets = new List<IInputElement>(1);
@@ -477,10 +476,12 @@ namespace Avalonia.Input
                 if (element is not ILogical parentElement) 
                     continue;
                 
-                // add all descendants of the element
-                sorted.AddRange(queue
-                    .Where(child => parentElement
-                        .IsLogicalAncestorOf(child as ILogical)));
+                // add all descendants of the element - iterate directly instead of LINQ Where
+                foreach (var child in queue)
+                {
+                    if (parentElement.IsLogicalAncestorOf(child as ILogical))
+                        sorted.Add(child);
+                }
             }
             return sorted;
         }
