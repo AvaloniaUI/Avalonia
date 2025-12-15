@@ -131,53 +131,55 @@ namespace Avalonia.Media
         {
             var result = new FrugalStructList<FontSourceIdentifier>(1);
 
-            var segments = name.Split(',');
-
-            for (int i = 0; i < segments.Length; i++)
+            int commaIndex = -1;
+            do
             {
-                var segment = segments[i];
-                var innerSegments = segment.Split('#');
+                // Look for a comma separator to carve out a single segment.
+                int segmentStart = commaIndex + 1;
+                commaIndex = name.IndexOf(',', segmentStart);
+                int segmentEnd = commaIndex == -1
+                    ? name.Length
+                    : commaIndex;
 
-                FontSourceIdentifier identifier = new FontSourceIdentifier(name, null);
+                var segment = name.AsSpan(segmentStart, segmentEnd - segmentStart).Trim();
 
-                switch (innerSegments.Length)
+                FontSourceIdentifier? identifier = null;
+
+                // Check if there is exactly one '#' (i.e., segment is in the format "path#innerName").
+                int separatorIndex = segment.IndexOf('#');
+                if (separatorIndex != -1 && segment.Slice(separatorIndex + 1).IndexOf('#') == -1)
                 {
-                    case 1:
+                    var pathSpan = segment.Slice(0, separatorIndex).Trim();
+                    var innerName = segment.Slice(separatorIndex + 1).Trim();
+
+                    if (pathSpan.IsEmpty)
+                    {
+                        identifier = new FontSourceIdentifier(innerName.ToString(), null);
+                    }
+                    else
+                    {
+                        string path = pathSpan.ToString();
+                        if (pathSpan.IndexOf('/') >= 0 && Uri.TryCreate(path, UriKind.Relative, out var source))
                         {
-                            identifier = new FontSourceIdentifier(innerSegments[0].Trim(), null);
-                            break;
+                            identifier = new FontSourceIdentifier(innerName.ToString(), source);
                         }
-
-                    case 2:
+                        else
                         {
-                            var path = innerSegments[0].Trim();
-                            var innerName = innerSegments[1].Trim();
-
-                            if (string.IsNullOrEmpty(path))
+                            if (Uri.TryCreate(path, UriKind.Absolute, out source))
                             {
-                                identifier = new FontSourceIdentifier(innerName, null);
+                                identifier = new FontSourceIdentifier(innerName.ToString(), source);
                             }
-                            else
-                            {
-                                if (path.Contains('/') && Uri.TryCreate(path, UriKind.Relative, out var source))
-                                {
-                                    identifier = new FontSourceIdentifier(innerName, source);
-                                }
-                                else
-                                {
-                                    if (Uri.TryCreate(path, UriKind.Absolute, out source))
-                                    {
-                                        identifier = new FontSourceIdentifier(innerName, source);
-                                    }
-                                }
-                            }
-
-                            break;
                         }
+                    }
                 }
 
-                result.Add(identifier);
-            }
+                // If we didn't manage to match it to any known format, treat the entire segment as the font name.
+                identifier ??= new FontSourceIdentifier(
+                    segment.Length == name.Length ? name : segment.ToString(),
+                    null);
+
+                result.Add(identifier.Value);
+            } while (commaIndex != -1);
 
             return result;
         }
