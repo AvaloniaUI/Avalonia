@@ -720,7 +720,8 @@ namespace Avalonia.Collections
         {
             if (_collectionChanged != null)
             {
-                var e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, new[] { item }, index);
+                // Use the single-object constructor to avoid array allocation
+                var e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item, index);
                 _collectionChanged(this, e);
             }
 
@@ -761,7 +762,8 @@ namespace Avalonia.Collections
         {
             if (_collectionChanged != null)
             {
-                var e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, new[] { item }, index);
+                // Use the single-object constructor to avoid array allocation
+                var e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item, index);
                 _collectionChanged(this, e);
             }
 
