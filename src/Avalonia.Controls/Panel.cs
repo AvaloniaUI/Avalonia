@@ -136,11 +136,25 @@ namespace Avalonia.Controls
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    if (!IsItemsHost)
                     {
-                        LogicalChildren.InsertRange(e.NewStartingIndex, e.NewItems!.OfType<Control>());
+                        // Children collection only contains Controls, so we can cast directly
+                        // instead of using OfType<T> which allocates an iterator.
+                        var newItems = e.NewItems!;
+                        var startIndex = e.NewStartingIndex;
+                        var count = newItems.Count;
+                        
+                        for (var i = 0; i < count; i++)
+                        {
+                            var child = (Control)newItems[i]!;
+                            var index = startIndex + i;
+                            
+                            if (!IsItemsHost)
+                            {
+                                LogicalChildren.Insert(index, child);
+                            }
+                            VisualChildren.Insert(index, child);
+                        }
                     }
-                    VisualChildren.InsertRange(e.NewStartingIndex, e.NewItems!.OfType<Visual>());
                     break;
 
                 case NotifyCollectionChangedAction.Move:
@@ -154,9 +168,9 @@ namespace Avalonia.Controls
                 case NotifyCollectionChangedAction.Remove:
                     if (!IsItemsHost)
                     {
-                        LogicalChildren.RemoveAll(e.OldItems!.OfType<Control>());
+                        LogicalChildren.RemoveRange(e.OldStartingIndex, e.OldItems!.Count);
                     }
-                    VisualChildren.RemoveAll(e.OldItems!.OfType<Visual>());
+                    VisualChildren.RemoveRange(e.OldStartingIndex, e.OldItems!.Count);
                     break;
 
                 case NotifyCollectionChangedAction.Replace:
