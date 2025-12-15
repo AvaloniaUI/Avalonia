@@ -541,9 +541,21 @@ namespace Avalonia
         /// <param name="e">The event args.</param>
         protected virtual void OnDetachedFromVisualTreeCore(VisualTreeAttachmentEventArgs e)
         {
+            OnDetachedFromVisualTreeCore(e, isTopLevel: true);
+        }
+
+        /// <summary>
+        /// Internal implementation that tracks whether this is the top-level detachment.
+        /// Only the top-level visual needs to be marked dirty - descendants are handled
+        /// as part of the parent's composition tree update.
+        /// Visual level is also updated during this traversal to avoid double tree traversal.
+        /// </summary>
+        private void OnDetachedFromVisualTreeCore(VisualTreeAttachmentEventArgs e, bool isTopLevel)
+        {
             Logger.TryGet(LogEventLevel.Verbose, LogArea.Visual)?.Log(this, "Detached from visual tree");
 
             _visualRoot = this as IRenderRoot;
+            _visualLevel = 0; // Reset visual level during detachment traversal
             RootedVisualChildrenCount--;
 
             if (RenderTransform is IMutableTransform mutableTransform)
@@ -552,12 +564,28 @@ namespace Avalonia
             }
 
             DisableTransitions();
-            UpdateIsEffectivelyVisible(true);
+            
+            // Update effective visibility during detachment traversal.
+            // When detached, effective visibility is just the control's IsVisible value
+            // (there's no parent to inherit visibility from).
+            var newEffectivelyVisible = _visualRoot == null && IsVisible;
+            if (IsEffectivelyVisible != newEffectivelyVisible)
+            {
+                IsEffectivelyVisible = newEffectivelyVisible;
+            }
+            
             OnDetachedFromVisualTree(e);
             DetachFromCompositor();
 
             DetachedFromVisualTree?.Invoke(this, e);
-            e.Root.Renderer.AddDirty(this);
+            
+            // Only mark the top-level detached visual as dirty.
+            // Descendants don't need individual dirty marking since they're being
+            // removed as part of the parent's composition tree update.
+            if (isTopLevel)
+            {
+                e.Root.Renderer.AddDirty(this);
+            }
 
             var visualChildren = VisualChildren;
             var visualChildrenCount = visualChildren.Count;
@@ -566,7 +594,7 @@ namespace Avalonia
             {
                 if (visualChildren[i] is { } child)
                 {
-                    child.OnDetachedFromVisualTreeCore(e);
+                    child.OnDetachedFromVisualTreeCore(e, isTopLevel: false);
                 }
             }
         }
@@ -682,14 +710,18 @@ namespace Avalonia
             var old = _visualParent;
             _visualParent = value;
 
-            // Update cached visual level and propagate to children
-            var newLevel = value != null ? value._visualLevel + 1 : 0;
-            UpdateVisualLevel(newLevel);
-
+            // For detachment, we'll update visual level inside OnDetachedFromVisualTreeCore
+            // to avoid double traversal of the tree
             if (_visualRoot is not null && old is not null)
             {
                 var e = new VisualTreeAttachmentEventArgs(old, _visualRoot);
                 OnDetachedFromVisualTreeCore(e);
+            }
+            else
+            {
+                // Update cached visual level and propagate to children
+                var newLevel = value != null ? value._visualLevel + 1 : 0;
+                UpdateVisualLevel(newLevel);
             }
 
             if (_visualParent is IRenderRoot || _visualParent?.IsAttachedToVisualTree == true)
