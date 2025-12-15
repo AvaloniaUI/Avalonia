@@ -119,3 +119,196 @@ We have a range of [support plans available](https://avaloniaui.net/support?utm_
 ## Avalonia XPF - Our cross-platform WPF
 Unleash the full potential of your existing WPF apps with our cross-platform UI framework, enabling WPF apps to run on macOS and Linux without requiring expensive and risky rewrites.
 [![GH_Banner](https://github.com/user-attachments/assets/a6176267-1187-45ff-b82b-fcc7048e54b7)](https://avaloniaui.net/xpf?utm_source=github&utm_medium=referral&utm_content=readme_ad)
+
+##Türkçe
+
+### C# `SourceGenerator` - Tip Güvenli Avalonia `x:Name` Referansları İçin
+
+Bu, `x:Name` (veya sadece `Name`) ile işaretlenmiş kontrollere güçlü tipli referanslar oluşturmak için geliştirilmiş bir [C# `SourceGenerator`](https://devblogs.microsoft.com/dotnet/introducing-c-source-generators/)'dır.
+
+### Başlarken
+
+Başlamak için, Avalonia NuGet paketi ile bir proje oluşturmanız yeterlidir:
+
+### Kullanım
+
+NuGet paketini yükledikten sonra, view sınıfınızı `partial` olarak tanımlayın.  XAML dosyalarında tanımlanan Avalonia kontrollerine tip güvenli C# referansları, `x:Class` direktifi tarafından referans verilen sınıflar için otomatik olarak oluşturulacaktır.
+
+```xml
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Sample. App.SignUpView">
+    <TextBox x:Name="UserNameTextBox" x:FieldModifier="public" />
+</Window>
+```
+
+`Sample.App` namespace'i içinde, `TextBox` tipinde `UserNameTextBox` adında tek bir `public` özelliğe sahip `SignUpView` adında yeni bir C# partial sınıfı oluşturulacaktır. Oluşturulan dosyayı görmeyeceğiz... 
+
+```cs
+using Avalonia.Controls;
+
+namespace Sample.App
+{
+    public partial class SignUpView : Window
+    {
+        public SignUpView()
+        {
+            // Bu metod otomatik oluşturulur. Oluşturulan özelliklere
+            // erişmeden önce bu metodu çağırın. 'UserNameTextBox'
+            // özelliği de otomatik oluşturulur.
+            InitializeComponent();
+            UserNameTextBox.Text = "Joseph";
+        }
+    }
+}
+```
+
+<img src="https://hsto.org/getpro/habr/post_images/d9f/4aa/a1e/d9f4aaa1eb450f5dd2fca66631bc16a0.gif" />
+
+### Neden buna ihtiyacım var? 
+
+Tip güvenli `x:Name` referansları, örneğin [ReactiveUI code-behind bindings](https://www.reactiveui.net/docs/handbook/data-binding/) kullanmaya karar verirseniz faydalı olabilir:
+
+```cs
+// UserNameValidation ve PasswordValidation otomatik olarak oluşturulur.
+public partial class SignUpView : ReactiveWindow<SignUpViewModel>
+{
+    public SignUpView()
+    {
+        InitializeComponent();
+        this.WhenActivated(disposables =>
+        {
+            this.BindValidation(ViewModel, x => x.UserName, x => x.UserNameValidation.Text)
+                .DisposeWith(disposables);
+            this.BindValidation(ViewModel, x => x.Password, x => x.PasswordValidation.Text)
+                .DisposeWith(disposables);
+        });
+    }
+}
+```
+
+### Gelişmiş Kullanım
+
+> `AvaloniaNameGeneratorBehavior` ayarı `InitializeComponent` olarak ayarlanmış generator kullanıyorsanız (bu varsayılandır), code-behind view sınıfınızda asla `InitializeComponent` adında bir metod bulundurmayın. 
+
+`x:Name` generator'ı, C# proje dosyanıza (`.csproj`) koyabileceğiniz MsBuild özellikleri aracılığıyla yapılandırılabilir.  Bu seçenekleri kullanarak, generator davranışını, varsayılan alan değiştiricisini ve daha fazlasını yapılandırabilirsiniz. 
+
+- `AvaloniaNameGeneratorBehavior`  
+    Olası değerler: `OnlyProperties`, `InitializeComponent`  
+    Varsayılan değer: `InitializeComponent`  
+    Generator'ın sadece salt-okunur özellikler mi yoksa `InitializeComponent` metodunu mu oluşturması gerektiğini belirler.
+
+- `AvaloniaNameGeneratorDefaultFieldModifier`  
+    Olası değerler: `internal`, `public`, `private`, `protected`  
+    Varsayılan değer: `internal`  
+    `x:FieldModifier` direktifi belirtilmediğinde kullanılacak varsayılan alan değiştirici. 
+
+- `AvaloniaNameGeneratorFilterByPath`  
+    Olası format: `glob_pattern`, `glob_pattern;glob_pattern`  
+    Varsayılan değer: `*`  
+    Generator sadece belirtilen glob kalıbı(ları)na uyan yollardaki XAML dosyalarını işleyecektir.  
+    Örnek: `*/Views/*View.xaml`, `*View.axaml;*Control.axaml`
+
+- `AvaloniaNameGeneratorFilterByNamespace`  
+    Olası format: `glob_pattern`, `glob_pattern;glob_pattern`  
+    Varsayılan değer: `*`  
+    Generator sadece temel sınıfların namespace'leri belirtilen glob kalıbı(ları)na uyan XAML dosyalarını işleyecektir.  
+    Örnek: `MyApp.Presentation.*`, `MyApp.Presentation.Views;MyApp. Presentation.Controls`
+
+- `AvaloniaNameGeneratorViewFileNamingStrategy`  
+    Olası değerler: `ClassName`, `NamespaceAndClassName`  
+    Varsayılan değer: `NamespaceAndClassName`  
+    Otomatik oluşturulan view dosyalarının nasıl [adlandırılacağını](https://github.com/AvaloniaUI/Avalonia. NameGenerator/issues/92) belirler.
+
+Varsayılan değerler şöyledir: 
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <AvaloniaNameGeneratorBehavior>InitializeComponent</AvaloniaNameGeneratorBehavior>
+        <AvaloniaNameGeneratorDefaultFieldModifier>internal</AvaloniaNameGeneratorDefaultFieldModifier>
+        <AvaloniaNameGeneratorFilterByPath>*</AvaloniaNameGeneratorFilterByPath>
+        <AvaloniaNameGeneratorFilterByNamespace>*</AvaloniaNameGeneratorFilterByNamespace>
+        <AvaloniaNameGeneratorViewFileNamingStrategy>NamespaceAndClassName</AvaloniaNameGeneratorViewFileNamingStrategy>
+    </PropertyGroup>
+    <!-- ... -->
+</Project>
+```
+
+![](https://user-images.githubusercontent.com/6759207/107812261-7ddfea00-6d80-11eb-9c7e-67bf95d0f0d4.gif)
+
+### Oluşturulan kaynak kodlar nasıl görünür?
+
+[`SignUpView`](https://github.com/avaloniaui/Avalonia. NameGenerator/blob/main/src/Avalonia.NameGenerator.Sandbox/Views/SignUpView.xaml) için, source generator çalıştırıldığında aşağıdaki çıktıyı alırız:
+
+```cs
+// <auto-generated />
+
+using Avalonia.Controls;
+using Avalonia.Markup.Xaml;
+
+namespace Sample.App
+{
+    partial class SampleView
+    {
+        internal global:: Avalonia.NameGenerator. Sandbox.Controls.CustomTextBox UserNameTextBox;
+        public global::Avalonia.Controls.TextBlock UserNameValidation;
+        private global::Avalonia.Controls.TextBox PasswordTextBox;
+        internal global::Avalonia.Controls.TextBlock PasswordValidation;
+        internal global:: Avalonia.Controls.ListBox AwesomeListView;
+        internal global::Avalonia.Controls.TextBox ConfirmPasswordTextBox;
+        internal global:: Avalonia.Controls.TextBlock ConfirmPasswordValidation;
+        internal global::Avalonia.Controls.Button SignUpButton;
+        internal global::Avalonia.Controls.TextBlock CompoundValidation;
+
+        public void InitializeComponent(bool loadXaml = true, bool attachDevTools = true)
+        {
+            if (loadXaml)
+            {
+                AvaloniaXamlLoader.Load(this);
+            }
+
+// Bu sadece Avalonia.Diagnostics yüklüyse eklenecektir.
+#if DEBUG
+            if (attachDevTools)
+            {
+                this.AttachDevTools();
+            } 
+#endif
+
+            UserNameTextBox = this.FindNameScope()?.Find<global::Avalonia.NameGenerator.Sandbox.Controls.CustomTextBox>("UserNameTextBox");
+            UserNameValidation = this.FindNameScope()?.Find<global::Avalonia.Controls.TextBlock>("UserNameValidation");
+            PasswordTextBox = this.FindNameScope()?.Find<global::Avalonia.Controls.TextBox>("PasswordTextBox");
+            PasswordValidation = this.FindNameScope()?.Find<global::Avalonia.Controls.TextBlock>("PasswordValidation");
+            AwesomeListView = this.FindNameScope()?.Find<global::Avalonia.Controls.ListBox>("AwesomeListView");
+            ConfirmPasswordTextBox = this.FindNameScope()?.Find<global::Avalonia. Controls.TextBox>("ConfirmPasswordTextBox");
+            ConfirmPasswordValidation = this.FindNameScope()?.Find<global::Avalonia.Controls.TextBlock>("ConfirmPasswordValidation");
+            SignUpButton = this. FindNameScope()?.Find<global::Avalonia.Controls.Button>("SignUpButton");
+            CompoundValidation = this.FindNameScope()?.Find<global::Avalonia.Controls.TextBlock>("CompoundValidation");
+        }
+    }
+}
+```
+
+Eğer `OnlyProperties` source generator modunu etkinleştirirseniz, şunu elde edersiniz:
+
+```cs
+// <auto-generated />
+
+using Avalonia.Controls;
+
+namespace Avalonia.NameGenerator.Sandbox.Views
+{
+    partial class SignUpView
+    {
+        internal global::Avalonia.NameGenerator.Sandbox.Controls.CustomTextBox UserNameTextBox => this.FindNameScope()?.Find<global::Avalonia.NameGenerator.Sandbox.Controls.CustomTextBox>("UserNameTextBox");
+        public global:: Avalonia.Controls.TextBlock UserNameValidation => this.FindNameScope()?.Find<global::Avalonia.Controls.TextBlock>("UserNameValidation");
+        private global::Avalonia.Controls.TextBox PasswordTextBox => this.FindNameScope()?.Find<global::Avalonia.Controls.TextBox>("PasswordTextBox");
+        internal global::Avalonia.Controls.TextBlock PasswordValidation => this.FindNameScope()?.Find<global::Avalonia.Controls.TextBlock>("PasswordValidation");
+        internal global::Avalonia.Controls.TextBox ConfirmPasswordTextBox => this.FindNameScope()?.Find<global::Avalonia.Controls.TextBox>("ConfirmPasswordTextBox");
+        internal global:: Avalonia.Controls.TextBlock ConfirmPasswordValidation => this.FindNameScope()?.Find<global::Avalonia.Controls. TextBlock>("ConfirmPasswordValidation");
+        internal global:: Avalonia.Controls.Button SignUpButton => this.FindNameScope()?.Find<global::Avalonia.Controls.Button>("SignUpButton");
+        internal global::Avalonia.Controls.TextBlock CompoundValidation => this.FindNameScope()?.Find<global::Avalonia.Controls.TextBlock>("CompoundValidation");
+    }
+}
+```
