@@ -30,7 +30,6 @@
         "CiAzureWindows",
         "Clean",
         "Compile",
-        "CompileHtmlPreviewer",
         "CompileNative",
         "CreateIntermediateNugetPackages",
         "CreateNugetPackages",
@@ -129,9 +128,6 @@
         },
         "force-nuget-version": {
           "type": "string"
-        },
-        "skip-previewer": {
-          "type": "boolean"
         },
         "skip-tests": {
           "type": "boolean"
