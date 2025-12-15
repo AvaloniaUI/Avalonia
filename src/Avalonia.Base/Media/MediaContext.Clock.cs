@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Avalonia.Animation;
+using Avalonia.Collections.Pooled;
 using Avalonia.Reactive;
 
 namespace Avalonia.Media;
@@ -17,6 +18,8 @@ internal partial class MediaContext
         private readonly MediaContext _parent;
         private readonly List<IObserver<TimeSpan>> _observers = new();
         private readonly List<IObserver<TimeSpan>> _newObservers = new();
+        // Pooled list to avoid allocations during Pulse - reused each frame
+        private readonly PooledList<IObserver<TimeSpan>> _observersSnapshot = new();
         private Queue<Action<TimeSpan>> _queuedAnimationFrames = new();
         private Queue<Action<TimeSpan>> _queuedAnimationFramesNext = new();
         private TimeSpan _currentAnimationTimestamp;
@@ -58,13 +61,19 @@ internal partial class MediaContext
             while (animationFrames.TryDequeue(out var callback))
                 callback(now);
             
-            foreach (var observer in _observers.ToArray())
+            // Use pooled snapshot to avoid ToArray() allocation on each frame
+            _observersSnapshot.Clear();
+            _observersSnapshot.AddRange(_observers);
+            foreach (var observer in _observersSnapshot.Span)
                 observer.OnNext(_currentAnimationTimestamp);
         }
         
         public void PulseNewSubscriptions()
         {
-            foreach (var observer in _newObservers.ToArray())
+            // Use pooled snapshot to avoid ToArray() allocation
+            _observersSnapshot.Clear();
+            _observersSnapshot.AddRange(_newObservers);
+            foreach (var observer in _observersSnapshot.Span)
                 observer.OnNext(_currentAnimationTimestamp);
             _newObservers.Clear();
         }
