@@ -1,6 +1,4 @@
 ﻿using Avalonia.Interactivity;
-using Avalonia.VisualTree;
-using System.Linq;
 using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Metadata;
@@ -17,7 +15,16 @@ namespace Avalonia.Input
         private static Interactive? GetTarget(IInputRoot root, Point local)
         {
             var hit = root.InputHitTest(local) as Visual;
-            var target = hit?.GetSelfAndVisualAncestors()?.OfType<Interactive>()?.FirstOrDefault();
+            // Walk ancestor chain directly instead of OfType<Interactive>().FirstOrDefault() LINQ allocation
+            Interactive? target = null;
+            for (var current = hit; current != null; current = current.VisualParent)
+            {
+                if (current is Interactive interactive)
+                {
+                    target = interactive;
+                    break;
+                }
+            }
             if (target != null && DragDrop.GetAllowDrop(target))
                 return target;
             return null;
