@@ -103,8 +103,10 @@ namespace Avalonia.Controls.Primitives
                 (availableSize.Width - (_columns - 1) * ColumnSpacing) / _columns,
                 (availableSize.Height - (_rows - 1) * RowSpacing) / _rows);
 
-            foreach (var child in Children)
+            var children = Children;
+            for (var i = 0; i < children.Count; i++)
             {
+                var child = children[i];
                 child.Measure(childAvailableSize);
 
                 if (child.DesiredSize.Width > maxWidth)
@@ -153,8 +155,10 @@ namespace Avalonia.Controls.Primitives
                 height = LayoutHelper.RoundLayoutValue(height, scale);
             }
 
-            foreach (var child in Children)
+            var children = Children;
+            for (var i = 0; i < children.Count; i++)
             {
+                var child = children[i];
                 if (!child.IsVisible)
                 {
                     continue;
@@ -192,9 +196,10 @@ namespace Avalonia.Controls.Primitives
 
             var itemCount = FirstColumn;
 
-            foreach (var child in Children)
+            var children = Children;
+            for (var i = 0; i < children.Count; i++)
             {
-                if (child.IsVisible)
+                if (children[i].IsVisible)
                 {
                     itemCount++;
                 }
