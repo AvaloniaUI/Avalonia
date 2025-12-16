@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -386,7 +385,8 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         public IReadOnlyList<double> GetIrregularSnapPoints(Orientation orientation, SnapPointsAlignment snapPointsAlignment)
         {
-            var snapPoints = new List<double>();
+            var visualChildren = VisualChildren;
+            var snapPoints = new List<double>(visualChildren.Count);
 
             switch (orientation)
             {
@@ -395,8 +395,9 @@ namespace Avalonia.Controls
                         throw new InvalidOperationException();
                     if (Orientation == Orientation.Horizontal)
                     {
-                        foreach(var child in VisualChildren)
+                        for (var i = 0; i < visualChildren.Count; i++)
                         {
+                            var child = visualChildren[i];
                             double snapPoint = 0;
 
                             switch (snapPointsAlignment)
@@ -421,8 +422,9 @@ namespace Avalonia.Controls
                         throw new InvalidOperationException();
                     if (Orientation == Orientation.Vertical)
                     {
-                        foreach (var child in VisualChildren)
+                        for (var i = 0; i < visualChildren.Count; i++)
                         {
+                            var child = visualChildren[i];
                             double snapPoint = 0;
 
                             switch (snapPointsAlignment)
@@ -451,12 +453,13 @@ namespace Avalonia.Controls
         public double GetRegularSnapPoints(Orientation orientation, SnapPointsAlignment snapPointsAlignment, out double offset)
         {
             offset = 0f;
-            var firstChild = VisualChildren.FirstOrDefault();
-
-            if(firstChild == null)
+            var visualChildren = VisualChildren;
+            if (visualChildren.Count == 0)
             {
                 return 0;
             }
+            
+            var firstChild = visualChildren[0];
 
             double snapPoint = 0;
 
