@@ -154,7 +154,7 @@ namespace Avalonia.Controls.Primitives
                 }
 
                 var point = ToPresenter(handle.IndicatorPosition);
-                point = point.WithY(point.Y - _presenter.FontSize / 2);
+                point = point.WithY(point.Y - ((IPlatformTextScaleable)_presenter).GetScaledFontSize(_presenter.FontSize) / 2);
                 var hit = _presenter.TextLayout.HitTestPoint(point);
                 var position = hit.CharacterHit.FirstCharacterIndex + hit.CharacterHit.TrailingLength;
 

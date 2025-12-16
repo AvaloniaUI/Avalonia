@@ -187,7 +187,7 @@ namespace Avalonia.Controls
             var defaultProperties = new GenericTextRunProperties(
                 typeface,
                 FontFeatures,
-                FontSize,
+                EffectiveFontSize,
                 TextDecorations,
                 Foreground);
 
@@ -236,7 +236,7 @@ namespace Avalonia.Controls
                                 new GenericTextRunProperties(
                                     textRun.Properties?.Typeface ?? typeface,
                                     textRun.Properties?.FontFeatures ?? FontFeatures,
-                                    FontSize,
+                                    EffectiveFontSize,
                                     foregroundBrush: SelectionForegroundBrush)));
 
                         accumulatedLength += runLength;
@@ -247,7 +247,7 @@ namespace Avalonia.Controls
                     textStyleOverrides =
                     [
                         new ValueSpan<TextRunProperties>(start, length,
-                            new GenericTextRunProperties(typeface, FontFeatures, FontSize,
+                            new GenericTextRunProperties(typeface, FontFeatures, EffectiveFontSize,
                                 foregroundBrush: SelectionForegroundBrush))
                     ];
                 }

@@ -15,7 +15,7 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Presenters
 {
-    public class TextPresenter : Control
+    public class TextPresenter : Control, IPlatformTextScaleable
     {
         public static readonly StyledProperty<bool> ShowSelectionHighlightProperty =
             AvaloniaProperty.Register<TextPresenter, bool>(nameof(ShowSelectionHighlight), defaultValue: true);
@@ -46,6 +46,12 @@ namespace Avalonia.Controls.Presenters
 
         public static readonly StyledProperty<int> SelectionEndProperty =
             TextBox.SelectionEndProperty.AddOwner<TextPresenter>(new(coerce: TextBox.CoerceCaretIndex));
+
+        /// <summary>
+        /// Defines the <see cref="IsPlatformTextScalingEnabled"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsPlatformTextScalingEnabledProperty =
+            TextElement.IsPlatformTextScalingEnabledProperty.AddOwner<TextPresenter>();
 
         /// <summary>
         /// Defines the <see cref="Text"/> property.
@@ -124,6 +130,13 @@ namespace Avalonia.Controls.Presenters
             set => SetValue(BackgroundProperty, value);
         }
 
+        /// <inheritdoc cref="TextElement.IsPlatformTextScalingEnabled"/>
+        public bool IsPlatformTextScalingEnabled
+        {
+            get => GetValue(IsPlatformTextScalingEnabledProperty);
+            set => SetValue(IsPlatformTextScalingEnabledProperty, value);
+        }
+
         /// <summary>
         /// Gets or sets a value that determines whether the TextPresenter shows a selection highlight.
         /// </summary>
@@ -181,6 +194,13 @@ namespace Avalonia.Controls.Presenters
             get => TextElement.GetFontSize(this);
             set => TextElement.SetFontSize(this, value);
         }
+        
+        double IPlatformTextScaleable.GetScaledFontSize(double baseFontSize) => IsPlatformTextScalingEnabled && TopLevel.GetTopLevel(this) is { PlatformSettings: { } platformSettings } ? platformSettings.GetScaledFontSize(baseFontSize) : baseFontSize;
+        
+        /// <summary>
+        /// Gets <see cref="FontSize"/> scaled according to the platform's current text scaling rules.
+        /// </summary>
+        protected double EffectiveFontSize => ((IPlatformTextScaleable)this).GetScaledFontSize(FontSize);
 
         /// <summary>
         /// Gets or sets the font style.
@@ -335,6 +355,14 @@ namespace Avalonia.Controls.Presenters
 
         internal TextSelectionHandleCanvas? TextSelectionHandleCanvas { get; set; }
 
+        void IPlatformTextScaleable.OnPlatformTextScalingChanged()
+        {
+            if (IsPlatformTextScalingEnabled)
+            {
+                InvalidateMeasure();
+            }
+        }
+
         /// <summary>
         /// Creates the <see cref="TextLayout"/> used to render the text.
         /// </summary>
@@ -350,7 +378,7 @@ namespace Avalonia.Controls.Presenters
             var maxWidth = MathUtilities.IsZero(constraint.Width) ? double.PositiveInfinity : constraint.Width;
             var maxHeight = MathUtilities.IsZero(constraint.Height) ? double.PositiveInfinity : constraint.Height;
 
-            var textLayout = new TextLayout(text, typeface, FontFeatures, FontSize, foreground, TextAlignment,
+            var textLayout = new TextLayout(text, typeface, FontFeatures, EffectiveFontSize, foreground, TextAlignment,
                 TextWrapping, maxWidth: maxWidth, maxHeight: maxHeight, textStyleOverrides: textStyleOverrides,
                 flowDirection: FlowDirection, lineHeight: LineHeight, letterSpacing: LetterSpacing);
 
@@ -553,7 +581,7 @@ namespace Avalonia.Controls.Presenters
             if (!string.IsNullOrEmpty(preeditText))
             {
                 var preeditHighlight = new ValueSpan<TextRunProperties>(caretIndex, preeditText.Length,
-                        new GenericTextRunProperties(typeface, FontFeatures, FontSize,
+                        new GenericTextRunProperties(typeface, FontFeatures, EffectiveFontSize,
                         foregroundBrush: foreground,
                         textDecorations: TextDecorations.Underline));
 
@@ -569,7 +597,7 @@ namespace Avalonia.Controls.Presenters
                     textStyleOverrides = new[]
                     {
                         new ValueSpan<TextRunProperties>(start, length,
-                        new GenericTextRunProperties(typeface, FontFeatures, FontSize,
+                        new GenericTextRunProperties(typeface, FontFeatures, EffectiveFontSize,
                             foregroundBrush: SelectionForegroundBrush))
                     };
                 }

@@ -42,7 +42,7 @@ namespace Avalonia.Platform
         /// Get a configuration for platform-specific hotkeys in an Avalonia application.
         /// </summary>
         PlatformHotkeyConfiguration HotkeyConfiguration { get; }
-        
+
         /// <summary>
         /// Gets current system color values including dark mode and accent colors.
         /// </summary>
@@ -52,5 +52,15 @@ namespace Avalonia.Platform
         /// Raises when current system color values are changed. Including changing of a dark mode and accent colors.
         /// </summary>
         event EventHandler<PlatformColorValues>? ColorValuesChanged;
+
+        /// <summary>
+        /// Raised when the system text scaling changes.
+        /// </summary>
+        event EventHandler<EventArgs>? TextScalingChanged;
+
+        /// <summary>
+        /// Scales a font size according to the current system text scaling rules.
+        /// </summary>
+        double GetScaledFontSize(double baseFontSize);
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Foundation;
 using UIKit;
 
 namespace Avalonia.iOS;
@@ -8,7 +9,24 @@ namespace Avalonia.iOS;
 // TODO: ideally should be created per view/activity.
 internal class PlatformSettings : DefaultPlatformSettings
 {
+    private readonly NSObject _contentSizeChangedToken;
+
     private PlatformColorValues? _lastColorValues;
+
+    public PlatformSettings()
+    {
+        _contentSizeChangedToken = UIApplication.Notifications.ObserveContentSizeCategoryChanged(OnContentSizeCategoryChanged);
+    }
+
+    ~PlatformSettings()
+    {
+        _contentSizeChangedToken.Dispose();
+    }
+
+    private void OnContentSizeCategoryChanged(object? sender, UIContentSizeCategoryChangedEventArgs e)
+    {
+        OnTextScaleChanged();
+    }
 
     public override PlatformColorValues GetColorValues()
     {
@@ -61,4 +79,6 @@ internal class PlatformSettings : DefaultPlatformSettings
             OnColorValuesChanged(colorValues);
         }
     }
+
+    public override double GetScaledFontSize(double baseFontSize) => UIFontMetrics.DefaultMetrics.GetScaledValue((nfloat)baseFontSize);
 }

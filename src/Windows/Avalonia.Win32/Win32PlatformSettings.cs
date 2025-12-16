@@ -8,11 +8,22 @@ namespace Avalonia.Win32;
 
 internal class Win32PlatformSettings : DefaultPlatformSettings
 {
-    private static readonly Lazy<bool> s_uiSettingsSupported = new(() =>
-        WinRTApiInformation.IsTypePresent("Windows.UI.ViewManagement.UISettings")
-        && WinRTApiInformation.IsTypePresent("Windows.UI.ViewManagement.AccessibilitySettings")); 
-
     private PlatformColorValues? _lastColorValues;
+    private double _textScaleFactor = s_uiSettings2?.TextScaleFactor ?? 1;
+
+    private static readonly IUISettings2? s_uiSettings2;
+    private static readonly bool s_uiSettingsSupported;
+
+    static Win32PlatformSettings()
+    {
+        s_uiSettingsSupported = WinRTApiInformation.IsTypePresent("Windows.UI.ViewManagement.UISettings")
+        && WinRTApiInformation.IsTypePresent("Windows.UI.ViewManagement.AccessibilitySettings");
+
+        if (s_uiSettingsSupported)
+        {
+            s_uiSettings2 = NativeWinRTMethods.CreateInstance<IUISettings2>("Windows.UI.ViewManagement.UISettings");
+        }
+    }
 
     public override Size GetTapSize(PointerType type)
     {
@@ -33,10 +44,10 @@ internal class Win32PlatformSettings : DefaultPlatformSettings
     }
 
     public override TimeSpan GetDoubleTapTime(PointerType type) => TimeSpan.FromMilliseconds(GetDoubleClickTime());
-    
+
     public override PlatformColorValues GetColorValues()
     {
-        if (!s_uiSettingsSupported.Value)
+        if (!s_uiSettingsSupported)
         {
             return base.GetColorValues();
         }
@@ -74,10 +85,10 @@ internal class Win32PlatformSettings : DefaultPlatformSettings
                     PlatformThemeVariant.Light,
                 ContrastPreference = ColorContrastPreference.NoPreference,
                 AccentColor1 = accent
-            };   
+            };
         }
     }
-    
+
     internal void OnColorValuesChanged()
     {
         var oldColorValues = _lastColorValues;
@@ -87,5 +98,25 @@ internal class Win32PlatformSettings : DefaultPlatformSettings
         {
             OnColorValuesChanged(colorValues);
         }
+
+        var newTextScaleFactor = s_uiSettings2?.TextScaleFactor ?? 1;
+        if (newTextScaleFactor != _textScaleFactor)
+        {
+            _textScaleFactor = newTextScaleFactor;
+            OnTextScaleChanged();
+        }
+    }
+
+    /// <summary>
+    /// The algorithm used is undocumented, but <see href="https://github.com/microsoft/microsoft-ui-xaml/blob/5788dee271452753d5b2c70179f976c3e96a45c7/src/dxaml/xcp/core/text/common/TextFormatting.cpp#L181-L204">defined in Microsoft's source code</see>.
+    /// </summary>
+    public override double GetScaledFontSize(double baseFontSize)
+    {
+        if (baseFontSize <= 0)
+        {
+            return baseFontSize;
+        }
+
+        return Math.Max(1, baseFontSize) + Math.Max(-Math.Exp(1) * Math.Log(baseFontSize) + 18, 0.0) * (_textScaleFactor - 1);
     }
 }

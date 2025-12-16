@@ -15,13 +15,19 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control that displays a block of text.
     /// </summary>
-    public class TextBlock : Control, IInlineHost
+    public class TextBlock : Control, IInlineHost, IPlatformTextScaleable
     {
         /// <summary>
         /// Defines the <see cref="Background"/> property.
         /// </summary>
         public static readonly StyledProperty<IBrush?> BackgroundProperty =
             Border.BackgroundProperty.AddOwner<TextBlock>();
+
+        /// <summary>
+        /// Defines the <see cref="IsPlatformTextScalingEnabled"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsPlatformTextScalingEnabledProperty =
+            TextElement.IsPlatformTextScalingEnabledProperty.AddOwner<TextBlock>();
 
         /// <summary>
         /// Defines the <see cref="Padding"/> property.
@@ -98,7 +104,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="LetterSpacing"/> property.
         /// </summary>
         /// <remarks>
-        /// This property uses <see cref="AvaloniaProperty.AddOwner{TOwner}(AvaloniaProperty)"/> to share the same
+        /// This property uses <see cref="StyledProperty{TValue}.AddOwner{TOwner}(StyledPropertyMetadata{TValue}?)"/> to share the same
         /// definition as <see cref="TextElement.LetterSpacingProperty"/>, ensuring consistent behavior across text
         /// elements and templated controls.
         /// </remarks>
@@ -192,6 +198,13 @@ namespace Avalonia.Controls
         /// </summary>
         public TextLayout TextLayout => _textLayout ??= CreateTextLayout(Text);
 
+        /// <inheritdoc cref="TextElement.IsPlatformTextScalingEnabled"/>
+        public bool IsPlatformTextScalingEnabled
+        {
+            get => GetValue(IsPlatformTextScalingEnabledProperty);
+            set => SetValue(IsPlatformTextScalingEnabledProperty, value);
+        }
+
         /// <summary>
         /// Gets or sets the padding to place around the <see cref="Text"/>.
         /// </summary>
@@ -236,6 +249,13 @@ namespace Avalonia.Controls
             get => GetValue(FontSizeProperty);
             set => SetValue(FontSizeProperty, value);
         }
+
+        double IPlatformTextScaleable.GetScaledFontSize(double baseFontSize) => IsPlatformTextScalingEnabled && TopLevel.GetTopLevel(this) is { PlatformSettings: { } platformSettings } ? platformSettings.GetScaledFontSize(baseFontSize) : baseFontSize;
+
+        /// <summary>
+        /// Gets <see cref="FontSize"/> scaled according to the platform's current text scaling rules.
+        /// </summary>
+        protected double EffectiveFontSize => ((IPlatformTextScaleable)this).GetScaledFontSize(FontSize);
 
         /// <summary>
         /// Gets or sets the font style used to draw the control's text.
@@ -652,6 +672,14 @@ namespace Avalonia.Controls
             }
         }
 
+        void IPlatformTextScaleable.OnPlatformTextScalingChanged()
+        {
+            if (IsPlatformTextScalingEnabled)
+            {
+                InvalidateMeasure();
+            }
+        }
+
         /// <summary>
         /// Creates the <see cref="TextLayout"/> used to render the text.
         /// </summary>
@@ -663,7 +691,7 @@ namespace Avalonia.Controls
             var defaultProperties = new GenericTextRunProperties(
                 typeface,
                 FontFeatures,
-                FontSize,
+                EffectiveFontSize,
                 TextDecorations,
                 Foreground);
 
@@ -838,6 +866,7 @@ namespace Avalonia.Controls
             switch (change.Property.Name)
             {
                 case nameof(FontSize):
+                case nameof(IsPlatformTextScalingEnabled):
                 case nameof(FontWeight):
                 case nameof(FontStyle):
                 case nameof(FontFamily):
