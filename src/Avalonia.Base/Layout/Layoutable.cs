@@ -145,6 +145,18 @@ namespace Avalonia.Layout
         /// Used for hierarchical dirty tracking to skip clean subtrees.
         /// </summary>
         private bool _subtreeNeedsMeasure;
+        
+        /// <summary>
+        /// Inline queue tracking for measure queue - avoids dictionary allocations.
+        /// </summary>
+        internal bool IsInMeasureQueue;
+        internal byte MeasureQueueCount;
+        
+        /// <summary>
+        /// Inline queue tracking for arrange queue - avoids dictionary allocations.
+        /// </summary>
+        internal bool IsInArrangeQueue;
+        internal byte ArrangeQueueCount;
 
         /// <summary>
         /// Initializes static members of the <see cref="Layoutable"/> class.

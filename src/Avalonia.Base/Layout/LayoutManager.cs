@@ -22,8 +22,8 @@ namespace Avalonia.Layout
     {
         private const int MaxPasses = 10;
         private readonly Layoutable _owner;
-        private readonly LayoutQueue<Layoutable> _toMeasure = new LayoutQueue<Layoutable>(v => !v.IsMeasureValid);
-        private readonly LayoutQueue<Layoutable> _toArrange = new LayoutQueue<Layoutable>(v => !v.IsArrangeValid);
+        private readonly LayoutQueue _toMeasure = new LayoutQueue(isMeasureQueue: true);
+        private readonly LayoutQueue _toArrange = new LayoutQueue(isMeasureQueue: false);
         private readonly List<Layoutable> _toArrangeAfterMeasure = new();
         private List<EffectiveViewportChangedListener>? _effectiveViewportChangedListeners;
         private bool _disposed;
