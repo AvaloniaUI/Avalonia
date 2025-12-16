@@ -148,9 +148,10 @@ namespace Avalonia.Controls
         {
             availableSize = new Size(double.PositiveInfinity, double.PositiveInfinity);
 
-            foreach (Control child in Children)
+            var children = Children;
+            for (var i = 0; i < children.Count; i++)
             {
-                child.Measure(availableSize);
+                children[i].Measure(availableSize);
             }
 
             return new Size();
@@ -208,9 +209,10 @@ namespace Avalonia.Controls
         /// <returns>The space taken.</returns>
         protected override Size ArrangeOverride(Size finalSize)
         {
-            foreach (Control child in Children)
+            var children = Children;
+            for (var i = 0; i < children.Count; i++)
             {
-                ArrangeChild(child, finalSize);
+                ArrangeChild(children[i], finalSize);
             }
 
             return finalSize;
