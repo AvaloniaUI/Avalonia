@@ -285,7 +285,7 @@ namespace Avalonia.Layout
             if (!control.IsVisible || !control.IsAttachedToVisualTree)
                 return false;
 
-            // Controls closest to the visual root need to be arranged first. We don't try to store
+            // Controls closest to the visual root need to be measured first. We don't try to store
             // ordered invalidation lists, instead we traverse the tree upwards, measuring the
             // controls closest to the root first. This has been shown by benchmarks to be the
             // fastest and most memory-efficient algorithm.
@@ -296,7 +296,7 @@ namespace Avalonia.Layout
             }
 
             // If the control being measured has IsMeasureValid == true here then its measure was
-            // handed by an ancestor and can be ignored. The measure may have also caused the
+            // handled by an ancestor and can be ignored. The measure may have also caused the
             // control to be removed.
             if (!control.IsMeasureValid)
             {
