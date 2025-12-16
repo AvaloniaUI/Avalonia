@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Avalonia.Layout;
 using Avalonia.Utilities;
@@ -47,6 +48,71 @@ namespace Avalonia.Controls.Utils
         /// unstable.
         /// </summary>
         public double StartU => _startUUnstable ? double.NaN : _startU;
+
+        /// <summary>
+        /// Returns a struct enumerable that yields only non-null elements without allocating.
+        /// </summary>
+        public NonNullElementsEnumerable GetNonNullElements() => new NonNullElementsEnumerable(_elements);
+
+        /// <summary>
+        /// A struct enumerable that yields only non-null elements without allocating.
+        /// </summary>
+        public readonly struct NonNullElementsEnumerable : IEnumerable<Control>
+        {
+            private readonly IReadOnlyList<Control?>? _elements;
+
+            public NonNullElementsEnumerable(IReadOnlyList<Control?>? elements)
+            {
+                _elements = elements;
+            }
+
+            public Enumerator GetEnumerator() => new Enumerator(_elements);
+
+            IEnumerator<Control> IEnumerable<Control>.GetEnumerator() => GetEnumerator();
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+            public struct Enumerator : IEnumerator<Control>
+            {
+                private readonly IReadOnlyList<Control?>? _elements;
+                private readonly int _count;
+                private int _index;
+                private Control? _current;
+
+                public Enumerator(IReadOnlyList<Control?>? elements)
+                {
+                    _elements = elements;
+                    _count = elements?.Count ?? 0;
+                    _index = -1;
+                    _current = null;
+                }
+
+                public Control Current => _current!;
+                object IEnumerator.Current => Current;
+
+                public bool MoveNext()
+                {
+                    while (++_index < _count)
+                    {
+                        var element = _elements![_index];
+                        if (element is not null)
+                        {
+                            _current = element;
+                            return true;
+                        }
+                    }
+                    _current = null;
+                    return false;
+                }
+
+                public void Reset()
+                {
+                    _index = -1;
+                    _current = null;
+                }
+
+                public void Dispose() { }
+            }
+        }
 
         /// <summary>
         /// Adds a newly realized element to the collection.
