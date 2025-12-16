@@ -166,27 +166,26 @@ namespace Avalonia.X11
 
         private static bool ShouldUseXim()
         {
+            // Priority: AVALONIA_IM_MODULE > GTK_IM_MODULE >= QT_IM_MODULE
+            string? imeOverride = Environment.GetEnvironmentVariable("AVALONIA_IM_MODULE");
+            if (string.IsNullOrEmpty(imeOverride))
+                imeOverride = Environment.GetEnvironmentVariable("GTK_IM_MODULE");
+            if (string.IsNullOrEmpty(imeOverride))
+                imeOverride = Environment.GetEnvironmentVariable("QT_IM_MODULE");
+
             // Check if we are forbidden from using IME
-            if (Environment.GetEnvironmentVariable("AVALONIA_IM_MODULE") == "none"
-                || Environment.GetEnvironmentVariable("GTK_IM_MODULE") == "none"
-                || Environment.GetEnvironmentVariable("QT_IM_MODULE") == "none")
-                return true;
-            
+            if (imeOverride == "none")
+                return false;
+
             // Check if XIM is configured
             var modifiers = Environment.GetEnvironmentVariable("XMODIFIERS");
-            if (modifiers == null)
-                return false;
-            if (modifiers.Contains("@im=none") || modifiers.Contains("@im=null"))
-                return false;
-            if (!modifiers.Contains("@im="))
-                return false;
-            
-            // Check if we are configured to use it
-            if (Environment.GetEnvironmentVariable("GTK_IM_MODULE") == "xim"
-                || Environment.GetEnvironmentVariable("QT_IM_MODULE") == "xim"
-                || Environment.GetEnvironmentVariable("AVALONIA_IM_MODULE") == "xim")
-                return true;
-            
+            if (modifiers is not null && modifiers.Contains("@im="))
+            {
+                // If XIM is explicitly requested, or no IME override is configured
+                if (imeOverride == "xim" || string.IsNullOrEmpty(imeOverride))
+                    return true;
+            }
+
             return false;
         }
         
