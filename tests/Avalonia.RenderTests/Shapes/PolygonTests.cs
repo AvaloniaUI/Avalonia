@@ -17,6 +17,39 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
         {
         }
         
+        [Theory]
+        [InlineData(FillRule.EvenOdd)]
+        [InlineData(FillRule.NonZero)]
+        public async Task Polygon_FillRule(FillRule fillRule)
+        {
+            var target = new Decorator
+            {
+                Padding = new Thickness(8),
+                Width = 220,
+                Height = 220,
+                Child = new Polygon
+                {
+                    Stroke = Brushes.Black,
+                    StrokeThickness = 2,
+                    Fill = Brushes.Gold,
+                    Points = new Points
+                    {
+                        new Point(50, 0),
+                        new Point(21, 90),
+                        new Point(98, 35),
+                        new Point(2, 35),
+                        new Point(79, 90)
+                    },
+                    Stretch = Stretch.Uniform,
+                    FillRule = fillRule
+                }
+            };
+
+            var testName = $"{nameof(Polygon_FillRule)}_{fillRule}";
+            await RenderToFile(target, testName);
+            CompareImages(testName);
+        }
+
         [Fact]
         public async Task Polygon_1px_Stroke()
         {
