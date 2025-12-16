@@ -18,7 +18,7 @@ internal static class EastAsianWidthTrie
         get => new(Data, 0x00110000, 0x00000000);
     } 
     
-    private static ReadOnlySpan<uint> Data => new uint[]
+    private static readonly uint[] Data = new uint[]
     {
         0x000003E7, 0x000003EF, 0x000003F7, 0x000003FF, 0x0000041F, 0x00000427, 0x0000042F, 0x00000437, 0x0000043F, 0x00000447, 0x0000044F, 0x00000457, 
         0x00000417, 0x0000041F, 0x0000045C, 0x00000464, 0x00000417, 0x0000041F, 0x00000468, 0x00000470, 0x00000417, 0x0000041F, 0x00000477, 0x0000047F, 

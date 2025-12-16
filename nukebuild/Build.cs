@@ -1,21 +1,15 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Nuke.Common;
 using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
-using Nuke.Common.Tools.Npm;
-using Nuke.Common.Utilities;
 using static Nuke.Common.EnvironmentInfo;
-using static Nuke.Common.IO.PathConstruction;
-using static Nuke.Common.Tools.DotMemoryUnit.DotMemoryUnitTasks;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 using static Serilog.Log;
 using MicroCom.CodeGenerator;
@@ -135,21 +129,6 @@ partial class Build : NukeBuild
         }
     });
 
-    Target CompileHtmlPreviewer => _ => _
-        .DependsOn(Clean)
-        .OnlyWhenStatic(() => !Parameters.SkipPreviewer)
-        .Executes(() =>
-        {
-            var webappDir = RootDirectory / "src" / "Avalonia.DesignerSupport" / "Remote" / "HtmlTransport" / "webapp";
-
-            NpmTasks.NpmInstall(c => c
-                .SetProcessWorkingDirectory(webappDir)
-                .SetProcessAdditionalArguments("--silent"));
-            NpmTasks.NpmRun(c => c
-                .SetProcessWorkingDirectory(webappDir)
-                .SetCommand("dist"));
-        });
-
     Target CompileNative => _ => _
         .DependsOn(Clean)
         .DependsOn(GenerateCppHeaders)
@@ -163,7 +142,6 @@ partial class Build : NukeBuild
 
     Target Compile => _ => _
         .DependsOn(Clean, CompileNative)
-        .DependsOn(CompileHtmlPreviewer)
         .Executes(() =>
         {
             DotNetBuild(c => ApplySetting(c)
@@ -192,23 +170,6 @@ partial class Build : NukeBuild
         {
             DotNetTest(c => ApplySetting(c, project,tfm));
         });
-    }
-
-    void RunCoreDotMemoryUnit(string projectName)
-    {
-        RunCoreTest(projectName, (project, tfm) =>
-        {
-            var testSettings = ApplySetting(new DotNetTestSettings(), project, tfm);
-            var testToolPath = GetToolPathInternal(new DotNetTasks(), testSettings);
-            var testArgs = GetArguments(testSettings).JoinSpace();
-            DotMemoryUnit($"{testToolPath} --propagate-exit-code -- {testArgs:nq}");
-        });
-
-        [UnsafeAccessor(UnsafeAccessorKind.Method, Name = nameof(GetToolPathInternal))]
-        extern static string GetToolPathInternal(ToolTasks tasks, ToolOptions options);
-
-        [UnsafeAccessor(UnsafeAccessorKind.Method, Name = nameof(GetArguments))]
-        extern static IEnumerable<string> GetArguments(ToolOptions options);
     }
 
     void RunCoreTest(string projectName, Action<string, string> runTest)
@@ -272,18 +233,14 @@ partial class Build : NukeBuild
             .SetResultsDirectory(Parameters.TestResultsRoot));
 
     Target RunHtmlPreviewerTests => _ => _
-        .DependsOn(CompileHtmlPreviewer)
-        .OnlyWhenStatic(() => !(Parameters.SkipPreviewer || Parameters.SkipTests))
+        .OnlyWhenStatic(() => !(Parameters.SkipTests))
         .Executes(() =>
         {
-            var webappTestDir = RootDirectory / "tests" / "Avalonia.DesignerSupport.Tests" / "Remote" / "HtmlTransport" / "webapp";
+            var webappTest = RootDirectory / "tests" / "Avalonia.DesignerSupport.Tests";
 
-            NpmTasks.NpmInstall(c => c
-                .SetProcessWorkingDirectory(webappTestDir)
-                .SetProcessAdditionalArguments("--silent"));
-            NpmTasks.NpmRun(c => c
-                .SetProcessWorkingDirectory(webappTestDir)
-                .SetCommand("test"));
+            DotNetMSBuild(o => o
+                .SetProcessWorkingDirectory(webappTest)
+                .SetTargets("BunRunTests"));
         });
 
     Target RunCoreLibsTests => _ => _
@@ -325,11 +282,7 @@ partial class Build : NukeBuild
         .DependsOn(Compile)
         .Executes(() =>
         {
-            void DoMemoryTest()
-            {
-                RunCoreDotMemoryUnit("Avalonia.LeakTests");
-            }
-            ControlFlow.ExecuteWithRetry(DoMemoryTest, delay: TimeSpan.FromMilliseconds(3));
+            RunCoreTest("Avalonia.LeakTests");
         });
 
     Target ZipFiles => _ => _
@@ -418,8 +371,8 @@ partial class Build : NukeBuild
         .DependsOn(RunCoreLibsTests)
         .DependsOn(RunRenderTests)
         .DependsOn(RunToolsTests)
-        .DependsOn(RunHtmlPreviewerTests);
-        //.DependsOn(RunLeakTests); // dotMemory Unit doesn't support modern .NET versions, see https://youtrack.jetbrains.com/issue/DMU-300/
+        .DependsOn(RunHtmlPreviewerTests)
+        .DependsOn(RunLeakTests);
 
     Target Package => _ => _
         .DependsOn(RunTests)
