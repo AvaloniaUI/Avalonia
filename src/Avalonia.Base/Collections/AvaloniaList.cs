@@ -49,6 +49,9 @@ namespace Avalonia.Collections
     /// </remarks>
     public class AvaloniaList<T> : IAvaloniaList<T>, IList, INotifyCollectionChangedDebug
     {
+        [ThreadStatic]
+        private static ListSegmentWrapper<T>? t_listSegmentWrapper;
+        
         private readonly List<T> _inner;
         private NotifyCollectionChangedEventHandler? _collectionChanged;
 
@@ -571,9 +574,26 @@ namespace Avalonia.Collections
         {
             if (count > 0)
             {
-                var list = _inner.GetRange(index, count);
-                _inner.RemoveRange(index, count);
-                NotifyRemove(list, index);
+                if (_collectionChanged != null)
+                {
+                    // Use a pooled list segment wrapper to avoid allocation
+                    var wrapper = t_listSegmentWrapper ??= new ListSegmentWrapper<T>();
+                    wrapper.Set(_inner, index, count);
+                    try
+                    {
+                        _inner.RemoveRange(index, count);
+                        NotifyRemove(wrapper, index);
+                    }
+                    finally
+                    {
+                        wrapper.Clear();
+                    }
+                }
+                else
+                {
+                    _inner.RemoveRange(index, count);
+                    NotifyCountChanged();
+                }
             }
         }
 

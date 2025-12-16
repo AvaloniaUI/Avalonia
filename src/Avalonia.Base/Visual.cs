@@ -125,7 +125,7 @@ namespace Avalonia
         private bool _hasMirrorTransform;
         private int _visualLevel;
         private TargetWeakEventSubscriber<Visual, EventArgs>? _affectsRenderWeakSubscriber;
-
+        
         /// <summary>
         /// Initializes static members of the <see cref="Visual"/> class.
         /// </summary>
@@ -714,6 +714,8 @@ namespace Avalonia
             // to avoid double traversal of the tree
             if (_visualRoot is not null && old is not null)
             {
+                // Note: We cannot pool event args here due to re-entrancy during recursive traversal
+                // (child SetVisualParent calls would overwrite parent's event args)
                 var e = new VisualTreeAttachmentEventArgs(old, _visualRoot);
                 OnDetachedFromVisualTreeCore(e);
             }
@@ -728,6 +730,8 @@ namespace Avalonia
             {
                 var root = this.FindAncestorOfType<IRenderRoot>() ??
                     throw new AvaloniaInternalException("Visual is atached to visual tree but root could not be found.");
+                // Note: We cannot pool event args here due to re-entrancy during recursive traversal
+                // (child SetVisualParent calls would overwrite parent's event args)
                 var e = new VisualTreeAttachmentEventArgs(_visualParent, root);
                 OnAttachedToVisualTreeCore(e);
             }
