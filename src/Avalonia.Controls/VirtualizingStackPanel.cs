@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
-using System.Linq;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Utils;
 using Avalonia.Input;
@@ -445,7 +444,7 @@ namespace Avalonia.Controls
 
         protected internal override IEnumerable<Control>? GetRealizedContainers()
         {
-            return _realizedElements?.Elements.Where(x => x is not null)!;
+            return _realizedElements?.GetNonNullElements();
         }
 
         protected internal override Control? ContainerFromIndex(int index)
@@ -1152,14 +1151,14 @@ namespace Avalonia.Controls
             if(_realizedElements == null)
                 return new List<double>();
 
-            return new VirtualizingSnapPointsList(_realizedElements, ItemsControl?.ItemsSource?.Count() ?? 0, orientation, Orientation, snapPointsAlignment, EstimateElementSizeU());
+            return new VirtualizingSnapPointsList(_realizedElements, Items.Count, orientation, Orientation, snapPointsAlignment, EstimateElementSizeU());
         }
 
         /// <inheritdoc/>
         public double GetRegularSnapPoints(Orientation orientation, SnapPointsAlignment snapPointsAlignment, out double offset)
         {
             offset = 0f;
-            var firstRealizedChild = _realizedElements?.Elements.FirstOrDefault();
+            var firstRealizedChild = _realizedElements?.GetElement(_realizedElements.FirstIndex);
 
             if (firstRealizedChild == null)
             {
