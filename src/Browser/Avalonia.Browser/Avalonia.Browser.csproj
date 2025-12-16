@@ -3,7 +3,7 @@
     <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsCurrentBrowserTargetFramework)</TargetFrameworks>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <WebAppDir>$(MSBuildThisFileDirectory)/webapp</WebAppDir>
+    <WebAppDir>$(MSBuildThisFileDirectory)webapp</WebAppDir>
   </PropertyGroup>
 
   <ItemGroup>

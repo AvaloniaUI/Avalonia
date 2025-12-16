@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
     <OutputType>Library</OutputType>
-    <WebAppDir>Remote\HtmlTransport\webapp</WebAppDir>
+    <WebAppDir>$(MSBuildThisFileDirectory)Remote/HtmlTransport/webapp</WebAppDir>
   </PropertyGroup>
   <Import Project="..\..\build\UnitTests.NetCore.targets" />
   <Import Project="..\..\build\Moq.props" />
