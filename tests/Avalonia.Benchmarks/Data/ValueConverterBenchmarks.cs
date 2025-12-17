@@ -12,9 +12,11 @@ namespace Avalonia.Benchmarks.Data
         private IMultiValueConverter _andConverter = null!;
         private IMultiValueConverter _orConverter = null!;
         private IMultiValueConverter _customSumConverter = null!;
+        private IMultiValueConverter _stringFormatConverter = null!;
         private IList<object?> _boolValues = null!;
         private IList<object?> _intValues = null!;
         private IList<object?> _mixedValues = null!;
+        private IList<object?> _stringFormatValues = null!;
 
         [GlobalSetup]
         public void Setup()
@@ -31,10 +33,12 @@ namespace Avalonia.Benchmarks.Data
                 }
                 return sum;
             });
+            _stringFormatConverter = new StringFormatMultiValueConverter("{0} - {1} - {2}", null);
 
             _boolValues = new List<object?> { true, true, true, false };
             _intValues = new List<object?> { 1, 2, 3, 4, 5 };
             _mixedValues = new List<object?> { true, false, "invalid", true };
+            _stringFormatValues = new List<object?> { "Hello", "World", 42 };
         }
 
         /// <summary>
@@ -91,6 +95,15 @@ namespace Avalonia.Benchmarks.Data
         {
             var values = new List<object?> { true, true, true, true, true, true, true, true, true, true };
             return _andConverter.Convert(values, typeof(bool), null, CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// Benchmark StringFormatMultiValueConverter (optimized with ArrayPool)
+        /// </summary>
+        [Benchmark]
+        public object? StringFormatConverter()
+        {
+            return _stringFormatConverter.Convert(_stringFormatValues, typeof(string), null, CultureInfo.InvariantCulture);
         }
     }
 }

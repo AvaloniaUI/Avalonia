@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 
 namespace Avalonia.Data.Converters
 {
@@ -36,9 +36,26 @@ namespace Avalonia.Data.Converters
         /// <inheritdoc/>
         public object? Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
         {
-            return Inner == null
-                       ? string.Format(culture, Format, values.ToArray())
-                       : string.Format(culture, Format, Inner.Convert(values, targetType, parameter, culture));
+            if (Inner != null)
+            {
+                return string.Format(culture, Format, Inner.Convert(values, targetType, parameter, culture));
+            }
+
+            // Use ArrayPool to avoid allocation when converting IList to array for string.Format
+            var count = values.Count;
+            var rentedArray = ArrayPool<object?>.Shared.Rent(count);
+            try
+            {
+                for (var i = 0; i < count; i++)
+                {
+                    rentedArray[i] = values[i];
+                }
+                return string.Format(culture, Format, rentedArray);
+            }
+            finally
+            {
+                ArrayPool<object?>.Shared.Return(rentedArray, clearArray: true);
+            }
         }
     }
 }
