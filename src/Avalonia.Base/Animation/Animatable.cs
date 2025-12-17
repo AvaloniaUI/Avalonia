@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Linq;
 using Avalonia.Data;
 using Avalonia.PropertyStore;
 
@@ -121,7 +120,22 @@ namespace Avalonia.Animation
 
                     if (newTransitions.Count > 0 && oldTransitions?.Count > 0)
                     {
-                        toAdd = newTransitions.Except(oldTransitions).ToList();
+                        // Compute items in newTransitions but not in oldTransitions
+                        // Using HashSet instead of LINQ Except to avoid allocation
+                        var oldSet = new HashSet<ITransition>(oldTransitions.Count);
+                        foreach (ITransition t in oldTransitions)
+                        {
+                            oldSet.Add(t);
+                        }
+                        var list = new List<ITransition>(newTransitions.Count);
+                        foreach (ITransition t in newTransitions)
+                        {
+                            if (!oldSet.Contains(t))
+                            {
+                                list.Add(t);
+                            }
+                        }
+                        toAdd = list;
                     }
 
                     // Subscribe to collection changes only if transitions are already enabled,
@@ -141,7 +155,22 @@ namespace Avalonia.Animation
 
                     if (oldTransitions.Count > 0 && newTransitions?.Count > 0)
                     {
-                        toRemove = oldTransitions.Except(newTransitions).ToList();
+                        // Compute items in oldTransitions but not in newTransitions
+                        // Using HashSet instead of LINQ Except to avoid allocation
+                        var newSet = new HashSet<ITransition>(newTransitions.Count);
+                        foreach (ITransition t in newTransitions)
+                        {
+                            newSet.Add(t);
+                        }
+                        var list = new List<ITransition>(oldTransitions.Count);
+                        foreach (ITransition t in oldTransitions)
+                        {
+                            if (!newSet.Contains(t))
+                            {
+                                list.Add(t);
+                            }
+                        }
+                        toRemove = list;
                     }
 
                     oldTransitions.CollectionChanged -= TransitionsCollectionChangedHandler;
