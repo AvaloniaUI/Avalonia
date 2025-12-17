@@ -798,7 +798,7 @@ namespace Avalonia
             {
                 property.NotifyChanged(e);
                 _propertyChanged?.Invoke(this, e);
-                _inpcChanged?.Invoke(this, new PropertyChangedEventArgs(property.Name));
+                _inpcChanged?.Invoke(this, property.PropertyChangedEventArgs);
             }
         }
 

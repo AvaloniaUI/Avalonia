@@ -593,7 +593,7 @@ namespace Avalonia.PropertyStore
             var count = children.Count;
             
             var apArgs = new AvaloniaPropertyChangedEventArgs<T>(Owner, property, oldValue, value.Value, BindingPriority.Inherited, true);
-            var incpArgs = new PropertyChangedEventArgs(property.Name);
+            var incpArgs = property.PropertyChangedEventArgs;
 
             for (var i = 0; i < count; ++i)
             {
@@ -619,7 +619,7 @@ namespace Avalonia.PropertyStore
                 var count = children.Count;
 
                 var apArgs = new AvaloniaPropertyChangedEventArgs<T>(Owner, property, oldValue, newValue, BindingPriority.Inherited, true);
-                var incpArgs = new PropertyChangedEventArgs(property.Name);
+                var incpArgs = property.PropertyChangedEventArgs;
 
                 for (var i = 0; i < count; ++i)
                 {

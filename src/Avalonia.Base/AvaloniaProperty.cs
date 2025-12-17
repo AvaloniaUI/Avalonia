@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Avalonia.Data;
@@ -25,6 +26,11 @@ namespace Avalonia
         /// Provides a metadata object for types which have no metadata of their own.
         /// </summary>
         private readonly AvaloniaPropertyMetadata _defaultMetadata;
+
+        /// <summary>
+        /// Cached PropertyChangedEventArgs to avoid allocations when raising INPC notifications.
+        /// </summary>
+        private PropertyChangedEventArgs? _propertyChangedEventArgs;
 
         /// <summary>
         /// Provides a fast path when the property has no metadata overrides.
@@ -162,6 +168,15 @@ namespace Avalonia
         /// Gets the integer ID that represents this property.
         /// </summary>
         internal int Id { get; }
+
+        /// <summary>
+        /// Gets a cached <see cref="PropertyChangedEventArgs"/> for this property.
+        /// </summary>
+        /// <remarks>
+        /// This avoids allocating a new EventArgs instance on every property change notification.
+        /// </remarks>
+        internal PropertyChangedEventArgs PropertyChangedEventArgs =>
+            _propertyChangedEventArgs ??= new PropertyChangedEventArgs(Name);
 
         /// <summary>
         /// Provides access to a property's binding via the <see cref="AvaloniaObject"/>
