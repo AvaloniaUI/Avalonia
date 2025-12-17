@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using Avalonia.Media.Fonts;
+using Avalonia.Media.Fonts.Tables.Colr;
+using Avalonia.Media.Imaging;
 using Avalonia.Metadata;
+using Avalonia.Platform;
 
 namespace Avalonia.Media
 {
@@ -132,5 +136,55 @@ namespace Avalonia.Media
         ///   <c>true</c> if an glyph's metrics was found, <c>false</c> otherwise.
         /// </returns>
         bool TryGetGlyphMetrics(ushort glyph, out GlyphMetrics metrics);
+
+        /// <summary>
+        /// Retrieves a glyph drawing for the specified glyph ID, applying the given transformation and optional font
+        /// variation settings.
+        /// </summary>
+        /// <param name="glyphId">The identifier of the glyph to retrieve. Must correspond to a valid glyph in the font.</param>
+        /// <param name="variation">Optional font variation settings to use when selecting the glyph outline. If null, default font variations
+        /// are used.</param>
+        /// <returns>An object representing the glyph drawing with the applied transformation and variation settings, or null if
+        /// the glyph cannot be found.</returns>
+        IGlyphDrawing? GetGlyphDrawing(ushort glyphId, FontVariationSettings? variation = null);
+
+        /// <summary>
+        /// Retrieves the vector outline geometry for the specified glyph, applying the given transformation and font
+        /// variation settings.
+        /// </summary>
+        /// <param name="glyphId">The identifier of the glyph to retrieve the outline for. Must correspond to a valid glyph in the font.</param>
+        /// <param name="transform">A transformation matrix to apply to the glyph outline. This can be used to scale, rotate, or otherwise
+        /// transform the geometry.</param>
+        /// <param name="variation">Optional font variation settings to use when retrieving the glyph outline. If null, the default font
+        /// variations are used.</param>
+        /// <returns>A Geometry object representing the transformed outline of the specified glyph, or null if the glyph does not
+        /// have an outline.</returns>
+        Geometry? GetGlyphOutline(ushort glyphId, Matrix transform, FontVariationSettings? variation = null);
+    }
+
+    /// <summary>
+    /// Defines the contract for a glyph drawing, providing direct rendering capabilities.
+    /// </summary>
+    /// <remarks>Implementations of this interface represent a visual glyph that can be rendered
+    /// directly to a drawing context. The internal structure (layers, paints, etc.) is an implementation
+    /// detail.</remarks>
+    public interface IGlyphDrawing
+    {
+        /// <summary>
+        /// Gets the drawing type used to render the glyph.
+        /// </summary>
+        GlyphDrawingType Type { get; }
+
+        /// <summary>
+        /// Gets the bounds of the glyph drawing.
+        /// </summary>
+        Rect Bounds { get; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="origin"></param>
+        void Draw(DrawingContext context, Point origin);
     }
 }

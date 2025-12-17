@@ -155,6 +155,10 @@ internal class HeadlessGlyphTypeface : IGlyphTypeface
     public ushort GetGlyphAdvance(ushort glyph) => _inner.GetGlyphAdvance(glyph);
 
     public bool TryGetGlyphMetrics(ushort glyph, out GlyphMetrics metrics) => _inner.TryGetGlyphMetrics(glyph, out metrics);
+
+    public IGlyphDrawing? GetGlyphDrawing(ushort glyphId, FontVariationSettings? variation = null) => _inner.GetGlyphDrawing(glyphId, variation);
+
+    public Geometry? GetGlyphOutline(ushort glyphId, Matrix transform, FontVariationSettings? variation = null) => _inner.GetGlyphOutline(glyphId, transform, variation);
 }
 
 internal class HeadlessFontManagerStub : IFontManagerImpl
