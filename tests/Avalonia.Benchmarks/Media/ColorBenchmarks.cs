@@ -10,6 +10,10 @@ namespace Avalonia.Benchmarks.Media
         private string _hexColor = "#FF5733";
         private string _rgbColor = "rgb(255, 87, 51)";
         private string _rgbaColor = "rgba(255, 87, 51, 0.8)";
+        private string _hslColor = "hsl(180, 50%, 50%)";
+        private string _hslaColor = "hsla(180, 50%, 50%, 0.8)";
+        private string _hsvColor = "hsv(180, 50%, 50%)";
+        private string _hsvaColor = "hsva(180, 50%, 50%, 0.8)";
         private string _namedColor = "Red";
         private Color _color;
 
@@ -53,6 +57,60 @@ namespace Avalonia.Benchmarks.Media
         public Color ParseNamedColor()
         {
             return Color.Parse(_namedColor);
+        }
+
+        /// <summary>
+        /// Benchmark parsing HSL color (span-based optimization)
+        /// </summary>
+        [Benchmark]
+        public Color ParseHslColor()
+        {
+            return Color.Parse(_hslColor);
+        }
+
+        /// <summary>
+        /// Benchmark parsing HSLA color (span-based optimization)
+        /// </summary>
+        [Benchmark]
+        public Color ParseHslaColor()
+        {
+            return Color.Parse(_hslaColor);
+        }
+
+        /// <summary>
+        /// Benchmark parsing HSV color (span-based optimization)
+        /// </summary>
+        [Benchmark]
+        public Color ParseHsvColor()
+        {
+            return Color.Parse(_hsvColor);
+        }
+
+        /// <summary>
+        /// Benchmark parsing HSVA color (span-based optimization)
+        /// </summary>
+        [Benchmark]
+        public Color ParseHsvaColor()
+        {
+            return Color.Parse(_hsvaColor);
+        }
+
+        /// <summary>
+        /// Benchmark HslColor.TryParse directly
+        /// </summary>
+        [Benchmark]
+        public bool TryParseHslColor()
+        {
+            return HslColor.TryParse(_hslColor, out _);
+        }
+
+        /// <summary>
+        /// Benchmark HsvColor.TryParse directly
+        /// </summary>
+        [Benchmark]
+        public bool TryParseHsvColor()
+        {
+            return HsvColor.TryParse(_hsvColor, out _);
         }
 
         /// <summary>
