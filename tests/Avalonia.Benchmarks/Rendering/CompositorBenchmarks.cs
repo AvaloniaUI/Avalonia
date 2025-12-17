@@ -146,6 +146,23 @@ namespace Avalonia.Benchmarks.Rendering
             Dispatcher.UIThread.RunJobs(DispatcherPriority.Render);
         }
 
+        /// <summary>
+        /// Measures the cost of using pooled transforms via TransformPool.SetRotation.
+        /// </summary>
+        [Benchmark]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public void PooledTransforms()
+        {
+            for (var i = 0; i < _controls.Count; i++)
+            {
+                var control = _controls[i];
+                var angle = (i * 10 + 5) % 360;
+                control.RenderTransform = TransformPool.SetRotation(control.RenderTransform as Transform, angle);
+            }
+            _root.LayoutManager.ExecuteLayoutPass();
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Render);
+        }
+
         public void Dispose()
         {
             _app?.Dispose();
