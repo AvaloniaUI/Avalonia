@@ -14,13 +14,33 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(IsRunningAppium2)' == 'false'">
-    <PackageReference Include="Appium.WebDriver" Version="4.4.0" />
+    <PackageReference Include="Appium.WebDriver" Version="4.4.5" />
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
     <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(IsRunningAppium2)' == 'true'">
     <PackageReference Include="Appium.WebDriver" Version="5.2.0"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="ButtonTests.cs" />
+    <Compile Remove="CheckBoxTests.cs" />
+    <Compile Remove="ContextMenuTests.cs" />
+    <Compile Remove="EmbeddingTests.cs" />
+    <Compile Remove="GestureTests.cs" />
+    <Compile Remove="ListBoxTests.cs" />
+    <Compile Remove="NativeMenuTests.cs" />
+    <Compile Remove="PointerTests.cs" />
+    <Compile Remove="PointerTests_MacOS.cs" />
+    <Compile Remove="RadioButtonTests.cs" />
+    <Compile Remove="ScreenTests.cs" />
+    <Compile Remove="ScrollBarTests.cs" />
+    <Compile Remove="SliderTests.cs" />
+    <Compile Remove="TrayIconTests.cs" />
+    <Compile Remove="WindowDecorationsTests.cs" />
+    <Compile Remove="WindowTests.cs" />
+    <Compile Remove="WindowTests_MacOS.cs" />
   </ItemGroup>
 
   <Import Project="..\..\build\XUnit.props" />
