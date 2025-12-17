@@ -1,7 +1,8 @@
 using System;
+using System.Buffers;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 
 namespace Avalonia.Data.Converters
 {
@@ -36,32 +37,80 @@ namespace Avalonia.Data.Converters
         /// <inheritdoc/>
         public object? Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
         {
-            //standard OfType skip null values, even they are valid for the Type
-            static IEnumerable<TIn?> OfTypeWithDefaultSupport(IList<object?> list)
+            var count = values.Count;
+            
+            // Rent an array from the pool to avoid allocation
+            var rentedArray = ArrayPool<TIn?>.Shared.Rent(count);
+            
+            try
             {
-                foreach (var obj in list)
+                var validCount = 0;
+                
+                for (var i = 0; i < count; i++)
                 {
+                    var obj = values[i];
                     if (obj is TIn result)
                     {
-                        yield return result;
+                        rentedArray[validCount++] = result;
                     }
                     else if (Equals(obj, default(TIn)))
                     {
-                        yield return default;
+                        rentedArray[validCount++] = default;
                     }
+                    // If the value doesn't match, we don't increment validCount
+                    // This will cause the count check below to fail
+                }
+                
+                if (validCount != count)
+                {
+                    return AvaloniaProperty.UnsetValue;
+                }
+                
+                // Create a lightweight wrapper around the array segment
+                var wrapper = new ArraySegmentWrapper<TIn?>(rentedArray, count);
+                return _convert(wrapper);
+            }
+            finally
+            {
+                ArrayPool<TIn?>.Shared.Return(rentedArray, clearArray: true);
+            }
+        }
+        
+        /// <summary>
+        /// A lightweight wrapper around an array segment to implement IReadOnlyList without additional allocation.
+        /// </summary>
+        private readonly struct ArraySegmentWrapper<T> : IReadOnlyList<T>
+        {
+            private readonly T[] _array;
+            private readonly int _count;
+            
+            public ArraySegmentWrapper(T[] array, int count)
+            {
+                _array = array;
+                _count = count;
+            }
+            
+            public int Count => _count;
+            
+            public T this[int index]
+            {
+                get
+                {
+                    if ((uint)index >= (uint)_count)
+                        throw new ArgumentOutOfRangeException(nameof(index));
+                    return _array[index];
                 }
             }
-
-            var converted = OfTypeWithDefaultSupport(values).ToList();
-
-            if (converted.Count == values.Count)
+            
+            public IEnumerator<T> GetEnumerator()
             {
-                return _convert(converted);
+                for (var i = 0; i < _count; i++)
+                {
+                    yield return _array[i];
+                }
             }
-            else
-            {
-                return AvaloniaProperty.UnsetValue;
-            }
+            
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
     }
 }
