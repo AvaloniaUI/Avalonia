@@ -272,6 +272,19 @@ namespace Avalonia.Media
         }
 
 #if !BUILDTASK
+        /// <summary>
+        /// Parses an HSV color span.
+        /// </summary>
+        /// <param name="s">The HSV color span to parse.</param>
+        /// <param name="hsvColor">The parsed <see cref="HsvColor"/>.</param>
+        /// <returns>True if parsing was successful; otherwise, false.</returns>
+        public static bool TryParse(ReadOnlySpan<char> s, out HsvColor hsvColor)
+        {
+            return TryParseSpan(s, out hsvColor);
+        }
+#endif
+
+#if !BUILDTASK
         private static bool TryParseSpan(ReadOnlySpan<char> s, out HsvColor hsvColor)
         {
             hsvColor = default;

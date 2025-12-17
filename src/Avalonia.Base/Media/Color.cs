@@ -231,12 +231,31 @@ namespace Avalonia.Media
             {
                 return true;
             }
-#endif
 
-            // HSL and known color parsing requires string allocation
+            // HSL/HSV use span-based parsing - no string allocation needed
+            if (s.Length >= 10 &&
+                (s[0] == 'h' || s[0] == 'H') &&
+                (s[1] == 's' || s[1] == 'S') &&
+                (s[2] == 'l' || s[2] == 'L') &&
+                HslColor.TryParse(s, out HslColor hslColor))
+            {
+                color = hslColor.ToRgb();
+                return true;
+            }
+
+            if (s.Length >= 10 &&
+                (s[0] == 'h' || s[0] == 'H') &&
+                (s[1] == 's' || s[1] == 'S') &&
+                (s[2] == 'v' || s[2] == 'V') &&
+                HsvColor.TryParse(s, out HsvColor hsvColor))
+            {
+                color = hsvColor.ToRgb();
+                return true;
+            }
+#else
+            // BUILDTASK path requires string allocation
             var str = s.ToString();
 
-#if BUILDTASK
             if (s.Length >= 10 &&
                 (s[0] == 'r' || s[0] == 'R') &&
                 (s[1] == 'g' || s[1] == 'G') &&
@@ -245,7 +264,6 @@ namespace Avalonia.Media
             {
                 return true;
             }
-#endif
 
             if (s.Length >= 10 &&
                 (s[0] == 'h' || s[0] == 'H') &&
@@ -266,8 +284,11 @@ namespace Avalonia.Media
                 color = hsvColor.ToRgb();
                 return true;
             }
+#endif
 
-            var knownColor = KnownColors.GetKnownColor(str);
+            // KnownColors requires string for dictionary lookup
+            var knownColorStr = s.ToString();
+            var knownColor = KnownColors.GetKnownColor(knownColorStr);
 
             if (knownColor != KnownColor.None)
             {
