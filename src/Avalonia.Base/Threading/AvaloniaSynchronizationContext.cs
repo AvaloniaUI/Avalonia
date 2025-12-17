@@ -61,17 +61,35 @@ namespace Avalonia.Threading
         /// <inheritdoc/>
         public override void Post(SendOrPostCallback d, object? state)
         {
-            _dispatcher.Post(d, state, Priority);
+            try
+            {
+                _dispatcher.Post(d, state, Priority);
+            }
+            catch (Exception e)
+            {
+                // Swallow exceptions that happen because the dispatcher is shutting down.
+                if (!_dispatcher.HasShutdownStarted)
+                    throw;
+            }
         }
 
         /// <inheritdoc/>
         public override void Send(SendOrPostCallback d, object? state)
         {
-            if (_dispatcher.CheckAccess())
-                // Same-thread, use send priority to avoid any reentrancy.
-                _dispatcher.Send(d, state, DispatcherPriority.Send);
-            else
-                _dispatcher.Send(d, state, Priority);
+            try
+            {
+                if (_dispatcher.CheckAccess())
+                    // Same-thread, use send priority to avoid any reentrancy.
+                    _dispatcher.Send(d, state, DispatcherPriority.Send);
+                else
+                    _dispatcher.Send(d, state, Priority);
+            }
+            catch (Exception e)
+            {
+                // Swallow exceptions that happen because the dispatcher is shutting down.
+                if (!_dispatcher.HasShutdownStarted)
+                    throw;
+            }
         }
 
 #if !NET6_0_OR_GREATER
