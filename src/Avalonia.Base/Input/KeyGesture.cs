@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
 using System.Text;
 using Avalonia.Input.Platform;
 using Avalonia.Utilities;
@@ -12,11 +10,6 @@ namespace Avalonia.Input
     /// </summary>
     public sealed class KeyGesture : IEquatable<KeyGesture>, IFormattable
     {
-        private static readonly Dictionary<string, Key> s_keySynonyms = new Dictionary<string, Key>
-        {
-            { "+", Key.OemPlus }, { "-", Key.OemMinus }, { ".", Key.OemPeriod }, { ",", Key.OemComma }
-        };
-
         public KeyGesture(Key key, KeyModifiers modifiers = KeyModifiers.None)
         {
             Key = key;
@@ -79,7 +72,7 @@ namespace Avalonia.Input
                 {
                     var partSpan = gesture.AsSpan(cstart, c - cstart).Trim();
 
-                    if (!TryParseKey(partSpan.ToString(), out key))
+                    if (!TryParseKey(partSpan, out key))
                     {
                         keyModifiers |= ParseModifier(partSpan);
                     }
@@ -161,13 +154,21 @@ namespace Avalonia.Input
             ResolveNumPadOperationKey(keyEvent.Key) == ResolveNumPadOperationKey(Key);
 
         // TODO: Move that to external key parser
-        private static bool TryParseKey(string keyStr, out Key key)
+        private static bool TryParseKey(ReadOnlySpan<char> keySpan, out Key key)
         {
             key = Key.None;
-            if (s_keySynonyms.TryGetValue(keyStr.ToLower(CultureInfo.InvariantCulture), out key))
-                return true;
+            
+            // Check synonyms using span comparison
+            if (keySpan.Length == 1)
+            {
+                var ch = keySpan[0];
+                if (ch == '+') { key = Key.OemPlus; return true; }
+                if (ch == '-') { key = Key.OemMinus; return true; }
+                if (ch == '.') { key = Key.OemPeriod; return true; }
+                if (ch == ',') { key = Key.OemComma; return true; }
+            }
 
-            if (EnumHelper.TryParse(keyStr, true, out key))
+            if (EnumHelper.TryParse(keySpan, true, out key))
                 return true;
 
             return false;
@@ -187,7 +188,17 @@ namespace Avalonia.Input
                 return KeyModifiers.Meta;
             }
 
-            return EnumHelper.Parse<KeyModifiers>(modifier.ToString(), true);
+            if (modifier.Equals("shift".AsSpan(), StringComparison.OrdinalIgnoreCase))
+            {
+                return KeyModifiers.Shift;
+            }
+
+            if (modifier.Equals("alt".AsSpan(), StringComparison.OrdinalIgnoreCase))
+            {
+                return KeyModifiers.Alt;
+            }
+
+            return EnumHelper.Parse<KeyModifiers>(modifier, true);
         }
 
         private static Key ResolveNumPadOperationKey(Key key)

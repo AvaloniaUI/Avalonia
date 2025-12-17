@@ -166,7 +166,7 @@ namespace Avalonia.Controls
         {
             base.OnAttachedToLogicalTree(e);
             
-            _treeView = this.GetLogicalAncestors().OfType<TreeView>().FirstOrDefault();
+            _treeView = this.FindLogicalAncestorOfType<TreeView>();
             
             Level = CalculateDistanceFromLogicalParent<TreeView>(this) - 1;
 

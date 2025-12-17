@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using Avalonia.Reactive;
 
 namespace Avalonia.LogicalTree
@@ -62,9 +61,22 @@ namespace Avalonia.LogicalTree
 
             private void Update()
             {
-                _value = _relativeTo.GetLogicalAncestors()
-                    .Where(x => _ancestorType?.IsAssignableFrom(x.GetType()) ?? true)
-                    .ElementAtOrDefault(_ancestorLevel);
+                // Walk ancestor chain manually instead of using LINQ
+                int matchCount = 0;
+                _value = null;
+
+                foreach (var ancestor in _relativeTo.GetLogicalAncestors())
+                {
+                    if (_ancestorType is null || _ancestorType.IsInstanceOfType(ancestor))
+                    {
+                        if (matchCount == _ancestorLevel)
+                        {
+                            _value = ancestor;
+                            return;
+                        }
+                        matchCount++;
+                    }
+                }
             }
         }
     }

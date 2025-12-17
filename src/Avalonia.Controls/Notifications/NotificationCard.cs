@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using Avalonia.Controls.Metadata;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
@@ -126,7 +125,7 @@ namespace Avalonia.Controls.Notifications
         private static void Button_Click(object? sender, RoutedEventArgs e)
         {
             var btn = sender as ILogical;
-            var notification = btn?.GetLogicalAncestors().OfType<NotificationCard>().FirstOrDefault();
+            var notification = btn?.FindLogicalAncestorOfType<NotificationCard>();
             notification?.Close();
         }
 

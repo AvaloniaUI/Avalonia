@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using Avalonia.Reactive;
 
 namespace Avalonia.VisualTree
@@ -45,16 +44,22 @@ namespace Avalonia.VisualTree
 
             private Visual? GetResult()
             {
-                if (_relativeTo.IsAttachedToVisualTree)
-                {
-                    return _relativeTo.GetVisualAncestors()
-                        .Where(x => _ancestorType?.IsAssignableFrom(x.GetType()) ?? true)
-                        .ElementAtOrDefault(_ancestorLevel);
-                }
-                else
-                {
+                if (!_relativeTo.IsAttachedToVisualTree)
                     return null;
+
+                // Walk ancestor chain manually instead of using LINQ
+                int matchCount = 0;
+                foreach (var ancestor in _relativeTo.GetVisualAncestors())
+                {
+                    if (_ancestorType is null || _ancestorType.IsInstanceOfType(ancestor))
+                    {
+                        if (matchCount == _ancestorLevel)
+                            return ancestor;
+                        matchCount++;
+                    }
                 }
+
+                return null;
             }
         }
     }
