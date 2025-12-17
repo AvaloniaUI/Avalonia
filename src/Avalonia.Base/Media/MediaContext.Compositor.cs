@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -75,8 +76,19 @@ partial class MediaContext
             // Nothing to do, and there are no pending commits
             return false;
         
-        foreach (var c in _requestedCommits.ToArray())
-            CommitCompositor(c);
+        // Use ArrayPool to avoid allocation during hot render path
+        var count = _requestedCommits.Count;
+        var compositors = ArrayPool<Compositor>.Shared.Rent(count);
+        try
+        {
+            _requestedCommits.CopyTo(compositors);
+            for (var i = 0; i < count; i++)
+                CommitCompositor(compositors[i]);
+        }
+        finally
+        {
+            ArrayPool<Compositor>.Shared.Return(compositors, clearArray: true);
+        }
         
         return true;
     }
