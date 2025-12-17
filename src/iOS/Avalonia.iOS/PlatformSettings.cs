@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Foundation;
@@ -10,6 +11,7 @@ namespace Avalonia.iOS;
 internal class PlatformSettings : DefaultPlatformSettings
 {
     private readonly NSObject _contentSizeChangedToken;
+    private readonly Dictionary<double, double> _fontScaleCache = [];
 
     private PlatformColorValues? _lastColorValues;
 
@@ -25,6 +27,7 @@ internal class PlatformSettings : DefaultPlatformSettings
 
     private void OnContentSizeCategoryChanged(object? sender, UIContentSizeCategoryChangedEventArgs e)
     {
+        _fontScaleCache.Clear();
         OnTextScaleChanged();
     }
 
@@ -80,5 +83,19 @@ internal class PlatformSettings : DefaultPlatformSettings
         }
     }
 
-    public override double GetScaledFontSize(double baseFontSize) => UIFontMetrics.DefaultMetrics.GetScaledValue((nfloat)baseFontSize);
+    public override double GetScaledFontSize(double baseFontSize)
+    {
+        if (baseFontSize <= 0)
+        {
+            return baseFontSize;
+        }
+
+        if (!_fontScaleCache.TryGetValue(baseFontSize, out var scaledSize))
+        {
+            var font = UIFont.SystemFontOfSize((nfloat)baseFontSize);
+            scaledSize = UIFontMetrics.DefaultMetrics.GetScaledFont(font).PointSize;
+        }
+
+        return scaledSize;
+    }
 }
