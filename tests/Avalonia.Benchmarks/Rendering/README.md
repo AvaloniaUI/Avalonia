@@ -93,11 +93,18 @@ dotnet run -c Release --filter '*MatrixBenchmarks*'
 | InvalidateSingleControl | 17 ns | 0 B |
 | InvalidateAllControls | 113 ns | 0 B |
 | ChangeOpacity | 4,023 ns | 8,000 B |
-| ChangeTransforms (new) | 38,383 ns | 108,560 B |
-| UpdateExistingTransforms | 5,622 ns | 8,000 B |
+| ChangeTransforms (new) | 27,449 ns | 108,560 B |
+| UpdateExistingTransforms | 4,793 ns | 8,000 B |
+| **PooledTransforms** | **1,388 ns** | **0 B** |
 
-**Key Finding**: Creating new transform objects allocates 13.5x more memory than updating existing ones.
-The base 80 bytes/control allocation for opacity/transform changes comes from compositor serialization.
+**Key Finding**: Using `TransformPool.SetRotation()` achieves zero allocations and is 20x faster than creating new transforms.
+
+**Recommended Pattern**:
+```csharp
+// Instead of: control.RenderTransform = new RotateTransform(angle);
+// Use: 
+control.RenderTransform = TransformPool.SetRotation(control.RenderTransform as Transform, angle);
+```
 
 ### DirtyRectBenchmarks (100 rects)
 
@@ -140,7 +147,7 @@ The base 80 bytes/control allocation for opacity/transform changes comes from co
 Based on these benchmarks, potential optimization areas include:
 
 1. **Dirty Rect Tracking** - ✅ Already efficient and allocation-free
-2. **Batch Serialization** - Some allocations for pool growth, consider pre-warming pools
-3. **Transform Changes** - Reuse transform objects instead of creating new ones
+2. **Batch Serialization** - ✅ Pre-warming pools implemented (10% reduction)
+3. **Transform Changes** - ✅ Use `TransformPool` for zero allocations
 4. **Drawing Context** - ✅ Already allocation-free
-5. **Compositor Batching** - CompositionBatch creates TaskCompletionSource per commit
+5. **Compositor Batching** - ✅ CompositionBatch pooling implemented
