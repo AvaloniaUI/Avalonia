@@ -22,7 +22,7 @@ internal abstract class BatchStreamPoolBase<T> : IDisposable
     public int CurrentUsage => _usage;
     public int CurrentPool => _pool.Count;
 
-    public BatchStreamPoolBase(bool needsFinalize, bool reclaimImmediately, Action<Func<bool>>? startTimer = null)
+    public BatchStreamPoolBase(bool needsFinalize, bool reclaimImmediately, int initialCapacity = 0, Action<Func<bool>>? startTimer = null)
     {
         if(!needsFinalize)
             GC.SuppressFinalize(needsFinalize);
@@ -36,6 +36,26 @@ internal abstract class BatchStreamPoolBase<T> : IDisposable
             _reclaimImmediately = true;
         else
             StartUpdateTimer(startTimer, updateRef);
+        
+        // Pre-warm the pool to reduce initial allocations
+        PreWarm(initialCapacity);
+    }
+    
+    /// <summary>
+    /// Pre-warms the pool with the specified number of items to avoid allocations during initial usage.
+    /// </summary>
+    protected void PreWarm(int count)
+    {
+        if (count <= 0 || _reclaimImmediately)
+            return;
+            
+        lock (_pool)
+        {
+            for (var i = 0; i < count; i++)
+            {
+                _pool.Push(CreateItem());
+            }
+        }
     }
 
     static void StartUpdateTimer(Action<Func<bool>>? startTimer, WeakReference<BatchStreamPoolBase<T>> updateRef)
@@ -135,8 +155,8 @@ internal sealed class BatchStreamObjectPool<T> : BatchStreamPoolBase<T[]> where 
 {
     public int ArraySize { get; }
 
-    public BatchStreamObjectPool(bool reclaimImmediately = false, int arraySize = 128, Action<Func<bool>>? startTimer = null) 
-        : base(false, reclaimImmediately, startTimer)
+    public BatchStreamObjectPool(bool reclaimImmediately = false, int arraySize = 128, int initialCapacity = 4, Action<Func<bool>>? startTimer = null) 
+        : base(false, reclaimImmediately, initialCapacity, startTimer)
     {
         ArraySize = arraySize;
     }
@@ -156,8 +176,8 @@ internal sealed class BatchStreamMemoryPool : BatchStreamPoolBase<IntPtr>
 {
     public int BufferSize { get; }
 
-    public BatchStreamMemoryPool(bool reclaimImmediately, int bufferSize = 1024, Action<Func<bool>>? startTimer = null) 
-        : base(true, reclaimImmediately, startTimer)
+    public BatchStreamMemoryPool(bool reclaimImmediately, int bufferSize = 1024, int initialCapacity = 4, Action<Func<bool>>? startTimer = null) 
+        : base(true, reclaimImmediately, initialCapacity, startTimer)
     {
         BufferSize = bufferSize;
     }

@@ -12,16 +12,51 @@ namespace Avalonia.Rendering.Composition.Transport
     public sealed class CompositionBatch
     {
         private static long _nextSequenceId = 1;
-        private static readonly ConcurrentBag<BatchStreamData> _pool = new();
-        private readonly TaskCompletionSource<int> _acceptedTcs = new();
-        private readonly TaskCompletionSource<int> _renderedTcs = new();
+        private static readonly ConcurrentBag<BatchStreamData> _dataPool = new();
+        private static readonly ConcurrentBag<CompositionBatch> _batchPool = new();
         
-        internal long SequenceId { get; }
+        // Pre-warm the batch pool with a few instances to avoid initial allocations
+        private const int InitialPoolSize = 4;
         
-        internal CompositionBatch()
+        static CompositionBatch()
+        {
+            for (var i = 0; i < InitialPoolSize; i++)
+            {
+                _batchPool.Add(new CompositionBatch(createForPool: true));
+            }
+        }
+        
+        private TaskCompletionSource<int> _acceptedTcs;
+        private TaskCompletionSource<int> _renderedTcs;
+        
+        internal long SequenceId { get; private set; }
+        
+        /// <summary>
+        /// Gets a CompositionBatch from the pool or creates a new one.
+        /// </summary>
+        internal static CompositionBatch Get()
+        {
+            if (!_batchPool.TryTake(out var batch))
+                batch = new CompositionBatch(createForPool: false);
+            
+            batch.Initialize();
+            return batch;
+        }
+        
+        private CompositionBatch(bool createForPool)
+        {
+            _acceptedTcs = new TaskCompletionSource<int>();
+            _renderedTcs = new TaskCompletionSource<int>();
+            Changes = null!; // Will be set by Initialize()
+            
+            if (!createForPool)
+                Initialize();
+        }
+        
+        private void Initialize()
         {
             SequenceId = Interlocked.Increment(ref _nextSequenceId);
-            if (!_pool.TryTake(out var lst))
+            if (!_dataPool.TryTake(out var lst))
                 lst = new BatchStreamData();
             Changes = lst;
         }
@@ -56,12 +91,28 @@ namespace Avalonia.Rendering.Composition.Transport
         
         internal void NotifyProcessed()
         {
-            _pool.Add(Changes);
+            _dataPool.Add(Changes);
             Changes = null!;
 
             _acceptedTcs.TrySetResult(0);
         }
         
-        internal void NotifyRendered() => _renderedTcs.TrySetResult(0);
+        internal void NotifyRendered()
+        {
+            _renderedTcs.TrySetResult(0);
+            
+            // Return this batch to the pool for reuse
+            ReturnToPool();
+        }
+        
+        private void ReturnToPool()
+        {
+            // Reset the TaskCompletionSources for reuse
+            // We need to create new ones since TCS can only be completed once
+            _acceptedTcs = new TaskCompletionSource<int>();
+            _renderedTcs = new TaskCompletionSource<int>();
+            
+            _batchPool.Add(this);
+        }
     }
 }

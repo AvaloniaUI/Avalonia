@@ -110,7 +110,7 @@ namespace Avalonia.Rendering.Composition
             if (_nextCommit == null)
             {
                 using var _ = NonPumpingLockHelper.Use();
-                _nextCommit = new ();
+                _nextCommit = CompositionBatch.Get();
                 var pending = _pendingBatch;
                 if (pending != null)
                     pending.Processed.ContinueWith(
@@ -142,7 +142,7 @@ namespace Avalonia.Rendering.Composition
             Dispatcher.VerifyAccess();
             using var noPump = NonPumpingLockHelper.Use();
             
-            var commit = _nextCommit ??= new();
+            var commit = _nextCommit ??= CompositionBatch.Get();
 
             (_invokeBeforeCommitRead, _invokeBeforeCommitWrite) = (_invokeBeforeCommitWrite, _invokeBeforeCommitRead);
             while (_invokeBeforeCommitRead.Count > 0)
@@ -222,7 +222,7 @@ namespace Avalonia.Rendering.Composition
         {
             using var _ = NonPumpingLockHelper.Use();
             obj.Dispose();
-            var batch = new CompositionBatch();
+            var batch = CompositionBatch.Get();
             using (var writer = new BatchStreamWriter(batch.Changes, _batchMemoryPool, _batchObjectPool))
             {
                 writer.WriteObject(ServerCompositor.RenderThreadDisposeStartMarker);
