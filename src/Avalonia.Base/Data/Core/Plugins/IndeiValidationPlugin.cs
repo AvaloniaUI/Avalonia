@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using Avalonia.Utilities;
 
 namespace Avalonia.Data.Core.Plugins
@@ -84,10 +83,20 @@ namespace Avalonia.Data.Core.Plugins
             {
                 if (GetReferenceTarget() is INotifyDataErrorInfo target)
                 {
-                    var errors = target.GetErrors(_name)?
-                        .Cast<object>()
-                        .Where(x => x != null)
-                        .ToList();
+                    var errorsEnumerable = target.GetErrors(_name);
+                    List<object>? errors = null;
+                    
+                    if (errorsEnumerable != null)
+                    {
+                        foreach (var error in errorsEnumerable)
+                        {
+                            if (error != null)
+                            {
+                                errors ??= new List<object>();
+                                errors.Add(error);
+                            }
+                        }
+                    }
 
                     if (errors?.Count > 0)
                     {
@@ -116,8 +125,12 @@ namespace Avalonia.Data.Core.Plugins
                 }
                 else
                 {
-                    return new AggregateException(
-                        errors.Select(x => new DataValidationException(x)));
+                    var exceptions = new DataValidationException[errors.Count];
+                    for (int i = 0; i < errors.Count; i++)
+                    {
+                        exceptions[i] = new DataValidationException(errors[i]);
+                    }
+                    return new AggregateException(exceptions);
                 }
             }
         }

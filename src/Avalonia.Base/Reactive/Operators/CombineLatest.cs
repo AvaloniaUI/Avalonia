@@ -290,7 +290,7 @@ internal sealed class CombineLatest<TSource, TResult> : IObservable<TResult>
 
                 _hasValue[index] = true;
 
-                if (_hasValueAll || (_hasValueAll = _hasValue.All(v => v)))
+                if (_hasValueAll || (_hasValueAll = AllTrue(_hasValue)))
                 {
                     TResult res;
                     try
@@ -305,11 +305,42 @@ internal sealed class CombineLatest<TSource, TResult> : IObservable<TResult>
 
                     ForwardOnNext(res);
                 }
-                else if (_isDone.Where((_, i) => i != index).All(d => d))
+                else if (AllOthersDone(index))
                 {
                     ForwardOnCompleted();
                 }
             }
+        }
+
+        /// <summary>
+        /// Checks if all sources except the specified index are done.
+        /// </summary>
+        private bool AllOthersDone(int excludeIndex)
+        {
+            var isDone = _isDone;
+            for (int i = 0; i < isDone.Length; i++)
+            {
+                if (i != excludeIndex && !isDone[i])
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Checks if all elements in the bool array are true.
+        /// </summary>
+        private static bool AllTrue(bool[] array)
+        {
+            for (int i = 0; i < array.Length; i++)
+            {
+                if (!array[i])
+                {
+                    return false;
+                }
+            }
+            return true;
         }
 
         private new void OnError(Exception error)
@@ -326,7 +357,7 @@ internal sealed class CombineLatest<TSource, TResult> : IObservable<TResult>
             {
                 _isDone[index] = true;
 
-                if (_isDone.All(d => d))
+                if (AllTrue(_isDone))
                 {
                     ForwardOnCompleted();
                 }
