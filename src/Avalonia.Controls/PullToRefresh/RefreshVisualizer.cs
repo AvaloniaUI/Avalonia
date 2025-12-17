@@ -19,6 +19,7 @@ namespace Avalonia.Controls
         private double _executingRatio = 0.8;
 
         private RefreshVisualizerState _refreshVisualizerState;
+        private TranslateTransform? _translateTransform;
         private RefreshInfoProvider? _refreshInfoProvider;
         private IDisposable? _isInteractingSubscription;
         private IDisposable? _interactionRatioSubscription;
@@ -371,21 +372,31 @@ namespace Avalonia.Controls
             }
             else if (change.Property == BoundsProperty)
             {
+                // Reuse transform to avoid allocations on every bounds change
+                _translateTransform ??= new TranslateTransform();
+                
                 switch (PullDirection)
                 {
                     case PullDirection.TopToBottom:
-                        RenderTransform = new TranslateTransform(0, -Bounds.Height);
+                        _translateTransform.X = 0;
+                        _translateTransform.Y = -Bounds.Height;
                         break;
                     case PullDirection.BottomToTop:
-                        RenderTransform = new TranslateTransform(0, Bounds.Height);
+                        _translateTransform.X = 0;
+                        _translateTransform.Y = Bounds.Height;
                         break;
                     case PullDirection.LeftToRight:
-                        RenderTransform = new TranslateTransform(-Bounds.Width, 0);
+                        _translateTransform.X = -Bounds.Width;
+                        _translateTransform.Y = 0;
                         break;
                     case PullDirection.RightToLeft:
-                        RenderTransform = new TranslateTransform(Bounds.Width, 0);
+                        _translateTransform.X = Bounds.Width;
+                        _translateTransform.Y = 0;
                         break;
                 }
+                
+                if (RenderTransform != _translateTransform)
+                    RenderTransform = _translateTransform;
 
                 UpdateContent();
             }

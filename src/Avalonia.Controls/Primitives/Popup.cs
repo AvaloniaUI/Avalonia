@@ -754,7 +754,17 @@ namespace Avalonia.Controls.Primitives
                 // is null, which breaks TemplateBindings to this property. Offending commit/line:
                 //
                 // https://github.com/AvaloniaUI/Avalonia/commit/6fbe1c2180ef45a940e193f1b4637e64eaab80ed#diff-5344e793df13f462126a8153ef46c44194f244b6890f25501709bae51df97f82R54
-                popupHost.Transform = new ScaleTransform(scaleX, scaleY);
+                
+                // Reuse existing ScaleTransform to avoid allocations
+                if (popupHost.Transform is ScaleTransform existingTransform)
+                {
+                    existingTransform.ScaleX = scaleX;
+                    existingTransform.ScaleY = scaleY;
+                }
+                else
+                {
+                    popupHost.Transform = new ScaleTransform(scaleX, scaleY);
+                }
             }
             else
             {
