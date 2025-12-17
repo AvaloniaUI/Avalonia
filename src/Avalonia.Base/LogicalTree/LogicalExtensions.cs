@@ -1,5 +1,8 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using Avalonia.Collections;
 
 namespace Avalonia.LogicalTree
 {
@@ -13,17 +16,10 @@ namespace Avalonia.LogicalTree
         /// </summary>
         /// <param name="logical">The logical.</param>
         /// <returns>The logical's ancestors.</returns>
-        public static IEnumerable<ILogical> GetLogicalAncestors(this ILogical logical)
+        public static LogicalAncestorsEnumerable GetLogicalAncestors(this ILogical logical)
         {
             _ = logical ?? throw new ArgumentNullException(nameof(logical));
-
-            ILogical? l = logical.LogicalParent;
-
-            while (l != null)
-            {
-                yield return l;
-                l = l.LogicalParent;
-            }
+            return new LogicalAncestorsEnumerable(logical);
         }
 
         /// <summary>
@@ -31,14 +27,9 @@ namespace Avalonia.LogicalTree
         /// </summary>
         /// <param name="logical">The logical.</param>
         /// <returns>The logical and its ancestors.</returns>
-        public static IEnumerable<ILogical> GetSelfAndLogicalAncestors(this ILogical logical)
+        public static SelfAndLogicalAncestorsEnumerable GetSelfAndLogicalAncestors(this ILogical logical)
         {
-            yield return logical;
-
-            foreach (var ancestor in logical.GetLogicalAncestors())
-            {
-                yield return ancestor;
-            }
+            return new SelfAndLogicalAncestorsEnumerable(logical);
         }
 
         /// <summary>
@@ -85,17 +76,9 @@ namespace Avalonia.LogicalTree
         /// </summary>
         /// <param name="logical">The logical.</param>
         /// <returns>The logical's ancestors.</returns>
-        public static IEnumerable<ILogical> GetLogicalDescendants(this ILogical logical)
+        public static LogicalDescendantsEnumerable GetLogicalDescendants(this ILogical logical)
         {
-            foreach (ILogical child in logical.LogicalChildren)
-            {
-                yield return child;
-
-                foreach (ILogical descendant in child.GetLogicalDescendants())
-                {
-                    yield return descendant;
-                }
-            }
+            return new LogicalDescendantsEnumerable(logical);
         }
 
         /// <summary>
@@ -103,14 +86,9 @@ namespace Avalonia.LogicalTree
         /// </summary>
         /// <param name="logical">The logical.</param>
         /// <returns>The logical and its ancestors.</returns>
-        public static IEnumerable<ILogical> GetSelfAndLogicalDescendants(this ILogical logical)
+        public static SelfAndLogicalDescendantsEnumerable GetSelfAndLogicalDescendants(this ILogical logical)
         {
-            yield return logical;
-
-            foreach (var descendent in logical.GetLogicalDescendants())
-            {
-                yield return descendent;
-            }
+            return new SelfAndLogicalDescendantsEnumerable(logical);
         }
 
         /// <summary>
@@ -225,6 +203,371 @@ namespace Avalonia.LogicalTree
             }
 
             return null;
+        }
+    }
+
+    /// <summary>
+    /// A struct-based enumerable for logical descendants to avoid allocations.
+    /// </summary>
+    public readonly struct LogicalDescendantsEnumerable : IEnumerable<ILogical>
+    {
+        private readonly ILogical? _root;
+
+        internal LogicalDescendantsEnumerable(ILogical? root)
+        {
+            _root = root;
+        }
+
+        /// <summary>
+        /// Gets the struct enumerator (avoids allocation when used in foreach).
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public LogicalDescendantsEnumerator GetEnumerator() => new(_root);
+
+        IEnumerator<ILogical> IEnumerable<ILogical>.GetEnumerator() => GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    }
+
+    /// <summary>
+    /// A struct-based enumerator for logical descendants using depth-first traversal.
+    /// </summary>
+    public struct LogicalDescendantsEnumerator : IEnumerator<ILogical>
+    {
+        private readonly Stack<(ILogical parent, int index)>? _stack;
+        private ILogical? _current;
+        private ILogical? _currentParent;
+        private int _currentIndex;
+
+        internal LogicalDescendantsEnumerator(ILogical? root)
+        {
+            _current = null;
+            _currentParent = root;
+            _currentIndex = 0;
+
+            if (root != null && root.LogicalChildren.Count > 0)
+            {
+                _stack = new Stack<(ILogical, int)>(16);
+            }
+            else
+            {
+                _stack = null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the current logical.
+        /// </summary>
+        public ILogical Current
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _current!;
+        }
+
+        object IEnumerator.Current => Current;
+
+        /// <summary>
+        /// Moves to the next descendant using depth-first traversal.
+        /// </summary>
+        public bool MoveNext()
+        {
+            if (_currentParent == null)
+                return false;
+
+            IAvaloniaReadOnlyList<ILogical> children = _currentParent.LogicalChildren;
+
+            // Try to get next child at current level
+            while (_currentIndex < children.Count)
+            {
+                var child = children[_currentIndex];
+                _currentIndex++;
+                _current = child;
+
+                // If this child has children, push current state and descend
+                if (child.LogicalChildren.Count > 0)
+                {
+                    _stack?.Push((_currentParent, _currentIndex));
+                    _currentParent = child;
+                    _currentIndex = 0;
+                }
+
+                return true;
+            }
+
+            // Pop back up the stack
+            while (_stack != null && _stack.Count > 0)
+            {
+                (_currentParent, _currentIndex) = _stack.Pop();
+                children = _currentParent.LogicalChildren;
+
+                while (_currentIndex < children.Count)
+                {
+                    var child = children[_currentIndex];
+                    _currentIndex++;
+                    _current = child;
+
+                    if (child.LogicalChildren.Count > 0)
+                    {
+                        _stack.Push((_currentParent, _currentIndex));
+                        _currentParent = child;
+                        _currentIndex = 0;
+                    }
+
+                    return true;
+                }
+            }
+
+            _currentParent = null;
+            return false;
+        }
+
+        /// <summary>
+        /// Resets the enumerator.
+        /// </summary>
+        public void Reset()
+        {
+            throw new NotSupportedException();
+        }
+
+        /// <summary>
+        /// Disposes the enumerator.
+        /// </summary>
+        public void Dispose()
+        {
+            // Nothing to dispose
+        }
+    }
+
+    /// <summary>
+    /// A struct-based enumerable for logical ancestors to avoid allocations.
+    /// </summary>
+    public readonly struct LogicalAncestorsEnumerable : IEnumerable<ILogical>
+    {
+        private readonly ILogical? _logical;
+
+        internal LogicalAncestorsEnumerable(ILogical? logical)
+        {
+            _logical = logical;
+        }
+
+        /// <summary>
+        /// Gets the struct enumerator (avoids allocation when used in foreach).
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public LogicalAncestorsEnumerator GetEnumerator() => new(_logical);
+
+        IEnumerator<ILogical> IEnumerable<ILogical>.GetEnumerator() => GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    }
+
+    /// <summary>
+    /// A struct-based enumerator for logical ancestors.
+    /// </summary>
+    public struct LogicalAncestorsEnumerator : IEnumerator<ILogical>
+    {
+        private ILogical? _current;
+
+        internal LogicalAncestorsEnumerator(ILogical? logical)
+        {
+            _current = logical;
+        }
+
+        /// <summary>
+        /// Gets the current logical.
+        /// </summary>
+        public ILogical Current
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _current!;
+        }
+
+        object IEnumerator.Current => Current;
+
+        /// <summary>
+        /// Moves to the next ancestor.
+        /// </summary>
+        public bool MoveNext()
+        {
+            _current = _current?.LogicalParent;
+            return _current != null;
+        }
+
+        /// <summary>
+        /// Resets the enumerator.
+        /// </summary>
+        public void Reset()
+        {
+            throw new NotSupportedException();
+        }
+
+        /// <summary>
+        /// Disposes the enumerator.
+        /// </summary>
+        public void Dispose()
+        {
+            // Nothing to dispose
+        }
+    }
+
+    /// <summary>
+    /// A struct-based enumerable for self and logical ancestors to avoid allocations.
+    /// </summary>
+    public readonly struct SelfAndLogicalAncestorsEnumerable : IEnumerable<ILogical>
+    {
+        private readonly ILogical? _logical;
+
+        internal SelfAndLogicalAncestorsEnumerable(ILogical? logical)
+        {
+            _logical = logical;
+        }
+
+        /// <summary>
+        /// Gets the struct enumerator (avoids allocation when used in foreach).
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public SelfAndLogicalAncestorsEnumerator GetEnumerator() => new(_logical);
+
+        IEnumerator<ILogical> IEnumerable<ILogical>.GetEnumerator() => GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    }
+
+    /// <summary>
+    /// A struct-based enumerator for self and logical ancestors.
+    /// </summary>
+    public struct SelfAndLogicalAncestorsEnumerator : IEnumerator<ILogical>
+    {
+        private ILogical? _current;
+        private bool _includeSelf;
+
+        internal SelfAndLogicalAncestorsEnumerator(ILogical? logical)
+        {
+            _current = logical;
+            _includeSelf = true;
+        }
+
+        /// <summary>
+        /// Gets the current logical.
+        /// </summary>
+        public ILogical Current
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _current!;
+        }
+
+        object IEnumerator.Current => Current;
+
+        /// <summary>
+        /// Moves to the next element (self first, then ancestors).
+        /// </summary>
+        public bool MoveNext()
+        {
+            if (_includeSelf)
+            {
+                _includeSelf = false;
+                return _current != null;
+            }
+
+            _current = _current?.LogicalParent;
+            return _current != null;
+        }
+
+        /// <summary>
+        /// Resets the enumerator.
+        /// </summary>
+        public void Reset()
+        {
+            throw new NotSupportedException();
+        }
+
+        /// <summary>
+        /// Disposes the enumerator.
+        /// </summary>
+        public void Dispose()
+        {
+            // Nothing to dispose
+        }
+    }
+
+    /// <summary>
+    /// A struct-based enumerable for self and logical descendants to avoid allocations.
+    /// </summary>
+    public readonly struct SelfAndLogicalDescendantsEnumerable : IEnumerable<ILogical>
+    {
+        private readonly ILogical? _root;
+
+        internal SelfAndLogicalDescendantsEnumerable(ILogical? root)
+        {
+            _root = root;
+        }
+
+        /// <summary>
+        /// Gets the struct enumerator (avoids allocation when used in foreach).
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public SelfAndLogicalDescendantsEnumerator GetEnumerator() => new(_root);
+
+        IEnumerator<ILogical> IEnumerable<ILogical>.GetEnumerator() => GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    }
+
+    /// <summary>
+    /// A struct-based enumerator for self and logical descendants using depth-first traversal.
+    /// </summary>
+    public struct SelfAndLogicalDescendantsEnumerator : IEnumerator<ILogical>
+    {
+        private LogicalDescendantsEnumerator _descendantsEnumerator;
+        private ILogical? _root;
+        private bool _includeSelf;
+
+        internal SelfAndLogicalDescendantsEnumerator(ILogical? root)
+        {
+            _root = root;
+            _includeSelf = true;
+            _descendantsEnumerator = new LogicalDescendantsEnumerator(root);
+        }
+
+        /// <summary>
+        /// Gets the current logical.
+        /// </summary>
+        public ILogical Current
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _includeSelf ? _root! : _descendantsEnumerator.Current;
+        }
+
+        object IEnumerator.Current => Current;
+
+        /// <summary>
+        /// Moves to the next element (self first, then descendants).
+        /// </summary>
+        public bool MoveNext()
+        {
+            if (_includeSelf)
+            {
+                _includeSelf = false;
+                return _root != null;
+            }
+
+            return _descendantsEnumerator.MoveNext();
+        }
+
+        /// <summary>
+        /// Resets the enumerator.
+        /// </summary>
+        public void Reset()
+        {
+            throw new NotSupportedException();
+        }
+
+        /// <summary>
+        /// Disposes the enumerator.
+        /// </summary>
+        public void Dispose()
+        {
+            _descendantsEnumerator.Dispose();
         }
     }
 }
