@@ -219,20 +219,33 @@ namespace Avalonia.Media
                 return true;
             }
 
-            // At this point all parsing uses strings
-            var str = s.ToString();
-
             // Note: The length checks are also an important optimization.
             // The shortest possible CSS format is "rbg(0,0,0)", Length = 10.
 
+#if !BUILDTASK
             if (s.Length >= 10 &&
                 (s[0] == 'r' || s[0] == 'R') &&
                 (s[1] == 'g' || s[1] == 'G') &&
                 (s[2] == 'b' || s[2] == 'B') &&
-                TryParseCssFormat(str, out color))
+                TryParseCssFormatSpan(s, out color))
             {
                 return true;
             }
+#endif
+
+            // HSL and known color parsing requires string allocation
+            var str = s.ToString();
+
+#if BUILDTASK
+            if (s.Length >= 10 &&
+                (s[0] == 'r' || s[0] == 'R') &&
+                (s[1] == 'g' || s[1] == 'G') &&
+                (s[2] == 'b' || s[2] == 'B') &&
+                TryParseCssFormatString(str, out color))
+            {
+                return true;
+            }
+#endif
 
             if (s.Length >= 10 &&
                 (s[0] == 'h' || s[0] == 'H') &&
@@ -327,14 +340,189 @@ namespace Avalonia.Media
         /// </summary>
         private static bool TryParseCssFormat(string? s, out Color color)
         {
-            bool prefixMatched = false;
+            if (s is null)
+            {
+                color = default;
+                return false;
+            }
 
+#if !BUILDTASK
+            return TryParseCssFormatSpan(s.AsSpan(), out color);
+#else
+            return TryParseCssFormatString(s, out color);
+#endif
+        }
+
+#if !BUILDTASK
+        /// <summary>
+        /// Parses the given span representing a CSS color value into a new <see cref="Color"/>.
+        /// This method is allocation-free.
+        /// </summary>
+        private static bool TryParseCssFormatSpan(ReadOnlySpan<char> s, out Color color)
+        {
             color = default;
 
-            if (s is null)
+            var span = s.Trim();
+
+            if (span.Length == 0)
             {
                 return false;
             }
+
+            ReadOnlySpan<char> componentsSpan;
+            bool hasAlpha;
+
+            // Check for rgba( prefix
+            if (span.Length >= 11 &&
+                (span[0] == 'r' || span[0] == 'R') &&
+                (span[1] == 'g' || span[1] == 'G') &&
+                (span[2] == 'b' || span[2] == 'B') &&
+                (span[3] == 'a' || span[3] == 'A') &&
+                span[4] == '(' &&
+                span[span.Length - 1] == ')')
+            {
+                componentsSpan = span.Slice(5, span.Length - 6);
+                hasAlpha = true;
+            }
+            // Check for rgb( prefix
+            else if (span.Length >= 10 &&
+                (span[0] == 'r' || span[0] == 'R') &&
+                (span[1] == 'g' || span[1] == 'G') &&
+                (span[2] == 'b' || span[2] == 'B') &&
+                span[3] == '(' &&
+                span[span.Length - 1] == ')')
+            {
+                componentsSpan = span.Slice(4, span.Length - 5);
+                hasAlpha = false;
+            }
+            else
+            {
+                return false;
+            }
+
+            // Parse components without allocating string array
+            // Find comma positions
+            int comma1 = componentsSpan.IndexOf(',');
+            if (comma1 < 0)
+                return false;
+
+            var remaining = componentsSpan.Slice(comma1 + 1);
+            int comma2 = remaining.IndexOf(',');
+            if (comma2 < 0)
+                return false;
+
+            var comp1 = componentsSpan.Slice(0, comma1);
+            var comp2 = remaining.Slice(0, comma2);
+            remaining = remaining.Slice(comma2 + 1);
+
+            if (hasAlpha)
+            {
+                // RGBA - need 4th component
+                int comma3 = remaining.IndexOf(',');
+                ReadOnlySpan<char> comp3, comp4;
+                if (comma3 >= 0)
+                {
+                    comp3 = remaining.Slice(0, comma3);
+                    comp4 = remaining.Slice(comma3 + 1);
+                }
+                else
+                {
+                    comp3 = remaining;
+                    comp4 = default;
+                }
+
+                if (comp4.Length == 0)
+                {
+                    // rgba() with only 3 components - treat as rgb
+                    if (InternalTryParseByte(comp1.Trim(), out byte red) &&
+                        InternalTryParseByte(comp2.Trim(), out byte green) &&
+                        InternalTryParseByte(comp3.Trim(), out byte blue))
+                    {
+                        color = new Color(0xFF, red, green, blue);
+                        return true;
+                    }
+                }
+                else
+                {
+                    if (InternalTryParseByte(comp1.Trim(), out byte red) &&
+                        InternalTryParseByte(comp2.Trim(), out byte green) &&
+                        InternalTryParseByte(comp3.Trim(), out byte blue) &&
+                        InternalTryParseDouble(comp4.Trim(), out double alpha))
+                    {
+                        color = new Color((byte)Math.Round(alpha * 255.0), red, green, blue);
+                        return true;
+                    }
+                }
+            }
+            else
+            {
+                // RGB - 3 components
+                var comp3 = remaining;
+
+                if (InternalTryParseByte(comp1.Trim(), out byte red) &&
+                    InternalTryParseByte(comp2.Trim(), out byte green) &&
+                    InternalTryParseByte(comp3.Trim(), out byte blue))
+                {
+                    color = new Color(0xFF, red, green, blue);
+                    return true;
+                }
+            }
+
+            return false;
+
+            // Local function to specially parse a byte value with an optional percentage sign
+            static bool InternalTryParseByte(ReadOnlySpan<char> inString, out byte outByte)
+            {
+                // The percent sign, if it exists, must be at the end of the number
+                int percentIndex = inString.IndexOf('%');
+
+                if (percentIndex >= 0)
+                {
+                    var result = inString.Slice(0, percentIndex).TryParseDouble(NumberStyles.Number, CultureInfo.InvariantCulture,
+                        out double percentage);
+
+                    outByte = (byte)Math.Round((percentage / 100.0) * 255.0);
+                    return result;
+                }
+                else
+                {
+                    return inString.TryParseByte(NumberStyles.Number, CultureInfo.InvariantCulture,
+                        out outByte);
+                }
+            }
+
+            // Local function to specially parse a double value with an optional percentage sign
+            static bool InternalTryParseDouble(ReadOnlySpan<char> inString, out double outDouble)
+            {
+                // The percent sign, if it exists, must be at the end of the number
+                int percentIndex = inString.IndexOf('%');
+
+                if (percentIndex >= 0)
+                {
+                    var result = inString.Slice(0, percentIndex).TryParseDouble(NumberStyles.Number, CultureInfo.InvariantCulture,
+                         out double percentage);
+
+                    outDouble = percentage / 100.0;
+                    return result;
+                }
+                else
+                {
+                    return inString.TryParseDouble(NumberStyles.Number, CultureInfo.InvariantCulture,
+                        out outDouble);
+                }
+            }
+        }
+#endif
+
+        /// <summary>
+        /// Parses the given string representing a CSS color value into a new <see cref="Color"/>.
+        /// Used for BUILDTASK or as fallback.
+        /// </summary>
+        private static bool TryParseCssFormatString(string s, out Color color)
+        {
+            bool prefixMatched = false;
+
+            color = default;
 
             string workingString = s.Trim();
 
