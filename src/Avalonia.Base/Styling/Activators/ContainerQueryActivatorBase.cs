@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using Avalonia.Layout;
 using Avalonia.VisualTree;
 
@@ -73,9 +72,24 @@ namespace Avalonia.Styling.Activators
 
         internal static Layoutable? GetContainer(Visual visual, string? containerName)
         {
-            return visual.GetVisualAncestors().Where(x => x is Layoutable layoutable &&
-                ((containerName == null && Container.GetSizing(layoutable) != ContainerSizing.Normal)
-                || (containerName != null && Container.GetName(layoutable) == containerName))).FirstOrDefault() as Layoutable;
+            foreach (var ancestor in visual.GetVisualAncestors())
+            {
+                if (ancestor is Layoutable layoutable)
+                {
+                    if (containerName == null)
+                    {
+                        if (Container.GetSizing(layoutable) != ContainerSizing.Normal)
+                        {
+                            return layoutable;
+                        }
+                    }
+                    else if (Container.GetName(layoutable) == containerName)
+                    {
+                        return layoutable;
+                    }
+                }
+            }
+            return null;
         }
 
         private void HeightChanged(object? sender, EventArgs e)

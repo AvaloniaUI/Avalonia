@@ -1,6 +1,5 @@
 using System;
 using System.Diagnostics;
-using System.Linq;
 using Avalonia.Input.Navigation;
 using Avalonia.Interactivity;
 using Avalonia.Metadata;
@@ -295,7 +294,18 @@ namespace Avalonia.Input
         /// <returns>The first focusable element.</returns>
         public IInputElement? FindFirstFocusableElement()
         {
-            var root = (_contentRoot as Visual)?.GetSelfAndVisualDescendants().FirstOrDefault(x => x is IInputElement) as IInputElement;
+            IInputElement? root = null;
+            if (_contentRoot is Visual visual)
+            {
+                foreach (var descendant in visual.GetSelfAndVisualDescendants())
+                {
+                    if (descendant is IInputElement inputElement)
+                    {
+                        root = inputElement;
+                        break;
+                    }
+                }
+            }
             if (root == null)
                 return null;
             return GetFirstFocusableElementFromRoot(false);
@@ -317,7 +327,18 @@ namespace Avalonia.Input
         /// <returns>The last focusable element.</returns>
         public IInputElement? FindLastFocusableElement()
         {
-            var root = (_contentRoot as Visual)?.GetSelfAndVisualDescendants().FirstOrDefault(x => x is IInputElement) as IInputElement;
+            IInputElement? root = null;
+            if (_contentRoot is Visual visual)
+            {
+                foreach (var descendant in visual.GetSelfAndVisualDescendants())
+                {
+                    if (descendant is IInputElement inputElement)
+                    {
+                        root = inputElement;
+                        break;
+                    }
+                }
+            }
             if (root == null)
                 return null;
             return GetFirstFocusableElementFromRoot(true);

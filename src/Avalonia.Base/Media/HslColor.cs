@@ -234,6 +234,150 @@ namespace Avalonia.Media
         /// <returns>True if parsing was successful; otherwise, false.</returns>
         public static bool TryParse(string? s, out HslColor hslColor)
         {
+#if !BUILDTASK
+            return TryParseSpan(s.AsSpan(), out hslColor);
+#else
+            return TryParseString(s, out hslColor);
+#endif
+        }
+
+#if !BUILDTASK
+        private static bool TryParseSpan(ReadOnlySpan<char> s, out HslColor hslColor)
+        {
+            hslColor = default;
+
+            if (s.IsEmpty)
+            {
+                return false;
+            }
+
+            var span = s.Trim();
+
+            if (span.Length == 0 || span.IndexOf(',') < 0)
+            {
+                return false;
+            }
+
+            // Note: The length checks are also an important optimization.
+            // The shortest possible format is "hsl(0,0,0)", Length = 10.
+
+            bool hasAlpha;
+            ReadOnlySpan<char> componentsSpan;
+
+            if (span.Length >= 11 &&
+                span.StartsWith("hsla(".AsSpan(), StringComparison.OrdinalIgnoreCase) &&
+                span[span.Length - 1] == ')')
+            {
+                componentsSpan = span.Slice(5, span.Length - 6);
+                hasAlpha = true;
+            }
+            else if (span.Length >= 10 &&
+                     span.StartsWith("hsl(".AsSpan(), StringComparison.OrdinalIgnoreCase) &&
+                     span[span.Length - 1] == ')')
+            {
+                componentsSpan = span.Slice(4, span.Length - 5);
+                hasAlpha = false;
+            }
+            else
+            {
+                return false;
+            }
+
+            // Parse components without allocating string array
+            // Find comma positions
+            int comma1 = componentsSpan.IndexOf(',');
+            if (comma1 < 0)
+                return false;
+
+            var remaining = componentsSpan.Slice(comma1 + 1);
+            int comma2 = remaining.IndexOf(',');
+            if (comma2 < 0)
+                return false;
+
+            var comp1 = componentsSpan.Slice(0, comma1);
+            var comp2 = remaining.Slice(0, comma2);
+            remaining = remaining.Slice(comma2 + 1);
+
+            if (hasAlpha)
+            {
+                // HSLA - need 4th component
+                int comma3 = remaining.IndexOf(',');
+                ReadOnlySpan<char> comp3, comp4;
+                if (comma3 >= 0)
+                {
+                    comp3 = remaining.Slice(0, comma3);
+                    comp4 = remaining.Slice(comma3 + 1);
+                }
+                else
+                {
+                    comp3 = remaining;
+                    comp4 = default;
+                }
+
+                if (comp4.Length == 0)
+                {
+                    // hsla() with only 3 components - treat as hsl
+                    if (comp1.Trim().TryParseDouble(NumberStyles.Number, CultureInfo.InvariantCulture, out double hue) &&
+                        TryParsePercentageOrDouble(comp2.Trim(), out double saturation) &&
+                        TryParsePercentageOrDouble(comp3.Trim(), out double lightness))
+                    {
+                        hslColor = new HslColor(1.0, hue, saturation, lightness);
+                        return true;
+                    }
+                }
+                else
+                {
+                    if (comp1.Trim().TryParseDouble(NumberStyles.Number, CultureInfo.InvariantCulture, out double hue) &&
+                        TryParsePercentageOrDouble(comp2.Trim(), out double saturation) &&
+                        TryParsePercentageOrDouble(comp3.Trim(), out double lightness) &&
+                        TryParsePercentageOrDouble(comp4.Trim(), out double alpha))
+                    {
+                        hslColor = new HslColor(alpha, hue, saturation, lightness);
+                        return true;
+                    }
+                }
+            }
+            else
+            {
+                // HSL - 3 components
+                var comp3 = remaining;
+
+                if (comp1.Trim().TryParseDouble(NumberStyles.Number, CultureInfo.InvariantCulture, out double hue) &&
+                    TryParsePercentageOrDouble(comp2.Trim(), out double saturation) &&
+                    TryParsePercentageOrDouble(comp3.Trim(), out double lightness))
+                {
+                    hslColor = new HslColor(1.0, hue, saturation, lightness);
+                    return true;
+                }
+            }
+
+            return false;
+
+            // Local function to specially parse a double value with an optional percentage sign
+            static bool TryParsePercentageOrDouble(ReadOnlySpan<char> inString, out double outDouble)
+            {
+                // The percent sign, if it exists, must be at the end of the number
+                int percentIndex = inString.IndexOf('%');
+
+                if (percentIndex >= 0)
+                {
+                    var result = inString.Slice(0, percentIndex).TryParseDouble(NumberStyles.Number, CultureInfo.InvariantCulture,
+                         out double percentage);
+
+                    outDouble = percentage / 100.0;
+                    return result;
+                }
+                else
+                {
+                    return inString.TryParseDouble(NumberStyles.Number, CultureInfo.InvariantCulture,
+                        out outDouble);
+                }
+            }
+        }
+#endif
+
+        private static bool TryParseString(string? s, out HslColor hslColor)
+        {
             bool prefixMatched = false;
 
             hslColor = default;

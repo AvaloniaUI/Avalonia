@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Avalonia.LogicalTree;
 
 namespace Avalonia.Controls
@@ -114,11 +113,18 @@ namespace Avalonia.Controls
         {
             _ = control ?? throw new ArgumentNullException(nameof(control));
 
-            var scope = control.GetSelfAndLogicalAncestors()
-                .OfType<StyledElement>()
-                .Select(x => (x as INameScope) ?? NameScope.GetNameScope(x))
-                .FirstOrDefault(x => x != null);
-            return scope;
+            foreach (var ancestor in control.GetSelfAndLogicalAncestors())
+            {
+                if (ancestor is StyledElement styledElement)
+                {
+                    var scope = (styledElement as INameScope) ?? NameScope.GetNameScope(styledElement);
+                    if (scope != null)
+                    {
+                        return scope;
+                    }
+                }
+            }
+            return null;
         }
     }
 }
