@@ -96,12 +96,18 @@ namespace Avalonia.Interactivity
 
         internal void InvokeRaised(object sender, RoutedEventArgs e)
         {
-            _raised.OnNext((sender, e));
+            if (_raised.HasObservers)
+            {
+                _raised.OnNext((sender, e));
+            }
         }
 
         internal void InvokeRouteFinished(RoutedEventArgs e)
         {
-            _routeFinished.OnNext(e);
+            if (_routeFinished.HasObservers)
+            {
+                _routeFinished.OnNext(e);
+            }
         }
 
         public override string ToString()
