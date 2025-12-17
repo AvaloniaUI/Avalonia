@@ -112,9 +112,10 @@ namespace Avalonia.Controls.Documents
         }
 
         /// <summary>
-        /// Gets or sets whether the <see cref="FontSize"/> should be scaled according to platform text scaling
-        /// rules when measuring and rendering this control.
+        /// Gets or sets whether <see cref="FontSize"/>, <see cref="LetterSpacing"/>, <see cref="TextBlock.LineHeight"/>, and 
+        /// <see cref="TextBlock.LineSpacing"/> should be scaled according to platform text scaling rules when measuring and rendering this control.
         /// </summary>
+        /// <remarks>Text scaling is typically not uniform. Smaller text scales up faster than larger text.</remarks>
         public bool IsPlatformTextScalingEnabled
         {
             get => GetValue(IsPlatformTextScalingEnabledProperty);

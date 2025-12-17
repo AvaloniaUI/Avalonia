@@ -327,7 +327,7 @@ namespace Avalonia.Controls.Primitives
             {
                 if (_textBox.ContextFlyout is PopupFlyoutBase flyout)
                 {
-                    var verticalOffset = (double.IsNaN(_textBox.LineHeight) ? _textBox.FontSize : _textBox.LineHeight) +
+                    var verticalOffset = ((IPlatformTextScaleable)_textBox).GetScaledFontSize(double.IsNaN(_textBox.LineHeight) ? _textBox.FontSize : _textBox.LineHeight) +
                                          ContextMenuPadding;
 
                     TextSelectionHandle? handle = null;

@@ -195,12 +195,11 @@ namespace Avalonia.Controls.Presenters
             set => TextElement.SetFontSize(this, value);
         }
         
-        double IPlatformTextScaleable.GetScaledFontSize(double baseFontSize) => IsPlatformTextScalingEnabled && TopLevel.GetTopLevel(this) is { PlatformSettings: { } platformSettings } ? platformSettings.GetScaledFontSize(baseFontSize) : baseFontSize;
-        
-        /// <summary>
-        /// Gets <see cref="FontSize"/> scaled according to the platform's current text scaling rules.
-        /// </summary>
-        protected double EffectiveFontSize => ((IPlatformTextScaleable)this).GetScaledFontSize(FontSize);
+        /// <inheritdoc cref="IPlatformTextScaleable.GetScaledFontSize(double)"/>
+        protected double GetScaledFontSize(double baseFontSize) => !double.IsNaN(baseFontSize) && IsPlatformTextScalingEnabled && 
+            TopLevel.GetTopLevel(this) is { PlatformSettings: { } platformSettings } ? platformSettings.GetScaledFontSize(baseFontSize) : baseFontSize;
+
+        double IPlatformTextScaleable.GetScaledFontSize(double baseFontSize) => GetScaledFontSize(baseFontSize);
 
         /// <summary>
         /// Gets or sets the font style.
@@ -378,9 +377,9 @@ namespace Avalonia.Controls.Presenters
             var maxWidth = MathUtilities.IsZero(constraint.Width) ? double.PositiveInfinity : constraint.Width;
             var maxHeight = MathUtilities.IsZero(constraint.Height) ? double.PositiveInfinity : constraint.Height;
 
-            var textLayout = new TextLayout(text, typeface, FontFeatures, EffectiveFontSize, foreground, TextAlignment,
+            var textLayout = new TextLayout(text, typeface, FontFeatures, GetScaledFontSize(FontSize), foreground, TextAlignment,
                 TextWrapping, maxWidth: maxWidth, maxHeight: maxHeight, textStyleOverrides: textStyleOverrides,
-                flowDirection: FlowDirection, lineHeight: LineHeight, letterSpacing: LetterSpacing);
+                flowDirection: FlowDirection, lineHeight: GetScaledFontSize(LineHeight), letterSpacing: GetScaledFontSize(LetterSpacing));
 
             return textLayout;
         }
@@ -569,6 +568,7 @@ namespace Avalonia.Controls.Presenters
             var preeditText = PreeditText;
             var text = GetCombinedText(Text, caretIndex, preeditText);
             var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
+            var effectiveFontSize = GetScaledFontSize(FontSize);
             var selectionStart = SelectionStart;
             var selectionEnd = SelectionEnd;
             var start = Math.Min(selectionStart, selectionEnd);
@@ -581,7 +581,7 @@ namespace Avalonia.Controls.Presenters
             if (!string.IsNullOrEmpty(preeditText))
             {
                 var preeditHighlight = new ValueSpan<TextRunProperties>(caretIndex, preeditText.Length,
-                        new GenericTextRunProperties(typeface, FontFeatures, EffectiveFontSize,
+                        new GenericTextRunProperties(typeface, FontFeatures, effectiveFontSize,
                         foregroundBrush: foreground,
                         textDecorations: TextDecorations.Underline));
 
@@ -597,7 +597,7 @@ namespace Avalonia.Controls.Presenters
                     textStyleOverrides = new[]
                     {
                         new ValueSpan<TextRunProperties>(start, length,
-                        new GenericTextRunProperties(typeface, FontFeatures, EffectiveFontSize,
+                        new GenericTextRunProperties(typeface, FontFeatures, effectiveFontSize,
                             foregroundBrush: SelectionForegroundBrush))
                     };
                 }

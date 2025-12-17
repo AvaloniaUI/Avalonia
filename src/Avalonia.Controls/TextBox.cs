@@ -2382,39 +2382,26 @@ namespace Avalonia.Controls
         {
             if (_scrollViewer != null)
             {
-                var maxHeight = double.PositiveInfinity;
-
-                if (MaxLines > 0 && double.IsNaN(Height))
-                {
-                    var fontSize = FontSize;
-                    var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
-                    var paragraphProperties = TextLayout.CreateTextParagraphProperties(typeface, fontSize, null, default, default, null, default, LineHeight, default, FontFeatures);
-                    var textLayout = new TextLayout(new LineTextSource(MaxLines), paragraphProperties);
-                    var verticalSpace = GetVerticalSpaceBetweenScrollViewerAndPresenter();
-
-                    maxHeight = Math.Ceiling(textLayout.Height + verticalSpace);
-                }
-
-                _scrollViewer.SetCurrentValue(MaxHeightProperty, maxHeight);
-
-
-                var minHeight = 0.0;
-
-                if (MinLines > 0 && double.IsNaN(Height))
-                {
-                    var fontSize = FontSize;
-                    var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
-                    var paragraphProperties = TextLayout.CreateTextParagraphProperties(typeface, fontSize, null, default, default, null, default, LineHeight, default, FontFeatures);
-                    var textLayout = new TextLayout(new LineTextSource(MinLines), paragraphProperties);
-                    var verticalSpace = GetVerticalSpaceBetweenScrollViewerAndPresenter();
-
-                    minHeight = Math.Ceiling(textLayout.Height + verticalSpace);
-                }
-
-                _scrollViewer.SetCurrentValue(MinHeightProperty, minHeight);
+                _scrollViewer.SetCurrentValue(MaxHeightProperty, MaxLines > 0 && double.IsNaN(Height) ? CalculateLineDIPHeight(MaxLines) : double.PositiveInfinity);
+                _scrollViewer.SetCurrentValue(MinHeightProperty, MinLines > 0 && double.IsNaN(Height) ? CalculateLineDIPHeight(MinLines) : 0);
             }
 
             return base.MeasureOverride(availableSize);
+        }
+
+        /// <returns>Height of <paramref name="numLines"/> lines of text in device-independent pixels.</returns>
+        private double CalculateLineDIPHeight(int numLines)
+        {
+            var textScaler = _presenter as IPlatformTextScaleable;
+            var effectiveFontSize = textScaler?.GetScaledFontSize(FontSize) ?? FontSize;
+            var effectiveLineHeight = textScaler?.GetScaledFontSize(LineHeight) ?? LineHeight;
+
+            var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
+            var paragraphProperties = TextLayout.CreateTextParagraphProperties(typeface, effectiveFontSize, null, default, default, null, default, effectiveLineHeight, default, FontFeatures);
+            var textLayout = new TextLayout(new LineTextSource(numLines), paragraphProperties);
+            var verticalSpace = GetVerticalSpaceBetweenScrollViewerAndPresenter();
+
+            return Math.Ceiling(textLayout.Height + verticalSpace);
         }
 
         private class LineTextSource : ITextSource

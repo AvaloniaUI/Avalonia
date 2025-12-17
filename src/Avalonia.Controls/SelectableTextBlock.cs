@@ -183,18 +183,19 @@ namespace Avalonia.Controls
         protected override TextLayout CreateTextLayout(string? text)
         {
             var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
-
+            var effectiveFontSize = GetScaledFontSize(FontSize);
+            
             var defaultProperties = new GenericTextRunProperties(
                 typeface,
                 FontFeatures,
-                EffectiveFontSize,
+                effectiveFontSize,
                 TextDecorations,
                 Foreground);
 
             var paragraphProperties = new GenericTextParagraphProperties(FlowDirection, TextAlignment, true, false,
-                defaultProperties, TextWrapping, LineHeight, 0, LetterSpacing)
+                defaultProperties, TextWrapping, GetScaledFontSize(LineHeight), 0, GetScaledFontSize(LetterSpacing))
             {
-                LineSpacing = LineSpacing
+                LineSpacing = GetScaledFontSize(LineSpacing),
             };
 
             List<ValueSpan<TextRunProperties>>? textStyleOverrides = null;
@@ -236,7 +237,7 @@ namespace Avalonia.Controls
                                 new GenericTextRunProperties(
                                     textRun.Properties?.Typeface ?? typeface,
                                     textRun.Properties?.FontFeatures ?? FontFeatures,
-                                    EffectiveFontSize,
+                                    effectiveFontSize,
                                     foregroundBrush: SelectionForegroundBrush)));
 
                         accumulatedLength += runLength;
@@ -247,7 +248,7 @@ namespace Avalonia.Controls
                     textStyleOverrides =
                     [
                         new ValueSpan<TextRunProperties>(start, length,
-                            new GenericTextRunProperties(typeface, FontFeatures, EffectiveFontSize,
+                            new GenericTextRunProperties(typeface, FontFeatures, effectiveFontSize,
                                 foregroundBrush: SelectionForegroundBrush))
                     ];
                 }

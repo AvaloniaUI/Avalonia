@@ -250,12 +250,11 @@ namespace Avalonia.Controls
             set => SetValue(FontSizeProperty, value);
         }
 
-        double IPlatformTextScaleable.GetScaledFontSize(double baseFontSize) => IsPlatformTextScalingEnabled && TopLevel.GetTopLevel(this) is { PlatformSettings: { } platformSettings } ? platformSettings.GetScaledFontSize(baseFontSize) : baseFontSize;
-
-        /// <summary>
-        /// Gets <see cref="FontSize"/> scaled according to the platform's current text scaling rules.
-        /// </summary>
-        protected double EffectiveFontSize => ((IPlatformTextScaleable)this).GetScaledFontSize(FontSize);
+        /// <inheritdoc cref="IPlatformTextScaleable.GetScaledFontSize(double)"/>
+        protected double GetScaledFontSize(double baseFontSize) => !double.IsNaN(baseFontSize) && IsPlatformTextScalingEnabled && 
+            TopLevel.GetTopLevel(this) is { PlatformSettings: { } platformSettings } ? platformSettings.GetScaledFontSize(baseFontSize) : baseFontSize;
+        
+        double IPlatformTextScaleable.GetScaledFontSize(double baseFontSize) => GetScaledFontSize(baseFontSize);
 
         /// <summary>
         /// Gets or sets the font style used to draw the control's text.
@@ -691,14 +690,14 @@ namespace Avalonia.Controls
             var defaultProperties = new GenericTextRunProperties(
                 typeface,
                 FontFeatures,
-                EffectiveFontSize,
+                GetScaledFontSize(FontSize),
                 TextDecorations,
                 Foreground);
 
             var paragraphProperties = new GenericTextParagraphProperties(FlowDirection, IsMeasureValid ? TextAlignment : TextAlignment.Left, true, false,
-                defaultProperties, TextWrapping, LineHeight, 0, LetterSpacing)
+                defaultProperties, TextWrapping, GetScaledFontSize(LineHeight), 0, GetScaledFontSize(LetterSpacing))
             {
-                LineSpacing = LineSpacing
+                LineSpacing = GetScaledFontSize(LineSpacing),
             };
 
             ITextSource textSource;
@@ -880,6 +879,7 @@ namespace Avalonia.Controls
 
                 case nameof(Padding):
                 case nameof(LineHeight):
+                case nameof(LineSpacing):
                 case nameof(LetterSpacing):
                 case nameof(MaxLines):
 
