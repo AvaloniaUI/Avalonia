@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Avalonia.Input.GestureRecognizers;
 using Avalonia.VisualTree;
 
@@ -31,23 +30,8 @@ namespace Avalonia.Input
             if (control1 is not Visual c1 || control2 is not Visual c2)
                 return null;
             
-            // Walk the ancestor chain directly without LINQ allocation
-            // First, mark all ancestors of c1
-            var seen = new HashSet<Visual>();
-            for (var current = c1; current != null; current = current.VisualParent)
-            {
-                if (current is IInputElement)
-                    seen.Add(current);
-            }
-            
-            // Then find first common ancestor in c2's chain
-            for (var current = c2; current != null; current = current.VisualParent)
-            {
-                if (current is IInputElement element && seen.Contains(current))
-                    return element;
-            }
-            
-            return null;
+            // Use the zero-allocation FindCommonVisualAncestor that leverages cached VisualLevel
+            return c1.FindCommonVisualAncestor(c2) as IInputElement;
         }
 
         protected virtual void PlatformCapture(IInputElement? element)
