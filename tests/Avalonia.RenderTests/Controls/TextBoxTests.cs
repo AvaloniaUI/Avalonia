@@ -1,5 +1,7 @@
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Templates;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Xunit;
@@ -17,35 +19,65 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
         {
         }
 
-        /// <summary>
-        /// Tests the visual appearance of a watermark text with custom foreground color.
-        /// This test uses a TextBlock directly to simulate what the watermark would look like,
-        /// since full TextBox template rendering requires application-level theme infrastructure.
-        /// </summary>
+        private static IControlTemplate CreateTextBoxTemplate()
+        {
+            return new FuncControlTemplate<TextBox>((textBox, scope) =>
+            {
+                var border = new Border
+                {
+                    Background = textBox.Background,
+                    BorderBrush = Brushes.Gray,
+                    BorderThickness = new Thickness(1),
+                    Padding = new Thickness(4),
+                };
+
+                var panel = new Panel();
+
+                var watermark = new TextBlock
+                {
+                    Name = "PART_Watermark",
+                    [!TextBlock.TextProperty] = textBox[!TextBox.WatermarkProperty],
+                    [!TextBlock.ForegroundProperty] = textBox[!TextBox.WatermarkForegroundProperty],
+                    FontFamily = textBox.FontFamily,
+                    FontSize = textBox.FontSize,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Opacity = 0.5,
+                }.RegisterInNameScope(scope);
+
+                var presenter = new TextPresenter
+                {
+                    Name = "PART_TextPresenter",
+                    [!TextPresenter.TextProperty] = textBox[!TextBox.TextProperty],
+                    [!TextPresenter.CaretIndexProperty] = textBox[!TextBox.CaretIndexProperty],
+                    FontFamily = textBox.FontFamily,
+                    FontSize = textBox.FontSize,
+                }.RegisterInNameScope(scope);
+
+                panel.Children.Add(watermark);
+                panel.Children.Add(presenter);
+                border.Child = panel;
+
+                return border;
+            });
+        }
+
         [Fact]
         public async Task Watermark_With_Red_Foreground()
         {
-            // Simulating the watermark appearance directly
-            Decorator target = new Decorator
+            var target = new Border
             {
                 Padding = new Thickness(8),
                 Width = 200,
                 Height = 50,
-                Child = new Border
+                Background = Brushes.White,
+                Child = new TextBox
                 {
+                    Template = CreateTextBoxTemplate(),
+                    FontFamily = TestFontFamily,
+                    FontSize = 12,
                     Background = Brushes.White,
-                    BorderBrush = Brushes.Gray,
-                    BorderThickness = new Thickness(1),
-                    Padding = new Thickness(4),
-                    Child = new TextBlock
-                    {
-                        FontFamily = TestFontFamily,
-                        FontSize = 12,
-                        Text = "Red watermark",
-                        Foreground = Brushes.Red,
-                        Opacity = 0.5,
-                        VerticalAlignment = VerticalAlignment.Center,
-                    }
+                    Watermark = "Red watermark",
+                    WatermarkForeground = Brushes.Red,
                 }
             };
 
@@ -53,32 +85,23 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             CompareImages();
         }
 
-        /// <summary>
-        /// Tests the visual appearance of a watermark text with blue foreground color.
-        /// </summary>
         [Fact]
         public async Task Watermark_With_Blue_Foreground()
         {
-            Decorator target = new Decorator
+            var target = new Border
             {
                 Padding = new Thickness(8),
                 Width = 200,
                 Height = 50,
-                Child = new Border
+                Background = Brushes.White,
+                Child = new TextBox
                 {
+                    Template = CreateTextBoxTemplate(),
+                    FontFamily = TestFontFamily,
+                    FontSize = 12,
                     Background = Brushes.White,
-                    BorderBrush = Brushes.Gray,
-                    BorderThickness = new Thickness(1),
-                    Padding = new Thickness(4),
-                    Child = new TextBlock
-                    {
-                        FontFamily = TestFontFamily,
-                        FontSize = 12,
-                        Text = "Blue watermark",
-                        Foreground = Brushes.Blue,
-                        Opacity = 0.5,
-                        VerticalAlignment = VerticalAlignment.Center,
-                    }
+                    Watermark = "Blue watermark",
+                    WatermarkForeground = Brushes.Blue,
                 }
             };
 
@@ -86,32 +109,23 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             CompareImages();
         }
 
-        /// <summary>
-        /// Tests the default watermark appearance (gray foreground).
-        /// </summary>
         [Fact]
         public async Task Watermark_With_Default_Foreground()
         {
-            Decorator target = new Decorator
+            var target = new Border
             {
                 Padding = new Thickness(8),
                 Width = 200,
                 Height = 50,
-                Child = new Border
+                Background = Brushes.White,
+                Child = new TextBox
                 {
+                    Template = CreateTextBoxTemplate(),
+                    FontFamily = TestFontFamily,
+                    FontSize = 12,
                     Background = Brushes.White,
-                    BorderBrush = Brushes.Gray,
-                    BorderThickness = new Thickness(1),
-                    Padding = new Thickness(4),
-                    Child = new TextBlock
-                    {
-                        FontFamily = TestFontFamily,
-                        FontSize = 12,
-                        Text = "Default watermark",
-                        Foreground = Brushes.Gray,
-                        Opacity = 0.5,
-                        VerticalAlignment = VerticalAlignment.Center,
-                    }
+                    Watermark = "Default watermark",
+                    WatermarkForeground = Brushes.Gray,
                 }
             };
 
