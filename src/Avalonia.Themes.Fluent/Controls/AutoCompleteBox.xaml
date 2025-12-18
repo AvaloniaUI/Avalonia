@@ -35,6 +35,7 @@
           <Grid Name="PART_LayoutRoot">
             <TextBox Name="PART_TextBox"
                      Watermark="{TemplateBinding Watermark}"
+                     WatermarkForeground="{TemplateBinding WatermarkForeground}"
                      Width="{TemplateBinding Width}"
                      Foreground="{TemplateBinding Foreground}"
                      Background="{TemplateBinding Background}"

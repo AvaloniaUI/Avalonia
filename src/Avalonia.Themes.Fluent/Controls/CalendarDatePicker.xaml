@@ -93,6 +93,7 @@
                        Margin="{TemplateBinding BorderThickness}"
                        Padding="{TemplateBinding Padding}"
                        Watermark="{TemplateBinding Watermark}"
+                       WatermarkForeground="{TemplateBinding WatermarkForeground}"
                        UseFloatingWatermark="{TemplateBinding UseFloatingWatermark}"
                        HorizontalAlignment="Stretch"
                        VerticalAlignment="Stretch"

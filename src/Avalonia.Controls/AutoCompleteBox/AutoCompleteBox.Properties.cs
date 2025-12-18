@@ -28,6 +28,13 @@ namespace Avalonia.Controls
             TextBox.WatermarkProperty.AddOwner<AutoCompleteBox>();
 
         /// <summary>
+        /// Defines the <see cref="WatermarkForeground"/> property.
+        /// </summary>
+        public static readonly StyledProperty<Media.IBrush?> WatermarkForegroundProperty =
+            TextBox.WatermarkForegroundProperty.AddOwner<AutoCompleteBox>();
+
+
+        /// <summary>
         /// Identifies the <see cref="MinimumPrefixLength" /> property.
         /// </summary>
         /// <value>The identifier for the <see cref="MinimumPrefixLength" /> property.</value>
@@ -415,6 +422,16 @@ namespace Avalonia.Controls
             get => GetValue(WatermarkProperty);
             set => SetValue(WatermarkProperty, value);
         }
+
+        /// <summary>
+        /// Gets or sets the brush used for the foreground color of the watermark text.
+        /// </summary>
+        public Media.IBrush? WatermarkForeground
+        {
+            get => GetValue(WatermarkForegroundProperty);
+            set => SetValue(WatermarkForegroundProperty, value);
+        }
+
 
         /// <summary>
         /// Gets or sets the custom method that uses user-entered text to filter

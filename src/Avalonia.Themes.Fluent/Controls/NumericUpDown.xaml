@@ -82,6 +82,7 @@
                      MinWidth="0"
                      Foreground="{TemplateBinding Foreground}"
                      Watermark="{TemplateBinding Watermark}"
+                     WatermarkForeground="{TemplateBinding WatermarkForeground}"
                      IsReadOnly="{TemplateBinding IsReadOnly}"
                      VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                      HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"

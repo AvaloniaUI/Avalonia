@@ -85,6 +85,7 @@
     <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
     <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}" />
     <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+    <Setter Property="WatermarkForeground" Value="{DynamicResource ThemeForegroundLowBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}" />
     <Setter Property="SelectionBrush" Value="{DynamicResource HighlightBrush}" />
     <Setter Property="SelectionForegroundBrush" Value="{DynamicResource HighlightForegroundBrush}" />
@@ -105,7 +106,7 @@
             <TextBlock Name="floatingWatermark"
                        DockPanel.Dock="Top"
                        FontSize="{DynamicResource FontSizeSmall}"
-                       Foreground="{DynamicResource ThemeAccentBrush}"
+                       Foreground="{TemplateBinding WatermarkForeground}"
                        Text="{TemplateBinding Watermark}">
               <TextBlock.IsVisible>
                 <MultiBinding Converter="{x:Static BoolConverters.And}">
@@ -134,6 +135,7 @@
                               VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
                   <Panel>
                     <TextBlock Name="watermark"
+                               Foreground="{TemplateBinding WatermarkForeground}"
                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"   
                                Opacity="{DynamicResource TextControlPlaceholderOpacity}"

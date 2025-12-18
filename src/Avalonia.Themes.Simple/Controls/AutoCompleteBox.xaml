@@ -20,6 +20,7 @@
                    ClearSelectionOnLostFocus="{TemplateBinding ClearSelectionOnLostFocus}"
                    DataValidationErrors.Errors="{TemplateBinding (DataValidationErrors.Errors)}"
                    Watermark="{TemplateBinding Watermark}"
+                   WatermarkForeground="{TemplateBinding WatermarkForeground}"
                    MaxLength="{TemplateBinding MaxLength}"                   
                    InnerLeftContent="{TemplateBinding InnerLeftContent}"
                    InnerRightContent="{TemplateBinding InnerRightContent}"

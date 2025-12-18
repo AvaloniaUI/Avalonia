@@ -193,6 +193,13 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<TextBox, bool>(nameof(UseFloatingWatermark));
 
         /// <summary>
+        /// Defines the <see cref="WatermarkForeground"/> property
+        /// </summary>
+        public static readonly StyledProperty<IBrush?> WatermarkForegroundProperty =
+            AvaloniaProperty.Register<TextBox, IBrush?>(nameof(WatermarkForeground));
+
+
+        /// <summary>
         /// Defines the <see cref="NewLine"/> property
         /// </summary>
         public static readonly StyledProperty<string> NewLineProperty =
@@ -680,6 +687,16 @@ namespace Avalonia.Controls
             get => GetValue(UseFloatingWatermarkProperty);
             set => SetValue(UseFloatingWatermarkProperty, value);
         }
+
+        /// <summary>
+        /// Gets or sets the brush used for the foreground color of the watermark text.
+        /// </summary>
+        public IBrush? WatermarkForeground
+        {
+            get => GetValue(WatermarkForegroundProperty);
+            set => SetValue(WatermarkForegroundProperty, value);
+        }
+
 
         /// <summary>
         /// Gets or sets custom content that is positioned on the left side of the text layout box

@@ -99,6 +99,7 @@
     <Setter Property="CaretBrush" Value="{DynamicResource TextControlForeground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrush}" />
     <Setter Property="SelectionBrush" Value="{DynamicResource TextControlSelectionHighlightColor}" />
+    <Setter Property="WatermarkForeground" Value="{DynamicResource TextControlPlaceholderForeground}" />
     <Setter Property="BorderThickness" Value="{DynamicResource TextControlBorderThemeThickness}" />
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="MinHeight" Value="{DynamicResource TextControlThemeMinHeight}" />
@@ -133,10 +134,11 @@
                            Grid.ColumnSpan="1"
                            Margin="{TemplateBinding Padding}">
                   <TextBlock Name="PART_FloatingWatermark"
-                             Foreground="{DynamicResource SystemAccentColor}"
+                             Foreground="{TemplateBinding WatermarkForeground}"
                              IsVisible="False"
                              Text="{TemplateBinding Watermark}"
                              DockPanel.Dock="Top" />
+
                   <ScrollViewer Name="PART_ScrollViewer"
                                 HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
                                 VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}"
@@ -145,6 +147,7 @@
                                 BringIntoViewOnFocusChange="{TemplateBinding (ScrollViewer.BringIntoViewOnFocusChange)}">
                     <Panel>
                       <TextBlock Name="PART_Watermark"
+                              Foreground="{TemplateBinding WatermarkForeground}"
                               Opacity="{DynamicResource TextControlPlaceholderOpacity}"
                               Text="{TemplateBinding Watermark}"
                               TextAlignment="{TemplateBinding TextAlignment}"
@@ -158,6 +161,7 @@
                           </MultiBinding>
                         </TextBlock.IsVisible>
                       </TextBlock>
+
                       <TextPresenter Name="PART_TextPresenter"
                                     Text="{TemplateBinding Text, Mode=TwoWay}"
                                     CaretBlinkInterval="{TemplateBinding CaretBlinkInterval}"
@@ -203,9 +207,6 @@
         <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrushDisabled}" />
       </Style>
 
-      <Style Selector="^ /template/ TextBlock#PART_Watermark, ^ /template/ TextBlock#PART_FloatingWatermark">
-        <Setter Property="Foreground" Value="{DynamicResource TextControlPlaceholderForegroundDisabled}" />
-      </Style>
     </Style>
 
     <!-- PointerOver State-->
@@ -217,18 +218,11 @@
         <Setter Property="Background" Value="{DynamicResource TextControlBackgroundPointerOver}" />
       </Style>
 
-      <Style Selector="^ /template/ TextBlock#PART_Watermark">
-        <Setter Property="Foreground" Value="{DynamicResource TextControlPlaceholderForegroundPointerOver}" />
-      </Style>
     </Style>
 
     <!-- Focused State -->
     <Style Selector="^:focus">
       <Setter Property="Foreground" Value="{DynamicResource TextControlForegroundFocused}" />
-
-      <Style Selector="^ /template/ TextBlock#PART_Watermark">
-        <Setter Property="Foreground" Value="{DynamicResource TextControlPlaceholderForegroundFocused}" />
-      </Style>
 
       <Style Selector="^ /template/ Border#PART_BorderElement">
         <Setter Property="Background" Value="{DynamicResource TextControlBackgroundFocused}"/>
@@ -248,6 +242,7 @@
     <Style Selector="^[UseFloatingWatermark=true]:not(:empty) /template/ TextBlock#PART_FloatingWatermark">
       <Setter Property="IsVisible" Value="True" />
     </Style>
+
 
     <Style Selector="^.revealPasswordButton[AcceptsReturn=False][IsReadOnly=False]:not(TextBox:empty)">
       <Setter Property="InnerRightContent">
