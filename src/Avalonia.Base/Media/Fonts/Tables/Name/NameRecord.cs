@@ -6,7 +6,7 @@ using System;
 
 namespace Avalonia.Media.Fonts.Tables.Name
 {
-    internal class NameRecord
+    internal readonly struct NameRecord
     {
         private readonly ReadOnlyMemory<byte> _stringStorage;
 
@@ -50,15 +50,9 @@ namespace Avalonia.Media.Fonts.Tables.Name
                     return string.Empty;
                 }
 
-                var reader = new BigEndianBinaryReader(_stringStorage.Span);
+                var span = _stringStorage.Span.Slice(Offset, Length);
 
-                reader.Seek(Offset);
-
-                byte[] data = reader.ReadBytes(Length);
-
-                var value = Encoding.GetString(data);
-
-                return value;
+                return Encoding.GetString(span);
             }
         }
     }

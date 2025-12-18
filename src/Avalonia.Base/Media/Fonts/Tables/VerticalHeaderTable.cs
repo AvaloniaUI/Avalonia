@@ -1,6 +1,6 @@
 namespace Avalonia.Media.Fonts.Tables
 {
-    internal class VerticalHeaderTable
+    internal readonly struct VerticalHeaderTable
     {
         internal const string TableName = "vhea";
         internal static OpenTypeTag Tag { get; } = OpenTypeTag.Parse(TableName);
@@ -62,7 +62,6 @@ namespace Avalonia.Media.Fonts.Tables
 
             var binaryReader = new BigEndianBinaryReader(table.Span);
 
-            // Move to start of table.
             return Load(binaryReader);
         }
 

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0.
 // Ported from: https://github.com/SixLabors/Fonts/blob/034a440aece357341fcc6b02db58ffbe153e54ef/src/SixLabors.Fonts
 
+using System;
 using System.Collections.Generic;
 
 namespace Avalonia.Media.Fonts.Tables
@@ -36,8 +37,8 @@ namespace Avalonia.Media.Fonts.Tables
             var reader = new BigEndianBinaryReader(gPosTable.Span);
 
             return Load(reader);
-
         }
+
         public static FeatureListTable? LoadGPos(IGlyphTypeface glyphTypeface)
         {
             if (!glyphTypeface.PlatformTypeface.TryGetTable(GPosTag, out var gSubTable))
@@ -48,7 +49,6 @@ namespace Avalonia.Media.Fonts.Tables
             var reader = new BigEndianBinaryReader(gSubTable.Span);
 
             return Load(reader);
-
         }
 
         private static FeatureListTable Load(BigEndianBinaryReader reader)
@@ -91,7 +91,17 @@ namespace Avalonia.Media.Fonts.Tables
 
             var featureCount = reader.ReadUInt16();
 
-            var features = new List<OpenTypeTag>(featureCount);
+            if (featureCount == 0)
+            {
+                return new FeatureListTable(Array.Empty<OpenTypeTag>());
+            }
+
+            // Use stackalloc for small counts, array for larger
+            Span<OpenTypeTag> tempFeatures = featureCount <= 64 
+                ? stackalloc OpenTypeTag[featureCount] 
+                : new OpenTypeTag[featureCount];
+
+            int uniqueCount = 0;
 
             for (var i = 0; i < featureCount; i++)
             {
@@ -104,19 +114,32 @@ namespace Avalonia.Media.Fonts.Tables
                 // | Offset16 | featureOffset | Offset to Feature table, from beginning of FeatureList |
                 // +----------+---------------+--------------------------------------------------------+
                 var featureTag = reader.ReadUInt32();
-
                 reader.ReadOffset16();
 
                 var tag = new OpenTypeTag(featureTag);
 
-                if (!features.Contains(tag))
+                // Check for duplicates in already added features
+                bool isDuplicate = false;
+                for (int j = 0; j < uniqueCount; j++)
                 {
-                    features.Add(tag);
+                    if (tempFeatures[j].Equals(tag))
+                    {
+                        isDuplicate = true;
+                        break;
+                    }
+                }
+
+                if (!isDuplicate)
+                {
+                    tempFeatures[uniqueCount++] = tag;
                 }
             }
 
-            return new FeatureListTable(features /*featureTables*/);
-        }
+            // Create array with only unique features
+            var features = new OpenTypeTag[uniqueCount];
+            tempFeatures.Slice(0, uniqueCount).CopyTo(features);
 
+            return new FeatureListTable(features);
+        }
     }
 }

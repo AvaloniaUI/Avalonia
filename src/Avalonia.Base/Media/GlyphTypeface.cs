@@ -20,6 +20,9 @@ namespace Avalonia.Media
     /// shaping scenarios.</remarks>
     public sealed class GlyphTypeface : IGlyphTypeface
     {
+        private static readonly IReadOnlyDictionary<CultureInfo, string> s_emptyStringDictionary = 
+            new Dictionary<CultureInfo, string>(0);
+
         private bool _isDisposed;
 
         private readonly NameTable? _nameTable;
@@ -60,14 +63,14 @@ namespace Avalonia.Media
 
             if (_hhTable is not null)
             {
-                _hmTable = HorizontalMetricsTable.Load(this, _hhTable.NumberOfHMetrics, GlyphCount);
+                _hmTable = HorizontalMetricsTable.Load(this, _hhTable.Value.NumberOfHMetrics, GlyphCount);
             }
 
             _vhTable = VerticalHeaderTable.Load(this);
 
             if (_vhTable is not null)
             {
-                _vmTable = VerticalMetricsTable.Load(this, _vhTable.NumberOfVMetrics, GlyphCount);
+                _vmTable = VerticalMetricsTable.Load(this, _vhTable.Value.NumberOfVMetrics, GlyphCount);
             }
 
             var ascent = 0;
@@ -84,9 +87,9 @@ namespace Avalonia.Media
             {
                 if (_hhTable != null)
                 {
-                    ascent = -_hhTable.Ascender;
-                    descent = -_hhTable.Descender;
-                    lineGap = _hhTable.LineGap;
+                    ascent = -_hhTable.Value.Ascender;
+                    descent = -_hhTable.Value.Descender;
+                    lineGap = _hhTable.Value.LineGap;
                 }
             }
 
@@ -147,8 +150,8 @@ namespace Avalonia.Media
 
             if (_nameTable != null)
             {
-                var familyNames = new Dictionary<CultureInfo, string>(1);
-                var faceNames = new Dictionary<CultureInfo, string>(1);
+                Dictionary<CultureInfo, string>? familyNames = null;
+                Dictionary<CultureInfo, string>? faceNames = null;
 
                 foreach (var nameRecord in _nameTable)
                 {
@@ -161,11 +164,12 @@ namespace Avalonia.Media
 
                         var culture = GetCulture(nameRecord.LanguageID);
 
+                        familyNames ??= new Dictionary<CultureInfo, string>(1);
+
                         if (!familyNames.ContainsKey(culture))
                         {
                             familyNames[culture] = nameRecord.Value;
                         }
-
                     }
 
                     if (nameRecord.NameID == KnownNameIds.FontSubfamilyName)
@@ -177,6 +181,8 @@ namespace Avalonia.Media
 
                         var culture = GetCulture(nameRecord.LanguageID);
 
+                        faceNames ??= new Dictionary<CultureInfo, string>(1);
+
                         if (!faceNames.ContainsKey(culture))
                         {
                             faceNames[culture] = nameRecord.Value;
@@ -184,8 +190,8 @@ namespace Avalonia.Media
                     }
                 }
 
-                FamilyNames = familyNames;
-                FaceNames = faceNames;
+                FamilyNames = familyNames ?? s_emptyStringDictionary;
+                FaceNames = faceNames ?? s_emptyStringDictionary;
             }
             else
             {
