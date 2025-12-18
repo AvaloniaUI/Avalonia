@@ -354,7 +354,12 @@ namespace Avalonia.Media
                 return 0;
             }
 
-            return _hmTable.GetAdvance(glyphId);
+            if (!_hmTable.TryGetAdvance(glyphId, out var advance))
+            {
+                return 0;
+            }
+
+            return advance;
         }
 
         public bool TryGetGlyphMetrics(ushort glyph, out GlyphMetrics metrics)
@@ -364,17 +369,20 @@ namespace Avalonia.Media
             HorizontalGlyphMetric hMetric = default;
             VerticalGlyphMetric vMetric = default;
 
+            var hasHorizontal = false;
+            var hasVertical = false;
+
             if (_hmTable != null)
             {
-                hMetric = _hmTable.GetMetrics(glyph);
+                hasHorizontal = _hmTable.TryGetMetrics(glyph, out hMetric);
             }
 
             if (_vmTable != null)
             {
-                vMetric = _vmTable.GetMetrics(glyph);
+                hasVertical = _vmTable.TryGetMetrics(glyph, out vMetric);
             }
 
-            if (hMetric.Equals(default) && vMetric.Equals(default))
+            if (!hasHorizontal && !hasVertical)
             {
                 return false;
             }
