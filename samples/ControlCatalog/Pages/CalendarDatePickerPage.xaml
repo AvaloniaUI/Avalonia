@@ -37,6 +37,11 @@
                     Name="DatePicker5"
                     Watermark="Floating Watermark"
                     UseFloatingWatermark="True"/>
+
+        <TextBlock Text="Watermark with custom color"/>
+        <CalendarDatePicker Margin="0,0,0,8"
+                    Watermark="Select a date"
+                    WatermarkForeground="Purple"/>
                 
         <TextBlock Text="Disabled"/>
         <CalendarDatePicker IsEnabled="False"/>

@@ -43,6 +43,10 @@
         <AutoCompleteBox Watermark="Hello World" />
       </StackPanel>
       <StackPanel>
+        <TextBlock Text="Watermark with custom color" />
+        <AutoCompleteBox Watermark="Search here..." WatermarkForeground="Green" />
+      </StackPanel>
+      <StackPanel>
         <TextBlock Text="Disabled" />
         <AutoCompleteBox IsEnabled="False" />
       </StackPanel>
