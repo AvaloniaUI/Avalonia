@@ -53,8 +53,11 @@ namespace Sandbox
 
             FontManager.Current.AddFontCollection(fontCollection);
 
-            var typeface = new Typeface("Noto Color Emoji");
-            var glyphTypeface = typeface.GlyphTypeface;
+            var notoColorEmojiTypeface = new Typeface("Noto Color Emoji");
+            var notoColorEmojiGlyphTypeface = notoColorEmojiTypeface.GlyphTypeface;
+
+            var segoeUiEmojiTypeface = new Typeface("Segoe UI Emoji");
+            var segoeUiEmojiGlyphTypeface = segoeUiEmojiTypeface.GlyphTypeface;
 
             var wrap = new WrapPanel
             {
@@ -64,12 +67,12 @@ namespace Sandbox
                 VerticalAlignment = VerticalAlignment.Center
             };
 
-            foreach (var (c, g) in glyphTypeface.CharacterToGlyphMap)
+            foreach (var (c, g) in notoColorEmojiGlyphTypeface.CharacterToGlyphMap)
             {
                 // Create a glyph control for each glyph
                 var glyphControl = new GlyphControl
                 {
-                    GlyphTypeface = glyphTypeface,
+                    GlyphTypeface = notoColorEmojiGlyphTypeface,
                     GlyphId = g,
                     Width = 66,
                     Height = 66,
@@ -94,28 +97,31 @@ namespace Sandbox
                 wrap.Children.Add(border);
 
 
-                wrap.Children.Add(new Border
+                if (segoeUiEmojiGlyphTypeface.CharacterToGlyphMap.TryGetValue(c, out var sg))
                 {
-                    BorderBrush = Brushes.LightGray,
-                    BorderThickness = new Thickness(1),
-                    MinHeight = 80,
-                    Width = 80,
-                    Padding = new Thickness(4),
-                    Child = new Grid
+                    wrap.Children.Add(new Border
                     {
-                        ClipToBounds = false,
-                        Children = { new TextBlock
-                    {
-                        ClipToBounds = false,
-                        HorizontalAlignment = HorizontalAlignment.Center,
-                        VerticalAlignment = VerticalAlignment.Center,
-                        FontSize = 66,
-                        FontFamily ="Noto Color Emoji",
-                        Text = char.ConvertFromUtf32(c)
-                    } }
-                    },
-                    Margin = new Thickness(4)
-                });
+                        BorderBrush = Brushes.LightGray,
+                        BorderThickness = new Thickness(1),
+                        MinHeight = 80,
+                        MinWidth = 80,
+                        Padding = new Thickness(4),
+                        Child = new Grid
+                        {
+                            Children = {
+                                new GlyphControl
+                                {
+                                    GlyphTypeface = segoeUiEmojiGlyphTypeface,
+                                    GlyphId = sg,
+                                    Width = 66,
+                                    Height = 66,
+                                    HorizontalAlignment = HorizontalAlignment.Center,
+                                    VerticalAlignment = VerticalAlignment.Center
+                                } }
+                        },
+                        Margin = new Thickness(4)
+                    });
+                }
             }
 
             Content = new ScrollViewer { Content = wrap };
