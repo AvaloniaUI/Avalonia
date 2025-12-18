@@ -2130,7 +2130,6 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-<<<<<<< Updated upstream
         public void Backspace_Should_Delete_CRLFNewline_Character_At_Once()
         {
             using var _ = UnitTestApplication.Start(Services);
@@ -2147,7 +2146,9 @@ namespace Avalonia.Controls.UnitTests
             // (FirstSecond)
 
             Assert.Equal("FirstSecond", target.Text);
-=======
+        }
+
+        [Fact]
         public void WatermarkForeground_Can_Be_Set()
         {
             using (UnitTestApplication.Start(Services))
@@ -2200,7 +2201,6 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.Null(target.WatermarkForeground);
             }
->>>>>>> Stashed changes
         }
 
         private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
