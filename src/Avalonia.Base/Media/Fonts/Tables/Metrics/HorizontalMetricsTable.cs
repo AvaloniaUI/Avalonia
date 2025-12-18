@@ -29,41 +29,37 @@ namespace Avalonia.Media.Fonts.Tables.Metrics
         }
 
         /// <summary>
-        /// Retrieves the horizontal glyph metrics for the specified glyph index.
+        /// Attempts to retrieve the horizontal glyph metrics for the specified glyph index.
         /// </summary>
-        /// <remarks>This method retrieves the horizontal metrics for a single glyph by its index. The
-        /// returned metrics include information such as advance width, left side bearing, and other glyph-specific
-        /// data.</remarks>
-        /// <param name="glyphIndex">The index of the glyph for which to retrieve metrics. Must be a valid glyph index within the font.</param>
-        /// <returns>A <see cref="HorizontalGlyphMetric"/> object containing the horizontal metrics for the specified glyph.</returns>
-        public HorizontalGlyphMetric GetMetrics(ushort glyphIndex)
+        /// <param name="glyphIndex">The index of the glyph for which to retrieve metrics.</param>
+        /// <param name="metric">When this method returns, contains the horizontal glyph metric if the glyph index is valid; otherwise, the default value.</param>
+        /// <returns><c>true</c> if the glyph index is valid and metrics were retrieved; otherwise, <c>false</c>.</returns>
+        public bool TryGetMetrics(ushort glyphIndex, out HorizontalGlyphMetric metric)
         {
-            // Validate glyph index
+            metric = default;
+
             if (glyphIndex >= _numGlyphs)
             {
-                throw new ArgumentOutOfRangeException(nameof(glyphIndex), $"Glyph index {glyphIndex} is out of range.");
+                return false;
             }
 
             var reader = new BigEndianBinaryReader(_data.Span);
 
             if (glyphIndex < _numOfHMetrics)
             {
-                // Each record is 4 bytes
                 reader.Seek(glyphIndex * 4);
 
                 ushort advanceWidth = reader.ReadUInt16();
                 short leftSideBearing = reader.ReadInt16();
 
-                return new HorizontalGlyphMetric(advanceWidth, leftSideBearing);
+                metric = new HorizontalGlyphMetric(advanceWidth, leftSideBearing);
             }
             else
             {
-                // Last advance width
                 reader.Seek((_numOfHMetrics - 1) * 4);
 
                 ushort lastAdvanceWidth = reader.ReadUInt16();
 
-                // Offset into trailing LSB array
                 int lsbIndex = glyphIndex - _numOfHMetrics;
                 int lsbOffset = _numOfHMetrics * 4 + lsbIndex * 2;
 
@@ -71,43 +67,43 @@ namespace Avalonia.Media.Fonts.Tables.Metrics
 
                 short leftSideBearing = reader.ReadInt16();
 
-                return new HorizontalGlyphMetric(lastAdvanceWidth, leftSideBearing);
+                metric = new HorizontalGlyphMetric(lastAdvanceWidth, leftSideBearing);
             }
+
+            return true;
         }
 
         /// <summary>
-        /// Retrieves the advance width for a single glyph.
+        /// Attempts to retrieve the advance width for a single glyph.
         /// </summary>
         /// <param name="glyphIndex">Glyph index to query.</param>
-        /// <returns>Advance width for the glyph.</returns>
-        public ushort GetAdvance(ushort glyphIndex)
+        /// <param name="advance">When this method returns, contains the advance width if the glyph index is valid; otherwise, zero.</param>
+        /// <returns><c>true</c> if the glyph index is valid and the advance was retrieved; otherwise, <c>false</c>.</returns>
+        public bool TryGetAdvance(ushort glyphIndex, out ushort advance)
         {
-            // Validate glyph index
+            advance = 0;
+
             if (glyphIndex >= _numGlyphs)
             {
-                throw new ArgumentOutOfRangeException(nameof(glyphIndex));
+                return false;
             }
 
             var reader = new BigEndianBinaryReader(_data.Span);
 
             if (glyphIndex < _numOfHMetrics)
             {
-                // Each record is 4 bytes
                 reader.Seek(glyphIndex * 4);
 
-                ushort advanceWidth = reader.ReadUInt16();
-
-                return advanceWidth;
+                advance = reader.ReadUInt16();
             }
             else
             {
-                // Last advance width
                 reader.Seek((_numOfHMetrics - 1) * 4);
 
-                ushort lastAdvanceWidth = reader.ReadUInt16();
-
-                return lastAdvanceWidth;
+                advance = reader.ReadUInt16();
             }
+
+            return true;
         }
     }
 }

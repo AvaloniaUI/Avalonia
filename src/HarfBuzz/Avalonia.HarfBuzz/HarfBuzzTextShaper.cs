@@ -51,7 +51,10 @@ namespace Avalonia.Harfbuzz
 
             var usedCulture = culture ?? CultureInfo.CurrentCulture;
 
-            buffer.Language = s_cachedLanguage.GetOrAdd(usedCulture.LCID, _ => new Language(usedCulture));
+            buffer.Language = s_cachedLanguage.GetOrAdd(
+                usedCulture.LCID,
+                static (_, culture) => new Language(culture),
+                usedCulture);
 
             var font = harfBuzzTypeface.HBFont;
 

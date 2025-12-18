@@ -2,7 +2,7 @@ using System;
 
 namespace Avalonia.Media.Fonts.Tables
 {
-    internal sealed class HeadTable
+    internal readonly struct HeadTable
     {
         internal const string TableName = "head";
         internal static OpenTypeTag Tag { get; } = OpenTypeTag.Parse(TableName);

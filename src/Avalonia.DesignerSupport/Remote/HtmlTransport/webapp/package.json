@@ -1,9 +1,5 @@
 {
   "name": "previewer",
-  "scripts": {
-    "predist": "tsc -noEmit",
-    "dist": "node build.js"
-  },
   "devDependencies": {
     "@chialab/esbuild-plugin-html": "^0.17.0",
     "esbuild": "^0.14.54",

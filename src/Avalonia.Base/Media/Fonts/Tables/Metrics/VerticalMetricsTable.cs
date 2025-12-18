@@ -29,38 +29,37 @@ namespace Avalonia.Media.Fonts.Tables.Metrics
         }
 
         /// <summary>
-        /// Retrieves the vertical glyph metrics for the specified glyph index.
+        /// Attempts to retrieve the vertical glyph metrics for the specified glyph index.
         /// </summary>
         /// <param name="glyphIndex">The index of the glyph for which to retrieve metrics.</param>
-        /// <returns>A <see cref="VerticalGlyphMetric"/> containing the vertical metrics for the specified glyph.</returns>
-        public VerticalGlyphMetric GetMetrics(ushort glyphIndex)
+        /// <param name="metric">When this method returns, contains the vertical glyph metric if the glyph index is valid; otherwise, the default value.</param>
+        /// <returns><c>true</c> if the glyph index is valid and metrics were retrieved; otherwise, <c>false</c>.</returns>
+        public bool TryGetMetrics(ushort glyphIndex, out VerticalGlyphMetric metric)
         {
-            // Validate glyph index
+            metric = default;
+
             if (glyphIndex >= _numGlyphs)
             {
-                throw new ArgumentOutOfRangeException(nameof(glyphIndex), $"Glyph index {glyphIndex} is out of range.");
+                return false;
             }
 
             var reader = new BigEndianBinaryReader(_data.Span);
 
             if (glyphIndex < _numOfVMetrics)
             {
-                // Each record is 4 bytes
                 reader.Seek(glyphIndex * 4);
 
                 ushort advanceHeight = reader.ReadUInt16();
                 short topSideBearing = reader.ReadInt16();
 
-                return new VerticalGlyphMetric(advanceHeight, topSideBearing);
+                metric = new VerticalGlyphMetric(advanceHeight, topSideBearing);
             }
             else
             {
-                // Last advance height
                 reader.Seek((_numOfVMetrics - 1) * 4);
 
                 ushort lastAdvanceHeight = reader.ReadUInt16();
 
-                // Offset into trailing TSB array
                 int tsbIndex = glyphIndex - _numOfVMetrics;
                 int tsbOffset = _numOfVMetrics * 4 + tsbIndex * 2;
 
@@ -68,43 +67,43 @@ namespace Avalonia.Media.Fonts.Tables.Metrics
 
                 short tsb = reader.ReadInt16();
 
-                return new VerticalGlyphMetric(lastAdvanceHeight, tsb);
+                metric = new VerticalGlyphMetric(lastAdvanceHeight, tsb);
             }
+
+            return true;
         }
 
         /// <summary>
-        /// Retrieves the advance height for a single glyph.
+        /// Attempts to retrieve the advance height for a single glyph.
         /// </summary>
         /// <param name="glyphIndex">Glyph index to query.</param>
-        /// <returns>Advance height for the glyph.</returns>
-        public ushort GetAdvance(ushort glyphIndex)
+        /// <param name="advance">When this method returns, contains the advance height if the glyph index is valid; otherwise, zero.</param>
+        /// <returns><c>true</c> if the glyph index is valid and the advance was retrieved; otherwise, <c>false</c>.</returns>
+        public bool TryGetAdvance(ushort glyphIndex, out ushort advance)
         {
-            // Validate glyph index
+            advance = 0;
+
             if (glyphIndex >= _numGlyphs)
             {
-                throw new ArgumentOutOfRangeException(nameof(glyphIndex));
+                return false;
             }
 
             var reader = new BigEndianBinaryReader(_data.Span);
 
             if (glyphIndex < _numOfVMetrics)
             {
-                // Each record is 4 bytes
                 reader.Seek(glyphIndex * 4);
 
-                ushort advanceHeight = reader.ReadUInt16();
-
-                return advanceHeight;
+                advance = reader.ReadUInt16();
             }
             else
             {
-                // Last advance height
                 reader.Seek((_numOfVMetrics - 1) * 4);
 
-                ushort lastAdvanceHeight = reader.ReadUInt16();
-
-                return lastAdvanceHeight;
+                advance = reader.ReadUInt16();
             }
+
+            return true;
         }
     }
 }

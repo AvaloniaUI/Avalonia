@@ -4,7 +4,7 @@
 
 namespace Avalonia.Media.Fonts.Tables
 {
-    internal class HorizontalHeaderTable
+    internal readonly struct HorizontalHeaderTable
     {
         internal const string TableName = "hhea";
 
