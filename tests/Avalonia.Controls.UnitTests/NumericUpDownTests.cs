@@ -190,5 +190,18 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(10, textbox.TabIndex);
             });
         }
+
+        [Fact]
+        public void WatermarkForeground_Can_Be_Set()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var control = CreateControl();
+                control.Watermark = "Enter value";
+                control.WatermarkForeground = Media.Brushes.Red;
+
+                Assert.Equal(Media.Brushes.Red, control.WatermarkForeground);
+            }
+        }
     }
 }

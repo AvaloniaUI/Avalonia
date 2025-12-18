@@ -178,5 +178,18 @@ namespace Avalonia.Controls.UnitTests
             });
         }
 
+        [Fact]
+        public void WatermarkForeground_Can_Be_Set()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var control = CreateControl();
+                control.Watermark = "Select date";
+                control.WatermarkForeground = Media.Brushes.Purple;
+
+                Assert.Equal(Media.Brushes.Purple, control.WatermarkForeground);
+            }
+        }
+
     }
 }
