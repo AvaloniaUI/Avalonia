@@ -174,12 +174,35 @@ namespace Avalonia.Skia
 
             return sm;
         }
-        
-        
+
+
         public static SKMatrix44 ToSKMatrix44(this CompositionMatrix m)
+#if DEBUG_COMPOSITION_MATRIX
+        {
+            var rv = ToSKMatrix44Core(m);
+            var expected = m.ToMatrix().ToSKMatrix44();
+            if (rv != expected)
+                throw new Exception();
+            return rv;
+        }
+        public static SKMatrix44 ToSKMatrix44Core(CompositionMatrix m)
+#endif
         {
             if (m.GuaranteedIdentity)
                 return SKMatrix44.Identity;
+
+            if (m.GuaranteedTranslateAndScaleOnly)
+            {
+                return new SKMatrix44()
+                {
+                    M00 = (float)m.ScaleX,
+                    M11 = (float)m.ScaleY,
+                    M22 = 1,
+                    M30 = (float)m.OffsetX,
+                    M31 = (float)m.OffsetY,
+                    M33 = 1
+                };
+            }
 
             return new SKMatrix44
             {

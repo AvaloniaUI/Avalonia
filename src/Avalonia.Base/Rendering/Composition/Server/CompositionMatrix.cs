@@ -152,7 +152,7 @@ public struct CompositionMatrix(Matrix matrix)
         var actual = res.ToMatrix();
         if (!expected.Equals(actual))
         {
-            Console.WriteLine("BUG!");
+            throw new InvalidOperationException("BUG");
         }
 
         return res;
@@ -224,7 +224,7 @@ public struct CompositionMatrix(Matrix matrix)
         var expected = p.Transform(ToMatrix());
         if (res != expected)
         {
-            Console.WriteLine("Bug!");
+            throw new InvalidOperationException("BUG");
         }
 
         return res;

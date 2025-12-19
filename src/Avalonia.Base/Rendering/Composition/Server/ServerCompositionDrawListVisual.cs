@@ -43,7 +43,7 @@ internal class ServerCompositionDrawListVisual : ServerCompositionContainerVisua
     protected override void RenderCore(ServerVisualRenderContext context, LtrbRect currentTransformedClip)
     {
         if (_renderCommands != null 
-            && context.ShouldRenderOwnContent(this, currentTransformedClip))
+            && context.ShouldRenderOwnContent(this, ref currentTransformedClip))
         {
             _renderCommands.Render(context.Canvas);
         }
