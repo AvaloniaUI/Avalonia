@@ -7,6 +7,12 @@
     <IsRunningAppium2 Condition="'$(IsRunningAppium2)' == ''">false</IsRunningAppium2>
     <DefineConstants Condition="'$(IsRunningAppium2)' == 'false'">$(DefineConstants);APPIUM1</DefineConstants>
     <DefineConstants Condition="'$(IsRunningAppium2)' == 'true'">$(DefineConstants);APPIUM2</DefineConstants>
+
+    <!--
+      References to System.Net.Http and System.Text.RegularExpressions are explicitly added to
+      avoid deprecated versions, we don't care about them not being pruned.
+    -->
+    <NoWarn>$(NoWarn);NU1510</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,26 +27,6 @@
 
   <ItemGroup Condition="'$(IsRunningAppium2)' == 'true'">
     <PackageReference Include="Appium.WebDriver" Version="5.2.0"/>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="ButtonTests.cs" />
-    <Compile Remove="CheckBoxTests.cs" />
-    <Compile Remove="ContextMenuTests.cs" />
-    <Compile Remove="EmbeddingTests.cs" />
-    <Compile Remove="GestureTests.cs" />
-    <Compile Remove="ListBoxTests.cs" />
-    <Compile Remove="NativeMenuTests.cs" />
-    <Compile Remove="PointerTests.cs" />
-    <Compile Remove="PointerTests_MacOS.cs" />
-    <Compile Remove="RadioButtonTests.cs" />
-    <Compile Remove="ScreenTests.cs" />
-    <Compile Remove="ScrollBarTests.cs" />
-    <Compile Remove="SliderTests.cs" />
-    <Compile Remove="TrayIconTests.cs" />
-    <Compile Remove="WindowDecorationsTests.cs" />
-    <Compile Remove="WindowTests.cs" />
-    <Compile Remove="WindowTests_MacOS.cs" />
   </ItemGroup>
 
   <Import Project="..\..\build\XUnit.props" />
