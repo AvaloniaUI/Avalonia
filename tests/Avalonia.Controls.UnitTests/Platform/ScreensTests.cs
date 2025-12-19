@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Avalonia.Platform;
 using Avalonia.Threading;
@@ -102,6 +103,7 @@ public class ScreensTests : ScopedTestBase
     }
 
     [Fact]
+    [UnconditionalSuppressMessage("Usage", "xUnit1031:Do not use blocking task operations in test method", Justification = "Explicit threading test")]
     public void Should_Raise_Event_When_Screen_Changed_From_Another_Thread()
     {
         using var _ = UnitTestApplication.Start(TestServices.MockThreadingInterface);

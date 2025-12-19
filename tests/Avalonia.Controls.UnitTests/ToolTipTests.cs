@@ -42,9 +42,10 @@ namespace Avalonia.Controls.UnitTests
             }));
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             _toolTipOpenSubscription.Dispose();
+            base.Dispose();
         }
 
         protected override TestServices ConfigureServices(TestServices baseServices) =>

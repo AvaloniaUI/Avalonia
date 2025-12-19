@@ -97,11 +97,6 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="LetterSpacing"/> property.
         /// </summary>
-        /// <remarks>
-        /// This property uses <see cref="AvaloniaProperty.AddOwner{TOwner}(AvaloniaProperty)"/> to share the same
-        /// definition as <see cref="TextElement.LetterSpacingProperty"/>, ensuring consistent behavior across text
-        /// elements and templated controls.
-        /// </remarks>
         public static readonly StyledProperty<double> LetterSpacingProperty =
             TextElement.LetterSpacingProperty.AddOwner<TextBlock>();
 
