@@ -56,7 +56,7 @@ internal partial class ServerCompositor
             var pixelSize = PixelSize.FromSize(new Size(visual.Size.X, visual.Size.Y), scaling);
             
             var scaleTransform = Matrix.CreateScale(scaling, scaling);
-            var invertRootTransform = visual.CombinedTransformMatrix.Invert();
+            var invertRootTransform = visual.CombinedTransformMatrix.ToMatrix().Invert();
 
             IDrawingContextLayerImpl? target = null;
             try

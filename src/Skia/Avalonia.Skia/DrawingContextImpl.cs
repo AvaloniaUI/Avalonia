@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Rendering.Composition.Server;
 using Avalonia.Rendering.Utilities;
 using Avalonia.Skia.Helpers;
 using Avalonia.Utilities;
@@ -27,10 +28,10 @@ namespace Avalonia.Skia
         private readonly Stack<(SKMatrix matrix, PaintWrapper paint)> _maskStack = new();
         private readonly Stack<double> _opacityStack = new();
         private readonly Stack<RenderOptions> _renderOptionsStack = new();
-        private readonly Matrix? _postTransform;
+        private readonly CompositionMatrix? _postTransform;
         private double _currentOpacity = 1.0f;
         private readonly bool _disableSubpixelTextRendering;
-        private Matrix? _currentTransform;
+        private CompositionMatrix? _currentTransform;
         private bool _disposed;
         private GRContext? _grContext;
         public GRContext? GrContext => _grContext;
@@ -844,7 +845,7 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public Matrix Transform
+        public CompositionMatrix Transform
         {
             // There is a Canvas.TotalMatrix (non 4x4 overload), but internally it still uses 4x4 matrix.
             // We want to avoid SKMatrix4x4 -> SKMatrix -> Matrix conversion by directly going SKMatrix4x4 -> Matrix.

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -209,7 +210,7 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
                 resetBody = resetBody.AddStatements(
                     ExpressionStatement(InvocationExpression(MemberAccess(prop.Name, "Reset"))));
                 
-                serializeMethodBody = ApplySerializeField(serializeMethodBody, cl, prop, isObject, isPassthrough);
+                serializeMethodBody = ApplySerializeField(serializeMethodBody, cl, prop, isObject, isPassthrough, typeInfo.ServerType);
                 deserializeMethodBody = ApplyDeserializeField(deserializeMethodBody,cl, prop, serverPropertyType, isObject);
                 
                 if (animatedServer)
@@ -230,6 +231,7 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
                         $"CompositionProperty.Register<{serverName}, {serverPropertyType}>(\"{prop.Name}\", obj => (({serverName})obj).{fieldName}, (obj, v) => (({serverName})obj).{fieldName} = v, {compositionPropertyVariantGetter})")),
                     SyntaxKind.InternalKeyword, SyntaxKind.StaticKeyword));
                 
+                var defaultValue = prop.DefaultValue ?? typeInfo.DefaultValue;
                 if (prop.DefaultValue != null)
                 {
                     defaultsMethodBody = defaultsMethodBody.AddStatements(
@@ -475,7 +477,8 @@ return;
         private static BlockSyntax SerializeChangesEpilogue(GClass cl) =>
             Block(ParseStatement(ChangedFieldsFieldName(cl) + " = default;"));
 
-        static BlockSyntax ApplySerializeField(BlockSyntax body, GClass cl, GProperty prop, bool isObject, bool isPassthrough)
+        static BlockSyntax ApplySerializeField(BlockSyntax body, GClass cl, GProperty prop, bool isObject, bool isPassthrough,
+            string serverType)
         {
             var changedFields = ChangedFieldsFieldName(cl);
             var changedFieldsType = ChangedFieldsTypeName(cl);
@@ -491,7 +494,7 @@ return;
 
             code += $@"
     if(({changedFields} & {changedFieldsType}.{prop.Name}) == {changedFieldsType}.{prop.Name})
-        writer.Write{(isObject ? "Object" : "")}({PropertyBackingFieldName(prop)}{(isObject && !isPassthrough ? "?.Server!":"")});
+        writer.Write{(isObject ? "Object" : $"<{serverType}>")}({PropertyBackingFieldName(prop)}{(isObject && !isPassthrough ? "?.Server!":"")});
 ";
             return body.AddStatements(ParseStatement(code));
         }

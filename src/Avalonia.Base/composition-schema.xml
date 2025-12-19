@@ -13,6 +13,10 @@
     <Manual Name="Avalonia.Media.Immutable.ImmutableDashStyle" Passthrough="true"/>
     <Manual Name="CompositionSurface" />
     <Manual Name="CompositionDrawingSurface" />
+    <Manual Name="Avalonia.Matrix"
+            ServerName="Avalonia.Rendering.Composition.Server.CompositionMatrix"
+            DefaultValue="Avalonia.Matrix.Identity" ServerDefaultValue="default"
+            IsValueType="true" Passthrough="true"/>
     <Object Name="CompositionVisual" Abstract="true">
         <Property Name="Root" Type="CompositionTarget?" Internal="true" />
         <Property Name="Parent" Type="CompositionVisual?" Internal="true"  />
@@ -28,7 +32,7 @@
         <Property Name="RotationAngle" Type="float" Animated="true"/>
         <Property Name="Orientation" Type="Quaternion" DefaultValue="Quaternion.Identity" Animated="true"/>
         <Property Name="Scale" Type="Vector3D" DefaultValue="new Avalonia.Vector3D(1, 1, 1)" Animated="true"/>
-        <Property Name="TransformMatrix" Type="Avalonia.Matrix" DefaultValue="Avalonia.Matrix.Identity" Animated="true" Internal="true"/>
+        <Property Name="TransformMatrix" Type="Avalonia.Matrix" Animated="true" Internal="true"/>
         <Property Name="AdornedVisual" Type="CompositionVisual?" Internal="true" />
         <Property Name="AdornerIsClipped" Type="bool" Internal="true" />
         <Property Name="OpacityMaskBrush" ClientName="OpacityMaskBrushTransportField" Type="Avalonia.Media.IBrush?" Private="true"  />

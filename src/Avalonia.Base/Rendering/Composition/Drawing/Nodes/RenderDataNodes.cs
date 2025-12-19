@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Rendering.Composition.Server;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Threading;
 using Avalonia.Utilities;
@@ -29,8 +30,8 @@ interface IRenderDataItemWithServerResources : IRenderDataItem
 
 struct RenderDataNodeRenderContext : IDisposable
 {
-    private Stack<Matrix>? _stack;
-    private static readonly ThreadSafeObjectPool<Stack<Matrix>> s_matrixStackPool = new();
+    private Stack<CompositionMatrix>? _stack;
+    private static readonly ThreadSafeObjectPool<Stack<CompositionMatrix>> s_matrixStackPool = new();
     
     public RenderDataNodeRenderContext(IDrawingContextImpl context)
     {
@@ -38,7 +39,7 @@ struct RenderDataNodeRenderContext : IDisposable
     }
     public IDrawingContextImpl Context { get; }
 
-    public Stack<Matrix> MatrixStack
+    public Stack<CompositionMatrix> MatrixStack
     {
         get => _stack ??= s_matrixStackPool.Get();
     }

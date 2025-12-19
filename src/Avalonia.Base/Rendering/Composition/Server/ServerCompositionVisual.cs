@@ -18,7 +18,6 @@ namespace Avalonia.Rendering.Composition.Server
     {
         private bool _isDirtyForUpdate;
         private LtrbRect _oldOwnContentBounds;
-        private bool _isBackface;
         private LtrbRect? _transformedClipBounds;
         private LtrbRect _combinedTransformedClipBounds;
 
@@ -125,8 +124,8 @@ namespace Avalonia.Rendering.Composition.Server
             return ref _readback2;
         }
 
-        public Matrix CombinedTransformMatrix { get; private set; } = Matrix.Identity;
-        public Matrix GlobalTransformMatrix { get; private set; }
+        public CompositionMatrix CombinedTransformMatrix = Matrix.Identity;
+        public CompositionMatrix GlobalTransformMatrix;
 
         public record struct UpdateResult(LtrbRect? Bounds, bool InvalidatedOld, bool InvalidatedNew)
         {
@@ -136,7 +135,7 @@ namespace Avalonia.Rendering.Composition.Server
             }
         }
         
-        public virtual UpdateResult Update(ServerCompositionTarget root, Matrix parentVisualTransform)
+        public virtual UpdateResult Update(ServerCompositionTarget root, ref CompositionMatrix parentTransform)
         {
             if (Parent == null && Root == null)
                 return default;
@@ -153,7 +152,6 @@ namespace Avalonia.Rendering.Composition.Server
                 _combinedTransformDirty = false;
             }
 
-            var parentTransform = AdornedVisual?.GlobalTransformMatrix ?? parentVisualTransform;
 
             var newTransform = CombinedTransformMatrix * parentTransform;
 
@@ -161,8 +159,6 @@ namespace Avalonia.Rendering.Composition.Server
             var positionChanged = false;
             if (GlobalTransformMatrix != newTransform)
             {
-                _isBackface = Vector3.Transform(
-                    new Vector3(0, 0, float.PositiveInfinity), MatrixUtils.ToMatrix4x4(GlobalTransformMatrix)).Z <= 0;
                 positionChanged = true;
             }
 
@@ -232,7 +228,6 @@ namespace Avalonia.Rendering.Composition.Server
 
             IsHitTestVisibleInFrame = _parent?.IsHitTestVisibleInFrame != false
                                       && Visible
-                                      && !_isBackface
                                       && !(_combinedTransformedClipBounds.IsZeroSize);
 
             IsVisibleInFrame = IsHitTestVisibleInFrame
@@ -259,7 +254,7 @@ namespace Avalonia.Rendering.Composition.Server
             var i = Root!.Readback;
             ref var readback = ref GetReadback(i.WriteIndex);
             readback.Revision = root.Revision;
-            readback.Matrix = GlobalTransformMatrix;
+            readback.Matrix = GlobalTransformMatrix.ToMatrix();
             readback.TargetId = Root.Id;
             readback.Visible = IsHitTestVisibleInFrame;
             return new(TransformedOwnContentBounds, invalidateNewBounds, invalidateOldBounds);

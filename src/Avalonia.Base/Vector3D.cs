@@ -76,6 +76,11 @@ public readonly record struct Vector3D(double X, double Y, double Z)
         new(left.X * right.X, left.Y * right.Y, left.Z * right.Z);
 
     /// <summary>
+    /// Multiplies the vector by the second vector.
+    /// </summary>
+    public static Vector3D operator *(Vector3D left, Vector3D right) => Multiply(left, right);
+    
+    /// <summary>
     /// Multiplies the vector by the given scalar.
     /// </summary>
     public static Vector3D Multiply(Vector3D left, double right) =>
@@ -123,6 +128,8 @@ public readonly record struct Vector3D(double X, double Y, double Z)
     /// Length of the vector.
     /// </summary>
     public double Length => Math.Sqrt(Dot(this, this));
+
+    public static Vector3D One { get; } = new Vector3D(1, 1, 1);
     
     /// <summary>
     /// Returns a normalized version of this vector.

@@ -80,7 +80,7 @@ internal sealed class PlatformDrawingContext : DrawingContext
     {
         _transforms ??= TransformStackPool.Get();
         var current = _impl.Transform;
-        _transforms.Push(current);
+        _transforms.Push(current.ToMatrix());
         _impl.Transform = matrix * current;
     }
 

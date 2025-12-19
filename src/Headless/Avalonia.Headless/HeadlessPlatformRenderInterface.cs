@@ -10,6 +10,7 @@ using Avalonia.Rendering.SceneGraph;
 using Avalonia.Utilities;
 using Avalonia.Media.Imaging;
 using Avalonia.Media.TextFormatting;
+using Avalonia.Rendering.Composition.Server;
 
 namespace Avalonia.Headless
 {
@@ -448,7 +449,7 @@ namespace Avalonia.Headless
 
             }
 
-            public Matrix Transform { get; set; }
+            public CompositionMatrix Transform { get; set; }
 
             public void Clear(Color color)
             {

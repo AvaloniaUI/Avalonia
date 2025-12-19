@@ -29,16 +29,16 @@ namespace Avalonia.Rendering.Composition.Server
             }
         }
 
-        public override UpdateResult Update(ServerCompositionTarget root, Matrix parentCombinedTransform)
+        public override UpdateResult Update(ServerCompositionTarget root, ref CompositionMatrix parentCombinedTransform)
         {
-            var (combinedBounds, oldInvalidated, newInvalidated) = base.Update(root, parentCombinedTransform);
+            var (combinedBounds, oldInvalidated, newInvalidated) = base.Update(root, ref parentCombinedTransform);
             foreach (var child in Children)
             {
                 if (child.AdornedVisual != null)
                     root.EnqueueAdornerUpdate(child);
                 else
                 {
-                    var res = child.Update(root, GlobalTransformMatrix);
+                    var res = child.Update(root, ref GlobalTransformMatrix);
                     oldInvalidated |= res.InvalidatedOld;
                     newInvalidated |= res.InvalidatedNew;
                     combinedBounds = LtrbRect.FullUnion(combinedBounds, res.Bounds);
@@ -79,24 +79,26 @@ namespace Avalonia.Rendering.Composition.Server
             // We are in a weird position here: bounds are in global coordinates while padding gets applied in local ones
             // Since we have optimizations to AVOID recomputing transformed bounds and since visuals with effects are relatively rare
             // we instead apply the transformation matrix to rescale the bounds
-            
-            
-            // If we only have translation and scale, just scale the padding
-            if (CombinedTransformMatrix is
-                {
-                    M12: 0, M13: 0,
-                    M21: 0, M23: 0,
-                    M31: 0, M32: 0
-                })
-                padding = new Thickness(padding.Left * CombinedTransformMatrix.M11,
-                    padding.Top * CombinedTransformMatrix.M22,
-                    padding.Right * CombinedTransformMatrix.M11,
-                    padding.Bottom * CombinedTransformMatrix.M22);
-            else
+
+            if (!CombinedTransformMatrix.GuaranteedIdentity)
             {
-                // Conservatively use the transformed rect size
-                var transformedPaddingRect = new Rect().Inflate(padding).TransformToAABB(CombinedTransformMatrix);
-                padding = new(Math.Max(transformedPaddingRect.Width, transformedPaddingRect.Height));
+
+                // If we only have translation and scale, just scale the padding
+                if (CombinedTransformMatrix.GuaranteedTranslateAndScaleOnly)
+                {
+                    padding = new Thickness(padding.Left * CombinedTransformMatrix.ScaleX,
+                        padding.Top * CombinedTransformMatrix.ScaleY,
+                        padding.Right * CombinedTransformMatrix.ScaleX,
+                        padding.Bottom * CombinedTransformMatrix.ScaleY);
+                }
+                else
+                {
+                    // Conservatively use the transformed rect size
+                    var transformedPaddingRect =
+                        new Rect().Inflate(padding).TransformToAABB(CombinedTransformMatrix.ToMatrix());
+                    padding = new(Math.Max(transformedPaddingRect.Width, transformedPaddingRect.Height));
+                }
+
             }
 
             AddDirtyRect(transformedBounds.Inflate(padding));

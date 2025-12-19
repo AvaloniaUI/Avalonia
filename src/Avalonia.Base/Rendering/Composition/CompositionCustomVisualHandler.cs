@@ -97,14 +97,14 @@ public abstract class CompositionCustomVisualHandler
     protected bool RenderClipContains(Point pt)
     {
         VerifyInRender();
-        pt *= _host!.GlobalTransformMatrix;
+        pt = _host!.GlobalTransformMatrix.Transform(pt);
         return _currentTransformedClip.Contains(pt) && _host.Root!.DirtyRects.Contains(pt);
     }
 
     protected bool RenderClipIntersectes(Rect rc)
     {
         VerifyInRender();
-        rc = rc.TransformToAABB(_host!.GlobalTransformMatrix);
+        rc = rc.TransformToAABB(_host!.GlobalTransformMatrix.ToMatrix());
         return _currentTransformedClip.Intersects(rc) && _host.Root!.DirtyRects.Intersects(new (rc));
     }
 }

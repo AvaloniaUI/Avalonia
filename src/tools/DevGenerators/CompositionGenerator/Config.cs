@@ -39,6 +39,15 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
         
         [XmlAttribute]
         public string ServerName { get; set; }
+        
+        [XmlAttribute]
+        public string? DefaultValue { get; set; }
+        
+        [XmlAttribute]
+        public string? ServerDefaultValue { get; set; }
+        
+        [XmlAttribute]
+        public bool IsValueType { get; set; }
     }
     
     public class GImplements
@@ -110,6 +119,8 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
         public string ClientName { get; set; }
         [XmlAttribute]
         public string Type { get; set; }
+        [XmlAttribute]
+        public string ServerType { get; set; }
         [XmlAttribute]
         public string DefaultValue { get; set; }
         [XmlAttribute]

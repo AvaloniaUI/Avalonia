@@ -10,7 +10,7 @@ internal class ServerVisualRenderContext
     public bool DetachedRendering { get; }
     public bool RenderChildren { get; }
     public CompositorDrawingContextProxy Canvas { get; }
-    private readonly Stack<Matrix>? _transformStack;
+    private readonly Stack<CompositionMatrix>? _transformStack;
 
     public ServerVisualRenderContext(CompositorDrawingContextProxy canvas, IDirtyRectTracker? dirtyRects,
         bool detachedRendering, bool renderChildren)
@@ -38,7 +38,7 @@ internal class ServerVisualRenderContext
         return true;
     }
 
-    public bool ShouldRenderOwnContent(ServerCompositionVisual visual, LtrbRect currentTransformedClip)
+    public bool ShouldRenderOwnContent(ServerCompositionVisual visual, ref LtrbRect currentTransformedClip)
     {
         if (DetachedRendering)
             return true;

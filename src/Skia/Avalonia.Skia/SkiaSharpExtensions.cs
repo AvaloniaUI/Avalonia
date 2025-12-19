@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Rendering.Composition.Server;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -173,6 +174,34 @@ namespace Avalonia.Skia
 
             return sm;
         }
+        
+        
+        public static SKMatrix44 ToSKMatrix44(this CompositionMatrix m)
+        {
+            if (m.GuaranteedIdentity)
+                return SKMatrix44.Identity;
+
+            return new SKMatrix44
+            {
+                M00 = (float)m.ScaleX,
+                M01 = (float)m.SkewY,
+                M02 = 0,
+                M03 = (float)m.PerspX,
+                M10 = (float)m.SkewX,
+                M11 = (float)m.ScaleY,
+                M12 = 0,
+                M13 = (float)m.PerspY,
+                M20 = 0,
+                M21 = 0,
+                M22 = 1,
+                M23 = 0,
+                M30 = (float)m.OffsetX,
+                M31 = (float)m.OffsetY,
+                M32 = 0,
+                M33 = (float)m.PerspZ
+            };
+        }
+
 
         internal static Matrix ToAvaloniaMatrix(this SKMatrix m) => new(
             m.ScaleX, m.SkewY, m.Persp0,

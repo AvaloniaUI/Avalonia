@@ -84,6 +84,31 @@ namespace Avalonia.Rendering.Composition.Server
             _fullRedrawRequested = true;
         }
 
+        // Public for usage in benchmarks
+        public void Update()
+        {
+            Revision++;
+
+            _overlays.MarkUpdateCallStart();
+            using (Diagnostic.BeginCompositorUpdatePass())
+            {
+                var transform = CompositionMatrix.CreateScale(Scaling, Scaling);
+                // Update happens in a separate phase to extend dirty rect if needed
+                Root!.Update(this, ref transform);
+
+                while (_adornerUpdateQueue.Count > 0)
+                {
+                    var adorner = _adornerUpdateQueue.Dequeue();
+                    adorner.Update(this, ref adorner.AdornedVisual!.GlobalTransformMatrix);
+                }
+
+                _updateRequested = false;
+                Readback.CompleteWrite(Revision);
+
+                _overlays.MarkUpdateCallEnd();
+            }
+        }
+        
         public void Render()
         {
             if (_disposed)
@@ -120,26 +145,7 @@ namespace Avalonia.Rendering.Composition.Server
             if (DirtyRects.IsEmpty && !_redrawRequested && !_updateRequested)
                 return;
 
-            Revision++;
-
-            _overlays.MarkUpdateCallStart();
-            using (Diagnostic.BeginCompositorUpdatePass())
-            {
-                var transform = Matrix.CreateScale(Scaling, Scaling);
-                // Update happens in a separate phase to extend dirty rect if needed
-                Root.Update(this, transform);
-
-                while (_adornerUpdateQueue.Count > 0)
-                {
-                    var adorner = _adornerUpdateQueue.Dequeue();
-                    adorner.Update(this, transform);
-                }
-
-                _updateRequested = false;
-                Readback.CompleteWrite(Revision);
-
-                _overlays.MarkUpdateCallEnd();
-            }
+            Update();
 
             if (!_redrawRequested)
                 return;

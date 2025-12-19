@@ -35,7 +35,7 @@ namespace Avalonia.Media
             }
         }
 
-        internal ImmediateDrawingContext(IDrawingContextImpl impl, bool ownsImpl) : this(impl, impl.Transform, ownsImpl)
+        internal ImmediateDrawingContext(IDrawingContextImpl impl, bool ownsImpl) : this(impl, impl.Transform.ToMatrix(), ownsImpl)
         {
             
         }

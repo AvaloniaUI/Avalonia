@@ -14,6 +14,8 @@ public partial class Generator
         public bool IsPassthrough { get; set; }
         public string ServerType { get; set; } = null!;
         public bool IsNullable { get; set; }
+        public string? DefaultValue { get; set; }
+        public string? ServerDefaultValue { get; set; }
     }
 
     private readonly Dictionary<string, GeneratorTypeInfo> _typeInfoCache = new();
@@ -28,6 +30,7 @@ public partial class Generator
         var isObject = _objects.Contains(filteredType);
         var isNullable = type.EndsWith("?");
         bool isPassthrough = false;
+        string? defaultValue = null, serverDefaultValue = null;
                 
         var serverType = ((isObject ? "Server" : "") + type);
         if (_manuals.TryGetValue(filteredType, out var manual))
@@ -40,6 +43,10 @@ public partial class Generator
 
             if (manual.ServerName != null)
                 serverType = manual.ServerName + (isNullable ? "?" : "");
+
+            defaultValue = manual.ServerDefaultValue;
+            serverDefaultValue = manual.ServerDefaultValue;
+            isObject = !manual.IsValueType;
         }
 
         return _typeInfoCache[type] = new GeneratorTypeInfo
@@ -49,7 +56,9 @@ public partial class Generator
             IsObject = isObject,
             IsPassthrough = isPassthrough,
             ServerType = serverType,
-            IsNullable = isNullable
+            IsNullable = isNullable,
+            ServerDefaultValue = serverDefaultValue,
+            DefaultValue = defaultValue
         };
     }
 }

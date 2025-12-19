@@ -74,7 +74,7 @@ internal sealed class ServerCompositionCustomVisual : ServerCompositionContainer
     protected override void RenderCore(ServerVisualRenderContext ctx, LtrbRect currentTransformedClip)
     {
         ctx.Canvas.AutoFlush = true;
-        using var context = new ImmediateDrawingContext(ctx.Canvas, GlobalTransformMatrix, false);
+        using var context = new ImmediateDrawingContext(ctx.Canvas, GlobalTransformMatrix.ToMatrix(), false);
         try
         {
             _handler.Render(context, currentTransformedClip.ToRect());

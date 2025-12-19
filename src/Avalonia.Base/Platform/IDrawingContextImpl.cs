@@ -4,6 +4,7 @@ using Avalonia.Utilities;
 using Avalonia.Metadata;
 using Avalonia.Media.Imaging;
 using Avalonia.Media.Immutable;
+using Avalonia.Rendering.Composition.Server;
 
 namespace Avalonia.Platform
 {
@@ -16,7 +17,7 @@ namespace Avalonia.Platform
         /// <summary>
         /// Gets or sets the current transform of the drawing context.
         /// </summary>
-        Matrix Transform { get; set; }
+        CompositionMatrix Transform { get; set; }
 
         /// <summary>
         /// Clears the render target to the specified color.

@@ -2,6 +2,7 @@
 
 using System;
 using Avalonia.Metadata;
+using Avalonia.Rendering.Composition.Server;
 
 namespace Avalonia.Platform;
 
@@ -115,6 +116,32 @@ public struct LtrbRect
         return new LtrbRect(left, top, right, bottom);
     }
     
+    internal LtrbRect TransformToAABB(CompositionMatrix matrix)
+    {
+        ReadOnlySpan<Point> points = stackalloc Point[4]
+        {
+            matrix.Transform(TopLeft),
+            matrix.Transform(TopRight),
+            matrix.Transform(BottomRight),
+            matrix.Transform(BottomLeft)
+        };
+
+        var left = double.MaxValue;
+        var right = double.MinValue;
+        var top = double.MaxValue;
+        var bottom = double.MinValue;
+
+        foreach (var p in points)
+        {
+            if (p.X < left) left = p.X;
+            if (p.X > right) right = p.X;
+            if (p.Y < top) top = p.Y;
+            if (p.Y > bottom) bottom = p.Y;
+        }
+
+        return new LtrbRect(left, top, right, bottom);
+    }
+    
     /// <summary>
     /// Perform _WPF-like_ union operation
     /// </summary>
@@ -164,6 +191,11 @@ public struct LtrbRect
             hash = (hash * 23) + Bottom.GetHashCode();
             return hash;
         }
+    }
+    
+    public override string ToString()
+    {
+        return $"{Left}:{Top}-{Right}:{Bottom}";
     }
 }
 
@@ -264,5 +296,10 @@ public struct LtrbPixelRect
     {
         return new LtrbPixelRect((int)rect.Left, (int)rect.Top, (int)Math.Ceiling(rect.Right),
             (int)Math.Ceiling(rect.Bottom));
+    }
+
+    public override string ToString()
+    {
+        return $"{Left}:{Top}-{Right}:{Bottom}";
     }
 }

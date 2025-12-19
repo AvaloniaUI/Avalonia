@@ -1,25 +1,26 @@
 using System.Numerics;
+using Avalonia.Rendering.Composition.Server;
 
 namespace Avalonia.Rendering.Composition
 {
     static class MatrixUtils
     {
-        public static Matrix ComputeTransform(Vector size, Vector anchorPoint, Vector3D centerPoint,
-            Matrix transformMatrix, Vector3D scale, float rotationAngle, Quaternion orientation, Vector3D offset)
+        public static CompositionMatrix ComputeTransform(Vector size, Vector anchorPoint, Vector3D centerPoint,
+            CompositionMatrix transformMatrix, Vector3D scale, float rotationAngle, Quaternion orientation, Vector3D offset)
         {
             // The math here follows the *observed* UWP behavior since there are no docs on how it's supposed to work
 
             var anchor = Vector.Multiply(size, anchorPoint);
-            var  mat = Matrix.CreateTranslation(-anchor.X, -anchor.Y);
+            var  mat = CompositionMatrix.CreateTranslation(-anchor.X, -anchor.Y);
 
             var center = new Vector3D(centerPoint.X, centerPoint.Y, centerPoint.Z);
 
-            if (!transformMatrix.IsIdentity)
+            if (!transformMatrix.GuaranteedIdentity)
                 mat = transformMatrix * mat;
 
 
             if (scale != new Vector3D(1, 1, 1))
-                mat *= ToMatrix(Matrix4x4.CreateScale(scale.ToVector3(), center.ToVector3()));
+                mat = CompositionMatrix.CreateScale(scale, center);
 
             //TODO: RotationAxis support
             if (rotationAngle != 0)
@@ -39,10 +40,7 @@ namespace Avalonia.Rendering.Composition
 
             if (offset != default)
             {
-                if (offset.Z == 0)
-                    mat *= Matrix.CreateTranslation(offset.X, offset.Y);
-                else
-                    mat *= ToMatrix(Matrix4x4.CreateTranslation(offset.ToVector3()));
+                mat *= CompositionMatrix.CreateTranslation(offset.X, offset.Y);
             }
 
             return mat;

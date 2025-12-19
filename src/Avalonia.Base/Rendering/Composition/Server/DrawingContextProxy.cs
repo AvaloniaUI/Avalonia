@@ -17,8 +17,8 @@ internal partial class CompositorDrawingContextProxy : IDrawingContextImpl,
     IDrawingContextWithAcrylicLikeSupport, IDrawingContextImplWithEffects
 {
     private readonly IDrawingContextImpl _impl;
-    private static readonly ThreadSafeObjectPool<Stack<Matrix>> s_transformStackPool = new();
-    private Stack<Matrix>? _transformStack = s_transformStackPool.Get();
+    private static readonly ThreadSafeObjectPool<Stack<CompositionMatrix>> s_transformStackPool = new();
+    private Stack<CompositionMatrix>? _transformStack = s_transformStackPool.Get();
 
     public CompositorDrawingContextProxy(IDrawingContextImpl impl)
     {
@@ -38,17 +38,17 @@ internal partial class CompositorDrawingContextProxy : IDrawingContextImpl,
         s_transformStackPool.ReturnAndSetNull(ref _transformStack);
     }
 
-    public Matrix? PostTransform { get; set; }
+    public CompositionMatrix? PostTransform { get; set; }
     
     // Transform that was most recently passed to set_Transform or restored by a PopXXX operation
     // We use it to report the transform that would correspond to the current state if all commands were executed
-    Matrix _reportedTransform = Matrix.Identity;
+    CompositionMatrix _reportedTransform = CompositionMatrix.Identity;
     
     // Transform that was most recently passed to SetImplTransform or restored by a PopXXX operation
     // We use it to save the effective transform before executing a Push operation
-    Matrix _effectiveTransform = Matrix.Identity;
+    CompositionMatrix _effectiveTransform = CompositionMatrix.Identity;
 
-    public Matrix Transform
+    public CompositionMatrix Transform
     {
         get => _reportedTransform;
         set
@@ -58,7 +58,7 @@ internal partial class CompositorDrawingContextProxy : IDrawingContextImpl,
         }
     }
 
-    void SetImplTransform(Matrix m)
+    void SetImplTransform(CompositionMatrix m)
     {
         _effectiveTransform = m;
         if (PostTransform.HasValue)

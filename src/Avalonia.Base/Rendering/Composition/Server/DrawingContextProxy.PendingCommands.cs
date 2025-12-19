@@ -40,7 +40,7 @@ internal partial class CompositorDrawingContextProxy
         [FieldOffset(0)] public double Opacity;
         [FieldOffset(8)] public Rect? NullableOpacityRect;
 
-        [FieldOffset(0)] public Matrix Transform;
+        [FieldOffset(0)] public CompositionMatrix Transform;
 
         [FieldOffset(0)] public RenderOptions RenderOptions;
 
@@ -73,7 +73,7 @@ internal partial class CompositorDrawingContextProxy
         }
     }
     
-    public void SetTransform(Matrix m)
+    public void SetTransform(CompositionMatrix m)
     {
         if (_autoFlush)
         {
