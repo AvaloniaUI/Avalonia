@@ -44,18 +44,7 @@ namespace Avalonia.Rendering.Composition.Server
             Root!.DebugEvents?.IncrementRenderedVisuals();
 
             var boundsRect = new Rect(new Size(Size.X, Size.Y));
-
-            if (AdornedVisual != null)
-            {
-                // Adorners are currently not supported in detached rendering mode
-                if(context.DetachedRendering)
-                    return;
-                
-                canvas.Transform = Matrix.Identity;
-                if (AdornerIsClipped)
-                    canvas.PushClip(AdornedVisual._combinedTransformedClipBounds.ToRect());
-            }
-
+            
             using var _ = context.SetOrPushTransform(this);
 
             var applyRenderOptions = RenderOptions != default;
@@ -81,8 +70,7 @@ namespace Avalonia.Rendering.Composition.Server
                 canvas.PopGeometryClip();
             if (ClipToBounds && !HandlesClipToBounds)
                 canvas.PopClip();
-            if (AdornedVisual != null && AdornerIsClipped)
-                canvas.PopClip();
+
             if (Opacity != 1)
                 canvas.PopOpacity();
             
@@ -136,7 +124,7 @@ namespace Avalonia.Rendering.Composition.Server
             }
         }
         
-        public virtual UpdateResult Update(ServerCompositionTarget root, Matrix parentVisualTransform)
+        public virtual UpdateResult Update(ServerCompositionTarget root, Matrix parentTransform)
         {
             if (Parent == null && Root == null)
                 return default;
@@ -147,13 +135,10 @@ namespace Avalonia.Rendering.Composition.Server
             if (_combinedTransformDirty)
             {
                 CombinedTransformMatrix = MatrixUtils.ComputeTransform(Size, AnchorPoint, CenterPoint,
-                    // HACK: Ignore RenderTransform set by the adorner layer
-                    AdornedVisual != null ? Matrix.Identity : TransformMatrix,
+                    TransformMatrix,
                     Scale, RotationAngle, Orientation, Offset);
                 _combinedTransformDirty = false;
             }
-
-            var parentTransform = AdornedVisual?.GlobalTransformMatrix ?? parentVisualTransform;
 
             var newTransform = CombinedTransformMatrix * parentTransform;
 
@@ -221,8 +206,7 @@ namespace Avalonia.Rendering.Composition.Server
             }
 
             _combinedTransformedClipBounds =
-                (AdornerIsClipped ? AdornedVisual?._combinedTransformedClipBounds : null)
-                ?? (Parent?.Effect == null ? Parent?._combinedTransformedClipBounds : null)
+                (Parent?.Effect == null ? Parent?._combinedTransformedClipBounds : null)
                 ?? new LtrbRect(0, 0, Root!.PixelSize.Width, Root!.PixelSize.Height);
 
             if (_transformedClipBounds != null)

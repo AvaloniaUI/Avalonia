@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Specialized;
+using Avalonia.Input.TextInput;
 using Avalonia.Media;
 using Avalonia.Reactive;
 using Avalonia.VisualTree;
@@ -45,15 +46,20 @@ namespace Avalonia.Controls.Primitives
         private static readonly AttachedProperty<AdornerLayer?> s_savedAdornerLayerProperty =
             AvaloniaProperty.RegisterAttached<Visual, Visual, AdornerLayer?>("SavedAdornerLayer");
 
+        private TransformTrackingHelper _trackingHelper = new TransformTrackingHelper(false);
+
         static AdornerLayer()
         {
             AdornedElementProperty.Changed.Subscribe(AdornedElementChanged);
             AdornerProperty.Changed.Subscribe(AdornerChanged);
+            IsClipEnabledProperty.Changed.Subscribe(AdornerIsClipEnabledChanged);
         }
 
         public AdornerLayer()
         {
             Children.CollectionChanged += ChildrenCollectionChanged;
+            _trackingHelper.SetVisual(this);
+            _trackingHelper.MatrixChanged += delegate { InvalidateMeasure(); };
         }
 
         public static Visual? GetAdornedElement(Visual adorner)
@@ -199,9 +205,9 @@ namespace Avalonia.Controls.Primitives
                 {
                     var info = ao.GetValue(s_adornedElementInfoProperty);
 
-                    if (info != null && info.Bounds.HasValue)
+                    if (info is { AdornedElement: not null })
                     {
-                        child.Measure(info.Bounds.Value.Bounds.Size);
+                        child.Measure(info.AdornedElement.Bounds.Size);
                     }
                     else
                     {
@@ -223,12 +229,15 @@ namespace Avalonia.Controls.Primitives
                     var info = ao.GetValue(s_adornedElementInfoProperty);
                     var isClipEnabled = ao.GetValue(IsClipEnabledProperty);
 
-                    if (info != null && info.Bounds.HasValue)
+                    var adorned = info?.AdornedElement;
+                    
+                    if (adorned != null)
                     {
-                        child.RenderTransform = new MatrixTransform(info.Bounds.Value.Transform);
+                        var transform = adorned.TransformToVisual(this);
+                        child.RenderTransform = new MatrixTransform(transform ?? default);
                         child.RenderTransformOrigin = new RelativePoint(new Point(0, 0), RelativeUnit.Absolute);
-                        UpdateClip(child, info.Bounds.Value, isClipEnabled);
-                        child.Arrange(info.Bounds.Value.Bounds);
+                        UpdateClip(child, adorned, isClipEnabled);
+                        child.Arrange(new(adorned.Bounds.Size));
                     }
                     else
                     {
@@ -248,29 +257,22 @@ namespace Avalonia.Controls.Primitives
             layer?.UpdateAdornedElement(adorner, adorned);
         }
 
-        private void UpdateClip(Control control, TransformedBounds bounds, bool isEnabled)
+        private static void AdornerIsClipEnabledChanged(AvaloniaPropertyChangedEventArgs<bool> e)
+        {
+            var info = ((Visual)e.Sender).GetValue(s_adornedElementInfoProperty);
+            info?.UpdateSubscription();
+            info?.Layer?.InvalidateMeasure();
+        }
+
+        private void UpdateClip(Control control, Visual adorned, bool isEnabled)
         {
             if (!isEnabled)
             {
                 control.Clip = null;
-
                 return;
             }
 
-            if (!(control.Clip is RectangleGeometry clip))
-            {
-                clip = new RectangleGeometry();
-                control.Clip = clip;
-            }
-
-            var clipBounds = bounds.Bounds;
-
-            if (bounds.Transform.HasInverse)
-            {
-                clipBounds = bounds.Clip.TransformToAABB(bounds.Transform.Invert());
-            }
-
-            clip.Rect = clipBounds;
+            control.Clip = AdornerHelper.CalculateAdornerClip(adorned);
         }
 
         private void ChildrenCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -291,17 +293,12 @@ namespace Avalonia.Controls.Primitives
 
         private void UpdateAdornedElement(Visual adorner, Visual? adorned)
         {
-            if (adorner.CompositionVisual != null)
-            {
-                adorner.CompositionVisual.AdornedVisual = adorned?.CompositionVisual;
-                adorner.CompositionVisual.AdornerIsClipped = GetIsClipEnabled(adorner);
-            }
-
             var info = adorner.GetValue(s_adornedElementInfoProperty);
 
             if (info != null)
             {
                 info.Subscription!.Dispose();
+                info.Subscription = null;
 
                 if (adorned == null)
                 {
@@ -313,24 +310,35 @@ namespace Avalonia.Controls.Primitives
             {
                 if (info == null)
                 {
-                    info = new AdornedElementInfo();
+                    info = new AdornedElementInfo(adorner);
                     adorner.SetValue(s_adornedElementInfoProperty, info);
                 }
 
-                if (adorner.CompositionVisual != null)
-                    info.Subscription = adorned.GetObservable(BoundsProperty).Subscribe(x =>
-                    {
-                        info.Bounds = new TransformedBounds(new Rect(adorned.Bounds.Size), new Rect(adorned.Bounds.Size), Matrix.Identity);
-                        InvalidateMeasure();
-                    });
+                info.Layer = this;
+                info.AdornedElement = adorned;
+                info.UpdateSubscription();
             }
         }
 
-        private class AdornedElementInfo
+        private class AdornedElementInfo(Visual adorner)
         {
+            public AdornerLayer? Layer { get; set; }
             public IDisposable? Subscription { get; set; }
+            public Visual? AdornedElement { get; set; }
 
-            public TransformedBounds? Bounds { get; set; }
+            public void UpdateSubscription()
+            {
+                Subscription?.Dispose();
+                Subscription = null;
+                if (AdornedElement != null)
+                {
+                    Subscription = AdornerHelper.SubscribeToAncestorPropertyChanges(AdornedElement,
+                        GetIsClipEnabled(adorner), () =>
+                        {
+                            Layer?.InvalidateMeasure();
+                        });
+                }
+            }
         }
     }
 }

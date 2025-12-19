@@ -34,15 +34,10 @@ namespace Avalonia.Rendering.Composition.Server
             var (combinedBounds, oldInvalidated, newInvalidated) = base.Update(root, parentCombinedTransform);
             foreach (var child in Children)
             {
-                if (child.AdornedVisual != null)
-                    root.EnqueueAdornerUpdate(child);
-                else
-                {
-                    var res = child.Update(root, GlobalTransformMatrix);
-                    oldInvalidated |= res.InvalidatedOld;
-                    newInvalidated |= res.InvalidatedNew;
-                    combinedBounds = LtrbRect.FullUnion(combinedBounds, res.Bounds);
-                }
+                var res = child.Update(root, GlobalTransformMatrix);
+                oldInvalidated |= res.InvalidatedOld;
+                newInvalidated |= res.InvalidatedNew;
+                combinedBounds = LtrbRect.FullUnion(combinedBounds, res.Bounds);
             }
             
             // If effect is changed, we need to clean both old and new bounds

@@ -31,7 +31,6 @@ namespace Avalonia.Rendering.Composition.Server
         private bool _fullRedrawRequested;
         private bool _disposed;
         private readonly HashSet<ServerCompositionVisual> _attachedVisuals = new();
-        private readonly Queue<ServerCompositionVisual> _adornerUpdateQueue = new();
 
         public long Id { get; }
         public ulong Revision { get; private set; }
@@ -128,12 +127,6 @@ namespace Avalonia.Rendering.Composition.Server
                 var transform = Matrix.CreateScale(Scaling, Scaling);
                 // Update happens in a separate phase to extend dirty rect if needed
                 Root.Update(this, transform);
-
-                while (_adornerUpdateQueue.Count > 0)
-                {
-                    var adorner = _adornerUpdateQueue.Dequeue();
-                    adorner.Update(this, transform);
-                }
 
                 _updateRequested = false;
                 Readback.CompleteWrite(Revision);
@@ -263,7 +256,5 @@ namespace Avalonia.Rendering.Composition.Server
             if (visual.IsVisibleInFrame)
                 AddDirtyRect(visual.TransformedOwnContentBounds);
         }
-
-        public void EnqueueAdornerUpdate(ServerCompositionVisual visual) => _adornerUpdateQueue.Enqueue(visual);
     }
 }
