@@ -56,8 +56,29 @@ namespace Avalonia.Controls
         /// Defines the <see cref="CacheLength"/> property.
         /// </summary>
         public static readonly StyledProperty<double> CacheLengthProperty =
-            AvaloniaProperty.Register<VirtualizingStackPanel, double>(nameof(CacheLength), 0.0, 
+            AvaloniaProperty.Register<VirtualizingStackPanel, double>(nameof(CacheLength), 0.0,
                 validate: v => v is >= 0 and <= 2);
+
+        /// <summary>
+        /// Gets or sets whether container warmup is enabled.
+        /// When enabled, containers are pre-created during initialization to improve first-scroll performance.
+        /// Default: false (opt-in).
+        /// </summary>
+        public static readonly StyledProperty<bool> EnableWarmupProperty =
+            AvaloniaProperty.Register<VirtualizingStackPanel, bool>(
+                nameof(EnableWarmup),
+                defaultValue: false);
+
+        /// <summary>
+        /// Gets or sets the number of items to sample for template discovery during warmup.
+        /// Higher values discover more template types but take longer to analyze.
+        /// Default: 50 items.
+        /// </summary>
+        public static readonly StyledProperty<int> WarmupSampleSizeProperty =
+            AvaloniaProperty.Register<VirtualizingStackPanel, int>(
+                nameof(WarmupSampleSize),
+                defaultValue: 50,
+                validate: v => v > 0 && v <= 1000);
 
         private static readonly AttachedProperty<object?> RecycleKeyProperty =
             AvaloniaProperty.RegisterAttached<VirtualizingStackPanel, Control, object?>("RecycleKey");
@@ -75,16 +96,41 @@ namespace Avalonia.Controls
         private RealizedStackElements? _realizedElements;
         private IScrollAnchorProvider? _scrollAnchorProvider;
         private Rect _viewport;
-        private Dictionary<object, Stack<Control>>? _recyclePool;
+        private Dictionary<object, List<Control>>? _recyclePool;
         private Control? _focusedElement;
         private int _focusedIndex = -1;
         private Control? _realizingElement;
         private int _realizingIndex = -1;
-        private double _bufferFactor; 
-        
+        private double _bufferFactor;
+        private bool _isWarmupComplete = false;
+
         private bool _hasReachedStart = false;
         private bool _hasReachedEnd = false;
         private Rect _extendedViewport;
+        private Rect _lastMeasuredViewport;
+        private bool _suppressScrollIntoView = false;  // Suppress ScrollIntoView after Reset
+
+        // Viewport anchor tracking for scroll jump prevention
+        private int _viewportAnchorIndex = -1;        // Index of first visible item
+        private double _viewportAnchorU = double.NaN;  // Absolute position of anchor item
+        private double _lastMeasuredExtentU = 0;       // Previous extent for delta calculation
+
+        // Track realized range used for last estimate to avoid redundant re-estimation
+        private int _lastEstimateFirstIndex = -1;
+        private int _lastEstimateLastIndex = -1;
+
+        public bool IsTracingEnabled
+        {
+            get => GetValue(IsTracingEnabledProperty);
+            set => SetValue(IsTracingEnabledProperty, value);
+        }
+        
+        /// <summary>
+        /// Defines the <see cref="IsTracingEnabled"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsTracingEnabledProperty =
+            AvaloniaProperty.Register<VirtualizingStackPanel,bool>(
+                nameof(IsTracingEnabled));
 
         static VirtualizingStackPanel()
         {
@@ -165,6 +211,26 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets or sets whether container warmup is enabled.
+        /// When enabled, containers are pre-created during initialization to improve first-scroll performance.
+        /// </summary>
+        public bool EnableWarmup
+        {
+            get => GetValue(EnableWarmupProperty);
+            set => SetValue(EnableWarmupProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the number of items to sample for template discovery during warmup.
+        /// Higher values discover more template types but take longer to analyze.
+        /// </summary>
+        public int WarmupSampleSize
+        {
+            get => GetValue(WarmupSampleSizeProperty);
+            set => SetValue(WarmupSampleSizeProperty, value);
+        }
+
+        /// <summary>
         /// Gets the index of the first realized element, or -1 if no elements are realized.
         /// </summary>
         public int FirstRealizedIndex => _realizedElements?.FirstIndex ?? -1;
@@ -193,10 +259,19 @@ namespace Avalonia.Controls
 
             var orientation = Orientation;
 
+            System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                $"\n[VSP-MEASURE] ╔════════════════════ MEASURE PASS START ════════════════════");
+            System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                $"[VSP-MEASURE] Viewport: {_viewport}, AvailableSize: {availableSize}");
+
             // If we're bringing an item into view, ignore any layout passes until we receive a new
             // effective viewport.
             if (_isWaitingForViewportUpdate)
+            {
+                System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                    $"[VSP-MEASURE] Waiting for viewport update, returning estimate");
                 return EstimateDesiredSize(orientation, items.Count);
+            }
 
             _isInLayout = true;
 
@@ -206,17 +281,23 @@ namespace Avalonia.Controls
                 _realizedElements ??= new();
                 _measureElements ??= new();
 
-                // We need to set the lastEstimatedElementSizeU before calling CalculateDesiredSize()
-                _ = EstimateElementSizeU();
+                // Capture viewport anchor before measuring to enable extent compensation
+                CaptureViewportAnchor(orientation);
 
                 // We handle horizontal and vertical layouts here so X and Y are abstracted to:
                 // - Horizontal layouts: U = horizontal, V = vertical
                 // - Vertical layouts: U = vertical, V = horizontal
                 var viewport = CalculateMeasureViewport(orientation, items);
 
+                // Track the extended viewport we're measuring with to prevent redundant invalidations
+                _lastMeasuredViewport = _extendedViewport;
+
                 // If the viewport is disjunct then we can recycle everything.
                 if (viewport.viewportIsDisjunct)
+                {
+                    System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled, $"[VSP] RECYCLING ALL - HasReachedEnd={_hasReachedEnd}, HasReachedStart={_hasReachedStart}, ItemCount={items.Count}");
                     _realizedElements.RecycleAllElements(_recycleElement);
+                }
 
                 // Do the measure, creating/recycling elements as necessary to fill the viewport. Don't
                 // write to _realizedElements yet, only _measureElements.
@@ -226,15 +307,31 @@ namespace Avalonia.Controls
                 (_measureElements, _realizedElements) = (_realizedElements, _measureElements);
                 _measureElements.ResetForReuse();
 
+                // Calculate estimate from NEWLY measured elements for contextually-accurate extent calculation.
+                // This eliminates temporal mismatch where old viewport data was used to estimate new viewport.
+                _ = EstimateElementSizeU();
+
                 // If there is a focused element is outside the visible viewport (i.e.
                 // _focusedElement is non-null), ensure it's measured.
                 _focusedElement?.Measure(availableSize);
 
-                return CalculateDesiredSize(orientation, items.Count, viewport);
+                var desiredSize = CalculateDesiredSize(orientation, items.Count, viewport);
+
+                // Compensate for extent changes to prevent scroll jumping
+                CompensateForExtentChange(orientation, desiredSize);
+
+                System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                    $"[VSP-MEASURE] DesiredSize: {desiredSize}, " +
+                    $"Realized: [{_realizedElements?.FirstIndex ?? -1}-{_realizedElements?.LastIndex ?? -1}]");
+                System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                    $"[VSP-MEASURE] ╚════════════════════ MEASURE PASS END ════════════════════\n");
+
+                return desiredSize;
             }
             finally
             {
                 _isInLayout = false;
+                // Don't clear _suppressScrollIntoView here - it will be cleared when extent stabilizes
             }
         }
 
@@ -295,6 +392,12 @@ namespace Avalonia.Controls
         {
             base.OnAttachedToVisualTree(e);
             _scrollAnchorProvider = this.FindAncestorOfType<IScrollAnchorProvider>();
+
+            // Schedule warmup after initial render if enabled
+            if (EnableWarmup && !_isWarmupComplete)
+            {
+                Threading.Dispatcher.UIThread.Post(PerformWarmup, Threading.DispatcherPriority.Background);
+            }
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
@@ -306,6 +409,18 @@ namespace Avalonia.Controls
         protected override void OnItemsChanged(IReadOnlyList<object?> items, NotifyCollectionChangedEventArgs e)
         {
             InvalidateMeasure();
+
+            // Handle async collection loading - trigger warmup when first items become available
+            if (EnableWarmup && !_isWarmupComplete && items.Count > 0 && e.Action == NotifyCollectionChangedAction.Add)
+            {
+                if (_recyclePool == null || _recyclePool.Count == 0)
+                {
+                    System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                        $"[VSP-WARMUP] First items added to collection, triggering warmup");
+
+                    Threading.Dispatcher.UIThread.Post(PerformWarmup, Threading.DispatcherPriority.Background);
+                }
+            }
 
             if (_realizedElements is null)
                 return;
@@ -338,7 +453,109 @@ namespace Avalonia.Controls
                     _realizedElements.ItemsInserted(insertIndex, e.NewItems!.Count, _updateElementIndex);
                     break;
                 case NotifyCollectionChangedAction.Reset:
-                    _realizedElements.ItemsReset(_recycleElementOnItemRemoved);
+                    // Try to preserve scroll position during Reset
+                    // Strategy: Validate that realized items still exist in the new collection
+                    // If they do, keep them realized to maintain scroll stability
+                    // If they don't, recycle everything (collection replacement scenario)
+
+                    var shouldPreserveRealizedElements = false;
+
+                    if (_realizedElements.Count > 0)
+                    {
+                        // Check if any realized items still exist in the new collection
+                        var preservedCount = 0;
+                        for (var i = 0; i < _realizedElements.Count; i++)
+                        {
+                            if (_realizedElements.Elements[i] == null)
+                                continue;
+
+                            var oldIndex = _realizedElements.FirstIndex + i;
+                            if (oldIndex >= 0 && oldIndex < items.Count)
+                            {
+                                // Check if the item at this index is the same object
+                                var element = _realizedElements.Elements[i];
+                                var dataContext = (element as IDataContextProvider)?.DataContext;
+
+                                if (dataContext != null && ReferenceEquals(items[oldIndex], dataContext))
+                                {
+                                    preservedCount++;
+                                }
+                            }
+                        }
+
+                        // If most realized items still exist at same indices, this is likely
+                        // an append operation (infinite scroll), not a replacement
+                        shouldPreserveRealizedElements = preservedCount > _realizedElements.Count / 2;
+
+                        System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                            $"[VSP-RESET] {preservedCount}/{_realizedElements.Count} realized items still valid, " +
+                            $"preserve={shouldPreserveRealizedElements}");
+                    }
+
+                    if (shouldPreserveRealizedElements)
+                    {
+                        // Keep realized elements - they're still valid
+                        // The normal virtualization logic will handle any adjustments
+                        // Suppress ScrollIntoView to prevent ListBox from interfering with scroll position
+                        _suppressScrollIntoView = true;
+
+                        System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                            $"[VSP-RESET] Preserving realized elements for scroll stability");
+
+                        // DON'T reset estimate tracking - realized elements unchanged, estimate still valid
+                        // This prevents extent oscillation during infinite scroll
+                    }
+                    else
+                    {
+                        // Collection was replaced - recycle everything
+                        System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                            $"[VSP-RESET] Collection replaced, recycling all elements");
+                        _realizedElements.ItemsReset(_recycleElementOnItemRemoved);
+
+                        // Reset estimate tracking since all elements were recycled
+                        _lastEstimateFirstIndex = -1;
+                        _lastEstimateLastIndex = -1;
+                    }
+
+                    // WARMUP OPTIMIZATION: After reset, clear only obsolete keys and top-up if needed
+                    if (EnableWarmup && _isWarmupComplete && !shouldPreserveRealizedElements && items.Count > 0)
+                    {
+                        // Clear only containers whose keys are no longer in the new collection
+                        ClearObsoleteWarmupContainers();
+
+                        // Discover what keys we need now
+                        var currentKeys = DiscoverTemplateKeys();
+
+                        // Check if we need to warm up any new keys or top-up existing ones
+                        bool needsWarmup = false;
+                        foreach (var kvp in currentKeys)
+                        {
+                            var existingCount = _recyclePool?.TryGetValue(kvp.Key, out var pool) == true
+                                ? pool.Count
+                                : 0;
+
+                            if (existingCount < kvp.Value)
+                            {
+                                needsWarmup = true;
+                                break;
+                            }
+                        }
+
+                        if (needsWarmup)
+                        {
+                            System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                                $"[VSP-WARMUP] Reset detected need for warmup, scheduling background warmup");
+
+                            _isWarmupComplete = false;
+                            Threading.Dispatcher.UIThread.Post(PerformWarmup, Threading.DispatcherPriority.Background);
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                                $"[VSP-WARMUP] Reset completed, existing warmup sufficient");
+                        }
+                    }
+
                     break;
             }
         }
@@ -451,16 +668,39 @@ namespace Avalonia.Controls
         {
             var items = Items;
 
+            // Always log ScrollIntoView calls to trace what's triggering them
+            System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                $"[VSP-SCROLLINTO] ScrollIntoView({index}) called, Realized=[{_realizedElements?.FirstIndex ?? -1}-{_realizedElements?.LastIndex ?? -1}], " +
+                $"Suppressed={_suppressScrollIntoView}, InLayout={_isInLayout}");
+
             if (_isInLayout || index < 0 || index >= items.Count || _realizedElements is null || !IsEffectivelyVisible)
+            {
+                System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                    $"[VSP-SCROLLINTO] ScrollIntoView({index}) rejected: InLayout={_isInLayout}, ValidIndex={index >= 0 && index < items.Count}, " +
+                    $"HasRealized={_realizedElements is not null}, Visible={IsEffectivelyVisible}");
                 return null;
+            }
+
+            // Suppress ScrollIntoView temporarily after Reset to prevent viewport jumps
+            if (_suppressScrollIntoView)
+            {
+                System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                    $"[VSP-SCROLLINTO] ScrollIntoView({index}) suppressed after Reset");
+                return GetRealizedElement(index);
+            }
 
             if (GetRealizedElement(index) is Control element)
             {
+                System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                    $"[VSP-SCROLLINTO] ScrollIntoView({index}) - element already realized, calling BringIntoView");
                 element.BringIntoView();
                 return element;
             }
             else if (this.GetVisualRoot() is ILayoutRoot root)
             {
+                System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                    $"[VSP-SCROLLINTO] ScrollIntoView({index}) - element not realized, creating and measuring");
+
                 // Create and measure the element to be brought into view. Store it in a field so that
                 // it can be re-used in the layout pass.
                 var scrollToElement = GetOrCreateElement(items, index);
@@ -484,12 +724,16 @@ namespace Avalonia.Controls
                 // will be able to scroll the new item into view.
                 if (!Bounds.Contains(rect) && !_viewport.Contains(rect))
                 {
+                    System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                        $"[VSP-SCROLLINTO] Item {index} outside bounds/viewport, executing layout pass");
                     _isWaitingForViewportUpdate = true;
                     root.LayoutManager.ExecuteLayoutPass();
                     _isWaitingForViewportUpdate = false;
                 }
 
                 // Try to bring the item into view.
+                System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                    $"[VSP-SCROLLINTO] Calling BringIntoView on element {index} at position {anchorU:F2}");
                 scrollToElement.BringIntoView();
 
                 // If the viewport does not contain the item to scroll to, set _isWaitingForViewportUpdate:
@@ -497,7 +741,11 @@ namespace Avalonia.Controls
                 // - Measure is first done with the old viewport (which will be a no-op, see MeasureOverride)
                 // - The viewport is then updated by the layout system which invalidates our measure
                 // - Measure is then done with the new viewport.
-                _isWaitingForViewportUpdate = !_viewport.Contains(rect);
+                var viewportContainsItem = _viewport.Contains(rect);
+                System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                    $"[VSP-SCROLLINTO] Viewport {_viewport} contains item rect {rect}: {viewportContainsItem}, " +
+                    $"setting _isWaitingForViewportUpdate={!viewportContainsItem}");
+                _isWaitingForViewportUpdate = !viewportContainsItem;
                 root.LayoutManager.ExecuteLayoutPass();
 
                 // If for some reason the layout system didn't give us a new viewport during the layout, we
@@ -545,10 +793,24 @@ namespace Avalonia.Controls
             int anchorIndex;
             double anchorU;
 
-            if (_scrollToIndex >= 0 && _scrollToElement is not null)
+            if (_scrollToIndex >= 0)
             {
+                // Scroll to specific index (e.g., after Reset to preserve position)
                 anchorIndex = _scrollToIndex;
-                anchorU = orientation == Orientation.Horizontal ? _scrollToElement.Bounds.Left : _scrollToElement.Bounds.Top;
+
+                if (_scrollToElement is not null)
+                {
+                    // Use element's actual position if available
+                    anchorU = orientation == Orientation.Horizontal ? _scrollToElement.Bounds.Left : _scrollToElement.Bounds.Top;
+                }
+                else
+                {
+                    // Estimate position based on index (e.g., after Reset when no elements realized)
+                    anchorU = _scrollToIndex * EstimateElementSizeU();
+
+                    System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                        $"[VSP] Using _scrollToIndex={_scrollToIndex} with estimated position {anchorU:F2}");
+                }
             }
             else
             {
@@ -561,8 +823,36 @@ namespace Avalonia.Controls
             }
 
             // Check if the anchor element is not within the currently realized elements.
-            var disjunct = anchorIndex < _realizedElements.FirstIndex || 
-                anchorIndex > _realizedElements.LastIndex;
+            // Use distance-based tolerance for variable-height items to prevent excessive recycling.
+            var gapBefore = _realizedElements.FirstIndex - anchorIndex;
+            var gapAfter = anchorIndex - _realizedElements.LastIndex;
+
+            // Calculate the actual pixel distance of the gap using estimated element size
+            var estimatedSize = EstimateElementSizeU();
+            var gapDistanceBefore = gapBefore * estimatedSize;
+            var gapDistanceAfter = gapAfter * estimatedSize;
+
+            // Calculate viewport size and buffer tolerance
+            var viewportSize = viewportEnd - viewportStart;
+
+            // Allow gaps up to a fraction of the viewport size:
+            // - Backward gaps (scrolling up): Allow up to 100% of viewport size
+            //   This is typically one buffer's worth and can be realized efficiently
+            // - Forward gaps (scrolling down): Allow up to 50% of viewport size
+            //   Keep this tighter since forward scrolling is usually faster
+            var maxDistanceBefore = viewportSize * 1.0;  // 100% of viewport
+            var maxDistanceAfter = viewportSize * 0.5;   // 50% of viewport
+
+            // A gap is only disjunct if BOTH conditions are true:
+            // 1. The item count gap exceeds a minimum threshold (2 items)
+            // 2. The pixel distance exceeds the viewport-based tolerance
+            var disjunct = (gapBefore > 2 && gapDistanceBefore > maxDistanceBefore) ||
+                          (gapAfter > 2 && gapDistanceAfter > maxDistanceAfter);
+
+            System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled, $"[VSP] CalculateMeasureViewport: Anchor={anchorIndex} (u={anchorU:F2}), Realized=[{_realizedElements.FirstIndex}-{_realizedElements.LastIndex}] (Count={_realizedElements.Count}), GapBefore={gapBefore} items ({gapDistanceBefore:F0}px/{maxDistanceBefore:F0}px), GapAfter={gapAfter} items ({gapDistanceAfter:F0}px/{maxDistanceAfter:F0}px), Disjunct={disjunct}, ViewportSize={viewportSize:F0}px");
+            // // Check if the anchor element is not within the currently realized elements.
+            // var disjunct = anchorIndex < _realizedElements.FirstIndex || 
+            //                anchorIndex > _realizedElements.LastIndex;
 
             return new MeasureViewport
             {
@@ -612,6 +902,17 @@ namespace Avalonia.Controls
             if (_realizedElements is null)
                 return _lastEstimatedElementSizeU;
 
+            // Skip re-estimation if realized range hasn't changed
+            // This prevents smoothing convergence over multiple passes when measuring the same elements
+            var firstIndex = _realizedElements.FirstIndex;
+            var lastIndex = _realizedElements.LastIndex;
+            if (firstIndex == _lastEstimateFirstIndex && lastIndex == _lastEstimateLastIndex)
+            {
+                System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                    $"[VSP-ESTIMATE] Skipping re-estimation: realized range unchanged [{firstIndex}-{lastIndex}]");
+                return _lastEstimatedElementSizeU;
+            }
+
             var orientation = Orientation;
             var total = 0.0;
             var divisor = 0.0;
@@ -632,8 +933,40 @@ namespace Avalonia.Controls
             if (divisor == 0 || total == 0)
                 return _lastEstimatedElementSizeU;
 
-            // Store and return the estimate.
-            return _lastEstimatedElementSizeU = total / divisor;
+            var newAverage = total / divisor;
+
+            // Use direct averaging for accurate extent calculation
+            // With Phase 1 fix (temporal mismatch eliminated) and "skip re-estimation when range
+            // unchanged" optimization, we don't need smoothing for larger samples anymore
+            if (_lastEstimatedElementSizeU > 0 && divisor < 5)
+            {
+                // Apply smoothing only for very small samples (< 5 items) to prevent wild swings
+                var smoothingFactor = 0.3;
+                var smoothedEstimate = (_lastEstimatedElementSizeU * (1 - smoothingFactor)) +
+                                      (newAverage * smoothingFactor);
+
+                System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                    $"[VSP-ESTIMATE] Realized range [{firstIndex}-{lastIndex}]: " +
+                    $"avg={newAverage:F2}, smoothed={smoothedEstimate:F2} " +
+                    $"(old={_lastEstimatedElementSizeU:F2}, factor={smoothingFactor:F2})");
+
+                // Track the realized range used for this estimate
+                _lastEstimateFirstIndex = firstIndex;
+                _lastEstimateLastIndex = lastIndex;
+
+                return _lastEstimatedElementSizeU = smoothedEstimate;
+            }
+
+            // For larger samples (>= 5), use direct average without smoothing
+            // This provides immediate adaptation to new item sizes
+            System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                $"[VSP-ESTIMATE] Realized range [{firstIndex}-{lastIndex}]: " +
+                $"avg={newAverage:F2} (direct, no smoothing)");
+
+            _lastEstimateFirstIndex = firstIndex;
+            _lastEstimateLastIndex = lastIndex;
+
+            return _lastEstimatedElementSizeU = newAverage;
         }
 
         private void GetOrEstimateAnchorElementForViewport(
@@ -679,13 +1012,269 @@ namespace Avalonia.Controls
             }
 
             // We don't have any realized elements in the requested viewport, or can't rely on
-            // StartU being valid. Estimate the index using only the estimated element size.
+            // StartU being valid. Estimate the index using realized element positions if available.
             var estimatedSize = EstimateElementSizeU();
 
-            // Estimate the element at the start of the viewport.
+            // If we have realized elements, use their actual positions to improve estimation accuracy.
+            // This prevents anchor jumps when scrolling with variable-sized items.
+            if (_realizedElements != null && _realizedElements.Count > 0 && _realizedElements.StartU is { } startU && !double.IsNaN(startU))
+            {
+                var firstIndex = _realizedElements.FirstIndex;
+                var lastIndex = _realizedElements.LastIndex;
+            
+                // If viewport is before realized elements, extrapolate backward from first element
+                if (viewportStartU < startU)
+                {
+                    var distanceBack = startU - viewportStartU;
+                    var itemsBack = (int)(distanceBack / estimatedSize);
+                    index = Math.Max(0, firstIndex - itemsBack);
+                    position = startU - (itemsBack * estimatedSize);
+                    System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled, $"[VSP] Anchor estimation: Extrapolating BACKWARD from first realized element. FirstIndex={firstIndex}, StartU={startU:F2}, ItemsBack={itemsBack}, EstimatedAnchor={index}");
+                    return;
+                }
+            
+                // If viewport is after realized elements, extrapolate forward from last element
+                var lastElementU = _realizedElements.GetElementU(lastIndex);
+                if (!double.IsNaN(lastElementU))
+                {
+                    var lastElementSize = _realizedElements.SizeU[_realizedElements.Count - 1];
+                    var lastElementEndU = lastElementU + lastElementSize;
+            
+                    if (viewportStartU >= lastElementEndU)
+                    {
+                        var distanceForward = viewportStartU - lastElementEndU;
+                        var itemsForward = (int)(distanceForward / estimatedSize);
+                        index = Math.Min(lastIndex + 1 + itemsForward, itemCount - 1);
+                        position = lastElementEndU + (itemsForward * estimatedSize);
+                        System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled, $"[VSP] Anchor estimation: Extrapolating FORWARD from last realized element. LastIndex={lastIndex}, LastEndU={lastElementEndU:F2}, ItemsForward={itemsForward}, EstimatedAnchor={index}");
+                        return;
+                    }
+                }
+            }
+
+            // Fallback: No realized elements or unable to extrapolate, use simple estimation
             var startIndex = Math.Min((int)(viewportStartU / estimatedSize), itemCount - 1);
             index = startIndex;
             position = startIndex * estimatedSize;
+            System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled, $"[VSP] Anchor estimation: Using SIMPLE estimation (no realized elements). EstimatedSize={estimatedSize:F2}, EstimatedAnchor={index}");
+        }
+
+        /// <summary>
+        /// Captures the current viewport anchor to enable scroll jump compensation.
+        /// The anchor is the first element that intersects the viewport start.
+        /// </summary>
+        private void CaptureViewportAnchor(Orientation orientation)
+        {
+            _viewportAnchorIndex = -1;
+            _viewportAnchorU = double.NaN;
+
+            if (_realizedElements == null || _realizedElements.Count == 0)
+            {
+                System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                    $"[VSP-ANCHOR] No realized elements to capture anchor");
+                return;
+            }
+
+            var viewportStartU = orientation == Orientation.Horizontal ? _viewport.X : _viewport.Y;
+            var viewportEndU = orientation == Orientation.Horizontal ? _viewport.Right : _viewport.Bottom;
+            var startU = _realizedElements.StartU;
+
+            if (double.IsNaN(startU))
+            {
+                System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                    $"[VSP-ANCHOR] StartU is NaN (unstable), cannot capture anchor");
+                return;
+            }
+
+            System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                $"[VSP-ANCHOR] Viewport: [{viewportStartU:F2}, {viewportEndU:F2}], " +
+                $"Realized range: [{_realizedElements.FirstIndex}-{_realizedElements.LastIndex}], " +
+                $"StartU={startU:F2}, Count={_realizedElements.Count}");
+
+            var u = startU;
+
+            // Find first element that intersects viewport start
+            for (var i = 0; i < _realizedElements.Count; i++)
+            {
+                if (_realizedElements.Elements[i] == null)
+                    continue;
+
+                var sizeU = _realizedElements.SizeU[i];
+                var elementEndU = u + sizeU;
+                var itemIndex = _realizedElements.FirstIndex + i;
+
+                if (elementEndU > viewportStartU && u <= viewportStartU)
+                {
+                    _viewportAnchorIndex = itemIndex;
+                    _viewportAnchorU = u;
+
+                    System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                        $"[VSP-ANCHOR] ✓ Captured anchor: Index={_viewportAnchorIndex}, " +
+                        $"U={u:F2}, Size={sizeU:F2}, " +
+                        $"Overlap=[{u:F2}, {elementEndU:F2}] ∩ [{viewportStartU:F2}, {viewportEndU:F2}]");
+                    return;
+                }
+
+                u = elementEndU;
+            }
+
+            System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                $"[VSP-ANCHOR] ✗ No anchor found (viewport outside realized range?)");
+        }
+
+        /// <summary>
+        /// Compensates for extent changes by checking anchor stability.
+        /// Relies on Avalonia's built-in scroll anchoring (IScrollAnchorProvider).
+        /// </summary>
+        private void CompensateForExtentChange(Orientation orientation, Size desiredSize)
+        {
+            var currentExtentU = orientation == Orientation.Horizontal ?
+                desiredSize.Width : desiredSize.Height;
+
+            var isFirstMeasure = MathUtilities.AreClose(_lastMeasuredExtentU, 0);
+
+            if (MathUtilities.AreClose(_lastMeasuredExtentU, currentExtentU))
+            {
+                _lastMeasuredExtentU = currentExtentU;
+
+                System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                    $"[VSP-EXTENT] No change: Extent={currentExtentU:F2}");
+                return;
+            }
+
+
+            var extentDelta = currentExtentU - _lastMeasuredExtentU;
+            var previousExtent = _lastMeasuredExtentU;
+
+            if (isFirstMeasure)
+            {
+                _lastMeasuredExtentU = currentExtentU;
+                System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                    $"[VSP-EXTENT] Initial extent: {currentExtentU:F2}");
+                return;
+            }
+
+            // Detect extreme extent oscillations that can confuse ScrollViewer
+            // This happens when we have very few realized items and many unrealized items
+            var extentChangeRatio = Math.Abs(extentDelta / previousExtent);
+            if (extentChangeRatio > 0.5 && _realizedElements != null)
+            {
+                var items = Items;
+                var realizedCount = _realizedElements.Count;
+                var totalCount = items?.Count ?? 0;
+                var unrealizedCount = totalCount - realizedCount;
+
+                // If we have less than 10% of items realized and extent changed >50%
+                // This indicates estimation instability
+                if (realizedCount < totalCount * 0.1 && unrealizedCount > 10)
+                {
+                    System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                        $"[VSP-EXTENT] ⚠ EXTREME OSCILLATION DETECTED: {extentChangeRatio:P0} change " +
+                        $"with only {realizedCount}/{totalCount} items realized");
+                    System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                        $"[VSP-EXTENT] → Dampening extent change to prevent ScrollViewer jump");
+
+                    // Dampen the extent change to prevent ScrollViewer from overshooting
+                    // Use a weighted average instead of accepting the full change
+                    var dampenedExtent = previousExtent + (extentDelta * 0.3);
+                    _lastMeasuredExtentU = dampenedExtent;
+
+                    System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                        $"[VSP-EXTENT] Dampened: {previousExtent:F2} → {dampenedExtent:F2} " +
+                        $"(instead of {currentExtentU:F2})");
+                    return;
+                }
+            }
+
+            _lastMeasuredExtentU = currentExtentU;
+
+            System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                $"[VSP-EXTENT] ═══════════════════════════════════════════════════");
+            System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                $"[VSP-EXTENT] EXTENT CHANGED: {previousExtent:F2} → {currentExtentU:F2} " +
+                $"(Δ={extentDelta:F2})");
+
+            if (_viewportAnchorIndex < 0 || double.IsNaN(_viewportAnchorU))
+            {
+                System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                    $"[VSP-EXTENT] ✗ No anchor to track stability");
+                System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                    $"[VSP-EXTENT] ═══════════════════════════════════════════════════");
+                return;
+            }
+
+            // Check if anchor is still realized
+            var currentAnchorU = _realizedElements?.GetElementU(_viewportAnchorIndex);
+
+            if (currentAnchorU == null || double.IsNaN(currentAnchorU.Value))
+            {
+                System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                    $"[VSP-EXTENT] ✗ Anchor index {_viewportAnchorIndex} no longer realized");
+                System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                    $"[VSP-EXTENT] ═══════════════════════════════════════════════════");
+                return;
+            }
+
+            var anchorDrift = currentAnchorU.Value - _viewportAnchorU;
+
+            System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                $"[VSP-EXTENT] Anchor index: {_viewportAnchorIndex}");
+            System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                $"[VSP-EXTENT] Anchor position: Expected={_viewportAnchorU:F2}, " +
+                $"Actual={currentAnchorU.Value:F2}, Drift={anchorDrift:F2}");
+
+            if (_realizedElements != null)
+            {
+                System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                    $"[VSP-EXTENT] Realized range: [{_realizedElements.FirstIndex}-{_realizedElements.LastIndex}], " +
+                    $"StartU={_realizedElements.StartU:F2}");
+            }
+
+            // CRITICAL: If item 0 is realized at position 0, NEVER apply compensation.
+            // Any anchor drift is due to estimation errors in other items, and compensating
+            // would incorrectly move item 0 away from its correct position (0).
+            if (_realizedElements != null &&
+                _realizedElements.FirstIndex == 0 &&
+                _realizedElements.StartU is { } startU &&
+                !double.IsNaN(startU) &&
+                MathUtilities.AreClose(startU, 0))
+            {
+                // System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                //     $"[VSP-EXTENT] ✓ Item 0 is realized at position 0");
+                // System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                //     $"[VSP-EXTENT] → Skipping ALL compensation to preserve item 0 position");
+                // System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                //     $"[VSP-EXTENT] → (Anchor drift of {anchorDrift:F2}px accepted as estimation error)");
+                return;
+            }
+
+            if (MathUtilities.AreClose(anchorDrift, 0))
+            {
+                System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                    $"[VSP-EXTENT] ✓ Anchor stable (no drift), extent change likely in unrealized items");
+
+                // Anchor is stable - extent changed in unrealized items
+                // This is the common case with heterogeneous items
+                // The ScrollViewer might still jump due to extent changes, so we rely on
+                // IScrollAnchorProvider to maintain the anchor's viewport position
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                    $"[VSP-EXTENT] ⚠ Anchor DRIFTED by {anchorDrift:F2}px!");
+                System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                    $"[VSP-EXTENT] → Compensating by adjusting StartU");
+
+                // Anchor drifted - this means items BEFORE the anchor changed size
+                // Compensate by shifting StartU to restore the anchor's position
+                _realizedElements?.CompensateStartU(-anchorDrift);
+
+                System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                    $"[VSP-EXTENT] → StartU adjusted by {-anchorDrift:F2}px to restore anchor position");
+            }
+
+            System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                $"[VSP-EXTENT] ═══════════════════════════════════════════════════");
         }
 
         private double GetOrEstimateElementU(int index)
@@ -731,11 +1320,20 @@ namespace Avalonia.Controls
                 _realizingIndex = index;
                 var e = GetOrCreateElement(items, index);
                 _realizingElement = e;
-                
+
                 e.Measure(availableSize);
-                
+
                 var sizeU = horizontal ? e.DesiredSize.Width : e.DesiredSize.Height;
                 var sizeV = horizontal ? e.DesiredSize.Height : e.DesiredSize.Width;
+
+                // Pre-emptive fix: Force item 0 to position U=0 to prevent clipping
+                // This handles the case when item 0 is the anchor element with wrong estimated position
+                if (index == 0 && !MathUtilities.AreClose(u, 0))
+                {
+                   // System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                   //    $"[VSP-CLIP-FIX] FORWARD LOOP: Item 0 at {u:F2}px, forcing to U=0");
+                   u = 0;
+                }
 
                 _measureElements!.Add(index, e, u, sizeU);
                 viewport.measuredV = Math.Max(viewport.measuredV, sizeV);
@@ -760,6 +1358,10 @@ namespace Avalonia.Controls
             index = viewport.anchorIndex - 1;
             u = viewport.anchorU;
 
+            System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+               $"[VSP-CLIP-FIX] BACKWARD LOOP START: StartIndex={index}, " +
+               $"StartU={u:F2}, ViewportStart={viewport.viewportUStart:F2}");
+
             while (u > viewport.viewportUStart && index >= 0)
             {
                 var e = GetOrCreateElement(items, index);
@@ -769,6 +1371,24 @@ namespace Avalonia.Controls
                 var sizeV = horizontal ? e.DesiredSize.Height : e.DesiredSize.Width;
                 u -= sizeU;
 
+                // Pre-emptive fix: Force item 0 to position U=0 to prevent clipping
+                if (index == 0)
+                {
+                   if (!MathUtilities.AreClose(u, 0))
+                   {
+                      var estimationError = u;
+                      System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                         $"[VSP-CLIP-FIX] PRE-EMPTIVE: Item 0 at {u:F2}px " +
+                         $"(error={estimationError:F2}px), forcing to U=0");
+                      u = 0;
+                   }
+                   else
+                   {
+                      System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                         $"[VSP-CLIP-FIX] PRE-EMPTIVE: Item 0 already at U=0 ✓");
+                   }
+                }
+
                 _measureElements!.Add(index, e, u, sizeU);
                 viewport.measuredV = Math.Max(viewport.measuredV, sizeV);
                 --index;
@@ -776,6 +1396,62 @@ namespace Avalonia.Controls
             
             // Check if we reached the start of the collection
             _hasReachedStart = index < 0;
+
+            // Log backward loop completion if item 0 was realized
+            if (_measureElements.FirstIndex == 0)
+            {
+               var item0U = _measureElements.StartU;
+               System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                  $"[VSP-CLIP-FIX] BACKWARD LOOP COMPLETE: Item 0 at U={item0U:F2}px " +
+                  $"(expected=0, error={item0U:F2}px)");
+            }
+
+            // If we've reached the start (realized item 0), ensure item 0 is positioned at exactly U=0
+            // to prevent the "cut off first item" issue when scrolling up fast
+            if (_hasReachedStart && _measureElements.Count > 0 && _measureElements.FirstIndex == 0)
+            {
+                var firstItemU = _measureElements.StartU;
+
+                // Defensive check: warn if StartU is NaN (should not happen during normal scrolling)
+                if (double.IsNaN(firstItemU))
+                {
+                   // System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                   //    $"[VSP-CLIP-FIX] ⚠ SAFETY NET: StartU is NaN, cannot fix item 0 position!");
+                }
+                else if (!MathUtilities.AreClose(firstItemU, 0))
+                {
+                    // Item 0 is not at position 0 - this happens due to estimation errors
+                    // Adjust all realized element positions so item 0 starts at exactly 0
+                    var adjustment = -firstItemU;
+
+                    // Warn if adjustment is very large (indicates serious estimation error)
+                    // System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled && Math.Abs(adjustment) > 100,
+                    //    $"[VSP-CLIP-FIX] ⚠ SAFETY NET: Large adjustment {adjustment:F2}px needed for item 0");
+
+                    // System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                    //     $"[VSP-CLIP-FIX] ⚠ SAFETY NET TRIGGERED: Item 0 at {firstItemU:F2}px " +
+                    //     $"(pre-emptive fix should have handled this), adjusting by {adjustment:F2}px");
+
+                    // Shift all positions using CompensateStartU
+                    _measureElements.CompensateStartU(adjustment);
+
+                    // Also adjust the viewport positions that reference these elements
+                    viewport.realizedEndU += adjustment;
+
+                    // Verify the adjustment worked
+                    var newStartU = _measureElements.StartU;
+                    // System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled && !double.IsNaN(newStartU) && !MathUtilities.AreClose(newStartU, 0),
+                    //    $"[VSP-CLIP-FIX] ✗ SAFETY NET FAILED: Item 0 still at {newStartU:F2}px after adjustment!");
+
+                    // System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                    //     $"[VSP-CLIP-FIX] ✓ SAFETY NET: Item 0 successfully positioned at U=0");
+                }
+                else
+                {
+                    // System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                    //     $"[VSP-CLIP-FIX] SAFETY NET: Item 0 already at U=0, pre-emptive fix succeeded ✓");
+                }
+            }
 
             // We can now recycle elements before the first element.
             _realizedElements.RecycleElementsBefore(index + 1, _recycleElement);
@@ -857,7 +1533,19 @@ namespace Avalonia.Controls
 
             if (_recyclePool?.TryGetValue(recycleKey, out var recyclePool) == true && recyclePool.Count > 0)
             {
-                var recycled = recyclePool.Pop();
+                // edge case: The item is already datacontext of a recyclable item
+                var recycleIndex = recyclePool.Count - 1;
+                for (int i = 0; i < recyclePool.Count; i++)
+                {
+                    if (recyclePool[i].DataContext == item)
+                    {
+                        recycleIndex = i;
+                        break;
+                    }
+                }
+
+                var recycled = recyclePool[recycleIndex];
+                recyclePool.RemoveAt(recycleIndex);
                 recycled.SetCurrentValue(Visual.IsVisibleProperty, true);
                 generator.PrepareItemContainer(recycled, item, index);
                 generator.ItemContainerPrepared(recycled, item, index);
@@ -942,7 +1630,12 @@ namespace Avalonia.Controls
                 _recyclePool.Add(recycleKey, pool);
             }
 
-            pool.Push(element);
+            // respect max poolsize per key of IVirtualizingDataTemplate
+            if (ItemsControl?.ItemTemplate is Templates.IVirtualizingDataTemplate vdt &&
+                pool.Count >= vdt.MaxPoolSizePerKey)
+                return;
+            
+            pool.Add(element);
         }
 
         private void UpdateElementIndex(Control element, int oldIndex, int newIndex)
@@ -1086,19 +1779,40 @@ namespace Avalonia.Controls
                 }
             }
 
+            System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled, $"[VSP] OnEffectiveViewportChanged: NeedsMeasure={needsMeasure}, HasReachedStart={_hasReachedStart}, HasReachedEnd={_hasReachedEnd}");
+            System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled, $"[VSP]   OldViewport=[{oldViewportStart:F2}-{oldViewportEnd:F2}], NewViewport=[{newViewportStart:F2}-{newViewportEnd:F2}]");
+            System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled, $"[VSP]   OldExtended=[{oldExtendedViewportStart:F2}-{oldExtendedViewportEnd:F2}], NewExtended=[{newExtendedViewportStart:F2}-{newExtendedViewportEnd:F2}]");
+
             if (needsMeasure)
             {
-                // only store the new "old" extended viewport if we _did_ actually measure
+                // Check if we're already measuring with this viewport (or very close to it)
+                // This prevents layout cycles during fast scrolling where viewport shifts slightly
+                // as heterogeneous items are measured
+                if (_isInLayout &&
+                    MathUtilities.AreClose(_lastMeasuredViewport.X, extendedViewPort.X) &&
+                    MathUtilities.AreClose(_lastMeasuredViewport.Y, extendedViewPort.Y) &&
+                    MathUtilities.AreClose(_lastMeasuredViewport.Width, extendedViewPort.Width) &&
+                    MathUtilities.AreClose(_lastMeasuredViewport.Height, extendedViewPort.Height))
+                {
+                    // We're already measuring with this viewport - don't invalidate again
+                    System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                        $"[VSP] OnEffectiveViewportChanged: Skipping InvalidateMeasure (already measuring this viewport)");
+                    _extendedViewport = extendedViewPort;
+                    return;
+                }
+
+                // Always update the extended viewport to prevent stale comparisons in the next
+                // OnEffectiveViewportChanged call, which would cause repeated layout cycles.
                 _extendedViewport = extendedViewPort;
-                
                 InvalidateMeasure();
             }
+
         }
 
         private void OnItemsControlPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
             if (_focusedElement is not null &&
-                e.Property == KeyboardNavigation.TabOnceActiveElementProperty && 
+                e.Property == KeyboardNavigation.TabOnceActiveElementProperty &&
                 e.GetOldValue<IInputElement?>() == _focusedElement)
             {
                 // TabOnceActiveElement has moved away from _focusedElement so we can recycle it.
@@ -1106,17 +1820,297 @@ namespace Avalonia.Controls
                 _focusedElement = null;
                 _focusedIndex = -1;
             }
+
+            // Handle ItemTemplate changes - invalidate warmup and re-trigger if enabled
+            if (e.Property == ItemsControl.ItemTemplateProperty)
+            {
+                if (EnableWarmup && _isWarmupComplete)
+                {
+                    System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                        $"[VSP-WARMUP] ItemTemplate changed, clearing warmup containers");
+
+                    ClearWarmupContainers();
+                    _isWarmupComplete = false;
+
+                    Threading.Dispatcher.UIThread.Post(PerformWarmup, Threading.DispatcherPriority.Background);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Clears unused warmup containers from the recycle pool.
+        /// Only removes containers that haven't been used yet (null DataContext and invisible).
+        /// </summary>
+        private void ClearWarmupContainers()
+        {
+            if (_recyclePool == null)
+                return;
+
+            int clearedCount = 0;
+
+            foreach (var pool in _recyclePool.Values)
+            {
+                for (int i = pool.Count - 1; i >= 0; i--)
+                {
+                    var container = pool[i];
+                    if (container.DataContext == null && !container.IsVisible)
+                    {
+                        RemoveInternalChild(container);
+                        pool.RemoveAt(i);
+                        clearedCount++;
+                    }
+                }
+            }
+
+            System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                $"[VSP-WARMUP] Cleared {clearedCount} unused warmup containers");
+        }
+
+        /// <summary>
+        /// Clears only obsolete warmup containers from the recycle pool.
+        /// Preserves containers whose recycleKey is still active in the current collection.
+        /// </summary>
+        private void ClearObsoleteWarmupContainers()
+        {
+            if (_recyclePool == null)
+                return;
+
+            // Get currently needed keys from the new collection
+            var activeKeys = new HashSet<object>(DiscoverTemplateKeys().Keys);
+
+            var keysToRemove = new List<object>();
+            int clearedCount = 0;
+
+            foreach (var kvp in _recyclePool)
+            {
+                var recycleKey = kvp.Key;
+                var pool = kvp.Value;
+
+                // Only clear pools for obsolete keys (not in new collection)
+                if (!activeKeys.Contains(recycleKey))
+                {
+                    for (int i = pool.Count - 1; i >= 0; i--)
+                    {
+                        var container = pool[i];
+                        if (container.DataContext == null && !container.IsVisible)
+                        {
+                            RemoveInternalChild(container);
+                            pool.RemoveAt(i);
+                            clearedCount++;
+                        }
+                    }
+
+                    if (pool.Count == 0)
+                        keysToRemove.Add(recycleKey);
+                }
+            }
+
+            // Remove empty pools
+            foreach (var key in keysToRemove)
+                _recyclePool.Remove(key);
+
+            System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                $"[VSP-WARMUP] Cleared {clearedCount} obsolete containers for {keysToRemove.Count} unused keys");
         }
 
         private void OnCacheLengthChanged(AvaloniaPropertyChangedEventArgs e)
         {
             var newValue = e.GetNewValue<double>();
             _bufferFactor = newValue;
-    
+
             // Force a recalculation of the extended viewport on the next layout pass
             InvalidateMeasure();
         }
-        
+
+        /// <summary>
+        /// Discovers unique template types/keys by sampling items from the collection.
+        /// Returns a dictionary mapping recycle keys to target warmup counts.
+        /// </summary>
+        private Dictionary<object, int> DiscoverTemplateKeys()
+        {
+            var templateKeys = new Dictionary<object, int>();
+            var items = Items;
+
+            if (items == null || items.Count == 0 || ItemContainerGenerator == null)
+                return templateKeys;
+
+            System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                $"[VSP-WARMUP] Starting template discovery, ItemCount={items.Count}");
+
+            // Sample first N items to discover template types
+            int sampleSize = Math.Min(WarmupSampleSize, items.Count);
+
+            for (int i = 0; i < sampleSize; i++)
+            {
+                var item = items[i];
+
+                // Use ItemContainerGenerator to determine recycle key without creating container
+                if (ItemContainerGenerator.NeedsContainer(item, i, out var recycleKey) && recycleKey != null)
+                {
+                    if (!templateKeys.ContainsKey(recycleKey))
+                    {
+                        templateKeys[recycleKey] = 0;
+                    }
+                    templateKeys[recycleKey]++;
+                }
+            }
+
+            // Query MaxPoolSizePerKey from IVirtualizingDataTemplate if available
+            if (ItemsControl?.ItemTemplate is Templates.IVirtualizingDataTemplate vdt)
+            {
+                foreach (var key in templateKeys.Keys.ToList())
+                {
+                    templateKeys[key] = vdt.MinPoolSizePerKey;
+                }
+
+                System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                    $"[VSP-WARMUP] Using MaxPoolSizePerKey={vdt.MinPoolSizePerKey} from IVirtualizingDataTemplate");
+            }
+            else
+            {
+                // Default to 3 containers per type if no MaxPoolSizePerKey available
+                foreach (var key in templateKeys.Keys.ToList())
+                {
+                    templateKeys[key] = 3;
+                }
+            }
+
+            System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                $"[VSP-WARMUP] Discovered {templateKeys.Count} template types from {sampleSize} items");
+
+            return templateKeys;
+        }
+
+        /// <summary>
+        /// Pre-creates containers with their content for each discovered template type.
+        /// Containers are stored in the recycle pool with their Child controls already attached,
+        /// ready to be reused during scrolling. This eliminates the expensive template instantiation
+        /// cost during the first scroll.
+        /// </summary>
+        private void PerformWarmup()
+        {
+            if (_isWarmupComplete || Items == null || Items.Count == 0)
+                return;
+
+            System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                $"[VSP-WARMUP] Starting warmup");
+
+            var startTime = System.Diagnostics.Stopwatch.StartNew();
+            var templateKeys = DiscoverTemplateKeys();
+
+            if (templateKeys.Count == 0)
+            {
+                System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                    $"[VSP-WARMUP] No templates discovered, skipping warmup");
+                _isWarmupComplete = true;
+                return;
+            }
+
+            _recyclePool ??= new Dictionary<object, List<Control>>();
+            
+            var orientation = Orientation;
+            var availableSize = orientation == Orientation.Horizontal
+                ? new Size(double.PositiveInfinity, Bounds.Height > 0 ? Bounds.Height : _lastEstimatedElementSizeU)
+                : new Size(Bounds.Width > 0 ? Bounds.Width : double.PositiveInfinity, double.PositiveInfinity);
+            
+            int totalCreated = 0;
+
+            int alreadyRealized = _realizedElements?.Elements?.Count ?? 0;
+            Dictionary<object, List<Control?>> realizedElementsLookup = new();
+            if(_realizedElements is { Elements: not null } realizedElements)
+            {
+                realizedElementsLookup = realizedElements.Elements.Where(re => re != null)
+                    .GroupBy(re => re!.GetValue(RecycleKeyProperty))
+                    .ToDictionary(g => g.Key??new object(), g => g.ToList());
+                
+            }
+
+            foreach (var kvp in templateKeys)
+            {
+                var recycleKey = kvp.Key;
+                var targetCount = kvp.Value;
+
+                // OPTIMIZATION: Check existing pool size
+                var existingCount = _recyclePool.TryGetValue(recycleKey, out var existingPool)
+                    ? existingPool.Count
+                    : 0;
+                // OPTIMIZATION 2: Check realized elements
+                if (realizedElementsLookup.TryGetValue(recycleKey, out var realized))
+                    existingCount += realized.Count;
+
+                var neededCount = Math.Max(0, targetCount - existingCount);
+
+                if (neededCount == 0)
+                {
+                    System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                        $"[VSP-WARMUP] Pool for {recycleKey} already has {existingCount}/{targetCount} containers, skipping");
+                    continue;
+                }
+
+                System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                    $"[VSP-WARMUP] Creating {neededCount} containers for key: {recycleKey} " +
+                    $"(existing: {existingCount}, target: {targetCount})");
+
+                // Collect actual items from the ItemsSource that match this recycle key
+                // CHANGED: Only collect neededCount items, not targetCount
+                var matchingItems = new List<(object item, int index)>();
+                var startIndex = Math.Max(alreadyRealized - 1, 0);
+                for (int i = startIndex; i < Math.Min(WarmupSampleSize+alreadyRealized, Items.Count); i++)
+                {
+                    var item = Items[i];
+                    if (ItemContainerGenerator!.NeedsContainer(item, i, out var key) &&
+                        Equals(key, recycleKey) && item is not null)
+                    {
+                        matchingItems.Add((item, i));
+                        if (matchingItems.Count >= neededCount)  // CHANGED: from targetCount
+                            break;
+                    }
+                }
+
+                if (matchingItems.Count == 0)
+                    continue;
+
+                // Create containers for real items (but only those not yet realized)
+                for (int i = 0; i < matchingItems.Count; i++)
+                {
+                    var (item, index) = matchingItems[i];
+
+                    try
+                    {
+                        // Create container with real item - this creates the Container + Child together
+                        // PrepareContainerForItemOverride is called, which creates the Child control
+                        var container = CreateElement(item, index, recycleKey);
+                        
+                        // Pre-measure with typical available size to cache layout
+                        container.Measure(availableSize);
+                        
+                        // IMPORTANT: Do NOT clear the container!
+                        // The Child control should stay attached with its template instantiated.
+                        // When reused, only the data binding will update (cheap operation).
+
+                        // Push to recycle pool - container + child are pooled together
+                        PushToRecyclePool(recycleKey, container);
+                        container.SetCurrentValue(Visual.IsVisibleProperty, false);
+
+                        totalCreated++;
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                            $"[VSP-WARMUP] Error creating container for key {recycleKey}: {ex.Message}");
+                        break;
+                    }
+                }
+            }
+
+            _isWarmupComplete = true;
+            startTime.Stop();
+
+            System.Diagnostics.Debug.WriteLineIf(IsTracingEnabled,
+                $"[VSP-WARMUP] Completed: {templateKeys.Count} template types, " +
+                $"{totalCreated} containers pre-created in {startTime.ElapsedMilliseconds}ms");
+        }
+
         /// <inheritdoc/>
         public IReadOnlyList<double> GetIrregularSnapPoints(Orientation orientation, SnapPointsAlignment snapPointsAlignment)
         {

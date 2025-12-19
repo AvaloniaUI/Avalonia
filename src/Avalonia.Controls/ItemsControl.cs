@@ -87,6 +87,7 @@ namespace Avalonia.Controls
         private EventHandler<ChildIndexChangedEventArgs>? _childIndexChanged;
         private IDataTemplate? _displayMemberItemTemplate;
         private ItemsPresenter? _itemsPresenter;
+        private Dictionary<Type, IDataTemplate?>? _templateCache;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemsControl"/> class.
@@ -391,15 +392,45 @@ namespace Avalonia.Controls
             }
             else if (container is ContentControl cc)
             {
-                SetIfUnset(cc, ContentControl.ContentProperty, item);
-                if (itemTemplate is not null)
-                    SetIfUnset(cc, ContentControl.ContentTemplateProperty, itemTemplate);
+                // Find the actual template that will be used (handles DataTemplates collection)
+                // Use cached lookup to avoid repeated FindDataTemplate calls during measure (prevents layout cycles)
+                var actualTemplate = GetCachedDataTemplate(container, item, itemTemplate);
+
+                // Begin batch update to ensure both Content and ContentTemplate are set together
+                if (cc.Presenter != null)
+                {
+                    cc.Presenter.BeginBatchUpdate();
+                }
+
+                SetIfUnsetOrDifferent(cc, ContentControl.ContentProperty, item);
+
+                // Set the resolved template (avoids FindDataTemplate in ContentPresenter.CreateChild)
+                if (actualTemplate is not null)
+                    SetIfUnsetOrDifferent(cc, ContentControl.ContentTemplateProperty, actualTemplate);
+
+                // End batch update - triggers single UpdateChild with both properties set
+                if (cc.Presenter != null)
+                {
+                    cc.Presenter.EndBatchUpdate();
+                }
             }
             else if (container is ContentPresenter p)
             {
-                SetIfUnset(p, ContentPresenter.ContentProperty, item);
-                if (itemTemplate is not null)
-                    SetIfUnset(p, ContentPresenter.ContentTemplateProperty, itemTemplate);
+                // Find the actual template that will be used (handles DataTemplates collection)
+                // Use cached lookup to avoid repeated FindDataTemplate calls during measure (prevents layout cycles)
+                var actualTemplate = GetCachedDataTemplate(container, item, itemTemplate);
+
+                // Begin batch update to ensure both Content and ContentTemplate are set together
+                p.BeginBatchUpdate();
+
+                SetIfUnsetOrDifferent(p, ContentPresenter.ContentProperty, item);
+
+                // Set the resolved template (avoids FindDataTemplate in ContentPresenter.CreateChild)
+                if (actualTemplate is not null)
+                    SetIfUnsetOrDifferent(p, ContentPresenter.ContentTemplateProperty, actualTemplate);
+
+                // End batch update - triggers single UpdateChild with both properties set
+                p.EndBatchUpdate();
             }
             else if (container is ItemsControl ic)
             {
@@ -465,13 +496,63 @@ namespace Avalonia.Controls
             }
             else if (container is ContentControl cc)
             {
-                cc.ClearValue(ContentControl.ContentProperty);
-                cc.ClearValue(ContentControl.ContentTemplateProperty);
+                bool shouldSkipClear = false;
+
+                // Check if we should skip clearing for virtualization
+                // ONLY skip when using a VirtualizingPanel that actually recycles containers
+                // When we skip clearing, the Child stays attached to this container
+                if(cc.Presenter != null && ContentVirtualizationDiagnostics.IsEnabled && Presenter?.Panel is VirtualizingStackPanel)
+                {
+                    var item = cc.Content;
+                    var template = cc.ContentTemplate;
+
+                    if (template is IVirtualizingDataTemplate vdt && vdt.GetKey(item) != null)
+                    {
+                        shouldSkipClear = true;
+                    }
+                    else if (template is IRecyclingDataTemplate && template is ITypedDataTemplate tdt && tdt.DataType != null)
+                    {
+                        shouldSkipClear = true;
+                    }
+                }
+
+                // Only clear if NOT being recycled for virtualization
+                // This keeps the Child attached, avoiding detach/reattach visual tree churn
+                if (!shouldSkipClear)
+                {
+                    cc.ClearValue(ContentControl.ContentProperty);
+                    cc.ClearValue(ContentControl.ContentTemplateProperty);
+                }
             }
             else if (container is ContentPresenter p)
             {
-                p.ClearValue(ContentPresenter.ContentProperty);
-                p.ClearValue(ContentPresenter.ContentTemplateProperty);
+                bool shouldSkipClear = false;
+
+                var item = p.Content;
+                var template = p.ContentTemplate;
+
+                // Check if we should skip clearing for virtualization
+                // ONLY skip when using a VirtualizingPanel that actually recycles containers
+                // When we skip clearing, the Child stays attached to this container
+                if (ContentVirtualizationDiagnostics.IsEnabled && Presenter?.Panel is VirtualizingStackPanel)
+                {
+                    if (template is IVirtualizingDataTemplate vdt && vdt.GetKey(item) != null)
+                    {
+                        shouldSkipClear = true;
+                    }
+                    else if (template is IRecyclingDataTemplate && template is ITypedDataTemplate tdt && tdt.DataType != null)
+                    {
+                        shouldSkipClear = true;
+                    }
+                }
+
+                // Only clear if NOT being recycled for virtualization
+                // This keeps the Child attached, avoiding detach/reattach visual tree churn
+                if (!shouldSkipClear)
+                {
+                    p.ClearValue(ContentPresenter.ContentProperty);
+                    p.ClearValue(ContentPresenter.ContentTemplateProperty);
+                }
             }
             else if (container is ItemsControl ic)
             {
@@ -530,16 +611,50 @@ namespace Avalonia.Controls
         /// </returns>
         protected bool NeedsContainer<T>(object? item, out object? recycleKey) where T : Control
         {
-            if (item is T)
+            // When content virtualization is enabled, use type-aware recycling keys to ensure
+            // containers are only reused for compatible data types. This prevents unnecessary
+            // Child rebuilds in ContentPresenter when the data type changes.
+            if (ContentVirtualizationDiagnostics.IsEnabled && Presenter?.Panel is VirtualizingStackPanel)
+            {
+                // Only check ItemTemplate property if set (avoid FindDataTemplate during measure)
+                // For DataTemplates collections, we rely on item type matching template DataType
+                var template = GetEffectiveItemTemplate();
+
+                if (template != null)
+                {
+                    // Use IVirtualizingDataTemplate key if available
+                    if (template is IVirtualizingDataTemplate vdt)
+                    {
+                        var key = vdt.GetKey(item);
+                        if (key != null)
+                        {
+                            recycleKey = key;
+                            return true;
+                        }
+                    }
+                    // Use DataType for automatic recycling
+                    else if (template is ITypedDataTemplate tdt && tdt.DataType != null)
+                    {
+                        recycleKey = tdt.DataType;
+                        return true;
+                    }
+                }
+
+                // For DataTemplates collections: use item type as recycle key
+                // This works because DataTemplate.Match uses DataType.IsInstanceOfType(data)
+                // so items of same type always match the same template
+                // Example: typeof(TaskItem) key → TaskItem pool → template with DataType=TaskItem
+                recycleKey = item?.GetType() ?? DefaultRecycleKey;
+                return true;
+            }
+            else if (item is T)
             {
                 recycleKey = null;
                 return false;
             }
-            else
-            {
-                recycleKey = DefaultRecycleKey;
-                return true;
-            }
+
+            recycleKey = DefaultRecycleKey;
+            return true;
         }
 
         /// <inheritdoc />
@@ -628,6 +743,7 @@ namespace Avalonia.Controls
             {
                 if (change.NewValue is not null && DisplayMemberBinding is not null)
                     throw new InvalidOperationException("Cannot set both DisplayMemberBinding and ItemTemplate.");
+                _templateCache?.Clear(); // Clear template cache when ItemTemplate changes
                 RefreshContainers();
             }
             else if (change.Property == DisplayMemberBindingProperty)
@@ -635,6 +751,7 @@ namespace Avalonia.Controls
                 if (change.NewValue is not null && ItemTemplate is not null)
                     throw new InvalidOperationException("Cannot set both DisplayMemberBinding and ItemTemplate.");
                 _displayMemberItemTemplate = null;
+                _templateCache?.Clear(); // Clear template cache when DisplayMemberBinding changes
                 RefreshContainers();
             }
         }
@@ -786,6 +903,15 @@ namespace Avalonia.Controls
             if (!target.IsSet(property))
                 target.SetCurrentValue(property, value);
         }
+        
+        private void SetIfUnsetOrDifferent<T>(AvaloniaObject target, StyledProperty<T> property, T value)
+        {
+            if (!target.IsSet(property))
+                target.SetCurrentValue(property, value);
+            // when re-using some contentpresenter/contentcontrol, we need to re-apply the content and contenttemplate
+            else if(!object.Equals(target.GetValue(property), value))
+                target.SetCurrentValue(property, value);
+        }
 
         private void RemoveControlItemsFromLogicalChildren(IEnumerable? items)
         {
@@ -822,6 +948,38 @@ namespace Avalonia.Controls
             }
 
             return _displayMemberItemTemplate;
+        }
+
+        /// <summary>
+        /// Gets a data template for the item, using cache to avoid repeated FindDataTemplate calls during measure.
+        /// This is critical for avoiding layout cycles when using DataTemplates collections.
+        /// </summary>
+        private IDataTemplate? GetCachedDataTemplate(Control container, object? item, IDataTemplate? effectiveTemplate)
+        {
+            // If there's an ItemTemplate property, use it directly (no need for cache)
+            if (effectiveTemplate != null)
+                return effectiveTemplate;
+
+            // For DataTemplates collections, cache by item type to avoid repeated tree walks during measure
+            if (item == null)
+                return null;
+
+            var itemType = item.GetType();
+
+            // Initialize cache if needed
+            _templateCache ??= new Dictionary<Type, IDataTemplate?>();
+
+            // Check cache first
+            if (_templateCache.TryGetValue(itemType, out var cachedTemplate))
+                return cachedTemplate;
+
+            // Not in cache - need to find it (this may walk the tree)
+            var template = container.FindDataTemplate(item, null);
+
+            // Cache the result for this type
+            _templateCache[itemType] = template;
+
+            return template;
         }
 
         private void UpdatePseudoClasses()
@@ -889,5 +1047,69 @@ namespace Avalonia.Controls
             count = ItemsView.Count;
             return true;
         }
+    }
+
+    /// <summary>
+    /// Provides diagnostics for content virtualization.
+    /// </summary>
+    public static class ContentVirtualizationDiagnostics
+    {
+        /// <summary>
+        /// Gets or sets whether content virtualization is globally enabled.
+        /// Default is true. Set to false for debugging.
+        /// </summary>
+        public static bool IsEnabled { get; set; } = true;
+
+        /// <summary>
+        /// Gets pool statistics for the specified ItemsControl.
+        /// </summary>
+        /// <param name="control">The ItemsControl to get statistics for.</param>
+        /// <returns>Statistics about the content recycle pools, or null if no pools exist.</returns>
+        public static ContentPoolStats? GetPoolStats(ItemsControl control)
+        {
+            // Content pooling has been removed. Only container-level pooling remains (in VirtualizingStackPanel).
+            return null;
+        }
+
+        /// <summary>
+        /// Clears all content recycle pools for the specified ItemsControl.
+        /// </summary>
+        /// <param name="control">The ItemsControl to clear pools for.</param>
+        public static void ClearPools(ItemsControl control)
+        {
+            // No-op: Content pooling has been removed. Only container-level pooling remains.
+        }
+    }
+
+    /// <summary>
+    /// Statistics about content recycle pools.
+    /// </summary>
+    public class ContentPoolStats
+    {
+        /// <summary>
+        /// Gets the pool entries.
+        /// </summary>
+        public List<PoolEntry> PoolEntries { get; } = new();
+    }
+
+    /// <summary>
+    /// Information about a single pool entry.
+    /// </summary>
+    public class PoolEntry
+    {
+        /// <summary>
+        /// Gets or sets the name of the template.
+        /// </summary>
+        public string TemplateName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the recycle key for this pool.
+        /// </summary>
+        public object RecycleKey { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the number of controls currently pooled.
+        /// </summary>
+        public int PooledCount { get; set; }
     }
 }
