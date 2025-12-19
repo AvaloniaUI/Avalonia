@@ -168,7 +168,7 @@ namespace Avalonia.Media
 
                         if (!familyNames.ContainsKey(culture))
                         {
-                            familyNames[culture] = nameRecord.Value;
+                            familyNames[culture] = nameRecord.GetValue();
                         }
                     }
 
@@ -185,7 +185,7 @@ namespace Avalonia.Media
 
                         if (!faceNames.ContainsKey(culture))
                         {
-                            faceNames[culture] = nameRecord.Value;
+                            faceNames[culture] = nameRecord.GetValue();
                         }
                     }
                 }
@@ -353,19 +353,21 @@ namespace Avalonia.Media
             GC.SuppressFinalize(this);
         }
 
-        public ushort GetGlyphAdvance(ushort glyphId)
+        public bool TryGetHorizontalGlyphAdvance(ushort glyphId, out ushort advance)
         {
+            advance = default;
+
             if (_hmTable is null)
             {
-                return 0;
+                return false;
             }
 
-            if (!_hmTable.TryGetAdvance(glyphId, out var advance))
+            if (!_hmTable.TryGetAdvance(glyphId, out advance))
             {
-                return 0;
+                return false;
             }
 
-            return advance;
+            return true;
         }
 
         public bool TryGetGlyphMetrics(ushort glyph, out GlyphMetrics metrics)

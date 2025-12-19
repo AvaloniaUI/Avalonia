@@ -115,13 +115,13 @@ namespace Avalonia.Media
         ITextShaperTypeface TextShaperTypeface { get; }
 
         /// <summary>
-        ///     Returns the glyph advance for the specified glyph.
+        /// Attempts to retrieve the horizontal advance width for the specified glyph.
         /// </summary>
-        /// <param name="glyph">The glyph.</param>
-        /// <returns>
-        ///     The advance.
-        /// </returns>
-        ushort GetGlyphAdvance(ushort glyph);
+        /// <param name="glyph">The identifier of the glyph for which to obtain the horizontal advance width.</param>
+        /// <param name="advance">When this method returns, contains the horizontal advance width of the specified glyph if found; otherwise,
+        /// zero. This parameter is passed uninitialized.</param>
+        /// <returns>true if the horizontal advance width was successfully retrieved; otherwise, false.</returns>
+        bool TryGetHorizontalGlyphAdvance(ushort glyph, out ushort advance);
 
         /// <summary>
         ///     Tries to get a glyph's metrics in em units.

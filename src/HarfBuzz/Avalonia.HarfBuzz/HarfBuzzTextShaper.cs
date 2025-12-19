@@ -93,9 +93,16 @@ namespace Avalonia.Harfbuzz
                 {
                     glyphIndex = glyphTypeface.CharacterToGlyphMap[' '];
 
-                    glyphAdvance = options.IncrementalTabWidth > 0 ?
-                        options.IncrementalTabWidth :
-                        4 * glyphTypeface.GetGlyphAdvance(glyphIndex) * textScale;
+                    if(options.IncrementalTabWidth > 0)
+                    {
+                        glyphAdvance = options.IncrementalTabWidth;
+                    }
+                    else
+                    {
+                        glyphTypeface.TryGetHorizontalGlyphAdvance(glyphIndex, out var advance);
+
+                        glyphAdvance = 4 * advance * textScale;
+                    }                          
                 }
 
                 shapedBuffer[i] = new Media.TextFormatting.GlyphInfo(glyphIndex, glyphCluster, glyphAdvance, glyphOffset);

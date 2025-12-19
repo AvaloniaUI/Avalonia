@@ -120,10 +120,10 @@ namespace Avalonia.Media.Fonts.Tables
 
             var binaryReader = new BigEndianBinaryReader(table.Span);
 
-            return Load(binaryReader);
+            return Load(ref binaryReader);
         }
 
-        private static OS2Table Load(BigEndianBinaryReader reader)
+        private static OS2Table Load(ref BigEndianBinaryReader reader)
         {
             // Version 1.0
             // Type   | Name                   | Comments

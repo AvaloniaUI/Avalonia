@@ -67,7 +67,8 @@ namespace Avalonia.Base.UnitTests.Media
             // Ensure metrics are available for this glyph
             Assert.True(typeface.TryGetGlyphMetrics(glyphId, out var metrics));
 
-            var advance = typeface.GetGlyphAdvance(glyphId);
+            // Ensure advance can be retrieved
+            Assert.True(typeface.TryGetHorizontalGlyphAdvance(glyphId, out var advance));
 
             // Advance returned by GetGlyphAdvance should match the metrics width
             Assert.Equal(metrics.Width, advance);
@@ -226,7 +227,7 @@ namespace Avalonia.Base.UnitTests.Media
         }
 
         [Fact]
-        public void GetGlyphAdvance_Should_Return_Zero_For_Invalid_GlyphId()
+        public void TryGetGlyphAdvance_Should_Return_False_For_Invalid_GlyphId()
         {
             var assetLoader = new StandardAssetLoader();
 
@@ -234,9 +235,7 @@ namespace Avalonia.Base.UnitTests.Media
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
-            var advance = typeface.GetGlyphAdvance(ushort.MaxValue);
-
-            Assert.True(advance >= 0);
+            Assert.False(typeface.TryGetHorizontalGlyphAdvance(ushort.MaxValue, out var advance));
         }
 
         [Fact]

@@ -101,9 +101,9 @@ namespace Avalonia.Media
             {
                 var glyphIndex = glyphIndexSpan[i];
 
-                var advance = glyphTypeface.GetGlyphAdvance(glyphIndex) * scale;
+                glyphTypeface.TryGetHorizontalGlyphAdvance(glyphIndex, out var advance);
 
-                glyphInfos[i] = new GlyphInfo(glyphIndex, i, advance);
+                glyphInfos[i] = new GlyphInfo(glyphIndex, i, advance * scale);
             }
 
             return glyphInfos;

@@ -112,51 +112,6 @@ namespace Avalonia.Headless
     }
 }
 
-internal class HeadlessGlyphTypeface : IGlyphTypeface
-{
-    private readonly IGlyphTypeface _inner;
-
-    public HeadlessGlyphTypeface(IGlyphTypeface inner, string familyName)
-    {
-        _inner = inner;
-        FamilyName = familyName;
-    }
-
-    public string FamilyName { get; }
-
-    public string TypographicFamilyName => FamilyName;
-
-    public IReadOnlyDictionary<CultureInfo, string> FamilyNames => _inner.FamilyNames;
-
-    public IReadOnlyList<OpenTypeTag> SupportedFeatures => _inner.SupportedFeatures;
-
-    public IReadOnlyDictionary<CultureInfo, string> FaceNames => _inner.FaceNames;
-
-    public FontWeight Weight => _inner.Weight;
-
-    public FontStyle Style => _inner.Style;
-
-    public FontStretch Stretch => _inner.Stretch;
-
-    public int GlyphCount => _inner.GlyphCount;
-
-    public FontSimulations FontSimulations => _inner.FontSimulations;
-
-    public FontMetrics Metrics => _inner.Metrics;
-
-    public IReadOnlyDictionary<int, ushort> CharacterToGlyphMap => _inner.CharacterToGlyphMap;
-
-    public IPlatformTypeface PlatformTypeface => _inner.PlatformTypeface;
-
-    public ITextShaperTypeface TextShaperTypeface => _inner.TextShaperTypeface;
-
-    public void Dispose() => _inner.Dispose();
-
-    public ushort GetGlyphAdvance(ushort glyph) => _inner.GetGlyphAdvance(glyph);
-
-    public bool TryGetGlyphMetrics(ushort glyph, out GlyphMetrics metrics) => _inner.TryGetGlyphMetrics(glyph, out metrics);
-}
-
 internal class HeadlessFontManagerStub : IFontManagerImpl
 {
     private readonly string _interFontUri = "avares://Avalonia.Fonts.Inter/Assets/Inter-Regular.ttf";

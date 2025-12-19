@@ -7,7 +7,8 @@ namespace Avalonia.Media.Fonts.Tables
         internal const string TableName = "head";
         internal static OpenTypeTag Tag { get; } = OpenTypeTag.Parse(TableName);
 
-        public float Version { get; }
+        public ushort MajorVersion { get; }
+        public ushort MinorVersion { get; }
         public float FontRevision { get; }
         public uint CheckSumAdjustment { get; }
         public uint MagicNumber { get; }
@@ -26,7 +27,8 @@ namespace Avalonia.Media.Fonts.Tables
         public short GlyphDataFormat { get; }
 
         private HeadTable(
-            float version,
+            ushort majorVersion,
+            ushort minorVersion,
             float fontRevision,
             uint checkSumAdjustment,
             uint magicNumber,
@@ -44,7 +46,8 @@ namespace Avalonia.Media.Fonts.Tables
             short indexToLocFormat,
             short glyphDataFormat)
         {
-            Version = version;
+            MajorVersion = majorVersion;
+            MinorVersion = minorVersion;
             FontRevision = fontRevision;
             CheckSumAdjustment = checkSumAdjustment;
             MagicNumber = magicNumber;
@@ -72,12 +75,13 @@ namespace Avalonia.Media.Fonts.Tables
 
             var reader = new BigEndianBinaryReader(table.Span);
 
-            return Load(reader);
+            return Load(ref reader);
         }
 
-        private static HeadTable Load(BigEndianBinaryReader reader)
+        private static HeadTable Load(ref BigEndianBinaryReader reader)
         {
-            float version = reader.ReadFixed();
+            ushort majorVersion = reader.ReadUInt16();
+            ushort minorVersion = reader.ReadUInt16();
             float fontRevision = reader.ReadFixed();
             uint checkSumAdjustment = reader.ReadUInt32();
             uint magicNumber = reader.ReadUInt32();
@@ -96,7 +100,8 @@ namespace Avalonia.Media.Fonts.Tables
             short glyphDataFormat = reader.ReadInt16();
 
             return new HeadTable(
-                version,
+                majorVersion,
+                minorVersion,
                 fontRevision,
                 checkSumAdjustment,
                 magicNumber,

@@ -41,19 +41,16 @@ namespace Avalonia.Media.Fonts.Tables.Name
 
         public System.Text.Encoding Encoding { get; }
 
-        public string Value
+        public string GetValue()
         {
-            get
+            if (Length == 0)
             {
-                if (Length == 0)
-                {
-                    return string.Empty;
-                }
-
-                var span = _stringStorage.Span.Slice(Offset, Length);
-
-                return Encoding.GetString(span);
+                return string.Empty;
             }
+
+            var span = _stringStorage.Span.Slice(Offset, Length);
+
+            return Encoding.GetString(span);
         }
     }
 }

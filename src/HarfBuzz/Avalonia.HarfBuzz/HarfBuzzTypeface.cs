@@ -46,10 +46,7 @@ namespace Avalonia.Harfbuzz
 
             unsafe
             {
-                fixed (byte* src = table.Span)
-                {
-                    System.Buffer.MemoryCopy(src, (void*)nativePtr, table.Length, table.Length);
-                }
+                table.Span.CopyTo(new Span<byte>((void*)nativePtr, table.Length));
             }
 
             var releaseDelegate = new ReleaseDelegate(() => Marshal.FreeHGlobal(nativePtr));

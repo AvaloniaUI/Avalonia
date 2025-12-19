@@ -478,10 +478,11 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var glyph = typeface.GlyphTypeface.CharacterToGlyphMap['a'];
 
-                var advance = typeface.GlyphTypeface.GetGlyphAdvance(glyph) *
-                              (12.0 / typeface.GlyphTypeface.Metrics.DesignEmHeight);
+                typeface.GlyphTypeface.TryGetHorizontalGlyphAdvance(glyph, out var advance);
 
-                var paragraphWidth = advance * numberOfCharactersPerLine;
+                var scale = 12.0 / typeface.GlyphTypeface.Metrics.DesignEmHeight;
+
+                var paragraphWidth = advance * scale * numberOfCharactersPerLine;
 
                 var currentPosition = 0;
 
