@@ -499,8 +499,9 @@ namespace Avalonia.Controls
                 bool shouldSkipClear = false;
 
                 // Check if we should skip clearing for virtualization
+                // ONLY skip when using a VirtualizingPanel that actually recycles containers
                 // When we skip clearing, the Child stays attached to this container
-                if(cc.Presenter != null && ContentVirtualizationDiagnostics.IsEnabled)
+                if(cc.Presenter != null && ContentVirtualizationDiagnostics.IsEnabled && Presenter?.Panel is VirtualizingStackPanel)
                 {
                     var item = cc.Content;
                     var template = cc.ContentTemplate;
@@ -531,8 +532,9 @@ namespace Avalonia.Controls
                 var template = p.ContentTemplate;
 
                 // Check if we should skip clearing for virtualization
+                // ONLY skip when using a VirtualizingPanel that actually recycles containers
                 // When we skip clearing, the Child stays attached to this container
-                if (ContentVirtualizationDiagnostics.IsEnabled)
+                if (ContentVirtualizationDiagnostics.IsEnabled && Presenter?.Panel is VirtualizingStackPanel)
                 {
                     if (template is IVirtualizingDataTemplate vdt && vdt.GetKey(item) != null)
                     {
@@ -612,7 +614,7 @@ namespace Avalonia.Controls
             // When content virtualization is enabled, use type-aware recycling keys to ensure
             // containers are only reused for compatible data types. This prevents unnecessary
             // Child rebuilds in ContentPresenter when the data type changes.
-            if (ContentVirtualizationDiagnostics.IsEnabled)
+            if (ContentVirtualizationDiagnostics.IsEnabled && Presenter?.Panel is VirtualizingStackPanel)
             {
                 // Only check ItemTemplate property if set (avoid FindDataTemplate during measure)
                 // For DataTemplates collections, we rely on item type matching template DataType
