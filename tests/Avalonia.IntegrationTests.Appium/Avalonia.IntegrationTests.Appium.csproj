@@ -23,26 +23,6 @@
     <PackageReference Include="Appium.WebDriver" Version="5.2.0"/>
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Remove="ButtonTests.cs" />
-    <Compile Remove="CheckBoxTests.cs" />
-    <Compile Remove="ContextMenuTests.cs" />
-    <Compile Remove="EmbeddingTests.cs" />
-    <Compile Remove="GestureTests.cs" />
-    <Compile Remove="ListBoxTests.cs" />
-    <Compile Remove="NativeMenuTests.cs" />
-    <Compile Remove="PointerTests.cs" />
-    <Compile Remove="PointerTests_MacOS.cs" />
-    <Compile Remove="RadioButtonTests.cs" />
-    <Compile Remove="ScreenTests.cs" />
-    <Compile Remove="ScrollBarTests.cs" />
-    <Compile Remove="SliderTests.cs" />
-    <Compile Remove="TrayIconTests.cs" />
-    <Compile Remove="WindowDecorationsTests.cs" />
-    <Compile Remove="WindowTests.cs" />
-    <Compile Remove="WindowTests_MacOS.cs" />
-  </ItemGroup>
-
   <Import Project="..\..\build\XUnit.props" />
   <Import Project="..\..\build\Rx.props" />
   <Import Project="..\..\build\ImageSharp.props" />
