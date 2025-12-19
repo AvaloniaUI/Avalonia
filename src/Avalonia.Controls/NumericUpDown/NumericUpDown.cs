@@ -450,7 +450,7 @@ namespace Avalonia.Controls
         {
             if (IsInitialized)
             {
-                SyncTextAndValueProperties(false, null);
+                SyncTextAndValueProperties(false, null, true);
             }
         }
 
