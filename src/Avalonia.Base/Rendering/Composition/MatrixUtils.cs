@@ -20,7 +20,7 @@ namespace Avalonia.Rendering.Composition
 
 
             if (scale != new Vector3D(1, 1, 1))
-                mat = CompositionMatrix.CreateScale(scale, center);
+                mat *= CompositionMatrix.CreateScale(scale, center);
 
             //TODO: RotationAxis support
             if (rotationAngle != 0)

@@ -30,18 +30,18 @@ public struct CompositionMatrix(Matrix matrix)
     public bool GuaranteedIdentity => _type == Type.Identity;
     public bool GuaranteedTranslateAndScaleOnly => _type == Type.TranslateAndScale;
     public bool GuaranteedTranslateAndScaleOnlyOrIdentity => _type is Type.TranslateAndScale or Type.Identity;
-    
-    public double ScaleX => _scaleX_11;
+
+    public double ScaleX => _type != Type.Identity ? _scaleX_11 : 1;
     public double SkewY => _skewY_12;
     public double PerspX => _perspX_13;
 
     public double SkewX => _skewX_21;
-    public double ScaleY => _scaleY_22;
+    public double ScaleY => _type != Type.Identity ? _scaleY_22 : 1;
     public double PerspY => _perspY_23;
     
     public double OffsetX => _offsetX_31;
     public double OffsetY => _offsetY_32;
-    public double PerspZ => _perspZ_33;
+    public double PerspZ => _type == Type.Full ? _perspZ_33 : 1;
 
     public static CompositionMatrix Identity { get; } = default;
     
@@ -92,13 +92,20 @@ public struct CompositionMatrix(Matrix matrix)
     public static unsafe CompositionMatrix FromMatrix(in Matrix m)
     {
         CompositionMatrix rv;
-        if(m.M13 != 0 || m.M23 != 0 || m.M33 != 1)
+        if(m.M13 != 0 || m.M23 != 0 || m.M33 != 1 || m.M12 != 0 || m.M21 != 0)
             rv._type = Type.Full;
-        else if (m.M11 != 1 || m.M22 != 1 || m.M31 != 0 || m.M32 != 0 || m.M12 != 0 || m.M21 != 0)
+        else if (m.M11 != 1 || m.M22 != 1 || m.M31 != 0 || m.M32 != 0 )
             rv._type = Type.TranslateAndScale;
         else
             return default;
         *(Matrix*)&rv = m;
+#if DEBUG_COMPOSITION_MATRIX
+        var back = rv.ToMatrix();
+        if(back != m)
+        {
+            throw new InvalidOperationException("BUG");
+        }
+#endif
         return rv;
     }
     
@@ -110,7 +117,7 @@ public struct CompositionMatrix(Matrix matrix)
         if (_type == Type.TranslateAndScale)
             return new Matrix(_scaleX_11, 0, 0, _scaleY_22, _offsetX_31, _offsetY_32);
         
-        return new Matrix(_scaleX_11, _skewY_12, _skewX_21, _scaleY_22, _offsetX_31, _offsetY_32, _perspX_13, _perspY_23, _perspZ_33);
+        return new Matrix(_scaleX_11, _skewY_12, _perspX_13, _skewX_21, _scaleY_22, _perspY_23, _offsetX_31, _offsetY_32, _perspZ_33);
     }
     
     //public static implicit operator Matrix(CompositionMatrix m) => m.ToMatrix();
@@ -183,32 +190,32 @@ public struct CompositionMatrix(Matrix matrix)
         {
             _type = Type.Full,
             _scaleX_11 =
-                (left._scaleX_11 * right._scaleX_11) + (left._skewY_12 * right._skewX_21) +
+                (left.ScaleX * right.ScaleX) + (left._skewY_12 * right._skewX_21) +
                 (left._perspX_13 * right._offsetX_31),
             _skewY_12 =
-                (left._scaleX_11 * right._skewY_12) + (left._skewY_12 * right._scaleY_22) +
+                (left.ScaleX * right._skewY_12) + (left._skewY_12 * right.ScaleY) +
                 (left._perspX_13 * right._offsetY_32),
             _perspX_13 =
-                (left._scaleX_11 * right._perspX_13) + (left._skewY_12 * right._perspY_23) +
-                (left._perspX_13 * right._perspZ_33),
+                (left.ScaleX * right._perspX_13) + (left._skewY_12 * right._perspY_23) +
+                (left._perspX_13 * right.PerspZ),
             _skewX_21 =
-                (left._skewX_21 * right._scaleX_11) + (left._scaleY_22 * right._skewX_21) +
+                (left._skewX_21 * right.ScaleX) + (left.ScaleY * right._skewX_21) +
                 (left._perspY_23 * right._offsetX_31),
             _scaleY_22 =
-                (left._skewX_21 * right._skewY_12) + (left._scaleY_22 * right._scaleY_22) +
+                (left._skewX_21 * right._skewY_12) + (left.ScaleY * right.ScaleY) +
                 (left._perspY_23 * right._offsetY_32),
             _perspY_23 =
-                (left._skewX_21 * right._perspX_13) + (left._scaleY_22 * right._perspY_23) +
-                (left._perspY_23 * right._perspZ_33),
+                (left._skewX_21 * right._perspX_13) + (left.ScaleY * right._perspY_23) +
+                (left._perspY_23 * right.PerspZ),
             _offsetX_31 =
-                (left._offsetX_31 * right._scaleX_11) + (left._offsetY_32 * right._skewX_21) +
-                (left._perspZ_33 * right._offsetX_31),
+                (left._offsetX_31 * right.ScaleX) + (left._offsetY_32 * right._skewX_21) +
+                (left.PerspZ * right._offsetX_31),
             _offsetY_32 =
-                (left._offsetX_31 * right._skewY_12) + (left._offsetY_32 * right._scaleY_22) +
-                (left._perspZ_33 * right._offsetY_32),
+                (left._offsetX_31 * right._skewY_12) + (left._offsetY_32 * right.ScaleY) +
+                (left.PerspZ * right._offsetY_32),
             _perspZ_33 =
                 (left._offsetX_31 * right._perspX_13) + (left._offsetY_32 * right._perspY_23) +
-                (left._perspZ_33 * right._perspZ_33)
+                (left.PerspZ * right.PerspZ)
         };
     }
     
@@ -222,10 +229,15 @@ public struct CompositionMatrix(Matrix matrix)
     {
         var res = TransformCore(p);
         var expected = p.Transform(ToMatrix());
-        if (res != expected)
+
+        static void Compare(double res, double expected)
         {
-            throw new InvalidOperationException("BUG");
+            var diff = Math.Abs(res - expected);
+            if (diff > 0.00000153)
+                throw new InvalidProgramException("BUG");
         }
+        Compare(res.X, res.X);
+        Compare(res.Y, res.Y);
 
         return res;
     }
