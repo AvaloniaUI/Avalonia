@@ -28,10 +28,12 @@ namespace Avalonia.Media
         private readonly NameTable? _nameTable;
         private readonly OS2Table? _os2Table;
         private readonly IReadOnlyDictionary<int, ushort> _cmapTable;
-        private readonly HorizontalHeaderTable? _hhTable;
-        private readonly VerticalHeaderTable? _vhTable;
+        private readonly HorizontalHeaderTable _hhTable;
+        private readonly VerticalHeaderTable _vhTable;
         private readonly HorizontalMetricsTable? _hmTable;
         private readonly VerticalMetricsTable? _vmTable;
+        private readonly bool _hasHorizontalMetrics;
+        private readonly bool _hasVerticalMetrics;
 
         private IReadOnlyList<OpenTypeTag>? _supportedFeatures;
         private ITextShaperTypeface? _textShaperTypeface;
@@ -55,56 +57,56 @@ namespace Avalonia.Media
             _os2Table = OS2Table.Load(this);
             _cmapTable = CmapTable.Load(this);
 
-            var maxpTable = MaxpTable.Load(this) ?? throw new InvalidOperationException("Could not load the 'maxp' table.");
+            var maxpTable = MaxpTable.Load(this);
 
             GlyphCount = maxpTable.NumGlyphs;
 
-            _hhTable = HorizontalHeaderTable.Load(this);
+            _hasHorizontalMetrics = HorizontalHeaderTable.TryLoad(this, out _hhTable);
 
-            if (_hhTable is not null)
+            if (_hasHorizontalMetrics)
             {
-                _hmTable = HorizontalMetricsTable.Load(this, _hhTable.Value.NumberOfHMetrics, GlyphCount);
+                _hmTable = HorizontalMetricsTable.Load(this, _hhTable.NumberOfHMetrics, GlyphCount);
             }
 
-            _vhTable = VerticalHeaderTable.Load(this);
+            _hasVerticalMetrics = VerticalHeaderTable.TryLoad(this, out _vhTable);
 
-            if (_vhTable is not null)
+            if (_hasVerticalMetrics)
             {
-                _vmTable = VerticalMetricsTable.Load(this, _vhTable.Value.NumberOfVMetrics, GlyphCount);
+                _vmTable = VerticalMetricsTable.Load(this, _vhTable.NumberOfVMetrics, GlyphCount);
             }
 
             var ascent = 0;
             var descent = 0;
             var lineGap = 0;
 
-            if (_os2Table != null && (_os2Table.Selection & OS2Table.FontSelectionFlags.USE_TYPO_METRICS) != 0)
+            if (_os2Table.HasValue && (_os2Table.Value.Selection & OS2Table.FontSelectionFlags.USE_TYPO_METRICS) != 0)
             {
-                ascent = -_os2Table.TypoAscender;
-                descent = -_os2Table.TypoDescender;
-                lineGap = _os2Table.TypoLineGap;
+                ascent = -_os2Table.Value.TypoAscender;
+                descent = -_os2Table.Value.TypoDescender;
+                lineGap = _os2Table.Value.TypoLineGap;
             }
             else
             {
-                if (_hhTable != null)
+                if (_hasHorizontalMetrics)
                 {
-                    ascent = -_hhTable.Value.Ascender;
-                    descent = -_hhTable.Value.Descender;
-                    lineGap = _hhTable.Value.LineGap;
+                    ascent = -_hhTable.Ascender;
+                    descent = -_hhTable.Descender;
+                    lineGap = _hhTable.LineGap;
                 }
             }
 
-            if (_os2Table != null && (ascent == 0 || descent == 0))
+            if (_os2Table.HasValue && (ascent == 0 || descent == 0))
             {
-                if (_os2Table.TypoAscender != 0 || _os2Table.TypoDescender != 0)
+                if (_os2Table.Value.TypoAscender != 0 || _os2Table.Value.TypoDescender != 0)
                 {
-                    ascent = -_os2Table.TypoAscender;
-                    descent = -_os2Table.TypoDescender;
-                    lineGap = _os2Table.TypoLineGap;
+                    ascent = -_os2Table.Value.TypoAscender;
+                    descent = -_os2Table.Value.TypoDescender;
+                    lineGap = _os2Table.Value.TypoLineGap;
                 }
                 else
                 {
-                    ascent = -_os2Table.WinAscent;
-                    descent = _os2Table.WinDescent;
+                    ascent = -_os2Table.Value.WinAscent;
+                    descent = _os2Table.Value.WinDescent;
                 }
             }
 
@@ -123,22 +125,22 @@ namespace Avalonia.Media
                 LineGap = lineGap,
                 UnderlinePosition = -underlineOffset,
                 UnderlineThickness = underlineSize,
-                StrikethroughPosition = -_os2Table?.StrikeoutPosition ?? 0,
+                StrikethroughPosition = _os2Table?.StrikeoutPosition ?? 0,
                 StrikethroughThickness = _os2Table?.StrikeoutSize ?? 0,
                 IsFixedPitch = isFixedPitch
             };
 
             FontSimulations = fontSimulations;
 
-            var fontWeight = _os2Table != null ? (FontWeight)_os2Table.WeightClass : FontWeight.Normal;
+            var fontWeight = _os2Table.HasValue ? (FontWeight)_os2Table.Value.WeightClass : FontWeight.Normal;
 
             Weight = (fontSimulations & FontSimulations.Bold) != 0 ? FontWeight.Bold : fontWeight;
 
-            var style = _os2Table != null ? GetFontStyle(_os2Table, headTable, postTable) : FontStyle.Normal;
+            var style = _os2Table.HasValue ? GetFontStyle(_os2Table.Value, headTable, postTable) : FontStyle.Normal;
 
             Style = (fontSimulations & FontSimulations.Oblique) != 0 ? FontStyle.Italic : style;
 
-            var stretch = _os2Table != null ? (FontStretch)_os2Table.WidthClass : FontStretch.Normal;
+            var stretch = _os2Table.HasValue ? (FontStretch)_os2Table.Value.WidthClass : FontStretch.Normal;
 
             Stretch = stretch;
 
@@ -357,7 +359,7 @@ namespace Avalonia.Media
         {
             advance = default;
 
-            if (_hmTable is null)
+            if (!_hasHorizontalMetrics || _hmTable is null)
             {
                 return false;
             }
@@ -380,12 +382,12 @@ namespace Avalonia.Media
             var hasHorizontal = false;
             var hasVertical = false;
 
-            if (_hmTable != null)
+            if (_hasHorizontalMetrics && _hmTable != null)
             {
                 hasHorizontal = _hmTable.TryGetMetrics(glyph, out hMetric);
             }
 
-            if (_vmTable != null)
+            if (_hasVerticalMetrics && _vmTable != null)
             {
                 hasVertical = _vmTable.TryGetMetrics(glyph, out vMetric);
             }

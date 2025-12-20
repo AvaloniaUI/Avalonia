@@ -10,12 +10,12 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 {
-    public class OS2TableTests
+    public class MaxpTableTests
     {
         private static string s_InterFontUri = "resm:Avalonia.Base.UnitTests.Assets.Inter-Regular.ttf?assembly=Avalonia.Base.UnitTests";
 
         [Fact]
-        public void Should_Load_OS2Table_From_Inter_Font()
+        public void Should_Load_MaxpTable_From_Inter_Font()
         {
             var assetLoader = new StandardAssetLoader();
 
@@ -23,13 +23,13 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
-            var os2Table = OS2Table.Load(typeface);
+            var maxpTable = MaxpTable.Load(typeface);
 
-            Assert.NotNull(os2Table);
+            Assert.NotEqual(default, maxpTable);
         }
 
         [Fact]
-        public void OS2Table_Should_Have_Valid_WeightClass()
+        public void MaxpTable_Should_Have_Valid_NumGlyphs()
         {
             var assetLoader = new StandardAssetLoader();
 
@@ -37,15 +37,13 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
-            var os2Table = OS2Table.Load(typeface);
+            var maxpTable = MaxpTable.Load(typeface);
 
-            Assert.NotNull(os2Table);
-            Assert.True(os2Table.Value.WeightClass >= 1);
-            Assert.True(os2Table.Value.WeightClass <= 1000);
+            Assert.True(maxpTable.NumGlyphs > 0);
         }
 
         [Fact]
-        public void OS2Table_Should_Have_Valid_WidthClass()
+        public void MaxpTable_TrueType_Should_Have_Version_1_0()
         {
             var assetLoader = new StandardAssetLoader();
 
@@ -53,15 +51,13 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
-            var os2Table = OS2Table.Load(typeface);
+            var maxpTable = MaxpTable.Load(typeface);
 
-            Assert.NotNull(os2Table);
-            Assert.True(os2Table.Value.WidthClass >= 1);
-            Assert.True(os2Table.Value.WidthClass <= 9);
+            Assert.Equal(1.0f, maxpTable.Version);
         }
 
         [Fact]
-        public void OS2Table_Should_Have_Valid_TypoMetrics()
+        public void MaxpTable_Version_1_0_Should_Have_Valid_MaxPoints()
         {
             var assetLoader = new StandardAssetLoader();
 
@@ -69,16 +65,13 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
-            var os2Table = OS2Table.Load(typeface);
+            var maxpTable = MaxpTable.Load(typeface);
 
-            Assert.NotNull(os2Table);
-            Assert.NotEqual(0, os2Table.Value.TypoAscender);
-            Assert.NotEqual(0, os2Table.Value.TypoDescender);
-            Assert.True(os2Table.Value.TypoAscender > os2Table.Value.TypoDescender);
+            Assert.Equal(148, maxpTable.MaxPoints);
         }
 
         [Fact]
-        public void OS2Table_Should_Have_Valid_WinMetrics()
+        public void MaxpTable_Version_1_0_Should_Have_Valid_MaxContours()
         {
             var assetLoader = new StandardAssetLoader();
 
@@ -86,15 +79,13 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
-            var os2Table = OS2Table.Load(typeface);
+            var maxpTable = MaxpTable.Load(typeface);
 
-            Assert.NotNull(os2Table);
-            Assert.True(os2Table.Value.WinAscent > 0);
-            Assert.True(os2Table.Value.WinDescent > 0);
+            Assert.Equal(12, maxpTable.MaxContours);
         }
 
         [Fact]
-        public void OS2Table_Should_Have_Valid_StrikeoutMetrics()
+        public void MaxpTable_Version_1_0_Should_Have_Valid_MaxZones()
         {
             var assetLoader = new StandardAssetLoader();
 
@@ -102,14 +93,13 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
-            var os2Table = OS2Table.Load(typeface);
+            var maxpTable = MaxpTable.Load(typeface);
 
-            Assert.NotNull(os2Table);
-            Assert.True(os2Table.Value.StrikeoutSize >= 0);
+            Assert.Equal(1, maxpTable.MaxZones);
         }
 
         [Fact]
-        public void OS2Table_Should_Have_Selection_Flags()
+        public void MaxpTable_Should_Have_Valid_MaxCompositePoints()
         {
             var assetLoader = new StandardAssetLoader();
 
@@ -117,13 +107,13 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
-            var os2Table = OS2Table.Load(typeface);
+            var maxpTable = MaxpTable.Load(typeface);
 
-            Assert.NotNull(os2Table);
+            Assert.Equal(112, maxpTable.MaxCompositePoints);
         }
 
         [Fact]
-        public void OS2Table_Inter_Regular_Should_Not_Be_Bold()
+        public void MaxpTable_Should_Have_Valid_MaxCompositeContours()
         {
             var assetLoader = new StandardAssetLoader();
 
@@ -131,14 +121,14 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
-            var os2Table = OS2Table.Load(typeface);
+            var maxpTable = MaxpTable.Load(typeface);
 
-            Assert.NotNull(os2Table);
-            Assert.False(os2Table.Value.Selection.HasFlag(OS2Table.FontSelectionFlags.BOLD));
+            Assert.Equal(7, maxpTable.MaxCompositeContours);
+
         }
 
         [Fact]
-        public void OS2Table_Inter_Regular_Should_Not_Be_Italic()
+        public void MaxpTable_Should_Have_Valid_MaxStackElements()
         {
             var assetLoader = new StandardAssetLoader();
 
@@ -146,14 +136,13 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
-            var os2Table = OS2Table.Load(typeface);
+            var maxpTable = MaxpTable.Load(typeface);
 
-            Assert.NotNull(os2Table);
-            Assert.False(os2Table.Value.Selection.HasFlag(OS2Table.FontSelectionFlags.ITALIC));
+            Assert.Equal(0, maxpTable.MaxStackElements);
         }
 
         [Fact]
-        public void OS2Table_Inter_Regular_Should_Be_Regular()
+        public void MaxpTable_Should_Have_Valid_MaxComponentDepth()
         {
             var assetLoader = new StandardAssetLoader();
 
@@ -161,14 +150,13 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
-            var os2Table = OS2Table.Load(typeface);
+            var maxpTable = MaxpTable.Load(typeface);
 
-            Assert.NotNull(os2Table);
-            Assert.True(os2Table.Value.Selection.HasFlag(OS2Table.FontSelectionFlags.REGULAR));
+            Assert.Equal(1, maxpTable.MaxComponentDepth);
         }
 
         [Fact]
-        public void OS2Table_Should_Have_Consistent_Ascent_Values()
+        public void MaxpTable_NumGlyphs_Should_Match_GlyphTypeface_GlyphCount()
         {
             var assetLoader = new StandardAssetLoader();
 
@@ -176,87 +164,9 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
-            var os2Table = OS2Table.Load(typeface);
+            var maxpTable = MaxpTable.Load(typeface);
 
-            Assert.NotNull(os2Table);
-            Assert.True(os2Table.Value.TypoAscender > 0);
-            Assert.True(os2Table.Value.WinAscent > 0);
-        }
-
-        [Fact]
-        public void OS2Table_Should_Have_Consistent_Descent_Values()
-        {
-            var assetLoader = new StandardAssetLoader();
-
-            using var stream = assetLoader.Open(new Uri(s_InterFontUri));
-
-            var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
-
-            var os2Table = OS2Table.Load(typeface);
-
-            Assert.NotNull(os2Table);
-            Assert.True(os2Table.Value.TypoDescender < 0);
-            Assert.True(os2Table.Value.WinDescent > 0);
-        }
-
-        [Fact]
-        public void OS2Table_TypoLineGap_Should_Be_Valid()
-        {
-            var assetLoader = new StandardAssetLoader();
-
-            using var stream = assetLoader.Open(new Uri(s_InterFontUri));
-
-            var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
-
-            var os2Table = OS2Table.Load(typeface);
-
-            Assert.NotNull(os2Table);
-        }
-
-        [Fact]
-        public void OS2Table_Inter_Should_Have_Normal_Weight()
-        {
-            var assetLoader = new StandardAssetLoader();
-
-            using var stream = assetLoader.Open(new Uri(s_InterFontUri));
-
-            var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
-
-            var os2Table = OS2Table.Load(typeface);
-
-            Assert.NotNull(os2Table);
-            Assert.Equal((ushort)400, os2Table.Value.WeightClass);
-        }
-
-        [Fact]
-        public void OS2Table_Inter_Should_Have_Medium_Width()
-        {
-            var assetLoader = new StandardAssetLoader();
-
-            using var stream = assetLoader.Open(new Uri(s_InterFontUri));
-
-            var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
-
-            var os2Table = OS2Table.Load(typeface);
-
-            Assert.NotNull(os2Table);
-            Assert.Equal((ushort)5, os2Table.Value.WidthClass);
-        }
-
-        [Fact]
-        public void OS2Table_Should_Have_Valid_Panose()
-        {
-            var assetLoader = new StandardAssetLoader();
-
-            using var stream = assetLoader.Open(new Uri(s_InterFontUri));
-
-            var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
-
-            var os2Table = OS2Table.Load(typeface);
-
-            Assert.NotNull(os2Table);
-            var panose = os2Table.Value.Panose;
-            Assert.Equal(PanoseFamilyKind.LatinText, panose.FamilyKind);
+            Assert.Equal(maxpTable.NumGlyphs, typeface.GlyphCount);
         }
 
         private class CustomPlatformTypeface : IPlatformTypeface

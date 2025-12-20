@@ -94,20 +94,24 @@ namespace Avalonia.Media.Fonts.Tables
         /// </summary>
         public short XMaxExtent { get; }
 
-        public static HorizontalHeaderTable? Load(IGlyphTypeface fontFace)
+        public static bool TryLoad(IGlyphTypeface fontFace, out HorizontalHeaderTable horizontalHeaderTable)
         {
+            horizontalHeaderTable = default;
+
             if (!fontFace.PlatformTypeface.TryGetTable(Tag, out var table))
             {
-                return null;
+                return false;
             }
 
             var binaryReader = new BigEndianBinaryReader(table.Span);
 
-            return Load(binaryReader);
+            return TryLoad(ref binaryReader, out horizontalHeaderTable);
         }
 
-        private static HorizontalHeaderTable Load(BigEndianBinaryReader reader)
+        private static bool TryLoad(ref BigEndianBinaryReader reader, out HorizontalHeaderTable horizontalHeaderTable)
         {
+            horizontalHeaderTable = default;
+
             // +--------+---------------------+---------------------------------------------------------------------------------+
             // | Type   | Name                | Description                                                                     |
             // +========+=====================+=================================================================================+
@@ -162,14 +166,15 @@ namespace Avalonia.Media.Fonts.Tables
             reader.ReadInt16(); // reserved
             reader.ReadInt16(); // reserved
             short metricDataFormat = reader.ReadInt16(); // 0
+
             if (metricDataFormat != 0)
             {
-                throw new InvalidFontTableException($"Expected metricDataFormat = 0 found {metricDataFormat}", TableName);
+                return false;
             }
 
             ushort numberOfHMetrics = reader.ReadUInt16();
 
-            return new HorizontalHeaderTable(
+            horizontalHeaderTable = new HorizontalHeaderTable(
                 ascender,
                 descender,
                 lineGap,
@@ -181,6 +186,8 @@ namespace Avalonia.Media.Fonts.Tables
                 caretSlopeRun,
                 caretOffset,
                 numberOfHMetrics);
+
+            return true;
         }
     }
 }

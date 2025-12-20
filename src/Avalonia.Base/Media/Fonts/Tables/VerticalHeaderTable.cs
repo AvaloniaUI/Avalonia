@@ -53,20 +53,24 @@ namespace Avalonia.Media.Fonts.Tables
 
         public short YMaxExtent { get; }
 
-        public static VerticalHeaderTable? Load(IGlyphTypeface fontFace)
+        public static bool TryLoad(IGlyphTypeface fontFace, out VerticalHeaderTable verticalHeaderTable)
         {
+            verticalHeaderTable = default;
+
             if (!fontFace.PlatformTypeface.TryGetTable(Tag, out var table))
             {
-                return null;
+                return false;
             }
 
             var binaryReader = new BigEndianBinaryReader(table.Span);
 
-            return Load(binaryReader);
+            return TryLoad(ref binaryReader, out verticalHeaderTable);
         }
 
-        private static VerticalHeaderTable Load(BigEndianBinaryReader reader)
+        private static bool TryLoad(ref BigEndianBinaryReader reader, out VerticalHeaderTable verticalHeaderTable)
         {
+            verticalHeaderTable = default;
+
             // See OpenType spec for vhea:
             // | Fixed  | version             | 0x00010000 (1.0)                                                                |
             // | FWord  | ascender            | Distance from baseline of highest ascender (vertical)                            |
@@ -103,14 +107,15 @@ namespace Avalonia.Media.Fonts.Tables
             reader.ReadInt16(); // reserved
             reader.ReadInt16(); // reserved
             short metricDataFormat = reader.ReadInt16(); // 0
+
             if (metricDataFormat != 0)
             {
-                throw new InvalidFontTableException($"Expected metricDataFormat = 0 found {metricDataFormat}", TableName);
+                return false;
             }
 
             ushort numberOfVMetrics = reader.ReadUInt16();
 
-            return new VerticalHeaderTable(
+            verticalHeaderTable = new VerticalHeaderTable(
                 ascender,
                 descender,
                 lineGap,
@@ -122,6 +127,8 @@ namespace Avalonia.Media.Fonts.Tables
                 caretSlopeRun,
                 caretOffset,
                 numberOfVMetrics);
+
+            return true;
         }
     }
 }
