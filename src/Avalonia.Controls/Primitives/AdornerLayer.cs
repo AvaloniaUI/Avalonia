@@ -233,11 +233,18 @@ namespace Avalonia.Controls.Primitives
                     
                     if (adorned != null)
                     {
+                        child.Arrange(new(adorned.Bounds.Size));
                         var transform = adorned.TransformToVisual(this);
+                        // If somebody decides that having Margin on an adorner is a good idea,
+                        // we need to compensate for element being positioned at non-(0,0) coords.
+                        if (transform != null && child.Bounds.Position != default)
+                        {
+                            transform = Matrix.CreateTranslation(child.Bounds.Position) * transform.Value *
+                                        Matrix.CreateTranslation(-child.Bounds.Position);
+                        }
                         child.RenderTransform = new MatrixTransform(transform ?? default);
                         child.RenderTransformOrigin = new RelativePoint(new Point(0, 0), RelativeUnit.Absolute);
                         UpdateClip(child, adorned, isClipEnabled);
-                        child.Arrange(new(adorned.Bounds.Size));
                     }
                     else
                     {
