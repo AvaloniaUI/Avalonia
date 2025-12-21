@@ -110,9 +110,9 @@ internal class Win32PlatformSettings : DefaultPlatformSettings
     /// <summary>
     /// The algorithm used is undocumented, but <see href="https://github.com/microsoft/microsoft-ui-xaml/blob/5788dee271452753d5b2c70179f976c3e96a45c7/src/dxaml/xcp/core/text/common/TextFormatting.cpp#L181-L204">defined in Microsoft's source code</see>.
     /// </summary>
-    public override double GetScaledFontSize(double baseFontSize)
+    public override double GetScaledFontSize(Visual target, double baseFontSize)
     {
-        if (baseFontSize <= 0)
+        if (baseFontSize <= 0 || _textScaleFactor == 1)
         {
             return baseFontSize;
         }

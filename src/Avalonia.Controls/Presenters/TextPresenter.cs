@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Data;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Primitives;
-using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
@@ -15,7 +13,7 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Presenters
 {
-    public class TextPresenter : Control, IPlatformTextScaleable
+    public class TextPresenter : Control, ITextScaleable
     {
         public static readonly StyledProperty<bool> ShowSelectionHighlightProperty =
             AvaloniaProperty.Register<TextPresenter, bool>(nameof(ShowSelectionHighlight), defaultValue: true);
@@ -48,12 +46,6 @@ namespace Avalonia.Controls.Presenters
             TextBox.SelectionEndProperty.AddOwner<TextPresenter>(new(coerce: TextBox.CoerceCaretIndex));
 
         /// <summary>
-        /// Defines the <see cref="IsPlatformTextScalingEnabled"/> property.
-        /// </summary>
-        public static readonly StyledProperty<bool> IsPlatformTextScalingEnabledProperty =
-            TextElement.IsPlatformTextScalingEnabledProperty.AddOwner<TextPresenter>();
-
-        /// <summary>
         /// Defines the <see cref="Text"/> property.
         /// </summary>
         public static readonly StyledProperty<string?> TextProperty =
@@ -64,7 +56,7 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         public static readonly StyledProperty<string?> PreeditTextProperty =
             AvaloniaProperty.Register<TextPresenter, string?>(nameof(PreeditText));
-        
+
         /// <summary>
         /// Defines the <see cref="PreeditText"/> property.
         /// </summary>
@@ -130,13 +122,6 @@ namespace Avalonia.Controls.Presenters
             set => SetValue(BackgroundProperty, value);
         }
 
-        /// <inheritdoc cref="TextElement.IsPlatformTextScalingEnabled"/>
-        public bool IsPlatformTextScalingEnabled
-        {
-            get => GetValue(IsPlatformTextScalingEnabledProperty);
-            set => SetValue(IsPlatformTextScalingEnabledProperty, value);
-        }
-
         /// <summary>
         /// Gets or sets a value that determines whether the TextPresenter shows a selection highlight.
         /// </summary>
@@ -161,7 +146,7 @@ namespace Avalonia.Controls.Presenters
             get => GetValue(PreeditTextProperty);
             set => SetValue(PreeditTextProperty, value);
         }
-        
+
         public int? PreeditTextCursorPosition
         {
             get => GetValue(PreeditTextCursorPositionProperty);
@@ -194,12 +179,6 @@ namespace Avalonia.Controls.Presenters
             get => TextElement.GetFontSize(this);
             set => TextElement.SetFontSize(this, value);
         }
-        
-        /// <inheritdoc cref="IPlatformTextScaleable.GetScaledFontSize(double)"/>
-        protected double GetScaledFontSize(double baseFontSize) => !double.IsNaN(baseFontSize) && IsPlatformTextScalingEnabled && 
-            TopLevel.GetTopLevel(this) is { PlatformSettings: { } platformSettings } ? platformSettings.GetScaledFontSize(baseFontSize) : baseFontSize;
-
-        double IPlatformTextScaleable.GetScaledFontSize(double baseFontSize) => GetScaledFontSize(baseFontSize);
 
         /// <summary>
         /// Gets or sets the font style.
@@ -354,13 +333,7 @@ namespace Avalonia.Controls.Presenters
 
         internal TextSelectionHandleCanvas? TextSelectionHandleCanvas { get; set; }
 
-        void IPlatformTextScaleable.OnPlatformTextScalingChanged()
-        {
-            if (IsPlatformTextScalingEnabled)
-            {
-                InvalidateMeasure();
-            }
-        }
+        void ITextScaleable.OnTextScalingChanged() => InvalidateMeasure();
 
         /// <summary>
         /// Creates the <see cref="TextLayout"/> used to render the text.
@@ -377,9 +350,12 @@ namespace Avalonia.Controls.Presenters
             var maxWidth = MathUtilities.IsZero(constraint.Width) ? double.PositiveInfinity : constraint.Width;
             var maxHeight = MathUtilities.IsZero(constraint.Height) ? double.PositiveInfinity : constraint.Height;
 
-            var textLayout = new TextLayout(text, typeface, FontFeatures, GetScaledFontSize(FontSize), foreground, TextAlignment,
+            var effectiveFontSize = TextScaling.GetScaledFontSize(this, FontSize);
+            var fontScaleFactor = effectiveFontSize / FontSize;
+
+            var textLayout = new TextLayout(text, typeface, FontFeatures, effectiveFontSize, foreground, TextAlignment,
                 TextWrapping, maxWidth: maxWidth, maxHeight: maxHeight, textStyleOverrides: textStyleOverrides,
-                flowDirection: FlowDirection, lineHeight: GetScaledFontSize(LineHeight), letterSpacing: GetScaledFontSize(LetterSpacing));
+                flowDirection: FlowDirection, lineHeight: LineHeight * fontScaleFactor, letterSpacing: LetterSpacing * fontScaleFactor);
 
             return textLayout;
         }
@@ -568,7 +544,7 @@ namespace Avalonia.Controls.Presenters
             var preeditText = PreeditText;
             var text = GetCombinedText(Text, caretIndex, preeditText);
             var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
-            var effectiveFontSize = GetScaledFontSize(FontSize);
+            var effectiveFontSize = TextScaling.GetScaledFontSize(this, FontSize);
             var selectionStart = SelectionStart;
             var selectionEnd = SelectionEnd;
             var start = Math.Min(selectionStart, selectionEnd);
@@ -775,7 +751,7 @@ namespace Avalonia.Controls.Presenters
 
             CaretChanged();
         }
-        
+
         private void EnsureCaretTimer()
         {
             if (_caretTimer == null)
@@ -801,7 +777,7 @@ namespace Avalonia.Controls.Presenters
                 _caretTimer = null;
             }
 
-            if (CaretBlinkInterval.TotalMilliseconds > 0) 
+            if (CaretBlinkInterval.TotalMilliseconds > 0)
             {
                 _caretTimer = new DispatcherTimer { Interval = CaretBlinkInterval };
                 _caretTimer.Tick += CaretTimerTick;
@@ -998,7 +974,7 @@ namespace Avalonia.Controls.Presenters
                 _caretTimer.Tick -= CaretTimerTick;
             }
         }
-        
+
         private void OnPreeditChanged(string? preeditText, int? cursorPosition)
         {
             if (string.IsNullOrEmpty(preeditText))
@@ -1029,7 +1005,7 @@ namespace Avalonia.Controls.Presenters
             {
                 OnPreeditChanged(change.NewValue as string, PreeditTextCursorPosition);
             }
-            
+
             if(change.Property == PreeditTextCursorPositionProperty)
             {
                 OnPreeditChanged(PreeditText, PreeditTextCursorPosition);
@@ -1054,6 +1030,11 @@ namespace Avalonia.Controls.Presenters
             if (change.Property == CaretBlinkIntervalProperty)
             {
                 ResetCaretTimer();
+            }
+
+            if (change.Property.OwnerType == typeof(TextScaling))
+            {
+                InvalidateTextLayout();
             }
 
             switch (change.Property.Name)

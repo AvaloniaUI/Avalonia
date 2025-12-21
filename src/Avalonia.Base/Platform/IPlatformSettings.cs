@@ -10,7 +10,7 @@ namespace Avalonia.Platform
     /// Some of these settings might be changed by used globally in the OS in runtime.
     /// </summary>
     [NotClientImplementable]
-    public interface IPlatformSettings
+    public interface IPlatformSettings : ITextScaler
     {
         /// <summary>
         /// The size of the rectangle around the location of a pointer down that a pointer up
@@ -52,15 +52,5 @@ namespace Avalonia.Platform
         /// Raises when current system color values are changed. Including changing of a dark mode and accent colors.
         /// </summary>
         event EventHandler<PlatformColorValues>? ColorValuesChanged;
-
-        /// <summary>
-        /// Raised when the system text scaling changes.
-        /// </summary>
-        event EventHandler<EventArgs>? TextScalingChanged;
-
-        /// <summary>
-        /// Scales a font size according to the current system text scaling rules.
-        /// </summary>
-        double GetScaledFontSize(double baseFontSize);
     }
 }

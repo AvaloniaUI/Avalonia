@@ -83,7 +83,7 @@ internal class PlatformSettings : DefaultPlatformSettings
         }
     }
 
-    public override double GetScaledFontSize(double baseFontSize)
+    public override double GetScaledFontSize(Visual target, double baseFontSize)
     {
         if (baseFontSize <= 0)
         {

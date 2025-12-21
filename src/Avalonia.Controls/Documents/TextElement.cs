@@ -15,15 +15,6 @@ namespace Avalonia.Controls.Documents
             Border.BackgroundProperty.AddOwner<TextElement>();
 
         /// <summary>
-        /// Defines the <see cref="IsPlatformTextScalingEnabled"/> property.
-        /// </summary>
-        public static readonly AttachedProperty<bool> IsPlatformTextScalingEnabledProperty =
-            AvaloniaProperty.RegisterAttached<TextElement, Control, bool>(
-                nameof(IsPlatformTextScalingEnabled),
-                defaultValue: false,
-                inherits: true);
-
-        /// <summary>
         /// Defines the <see cref="FontFamily"/> property.
         /// </summary>
         public static readonly AttachedProperty<FontFamily> FontFamilyProperty =
@@ -112,17 +103,6 @@ namespace Avalonia.Controls.Documents
         }
 
         /// <summary>
-        /// Gets or sets whether <see cref="FontSize"/>, <see cref="LetterSpacing"/>, <see cref="TextBlock.LineHeight"/>, and 
-        /// <see cref="TextBlock.LineSpacing"/> should be scaled according to platform text scaling rules when measuring and rendering this control.
-        /// </summary>
-        /// <remarks>Text scaling is typically not uniform. Smaller text scales up faster than larger text.</remarks>
-        public bool IsPlatformTextScalingEnabled
-        {
-            get => GetValue(IsPlatformTextScalingEnabledProperty);
-            set => SetValue(IsPlatformTextScalingEnabledProperty, value);
-        }
-
-        /// <summary>
         /// Gets or sets the font family.
         /// </summary>
         public FontFamily FontFamily
@@ -193,9 +173,6 @@ namespace Avalonia.Controls.Documents
             get => GetValue(LetterSpacingProperty);
             set => SetValue(LetterSpacingProperty, value);
         }
-
-        public static bool GetIsPlatformTextScalingEnabled(Control control) => control.GetValue(IsPlatformTextScalingEnabledProperty);
-        public static void SetIsPlatformTextScalingEnabled(Control control, bool value) => control.SetValue(IsPlatformTextScalingEnabledProperty, value);
 
         /// <summary>
         /// Gets the value of the attached <see cref="FontFamilyProperty"/> on a control.
@@ -377,17 +354,22 @@ namespace Avalonia.Controls.Documents
         {
             base.OnPropertyChanged(change);
 
+            if (change.Property.OwnerType == typeof(TextScaling))
+            {
+                InlineHost?.Invalidate();
+                return;
+            }
+
             switch (change.Property.Name)
             {
                 case nameof(Background):
                 case nameof(FontFamily):
                 case nameof(FontSize):
-                case nameof(IsPlatformTextScalingEnabled):
                 case nameof(FontStyle):
                 case nameof(FontWeight):
                 case nameof(FontStretch):
                 case nameof(Foreground):
-                    InlineHost?.Invalidate();
+                InlineHost?.Invalidate();
                     break;
             }
         }

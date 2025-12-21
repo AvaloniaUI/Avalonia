@@ -83,7 +83,7 @@ namespace Avalonia.Controls.Documents
             return new GenericTextRunProperties(
                 typeface,
                 FontFeatures, 
-                InlineHost?.GetScaledFontSize(FontSize) ?? FontSize,
+                InlineHost is Visual hostVisual ? TextScaling.GetScaledFontSize(hostVisual, FontSize) : FontSize,
                 TextDecorations, 
                 Foreground,
                 parentOrSelfBackground,

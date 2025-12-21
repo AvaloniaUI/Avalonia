@@ -825,6 +825,20 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets the height of each line in the <see cref="TextBox"/>, or null if no layout information is available.
+        /// </summary>
+        /// <returns></returns>
+        public double? GetLineHeight()
+        {
+            if (_presenter == null)
+                return null;
+
+            var scaledFontSize = TextScaling.GetScaledFontSize(_presenter, _presenter.FontSize);
+
+            return double.IsNaN(LineHeight) ? scaledFontSize : LineHeight * (scaledFontSize / _presenter.FontSize);
+        }
+
+        /// <summary>
         /// Raised when content is being copied to the clipboard
         /// </summary>
         public event EventHandler<RoutedEventArgs>? CopyingToClipboard
@@ -982,6 +996,10 @@ namespace Avalonia.Controls
                 InvalidateMeasure();
             }
             else if (change.Property == MinLinesProperty)
+            {
+                InvalidateMeasure();
+            }
+            else if (change.Property == LineHeightProperty)
             {
                 InvalidateMeasure();
             }
@@ -2392,9 +2410,14 @@ namespace Avalonia.Controls
         /// <returns>Height of <paramref name="numLines"/> lines of text in device-independent pixels.</returns>
         private double CalculateLineDIPHeight(int numLines)
         {
-            var textScaler = _presenter as IPlatformTextScaleable;
-            var effectiveFontSize = textScaler?.GetScaledFontSize(FontSize) ?? FontSize;
-            var effectiveLineHeight = textScaler?.GetScaledFontSize(LineHeight) ?? LineHeight;
+            var effectiveFontSize = FontSize;
+            var effectiveLineHeight = LineHeight;
+
+            if (_presenter != null)
+            { 
+                effectiveFontSize = TextScaling.GetScaledFontSize(_presenter, effectiveFontSize);
+                effectiveLineHeight = effectiveFontSize / _presenter.FontSize * LineHeight;
+            }
 
             var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
             var paragraphProperties = TextLayout.CreateTextParagraphProperties(typeface, effectiveFontSize, null, default, default, null, default, effectiveLineHeight, default, FontFeatures);

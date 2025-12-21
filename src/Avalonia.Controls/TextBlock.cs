@@ -15,19 +15,13 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control that displays a block of text.
     /// </summary>
-    public class TextBlock : Control, IInlineHost, IPlatformTextScaleable
+    public class TextBlock : Control, IInlineHost, ITextScaleable
     {
         /// <summary>
         /// Defines the <see cref="Background"/> property.
         /// </summary>
         public static readonly StyledProperty<IBrush?> BackgroundProperty =
             Border.BackgroundProperty.AddOwner<TextBlock>();
-
-        /// <summary>
-        /// Defines the <see cref="IsPlatformTextScalingEnabled"/> property.
-        /// </summary>
-        public static readonly StyledProperty<bool> IsPlatformTextScalingEnabledProperty =
-            TextElement.IsPlatformTextScalingEnabledProperty.AddOwner<TextBlock>();
 
         /// <summary>
         /// Defines the <see cref="Padding"/> property.
@@ -198,13 +192,6 @@ namespace Avalonia.Controls
         /// </summary>
         public TextLayout TextLayout => _textLayout ??= CreateTextLayout(Text);
 
-        /// <inheritdoc cref="TextElement.IsPlatformTextScalingEnabled"/>
-        public bool IsPlatformTextScalingEnabled
-        {
-            get => GetValue(IsPlatformTextScalingEnabledProperty);
-            set => SetValue(IsPlatformTextScalingEnabledProperty, value);
-        }
-
         /// <summary>
         /// Gets or sets the padding to place around the <see cref="Text"/>.
         /// </summary>
@@ -249,12 +236,6 @@ namespace Avalonia.Controls
             get => GetValue(FontSizeProperty);
             set => SetValue(FontSizeProperty, value);
         }
-
-        /// <inheritdoc cref="IPlatformTextScaleable.GetScaledFontSize(double)"/>
-        protected double GetScaledFontSize(double baseFontSize) => !double.IsNaN(baseFontSize) && IsPlatformTextScalingEnabled && 
-            TopLevel.GetTopLevel(this) is { PlatformSettings: { } platformSettings } ? platformSettings.GetScaledFontSize(baseFontSize) : baseFontSize;
-        
-        double IPlatformTextScaleable.GetScaledFontSize(double baseFontSize) => GetScaledFontSize(baseFontSize);
 
         /// <summary>
         /// Gets or sets the font style used to draw the control's text.
@@ -671,13 +652,7 @@ namespace Avalonia.Controls
             }
         }
 
-        void IPlatformTextScaleable.OnPlatformTextScalingChanged()
-        {
-            if (IsPlatformTextScalingEnabled)
-            {
-                InvalidateMeasure();
-            }
-        }
+        void ITextScaleable.OnTextScalingChanged() => InvalidateMeasure();
 
         /// <summary>
         /// Creates the <see cref="TextLayout"/> used to render the text.
@@ -690,14 +665,16 @@ namespace Avalonia.Controls
             var defaultProperties = new GenericTextRunProperties(
                 typeface,
                 FontFeatures,
-                GetScaledFontSize(FontSize),
+                TextScaling.GetScaledFontSize(this, FontSize),
                 TextDecorations,
                 Foreground);
 
+            var fontScaleFactor = defaultProperties.FontRenderingEmSize / FontSize;
+
             var paragraphProperties = new GenericTextParagraphProperties(FlowDirection, IsMeasureValid ? TextAlignment : TextAlignment.Left, true, false,
-                defaultProperties, TextWrapping, GetScaledFontSize(LineHeight), 0, GetScaledFontSize(LetterSpacing))
+                defaultProperties, TextWrapping, LineHeight * fontScaleFactor, 0, LetterSpacing * fontScaleFactor)
             {
-                LineSpacing = GetScaledFontSize(LineSpacing),
+                LineSpacing = LineSpacing * fontScaleFactor,
             };
 
             ITextSource textSource;
@@ -762,7 +739,7 @@ namespace Avalonia.Controls
                 //Force arrange so text will be properly aligned.
                 InvalidateArrange();
             }
-           
+
             var inlines = Inlines;
 
             if (HasComplexContent)
@@ -862,10 +839,15 @@ namespace Avalonia.Controls
                 }
             }
 
+            if (change.Property.OwnerType == typeof(TextScaling))
+            {
+                InvalidateTextLayout();
+                return;
+            }
+
             switch (change.Property.Name)
             {
                 case nameof(FontSize):
-                case nameof(IsPlatformTextScalingEnabled):
                 case nameof(FontWeight):
                 case nameof(FontStyle):
                 case nameof(FontFamily):

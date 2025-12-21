@@ -347,9 +347,14 @@ namespace Avalonia.Controls
 
         private void OnPlatformTextScalingChanged(object? sender, EventArgs e)
         {
-            foreach (var scaleable in this.GetVisualDescendants().OfType<IPlatformTextScaleable>())
+            foreach (var visual in this.GetVisualDescendants())
             {
-                scaleable.OnPlatformTextScalingChanged();
+                if (visual is not ITextScaleable scaleable || !TextScaling.GetIsEnabled(visual) || TextScaling.GetCustomTextScaler(visual) != null)
+                {
+                    continue;
+                }
+
+                scaleable.OnTextScalingChanged();
             }
         }
 

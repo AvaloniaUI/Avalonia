@@ -57,6 +57,6 @@ namespace Avalonia.Platform
 
         protected virtual void OnTextScaleChanged() => Dispatcher.UIThread.Send(_ => TextScalingChanged?.Invoke(this, EventArgs.Empty));
 
-        public virtual double GetScaledFontSize(double baseFontSize) => baseFontSize;
+        public virtual double GetScaledFontSize(Visual target, double baseFontSize) => baseFontSize;
     }
 }

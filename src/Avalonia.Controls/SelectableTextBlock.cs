@@ -183,8 +183,9 @@ namespace Avalonia.Controls
         protected override TextLayout CreateTextLayout(string? text)
         {
             var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
-            var effectiveFontSize = GetScaledFontSize(FontSize);
-            
+            var effectiveFontSize = TextScaling.GetScaledFontSize(this, FontSize);
+            var fontScaleFactor = effectiveFontSize / FontSize;
+
             var defaultProperties = new GenericTextRunProperties(
                 typeface,
                 FontFeatures,
@@ -193,9 +194,9 @@ namespace Avalonia.Controls
                 Foreground);
 
             var paragraphProperties = new GenericTextParagraphProperties(FlowDirection, TextAlignment, true, false,
-                defaultProperties, TextWrapping, GetScaledFontSize(LineHeight), 0, GetScaledFontSize(LetterSpacing))
+                defaultProperties, TextWrapping, LineHeight * fontScaleFactor, 0, LetterSpacing * fontScaleFactor)
             {
-                LineSpacing = GetScaledFontSize(LineSpacing),
+                LineSpacing = LineSpacing * fontScaleFactor,
             };
 
             List<ValueSpan<TextRunProperties>>? textStyleOverrides = null;
