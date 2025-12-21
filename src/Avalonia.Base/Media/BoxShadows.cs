@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using Avalonia.Utilities;
 
@@ -116,63 +115,6 @@ namespace Avalonia.Media
         [EditorBrowsable(EditorBrowsableState.Never)]
         public BoxShadowsEnumerator GetEnumerator() => new BoxShadowsEnumerator(this);
 
-        private static string[] SplitRespectingParentheses(string s)
-        {
-            var span = s.AsSpan();
-            if (span.IsWhiteSpace())
-                return [];
-
-            var ranges = new List<(int start, int length)>();
-            int depth = 0;
-            int segStart = 0;
-
-            for (int i = 0; i < span.Length; i++)
-            {
-                char ch = span[i];
-                switch (ch)
-                {
-                    case OpeningParenthesis:
-                        depth++;
-                        break;
-                    case ClosingParenthesis:
-                        if (depth > 0) depth--;
-                        break;
-                    case Separator:
-                        if (depth == 0)
-                        {
-                            int start = segStart;
-                            int end = i - 1;
-                            if (segStart <= end)
-                                ranges.Add((start, end - start + 1));
-                            segStart = i + 1;
-                        }
-                        break;
-                }
-            }
-
-            // last segment
-            int lastStart = segStart;
-            int lastEnd = span.Length - 1;
-            if (lastStart <= lastEnd)
-                ranges.Add((lastStart, lastEnd - lastStart + 1));
-
-            if (ranges.Count == 0)
-                return [];
-
-            var result = new string[ranges.Count];
-            for (int i = 0; i < ranges.Count; i++)
-            {
-                var r = ranges[i];
-#if NET6_0_OR_GREATER
-                result[i] = new string(span.Slice(r.start, r.length).Trim());
-#else
-                result[i] = span.Slice(r.start, r.length).Trim().ToString();
-#endif
-            }
-
-            return result;
-        }
-
         /// <summary>
         /// Parses a <see cref="BoxShadows"/> string representing one or more <see cref="BoxShadow"/>s.
         /// </summary>
@@ -180,7 +122,9 @@ namespace Avalonia.Media
         /// <returns>A new <see cref="BoxShadows"/> collection.</returns>
         public static BoxShadows Parse(string s)
         {
-            var sp = SplitRespectingParentheses(s);
+            var sp = StringSplitter.SplitRespectingBrackets(
+                s, Separator, OpeningParenthesis, ClosingParenthesis,
+                StringSplitOptions.RemoveEmptyEntries);
             if (sp.Length == 0
                 || (sp.Length == 1 &&
                     (string.IsNullOrWhiteSpace(sp[0])

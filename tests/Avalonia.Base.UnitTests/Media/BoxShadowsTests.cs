@@ -19,6 +19,8 @@ namespace Avalonia.Base.UnitTests.Media
         [Theory]
         [InlineData("0 0 5 0 #FF0000")]
         [InlineData("10 20 30 5 rgba(0,0,0,0.5)")]
+        [InlineData("10 20 30 5 rgba(0, 0, 0, 0.5)")]
+        [InlineData("  10  20  30  5  rgba(0,  0,  0,  0.5)  ")]
         public void Parse_SingleShadow_ToString_RoundTrip(string input)
         {
             var bs = BoxShadows.Parse(input);
@@ -29,8 +31,8 @@ namespace Avalonia.Base.UnitTests.Media
         }
 
         [Theory]
-        [InlineData("0 0 10 0 rgba(0,0,0,0.5)", 20.0)]
         [InlineData("0 0 5 0 #FF0000", 10.0)]
+        [InlineData("0 0 10 0 rgba(0,0,0,0.5)", 20.0)]
         public void TransformBounds_IncludesShadowExpansion(string input, double minExpansion)
         {
             var bs = BoxShadows.Parse(input);
@@ -59,6 +61,7 @@ namespace Avalonia.Base.UnitTests.Media
         [InlineData("10 20 30 5 rgba(0,0,0,0.5), 1 2 3 0 #FF0000", 2)]
         [InlineData("10 20 30 5 rgba(0,0,0,0.5), 10 20 30 5 rgba(0,0,0,0.5)", 2)]
         [InlineData("10 20 30 5 rgba(0,0,0,0.5), 10 20 30 5 rgba(0,0,0,0.5), 10 20 30 5 rgba(0,0,0,0.5)", 3)]
+        [InlineData(" , 10 20 30 5 rgba(0, 0, 0, 0.5), 10 20 30 5 rgba(0, 0, 0, 0.5), 10 20 30 5 rgba(0, 0, 0, 0.5),", 3)]
         public void Parse_MultipleShadows(string input, int count)
         {
             var bs = BoxShadows.Parse(input);
