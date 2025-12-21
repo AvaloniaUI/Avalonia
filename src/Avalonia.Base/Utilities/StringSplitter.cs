@@ -72,6 +72,8 @@ internal static class StringSplitter
             }
         }
 
+        if (depth != 0)
+            throw new FormatException($"Unmatched opening bracket '{openingBracket}' in input string.");
         // last segment
         ProcessSegment(segStart, span.Length - 1);
 
@@ -102,7 +104,7 @@ internal static class StringSplitter
             }
 
             int length = end - start + 1;
-            if (length > 0 || length == 0 && !removeEmptyEntries)
+            if (length > 0 || !removeEmptyEntries)
                 ranges.Add((start, length));
         }
     }
