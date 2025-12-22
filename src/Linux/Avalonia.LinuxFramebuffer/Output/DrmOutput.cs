@@ -264,13 +264,7 @@ namespace Avalonia.LinuxFramebuffer.Output
                 {
                     var gl = _deferredContext.GlInterface;
                     _rotationFbo = gl.GenFramebuffer();
-                    
-                    unsafe
-                    {
-                        int tex = 0;
-                        gl.GenTextures(1, &tex);
-                        _rotationTexture = tex;
-                    }
+                    _rotationTexture = gl.GenTexture();
                     
                     gl.BindTexture(GlConsts.GL_TEXTURE_2D, _rotationTexture);
                     gl.TexImage2D(GlConsts.GL_TEXTURE_2D, 0, GlConsts.GL_RGBA, _rotatedSize.Width, _rotatedSize.Height, 0,
@@ -349,17 +343,9 @@ namespace Avalonia.LinuxFramebuffer.Output
                             -1.0f,  1.0f,        0.0f, 1.0f
                         }
                     };
-                    
-                    unsafe
-                    {
-                        int vbo = 0;
-                        gl.GenBuffers(1, &vbo);
-                        _rotationVbo = vbo;
-                        
-                        int vao = 0;
-                        gl.GenVertexArrays(1, &vao);
-                        _rotationVao = vao;
-                    }
+
+                    _rotationFbo = gl.GenBuffer();
+                    _rotationVao = gl.GenVertexArray();
                     
                     gl.BindVertexArray(_rotationVao);
                     gl.BindBuffer(GlConsts.GL_ARRAY_BUFFER, _rotationVbo);
