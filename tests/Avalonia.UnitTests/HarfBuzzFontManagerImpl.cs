@@ -1,4 +1,7 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿#nullable enable
+
+using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -13,13 +16,13 @@ namespace Avalonia.UnitTests
         private readonly string _defaultFamilyName;
 
         private static readonly Typeface _defaultTypeface =
-            new Typeface("resm:Avalonia.UnitTests.Assets?assembly=Avalonia.UnitTests#Noto Mono");
+            new Typeface(new FontFamily("resm:Avalonia.UnitTests.Assets?assembly=Avalonia.UnitTests#Noto Mono"));
         private  static readonly Typeface _italicTypeface =
-            new Typeface("resm:Avalonia.UnitTests.Assets?assembly=Avalonia.UnitTests#Noto Sans");
+            new Typeface(new FontFamily("resm:Avalonia.UnitTests.Assets?assembly=Avalonia.UnitTests#Noto Sans"));
         private  static readonly Typeface _emojiTypeface =
-            new Typeface("resm:Avalonia.UnitTests.Assets?assembly=Avalonia.UnitTests#Twitter Color Emoji");
+            new Typeface(new FontFamily("resm:Avalonia.UnitTests.Assets?assembly=Avalonia.UnitTests#Twitter Color Emoji"));
 
-        public HarfBuzzFontManagerImpl(string defaultFamilyName = "resm:Avalonia.UnitTests.Assets?assembly=Avalonia.UnitTests#Noto Mono")
+        public HarfBuzzFontManagerImpl(string defaultFamilyName = "Noto Mono")
         {
             _customTypefaces = new[] { _emojiTypeface, _italicTypeface, _defaultTypeface };
             _defaultFamilyName = defaultFamilyName;
@@ -32,11 +35,11 @@ namespace Avalonia.UnitTests
 
         string[] IFontManagerImpl.GetInstalledFontFamilyNames(bool checkForUpdates)
         {
-            return _customTypefaces.Select(x => x.FontFamily!.Name).ToArray();
+            return _customTypefaces.Select(x => x.FontFamily.Name).ToArray();
         }
 
         public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight,
-            FontStretch fontStretch, CultureInfo culture, out Typeface fontKey)
+            FontStretch fontStretch, string? familyName, CultureInfo? culture, out Typeface fontKey)
         {
             foreach (var customTypeface in _customTypefaces)
             {
@@ -65,7 +68,7 @@ namespace Avalonia.UnitTests
         }
 
         public bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight, 
-            FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface glyphTypeface)
+            FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
         {
             glyphTypeface = null;
 

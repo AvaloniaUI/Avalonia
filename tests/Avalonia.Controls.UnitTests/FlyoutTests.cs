@@ -647,7 +647,6 @@ namespace Avalonia.Controls.UnitTests
             return UnitTestApplication.Start(TestServices.StyledWindow.With(windowingPlatform:
                 new MockWindowingPlatform(null,
                     x => UseOverlayPopups ? null : MockWindowingPlatform.CreatePopupMock(x).Object),
-                    focusManager: new FocusManager(),
                     keyboardDevice: () => new KeyboardDevice()));
         }
 

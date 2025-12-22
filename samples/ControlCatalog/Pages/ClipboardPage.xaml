@@ -6,12 +6,12 @@
 
     <Button Click="CopyText" Content="Copy text to clipboard" />
     <Button Click="PasteText" Content="Paste text from clipboard" />
-    <Button Click="CopyTextDataObject" Content="Copy text to clipboard (data object)" />
-    <Button Click="PasteTextDataObject" Content="Paste text from clipboard (data object)" />
-
-    <Button Click="CopyFilesDataObject" Content="Copy files to clipboard (data object)" />
-    <Button Click="PasteFilesDataObject" Content="Paste files from clipboard (data object)" />
-
+    <Button Click="CopyImage" Content="Copy image to clipboard" />
+    <Button Click="PasteImage" Content="Paste image from clipboard" />
+    <Button Click="CopyFiles" Content="Copy files to clipboard" />
+    <Button Click="PasteFiles" Content="Paste files from clipboard" />
+    <Button Click="CopyBinaryData" Content="Copy bytes to clipboard" />
+    <Button Click="PasteBinaryData" Content="Paste bytes from clipboard" />
     <Button Click="GetFormats" Content="Get clipboard formats" />
     <Button Click="Clear" Content="Clear clipboard" />
 
@@ -22,5 +22,9 @@
              MinHeight="100"
              AcceptsReturn="True"
              Watermark="Text to copy of file names per line" />
+    <Viewbox Width="420" Height="360">
+      <Image x:Name="ClipboardImage"
+      />
+    </Viewbox>
   </StackPanel>
 </UserControl>

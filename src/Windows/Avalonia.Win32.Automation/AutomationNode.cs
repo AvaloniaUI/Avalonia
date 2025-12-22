@@ -37,6 +37,8 @@ namespace Avalonia.Win32.Automation
             { AutomationElementIdentifiers.ClassNameProperty, UiaPropertyId.ClassName },
             { AutomationElementIdentifiers.NameProperty, UiaPropertyId.Name },
             { AutomationElementIdentifiers.HelpTextProperty, UiaPropertyId.HelpText },
+            { AutomationElementIdentifiers.LandmarkTypeProperty, UiaPropertyId.LandmarkType },
+            { AutomationElementIdentifiers.HeadingLevelProperty, UiaPropertyId.HeadingLevel },
             { ExpandCollapsePatternIdentifiers.ExpandCollapseStateProperty, UiaPropertyId.ExpandCollapseExpandCollapseState },
             { RangeValuePatternIdentifiers.IsReadOnlyProperty, UiaPropertyId.RangeValueIsReadOnly},
             { RangeValuePatternIdentifiers.MaximumProperty, UiaPropertyId.RangeValueMaximum },
@@ -138,6 +140,9 @@ namespace Avalonia.Win32.Automation
                 UiaPropertyId.LocalizedControlType => InvokeSync(() => Peer.GetLocalizedControlType()),
                 UiaPropertyId.Name => InvokeSync(() => Peer.GetName()),
                 UiaPropertyId.HelpText => InvokeSync(() => Peer.GetHelpText()),
+                UiaPropertyId.LandmarkType => InvokeSync(() => ToUiaLandmarkType(Peer.GetLandmarkType())),
+                UiaPropertyId.LocalizedLandmarkType => InvokeSync(() => ToUiaLocalizedLandmarkType(Peer.GetLandmarkType())),
+                UiaPropertyId.HeadingLevel => InvokeSync(() => ToUiaHeadingLevel(Peer.GetHeadingLevel())),
                 UiaPropertyId.ProcessId => s_pid,
                 UiaPropertyId.RuntimeId => _runtimeId,
                 _ => null,
@@ -355,6 +360,51 @@ namespace Avalonia.Win32.Automation
                 AutomationControlType.TitleBar => UiaControlTypeId.TitleBar,
                 AutomationControlType.Separator => UiaControlTypeId.Separator,
                 _ => UiaControlTypeId.Custom,
+            };
+        }
+
+        private static UiaLandmarkType? ToUiaLandmarkType(AutomationLandmarkType? landmarkType)
+        {
+            return landmarkType switch
+            {
+                AutomationLandmarkType.Banner or
+                AutomationLandmarkType.Complementary or
+                AutomationLandmarkType.ContentInfo or
+                AutomationLandmarkType.Region => UiaLandmarkType.Custom,
+                AutomationLandmarkType.Form => UiaLandmarkType.Form,
+                AutomationLandmarkType.Main => UiaLandmarkType.Main,
+                AutomationLandmarkType.Navigation => UiaLandmarkType.Navigation,
+                AutomationLandmarkType.Search => UiaLandmarkType.Search,
+                _ => null,
+            };
+        }
+
+        private static string? ToUiaLocalizedLandmarkType(AutomationLandmarkType? landmarkType)
+        {
+            return landmarkType switch
+            {
+                AutomationLandmarkType.Banner => "banner",
+                AutomationLandmarkType.Complementary => "complementary",
+                AutomationLandmarkType.ContentInfo => "content information",
+                AutomationLandmarkType.Region => "region",
+                _ => null,
+            };
+        }
+
+        private static UiaHeadingLevel ToUiaHeadingLevel(int level)
+        {
+            return level switch
+            {
+                1 => UiaHeadingLevel.Level1,
+                2 => UiaHeadingLevel.Level2,
+                3 => UiaHeadingLevel.Level3,
+                4 => UiaHeadingLevel.Level4,
+                5 => UiaHeadingLevel.Level5,
+                6 => UiaHeadingLevel.Level6,
+                7 => UiaHeadingLevel.Level7,
+                8 => UiaHeadingLevel.Level8,
+                9 => UiaHeadingLevel.Level9,
+                _ => UiaHeadingLevel.None,
             };
         }
 

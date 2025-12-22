@@ -7,11 +7,8 @@ using System.Runtime.CompilerServices;
 using Avalonia.Controls;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
-using Avalonia.Input;
-using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml.UnitTests.Xaml;
 using Avalonia.Media;
-using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
@@ -151,57 +148,6 @@ namespace Avalonia.Markup.Xaml.UnitTests
             
         }
 
-        static void AssertThrows(Action callback, Func<Exception, bool> check)
-        {
-            try
-            {
-                callback();
-            }
-            catch (Exception e) when (check(e))
-            {
-                return;
-            }
-
-            throw new Exception("Expected exception was not thrown");
-        }
-        
-        public static object SomeStaticProperty { get; set; }
-
-        [Fact]
-        public void Bug2570()
-        {
-            SomeStaticProperty = "123";
-            AssertThrows(() => AvaloniaRuntimeXamlLoader
-                    .Load(@"
-<UserControl 
-    xmlns='https://github.com/avaloniaui'
-    xmlns:d='http://schemas.microsoft.com/expression/blend/2008'
-    xmlns:tests='clr-namespace:Avalonia.Markup.Xaml.UnitTests'
-    d:DataContext='{x:Static tests:XamlIlTests.SomeStaticPropery}'
-    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'/>", typeof(XamlIlTests).Assembly,
-                        designMode: true),
-                e => e.Message.Contains("Unable to resolve ")
-                     && e.Message.Contains(" as static field, property, constant or enum value"));
-
-        }
-        
-        [Fact]
-        public void Design_Mode_DataContext_Should_Be_Set()
-        {
-            SomeStaticProperty = "123";
-            
-            var loaded = (UserControl)AvaloniaRuntimeXamlLoader
-                .Load(@"
-<UserControl 
-    xmlns='https://github.com/avaloniaui'
-    xmlns:d='http://schemas.microsoft.com/expression/blend/2008'
-    xmlns:tests='clr-namespace:Avalonia.Markup.Xaml.UnitTests'
-    d:DataContext='{x:Static tests:XamlIlTests.SomeStaticProperty}'
-    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'/>", typeof(XamlIlTests).Assembly,
-                    designMode: true);
-            Assert.Equal(Design.GetDataContext(loaded), SomeStaticProperty);
-        }
-        
         [Fact]
         public void Attached_Properties_From_Static_Types_Should_Work_In_Style_Setters_Bug_2561()
         {
@@ -458,6 +404,23 @@ namespace Avalonia.Markup.Xaml.UnitTests
             Assert.Equal(RuntimeXamlDiagnosticSeverity.Warning, warning.Severity);
             Assert.Equal("AVLN2208", warning.Id);
         }
+        
+        [Fact]
+        public void Type_Converters_Should_Work_When_Specified_With_Attributes_On_Avalonia_Properties()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+
+                var parsed = (XamlIlClassWithTypeConverterOnAvaloniaProperty)
+                    AvaloniaRuntimeXamlLoader.Parse(@"
+<XamlIlClassWithTypeConverterOnAvaloniaProperty
+    xmlns='clr-namespace:Avalonia.Markup.Xaml.UnitTests;assembly=Avalonia.Markup.Xaml.UnitTests' 
+    MyProp='a,b,c'/>",
+                        typeof(XamlIlBugTestsEventHandlerCodeBehind).Assembly);
+            
+                Assert.Equal((IEnumerable<string>)["a", "b", "c"], parsed.MyProp.Select(x => x.Value));
+            }
+        }
     }
 
     public class XamlIlBugTestsEventHandlerCodeBehind : Window
@@ -553,5 +516,39 @@ namespace Avalonia.Markup.Xaml.UnitTests
     public class XamlIlClassWithClrPropertyWithValue
     {
         public int Count { get; set; }= 5;
+    }
+
+    public class XamlIlClassWithTypeConverterOnAvaloniaProperty : AvaloniaObject
+    {
+        public class MyType(string value)
+        {
+            public string Value => value;
+        }
+        
+        public class MyTypeConverter : TypeConverter
+        {
+            public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+            {
+                return sourceType == typeof(string);
+            }
+
+            public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+            {
+                if (value is string s)
+                    return s.Split([','], StringSplitOptions.RemoveEmptyEntries).Select(x => new MyType(x.Trim()));
+                return base.ConvertFrom(context, culture, value);
+            }
+        }
+
+        public static readonly StyledProperty<IEnumerable<MyType>> MyPropProperty = AvaloniaProperty.Register<XamlIlClassWithTypeConverterOnAvaloniaProperty, IEnumerable<MyType>>(
+            "MyProp");
+
+        [TypeConverter(typeof(MyTypeConverter))]
+        public IEnumerable<MyType> MyProp
+        {
+            get => GetValue(MyPropProperty);
+            set => SetValue(MyPropProperty, value);
+        }
+        
     }
 }

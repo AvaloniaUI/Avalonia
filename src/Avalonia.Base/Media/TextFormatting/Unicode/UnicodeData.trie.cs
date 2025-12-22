@@ -16,10 +16,18 @@ internal static class UnicodeDataTrie
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => new(Data, 0x00100000, 0x00000000);
-    } 
-    
-    private static ReadOnlySpan<uint> Data => new uint[]
-    {
+    }
+
+    // For Debug builds, we store the data in a separate uint[] field to avoid RuntimeFieldInfoStub allocations.
+    // See also: https://github.com/AvaloniaUI/Avalonia/pull/20175
+
+#if DEBUG
+    public static ReadOnlySpan<uint> Data => s_data;
+    private static uint[] s_data =
+#else
+    public static ReadOnlySpan<uint> Data =>
+#endif
+    [
         0x00000482, 0x0000048A, 0x00000492, 0x0000049A, 0x000004B2, 0x000004BA, 0x000004C2, 0x000004CA, 0x000004D2, 0x000004DA, 0x000004E0, 0x000004E8, 
         0x000004F0, 0x000004F8, 0x00000500, 0x00000508, 0x0000050E, 0x00000516, 0x0000051E, 0x00000526, 0x00000529, 0x00000531, 0x00000539, 0x00000541, 
         0x00000549, 0x00000551, 0x00000556, 0x0000055E, 0x00000566, 0x0000056E, 0x00000573, 0x0000057B, 0x00000583, 0x0000058B, 0x0000058F, 0x00000597, 
@@ -2351,5 +2359,5 @@ internal static class UnicodeDataTrie
         0x00038061, 0x00038061, 0x00038061, 0x00038061, 0x00038061, 0x00074061, 0x00074061, 0x00074061, 0x00038061, 0x00074061, 0x00074061, 0x00074061, 
         0x00074061, 0x00074061, 0x00074061, 0x00074061, 0x00074061, 0x00074061, 0x00074061, 0x00074061, 0x00074061, 0x00074061, 0x00038061, 0x00038061, 
         0x00000000, 0x00000000, 0x00000000, 0x00000000
-    };
+    ];
 }

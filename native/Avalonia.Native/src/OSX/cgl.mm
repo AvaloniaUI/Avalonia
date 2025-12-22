@@ -107,6 +107,61 @@ public:
         return Context;
     }
     
+    int texImageIOSurface2D(int target, int internal_format,
+                                int width, int height, int format, int type, void* ioSurface, int plane) override
+    {
+        return CGLTexImageIOSurface2D(Context, target, internal_format, width, height, format, type, (IOSurfaceRef)ioSurface, plane);
+    }
+    
+    bool GetIOKitRegistryId(uint64_t *value) override {
+        if (@available(macOS 10.13, *))
+        {
+            
+            GLint rendererId;
+            if(CGLGetParameter(Context, kCGLCPCurrentRendererID, &rendererId) != 0)
+                return false;
+            
+            GLint rendererCount = 0;
+            CGLRendererInfoObj rendererInfo;
+            
+            if(CGLQueryRendererInfo(0xFFFFFFFF, &rendererInfo, &rendererCount))
+                return false;
+            
+            @try
+            {
+                for(auto i = 0; i < rendererCount; i++)
+                {
+                    GLint thisRendererID;
+                    
+                    CGLDescribeRenderer(rendererInfo, i, kCGLRPRendererID, &thisRendererID);
+                    if(thisRendererID == rendererId)
+                    {
+                        GLint gpuIDLow  = 0;
+                        GLint gpuIDHigh = 0;
+                        
+                        if(CGLDescribeRenderer(rendererInfo, 0, kCGLRPRegistryIDLow, &gpuIDLow))
+                            return false;
+                        
+                        if(CGLDescribeRenderer(rendererInfo, 0, kCGLRPRegistryIDHigh, &gpuIDHigh))
+                            return false;
+                        
+                        *value = ((uint64_t)gpuIDHigh << 32) | gpuIDLow;
+                        return true;
+                    }
+                }
+                return false;
+                
+            }
+            @finally
+            {
+                CGLDestroyRendererInfo(rendererInfo);
+            }
+        }
+        else
+            return false;
+    }
+    
+    
     ~AvnGlContext()
     {
         CGLReleaseContext(Context);

@@ -33,14 +33,14 @@ namespace Avalonia.iOS
             remove { _onDeactivated -= value; }
         }
 
-        protected virtual AppBuilder CreateAppBuilder() => AppBuilder.Configure<TApp>().UseiOS();
+        protected virtual AppBuilder CreateAppBuilder() => AppBuilder.Configure<TApp>().UseiOS(this);
         protected virtual AppBuilder CustomizeAppBuilder(AppBuilder builder) => builder;
 
         [Export("window")]
         public UIWindow? Window { get; set; }
 
         [Export("application:didFinishLaunchingWithOptions:")]
-        public bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
+        public bool FinishedLaunching(UIApplication application, NSDictionary? launchOptions)
         {
             var builder = CreateAppBuilder();
             builder = CustomizeAppBuilder(builder);

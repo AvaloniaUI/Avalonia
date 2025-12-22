@@ -146,14 +146,6 @@ namespace Avalonia.Controls
                 Selection.SelectAll();
                 e.Handled = true;
             }
-            else if (e.Key == Key.Space || e.Key == Key.Enter)
-            {
-                UpdateSelectionFromEventSource(
-                    e.Source,
-                    true,
-                    e.KeyModifiers.HasFlag(KeyModifiers.Shift),
-                    ctrl);
-            }
 
             base.OnKeyDown(e);
         }
@@ -162,20 +154,6 @@ namespace Avalonia.Controls
         {
             base.OnApplyTemplate(e);
             Scroll = e.NameScope.Find<IScrollable>("PART_ScrollViewer");
-        }
-
-        internal bool UpdateSelectionFromPointerEvent(Control source, PointerEventArgs e)
-        {
-            // TODO: use TopLevel.PlatformSettings here, but first need to update our tests to use TopLevels. 
-            var hotkeys = Application.Current!.PlatformSettings?.HotkeyConfiguration;
-            var toggle = hotkeys is not null && e.KeyModifiers.HasAllFlags(hotkeys.CommandModifiers);
-
-            return UpdateSelectionFromEventSource(
-                source,
-                true,
-                e.KeyModifiers.HasAllFlags(KeyModifiers.Shift),
-                toggle,
-                e.GetCurrentPoint(source).Properties.IsRightButtonPressed);
         }
     }
 }

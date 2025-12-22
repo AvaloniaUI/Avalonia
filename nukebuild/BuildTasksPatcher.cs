@@ -85,7 +85,7 @@ public class BuildTasksPatcher
                         var cecilMdbAsm = GetAssemblyPath(typeof(Mono.Cecil.Mdb.MdbReaderProvider));
 
                         ilRepackTool.Invoke(
-                            $"/internalize /out:\"{output}\" \"{temp}\" \"{cecilAsm}\" \"{cecilRocksAsm}\" \"{cecilPdbAsm}\" \"{cecilMdbAsm}\"",
+                            $"/internalize /out:\"{output:nq}\" \"{temp:nq}\" \"{cecilAsm:nq}\" \"{cecilRocksAsm:nq}\" \"{cecilPdbAsm:nq}\" \"{cecilMdbAsm:nq}\"",
                             tempDir);
 
                         // 'hurr-durr assembly with the same name is already loaded' prevention

@@ -1,6 +1,7 @@
 <UserControl x:Class="ControlCatalog.MainView"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:ControlCatalog"
              xmlns:controls="using:ControlSamples"
              xmlns:models="using:ControlCatalog.Models"
              xmlns:pages="using:ControlCatalog.Pages"
@@ -210,33 +211,35 @@
           <StackPanel Width="152" Spacing="8">
             <ComboBox x:Name="Decorations"
                       HorizontalAlignment="Stretch"
-                      SelectedIndex="0">
+                      SelectedIndex="0"
+                      SelectionChanged="Decorations_SelectionChanged">
               <ComboBox.Items>
                 <SystemDecorations>None</SystemDecorations>
                 <SystemDecorations>BorderOnly</SystemDecorations>
                 <SystemDecorations>Full</SystemDecorations>
               </ComboBox.Items>
             </ComboBox>
-            <ComboBox x:Name="ThemeVariants"
-                      HorizontalAlignment="Stretch"
+            <ComboBox HorizontalAlignment="Stretch"
                       DisplayMemberBinding="{Binding Key, x:DataType=ThemeVariant}"
-                      SelectedIndex="0">
+                      SelectedIndex="0"
+                      SelectionChanged="ThemeVariants_SelectionChanged">
               <ComboBox.Items>
                 <ThemeVariant>Default</ThemeVariant>
                 <ThemeVariant>Light</ThemeVariant>
                 <ThemeVariant>Dark</ThemeVariant>
               </ComboBox.Items>
             </ComboBox>
-            <ComboBox x:Name="Themes"
-                      HorizontalAlignment="Stretch"
-                      SelectedIndex="0">
+            <ComboBox HorizontalAlignment="Stretch"
+                      SelectedItem="{x:Static local:App.CurrentTheme}"
+                      SelectionChanged="Themes_SelectionChanged">
               <ComboBox.Items>
                 <models:CatalogTheme>Fluent</models:CatalogTheme>
                 <models:CatalogTheme>Simple</models:CatalogTheme>
               </ComboBox.Items>
             </ComboBox>
-            <ComboBox x:Name="TransparencyLevels"
-                      HorizontalAlignment="Stretch">
+            <ComboBox HorizontalAlignment="Stretch"
+                      SelectedIndex="0"
+                      SelectionChanged="TransparencyLevels_SelectionChanged">
               <ComboBox.Items>
                 <WindowTransparencyLevel>None</WindowTransparencyLevel>
                 <WindowTransparencyLevel>Transparent</WindowTransparencyLevel>
@@ -245,9 +248,9 @@
                 <WindowTransparencyLevel>Mica</WindowTransparencyLevel>
               </ComboBox.Items>
             </ComboBox>
-            <ComboBox x:Name="FlowDirection"
-                      HorizontalAlignment="Stretch"
-                      SelectedIndex="0">
+            <ComboBox HorizontalAlignment="Stretch"
+                      SelectedIndex="0"
+                      SelectionChanged="FlowDirection_SelectionChanged">
               <ComboBox.Items>
                 <FlowDirection>LeftToRight</FlowDirection>
                 <FlowDirection>RightToLeft</FlowDirection>

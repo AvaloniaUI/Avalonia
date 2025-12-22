@@ -31,6 +31,12 @@
       <ComboBoxItem>TXT mime only</ComboBoxItem>
       <ComboBoxItem>TXT apple type id only</ComboBoxItem>
     </ComboBox>
+    <StackPanel Orientation="Horizontal" Spacing="8">
+      <CheckBox Name="UseSuggestedFilter">Use SuggestedFileType</CheckBox>
+      <ComboBox Name="SuggestedFilterSelector" MinWidth="160">
+        <ComboBoxItem>First filter</ComboBoxItem>
+      </ComboBox>
+    </StackPanel>
     <Expander Header="FilePicker API">
       <StackPanel Spacing="4">
         <CheckBox Name="ForceManaged">Force managed dialog</CheckBox>
@@ -38,6 +44,7 @@
         <Button Name="OpenFolderPicker">Select Fo_lder</Button>
         <Button Name="OpenFilePicker">_Open File</Button>
         <Button Name="SaveFilePicker">_Save File</Button>
+        <Button Name="SaveFilePickerWithResult">Save File XML or JSON</Button>
         <Button Name="OpenFileFromBookmark">Open File Bookmark</Button>
         <Button Name="OpenFolderFromBookmark">Open Folder Bookmark</Button>
       </StackPanel>

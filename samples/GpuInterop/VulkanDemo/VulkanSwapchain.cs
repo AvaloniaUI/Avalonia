@@ -39,8 +39,10 @@ class VulkanSwapchainImage : ISwapchainImage
     private readonly ICompositionGpuInterop _interop;
     private readonly CompositionDrawingSurface _target;
     private readonly VulkanImage _image;
-    private readonly VulkanSemaphorePair _semaphorePair;
-    private ICompositionImportedGpuSemaphore? _availableSemaphore, _renderCompletedSemaphore;
+    private readonly VulkanSemaphorePair? _semaphorePair;
+    private readonly VulkanTimelineSemaphore? _timelineSemaphore;
+    private ulong _timelineCounter;
+    private ICompositionImportedGpuSemaphore? _availableSemaphore, _renderCompletedSemaphore, _importedTimelineSemaphore;
     private ICompositionImportedGpuImage? _importedImage;
     private Task? _lastPresent;
     public VulkanImage Image => _image;
@@ -52,8 +54,12 @@ class VulkanSwapchainImage : ISwapchainImage
         _interop = interop;
         _target = target;
         Size = size;
-        _image = new VulkanImage(vk, (uint)Format.R8G8B8A8Unorm, size, true, interop.SupportedImageHandleTypes);
-        _semaphorePair = new VulkanSemaphorePair(vk, true);
+        var format = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? Format.B8G8R8A8Unorm : Format.R8G8B8A8Unorm;
+        _image = new VulkanImage(vk, (uint)format, size, true, interop.SupportedImageHandleTypes);
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            _timelineSemaphore = new(vk);
+        else
+            _semaphorePair = new VulkanSemaphorePair(vk, true);
     }
 
     public async ValueTask DisposeAsync()
@@ -62,11 +68,13 @@ class VulkanSwapchainImage : ISwapchainImage
             await LastPresent;
         if (_importedImage != null)
             await _importedImage.DisposeAsync();
+        
         if (_availableSemaphore != null)
             await _availableSemaphore.DisposeAsync();
         if (_renderCompletedSemaphore != null)
             await _renderCompletedSemaphore.DisposeAsync();
-        _semaphorePair.Dispose();
+        _semaphorePair?.Dispose();
+        _timelineSemaphore?.Dispose();
         _image.Dispose();
     }
 
@@ -89,13 +97,29 @@ class VulkanSwapchainImage : ISwapchainImage
                 AcquireKey = 0,
                 DeviceMemory = _image.DeviceMemory
             });
+        else if (_timelineSemaphore != null)
+        {
+            unsafe
+            {
+                var wait = _timelineCounter;
+                var submitInfo = new TimelineSemaphoreSubmitInfo
+                {
+                    PWaitSemaphoreValues = &wait,
+                    WaitSemaphoreValueCount = 1,
+                    SType = StructureType.TimelineSemaphoreSubmitInfo
+                };
+                var waitSemaphores = new[] { _timelineSemaphore.Handle };
+
+                buffer.Submit(waitSemaphores, pNext: (IntPtr)(&submitInfo));
+            }
+        }
         else if (_initial)
         {
             _initial = false;
             buffer.Submit();
         }
         else
-            buffer.Submit(new[] { _semaphorePair.ImageAvailableSemaphore },
+            buffer.Submit(new[] { _semaphorePair!.ImageAvailableSemaphore },
                 new[]
                 {
                     PipelineStageFlags.AllGraphicsBit
@@ -110,7 +134,7 @@ class VulkanSwapchainImage : ISwapchainImage
         buffer.BeginRecording();
         _image.TransitionLayout(buffer.InternalHandle, ImageLayout.TransferSrcOptimal, AccessFlags.TransferWriteBit);
 
-        
+
         if (_image.IsDirectXBacked)
         {
             buffer.Submit(null, null, null, null,
@@ -119,26 +143,51 @@ class VulkanSwapchainImage : ISwapchainImage
                     DeviceMemory = _image.DeviceMemory, ReleaseKey = 1
                 });
         }
-        else
-            buffer.Submit(null, null, new[] { _semaphorePair.RenderFinishedSemaphore });
-
-        if (!_image.IsDirectXBacked)
+        else if (_timelineSemaphore != null)
         {
-            _availableSemaphore ??= _interop.ImportSemaphore(_semaphorePair.Export(false));
+            unsafe
+            {
+                var signal = _timelineCounter + 1;
+                var submitInfo = new TimelineSemaphoreSubmitInfo
+                {
+                    PSignalSemaphoreValues = &signal,
+                    SignalSemaphoreValueCount = 1,
+                    SType = StructureType.TimelineSemaphoreSubmitInfo
+                };
+                var signalSemaphores = new[] { _timelineSemaphore.Handle };
+
+                buffer.Submit(default, signalSemaphores: signalSemaphores, pNext: (IntPtr)(&submitInfo));
+            }
+        }
+        else
+            buffer.Submit(null, null, new[] { _semaphorePair!.RenderFinishedSemaphore });
+
+        if (_timelineSemaphore != null)
+        {
+            _importedTimelineSemaphore ??= _interop.ImportSemaphore(_timelineSemaphore.Export());
+        }
+        else if (!_image.IsDirectXBacked)
+        {
+            _availableSemaphore ??= _interop.ImportSemaphore(_semaphorePair!.Export(false));
             
-            _renderCompletedSemaphore ??= _interop.ImportSemaphore(_semaphorePair.Export(true));
+            _renderCompletedSemaphore ??= _interop.ImportSemaphore(_semaphorePair!.Export(true));
         }
 
         _importedImage ??= _interop.ImportImage(_image.Export(),
             new PlatformGraphicsExternalImageProperties
             {
-                Format = PlatformGraphicsExternalImageFormat.R8G8B8A8UNorm,
+                Format = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? PlatformGraphicsExternalImageFormat.B8G8R8A8UNorm : PlatformGraphicsExternalImageFormat.R8G8B8A8UNorm,
                 Width = Size.Width,
                 Height = Size.Height,
                 MemorySize = _image.MemorySize
             });
-
-        if (_image.IsDirectXBacked)
+        if (_importedTimelineSemaphore != null)
+        {
+            _lastPresent = _target.UpdateWithTimelineSemaphoresAsync(_importedImage,
+                _importedTimelineSemaphore, _timelineCounter + 1, _importedTimelineSemaphore, _timelineCounter + 2);
+            _timelineCounter += 2;
+        }
+        else if (_image.IsDirectXBacked)
             _lastPresent = _target.UpdateWithKeyedMutexAsync(_importedImage, 1, 0);
         else
             _lastPresent = _target.UpdateWithSemaphoresAsync(_importedImage, _renderCompletedSemaphore!, _availableSemaphore!);

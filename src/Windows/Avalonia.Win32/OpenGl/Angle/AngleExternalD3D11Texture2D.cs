@@ -68,6 +68,8 @@ internal class AngleExternalMemoryD3D11Texture2D : IGlExternalImageTexture
 
     public int TextureId { get; private set; }
     public int InternalFormat { get; }
+
+    public int TextureType => GL_TEXTURE_2D;
     public PlatformGraphicsExternalImageProperties Properties { get; }
 }
 

@@ -13,5 +13,14 @@
     <TextBox Name="LabeledByTextBox" AutomationProperties.LabeledBy="{Binding #TextBlockAsLabel}">
       Foo
     </TextBox>
+    <TextBlock Name="TextBlockWithHeader1" AutomationProperties.ControlTypeOverride="Header" AutomationProperties.HeadingLevel="1">
+      Header 1
+    </TextBlock>
+    <TextBlock Name="TextBlockWithHeader2" AutomationProperties.ControlTypeOverride="Header" AutomationProperties.HeadingLevel="2">
+      Header 2
+    </TextBlock>
+    <TextBlock Name="TextBlockWithoutHeader">
+      Header None
+    </TextBlock>
   </StackPanel>
 </UserControl>

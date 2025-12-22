@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Avalonia;
@@ -231,6 +233,7 @@ namespace TextTestApp
         }
 
         private GenericTextRunProperties? _textRunProperties;
+
         public GenericTextRunProperties TextRunProperties
         {
             get
@@ -239,9 +242,6 @@ namespace TextTestApp
             }
             set
             {
-                if (value == null)
-                    throw new ArgumentNullException(nameof(value));
-
                 _textRunProperties = value;
                 SetCurrentValue(FontFamilyProperty, value.Typeface.FontFamily);
                 SetCurrentValue(FontFeaturesProperty, value.FontFeatures);
@@ -327,7 +327,7 @@ namespace TextTestApp
         protected Size TextLineSize => _textLineSize ??= TextLine is { } textLine ? new Size(textLine.WidthIncludingTrailingWhitespace, textLine.Height) : default;
 
         private Size? _inkSize;
-        protected Size InkSize => _inkSize ??= TextLine is { } textLine ? new Size(textLine.OverhangLeading + textLine.WidthIncludingTrailingWhitespace + textLine.OverhangTrailing, textLine.Extent) : default;
+        protected Size InkSize => _inkSize ??= TextLine is { } textLine ? new Size(-textLine.OverhangLeading + textLine.WidthIncludingTrailingWhitespace - textLine.OverhangTrailing, textLine.Extent) : default;
 
         public event EventHandler? TextLineChanged;
 
@@ -372,6 +372,14 @@ namespace TextTestApp
                 case nameof(FontFamily):
                 case nameof(FontSize):
                     InvalidateTextRunProperties();
+                    break;
+
+                case nameof(FontFeatures):
+                    if (change.OldValue is FontFeatureCollection oc)
+                        oc.CollectionChanged -= OnFeatureCollectionChanged;
+                    if (change.NewValue is FontFeatureCollection nc)
+                        nc.CollectionChanged += OnFeatureCollectionChanged;
+                    OnFeatureCollectionChanged(null, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
                     break;
 
                 case nameof(FontStyle):
@@ -422,6 +430,11 @@ namespace TextTestApp
             base.OnPropertyChanged(change);
         }
 
+        private void OnFeatureCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            InvalidateTextRunProperties();
+        }
+
         protected override Size MeasureOverride(Size availableSize)
         {
             if (TextLine == null)
@@ -433,6 +446,7 @@ namespace TextTestApp
         private const double VerticalSpacing = 5;
         private const double HorizontalSpacing = 5;
         private const double ArrowSize = 5;
+        private const double LabelFontSize = 9;
 
         private Dictionary<string, FormattedText> _labelsCache = new();
         protected FormattedText GetOrCreateLabel(string label, IBrush brush, bool disableCache = false)
@@ -440,7 +454,7 @@ namespace TextTestApp
             if (_labelsCache.TryGetValue(label, out var text))
                 return text;
 
-            text = new FormattedText(label, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, Typeface.Default, 8, brush);
+            text = new FormattedText(label, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, Typeface.Default, LabelFontSize, brush);
 
             if (!disableCache)
                 _labelsCache[label] = text;
@@ -519,7 +533,7 @@ namespace TextTestApp
                     }
                 }
 
-                double y = inkBounds.Bottom - lineBounds.Top + VerticalSpacing * 2;
+                double y = Math.Max(inkBounds.Bottom, lineBounds.Bottom) + VerticalSpacing * 2;
 
                 if (NextHitStroke != null)
                 {
@@ -563,6 +577,14 @@ namespace TextTestApp
                             nextHit = textLine.GetNextCaretCharacterHit(hit);
                             var nextLabel = RenderLabel(context, $" > {nextHit.FirstCharacterIndex}+{nextHit.TrailingLength}", NextHitStroke, leftLabelX, y, TextAlignment.Right, disableCache: true);
                             leftLabelX -= nextLabel.WidthIncludingTrailingWhitespace;
+                        }
+
+                        if (BackspaceHitStroke != null)
+                        {
+                            CharacterHit backHit = textLine.GetBackspaceCaretCharacterHit(hit);
+                            var x1 = textLine.GetDistanceFromCharacterHit(new CharacterHit(backHit.FirstCharacterIndex, 0));
+                            var x2 = textLine.GetDistanceFromCharacterHit(new CharacterHit(backHit.FirstCharacterIndex + backHit.TrailingLength, 0));
+                            RenderHorizontalPoint(context, x1, x2, y, BackspaceHitPen, ArrowSize);
                         }
 
                         if (PreviousHitStroke != null)

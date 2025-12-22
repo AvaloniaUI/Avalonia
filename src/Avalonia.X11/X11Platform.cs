@@ -15,6 +15,7 @@ using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.Vulkan;
 using Avalonia.X11;
+using Avalonia.X11.Clipboard;
 using Avalonia.X11.Dispatching;
 using Avalonia.X11.Glx;
 using Avalonia.X11.Vulkan;
@@ -71,6 +72,9 @@ namespace Avalonia.X11
                ? new UiThreadRenderTimer(60)
                : new SleepLoopRenderTimer(60);
 
+            var clipboardImpl = new X11ClipboardImpl(this);
+            var clipboard = new Input.Platform.Clipboard(clipboardImpl);
+
             AvaloniaLocator.CurrentMutable.BindToSelf(this)
                 .Bind<IWindowingPlatform>().ToConstant(this)
                 .Bind<IDispatcherImpl>().ToConstant<IDispatcherImpl>(options.UseGLibMainLoop
@@ -81,7 +85,8 @@ namespace Avalonia.X11
                 .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>() { }, meta: "Super"))
                 .Bind<IKeyboardDevice>().ToFunc(() => KeyboardDevice)
                 .Bind<ICursorFactory>().ToConstant(new X11CursorFactory(Display))
-                .Bind<IClipboard>().ToLazy(() => new X11Clipboard(this))
+                .Bind<IClipboardImpl>().ToConstant(clipboardImpl)
+                .Bind<IClipboard>().ToConstant(clipboard)
                 .Bind<IPlatformSettings>().ToSingleton<DBusPlatformSettings>()
                 .Bind<IPlatformIconLoader>().ToConstant(new X11IconLoader())
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new LinuxMountedVolumeInfoProvider())
@@ -161,27 +166,26 @@ namespace Avalonia.X11
 
         private static bool ShouldUseXim()
         {
+            // Priority: AVALONIA_IM_MODULE > GTK_IM_MODULE >= QT_IM_MODULE
+            string? imeOverride = Environment.GetEnvironmentVariable("AVALONIA_IM_MODULE");
+            if (string.IsNullOrEmpty(imeOverride))
+                imeOverride = Environment.GetEnvironmentVariable("GTK_IM_MODULE");
+            if (string.IsNullOrEmpty(imeOverride))
+                imeOverride = Environment.GetEnvironmentVariable("QT_IM_MODULE");
+
             // Check if we are forbidden from using IME
-            if (Environment.GetEnvironmentVariable("AVALONIA_IM_MODULE") == "none"
-                || Environment.GetEnvironmentVariable("GTK_IM_MODULE") == "none"
-                || Environment.GetEnvironmentVariable("QT_IM_MODULE") == "none")
-                return true;
-            
+            if (imeOverride == "none")
+                return false;
+
             // Check if XIM is configured
             var modifiers = Environment.GetEnvironmentVariable("XMODIFIERS");
-            if (modifiers == null)
-                return false;
-            if (modifiers.Contains("@im=none") || modifiers.Contains("@im=null"))
-                return false;
-            if (!modifiers.Contains("@im="))
-                return false;
-            
-            // Check if we are configured to use it
-            if (Environment.GetEnvironmentVariable("GTK_IM_MODULE") == "xim"
-                || Environment.GetEnvironmentVariable("QT_IM_MODULE") == "xim"
-                || Environment.GetEnvironmentVariable("AVALONIA_IM_MODULE") == "xim")
-                return true;
-            
+            if (modifiers is not null && modifiers.Contains("@im="))
+            {
+                // If XIM is explicitly requested, or no IME override is configured
+                if (imeOverride == "xim" || string.IsNullOrEmpty(imeOverride))
+                    return true;
+            }
+
             return false;
         }
         

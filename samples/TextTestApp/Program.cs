@@ -1,5 +1,7 @@
 using System;
+using System.ComponentModel;
 using Avalonia;
+using Avalonia.Media;
 
 namespace TextTestApp
 {
@@ -11,6 +13,8 @@ namespace TextTestApp
         [STAThread]
         public static void Main(string[] args)
         {
+            TypeDescriptor.AddAttributes(typeof(FontFeatureCollection), new TypeConverterAttribute(typeof(FontFeatureCollectionConverter)));
+
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
         }
 

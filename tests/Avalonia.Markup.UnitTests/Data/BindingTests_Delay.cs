@@ -25,7 +25,7 @@ public class BindingTests_Delay : ScopedTestBase, IDisposable
     public BindingTests_Delay()
     {
         _dispatcher = new ManualTimerDispatcher();
-        _app = UnitTestApplication.Start(new(dispatcherImpl: _dispatcher, focusManager: new FocusManager(), keyboardDevice: () => new KeyboardDevice()));
+        _app = UnitTestApplication.Start(new(dispatcherImpl: _dispatcher, keyboardDevice: () => new KeyboardDevice()));
 
         _source = new BindingTests.Source { Foo = InitialFooValue };
         _target = new TextBox { DataContext = _source };
@@ -36,7 +36,7 @@ public class BindingTests_Delay : ScopedTestBase, IDisposable
         Assert.Equal(_source.Foo, _target.Text);
     }
 
-    public void Dispose()
+    public override void Dispose()
     {
         _app.Dispose();
         base.Dispose();

@@ -8,6 +8,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Controls.Utils;
 using Avalonia.Data;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Metadata;
@@ -270,11 +271,9 @@ namespace Avalonia.Controls
                 SetCurrentValue(IsDropDownOpenProperty, true);
                 e.Handled = true;
             }
-            else if (IsDropDownOpen && (e.Key == Key.Enter || e.Key == Key.Space))
+            else if (IsDropDownOpen && e.Key == Key.Tab)
             {
-                SelectFocusedItem();
                 SetCurrentValue(IsDropDownOpenProperty, false);
-                e.Handled = true;
             }
             // Ignore key buttons, if they are used for XY focus.
             else if (!IsDropDownOpen
@@ -362,15 +361,7 @@ namespace Avalonia.Controls
 
             if (!e.Handled && e.Source is Visual source)
             {
-                if (_popup?.IsInsidePopup(source) == true)
-                {
-                    if (UpdateSelectionFromEventSource(e.Source))
-                    {
-                        _popup?.Close();
-                        e.Handled = true;
-                    }
-                }
-                else if (PseudoClasses.Contains(pcPressed))
+                if (_popup?.IsInsidePopup(source) != true && PseudoClasses.Contains(pcPressed))
                 {
                     SetCurrentValue(IsDropDownOpenProperty, !IsDropDownOpen);
                     e.Handled = true;
@@ -380,6 +371,22 @@ namespace Avalonia.Controls
             PseudoClasses.Set(pcPressed, false);
             base.OnPointerReleased(e);
         }
+
+        public override bool UpdateSelectionFromEvent(Control container, RoutedEventArgs eventArgs)
+        {
+            if (base.UpdateSelectionFromEvent(container, eventArgs))
+            {
+                _popup?.Close();
+                return true;
+            }
+
+            return false;
+        }
+
+        protected override bool ShouldTriggerSelection(Visual selectable, PointerEventArgs eventArgs) =>
+            ItemSelectionEventTriggers.IsPointerEventWithinBounds(selectable, eventArgs) &&
+            eventArgs is { Properties.PointerUpdateKind: PointerUpdateKind.LeftButtonReleased or PointerUpdateKind.RightButtonReleased } &&
+            eventArgs.RoutedEvent == PointerReleasedEvent;
 
         /// <inheritdoc/>
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -598,18 +605,6 @@ namespace Avalonia.Controls
             SetCurrentValue(TextProperty, GetItemTextValue(item));
         }
 
-        private void SelectFocusedItem()
-        {
-            foreach (var dropdownItem in GetRealizedContainers())
-            {
-                if (dropdownItem.IsFocused)
-                {
-                    SelectedIndex = IndexFromContainer(dropdownItem);
-                    break;
-                }
-            }
-        }
-
         private bool SelectNext() => MoveSelection(SelectedIndex, 1, WrapSelection);
         private bool SelectPrevious() => MoveSelection(SelectedIndex, -1, WrapSelection);
 
@@ -717,6 +712,11 @@ namespace Avalonia.Controls
             {
                 _skipNextTextChanged = false;
             }
+
+            //when changing the SelectedIndex it will call: KeyboardNavigation.SetTabOnceActiveElement(this, [combo box item]);
+            //this will then break tab navigation back into this combobox as it will try to focus the combo box item
+            //rather than the combobox or editable text box, so we need to SetTabOnceActiveElement to null
+            KeyboardNavigation.SetTabOnceActiveElement(this, null);
         }
 
         private string GetItemTextValue(object? item) 

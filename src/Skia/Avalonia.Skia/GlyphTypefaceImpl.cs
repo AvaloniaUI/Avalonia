@@ -16,7 +16,6 @@ namespace Avalonia.Skia
     internal class GlyphTypefaceImpl : IGlyphTypeface2
     {
         private bool _isDisposed;
-        private readonly SKTypeface _typeface;
         private readonly NameTable? _nameTable;
         private readonly OS2Table? _os2Table;
         private readonly HorizontalHeadTable? _hhTable;
@@ -24,7 +23,7 @@ namespace Avalonia.Skia
 
         public GlyphTypefaceImpl(SKTypeface typeface, FontSimulations fontSimulations)
         {
-            _typeface = typeface ?? throw new ArgumentNullException(nameof(typeface));
+            SKTypeface = typeface ?? throw new ArgumentNullException(nameof(typeface));
 
             Face = new Face(GetTable) { UnitsPerEm = typeface.UnitsPerEm };
 
@@ -96,6 +95,11 @@ namespace Avalonia.Skia
 
             var style = _os2Table != null ? GetFontStyle(_os2Table.FontStyle) : FontStyle.Normal;
 
+            if (typeface.FontStyle.Slant == SKFontStyleSlant.Oblique)
+            {
+                style = FontStyle.Oblique;
+            }
+
             Style = (fontSimulations & FontSimulations.Oblique) != 0 ? FontStyle.Italic : style;
 
             var stretch = _os2Table != null ? (FontStretch)_os2Table.WidthClass : FontStretch.Normal;
@@ -116,30 +120,22 @@ namespace Avalonia.Skia
 
                 foreach (var nameRecord in _nameTable)
                 {
-                    if(nameRecord.NameID == KnownNameIds.FontFamilyName)
+                    var languageId = nameRecord.LanguageID == 0 ?
+                        (ushort)CultureInfo.InvariantCulture.LCID :
+                        nameRecord.LanguageID;
+                    
+                    switch (nameRecord.NameID)
                     {
-                        if (nameRecord.Platform != PlatformIDs.Windows || nameRecord.LanguageID == 0)
-                        {
-                            continue;
-                        }
-
-                        if (!familyNames.ContainsKey(nameRecord.LanguageID))
-                        {
-                            familyNames[nameRecord.LanguageID] = nameRecord.Value;
-                        }
-                    }
-
-                    if(nameRecord.NameID == KnownNameIds.FontSubfamilyName)
-                    {
-                        if (nameRecord.Platform != PlatformIDs.Windows || nameRecord.LanguageID == 0)
-                        {
-                            continue;
-                        }
-
-                        if (!faceNames.ContainsKey(nameRecord.LanguageID))
-                        {
-                            faceNames[nameRecord.LanguageID] = nameRecord.Value;
-                        }
+                        case KnownNameIds.FontFamilyName:
+                            {
+                                familyNames.TryAdd(languageId, nameRecord.Value);
+                                break;
+                            }
+                        case KnownNameIds.FontSubfamilyName:
+                            {
+                                faceNames.TryAdd(languageId, nameRecord.Value);
+                                break;
+                            }
                     }
                 }
 
@@ -204,6 +200,8 @@ namespace Avalonia.Skia
                 return supportedFeatures;
             }
         }
+
+        public SKTypeface SKTypeface { get; }
 
         public Face Face { get; }
 
@@ -300,12 +298,12 @@ namespace Avalonia.Skia
 
         private static FontStyle GetFontStyle(OS2Table.FontStyleSelection styleSelection)
         {
-            if((styleSelection & OS2Table.FontStyleSelection.ITALIC) != 0)
+            if ((styleSelection & OS2Table.FontStyleSelection.ITALIC) != 0)
             {
                 return FontStyle.Italic;
             }
 
-            if((styleSelection & OS2Table.FontStyleSelection.OBLIQUE) != 0)
+            if ((styleSelection & OS2Table.FontStyleSelection.OBLIQUE) != 0)
             {
                 return FontStyle.Oblique;
             }
@@ -315,18 +313,18 @@ namespace Avalonia.Skia
 
         private Blob? GetTable(Face face, Tag tag)
         {
-            var size = _typeface.GetTableSize(tag);
+            var size = SKTypeface.GetTableSize(tag);
 
             var data = Marshal.AllocCoTaskMem(size);
 
             var releaseDelegate = new ReleaseDelegate(() => Marshal.FreeCoTaskMem(data));
 
-            return _typeface.TryGetTableData(tag, 0, size, data) ?
+            return SKTypeface.TryGetTableData(tag, 0, size, data) ?
                 new Blob(data, size, MemoryMode.ReadOnly, releaseDelegate) : null;
         }
 
         public SKFont CreateSKFont(float size)
-            => new(_typeface, size, skewX: (FontSimulations & FontSimulations.Oblique) != 0 ? -0.3f : 0.0f)
+            => new(SKTypeface, size, skewX: (FontSimulations & FontSimulations.Oblique) != 0 ? -0.3f : 0.0f)
             {
                 LinearMetrics = true,
                 Embolden = (FontSimulations & FontSimulations.Bold) != 0
@@ -348,7 +346,7 @@ namespace Avalonia.Skia
 
             Font.Dispose();
             Face.Dispose();
-            _typeface.Dispose();
+            SKTypeface.Dispose();
         }
 
         public void Dispose()
@@ -359,14 +357,14 @@ namespace Avalonia.Skia
 
         public bool TryGetTable(uint tag, out byte[] table)
         {
-            return _typeface.TryGetTableData(tag, out table);
+            return SKTypeface.TryGetTableData(tag, out table);
         }
 
         public bool TryGetStream([NotNullWhen(true)] out Stream? stream)
         {
             try
             {
-                var asset = _typeface.OpenStream();
+                var asset = SKTypeface.OpenStream();
                 var size = asset.Length;
                 var buffer = new byte[size];
 

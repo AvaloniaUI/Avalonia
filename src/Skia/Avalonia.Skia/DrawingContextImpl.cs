@@ -244,12 +244,14 @@ namespace Avalonia.Skia
             var drawableImage = (IDrawableBitmapImpl)source;
             var s = sourceRect.ToSKRect();
             var d = destRect.ToSKRect();
+            var isUpscaling = d.Width > s.Width || d.Height > s.Height;
 
             var paint = SKPaintCache.Shared.Get();
-            var samplingOptions = RenderOptions.BitmapInterpolationMode.ToSKSamplingOptions();
+            var samplingOptions = RenderOptions.BitmapInterpolationMode.ToSKSamplingOptions(isUpscaling);
 
             paint.Color = new SKColor(255, 255, 255, (byte)(255 * opacity * _currentOpacity));
             paint.BlendMode = RenderOptions.BitmapBlendingMode.ToSKBlendMode();
+            paint.IsAntialias = RenderOptions.EdgeMode != EdgeMode.Aliased;
 
             drawableImage.Draw(this, s, d, samplingOptions, paint);
             SKPaintCache.Shared.ReturnReset(paint);
