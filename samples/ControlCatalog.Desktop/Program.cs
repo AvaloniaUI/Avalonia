@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Fonts.Inter;
 using Avalonia.Headless;
 using Avalonia.LinuxFramebuffer.Output;
 using Avalonia.LogicalTree;
@@ -149,16 +148,9 @@ namespace ControlCatalog.Desktop
                 })
                 .UseSkia()
                 .WithInterFont()
+                .WithDeveloperTools()
                 .AfterSetup(builder =>
                 {
-                    if (!s_useFramebuffer)
-                    {
-                        builder.Instance!.AttachDevTools(new Avalonia.Diagnostics.DevToolsOptions()
-                        {
-                            StartupScreenIndex = 1,
-                        });
-                    }
-
                     EmbedSample.Implementation = OperatingSystem.IsWindows() ? (INativeDemoControl)new EmbedSampleWin()
                         : OperatingSystem.IsMacOS() ? new EmbedSampleMac()
                         : OperatingSystem.IsLinux() ? new EmbedSampleGtk()
