@@ -97,8 +97,8 @@ namespace Avalonia.Media.Fonts.Tables
             IndexToLocFormat indexToLocFormat = (IndexToLocFormat)reader.ReadInt16();
             GlyphDataFormat glyphDataFormat = (GlyphDataFormat)reader.ReadInt16();
 
-            DateTime created = s_fontEpoch.AddSeconds(createdRaw);
-            DateTime modified = s_fontEpoch.AddSeconds(modifiedRaw);
+            DateTime created = SafeAddSeconds(s_fontEpoch, createdRaw);
+            DateTime modified = SafeAddSeconds(s_fontEpoch, modifiedRaw);
 
             return new HeadTable(
                 version,
@@ -118,6 +118,44 @@ namespace Avalonia.Media.Fonts.Tables
                 fontDirectionHint,
                 indexToLocFormat,
                 glyphDataFormat);
+        }
+
+        private static DateTime SafeAddSeconds(DateTime epoch, long seconds)
+        {
+            // Handle invalid/corrupted timestamps gracefully
+            // Valid range for font timestamps is roughly 1904-01-01 to ~2040
+            // Negative values or extremely large values indicate corrupted data
+            
+            try
+            {
+                // Check if the resulting date would be valid before attempting addition
+                // DateTime.MinValue is 0001-01-01, DateTime.MaxValue is 9999-12-31
+                if (seconds < 0)
+                {
+                    // Calculate minimum allowed seconds from epoch to DateTime.MinValue
+                    var minSeconds = (long)(DateTime.MinValue - epoch).TotalSeconds;
+                    if (seconds < minSeconds)
+                    {
+                        return DateTime.MinValue;
+                    }
+                }
+                else
+                {
+                    // Calculate maximum allowed seconds from epoch to DateTime.MaxValue
+                    var maxSeconds = (long)(DateTime.MaxValue - epoch).TotalSeconds;
+                    if (seconds > maxSeconds)
+                    {
+                        return DateTime.MaxValue;
+                    }
+                }
+
+                return epoch.AddSeconds(seconds);
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                // Fallback for any edge cases that slip through
+                return seconds < 0 ? DateTime.MinValue : DateTime.MaxValue;
+            }
         }
     }
 
