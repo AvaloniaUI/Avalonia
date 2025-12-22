@@ -18,20 +18,21 @@ namespace Avalonia.Media
     /// character-to-glyph mappings, and supported OpenType features. It supports platform-specific typefaces and
     /// applies optional font simulations such as bold or oblique. This class is typically used in text rendering and
     /// shaping scenarios.</remarks>
-    public sealed class GlyphTypeface : IGlyphTypeface
+    public sealed class GlyphTypeface
     {
-        private static readonly IReadOnlyDictionary<CultureInfo, string> s_emptyStringDictionary = 
+        private static readonly IReadOnlyDictionary<CultureInfo, string> s_emptyStringDictionary =
             new Dictionary<CultureInfo, string>(0);
 
         private bool _isDisposed;
 
         private readonly NameTable? _nameTable;
-        private readonly OS2Table? _os2Table;
+        private readonly OS2Table _os2Table;
         private readonly IReadOnlyDictionary<int, ushort> _cmapTable;
         private readonly HorizontalHeaderTable _hhTable;
         private readonly VerticalHeaderTable _vhTable;
         private readonly HorizontalMetricsTable? _hmTable;
         private readonly VerticalMetricsTable? _vmTable;
+        private readonly bool _hasOs2Table;
         private readonly bool _hasHorizontalMetrics;
         private readonly bool _hasVerticalMetrics;
 
@@ -54,7 +55,7 @@ namespace Avalonia.Media
         {
             PlatformTypeface = typeface;
 
-            _os2Table = OS2Table.Load(this);
+            _hasOs2Table = OS2Table.TryLoad(this, out _os2Table);
             _cmapTable = CmapTable.Load(this);
 
             var maxpTable = MaxpTable.Load(this);
@@ -79,11 +80,11 @@ namespace Avalonia.Media
             var descent = 0;
             var lineGap = 0;
 
-            if (_os2Table.HasValue && (_os2Table.Value.Selection & OS2Table.FontSelectionFlags.USE_TYPO_METRICS) != 0)
+            if (_hasOs2Table && (_os2Table.Selection & OS2Table.FontSelectionFlags.USE_TYPO_METRICS) != 0)
             {
-                ascent = -_os2Table.Value.TypoAscender;
-                descent = -_os2Table.Value.TypoDescender;
-                lineGap = _os2Table.Value.TypoLineGap;
+                ascent = -_os2Table.TypoAscender;
+                descent = -_os2Table.TypoDescender;
+                lineGap = _os2Table.TypoLineGap;
             }
             else
             {
@@ -95,18 +96,18 @@ namespace Avalonia.Media
                 }
             }
 
-            if (_os2Table.HasValue && (ascent == 0 || descent == 0))
+            if (_hasOs2Table && (ascent == 0 || descent == 0))
             {
-                if (_os2Table.Value.TypoAscender != 0 || _os2Table.Value.TypoDescender != 0)
+                if (_os2Table.TypoAscender != 0 || _os2Table.TypoDescender != 0)
                 {
-                    ascent = -_os2Table.Value.TypoAscender;
-                    descent = -_os2Table.Value.TypoDescender;
-                    lineGap = _os2Table.Value.TypoLineGap;
+                    ascent = -_os2Table.TypoAscender;
+                    descent = -_os2Table.TypoDescender;
+                    lineGap = _os2Table.TypoLineGap;
                 }
                 else
                 {
-                    ascent = -_os2Table.Value.WinAscent;
-                    descent = _os2Table.Value.WinDescent;
+                    ascent = -_os2Table.WinAscent;
+                    descent = _os2Table.WinDescent;
                 }
             }
 
@@ -125,22 +126,22 @@ namespace Avalonia.Media
                 LineGap = lineGap,
                 UnderlinePosition = -underlineOffset,
                 UnderlineThickness = underlineSize,
-                StrikethroughPosition = _os2Table?.StrikeoutPosition ?? 0,
-                StrikethroughThickness = _os2Table?.StrikeoutSize ?? 0,
+                StrikethroughPosition = _hasOs2Table ? -_os2Table.StrikeoutPosition : 0,
+                StrikethroughThickness = _hasOs2Table ? _os2Table.StrikeoutSize : 0,
                 IsFixedPitch = isFixedPitch
             };
 
             FontSimulations = fontSimulations;
 
-            var fontWeight = _os2Table.HasValue ? (FontWeight)_os2Table.Value.WeightClass : FontWeight.Normal;
+            var fontWeight = GetFontWeight(_hasOs2Table ? _os2Table : default, headTable);
 
             Weight = (fontSimulations & FontSimulations.Bold) != 0 ? FontWeight.Bold : fontWeight;
 
-            var style = _os2Table.HasValue ? GetFontStyle(_os2Table.Value, headTable, postTable) : FontStyle.Normal;
+            var style = GetFontStyle(_hasOs2Table ? _os2Table : default, _hasOs2Table, headTable, postTable);
 
             Style = (fontSimulations & FontSimulations.Oblique) != 0 ? FontStyle.Italic : style;
 
-            var stretch = _os2Table.HasValue ? (FontStretch)_os2Table.Value.WidthClass : FontStretch.Normal;
+            var stretch = GetFontStretch(_hasOs2Table ? _os2Table : default, _hasOs2Table);
 
             Stretch = stretch;
 
@@ -219,12 +220,76 @@ namespace Avalonia.Media
             }
         }
 
+        /// <summary>
+        /// Gets the family name of the font.
+        /// </summary>
+        public string FamilyName { get; }
+
+        /// <summary>
+        /// Gets the typographic family name of the font.
+        /// </summary>
         public string TypographicFamilyName { get; }
 
+        /// <summary>
+        /// Gets a read-only mapping of localized culture-specific family names.
+        /// </summary>
+        /// <remarks>The dictionary contains entries for each supported culture, where the key is a <see
+        /// cref="CultureInfo"/> representing the culture, and the value is the corresponding localized family name. The
+        /// dictionary may be empty if no family names are available.</remarks>
         public IReadOnlyDictionary<CultureInfo, string> FamilyNames { get; }
 
+        /// <summary>
+        /// Gets a read-only mapping of culture-specific face names.
+        /// </summary>
+        /// <remarks>Each entry in the dictionary maps a <see cref="System.Globalization.CultureInfo"/> to
+        /// the corresponding localized face name. The dictionary is empty if no face names are defined.</remarks>
         public IReadOnlyDictionary<CultureInfo, string> FaceNames { get; }
 
+        /// <summary>
+        /// Gets a read-only mapping of Unicode character codes to glyph indices for the font.
+        /// </summary>
+        /// <remarks>This dictionary provides the correspondence between Unicode code points and the
+        /// glyphs defined in the font. The mapping can be used to look up the glyph index for a given character when
+        /// rendering or processing text. The set of mapped characters depends on the font's supported character
+        /// set.</remarks>
+        public IReadOnlyDictionary<int, ushort> CharacterToGlyphMap => _cmapTable;
+
+        /// <summary>
+        /// Gets the font metrics associated with this font.
+        /// </summary>
+        public FontMetrics Metrics { get; }
+
+        /// <summary>
+        /// Gets the font weight.
+        /// </summary>
+        public FontWeight Weight { get; }
+
+        /// <summary>
+        /// Gets the font style.
+        /// </summary>
+        public FontStyle Style { get; }
+
+        /// <summary>
+        /// Gets the font stretch.
+        /// </summary>
+        public FontStretch Stretch { get; }
+
+        /// <summary>
+        /// Gets the font simulation settings applied to the <see cref="GlyphTypeface"/>.
+        /// </summary>
+        public FontSimulations FontSimulations { get; }
+
+        /// <summary>
+        /// Gets the number of glyphs held by this font.
+        /// </summary>
+        public int GlyphCount { get; }
+
+        /// <summary>
+        /// Gets the list of OpenType feature tags supported by the font.
+        /// </summary>
+        /// <remarks>The returned list reflects the features available in the underlying font and is
+        /// read-only. The order of features in the list is not guaranteed. This property does not return null; if the
+        /// font does not support any features, the list will be empty.</remarks>
         public IReadOnlyList<OpenTypeTag> SupportedFeatures
         {
             get
@@ -234,61 +299,23 @@ namespace Avalonia.Media
                     return _supportedFeatures;
                 }
 
-                var gPosFeatures = FeatureListTable.LoadGPos(this);
-                var gSubFeatures = FeatureListTable.LoadGSub(this);
+                _supportedFeatures = LoadSupportedFeatures();
 
-                var supportedFeatures = new List<OpenTypeTag>(gPosFeatures?.Features.Count ?? 0 + gSubFeatures?.Features.Count ?? 0);
-
-                if (gPosFeatures != null)
-                {
-                    foreach (var gPosFeature in gPosFeatures.Features)
-                    {
-                        if (supportedFeatures.Contains(gPosFeature))
-                        {
-                            continue;
-                        }
-
-                        supportedFeatures.Add(gPosFeature);
-                    }
-                }
-
-                if (gSubFeatures != null)
-                {
-                    foreach (var gSubFeature in gSubFeatures.Features)
-                    {
-                        if (supportedFeatures.Contains(gSubFeature))
-                        {
-                            continue;
-                        }
-
-                        supportedFeatures.Add(gSubFeature);
-                    }
-                }
-
-                _supportedFeatures = supportedFeatures;
-
-                return supportedFeatures;
+                return _supportedFeatures;
             }
         }
 
-        public FontSimulations FontSimulations { get; }
-
-        public FontMetrics Metrics { get; }
-
-        public int GlyphCount { get; }
-
-        public string FamilyName { get; }
-
-        public FontWeight Weight { get; }
-
-        public FontStyle Style { get; }
-
-        public FontStretch Stretch { get; }
-
-        public IReadOnlyDictionary<int, ushort> CharacterToGlyphMap => _cmapTable;
-
+        /// <summary>
+        /// Gets the platform-specific typeface associated with this font.
+        /// </summary>
         public IPlatformTypeface PlatformTypeface { get; }
 
+        /// <summary>
+        /// Gets the typeface information used by the text shaper for this font.
+        /// </summary>
+        /// <remarks>The returned typeface is created on demand and cached for subsequent accesses. This
+        /// property is typically used by text rendering components that require low-level font shaping
+        /// details.</remarks>
         public ITextShaperTypeface TextShaperTypeface
         {
             get
@@ -306,55 +333,15 @@ namespace Avalonia.Media
             }
         }
 
-        private static FontStyle GetFontStyle(OS2Table oS2Table, HeadTable headTable, PostTable postTable)
-        {
-            var isItalic = (oS2Table.Selection & OS2Table.FontSelectionFlags.ITALIC) != 0 || (headTable.MacStyle & 0x02) != 0;
-
-            var isOblique = (oS2Table.Selection & OS2Table.FontSelectionFlags.OBLIQUE) != 0;
-
-            var italicAngle = postTable.ItalicAngle;
-
-            if (isOblique)
-            {
-                return FontStyle.Oblique;
-            }
-
-            if (Math.Abs(italicAngle) > 0.01f && !isItalic)
-            {
-                return FontStyle.Oblique;
-            }
-
-            if (isItalic)
-            {
-                return FontStyle.Italic;
-            }
-
-            return FontStyle.Normal;
-        }
-
-        private void Dispose(bool disposing)
-        {
-            if (_isDisposed)
-            {
-                return;
-            }
-
-            _isDisposed = true;
-
-            if (!disposing)
-            {
-                return;
-            }
-
-            PlatformTypeface.Dispose();
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
+        /// <summary>
+        /// Attempts to retrieve the horizontal advance width for the specified glyph.
+        /// </summary>
+        /// <remarks>Returns false if horizontal metrics are not available or if the specified glyph is
+        /// not present in the metrics table.</remarks>
+        /// <param name="glyphId">The identifier of the glyph for which to obtain the horizontal advance width.</param>
+        /// <param name="advance">When this method returns, contains the horizontal advance width of the glyph if found; otherwise, zero. This
+        /// parameter is passed uninitialized.</param>
+        /// <returns>true if the horizontal advance width was successfully retrieved; otherwise, false.</returns>
         public bool TryGetHorizontalGlyphAdvance(ushort glyphId, out ushort advance)
         {
             advance = default;
@@ -372,6 +359,71 @@ namespace Avalonia.Media
             return true;
         }
 
+        /// <summary>
+        /// Attempts to retrieve horizontal advance widths for multiple glyphs in a single operation.
+        /// </summary>
+        /// <remarks>This method is significantly more efficient than calling <see cref="TryGetHorizontalGlyphAdvance"/>
+        /// multiple times as it minimizes memory access overhead and exploits data locality. This is the preferred method
+        /// for batch glyph metrics retrieval in text layout and rendering scenarios. Returns false if horizontal metrics
+        /// are not available.</remarks>
+        /// <param name="glyphIds">Read-only span of glyph identifiers for which to retrieve advance widths.</param>
+        /// <param name="advances">Output span to write the advance widths. Must be at least as long as <paramref name="glyphIds"/>.</param>
+        /// <returns>true if horizontal metrics are available and all advances were successfully retrieved; otherwise, false.</returns>
+        public bool TryGetHorizontalGlyphAdvances(ReadOnlySpan<ushort> glyphIds, Span<ushort> advances)
+        {
+            if (!_hasHorizontalMetrics || _hmTable is null)
+            {
+                return false;
+            }
+
+            return _hmTable.TryGetAdvances(glyphIds, advances);
+        }
+
+        /// <summary>
+        /// Maps multiple Unicode code points to glyph indices in a single operation.
+        /// </summary>
+        /// <remarks>This method is significantly more efficient than calling <see cref="CharacterToGlyphMap"/> indexer
+        /// multiple times as it minimizes memory access overhead and exploits locality of reference in text runs.
+        /// This is the preferred method for character-to-glyph mapping in text shaping and layout scenarios.
+        /// Unmapped code points will have their corresponding glyph ID set to 0.</remarks>
+        /// <param name="codePoints">Read-only span of Unicode code points to map.</param>
+        /// <param name="glyphIndices">Output span to write the glyph indices. Must be at least as long as <paramref name="codePoints"/>.</param>
+        public void GetGlyphIndices(ReadOnlySpan<int> codePoints, Span<ushort> glyphIndices)
+        {
+            if (glyphIndices.Length < codePoints.Length)
+            {
+                throw new ArgumentException("Output span must be at least as long as input span", nameof(glyphIndices));
+            }
+
+            // Use the batch method if available
+            if (_cmapTable is CmapFormat4Table format4)
+            {
+                format4.MapCodePointsToGlyphs(codePoints, glyphIndices);
+            }
+            else if (_cmapTable is CmapFormat12Table format12)
+            {
+                format12.MapCodePointsToGlyphs(codePoints, glyphIndices);
+            }
+            else
+            {
+                // Fallback to individual lookups
+                for (int i = 0; i < codePoints.Length; i++)
+                {
+                    glyphIndices[i] = _cmapTable.TryGetValue(codePoints[i], out var gid) ? gid : (ushort)0;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Attempts to retrieve the metrics for the specified glyph.
+        /// </summary>
+        /// <remarks>This method returns metrics only if horizontal or vertical metrics are available for
+        /// the specified glyph. If neither is available, the method returns false and the output parameter is set to
+        /// its default value.</remarks>
+        /// <param name="glyph">The identifier of the glyph for which to obtain metrics.</param>
+        /// <param name="metrics">When this method returns, contains the metrics for the specified glyph if found; otherwise, contains the
+        /// default value.</param>
+        /// <returns>true if metrics for the specified glyph are available; otherwise, false.</returns>
         public bool TryGetGlyphMetrics(ushort glyph, out GlyphMetrics metrics)
         {
             metrics = default;
@@ -406,6 +458,231 @@ namespace Avalonia.Media
             };
 
             return true;
+        }
+
+        /// <summary>
+        /// Attempts to retrieve glyph metrics for multiple glyphs in a single operation.
+        /// </summary>
+        /// <remarks>This method is significantly more efficient than calling <see cref="TryGetGlyphMetrics(ushort, out GlyphMetrics)"/>
+        /// multiple times as it minimizes memory access overhead and exploits data locality. This is the preferred
+        /// method for batch glyph metrics retrieval in text layout and rendering scenarios. Returns false if neither
+        /// horizontal nor vertical metrics are available.</remarks>
+        /// <param name="glyphIds">Read-only span of glyph identifiers for which to retrieve metrics.</param>
+        /// <param name="metrics">Output span to write the glyph metrics. Must be at least as long as <paramref name="glyphIds"/>.</param>
+        /// <returns>true if metrics are available and all were successfully retrieved; otherwise, false.</returns>
+        public bool TryGetGlyphMetrics(ReadOnlySpan<ushort> glyphIds, Span<GlyphMetrics> metrics)
+        {
+            if (metrics.Length < glyphIds.Length)
+            {
+                throw new ArgumentException("Output span must be at least as long as input span", nameof(metrics));
+            }
+
+            if (!_hasHorizontalMetrics && !_hasVerticalMetrics)
+            {
+                return false;
+            }
+
+            // Use stackalloc for temporary buffers to avoid heap allocations
+            Span<HorizontalGlyphMetric> hMetrics = glyphIds.Length <= 256 
+                ? stackalloc HorizontalGlyphMetric[glyphIds.Length] 
+                : new HorizontalGlyphMetric[glyphIds.Length];
+
+            Span<VerticalGlyphMetric> vMetrics = glyphIds.Length <= 256
+                ? stackalloc VerticalGlyphMetric[glyphIds.Length]
+                : new VerticalGlyphMetric[glyphIds.Length];
+
+            bool hasHorizontal = false;
+            bool hasVertical = false;
+
+            // Batch retrieve horizontal metrics
+            if (_hasHorizontalMetrics && _hmTable != null)
+            {
+                hasHorizontal = _hmTable.TryGetMetrics(glyphIds, hMetrics);
+            }
+
+            // Batch retrieve vertical metrics
+            if (_hasVerticalMetrics && _vmTable != null)
+            {
+                hasVertical = _vmTable.TryGetMetrics(glyphIds, vMetrics);
+            }
+
+            if (!hasHorizontal && !hasVertical)
+            {
+                return false;
+            }
+
+            // Combine horizontal and vertical metrics
+            for (int i = 0; i < glyphIds.Length; i++)
+            {
+                metrics[i] = new GlyphMetrics
+                {
+                    XBearing = hasHorizontal ? hMetrics[i].LeftSideBearing : (short)0,
+                    YBearing = hasVertical ? vMetrics[i].TopSideBearing : (short)0,
+                    Width = hasHorizontal ? hMetrics[i].AdvanceWidth : (ushort)0,
+                    Height = hasVertical ? vMetrics[i].AdvanceHeight : (ushort)0
+                };
+            }
+
+            return true;
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        private IReadOnlyList<OpenTypeTag> LoadSupportedFeatures()
+        {
+            var gPosFeatures = FeatureListTable.LoadGPos(this);
+            var gSubFeatures = FeatureListTable.LoadGSub(this);
+
+            var count = (gPosFeatures?.Features.Count ?? 0) + (gSubFeatures?.Features.Count ?? 0);
+
+            if (count == 0)
+            {
+                return [];
+            }
+
+            var supportedFeatures = new List<OpenTypeTag>(count);
+
+            if (gPosFeatures != null)
+            {
+                foreach (var gPosFeature in gPosFeatures.Features)
+                {
+                    if (supportedFeatures.Contains(gPosFeature))
+                    {
+                        continue;
+                    }
+
+                    supportedFeatures.Add(gPosFeature);
+                }
+            }
+
+            if (gSubFeatures != null)
+            {
+                foreach (var gSubFeature in gSubFeatures.Features)
+                {
+                    if (supportedFeatures.Contains(gSubFeature))
+                    {
+                        continue;
+                    }
+
+                    supportedFeatures.Add(gSubFeature);
+                }
+            }
+
+            return supportedFeatures;
+        }
+
+        private static FontStyle GetFontStyle(OS2Table oS2Table, bool hasOs2Table, HeadTable headTable, PostTable postTable)
+        {
+            bool isItalic = false;
+            bool isOblique = false;
+
+            if (hasOs2Table)
+            {
+                isItalic = (oS2Table.Selection & OS2Table.FontSelectionFlags.ITALIC) != 0;
+                isOblique = (oS2Table.Selection & OS2Table.FontSelectionFlags.OBLIQUE) != 0;
+            }
+
+            if (!isItalic)
+            {
+                isItalic = headTable.MacStyle.HasFlag(MacStyleFlags.Italic);
+            }
+
+            var italicAngle = postTable.ItalicAngle;
+
+            if (isOblique)
+            {
+                return FontStyle.Oblique;
+            }
+
+            if (Math.Abs(italicAngle) > 0.01f && !isItalic)
+            {
+                return FontStyle.Oblique;
+            }
+
+            if (isItalic)
+            {
+                return FontStyle.Italic;
+            }
+
+            return FontStyle.Normal;
+        }
+
+        private static FontWeight GetFontWeight(OS2Table os2Table, HeadTable headTable)
+        {
+            if (os2Table.WeightClass >= 1 && os2Table.WeightClass <= 1000)
+            {
+                return (FontWeight)os2Table.WeightClass;
+            }
+
+            if (headTable.MacStyle.HasFlag(MacStyleFlags.Bold))
+            {
+                return FontWeight.Bold;
+            }
+
+            if (os2Table.Panose.FamilyKind == PanoseFamilyKind.LatinText)
+            {
+                return os2Table.Panose.Weight switch
+                {
+                    PanoseWeight.VeryLight => FontWeight.Thin,
+                    PanoseWeight.Light => FontWeight.Light,
+                    PanoseWeight.Thin => FontWeight.ExtraLight,
+                    PanoseWeight.Book => FontWeight.Normal,
+                    PanoseWeight.Medium => FontWeight.Medium,
+                    PanoseWeight.Demi => FontWeight.SemiBold,
+                    PanoseWeight.Bold => FontWeight.Bold,
+                    PanoseWeight.Heavy => FontWeight.ExtraBold,
+                    PanoseWeight.Black => FontWeight.Black,
+                    PanoseWeight.ExtraBlack => FontWeight.ExtraBlack,
+                    _ => FontWeight.Normal
+                };
+            }
+
+            return FontWeight.Normal;
+        }
+
+        private static FontStretch GetFontStretch(OS2Table os2Table, bool hasOs2Table)
+        {
+            if (hasOs2Table && os2Table.WidthClass >= 1 && os2Table.WidthClass <= 9)
+            {
+                return (FontStretch)os2Table.WidthClass;
+            }
+
+            if (hasOs2Table && os2Table.Panose.FamilyKind == PanoseFamilyKind.LatinText)
+            {
+                return os2Table.Panose.Proportion switch
+                {
+                    PanoseProportion.VeryCondensed => FontStretch.UltraCondensed,
+                    PanoseProportion.Condensed => FontStretch.Condensed,
+                    PanoseProportion.Modern or PanoseProportion.EvenWidth or PanoseProportion.OldStyle => FontStretch.Normal,
+                    PanoseProportion.Extended => FontStretch.Expanded,
+                    PanoseProportion.VeryExtended => FontStretch.UltraExpanded,
+                    PanoseProportion.Monospaced => FontStretch.Normal,
+                    _ => FontStretch.Normal
+                };
+            }
+
+            return FontStretch.Normal;
+        }
+
+        private void Dispose(bool disposing)
+        {
+            if (_isDisposed)
+            {
+                return;
+            }
+
+            _isDisposed = true;
+
+            if (!disposing)
+            {
+                return;
+            }
+
+            PlatformTypeface.Dispose();
         }
     }
 }

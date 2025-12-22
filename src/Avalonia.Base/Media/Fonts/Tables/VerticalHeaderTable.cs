@@ -5,7 +5,21 @@ namespace Avalonia.Media.Fonts.Tables
         internal const string TableName = "vhea";
         internal static OpenTypeTag Tag { get; } = OpenTypeTag.Parse(TableName);
 
+        public FontVersion Version { get; }
+        public short Ascender { get; }
+        public short Descender { get; }
+        public short LineGap { get; }
+        public ushort AdvanceHeightMax { get; }
+        public short MinTopSideBearing { get; }
+        public short MinBottomSideBearing { get; }
+        public short YMaxExtent { get; }
+        public short CaretSlopeRise { get; }
+        public short CaretSlopeRun { get; }
+        public short CaretOffset { get; }
+        public ushort NumberOfVMetrics { get; }
+
         public VerticalHeaderTable(
+            FontVersion version,
             short ascender,
             short descender,
             short lineGap,
@@ -18,6 +32,7 @@ namespace Avalonia.Media.Fonts.Tables
             short caretOffset,
             ushort numberOfVMetrics)
         {
+            Version = version;
             Ascender = ascender;
             Descender = descender;
             LineGap = lineGap;
@@ -31,29 +46,7 @@ namespace Avalonia.Media.Fonts.Tables
             NumberOfVMetrics = numberOfVMetrics;
         }
 
-        public ushort AdvanceHeightMax { get; }
-
-        public short Ascender { get; }
-
-        public short CaretOffset { get; }
-
-        public short CaretSlopeRise { get; }
-
-        public short CaretSlopeRun { get; }
-
-        public short Descender { get; }
-
-        public short LineGap { get; }
-
-        public short MinTopSideBearing { get; }
-
-        public short MinBottomSideBearing { get; }
-
-        public ushort NumberOfVMetrics { get; }
-
-        public short YMaxExtent { get; }
-
-        public static bool TryLoad(IGlyphTypeface fontFace, out VerticalHeaderTable verticalHeaderTable)
+        public static bool TryLoad(GlyphTypeface fontFace, out VerticalHeaderTable verticalHeaderTable)
         {
             verticalHeaderTable = default;
 
@@ -72,7 +65,7 @@ namespace Avalonia.Media.Fonts.Tables
             verticalHeaderTable = default;
 
             // See OpenType spec for vhea:
-            // | Fixed  | version             | 0x00010000 (1.0)                                                                |
+            // | Version16Dot16 | version             | 0x00010000 (1.0) or 0x00011000 (1.1)                                            |
             // | FWord  | ascender            | Distance from baseline of highest ascender (vertical)                            |
             // | FWord  | descender           | Distance from baseline of lowest descender (vertical)                            |
             // | FWord  | lineGap             | typographic line gap (vertical)                                                  |
@@ -90,8 +83,7 @@ namespace Avalonia.Media.Fonts.Tables
             // | int16  | metricDataFormat    | 0 for current format                                                             |
             // | uint16 | numOfLongVerMetrics | number of advance heights in vertical metrics table                              |
 
-            ushort majorVersion = reader.ReadUInt16();
-            ushort minorVersion = reader.ReadUInt16();
+            FontVersion version = reader.ReadVersion16Dot16();
             short ascender = reader.ReadFWORD();
             short descender = reader.ReadFWORD();
             short lineGap = reader.ReadFWORD();
@@ -116,6 +108,7 @@ namespace Avalonia.Media.Fonts.Tables
             ushort numberOfVMetrics = reader.ReadUInt16();
 
             verticalHeaderTable = new VerticalHeaderTable(
+                version,
                 ascender,
                 descender,
                 lineGap,

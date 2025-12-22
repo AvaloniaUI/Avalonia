@@ -14,7 +14,7 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
         internal const string TableName = "cmap";
         internal static OpenTypeTag Tag { get; } = OpenTypeTag.Parse(TableName);
 
-        public static IReadOnlyDictionary<int, ushort> Load(IGlyphTypeface glyphTypeface)
+        public static IReadOnlyDictionary<int, ushort> Load(GlyphTypeface glyphTypeface)
         {
             if (!glyphTypeface.PlatformTypeface.TryGetTable(Tag, out var table))
             {

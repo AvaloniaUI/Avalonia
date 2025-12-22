@@ -208,7 +208,7 @@ namespace Avalonia.Base.UnitTests.Media
 
             var features = typeface.SupportedFeatures;
 
-            Assert.NotNull(features);
+            Assert.NotEmpty(features);
         }
 
         [Fact]
@@ -404,7 +404,7 @@ namespace Avalonia.Base.UnitTests.Media
 
             public void Dispose()
             {
-                _fontMemory.Dispose();
+                ((IDisposable)_fontMemory).Dispose();
             }
 
             public unsafe bool TryGetStream([NotNullWhen(true)] out Stream stream)

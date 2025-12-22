@@ -151,16 +151,20 @@ namespace Avalonia.Media.Fonts.Tables
             UpperOpticalPointSize = upperOpticalPointSize;
         }
 
-        public static OS2Table? Load(IGlyphTypeface fontFace)
+        public static bool TryLoad(GlyphTypeface fontFace, out OS2Table os2Table)
         {
+            os2Table = default;
+            
             if (!fontFace.PlatformTypeface.TryGetTable(Tag, out var table))
             {
-                return null;
+                return false;
             }
 
             var binaryReader = new BigEndianBinaryReader(table.Span);
 
-            return Load(ref binaryReader);
+            os2Table = Load(ref binaryReader);
+
+            return true;
         }
 
         private static OS2Table Load(ref BigEndianBinaryReader reader)

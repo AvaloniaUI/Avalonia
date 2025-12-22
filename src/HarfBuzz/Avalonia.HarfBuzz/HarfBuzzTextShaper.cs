@@ -112,7 +112,7 @@ namespace Avalonia.Harfbuzz
         }
 
 
-        public ITextShaperTypeface CreateTypeface(IGlyphTypeface glyphTypeface)
+        public ITextShaperTypeface CreateTypeface(GlyphTypeface glyphTypeface)
         {
             return new HarfBuzzTypeface(glyphTypeface);
         }

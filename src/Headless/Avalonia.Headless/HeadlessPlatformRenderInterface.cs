@@ -131,7 +131,7 @@ namespace Avalonia.Headless
         }
 
         public IGlyphRunImpl CreateGlyphRun(
-            IGlyphTypeface glyphTypeface, 
+            GlyphTypeface glyphTypeface, 
             double fontRenderingEmSize,
             IReadOnlyList<GlyphInfo> glyphInfos, 
             Point baselineOrigin)
@@ -142,7 +142,7 @@ namespace Avalonia.Headless
         internal class HeadlessGlyphRunStub : IGlyphRunImpl
         {
             public HeadlessGlyphRunStub(
-                IGlyphTypeface glyphTypeface,
+                GlyphTypeface glyphTypeface,
                 double fontRenderingEmSize,
                 Point baselineOrigin)
             {
@@ -155,7 +155,7 @@ namespace Avalonia.Headless
 
             public Point BaselineOrigin { get; }
 
-            public IGlyphTypeface GlyphTypeface { get; }
+            public GlyphTypeface GlyphTypeface { get; }
 
             public double FontRenderingEmSize { get; }           
 

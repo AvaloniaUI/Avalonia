@@ -7,9 +7,8 @@ namespace Avalonia.Media.Fonts.Tables
         internal const string TableName = "maxp";
         internal static OpenTypeTag Tag { get; } = OpenTypeTag.Parse(TableName);
 
-        public float Version { get; }
-        public ushort NumGlyphs { get; }
-        
+        public FontVersion Version { get; }
+        public ushort NumGlyphs { get; }        
         public ushort MaxPoints { get; }
         public ushort MaxContours { get; }
         public ushort MaxCompositePoints { get; }
@@ -25,7 +24,7 @@ namespace Avalonia.Media.Fonts.Tables
         public ushort MaxComponentDepth { get; }
 
         private MaxpTable(
-            float version,
+            FontVersion version,
             ushort numGlyphs,
             ushort maxPoints,
             ushort maxContours,
@@ -58,7 +57,7 @@ namespace Avalonia.Media.Fonts.Tables
             MaxComponentDepth = maxComponentDepth;
         }
 
-        public static MaxpTable Load(IGlyphTypeface fontFace)
+        public static MaxpTable Load(GlyphTypeface fontFace)
         {
             if (!fontFace.PlatformTypeface.TryGetTable(Tag, out var table))
             {
@@ -67,10 +66,10 @@ namespace Avalonia.Media.Fonts.Tables
 
             var binaryReader = new BigEndianBinaryReader(table.Span);
 
-            return Load(binaryReader);
+            return Load(ref binaryReader);
         }
 
-        private static MaxpTable Load(BigEndianBinaryReader reader)
+        private static MaxpTable Load(ref BigEndianBinaryReader reader)
         {
             // Version 0.5 (CFF/CFF2 fonts):
             // | Version16Dot16 | version   | 0x00005000 for version 0.5      |
@@ -93,10 +92,10 @@ namespace Avalonia.Media.Fonts.Tables
             // | uint16         | maxComponentElements   | Maximum number of components at top level           |
             // | uint16         | maxComponentDepth      | Maximum levels of recursion                         |
 
-            float version = reader.ReadFixed();
+            FontVersion version = reader.ReadVersion16Dot16();
             ushort numGlyphs = reader.ReadUInt16();
 
-            if (version < 1.0f)
+            if (version.Major < 1)
             {
                 return new MaxpTable(
                     version,

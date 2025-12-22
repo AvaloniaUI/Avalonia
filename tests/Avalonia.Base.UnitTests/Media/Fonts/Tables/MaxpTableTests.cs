@@ -53,7 +53,8 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var maxpTable = MaxpTable.Load(typeface);
 
-            Assert.Equal(1.0f, maxpTable.Version);
+            Assert.Equal(1, maxpTable.Version.Major);
+            Assert.Equal(0, maxpTable.Version.Minor);
         }
 
         [Fact]
@@ -124,7 +125,6 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
             var maxpTable = MaxpTable.Load(typeface);
 
             Assert.Equal(7, maxpTable.MaxCompositeContours);
-
         }
 
         [Fact]
@@ -191,7 +191,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             public void Dispose()
             {
-                _fontMemory.Dispose();
+                ((IDisposable)_fontMemory).Dispose();
             }
 
             public unsafe bool TryGetStream([NotNullWhen(true)] out Stream stream)

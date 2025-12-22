@@ -123,7 +123,7 @@ namespace Avalonia.Media.Fonts.Tables.Name
         public string GetNameById(ushort culture, ushort nameId)
             => GetNameById(culture, (KnownNameIds)nameId);
 
-        public static NameTable? Load(IGlyphTypeface glyphTypeface)
+        public static NameTable? Load(GlyphTypeface glyphTypeface)
         {
             if (!glyphTypeface.PlatformTypeface.TryGetTable(Tag, out var table))
             {

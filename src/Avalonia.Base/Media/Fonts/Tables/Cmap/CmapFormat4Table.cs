@@ -19,6 +19,12 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
 
         private int? _count;
 
+        /// <summary>
+        /// Gets the language code for the cmap subtable.
+        /// For non-language-specific tables, this value is 0.
+        /// </summary>
+        public ushort Language { get; }
+
         public CmapFormat4Table(ReadOnlyMemory<byte> table)
         {
             var reader = new BigEndianBinaryReader(table.Span);
@@ -31,7 +37,7 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
 
             _table = table.Slice(0, length);
 
-            ushort language = reader.ReadUInt16(); // language code, 0 for non-language-specific
+            Language = reader.ReadUInt16(); // language code, 0 for non-language-specific
 
             ushort segCountX2 = reader.ReadUInt16(); // 2 * segCount
             _segCount = segCountX2 / 2;
@@ -76,9 +82,8 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
         }
 
         // Reads a big-endian UInt16 from the specified word index in the given memory
-        private static ushort ReadUInt16BE(ReadOnlyMemory<byte> mem, int wordIndex)
+        private static ushort ReadUInt16BE(ReadOnlySpan<byte> span, int wordIndex)
         {
-            var span = mem.Span;
             int byteIndex = wordIndex * 2;
 
             // Ensure we don't go out of bounds
@@ -96,11 +101,14 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
 
                 int count = 0;
 
+                var startCodes = _startCodes.Span;
+                var endCodes = _endCodes.Span;
+
                 for (int seg = 0; seg < _segCount; seg++)
                 {
                     // Get start and end of segment
-                    int start = ReadUInt16BE(_startCodes, seg);
-                    int end = ReadUInt16BE(_endCodes, seg);
+                    int start = ReadUInt16BE(startCodes, seg);
+                    int end = ReadUInt16BE(endCodes, seg);
 
                     for (int cp = start; cp <= end; cp++)
                     {
@@ -130,8 +138,8 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
                     return 0;
                 }
 
-                ushort idRangeOffset = ReadUInt16BE(_idRangeOffsets, segmentIndex);
-                ushort idDelta = ReadUInt16BE(_idDeltas, segmentIndex);
+                ushort idRangeOffset = ReadUInt16BE(_idRangeOffsets.Span, segmentIndex);
+                ushort idDelta = ReadUInt16BE(_idDeltas.Span, segmentIndex);
 
                 // If idRangeOffset is 0, glyphId = (codePoint + idDelta) % 65536
                 if (idRangeOffset == 0)
@@ -140,7 +148,7 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
                 }
                 else
                 {
-                    int start = ReadUInt16BE(_startCodes, segmentIndex);
+                    int start = ReadUInt16BE(_startCodes.Span, segmentIndex);
                     int ro = idRangeOffset / 2; // words
                     // The index into the glyphIdArray
                     int idx = (codePoint - start) + ro - (_segCount - segmentIndex);
@@ -150,7 +158,7 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
 
                     if ((uint)idx < (uint)glyphArrayWords)
                     {
-                        ushort glyphId = ReadUInt16BE(_glyphIdArray, idx);
+                        ushort glyphId = ReadUInt16BE(_glyphIdArray.Span, idx);
 
                         // If glyphId is not 0, apply idDelta
                         if (glyphId != 0)
@@ -182,8 +190,8 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
             {
                 for (int seg = 0; seg < _segCount; seg++)
                 {
-                    int start = ReadUInt16BE(_startCodes, seg);
-                    int end = ReadUInt16BE(_endCodes, seg);
+                    int start = ReadUInt16BE(_startCodes.Span, seg);
+                    int end = ReadUInt16BE(_endCodes.Span, seg);
 
                     for (int cp = start; cp <= end; cp++)
                     {
@@ -205,8 +213,8 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
             {
                 for (int seg = 0; seg < _segCount; seg++)
                 {
-                    int start = ReadUInt16BE(_startCodes, seg);
-                    int end = ReadUInt16BE(_endCodes, seg);
+                    int start = ReadUInt16BE(_startCodes.Span, seg);
+                    int end = ReadUInt16BE(_endCodes.Span, seg);
 
                     for (int cp = start; cp <= end; cp++)
                     {
@@ -226,8 +234,8 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
         {
             for (int seg = 0; seg < _segCount; seg++)
             {
-                int start = ReadUInt16BE(_startCodes, seg);
-                int end = ReadUInt16BE(_endCodes, seg);
+                int start = ReadUInt16BE(_startCodes.Span, seg);
+                int end = ReadUInt16BE(_endCodes.Span, seg);
 
                 for (int cp = start; cp <= end; cp++)
                 {
@@ -247,8 +255,8 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
         // Resolves the glyph ID for a given code point within a specific segment
         private ushort ResolveGlyph(int segmentIndex, int codePoint)
         {
-            ushort idRangeOffset = ReadUInt16BE(_idRangeOffsets, segmentIndex);
-            ushort idDelta = ReadUInt16BE(_idDeltas, segmentIndex);
+            ushort idRangeOffset = ReadUInt16BE(_idRangeOffsets.Span, segmentIndex);
+            ushort idDelta = ReadUInt16BE(_idDeltas.Span, segmentIndex);
 
             if (idRangeOffset == 0)
             {
@@ -256,14 +264,14 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
             }
             else
             {
-                int start = ReadUInt16BE(_startCodes, segmentIndex);
+                int start = ReadUInt16BE(_startCodes.Span, segmentIndex);
                 int ro = idRangeOffset / 2; // words
                 int idx = (codePoint - start) + ro - (_segCount - segmentIndex);
                 int glyphArrayWords = _glyphIdArray.Length / 2;
 
                 if ((uint)idx < (uint)glyphArrayWords)
                 {
-                    ushort glyphId = ReadUInt16BE(_glyphIdArray, idx);
+                    ushort glyphId = ReadUInt16BE(_glyphIdArray.Span, idx);
 
                     if (glyphId != 0)
                     {
@@ -283,11 +291,14 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
             int lo = 0;
             int hi = _segCount - 1;
 
+            var startCodes = _startCodes.Span;
+            var endCodes = _endCodes.Span;
+
             // Binary search over endCodes (sorted ascending)
             while (lo <= hi)
             {
                 int mid = (lo + hi) >> 1;
-                int end = ReadUInt16BE(_endCodes, mid);
+                int end = ReadUInt16BE(endCodes, mid);
 
                 if (codePoint > end)
                 {
@@ -302,7 +313,7 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
             // lo is now the first segment whose endCode >= codePoint
             if (lo < _segCount)
             {
-                int start = ReadUInt16BE(_startCodes, lo);
+                int start = ReadUInt16BE(startCodes, lo);
 
                 if (codePoint >= start)
                 {
@@ -311,6 +322,132 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
             }
 
             return -1; // not found
+        }
+
+        /// <summary>
+        /// Maps multiple Unicode code points to glyph indices in a single operation.
+        /// </summary>
+        /// <param name="codePoints">Read-only span of code points to map.</param>
+        /// <param name="glyphIds">Output span to write glyph IDs. Must be at least as long as <paramref name="codePoints"/>.</param>
+        /// <remarks>
+        /// This method is significantly more efficient than calling the indexer multiple times as it:
+        /// - Reuses span references (no repeated .Span property access)
+        /// - Caches segment data for sequential lookups
+        /// - Optimizes for locality of code points (common in text runs)
+        /// This is the preferred method for batch character-to-glyph mapping in text shaping.
+        /// </remarks>
+        public void MapCodePointsToGlyphs(ReadOnlySpan<int> codePoints, Span<ushort> glyphIds)
+        {
+            if (glyphIds.Length < codePoints.Length)
+            {
+                throw new ArgumentException("Output span must be at least as long as input span", nameof(glyphIds));
+            }
+
+            // Cache all spans once
+            var startCodes = _startCodes.Span;
+            var endCodes = _endCodes.Span;
+            var idDeltas = _idDeltas.Span;
+            var idRangeOffsets = _idRangeOffsets.Span;
+            var glyphIdArray = _glyphIdArray.Span;
+            int glyphArrayWords = glyphIdArray.Length / 2;
+
+            // Track last segment for locality optimization
+            int lastSegment = -1;
+
+            for (int i = 0; i < codePoints.Length; i++)
+            {
+                int codePoint = codePoints[i];
+                int segmentIndex;
+
+                // Optimization: check if codepoint is in the same segment as previous
+                if (lastSegment >= 0 && lastSegment < _segCount)
+                {
+                    int lastStart = ReadUInt16BE(startCodes, lastSegment);
+                    int lastEnd = ReadUInt16BE(endCodes, lastSegment);
+
+                    if (codePoint >= lastStart && codePoint <= lastEnd)
+                    {
+                        segmentIndex = lastSegment;
+                        goto MapGlyph;
+                    }
+                }
+
+                // Binary search for segment
+                segmentIndex = FindSegmentIndexOptimized(codePoint, startCodes, endCodes);
+
+                if (segmentIndex < 0)
+                {
+                    glyphIds[i] = 0;
+                    continue;
+                }
+
+                lastSegment = segmentIndex;
+
+            MapGlyph:
+                ushort idRangeOffset = ReadUInt16BE(idRangeOffsets, segmentIndex);
+                ushort idDelta = ReadUInt16BE(idDeltas, segmentIndex);
+
+                if (idRangeOffset == 0)
+                {
+                    glyphIds[i] = (ushort)((codePoint + idDelta) & 0xFFFF);
+                }
+                else
+                {
+                    int start = ReadUInt16BE(startCodes, segmentIndex);
+                    int ro = idRangeOffset / 2;
+                    int idx = (codePoint - start) + ro - (_segCount - segmentIndex);
+
+                    if ((uint)idx < (uint)glyphArrayWords)
+                    {
+                        ushort glyphId = ReadUInt16BE(glyphIdArray, idx);
+
+                        if (glyphId != 0)
+                        {
+                            glyphId = (ushort)((glyphId + idDelta) & 0xFFFF);
+                        }
+
+                        glyphIds[i] = glyphId;
+                    }
+                    else
+                    {
+                        glyphIds[i] = 0;
+                    }
+                }
+            }
+        }
+
+        // Optimized binary search that works directly with cached spans
+        private int FindSegmentIndexOptimized(int codePoint, ReadOnlySpan<byte> startCodes, ReadOnlySpan<byte> endCodes)
+        {
+            int lo = 0;
+            int hi = _segCount - 1;
+
+            while (lo <= hi)
+            {
+                int mid = (lo + hi) >> 1;
+                int end = ReadUInt16BE(endCodes, mid);
+
+                if (codePoint > end)
+                {
+                    lo = mid + 1;
+                }
+                else
+                {
+                    hi = mid - 1;
+                }
+            }
+
+            if (lo < _segCount)
+            {
+                int start = ReadUInt16BE(startCodes, lo);
+
+                if (codePoint >= start)
+                {
+                    return lo;
+                }
+            }
+
+            return -1;
         }
     }
 }

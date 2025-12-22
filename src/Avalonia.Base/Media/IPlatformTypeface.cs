@@ -37,7 +37,7 @@ namespace Avalonia.Media
         FontSimulations FontSimulations { get; }
 
         /// <summary>
-        /// Returns the font file stream represented by the <see cref="IGlyphTypeface"/>.
+        /// Returns the font file stream represented by the <see cref="GlyphTypeface"/>.
         /// </summary>
         /// <param name="stream">The stream.</param>
         /// <returns>Returns <c>true</c> if the stream can be obtained, otherwise <c>false</c>.</returns>

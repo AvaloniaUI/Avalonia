@@ -39,8 +39,8 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var headTable = HeadTable.Load(typeface);
 
-            Assert.Equal((ushort)1, headTable.MajorVersion);
-            Assert.Equal((ushort)0, headTable.MinorVersion);
+            Assert.Equal((ushort)1, headTable.Version.Major);
+            Assert.Equal((ushort)0, headTable.Version.Minor);
         }
 
         [Fact]
@@ -68,8 +68,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var headTable = HeadTable.Load(typeface);
 
-            Assert.True(headTable.UnitsPerEm >= 16);
-            Assert.True(headTable.UnitsPerEm <= 16384);
+            Assert.Equal(2816, headTable.UnitsPerEm);
         }
 
         [Fact]
@@ -83,8 +82,10 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var headTable = HeadTable.Load(typeface);
 
-            Assert.True(headTable.XMin <= headTable.XMax);
-            Assert.True(headTable.YMin <= headTable.YMax);
+            Assert.Equal(-2080, headTable.XMin);
+            Assert.Equal(7274, headTable.XMax);
+            Assert.Equal(-900, headTable.YMin);
+            Assert.Equal(3072, headTable.YMax);
         }
 
         [Fact]
@@ -98,7 +99,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var headTable = HeadTable.Load(typeface);
 
-            Assert.True(headTable.IndexToLocFormat == 0 || headTable.IndexToLocFormat == 1);
+            Assert.Equal(IndexToLocFormat.Long, headTable.IndexToLocFormat);
         }
 
         [Fact]
@@ -112,7 +113,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var headTable = HeadTable.Load(typeface);
 
-            Assert.Equal((short)0, headTable.GlyphDataFormat);
+            Assert.Equal(GlyphDataFormat.Current, headTable.GlyphDataFormat);
         }
 
         [Fact]
@@ -126,7 +127,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var headTable = HeadTable.Load(typeface);
 
-            Assert.True(headTable.LowestRecPPEM > 0);
+            Assert.Equal(6, headTable.LowestRecPPEM);
         }
 
         [Fact]
@@ -140,7 +141,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var headTable = HeadTable.Load(typeface);
 
-            Assert.True(headTable.FontRevision > 0);
+            Assert.True(headTable.FontRevision.ToFloat() > 0);
         }
 
         [Fact]
@@ -154,7 +155,8 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var headTable = HeadTable.Load(typeface);
 
-            Assert.NotEqual(0, headTable.Created);
+            Assert.True(headTable.Created > new DateTime(1904, 1, 1));
+            Assert.True(headTable.Created < DateTime.UtcNow);
         }
 
         [Fact]
@@ -168,7 +170,36 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var headTable = HeadTable.Load(typeface);
 
-            Assert.NotEqual(0, headTable.Modified);
+            Assert.True(headTable.Modified > new DateTime(1904, 1, 1));
+            Assert.True(headTable.Modified < DateTime.UtcNow);
+        }
+
+        [Fact]
+        public void HeadTable_Should_Have_Valid_Flags()
+        {
+            var assetLoader = new StandardAssetLoader();
+
+            using var stream = assetLoader.Open(new Uri(s_InterFontUri));
+
+            var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
+
+            var headTable = HeadTable.Load(typeface);
+
+            Assert.True(headTable.Flags.HasFlag(HeadFlags.BaselineAtY0));
+        }
+
+        [Fact]
+        public void HeadTable_Should_Have_Valid_FontDirectionHint()
+        {
+            var assetLoader = new StandardAssetLoader();
+
+            using var stream = assetLoader.Open(new Uri(s_InterFontUri));
+
+            var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
+
+            var headTable = HeadTable.Load(typeface);
+
+            Assert.Equal(FontDirectionHint.LeftToRightWithNeutrals, headTable.FontDirectionHint);
         }
 
         private class CustomPlatformTypeface : IPlatformTypeface
@@ -193,7 +224,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             public void Dispose()
             {
-                _fontMemory.Dispose();
+                ((IDisposable)_fontMemory).Dispose();
             }
 
             public unsafe bool TryGetStream([NotNullWhen(true)] out Stream stream)

@@ -4,9 +4,9 @@ namespace Avalonia.Media.Fonts
 {
     public readonly record struct OpenTypeTag
     {
-        public static readonly OpenTypeTag None = new OpenTypeTag(0, 0, 0, 0);
-        public static readonly OpenTypeTag Max = new OpenTypeTag(byte.MaxValue, byte.MaxValue, byte.MaxValue, byte.MaxValue);
-        public static readonly OpenTypeTag MaxSigned = new OpenTypeTag((byte)sbyte.MaxValue, byte.MaxValue, byte.MaxValue, byte.MaxValue);
+        internal static readonly OpenTypeTag None = new OpenTypeTag(0, 0, 0, 0);
+        internal static readonly OpenTypeTag Max = new OpenTypeTag(byte.MaxValue, byte.MaxValue, byte.MaxValue, byte.MaxValue);
+        internal static readonly OpenTypeTag MaxSigned = new OpenTypeTag((byte)sbyte.MaxValue, byte.MaxValue, byte.MaxValue, byte.MaxValue);
 
         private readonly uint _value;
 

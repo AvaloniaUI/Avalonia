@@ -111,6 +111,17 @@ namespace Avalonia.Media.Fonts.Tables
             return value;
         }
 
+        public FontVersion ReadVersion16Dot16()
+        {
+            EnsureAvailable(4);
+
+            uint value = BinaryPrimitives.ReadUInt32BigEndian(_span.Slice(_position, 4));
+
+            _position += 4;
+
+            return new FontVersion(value);
+        }
+
         public int ReadInt32()
         {
             EnsureAvailable(4);

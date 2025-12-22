@@ -27,7 +27,7 @@ namespace Avalonia.Media.Fonts.Tables
 
         public IReadOnlyList<OpenTypeTag> Features { get; }
 
-        public static FeatureListTable? LoadGSub(IGlyphTypeface glyphTypeface)
+        public static FeatureListTable? LoadGSub(GlyphTypeface glyphTypeface)
         {
             if (!glyphTypeface.PlatformTypeface.TryGetTable(GSubTag, out var gPosTable))
             {
@@ -39,7 +39,7 @@ namespace Avalonia.Media.Fonts.Tables
             return Load(ref reader);
         }
 
-        public static FeatureListTable? LoadGPos(IGlyphTypeface glyphTypeface)
+        public static FeatureListTable? LoadGPos(GlyphTypeface glyphTypeface)
         {
             if (!glyphTypeface.PlatformTypeface.TryGetTable(GPosTag, out var gSubTable))
             {

@@ -167,8 +167,8 @@ namespace Avalonia.Media.TextFormatting
         /// <returns></returns>
         internal static bool TryGetShapeableLength(
             ReadOnlySpan<char> text,
-            IGlyphTypeface glyphTypeface,
-            IGlyphTypeface? defaultGlyphTypeface,
+            GlyphTypeface glyphTypeface,
+            GlyphTypeface? defaultGlyphTypeface,
             out int length)
         {
             length = 0;

@@ -7,7 +7,7 @@ namespace Avalonia.Harfbuzz
 {
     internal class HarfBuzzTypeface : ITextShaperTypeface
     {
-        public HarfBuzzTypeface(IGlyphTypeface glyphTypeface)
+        public HarfBuzzTypeface(GlyphTypeface glyphTypeface)
         {
             GlyphTypeface = glyphTypeface;
 
@@ -18,7 +18,7 @@ namespace Avalonia.Harfbuzz
             HBFont.SetFunctionsOpenType();
         }
 
-        public IGlyphTypeface GlyphTypeface { get; }
+        public GlyphTypeface GlyphTypeface { get; }
         public Face HBFace { get; }
         public Font HBFont { get; }
 

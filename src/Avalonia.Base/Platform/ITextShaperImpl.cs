@@ -25,6 +25,6 @@ namespace Avalonia.Platform
         /// <param name="glyphTypeface">The glyph typeface to use as the basis for the text shaper typeface.</param>
         /// <returns>An instance of <see cref="ITextShaperTypeface"/> that represents the text shaping functionality for the
         /// specified glyph typeface.</returns>
-        ITextShaperTypeface CreateTypeface(IGlyphTypeface glyphTypeface);
+        ITextShaperTypeface CreateTypeface(GlyphTypeface glyphTypeface);
     }
 }

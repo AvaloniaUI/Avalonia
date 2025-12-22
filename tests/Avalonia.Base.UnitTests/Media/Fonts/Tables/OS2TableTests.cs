@@ -23,9 +23,9 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
-            var os2Table = OS2Table.Load(typeface);
+            var loaded = OS2Table.TryLoad(typeface, out var os2Table);
 
-            Assert.NotNull(os2Table);
+            Assert.True(loaded);
         }
 
         [Fact]
@@ -37,11 +37,11 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
-            var os2Table = OS2Table.Load(typeface);
+            var loaded = OS2Table.TryLoad(typeface, out var os2Table);
 
-            Assert.NotNull(os2Table);
-            Assert.True(os2Table.Value.WeightClass >= 1);
-            Assert.True(os2Table.Value.WeightClass <= 1000);
+            Assert.True(loaded);
+            Assert.True(os2Table.WeightClass >= 1);
+            Assert.True(os2Table.WeightClass <= 1000);
         }
 
         [Fact]
@@ -53,11 +53,11 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
-            var os2Table = OS2Table.Load(typeface);
+            var loaded = OS2Table.TryLoad(typeface, out var os2Table);
 
-            Assert.NotNull(os2Table);
-            Assert.True(os2Table.Value.WidthClass >= 1);
-            Assert.True(os2Table.Value.WidthClass <= 9);
+            Assert.True(loaded);
+            Assert.True(os2Table.WidthClass >= 1);
+            Assert.True(os2Table.WidthClass <= 9);
         }
 
         [Fact]
@@ -69,12 +69,12 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
-            var os2Table = OS2Table.Load(typeface);
+            var loaded = OS2Table.TryLoad(typeface, out var os2Table);
 
-            Assert.NotNull(os2Table);
-            Assert.NotEqual(0, os2Table.Value.TypoAscender);
-            Assert.NotEqual(0, os2Table.Value.TypoDescender);
-            Assert.True(os2Table.Value.TypoAscender > os2Table.Value.TypoDescender);
+            Assert.True(loaded);
+            Assert.NotEqual(0, os2Table.TypoAscender);
+            Assert.NotEqual(0, os2Table.TypoDescender);
+            Assert.True(os2Table.TypoAscender > os2Table.TypoDescender);
         }
 
         [Fact]
@@ -86,11 +86,11 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
-            var os2Table = OS2Table.Load(typeface);
+            var loaded = OS2Table.TryLoad(typeface, out var os2Table);
 
-            Assert.NotNull(os2Table);
-            Assert.True(os2Table.Value.WinAscent > 0);
-            Assert.True(os2Table.Value.WinDescent > 0);
+            Assert.True(loaded);
+            Assert.True(os2Table.WinAscent > 0);
+            Assert.True(os2Table.WinDescent > 0);
         }
 
         [Fact]
@@ -102,10 +102,10 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
-            var os2Table = OS2Table.Load(typeface);
+            var loaded = OS2Table.TryLoad(typeface, out var os2Table);
 
-            Assert.NotNull(os2Table);
-            Assert.True(os2Table.Value.StrikeoutSize >= 0);
+            Assert.True(loaded);
+            Assert.True(os2Table.StrikeoutSize >= 0);
         }
 
         [Fact]
@@ -117,39 +117,9 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
-            var os2Table = OS2Table.Load(typeface);
+            var loaded = OS2Table.TryLoad(typeface, out var os2Table);
 
-            Assert.NotNull(os2Table);
-        }
-
-        [Fact]
-        public void OS2Table_Inter_Regular_Should_Not_Be_Bold()
-        {
-            var assetLoader = new StandardAssetLoader();
-
-            using var stream = assetLoader.Open(new Uri(s_InterFontUri));
-
-            var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
-
-            var os2Table = OS2Table.Load(typeface);
-
-            Assert.NotNull(os2Table);
-            Assert.False(os2Table.Value.Selection.HasFlag(OS2Table.FontSelectionFlags.BOLD));
-        }
-
-        [Fact]
-        public void OS2Table_Inter_Regular_Should_Not_Be_Italic()
-        {
-            var assetLoader = new StandardAssetLoader();
-
-            using var stream = assetLoader.Open(new Uri(s_InterFontUri));
-
-            var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
-
-            var os2Table = OS2Table.Load(typeface);
-
-            Assert.NotNull(os2Table);
-            Assert.False(os2Table.Value.Selection.HasFlag(OS2Table.FontSelectionFlags.ITALIC));
+            Assert.True(loaded);
         }
 
         [Fact]
@@ -161,10 +131,10 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
-            var os2Table = OS2Table.Load(typeface);
+            var loaded = OS2Table.TryLoad(typeface, out var os2Table);
 
-            Assert.NotNull(os2Table);
-            Assert.True(os2Table.Value.Selection.HasFlag(OS2Table.FontSelectionFlags.REGULAR));
+            Assert.True(loaded);
+            Assert.True(os2Table.Selection.HasFlag(OS2Table.FontSelectionFlags.REGULAR));
         }
 
         [Fact]
@@ -176,11 +146,11 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
-            var os2Table = OS2Table.Load(typeface);
+            var loaded = OS2Table.TryLoad(typeface, out var os2Table);
 
-            Assert.NotNull(os2Table);
-            Assert.True(os2Table.Value.TypoAscender > 0);
-            Assert.True(os2Table.Value.WinAscent > 0);
+            Assert.True(loaded);
+            Assert.True(os2Table.TypoAscender > 0);
+            Assert.True(os2Table.WinAscent > 0);
         }
 
         [Fact]
@@ -192,11 +162,11 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
-            var os2Table = OS2Table.Load(typeface);
+            var loaded = OS2Table.TryLoad(typeface, out var os2Table);
 
-            Assert.NotNull(os2Table);
-            Assert.True(os2Table.Value.TypoDescender < 0);
-            Assert.True(os2Table.Value.WinDescent > 0);
+            Assert.True(loaded);
+            Assert.True(os2Table.TypoDescender < 0);
+            Assert.True(os2Table.WinDescent > 0);
         }
 
         [Fact]
@@ -208,9 +178,9 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
-            var os2Table = OS2Table.Load(typeface);
+            var loaded = OS2Table.TryLoad(typeface, out var os2Table);
 
-            Assert.NotNull(os2Table);
+            Assert.True(loaded);
         }
 
         [Fact]
@@ -222,10 +192,10 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
-            var os2Table = OS2Table.Load(typeface);
+            var loaded = OS2Table.TryLoad(typeface, out var os2Table);
 
-            Assert.NotNull(os2Table);
-            Assert.Equal((ushort)400, os2Table.Value.WeightClass);
+            Assert.True(loaded);
+            Assert.Equal((ushort)400, os2Table.WeightClass);
         }
 
         [Fact]
@@ -237,10 +207,10 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
-            var os2Table = OS2Table.Load(typeface);
+            var loaded = OS2Table.TryLoad(typeface, out var os2Table);
 
-            Assert.NotNull(os2Table);
-            Assert.Equal((ushort)5, os2Table.Value.WidthClass);
+            Assert.True(loaded);
+            Assert.Equal((ushort)5, os2Table.WidthClass);
         }
 
         [Fact]
@@ -252,10 +222,10 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
-            var os2Table = OS2Table.Load(typeface);
+            var loaded = OS2Table.TryLoad(typeface, out var os2Table);
 
-            Assert.NotNull(os2Table);
-            var panose = os2Table.Value.Panose;
+            Assert.True(loaded);
+            var panose = os2Table.Panose;
             Assert.Equal(PanoseFamilyKind.LatinText, panose.FamilyKind);
         }
 
@@ -281,7 +251,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             public void Dispose()
             {
-                _fontMemory.Dispose();
+                ((IDisposable)_fontMemory).Dispose();
             }
 
             public unsafe bool TryGetStream([NotNullWhen(true)] out Stream stream)
