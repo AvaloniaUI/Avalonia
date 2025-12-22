@@ -97,15 +97,18 @@ namespace Avalonia.Media
             var glyphInfos = new GlyphInfo[glyphIndexSpan.Length];
             var scale = fontRenderingEmSize / glyphTypeface.Metrics.DesignEmHeight;
 
-            for (var i = 0; i < glyphIndexSpan.Length; ++i)
+            var advances = glyphIndexSpan.Length <= 256
+                ? stackalloc ushort[glyphIndexSpan.Length]
+                : new ushort[glyphIndexSpan.Length];
+
+            if (glyphTypeface.TryGetHorizontalGlyphAdvances(glyphIndexSpan, advances))
             {
-                var glyphIndex = glyphIndexSpan[i];
-
-                glyphTypeface.TryGetHorizontalGlyphAdvance(glyphIndex, out var advance);
-
-                glyphInfos[i] = new GlyphInfo(glyphIndex, i, advance * scale);
+                for (var i = 0; i < glyphIndexSpan.Length; ++i)
+                {
+                    glyphInfos[i] = new GlyphInfo(glyphIndexSpan[i], i, advances[i] * scale);
+                }
             }
-
+            
             return glyphInfos;
         }
 

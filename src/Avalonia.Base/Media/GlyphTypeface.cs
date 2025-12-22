@@ -211,7 +211,7 @@ namespace Avalonia.Media
 
                 try
                 {
-                    return CultureInfo.GetCultureInfo(lcid) ?? CultureInfo.InvariantCulture;
+                    return CultureInfo.GetCultureInfo(lcid);
                 }
                 catch (CultureNotFoundException)
                 {
