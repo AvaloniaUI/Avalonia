@@ -344,7 +344,7 @@ namespace Avalonia.LinuxFramebuffer.Output
                         }
                     };
 
-                    _rotationFbo = gl.GenBuffer();
+                    _rotationVbo = gl.GenBuffer();
                     _rotationVao = gl.GenVertexArray();
                     
                     gl.BindVertexArray(_rotationVao);
