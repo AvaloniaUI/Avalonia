@@ -40,8 +40,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
             var loaded = OS2Table.TryLoad(typeface, out var os2Table);
 
             Assert.True(loaded);
-            Assert.True(os2Table.WeightClass >= 1);
-            Assert.True(os2Table.WeightClass <= 1000);
+            Assert.Equal(400, os2Table.WeightClass);
         }
 
         [Fact]
@@ -56,8 +55,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
             var loaded = OS2Table.TryLoad(typeface, out var os2Table);
 
             Assert.True(loaded);
-            Assert.True(os2Table.WidthClass >= 1);
-            Assert.True(os2Table.WidthClass <= 9);
+            Assert.Equal(5, os2Table.WidthClass);
         }
 
         [Fact]
@@ -72,8 +70,8 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
             var loaded = OS2Table.TryLoad(typeface, out var os2Table);
 
             Assert.True(loaded);
-            Assert.NotEqual(0, os2Table.TypoAscender);
-            Assert.NotEqual(0, os2Table.TypoDescender);
+            Assert.Equal(2728, os2Table.TypoAscender);
+            Assert.Equal(-680, os2Table.TypoDescender);
             Assert.True(os2Table.TypoAscender > os2Table.TypoDescender);
         }
 
@@ -89,8 +87,8 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
             var loaded = OS2Table.TryLoad(typeface, out var os2Table);
 
             Assert.True(loaded);
-            Assert.True(os2Table.WinAscent > 0);
-            Assert.True(os2Table.WinDescent > 0);
+            Assert.Equal(2728, os2Table.WinAscent);
+            Assert.Equal(680, os2Table.WinDescent);
         }
 
         [Fact]
@@ -105,21 +103,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
             var loaded = OS2Table.TryLoad(typeface, out var os2Table);
 
             Assert.True(loaded);
-            Assert.True(os2Table.StrikeoutSize >= 0);
-        }
-
-        [Fact]
-        public void OS2Table_Should_Have_Selection_Flags()
-        {
-            var assetLoader = new StandardAssetLoader();
-
-            using var stream = assetLoader.Open(new Uri(s_InterFontUri));
-
-            var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
-
-            var loaded = OS2Table.TryLoad(typeface, out var os2Table);
-
-            Assert.True(loaded);
+            Assert.Equal(192, os2Table.StrikeoutSize);
         }
 
         [Fact]
@@ -149,8 +133,8 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
             var loaded = OS2Table.TryLoad(typeface, out var os2Table);
 
             Assert.True(loaded);
-            Assert.True(os2Table.TypoAscender > 0);
-            Assert.True(os2Table.WinAscent > 0);
+            Assert.Equal(2728, os2Table.TypoAscender);
+            Assert.Equal(2728, os2Table.WinAscent);
         }
 
         [Fact]
@@ -165,52 +149,8 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
             var loaded = OS2Table.TryLoad(typeface, out var os2Table);
 
             Assert.True(loaded);
-            Assert.True(os2Table.TypoDescender < 0);
-            Assert.True(os2Table.WinDescent > 0);
-        }
-
-        [Fact]
-        public void OS2Table_TypoLineGap_Should_Be_Valid()
-        {
-            var assetLoader = new StandardAssetLoader();
-
-            using var stream = assetLoader.Open(new Uri(s_InterFontUri));
-
-            var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
-
-            var loaded = OS2Table.TryLoad(typeface, out var os2Table);
-
-            Assert.True(loaded);
-        }
-
-        [Fact]
-        public void OS2Table_Inter_Should_Have_Normal_Weight()
-        {
-            var assetLoader = new StandardAssetLoader();
-
-            using var stream = assetLoader.Open(new Uri(s_InterFontUri));
-
-            var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
-
-            var loaded = OS2Table.TryLoad(typeface, out var os2Table);
-
-            Assert.True(loaded);
-            Assert.Equal((ushort)400, os2Table.WeightClass);
-        }
-
-        [Fact]
-        public void OS2Table_Inter_Should_Have_Medium_Width()
-        {
-            var assetLoader = new StandardAssetLoader();
-
-            using var stream = assetLoader.Open(new Uri(s_InterFontUri));
-
-            var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
-
-            var loaded = OS2Table.TryLoad(typeface, out var os2Table);
-
-            Assert.True(loaded);
-            Assert.Equal((ushort)5, os2Table.WidthClass);
+            Assert.Equal(-680, os2Table.TypoDescender);
+            Assert.Equal(680, os2Table.WinDescent);
         }
 
         [Fact]

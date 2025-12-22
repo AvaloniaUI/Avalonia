@@ -39,7 +39,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var maxpTable = MaxpTable.Load(typeface);
 
-            Assert.True(maxpTable.NumGlyphs > 0);
+            Assert.Equal(2547, maxpTable.NumGlyphs);
         }
 
         [Fact]
