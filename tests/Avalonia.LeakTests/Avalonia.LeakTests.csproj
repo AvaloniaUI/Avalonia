@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
+    <OutputType>Exe</OutputType>
   </PropertyGroup>
   <Import Project="..\..\build\Moq.props" />
   <Import Project="..\..\build\XUnit.props" />

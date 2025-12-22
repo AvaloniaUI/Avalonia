@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
     <TargetFrameworks>$(AvsCurrentTargetFramework)</TargetFrameworks>
-    <OutputType>Library</OutputType>
+    <OutputType>Exe</OutputType>
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
   <Import Project="..\..\build\UnitTests.NetCore.targets" />

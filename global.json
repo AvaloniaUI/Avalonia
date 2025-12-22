@@ -3,6 +3,9 @@
     "version": "10.0.100",
     "rollForward": "latestFeature"
   },
+  "test": {
+    "runner": "Microsoft.Testing.Platform"
+  },
   "msbuild-sdks": {
     "Microsoft.Build.Traversal": "4.1.0"
   }

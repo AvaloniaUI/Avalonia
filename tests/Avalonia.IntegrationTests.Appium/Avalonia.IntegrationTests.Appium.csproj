@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
+    <OutputType>Exe</OutputType>
     <Nullable>enable</Nullable>
 
     <IsRunningAppium2 Condition="'$(IsRunningAppium2)' == ''">false</IsRunningAppium2>

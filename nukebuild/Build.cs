@@ -182,6 +182,8 @@ partial class Build : NukeBuild
     {
         RunCoreTest(projectName, (project, tfm) =>
         {
+            // TODO: Looks like this might be only supporting VSTest.
+            // Figure out how to fix this to run with Microsoft.Testing.Platform.
             DotNetTest(c => ApplySetting(c, project,tfm));
         });
     }
