@@ -2520,7 +2520,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
         public class NestedGeneric<T>
         {
-            public T Value { get; set; }
+            public T? Value { get; set; }
         }
     }
 

@@ -11,6 +11,7 @@ using Avalonia.VisualTree;
 using Avalonia.Automation;
 using Avalonia.Controls.Metadata;
 using Avalonia.Reactive;
+using Avalonia.Interactivity;
 
 namespace Avalonia.Controls
 {
@@ -193,6 +194,19 @@ namespace Avalonia.Controls
             UpdateSelectedContent();
         }
 
+        protected override bool ShouldTriggerSelection(Visual selectable, PointerEventArgs eventArgs) =>
+            eventArgs.Properties.PointerUpdateKind is PointerUpdateKind.LeftButtonPressed or PointerUpdateKind.LeftButtonReleased && base.ShouldTriggerSelection(selectable, eventArgs);
+
+        public override bool UpdateSelectionFromEvent(Control container, RoutedEventArgs eventArgs)
+        {
+            if (eventArgs is GotFocusEventArgs { NavigationMethod: not NavigationMethod.Directional })
+            {
+                return false;
+            }
+
+            return base.UpdateSelectionFromEvent(container, eventArgs);
+        }
+
         private void UpdateSelectedContent(Control? container = null)
         {
             _selectedItemSubscriptions?.Dispose();
@@ -259,42 +273,6 @@ namespace Avalonia.Controls
                 KeyboardNavigation.SetTabOnceActiveElement(
                     panel,
                     KeyboardNavigation.GetTabOnceActiveElement(this));
-            }
-        }
-
-        /// <inheritdoc/>
-        protected override void OnGotFocus(GotFocusEventArgs e)
-        {
-            base.OnGotFocus(e);
-
-            if (e.NavigationMethod == NavigationMethod.Directional && e.Source is TabItem)
-            {
-                e.Handled = UpdateSelectionFromEventSource(e.Source);
-            }
-        }
-
-        /// <inheritdoc/>
-        protected override void OnPointerPressed(PointerPressedEventArgs e)
-        {
-            base.OnPointerPressed(e);
-
-            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed && e.Pointer.Type == PointerType.Mouse)
-            {
-                e.Handled = UpdateSelectionFromEventSource(e.Source);
-            }
-        }
-
-        protected override void OnPointerReleased(PointerReleasedEventArgs e)
-        {
-            if (e.InitialPressMouseButton == MouseButton.Left && e.Pointer.Type != PointerType.Mouse)
-            {
-                var container = GetContainerFromEventSource(e.Source);
-                if (container != null
-                    && container.GetVisualsAt(e.GetPosition(container))
-                        .Any(c => container == c || container.IsVisualAncestorOf(c)))
-                {
-                    e.Handled = UpdateSelectionFromEventSource(e.Source);
-                }
             }
         }
 
