@@ -188,7 +188,9 @@ namespace Avalonia.Utilities
         /// <param name="value"> The double to compare to 0. </param>
         public static bool IsZero(double value)
         {
-            return Math.Abs(value) < 10.0 * DoubleEpsilon;
+            // Increased tolerance to handle floating-point precision errors in complex layout scenarios
+            // The original 10.0 * DoubleEpsilon was too strict for accumulated errors in Grid layout
+            return Math.Abs(value) < 1000.0 * DoubleEpsilon;
         }
 
         /// <summary>
