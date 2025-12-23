@@ -169,6 +169,7 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
 
         public ushort this[int codePoint]
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 int groupIndex = FindGroupIndex(codePoint);

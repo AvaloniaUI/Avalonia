@@ -250,7 +250,6 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
             return glyphId != 0;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal bool TryGetRange(int index, out CodepointRange range)
         {
             if ((uint)index >= (uint)_segCount)
@@ -326,7 +325,6 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
         }
 
         // Resolves the glyph ID for a given code point within a specific segment
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private ushort ResolveGlyph(int segmentIndex, int codePoint)
         {
             ushort idRangeOffset = ReadUInt16BE(_idRangeOffsets.Span, segmentIndex);
@@ -360,7 +358,6 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
             return 0;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private int FindSegmentIndex(int codePoint)
         {
             int lo = 0;
@@ -400,7 +397,6 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
         }
 
         // Optimized binary search that works directly with cached spans
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private int FindSegmentIndexOptimized(int codePoint, ReadOnlySpan<byte> startCodes, ReadOnlySpan<byte> endCodes)
         {
             int lo = 0;
