@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading.Tasks;
 using Avalonia.Animation.Easings;
 using Avalonia.Base.UnitTests.Rendering;
 using Avalonia.Rendering;
@@ -55,12 +56,15 @@ public class CompositionAnimationTests : ScopedTestBase
                 }
             };
 
-        public override IEnumerable<object[]> GetData(MethodInfo testMethod, DisposalTracker disposalTracker)
+        public override ValueTask<IReadOnlyCollection<ITheoryDataRow>> GetData(MethodInfo testMethod, DisposalTracker disposalTracker)
         {
+            var list = new List<ITheoryDataRow>();
             foreach (var ani in Generate())
             {
-                yield return new Object[] { ani };
+                list.Add(new TheoryDataRow<AnimationData>(ani));
             }
+
+            return ValueTask.FromResult<IReadOnlyCollection<ITheoryDataRow>>(list);
         }
 
         public override bool SupportsDiscoveryEnumeration()
