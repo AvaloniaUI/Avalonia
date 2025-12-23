@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using Avalonia.Media;
 using HarfBuzzSharp;
@@ -126,7 +127,7 @@ namespace Avalonia.UnitTests
             return Font.GetHorizontalGlyphAdvances(glyphIndices);
         }
 
-        public bool TryGetTable(uint tag, out byte[] table)
+        public bool TryGetTable(uint tag, [NotNullWhen(true)] out byte[]? table)
         {
             table = null;
             var blob = Face.ReferenceTable(tag);
