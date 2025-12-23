@@ -39,13 +39,13 @@ namespace Avalonia.Base.UnitTests.Media
 
             Assert.NotNull(map);
 
-            Assert.True(map.ContainsKey('A'));
+            Assert.True(map.ContainsGlyph('A'));
             Assert.True(map['A'] != 0);
 
-            Assert.True(map.ContainsKey('a'));
+            Assert.True(map.ContainsGlyph('a'));
             Assert.True(map['a'] != 0);
 
-            Assert.True(map.ContainsKey(' '));
+            Assert.True(map.ContainsGlyph(' '));
             Assert.True(map[' '] != 0);
         }
 
@@ -60,7 +60,7 @@ namespace Avalonia.Base.UnitTests.Media
 
             var map = typeface.CharacterToGlyphMap;
 
-            Assert.True(map.ContainsKey('A'));
+            Assert.True(map.ContainsGlyph('A'));
 
             var glyphId = map['A'];
 
@@ -263,7 +263,7 @@ namespace Avalonia.Base.UnitTests.Media
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
             var map = typeface.CharacterToGlyphMap;
-            Assert.True(map.ContainsKey('A'));
+            Assert.True(map.ContainsGlyph('A'));
 
             var glyphId = map['A'];
             var result = typeface.TryGetGlyphMetrics(glyphId, out var metrics);
@@ -312,8 +312,8 @@ namespace Avalonia.Base.UnitTests.Media
 
             var map = typeface.CharacterToGlyphMap;
 
-            Assert.True(map.ContainsKey('A'));
-            Assert.True(map.ContainsKey('B'));
+            Assert.True(map.ContainsGlyph('A'));
+            Assert.True(map.ContainsGlyph('B'));
 
             var glyphA = map['A'];
             var glyphB = map['B'];
@@ -352,7 +352,7 @@ namespace Avalonia.Base.UnitTests.Media
 
             foreach (var ch in testCharacters)
             {
-                Assert.True(map.ContainsKey(ch), $"Character '{ch}' not found in glyph map");
+                Assert.True(map.ContainsGlyph(ch), $"Character '{ch}' not found in glyph map");
             }
         }
 

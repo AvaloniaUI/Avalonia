@@ -46,7 +46,7 @@ namespace Avalonia.Media.Fonts
             {
                 if (TryGetNearestMatch(glyphTypefaces, key, out var glyphTypeface))
                 {
-                    if (glyphTypeface.CharacterToGlyphMap.TryGetValue(codepoint, out _))
+                    if (glyphTypeface.CharacterToGlyphMap.TryGetGlyph(codepoint, out _))
                     {
                         match = new Typeface(new FontFamily(null, Key.AbsoluteUri + "#" + glyphTypeface.FamilyName), style, weight, stretch);
 
@@ -68,7 +68,7 @@ namespace Avalonia.Media.Fonts
 
                 if (TryGetNearestMatch(glyphTypefaces, key, out var glyphTypeface))
                 {
-                    if (glyphTypeface.CharacterToGlyphMap.TryGetValue(codepoint, out _))
+                    if (glyphTypeface.CharacterToGlyphMap.TryGetGlyph(codepoint, out _))
                     {
                         var platformTypeface = glyphTypeface.PlatformTypeface;
 

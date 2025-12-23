@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using Avalonia.Media.Fonts;
 using Avalonia.Media.Fonts.Tables;
 using Avalonia.Media.Fonts.Tables.Cmap;
@@ -27,7 +28,7 @@ namespace Avalonia.Media
 
         private readonly NameTable? _nameTable;
         private readonly OS2Table _os2Table;
-        private readonly IReadOnlyDictionary<int, ushort> _cmapTable;
+        private readonly CharacterToGlyphMap _cmapTable;
         private readonly HorizontalHeaderTable _hhTable;
         private readonly VerticalHeaderTable _vhTable;
         private readonly HorizontalMetricsTable? _hmTable;
@@ -252,7 +253,7 @@ namespace Avalonia.Media
         /// glyphs defined in the font. The mapping can be used to look up the glyph index for a given character when
         /// rendering or processing text. The set of mapped characters depends on the font's supported character
         /// set.</remarks>
-        public IReadOnlyDictionary<int, ushort> CharacterToGlyphMap => _cmapTable;
+        public CharacterToGlyphMap CharacterToGlyphMap => _cmapTable;
 
         /// <summary>
         /// Gets the font metrics associated with this font.
@@ -380,41 +381,6 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Maps multiple Unicode code points to glyph indices in a single operation.
-        /// </summary>
-        /// <remarks>This method is significantly more efficient than calling <see cref="CharacterToGlyphMap"/> indexer
-        /// multiple times as it minimizes memory access overhead and exploits locality of reference in text runs.
-        /// This is the preferred method for character-to-glyph mapping in text shaping and layout scenarios.
-        /// Unmapped code points will have their corresponding glyph ID set to 0.</remarks>
-        /// <param name="codePoints">Read-only span of Unicode code points to map.</param>
-        /// <param name="glyphIndices">Output span to write the glyph indices. Must be at least as long as <paramref name="codePoints"/>.</param>
-        public void GetGlyphIndices(ReadOnlySpan<int> codePoints, Span<ushort> glyphIndices)
-        {
-            if (glyphIndices.Length < codePoints.Length)
-            {
-                throw new ArgumentException("Output span must be at least as long as input span", nameof(glyphIndices));
-            }
-
-            // Use the batch method if available
-            if (_cmapTable is CmapFormat4Table format4)
-            {
-                format4.MapCodePointsToGlyphs(codePoints, glyphIndices);
-            }
-            else if (_cmapTable is CmapFormat12Table format12)
-            {
-                format12.MapCodePointsToGlyphs(codePoints, glyphIndices);
-            }
-            else
-            {
-                // Fallback to individual lookups
-                for (int i = 0; i < codePoints.Length; i++)
-                {
-                    glyphIndices[i] = _cmapTable.TryGetValue(codePoints[i], out var gid) ? gid : (ushort)0;
-                }
-            }
-        }
-
-        /// <summary>
         /// Attempts to retrieve the metrics for the specified glyph.
         /// </summary>
         /// <remarks>This method returns metrics only if horizontal or vertical metrics are available for
@@ -483,8 +449,8 @@ namespace Avalonia.Media
             }
 
             // Use stackalloc for temporary buffers to avoid heap allocations
-            Span<HorizontalGlyphMetric> hMetrics = glyphIds.Length <= 256 
-                ? stackalloc HorizontalGlyphMetric[glyphIds.Length] 
+            Span<HorizontalGlyphMetric> hMetrics = glyphIds.Length <= 256
+                ? stackalloc HorizontalGlyphMetric[glyphIds.Length]
                 : new HorizontalGlyphMetric[glyphIds.Length];
 
             Span<VerticalGlyphMetric> vMetrics = glyphIds.Length <= 256

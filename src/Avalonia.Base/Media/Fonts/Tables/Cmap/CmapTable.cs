@@ -14,7 +14,7 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
         internal const string TableName = "cmap";
         internal static OpenTypeTag Tag { get; } = OpenTypeTag.Parse(TableName);
 
-        public static IReadOnlyDictionary<int, ushort> Load(GlyphTypeface glyphTypeface)
+        public static CharacterToGlyphMap Load(GlyphTypeface glyphTypeface)
         {
             if (!glyphTypeface.PlatformTypeface.TryGetTable(Tag, out var table))
             {
@@ -52,13 +52,13 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
             if (TryFindFormat12Entry(entries, out var format12Entry))
             {
                 // Prefer Format 12 if available
-                return new CmapFormat12Table(format12Entry.GetSubtableMemory(table));
+                return new CharacterToGlyphMap(new CmapFormat12Table(format12Entry.GetSubtableMemory(table)));
             }
 
             // Fallback to Format 4
             if (TryFindFormat4Entry(entries, out var format4Entry))
             {
-                return new CmapFormat4Table(format4Entry.GetSubtableMemory(table));
+                return new CharacterToGlyphMap(new CmapFormat4Table(format4Entry.GetSubtableMemory(table)));
             }
 
             throw new InvalidOperationException("No suitable cmap subtable found.");
