@@ -178,13 +178,34 @@ partial class Build : NukeBuild
             File.WriteAllText(prIdFile, prId);
         });
 
-    void RunCoreTest(string projectName)
+    void RunCoreTest(string projectName, bool useVSTest = false)
     {
         RunCoreTest(projectName, (project, tfm) =>
         {
-            // TODO: Looks like this might be only supporting VSTest.
-            // Figure out how to fix this to run with Microsoft.Testing.Platform.
-            DotNetTest(c => ApplySetting(c, project,tfm));
+            if (useVSTest)
+            {
+                DotNetTest(c => ApplySetting(c, project,tfm));
+            }
+            else
+            {
+                // These are mostly duplicates from what exists in the VSTest branch.
+                // This is due to lack of MTP support in Nuke.
+                // Issue: https://github.com/nuke-build/nuke/issues/1584
+                string testCommand = $"test --project {project} --framework {tfm} --no-build";
+                if (Parameters.PublishTestResults)
+                {
+                    testCommand += $" --results-directory {Parameters.TestResultsRoot} --report-trx";
+                }
+
+                if (Parameters.IsRunningOnAzure)
+                    testCommand += $"-p:JavaSdkDirectory={GetVariable<string>("JAVA_HOME_11_X64")}";
+                testCommand += $"-p:PackageVersion={Parameters.Version}";
+                testCommand += $"-c {Parameters.Configuration} --verbosity minimal";
+                if (Parameters.IsPackingToLocalCache)
+                    testCommand += $"-p:ForcePackAvaloniaNative=True -p:SkipObscurePlatforms=True -p:SkipBuildingSamples=True -p:SkipBuildingTests=True";
+
+                DotNet(testCommand);
+            }
         });
     }
 
@@ -271,8 +292,8 @@ partial class Build : NukeBuild
             RunCoreTest("Avalonia.Skia.UnitTests");
             RunCoreTest("Avalonia.Headless.NUnit.PerAssembly.UnitTests");
             RunCoreTest("Avalonia.Headless.NUnit.PerTest.UnitTests");
-            RunCoreTest("Avalonia.Headless.XUnit.PerAssembly.UnitTests");
-            RunCoreTest("Avalonia.Headless.XUnit.PerTest.UnitTests");
+            RunCoreTest("Avalonia.Headless.XUnit.PerAssembly.UnitTests", useVSTest: true); // This is xunit 2 which doesn't support Microsoft.Testing.Platform.
+            RunCoreTest("Avalonia.Headless.XUnit.PerTest.UnitTests", useVSTest: true); // This is xunit 2 which doesn't support Microsoft.Testing.Platform.
         });
 
     Target RunRenderTests => _ => _
