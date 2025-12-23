@@ -4,21 +4,23 @@ using Avalonia.Media.Immutable;
 using Avalonia.Metadata;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition.Drawing;
+using Avalonia.Rendering.Composition.Server;
 
 namespace Avalonia.Media
 {
-    [NotClientImplementable]
+    [PrivateApi]
     public interface ISceneBrush : ITileBrush
     {
         ISceneBrushContent? CreateContent();
     }
     
-    [NotClientImplementable]
+    [PrivateApi]
     public interface ISceneBrushContent : IImmutableBrush, IDisposable
     {
         ITileBrush Brush { get; }
         Rect Rect { get; }
-        void Render(IDrawingContextImpl context, Matrix? transform);
+        [Obsolete]
+        internal void Render(IDrawingContextImpl context, CompositionMatrix? transform);
         internal bool UseScalableRasterization { get; }
     }
 

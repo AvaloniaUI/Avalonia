@@ -16,6 +16,7 @@ public partial class Generator
         public bool IsNullable { get; set; }
         public string? DefaultValue { get; set; }
         public string? ServerDefaultValue { get; set; }
+        public string? ServerConvertExpression { get; set; }
     }
 
     private readonly Dictionary<string, GeneratorTypeInfo> _typeInfoCache = new();
@@ -29,6 +30,7 @@ public partial class Generator
         var filteredType = type.TrimEnd('?');
         var isObject = _objects.Contains(filteredType);
         var isNullable = type.EndsWith("?");
+        string? serverConvert = null;
         bool isPassthrough = false;
         string? defaultValue = null, serverDefaultValue = null;
                 
@@ -47,6 +49,7 @@ public partial class Generator
             defaultValue = manual.ServerDefaultValue;
             serverDefaultValue = manual.ServerDefaultValue;
             isObject = !manual.IsValueType;
+            serverConvert = manual.ServerConvert;
         }
 
         return _typeInfoCache[type] = new GeneratorTypeInfo
@@ -58,7 +61,8 @@ public partial class Generator
             ServerType = serverType,
             IsNullable = isNullable,
             ServerDefaultValue = serverDefaultValue,
-            DefaultValue = defaultValue
+            DefaultValue = defaultValue,
+            ServerConvertExpression = serverConvert
         };
     }
 }

@@ -54,8 +54,8 @@ namespace Avalonia.Rendering.Composition
                 (float)matrix.M31, (float)matrix.M32, 0, (float)matrix.M33
             );
         
-        public static Matrix ToMatrix(Matrix4x4 matrix44) =>
-            new Matrix(
+        public static CompositionMatrix ToMatrix(Matrix4x4 matrix44) =>
+            CompositionMatrix.FromMatrix(
                 matrix44.M11,
                 matrix44.M12,
                 matrix44.M14,

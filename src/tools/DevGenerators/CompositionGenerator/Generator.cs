@@ -210,7 +210,8 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
                 resetBody = resetBody.AddStatements(
                     ExpressionStatement(InvocationExpression(MemberAccess(prop.Name, "Reset"))));
                 
-                serializeMethodBody = ApplySerializeField(serializeMethodBody, cl, prop, isObject, isPassthrough, typeInfo.ServerType);
+                serializeMethodBody = ApplySerializeField(serializeMethodBody, cl, prop, isObject, isPassthrough,
+                    typeInfo.ServerType, typeInfo.ServerConvertExpression);
                 deserializeMethodBody = ApplyDeserializeField(deserializeMethodBody,cl, prop, serverPropertyType, isObject);
                 
                 if (animatedServer)
@@ -478,7 +479,7 @@ return;
             Block(ParseStatement(ChangedFieldsFieldName(cl) + " = default;"));
 
         static BlockSyntax ApplySerializeField(BlockSyntax body, GClass cl, GProperty prop, bool isObject, bool isPassthrough,
-            string serverType)
+            string serverType, string? serverConvertExpression)
         {
             var changedFields = ChangedFieldsFieldName(cl);
             var changedFieldsType = ChangedFieldsTypeName(cl);
@@ -492,9 +493,11 @@ return;
     else ";
             }
 
+            serverConvertExpression ??= (isObject && !isPassthrough) ? "{0}?.Server!" : "{0}";
+
             code += $@"
     if(({changedFields} & {changedFieldsType}.{prop.Name}) == {changedFieldsType}.{prop.Name})
-        writer.Write{(isObject ? "Object" : $"<{serverType}>")}({PropertyBackingFieldName(prop)}{(isObject && !isPassthrough ? "?.Server!":"")});
+        writer.Write{(isObject ? "Object" : $"<{serverType}>")}({string.Format(serverConvertExpression, PropertyBackingFieldName(prop))});
 ";
             return body.AddStatements(ParseStatement(code));
         }

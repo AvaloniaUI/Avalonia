@@ -1,5 +1,6 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Media;
+using Avalonia.Rendering.Composition.Server;
 using Avalonia.Rendering.Utilities;
 using Xunit;
 
@@ -61,7 +62,7 @@ namespace Avalonia.Base.UnitTests.Rendering.Utilities
             Assert.Equal(new Rect(0, 0, 100, 100), result.SourceRect);
             Assert.Equal(new Rect(0, 0, 200, 100), result.DestinationRect);
             Assert.Equal(new Size(200, 100), result.IntermediateSize);
-            Assert.Equal(Matrix.CreateTranslation(50, 0), result.IntermediateTransform);
+            Assert.Equal(CompositionMatrix.CreateTranslation(50, 0), result.IntermediateTransform);
         }
 
         [Fact]
@@ -81,7 +82,7 @@ namespace Avalonia.Base.UnitTests.Rendering.Utilities
             Assert.Equal(new Rect(0, 0, 100, 100), result.SourceRect);
             Assert.Equal(new Rect(0, 0, 100, 200), result.DestinationRect);
             Assert.Equal(new Size(100, 200), result.IntermediateSize);
-            Assert.Equal(Matrix.CreateTranslation(0, 50), result.IntermediateTransform);
+            Assert.Equal(CompositionMatrix.CreateTranslation(0, 50), result.IntermediateTransform);
         }
 
         [Fact]
@@ -102,7 +103,7 @@ namespace Avalonia.Base.UnitTests.Rendering.Utilities
             Assert.Equal(new Rect(200, 200, 200, 200), result.DestinationRect);
             Assert.Equal(new Size(400, 400), result.IntermediateSize);
             Assert.Equal(new Rect(200, 200, 200, 200), result.IntermediateClip);
-            Assert.Equal(Matrix.CreateTranslation(-100, -100), result.IntermediateTransform);
+            Assert.Equal(CompositionMatrix.CreateTranslation(-100, -100), result.IntermediateTransform);
         }
 
         [Fact]
@@ -132,7 +133,7 @@ namespace Avalonia.Base.UnitTests.Rendering.Utilities
             Assert.Equal(new Rect(100, 100, 200, 200), result.DestinationRect);
             Assert.Equal(new Size(200, 200), result.IntermediateSize);
             Assert.Equal(new Rect(0, 0, 200, 200), result.IntermediateClip);
-            Assert.Equal(Matrix.CreateTranslation(-500, -500), result.IntermediateTransform);
+            Assert.Equal(CompositionMatrix.CreateTranslation(-500, -500), result.IntermediateTransform);
         }
     }
 }

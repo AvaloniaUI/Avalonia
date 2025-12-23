@@ -55,8 +55,8 @@ internal partial class ServerCompositor
         {
             var pixelSize = PixelSize.FromSize(new Size(visual.Size.X, visual.Size.Y), scaling);
             
-            var scaleTransform = Matrix.CreateScale(scaling, scaling);
-            var invertRootTransform = visual.CombinedTransformMatrix.ToMatrix().Invert();
+            var scaleTransform = CompositionMatrix.CreateScale(scaling, scaling);
+            var invertRootTransform = visual.CombinedTransformMatrix.Invert();
 
             IDrawingContextLayerImpl? target = null;
             try
@@ -67,7 +67,7 @@ internal partial class ServerCompositor
                     var proxy = new CompositorDrawingContextProxy(canvas)
                     {
                         PostTransform = invertRootTransform * scaleTransform,
-                        Transform = Matrix.Identity
+                        Transform = CompositionMatrix.Identity
                     };
                     var ctx = new ServerVisualRenderContext(proxy, null, true, renderChildren);
                     visual.Render(ctx, null);

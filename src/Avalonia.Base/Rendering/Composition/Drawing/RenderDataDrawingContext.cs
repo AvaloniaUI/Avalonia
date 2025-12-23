@@ -7,6 +7,7 @@ using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition.Drawing.Nodes;
+using Avalonia.Rendering.Composition.Server;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Threading;
 using Avalonia.Utilities;
@@ -255,7 +256,7 @@ internal class RenderDataDrawingContext : DrawingContext
         else
             Push(new RenderDataPushMatrixNode()
             {
-                Matrix = matrix
+                Matrix = CompositionMatrix.FromMatrix(matrix)
             });
     }
 

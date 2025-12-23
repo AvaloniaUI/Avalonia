@@ -203,11 +203,11 @@ namespace Avalonia.Skia
             if (createInfo.ScaleDrawingToDpi && !createInfo.Dpi.NearlyEquals(SkiaPlatform.DefaultDpi))
             {
                 _postTransform =
-                    Matrix.CreateScale(createInfo.Dpi.X / SkiaPlatform.DefaultDpi.X,
+                    CompositionMatrix.CreateScale(createInfo.Dpi.X / SkiaPlatform.DefaultDpi.X,
                         createInfo.Dpi.Y / SkiaPlatform.DefaultDpi.Y);
             }
 
-            Transform = Matrix.Identity;
+            Transform = CompositionMatrix.Identity;
 
             var options = AvaloniaLocator.Current.GetService<SkiaOptions>();
 
@@ -452,7 +452,7 @@ namespace Avalonia.Skia
                                 shadow.ClipOperation, true);
                             
                             var oldTransform = Transform;
-                            Transform = oldTransform * Matrix.CreateTranslation(boxShadow.OffsetX, boxShadow.OffsetY);
+                            Transform = oldTransform * CompositionMatrix.CreateTranslation(boxShadow.OffsetX, boxShadow.OffsetY);
                             Canvas.DrawRoundRect(shadowRect, shadow.Paint);
                             Transform = oldTransform;
                             SKRoundRectCache.Shared.Return(shadowRect);
@@ -464,7 +464,7 @@ namespace Avalonia.Skia
                                 shadowRect.Inflate(spread, spread);
                             Canvas.ClipRect(rc, shadow.ClipOperation);
                             var oldTransform = Transform;
-                            Transform = oldTransform * Matrix.CreateTranslation(boxShadow.OffsetX, boxShadow.OffsetY);
+                            Transform = oldTransform * CompositionMatrix.CreateTranslation(boxShadow.OffsetX, boxShadow.OffsetY);
                             Canvas.DrawRect(shadowRect, shadow.Paint);
                             Transform = oldTransform;
                         }
@@ -508,7 +508,7 @@ namespace Avalonia.Skia
                             shadow.ClipOperation, true);
                         
                         var oldTransform = Transform;
-                        Transform = oldTransform * Matrix.CreateTranslation(boxShadow.OffsetX, boxShadow.OffsetY);
+                        Transform = oldTransform * CompositionMatrix.CreateTranslation(boxShadow.OffsetX, boxShadow.OffsetY);
                         using (var outerRRect = new SKRoundRect(outerRect))
                             Canvas.DrawRoundRectDifference(outerRRect, shadowRect, shadow.Paint);
                         Transform = oldTransform;
@@ -849,7 +849,7 @@ namespace Avalonia.Skia
         {
             // There is a Canvas.TotalMatrix (non 4x4 overload), but internally it still uses 4x4 matrix.
             // We want to avoid SKMatrix4x4 -> SKMatrix -> Matrix conversion by directly going SKMatrix4x4 -> Matrix.
-            get { return _currentTransform ??= Canvas.TotalMatrix44.ToAvaloniaMatrix(); }
+            get { return _currentTransform ??= Canvas.TotalMatrix44.ToCompositionMatrix(); }
             set
             {
                 CheckLease();
@@ -1167,7 +1167,7 @@ namespace Avalonia.Skia
                 {
                     ctx.PushRenderOptions(RenderOptions);
                     ctx.Clear(Colors.Transparent);
-                    content.Render(ctx, rect.TopLeft == default ? null : Matrix.CreateTranslation(-rect.X, -rect.Y));
+                    content.Render(ctx, rect.TopLeft == default ? null : CompositionMatrix.CreateTranslation(-rect.X, -rect.Y));
                     ctx.PopRenderOptions();
                 }
 
@@ -1210,7 +1210,7 @@ namespace Avalonia.Skia
             
             // We are moving the render area to make the top-left corner of the SourceRect (ViewBox) to be at (0,0)
             // of the tile
-            var contentRenderTransform = Matrix.CreateTranslation(-sourceRect.X, -sourceRect.Y);
+            var contentRenderTransform = CompositionMatrix.CreateTranslation(-sourceRect.X, -sourceRect.Y);
             
             // DestinationRect (aka Viewport) is specified relative to the target rect
             var destinationRect = content.Brush.DestinationRect.ToPixels(targetRect);
@@ -1229,8 +1229,8 @@ namespace Avalonia.Skia
                     content.Brush.AlignmentX,
                     content.Brush.AlignmentY, sourceRect.Size * scale, tileSize);
 
-                contentRenderTransform = contentRenderTransform * Matrix.CreateScale(scale) *
-                                         Matrix.CreateTranslation(alignmentTranslate);
+                contentRenderTransform = contentRenderTransform * CompositionMatrix.CreateScale(scale) *
+                                         CompositionMatrix.CreateTranslation(alignmentTranslate);
             }
             
             // Pre-rasterize the tile into SKPicture

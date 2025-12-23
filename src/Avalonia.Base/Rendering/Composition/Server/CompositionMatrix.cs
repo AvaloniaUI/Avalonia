@@ -8,7 +8,7 @@ using Avalonia.Metadata;
 
 namespace Avalonia.Rendering.Composition.Server;
 [PrivateApi]
-public struct CompositionMatrix(Matrix matrix)
+public struct CompositionMatrix : IEquatable<CompositionMatrix>
 {
     enum Type
     {
@@ -27,6 +27,7 @@ public struct CompositionMatrix(Matrix matrix)
     private double _offsetY_32;
     private double _perspZ_33;
     private Type _type;
+    
     public bool GuaranteedIdentity => _type == Type.Identity;
     public bool GuaranteedTranslateAndScaleOnly => _type == Type.TranslateAndScale;
     public bool GuaranteedTranslateAndScaleOnlyOrIdentity => _type is Type.TranslateAndScale or Type.Identity;
@@ -44,6 +45,8 @@ public struct CompositionMatrix(Matrix matrix)
     public double PerspZ => _type == Type.Full ? _perspZ_33 : 1;
 
     public static CompositionMatrix Identity { get; } = default;
+
+    public static CompositionMatrix CreateTranslation(Vector offset) => CreateTranslation(offset.X, offset.Y);
     
     public static CompositionMatrix CreateTranslation(double offsetX, double offsetY)
     {
@@ -74,6 +77,8 @@ public struct CompositionMatrix(Matrix matrix)
             _perspZ_33 = 1
         };
     }
+
+    public static CompositionMatrix CreateScale(Vector scale) => CreateScale(scale.X, scale.Y);
     
     public static CompositionMatrix CreateScale(double scaleX, double scaleY)
     {
@@ -87,6 +92,7 @@ public struct CompositionMatrix(Matrix matrix)
             _perspZ_33 = 1
         };
     }
+    
     
     [SkipLocalsInit]
     public static unsafe CompositionMatrix FromMatrix(in Matrix m)
@@ -109,6 +115,34 @@ public struct CompositionMatrix(Matrix matrix)
         return rv;
     }
     
+    [SkipLocalsInit]
+    public static unsafe CompositionMatrix FromMatrix(double m11, double m12, double m13,
+        double m21, double m22, double m23,
+        double m31, double m32, double m33)
+    {
+
+        CompositionMatrix rv;
+        if(m13 != 0 || m23 != 0 || m33 != 1 || m12 != 0 || m21 != 0)
+            rv._type = Type.Full;
+        else if (m11 != 1 || m22 != 1 || m31 != 0 || m32 != 0 )
+            rv._type = Type.TranslateAndScale;
+        else
+            return default;
+        // TODO: opt
+        *(Matrix*)&rv = new Matrix(m11, m12, m13, m21, m22, m23, m31, m32, m33);
+        return rv;
+    }
+    
+    
+    public CompositionMatrix(double m11, double m12, double m13,
+        double m21, double m22, double m23,
+        double m31, double m32, double m33)
+    {
+        // TODO: opt
+        this = FromMatrix(m11, m12, m13, m21, m22, m23, m31, m32, m33);
+    }
+
+    
     public Matrix ToMatrix()
     {
         if (_type == Type.Identity)
@@ -121,7 +155,7 @@ public struct CompositionMatrix(Matrix matrix)
     }
     
     //public static implicit operator Matrix(CompositionMatrix m) => m.ToMatrix();
-    public static implicit operator CompositionMatrix(Matrix m) => FromMatrix(m);
+    //public static implicit operator CompositionMatrix(Matrix m) => FromMatrix(m);
 
     public bool Equals(CompositionMatrix m)
     {
@@ -135,15 +169,15 @@ public struct CompositionMatrix(Matrix matrix)
                    m._offsetY_32 == _offsetY_32;
         }
         
-        return m._scaleX_11 == _scaleX_11 &&
+        return m.ScaleX == ScaleX &&
                m._skewY_12 == _skewY_12 &&
                m._perspX_13 == _perspX_13 &&
                m._skewX_21 == _skewX_21 &&
-               m._scaleY_22 == _scaleY_22 &&
+               m.ScaleY == ScaleY &&
                m._perspY_23 == _perspY_23 &&
                m._offsetX_31 == _offsetX_31 &&
                m._offsetY_32 == _offsetY_32 &&
-               m._perspZ_33 == _perspZ_33;
+               m.PerspZ == PerspZ;
     }
     
     public static bool operator ==(CompositionMatrix left, CompositionMatrix right) => left.Equals(right);
@@ -276,11 +310,26 @@ public struct CompositionMatrix(Matrix matrix)
         if(m.IsIdentity)
             return "Identity";
         return m.ToString();
-        /*
-        if (_type == Type.Identity)
-            return "Identity";
-        if (_type == Type.TranslateAndScale)
-            return $"{_scaleX_11} 0 0 / 0 {_scaleY_22} 0 / {_offsetX_31} {_offsetY_32} / 1";
-        return $"{_scaleX_11} {_skewY_12} {_perspX_13} / {_skewX_21} {_scaleY_22} {_perspY_23} / {_offsetX_31} {_offsetY_32} {_perspZ_33}";*/
+    }
+
+    
+    // TODO: Optimize for simple translate+scale
+    public bool HasInverse => ToMatrix().HasInverse;
+    
+    // TODO: Optimize for simple translate+scale
+    public CompositionMatrix Invert() => FromMatrix(ToMatrix().Invert());
+    
+    // TODO: Optimize for simple translate+scale
+    public bool TryInvert(out CompositionMatrix inverted)
+    {
+        var m = ToMatrix();
+        if (m.TryInvert(out var inv))
+        {
+            inverted = FromMatrix(inv);
+            return true;
+        }
+
+        inverted = default;
+        return false;
     }
 }

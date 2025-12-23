@@ -50,7 +50,7 @@ namespace Avalonia.Rendering.Composition.Server
                 if(context.DetachedRendering)
                     return;
                 
-                canvas.Transform = Matrix.Identity;
+                canvas.Transform = CompositionMatrix.Identity;
                 if (AdornerIsClipped)
                     canvas.PushClip(AdornedVisual._combinedTransformedClipBounds.ToRect());
             }
@@ -101,7 +101,7 @@ namespace Avalonia.Rendering.Composition.Server
             if (clip.IsZeroSize)
                 return false;
             var oldMatrix = canvas.Transform;
-            canvas.Transform = Matrix.Identity;
+            canvas.Transform = CompositionMatrix.Identity;
             canvas.PushEffect(GetEffectBounds().ToRect(), Effect!);
             canvas.Transform = oldMatrix;
             return true;
@@ -124,7 +124,7 @@ namespace Avalonia.Rendering.Composition.Server
             return ref _readback2;
         }
 
-        public CompositionMatrix CombinedTransformMatrix = Matrix.Identity;
+        public CompositionMatrix CombinedTransformMatrix = CompositionMatrix.Identity;
         public CompositionMatrix GlobalTransformMatrix;
 
         public record struct UpdateResult(LtrbRect? Bounds, bool InvalidatedOld, bool InvalidatedNew)
@@ -147,7 +147,7 @@ namespace Avalonia.Rendering.Composition.Server
             {
                 CombinedTransformMatrix = MatrixUtils.ComputeTransform(Size, AnchorPoint, CenterPoint,
                     // HACK: Ignore RenderTransform set by the adorner layer
-                    AdornedVisual != null ? Matrix.Identity : TransformMatrix,
+                    AdornedVisual != null ? CompositionMatrix.Identity : TransformMatrix,
                     Scale, RotationAngle, Orientation, Offset);
                 _combinedTransformDirty = false;
             }

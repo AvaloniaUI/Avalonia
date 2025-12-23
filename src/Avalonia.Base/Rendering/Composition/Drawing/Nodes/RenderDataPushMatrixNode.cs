@@ -1,8 +1,10 @@
+using Avalonia.Rendering.Composition.Server;
+
 namespace Avalonia.Rendering.Composition.Drawing.Nodes;
 
 class RenderDataPushMatrixNode : RenderDataPushNode
 {
-    public Matrix Matrix { get; set; }
+    public CompositionMatrix Matrix { get; set; }
 
     public override void Push(ref RenderDataNodeRenderContext context)
     {
@@ -19,7 +21,7 @@ class RenderDataPushMatrixNode : RenderDataPushNode
     public override bool HitTest(Point p)
     {
         if (Matrix.TryInvert(out var inverted))
-            return base.HitTest(p.Transform(inverted));
+            return base.HitTest(inverted.Transform(p));
         return false;
     }
 

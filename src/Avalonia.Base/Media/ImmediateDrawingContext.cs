@@ -5,6 +5,7 @@ using Avalonia.Threading;
 using Avalonia.Utilities;
 using Avalonia.Media.Imaging;
 using Avalonia.Media.Immutable;
+using Avalonia.Rendering.Composition.Server;
 
 namespace Avalonia.Media
 {
@@ -25,22 +26,22 @@ namespace Avalonia.Media
 
         readonly struct TransformContainer
         {
-            public readonly Matrix LocalTransform;
-            public readonly Matrix ContainerTransform;
+            public readonly CompositionMatrix LocalTransform;
+            public readonly CompositionMatrix ContainerTransform;
 
-            public TransformContainer(Matrix localTransform, Matrix containerTransform)
+            public TransformContainer(CompositionMatrix localTransform, CompositionMatrix containerTransform)
             {
                 LocalTransform = localTransform;
                 ContainerTransform = containerTransform;
             }
         }
 
-        internal ImmediateDrawingContext(IDrawingContextImpl impl, bool ownsImpl) : this(impl, impl.Transform.ToMatrix(), ownsImpl)
+        internal ImmediateDrawingContext(IDrawingContextImpl impl, bool ownsImpl) : this(impl, impl.Transform, ownsImpl)
         {
             
         }
         
-        internal ImmediateDrawingContext(IDrawingContextImpl impl, Matrix transform,  bool ownsImpl)
+        internal ImmediateDrawingContext(IDrawingContextImpl impl, CompositionMatrix transform,  bool ownsImpl)
         {
             _ownsImpl = ownsImpl;
             PlatformImpl = impl;
@@ -49,22 +50,29 @@ namespace Avalonia.Media
 
         public IDrawingContextImpl PlatformImpl { get; }
 
-        private Matrix _currentTransform = Matrix.Identity;
+        private CompositionMatrix _currentTransform = CompositionMatrix.Identity;
 
-        private Matrix _currentContainerTransform;
+        private CompositionMatrix _currentContainerTransform;
 
         /// <summary>
         /// Gets the current transform of the drawing context.
         /// </summary>
         public Matrix CurrentTransform
         {
-            get { return _currentTransform; }
+            get { return _currentTransform.ToMatrix(); }
             private set
             {
-                _currentTransform = value;
+                _currentTransform = CompositionMatrix.FromMatrix(value);
                 var transform = _currentTransform * _currentContainerTransform;
                 PlatformImpl.Transform = transform;
             }
+        }
+
+        private void SetTransform(CompositionMatrix value)
+        {
+            _currentTransform = value;
+            var transform = _currentTransform * _currentContainerTransform;
+            PlatformImpl.Transform = transform;
         }
 
         /// <summary>
@@ -257,7 +265,7 @@ namespace Avalonia.Media
                 {
                     var cont = _context._transformContainers.Pop();
                     _context._currentContainerTransform = cont.ContainerTransform;
-                    _context.CurrentTransform = cont.LocalTransform;
+                    _context.SetTransform(cont.LocalTransform);
                 }
             }
         }
@@ -342,9 +350,9 @@ namespace Avalonia.Media
         {
             if (_transformContainers is null)
                 throw new ObjectDisposedException(nameof(DrawingContext));
-            _transformContainers.Push(new TransformContainer(CurrentTransform, _currentContainerTransform));
-            _currentContainerTransform = CurrentTransform * _currentContainerTransform;
-            _currentTransform = Matrix.Identity;
+            _transformContainers.Push(new TransformContainer(_currentTransform, _currentContainerTransform));
+            _currentContainerTransform = _currentTransform * _currentContainerTransform;
+            _currentTransform = CompositionMatrix.Identity;
             return new PushedState(this, PushedState.PushedStateType.MatrixContainer);
         }
 

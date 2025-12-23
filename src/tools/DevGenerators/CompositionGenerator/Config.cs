@@ -47,6 +47,9 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
         public string? ServerDefaultValue { get; set; }
         
         [XmlAttribute]
+        public string? ServerConvert { get; set; }
+        
+        [XmlAttribute]
         public bool IsValueType { get; set; }
     }
     

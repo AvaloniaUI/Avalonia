@@ -1,3 +1,4 @@
+//#define DEBUG_COMPOSITION_MATRIX
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Media;
@@ -182,7 +183,7 @@ namespace Avalonia.Skia
             var rv = ToSKMatrix44Core(m);
             var expected = m.ToMatrix().ToSKMatrix44();
             if (rv != expected)
-                throw new Exception();
+                throw new InvalidProgramException("BUG");
             return rv;
         }
         public static SKMatrix44 ToSKMatrix44Core(CompositionMatrix m)
@@ -235,6 +236,28 @@ namespace Avalonia.Skia
             m.M00, m.M01, m.M03,
             m.M10, m.M11, m.M13,
             m.M30, m.M31, m.M33);
+        
+        #if DEBUG_COMPOSITION_MATRIX
+        internal static CompositionMatrix ToCompositionMatrix(this SKMatrix44 m)
+        {
+            var expected = ToAvaloniaMatrix(m);
+            var rv = ToCompositionMatrixCore(m);
+            var actual = rv.ToMatrix();
+            if (actual != expected)
+                throw new InvalidProgramException("BUG");
+            return rv;
+        }
+        
+        internal static CompositionMatrix ToCompositionMatrixCore(SKMatrix44 m)
+        #else
+        internal static CompositionMatrix ToCompositionMatrix(this SKMatrix44 m)
+        #endif
+        {
+            return CompositionMatrix.FromMatrix(
+                m.M00, m.M01, m.M03,
+                m.M10, m.M11, m.M13,
+                m.M30, m.M31, m.M33);
+        }
 
         public static SKColor ToSKColor(this Color c)
         {

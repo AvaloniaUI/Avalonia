@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition.Drawing.Nodes;
+using Avalonia.Rendering.Composition.Server;
 using Avalonia.Threading;
 
 namespace Avalonia.Rendering.Composition.Drawing;
@@ -63,7 +64,7 @@ internal class ImmediateRenderDataSceneBrushContent : ISceneBrushContent
         }
     }
     
-    public void Render(IDrawingContextImpl context, Matrix? transform)
+    public void Render(IDrawingContextImpl context, CompositionMatrix? transform)
     {
         if (transform.HasValue)
         {

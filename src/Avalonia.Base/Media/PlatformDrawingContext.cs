@@ -4,6 +4,7 @@ using Avalonia.Logging;
 using Avalonia.Media.Imaging;
 using Avalonia.Media.Immutable;
 using Avalonia.Platform;
+using Avalonia.Rendering.Composition.Server;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Threading;
 using Avalonia.Utilities;
@@ -14,10 +15,10 @@ internal sealed class PlatformDrawingContext : DrawingContext
 {
     private readonly IDrawingContextImpl _impl;
     private readonly bool _ownsImpl;
-    private static ThreadSafeObjectPool<Stack<Matrix>> TransformStackPool { get; } =
-        ThreadSafeObjectPool<Stack<Matrix>>.Default;
+    private static ThreadSafeObjectPool<Stack<CompositionMatrix>> TransformStackPool { get; } =
+        ThreadSafeObjectPool<Stack<CompositionMatrix>>.Default;
 
-    private Stack<Matrix>? _transforms;
+    private Stack<CompositionMatrix>? _transforms;
         
 
     public PlatformDrawingContext(IDrawingContextImpl impl, bool ownsImpl = true)
@@ -80,8 +81,8 @@ internal sealed class PlatformDrawingContext : DrawingContext
     {
         _transforms ??= TransformStackPool.Get();
         var current = _impl.Transform;
-        _transforms.Push(current.ToMatrix());
-        _impl.Transform = matrix * current;
+        _transforms.Push(current);
+        _impl.Transform = CompositionMatrix.FromMatrix(matrix) * current;
     }
 
     protected override void PushRenderOptionsCore(RenderOptions renderOptions) => _impl.PushRenderOptions(renderOptions);

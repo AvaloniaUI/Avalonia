@@ -1,4 +1,5 @@
 ﻿using Avalonia.Media;
+using Avalonia.Rendering.Composition.Server;
 
 namespace Avalonia.Rendering.Utilities
 {
@@ -92,7 +93,7 @@ namespace Avalonia.Rendering.Utilities
         /// Gets the transform to be used when rendering to the intermediate image when
         /// <see cref="NeedsIntermediate"/> is true.
         /// </summary>
-        public Matrix IntermediateTransform { get; }
+        public CompositionMatrix IntermediateTransform { get; }
 
         /// <summary>
         /// Gets a value indicating whether an intermediate image should be created in order to
@@ -107,7 +108,7 @@ namespace Avalonia.Rendering.Utilities
         {
             get
             {
-                if (IntermediateTransform != Matrix.Identity)
+                if (IntermediateTransform != CompositionMatrix.Identity)
                     return true;
                 if (SourceRect.Position != default)
                     return true;
@@ -165,7 +166,7 @@ namespace Avalonia.Rendering.Utilities
             return new Vector(x, y);
         }
 
-        public static Matrix CalculateIntermediateTransform(
+        public static CompositionMatrix CalculateIntermediateTransform(
             TileMode tileMode,
             Rect sourceRect,
             Rect destinationRect,
@@ -173,15 +174,15 @@ namespace Avalonia.Rendering.Utilities
             Vector translate,
             out Rect drawRect)
         {
-            var transform = Matrix.CreateTranslation(-sourceRect.Position) *
-                            Matrix.CreateScale(scale) *
-                            Matrix.CreateTranslation(translate);
+            var transform = CompositionMatrix.CreateTranslation(-sourceRect.Position) *
+                            CompositionMatrix.CreateScale(scale) *
+                            CompositionMatrix.CreateTranslation(translate);
             Rect dr;
 
             if (tileMode == TileMode.None)
             {
                 dr = destinationRect;
-                transform *= Matrix.CreateTranslation(destinationRect.Position);
+                transform *= CompositionMatrix.CreateTranslation(destinationRect.Position);
             }
             else
             {

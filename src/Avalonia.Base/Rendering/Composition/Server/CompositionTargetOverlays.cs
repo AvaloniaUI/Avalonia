@@ -90,7 +90,7 @@ internal class CompositionTargetOverlays
             if (DebugOverlays.HasFlag(RendererDebugOverlays.DirtyRects))
                 _target.DirtyRects.Visualize(targetContext);
 
-            targetContext.Transform = Matrix.CreateScale(_target.Scaling, _target.Scaling);
+            targetContext.Transform = CompositionMatrix.CreateScale(_target.Scaling, _target.Scaling);
             
             using (var immediate = new ImmediateDrawingContext(targetContext, false))
                 DrawOverlays(immediate, hasLayer, _target.PixelSize.ToSize(_target.Scaling));

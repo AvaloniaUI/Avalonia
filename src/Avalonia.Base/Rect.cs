@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.Numerics;
 using Avalonia.Animation.Animators;
+using Avalonia.Rendering.Composition.Server;
 using Avalonia.Utilities;
 
 namespace Avalonia
@@ -412,16 +413,16 @@ namespace Avalonia
 
             foreach (var p in points)
             {
-                if (p.X < left) left = p.X;
-                if (p.X > right) right = p.X;
-                if (p.Y < top) top = p.Y;
-                if (p.Y > bottom) bottom = p.Y;
+                left = Math.Min(left, p.X);
+                right = Math.Max(right, p.X);
+                top = Math.Min(top, p.Y);
+                bottom = Math.Max(bottom, p.Y);
             }
 
             return new Rect(new Point(left, top), new Point(right, bottom));
         }
         
-        internal Rect TransformToAABB(Matrix4x4 matrix)
+        internal Rect TransformToAABB(CompositionMatrix matrix)
         {
             ReadOnlySpan<Point> points = stackalloc Point[4]
             {
@@ -438,10 +439,10 @@ namespace Avalonia
 
             foreach (var p in points)
             {
-                if (p.X < left) left = p.X;
-                if (p.X > right) right = p.X;
-                if (p.Y < top) top = p.Y;
-                if (p.Y > bottom) bottom = p.Y;
+                left = Math.Min(left, p.X);
+                right = Math.Max(right, p.X);
+                top = Math.Min(top, p.Y);
+                bottom = Math.Max(bottom, p.Y);
             }
 
             return new Rect(new Point(left, top), new Point(right, bottom));

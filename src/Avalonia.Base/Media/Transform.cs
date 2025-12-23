@@ -78,6 +78,6 @@ namespace Avalonia.Media
         void ICompositionRenderResource.ReleaseOnCompositor(Compositor c) => _resource.Release(c);
         
         void ICompositorSerializable.SerializeChanges(Compositor c, BatchStreamWriter writer) =>
-            ServerCompositionSimpleTransform.SerializeAllChanges(writer, Value);
+            ServerCompositionSimpleTransform.SerializeAllChanges(writer, CompositionMatrix.FromMatrix(Value));
     }
 }

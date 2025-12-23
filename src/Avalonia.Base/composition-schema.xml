@@ -16,6 +16,7 @@
     <Manual Name="Avalonia.Matrix"
             ServerName="Avalonia.Rendering.Composition.Server.CompositionMatrix"
             DefaultValue="Avalonia.Matrix.Identity" ServerDefaultValue="default"
+            ServerConvert="Avalonia.Rendering.Composition.Server.CompositionMatrix.FromMatrix({0})"
             IsValueType="true" Passthrough="true"/>
     <Object Name="CompositionVisual" Abstract="true">
         <Property Name="Root" Type="CompositionTarget?" Internal="true" />

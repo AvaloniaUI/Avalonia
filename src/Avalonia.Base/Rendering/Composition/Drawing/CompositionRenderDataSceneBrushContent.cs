@@ -1,6 +1,7 @@
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Platform;
+using Avalonia.Rendering.Composition.Server;
 
 namespace Avalonia.Rendering.Composition.Drawing;
 
@@ -31,7 +32,7 @@ internal class CompositionRenderDataSceneBrushContent : ISceneBrushContent
         // No-op on server
     }
 
-    public void Render(IDrawingContextImpl context, Matrix? transform)
+    public void Render(IDrawingContextImpl context, CompositionMatrix? transform)
     {
         if (transform.HasValue)
         {
