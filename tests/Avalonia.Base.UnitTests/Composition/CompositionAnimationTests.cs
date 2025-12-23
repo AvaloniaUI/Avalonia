@@ -12,6 +12,7 @@ using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Xunit;
 using Xunit.Sdk;
+using Xunit.v3;
 
 namespace Avalonia.Base.UnitTests.Composition;
 
