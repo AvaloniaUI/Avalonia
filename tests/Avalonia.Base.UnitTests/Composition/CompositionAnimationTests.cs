@@ -55,13 +55,16 @@ public class CompositionAnimationTests : ScopedTestBase
                 }
             };
 
-        public override IEnumerable<object[]> GetData(MethodInfo testMethod)
+        public override IEnumerable<object[]> GetData(MethodInfo testMethod, DisposalTracker disposalTracker)
         {
             foreach (var ani in Generate())
             {
                 yield return new Object[] { ani };
             }
         }
+
+        public override bool SupportsDiscoveryEnumeration()
+            => true;
     }
 
     class DummyDispatcher : IDispatcher
