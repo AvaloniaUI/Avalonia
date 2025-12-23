@@ -198,11 +198,11 @@ partial class Build : NukeBuild
                 }
 
                 if (Parameters.IsRunningOnAzure)
-                    testCommand += $"-p:JavaSdkDirectory={GetVariable<string>("JAVA_HOME_11_X64")}";
-                testCommand += $"-p:PackageVersion={Parameters.Version}";
-                testCommand += $"-c {Parameters.Configuration} --verbosity minimal";
+                    testCommand += $" -p:JavaSdkDirectory={GetVariable<string>("JAVA_HOME_11_X64")}";
+                testCommand += $" -p:PackageVersion={Parameters.Version}";
+                testCommand += $" -c {Parameters.Configuration}";
                 if (Parameters.IsPackingToLocalCache)
-                    testCommand += $"-p:ForcePackAvaloniaNative=True -p:SkipObscurePlatforms=True -p:SkipBuildingSamples=True -p:SkipBuildingTests=True";
+                    testCommand += $" -p:ForcePackAvaloniaNative=True -p:SkipObscurePlatforms=True -p:SkipBuildingSamples=True -p:SkipBuildingTests=True";
 
                 DotNet(testCommand);
             }
