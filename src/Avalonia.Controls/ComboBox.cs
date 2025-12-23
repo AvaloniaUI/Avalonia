@@ -8,6 +8,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Controls.Utils;
 using Avalonia.Data;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Metadata;
@@ -270,12 +271,6 @@ namespace Avalonia.Controls
                 SetCurrentValue(IsDropDownOpenProperty, true);
                 e.Handled = true;
             }
-            else if (IsDropDownOpen && (e.Key == Key.Enter || e.Key == Key.Space))
-            {
-                SelectFocusedItem();
-                SetCurrentValue(IsDropDownOpenProperty, false);
-                e.Handled = true;
-            }
             else if (IsDropDownOpen && e.Key == Key.Tab)
             {
                 SetCurrentValue(IsDropDownOpenProperty, false);
@@ -366,15 +361,7 @@ namespace Avalonia.Controls
 
             if (!e.Handled && e.Source is Visual source)
             {
-                if (_popup?.IsInsidePopup(source) == true)
-                {
-                    if (UpdateSelectionFromEventSource(e.Source))
-                    {
-                        _popup?.Close();
-                        e.Handled = true;
-                    }
-                }
-                else if (PseudoClasses.Contains(pcPressed))
+                if (_popup?.IsInsidePopup(source) != true && PseudoClasses.Contains(pcPressed))
                 {
                     SetCurrentValue(IsDropDownOpenProperty, !IsDropDownOpen);
                     e.Handled = true;
@@ -384,6 +371,22 @@ namespace Avalonia.Controls
             PseudoClasses.Set(pcPressed, false);
             base.OnPointerReleased(e);
         }
+
+        public override bool UpdateSelectionFromEvent(Control container, RoutedEventArgs eventArgs)
+        {
+            if (base.UpdateSelectionFromEvent(container, eventArgs))
+            {
+                _popup?.Close();
+                return true;
+            }
+
+            return false;
+        }
+
+        protected override bool ShouldTriggerSelection(Visual selectable, PointerEventArgs eventArgs) =>
+            ItemSelectionEventTriggers.IsPointerEventWithinBounds(selectable, eventArgs) &&
+            eventArgs is { Properties.PointerUpdateKind: PointerUpdateKind.LeftButtonReleased or PointerUpdateKind.RightButtonReleased } &&
+            eventArgs.RoutedEvent == PointerReleasedEvent;
 
         /// <inheritdoc/>
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -600,18 +603,6 @@ namespace Avalonia.Controls
             if (_skipNextTextChanged)
                 return;
             SetCurrentValue(TextProperty, GetItemTextValue(item));
-        }
-
-        private void SelectFocusedItem()
-        {
-            foreach (var dropdownItem in GetRealizedContainers())
-            {
-                if (dropdownItem.IsFocused)
-                {
-                    SelectedIndex = IndexFromContainer(dropdownItem);
-                    break;
-                }
-            }
         }
 
         private bool SelectNext() => MoveSelection(SelectedIndex, 1, WrapSelection);

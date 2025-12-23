@@ -490,7 +490,7 @@ namespace Avalonia.Controls
         protected override void OnGotFocus(GotFocusEventArgs e)
         {
             base.OnGotFocus(e);
-            e.Handled = UpdateSelectionFromEventSource(e.Source, true);
+            ItemsControlFromItemContainer(this)?.UpdateSelectionFromEvent(this, e);
         }
 
         /// <inheritdoc/>

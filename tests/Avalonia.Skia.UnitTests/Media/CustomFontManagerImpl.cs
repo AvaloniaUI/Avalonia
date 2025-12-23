@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -96,7 +98,7 @@ namespace Avalonia.Skia.UnitTests.Media
         }
 
         public bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight,
-            FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface glyphTypeface)
+            FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
         {
             if (SystemFonts.TryGetGlyphTypeface(familyName, style, weight, stretch, out glyphTypeface))
             {
@@ -111,7 +113,7 @@ namespace Avalonia.Skia.UnitTests.Media
             return true;
         }
 
-        public bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, [NotNullWhen(true)] out IGlyphTypeface glyphTypeface)
+        public bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
         {
             var skTypeface = SKTypeface.FromStream(stream);
 

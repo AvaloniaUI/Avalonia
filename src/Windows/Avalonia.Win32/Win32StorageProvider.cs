@@ -79,7 +79,7 @@ namespace Avalonia.Win32
                 options.FileTypeChoices[index - 1] :
                 null;
 
-            return new SaveFilePickerResult(file) { SelectedFileType = selectedFileType };
+            return new SaveFilePickerResult { File = file, SelectedFileType = selectedFileType };
         }
 
         private unsafe Task<(IReadOnlyList<TStorageItem> items, int typeIndex)> ShowFilePicker<TStorageItem>(
