@@ -83,7 +83,6 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ushort GetGlyph(int codePoint) => this[codePoint];
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool ContainsGlyph(int codePoint)
         {
             int seg = FindSegmentIndex(codePoint);
@@ -276,7 +275,6 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
                 
         public ushort this[int codePoint]
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 // Find the segment containing the codePoint

@@ -126,7 +126,6 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryGetGlyph(int codePoint, out ushort glyphId)
         {
             int groupIndex = FindGroupIndex(codePoint);
@@ -147,7 +146,6 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
             return glyphId != 0;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal bool TryGetRange(int index, out CodepointRange range)
         {
             if ((uint)index >= (uint)_groupCount)
@@ -169,7 +167,6 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
 
         public ushort this[int codePoint]
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 int groupIndex = FindGroupIndex(codePoint);
@@ -190,7 +187,6 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
         }
 
         // Optimized binary search that works directly with cached span
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private int FindGroupIndexOptimized(int codePoint, ReadOnlySpan<byte> groups)
         {
             int lo = 0;
@@ -228,7 +224,6 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
         }
 
         // Binary search to find the group containing the code point
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private int FindGroupIndex(int codePoint)
         {
             int lo = 0;
