@@ -61,7 +61,9 @@ namespace Avalonia.Base.UnitTests.Media
         [InlineData("10 20 30 5 rgba(0,0,0,0.5), 1 2 3 0 #FF0000", 2)]
         [InlineData("10 20 30 5 rgba(0,0,0,0.5), 10 20 30 5 rgba(0,0,0,0.5)", 2)]
         [InlineData("10 20 30 5 rgba(0,0,0,0.5), 10 20 30 5 rgba(0,0,0,0.5), 10 20 30 5 rgba(0,0,0,0.5)", 3)]
+        [InlineData("10 20 30 5 rgba(0,0,0,0.5), 10 20 30 5 #ffffff, 10 20 30 5 Red", 3)]
         [InlineData("  10 20 30 5 rgba(0, 0, 0, 0.5), 10 20 30 5 rgba(0, 0, 0, 0.5), 10 20 30 5 rgba(0, 0, 0, 0.5)  ", 3)]
+        [InlineData("  10 20 30 5 rgba(0, 0, 0, 0.5), 10 20 30 5 #ffffff, 10 20 30 5 Red  ", 3)]
         public void Parse_MultipleShadows(string input, int count)
         {
             var bs = BoxShadows.Parse(input);
