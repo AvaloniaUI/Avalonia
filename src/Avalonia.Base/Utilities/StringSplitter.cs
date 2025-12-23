@@ -15,7 +15,7 @@ internal static class StringSplitter
     /// Splits the provided string by the specified separators, but ignores separators that
     /// appear inside matching bracket pairs (<paramref name="openingBracket"/> / <paramref name="closingBracket"/>).
     /// </summary>
-    /// <param name="s">The input string to split. If <c>null</c> or whitespace, an empty array is returned.</param>
+    /// <param name="s">The input string to split. If <c>null</c>, an empty array is returned.</param>
     /// <param name="separator">The separator character to split on.</param>
     /// <param name="openingBracket">The character that opens a bracketed section. <c>(</c> by default.</param>
     /// <param name="closingBracket">The character that closes a bracketed section. <c>)</c> by default.</param>
@@ -30,7 +30,7 @@ internal static class StringSplitter
     /// Splits the provided string by the specified separator, but ignores separators that
     /// appear inside matching bracket pairs (<paramref name="openingBracket"/> / <paramref name="closingBracket"/>).
     /// </summary>
-    /// <param name="s">The input string to split. If <c>null</c> or whitespace, an empty array is returned.</param>
+    /// <param name="s">The input string to split. If <c>null</c>, an empty array is returned.</param>
     /// <param name="separators">The separator characters to split on.</param>
     /// <param name="openingBracket">The character that opens a bracketed section. <c>(</c> by default.</param>
     /// <param name="closingBracket">The character that closes a bracketed section. <c>)</c> by default.</param>
@@ -43,7 +43,7 @@ internal static class StringSplitter
         if (openingBracket == closingBracket)
             throw new ArgumentException($"Opening bracket and closing bracket cannot be the same character '{openingBracket}'.", nameof(closingBracket));
 
-        if (string.IsNullOrWhiteSpace(s))
+        if (s is null)
             return [];
 
         var span = s.AsSpan();
