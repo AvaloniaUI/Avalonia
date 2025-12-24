@@ -11,7 +11,7 @@ namespace Avalonia.UnitTests
         private ulong Timestamp() => _nextStamp++;
 
         private RawInputModifiers _pressedButtons;
-        public IInputElement Captured => _pointer.Captured;
+        public IInputElement? Captured => _pointer.Captured;
 
         private RawInputModifiers Convert(MouseButton mouseButton)
         {
@@ -141,7 +141,7 @@ namespace Avalonia.UnitTests
         private Point MidpointRelativeToRoot(Interactive element)
         {
             var root = GetRoot(element);
-            return element.TranslatePoint(new(element.Bounds.Width / 2, element.Bounds.Height / 2), root).Value;
+            return element.TranslatePoint(new(element.Bounds.Width / 2, element.Bounds.Height / 2), root).GetValueOrDefault();
         }
     }
 }

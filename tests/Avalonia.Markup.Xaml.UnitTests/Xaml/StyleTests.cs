@@ -35,7 +35,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </UserControl.Styles>
 </UserControl>";
                 var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var color = (Color)((Style)userControl.Styles[0]).Resources["color"];
+                var color = (Color)((Style)userControl.Styles[0]).Resources["color"]!;
 
                 Assert.Equal(0xff506070, color.ToUInt32());
             }
@@ -58,7 +58,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </UserControl.Styles>
 </UserControl>";
                 var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var dataTemplate = (DataTemplate)((Style)userControl.Styles[0]).Resources["dataTemplate"];
+                var dataTemplate = (DataTemplate?)((Style)userControl.Styles[0]).Resources["dataTemplate"];
 
                 Assert.NotNull(dataTemplate);
             }
@@ -83,7 +83,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </UserControl.Styles>
 </UserControl>";
                 var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var controlTemplate = (ControlTemplate)((Style)userControl.Styles[0]).Resources["controlTemplate"];
+                var controlTemplate = (ControlTemplate?)((Style)userControl.Styles[0]).Resources["controlTemplate"];
 
                 Assert.NotNull(controlTemplate);
                 Assert.Equal(typeof(Button), controlTemplate.TargetType);
@@ -107,7 +107,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </UserControl.Styles>
 </UserControl>";
                 var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var brush = (ISolidColorBrush)((Style)userControl.Styles[0]).Resources["brush"];
+                var brush = (ISolidColorBrush)((Style)userControl.Styles[0]).Resources["brush"]!;
 
                 Assert.Equal(0xff506070, brush.Color.ToUInt32());
             }
@@ -135,7 +135,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 </Window>";
 
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var target = window.Find<ContentControl>("target");
+                var target = window.Get<ContentControl>("target");
 
                 Assert.IsType<TextBlock>(target.Content);
                 Assert.Equal("Hello World!", ((TextBlock)target.Content).Text);
@@ -166,7 +166,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 </Window>";
 
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var target = window.Find<TextBlock>("target");
+                var target = window.Get<TextBlock>("target");
 
                 Assert.NotNull(target.FocusAdorner);
             }
@@ -189,7 +189,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     <TextBlock/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = (TextBlock)window.Content;
+                var textBlock = (TextBlock)window.Content!;
 
                 window.ApplyTemplate();
 
@@ -217,7 +217,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
                 Assert.Equal(
                     "Property 'Button.IsDefault' is not registered on 'Avalonia.Controls.TextBlock'.",
-                    ex.InnerException.Message);
+                    ex.InnerException?.Message);
             }
         }
 
@@ -240,11 +240,11 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </StackPanel>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var foo = window.FindControl<Border>("foo");
-                var notFoo = window.FindControl<Border>("notFoo");
+                var foo = window.GetControl<Border>("foo");
+                var notFoo = window.GetControl<Border>("notFoo");
 
                 Assert.Null(foo.Background);
-                Assert.Equal(Colors.Red, ((ISolidColorBrush)notFoo.Background).Color);
+                Assert.Equal(Colors.Red, ((ISolidColorBrush)notFoo.Background!).Color);
             }
         }
 
@@ -267,8 +267,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </StackPanel>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var b1 = window.FindControl<Border>("b1");
-                var b2 = window.FindControl<Border>("b2");
+                var b1 = window.GetControl<Border>("b1");
+                var b2 = window.GetControl<Border>("b2");
 
                 Assert.Equal(Brushes.Red, b1.Background);
                 Assert.Null(b2.Background);
@@ -295,9 +295,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
 
-                var parent = window.FindControl<StackPanel>("parent");
-                var b1 = window.FindControl<Border>("b1");
-                var b2 = window.FindControl<Border>("b2");
+                var parent = window.GetControl<StackPanel>("parent");
+                var b1 = window.GetControl<Border>("b1");
+                var b2 = window.GetControl<Border>("b2");
 
                 Assert.Null(b1.Background);
                 Assert.Equal(Brushes.Red, b2.Background);
@@ -334,9 +334,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
 
-                var parent = window.FindControl<StackPanel>("parent");
-                var b1 = window.FindControl<Border>("b1");
-                var b2 = window.FindControl<Border>("b2");
+                var parent = window.GetControl<StackPanel>("parent");
+                var b1 = window.GetControl<Border>("b1");
+                var b2 = window.GetControl<Border>("b2");
 
                 Assert.Equal(Brushes.Red, b1.Background);
                 Assert.Null(b2.Background);
@@ -374,12 +374,12 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                     Brushes.Red, Brushes.Green, Brushes.Blue
                 };
 
-                var list = window.FindControl<ListBox>("list");
+                var list = window.GetControl<ListBox>("list");
                 list.ItemsSource = collection;
 
                 window.Show();
 
-                IEnumerable<IBrush> GetColors() => list.GetRealizedContainers().Cast<ListBoxItem>().Select(t => t.Background);
+                IEnumerable<IBrush?> GetColors() => list.GetRealizedContainers().Cast<ListBoxItem>().Select(t => t.Background);
 
                 Assert.Equal(new[] { Brushes.Transparent, Brushes.Green, Brushes.Transparent }, GetColors());
 
@@ -416,9 +416,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </StackPanel>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var foo = window.FindControl<Border>("foo");
-                var bar = window.FindControl<Border>("bar");
-                var baz = window.FindControl<Border>("baz");
+                var foo = window.GetControl<Border>("foo");
+                var bar = window.GetControl<Border>("bar");
+                var baz = window.GetControl<Border>("baz");
 
                 Assert.Equal(Brushes.Red, foo.Background);
                 Assert.Equal(Brushes.Red, bar.Background);
@@ -446,9 +446,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </StackPanel>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = window.FindControl<Button>("button");
-                var carousel = window.FindControl<Carousel>("carousel");
-                var listBox = window.FindControl<ListBox>("listBox");
+                var button = window.GetControl<Button>("button");
+                var carousel = window.GetControl<Carousel>("carousel");
+                var listBox = window.GetControl<ListBox>("listBox");
 
                 Assert.Equal(Brushes.Red, button.Background);
                 Assert.Equal(Brushes.Red, carousel.Background);
@@ -483,18 +483,21 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     <Border/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var border = (Border)window.Content;
+                var border = (Border)window.Content!;
 
+                Assert.NotNull(border.Transitions);
                 Assert.Equal(1, border.Transitions.Count);
                 Assert.Equal(Border.WidthProperty, border.Transitions[0].Property);
 
                 border.Classes.Add("foo");
 
+                Assert.NotNull(border.Transitions);
                 Assert.Equal(1, border.Transitions.Count);
                 Assert.Equal(Border.HeightProperty, border.Transitions[0].Property);
 
                 border.Classes.Remove("foo");
 
+                Assert.NotNull(border.Transitions);
                 Assert.Equal(1, border.Transitions.Count);
                 Assert.Equal(Border.WidthProperty, border.Transitions[0].Property);
             }
@@ -518,9 +521,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </StackPanel>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var foo = window.FindControl<Border>("foo");
+                var foo = window.GetControl<Border>("foo");
 
-                Assert.Equal(Colors.Red, ((ISolidColorBrush)foo.Background).Color);
+                Assert.Equal(Colors.Red, ((ISolidColorBrush)foo.Background!).Color);
             }
         }
 
@@ -542,13 +545,13 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </StackPanel>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var foo = window.FindControl<Border>("foo");
+                var foo = window.GetControl<Border>("foo");
 
                 Assert.Null(foo.Background);
 
                 ((IPseudoClasses)foo.Classes).Add(":foo-bar");
 
-                Assert.Equal(Colors.Red, ((ISolidColorBrush)foo.Background).Color);
+                Assert.Equal(Colors.Red, ((ISolidColorBrush)foo.Background!).Color);
             }
         }
 
@@ -572,13 +575,13 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </StackPanel>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var foo = window.FindControl<Border>("foo");
+                var foo = window.GetControl<Border>("foo");
 
                 Assert.Null(foo.Background);
 
                 foo.Classes.Add("foo");
 
-                Assert.Equal(Colors.Red, ((ISolidColorBrush)foo.Background).Color);
+                Assert.Equal(Colors.Red, ((ISolidColorBrush)foo.Background!).Color);
             }
         }
         

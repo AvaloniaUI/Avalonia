@@ -355,7 +355,7 @@ namespace Avalonia.Skia
             GC.SuppressFinalize(this);
         }
 
-        public bool TryGetTable(uint tag, out byte[] table)
+        public bool TryGetTable(uint tag, [NotNullWhen(true)] out byte[]? table)
         {
             return SKTypeface.TryGetTableData(tag, out table);
         }

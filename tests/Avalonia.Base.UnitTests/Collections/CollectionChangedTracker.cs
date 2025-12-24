@@ -10,14 +10,14 @@ namespace Avalonia.Base.UnitTests.Collections
             collection.CollectionChanged += CollectionChanged;
         }
 
-        public NotifyCollectionChangedEventArgs Args { get; private set; }
+        public NotifyCollectionChangedEventArgs? Args { get; private set; }
 
         public void Reset()
         {
             Args = null;
         }
 
-        private void CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             if (Args != null)
             {

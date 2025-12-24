@@ -11,7 +11,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml;
 
 public class DesignModeTests : XamlTestBase
 {
-    public static object SomeStaticProperty { get; set; }
+    public static object? SomeStaticProperty { get; set; }
 
     [Fact]
     public void Design_Mode_PreviewWith_Should_Be_Ignored_Without_Design_Mode()

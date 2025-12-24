@@ -30,7 +30,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
     </TextBlock>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = window.FindControl<TextBlock>("textBlock");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
 
                 window.ApplyTemplate();
 
@@ -50,7 +50,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
     {
         public static readonly TestMultiValueConverter Instance = new TestMultiValueConverter();
 
-        public object Convert(IList<object> values, Type targetType, object parameter, CultureInfo culture)
+        public object Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
         {
             if (values[0] is int i && values[1] is int j)
             {

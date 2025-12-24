@@ -25,9 +25,9 @@ namespace Avalonia.Markup.UnitTests.Data
         
         public class Source : INotifyPropertyChanged
         {
-            private string _foo;
+            private string? _foo;
 
-            public string Foo
+            public string? Foo
             {
                 get => _foo;
                 set
@@ -37,7 +37,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 }
             }
 
-            public event PropertyChangedEventHandler PropertyChanged;
+            public event PropertyChangedEventHandler? PropertyChanged;
 
             private void RaisePropertyChanged([CallerMemberName] string prop = "")
             {

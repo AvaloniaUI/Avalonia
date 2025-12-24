@@ -96,7 +96,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 {
-                    var panel = window.FindControl<RelativePanel>("TestRelativePanel");
+                    var panel = window.GetControl<RelativePanel>("TestRelativePanel");
 
                     panel.DataContext = new
                     {
@@ -106,7 +106,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 window.ApplyTemplate();
                 window.Show();
                     
-                var sv = window.FindControl<ScrollViewer>("TestArea");
+                var sv = window.GetControl<ScrollViewer>("TestArea");
                 Assert.True(sv.Viewport.Width < sv.Bounds.Width);
                 Assert.True(sv.Viewport.Height < sv.Bounds.Height);
             }

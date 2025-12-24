@@ -4,9 +4,9 @@ namespace Avalonia.Markup.Xaml.UnitTests
 {
     public class TestViewModel : NotifyingBase
     {
-        private string _string;
+        private string? _string;
         private int _integer;
-        private TestViewModel _child;
+        private TestViewModel? _child;
         private bool _boolean;
 
         public int Integer
@@ -19,7 +19,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
             }
         }
 
-        public string String
+        public string? String
         {
             get => _string;
             set
@@ -29,7 +29,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
             }
         }
 
-        public TestViewModel Child
+        public TestViewModel? Child
         {
             get => _child;
             set

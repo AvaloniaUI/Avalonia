@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reactive.Disposables;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
@@ -11,7 +12,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;
 
 public class OptionsMarkupExtensionTests : XamlTestBase
 {
-    public static Func<object, bool> RaisedOption;
+    public static Func<object, bool>? RaisedOption;
     public static int? ObjectsCreated;
 
     [Fact]
@@ -420,7 +421,7 @@ public class OptionsMarkupExtensionTests : XamlTestBase
 </UserControl>";
 
         var window = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
-        var textBlock = window.FindControl<TextBlock>("textBlock");
+        var textBlock = window.GetControl<TextBlock>("textBlock");
 
         Assert.Equal(expected, textBlock.Text);
     }
@@ -471,6 +472,7 @@ public class OptionsMarkupExtensionTests : XamlTestBase
         Assert.True(textBlock.IsVisible);
     }
 
+    [MemberNotNull(nameof(RaisedOption))]
     private static IDisposable SetupTestGlobals(object acceptedOption)
     {
         RaisedOption = o => o.Equals(acceptedOption);
@@ -513,24 +515,24 @@ public class OptionsMarkupExtensionBase<TReturn, TOn> : IAddChild<TOn>
     where TOn : On<TReturn>
 {
     [MarkupExtensionOption("option 1")]
-    public TReturn OptionA { get; set; }
+    public TReturn? OptionA { get; set; }
 
     [MarkupExtensionOption("option 2")]
-    public TReturn OptionB { get; set; }
+    public TReturn? OptionB { get; set; }
 
     [MarkupExtensionOption(3)]
-    public TReturn OptionNumber { get; set; }
+    public TReturn? OptionNumber { get; set; }
 
     [Content]
     [MarkupExtensionDefaultOption]
-    public TReturn Default { get; set; }
+    public TReturn? Default { get; set; }
 
     public bool ShouldProvideOption(IServiceProvider serviceProvider, string option)
     {
-        return OptionsMarkupExtensionTests.RaisedOption(option);
+        return OptionsMarkupExtensionTests.RaisedOption!(option);
     }
 
-    public TReturn ProvideValue(IServiceProvider serviceProvider) { throw null; }
+    public TReturn ProvideValue(IServiceProvider serviceProvider) { throw null!; }
 
     public void AddChild(TOn child) {}
 }
@@ -538,21 +540,21 @@ public class OptionsMarkupExtensionBase<TReturn, TOn> : IAddChild<TOn>
 public class OptionsMarkupExtensionNoServiceProvider
 {
     [MarkupExtensionOption(1)]
-    public object OptionA { get; set; }
+    public object? OptionA { get; set; }
 
     [MarkupExtensionOption(2)]
-    public object OptionB { get; set; }
+    public object? OptionB { get; set; }
 
     [Content]
     [MarkupExtensionDefaultOption]
-    public object Default { get; set; }
+    public object? Default { get; set; }
 
     public static bool ShouldProvideOption(int option)
     {
-        return OptionsMarkupExtensionTests.RaisedOption(option);
+        return OptionsMarkupExtensionTests.RaisedOption!(option);
     }
 
-    public object ProvideValue(IServiceProvider serviceProvider) { throw null; }
+    public object ProvideValue(IServiceProvider serviceProvider) { throw null!; }
 }
 
 public class OptionsMarkupExtensionMinimal
@@ -562,7 +564,7 @@ public class OptionsMarkupExtensionMinimal
 
     public static bool ShouldProvideOption(double option) => option > 0;
 
-    public object ProvideValue() { throw null; }
+    public object ProvideValue() { throw null!; }
 }
 
 public class OptionsMarkupExtensionWithProperty
@@ -574,29 +576,29 @@ public class OptionsMarkupExtensionWithProperty
 
     public bool ShouldProvideOption(int option) => option == Property;
 
-    public object ProvideValue() { throw null; }
+    public object ProvideValue() { throw null!; }
 }
 
 public class OptionsMarkupExtensionWithGeneric<TResult>
 {
     [MarkupExtensionOption("option 1")]
-    public TResult OptionA { get; set; }
+    public TResult? OptionA { get; set; }
 
     [Content]
     [MarkupExtensionDefaultOption]
-    public TResult Default { get; set; }
+    public TResult? Default { get; set; }
 
     public bool ShouldProvideOption(string option)
     {
-        return OptionsMarkupExtensionTests.RaisedOption(option);
+        return OptionsMarkupExtensionTests.RaisedOption!(option);
     }
 
-    public TResult ProvideValue() { throw null; }
+    public TResult ProvideValue() { throw null!; }
 }
 
 public class ChildObject
 {
-    public string Name { get; set; }
+    public string? Name { get; set; }
 
     public ChildObject()
     {

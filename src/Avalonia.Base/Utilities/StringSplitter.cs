@@ -21,7 +21,7 @@ internal static class StringSplitter
     /// <param name="closingBracket">The character that closes a bracketed section. <c>)</c> by default.</param>
     /// <param name="options">Options for trimming entries and removing empty entries.</param>
     /// <returns>An array of split segments. Returns an empty array if the input is null or only whitespace.</returns>
-    public static string[] SplitRespectingBrackets(string s, char separator,
+    public static string[] SplitRespectingBrackets(string? s, char separator,
         char openingBracket = DefaultOpeningParenthesis, char closingBracket = DefaultClosingParenthesis,
         StringSplitOptions options = StringSplitOptions.None) =>
         SplitRespectingBrackets(s, [separator], openingBracket, closingBracket, options);
@@ -36,7 +36,7 @@ internal static class StringSplitter
     /// <param name="closingBracket">The character that closes a bracketed section. <c>)</c> by default.</param>
     /// <param name="options">Options for trimming entries and removing empty entries.</param>
     /// <returns>An array of split segments. Returns an empty array if the input is null or only whitespace.</returns>
-    public static string[] SplitRespectingBrackets(string s, ReadOnlySpan<char> separators,
+    public static string[] SplitRespectingBrackets(string? s, ReadOnlySpan<char> separators,
         char openingBracket = DefaultOpeningParenthesis, char closingBracket = DefaultClosingParenthesis,
         StringSplitOptions options = StringSplitOptions.None)
     {

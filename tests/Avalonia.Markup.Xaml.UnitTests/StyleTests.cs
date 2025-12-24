@@ -103,7 +103,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
 
         private class Data
         {
-            public string Foo { get; set; }
+            public string? Foo { get; set; }
         }
     }
 }
