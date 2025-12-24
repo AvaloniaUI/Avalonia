@@ -54,7 +54,7 @@ namespace Avalonia
         /// <inheritdoc cref="ThemeVariantScope.ActualThemeVariantProperty" />
         public static readonly StyledProperty<ThemeVariant> ActualThemeVariantProperty =
             ThemeVariantScope.ActualThemeVariantProperty.AddOwner<Application>();
-        
+
         /// <inheritdoc cref="ThemeVariantScope.RequestedThemeVariantProperty" />
         public static readonly StyledProperty<ThemeVariant?> RequestedThemeVariantProperty =
             ThemeVariantScope.RequestedThemeVariantProperty.AddOwner<Application>();
@@ -73,6 +73,11 @@ namespace Avalonia
 
         /// <inheritdoc/>
         public event EventHandler? ActualThemeVariantChanged;
+
+        static Application()
+        {
+            RequestedThemeVariantProperty.OverrideDefaultValue<Application>(ThemeVariant.Default);
+        }
 
         /// <summary>
         /// Creates an instance of the <see cref="Application"/> class.
@@ -101,7 +106,7 @@ namespace Avalonia
             get => GetValue(RequestedThemeVariantProperty);
             set => SetValue(RequestedThemeVariantProperty, value);
         }
-        
+
         /// <inheritdoc />
         [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1031", Justification = "This property is supposed to be a styled readonly property.")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1030", Justification = "False positive.")]
@@ -211,7 +216,7 @@ namespace Avalonia
         /// as specific top levels might have different settings set-up. 
         /// </remarks>
         public IPlatformSettings? PlatformSettings => this.TryGetFeature<IPlatformSettings>();
-        
+
         event Action<IReadOnlyList<IStyle>>? IGlobalStyles.GlobalStylesAdded
         {
             add => _stylesAdded += value;
@@ -228,7 +233,7 @@ namespace Avalonia
         /// Initializes the application by loading XAML etc.
         /// </summary>
         public virtual void Initialize() { }
-        
+
         /// <inheritdoc/>
         public bool TryGetResource(object key, ThemeVariant? theme, out object? value)
         {
@@ -279,7 +284,7 @@ namespace Avalonia
                 .Bind<IGlobalStyles>().ToConstant(this)
                 .Bind<IThemeVariantHost>().ToConstant(this)
                 .Bind<IInputManager>().ToConstant(InputManager)
-                .Bind< IToolTipService>().ToConstant(new ToolTipService(InputManager))
+                .Bind<IToolTipService>().ToConstant(new ToolTipService(InputManager))
                 .Bind<IKeyboardNavigationHandler>().ToTransient<KeyboardNavigationHandler>()
                 .Bind<IDragDropDevice>().ToConstant(DragDropDevice.Instance);
 
@@ -297,10 +302,10 @@ namespace Avalonia
         public virtual void OnFrameworkInitializationCompleted()
         {
         }
-        
+
         void IApplicationPlatformEvents.RaiseUrlsOpened(string[] urls)
         {
-            UrlsOpened?.Invoke(this, new UrlOpenedEventArgs (urls));
+            UrlsOpened?.Invoke(this, new UrlOpenedEventArgs(urls));
         }
 
         private string? _name;
@@ -352,20 +357,28 @@ namespace Avalonia
 
             if (change.Property == RequestedThemeVariantProperty)
             {
-                if (change.GetNewValue<ThemeVariant>() is {} themeVariant && themeVariant != ThemeVariant.Default)
-                    SetValue(ActualThemeVariantProperty, themeVariant);
-                else
-                    ClearValue(ActualThemeVariantProperty);
+                if (change.GetNewValue<ThemeVariant>() is { } themeVariant)
+                {
+                    if (themeVariant == ThemeVariant.Default)
+                    {
+                        ClearValue(ActualThemeVariantProperty);
+                    }
+                    else
+                    {
+                        SetValue(ActualThemeVariantProperty, themeVariant);
+                    }
+                }
             }
             else if (change.Property == ActualThemeVariantProperty)
             {
                 ActualThemeVariantChanged?.Invoke(this, EventArgs.Empty);
             }
         }
-        
+
         private void OnColorValuesChanged(object? sender, PlatformColorValues e)
         {
-            SetValue(ActualThemeVariantProperty, (ThemeVariant)e.ThemeVariant, BindingPriority.Template);
+            if ((RequestedThemeVariant ?? ThemeVariant.Default) == ThemeVariant.Default)
+                SetValue(ActualThemeVariantProperty, (ThemeVariant)e.ThemeVariant);
         }
     }
 }
