@@ -66,7 +66,11 @@ namespace Avalonia.UnitTests
             // If it's null, it will fail. So we need to ensure it's not null.
             // Historically, this line wasn't needed because xunit itself used to always install its own SynchronizationContext.
             // This was changed in xunit.v3.
-            AvaloniaSynchronizationContext.InstallIfNeeded();
+            if (SynchronizationContext.Current is null)
+            {
+                AvaloniaSynchronizationContext.InstallIfNeeded();
+            }
+
             AvaloniaLocator.CurrentMutable
                 .Bind<IAssetLoader>().ToConstant(Services.AssetLoader)
                 .Bind<IGlobalClock>().ToConstant(Services.GlobalClock)
