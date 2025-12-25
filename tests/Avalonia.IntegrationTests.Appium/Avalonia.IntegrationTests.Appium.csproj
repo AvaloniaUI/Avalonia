@@ -34,6 +34,7 @@
     <!-- This test project is run in CI via VSTest Azure Task, to have video recorder support -->
     <!-- Video recorder isn't yet supported by Microsoft.Testing.Platform, we keep this project compatible with both VSTest and Microsoft.Testing.Platform. -->
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5" />
   </ItemGroup>
 
   <Import Project="..\..\build\XUnit.props" />

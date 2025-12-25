@@ -93,6 +93,7 @@ jobs:
     inputs:
       command: 'run'
       projects: 'tests/Avalonia.IntegrationTests.Win32/Avalonia.IntegrationTests.Win32.csproj'
+      arguments: '--no-progress'
 
   - task: VSTest@2
     displayName: 'Run Appium Integration Tests'
