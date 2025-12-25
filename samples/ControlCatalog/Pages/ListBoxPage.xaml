@@ -20,6 +20,9 @@
         <Setter Property="Background" Value="Blue" />
         <Setter Property="FontWeight" Value="Bold" />
       </Style>
+      <Style Selector="ListBox.mouserelease ListBoxItem">
+        <Setter Property="ItemSelectionEventTriggers.MouseTriggerOnRelease" Value="True"/>
+      </Style>
 	  <Style Selector="VirtualizingStackPanel">
 	    <Setter Property="CacheLength" Value="0.5" />
 	  </Style>
@@ -34,6 +37,7 @@
       <CheckBox IsChecked="{Binding AlwaysSelected}">AlwaysSelected</CheckBox>
       <CheckBox IsChecked="{Binding AutoScrollToSelectedItem}">AutoScrollToSelectedItem</CheckBox>
       <CheckBox IsChecked="{Binding WrapSelection}">WrapSelection</CheckBox>
+      <CheckBox Name="MouseTriggerOnReleaseCheckBox">MouseTriggerOnRelease</CheckBox>
     </StackPanel>
     <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="4">
       <Button Command="{Binding AddItemCommand}">Add</Button>
@@ -45,6 +49,7 @@
              DisplayMemberBinding="{Binding (viewModels:ItemModel).ID, StringFormat='{}Item {0:N0}'}"
              AutoScrollToSelectedItem="{Binding AutoScrollToSelectedItem}"
              SelectionMode="{Binding SelectionMode^}"
-             WrapSelection="{Binding WrapSelection}"/>
+             WrapSelection="{Binding WrapSelection}"
+             Classes.mouserelease="{Binding #MouseTriggerOnReleaseCheckBox.IsChecked}"/>
   </DockPanel>
 </UserControl>
