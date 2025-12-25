@@ -111,6 +111,9 @@ partial class Build : NukeBuild
     DotNetTestSettings ApplySetting(DotNetTestSettings c, Configure<DotNetTestSettings> configurator = null) =>
         ApplySettingCore(c).Test.Apply(configurator);
 
+    DotNetRunSettings ApplySetting(DotNetRunSettings c, Configure<DotNetRunSettings> configurator = null) =>
+        ApplySettingCore(c).Run.Apply(configurator);
+
     Target Clean => _ => _.Executes(() =>
     {
         foreach (var buildDir in Parameters.BuildDirs)
@@ -178,34 +181,14 @@ partial class Build : NukeBuild
             File.WriteAllText(prIdFile, prId);
         });
 
-    void RunCoreTest(string projectName, bool useVSTest = false)
+    void RunCoreTest(string projectName)
     {
         RunCoreTest(projectName, (project, tfm) =>
         {
-            if (useVSTest)
-            {
-                DotNetTest(c => ApplySetting(c, project,tfm));
-            }
-            else
-            {
-                // These are mostly duplicates from what exists in the VSTest branch.
-                // This is due to lack of MTP support in Nuke.
-                // Issue: https://github.com/nuke-build/nuke/issues/1584
-                string testCommand = $"test --project {project} --framework {tfm} --no-build";
-                if (Parameters.PublishTestResults)
-                {
-                    testCommand += $" --results-directory {Parameters.TestResultsRoot} --report-trx";
-                }
-
-                if (Parameters.IsRunningOnAzure)
-                    testCommand += $" -p:JavaSdkDirectory={GetVariable<string>("JAVA_HOME_11_X64")}";
-                testCommand += $" -p:PackageVersion={Parameters.Version}";
-                testCommand += $" -c {Parameters.Configuration}";
-                if (Parameters.IsPackingToLocalCache)
-                    testCommand += $" -p:ForcePackAvaloniaNative=True -p:SkipObscurePlatforms=True -p:SkipBuildingSamples=True -p:SkipBuildingTests=True";
-
-                DotNet(testCommand);
-            }
+            // NOTE: Nuke DotNetTest doesn't support Microsoft.Testing.Platform yet.
+            // Issue: https://github.com/nuke-build/nuke/issues/1584.
+            // However, we can easily use DotNetRun instead since MTP projects are executables.
+            DotNetRun(c => ApplySetting(c, project, tfm));
         });
     }
 
@@ -259,15 +242,14 @@ partial class Build : NukeBuild
         }
     }
 
-    DotNetTestSettings ApplySetting(DotNetTestSettings settings, string project, string tfm) =>
+    DotNetRunSettings ApplySetting(DotNetRunSettings settings, string project, string tfm) =>
         ApplySetting(settings)
         .SetProjectFile(project)
         .SetFramework(tfm)
         .EnableNoBuild()
         .EnableNoRestore()
         .When(_ => Parameters.PublishTestResults, _ => _
-            .SetLoggers("trx")
-            .SetResultsDirectory(Parameters.TestResultsRoot));
+            .AddApplicationArguments("--report-trx", "--results-directory", Parameters.TestResultsRoot));
 
     Target RunHtmlPreviewerTests => _ => _
         .OnlyWhenStatic(() => !(Parameters.SkipTests))
@@ -292,8 +274,8 @@ partial class Build : NukeBuild
             RunCoreTest("Avalonia.Skia.UnitTests");
             RunCoreTest("Avalonia.Headless.NUnit.PerAssembly.UnitTests");
             RunCoreTest("Avalonia.Headless.NUnit.PerTest.UnitTests");
-            RunCoreTest("Avalonia.Headless.XUnit.PerAssembly.UnitTests", useVSTest: true); // This is xunit 2 which doesn't support Microsoft.Testing.Platform.
-            RunCoreTest("Avalonia.Headless.XUnit.PerTest.UnitTests", useVSTest: true); // This is xunit 2 which doesn't support Microsoft.Testing.Platform.
+            RunCoreTest("Avalonia.Headless.XUnit.PerAssembly.UnitTests");
+            RunCoreTest("Avalonia.Headless.XUnit.PerTest.UnitTests");
         });
 
     Target RunRenderTests => _ => _
