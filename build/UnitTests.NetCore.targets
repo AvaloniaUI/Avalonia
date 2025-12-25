@@ -3,7 +3,4 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
   </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Testing.Extensions.TrxReport" Version="2.0.2" />
-  </ItemGroup>
 </Project>
