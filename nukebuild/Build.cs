@@ -248,6 +248,9 @@ partial class Build : NukeBuild
         .SetFramework(tfm)
         .EnableNoBuild()
         .EnableNoRestore()
+        // Disable progress output (works like terminal logger which isn't so nice in CI).
+        // See https://github.com/microsoft/testfx/issues/7056
+        .AddApplicationArguments("--no-progress")
         .When(_ => Parameters.PublishTestResults, _ => _
             .AddApplicationArguments("--report-trx", "--results-directory", Parameters.TestResultsRoot));
 
