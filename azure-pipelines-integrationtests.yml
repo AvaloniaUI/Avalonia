@@ -43,6 +43,7 @@ jobs:
     inputs:
       command: 'test'
       projects: 'tests/Avalonia.IntegrationTests.Appium/Avalonia.IntegrationTests.Appium.csproj'
+      arguments: '--no-progress'
 
   - script: |
       pkill IntegrationTestApp
