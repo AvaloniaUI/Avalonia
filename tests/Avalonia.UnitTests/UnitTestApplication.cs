@@ -68,7 +68,7 @@ namespace Avalonia.UnitTests
             // This was changed in xunit.v3.
             if (SynchronizationContext.Current is null)
             {
-                AvaloniaSynchronizationContext.InstallIfNeeded();
+                SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
             }
 
             AvaloniaLocator.CurrentMutable
