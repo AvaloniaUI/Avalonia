@@ -9,6 +9,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Headless;
 using Avalonia.Layout;
 using Avalonia.Platform;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
@@ -375,6 +376,15 @@ namespace Avalonia.Controls.UnitTests
 
         private void Layout(Control c)
         {
+            if (SynchronizationContext.Current is null)
+            {
+                // Arrange (as part of layouting) calls TaskScheduler.FromCurrentSynchronizationContext, which needs a non-null context.
+                // If it's null, it will fail. So we need to ensure it's not null.
+                // Historically, this line wasn't needed because xunit itself used to always install its own SynchronizationContext.
+                // This was changed in xunit.v3.
+                SynchronizationContext.SetSynchronizationContext(new AvaloniaSynchronizationContext());
+            }
+
             (c.GetVisualRoot() as ILayoutRoot)?.LayoutManager.ExecuteLayoutPass();
         }
 
