@@ -19,7 +19,6 @@
 -(AvnPoint) translateLocalPoint:(AvnPoint)pt;
 -(void) onClosed;
 -(void) setModifiers:(NSEventModifierFlags)modifierFlags;
--(void) resetPressedMouseButtons;
 
 -(AvnPlatformResizeReason) getResizeReason;
 -(void) setResizeReason:(AvnPlatformResizeReason)reason;

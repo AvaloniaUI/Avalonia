@@ -1,48 +1,78 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "title": "Build Schema",
-  "$ref": "#/definitions/build",
   "definitions": {
-    "build": {
-      "type": "object",
+    "Host": {
+      "type": "string",
+      "enum": [
+        "AppVeyor",
+        "AzurePipelines",
+        "Bamboo",
+        "Bitbucket",
+        "Bitrise",
+        "GitHubActions",
+        "GitLab",
+        "Jenkins",
+        "Rider",
+        "SpaceAutomation",
+        "TeamCity",
+        "Terminal",
+        "TravisCI",
+        "VisualStudio",
+        "VSCode"
+      ]
+    },
+    "ExecutableTarget": {
+      "type": "string",
+      "enum": [
+        "BuildToNuGetCache",
+        "CiAzureLinux",
+        "CiAzureOSX",
+        "CiAzureWindows",
+        "Clean",
+        "Compile",
+        "CompileNative",
+        "CreateIntermediateNugetPackages",
+        "CreateNugetPackages",
+        "DownloadApiBaselinePackages",
+        "GenerateCppHeaders",
+        "InitDnx",
+        "OutputApiDiff",
+        "OutputVersion",
+        "Package",
+        "RunCoreLibsTests",
+        "RunHtmlPreviewerTests",
+        "RunLeakTests",
+        "RunRenderTests",
+        "RunTests",
+        "RunToolsTests",
+        "ValidateApiDiff",
+        "VerifyXamlCompilation",
+        "ZipFiles"
+      ]
+    },
+    "Verbosity": {
+      "type": "string",
+      "description": "",
+      "enum": [
+        "Verbose",
+        "Normal",
+        "Minimal",
+        "Quiet"
+      ]
+    },
+    "NukeBuild": {
       "properties": {
-        "api-baseline": {
-          "type": "string"
-        },
-        "configuration": {
-          "type": "string"
-        },
         "Continue": {
           "type": "boolean",
           "description": "Indicates to continue a previously failed build attempt"
-        },
-        "force-nuget-version": {
-          "type": "string"
         },
         "Help": {
           "type": "boolean",
           "description": "Shows the help text for this build assembly"
         },
         "Host": {
-          "type": "string",
           "description": "Host for execution. Default is 'automatic'",
-          "enum": [
-            "AppVeyor",
-            "AzurePipelines",
-            "Bamboo",
-            "Bitbucket",
-            "Bitrise",
-            "GitHubActions",
-            "GitLab",
-            "Jenkins",
-            "Rider",
-            "SpaceAutomation",
-            "TeamCity",
-            "Terminal",
-            "TravisCI",
-            "VisualStudio",
-            "VSCode"
-          ]
+          "$ref": "#/definitions/Host"
         },
         "NoLogo": {
           "type": "boolean",
@@ -71,89 +101,51 @@
           "type": "array",
           "description": "List of targets to be skipped. Empty list skips all dependencies",
           "items": {
-            "type": "string",
-            "enum": [
-              "BuildToNuGetCache",
-              "CiAzureLinux",
-              "CiAzureOSX",
-              "CiAzureWindows",
-              "Clean",
-              "Compile",
-              "CompileHtmlPreviewer",
-              "CompileNative",
-              "CreateIntermediateNugetPackages",
-              "CreateNugetPackages",
-              "GenerateCppHeaders",
-              "OutputApiDiff",
-              "OutputVersion",
-              "Package",
-              "RunCoreLibsTests",
-              "RunHtmlPreviewerTests",
-              "RunLeakTests",
-              "RunRenderTests",
-              "RunTests",
-              "RunToolsTests",
-              "ValidateApiDiff",
-              "VerifyXamlCompilation",
-              "ZipFiles"
-            ]
+            "$ref": "#/definitions/ExecutableTarget"
           }
-        },
-        "skip-previewer": {
-          "type": "boolean"
-        },
-        "skip-tests": {
-          "type": "boolean"
         },
         "Target": {
           "type": "array",
           "description": "List of targets to be invoked. Default is '{default_target}'",
           "items": {
-            "type": "string",
-            "enum": [
-              "BuildToNuGetCache",
-              "CiAzureLinux",
-              "CiAzureOSX",
-              "CiAzureWindows",
-              "Clean",
-              "Compile",
-              "CompileHtmlPreviewer",
-              "CompileNative",
-              "CreateIntermediateNugetPackages",
-              "CreateNugetPackages",
-              "GenerateCppHeaders",
-              "OutputApiDiff",
-              "OutputVersion",
-              "Package",
-              "RunCoreLibsTests",
-              "RunHtmlPreviewerTests",
-              "RunLeakTests",
-              "RunRenderTests",
-              "RunTests",
-              "RunToolsTests",
-              "ValidateApiDiff",
-              "VerifyXamlCompilation",
-              "ZipFiles"
-            ]
+            "$ref": "#/definitions/ExecutableTarget"
           }
         },
-        "update-api-suppression": {
+        "Verbosity": {
+          "description": "Logging verbosity during build execution. Default is 'Normal'",
+          "$ref": "#/definitions/Verbosity"
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "properties": {
+        "configuration": {
+          "type": "string"
+        },
+        "force-api-baseline": {
+          "type": "string"
+        },
+        "force-nuget-version": {
+          "type": "string"
+        },
+        "skip-tests": {
           "type": "boolean"
         },
-        "Verbosity": {
-          "type": "string",
-          "description": "Logging verbosity during build execution. Default is 'Normal'",
-          "enum": [
-            "Minimal",
-            "Normal",
-            "Quiet",
-            "Verbose"
+        "update-api-suppression": {
+          "type": [
+            "boolean",
+            "null"
           ]
         },
         "version-output-dir": {
           "type": "string"
         }
       }
+    },
+    {
+      "$ref": "#/definitions/NukeBuild"
     }
-  }
+  ]
 }

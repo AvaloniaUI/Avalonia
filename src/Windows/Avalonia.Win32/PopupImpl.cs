@@ -113,6 +113,8 @@ namespace Avalonia.Win32
             {
                 ShowInTaskbar = false,
                 IsResizable = false,
+                IsMinimizable = false,
+                IsMaximizable = false,
                 Decorations = SystemDecorations.None,
             };
 

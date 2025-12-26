@@ -28,6 +28,11 @@ namespace Avalonia.Input.TextInput
         /// Fires when client wants to reset IME state
         /// </summary>
         public event EventHandler? ResetRequested;
+        
+        /// <summary>
+        /// Fires when client requests the input panel be opened.
+        /// </summary>
+        public event EventHandler? InputPaneActivationRequested;
 
         /// <summary>
         /// The visual that's showing the text
@@ -78,7 +83,12 @@ namespace Avalonia.Input.TextInput
             SetPreeditText(preeditText);
         }
 
-        public virtual void ShowInputPanel() { }
+        //TODO12: remove
+        [Obsolete]
+        public virtual void ShowInputPanel()
+        {
+            RaiseInputPaneActivationRequested();
+        }
         
         protected virtual void RaiseTextViewVisualChanged()
         {
@@ -98,6 +108,11 @@ namespace Avalonia.Input.TextInput
         protected virtual void RaiseSelectionChanged()
         {
             SelectionChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        protected virtual void RaiseInputPaneActivationRequested()
+        {
+            InputPaneActivationRequested?.Invoke(this, EventArgs.Empty);
         }
         
         protected virtual void RequestReset()

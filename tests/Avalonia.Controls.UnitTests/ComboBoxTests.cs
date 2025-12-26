@@ -193,10 +193,6 @@ namespace Avalonia.Controls.UnitTests
                         {
                             [!ContentControl.ContentProperty] = parent[!ComboBox.SelectionBoxItemProperty],
                         },
-                        new ToggleButton
-                        {
-                            Name = "toggle",
-                        }.RegisterInNameScope(scope),
                         new Popup
                         {
                             Name = "PART_Popup",
@@ -209,6 +205,10 @@ namespace Avalonia.Controls.UnitTests
                                     ItemsPanel = new FuncTemplate<Panel>(() => new VirtualizingStackPanel()),
                                 }.RegisterInNameScope(scope)
                             }.RegisterInNameScope(scope)
+                        }.RegisterInNameScope(scope),
+                        new TextBox
+                        {
+                            Name = "PART_EditableTextBox"
                         }.RegisterInNameScope(scope)
                     }
                 };
@@ -635,5 +635,208 @@ namespace Avalonia.Controls.UnitTests
         }
 
         private sealed record Item(string Value, string Display);
+
+        [Fact]
+        public void When_Editable_Input_Text_Matches_An_Item_It_Is_Selected()
+        {
+            var target = new ComboBox
+            {
+                DisplayMemberBinding = new Binding(),
+                IsEditable = true,
+                ItemsSource = new[] { "foo", "bar" }
+            };
+
+            target.SelectedItem = null;
+            Assert.Null(target.SelectedItem);
+
+            target.Text = "foo";
+            Assert.NotNull(target.SelectedItem);
+            Assert.Equal(target.SelectedItem, "foo");
+        }
+
+        [Fact]
+        public void When_Editable_TextSearch_TextBinding_Is_Prioritised_Over_DisplayMember()
+        {
+            var items = new[]
+            {
+                new Item("Value 1", "Display 1"),
+                new Item("Value 2", "Display 2")
+            };
+            var target = new ComboBox
+            {
+                DisplayMemberBinding = new Binding("Display"),
+                IsEditable = true,
+                ItemsSource = items
+            };
+            TextSearch.SetTextBinding(target, new Binding("Value"));
+
+            target.SelectedItem = null;
+            Assert.Null(target.SelectedItem);
+
+            target.Text = "Value 1";
+            Assert.NotNull(target.SelectedItem);
+            Assert.Equal(target.SelectedItem, items[0]);
+        }
+
+        [Fact]
+        public void When_Items_Source_Changes_It_Selects_An_Item_By_Text()
+        {
+            var items = new[]
+            {
+                new Item("Value 1", "Display 1"),
+                new Item("Value 2", "Display 2")
+            };
+            var items2 = new[]
+            {
+                new Item("Value 1", "Display 3"),
+                new Item("Value 2", "Display 4")
+            };
+            var target = new ComboBox
+            {
+                DisplayMemberBinding = new Binding("Display"),
+                IsEditable = true,
+                ItemsSource = items
+            };
+            TextSearch.SetTextBinding(target, new Binding("Value"));
+
+            target.SelectedItem = null;
+            Assert.Null(target.SelectedItem);
+
+            target.Text = "Value 1";
+            Assert.NotNull(target.SelectedItem);
+            Assert.Equal(target.SelectedItem, items[0]);
+
+            target.ItemsSource = items2;
+            Assert.NotNull(target.SelectedItem);
+            Assert.Equal(target.SelectedItem, items2[0]);
+            Assert.Equal(target.Text, "Value 1");
+        }
+
+        private void RaiseTabKeyPress(Control target, bool withShift = false)
+        {
+            target.RaiseEvent(new KeyEventArgs
+            {
+                RoutedEvent = InputElement.KeyDownEvent,
+                Key = Key.Tab,
+                KeyModifiers = withShift ? KeyModifiers.Shift : KeyModifiers.None
+            });
+
+            target.RaiseEvent(new KeyEventArgs
+            {
+                RoutedEvent = InputElement.KeyUpEvent,
+                Key = Key.Tab,
+                KeyModifiers = withShift ? KeyModifiers.Shift : KeyModifiers.None
+            });
+        }
+
+        [Fact]
+        public void When_Tabbing_Out_With_Dropdown_Open_It_Closes()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+
+            var target = new ComboBox
+            {
+                ItemsSource = new[] { "Foo", "Bar" }
+            };
+            var nextControl = new ComboBox
+            {
+                ItemsSource = new[] { "Baz" }
+            };
+
+            var container = new StackPanel
+            {
+                Children =
+                {
+                    target,
+                    nextControl
+                }
+            };
+            var root = new TestRoot(container);
+            var keyboardNavHandler = new KeyboardNavigationHandler();
+            keyboardNavHandler.SetOwner(root);
+
+            target.Focus();
+            _helper.Down(target);
+            _helper.Up(target);
+            Assert.True(target.IsFocused);
+            Assert.True(target.IsDropDownOpen);
+
+            RaiseTabKeyPress(target);
+
+            Assert.False(target.IsFocused);
+            Assert.True(nextControl.IsFocused);
+            Assert.False(target.IsDropDownOpen);
+        }
+
+        [Fact]
+        public void When_Editable_And_Item_Selected_Via_Text_Then_Focus_Swaps_Via_Tab_Swapping_Back_Should_Focus_TextBox()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+
+            var items = new[]
+            {
+                new Item("Value 1", "Display 1"),
+                new Item("Value 2", "Display 2")
+            };
+            var target = new ComboBox
+            {
+                DisplayMemberBinding = new Binding("Display"),
+                IsEditable = true,
+                IsTabStop = false,
+                ItemsSource = items,
+                Template = GetTemplate()
+            };
+            TextSearch.SetTextBinding(target, new Binding("Value"));
+            KeyboardNavigation.SetTabNavigation(target, KeyboardNavigationMode.Local);
+
+            var previousControl = new ComboBox
+            {
+                ItemsSource = new[] { "Baz" }
+            };
+
+            var container = new StackPanel
+            {
+                Children =
+                {
+                    previousControl,
+                    target
+                }
+            };
+            var root = new TestRoot(container);
+            var keyboardNavHandler = new KeyboardNavigationHandler();
+            keyboardNavHandler.SetOwner(root);
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            var containerPanel = target.GetTemplateChildren().OfType<Panel>().FirstOrDefault(x => x.Name == "container");
+            var editableTextBox = containerPanel?.GetVisualDescendants().OfType<TextBox>().FirstOrDefault(x => x.Name == "PART_EditableTextBox");
+            var popup = containerPanel?.GetVisualDescendants().OfType<Popup>().FirstOrDefault(x => x.Name == "PART_Popup");
+            var popupScrollViewer = popup?.Child as ScrollViewer;
+            var scrollViewerItemsPresenter = popupScrollViewer?.Content as ItemsPresenter;
+            var popupVirtualizingStackPanel = scrollViewerItemsPresenter?.GetVisualDescendants().OfType<VirtualizingStackPanel>().FirstOrDefault();
+            Assert.NotNull(popupVirtualizingStackPanel);
+
+            //force the popup to render the ComboBoxItem(s) as they are what get set as "focused" if this test fails
+            popupVirtualizingStackPanel.Measure(Size.Infinity);
+
+            target.Focus();
+            Assert.True(editableTextBox.IsFocused);
+
+            target.Text = "Value 1";
+            Assert.Same(target.SelectedItem, items[0]);
+            var item1 = scrollViewerItemsPresenter.ContainerFromIndex(0);
+            Assert.IsType<ComboBoxItem>(item1);
+
+            RaiseTabKeyPress(target, withShift: true);
+
+            Assert.False(target.IsFocused);
+            Assert.True(previousControl.IsFocused);
+
+            RaiseTabKeyPress(previousControl);
+
+            var focused = root.FocusManager.GetFocusedElement();
+            Assert.Same(editableTextBox, focused);
+        }
     }
 }

@@ -91,6 +91,8 @@
             </Button.Styles>
           </Button>
           <Button Classes="accent">Accent</Button>
+          <Button LetterSpacing="0">Normal Spacing</Button>
+          <Button LetterSpacing="2.0">Loose Spacing</Button>
         </StackPanel>
 
         <StackPanel Orientation="Vertical"
@@ -105,6 +107,8 @@
                   IsEnabled="False">Disabled</Button>
           <Button BorderBrush="{DynamicResource SystemAccentColor}"
                   KeyboardNavigation.IsTabStop="False">IsTabStop=False</Button>
+          <Button LetterSpacing="-0.5">Tight Spacing</Button>
+          <Button LetterSpacing="4.0">E X T R A   L O O S E</Button>
         </StackPanel>
       </StackPanel>
     </Border>
@@ -141,7 +145,7 @@
             Padding="15">
       <StackPanel Orientation="Vertical"
                   Spacing="8">
-        <RepeatButton Name="RepeatButton">
+        <RepeatButton Name="RepeatButton" Click="OnRepeatButtonClick">
           <TextBlock Name="RepeatButtonTextBlock"
                      Text="Repeat Button: 0" />
         </RepeatButton>

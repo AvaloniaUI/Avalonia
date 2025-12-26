@@ -25,6 +25,10 @@
                 Classes="draggable">
           <TextBlock Name="DragStateFiles" TextWrapping="Wrap">Drag Me (files)</TextBlock>
         </Border>
+        <Border Name="DragMeBitmap"
+                Classes="draggable">
+          <TextBlock Name="DragStateBitmap" TextWrapping="Wrap">Drag Me (bitmap)</TextBlock>
+        </Border>
         <Border Name="DragMeCustom"
                 Classes="draggable">
           <TextBlock Name="DragStateCustom" TextWrapping="Wrap">Drag Me (custom)</TextBlock>
@@ -51,6 +55,6 @@
       </StackPanel>
     </WrapPanel>
 
-    <TextBlock x:Name="DropState" TextWrapping="Wrap" />
+    <ContentControl x:Name="DropState" TextBlock.TextWrapping="Wrap" />
   </StackPanel>
 </UserControl>

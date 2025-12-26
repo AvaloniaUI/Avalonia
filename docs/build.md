@@ -16,7 +16,7 @@ Go to https://dotnet.microsoft.com/en-us/download/visual-studio-sdks and install
 Since Avalonia targets pretty much every supported .NET platform, you need to install these workloads as well. 
 Running it from the command line:
 ```bash
-dotnet workload install android ios wasm-tools
+dotnet workload install android ios maccatalyst wasm-tools
 ```
 
 macOS workloads are not required to build Avalonia.
@@ -33,7 +33,7 @@ curl -sSL https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scri
 ##  Build and Run Avalonia
 
 ```bash
-cd samples\ControlCatalog.NetCore
+cd samples\ControlCatalog.Desktop
 dotnet restore
 dotnet run
 ```
@@ -47,7 +47,7 @@ If you want to open Avalonia in Visual Studio you have two options:
 
 Avalonia requires Visual Studio 2022 or newer. The free Visual Studio Community edition works fine.
 
-Build and run `ControlCatalog.NetCore` project to see the sample application.
+Build and run `ControlCatalog.Desktop` project to see the sample application.
 
 ### Visual Studio Troubleshooting
 
@@ -70,6 +70,9 @@ And run tests:
 
 Or if you need to create nuget packages as well (it will compile and run tests automatically):
 `nuke --target Package --configuration Release`
+
+Alternatively, you can run nuke build direclty without installing Nuke global tool:
+`dotnet run --project nukebuild/_build.csproj -- --configuration Debug`
 
 # Linux/macOS
 
@@ -97,25 +100,6 @@ On macOS it is necessary to build and manually install the respective native lib
 ./build.sh CompileNative
 ```
 
-# Building Avalonia into a local NuGet cache
-
-It is possible to build Avalonia locally and generate NuGet packages that can be used locally to test local changes.
-
-First, install Nuke's dotnet global tool like so:
-
-```bash
-dotnet tool install Nuke.GlobalTool --global
-```
-
-Then you need to run:
-```bash
-nuke --target BuildToNuGetCache --configuration Release
-```
-
-This command will generate nuget packages and push them into a local NuGet automatically.
-To use these packages use `9999.0.0-localbuild` package version. 
-Each time local changes are made to Avalonia, running this command again will replace old packages and reset cache for the same version.
-
 ## Browser
 
 To build and run browser/wasm projects, it's necessary to install NodeJS.
@@ -124,3 +108,7 @@ You can find latest LTS on https://nodejs.org/.
 ## Windows
 
 It is possible to run some .NET Framework samples and tests using .NET Framework SDK. You need to install at least 4.7 SDK.
+
+## Building Avalonia into a local NuGet cache
+
+See [Building Local NuGet Packages](nuget.md)

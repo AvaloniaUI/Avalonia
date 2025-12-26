@@ -47,7 +47,7 @@ namespace Avalonia.Media.Imaging
         public void Render(Visual visual)
         {
             using (var ctx = CreateDrawingContext())
-                ImmediateRenderer.Render(visual, ctx);
+                ImmediateRenderer.Render(ctx, visual);
         }
 
         /// <summary>

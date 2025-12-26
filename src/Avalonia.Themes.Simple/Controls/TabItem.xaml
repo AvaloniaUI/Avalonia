@@ -20,10 +20,14 @@
                           Content="{TemplateBinding Header}"
                           ContentTemplate="{TemplateBinding HeaderTemplate}"
                           CornerRadius="{TemplateBinding CornerRadius}"
-                          RecognizesAccessKey="True"
                           />
       </ControlTemplate>
     </Setter>
+
+    <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="RecognizesAccessKey" Value="True" />
+    </Style>
+
     <Style Selector="^:disabled /template/ ContentPresenter#PART_ContentPresenter">
       <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}" />
     </Style>

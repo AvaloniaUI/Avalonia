@@ -4,8 +4,13 @@ using Avalonia.Interactivity;
 
 namespace ControlCatalog.Pages;
 
-public class DataGridPage : UserControl
+public partial class DataGridPage : UserControl
 {
+    public DataGridPage()
+    {
+        InitializeComponent();
+    }
+
     private void OnLinkClicked(object? sender, RoutedEventArgs e)
     {
         Process.Start(new ProcessStartInfo

@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Media.Imaging;
@@ -14,6 +15,8 @@ namespace Avalonia.Headless
         void MouseMove(Point point, RawInputModifiers modifiers = RawInputModifiers.None);
         void MouseUp(Point point, MouseButton button, RawInputModifiers modifiers = RawInputModifiers.None);
         void MouseWheel(Point point, Vector delta, RawInputModifiers modifiers = RawInputModifiers.None);
+        [Obsolete($"Use the overload accepting a {nameof(IDataTransfer)} instance instead.")]
         void DragDrop(Point point, RawDragEventType type, IDataObject data, DragDropEffects effects, RawInputModifiers modifiers = RawInputModifiers.None);
+        void DragDrop(Point point, RawDragEventType type, IDataTransfer data, DragDropEffects effects, RawInputModifiers modifiers = RawInputModifiers.None);
     }
 }

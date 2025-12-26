@@ -60,6 +60,12 @@ namespace Avalonia.Controls.Shapes
         public static readonly StyledProperty<PenLineJoin> StrokeJoinProperty =
             AvaloniaProperty.Register<Shape, PenLineJoin>(nameof(StrokeJoin), PenLineJoin.Miter);
 
+        /// <summary>
+        /// Defines the <see cref="StrokeMiterLimit"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> StrokeMiterLimitProperty =
+            AvaloniaProperty.Register<Shape, double>(nameof(StrokeMiterLimit), 10.0);
+
         private Matrix _transform = Matrix.Identity;
         private Geometry? _definingGeometry;
         private Geometry? _renderedGeometry;
@@ -191,6 +197,15 @@ namespace Avalonia.Controls.Shapes
             get => GetValue(StrokeJoinProperty);
             set => SetValue(StrokeJoinProperty, value);
         }
+
+        /// <summary>
+        /// Gets or sets the limit on the ratio of the miter length to half the <see cref="StrokeThickness"/> of the pen.
+        /// </summary>
+        public double StrokeMiterLimit
+        {
+            get => GetValue(StrokeMiterLimitProperty);
+            set => SetValue(StrokeMiterLimitProperty, value);
+        }
         
         private EventHandler GeometryChangedHandler => _geometryChangedHandler ??= OnGeometryChanged;
 
@@ -270,7 +285,8 @@ namespace Avalonia.Controls.Shapes
                 || change.Property == StrokeDashArrayProperty
                 || change.Property == StrokeDashOffsetProperty
                 || change.Property == StrokeLineCapProperty
-                || change.Property == StrokeJoinProperty)
+                || change.Property == StrokeJoinProperty
+                || change.Property == StrokeMiterLimitProperty)
             {
                 if (change.Property == StrokeProperty
                     || change.Property == StrokeThicknessProperty)
@@ -278,7 +294,7 @@ namespace Avalonia.Controls.Shapes
                     InvalidateMeasure();
                 }
                 
-                if (Pen.TryModifyOrCreate(ref _strokePen, Stroke, StrokeThickness, StrokeDashArray, StrokeDashOffset, StrokeLineCap, StrokeJoin))
+                if (Pen.TryModifyOrCreate(ref _strokePen, Stroke, StrokeThickness, StrokeDashArray, StrokeDashOffset, StrokeLineCap, StrokeJoin, StrokeMiterLimit))
                 {
                     InvalidateVisual();
                 }

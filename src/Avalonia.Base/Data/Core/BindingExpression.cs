@@ -190,6 +190,9 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
     /// <param name="targetNullValue">The null target value.</param>
     /// <param name="allowReflection">Whether to allow reflection for target type conversion.</param>
     [RequiresUnreferencedCode(TrimmingMessages.ExpressionNodeRequiresUnreferencedCodeMessage)]
+#if NET8_0_OR_GREATER
+    [RequiresDynamicCode(TrimmingMessages.ExpressionNodeRequiresDynamicCodeMessage)]
+#endif
     internal static BindingExpression Create<TIn, TOut>(
         TIn source,
         Expression<Func<TIn, TOut>> expression,
@@ -355,8 +358,9 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
             }
         }
 
-        // Don't set the value if it's unchanged.
-        if (TypeUtilities.IdentityEquals(LeafNode.Value, value, type))
+        // Don't set the value if it's unchanged. If there is a binding error, we still have to set the value
+        // in order to clear the error.
+        if (TypeUtilities.IdentityEquals(LeafNode.Value, value, type) && ErrorType == BindingErrorType.None)
             return true;
 
         try

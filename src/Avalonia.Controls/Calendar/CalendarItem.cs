@@ -1030,6 +1030,15 @@ namespace Avalonia.Controls.Primitives
                         Owner.OnDayClick(selectedDate);
                         return;
                     }
+                    if (Owner.AllowTapRangeSelection &&
+                        (Owner.SelectionMode == CalendarSelectionMode.SingleRange || Owner.SelectionMode == CalendarSelectionMode.MultipleRange))
+                    {
+                        if (Owner.ProcessTapRangeSelection(selectedDate))
+                        {
+                            Owner.OnDayClick(selectedDate);
+                            return;
+                        }
+                    }
                     if (Owner.HoverStart.HasValue)
                     {
                         switch (Owner.SelectionMode)

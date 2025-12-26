@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Generators.Common;
 using Avalonia.Generators.Common.Domain;
 using Avalonia.Generators.Compiler;
-using Avalonia.ReactiveUI;
 using Avalonia.Generators.Tests.Views;
 using Xunit;
 
@@ -53,11 +54,11 @@ public class XamlXNameResolverTests
 
         Assert.NotEmpty(controls);
         Assert.Equal(3, controls.Count);
-        Assert.Equal("ClrNamespaceRoutedViewHost", controls[0].Name);
-        Assert.Equal("UriRoutedViewHost", controls[1].Name);
+        Assert.Equal("ClrNamespaceColorPicker", controls[0].Name);
+        Assert.Equal("UriColorPicker", controls[1].Name);
         Assert.Equal("UserNameTextBox", controls[2].Name);
-        Assert.Contains(typeof(RoutedViewHost).FullName!, controls[0].TypeName);
-        Assert.Contains(typeof(RoutedViewHost).FullName!, controls[1].TypeName);
+        Assert.Contains(typeof(ColorPicker).FullName!, controls[0].TypeName);
+        Assert.Contains(typeof(ColorPicker).FullName!, controls[1].TypeName);
         Assert.Contains("Controls.CustomTextBox", controls[2].TypeName);
     }
 
@@ -123,20 +124,19 @@ public class XamlXNameResolverTests
 
     private static IReadOnlyList<ResolvedName> ResolveNames(string xaml)
     {
+        var nameResolver = new XamlXNameResolver();
+
+        // Step 1: parse XAML as xml nodes, without any type information.
+        var classResolver = new XamlXViewResolver(MiniCompiler.CreateNoop());
+        var classInfo = classResolver.ResolveView(xaml, CancellationToken.None);
+        Assert.NotNull(classInfo);
+        var names = nameResolver.ResolveXmlNames(classInfo.Xaml, CancellationToken.None);
+
+        // Step 2: use compilation context to resolve types
         var compilation =
             View.CreateAvaloniaCompilation()
                 .WithCustomTextBox()
                 .WithBaseView();
-
-        var classResolver = new XamlXViewResolver(
-            new RoslynTypeSystem(compilation),
-            MiniCompiler.CreateDefault(
-                new RoslynTypeSystem(compilation),
-                MiniCompiler.AvaloniaXmlnsDefinitionAttribute));
-
-        var classInfo = classResolver.ResolveView(xaml);
-        Assert.NotNull(classInfo);
-        var nameResolver = new XamlXNameResolver();
-        return nameResolver.ResolveNames(classInfo.Xaml);
+        return names.ResolveNames(compilation, nameResolver).ToArray();
     }
 }

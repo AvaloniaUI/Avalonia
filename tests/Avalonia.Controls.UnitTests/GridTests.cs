@@ -1900,6 +1900,36 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(grid1.Children[4].Bounds.Width, grid2.Children[0].Bounds.Width);
         }
 
+
+        [Fact]
+        public void Grid_With_ColumnSpacing_And_ColumnDefinitions_Unset()
+        {
+            var target = new Grid
+            {
+                Height = 300,
+                Width = 100,
+                ColumnSpacing = 10,
+                RowDefinitions = RowDefinitions.Parse("Auto,*"),//Set RowDefinitions to avoid 
+                Children =
+                {
+                    new Border
+                    {
+                        [Grid.RowProperty] = 0,
+                        Height = 80,
+                        Margin = new Thickness(10),
+                    },
+                    new Border
+                    {
+                        [Grid.RowProperty] = 1,
+                        Margin = new Thickness(20),
+                    },
+                },
+            };
+            target.Measure(new Size(100, 300));
+            target.Arrange(new Rect(target.DesiredSize));
+            Assert.Equal(new Rect(10, 10, 80, 80), target.Children[0].Bounds);
+            Assert.Equal(new Rect(20, 120, 60, 160),target.Children[1].Bounds);
+        }
         private class TestControl : Control
         {
             public Size MeasureSize { get; set; }

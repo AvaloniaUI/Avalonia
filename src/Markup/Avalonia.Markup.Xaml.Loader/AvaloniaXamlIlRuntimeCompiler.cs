@@ -170,7 +170,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
         static void EmitIgnoresAccessCheckToAttribute(AssemblyName assemblyName)
         {
             var name = assemblyName.Name;
-            if(string.IsNullOrWhiteSpace(name))
+            if (string.IsNullOrWhiteSpace(name))
                 return;
             var key = assemblyName.GetPublicKey();
             if (key != null && key.Length != 0)
@@ -178,6 +178,63 @@ namespace Avalonia.Markup.Xaml.XamlIl
             _sreAsm!.SetCustomAttribute(new CustomAttributeBuilder(
                 _ignoresAccessChecksFromAttribute!.GetConstructors()[0],
                 new object[] { name }));
+        }
+        
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = XamlX.TrimmingMessages.CanBeSafelyTrimmed)]
+        [UnconditionalSuppressMessage("Trimming", "IL2070", Justification = XamlX.TrimmingMessages.GeneratedTypes)]
+        static HashSet<Assembly> FindAssembliesGrantingInternalAccess(Assembly assembly)
+        {
+            var result = new HashSet<Assembly>();
+            if (assembly == null)
+                return result;
+
+            var assemblyName = assembly.GetName();
+            var publicKey = assemblyName.GetPublicKey();
+
+            // Search through all loaded assemblies to find those that grant InternalsVisibleTo to our assembly
+            foreach (var loadedAssembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                try
+                {
+                    var ivtAttributes = loadedAssembly.GetCustomAttributes(
+                        typeof(System.Runtime.CompilerServices.InternalsVisibleToAttribute), false);
+
+                    foreach (System.Runtime.CompilerServices.InternalsVisibleToAttribute ivt in ivtAttributes)
+                    {
+                        var ivtName = ivt.AssemblyName;
+                        if (string.IsNullOrWhiteSpace(ivtName))
+                            continue;
+
+                        // Parse the InternalsVisibleTo assembly name
+                        var ivtAssemblyName = new AssemblyName(ivtName);
+
+                        // Check if it matches our assembly name
+                        if (string.Equals(ivtAssemblyName.Name, assemblyName.Name, StringComparison.OrdinalIgnoreCase))
+                        {
+                            // If public key is specified in IVT, verify it matches
+                            var ivtPublicKey = ivtAssemblyName.GetPublicKey();
+                            if (ivtPublicKey != null && ivtPublicKey.Length > 0)
+                            {
+                                if (publicKey != null && publicKey.SequenceEqual(ivtPublicKey))
+                                {
+                                    result.Add(loadedAssembly);
+                                }
+                            }
+                            else
+                            {
+                                // No public key specified in IVT, just match by name
+                                result.Add(loadedAssembly);
+                            }
+                        }
+                    }
+                }
+                catch
+                {
+                    // Ignore assemblies that throw exceptions when accessing attributes
+                }
+            }
+
+            return result;
         }
 
         static object LoadSre(RuntimeXamlLoaderDocument document, RuntimeXamlLoaderConfiguration configuration)
@@ -218,8 +275,24 @@ namespace Avalonia.Markup.Xaml.XamlIl
         {
             InitializeSre();
             var localAssembly = configuration.LocalAssembly;
+
+            // Emit IgnoresAccessChecksTo for the local assembly
             if (localAssembly?.GetName() != null)
                 EmitIgnoresAccessCheckToAttribute(localAssembly.GetName());
+
+            // Also emit IgnoresAccessChecksTo for all assemblies that grant InternalsVisibleTo to the local assembly
+            // This allows the runtime compiler to access internal types from referenced assemblies
+            if (localAssembly != null)
+            {
+                var assembliesGrantingAccess = FindAssembliesGrantingInternalAccess(localAssembly);
+                foreach (var assembly in assembliesGrantingAccess)
+                {
+                    var name = assembly.GetName();
+                    if (name != null)
+                        EmitIgnoresAccessCheckToAttribute(name);
+                }
+            }
+
             var asm = localAssembly == null ? null : _sreTypeSystem.GetAssembly(localAssembly);
             var clrPropertyBuilder = _sreBuilder.DefineType("ClrProperties_" + Guid.NewGuid().ToString("N"));
             var indexerClosureType = _sreBuilder.DefineType("IndexerClosure_" + Guid.NewGuid().ToString("N"));

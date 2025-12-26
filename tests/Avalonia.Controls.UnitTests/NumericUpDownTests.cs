@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reactive.Subjects;
 using Avalonia.Controls.Templates;
@@ -80,6 +81,26 @@ namespace Avalonia.Controls.UnitTests
             });
         }
 
+        [Fact]
+        public void NumberFormat_Is_Applied_Immediately()
+        {
+            RunTest((control, textbox) =>
+            {
+                const decimal value = 10.11m;
+                var initialNumberFormat = new NumberFormatInfo { NumberDecimalSeparator = "." };
+                var newNumberFormat = new NumberFormatInfo { NumberDecimalSeparator = ";" };
+
+                // Establish and verify initial conditions.
+                control.NumberFormat = initialNumberFormat;
+                control.Value = value;
+                Assert.Equal(value.ToString(initialNumberFormat), control.Text);
+
+                // Check that NumberFormat is applied.
+                control.NumberFormat = newNumberFormat;
+                Assert.Equal(value.ToString(newNumberFormat), control.Text);
+            });
+        }
+
         public static IEnumerable<object[]> Increment_Decrement_TestData()
         {
             // if min and max are not defined and value was null, 0 should be ne new value after spin
@@ -150,6 +171,23 @@ namespace Avalonia.Controls.UnitTests
                         Name = "PART_Spinner",
                         Content = textBox,
                     }.RegisterInNameScope(scope);
+            });
+        }
+
+        [Fact]
+        public void TabIndex_Should_Be_Synchronized_With_Inner_TextBox()
+        {
+            RunTest((control, textbox) =>
+            {
+                // Set TabIndex on NumericUpDown
+                control.TabIndex = 5;
+                
+                // The inner TextBox should inherit the same TabIndex
+                Assert.Equal(5, textbox.TabIndex);
+                
+                // Change TabIndex and verify it gets synchronized
+                control.TabIndex = 10;
+                Assert.Equal(10, textbox.TabIndex);
             });
         }
     }

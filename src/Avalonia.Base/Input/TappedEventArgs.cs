@@ -4,7 +4,7 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Input
 {
-    public class TappedEventArgs : RoutedEventArgs
+    public class TappedEventArgs : RoutedEventArgs, IKeyModifiersEventArgs
     {
         private readonly PointerEventArgs lastPointerEventArgs;
 

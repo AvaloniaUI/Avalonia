@@ -184,7 +184,14 @@ internal enum UiaPropertyId
     OutlineThickness,
     CenterPoint,
     Rotatation,
-    Size
+    Size,
+    IsSelectionPattern2Available,
+    Selection2FirstSelectedItem,
+    Selection2LastSelectedItem,
+    Selection2CurrentSelectedItem,
+    Selection2ItemCount,
+    HeadingLevel,
+    IsDialog
 }
 
 internal enum UiaPatternId
@@ -268,6 +275,29 @@ internal enum UiaControlTypeId
     Separator,
     SemanticZoom,
     AppBar
+};
+
+internal enum UiaLandmarkType
+{
+    Custom = 80000,
+    Form,
+    Main,
+    Navigation,
+    Search,
+};
+
+internal enum UiaHeadingLevel
+{
+    None = 80050,
+    Level1,
+    Level2,
+    Level3,
+    Level4,
+    Level5,
+    Level6,
+    Level7,
+    Level8,
+    Level9
 };
 
 #if NET8_0_OR_GREATER

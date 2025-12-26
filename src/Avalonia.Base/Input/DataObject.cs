@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Avalonia.Input
 {
     /// <summary>
     /// Specific and mutable implementation of the IDataObject interface.
     /// </summary>
+    [Obsolete($"Use {nameof(DataTransfer)} instead")]
     public class DataObject : IDataObject
     {
         private readonly Dictionary<string, object> _items = new();

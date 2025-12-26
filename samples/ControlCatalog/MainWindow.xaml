@@ -10,7 +10,9 @@
         ExtendClientAreaToDecorationsHint="{Binding ExtendClientAreaEnabled}"
         ExtendClientAreaChromeHints="{Binding ChromeHints}"
         ExtendClientAreaTitleBarHeightHint="{Binding TitleBarHeight}"
-        x:Name="MainWindow"
+        CanResize="{Binding CanResize}"
+        CanMinimize="{Binding CanMinimize}"
+        CanMaximize="{Binding CanMaximize}"
         Background="Transparent"
         x:Class="ControlCatalog.MainWindow" WindowState="{Binding WindowState, Mode=TwoWay}"
         x:DataType="vm:MainWindowViewModel">
@@ -56,8 +58,8 @@
     </DataTemplate>
   </Window.DataTemplates>
   <Panel>
-    <Panel Margin="{Binding #MainWindow.OffScreenMargin}">
-      <local:MainView Margin="{Binding #MainWindow.WindowDecorationMargin}" />
+    <Panel Margin="{Binding $parent[local:MainWindow].OffScreenMargin}">
+      <local:MainView Margin="{Binding $parent[local:MainWindow].WindowDecorationMargin}" />
     </Panel>
     <Border IsVisible="{Binding ExtendClientAreaEnabled}" BorderThickness="1 1 1 0" CornerRadius="4 4 0 0" BorderBrush="#55000000" Height="22" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="250 8 0 0">
       <Border.Background>

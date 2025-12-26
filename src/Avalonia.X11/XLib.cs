@@ -559,6 +559,12 @@ namespace Avalonia.X11
         [DllImport(libX11)]
         public static extern void XFreeEventData(IntPtr display, void* cookie);
         
+        [DllImport(libX11)]
+        public static extern IntPtr XMaxRequestSize(IntPtr display);
+        
+        [DllImport(libX11)]
+        public static extern IntPtr XExtendedMaxRequestSize(IntPtr display);
+        
         [DllImport(libX11Randr)]
         public static extern int XRRQueryExtension (IntPtr dpy,
             out int event_base_return,

@@ -108,6 +108,10 @@ internal class VulkanSkiaExternalObjectsFeature : IExternalObjectsRenderInterfac
             return new ImmutableBitmap(image);
         }
 
+        public IBitmapImpl SnapshotWithTimelineSemaphores(IPlatformRenderInterfaceImportedSemaphore waitForSemaphore,
+            ulong waitForValue, IPlatformRenderInterfaceImportedSemaphore signalSemaphore, ulong signalValue) =>
+            throw new NotSupportedException();
+
         public IBitmapImpl SnapshotWithAutomaticSync() => throw new NotSupportedException();
     }
 

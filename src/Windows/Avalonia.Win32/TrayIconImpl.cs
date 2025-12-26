@@ -16,7 +16,7 @@ namespace Avalonia.Win32
 {
     internal class TrayIconImpl : ITrayIconImpl
     {
-        private static readonly Win32Icon s_emptyIcon;
+        private static Win32Icon? s_emptyIcon;
         private readonly int _uniqueId;
         private static int s_nextUniqueId;
         private static nint s_taskBarMonitor;
@@ -31,13 +31,11 @@ namespace Avalonia.Win32
         private bool _disposedValue;
         private static readonly uint WM_TASKBARCREATED = RegisterWindowMessage("TaskbarCreated");
 
-        static TrayIconImpl()
+        internal static void ChangeWindowMessageFilter(IntPtr hWnd)
         {
-            using var bitmap = new WriteableBitmap(
-                new PixelSize(32, 32), new Vector(96, 96), PixelFormats.Bgra8888, AlphaFormat.Unpremul);
-            s_emptyIcon = new Win32Icon(bitmap);
+            ChangeWindowMessageFilterEx(hWnd, WM_TASKBARCREATED, MessageFilterFlag.MSGFLT_ALLOW, IntPtr.Zero);
         }
-        
+
         public TrayIconImpl()
         {
             FindTaskBarMonitor();
@@ -140,7 +138,7 @@ namespace Avalonia.Win32
             {
                 iconData.uFlags = NIF.TIP | NIF.MESSAGE | NIF.ICON;
                 iconData.uCallbackMessage = (int)CustomWindowsMessage.WM_TRAYMOUSE;
-                iconData.hIcon = (_iconStale ? newIcon : _icon)?.Handle ?? s_emptyIcon.Handle;
+                iconData.hIcon = (_iconStale ? newIcon : _icon)?.Handle ?? GetOrCreateEmptyIcon().Handle;
                 iconData.szTip = _tooltipText ?? "";
 
                 if (!_iconAdded)
@@ -167,7 +165,19 @@ namespace Avalonia.Win32
                 _iconStale = false;
             }
         }
-        
+
+        private static Win32Icon GetOrCreateEmptyIcon()
+        {
+            if (s_emptyIcon is null)
+            {
+                using var bitmap = new WriteableBitmap(
+                    new PixelSize(32, 32), new Vector(96, 96), PixelFormats.Bgra8888, AlphaFormat.Unpremul);
+                s_emptyIcon = new Win32Icon(bitmap);
+            }
+
+            return s_emptyIcon;
+        }
+
         private double GetTaskBarMonScalingOrDefault()
         {
             if (ShCoreAvailable && Win32Platform.WindowsVersion > PlatformConstants.Windows8_1)
@@ -269,10 +279,11 @@ namespace Avalonia.Win32
         private class TrayPopupRoot : Window
         {
             private readonly ManagedPopupPositioner _positioner;
-
+            private readonly TrayIconManagedPopupPositionerPopupImplHelper _positionerHelper;
             public TrayPopupRoot()
             {
-                _positioner = new ManagedPopupPositioner(new TrayIconManagedPopupPositionerPopupImplHelper(MoveResize));
+                _positionerHelper = new TrayIconManagedPopupPositionerPopupImplHelper(MoveResize);
+                _positioner = new ManagedPopupPositioner(_positionerHelper);
                 Topmost = true;
 
                 Deactivated += TrayPopupRoot_Deactivated;
@@ -285,6 +296,12 @@ namespace Avalonia.Win32
             private void TrayPopupRoot_Deactivated(object? sender, EventArgs e)
             {
                 Close();
+            }
+
+            protected override void OnClosed(EventArgs e)
+            {
+                base.OnClosed(e);
+                _positionerHelper.Dispose();
             }
 
             private void MoveResize(PixelPoint position, Size size, double scaling)
@@ -310,7 +327,7 @@ namespace Avalonia.Win32
                 });
             }
 
-            private class TrayIconManagedPopupPositionerPopupImplHelper : IManagedPopupPositionerPopup
+            private class TrayIconManagedPopupPositionerPopupImplHelper : IManagedPopupPositionerPopup, IDisposable
             {
                 private readonly Action<PixelPoint, Size, double> _moveResize;
                 private readonly Window _hiddenWindow;
@@ -343,6 +360,11 @@ namespace Avalonia.Win32
                 public void MoveAndResize(Point devicePoint, Size virtualSize)
                 {
                     _moveResize(new PixelPoint((int)devicePoint.X, (int)devicePoint.Y), virtualSize, Scaling);
+                }
+
+                public void Dispose()
+                {
+                    _hiddenWindow.Close();
                 }
 
                 public double Scaling => _hiddenWindow.Screens.Primary?.Scaling ?? 1.0;

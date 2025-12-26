@@ -509,7 +509,6 @@ namespace Avalonia.Controls.UnitTests
         public void Tab_Navigation_Should_Move_To_First_TabItem_When_No_Anchor_Element_Selected()
         {
             var services = TestServices.StyledWindow.With(
-                focusManager: new FocusManager(),
                 keyboardDevice: () => new KeyboardDevice());
             using var app = UnitTestApplication.Start(services);
 
@@ -558,7 +557,6 @@ namespace Avalonia.Controls.UnitTests
         public void Tab_Navigation_Should_Move_To_Anchor_TabItem()
         {
             var services = TestServices.StyledWindow.With(
-                focusManager: new FocusManager(),
                 keyboardDevice: () => new KeyboardDevice());
             using var app = UnitTestApplication.Start(services);
 
