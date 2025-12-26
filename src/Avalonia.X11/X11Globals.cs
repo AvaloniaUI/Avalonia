@@ -41,6 +41,13 @@ namespace Avalonia.X11
             plat.Windows[_rootWindow] = OnRootWindowEvent;
             XSelectInput(_x11.Display, _rootWindow,
                 new IntPtr((int)(EventMask.StructureNotifyMask | EventMask.PropertyChangeMask)));
+            
+            if (_x11.HasXkb)
+            {
+                nint supportsDetectable = 0;
+                XkbSetDetectableAutoRepeat(_x11.Display, true, supportsDetectable);
+            }
+            
             _compositingAtom = XInternAtom(_x11.Display, "_NET_WM_CM_S" + _screenNumber, false);
             OnNewWindowManager();
             UpdateCompositingAtomOwner();
