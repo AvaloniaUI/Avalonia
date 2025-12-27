@@ -1458,13 +1458,14 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     ItemsSource = new[] { "Foo", "Bar", "Baz" },
                 };
 
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
+                Prepare(target);
+
                 foreach (var item in target.Presenter.Panel.Children)
                 {
                     ItemSelectionEventTriggers.SetMouseTriggerOnRelease(item, true);
                 }
 
-                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
-                Prepare(target);
                 _helper.Down((Interactive)target.Presenter.Panel.Children[2]);
                 Assert.Equal(-1, target.SelectedIndex);
                 _helper.Up((Interactive)target.Presenter.Panel.Children[2]);
@@ -1483,10 +1484,10 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     ItemsSource = new[] { "Foo", "Bar", "Baz" },
                 };
 
-                ItemSelectionEventTriggers.SetMouseTriggerOnRelease(target.Presenter.Panel.Children[1], true);
-
                 AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
                 Prepare(target);
+
+                ItemSelectionEventTriggers.SetMouseTriggerOnRelease(target.Presenter.Panel.Children[1], true);
 
                 _helper.Down((Interactive)target.Presenter.Panel.Children[2]);
                 Assert.Equal(2, target.SelectedIndex);
