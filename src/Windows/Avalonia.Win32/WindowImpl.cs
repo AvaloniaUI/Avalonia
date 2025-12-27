@@ -27,6 +27,7 @@ using Avalonia.Platform.Storage.FileIO;
 using Avalonia.Threading;
 using static Avalonia.Controls.Win32Properties;
 using Avalonia.Logging;
+using Avalonia.Win32.WintabImpl;
 
 namespace Avalonia.Win32
 {
@@ -109,8 +110,21 @@ namespace Avalonia.Win32
         private WindowTransparencyLevel _transparencyLevel;
         private readonly WindowTransparencyLevel _defaultTransparencyLevel;
 
+        private WintabContext _hCtx;
+        private WintabData _wnData;
+        private bool _wasTipDown;
+        private bool _wasBarrelDown;
+        private bool _nextPointerEventIsInkTest;
+        private uint _lastProcessedPacketSerial;
+        private uint _wintabQueueSize;
+        private uint _lastWintabTime;
+        private double _maxPressure;
+        private bool _wintabEnabled;
+
         private const int MaxPointerHistorySize = 512;
+        private const int MaxWintabPacketHistorySize = 1024;
         private static readonly PooledList<RawPointerPoint> s_intermediatePointsPooledList = new();
+        private static readonly Dictionary<uint, WintabPacket> s_lastWintabPackets = new();
         private static readonly List<InternalPoint> s_sortedPoints = new(64);
         private static POINTER_TOUCH_INFO[]? s_historyTouchInfos;
         private static POINTER_PEN_INFO[]? s_historyPenInfos;
@@ -181,8 +195,48 @@ namespace Avalonia.Win32
             _defaultTransparencyLevel = UseRedirectionBitmap ? WindowTransparencyLevel.None : WindowTransparencyLevel.Transparent;
             _transparencyLevel = _defaultTransparencyLevel;
 
+            _hCtx = new WintabContext();
+            _wnData = new WintabData(_hCtx);
+
+            InitWintab();
+
             lock (s_instances)
                 s_instances.Add(this);
+        }
+
+        private void InitWintab()
+        {
+            if (WintabInfo.IsWintabAvailable())
+            {
+                try
+                {
+                    // Open system context, no need for digitizer
+                    _hCtx = WintabContext.GetDefaultContext(EWTICategoryIndex.WTI_DEFSYSCTX);
+                    _hCtx.Options |= (uint)ECTXOptionValues.CXO_SYSTEM | (uint)ECTXOptionValues.CXO_MESSAGES;
+                    _hCtx.PktMode = 0; // Absolute mode
+                    _hCtx.SysMode = false;
+                    _wnData = new WintabData(_hCtx);
+                    _hCtx.Open(_hwnd);
+                    _wintabQueueSize = 128;
+                    if (!_wnData.SetPacketQueueSize(_wintabQueueSize))
+                    {
+                        _wintabQueueSize = 32;
+                        if (!_wnData.SetPacketQueueSize(_wintabQueueSize))
+                        {
+                            _wintabQueueSize = 8; // default
+                        }
+                    }
+
+                    _maxPressure = WintabInfo.GetMaxPressure();
+                    _wintabEnabled = true;
+                }
+                catch (Exception ex)
+                {
+                    Logger.TryGet(LogEventLevel.Error, LogArea.Win32Platform)
+                        ?.Log(this, "Failed to initialize Wintab: {0}", ex);
+                    _wintabEnabled = false;
+                }
+            }
         }
 
         internal IInputRoot Owner

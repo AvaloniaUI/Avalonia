@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -12,6 +13,7 @@ using Avalonia.Threading;
 using Avalonia.Win32.Automation;
 using Avalonia.Win32.Automation.Interop;
 using Avalonia.Win32.Input;
+using Avalonia.Win32.WintabImpl;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia.Win32
@@ -32,8 +34,47 @@ namespace Avalonia.Win32
             RawInputEventArgs? e = null;
             var shouldTakeFocus = false;
             var message = (WindowsMessage)msg;
+
             switch (message)
             {
+                case(WindowsMessage)(int)EWintabEventMessage.WT_PROXIMITY:
+                case (WindowsMessage)(int)EWintabEventMessage.WT_PACKET:
+                {
+                    // lParam is the HCTX (Wintab Context Handle)
+                    // wParam is the serial number of the packet
+                    if(_hCtx.HCtx == IntPtr.Zero)
+                        break;
+
+                    uint pktId = (uint)ToInt32(wParam);
+                    WintabPacket packet = _wnData.GetDataPacket(_hCtx.HCtx, pktId);
+                    if (packet.pkContext != 0)
+                    {
+                        var raw = CreateRawPointerPoint(packet);
+                        var eventType = GetEventType(packet);
+                        var args = CreatePointerArgs(_penDevice, packet.pkTime, eventType, raw, GetInputModifiers(packet), packet.pkCursor);
+                        FlushIntermediatePackets(pktId - _lastProcessedPacketSerial);
+
+                        uint lastPktId = _lastProcessedPacketSerial;
+
+                        args.IntermediatePoints =
+                            new Lazy<IReadOnlyList<RawPointerPoint>?>(() => CreateIntermediatePoints(lastPktId, pktId));
+
+                        e = args;
+
+                        if (_lastWintabTime == 0)
+                        {
+                            // Test if windows ink should be used instead
+                            _hCtx.Close();
+                            _wintabEnabled = false;
+                            _nextPointerEventIsInkTest = true;
+                        }
+
+                        _lastProcessedPacketSerial = pktId;
+                        _lastWintabTime = packet.pkTime;
+                    }
+
+                    break;
+                }
                 case WindowsMessage.WM_ACTIVATE:
                     {
                         var wa = (WindowActivate)(ToInt32(wParam) & 0xffff);
@@ -45,12 +86,24 @@ namespace Avalonia.Win32
                                 {
                                     Activated?.Invoke();
                                     UpdateInputMethod(GetKeyboardLayout(0));
+                                    if (_wintabEnabled)
+                                    {
+                                        WintabFuncs.WTEnable(_hCtx.HCtx, true);
+                                        WintabFuncs.WTOverlap(_hCtx.HCtx, true);
+                                    }
+
                                     break;
                                 }
 
                             case WindowActivate.WA_INACTIVE:
                                 {
                                     Deactivated?.Invoke();
+                                    if (_wintabEnabled)
+                                    {
+                                        WintabFuncs.WTEnable(_hCtx.HCtx, false);
+                                        WintabFuncs.WTOverlap(_hCtx.HCtx, false);
+                                    }
+
                                     break;
                                 }
                         }
@@ -164,6 +217,11 @@ namespace Avalonia.Win32
                         if (Imm32InputMethod.Current.Hwnd == _hwnd)
                         {
                             Imm32InputMethod.Current.ClearLanguageAndWindow();
+                        }
+
+                        if (_wintabEnabled)
+                        {
+                            _hCtx.Close();
                         }
 
                         // Cleanup render targets
@@ -289,6 +347,8 @@ namespace Avalonia.Win32
                         {
                             break;
                         }
+                        if (timestamp - _lastWintabTime < 50) break;
+
                         shouldTakeFocus = ShouldTakeFocusOnClick;
                         if (ShouldIgnoreTouchEmulatedMessage())
                         {
@@ -350,59 +410,66 @@ namespace Avalonia.Win32
                     }
 
                 case WindowsMessage.WM_MOUSEMOVE:
+                {
+                    if (_nextPointerEventIsInkTest)
                     {
-                        if (IsMouseInPointerEnabled)
+                        if (!IsMessageFromPen())
                         {
-                            break;
-                        }
-                        if (ShouldIgnoreTouchEmulatedMessage())
-                        {
-                            break;
+                            InitWintab();
                         }
 
-                        if (!_trackingMouse)
-                        {
-                            var tm = new TRACKMOUSEEVENT
-                            {
-                                cbSize = Marshal.SizeOf<TRACKMOUSEEVENT>(),
-                                dwFlags = 2,
-                                hwndTrack = _hwnd,
-                                dwHoverTime = 0,
-                            };
-
-                            TrackMouseEvent(ref tm);
-                        }
-
-                        var point = DipFromLParam(lParam);
-
-                        // Prepare points for the IntermediatePoints call.
-                        var p = new POINT()
-                        {
-                            X = (int)(point.X * RenderScaling),
-                            Y = (int)(point.Y * RenderScaling)
-                        };
-                        ClientToScreen(_hwnd, ref p);
-                        var currPoint = new MOUSEMOVEPOINT()
-                        {
-                            x = p.X & 0xFFFF,
-                            y = p.Y & 0xFFFF,
-                            time = (int)timestamp
-                        };
-                        var prevPoint = _lastWmMousePoint;
-                        _lastWmMousePoint = currPoint;
-
-                        e = new RawPointerEventArgs(
-                            _mouseDevice,
-                            timestamp,
-                            Owner,
-                            RawPointerEventType.Move,
-                            point,
-                            GetMouseModifiers(wParam))
-                        {
-                            IntermediatePoints = new Lazy<IReadOnlyList<RawPointerPoint>?>(() => CreateIntermediatePoints(currPoint, prevPoint))
-                        };
-
+                        _nextPointerEventIsInkTest = false;
                         break;
+                    }
+
+                    if (IsMouseInPointerEnabled)
+                    {
+                        break;
+                    }
+
+                    if (timestamp - _lastWintabTime < 50) break;
+
+                    if (ShouldIgnoreTouchEmulatedMessage())
+                    {
+                        break;
+
+                    }
+                    if (!_trackingMouse)
+                    {
+                        var tm = new TRACKMOUSEEVENT
+                        {
+                            cbSize = Marshal.SizeOf<TRACKMOUSEEVENT>(),
+                            dwFlags = 2,
+                            hwndTrack = _hwnd,
+                            dwHoverTime = 0,
+                        };
+
+                        TrackMouseEvent(ref tm);
+                    }
+
+                    var point = DipFromLParam(lParam);
+
+                    // Prepare points for the IntermediatePoints call.
+                    var p = new POINT() { X = (int)(point.X * RenderScaling), Y = (int)(point.Y * RenderScaling) };
+                    ClientToScreen(_hwnd, ref p);
+                    var currPoint = new MOUSEMOVEPOINT() { x = p.X & 0xFFFF, y = p.Y & 0xFFFF, time = (int)timestamp };
+                    var prevPoint = _lastWmMousePoint;
+                    _lastWmMousePoint = currPoint;
+
+                    e = new RawPointerEventArgs(
+                        _mouseDevice,
+                        timestamp,
+                        Owner,
+                        RawPointerEventType.Move,
+                        point,
+                        GetMouseModifiers(wParam))
+                    {
+                        IntermediatePoints =
+                            new Lazy<IReadOnlyList<RawPointerPoint>?>(() =>
+                                CreateIntermediatePoints(currPoint, prevPoint))
+                    };
+
+                    break;
                     }
 
                 case WindowsMessage.WM_MOUSEWHEEL:
@@ -585,6 +652,8 @@ namespace Avalonia.Win32
                         var args = CreatePointerArgs(device, timestamp, eventType, point, modifiers, info.pointerId);
                         args.IntermediatePoints = CreateLazyIntermediatePoints(info);
                         e = args;
+
+                        _nextPointerEventIsInkTest = false;
                         break;
                     }
                 case WindowsMessage.WM_POINTERDEVICEOUTOFRANGE:
@@ -1001,6 +1070,36 @@ namespace Avalonia.Win32
             return DefWindowProc(hWnd, msg, wParam, lParam);
         }
 
+        private RawInputModifiers GetInputModifiers(WintabPacket packet)
+        {
+            bool barrelDown = (packet.pkButtons & 0x002) != 0;
+            var modifiers = WindowsKeyboardDevice.Instance.Modifiers;
+            if (barrelDown)
+            {
+                modifiers |= RawInputModifiers.PenBarrelButton;
+            }
+
+            bool isEraser = packet.pkCursor == 2;
+
+            if(isEraser)
+            {
+                modifiers |= RawInputModifiers.PenEraser;
+            }
+
+            bool isInverted = (packet.pkStatus & (uint)EWintabPacketStatusValue.TPS_INVERT) != 0;
+            if (isInverted)
+            {
+                modifiers |= RawInputModifiers.PenInverted;
+            }
+
+            if(packet.pkNormalPressure > 0)
+            {
+                modifiers |= RawInputModifiers.LeftMouseButton;
+            }
+
+            return modifiers;
+        }
+
         internal bool IsOurWindow(IntPtr hwnd)
         {
             if (hwnd == IntPtr.Zero)
@@ -1146,6 +1245,58 @@ namespace Avalonia.Win32
 
         }
 
+        private IReadOnlyList<RawPointerPoint>? CreateIntermediatePoints(uint lastPacket, uint currentPacketSerial)
+        {
+            if (lastPacket + 1 >= currentPacketSerial)
+            {
+                return null;
+            }
+
+            s_intermediatePointsPooledList.Clear();
+            s_intermediatePointsPooledList.Capacity = (int)(currentPacketSerial - lastPacket - 1);
+
+            for (uint pkSerial = lastPacket + 1; pkSerial < currentPacketSerial; pkSerial++)
+            {
+                if (s_lastWintabPackets.TryGetValue(pkSerial, out var packet))
+                {
+                    s_intermediatePointsPooledList.Add(CreateRawPointerPoint(packet));
+                }
+            }
+
+            return s_intermediatePointsPooledList;
+        }
+
+        private void FlushIntermediatePackets(uint count)
+        {
+            uint actualSize = 0;
+            var packets = _wnData.GetDataPackets(count, true, ref actualSize);
+            foreach (var packet in packets)
+            {
+                s_lastWintabPackets[packet.pkSerialNumber] = packet;
+            }
+
+            if (s_lastWintabPackets.Count > MaxWintabPacketHistorySize)
+            {
+                var keysToRemove = s_lastWintabPackets.Keys
+                    .OrderBy(k => k)
+                    .Take(s_lastWintabPackets.Count - MaxWintabPacketHistorySize)
+                    .ToList();
+
+                foreach (var key in keysToRemove)
+                {
+                    s_lastWintabPackets.Remove(key);
+                }
+            }
+        }
+
+        public Point MapWintabToClientLocation(int pkX, int pkY)
+        {
+            int screenHeight = GetSystemMetrics(SystemMetric.SM_CYVIRTUALSCREEN);
+            int screenTop = GetSystemMetrics(SystemMetric.SM_YVIRTUALSCREEN);
+            int invertedY = screenHeight + screenTop - pkY;
+            return PointToClient(new Point(pkX, invertedY));
+        }
+
         private RawPointerEventArgs CreatePointerArgs(IInputDevice device, ulong timestamp, RawPointerEventType eventType, RawPointerPoint point, RawInputModifiers modifiers, uint rawPointerId)
         {
             return device is TouchDevice
@@ -1262,6 +1413,78 @@ namespace Avalonia.Win32
                 XTilt = info.tiltX,
                 YTilt = info.tiltY
             };
+        }
+
+        private RawPointerEventType GetEventType(WintabPacket packet)
+        {
+            bool isTipDown = packet.pkNormalPressure > 0;
+            bool isBarrelDown = (packet.pkButtons & (uint)EWintabPacketButtonCode.TBN_DOWN) != 0;
+
+            RawPointerEventType eventType;
+
+            if (isTipDown && !_wasTipDown)
+            {
+                eventType = RawPointerEventType.LeftButtonDown;
+            }
+            else if (!isTipDown && _wasTipDown)
+            {
+                eventType = RawPointerEventType.LeftButtonUp;
+            }
+            else if (isBarrelDown && !_wasBarrelDown)
+            {
+                eventType = RawPointerEventType.RightButtonDown;
+            }
+            else if (!isBarrelDown && _wasBarrelDown)
+            {
+                eventType = RawPointerEventType.RightButtonUp;
+            }
+            else
+            {
+                eventType = RawPointerEventType.Move;
+            }
+
+            _wasTipDown = isTipDown;
+            _wasBarrelDown = isBarrelDown;
+
+            return eventType;
+        }
+
+        private RawPointerPoint CreateRawPointerPoint(WintabPacket packet)
+        {
+            var point = MapWintabToClientLocation(packet.pkX, packet.pkY);
+
+            var (xTilt, yTilt) = ConvertWintabToStandardTilt(packet.pkOrientation.orAzimuth, packet.pkOrientation.orAltitude);
+
+            return new RawPointerPoint
+            {
+                Position = point,
+                Pressure = packet.pkNormalPressure / (float)_maxPressure,
+                XTilt = xTilt,
+                YTilt = yTilt,
+                Twist = packet.pkOrientation.orTwist
+            };
+        }
+
+        public (float xTilt, float yTilt) ConvertWintabToStandardTilt(double rawAzimuth, double rawAltitude)
+        {
+            float azimuthDeg = (float)rawAzimuth / 10f;
+            float altitudeDeg = (float)rawAltitude / 10f;
+
+            float azimuthRad = azimuthDeg * MathF.PI / 180f;
+
+            float tiltFromVertical = 90f - altitudeDeg;
+
+            float tiltX, tiltY;
+
+            tiltX = tiltFromVertical * MathF.Sin(azimuthRad);
+            tiltY = tiltFromVertical * MathF.Cos(azimuthRad);
+
+            tiltY = -tiltY;
+
+            tiltX = Math.Clamp(tiltX, -90f, 90f);
+            tiltY = Math.Clamp(tiltY, -90f, 90f);
+
+            return (tiltX, tiltY);
         }
 
         private static RawPointerEventType GetEventType(WindowsMessage message, POINTER_INFO info)
