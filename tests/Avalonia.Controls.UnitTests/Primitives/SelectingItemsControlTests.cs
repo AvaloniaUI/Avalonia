@@ -1448,6 +1448,57 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void Mouse_Trigger_On_Release_Selects_Item()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var target = new ListBox
+                {
+                    Template = Template(),
+                    ItemsSource = new[] { "Foo", "Bar", "Baz" },
+                };
+
+                foreach (var item in target.Presenter.Panel.Children)
+                {
+                    ItemSelectionEventTriggers.SetMouseTriggerOnRelease(item, true);
+                }
+
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
+                Prepare(target);
+                _helper.Down((Interactive)target.Presenter.Panel.Children[2]);
+                Assert.Equal(-1, target.SelectedIndex);
+                _helper.Up((Interactive)target.Presenter.Panel.Children[2]);
+                Assert.Equal(2, target.SelectedIndex);
+            }
+        }
+
+        [Fact]
+        public void Mouse_Trigger_On_Release_Applies_To_Contained_Item()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var target = new ListBox
+                {
+                    Template = Template(),
+                    ItemsSource = new[] { "Foo", "Bar", "Baz" },
+                };
+
+                ItemSelectionEventTriggers.SetMouseTriggerOnRelease(target.Presenter.Panel.Children[1], true);
+
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
+                Prepare(target);
+
+                _helper.Down((Interactive)target.Presenter.Panel.Children[2]);
+                Assert.Equal(2, target.SelectedIndex);
+
+                _helper.Down((Interactive)target.Presenter.Panel.Children[1]);
+                Assert.Equal(2, target.SelectedIndex);
+                _helper.Up((Interactive)target.Presenter.Panel.Children[1]);
+                Assert.Equal(1, target.SelectedIndex);
+            }
+        }
+
+        [Fact]
         public void Should_Select_Correct_Item_When_Duplicate_Items_Are_Present()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
@@ -1864,7 +1915,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 target.Measure(new Size(100, 100));
                 target.Arrange(new Rect(0, 0, 100, 100));
-                
+
                 target.MoveSelection(NavigationDirection.Next, true);
             });
 
@@ -1928,7 +1979,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                     target.Measure(new Size(100, 100));
                     target.Arrange(new Rect(0, 0, 100, 100));
-                    
+
                     target.MoveSelection(NavigationDirection.First, true);
 
                     Assert.Equal(-1, target.SelectedIndex);
@@ -1952,7 +2003,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 target.Measure(new Size(100, 100));
                 target.Arrange(new Rect(0, 0, 100, 100));
-                
+
                 target.MoveSelection(NavigationDirection.Last, true);
 
                 Assert.Equal(-1, target.SelectedIndex);
@@ -2174,9 +2225,9 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var items = new ObservableCollection<string> { "foo" };
 
             // Simulates problem with TabStrip and Carousel with bound SelectedIndex.
-            var tabStrip = new TestSelector 
-            { 
-                ItemsSource = items, 
+            var tabStrip = new TestSelector
+            {
+                ItemsSource = items,
                 SelectionMode = SelectionMode.AlwaysSelected,
             };
 
@@ -2257,14 +2308,14 @@ namespace Avalonia.Controls.UnitTests.Primitives
             {
                 var items = new[]
                 {
-                    new Item { [TextSearch.TextProperty] = "Foo" }, 
+                    new Item { [TextSearch.TextProperty] = "Foo" },
                     new Item { [TextSearch.TextProperty] = "Bar" }
                 };
 
                 var target = new SelectingItemsControl
                 {
-                    ItemsSource = items, 
-                    Template = Template(), 
+                    ItemsSource = items,
+                    Template = Template(),
                     IsTextSearchEnabled = false
                 };
 
@@ -2282,7 +2333,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 target.RaiseEvent(new TextInputEventArgs
                 {
-                    RoutedEvent = InputElement.TextInputEvent, 
+                    RoutedEvent = InputElement.TextInputEvent,
                     Text = "Foo"
                 });
 
@@ -2328,7 +2379,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             Assert.Equal(0, selectedItemChangedRaised);
         }
-        
+
         [Fact]
         public void Should_First_Raise_Property_Changed_Notification_Then_Fire_Selection_Changed_Event()
         {
@@ -2336,38 +2387,38 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             // Issue #11006
             var items = new ObservableCollection<string>();
-            
+
             var vm = new SelectionViewModel
             {
                 SelectedItem = "" ,
             };
-            
+
             var theListBox = new ListBox
             {
                 DataContext = vm,
-                Template = Template(), 
-                ItemsSource = items, 
+                Template = Template(),
+                ItemsSource = items,
                 SelectionMode = SelectionMode.AlwaysSelected,
                 [!ListBox.SelectedItemProperty] = new Binding("SelectedItem"),
             };
-            
+
             var target = new TextBox
             {
                 Text = "",
             };
 
             Prepare(theListBox);
-            
+
             items.Add("Default");
             items.Add("First");
             items.Add("Second");
             items.Add("Third");
-            
+
             theListBox.SelectionChanged += (s, e) =>
             {
                 target.Text = (string)vm.SelectedItem;
             };
-            
+
             theListBox.SelectedIndex = 1;
             Assert.Equal("First", target.Text);
 
@@ -2383,8 +2434,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
         public void Changing_DataContext_Respects_AlwaysSelected()
         {
             // Issue #12733
-            var target = new ListBox 
-            { 
+            var target = new ListBox
+            {
                 DataContext = Enumerable.Range(0, 10).ToList(),
                 SelectionMode = SelectionMode.AlwaysSelected,
                 Template = Template(),
@@ -2575,7 +2626,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             public string Value { get; set; }
 
-            public bool IsSelected 
+            public bool IsSelected
             {
                 get => SelectingItemsControl.GetIsSelected(this);
                 set => SelectingItemsControl.SetIsSelected(this, value);
@@ -2652,7 +2703,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             public TestSelector()
             {
-                
+
             }
 
             public TestSelector(SelectionMode selectionMode)
