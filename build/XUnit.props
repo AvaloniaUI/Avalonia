@@ -4,7 +4,7 @@
   </ItemGroup>
   <ItemGroup Condition="'$(IsXUnit2)'=='true'">
     <PackageReference Include="xunit" Version="2.9.3" />
-    <PackageReference Include="YTest.MTP.XUnit2" Version="1.0.0-beta.2" />
+    <PackageReference Include="YTest.MTP.XUnit2" Version="1.0.0-beta.3" />
   </ItemGroup>
   <PropertyGroup>
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)\avalonia.snk</AssemblyOriginatorKeyFile>
