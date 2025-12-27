@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <OutputType>Library</OutputType>
+    <OutputType>Exe</OutputType>
     <IsPackable>false</IsPackable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
