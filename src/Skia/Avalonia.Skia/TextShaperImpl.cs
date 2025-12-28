@@ -201,18 +201,18 @@ namespace Avalonia.Skia
             }
 
             var features = new Feature[options.FontFeatures.Count];
-
+            
             for (var i = 0; i < options.FontFeatures.Count; i++)
             {
                 var fontFeature = options.FontFeatures[i];
 
                 features[i] = new Feature(
-                    Tag.Parse(fontFeature.Tag),
+                    Tag.Parse(fontFeature.Tag), 
                     (uint)fontFeature.Value,
                     (uint)fontFeature.Start,
                     (uint)fontFeature.End);
             }
-
+            
             return features;
         }
     }
