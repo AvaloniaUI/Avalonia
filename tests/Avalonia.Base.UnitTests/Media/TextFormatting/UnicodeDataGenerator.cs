@@ -468,15 +468,15 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
     
     internal class UnicodeDataEntries
     {
-        public IReadOnlyList<DataEntry> Scripts { get; set; }
-        public IReadOnlyList<DataEntry> GeneralCategories{ get; set; }
-        public IReadOnlyList<DataEntry> LineBreakClasses{ get; set; }
+        public IReadOnlyList<DataEntry> Scripts { get; set; } = [];
+        public IReadOnlyList<DataEntry> GeneralCategories { get; set; } = [];
+        public IReadOnlyList<DataEntry> LineBreakClasses { get; set; } = [];
     }
     
     internal class BiDiDataEntries
     {
-        public IReadOnlyList<DataEntry> PairedBracketTypes { get; set; }
-        public IReadOnlyList<DataEntry> BiDiClasses{ get; set; }
+        public IReadOnlyList<DataEntry> PairedBracketTypes { get; set; } = [];
+        public IReadOnlyList<DataEntry> BiDiClasses { get; set; } = [];
     }
 
     internal readonly struct CodepointRange

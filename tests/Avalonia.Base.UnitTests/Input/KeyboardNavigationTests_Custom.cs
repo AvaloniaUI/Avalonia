@@ -203,9 +203,9 @@ namespace Avalonia.Base.UnitTests.Input
         private class CustomNavigatingStackPanel : StackPanel, ICustomKeyboardNavigation
         {
             public bool CustomNavigates { get; set; } = true;
-            public IInputElement NextControl { get; set; }
+            public IInputElement? NextControl { get; set; }
 
-            public (bool handled, IInputElement next) GetNext(IInputElement element, NavigationDirection direction)
+            public (bool handled, IInputElement? next) GetNext(IInputElement element, NavigationDirection direction)
             {
                 return (CustomNavigates, NextControl);
             }

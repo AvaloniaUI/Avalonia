@@ -43,7 +43,7 @@ public partial class BindingExpressionTests
         using var sync = UnitTestSynchronizationContext.Begin();
         var source = new BehaviorSubject<ViewModel>(new() { StringValue = "foo" });
         var data = new ViewModel { NextObservable = source };
-        var target = CreateTargetWithSource(data, o => o.NextObservable.StreamBinding().StringValue);
+        var target = CreateTargetWithSource(data, o => o.NextObservable!.StreamBinding().StringValue);
 
         Assert.Equal("foo", target.String);
 

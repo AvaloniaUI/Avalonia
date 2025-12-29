@@ -30,13 +30,13 @@ namespace Avalonia.Base.UnitTests
         {
             var target = new TestVisual();
             var child = new TestVisual();
-            var parents = new List<Visual>();
+            var parents = new List<Visual?>();
 
             child.GetObservable(Visual.VisualParentProperty).Subscribe(x => parents.Add(x));
             target.AddChild(child);
             target.RemoveChild(child);
 
-            Assert.Equal(new Visual[] { null, target, null }, parents);
+            Assert.Equal([null, target, null], parents);
         }
 
         [Fact]
@@ -62,7 +62,7 @@ namespace Avalonia.Base.UnitTests
 
             var result = children.Select(x => x.GetVisualParent()).ToList();
 
-            Assert.Equal(new Visual[] { null, null }, result);
+            Assert.Equal([null, null], result);
         }
 
         [Fact]

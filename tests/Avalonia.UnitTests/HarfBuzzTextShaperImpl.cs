@@ -17,7 +17,6 @@ namespace Avalonia.UnitTests
         private static readonly ConcurrentDictionary<int, Language> s_cachedLanguage = new();
         public ShapedBuffer ShapeText(ReadOnlyMemory<char> text, TextShaperOptions options)
         {
-            var textSpan = text.Span;
             var typeface = options.Typeface;
             var fontRenderingEmSize = options.FontRenderingEmSize;
             var bidiLevel = options.BidiLevel;
@@ -168,7 +167,7 @@ namespace Avalonia.UnitTests
                 return segment.Array.AsMemory();
             }
 
-            if (MemoryMarshal.TryGetMemoryManager(memory, out MemoryManager<char> memoryManager, out start, out length))
+            if (MemoryMarshal.TryGetMemoryManager(memory, out MemoryManager<char>? memoryManager, out start, out length))
             {
                 return memoryManager.Memory;
             }
