@@ -317,7 +317,7 @@ namespace Avalonia.Controls.UnitTests
 
                 window.Show();
                 Assert.Equal(1, lifetime.Windows.Count);
-                windowImpl.Object.Closed();
+                windowImpl.Object.Closed!();
 
                 Assert.Empty(lifetime.Windows);
             }
@@ -443,7 +443,7 @@ namespace Avalonia.Controls.UnitTests
                 lifetime.Exit += (_, _) => Assert.Fail("lifetime.Exit was called.");
                 Dispatcher.UIThread.ShutdownStarted += UiThreadOnShutdownStarted;
 
-                static void UiThreadOnShutdownStarted(object sender, EventArgs e)
+                static void UiThreadOnShutdownStarted(object? sender, EventArgs e)
                 {
                     Assert.Fail("Dispatcher.UIThread.ShutdownStarted was called.");
                 }
