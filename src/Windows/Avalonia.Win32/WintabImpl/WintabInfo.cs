@@ -32,11 +32,18 @@ namespace Avalonia.Win32.WintabImpl
         /// <returns></returns>
         public static bool IsWintabAvailable()
         {
-            IntPtr buf = IntPtr.Zero;
+            try
+            {
+                IntPtr buf = IntPtr.Zero;
 
-            var status = (WintabFuncs.WTInfoA(0, 0, buf) > 0);
+                var status = (WintabFuncs.WTInfoA(0, 0, buf) > 0);
 
-            return status;
+                return status;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         /// <summary>
