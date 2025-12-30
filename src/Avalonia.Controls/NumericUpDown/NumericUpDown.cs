@@ -115,6 +115,13 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<NumericUpDown, string?>(nameof(Watermark));
 
         /// <summary>
+        /// Defines the <see cref="WatermarkForeground"/> property.
+        /// </summary>
+        public static readonly StyledProperty<Media.IBrush?> WatermarkForegroundProperty =
+            TextBox.WatermarkForegroundProperty.AddOwner<NumericUpDown>();
+
+
+        /// <summary>
         /// Defines the <see cref="HorizontalContentAlignment"/> property.
         /// </summary>
         public static readonly StyledProperty<HorizontalAlignment> HorizontalContentAlignmentProperty =
@@ -299,6 +306,16 @@ namespace Avalonia.Controls
             get => GetValue(WatermarkProperty);
             set => SetValue(WatermarkProperty, value);
         }
+
+        /// <summary>
+        /// Gets or sets the brush used for the foreground color of the watermark text.
+        /// </summary>
+        public Media.IBrush? WatermarkForeground
+        {
+            get => GetValue(WatermarkForegroundProperty);
+            set => SetValue(WatermarkForegroundProperty, value);
+        }
+
 
         /// <summary>
         /// Gets or sets the horizontal alignment of the content within the control.

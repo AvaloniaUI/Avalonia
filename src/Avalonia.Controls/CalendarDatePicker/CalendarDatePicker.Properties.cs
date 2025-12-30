@@ -93,6 +93,13 @@ namespace Avalonia.Controls
             TextBox.UseFloatingWatermarkProperty.AddOwner<CalendarDatePicker>();
 
         /// <summary>
+        /// Defines the <see cref="WatermarkForeground"/> property.
+        /// </summary>
+        public static readonly StyledProperty<Media.IBrush?> WatermarkForegroundProperty =
+            TextBox.WatermarkForegroundProperty.AddOwner<CalendarDatePicker>();
+
+
+        /// <summary>
         /// Defines the <see cref="HorizontalContentAlignment"/> property.
         /// </summary>
         public static readonly StyledProperty<HorizontalAlignment> HorizontalContentAlignmentProperty =
@@ -267,6 +274,14 @@ namespace Avalonia.Controls
             get => GetValue(UseFloatingWatermarkProperty);
             set => SetValue(UseFloatingWatermarkProperty, value);
         }
+
+        /// <inheritdoc cref="TextBox.WatermarkForeground"/>
+        public Media.IBrush? WatermarkForeground
+        {
+            get => GetValue(WatermarkForegroundProperty);
+            set => SetValue(WatermarkForegroundProperty, value);
+        }
+
 
         /// <summary>
         /// Gets or sets the horizontal alignment of the content within the control.

@@ -2148,6 +2148,61 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal("FirstSecond", target.Text);
         }
 
+        [Fact]
+        public void WatermarkForeground_Can_Be_Set()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Watermark = "Enter text",
+                    WatermarkForeground = Brushes.Red
+                };
+
+                target.ApplyTemplate();
+
+                Assert.Equal(Brushes.Red, target.WatermarkForeground);
+            }
+        }
+
+        [Fact]
+        public void WatermarkForeground_Defaults_To_Null()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Watermark = "Enter text"
+                };
+
+                target.ApplyTemplate();
+
+                Assert.Null(target.WatermarkForeground);
+            }
+        }
+
+        [Fact]
+        public void WatermarkForeground_Can_Be_Set_To_Null()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Watermark = "Enter text",
+                    WatermarkForeground = Brushes.Blue
+                };
+
+                target.ApplyTemplate();
+                
+                target.WatermarkForeground = null;
+
+                Assert.Null(target.WatermarkForeground);
+            }
+        }
+
         private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
             keyboardDevice: () => new KeyboardDevice(),
             keyboardNavigation: () => new KeyboardNavigationHandler(),
