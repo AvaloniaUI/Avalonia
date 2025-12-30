@@ -12,11 +12,11 @@ namespace Avalonia.UnitTests
     {
         private static readonly Size s_screenSize = new Size(1280, 1024);
         private readonly Func<IWindowImpl>? _windowImpl;
-        private readonly Func<IWindowBaseImpl, IPopupImpl>? _popupImpl;
+        private readonly Func<IWindowBaseImpl, IPopupImpl?>? _popupImpl;
 
         public MockWindowingPlatform(
             Func<IWindowImpl>? windowImpl = null,
-            Func<IWindowBaseImpl, IPopupImpl>? popupImpl = null )
+            Func<IWindowBaseImpl, IPopupImpl?>? popupImpl = null )
         {
             _windowImpl = windowImpl;
             _popupImpl = popupImpl;

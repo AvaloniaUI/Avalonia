@@ -37,8 +37,8 @@ namespace Avalonia.Controls.UnitTests
 
             Prepare(target);
 
-            var container = (ListBoxItem)target.Presenter.Panel.Children[0];
-            Assert.IsType<Canvas>(container.Presenter.Child);
+            var container = (ListBoxItem)target.Presenter!.Panel!.Children[0];
+            Assert.IsType<Canvas>(container.Presenter!.Child);
         }
 
         [Fact]
@@ -62,7 +62,7 @@ namespace Avalonia.Controls.UnitTests
                 Template = ListBoxTemplate(),
             };
 
-            ScrollViewer viewer = null;
+            ScrollViewer? viewer = null;
 
             target.TemplateApplied += (sender, e) =>
             {
@@ -88,9 +88,9 @@ namespace Avalonia.Controls.UnitTests
 
                 Prepare(target);
 
-                var text = target.Presenter.Panel.Children
+                var text = target.Presenter!.Panel!.Children
                     .OfType<ListBoxItem>()
-                    .Select(x => x.Presenter.Child)
+                    .Select(x => x.Presenter!.Child)
                     .OfType<TextBlock>()
                     .Select(x => x.Text)
                     .ToList();
@@ -115,7 +115,7 @@ namespace Avalonia.Controls.UnitTests
 
                 Prepare(target);
 
-                var container = (ListBoxItem)target.Presenter.Panel.Children[0];
+                var container = (ListBoxItem)target.Presenter!.Panel!.Children[0];
 
                 Assert.Same(container.Theme, theme);
             }
@@ -136,7 +136,7 @@ namespace Avalonia.Controls.UnitTests
 
                 Prepare(target);
 
-                var container = (ListBoxItem)target.Presenter.Panel.Children[0];
+                var container = (ListBoxItem)target.Presenter!.Panel!.Children[0];
 
                 Assert.Same(container.Theme, theme);
             }
@@ -187,7 +187,7 @@ namespace Avalonia.Controls.UnitTests
 
                 Prepare(target);
 
-                var dataContexts = target.Presenter.Panel.Children
+                var dataContexts = target.Presenter!.Panel!.Children
                     .Cast<Control>()
                     .Select(x => x.DataContext)
                     .ToList();
@@ -214,14 +214,14 @@ namespace Avalonia.Controls.UnitTests
                 Prepare(target);
 
                 // Make sure we're virtualized and first item is selected.
-                Assert.Equal(10, target.Presenter.Panel.Children.Count);
+                Assert.Equal(10, target.Presenter!.Panel!.Children.Count);
                 Assert.True(((ListBoxItem)target.Presenter.Panel.Children[0]).IsSelected);
 
                 // The selected item must not be the anchor, otherwise it won't get recycled.
                 target.Selection.AnchorIndex = -1;
 
                 // Scroll down a page.
-                target.Scroll.Offset = new Vector(0, 10);
+                target.Scroll!.Offset = new Vector(0, 10);
                 Layout(target);
 
                 // Make sure recycled item isn't now selected.
@@ -244,7 +244,7 @@ namespace Avalonia.Controls.UnitTests
 
                 Prepare(target);
 
-                Assert.Equal(new Size(100, 200), target.Scroll.Extent);
+                Assert.Equal(new Size(100, 200), target.Scroll!.Extent);
                 Assert.Equal(new Size(100, 100), target.Scroll.Viewport);
             }
         }
@@ -273,7 +273,7 @@ namespace Avalonia.Controls.UnitTests
                 items.Remove("Item 2");
                 Layout(target);
 
-                var actual = target.GetRealizedContainers().Cast<ListBoxItem>().Select(x => (string)x.Content).ToList();
+                var actual = target.GetRealizedContainers().Cast<ListBoxItem>().Select(x => (string?)x.Content).ToList();
                 Assert.Equal(items.OrderBy(x => x), actual.OrderBy(x => x));
             }
         }
@@ -324,7 +324,7 @@ namespace Avalonia.Controls.UnitTests
                 };
 
                 Prepare(target);
-                target.Scroll.Offset = new Vector(0, 1);
+                target.Scroll!.Offset = new Vector(0, 1);
 
                 items.RemoveRange(0, 11);
             }
@@ -393,10 +393,12 @@ namespace Avalonia.Controls.UnitTests
                 lm.ExecuteLayoutPass();
 
                 var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
-                var toMeasure = lm.GetType().GetField("_toMeasure", flags).GetValue(lm) as System.Collections.Generic.IEnumerable<Layout.Layoutable>;
-                var toArrange = lm.GetType().GetField("_toArrange", flags).GetValue(lm) as System.Collections.Generic.IEnumerable<Layout.Layoutable>;
+                var toMeasure = lm.GetType().GetField("_toMeasure", flags)!.GetValue(lm) as IEnumerable<Layoutable>;
+                var toArrange = lm.GetType().GetField("_toArrange", flags)!.GetValue(lm) as IEnumerable<Layoutable>;
 
+                Assert.NotNull(toMeasure);
                 Assert.Equal(0, toMeasure.Count());
+                Assert.NotNull(toArrange);
                 Assert.Equal(0, toArrange.Count());
             }
         }
@@ -435,11 +437,11 @@ namespace Avalonia.Controls.UnitTests
 
                 Threading.Dispatcher.UIThread.RunJobs();
 
-                Assert.Equal("30", target.ContainerFromIndex(items.Count - 1).DataContext);
-                Assert.Equal("29", target.ContainerFromIndex(items.Count - 2).DataContext);
-                Assert.Equal("28", target.ContainerFromIndex(items.Count - 3).DataContext);
-                Assert.Equal("27", target.ContainerFromIndex(items.Count - 4).DataContext);
-                Assert.Equal("26", target.ContainerFromIndex(items.Count - 5).DataContext);
+                Assert.Equal("30", target.ContainerFromIndex(items.Count - 1)!.DataContext);
+                Assert.Equal("29", target.ContainerFromIndex(items.Count - 2)!.DataContext);
+                Assert.Equal("28", target.ContainerFromIndex(items.Count - 3)!.DataContext);
+                Assert.Equal("27", target.ContainerFromIndex(items.Count - 4)!.DataContext);
+                Assert.Equal("26", target.ContainerFromIndex(items.Count - 5)!.DataContext);
             }
         }
 
@@ -463,7 +465,7 @@ namespace Avalonia.Controls.UnitTests
                 Threading.Dispatcher.UIThread.RunJobs();
 
                 // First an item that is not index 0 must be selected.
-                _mouse.Click(target.Presenter.Panel.Children[1]);
+                _mouse.Click(target.Presenter!.Panel!.Children[1]);
 
                 Threading.Dispatcher.UIThread.RunJobs();
 
@@ -516,7 +518,7 @@ namespace Avalonia.Controls.UnitTests
 
                 lm.ExecuteInitialLayoutPass();
 
-                var panel = target.Presenter.Panel;
+                var panel = target.Presenter!.Panel!;
 
                 items.Add("Item 1");
                 target.Selection.Select(0);
@@ -640,7 +642,7 @@ namespace Avalonia.Controls.UnitTests
 
         private static void Layout(Control c)
         {
-            ((ILayoutRoot)c.GetVisualRoot()).LayoutManager.ExecuteLayoutPass();
+            ((ILayoutRoot)c.GetVisualRoot()!).LayoutManager.ExecuteLayoutPass();
         }
 
         private class Item
@@ -671,7 +673,7 @@ namespace Avalonia.Controls.UnitTests
             target.Bind(ComboBox.SelectedItemProperty, textObservable);
 
             Assert.True(DataValidationErrors.GetHasErrors(target));
-            Assert.True(DataValidationErrors.GetErrors(target).SequenceEqual(new[] { exception }));
+            Assert.Equal([exception], DataValidationErrors.GetErrors(target));
         }
 
         [Fact]
@@ -689,7 +691,7 @@ namespace Avalonia.Controls.UnitTests
 
             var realized = target.GetRealizedContainers()
                 .Cast<ListBoxItem>()
-                .Select(x => (string)x.DataContext)
+                .Select(x => (string?)x.DataContext)
                 .ToList();
 
             Assert.Equal(Enumerable.Range(0, 10).Select(x => $"Item{x}"), realized);
@@ -699,7 +701,7 @@ namespace Avalonia.Controls.UnitTests
 
             realized = target.GetRealizedContainers()
                 .Cast<ListBoxItem>()
-                .Select(x => (string)x.DataContext)
+                .Select(x => (string?)x.DataContext)
                 .ToList();
 
             Assert.Equal(Enumerable.Range(0, 10).Select(x => $"Item{99 - x}"), realized);
@@ -722,7 +724,7 @@ namespace Avalonia.Controls.UnitTests
 
             var realized = target.GetRealizedContainers()
                 .Cast<ListBoxItem>()
-                .Select(x => (string)x.DataContext)
+                .Select(x => (string?)x.DataContext)
                 .ToList();
 
             Assert.Equal(Enumerable.Range(0, 10).Select(x => $"Item{x}"), realized);
@@ -734,7 +736,7 @@ namespace Avalonia.Controls.UnitTests
 
             realized = target.GetRealizedContainers()
                 .Cast<ListBoxItem>()
-                .Select(x => (string)x.DataContext)
+                .Select(x => (string?)x.DataContext)
                 .ToList();
 
             // "Item1" should remain selected, and now be at the bottom of the viewport.
@@ -775,7 +777,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 Template = ListBoxTemplate(),
                 ItemsSource = items,
-                ItemsPanel = new FuncTemplate<Panel>(() => new VirtualizingStackPanel 
+                ItemsPanel = new FuncTemplate<Panel?>(() => new VirtualizingStackPanel
                 {
                     Orientation = Orientation.Horizontal 
                 }),
@@ -811,13 +813,13 @@ namespace Avalonia.Controls.UnitTests
             Prepare(target);
 
             RaiseKeyEvent(target, Key.Down);
-            Assert.True(target.ContainerFromIndex(1).IsFocused);
+            Assert.True(target.ContainerFromIndex(1)!.IsFocused);
 
             RaiseKeyEvent(target, Key.Down);
-            Assert.True(target.ContainerFromIndex(2).IsFocused);
+            Assert.True(target.ContainerFromIndex(2)!.IsFocused);
 
             RaiseKeyEvent(target, Key.Up);
-            Assert.True(target.ContainerFromIndex(1).IsFocused);
+            Assert.True(target.ContainerFromIndex(1)!.IsFocused);
         }
 
         [Fact]
@@ -878,7 +880,7 @@ namespace Avalonia.Controls.UnitTests
             RaiseKeyEvent(target, Key.Down, KeyModifiers.Control);
 
             Assert.Equal(0, target.SelectedIndex);
-            Assert.True(target.ContainerFromIndex(1).IsFocused);
+            Assert.True(target.ContainerFromIndex(1)!.IsFocused);
         }
 
         [Fact]
@@ -899,16 +901,16 @@ namespace Avalonia.Controls.UnitTests
             Prepare(target);
 
             target.ContainerFromIndex(0)!.Focus();
-            target.Scroll.Offset = new Vector(0, 100);
+            target.Scroll!.Offset = new Vector(0, 100);
             Layout(target);
 
-            var panel = (VirtualizingStackPanel)target.ItemsPanelRoot;
+            var panel = (VirtualizingStackPanel)target.ItemsPanelRoot!;
             Assert.Equal(10, panel.FirstRealizedIndex);
 
             RaiseKeyEvent(target, Key.Down);
 
             Assert.Equal(1, target.SelectedIndex);
-            Assert.True(target.ContainerFromIndex(1).IsFocused);
+            Assert.True(target.ContainerFromIndex(1)!.IsFocused);
             Assert.Equal(new Vector(0, 10), target.Scroll.Offset);
         }
 
@@ -1184,6 +1186,7 @@ namespace Avalonia.Controls.UnitTests
             RaiseKeyEvent(button, Key.Tab);
 
             var item = target.ContainerFromIndex(1);
+            Assert.NotNull(item);
             Assert.Same(item, root.FocusManager.GetFocusedElement());
 
             RaiseKeyEvent(item, Key.Tab);
@@ -1340,33 +1343,33 @@ namespace Avalonia.Controls.UnitTests
                     new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
             }
 
-            public event NotifyCollectionChangedEventHandler CollectionChanged;
+            public event NotifyCollectionChangedEventHandler? CollectionChanged;
         }
 
         private class DataVirtualizingList : IList
         {
-            private readonly List<string> _inner = new(Enumerable.Repeat<string>(null, 100));
+            private readonly List<string?> _inner = new(Enumerable.Repeat<string?>(null, 100));
 
-            public object this[int index] 
+            public object? this[int index]
             { 
                 get => _inner[index] = $"Item{index}"; 
                 set => throw new NotSupportedException();
             }
 
-            public IEnumerable<string> GetRealizedItems() => _inner.Where(x => x is not null);
+            public IEnumerable<string> GetRealizedItems() => _inner.Where(x => x is not null)!;
             public bool IsFixedSize => true;
             public bool IsReadOnly => true;
             public int Count => _inner.Count;
             public bool IsSynchronized => false;
             public object SyncRoot => this;
-            public int Add(object value) => throw new NotSupportedException();
+            public int Add(object? value) => throw new NotSupportedException();
             public void Clear() => throw new NotSupportedException();
-            public bool Contains(object value) => throw new NotImplementedException();
+            public bool Contains(object? value) => throw new NotImplementedException();
             public void CopyTo(Array array, int index) => throw new NotImplementedException();
             public IEnumerator GetEnumerator() => _inner.GetEnumerator();
-            public int IndexOf(object value) => throw new NotImplementedException();
-            public void Insert(int index, object value) => throw new NotSupportedException();
-            public void Remove(object value) => throw new NotSupportedException();
+            public int IndexOf(object? value) => throw new NotImplementedException();
+            public void Insert(int index, object? value) => throw new NotSupportedException();
+            public void Remove(object? value) => throw new NotSupportedException();
             public void RemoveAt(int index) => throw new NotSupportedException();
         }
     }

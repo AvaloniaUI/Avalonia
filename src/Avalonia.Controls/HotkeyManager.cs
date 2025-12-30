@@ -159,7 +159,7 @@ namespace Avalonia.Controls
                 new Manager(control).Init();
             });
         }
-        public static void SetHotKey(AvaloniaObject target, KeyGesture value) => target.SetValue(HotKeyProperty, value);
+        public static void SetHotKey(AvaloniaObject target, KeyGesture? value) => target.SetValue(HotKeyProperty, value);
         public static KeyGesture? GetHotKey(AvaloniaObject target) => target.GetValue(HotKeyProperty);
     }
 }
