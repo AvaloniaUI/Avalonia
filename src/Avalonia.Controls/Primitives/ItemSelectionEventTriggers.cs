@@ -10,6 +10,28 @@ namespace Avalonia.Controls.Primitives;
 public static class ItemSelectionEventTriggers
 {
     /// <summary>
+    /// Defines the MouseTriggerOnRelease attached property to determine if the trigger selection should happen on press (false) or on release (true).
+    /// </summary>
+    public static readonly AttachedProperty<bool> MouseTriggerOnReleaseProperty =
+        AvaloniaProperty.RegisterAttached<Visual, bool>("MouseTriggerOnRelease", typeof(ItemSelectionEventTriggers), defaultValue: false);
+
+    /// <summary>
+    /// Sets the MouseTriggerOnRelease attached property for an object.
+    /// </summary>
+    /// <param name="element">object to attach to</param>
+    /// <param name="value">true to trigger on release, false to trigger on press</param>
+    public static void SetMouseTriggerOnRelease(AvaloniaObject element, bool value) =>
+        element.SetValue(MouseTriggerOnReleaseProperty, value);
+
+    /// <summary>
+    /// Gets the MouseTriggerOnRelease atached property for an object.
+    /// </summary>
+    /// <param name="element">object to read from</param>
+    /// <returns>true to trigger on release, false to trigger on press</returns>
+    public static bool GetMouseTriggerOnRelease(AvaloniaObject element) =>
+        element.GetValue(MouseTriggerOnReleaseProperty);
+
+    /// <summary>
     /// Analyses an input event received by a selectable element, and determines whether the action should trigger selection on press, on release, or not at all.
     /// </summary>
     /// <param name="selectable">The selectable element which is processing the event.</param>
@@ -29,8 +51,8 @@ public static class ItemSelectionEventTriggers
                 PointerUpdateKind.LeftButtonReleased or PointerUpdateKind.RightButtonReleased)
             } => false,
 
-            // Select on mouse press, unless the mouse can generate gestures
-            { Pointer.Type: PointerType.Mouse } => eventArgs.RoutedEvent == (Gestures.GetIsHoldWithMouseEnabled(selectable) ?
+            // Select on mouse press, unless the mouse can generate gestures or is explicitly set to trigger on release
+            { Pointer.Type: PointerType.Mouse } => eventArgs.RoutedEvent == (Gestures.GetIsHoldWithMouseEnabled(selectable) || GetMouseTriggerOnRelease(selectable) ?
                 InputElement.PointerReleasedEvent : (RoutedEvent)InputElement.PointerPressedEvent),
 
             // Pen "right clicks" are used for context menus, and gestures are only processed for primary input
