@@ -6,9 +6,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml;
 
 public class StyleWithServiceProvider : Style
 {
-    public IServiceProvider ServiceProvider { get; }
+    public IServiceProvider? ServiceProvider { get; }
 
-    public StyleWithServiceProvider(IServiceProvider sp = null)
+    public StyleWithServiceProvider(IServiceProvider? sp = null)
     {
         ServiceProvider = sp;
         AvaloniaXamlLoader.Load(sp, this);
