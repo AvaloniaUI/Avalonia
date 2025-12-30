@@ -1,12 +1,9 @@
-#nullable enable
-
 using System;
 using System.IO;
 using System.Linq;
 using Avalonia.Input;
 using Avalonia.Logging;
 using Avalonia.Native.Interop;
-using Avalonia.Utilities;
 
 namespace Avalonia.Native;
 

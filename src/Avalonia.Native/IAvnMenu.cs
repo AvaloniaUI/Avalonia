@@ -10,7 +10,7 @@ namespace Avalonia.Native.Interop
 {
     class MenuEvents : NativeCallbackBase, IAvnMenuEvents
     {
-        private IAvnMenu _parent;
+        private IAvnMenu? _parent;
 
         public void Initialise(IAvnMenu parent)
         {
@@ -49,7 +49,7 @@ namespace Avalonia.Native.Interop.Impl
         private List<__MicroComIAvnMenuItemProxy> _menuItems = new List<__MicroComIAvnMenuItemProxy>();
         private Dictionary<NativeMenuItemBase, __MicroComIAvnMenuItemProxy> _menuItemLookup = new Dictionary<NativeMenuItemBase, __MicroComIAvnMenuItemProxy>();
 
-        private void UpdateTitle(string title)
+        private void UpdateTitle(string? title)
         {
             if (OperatingSystemEx.IsMacOS())
             {
@@ -136,7 +136,7 @@ namespace Avalonia.Native.Interop.Impl
             return nativeItem;
         }
 
-        internal void Initialize(AvaloniaNativeMenuExporter exporter, NativeMenu managedMenu, string title)
+        internal void Initialize(AvaloniaNativeMenuExporter exporter, NativeMenu managedMenu, string? title)
         {
             _exporter = exporter;
             ManagedMenu = managedMenu;
@@ -166,7 +166,7 @@ namespace Avalonia.Native.Interop.Impl
 
             for (int i = 0; i < menu.Items.Count; i++)
             {
-                __MicroComIAvnMenuItemProxy nativeItem;
+                __MicroComIAvnMenuItemProxy? nativeItem;
 
                 if (i >= _menuItems.Count)
                 {
@@ -197,7 +197,7 @@ namespace Avalonia.Native.Interop.Impl
             }
         }
 
-        private void OnMenuItemsChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void OnMenuItemsChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             _exporter.QueueReset();
         }

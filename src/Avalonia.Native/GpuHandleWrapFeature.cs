@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using Avalonia.Native.Interop;
 using Avalonia.Platform;

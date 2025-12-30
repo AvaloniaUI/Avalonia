@@ -19,7 +19,7 @@ namespace Avalonia.Native
 
         class DndCallback : NativeCallbackBase, IAvnDndResultCallback
         {
-            private TaskCompletionSource<DragDropEffects> _tcs;
+            private TaskCompletionSource<DragDropEffects>? _tcs;
 
             public DndCallback(TaskCompletionSource<DragDropEffects> tcs)
             {

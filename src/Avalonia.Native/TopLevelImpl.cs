@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
@@ -311,7 +309,7 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
         Native.SetCursor(newCursor?.Cursor);
     }
 
-    public virtual IPopupImpl CreatePopup()
+    public virtual IPopupImpl? CreatePopup()
     {
         return new PopupImpl(Factory, this);
     }
@@ -554,6 +552,8 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
 
         public ILockedFramebuffer Lock()
         {
+            ObjectDisposedException.ThrowIf(_target is null, this);
+
             var w = _parent._savedLogicalSize.Width * _parent._savedScaling;
             var h = _parent._savedLogicalSize.Height * _parent._savedScaling;
             var dpi = _parent._savedScaling * 96;

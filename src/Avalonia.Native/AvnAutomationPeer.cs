@@ -6,11 +6,8 @@ using System.Runtime.CompilerServices;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
-using Avalonia.Controls;
 using Avalonia.Controls.Automation.Peers;
 using Avalonia.Native.Interop;
-
-#nullable enable
 
 namespace Avalonia.Native
 {
@@ -36,10 +33,10 @@ namespace Avalonia.Native
         public IAvnString? AutomationId => _inner.GetAutomationId().ToAvnString();
         public AvnRect BoundingRectangle => _inner.GetBoundingRectangle().ToAvnRect();
         public IAvnAutomationPeerArray Children => new AvnAutomationPeerArray(_inner.GetChildren());
-        public IAvnString ClassName => _inner.GetClassName().ToAvnString();
+        public IAvnString? ClassName => _inner.GetClassName().ToAvnString();
         public IAvnAutomationPeer? LabeledBy => Wrap(_inner.GetLabeledBy());
-        public IAvnString Name => _inner.GetName().ToAvnString();
-        public IAvnString HelpText => _inner.GetHelpText().ToAvnString();
+        public IAvnString? Name => _inner.GetName().ToAvnString();
+        public IAvnString? HelpText => _inner.GetHelpText().ToAvnString();
         public AvnLandmarkType LandmarkType => (AvnLandmarkType?)_inner.GetLandmarkType() ?? AvnLandmarkType.LandmarkNone;
         public int HeadingLevel => _inner.GetHeadingLevel();
         public IAvnAutomationPeer? Parent => Wrap(_inner.GetParent());
@@ -173,7 +170,7 @@ namespace Avalonia.Native
         public void ToggleProvider_Toggle() => ToggleProvider.Toggle();
 
         public int IsValueProvider() => IsProvider<IValueProvider>();
-        public IAvnString ValueProvider_GetValue() => ValueProvider.Value.ToAvnString();
+        public IAvnString? ValueProvider_GetValue() => ValueProvider.Value.ToAvnString();
         public void ValueProvider_SetValue(string value) => ValueProvider.SetValue(value);
 
         [return: NotNullIfNotNull("peer")]
