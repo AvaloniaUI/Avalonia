@@ -17,22 +17,22 @@ namespace Previewer
         <TextBlock>Hello world!</TextBlock>
     
         </Window>";
-        private IAvaloniaRemoteTransportConnection _connection;
+        private IAvaloniaRemoteTransportConnection? _connection;
         private Control _errorsContainer;
         private TextBlock _errors;
-        private RemoteWidget _remote;
+        private RemoteWidget? _remote;
 
 
         public MainWindow()
         {
             this.InitializeComponent();
-            var tb = this.FindControl<TextBox>("Xaml");
+            var tb = this.GetControl<TextBox>("Xaml");
             tb.Text = InitialXaml;
-            var scroll = this.FindControl<ScrollViewer>("Remote");
+            var scroll = this.GetControl<ScrollViewer>("Remote");
             var rem = new Center();
             scroll.Content = rem;
-            _errorsContainer = this.FindControl<Control>("ErrorsContainer");
-            _errors = this.FindControl<TextBlock>("Errors");
+            _errorsContainer = this.GetControl<Control>("ErrorsContainer");
+            _errors = this.GetControl<TextBlock>("Errors");
             tb.GetObservable(TextBox.TextProperty).Subscribe(text => _connection?.Send(new UpdateXamlMessage
             {
                 Xaml = text
@@ -70,7 +70,7 @@ namespace Previewer
                     _errorsContainer.IsVisible = result.Error != null;
                     _errors.Text = result.Error ?? "";
                 }
-                if (obj is RequestViewportResizeMessage resize)
+                if (obj is RequestViewportResizeMessage resize && _remote is not null)
                 {
                     _remote.Width = Math.Min(4096, Math.Max(resize.Width, 1));
                     _remote.Height = Math.Min(4096, Math.Max(resize.Height, 1));
