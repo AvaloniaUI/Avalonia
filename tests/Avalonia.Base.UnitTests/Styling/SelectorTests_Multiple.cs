@@ -41,6 +41,7 @@ namespace Avalonia.Base.UnitTests.Styling
             var match = selector.Match(border);
 
             Assert.Equal(SelectorMatchResult.Sometimes, match.Result);
+            Assert.NotNull(match.Activator);
             match.Activator.Subscribe(x => values.Add(x));
 
             Assert.Equal(new[] { false }, values);
@@ -103,6 +104,7 @@ namespace Avalonia.Base.UnitTests.Styling
             var match = selector.Match(textBlock);
 
             Assert.Equal(SelectorMatchResult.Sometimes, match.Result);
+            Assert.NotNull(match.Activator);
             match.Activator.Subscribe(x => values.Add(x));
 
             Assert.Equal(new[] { false }, values);
@@ -141,6 +143,7 @@ namespace Avalonia.Base.UnitTests.Styling
             var match = selector.Match(border);
 
             Assert.Equal(SelectorMatchResult.Sometimes, match.Result);
+            Assert.NotNull(match.Activator);
             match.Activator.Subscribe(x => values.Add(x));
 
             Assert.Equal(new[] { false }, values);
@@ -168,6 +171,7 @@ namespace Avalonia.Base.UnitTests.Styling
 
             var activator = match.Activator;
 
+            Assert.NotNull(activator);
             Assert.False(await activator.Take(1));
             control.Tag = "bar";
             Assert.False(await activator.Take(1));

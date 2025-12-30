@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Nuke.Common" Version="9.0.4" />
+    <PackageReference Include="Nuke.Common" Version="10.1.0" />
     <PackageReference Include="MicroCom.CodeGenerator" Version="0.11.0" />
     <!-- Keep in sync with Avalonia.Build.Tasks -->
     <PackageReference Include="Mono.Cecil" Version="0.11.6" />
@@ -20,7 +20,7 @@
     <PackageReference Include="NuGet.Protocol" Version="7.0.1" />
     <PackageDownload Include="Microsoft.DotNet.ApiCompat.Tool" Version="[10.0.100]" />
     <PackageDownload Include="Microsoft.DotNet.ApiDiff.Tool" Version="[10.0.100-rtm.25531.102]" />
-    <PackageDownload Include="dotnet-ilrepack" Version="[1.0.0]" />
+    <PackageDownload Include="dotnet-ilrepack" Version="[2.0.44]" />
   </ItemGroup>
 
   <ItemGroup>
