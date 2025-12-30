@@ -30,42 +30,39 @@ namespace Avalonia.Media.Fonts
         {
             var typeface = new Typeface(familyName, style, weight, stretch).Normalize(out familyName);
 
-            if (base.TryGetGlyphTypeface(familyName, style, weight, stretch, out glyphTypeface))
-            {
-                return true;
-            }
-
+            // Use normalized values for cache lookup to ensure consistent cache keys
             style = typeface.Style;
-
             weight = typeface.Weight;
-
             stretch = typeface.Stretch;
 
             var key = new FontCollectionKey(style, weight, stretch);
 
-            //Check cache first to avoid unnecessary calls to the font manager
+            // Check cache first
             if (_glyphTypefaceCache.TryGetValue(familyName, out var glyphTypefaces) && glyphTypefaces.TryGetValue(key, out glyphTypeface))
             {
                 return glyphTypeface != null;
             }
 
-            //Try to create the glyph typeface via system font manager
+            // Try base class (handles nearest match and synthetic creation)
+            if (base.TryGetGlyphTypeface(familyName, style, weight, stretch, out glyphTypeface))
+            {
+                // Cache under requested key to prevent leaks when FamilyName differs
+                TryAddGlyphTypeface(familyName, key, glyphTypeface);
+                return true;
+            }
+
+            // Create via platform
             if (!_platformImpl.TryCreateGlyphTypeface(familyName, style, weight, stretch, out glyphTypeface))
             {
-                //Add null to cache to avoid future calls
                 TryAddGlyphTypeface(familyName, key, null);
-
                 return false;
             }
 
-            //Add to cache
-            if (!TryAddGlyphTypeface(glyphTypeface))
-            {
-                return false;
-            }
+            // Cache under requested key (prevents leaks) and actual properties
+            TryAddGlyphTypeface(familyName, key, glyphTypeface);
+            TryAddGlyphTypeface(glyphTypeface);
 
-            //Requested glyph typeface should be in cache now
-            return base.TryGetGlyphTypeface(familyName, style, weight, stretch, out glyphTypeface);
+            return true;
         }
 
         public override bool TryGetFamilyTypefaces(string familyName, [NotNullWhen(true)] out IReadOnlyList<Typeface>? familyTypefaces)
