@@ -13,6 +13,10 @@
     <ProjectReference Include="$(MSBuildThisFileDirectory)../src/Skia/Avalonia.Skia/Avalonia.Skia.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.1.1" />
+  </ItemGroup>
+
   <Target Name="GatherReferences" AfterTargets="CoreCompile">
     <WriteLinesToFile File="$(TargetPath).refs"
                       Lines="@(ReferencePathWithRefAssemblies)"
