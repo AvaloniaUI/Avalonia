@@ -9,7 +9,7 @@ namespace RenderDemo.Pages
 {
     public class TextFormatterPage : UserControl
     {
-        private TextLine _textLine;
+        private TextLine? _textLine;
         
         public TextFormatterPage()
         {
@@ -50,7 +50,7 @@ namespace RenderDemo.Pages
         {
             var currentX = 0d;
             
-            foreach (var textRun in _textLine.TextRuns)
+            foreach (var textRun in _textLine?.TextRuns ?? [])
             {
                 if (textRun is ControlRun controlRun)
                 {
@@ -78,7 +78,7 @@ namespace RenderDemo.Pages
                 _defaultProperties = defaultProperties;
             }
             
-            public TextRun GetTextRun(int textSourceIndex)
+            public TextRun? GetTextRun(int textSourceIndex)
             {
                 if (textSourceIndex >= _text.Length * 2 + TextRun.DefaultTextSourceLength)
                 {
