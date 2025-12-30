@@ -8,7 +8,7 @@ namespace Avalonia.Native
 {
     class AvaloniaNativeCursor : ICursorImpl, IDisposable
     {
-        public IAvnCursor Cursor { get; private set; }
+        public IAvnCursor? Cursor { get; private set; }
         public IntPtr Handle => IntPtr.Zero;
 
         public string HandleDescriptor => "<none>";
@@ -20,7 +20,7 @@ namespace Avalonia.Native
 
         public void Dispose()
         {
-            Cursor.Dispose();
+            Cursor?.Dispose();
             Cursor = null;
         }
     }
