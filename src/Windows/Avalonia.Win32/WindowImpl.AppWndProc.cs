@@ -89,10 +89,17 @@ namespace Avalonia.Win32
                                 {
                                     Activated?.Invoke();
                                     UpdateInputMethod(GetKeyboardLayout(0));
+
+                                    _inkTestPerformed = false; // Reset ink test flag on activation
+
                                     if (_wintabEnabled)
                                     {
                                         WintabFuncs.WTEnable(_hCtx.HCtx, true);
                                         WintabFuncs.WTOverlap(_hCtx.HCtx, true);
+                                    }
+                                    else
+                                    {
+                                        InitWintab();
                                     }
 
                                     break;
@@ -415,7 +422,7 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_MOUSEMOVE:
                 {
-                    if (_nextPointerEventIsInkTest)
+                    if (_nextPointerEventIsInkTest && Math.Abs((int)timestamp - (int)_lastWintabTime) >= 10)
                     {
                         if (!IsMessageFromPen())
                         {
@@ -1274,7 +1281,7 @@ namespace Avalonia.Win32
         {
             if(count == 0)
                 return;
-            
+
             uint actualSize = 0;
             var packets = _wnData.GetDataPackets(Math.Min(count, MaxWintabPacketHistorySize), true, ref actualSize);
             foreach (var packet in packets)

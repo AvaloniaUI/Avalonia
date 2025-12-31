@@ -228,6 +228,7 @@ namespace Avalonia.Win32
                         }
                     }
 
+                    s_lastWintabPackets.Clear();
                     _maxPressure = WintabInfo.GetMaxPressure();
                     _wintabEnabled = true;
                 }
