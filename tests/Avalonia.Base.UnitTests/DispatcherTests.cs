@@ -25,8 +25,8 @@ public partial class DispatcherTests
                 AskedForSignal = true;
         }
 
-        public event Action Signaled;
-        public event Action Timer;
+        public event Action? Signaled;
+        public event Action? Timer;
         public long? NextTimer { get; private set; }
         public bool AskedForSignal { get; private set; }
 
@@ -64,7 +64,7 @@ public partial class DispatcherTests
     class SimpleDispatcherWithBackgroundProcessingImpl : SimpleDispatcherImpl, IDispatcherImplWithExplicitBackgroundProcessing
     {
         public bool AskedForBackgroundProcessing { get; private set; }
-        public event Action ReadyForBackgroundProcessing;
+        public event Action? ReadyForBackgroundProcessing;
         public void RequestBackgroundProcessing()
         {
             if (!CurrentThreadIsLoopThread)
@@ -607,7 +607,6 @@ public partial class DispatcherTests
         Dispatcher.UIThread.MainLoop(tokenSource.Token);
     }
 
-#nullable enable
     private class AsyncLocalTestClass
     {
         public AsyncLocal<string?> AsyncLocalField { get; set; } = new AsyncLocal<string?>();
@@ -776,6 +775,5 @@ public partial class DispatcherTests
             Assert.NotEqual("sux-Shaw-UM", oldCulture.Name);
         }
     }
-#nullable restore
 
 }

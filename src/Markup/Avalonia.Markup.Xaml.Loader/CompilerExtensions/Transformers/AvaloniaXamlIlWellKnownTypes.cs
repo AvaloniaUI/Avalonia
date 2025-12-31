@@ -143,6 +143,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             public IXamlMethod AddHandler { get; }
             public IXamlMethod AddHandlerT { get; }
 
+            [UnconditionalSuppressMessage("Trimming", "IL2122", Justification = TrimmingMessages.TypesInCoreOrAvaloniaAssembly)]
             internal InteractivityWellKnownTypes(TransformerConfiguration cfg)
             {
                 var ts = cfg.TypeSystem;
@@ -176,6 +177,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
         public InteractivityWellKnownTypes Interactivity { get; }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2122", Justification = TrimmingMessages.TypesInCoreOrAvaloniaAssembly)]
         public AvaloniaXamlIlWellKnownTypes(TransformerConfiguration cfg)
         {
             RuntimeHelpers = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.XamlIl.Runtime.XamlIlRuntimeHelpers");

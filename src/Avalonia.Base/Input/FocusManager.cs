@@ -34,7 +34,11 @@ namespace Avalonia.Input
         {
             InputElement.PointerPressedEvent.AddClassHandler(
                 typeof(IInputElement),
-                new EventHandler<RoutedEventArgs>(OnPreviewPointerPressed),
+                new EventHandler<RoutedEventArgs>(OnPreviewPointerEventHandler),
+                RoutingStrategies.Tunnel);
+            InputElement.PointerReleasedEvent.AddClassHandler(
+                typeof(IInputElement),
+                new EventHandler<RoutedEventArgs>(OnPreviewPointerEventHandler),
                 RoutingStrategies.Tunnel);
         }
 
@@ -194,6 +198,17 @@ namespace Avalonia.Input
         /// <returns>True if the element can be focused.</returns>
         internal static bool CanFocus(IInputElement e) => e.Focusable && e.IsEffectivelyEnabled && IsVisible(e);
 
+        private static bool CanPointerFocus(IInputElement e, PointerEventArgs ev)
+        {
+            if (CanFocus(e))
+            {
+                if (ev.Pointer.Type == PointerType.Mouse || ev is PointerReleasedEventArgs)
+                    return true;
+            }
+
+            return false;
+        }
+
         /// <summary>
         /// Gets the focus scope of the specified control, traversing popups.
         /// </summary>
@@ -241,21 +256,21 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        private static void OnPreviewPointerPressed(object? sender, RoutedEventArgs e)
+        private static void OnPreviewPointerEventHandler(object? sender, RoutedEventArgs e)
         {
             if (sender is null)
                 return;
 
-            var ev = (PointerPressedEventArgs)e;
+            var ev = (PointerEventArgs)e;
             var visual = (Visual)sender;
 
-            if (sender == e.Source && ev.GetCurrentPoint(visual).Properties.IsLeftButtonPressed)
+            if (sender == e.Source && (ev.GetCurrentPoint(visual).Properties.IsLeftButtonPressed || (e as PointerReleasedEventArgs)?.InitialPressMouseButton == MouseButton.Left))
             {
                 Visual? element = ev.Pointer?.Captured as Visual ?? e.Source as Visual;
 
                 while (element != null)
                 {
-                    if (element is IInputElement inputElement && CanFocus(inputElement))
+                    if (element is IInputElement inputElement && CanPointerFocus(inputElement, ev))
                     {
                         inputElement.Focus(NavigationMethod.Pointer, ev.KeyModifiers);
 

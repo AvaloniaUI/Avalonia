@@ -22,6 +22,7 @@ namespace Avalonia.Controls.UnitTests
             bold.BuildTextRun(textRuns, default);
 
             var runProperties = textRuns[0].Properties;
+            Assert.NotNull(runProperties);
             Assert.Equal(FontWeight.Bold, runProperties.Typeface.Weight);
         }
 
@@ -38,6 +39,7 @@ namespace Avalonia.Controls.UnitTests
             italic.BuildTextRun(textRuns, default);
 
             var runProperties = textRuns[0].Properties;
+            Assert.NotNull(runProperties);
             Assert.Equal(FontStyle.Italic, runProperties.Typeface.Style);
         }
 
@@ -55,6 +57,7 @@ namespace Avalonia.Controls.UnitTests
             span.BuildTextRun(textRuns, default);
 
             var runProperties = textRuns[0].Properties;
+            Assert.NotNull(runProperties);
             Assert.Equal(FontStretch.Condensed, runProperties.Typeface.Stretch);
         }
 
@@ -74,6 +77,7 @@ namespace Avalonia.Controls.UnitTests
             span.BuildTextRun(textRuns, default);
 
             var runProperties = textRuns[0].Properties;
+            Assert.NotNull(runProperties);
             Assert.Equal(backgroundBrush, runProperties.BackgroundBrush);
         }
     }

@@ -89,7 +89,7 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
         Factory = factory;
 
         _keyboard = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
-        _mouse = new MouseDevice();
+        _mouse = Avalonia.Input.MouseDevice.Primary;
         _pen = new PenDevice();
         _cursorFactory = AvaloniaLocator.Current.GetService<ICursorFactory>();
     }
@@ -387,8 +387,6 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
 
         _nativeControlHost?.Dispose();
         _nativeControlHost = null;
-
-        _mouse?.Dispose();
     }
 
     protected virtual bool ChromeHitTest(RawPointerEventArgs e)

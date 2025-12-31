@@ -485,11 +485,12 @@ namespace Avalonia.Base.UnitTests.Input
                 Assert.True(root.Classes.Contains(":focus-within"));
                 Assert.True(root.IsKeyboardFocusWithin);
 
-                Assert.Equal(KeyboardDevice.Instance.FocusedElement, target1);
+                var keyboardDevice = KeyboardDevice.Instance!;
+                Assert.Equal(keyboardDevice.FocusedElement, target1);
                 
                 root.Child = null;
                 
-                Assert.Null(KeyboardDevice.Instance.FocusedElement);
+                Assert.Null(keyboardDevice.FocusedElement);
                 
                 Assert.False(target1.IsFocused);
                 Assert.False(target1.Classes.Contains(":focus-within"));
@@ -541,7 +542,7 @@ namespace Avalonia.Base.UnitTests.Input
                 Assert.True(root1.Classes.Contains(":focus-within"));
                 Assert.True(root1.IsKeyboardFocusWithin);
 
-                Assert.Equal(KeyboardDevice.Instance.FocusedElement, target1);
+                Assert.Equal(KeyboardDevice.Instance!.FocusedElement, target1);
                 
                 target2.Focus();
                 
@@ -622,7 +623,7 @@ namespace Avalonia.Base.UnitTests.Input
             innerButton.Focus();
 
             // Remove the focused control from the tree.
-            ((Panel)innerButton.Parent).Children.Remove(innerButton);
+            ((Panel)innerButton.Parent!).Children.Remove(innerButton);
 
             var focusManager = Assert.IsType<FocusManager>(root.FocusManager);
             Assert.Same(outerButton, focusManager.GetFocusedElement());
@@ -658,7 +659,7 @@ namespace Avalonia.Base.UnitTests.Input
             innerButton.Focus();
 
             // Remove the inner focus scope.
-            ((Panel)innerScope.Parent).Children.Remove(innerScope);
+            ((Panel)innerScope.Parent!).Children.Remove(innerScope);
 
             var focusManager = Assert.IsType<FocusManager>(root.FocusManager);
             Assert.Same(outerButton, focusManager.GetFocusedElement());
@@ -795,6 +796,7 @@ namespace Avalonia.Base.UnitTests.Input
                 };
 
                 var focusManager = FocusManager.GetFocusManager(container);
+                Assert.NotNull(focusManager);
                 target1.Focus();
 
                 var next = focusManager.FindNextElement(NavigationDirection.Next);
@@ -841,6 +843,7 @@ namespace Avalonia.Base.UnitTests.Input
                 root.ExecuteInitialLayoutPass();
 
                 var focusManager = FocusManager.GetFocusManager(container);
+                Assert.NotNull(focusManager);
                 target1.Focus();
 
                 var options = new FindNextElementOptions()
@@ -892,6 +895,7 @@ namespace Avalonia.Base.UnitTests.Input
                 };
 
                 var focusManager = FocusManager.GetFocusManager(container);
+                Assert.NotNull(focusManager);
 
                 var hasMoved = focusManager.TryMoveFocus(NavigationDirection.Next);
 
@@ -939,6 +943,7 @@ namespace Avalonia.Base.UnitTests.Input
                 };
 
                 var focusManager = FocusManager.GetFocusManager(container);
+                Assert.NotNull(focusManager);
 
                 center.Focus();
 

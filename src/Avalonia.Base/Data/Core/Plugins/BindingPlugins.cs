@@ -28,6 +28,7 @@ namespace Avalonia.Data.Core.Plugins
             new ObservableStreamPlugin(),
         };
 
+        [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "We're checking if dynamic code is supported.")]
         static BindingPlugins()
         {
             // When building with AOT, don't create ReflectionMethodAccessorPlugin instance.

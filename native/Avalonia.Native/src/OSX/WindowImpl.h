@@ -87,7 +87,9 @@ BEGIN_INTERFACE_MAP()
     bool CanBecomeKeyWindow ();
 
     bool CanZoom() override { return _isEnabled && _canMaximize; }
-    
+
+    bool IsTransitioningWindowState() { return _transitioningWindowState; }
+
 protected:
     virtual NSWindowStyleMask CalculateStyleMask() override;
     virtual void UpdateAppearance() override;

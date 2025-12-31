@@ -141,7 +141,8 @@ namespace Avalonia.Dialogs.Internal
 
             if (filePickerOpen.FileTypeFilter?.Count > 0)
             {
-                Filters.AddRange(filePickerOpen.FileTypeFilter.Select(f => new ManagedFileChooserFilterViewModel(f)));
+                Filters.AddRange(filePickerOpen.FileTypeFilter.Select((f, i)
+                    => new ManagedFileChooserFilterViewModel(f, i)));
                 _selectedFilter = Filters[0];
                 ShowFilters = true;
             }
@@ -161,7 +162,8 @@ namespace Avalonia.Dialogs.Internal
 
             if (filePickerSave.FileTypeChoices?.Count > 0)
             {
-                Filters.AddRange(filePickerSave.FileTypeChoices.Select(f => new ManagedFileChooserFilterViewModel(f)));
+                Filters.AddRange(filePickerSave.FileTypeChoices.Select((f, i)
+                    => new ManagedFileChooserFilterViewModel(f, i)));
                 _selectedFilter = Filters[0];
                 ShowFilters = true;
             }

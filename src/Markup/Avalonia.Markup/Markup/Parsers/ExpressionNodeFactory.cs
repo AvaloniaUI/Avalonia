@@ -15,9 +15,12 @@ namespace Avalonia.Markup.Parsers
     internal static class ExpressionNodeFactory
     {
         [RequiresUnreferencedCode(TrimmingMessages.ReflectionBindingRequiresUnreferencedCodeMessage)]
+#if NET8_0_OR_GREATER
+        [RequiresDynamicCode(TrimmingMessages.ReflectionBindingRequiresDynamicCodeMessage)]
+#endif
         public static List<ExpressionNode>? CreateFromAst(
             List<BindingExpressionGrammar.INode> astNodes,
-            Func<string?, string, Type>? typeResolver,
+            Func<string?, string, Type?>? typeResolver,
             INameScope? nameScope,
             out bool isRooted)
         {
@@ -108,7 +111,7 @@ namespace Avalonia.Markup.Parsers
         }
 
         private static AvaloniaPropertyAccessorNode AttachedPropertyNode(
-            Func<string?, string, Type>? typeResolver,
+            Func<string?, string, Type?>? typeResolver,
             BindingExpressionGrammar.AttachedPropertyNameNode attached)
         {
             var type = LookupType(typeResolver, attached.Namespace, attached.TypeName);
@@ -118,7 +121,7 @@ namespace Avalonia.Markup.Parsers
         }
 
         private static LogicalAncestorElementNode LogicalAncestorNode(
-            Func<string?, string, Type>? typeResolver,
+            Func<string?, string, Type?>? typeResolver,
             BindingExpressionGrammar.AncestorNode ancestor)
         {
             Type? type = null;
@@ -132,7 +135,7 @@ namespace Avalonia.Markup.Parsers
         }
 
         private static Type LookupType(
-            Func<string?, string, Type>? typeResolver,
+            Func<string?, string, Type?>? typeResolver,
             string? @namespace,
             string? name)
         {

@@ -654,6 +654,19 @@ enum AvnAutomationControlType
     AutomationSeparator,
 }
 
+enum AvnLandmarkType
+{
+    LandmarkNone = -1,
+    LandmarkBanner,
+    LandmarkComplementary,
+    LandmarkContentInfo,
+    LandmarkRegion,
+    LandmarkForm,
+    LandmarkMain,
+    LandmarkNavigation,
+    LandmarkSearch,
+}
+
 enum AvnWindowTransparencyMode
 {
     Opaque,
@@ -910,6 +923,7 @@ interface IAvnPlatformThreadingInterface : IUnknown
 interface IAvnSystemDialogEvents : IUnknown
 {
      void OnCompleted(IAvnStringArray*array);
+     void OnCompletedWithFilter(IAvnStringArray*array, int selectedFilterIndex);
 }
 
 [uuid(4d7a47db-a944-4061-abe7-62cb6aa0ffd5)]
@@ -1006,7 +1020,7 @@ interface IAvnClipboardDataValue : IUnknown
 {
     bool IsString();
     IAvnString* AsString();
-    int GetByteLength();
+    long GetByteLength();
     void CopyBytesTo(void* buffer);
 }
 
@@ -1303,9 +1317,11 @@ interface IAvnAutomationPeer : IUnknown
      
      bool IsValueProvider();
      IAvnString* ValueProvider_GetValue();
-     void ValueProvider_SetValue(char* value);
+     void ValueProvider_SetValue([const] char* value);
 
      IAvnString* GetHelpText();
+
+     AvnLandmarkType GetLandmarkType();
      int GetHeadingLevel();
 }
 

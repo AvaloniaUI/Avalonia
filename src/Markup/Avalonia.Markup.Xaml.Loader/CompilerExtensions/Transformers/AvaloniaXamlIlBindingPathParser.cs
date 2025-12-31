@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Avalonia.Data.Core;
 using Avalonia.Markup.Parsers;
-using Avalonia.Utilities;
+using XamlX;
 using XamlX.Ast;
 using XamlX.Transform;
 using XamlX.Transform.Transformers;
@@ -22,7 +23,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
                 if (binding.Arguments.Count > 0 && binding.Arguments[0] is XamlAstTextNode bindingPathText)
                 {
-                    var (nodes, _) = BindingExpressionGrammar.Parse(bindingPathText.Text);
+                    var nodes = GetBindingPath(bindingPathText);
 
                     if (convertedNode != null)
                     {
@@ -47,7 +48,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
                     if (bindingPathAssignment != null && bindingPathAssignment.Values[0] is XamlAstTextNode pathValue)
                     {
-                        var (nodes, _) = BindingExpressionGrammar.Parse(pathValue.Text);
+                        var nodes = GetBindingPath(pathValue);
 
                         if (nodes.Count == 1 && nodes[0] is BindingExpressionGrammar.EmptyExpressionNode)
                         {
@@ -75,6 +76,18 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             }
 
             return node;
+        }
+
+        private static List<BindingExpressionGrammar.INode> GetBindingPath(XamlAstTextNode node)
+        {
+            try
+            {
+                return BindingExpressionGrammar.Parse(node.Text).Nodes;
+            }
+            catch (ExpressionParseException ex)
+            {
+                throw new XamlTransformException($"Failed to parse binding path '{node.Text}': {ex.Message}", node, ex);
+            }
         }
 
         private static BindingExpressionGrammar.INode? ConvertLongFormPropertiesToBindingExpressionNode(

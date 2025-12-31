@@ -1,4 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
@@ -6,23 +7,24 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <AvaloniaResource Include="**\*.xaml"/>
+    <AvaloniaXaml Include="**\*.xaml"/>
     <!-- Note this AdditionalFiles directive. -->
     <AdditionalFiles Include="**\*.xaml" SourceItemGroup="AvaloniaXaml" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ReactiveUI.Validation" Version="3.0.22"/>
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\packages\Avalonia\Avalonia.csproj"/>
     <ProjectReference Include="..\..\src\Avalonia.Desktop\Avalonia.Desktop.csproj"/>
-    <ProjectReference Include="..\..\src\Avalonia.ReactiveUI\Avalonia.ReactiveUI.csproj"/>
     <ProjectReference Include="..\..\src\Avalonia.Themes.Fluent\Avalonia.Themes.Fluent.csproj"/>
     <ProjectReference Include="..\..\src\Avalonia.Fonts.Inter\Avalonia.Fonts.Inter.csproj"/>
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+  </ItemGroup>
+
   <Import Project="..\..\build\BuildTargets.targets"/>
   <Import Project="..\..\build\SourceGenerators.props"/>
+  <Import Project="..\..\build\NullableEnable.props" />
+
 </Project>

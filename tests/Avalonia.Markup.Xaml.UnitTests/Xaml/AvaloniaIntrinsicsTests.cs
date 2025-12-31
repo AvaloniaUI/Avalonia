@@ -142,11 +142,11 @@ public class TestIntrinsicsControl : Control
     public Color ColorProperty { get; set; }
     public RelativePoint RelativePointProperty { get; set; }
     public GridLength GridLengthProperty { get; set; }
-    public IBrush IBrushProperty { get; set; }
-    public TextTrimming TextTrimmingProperty { get; set; }
-    public TextDecorationCollection TextDecorationCollectionProperty { get; set; }
+    public IBrush? IBrushProperty { get; set; }
+    public TextTrimming? TextTrimmingProperty { get; set; }
+    public TextDecorationCollection? TextDecorationCollectionProperty { get; set; }
     public WindowTransparencyLevel WindowTransparencyLevelProperty { get; set; }
-    public Uri UriProperty { get; set; }
-    public ThemeVariant ThemeVariantProperty { get; set; }
-    public Points PointsProperty { get; set; }
+    public Uri? UriProperty { get; set; }
+    public ThemeVariant? ThemeVariantProperty { get; set; }
+    public Points? PointsProperty { get; set; }
 }

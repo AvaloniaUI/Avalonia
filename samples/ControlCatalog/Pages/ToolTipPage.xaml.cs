@@ -1,22 +1,16 @@
 using System;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Interactivity;
 using Avalonia.Controls.Primitives.PopupPositioning;
-using Avalonia.Markup.Xaml;
+using Avalonia.Interactivity;
 
 namespace ControlCatalog.Pages
 {
-    public class ToolTipPage : UserControl
+    public partial class ToolTipPage : UserControl
     {
         public ToolTipPage()
         {
-            this.InitializeComponent();
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
+            InitializeComponent();
         }
 
         private void ToolTipOpening(object? sender, CancelRoutedEventArgs args)

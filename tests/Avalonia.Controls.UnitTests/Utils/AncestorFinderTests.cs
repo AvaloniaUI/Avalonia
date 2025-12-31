@@ -1,11 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Avalonia.Controls.Utils;
 using Avalonia.UnitTests;
-using Avalonia.VisualTree;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Utils
@@ -20,7 +15,7 @@ namespace Avalonia.Controls.UnitTests.Utils
             var grandParent = new Border();
             var grandParent2 = new Border();
 
-            StyledElement currentParent = null;
+            StyledElement? currentParent = null;
             var subscription = AncestorFinder.Create(child, typeof (Border)).Subscribe(s => currentParent = s);
 
             Assert.Null(currentParent);
