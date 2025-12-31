@@ -115,6 +115,7 @@ namespace Avalonia.Win32
         private bool _wasTipDown;
         private bool _wasBarrelDown;
         private bool _nextPointerEventIsInkTest;
+        private bool _inkTestPerformed;
         private uint _lastProcessedPacketSerial;
         private uint _wintabQueueSize;
         private uint _lastWintabTime;

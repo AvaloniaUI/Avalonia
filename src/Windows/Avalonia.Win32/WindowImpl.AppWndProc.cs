@@ -61,17 +61,20 @@ namespace Avalonia.Win32
 
                         e = args;
 
-                        if (_lastWintabTime == 0)
+                        if (!_inkTestPerformed)
                         {
                             // Test if windows ink should be used instead
                             _hCtx.Close();
                             _wintabEnabled = false;
                             _nextPointerEventIsInkTest = true;
+                            _inkTestPerformed = true;
+                            break;
                         }
 
                         _lastProcessedPacketSerial = pktId;
-                        _lastWintabTime = packet.pkTime;
                     }
+
+                    _lastWintabTime = timestamp;
 
                     break;
                 }
@@ -347,7 +350,8 @@ namespace Avalonia.Win32
                         {
                             break;
                         }
-                        if (timestamp - _lastWintabTime < 50) break;
+
+                        if (Math.Abs((int)timestamp - (int)_lastWintabTime) < 50) break;
 
                         shouldTakeFocus = ShouldTakeFocusOnClick;
                         if (ShouldIgnoreTouchEmulatedMessage())
@@ -427,7 +431,7 @@ namespace Avalonia.Win32
                         break;
                     }
 
-                    if (timestamp - _lastWintabTime < 50) break;
+                    if (Math.Abs((int)timestamp - (int)_lastWintabTime) < 50) break;
 
                     if (ShouldIgnoreTouchEmulatedMessage())
                     {
