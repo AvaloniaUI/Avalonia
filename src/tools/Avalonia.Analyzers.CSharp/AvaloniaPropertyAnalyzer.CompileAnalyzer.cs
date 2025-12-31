@@ -7,7 +7,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
 
@@ -168,7 +167,7 @@ public partial class AvaloniaPropertyAnalyzer
                         {
                             var (node, model) = GetNodeAndModel(syntaxRef);
 
-                            foreach (var descendant in node.DescendantNodes().Where(n => n.IsKind(SyntaxKind.SimpleAssignmentExpression)))
+                            foreach (var descendant in node.DescendantNodes().Where(IsSimpleAssignmentNode))
                             {
 
                                 if (model.GetOperation(descendant, cancellationToken) is IAssignmentOperation assignmentOperation &&
@@ -309,7 +308,7 @@ public partial class AvaloniaPropertyAnalyzer
 
                     if (_ownerTypeParams.TryGetValue(originalMethod, out var ownerTypeParam))
                     {
-                        ownerTypeRef = TypeReference.FromInvocationTypeParameter(invocation, ownerTypeParam);
+                        ownerTypeRef = TypeReferenceFromInvocationTypeParameter(invocation, ownerTypeParam);
                     }
                     else if (_ownerParams.TryGetValue(originalMethod, out var ownerParam) && // try extracting the runtime argument
                         ResolveOperationSource(invocation.Arguments[ownerParam.Ordinal].Value, cancellationToken) is ITypeOfOperation { Type: ITypeSymbol type } typeOf)
@@ -324,7 +323,7 @@ public partial class AvaloniaPropertyAnalyzer
                     TypeReference valueTypeRef;
                     if (_valueTypeParams.TryGetValue(originalMethod, out var valueTypeParam))
                     {
-                        valueTypeRef = TypeReference.FromInvocationTypeParameter(invocation, valueTypeParam);
+                        valueTypeRef = TypeReferenceFromInvocationTypeParameter(invocation, valueTypeParam);
                     }
                     else
                     {
@@ -360,7 +359,7 @@ public partial class AvaloniaPropertyAnalyzer
                     {
                         if (_hostTypeParams.TryGetValue(originalMethod, out var hostTypeParam))
                         {
-                            hostTypeRef = TypeReference.FromInvocationTypeParameter(invocation, hostTypeParam);
+                            hostTypeRef = TypeReferenceFromInvocationTypeParameter(invocation, hostTypeParam);
                         }
                         else
                         {
@@ -418,7 +417,7 @@ public partial class AvaloniaPropertyAnalyzer
                         return result;
                     });
 
-                    var ownerTypeRef = TypeReference.FromInvocationTypeParameter(invocation, ownerTypeParam);
+                    var ownerTypeRef = TypeReferenceFromInvocationTypeParameter(invocation, ownerTypeParam);
                     description.SetAssignment(target, ownerTypeRef);
                     description.AddOwner(ownerTypeRef);
                 }
@@ -611,7 +610,7 @@ public partial class AvaloniaPropertyAnalyzer
                 {
                     if (newOwnerType is INamedTypeSymbol { IsGenericType: true })
                     {
-                        context.ReportDiagnostic(Diagnostic.Create(PropertyOwnedByGenericType, TypeReference.FromInvocationTypeParameter(invocation, typeParam).Location));
+                        context.ReportDiagnostic(Diagnostic.Create(PropertyOwnedByGenericType, TypeReferenceFromInvocationTypeParameter(invocation, typeParam).Location));
                     }
 
                     if (_avaloniaPropertyAddOwnerMethods.Contains(originalMethod) && GetReferencedProperty(invocation.Instance!, context.CancellationToken) is { } refProp)
@@ -765,7 +764,7 @@ public partial class AvaloniaPropertyAnalyzer
                 var bodyNode = context.CodeBlock.ChildNodes().Single();
 
                 var operation = bodyNode.DescendantNodes()
-                    .Where(n => n.IsKind(SyntaxKind.InvocationExpression)) // this line is specific to C#
+                    .Where(IsInvocationNode)
                     .Select(n => (IInvocationOperation)context.SemanticModel.GetOperation(n)!)
                     .FirstOrDefault();
 

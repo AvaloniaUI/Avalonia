@@ -18,7 +18,17 @@
           "DoNotMergeDependencies": true
         },
         {
-          "Id": "Avalonia.Analyzers",
+          "Id": "Avalonia.Analyzers.CSharp",
+          "IgnoreMissingFrameworkBinaries": true,
+          "DoNotMergeDependencies": true
+        },
+        {
+          "Id": "Avalonia.Analyzers.VisualBasic",
+          "IgnoreMissingFrameworkBinaries": true,
+          "DoNotMergeDependencies": true
+        },
+        {
+          "Id": "Avalonia.Analyzers.CodeFixes.CSharp",
           "IgnoreMissingFrameworkBinaries": true,
           "DoNotMergeDependencies": true
         }

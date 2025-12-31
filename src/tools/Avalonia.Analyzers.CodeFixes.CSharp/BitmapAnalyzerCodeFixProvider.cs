@@ -10,21 +10,21 @@ using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Avalonia.Analyzers;
+namespace Avalonia.Analyzers.CodeFixes.CSharp;
 
 /// <summary>
 /// Provides a code fix for the BitmapAnalyzer diagnostic, which replaces "avares://" string arguments
 /// with a call to AssetLoader.Open(new Uri("avares://...")).
 /// </summary>
-[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(BitmapAnalyzerCSCodeFixProvider))]
+[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(BitmapAnalyzerCodeFixProvider))]
 [Shared]
-public class BitmapAnalyzerCSCodeFixProvider : CodeFixProvider
+public class BitmapAnalyzerCodeFixProvider : CodeFixProvider
 {
     private const string _title = "Use AssetLoader to open assets as stream first";
 
     /// <inheritdoc />
     public override ImmutableArray<string> FixableDiagnosticIds { get; } =
-        ImmutableArray.Create(BitmapAnalyzer.DiagnosticId);
+        ImmutableArray.Create(DiagnosticIds.Bitmap);
 
     /// <inheritdoc />
     public override FixAllProvider? GetFixAllProvider()

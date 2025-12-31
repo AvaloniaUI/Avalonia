@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <DebugType>embedded</DebugType>
+    <IsPackable>true</IsPackable>
+    <IncludeSymbols>false</IncludeSymbols>
+    <RootNamespace>Avalonia.Analyzers</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" Version="4.5.0" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="$(OutputPath)/$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="../Avalonia.Analyzers.CSharp/AvaloniaAnalysisException.cs" />
+    <Compile Include="../Avalonia.Analyzers.CSharp/AvaloniaPropertyAnalyzer.CompileAnalyzer.cs" />
+    <Compile Include="../Avalonia.Analyzers.CSharp/AvaloniaPropertyAnalyzer.cs" />
+  </ItemGroup>
+
+  <Import Project="../../../build/TrimmingEnable.props" />
+  <Import Project="../../../build/NullableEnable.props" />
+  <Import Project="../../../build/AnalyzerProject.targets" />
+
+</Project>
