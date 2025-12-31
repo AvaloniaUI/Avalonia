@@ -4,13 +4,13 @@ using System.Reflection;
 using Avalonia.Controls;
 using Avalonia.Threading;
 using Xunit;
-using Xunit.Sdk;
+using Xunit.v3;
 
 namespace Avalonia.UnitTests;
 
 public sealed class VerifyEmptyDispatcherAfterTestAttribute : BeforeAfterTestAttribute
 {
-    public override void After(MethodInfo methodUnderTest)
+    public override void After(MethodInfo methodUnderTest, IXunitTest test)
     {
         if (typeof(ScopedTestBase).IsAssignableFrom(methodUnderTest.DeclaringType))
             return;

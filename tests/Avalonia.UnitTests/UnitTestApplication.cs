@@ -62,6 +62,15 @@ namespace Avalonia.UnitTests
 
         public override void RegisterServices()
         {
+            // Arrange (as part of layouting) calls TaskScheduler.FromCurrentSynchronizationContext, which needs a non-null context.
+            // If it's null, it will fail. So we need to ensure it's not null.
+            // Historically, this line wasn't needed because xunit itself used to always install its own SynchronizationContext.
+            // This was changed in xunit.v3.
+            if (SynchronizationContext.Current is null)
+            {
+                SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
+            }
+
             AvaloniaLocator.CurrentMutable
                 .Bind<IAssetLoader?>().ToConstant(Services.AssetLoader)
                 .Bind<IGlobalClock?>().ToConstant(Services.GlobalClock)

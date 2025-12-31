@@ -9,6 +9,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Headless;
 using Avalonia.Layout;
 using Avalonia.Platform;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;

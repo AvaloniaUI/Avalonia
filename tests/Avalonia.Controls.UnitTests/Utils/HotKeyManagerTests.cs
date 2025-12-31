@@ -53,7 +53,7 @@ namespace Avalonia.Controls.UnitTests.Utils
         }
 
         [Theory]
-        [MemberData(nameof(ElementsFactory), parameters: true)]
+        [MemberData(nameof(ElementsFactory), arguments: true)]
         public void HotKeyManager_Should_Use_CommandParameter(string factoryName, Factory factory)
         {
             using (AvaloniaLocator.EnterScope())
@@ -98,7 +98,7 @@ namespace Avalonia.Controls.UnitTests.Utils
 
 
         [Theory]
-        [MemberData(nameof(ElementsFactory), parameters: true)]
+        [MemberData(nameof(ElementsFactory), arguments: true)]
         public void HotKeyManager_Should_Do_Not_Executed_When_IsEnabled_False(string factoryName, Factory factory)
         {
             using (AvaloniaLocator.EnterScope())
@@ -141,7 +141,7 @@ namespace Avalonia.Controls.UnitTests.Utils
         }
 
         [Theory]
-        [MemberData(nameof(ElementsFactory), parameters:false)]
+        [MemberData(nameof(ElementsFactory), arguments:false)]
         public void HotKeyManager_Should_Invoke_Event_Click_When_Command_Is_Null(string factoryName, Factory factory)
         {
             using (AvaloniaLocator.EnterScope())
@@ -197,7 +197,7 @@ namespace Avalonia.Controls.UnitTests.Utils
         }
 
         [Theory]
-        [MemberData(nameof(ElementsFactory), parameters: true)]
+        [MemberData(nameof(ElementsFactory), arguments: true)]
         public void HotKeyManager_Should_Not_Invoke_Event_Click_When_Command_Is_Not_Null(string factoryName, Factory factory)
         {
             using (AvaloniaLocator.EnterScope())
