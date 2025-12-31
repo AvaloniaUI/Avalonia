@@ -242,6 +242,8 @@ namespace Avalonia.Win32.WintabImpl
         /// WTOrientation structure for details.
         /// </summary>
         public WTOrientation pkOrientation; // ORIENTATION
+
+        public static int ByteSize { get; } = Marshal.SizeOf<WintabPacket>();
     }
 
     /// <summary>
@@ -519,10 +521,10 @@ namespace Avalonia.Win32.WintabImpl
         /// <summary>
         /// Returns one packet of WintabPacketExt data from the packet queue.
         /// </summary>
-        /// <param name="hCtx_I">Wintab context to be used when asking for the data</param>
+        /// <param name="hCtx">Wintab context to be used when asking for the data</param>
         /// <param name="pktID_I">Identifier for the tablet event packet to return.</param>
         /// <returns>Returns a data packet with non-null context if successful.</returns>
-        public WintabPacketExt GetDataPacketExt(UInt32 hCtx_I, UInt32 pktID_I)
+        public WintabPacketExt GetDataPacketExt(IntPtr hCtx, UInt32 pktID_I)
         {
             int size = (int)(Marshal.SizeOf(new WintabPacketExt()));
             IntPtr buf = Marshal.AllocHGlobal(size);
@@ -536,7 +538,7 @@ namespace Avalonia.Win32.WintabImpl
             }
 
             CheckForValidHCTX("GetDataPacket");
-            status = WintabFuncs.WTPacket(hCtx_I, pktID_I, buf);
+            status = WintabFuncs.WTPacket(hCtx, pktID_I, buf);
 
             if (status)
             {
@@ -545,8 +547,10 @@ namespace Avalonia.Win32.WintabImpl
             else
             {
                 // If fails, make sure context is zero.
-                packets[0].pkBase.nContext = 0;
+                packets[0].pkBase.nContext = new HCTX(IntPtr.Zero);
             }
+
+            Marshal.FreeHGlobal(buf);
 
             return packets[0];
         }
@@ -564,10 +568,10 @@ namespace Avalonia.Win32.WintabImpl
         /// <summary>
         /// Returns one packet of Wintab data from the packet queue.
         /// </summary>
-        /// <param name="hCtx_I">Wintab context to be used when asking for the data</param>
+        /// <param name="hCtx">Wintab context to be used when asking for the data</param>
         /// <param name="pktID_I">Identifier for the tablet event packet to return.</param>
         /// <returns>Returns a data packet with non-null context if successful.</returns>
-        public WintabPacket GetDataPacket(UInt32 hCtx_I, UInt32 pktID_I)
+        public WintabPacket GetDataPacket(IntPtr hCtx, UInt32 pktID_I)
         {
             IntPtr buf = Marshal.AllocHGlobal(Marshal.SizeOf<WintabPacket>());
             WintabPacket packet = new WintabPacket();
@@ -579,7 +583,7 @@ namespace Avalonia.Win32.WintabImpl
 
             CheckForValidHCTX("GetDataPacket");
 
-            if (WintabFuncs.WTPacket(hCtx_I, pktID_I, buf))
+            if (WintabFuncs.WTPacket(hCtx, pktID_I, buf))
             {
                 packet = Marshal.PtrToStructure<WintabPacket>(buf);
             }
@@ -588,8 +592,10 @@ namespace Avalonia.Win32.WintabImpl
                 //
                 // If fails, make sure context is zero.
                 //
-                packet.pkContext = 0;
+                packet.pkContext = new HCTX(IntPtr.Zero);
             }
+
+            Marshal.FreeHGlobal(buf);
 
             return packet;
         }
@@ -627,55 +633,59 @@ namespace Avalonia.Win32.WintabImpl
             int size = (int)(maxPkts_I * Marshal.SizeOf(new WintabPacket()));
             IntPtr buf = Marshal.AllocHGlobal(size);
 
-            if (remove_I)
+            try
             {
-                // Return data packets and remove packets from queue.
-                numPkts_O = WintabFuncs.WTPacketsGet(m_context.HCtx, maxPkts_I, buf);
-
-                if (numPkts_O > 0)
+                if (remove_I)
                 {
-                    packets = WintabMemUtils.MarshalDataPackets(numPkts_O, buf);
-                }
+                    // Return data packets and remove packets from queue.
+                    numPkts_O = WintabFuncs.WTPacketsGet(m_context.HCtx, maxPkts_I, buf);
 
-                //System.Diagnostics.Debug.WriteLine("GetDataPackets: numPkts_O: " + numPkts_O);
+                    if (numPkts_O > 0)
+                    {
+                        packets = WintabMemUtils.MarshalDataPackets(numPkts_O, buf);
+                    }
+                }
+                else
+                {
+                    // Return data packets, but leave on queue.  (Peek mode)
+                    UInt32 pktIDOldest = 0;
+                    UInt32 pktIDNewest = 0;
+
+                    // Get oldest and newest packet identifiers in the queue.  These will bound the
+                    // packets that are actually returned.
+                    if (WintabFuncs.WTQueuePacketsEx(m_context.HCtx, ref pktIDOldest, ref pktIDNewest))
+                    {
+                        UInt32 pktIDStart = pktIDOldest;
+                        UInt32 pktIDEnd = pktIDNewest;
+
+                        if (pktIDStart == 0)
+                        {
+                            throw new Exception("WTQueuePacketsEx reports zero start packet identifier");
+                        }
+
+                        if (pktIDEnd == 0)
+                        {
+                            throw new Exception("WTQueuePacketsEx reports zero end packet identifier");
+                        }
+
+                        // Peek up to the max number of packets specified.
+                        UInt32 numFoundPkts = WintabFuncs.WTDataPeek(m_context.HCtx, pktIDStart, pktIDEnd, maxPkts_I,
+                            buf,
+                            ref numPkts_O);
+
+                        if (numFoundPkts > 0 && numFoundPkts < numPkts_O)
+                        {
+                            throw new Exception(
+                                "WTDataPeek reports more packets returned than actually exist in queue.");
+                        }
+
+                        packets = WintabMemUtils.MarshalDataPackets(numPkts_O, buf);
+                    }
+                }
             }
-            else
+            finally
             {
-                // Return data packets, but leave on queue.  (Peek mode)
-                UInt32 pktIDOldest = 0;
-                UInt32 pktIDNewest = 0;
-
-                // Get oldest and newest packet identifiers in the queue.  These will bound the
-                // packets that are actually returned.
-                if (WintabFuncs.WTQueuePacketsEx(m_context.HCtx, ref pktIDOldest, ref pktIDNewest))
-                {
-                    UInt32 pktIDStart = pktIDOldest;
-                    UInt32 pktIDEnd = pktIDNewest;
-
-                    if (pktIDStart == 0)
-                    {
-                        throw new Exception("WTQueuePacketsEx reports zero start packet identifier");
-                    }
-
-                    if (pktIDEnd == 0)
-                    {
-                        throw new Exception("WTQueuePacketsEx reports zero end packet identifier");
-                    }
-
-                    // Peek up to the max number of packets specified.
-                    UInt32 numFoundPkts = WintabFuncs.WTDataPeek(m_context.HCtx, pktIDStart, pktIDEnd, maxPkts_I, buf,
-                        ref numPkts_O);
-
-                    System.Diagnostics.Debug.WriteLine("GetDataPackets: WTDataPeek - numFoundPkts: " + numFoundPkts +
-                                                       ", numPkts_O: " + numPkts_O);
-
-                    if (numFoundPkts > 0 && numFoundPkts < numPkts_O)
-                    {
-                        throw new Exception("WTDataPeek reports more packets returned than actually exist in queue.");
-                    }
-
-                    packets = WintabMemUtils.MarshalDataPackets(numPkts_O, buf);
-                }
+                Marshal.FreeHGlobal(buf);
             }
 
             return packets;

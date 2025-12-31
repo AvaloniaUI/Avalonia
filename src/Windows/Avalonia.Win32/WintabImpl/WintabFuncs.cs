@@ -16,9 +16,7 @@ using System.Runtime.InteropServices;
 
 namespace Avalonia.Win32.WintabImpl
 {
-    using P_WTPKT = UInt32;
-    using P_FIX32 = UInt32;
-    using P_HCTX = UInt32;
+    using P_HCTX = System.IntPtr;
     using P_HWND = System.IntPtr;
 
     //Implementation note: cannot use statement such as:
@@ -155,52 +153,31 @@ namespace Avalonia.Win32.WintabImpl
     /// Managed implementation of Wintab HCTX typedef.
     /// Holds a Wintab context identifier.
     /// </summary>
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    public class HCTX
+    [StructLayout(LayoutKind.Sequential)]
+    public readonly struct HCTX : IEquatable<HCTX>
     {
-        IntPtr value;
+        public readonly IntPtr Value;
 
-        public HCTX(UInt32 value)
+        public HCTX(IntPtr value)
         {
-            this.value = new IntPtr(value);
+            Value = value;
         }
 
-        public static implicit operator UInt32(HCTX hctx_I)
-        {
-            return (UInt32)hctx_I.value.ToInt32();
-        }
+        public bool Equals(HCTX other) => Value == other.Value;
+        public override bool Equals(object? obj) => obj is HCTX other && Equals(other);
+        public override int GetHashCode() => Value.GetHashCode();
 
-        public static implicit operator HCTX(UInt32 value)
-        {
-            return new HCTX(value);
-        }
+        public static bool operator ==(HCTX a, HCTX b) => a.Value == b.Value;
+        public static bool operator !=(HCTX a, HCTX b) => a.Value != b.Value;
 
-        public static bool operator ==(HCTX hctx, UInt32 value)
+        public static implicit operator IntPtr(HCTX hctx_I)
         {
-            return (UInt32)hctx.value.ToInt32() == value;
-        }
-
-        public static bool operator !=(HCTX hctx, UInt32 value)
-        {
-            return (UInt32)hctx.value.ToInt32() != value;
-        }
-
-        public override bool Equals(object? obj)
-        {
-            if (obj == null || obj.GetType() != typeof(HCTX))
-                return false;
-
-            return (HCTX)obj == this;
-        }
-
-        public override int GetHashCode()
-        {
-            return 0;
+            return hctx_I.Value;
         }
 
         public override string ToString()
         {
-            return value.ToString();
+            return Value.ToString();
         }
     }
 

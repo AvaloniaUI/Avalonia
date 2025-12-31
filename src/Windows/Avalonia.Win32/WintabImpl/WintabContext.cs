@@ -151,7 +151,7 @@ namespace Avalonia.Win32.WintabImpl
     {
         // Context data.
         private WintabLogContext m_logContext = new WintabLogContext();
-        private HCTX m_hCTX = 0;
+        private HCTX m_hCTX = new HCTX(IntPtr.Zero);
 
         public static WintabContext GetDefaultContext(EWTICategoryIndex contextIndex_I)
         {
@@ -217,7 +217,7 @@ namespace Avalonia.Win32.WintabImpl
         {
             try
             {
-                m_hCTX = WintabFuncs.WTOpenA(hwnd_I, ref m_logContext, enable_I);
+                m_hCTX = new HCTX((IntPtr)WintabFuncs.WTOpenA(hwnd_I, ref m_logContext, enable_I));
             }
             catch (Exception ex)
             {
@@ -234,8 +234,8 @@ namespace Avalonia.Win32.WintabImpl
         /// <returns>Returns true if successful.</returns>
         public bool Open(IntPtr hwnd)
         {
-            m_hCTX = WintabFuncs.WTOpenA(hwnd, ref m_logContext, true);
-            return (m_hCTX > 0);
+            m_hCTX = new HCTX((IntPtr)WintabFuncs.WTOpenA(hwnd, ref m_logContext, true));
+            return m_hCTX.Value != IntPtr.Zero;
         }
 
         /// <summary>
@@ -247,13 +247,13 @@ namespace Avalonia.Win32.WintabImpl
             bool status = false;
 
 
-            if (m_hCTX == 0)
+            if (m_hCTX.Value == IntPtr.Zero)
             {
                 throw new Exception("CloseContext: invalid context");
             }
 
-            status = WintabFuncs.WTClose(m_hCTX);
-            m_hCTX = 0;
+            status = WintabFuncs.WTClose(m_hCTX.Value);
+            m_hCTX = new HCTX(IntPtr.Zero);
             m_logContext = new WintabLogContext();
 
 
@@ -271,12 +271,12 @@ namespace Avalonia.Win32.WintabImpl
 
             try
             {
-                if (m_hCTX == 0)
+                if (m_hCTX.Value == IntPtr.Zero)
                 {
                     throw new Exception("EnableContext: invalid context");
                 }
 
-                status = WintabFuncs.WTEnable(m_hCTX, enable_I);
+                status = WintabFuncs.WTEnable(m_hCTX.Value, enable_I);
             }
             catch (Exception ex)
             {
@@ -296,20 +296,12 @@ namespace Avalonia.Win32.WintabImpl
         {
             bool status = false;
 
-            try
+            if (m_hCTX.Value == IntPtr.Zero)
             {
-                if (m_hCTX == 0)
-                {
-                    throw new Exception("EnableContext: invalid context");
-                }
+                throw new Exception("EnableContext: invalid context");
+            }
 
-                status = WintabFuncs.WTOverlap(m_hCTX, toTop_I);
-            }
-            catch (Exception ex)
-            {
-                // TODO: Throw
-                //MessageBox.Show("FAILED SetContextOverlapOrder: " + ex.ToString());
-            }
+            status = WintabFuncs.WTOverlap(m_hCTX.Value, toTop_I);
 
             return status;
         }

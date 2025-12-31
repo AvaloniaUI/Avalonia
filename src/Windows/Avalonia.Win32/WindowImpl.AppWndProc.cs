@@ -1272,7 +1272,7 @@ namespace Avalonia.Win32
                 return;
             
             uint actualSize = 0;
-            var packets = _wnData.GetDataPackets(count, true, ref actualSize);
+            var packets = _wnData.GetDataPackets(Math.Min(count, MaxWintabPacketHistorySize), true, ref actualSize);
             foreach (var packet in packets)
             {
                 s_lastWintabPackets[packet.pkSerialNumber] = packet;
