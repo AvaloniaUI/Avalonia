@@ -87,6 +87,7 @@ namespace Avalonia.Base.UnitTests.Styling
             var selector = default(Selector).OfType(styleKey).Class("foo").Template().OfType<Border>();
             var activator = selector.Match(border).Activator;
 
+            Assert.NotNull(activator);
             Assert.True(await activator.Take(1));
         }
 
@@ -99,6 +100,7 @@ namespace Avalonia.Base.UnitTests.Styling
             var selector = default(Selector).OfType(typeof(TestTemplatedControl)).Class("foo").Template().OfType<Border>();
             var activator = selector.Match(border).Activator;
 
+            Assert.NotNull(activator);
             Assert.False(await activator.Take(1));
         }
 
@@ -109,6 +111,7 @@ namespace Avalonia.Base.UnitTests.Styling
             var border = (Border)target.VisualChildren.Single();
             var selector = default(Selector).OfType(typeof(TestTemplatedControl)).Class("foo").Template().OfType<Border>();
             var activator = selector.Match(border).Activator;
+            Assert.NotNull(activator);
 
             using (activator.Subscribe(_ => { }))
             {

@@ -15,7 +15,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
     {
         public class StringDataViewModel
         {
-            public string PathData { get; set; } 
+            public string? PathData { get; set; }
         }
 
         public class IntDataViewModel
@@ -37,7 +37,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
     <Path Name='path' Data='{Binding PathData}' Height='10' Width='10'/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var path = window.FindControl<Path>("path");
+                var path = window.GetControl<Path>("path");
                 window.DataContext = vm;
                 Assert.Equal(nullData, path.Data is null);
             }

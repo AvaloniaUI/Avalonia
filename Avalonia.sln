@@ -9,8 +9,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Windows", "Windows", "{B39A
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Win32", "src\Windows\Avalonia.Win32\Avalonia.Win32.csproj", "{811A76CF-1CF6-440F-963B-BBE31BD72A82}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Direct2D1", "src\Windows\Avalonia.Direct2D1\Avalonia.Direct2D1.csproj", "{3E908F67-5543-4879-A1DC-08EACE79B3CD}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Controls", "src\Avalonia.Controls\Avalonia.Controls.csproj", "{D2221C82-4A25-4583-9B43-D791E3F6820C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Themes.Simple", "src\Avalonia.Themes.Simple\Avalonia.Themes.Simple.csproj", "{3E10A5FA-E8DA-48B1-AD44-6A5B6CB7750F}"
@@ -22,10 +20,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Controls.UnitTests", "tests\Avalonia.Controls.UnitTests\Avalonia.Controls.UnitTests.csproj", "{5CCB5571-7C30-4E7D-967D-0E2158EBD91F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Base.UnitTests", "tests\Avalonia.Base.UnitTests\Avalonia.Base.UnitTests.csproj", "{2905FF23-53FB-45E6-AA49-6AF47A172056}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Direct2D1.RenderTests", "tests\Avalonia.Direct2D1.RenderTests\Avalonia.Direct2D1.RenderTests.csproj", "{DABFD304-D6A4-4752-8123-C2CCF7AC7831}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Direct2D1.UnitTests", "tests\Avalonia.Direct2D1.UnitTests\Avalonia.Direct2D1.UnitTests.csproj", "{EFB11458-9CDF-41C0-BE4F-44AF45A4CAB8}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Markup.Xaml.UnitTests", "tests\Avalonia.Markup.Xaml.UnitTests\Avalonia.Markup.Xaml.UnitTests.csproj", "{99135EAB-653D-47E4-A378-C96E1278CA44}"
 EndProject
@@ -96,7 +90,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Props", "Props", "{F3AC8BC1
 		build\EmbedXaml.props = build\EmbedXaml.props
 		build\HarfBuzzSharp.props = build\HarfBuzzSharp.props
 		build\ImageSharp.props = build\ImageSharp.props
-		build\JetBrains.dotMemoryUnit.props = build\JetBrains.dotMemoryUnit.props
 		build\Microsoft.CSharp.props = build\Microsoft.CSharp.props
 		build\Microsoft.Reactive.Testing.props = build\Microsoft.Reactive.Testing.props
 		build\Moq.props = build\Moq.props
@@ -108,7 +101,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Props", "Props", "{F3AC8BC1
 		build\Rx.props = build\Rx.props
 		build\SampleApp.props = build\SampleApp.props
 		build\SharedVersion.props = build\SharedVersion.props
-		build\SharpDX.props = build\SharpDX.props
 		build\SkiaSharp.props = build\SkiaSharp.props
 		build\SourceGenerators.props = build\SourceGenerators.props
 		build\SourceLink.props = build\SourceLink.props
@@ -293,6 +285,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Headless.XUnit.Per
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Headless.XUnit.PerTest.UnitTests", "tests\Avalonia.Headless.XUnit.PerTest.UnitTests\Avalonia.Headless.XUnit.PerTest.UnitTests.csproj", "{26918642-829D-4FA2-B60A-BE8D83F4E063}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.IntegrationTests.Win32", "tests\Avalonia.IntegrationTests.Win32\Avalonia.IntegrationTests.Win32.csproj", "{11522B0D-BF31-42D5-8FC5-41E58F319AF9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -307,10 +301,6 @@ Global
 		{811A76CF-1CF6-440F-963B-BBE31BD72A82}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{811A76CF-1CF6-440F-963B-BBE31BD72A82}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{811A76CF-1CF6-440F-963B-BBE31BD72A82}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3E908F67-5543-4879-A1DC-08EACE79B3CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3E908F67-5543-4879-A1DC-08EACE79B3CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3E908F67-5543-4879-A1DC-08EACE79B3CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3E908F67-5543-4879-A1DC-08EACE79B3CD}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D2221C82-4A25-4583-9B43-D791E3F6820C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D2221C82-4A25-4583-9B43-D791E3F6820C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D2221C82-4A25-4583-9B43-D791E3F6820C}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -331,14 +321,6 @@ Global
 		{2905FF23-53FB-45E6-AA49-6AF47A172056}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2905FF23-53FB-45E6-AA49-6AF47A172056}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2905FF23-53FB-45E6-AA49-6AF47A172056}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DABFD304-D6A4-4752-8123-C2CCF7AC7831}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DABFD304-D6A4-4752-8123-C2CCF7AC7831}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DABFD304-D6A4-4752-8123-C2CCF7AC7831}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DABFD304-D6A4-4752-8123-C2CCF7AC7831}.Release|Any CPU.Build.0 = Release|Any CPU
-		{EFB11458-9CDF-41C0-BE4F-44AF45A4CAB8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EFB11458-9CDF-41C0-BE4F-44AF45A4CAB8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{EFB11458-9CDF-41C0-BE4F-44AF45A4CAB8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EFB11458-9CDF-41C0-BE4F-44AF45A4CAB8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{99135EAB-653D-47E4-A378-C96E1278CA44}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{99135EAB-653D-47E4-A378-C96E1278CA44}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{99135EAB-653D-47E4-A378-C96E1278CA44}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -679,17 +661,18 @@ Global
 		{26918642-829D-4FA2-B60A-BE8D83F4E063}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{26918642-829D-4FA2-B60A-BE8D83F4E063}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{26918642-829D-4FA2-B60A-BE8D83F4E063}.Release|Any CPU.Build.0 = Release|Any CPU
+		{11522B0D-BF31-42D5-8FC5-41E58F319AF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{11522B0D-BF31-42D5-8FC5-41E58F319AF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{11522B0D-BF31-42D5-8FC5-41E58F319AF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{11522B0D-BF31-42D5-8FC5-41E58F319AF9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{811A76CF-1CF6-440F-963B-BBE31BD72A82} = {B39A8919-9F95-48FE-AD7B-76E08B509888}
-		{3E908F67-5543-4879-A1DC-08EACE79B3CD} = {B39A8919-9F95-48FE-AD7B-76E08B509888}
 		{5CCB5571-7C30-4E7D-967D-0E2158EBD91F} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 		{2905FF23-53FB-45E6-AA49-6AF47A172056} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
-		{DABFD304-D6A4-4752-8123-C2CCF7AC7831} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
-		{EFB11458-9CDF-41C0-BE4F-44AF45A4CAB8} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 		{99135EAB-653D-47E4-A378-C96E1278CA44} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 		{3E53A01A-B331-47F3-B828-4A5717E77A24} = {8B6A8209-894F-4BA1-B880-965FD453982C}
 		{6417E941-21BC-467B-A771-0DE389353CE6} = {8B6A8209-894F-4BA1-B880-965FD453982C}
@@ -765,6 +748,7 @@ Global
 		{09EC467F-0F25-4E6F-A836-2BAEC8F6AB0C} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 		{342D2657-2F84-493C-B74B-9D2CAE5D9DAB} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 		{26918642-829D-4FA2-B60A-BE8D83F4E063} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
+		{11522B0D-BF31-42D5-8FC5-41E58F319AF9} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {87366D66-1391-4D90-8999-95A620AD786A}
