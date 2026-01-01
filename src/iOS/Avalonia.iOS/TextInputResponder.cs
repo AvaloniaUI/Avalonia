@@ -299,17 +299,28 @@ partial class AvaloniaView
                 Logger.TryGet(LogEventLevel.Debug, ImeLog)?.Log(null, "IUIKeyInput.GetPosition {start} {offset}", pos.Index, (int)offset);
 
                 var res = GetPositionCore(pos, offset);
-                Logger.TryGet(LogEventLevel.Debug, ImeLog)?.Log(null, "res: {position}", res.Index);
-                return res;
+
+                if (res is not null)
+                {
+                    Logger.TryGet(LogEventLevel.Debug, ImeLog)?.Log(null, "res: {position}", res.Index);
+                    return res;
+                }
+
+                return null!;
             }
 
             return null!;
         }
 
-        private AvaloniaTextPosition GetPositionCore(AvaloniaTextPosition pos, nint offset)
+        private AvaloniaTextPosition? GetPositionCore(AvaloniaTextPosition pos, nint offset)
         {
+
             var end = pos.Index + (int)offset;
-            return new AvaloniaTextPosition(Math.Clamp(end, 0, DocumentLength));
+            if (end < 0)
+                return null!;
+            if (end > DocumentLength)
+                return null;
+            return new AvaloniaTextPosition(end);
         }
 
         UITextPosition IUITextInput.GetPosition(UITextPosition fromPosition, UITextLayoutDirection inDirection, nint offset)
