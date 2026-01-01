@@ -7,6 +7,7 @@ using Android.Graphics.Drawables;
 using Android.Runtime;
 using Android.Views;
 using AndroidX.AppCompat.App;
+using AndroidX.Core.View;
 using Avalonia.Android.Platform.Input;
 using Avalonia.Android.Platform.Specific;
 using Avalonia.Android.Platform.Specific.Helpers;
@@ -226,9 +227,9 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             }
         }
 
-        public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
+        public void SetFrameThemeVariant(PlatformThemeVariant? themeVariant)
         {
-            if(_insetsManager != null)
+            if (_insetsManager != null)
             {
                 _insetsManager.SystemBarTheme = themeVariant switch
                 {
@@ -238,7 +239,23 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 };
             }
 
-            AppCompatDelegate.DefaultNightMode = themeVariant == PlatformThemeVariant.Light ? AppCompatDelegate.ModeNightNo : AppCompatDelegate.ModeNightYes;
+            // Sets the default app NightMode to AppCompatDelegate.ModeNightFollowSystem when themeVariant is null. This
+            // allows app to follow the current OS night mode. Using either ModeNightNo or ModeNightYes will force the app
+            // to use one night mode, ignoring the system's configuration and preventing us from detecting system theme changes
+            // in View.OnConfigurationChanged. In this case, only Activity.OnConfigurationChanged is called when system theme is
+            // changed, but we don't have access to that method if the toplevel view is embedded in a custom activity
+            var nightMode = themeVariant == null ? AppCompatDelegate.ModeNightFollowSystem :
+                themeVariant == PlatformThemeVariant.Light ? AppCompatDelegate.ModeNightNo : AppCompatDelegate.ModeNightYes;
+
+            AppCompatDelegate.DefaultNightMode = nightMode;
+
+            if (nightMode == AppCompatDelegate.ModeNightFollowSystem && _view.Context is { } context
+                && context.Resources?.Configuration is { } config)
+            {
+                var settings =
+                    AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>() as AndroidPlatformSettings;
+                settings?.OnViewConfigurationChanged(context, config);
+            }
         }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels => new AcrylicPlatformCompensationLevels(1, 1, 1);
@@ -248,8 +265,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         PixelSize EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Size => _view.Size;
         double EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Scaling => _view.Scaling;
 
+        internal AndroidInsetsManager? InsetsManager => _insetsManager;
         internal AndroidKeyboardEventsHelper<TopLevelImpl> KeyboardHelper => _keyboardHelper;
-
         internal AndroidMotionEventsHelper PointerHelper => _pointerHelper;
 
         public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevels)
