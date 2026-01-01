@@ -23,10 +23,10 @@ namespace Avalonia.Media
             AvaloniaProperty.Register<DrawingImage, Drawing?>(nameof(Drawing));
 
         /// <summary>
-        /// Defines the <see cref="Frame"/> property.
+        /// Defines the <see cref="Viewbox"/> property.
         /// </summary>
-        public static readonly StyledProperty<Rect?> FrameProperty =
-            AvaloniaProperty.Register<DrawingImage, Rect?>(nameof(Frame));
+        public static readonly StyledProperty<Rect?> ViewboxProperty =
+            AvaloniaProperty.Register<DrawingImage, Rect?>(nameof(Viewbox));
 
         /// <inheritdoc/>
         public event EventHandler? Invalidated;
@@ -47,19 +47,19 @@ namespace Avalonia.Media
         /// </summary>
         /// <remarks>
         /// This value can be used to display only part of <see cref="Drawing"/>, or to surround it with empty 
-        /// space. If null, <see cref="Drawing"/> will provide its own frame.
+        /// space. If null, <see cref="Drawing"/> will provide its own viewbox.
         /// </remarks>
         /// <seealso cref="Drawing.GetBounds"/>
-        public Rect? Frame
+        public Rect? Viewbox
         {
-            get => GetValue(FrameProperty);
-            set => SetValue(FrameProperty, value);
+            get => GetValue(ViewboxProperty);
+            set => SetValue(ViewboxProperty, value);
         }
 
         /// <inheritdoc/>
         public Size Size => GetBounds().Size;
 
-        private Rect GetBounds() => Frame ?? Drawing?.GetBounds() ?? default;
+        private Rect GetBounds() => Viewbox ?? Drawing?.GetBounds() ?? default;
 
         /// <inheritdoc/>
         void IImage.Draw(
@@ -98,7 +98,7 @@ namespace Avalonia.Media
         {
             base.OnPropertyChanged(change);
 
-            if (change.Property == DrawingProperty || change.Property == FrameProperty)
+            if (change.Property == DrawingProperty || change.Property == ViewboxProperty)
             {
                 RaiseInvalidated(EventArgs.Empty);
             }
