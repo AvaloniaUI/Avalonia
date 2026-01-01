@@ -383,13 +383,13 @@ namespace Avalonia.Base.UnitTests
         {
             using var app = UnitTestApplication.Start();
             var child = new Decorator();
-            var root = new TestRoot { Child = child, IsVisible = false };
+            var root = new TestRoot { Child = child, IsVisible = true };
 
-            Assert.False(child.IsEffectivelyVisible);
+            Assert.True(child.IsEffectivelyVisible);
 
             root.Child = null;
 
-            Assert.True(child.IsEffectivelyVisible);
+            Assert.False(child.IsEffectivelyVisible);
         }
 
         [Fact]
@@ -398,15 +398,15 @@ namespace Avalonia.Base.UnitTests
             using var app = UnitTestApplication.Start();
             var grandchild = new Decorator();
             var child = new Decorator { Child = grandchild };
-            var root = new TestRoot { Child = child, IsVisible = false };
-
-            Assert.False(child.IsEffectivelyVisible);
-            Assert.False(grandchild.IsEffectivelyVisible);
-
-            root.Child = null;
+            var root = new TestRoot { Child = child, IsVisible = true };
 
             Assert.True(child.IsEffectivelyVisible);
             Assert.True(grandchild.IsEffectivelyVisible);
+
+            root.Child = null;
+
+            Assert.False(child.IsEffectivelyVisible);
+            Assert.False(grandchild.IsEffectivelyVisible);
         }
     }
 }
