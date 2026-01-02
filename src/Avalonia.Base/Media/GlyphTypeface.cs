@@ -112,7 +112,7 @@ namespace Avalonia.Media
                 }
             }
 
-            var headTable = HeadTable.Load(this);
+            HeadTable.TryLoad(this, out var headTable);
             var postTable = PostTable.Load(this);
 
             var isFixedPitch = postTable.IsFixedPitch;
@@ -121,7 +121,7 @@ namespace Avalonia.Media
 
             Metrics = new FontMetrics
             {
-                DesignEmHeight = (short)headTable.UnitsPerEm,
+                DesignEmHeight = (short)((headTable?.UnitsPerEm ?? 0) != 0 ? headTable!.Value.UnitsPerEm : 2048),
                 Ascent = ascent,
                 Descent = descent,
                 LineGap = lineGap,
@@ -134,15 +134,15 @@ namespace Avalonia.Media
 
             FontSimulations = fontSimulations;
 
-            var fontWeight = GetFontWeight(_hasOs2Table ? _os2Table : default, headTable);
+            var fontWeight = GetFontWeight(_hasOs2Table ? _os2Table : null, headTable);
 
             Weight = (fontSimulations & FontSimulations.Bold) != 0 ? FontWeight.Bold : fontWeight;
 
-            var style = GetFontStyle(_hasOs2Table ? _os2Table : default, _hasOs2Table, headTable, postTable);
+            var style = GetFontStyle(_hasOs2Table ? _os2Table : null, headTable, postTable);
 
             Style = (fontSimulations & FontSimulations.Oblique) != 0 ? FontStyle.Italic : style;
 
-            var stretch = GetFontStretch(_hasOs2Table ? _os2Table : default, _hasOs2Table);
+            var stretch = GetFontStretch(_hasOs2Table ? _os2Table : null);
 
             Stretch = stretch;
 
@@ -541,20 +541,20 @@ namespace Avalonia.Media
             return supportedFeatures;
         }
 
-        private static FontStyle GetFontStyle(OS2Table oS2Table, bool hasOs2Table, HeadTable headTable, PostTable postTable)
+        private static FontStyle GetFontStyle(OS2Table? oS2Table, HeadTable? headTable, PostTable postTable)
         {
             bool isItalic = false;
             bool isOblique = false;
 
-            if (hasOs2Table)
+            if (oS2Table.HasValue)
             {
-                isItalic = (oS2Table.Selection & OS2Table.FontSelectionFlags.ITALIC) != 0;
-                isOblique = (oS2Table.Selection & OS2Table.FontSelectionFlags.OBLIQUE) != 0;
+                isItalic = (oS2Table.Value.Selection & OS2Table.FontSelectionFlags.ITALIC) != 0;
+                isOblique = (oS2Table.Value.Selection & OS2Table.FontSelectionFlags.OBLIQUE) != 0;
             }
 
-            if (!isItalic)
+            if (!isItalic && headTable.HasValue)
             {
-                isItalic = headTable.MacStyle.HasFlag(MacStyleFlags.Italic);
+                isItalic = headTable.Value.MacStyle.HasFlag(MacStyleFlags.Italic);
             }
 
             var italicAngle = postTable.ItalicAngle;
@@ -577,21 +577,21 @@ namespace Avalonia.Media
             return FontStyle.Normal;
         }
 
-        private static FontWeight GetFontWeight(OS2Table os2Table, HeadTable headTable)
+        private static FontWeight GetFontWeight(OS2Table? os2Table, HeadTable? headTable)
         {
-            if (os2Table.WeightClass >= 1 && os2Table.WeightClass <= 1000)
+            if (os2Table.HasValue && os2Table.Value.WeightClass >= 1 && os2Table.Value.WeightClass <= 1000)
             {
-                return (FontWeight)os2Table.WeightClass;
+                return (FontWeight)os2Table.Value.WeightClass;
             }
 
-            if (headTable.MacStyle.HasFlag(MacStyleFlags.Bold))
+            if (headTable.HasValue && headTable.Value.MacStyle.HasFlag(MacStyleFlags.Bold))
             {
                 return FontWeight.Bold;
             }
 
-            if (os2Table.Panose.FamilyKind == PanoseFamilyKind.LatinText)
+            if (os2Table.HasValue && os2Table.Value.Panose.FamilyKind == PanoseFamilyKind.LatinText)
             {
-                return os2Table.Panose.Weight switch
+                return os2Table.Value.Panose.Weight switch
                 {
                     PanoseWeight.VeryLight => FontWeight.Thin,
                     PanoseWeight.Light => FontWeight.Light,
@@ -610,16 +610,16 @@ namespace Avalonia.Media
             return FontWeight.Normal;
         }
 
-        private static FontStretch GetFontStretch(OS2Table os2Table, bool hasOs2Table)
+        private static FontStretch GetFontStretch(OS2Table? os2Table)
         {
-            if (hasOs2Table && os2Table.WidthClass >= 1 && os2Table.WidthClass <= 9)
+            if (os2Table.HasValue && os2Table.Value.WidthClass >= 1 && os2Table.Value.WidthClass <= 9)
             {
-                return (FontStretch)os2Table.WidthClass;
+                return (FontStretch)os2Table.Value.WidthClass;
             }
 
-            if (hasOs2Table && os2Table.Panose.FamilyKind == PanoseFamilyKind.LatinText)
+            if (os2Table.HasValue && os2Table.Value.Panose.FamilyKind == PanoseFamilyKind.LatinText)
             {
-                return os2Table.Panose.Proportion switch
+                return os2Table.Value.Panose.Proportion switch
                 {
                     PanoseProportion.VeryCondensed => FontStretch.UltraCondensed,
                     PanoseProportion.Condensed => FontStretch.Condensed,

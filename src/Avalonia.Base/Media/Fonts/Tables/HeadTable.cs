@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Avalonia.Media.Fonts.Tables
 {
@@ -65,16 +66,29 @@ namespace Avalonia.Media.Fonts.Tables
             GlyphDataFormat = glyphDataFormat;
         }
 
+        public static bool TryLoad(GlyphTypeface glyphTypeface, [NotNullWhen(true)] out HeadTable? headTable)
+        {
+            headTable = null;
+
+            if (!glyphTypeface.PlatformTypeface.TryGetTable(Tag, out var table))
+            {
+                return false;
+            }
+
+            var reader = new BigEndianBinaryReader(table.Span);
+            headTable = Load(ref reader);
+
+            return true;
+        }
+
         public static HeadTable Load(GlyphTypeface glyphTypeface)
         {
-            if (!glyphTypeface.PlatformTypeface.TryGetTable(Tag, out var table))
+            if (!TryLoad(glyphTypeface, out var headTable))
             {
                 throw new InvalidOperationException("Could not load the 'head' table.");
             }
 
-            var reader = new BigEndianBinaryReader(table.Span);
-
-            return Load(ref reader);
+            return headTable.Value;
         }
 
         private static HeadTable Load(ref BigEndianBinaryReader reader)

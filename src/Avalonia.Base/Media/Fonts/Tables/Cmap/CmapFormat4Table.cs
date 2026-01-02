@@ -45,13 +45,26 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
             ushort entrySelector = reader.ReadUInt16(); // entrySelector = log2(searchRange/2)
             ushort rangeShift = reader.ReadUInt16(); // rangeShift = segCountX2 - searchRange
 
-            // Spec sanity checks
-            Debug.Assert(searchRange == (ushort)(2 * (1 << (int)Math.Floor(Math.Log(_segCount, 2)))),
-                "searchRange must equal 2 * (2^floor(log2(segCount))).");
-            Debug.Assert(entrySelector == (ushort)Math.Floor(Math.Log(_segCount, 2)),
-                "entrySelector must equal log2(searchRange/2).");
-            Debug.Assert(rangeShift == (ushort)(segCountX2 - searchRange),
-                "rangeShift must equal segCountX2 - searchRange.");
+            // Spec sanity checks (warn in debug builds instead of asserting)
+#if DEBUG
+            var expectedSearchRange = (ushort)(2 * (1 << (int)Math.Floor(Math.Log(_segCount, 2))));
+            if (searchRange != expectedSearchRange)
+            {
+                Debug.WriteLine($"CMAP format 4: unexpected searchRange {searchRange}, expected {expectedSearchRange} for segCount {_segCount}.");
+            }
+
+            var expectedEntrySelector = (ushort)Math.Floor(Math.Log(_segCount, 2));
+            if (entrySelector != expectedEntrySelector)
+            {
+                Debug.WriteLine($"CMAP format 4: unexpected entrySelector {entrySelector}, expected {expectedEntrySelector} for segCount {_segCount}.");
+            }
+
+            var expectedRangeShift = (ushort)(segCountX2 - searchRange);
+            if (rangeShift != expectedRangeShift)
+            {
+                Debug.WriteLine($"CMAP format 4: unexpected rangeShift {rangeShift}, expected {expectedRangeShift} for segCountX2 {segCountX2} and searchRange {searchRange}.");
+            }
+#endif
 
             // Compute offsets
             int endCodeOffset = reader.Position;
