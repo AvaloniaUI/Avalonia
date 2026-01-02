@@ -46,6 +46,11 @@ namespace Avalonia.Win32
                         break;
 
                     uint pktId = (uint)ToInt32(wParam);
+                    if (pktId == 0)
+                    {
+                        break;
+                    }
+
                     WintabPacket packet = _wnData.GetDataPacket(_hCtx.HCtx, pktId);
                     if (packet.pkContext != 0)
                     {
