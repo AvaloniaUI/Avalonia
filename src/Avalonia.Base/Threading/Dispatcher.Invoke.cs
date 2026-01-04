@@ -541,7 +541,11 @@ public partial class Dispatcher
         return result;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Posts an action that will be invoked on the dispatcher thread.
+    /// </summary>
+    /// <param name="action">The method.</param>
+    /// <param name="priority">The priority with which to invoke the method.</param>
     public void Post(Action action, DispatcherPriority priority = default)
     {
         _ = action ?? throw new ArgumentNullException(nameof(action));
