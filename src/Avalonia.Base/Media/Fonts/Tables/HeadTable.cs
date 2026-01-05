@@ -81,16 +81,6 @@ namespace Avalonia.Media.Fonts.Tables
             return true;
         }
 
-        public static HeadTable Load(GlyphTypeface glyphTypeface)
-        {
-            if (!TryLoad(glyphTypeface, out var headTable))
-            {
-                throw new InvalidOperationException("Could not load the 'head' table.");
-            }
-
-            return headTable.Value;
-        }
-
         private static HeadTable Load(ref BigEndianBinaryReader reader)
         {
             FontVersion version = reader.ReadVersion16Dot16();

@@ -23,8 +23,9 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
-            var headTable = HeadTable.Load(typeface);
+            var success = HeadTable.TryLoad(typeface, out var headTable);
 
+            Assert.True(success);
             Assert.NotNull(headTable);
         }
 
@@ -37,10 +38,11 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
-            var headTable = HeadTable.Load(typeface);
+            var success = HeadTable.TryLoad(typeface, out var headTable);
 
-            Assert.Equal((ushort)1, headTable.Version.Major);
-            Assert.Equal((ushort)0, headTable.Version.Minor);
+            Assert.True(success);
+            Assert.Equal((ushort)1, headTable.Value.Version.Major);
+            Assert.Equal((ushort)0, headTable.Value.Version.Minor);
         }
 
         [Fact]
@@ -52,9 +54,10 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
-            var headTable = HeadTable.Load(typeface);
+            var success = HeadTable.TryLoad(typeface, out var headTable);
 
-            Assert.Equal(0x5F0F3CF5u, headTable.MagicNumber);
+            Assert.True(success);
+            Assert.Equal(0x5F0F3CF5u, headTable.Value.MagicNumber);
         }
 
         [Fact]
@@ -66,9 +69,10 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
-            var headTable = HeadTable.Load(typeface);
+            var success = HeadTable.TryLoad(typeface, out var headTable);
 
-            Assert.Equal(2816, headTable.UnitsPerEm);
+            Assert.True(success);
+            Assert.Equal(2816, headTable.Value.UnitsPerEm);
         }
 
         [Fact]
@@ -80,12 +84,13 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
-            var headTable = HeadTable.Load(typeface);
+            var success = HeadTable.TryLoad(typeface, out var headTable);
 
-            Assert.Equal(-2080, headTable.XMin);
-            Assert.Equal(7274, headTable.XMax);
-            Assert.Equal(-900, headTable.YMin);
-            Assert.Equal(3072, headTable.YMax);
+            Assert.True(success);
+            Assert.Equal(-2080, headTable.Value.XMin);
+            Assert.Equal(7274, headTable.Value.XMax);
+            Assert.Equal(-900, headTable.Value.YMin);
+            Assert.Equal(3072, headTable.Value.YMax);
         }
 
         [Fact]
@@ -97,9 +102,10 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
-            var headTable = HeadTable.Load(typeface);
+            var success = HeadTable.TryLoad(typeface, out var headTable);
 
-            Assert.Equal(IndexToLocFormat.Long, headTable.IndexToLocFormat);
+            Assert.True(success);
+            Assert.Equal(IndexToLocFormat.Long, headTable.Value.IndexToLocFormat);
         }
 
         [Fact]
@@ -111,9 +117,10 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
-            var headTable = HeadTable.Load(typeface);
+            var success = HeadTable.TryLoad(typeface, out var headTable);
 
-            Assert.Equal(GlyphDataFormat.Current, headTable.GlyphDataFormat);
+            Assert.True(success);
+            Assert.Equal(GlyphDataFormat.Current, headTable.Value.GlyphDataFormat);
         }
 
         [Fact]
@@ -125,9 +132,10 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
-            var headTable = HeadTable.Load(typeface);
+            var success = HeadTable.TryLoad(typeface, out var headTable);
 
-            Assert.Equal(6, headTable.LowestRecPPEM);
+            Assert.True(success);
+            Assert.Equal(6, headTable.Value.LowestRecPPEM);
         }
 
         [Fact]
@@ -139,9 +147,10 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
-            var headTable = HeadTable.Load(typeface);
+            var success = HeadTable.TryLoad(typeface, out var headTable);
 
-            Assert.True(headTable.FontRevision.ToFloat() > 0);
+            Assert.True(success);
+            Assert.True(headTable.Value.FontRevision.ToFloat() > 0);
         }
 
         [Fact]
@@ -153,10 +162,11 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
-            var headTable = HeadTable.Load(typeface);
+            var success = HeadTable.TryLoad(typeface, out var headTable);
 
-            Assert.True(headTable.Created > new DateTime(1904, 1, 1));
-            Assert.True(headTable.Created < DateTime.UtcNow);
+            Assert.True(success);
+            Assert.True(headTable.Value.Created > new DateTime(1904, 1, 1));
+            Assert.True(headTable.Value.Created < DateTime.UtcNow);
         }
 
         [Fact]
@@ -168,10 +178,11 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
-            var headTable = HeadTable.Load(typeface);
+            var success = HeadTable.TryLoad(typeface, out var headTable);
 
-            Assert.True(headTable.Modified > new DateTime(1904, 1, 1));
-            Assert.True(headTable.Modified < DateTime.UtcNow);
+            Assert.True(success);
+            Assert.True(headTable.Value.Modified > new DateTime(1904, 1, 1));
+            Assert.True(headTable.Value.Modified < DateTime.UtcNow);
         }
 
         [Fact]
@@ -183,9 +194,10 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
-            var headTable = HeadTable.Load(typeface);
+            var success = HeadTable.TryLoad(typeface, out var headTable);
 
-            Assert.True(headTable.Flags.HasFlag(HeadFlags.BaselineAtY0));
+            Assert.True(success);
+            Assert.True(headTable.Value.Flags.HasFlag(HeadFlags.BaselineAtY0));
         }
 
         [Fact]
@@ -197,9 +209,10 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
-            var headTable = HeadTable.Load(typeface);
+            var success = HeadTable.TryLoad(typeface, out var headTable);
 
-            Assert.Equal(FontDirectionHint.LeftToRightWithNeutrals, headTable.FontDirectionHint);
+            Assert.True(success);
+            Assert.Equal(FontDirectionHint.LeftToRightWithNeutrals, headTable.Value.FontDirectionHint);
         }
 
         private class CustomPlatformTypeface : IPlatformTypeface

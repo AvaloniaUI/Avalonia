@@ -72,7 +72,7 @@ namespace Avalonia.Controls.UnitTests
 
                 var constraint = LayoutHelper.RoundLayoutSizeUp(new Size(textLayout.Width, textLayout.Height), 1);
 
-                Assert.Equal(textBlock.DesiredSize, constraint);
+                Assert.Equal(constraint, textBlock.DesiredSize);
             }
         }
 
@@ -496,7 +496,7 @@ namespace Avalonia.Controls.UnitTests
 
             target.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
 
-            Assert.Equal(target.DesiredSize, new Size(28, 15));
+            Assert.Equal(new Size(28, 15), target.DesiredSize);
         }
 
         [Fact]
@@ -508,7 +508,7 @@ namespace Avalonia.Controls.UnitTests
 
             target.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
 
-            Assert.Equal(target.DesiredSize, new Size(32, 19));
+            Assert.Equal(new Size(32, 19), target.DesiredSize);
         }
 
         [Fact]
@@ -520,7 +520,7 @@ namespace Avalonia.Controls.UnitTests
 
             target.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
 
-            Assert.Equal(target.DesiredSize, new Size(27.954545454545453, 14.522727272727273));
+            Assert.Equal(new Size(27.954545454545453, 14.522727272727273), target.DesiredSize);
         }
 
         [Fact]
@@ -533,7 +533,7 @@ namespace Avalonia.Controls.UnitTests
             target.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
             target.Arrange(new Rect(default, target.DesiredSize));
 
-            Assert.Equal(target.Bounds, new Rect(0, 0, 27.954545454545453, 14.522727272727273));
+            Assert.Equal(new Rect(0, 0, 27.954545454545453, 14.522727272727273), target.Bounds);
         }
 
         [Fact]
@@ -545,7 +545,7 @@ namespace Avalonia.Controls.UnitTests
 
             target.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
 
-            Assert.Equal(target.DesiredSize, new Size(32.45454545454545, 19.022727272727273));
+            Assert.Equal(new Size(32.45454545454545, 19.022727272727273), target.DesiredSize);
         }
 
         [Fact]
@@ -558,7 +558,7 @@ namespace Avalonia.Controls.UnitTests
             target.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
             target.Arrange(new Rect(default, target.DesiredSize));
 
-            Assert.Equal(target.Bounds, new Rect(0, 0, 32.45454545454545, 19.022727272727273));
+            Assert.Equal(new Rect(0, 0, 32.45454545454545, 19.022727272727273), target.Bounds);
         }
 
         private class TestTextBlock : TextBlock
