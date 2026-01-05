@@ -29,7 +29,7 @@ namespace RenderDemo.Pages
         private float _fontSize = 20;
         private int _direction = 10;
 
-        private DispatcherTimer _timer;
+        private DispatcherTimer? _timer;
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
@@ -48,7 +48,7 @@ namespace RenderDemo.Pages
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
-            _timer.Stop();
+            _timer?.Stop();
 
             _timer = null;
         }
@@ -88,7 +88,7 @@ namespace RenderDemo.Pages
         private float _fontSize = 20;
         private int _direction = 10;
 
-        private DispatcherTimer _timer;
+        private DispatcherTimer? _timer;
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
@@ -107,7 +107,7 @@ namespace RenderDemo.Pages
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
-            _timer.Stop();
+            _timer?.Stop();
 
             _timer = null;
         }

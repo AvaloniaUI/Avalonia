@@ -13,7 +13,7 @@ namespace Avalonia.Markup.Parsers
     /// </summary>
     internal class SelectorParser
     {
-        private readonly Func<string, string, Type> _typeResolver;
+        private readonly Func<string, string, Type?> _typeResolver;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SelectorParser"/> class.
@@ -23,7 +23,7 @@ namespace Avalonia.Markup.Parsers
         /// a type name and a XML namespace prefix and a type name, and should return the resolved
         /// type or throw an exception.
         /// </param>
-        public SelectorParser(Func<string, string, Type> typeResolver)
+        public SelectorParser(Func<string, string, Type?> typeResolver)
         {
             _typeResolver = typeResolver;
         }

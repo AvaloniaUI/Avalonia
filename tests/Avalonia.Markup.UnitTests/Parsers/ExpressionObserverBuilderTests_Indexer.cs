@@ -159,7 +159,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         {
             var data = new { Foo = new AvaloniaList<string> { "foo", "bar" } };
             var target = BuildAsObservable(data, "Foo[2]");
-            var result = new List<object>();
+            var result = new List<object?>();
 
             using (var sub = target.Subscribe(x => result.Add(BindingNotification.ExtractValue(x))))
             {
@@ -180,7 +180,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         {
             var data = new { Foo = new AvaloniaList<string> { "foo", "bar" } };
             var target = BuildAsObservable(data, "Foo[0]");
-            var result = new List<object>();
+            var result = new List<object?>();
 
             using (var sub = target.Subscribe(x => result.Add(x)))
             {
@@ -201,7 +201,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         {
             var data = new { Foo = new AvaloniaList<string> { "foo", "bar" } };
             var target = BuildAsObservable(data, "Foo[1]");
-            var result = new List<object>();
+            var result = new List<object?>();
 
             using (var sub = target.Subscribe(x => result.Add(x)))
             {
@@ -225,7 +225,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             // as AvaloniaList as it implements PropertyChanged as an explicit interface event.
             var data = new { Foo = new ObservableCollection<string> { "foo", "bar" } };
             var target = BuildAsObservable(data, "Foo[1]");
-            var result = new List<object>();
+            var result = new List<object?>();
 
             var sub = target.Subscribe(x => result.Add(x));
             data.Foo.Move(0, 1);
@@ -241,7 +241,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         {
             var data = new { Foo = new AvaloniaList<string> { "foo", "bar" } };
             var target = BuildAsObservable(data, "Foo[1]");
-            var result = new List<object>();
+            var result = new List<object?>();
 
             var sub = target.Subscribe(x => result.Add(BindingNotification.ExtractValue(x)));
             data.Foo.Clear();
@@ -260,7 +260,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             data.Foo["baz"] = "qux";
 
             var target = BuildAsObservable(data, "Foo[foo]");
-            var result = new List<object>();
+            var result = new List<object?>();
 
             using (var sub = target.Subscribe(x => result.Add(x)))
             {
@@ -368,7 +368,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             Assert.Equal(data[1], value);
         }
 
-        private static BindingExpression Build(object source, string path, Func<string, string, Type> typeResolver = null)
+        private static BindingExpression Build(object source, string path, Func<string?, string, Type>? typeResolver = null)
         {
             var r = new CharacterReader(path);
             var grammar = BindingExpressionGrammar.Parse(ref r).Nodes;
@@ -376,7 +376,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             return new BindingExpression(source, nodes, AvaloniaProperty.UnsetValue);
         }
 
-        private static IObservable<object> BuildAsObservable(object source, string path, Func<string, string, Type> typeResolver = null)
+        private static IObservable<object?> BuildAsObservable(object source, string path, Func<string?, string, Type>? typeResolver = null)
         {
             return Build(source, path, typeResolver).ToObservable();
         }

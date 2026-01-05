@@ -29,8 +29,8 @@ namespace Avalonia.Base.UnitTests.Media
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface
                .With(fontManagerImpl: new HeadlessFontManagerWithMultipleSystemFontsStub(
-                   installedFontFamilyNames: new string[] { },
-                   defaultFamilyName: null))))
+                   installedFontFamilyNames: [],
+                   defaultFamilyName: null!))))
             {
                 Assert.Throws<InvalidOperationException>(() => FontManager.Current);
             }
@@ -81,8 +81,8 @@ namespace Avalonia.Base.UnitTests.Media
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface
                 .With(fontManagerImpl: new HeadlessFontManagerWithMultipleSystemFontsStub(
-                    installedFontFamilyNames: new[] { "DejaVu", "Verdana" },
-                    defaultFamilyName: null))))
+                    installedFontFamilyNames: ["DejaVu", "Verdana"],
+                    defaultFamilyName: null!))))
             {
                 Assert.Equal("DejaVu", FontManager.Current.DefaultFontFamily.Name);
             }

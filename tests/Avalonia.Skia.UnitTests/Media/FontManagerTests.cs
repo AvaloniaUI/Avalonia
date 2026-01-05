@@ -145,7 +145,7 @@ namespace Avalonia.Skia.UnitTests.Media
                     var result = FontManager.Current.TryGetGlyphTypeface(Typeface.Default, out var glyphTypeface);
 
                     Assert.True(result);
-
+                    Assert.NotNull(glyphTypeface);
                     Assert.Equal("Noto Mono", glyphTypeface.FamilyName);
                 }
             }
@@ -228,7 +228,7 @@ namespace Avalonia.Skia.UnitTests.Media
         [Theory]
         [InlineData("NotFound, Unknown", null)] // system fonts
         [InlineData("/#NotFound, /#Unknown", "avares://some/path")] // embedded fonts
-        public void Should_Match_Character_With_Fallbacks(string familyName, string baseUri)
+        public void Should_Match_Character_With_Fallbacks(string familyName, string? baseUri)
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
             {
@@ -386,7 +386,7 @@ namespace Avalonia.Skia.UnitTests.Media
                     var result = FontManager.Current.TryGetGlyphTypeface(new Typeface("Abc, Segoe UI"), out var glyphTypeface);
 
                     Assert.True(result);
-
+                    Assert.NotNull(glyphTypeface);
                     Assert.Equal("Inter", glyphTypeface.FamilyName);
                 }
             }

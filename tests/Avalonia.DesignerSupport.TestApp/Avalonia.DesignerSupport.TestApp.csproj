@@ -26,4 +26,5 @@
     <ProjectReference Include="..\..\src\Avalonia.Desktop\Avalonia.Desktop.csproj" />
   </ItemGroup>
   <Import Project="..\..\build\BuildTargets.targets" />
+  <Import Project="..\..\build\NullableEnable.props" />
 </Project>

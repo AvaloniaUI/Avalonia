@@ -13,6 +13,7 @@
   <Import Project="..\..\build\Base.props" />
   <Import Project="..\..\build\SharedVersion.props" />
   <Import Project="..\..\build\HarfBuzzSharp.props" />
+  <Import Project="..\..\build\NullableEnable.props" />
   <ItemGroup>
     <ProjectReference Include="..\..\src\HarfBuzz\Avalonia.HarfBuzz\Avalonia.HarfBuzz.csproj" />
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup.Xaml.Loader\Avalonia.Markup.Xaml.Loader.csproj" />

@@ -8,8 +8,8 @@ namespace Avalonia.Base.UnitTests.Layout
     {
         public bool Measured { get; set; }
         public bool Arranged { get; set; }
-        public Func<Layoutable, Size, Size> DoMeasureOverride { get; set; }
-        public Func<Layoutable, Size, Size> DoArrangeOverride { get; set; }
+        public Func<Layoutable, Size, Size>? DoMeasureOverride { get; set; }
+        public Func<Layoutable, Size, Size>? DoArrangeOverride { get; set; }
         public bool CallBaseMeasure { get; set; }
         public bool CallBaseArrange { get; set; }
 

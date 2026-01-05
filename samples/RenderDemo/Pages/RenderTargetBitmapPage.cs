@@ -10,7 +10,7 @@ namespace RenderDemo.Pages
 {
     public class RenderTargetBitmapPage : Control
     {
-        private RenderTargetBitmap _bitmap;
+        private RenderTargetBitmap? _bitmap;
 
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
@@ -20,7 +20,7 @@ namespace RenderDemo.Pages
 
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
-            _bitmap.Dispose();
+            _bitmap?.Dispose();
             _bitmap = null;
             base.OnDetachedFromLogicalTree(e);
         }
@@ -28,6 +28,9 @@ namespace RenderDemo.Pages
         readonly Stopwatch _st = Stopwatch.StartNew();
         public override void Render(DrawingContext context)
         {
+            if (_bitmap is null)
+                return;
+
             using (var ctx = _bitmap.CreateDrawingContext())
             using (ctx.PushTransform(Matrix.CreateTranslation(-100, -100)
                                          * Matrix.CreateRotation(_st.Elapsed.TotalSeconds)

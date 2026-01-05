@@ -978,7 +978,7 @@ namespace Avalonia.Controls.UnitTests
             });
         }
 
-        private static IDisposable Start(TestServices services = null)
+        private static IDisposable Start(TestServices? services = null)
         {
             CultureInfo.CurrentCulture = CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("en-US");
             return UnitTestApplication.Start((services ?? Services).With(assetLoader: new StandardAssetLoader()));
@@ -987,7 +987,7 @@ namespace Avalonia.Controls.UnitTests
         private class Class1 : NotifyingBase
         {
             private int _foo;
-            private string _bar;
+            private string? _bar;
 
             public int Foo
             {
@@ -995,7 +995,7 @@ namespace Avalonia.Controls.UnitTests
                 set { _foo = value; RaisePropertyChanged(); }
             }
 
-            public string Bar
+            public string? Bar
             {
                 get { return _bar; }
                 set { _bar = value; RaisePropertyChanged(); }
@@ -1006,7 +1006,7 @@ namespace Avalonia.Controls.UnitTests
         {
             private readonly ILayoutManager _layoutManager;
 
-            public TestTopLevel(ITopLevelImpl impl, ILayoutManager layoutManager = null)
+            public TestTopLevel(ITopLevelImpl impl, ILayoutManager? layoutManager = null)
                 : base(impl)
             {
                 _layoutManager = layoutManager ?? new LayoutManager(this);

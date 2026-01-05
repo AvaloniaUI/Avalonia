@@ -82,7 +82,7 @@ namespace Avalonia.DesignerSupport.Tests
             var sessionId = Guid.NewGuid();
             long handle = 0;
             bool success = false;
-            string error = null;
+            string? error = null;
 
             var resultMessageReceivedToken = new CancellationTokenSource();
 
