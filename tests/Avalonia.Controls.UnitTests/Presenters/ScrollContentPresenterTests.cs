@@ -446,7 +446,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.Arrange(new Rect(0, 0, 100, 100));
 
             // Border20 is at position 0,600 with bottom at Y=620
-            var border20 = target.FindControl<Border>("Border20");
+            var border20 = target.GetControl<Border>("Border20");
             target.BringDescendantIntoView(border20, new Rect(border20.Bounds.Size));
 
             // With viewport Height of 100, border becomes fully visible when alligned from the bottom at Offset Y=520, i.e. 620-100
@@ -458,7 +458,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.Arrange(new Rect(0, 0, 100, 100));
 
             // Border20 is at position 0,800 with bottom at Y=820
-            var border40 = target.FindControl<Border>("Border40");
+            var border40 = target.GetControl<Border>("Border40");
             target.BringDescendantIntoView(border40, new Rect(border40.Bounds.Size));
 
             // With viewport Height of 100, border becomes fully visible when alligned from the bottom at Offset Y=720, i.e. 820-100
@@ -502,7 +502,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.UpdateChild();
             target.Measure(Size.Infinity);
             target.Arrange(new Rect(0, 0, 100, 100));
-            var border3 = target.FindControl<Border>("Border3");
+            var border3 = target.GetControl<Border>("Border3");
             target.BringDescendantIntoView(border3, new Rect(border3.Bounds.Size));
 
             // Border3 is still in view, offset hasn't changed

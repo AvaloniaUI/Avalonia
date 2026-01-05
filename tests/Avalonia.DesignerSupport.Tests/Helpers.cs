@@ -1,15 +1,14 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace Avalonia.DesignerSupport.Tests
 {
     static class Helpers
     {
-        public static void StructDiff(object parsed, object expected) => StructDiff(parsed, expected, "{root}");
+        public static void StructDiff(object? parsed, object? expected) => StructDiff(parsed, expected, "{root}");
 
-        static void StructDiff(object parsed, object expected, string path)
+        static void StructDiff(object? parsed, object? expected, string path)
         {
             if (parsed == null && expected == null)
                 return;
@@ -17,7 +16,7 @@ namespace Avalonia.DesignerSupport.Tests
                 throw new Exception(
                     $"{path}: Null mismatch: {(parsed == null ? "null" : "not-null")}  {(expected == null ? "null" : "not-null")}");
             
-            if (parsed.GetType() != expected.GetType())
+            if (parsed!.GetType() != expected!.GetType())
                 throw new Exception($"{path}: Type mismatch: {parsed.GetType()} {expected.GetType()}");
 
             if (parsed is string || parsed.GetType().IsPrimitive)
