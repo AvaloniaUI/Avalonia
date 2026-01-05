@@ -74,12 +74,12 @@ namespace ControlCatalog.Desktop
                     {
                         DispatcherTimer.RunOnce(async () =>
                         {
-                            var window = ((IClassicDesktopStyleApplicationLifetime)Application.Current.ApplicationLifetime)
-                                .MainWindow;
+                            var window = ((IClassicDesktopStyleApplicationLifetime)Application.Current!.ApplicationLifetime!)
+                                .MainWindow!;
                             var tc = window.GetLogicalDescendants().OfType<TabControl>().First();
                             foreach (var page in tc.Items.Cast<TabItem>().ToList())
                             {
-                                if (page.Header.ToString() == "DatePicker" || page.Header.ToString() == "TreeView")
+                                if (page.Header?.ToString() is "DatePicker" or "TreeView")
                                     continue;
                                 Console.WriteLine("Selecting " + page.Header);
                                 tc.SelectedItem = page;

@@ -6,7 +6,6 @@
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <IncludeAvaloniaGenerators>true</IncludeAvaloniaGenerators>
-    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
