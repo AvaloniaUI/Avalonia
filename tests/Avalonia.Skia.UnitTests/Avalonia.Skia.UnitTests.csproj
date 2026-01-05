@@ -26,4 +26,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Update="Xunit.SkippableFact" Version="1.5.61" />
+  </ItemGroup>
 </Project>

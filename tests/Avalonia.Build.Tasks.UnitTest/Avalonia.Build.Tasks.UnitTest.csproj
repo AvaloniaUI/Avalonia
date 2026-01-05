@@ -25,17 +25,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build.Framework" Version="15.1.548" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.1.548" />
+    <PackageReference Include="Microsoft.Build.Framework" Version="18.0.2" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="18.0.2" />
   </ItemGroup>
   
   <ItemGroup>
     <ProjectReference Include="..\..\src\Avalonia.Build.Tasks\Avalonia.Build.Tasks.csproj" />
     <!-- Ensure PInvoke.csproj is build before Avalonia.Build.Tasks.UnitTest -->
-    <ProjectReference Include="..\TestFiles\BuildTasks\PInvoke\PInvoke.csproj" 
-                      SetConfiguration="Configuration=$(Configuration)"
-                      SetTargetFramework="TargetFramework=$(AvsCurrentTargetFramework)"
-                      ReferenceOutputAssembly="false" 
-                      PrivateAssets="all" />
+    <ProjectReference Include="..\TestFiles\BuildTasks\PInvoke\PInvoke.csproj" SetConfiguration="Configuration=$(Configuration)" SetTargetFramework="TargetFramework=$(AvsCurrentTargetFramework)" ReferenceOutputAssembly="false" PrivateAssets="all" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Update="Xunit.SkippableFact" Version="1.5.61" />
   </ItemGroup>
 </Project>

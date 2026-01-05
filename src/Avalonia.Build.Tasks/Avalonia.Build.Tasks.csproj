@@ -34,12 +34,8 @@
       <Compile Include="../Markup/Avalonia.Markup.Xaml.Loader/CompilerExtensions/**/*.cs">
         <Link>XamlIlExtensions/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
-      <Compile Include="$(XamlXSourcePath)/**/*.cs"
-               Exclude="$(XamlXSourcePath)/obj/**/*.cs;$(XamlXSourcePath)/Compatibility/*.cs;$(XamlXSourcePath)/**/SreTypeSystem.cs"
-               LinkBase="XamlIl" />
-      <Compile Include="$(XamlXCecilSourcePath)/**/*.cs"
-               Exclude="$(XamlXCecilSourcePath)/obj/**/*.cs"
-               LinkBase="XamlIl.Cecil" />
+      <Compile Include="$(XamlXSourcePath)/**/*.cs" Exclude="$(XamlXSourcePath)/obj/**/*.cs;$(XamlXSourcePath)/Compatibility/*.cs;$(XamlXSourcePath)/**/SreTypeSystem.cs" LinkBase="XamlIl" />
+      <Compile Include="$(XamlXCecilSourcePath)/**/*.cs" Exclude="$(XamlXCecilSourcePath)/obj/**/*.cs" LinkBase="XamlIl.Cecil" />
       <Compile Include="../Markup/Avalonia.Markup\Markup\Parsers\SelectorGrammar.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
@@ -132,7 +128,7 @@
       <Compile Include="../Shared/StringCompatibilityExtensions.cs" Link="Compatibility/StringCompatibilityExtensions.cs" />
       <Compile Include="../Shared/IsExternalInit.cs" Link="Compatibility/IsExternalInit.cs" />
       <PackageReference Include="Mono.Cecil" Version="0.11.6" />
-      <PackageReference Include="Microsoft.Build.Framework" Version="15.1.548" PrivateAssets="All" />
+      <PackageReference Include="Microsoft.Build.Framework" Version="18.0.2" PrivateAssets="All" />
       <PackageReference Include="System.Numerics.Vectors" Version="4.6.1" />
     </ItemGroup>
   <Import Project="../../build/SourceGenerators.props" />

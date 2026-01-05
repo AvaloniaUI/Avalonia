@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <PackageReference Include="Nuke.Common" Version="10.1.0" />
-    <PackageReference Include="MicroCom.CodeGenerator" Version="0.11.0" />
+    <PackageReference Include="MicroCom.CodeGenerator" Version="0.11.3" />
     <!-- Keep in sync with Avalonia.Build.Tasks -->
     <PackageReference Include="Mono.Cecil" Version="0.11.6" />
     <PackageReference Include="Microsoft.Build.Framework" Version="18.0.2" PrivateAssets="All" />
@@ -28,9 +28,7 @@
     <NukeExternalFiles Include="**\*.*.ext" Exclude="bin\**;obj\**" />
 
     <!-- Common build related files -->
-    <Compile Include="../external/Numerge/Numerge/**/*.cs"
-             Exclude="../external/Numerge/Numerge/obj/**/*.cs"
-             LinkBase="Numerge" />
+    <Compile Include="../external/Numerge/Numerge/**/*.cs" Exclude="../external/Numerge/Numerge/obj/**/*.cs" LinkBase="Numerge" />
     <EmbeddedResource Include="../build/avalonia.snk" />
   </ItemGroup>
 

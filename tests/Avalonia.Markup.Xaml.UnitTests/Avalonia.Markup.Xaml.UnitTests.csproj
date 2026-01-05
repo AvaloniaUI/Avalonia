@@ -36,7 +36,7 @@
     <Compile Include="..\Avalonia.IntegrationTests.Appium\PlatformFactAttribute.cs">
       <Link>PlatformFactAttribute.cs</Link>
     </Compile>
-    <Compile Include="../Shared/ScopedSanityCheck.cs"/>
+    <Compile Include="../Shared/ScopedSanityCheck.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Update="xunit.runner.console" Version="2.9.3">
@@ -47,6 +47,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Update="Xunit.SkippableFact" Version="1.5.61" />
   </ItemGroup>
   <Import Project="..\..\build\BuildTargets.targets" />
 </Project>

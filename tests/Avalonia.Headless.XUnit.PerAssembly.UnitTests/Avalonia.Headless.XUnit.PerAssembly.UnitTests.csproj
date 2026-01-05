@@ -21,4 +21,8 @@
     <ProjectReference Include="..\..\src\Headless\Avalonia.Headless.XUnit\Avalonia.Headless.XUnit.csproj" />
     <ProjectReference Include="..\..\src\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="Xunit.SkippableFact" Version="1.5.61" />
+  </ItemGroup>
 </Project>

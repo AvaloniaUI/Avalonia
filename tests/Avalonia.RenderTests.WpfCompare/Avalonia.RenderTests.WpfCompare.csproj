@@ -8,14 +8,14 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Controls\Avalonia.Controls.csproj" />
-    <Compile Include="..\Avalonia.RenderTests\CrossUI\CrossUI.cs"/>
-    <Compile Include="..\Avalonia.RenderTests\CrossTests\**\*.cs"/>
+    <Compile Include="..\Avalonia.RenderTests\CrossUI\CrossUI.cs" />
+    <Compile Include="..\Avalonia.RenderTests\CrossTests\**\*.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="../Avalonia.RenderTests/**/*.png" CopyToOutputDirectory="Always" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Xunit.StaFact" Version="1.2.69" />
+    <PackageReference Include="Xunit.StaFact" Version="3.0.13" />
   </ItemGroup>
   <Import Project="..\..\build\Moq.props" />
   <Import Project="..\..\build\Rx.props" />
@@ -23,4 +23,8 @@
   <Import Project="..\..\build\ImageSharp.props" />
   <Import Project="..\..\build\SkiaSharp.props" />
   <Import Project="..\..\build\SharedVersion.props" />
+  <ItemGroup>
+    <PackageReference Update="SixLabors.ImageSharp" Version="3.1.12" />
+    <PackageReference Update="Xunit.SkippableFact" Version="1.5.61" />
+  </ItemGroup>
 </Project>

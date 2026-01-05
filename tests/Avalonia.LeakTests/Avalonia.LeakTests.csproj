@@ -20,4 +20,7 @@
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Update="Xunit.SkippableFact" Version="1.5.61" />
+  </ItemGroup>
 </Project>

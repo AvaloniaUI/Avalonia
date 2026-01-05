@@ -11,7 +11,7 @@
   
     <ItemGroup>
       <PackageReference Include="Quamotion.RemoteViewing" Version="1.1.211" />
-      <PackageReference Include="SharpCompress" Version="0.41.0" />
+      <PackageReference Include="SharpCompress" Version="0.43.0" />
     </ItemGroup>
 
     <ItemGroup>

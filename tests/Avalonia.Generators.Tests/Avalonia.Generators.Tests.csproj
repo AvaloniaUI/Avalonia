@@ -10,7 +10,7 @@
     <ProjectReference Include="..\..\src\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj" />
     <ProjectReference Include="..\..\src\tools\Avalonia.Generators\Avalonia.Generators.csproj" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.5.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.0.0" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Views\*.xml" />
@@ -22,4 +22,7 @@
   <Import Project="..\..\build\XUnit.props" />
   <Import Project="..\..\build\SharedVersion.props" />
   <Import Project="..\..\build\NullableEnable.props" />
+  <ItemGroup>
+    <PackageReference Update="Xunit.SkippableFact" Version="1.5.61" />
+  </ItemGroup>
 </Project>
