@@ -4,7 +4,6 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
-    <Nullable>enable</Nullable>
     <UseD3DCompiler>true</UseD3DCompiler>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 

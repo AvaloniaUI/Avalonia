@@ -30,7 +30,6 @@ namespace Avalonia.Win32
         static ClipboardFormatRegistry()
         {
             AddDataFormat(DataFormat.Text, (ushort)UnmanagedMethods.ClipboardFormat.CF_UNICODETEXT);
-            AddDataFormat(DataFormat.Text, (ushort)UnmanagedMethods.ClipboardFormat.CF_TEXT);
             AddDataFormat(DataFormat.File, (ushort)UnmanagedMethods.ClipboardFormat.CF_HDROP);
             AddDataFormat(DibDataFormat, (ushort)UnmanagedMethods.ClipboardFormat.CF_DIB);
             AddDataFormat(DibV5DataFormat, (ushort)UnmanagedMethods.ClipboardFormat.CF_DIBV5);

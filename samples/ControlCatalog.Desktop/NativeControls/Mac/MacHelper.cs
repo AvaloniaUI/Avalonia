@@ -20,7 +20,7 @@ internal class MacHelper
 
 internal class MacOSViewHandle : INativeControlHostDestroyableControlHandle
 {
-    private NSView _view;
+    private NSView? _view;
 
     public MacOSViewHandle(NSView view)
     {
@@ -32,7 +32,7 @@ internal class MacOSViewHandle : INativeControlHostDestroyableControlHandle
 
     public void Destroy()
     {
-        _view.Dispose();
+        _view?.Dispose();
         _view = null;
     }
 }

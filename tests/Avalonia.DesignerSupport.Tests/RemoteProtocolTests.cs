@@ -21,27 +21,29 @@ namespace Avalonia.DesignerSupport.Tests
         private const int TimeoutInMs = 1000;
 
         private readonly List<IDisposable> _disposables = new List<IDisposable>();
-        private IAvaloniaRemoteTransportConnection _server;
-        private IAvaloniaRemoteTransportConnection _client;
+        private IAvaloniaRemoteTransportConnection? _server;
+        private IAvaloniaRemoteTransportConnection? _client;
         private BlockingCollection<object> _serverMessages = new BlockingCollection<object>();
         private BlockingCollection<object> _clientMessages = new BlockingCollection<object>();
-        private SynchronizationContext _originalContext;
+        private SynchronizationContext? _originalContext;
 
 
         class DisabledSyncContext : SynchronizationContext
         {
-            public override void Post(SendOrPostCallback d, object state)
+            public override void Post(SendOrPostCallback d, object? state)
             {
                 throw new InvalidCastException("Not allowed");
             }
 
-            public override void Send(SendOrPostCallback d, object state)
+            public override void Send(SendOrPostCallback d, object? state)
             {
                 throw new InvalidCastException("Not allowed");
             }
         }
-        
-        void Init(IMessageTypeResolver clientResolver = null, IMessageTypeResolver serverResolver = null)
+
+        [MemberNotNull(nameof(_server))]
+        [MemberNotNull(nameof(_client))]
+        void Init(IMessageTypeResolver? clientResolver = null, IMessageTypeResolver? serverResolver = null)
         {
             _originalContext = SynchronizationContext.Current;
             SynchronizationContext.SetSynchronizationContext(new DisabledSyncContext());
@@ -63,6 +65,7 @@ namespace Avalonia.DesignerSupport.Tests
             _disposables.Add(_client);
             _client.OnMessage += (_, m) => _clientMessages.Add(m);
             tcs.Task.Wait();
+            Assert.NotNull(_server);
             _disposables.Add(_server);
             _server.OnMessage += (_, m) => _serverMessages.Add(m);
 
@@ -95,8 +98,10 @@ namespace Avalonia.DesignerSupport.Tests
             {
                 if (t.IsArray)
                 {
-                    var arr = Array.CreateInstance(t.GetElementType(), 1);
-                    ((IList)arr)[0] = GetRandomValue(t.GetElementType(), pathInfo);
+                    var elementType = t.GetElementType();
+                    Assert.NotNull(elementType);
+                    var arr = Array.CreateInstance(elementType, 1);
+                    ((IList)arr)[0] = GetRandomValue(elementType, pathInfo);
                     return arr;
                 }
 
@@ -217,12 +222,12 @@ namespace Avalonia.DesignerSupport.Tests
         public double Width { get; set; }
         
         public int SomeNewProperty { get; set; }
-        public int[] SomeArrayProperty { get; set; }
+        public int[]? SomeArrayProperty { get; set; }
         public class SubObject
         {
             public int Foo { get; set; }
         }
-        public SubObject SubObjectProperty { get; set; }
+        public SubObject? SubObjectProperty { get; set; }
         public double Height { get; set; }
     }
 }

@@ -2,7 +2,6 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
-    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <PropertyGroup>
