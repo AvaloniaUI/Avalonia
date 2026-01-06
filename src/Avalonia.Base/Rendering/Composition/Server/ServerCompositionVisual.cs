@@ -62,11 +62,12 @@ namespace Avalonia.Rendering.Composition.Server
 
             if (applyRenderOptions)
                 canvas.PushRenderOptions(RenderOptions);
+            
             var applyTextOptions = TextOptions != default;
 
             if (applyTextOptions)
                 canvas.PushTextOptions(TextOptions);
-
+            
             var needPopEffect = PushEffect(canvas);
 
             if (Opacity != 1)

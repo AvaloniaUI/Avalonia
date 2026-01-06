@@ -286,6 +286,7 @@ internal partial class CompositorDrawingContextProxy : IDrawingContextImpl,
         if (!TryDiscardOrFlush(PendingCommandType.PushTextOptions))
         {
             _impl.PopTextOptions();
+            RestoreTransform();
         }
     }
 
