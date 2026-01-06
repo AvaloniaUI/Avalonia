@@ -113,6 +113,7 @@ namespace Avalonia.Media
             }
 
             HeadTable.TryLoad(this, out var headTable);
+
             var postTable = PostTable.Load(this);
 
             var isFixedPitch = postTable.IsFixedPitch;
@@ -121,7 +122,7 @@ namespace Avalonia.Media
 
             Metrics = new FontMetrics
             {
-                DesignEmHeight = (short)((headTable?.UnitsPerEm ?? 0) != 0 ? headTable!.Value.UnitsPerEm : 2048),
+                DesignEmHeight = headTable?.UnitsPerEm ?? 0,
                 Ascent = ascent,
                 Descent = descent,
                 LineGap = lineGap,
@@ -552,9 +553,9 @@ namespace Avalonia.Media
                 isOblique = (oS2Table.Value.Selection & OS2Table.FontSelectionFlags.OBLIQUE) != 0;
             }
 
-            if (!isItalic && headTable.HasValue)
+            if (!isItalic && headTable != null)
             {
-                isItalic = headTable.Value.MacStyle.HasFlag(MacStyleFlags.Italic);
+                isItalic = headTable.MacStyle.HasFlag(MacStyleFlags.Italic);
             }
 
             var italicAngle = postTable.ItalicAngle;
@@ -584,7 +585,7 @@ namespace Avalonia.Media
                 return (FontWeight)os2Table.Value.WeightClass;
             }
 
-            if (headTable.HasValue && headTable.Value.MacStyle.HasFlag(MacStyleFlags.Bold))
+            if (headTable != null && headTable.MacStyle.HasFlag(MacStyleFlags.Bold))
             {
                 return FontWeight.Bold;
             }

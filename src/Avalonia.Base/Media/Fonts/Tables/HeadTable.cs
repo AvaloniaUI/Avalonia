@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Avalonia.Media.Fonts.Tables
 {
-    internal readonly struct HeadTable
+    internal sealed class HeadTable
     {
         internal const string TableName = "head";
         internal static OpenTypeTag Tag { get; } = OpenTypeTag.Parse(TableName);

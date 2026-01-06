@@ -39,7 +39,7 @@ namespace Avalonia.UnitTests
         }
 
         public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight,
-            FontStretch fontStretch, string familyName, CultureInfo culture, out IPlatformTypeface? platformTypeface)
+            FontStretch fontStretch, string? familyName, CultureInfo? culture, [NotNullWhen(true)] out IPlatformTypeface? platformTypeface)
         {
             foreach (var customTypeface in _customTypefaces)
             {
@@ -107,7 +107,7 @@ namespace Avalonia.UnitTests
             return platformTypeface != null;
         }
 
-        public bool TryGetFamilyTypefaces(string familyName, [NotNullWhen(true)] out IReadOnlyList<Typeface> familyTypefaces)
+        public bool TryGetFamilyTypefaces(string familyName, [NotNullWhen(true)] out IReadOnlyList<Typeface>? familyTypefaces)
         {
             // Find all typefaces that belong to the specified family
             var typefaces = new List<Typeface>();
