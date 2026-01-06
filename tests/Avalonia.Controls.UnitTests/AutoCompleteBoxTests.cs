@@ -21,60 +21,60 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Search_Filters()
         {
-            Assert.True(GetFilter(AutoCompleteFilterMode.Contains)("am", "name"));
-            Assert.True(GetFilter(AutoCompleteFilterMode.Contains)("AME", "name"));
-            Assert.False(GetFilter(AutoCompleteFilterMode.Contains)("hello", "name"));
+            Assert.True(GetNotNullFilter(AutoCompleteFilterMode.Contains)("am", "name"));
+            Assert.True(GetNotNullFilter(AutoCompleteFilterMode.Contains)("AME", "name"));
+            Assert.False(GetNotNullFilter(AutoCompleteFilterMode.Contains)("hello", "name"));
 
-            Assert.True(GetFilter(AutoCompleteFilterMode.ContainsCaseSensitive)("na", "name"));
-            Assert.False(GetFilter(AutoCompleteFilterMode.ContainsCaseSensitive)("AME", "name"));
-            Assert.False(GetFilter(AutoCompleteFilterMode.ContainsCaseSensitive)("hello", "name"));
+            Assert.True(GetNotNullFilter(AutoCompleteFilterMode.ContainsCaseSensitive)("na", "name"));
+            Assert.False(GetNotNullFilter(AutoCompleteFilterMode.ContainsCaseSensitive)("AME", "name"));
+            Assert.False(GetNotNullFilter(AutoCompleteFilterMode.ContainsCaseSensitive)("hello", "name"));
 
             Assert.Null(GetFilter(AutoCompleteFilterMode.Custom));
             Assert.Null(GetFilter(AutoCompleteFilterMode.None));
 
-            Assert.True(GetFilter(AutoCompleteFilterMode.Equals)("na", "na"));
-            Assert.True(GetFilter(AutoCompleteFilterMode.Equals)("na", "NA"));
-            Assert.False(GetFilter(AutoCompleteFilterMode.Equals)("hello", "name"));
+            Assert.True(GetNotNullFilter(AutoCompleteFilterMode.Equals)("na", "na"));
+            Assert.True(GetNotNullFilter(AutoCompleteFilterMode.Equals)("na", "NA"));
+            Assert.False(GetNotNullFilter(AutoCompleteFilterMode.Equals)("hello", "name"));
 
-            Assert.True(GetFilter(AutoCompleteFilterMode.EqualsCaseSensitive)("na", "na"));
-            Assert.False(GetFilter(AutoCompleteFilterMode.EqualsCaseSensitive)("na", "NA"));
-            Assert.False(GetFilter(AutoCompleteFilterMode.EqualsCaseSensitive)("hello", "name"));
+            Assert.True(GetNotNullFilter(AutoCompleteFilterMode.EqualsCaseSensitive)("na", "na"));
+            Assert.False(GetNotNullFilter(AutoCompleteFilterMode.EqualsCaseSensitive)("na", "NA"));
+            Assert.False(GetNotNullFilter(AutoCompleteFilterMode.EqualsCaseSensitive)("hello", "name"));
 
-            Assert.True(GetFilter(AutoCompleteFilterMode.StartsWith)("na", "name"));
-            Assert.True(GetFilter(AutoCompleteFilterMode.StartsWith)("NAM", "name"));
-            Assert.False(GetFilter(AutoCompleteFilterMode.StartsWith)("hello", "name"));
+            Assert.True(GetNotNullFilter(AutoCompleteFilterMode.StartsWith)("na", "name"));
+            Assert.True(GetNotNullFilter(AutoCompleteFilterMode.StartsWith)("NAM", "name"));
+            Assert.False(GetNotNullFilter(AutoCompleteFilterMode.StartsWith)("hello", "name"));
 
-            Assert.True(GetFilter(AutoCompleteFilterMode.StartsWithCaseSensitive)("na", "name"));
-            Assert.False(GetFilter(AutoCompleteFilterMode.StartsWithCaseSensitive)("NAM", "name"));
-            Assert.False(GetFilter(AutoCompleteFilterMode.StartsWithCaseSensitive)("hello", "name"));
+            Assert.True(GetNotNullFilter(AutoCompleteFilterMode.StartsWithCaseSensitive)("na", "name"));
+            Assert.False(GetNotNullFilter(AutoCompleteFilterMode.StartsWithCaseSensitive)("NAM", "name"));
+            Assert.False(GetNotNullFilter(AutoCompleteFilterMode.StartsWithCaseSensitive)("hello", "name"));
         }
 
         [Fact]
         public void Ordinal_Search_Filters()
         {
-            Assert.True(GetFilter(AutoCompleteFilterMode.ContainsOrdinal)("am", "name"));
-            Assert.True(GetFilter(AutoCompleteFilterMode.ContainsOrdinal)("AME", "name"));
-            Assert.False(GetFilter(AutoCompleteFilterMode.ContainsOrdinal)("hello", "name"));
+            Assert.True(GetNotNullFilter(AutoCompleteFilterMode.ContainsOrdinal)("am", "name"));
+            Assert.True(GetNotNullFilter(AutoCompleteFilterMode.ContainsOrdinal)("AME", "name"));
+            Assert.False(GetNotNullFilter(AutoCompleteFilterMode.ContainsOrdinal)("hello", "name"));
 
-            Assert.True(GetFilter(AutoCompleteFilterMode.ContainsOrdinalCaseSensitive)("na", "name"));
-            Assert.False(GetFilter(AutoCompleteFilterMode.ContainsOrdinalCaseSensitive)("AME", "name"));
-            Assert.False(GetFilter(AutoCompleteFilterMode.ContainsOrdinalCaseSensitive)("hello", "name"));
+            Assert.True(GetNotNullFilter(AutoCompleteFilterMode.ContainsOrdinalCaseSensitive)("na", "name"));
+            Assert.False(GetNotNullFilter(AutoCompleteFilterMode.ContainsOrdinalCaseSensitive)("AME", "name"));
+            Assert.False(GetNotNullFilter(AutoCompleteFilterMode.ContainsOrdinalCaseSensitive)("hello", "name"));
 
-            Assert.True(GetFilter(AutoCompleteFilterMode.EqualsOrdinal)("na", "na"));
-            Assert.True(GetFilter(AutoCompleteFilterMode.EqualsOrdinal)("na", "NA"));
-            Assert.False(GetFilter(AutoCompleteFilterMode.EqualsOrdinal)("hello", "name"));
+            Assert.True(GetNotNullFilter(AutoCompleteFilterMode.EqualsOrdinal)("na", "na"));
+            Assert.True(GetNotNullFilter(AutoCompleteFilterMode.EqualsOrdinal)("na", "NA"));
+            Assert.False(GetNotNullFilter(AutoCompleteFilterMode.EqualsOrdinal)("hello", "name"));
 
-            Assert.True(GetFilter(AutoCompleteFilterMode.EqualsOrdinalCaseSensitive)("na", "na"));
-            Assert.False(GetFilter(AutoCompleteFilterMode.EqualsOrdinalCaseSensitive)("na", "NA"));
-            Assert.False(GetFilter(AutoCompleteFilterMode.EqualsOrdinalCaseSensitive)("hello", "name"));
+            Assert.True(GetNotNullFilter(AutoCompleteFilterMode.EqualsOrdinalCaseSensitive)("na", "na"));
+            Assert.False(GetNotNullFilter(AutoCompleteFilterMode.EqualsOrdinalCaseSensitive)("na", "NA"));
+            Assert.False(GetNotNullFilter(AutoCompleteFilterMode.EqualsOrdinalCaseSensitive)("hello", "name"));
 
-            Assert.True(GetFilter(AutoCompleteFilterMode.StartsWithOrdinal)("na", "name"));
-            Assert.True(GetFilter(AutoCompleteFilterMode.StartsWithOrdinal)("NAM", "name"));
-            Assert.False(GetFilter(AutoCompleteFilterMode.StartsWithOrdinal)("hello", "name"));
+            Assert.True(GetNotNullFilter(AutoCompleteFilterMode.StartsWithOrdinal)("na", "name"));
+            Assert.True(GetNotNullFilter(AutoCompleteFilterMode.StartsWithOrdinal)("NAM", "name"));
+            Assert.False(GetNotNullFilter(AutoCompleteFilterMode.StartsWithOrdinal)("hello", "name"));
 
-            Assert.True(GetFilter(AutoCompleteFilterMode.StartsWithOrdinalCaseSensitive)("na", "name"));
-            Assert.False(GetFilter(AutoCompleteFilterMode.StartsWithOrdinalCaseSensitive)("NAM", "name"));
-            Assert.False(GetFilter(AutoCompleteFilterMode.StartsWithOrdinalCaseSensitive)("hello", "name"));
+            Assert.True(GetNotNullFilter(AutoCompleteFilterMode.StartsWithOrdinalCaseSensitive)("na", "name"));
+            Assert.False(GetNotNullFilter(AutoCompleteFilterMode.StartsWithOrdinalCaseSensitive)("NAM", "name"));
+            Assert.False(GetNotNullFilter(AutoCompleteFilterMode.StartsWithOrdinalCaseSensitive)("hello", "name"));
         }
 
         [Fact]
@@ -261,7 +261,7 @@ namespace Avalonia.Controls.UnitTests
                 control.Populated += (s, e) =>
                 {
                     populated = true;
-                    ReadOnlyCollection<object> collection = e.Data as ReadOnlyCollection<object>;
+                    var collection = e.Data as ReadOnlyCollection<object>;
                     populatedOk = collection != null && collection.Count == 1;
                 };
 
@@ -328,14 +328,10 @@ namespace Avalonia.Controls.UnitTests
             RunTest((control, textbox) =>
             {
                 control.FilterMode = AutoCompleteFilterMode.Custom;
-                control.ItemFilter = (search, item) =>
-                {
-                    string s = item as string;
-                    return s == null ? false : true;
-                };
+                control.ItemFilter = (_, item) => item is string;
 
                 // Just set to null briefly to exercise that code path
-                AutoCompleteFilterPredicate<object> filter = control.ItemFilter;
+                var filter = control.ItemFilter;
                 Assert.NotNull(filter);
                 control.ItemFilter = null;
                 Assert.Null(control.ItemFilter);
@@ -377,6 +373,8 @@ namespace Avalonia.Controls.UnitTests
         {
             RunTest((control, textbox) =>
             {
+                Assert.NotNull(control.ItemsSource);
+
                 object selectedItem = control.ItemsSource.Cast<object>().First();
                 string input = "42";
 
@@ -394,6 +392,8 @@ namespace Avalonia.Controls.UnitTests
         {
             RunTest((control, textbox) =>
             {
+                Assert.NotNull(control.ItemsSource);
+
                 object selectedItem = control.ItemsSource.Cast<object>().First();
                 string input = "42";
 
@@ -416,8 +416,8 @@ namespace Avalonia.Controls.UnitTests
                 control.Bind(AutoCompleteBox.TextProperty, textObservable);
                 Dispatcher.UIThread.RunJobs();
 
-                Assert.Equal(DataValidationErrors.GetHasErrors(control), true);
-                Assert.Equal(DataValidationErrors.GetErrors(control).SequenceEqual(new[] { exception }), true);
+                Assert.True(DataValidationErrors.GetHasErrors(control));
+                Assert.Equal([exception], DataValidationErrors.GetErrors(control));
             });
         }
         
@@ -453,8 +453,8 @@ namespace Avalonia.Controls.UnitTests
                 control.Bind(AutoCompleteBox.SelectedItemProperty, itemObservable);
                 Dispatcher.UIThread.RunJobs();
 
-                Assert.Equal(DataValidationErrors.GetHasErrors(control), true);
-                Assert.Equal(DataValidationErrors.GetErrors(control).SequenceEqual(new[] { exception }), true);
+                Assert.True(DataValidationErrors.GetHasErrors(control));
+                Assert.Equal([exception], DataValidationErrors.GetErrors(control));
             });
         }
 
@@ -587,10 +587,17 @@ namespace Avalonia.Controls.UnitTests
         /// </summary>
         /// <param name="mode">The FilterMode of interest.</param>
         /// <returns>Returns the predicate instance.</returns>
-        private static AutoCompleteFilterPredicate<string> GetFilter(AutoCompleteFilterMode mode)
+        private static AutoCompleteFilterPredicate<string?>? GetFilter(AutoCompleteFilterMode mode)
         {
             return new AutoCompleteBox { FilterMode = mode }
                 .TextFilter;
+        }
+
+        private static AutoCompleteFilterPredicate<string?> GetNotNullFilter(AutoCompleteFilterMode mode)
+        {
+            var filter = GetFilter(mode);
+            Assert.NotNull(filter);
+            return filter;
         }
 
         /// <summary>
@@ -1200,7 +1207,7 @@ namespace Avalonia.Controls.UnitTests
                 var window = new Window {Content = control};
                 window.ApplyStyling();
                 window.ApplyTemplate();
-                window.Presenter.ApplyTemplate();
+                window.Presenter!.ApplyTemplate();
                 Dispatcher.UIThread.RunJobs();
                 test.Invoke(control, textBox);
             }

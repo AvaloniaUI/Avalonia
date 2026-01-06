@@ -57,7 +57,7 @@
         ///   <item>
         ///     <term>macOS</term>
         ///     <description>
-        ///       <c>NSAccessibilityProtocol.setAccessibilityValue</c> (not implemented)
+        ///       <c>NSAccessibilityProtocol.setAccessibilityValue</c>
         ///     </description>
         ///   </item>
         /// </list>

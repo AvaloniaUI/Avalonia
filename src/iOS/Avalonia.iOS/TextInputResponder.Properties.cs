@@ -24,8 +24,9 @@ partial class AvaloniaView
                 _view._options.ContentType switch
                 {
                     TextInputContentType.Alpha => UIKeyboardType.AsciiCapable,
-                    TextInputContentType.Digits or TextInputContentType.Number => UIKeyboardType.NumberPad,
+                    TextInputContentType.Digits => UIKeyboardType.PhonePad,
                     TextInputContentType.Pin => UIKeyboardType.NumberPad,
+                    TextInputContentType.Number => UIKeyboardType.DecimalPad,
                     TextInputContentType.Email => UIKeyboardType.EmailAddress,
                     TextInputContentType.Url => UIKeyboardType.Url,
                     TextInputContentType.Name => UIKeyboardType.NamePhonePad,

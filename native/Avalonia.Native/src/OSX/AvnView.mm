@@ -854,9 +854,10 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
 
 - (NSDragOperation)triggerAvnDragEvent: (AvnDragEventType) type info: (id <NSDraggingInfo>)info
 {
-    auto localPoint = [self convertPoint:[info draggingLocation] toView:self];
-    auto avnPoint = ToAvnPoint(localPoint);
-    auto point = [self translateLocalPoint:avnPoint];
+    NSPoint eventLocation = [info draggingLocation];
+    auto viewLocation = [self convertPoint:NSMakePoint(0, 0) toView:nil];
+    auto localPoint = NSMakePoint(eventLocation.x - viewLocation.x, viewLocation.y - eventLocation.y);
+    auto point = ToAvnPoint(localPoint);
     auto modifiers = [self getModifiers:[[NSApp currentEvent] modifierFlags]];
     NSDragOperation nsop = [info draggingSourceOperationMask];
 

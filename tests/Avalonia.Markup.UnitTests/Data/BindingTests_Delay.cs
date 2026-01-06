@@ -36,7 +36,7 @@ public class BindingTests_Delay : ScopedTestBase, IDisposable
         Assert.Equal(_source.Foo, _target.Text);
     }
 
-    public void Dispose()
+    public override void Dispose()
     {
         _app.Dispose();
         base.Dispose();

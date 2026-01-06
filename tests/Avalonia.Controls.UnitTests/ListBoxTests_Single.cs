@@ -35,7 +35,7 @@ namespace Avalonia.Controls.UnitTests
 
                 Prepare(target);
 
-                target.Presenter.Panel.Children[0].RaiseEvent(new GotFocusEventArgs
+                target.Presenter!.Panel!.Children[0].RaiseEvent(new GotFocusEventArgs
                 {
                     NavigationMethod = NavigationMethod.Tab,
                 });
@@ -57,7 +57,7 @@ namespace Avalonia.Controls.UnitTests
                 AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
                 Prepare(target);
 
-                target.Presenter.Panel.Children[0].RaiseEvent(new GotFocusEventArgs
+                target.Presenter!.Panel!.Children[0].RaiseEvent(new GotFocusEventArgs
                 {
                     NavigationMethod = NavigationMethod.Directional,
                     KeyModifiers = KeyModifiers.Control
@@ -86,7 +86,7 @@ namespace Avalonia.Controls.UnitTests
                 };
                 AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
                 Prepare(target);
-                _mouse.Click(target.Presenter.Panel.Children[0]);
+                _mouse.Click(target.Presenter!.Panel!.Children[0]);
 
                 Assert.Equal(0, target.SelectedIndex);
             }
@@ -104,7 +104,7 @@ namespace Avalonia.Controls.UnitTests
                     ItemsSource = new[] { "Foo", "Bar", "Baz " }
                 };
                 Prepare(target);
-                _pen.Down(target.Presenter.Panel.Children[0], MouseButton.Right);
+                _pen.Down(target.Presenter!.Panel!.Children[0], MouseButton.Right);
 
                 Assert.Equal(0, target.SelectedIndex);
             }
@@ -122,7 +122,7 @@ namespace Avalonia.Controls.UnitTests
                     ItemsSource = new[] { "Foo", "Bar", "Baz " }
                 };
                 Prepare(target);
-                _pen.Down(target.Presenter.Panel.Children[0]);
+                _pen.Down(target.Presenter!.Panel!.Children[0]);
 
                 Assert.Equal(-1, target.SelectedIndex);
             }
@@ -156,7 +156,7 @@ namespace Avalonia.Controls.UnitTests
                 });
 
                 var pointer = type == PointerType.Mouse ? _mouse : _pen;
-                pointer.Click(target.Presenter.Panel.Children[0], MouseButton.Right, position: new Point(5, 5));
+                pointer.Click(target.Presenter!.Panel!.Children[0], MouseButton.Right, position: new Point(5, 5));
 
                 Assert.True(contextRaised);
                 Assert.Equal(0, target.SelectedIndex);
@@ -177,7 +177,7 @@ namespace Avalonia.Controls.UnitTests
                 Prepare(target);
                 target.SelectedIndex = 0;
 
-                _mouse.Click(target.Presenter.Panel.Children[0]);
+                _mouse.Click(target.Presenter!.Panel!.Children[0]);
 
                 Assert.Equal(0, target.SelectedIndex);
             }
@@ -197,7 +197,7 @@ namespace Avalonia.Controls.UnitTests
                 AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
                 Prepare(target);
 
-                _mouse.Click(target.Presenter.Panel.Children[0]);
+                _mouse.Click(target.Presenter!.Panel!.Children[0]);
 
                 Assert.Equal(0, target.SelectedIndex);
             }
@@ -219,7 +219,7 @@ namespace Avalonia.Controls.UnitTests
                 Prepare(target);
                 target.SelectedIndex = 0;
 
-                _mouse.Click(target.Presenter.Panel.Children[0]);
+                _mouse.Click(target.Presenter!.Panel!.Children[0]);
 
                 Assert.Equal(-1, target.SelectedIndex);
             }
@@ -240,7 +240,7 @@ namespace Avalonia.Controls.UnitTests
                 Prepare(target);
                 target.SelectedIndex = 0;
 
-                _mouse.Click(target.Presenter.Panel.Children[0]);
+                _mouse.Click(target.Presenter!.Panel!.Children[0]);
 
                 Assert.Equal(0, target.SelectedIndex);
             }
@@ -261,7 +261,7 @@ namespace Avalonia.Controls.UnitTests
                 Prepare(target);
                 target.SelectedIndex = 1;
 
-                _mouse.Click(target.Presenter.Panel.Children[0]);
+                _mouse.Click(target.Presenter!.Panel!.Children[0]);
 
                 Assert.Equal(0, target.SelectedIndex);
             }
@@ -292,7 +292,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
-                var viewModel = new TestStackOverflowViewModel() { Items = new List<string> { "foo", "bar", "baz" } };
+                var viewModel = new TestStackOverflowViewModel() { Items = ["foo", "bar", "baz"] };
 
                 var target = new ListBox
                 {
@@ -316,17 +316,17 @@ namespace Avalonia.Controls.UnitTests
 
         private class TestStackOverflowViewModel : INotifyPropertyChanged
         {
-            public List<string> Items { get; set; }
+            public List<string?> Items { get; set; } = [];
 
             public int SetterInvokedCount { get; private set; }
 
             public const int MaxInvokedCount = 1000;
 
-            private string _selectedItem;
+            private string? _selectedItem;
 
-            public event PropertyChangedEventHandler PropertyChanged;
+            public event PropertyChangedEventHandler? PropertyChanged;
 
-            public string SelectedItem
+            public string? SelectedItem
             {
                 get { return _selectedItem; }
                 set

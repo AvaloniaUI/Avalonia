@@ -3,6 +3,7 @@
     <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsCurrentBrowserTargetFramework)</TargetFrameworks>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <WebAppDir>$(MSBuildThisFileDirectory)webapp</WebAppDir>
   </PropertyGroup>
 
   <ItemGroup>
@@ -41,18 +42,15 @@
     </Content>
   </ItemGroup>
 
-  <Target Name="NpmInstall" Inputs="webapp/package.json" Outputs="webapp/node_modules/.install-stamp">
-    <Exec Command="npm install" WorkingDirectory="webapp" />
+  <Target Name="BunInstall" Inputs="$(WebAppDir)/package.json" Outputs="$(WebAppDir)/node_modules/.install-stamp">
+    <!-- We use bun packages as .NET tool, to avoid preinstalled node.js dependency -->
+    <Exec Command="dnx Bun.Unofficial.Tool --yes -- install" WorkingDirectory="$(WebAppDir)" />
     <!-- Write the stamp file, so incremental builds work -->
-    <Touch Files="webapp/node_modules/.install-stamp" AlwaysCreate="true" />
+    <Touch Files="$(WebAppDir)/node_modules/.install-stamp" AlwaysCreate="true" />
   </Target>
-  <Target Name="NpmRunBuild" DependsOnTargets="NpmInstall" BeforeTargets="DispatchToInnerBuilds">
-    <Exec Command="npm run build" WorkingDirectory="webapp" />
+  <Target Name="BunRunBuild" DependsOnTargets="BunInstall" BeforeTargets="DispatchToInnerBuilds">
+    <Exec Command="dnx Bun.Unofficial.Tool build.js" WorkingDirectory="$(WebAppDir)" />
   </Target>
-
-  <ItemGroup Label="InternalsVisibleTo">
-    <InternalsVisibleTo Include="Avalonia.Browser.Blazor, PublicKey=$(AvaloniaPublicKey)" />
-  </ItemGroup>
 
   <ItemGroup>
     <Compile Include="..\..\Shared\RawEventGrouping.cs">

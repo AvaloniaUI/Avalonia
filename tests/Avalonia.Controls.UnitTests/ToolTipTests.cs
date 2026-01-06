@@ -24,6 +24,7 @@ namespace Avalonia.Controls.UnitTests
         protected override void VerifyToolTipType(Control control)
         {
             var toolTip = control.GetValue(ToolTip.ToolTipProperty);
+            Assert.NotNull(toolTip);
             Assert.IsType<PopupRoot>(toolTip.PopupHost);
             Assert.Same(toolTip.VisualRoot, toolTip.PopupHost);
         }
@@ -38,13 +39,14 @@ namespace Avalonia.Controls.UnitTests
             _toolTipOpenSubscription = ToolTip.IsOpenProperty.Changed.Subscribe(new AnonymousObserver<AvaloniaPropertyChangedEventArgs<bool>>(e =>
             {
                 if (e.Sender is Visual { VisualRoot: {} root } visual)
-                    OverlayLayer.GetOverlayLayer(visual).Measure(root.ClientSize);
+                    OverlayLayer.GetOverlayLayer(visual)!.Measure(root.ClientSize);
             }));
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             _toolTipOpenSubscription.Dispose();
+            base.Dispose();
         }
 
         protected override TestServices ConfigureServices(TestServices baseServices) =>
@@ -58,6 +60,7 @@ namespace Avalonia.Controls.UnitTests
         protected override void VerifyToolTipType(Control control)
         {
             var toolTip = control.GetValue(ToolTip.ToolTipProperty);
+            Assert.NotNull(toolTip);
             Assert.IsType<OverlayPopupHost>(toolTip.PopupHost);
             Assert.Same(toolTip.VisualRoot, control.VisualRoot);
         }
@@ -163,10 +166,10 @@ namespace Avalonia.Controls.UnitTests
                 SetupWindowAndActivateToolTip(target);
 
                 AssertToolTipOpen(target);
-                Assert.Equal("Tip", target.GetValue(ToolTip.ToolTipProperty).Content);
+                Assert.Equal("Tip", target.GetValue(ToolTip.ToolTipProperty)?.Content);
 
                 ToolTip.SetTip(target, "Tip1");
-                Assert.Equal("Tip1", target.GetValue(ToolTip.ToolTipProperty).Content);
+                Assert.Equal("Tip1", target.GetValue(ToolTip.ToolTipProperty)?.Content);
             }
         }
 
@@ -210,7 +213,7 @@ namespace Avalonia.Controls.UnitTests
 
                 window.ApplyStyling();
                 window.ApplyTemplate();
-                window.Presenter.ApplyTemplate();
+                window.Presenter!.ApplyTemplate();
 
                 Assert.Empty(toolTip.Classes);
             }
@@ -233,7 +236,7 @@ namespace Avalonia.Controls.UnitTests
 
                 window.ApplyStyling();
                 window.ApplyTemplate();
-                window.Presenter.ApplyTemplate();
+                window.Presenter!.ApplyTemplate();
 
                 ToolTip.SetIsOpen(decorator, true);
 
@@ -262,7 +265,7 @@ namespace Avalonia.Controls.UnitTests
 
                 window.ApplyStyling();
                 window.ApplyTemplate();
-                window.Presenter.ApplyTemplate();
+                window.Presenter!.ApplyTemplate();
 
                 ToolTip.SetIsOpen(decorator, true);
                 AssertToolTipOpen(decorator);
@@ -435,7 +438,7 @@ namespace Avalonia.Controls.UnitTests
                 [ToolTip.ShowDelayProperty] = 0
             };
 
-            var eventsOrder = new List<(string eventName, object sender, object source)>();
+            var eventsOrder = new List<(string eventName, object? sender, object? source)>();
 
             ToolTip.AddToolTipOpeningHandler(target,
                 (sender, args) => eventsOrder.Add(("Opening", sender, args.Source)));
@@ -453,7 +456,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(
                 new[]
                 {
-                    ("Opening", (object)target, (object)target),
+                    ("Opening", (object?)target, (object?)target),
                     ("Closing", target, target)
                 },
                 eventsOrder);
@@ -521,14 +524,14 @@ namespace Avalonia.Controls.UnitTests
                 AssertToolTipOpen(target);
 
                 var topLevel = TopLevel.GetTopLevel(target);
-                topLevel.PlatformImpl.Input(new RawPointerEventArgs(s_mouseDevice, (ulong)DateTime.Now.Ticks, topLevel, 
+                topLevel!.PlatformImpl!.Input!(new RawPointerEventArgs(s_mouseDevice, (ulong)DateTime.Now.Ticks, topLevel,
                     RawPointerEventType.LeaveWindow, default(RawPointerPoint), RawInputModifiers.None));
 
                 Assert.False(ToolTip.GetIsOpen(target));
             }
         }
 
-        private Action<Control> SetupWindowAndGetMouseEnterAction(Control windowContent, [CallerMemberName] string testName = null)
+        private Action<Control?> SetupWindowAndGetMouseEnterAction(Control windowContent, [CallerMemberName] string? testName = null)
         {
             var windowImpl = MockWindowingPlatform.CreateWindowMock();
             SetupWindowMock(windowImpl);
@@ -544,7 +547,7 @@ namespace Avalonia.Controls.UnitTests
 
             window.ApplyStyling();
             window.ApplyTemplate();
-            window.Presenter.ApplyTemplate();
+            window.Presenter!.ApplyTemplate();
             window.Show();
 
             Assert.True(windowContent.IsAttachedToVisualTree);
@@ -552,7 +555,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.True(windowContent.IsVisible);
 
             var controlIds = new Dictionary<Control, int>();
-            IInputRoot lastRoot = null;
+            IInputRoot? lastRoot = null;
 
             return control =>
             {
@@ -574,15 +577,15 @@ namespace Avalonia.Controls.UnitTests
                 hitTesterMock.Setup(m => m.HitTestFirst(point, window, It.IsAny<Func<Visual, bool>>()))
                     .Returns(control);
 
-                var root = (IInputRoot)control?.VisualRoot ?? window;
+                var root = (IInputRoot?)control?.VisualRoot ?? window;
                 var timestamp = (ulong)DateTime.Now.Ticks;
 
-                windowImpl.Object.Input(new RawPointerEventArgs(s_mouseDevice, timestamp, root,
+                windowImpl.Object.Input!(new RawPointerEventArgs(s_mouseDevice, timestamp, root,
                         RawPointerEventType.Move, point, RawInputModifiers.None));
 
                 if (lastRoot != null && lastRoot != root)
                 {
-                    ((TopLevel)lastRoot).PlatformImpl?.Input(new RawPointerEventArgs(s_mouseDevice, timestamp, 
+                    ((TopLevel)lastRoot).PlatformImpl?.Input!(new RawPointerEventArgs(s_mouseDevice, timestamp,
                         lastRoot, RawPointerEventType.LeaveWindow, new Point(-1,-1), RawInputModifiers.None));
                 }
 
@@ -592,7 +595,7 @@ namespace Avalonia.Controls.UnitTests
             };
         }
 
-        private void SetupWindowAndActivateToolTip(Control windowContent, Control targetOverride = null, [CallerMemberName] string testName = null) =>
+        private void SetupWindowAndActivateToolTip(Control windowContent, Control? targetOverride = null, [CallerMemberName] string? testName = null) =>
             SetupWindowAndGetMouseEnterAction(windowContent, testName)(targetOverride ?? windowContent);
     }
 

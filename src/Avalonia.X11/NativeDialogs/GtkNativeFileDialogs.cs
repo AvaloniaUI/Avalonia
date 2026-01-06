@@ -86,7 +86,7 @@ namespace Avalonia.X11.NativeDialogs
                     ? new BclStorageFile(new FileInfo(path))
                     : null;
 
-                return new SaveFilePickerResult(file) { SelectedFileType = selectedFilter };
+                return new SaveFilePickerResult { File = file, SelectedFileType = selectedFilter };
             });
         }
 

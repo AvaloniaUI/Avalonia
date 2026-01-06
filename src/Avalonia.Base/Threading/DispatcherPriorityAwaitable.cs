@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,6 +9,10 @@ namespace Avalonia.Threading;
 /// <summary>
 ///     A simple awaitable type that will return a DispatcherPriorityAwaiter.
 /// </summary>
+[UnconditionalSuppressMessage(
+    "Performance",
+    "CA1815:Override equals and operator equals on value types",
+    Justification = "This struct is not supposed to be used directly and should not be compared.")]
 public struct DispatcherPriorityAwaitable
 {
     private readonly Dispatcher _dispatcher;
@@ -30,6 +35,10 @@ public struct DispatcherPriorityAwaitable
 /// <remarks>
 ///     This is returned from DispatcherPriorityAwaitable.GetAwaiter()
 /// </remarks>
+[UnconditionalSuppressMessage(
+    "Performance",
+    "CA1815:Override equals and operator equals on value types",
+    Justification = "This struct is not supposed to be used directly and should not be compared.")]
 public struct DispatcherPriorityAwaiter : INotifyCompletion
 {
     private readonly Dispatcher _dispatcher;
@@ -72,6 +81,10 @@ public struct DispatcherPriorityAwaiter : INotifyCompletion
 /// <summary>
 ///     A simple awaitable type that will return a DispatcherPriorityAwaiter&lt;T&gt;.
 /// </summary>
+[UnconditionalSuppressMessage(
+    "Performance",
+    "CA1815:Override equals and operator equals on value types",
+    Justification = "This struct is not supposed to be used directly and should not be compared.")]
 public struct DispatcherPriorityAwaitable<T>
 {
     private readonly Dispatcher _dispatcher;
@@ -94,6 +107,10 @@ public struct DispatcherPriorityAwaitable<T>
 /// <remarks>
 ///     This is returned from DispatcherPriorityAwaitable&lt;T&gt;.GetAwaiter()
 /// </remarks>
+[UnconditionalSuppressMessage(
+    "Performance",
+    "CA1815:Override equals and operator equals on value types",
+    Justification = "This struct is not supposed to be used directly and should not be compared.")]
 public struct DispatcherPriorityAwaiter<T> : INotifyCompletion
 {
     private readonly Dispatcher _dispatcher;

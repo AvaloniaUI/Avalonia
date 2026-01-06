@@ -82,7 +82,7 @@ public class CompositionAnimationTests : ScopedTestBase
         var compositor =
             new Compositor(new RenderLoop(new CompositorTestServices.ManualRenderTimer()), null);
         var target = compositor.CreateSolidColorVisual();
-        var ani = new ScalarKeyFrameAnimation(null);
+        var ani = new ScalarKeyFrameAnimation(compositor);
         foreach (var frame in data.Frames)
             ani.InsertKeyFrame(frame.key, frame.value, new LinearEasing());
         ani.Duration = TimeSpan.FromSeconds(1);

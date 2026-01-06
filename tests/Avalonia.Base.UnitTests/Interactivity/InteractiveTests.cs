@@ -13,8 +13,8 @@ namespace Avalonia.Base.UnitTests.Interactivity
         public void Direct_Event_Should_Go_Straight_To_Source()
         {
             var ev = new RoutedEvent("test", RoutingStrategies.Direct, typeof(RoutedEventArgs), typeof(TestInteractive));
-            var invoked = new List<string>();
-            EventHandler<RoutedEventArgs> handler = (s, e) => invoked.Add(((TestInteractive)s).Name);
+            var invoked = new List<string?>();
+            EventHandler<RoutedEventArgs> handler = (s, e) => invoked.Add(((TestInteractive)s!).Name);
             var target = CreateTree(ev, handler, RoutingStrategies.Direct);
 
             var args = new RoutedEventArgs(ev, target);
@@ -47,8 +47,8 @@ namespace Avalonia.Base.UnitTests.Interactivity
         public void Bubbling_Event_Should_Bubble_Up()
         {
             var ev = new RoutedEvent("test", RoutingStrategies.Bubble, typeof(RoutedEventArgs), typeof(TestInteractive));
-            var invoked = new List<string>();
-            EventHandler<RoutedEventArgs> handler = (s, e) => invoked.Add(((TestInteractive)s).Name);
+            var invoked = new List<string?>();
+            EventHandler<RoutedEventArgs> handler = (s, e) => invoked.Add(((TestInteractive)s!).Name);
             var target = CreateTree(ev, handler, RoutingStrategies.Bubble | RoutingStrategies.Tunnel);
 
             var args = new RoutedEventArgs(ev, target);
@@ -61,8 +61,8 @@ namespace Avalonia.Base.UnitTests.Interactivity
         public void Tunneling_Event_Should_Tunnel()
         {
             var ev = new RoutedEvent("test", RoutingStrategies.Tunnel, typeof(RoutedEventArgs), typeof(TestInteractive));
-            var invoked = new List<string>();
-            EventHandler<RoutedEventArgs> handler = (s, e) => invoked.Add(((TestInteractive)s).Name);
+            var invoked = new List<string?>();
+            EventHandler<RoutedEventArgs> handler = (s, e) => invoked.Add(((TestInteractive)s!).Name);
             var target = CreateTree(ev, handler, RoutingStrategies.Bubble | RoutingStrategies.Tunnel);
 
             var args = new RoutedEventArgs(ev, target);
@@ -79,8 +79,8 @@ namespace Avalonia.Base.UnitTests.Interactivity
                 RoutingStrategies.Bubble | RoutingStrategies.Tunnel,
                 typeof(RoutedEventArgs),
                 typeof(TestInteractive));
-            var invoked = new List<string>();
-            EventHandler<RoutedEventArgs> handler = (s, e) => invoked.Add(((TestInteractive)s).Name);
+            var invoked = new List<string?>();
+            EventHandler<RoutedEventArgs> handler = (s, e) => invoked.Add(((TestInteractive)s!).Name);
             var target = CreateTree(ev, handler, RoutingStrategies.Bubble | RoutingStrategies.Tunnel);
 
             var args = new RoutedEventArgs(ev, target);
@@ -118,11 +118,11 @@ namespace Avalonia.Base.UnitTests.Interactivity
         public void Handled_Bubbled_Event_Should_Not_Propogate_Further()
         {
             var ev = new RoutedEvent("test", RoutingStrategies.Bubble, typeof(RoutedEventArgs), typeof(TestInteractive));
-            var invoked = new List<string>();
+            var invoked = new List<string?>();
 
             EventHandler<RoutedEventArgs> handler = (s, e) =>
             {
-                var t = (TestInteractive)s;
+                var t = (TestInteractive)s!;
                 invoked.Add(t.Name);
                 e.Handled = t.Name == "2b";
             };
@@ -143,11 +143,11 @@ namespace Avalonia.Base.UnitTests.Interactivity
                 RoutingStrategies.Bubble | RoutingStrategies.Tunnel, 
                 typeof(RoutedEventArgs), 
                 typeof(TestInteractive));
-            var invoked = new List<string>();
+            var invoked = new List<string?>();
 
             EventHandler<RoutedEventArgs> handler = (s, e) =>
             {
-                var t = (TestInteractive)s;
+                var t = (TestInteractive)s!;
                 invoked.Add(t.Name);
                 e.Handled = t.Name == "2b";
             };
@@ -239,11 +239,11 @@ namespace Avalonia.Base.UnitTests.Interactivity
                 RoutingStrategies.Bubble | RoutingStrategies.Tunnel,
                 typeof(RoutedEventArgs),
                 typeof(TestInteractive));
-            var invoked = new List<string>();
+            var invoked = new List<string?>();
 
             EventHandler<RoutedEventArgs> handler = (s, e) =>
             {
-                invoked.Add(((TestInteractive)s).Name);
+                invoked.Add(((TestInteractive)s!).Name);
                 e.Handled = true;
             };
 
@@ -263,8 +263,8 @@ namespace Avalonia.Base.UnitTests.Interactivity
                 RoutingStrategies.Direct,
                 typeof(RoutedEventArgs),
                 typeof(TestInteractive));
-            var invoked = new List<string>();
-            EventHandler<RoutedEventArgs> handler = (s, e) => invoked.Add(((TestInteractive)s).Name);
+            var invoked = new List<string?>();
+            EventHandler<RoutedEventArgs> handler = (s, e) => invoked.Add(((TestInteractive)s!).Name);
 
             var target = CreateTree(ev, null, 0);
 
@@ -284,8 +284,8 @@ namespace Avalonia.Base.UnitTests.Interactivity
                 RoutingStrategies.Bubble | RoutingStrategies.Tunnel,
                 typeof(RoutedEventArgs),
                 typeof(TestInteractive));
-            var invoked = new List<string>();
-            EventHandler<RoutedEventArgs> handler = (s, e) => invoked.Add(((TestInteractive)s).Name);
+            var invoked = new List<string?>();
+            EventHandler<RoutedEventArgs> handler = (s, e) => invoked.Add(((TestInteractive)s!).Name);
 
             var target = CreateTree(ev, null, 0);
 
@@ -305,8 +305,8 @@ namespace Avalonia.Base.UnitTests.Interactivity
                 RoutingStrategies.Bubble | RoutingStrategies.Tunnel,
                 typeof(RoutedEventArgs),
                 typeof(TestInteractive));
-            var invoked = new List<string>();
-            EventHandler<RoutedEventArgs> handler = (s, e) => invoked.Add(((TestInteractive)s).Name);
+            var invoked = new List<string?>();
+            EventHandler<RoutedEventArgs> handler = (s, e) => invoked.Add(((TestInteractive)s!).Name);
 
             var target = CreateTree(ev, null, 0);
 
@@ -334,7 +334,9 @@ namespace Avalonia.Base.UnitTests.Interactivity
             target.RaiseEvent(args);
 
             Assert.True(target.ClassHandlerInvoked);
-            Assert.True(target.GetVisualParent<TestInteractive>().ClassHandlerInvoked);
+            var interactive = target.GetVisualParent<TestInteractive>();
+            Assert.NotNull(interactive);
+            Assert.True(interactive.ClassHandlerInvoked);
         }
 
         [Fact]
@@ -355,7 +357,9 @@ namespace Avalonia.Base.UnitTests.Interactivity
 
             Assert.True(args.Handled);
             Assert.True(target.ClassHandlerInvoked);
-            Assert.True(target.GetVisualParent<TestInteractive>().ClassHandlerInvoked);
+            var interactive = target.GetVisualParent<TestInteractive>();
+            Assert.NotNull(interactive);
+            Assert.True(interactive.ClassHandlerInvoked);
         }
 
         [Fact]
@@ -381,8 +385,8 @@ namespace Avalonia.Base.UnitTests.Interactivity
         {
             // Issue #3176
             var ev = new RoutedEvent("test", RoutingStrategies.Bubble, typeof(RoutedEventArgs), typeof(TestInteractive));
-            var invoked = new List<string>();
-            EventHandler<RoutedEventArgs> handler = (s, e) => invoked.Add(((TestInteractive)s).Name);
+            var invoked = new List<string?>();
+            EventHandler<RoutedEventArgs> handler = (s, e) => invoked.Add(((TestInteractive)s!).Name);
             var parent = CreateTree(ev, handler, RoutingStrategies.Bubble | RoutingStrategies.Tunnel);
             var target = (Interactive)parent.GetVisualChildren().Single();
 
@@ -401,7 +405,7 @@ namespace Avalonia.Base.UnitTests.Interactivity
 
         private static TestInteractive CreateTree(
             RoutedEvent ev,
-            EventHandler<RoutedEventArgs> handler,
+            EventHandler<RoutedEventArgs>? handler,
             RoutingStrategies handlerRoutes,
             bool handledEventsToo = false)
         {
@@ -444,19 +448,19 @@ namespace Avalonia.Base.UnitTests.Interactivity
         private class TestInteractive : Interactive
         {
             public bool ClassHandlerInvoked { get; private set; }
-            public new string Name { get; set; }
+            public new string? Name { get; set; }
 
             public IEnumerable<Visual> Children
             {
                 get
                 {
-                    return ((Visual)this).VisualChildren.AsEnumerable();
+                    return VisualChildren.AsEnumerable();
                 }
 
                 set
                 {
                     VisualChildren.Clear();
-                    VisualChildren.AddRange(value.Cast<Visual>());
+                    VisualChildren.AddRange(value);
                 }
             }
 

@@ -13,7 +13,6 @@ namespace Avalonia.Android
 {
     internal sealed class ChoreographerTimer : IRenderTimer
     {
-        private static readonly bool s_supports64Callback = OperatingSystem.IsAndroidVersionAtLeast(29);
         private readonly object _lock = new();
         private readonly TaskCompletionSource<IntPtr> _choreographer = new();
         private readonly AutoResetEvent _event = new(false);
@@ -126,7 +125,7 @@ namespace Avalonia.Android
         private static unsafe void PostFrameCallback(IntPtr choreographer, IntPtr data)
         {
             // AChoreographer_postFrameCallback is deprecated on 10.0+. 
-            if (s_supports64Callback)
+            if (OperatingSystem.IsAndroidVersionAtLeast(29))
             {
                 AChoreographer_postFrameCallback64(choreographer, &FrameCallback64, data);
             }

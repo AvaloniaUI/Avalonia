@@ -212,9 +212,10 @@ namespace Avalonia.Platform
         object? GetFeature(Type t);
     }
 
-    public interface IDrawingContextImplWithEffects
+    [PrivateApi]
+    public interface IDrawingContextImplWithEffects : IDrawingContextImpl
     {
-        void PushEffect(IEffect effect);
+        void PushEffect(Rect? clipRect, IEffect effect);
         void PopEffect();
     }
 

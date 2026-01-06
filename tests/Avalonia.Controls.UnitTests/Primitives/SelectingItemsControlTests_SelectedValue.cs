@@ -319,7 +319,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         public void Handles_Null_SelectedItem_When_SelectedValueBinding_Assigned()
         {
             // Issue #11220
-            var items = new object[] { null };
+            var items = new object?[] { null };
             var sic = new SelectingItemsControl
             {
                 ItemsSource = items,
@@ -366,15 +366,15 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
     internal class TestClass
     {
-        public TestClass(string name, string alt)
+        public TestClass(string? name, string? alt)
         {
             Name = name;
             AltProperty = alt;
         }
 
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
-        public string AltProperty { get; set; }
+        public string? AltProperty { get; set; }
 
         public static List<TestClass> GetItems()
         {

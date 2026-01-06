@@ -67,7 +67,7 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
 
         public static void GenerateTrieClass(string name, UnicodeTrie trie)
         {
-            using var fileStream = File.Create($"Generated\\{name}.trie.cs");
+            using var fileStream = File.Create(Path.Combine("Generated", $"{name}.trie.cs"));
             using var writer = new StreamWriter(fileStream);
 
             writer.Write(
@@ -90,10 +90,18 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
                       {
                           [MethodImpl(MethodImplOptions.AggressiveInlining)]
                           get => new(Data, 0x{{trie.HighStart:X8}}, 0x{{trie.ErrorValue:X8}});
-                      } 
-                      
-                      private static ReadOnlySpan<uint> Data => new uint[]
-                      {
+                      }
+
+                      // For Debug builds, we store the data in a separate uint[] field to avoid RuntimeFieldInfoStub allocations.
+                      // See also: https://github.com/AvaloniaUI/Avalonia/pull/20175
+
+                  #if DEBUG
+                      public static ReadOnlySpan<uint> Data => s_data;
+                      private static uint[] s_data =
+                  #else
+                      public static ReadOnlySpan<uint> Data =>
+                  #endif
+                      [
                   """);
 
             for (int i = 0; i < trie.Data.Length; ++i)
@@ -114,7 +122,7 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
             writer.Write(
                 """
                 
-                    };
+                    ];
                 }
                 
                 """);
@@ -460,15 +468,15 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
     
     internal class UnicodeDataEntries
     {
-        public IReadOnlyList<DataEntry> Scripts { get; set; }
-        public IReadOnlyList<DataEntry> GeneralCategories{ get; set; }
-        public IReadOnlyList<DataEntry> LineBreakClasses{ get; set; }
+        public IReadOnlyList<DataEntry> Scripts { get; set; } = [];
+        public IReadOnlyList<DataEntry> GeneralCategories { get; set; } = [];
+        public IReadOnlyList<DataEntry> LineBreakClasses { get; set; } = [];
     }
     
     internal class BiDiDataEntries
     {
-        public IReadOnlyList<DataEntry> PairedBracketTypes { get; set; }
-        public IReadOnlyList<DataEntry> BiDiClasses{ get; set; }
+        public IReadOnlyList<DataEntry> PairedBracketTypes { get; set; } = [];
+        public IReadOnlyList<DataEntry> BiDiClasses { get; set; } = [];
     }
 
     internal readonly struct CodepointRange

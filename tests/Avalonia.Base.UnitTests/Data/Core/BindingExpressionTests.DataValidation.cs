@@ -6,8 +6,6 @@ using Avalonia.Data;
 using Avalonia.UnitTests;
 using Xunit;
 
-#nullable enable
-
 namespace Avalonia.Base.UnitTests.Data.Core;
 
 public partial class BindingExpressionTests
@@ -373,11 +371,12 @@ public partial class BindingExpressionTests
 
         public override bool HasErrors => _mustBePositive >= 0;
 
-        public override IEnumerable? GetErrors(string propertyName)
+        public override IEnumerable GetErrors(string? propertyName)
         {
-            IList<string>? result;
-            _errors.TryGetValue(propertyName, out result);
-            return result;
+            if (propertyName is not null && _errors.TryGetValue(propertyName, out var result))
+                return result;
+
+            return Array.Empty<string>();
         }
     }
 
@@ -392,7 +391,7 @@ public partial class BindingExpressionTests
         }
 
         public override bool HasErrors => false;
-        public override IEnumerable? GetErrors(string propertyName) => null;
+        public override IEnumerable GetErrors(string? propertyName) => Array.Empty<string>();
     }
 
     private class DataAnnotationsViewModel : NotifyingBase
@@ -420,14 +419,14 @@ public partial class BindingExpressionTests
 
         public override bool HasErrors => RequiredString is null;
         
-        public override IEnumerable? GetErrors(string propertyName)
+        public override IEnumerable GetErrors(string? propertyName)
         {
             if (propertyName == nameof(RequiredString) && RequiredString is null)
             {
                 return new[] { "String is required!" };
             }
 
-            return null;
+            return Array.Empty<string>();
         }
     }   
 

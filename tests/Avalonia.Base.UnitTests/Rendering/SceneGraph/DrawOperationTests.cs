@@ -81,7 +81,8 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
             using (ctx.Context.PushTransform(Matrix.CreateScale(scaleX, scaleY)))
                 ctx.Context.DrawRectangle(null, new ImmutablePen(Brushes.Black, penThickness), new Rect(x, y, width, height));
 
-            Assert.Equal(new Rect(expectedX, expectedY, expectedWidth, expectedHeight), ctx.GetBounds().Value);
+            var bounds = Assert.NotNull(ctx.GetBounds());
+            Assert.Equal(new Rect(expectedX, expectedY, expectedWidth, expectedHeight), bounds);
         }
 
         [Theory, InlineData(false), InlineData(true)]

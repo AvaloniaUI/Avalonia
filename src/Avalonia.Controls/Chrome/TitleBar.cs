@@ -27,12 +27,19 @@ namespace Avalonia.Controls.Chrome
 
             if (window.WindowState != WindowState.FullScreen)
             {
-                Height = Math.Max(0, window.WindowDecorationMargin.Top);
-
-                if (_captionButtons != null)
-                {
-                    _captionButtons.Height = Height;
-                }
+                var height = Math.Max(0, window.WindowDecorationMargin.Top);
+                Height = height;
+                _captionButtons?.Height = window.SystemDecorations == SystemDecorations.Full ? height : 0;
+            }
+            else
+            {
+                // Note: apparently the titlebar was supposed to be displayed when hovering the top of the screen,
+                // to mimic macOS behavior. This has been broken for years. It actually only partially works if the
+                // window is FullScreen right on startup, and only once. Any size change will then break it.
+                // Disable it for now.
+                // TODO: restore that behavior so that it works in all cases
+                Height = 0;
+                _captionButtons?.Height = 0;
             }
 
             IsVisible = window.PlatformImpl?.NeedsManagedDecorations ?? false;
@@ -79,6 +86,7 @@ namespace Avalonia.Controls.Chrome
                             PseudoClasses.Set(":normal", x == WindowState.Normal);
                             PseudoClasses.Set(":maximized", x == WindowState.Maximized);
                             PseudoClasses.Set(":fullscreen", x == WindowState.FullScreen);
+                            UpdateSize(window);
                         }),
                     window.GetObservable(Window.IsExtendedIntoWindowDecorationsProperty)
                         .Subscribe(_ => UpdateSize(window))

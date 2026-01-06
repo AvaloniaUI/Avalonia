@@ -21,27 +21,29 @@ namespace Avalonia.DesignerSupport.Tests
         private const int TimeoutInMs = 1000;
 
         private readonly List<IDisposable> _disposables = new List<IDisposable>();
-        private IAvaloniaRemoteTransportConnection _server;
-        private IAvaloniaRemoteTransportConnection _client;
+        private IAvaloniaRemoteTransportConnection? _server;
+        private IAvaloniaRemoteTransportConnection? _client;
         private BlockingCollection<object> _serverMessages = new BlockingCollection<object>();
         private BlockingCollection<object> _clientMessages = new BlockingCollection<object>();
-        private SynchronizationContext _originalContext;
+        private SynchronizationContext? _originalContext;
 
 
         class DisabledSyncContext : SynchronizationContext
         {
-            public override void Post(SendOrPostCallback d, object state)
+            public override void Post(SendOrPostCallback d, object? state)
             {
                 throw new InvalidCastException("Not allowed");
             }
 
-            public override void Send(SendOrPostCallback d, object state)
+            public override void Send(SendOrPostCallback d, object? state)
             {
                 throw new InvalidCastException("Not allowed");
             }
         }
-        
-        void Init(IMessageTypeResolver clientResolver = null, IMessageTypeResolver serverResolver = null)
+
+        [MemberNotNull(nameof(_server))]
+        [MemberNotNull(nameof(_client))]
+        void Init(IMessageTypeResolver? clientResolver = null, IMessageTypeResolver? serverResolver = null)
         {
             _originalContext = SynchronizationContext.Current;
             SynchronizationContext.SetSynchronizationContext(new DisabledSyncContext());
@@ -63,6 +65,7 @@ namespace Avalonia.DesignerSupport.Tests
             _disposables.Add(_client);
             _client.OnMessage += (_, m) => _clientMessages.Add(m);
             tcs.Task.Wait();
+            Assert.NotNull(_server);
             _disposables.Add(_server);
             _server.OnMessage += (_, m) => _serverMessages.Add(m);
 
@@ -95,8 +98,10 @@ namespace Avalonia.DesignerSupport.Tests
             {
                 if (t.IsArray)
                 {
-                    var arr = Array.CreateInstance(t.GetElementType(), 1);
-                    ((IList)arr)[0] = GetRandomValue(t.GetElementType(), pathInfo);
+                    var elementType = t.GetElementType();
+                    Assert.NotNull(elementType);
+                    var arr = Array.CreateInstance(elementType, 1);
+                    ((IList)arr)[0] = GetRandomValue(elementType, pathInfo);
                     return arr;
                 }
 
@@ -162,6 +167,48 @@ namespace Avalonia.DesignerSupport.Tests
 
         }
 
+        [Fact]
+        [SuppressMessage("Usage", "xUnit1031:Do not use blocking task operations in test method", Justification = "Sync context is explicitly disabled")]
+        void BsonSerializationIsThreadSafe()
+        {
+            Init();
+            // This test verifies that concurrent serialization doesn't cause infinite loops
+            // or corruption in the TypeHelper cache
+            var messages = Enumerable.Range(0, 100).Select(i => new MeasureViewportMessage
+            {
+                Width = i,
+                Height = i * 2
+            }).ToArray();
+
+            var tasks = new List<Task>();
+            var exceptions = new ConcurrentBag<Exception>();
+
+            // Spawn multiple threads that all try to serialize messages concurrently
+            for (int i = 0; i < 10; i++)
+            {
+                var task = Task.Run(() =>
+                {
+                    try
+                    {
+                        foreach (var message in messages)
+                        {
+                            _client.Send(message).Wait(TimeoutInMs);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        exceptions.Add(ex);
+                    }
+                });
+                tasks.Add(task);
+            }
+
+            Task.WaitAll(tasks.ToArray(), TimeoutInMs * messages.Length * 10);
+            
+            // Verify no exceptions occurred
+            Assert.Empty(exceptions);
+        }
+
         public void Dispose()
         {
             _disposables.ForEach(d => d.Dispose());
@@ -175,12 +222,12 @@ namespace Avalonia.DesignerSupport.Tests
         public double Width { get; set; }
         
         public int SomeNewProperty { get; set; }
-        public int[] SomeArrayProperty { get; set; }
+        public int[]? SomeArrayProperty { get; set; }
         public class SubObject
         {
             public int Foo { get; set; }
         }
-        public SubObject SubObjectProperty { get; set; }
+        public SubObject? SubObjectProperty { get; set; }
         public double Height { get; set; }
     }
 }

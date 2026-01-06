@@ -36,7 +36,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         {
             var data = new Class1();
             var target = Build(data, "Foo");
-            var result = new List<object>();
+            var result = new List<object?>();
 
             var sub = target.ToObservable().Subscribe(x => result.Add(x));
             data.SetValue(Class1.FooProperty, "bar");

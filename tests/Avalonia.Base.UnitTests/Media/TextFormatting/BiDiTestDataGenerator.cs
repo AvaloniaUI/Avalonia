@@ -42,7 +42,7 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
                         var lineNumber = 0;
 
                         // Process each line
-                        int[] levels = null;
+                        int[]? levels = null;
 
                         while (!reader.EndOfStream)
                         {
@@ -121,7 +121,7 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
                                     lineNumber,
                                     directions,
                                     paragraphEmbeddingLevel,
-                                    levels
+                                    levels!
                                 ]);
 
                                 break;

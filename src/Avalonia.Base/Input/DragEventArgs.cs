@@ -5,7 +5,7 @@ using Avalonia.Metadata;
 
 namespace Avalonia.Input
 {
-    public class DragEventArgs : RoutedEventArgs
+    public class DragEventArgs : RoutedEventArgs, IKeyModifiersEventArgs
     {
         private readonly Interactive _target;
         private readonly Point _targetLocation;

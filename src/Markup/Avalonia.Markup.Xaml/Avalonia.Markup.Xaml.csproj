@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsLegacyTargetFrameworks);netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsLegacyTargetFrameworks)</TargetFrameworks>
     <DefineConstants>$(DefineConstants);PCL;NETSTANDARD;NETSTANDARD2_0;HAS_TYPE_CONVERTER;HAS_CUSTOM_ATTRIBUTE_PROVIDER;XAMLX_INTERNAL</DefineConstants>
     <UseCecil>false</UseCecil>
     <DefineConstants Condition="$(UseCecil) == true">$(DefineConstants);RUNTIME_XAML_CECIL</DefineConstants>

@@ -185,7 +185,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             {
                 var target = new Popup();
 
-                Assert.Null(((Visual)target.Host));
+                Assert.Null((Visual)target.Host!);
             }
         }
 
@@ -198,7 +198,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 target.Open();
 
-                Assert.Equal(target, ((Visual)target.Host).Parent);
+                Assert.Equal(target, ((Visual)target.Host!).Parent);
                 Assert.Equal(target, ((Visual)target.Host).GetLogicalParent());
             }
         }
@@ -213,7 +213,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 target.Open();
 
-                var popupRoot = (ILogical)((Visual)target.Host);
+                var popupRoot = (ILogical)(Visual)target.Host!;
 
                 Assert.True(popupRoot.IsAttachedToLogicalTree);
                 root.Content = null;
@@ -332,7 +332,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var popup = (Popup)target.GetTemplateChildren().First(x => x.Name == "popup");
                 popup.Open();
 
-                var popupRoot = (Control)popup.Host;
+                var popupRoot = (Control)popup.Host!;
                 popupRoot.Measure(Size.Infinity);
                 popupRoot.Arrange(new Rect(popupRoot.DesiredSize));
 
@@ -375,7 +375,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 if (UsePopupHost)
                 {
                     Assert.Equal(
-                        new object[]
+                        new object?[]
                         {
                             popupRoot,
                             popupRoot,
@@ -388,7 +388,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 else
                 {
                     Assert.Equal(
-                        new object[]
+                        new object?[]
                         {
                             popupRoot,
                             popupRoot,
@@ -423,7 +423,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var popup = (Popup)target.GetTemplateChildren().First(x => x.Name == "popup");
                 popup.Open();
 
-                var popupRoot = (Control)popup.Host;
+                var popupRoot = (Control)popup.Host!;
                 popupRoot.Measure(Size.Infinity);
                 popupRoot.Arrange(new Rect(popupRoot.DesiredSize));
 
@@ -468,7 +468,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 if (UsePopupHost)
                 {
                     Assert.Equal(
-                        new object[]
+                        new object?[]
                         {
                             popupRoot,
                             popupRoot,
@@ -482,7 +482,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 else
                 {
                     Assert.Equal(
-                        new object[]
+                        new object?[]
                         {
                             popupRoot,
                             popupRoot,
@@ -518,7 +518,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var popup = (Popup)target.GetTemplateChildren().First(x => x.Name == "popup");
                 popup.Open();
 
-                var popupRoot = (Control)popup.Host;
+                var popupRoot = (Control)popup.Host!;
                 popupRoot.Measure(Size.Infinity);
                 popupRoot.Arrange(new Rect(popupRoot.DesiredSize));
 
@@ -621,6 +621,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 var e = CreatePointerPressedEventArgs(window, new Point(10, 15));
                 var overlay = LightDismissOverlayLayer.GetLightDismissOverlayLayer(window);
+                Assert.NotNull(overlay);
                 overlay.RaiseEvent(e);
 
                 Assert.Equal(1, raised);
@@ -747,6 +748,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 p.Close();
 
                 var focusManager = window.FocusManager;
+                Assert.NotNull(focusManager);
                 var focus = focusManager.GetFocusedElement();
                 Assert.Same(window, focus);
             }
@@ -787,6 +789,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 windowTB.Focus();
 
                 var focusManager = window.FocusManager;
+                Assert.NotNull(focusManager);
                 var focus = focusManager.GetFocusedElement();
 
                 Assert.True(focus == windowTB);
@@ -1167,7 +1170,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var ev = new PointerPressedEventArgs(
                     popupContent,
                     pointer,
-                    popupContent.VisualRoot as PopupRoot,
+                    (PopupRoot)popupContent.VisualRoot!,
                     new Point(50 , 50),
                     0,
                     new PointerPointProperties(RawInputModifiers.None, PointerUpdateKind.LeftButtonPressed),
@@ -1231,6 +1234,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var root = PreparedWindow(windowContent);
 
                 var adornerLayer = AdornerLayer.GetAdornerLayer(adorned);
+                Assert.NotNull(adornerLayer);
                 adornerLayer.Children.Add(adorner);
                 AdornerLayer.SetAdornedElement(adorner, adorned);
 
@@ -1286,9 +1290,9 @@ namespace Avalonia.Controls.UnitTests.Primitives
             }
         }
 
-        private static PopupRoot CreateRoot(TopLevel popupParent, IPopupImpl impl = null)
+        private static PopupRoot CreateRoot(TopLevel popupParent, IPopupImpl? impl = null)
         {
-            impl ??= popupParent.PlatformImpl.CreatePopup();
+            impl ??= popupParent.PlatformImpl!.CreatePopup()!;
 
             var result = new PopupRoot(popupParent, impl)
             {
@@ -1382,7 +1386,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             }, null);
         }
 
-        private static Window PreparedWindow(object content = null)
+        private static Window PreparedWindow(object? content = null)
         {
             var w = new Window { Content = content };
             w.Show();
@@ -1424,9 +1428,9 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
         private class TestControl : Decorator
         {
-            public event EventHandler DataContextBeginUpdate;
+            public event EventHandler? DataContextBeginUpdate;
 
-            public new AvaloniaObject InheritanceParent => base.InheritanceParent;
+            public new AvaloniaObject? InheritanceParent => base.InheritanceParent;
 
             protected override void OnDataContextBeginUpdate()
             {

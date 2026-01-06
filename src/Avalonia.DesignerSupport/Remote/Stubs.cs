@@ -309,7 +309,7 @@ namespace Avalonia.DesignerSupport.Remote
 
         public override Task<SaveFilePickerResult> SaveFilePickerWithResultAsync(FilePickerSaveOptions options)
         {
-            return Task.FromResult<SaveFilePickerResult>(new SaveFilePickerResult(null));
+            return Task.FromResult(new SaveFilePickerResult());
         }
 
         public override bool CanPickFolder => false;

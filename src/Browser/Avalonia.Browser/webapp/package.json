@@ -1,11 +1,5 @@
 {
   "name": "avalonia.browser",
-  "scripts": {
-    "typecheck": "npx tsc -noEmit",
-    "eslint": "npx eslint . --fix",
-    "prebuild": "npm-run-all typecheck eslint",
-    "build": "node build.js"
-  },
   "devDependencies": {
     "@types/emscripten": "^1.39.6",
     "@types/offscreencanvas": "2019.7.1",
@@ -21,6 +15,6 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "native-file-system-adapter": "github:jimmywarting/native-file-system-adapter#d43ad841581c2cc3ce47bbd1e8f11950ebdff027"
+    "native-file-system-adapter": "github:jimmywarting/native-file-system-adapter"
   }
 }

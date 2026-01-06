@@ -45,6 +45,7 @@ namespace Avalonia.Base.UnitTests.Styling
             var match = target.Match(control);
 
             Assert.Equal(SelectorMatchResult.Sometimes, match.Result);
+            Assert.NotNull(match.Activator);
             Assert.False(await match.Activator.Take(1));
         }
 
@@ -60,6 +61,7 @@ namespace Avalonia.Base.UnitTests.Styling
             var match = target.Match(control);
 
             Assert.Equal(SelectorMatchResult.Sometimes, match.Result);
+            Assert.NotNull(match.Activator);
             Assert.True(await match.Activator.Take(1));
         }
 
@@ -75,6 +77,7 @@ namespace Avalonia.Base.UnitTests.Styling
             var match = target.Match(control);
 
             Assert.Equal(SelectorMatchResult.Sometimes, match.Result);
+            Assert.NotNull(match.Activator);
             Assert.True(await match.Activator.Take(1));
         }
 

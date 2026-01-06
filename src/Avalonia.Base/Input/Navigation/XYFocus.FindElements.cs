@@ -65,7 +65,7 @@ public partial class XYFocus
 
     private static bool IsValidCandidate(InputElement candidate, KeyDeviceType? inputKeyDeviceType)
     {
-        return candidate.Focusable && candidate.IsEnabled && candidate.IsVisible
+        return candidate.Focusable && candidate.IsEffectivelyEnabled && candidate.IsEffectivelyVisible
                // Only allow candidate focus, if original key device type could focus it.
                && XYFocusHelpers.IsAllowedXYNavigationMode(candidate, inputKeyDeviceType);
     }

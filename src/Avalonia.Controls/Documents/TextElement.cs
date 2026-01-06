@@ -76,6 +76,21 @@ namespace Avalonia.Controls.Documents
                 Brushes.Black,
                 inherits: true);
 
+        /// <summary>
+        /// Defines the <see cref="LetterSpacing"/> property.
+        /// </summary>
+        /// <remarks>
+        /// This is an inherited attached property that defines letter spacing for text.
+        /// Letter spacing is specified in pixels. Default value is 0 (normal spacing).
+        /// Positive values increase spacing between characters.
+        /// Negative values decrease spacing between characters.
+        /// </remarks>
+        public static readonly AttachedProperty<double> LetterSpacingProperty =
+            AvaloniaProperty.RegisterAttached<TextElement, Control, double>(
+                name: nameof(LetterSpacing),
+                defaultValue: 0.0,
+                inherits: true);
+
         private IInlineHost? _inlineHost;
 
         /// <summary>
@@ -149,6 +164,15 @@ namespace Avalonia.Controls.Documents
             get => GetValue(ForegroundProperty);
             set => SetValue(ForegroundProperty, value);
         }
+        
+        /// <summary>
+        /// Gets or sets the letter spacing.
+        /// </summary>
+        public double LetterSpacing
+        {
+            get => GetValue(LetterSpacingProperty);
+            set => SetValue(LetterSpacingProperty, value);
+        }
 
         /// <summary>
         /// Gets the value of the attached <see cref="FontFamilyProperty"/> on a control.
@@ -188,6 +212,26 @@ namespace Avalonia.Controls.Documents
         public static void SetFontFeatures(Control control, FontFeatureCollection? value)
         {
             control.SetValue(FontFeaturesProperty, value);
+        }
+        
+        /// <summary>
+        /// Gets the value of the attached <see cref="LetterSpacingProperty"/> on a control.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <returns>The letter spacing applied to the control.</returns>
+        public static double GetLetterSpacing(Control control)
+        {
+            return control.GetValue(LetterSpacingProperty);
+        }
+
+        /// <summary>
+        /// Sets the value of the attached <see cref="LetterSpacingProperty"/> on a control.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="value">The letter spacing to apply.</param>
+        public static void SetLetterSpacing(Control control, double value)
+        {
+            control.SetValue(LetterSpacingProperty, value);
         }
         
         /// <summary>

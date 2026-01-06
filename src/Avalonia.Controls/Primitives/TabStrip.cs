@@ -1,5 +1,6 @@
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Layout;
 
 namespace Avalonia.Controls.Primitives
@@ -26,31 +27,17 @@ namespace Avalonia.Controls.Primitives
             return NeedsContainer<TabStripItem>(item, out recycleKey);
         }
 
-        /// <inheritdoc/>
-        protected override void OnGotFocus(GotFocusEventArgs e)
+        protected override bool ShouldTriggerSelection(Visual selectable, PointerEventArgs e) =>
+            e.Properties.PointerUpdateKind is PointerUpdateKind.LeftButtonPressed or PointerUpdateKind.LeftButtonReleased && base.ShouldTriggerSelection(selectable, e);
+
+        public override bool UpdateSelectionFromEvent(Control container, RoutedEventArgs eventArgs)
         {
-            base.OnGotFocus(e);
-
-            if (e.NavigationMethod == NavigationMethod.Directional)
+            if (eventArgs is GotFocusEventArgs { NavigationMethod: not NavigationMethod.Directional })
             {
-                e.Handled = UpdateSelectionFromEventSource(e.Source);
+                return false;
             }
-        }
 
-        /// <inheritdoc/>
-        protected override void OnPointerPressed(PointerPressedEventArgs e)
-        {
-            base.OnPointerPressed(e);
-
-            if (e.Source is Visual source)
-            {
-                var point = e.GetCurrentPoint(source);
-
-                if (point.Properties.IsLeftButtonPressed)
-                {
-                    e.Handled = UpdateSelectionFromEventSource(e.Source);
-                }
-            }
+            return base.UpdateSelectionFromEvent(container, eventArgs);
         }
     }
 }

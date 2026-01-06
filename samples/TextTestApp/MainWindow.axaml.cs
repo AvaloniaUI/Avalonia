@@ -320,11 +320,17 @@ namespace TextTestApp
 
         private void OnBufferSelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
-            List<Rect> rectangles = new List<Rect>(_buffer.Selection.Count);
+            if (_selectionAdorner is null)
+                return;
 
-            foreach (var row in _buffer.SelectedItems)
-                if (row is Control { Tag: Rect rect })
-                    rectangles.Add(rect);
+            var rectangles = new List<Rect>(_buffer.Selection.Count);
+
+            if (_buffer.SelectedItems is { } selectedItems)
+            {
+                foreach (var row in selectedItems)
+                    if (row is Control { Tag: Rect rect })
+                        rectangles.Add(rect);
+            }
 
             _selectionAdorner.Rectangles = rectangles;
         }

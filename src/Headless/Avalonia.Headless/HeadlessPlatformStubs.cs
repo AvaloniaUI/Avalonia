@@ -174,6 +174,12 @@ namespace Avalonia.Headless
 
                 var codepoint = Codepoint.ReadAt(textSpan, i, out var count);
 
+                // Handle CRLF as a single cluster
+                if (codepoint.Value == 0x0D && Codepoint.ReadAt(textSpan, i + count, out var lfCount).Value == 0x0A)
+                {
+                    count += lfCount;
+                }
+
                 var glyphIndex = typeface.GetGlyph(codepoint);
 
                 for (var j = 0; j < count; ++j)
@@ -210,15 +216,14 @@ namespace Avalonia.Headless
         }
 
         public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight,
-            FontStretch fontStretch,
-            CultureInfo? culture, out Typeface fontKey)
+            FontStretch fontStretch, string? familyName, CultureInfo? culture, out Typeface fontKey)
         {
             fontKey = new Typeface(_defaultFamilyName);
 
             return false;
         }
 
-        public virtual bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight, 
+        public virtual bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight,
             FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
         {
             glyphTypeface = null;
@@ -238,9 +243,9 @@ namespace Avalonia.Headless
         public virtual bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, out IGlyphTypeface glyphTypeface)
         {
             glyphTypeface = new HeadlessGlyphTypefaceImpl(
-                FontFamily.DefaultFontFamilyName, 
-                fontSimulations.HasFlag(FontSimulations.Oblique) ? FontStyle.Italic : FontStyle.Normal, 
-                fontSimulations.HasFlag(FontSimulations.Bold) ? FontWeight.Bold : FontWeight.Normal, 
+                FontFamily.DefaultFontFamilyName,
+                fontSimulations.HasFlag(FontSimulations.Oblique) ? FontStyle.Italic : FontStyle.Normal,
+                fontSimulations.HasFlag(FontSimulations.Bold) ? FontWeight.Bold : FontWeight.Normal,
                 FontStretch.Normal);
 
             TryCreateGlyphTypefaceCount++;
@@ -275,8 +280,7 @@ namespace Avalonia.Headless
         }
 
         public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight,
-            FontStretch fontStretch,
-            CultureInfo? culture, out Typeface fontKey)
+            FontStretch fontStretch, string? familyName, CultureInfo? culture, out Typeface fontKey)
         {
             fontKey = new Typeface(_defaultFamilyName);
 

@@ -3,11 +3,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using Xunit;
 
-#if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests
-#else
-namespace Avalonia.Direct2D1.RenderTests
-#endif
 {   
     public class Win32Fact : FactAttribute
     {

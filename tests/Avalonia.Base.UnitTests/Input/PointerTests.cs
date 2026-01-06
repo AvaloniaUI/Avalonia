@@ -22,7 +22,7 @@ namespace Avalonia.Base.UnitTests.Input
                     (newParent = new Border { Child = newCapture = new Border() })
                 }
             };
-            var receivers = new List<object>();
+            var receivers = new List<object?>();
             var root = new TestRoot(el);
             foreach (InputElement d in root.GetSelfAndVisualDescendants())
                 d.PointerCaptureLost += (s, e) => receivers.Add(s);

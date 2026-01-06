@@ -141,9 +141,6 @@ dotnet_analyzer_diagnostic.category-Performance.severity = none #error - Uncomme
 # CS0649: Field 'field' is never assigned to, and will always have its default value 'value'
 dotnet_diagnostic.CS0649.severity = error
 
-# CS1591: Missing XML comment for publicly visible type or member
-dotnet_diagnostic.CS1591.severity = suggestion
-
 # CS0162: Remove unreachable code
 dotnet_diagnostic.CS0162.severity = error
 # CA1018: Mark attributes with AttributeUsageAttribute

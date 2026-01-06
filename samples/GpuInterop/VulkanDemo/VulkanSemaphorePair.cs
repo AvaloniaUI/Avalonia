@@ -29,10 +29,10 @@ class VulkanSemaphorePair : IDisposable
             PNext = exportable ? &semaphoreExportInfo : null
         };
 
-        resources.Api.CreateSemaphore(resources.Device, semaphoreCreateInfo, null, out var semaphore).ThrowOnError();
+        resources.Api.CreateSemaphore(resources.Device, in semaphoreCreateInfo, null, out var semaphore).ThrowOnError();
         ImageAvailableSemaphore = semaphore;
 
-        resources.Api.CreateSemaphore(resources.Device, semaphoreCreateInfo, null, out semaphore).ThrowOnError();
+        resources.Api.CreateSemaphore(resources.Device, in semaphoreCreateInfo, null, out semaphore).ThrowOnError();
         RenderFinishedSemaphore = semaphore;
     }
 
@@ -47,7 +47,7 @@ class VulkanSemaphorePair : IDisposable
             Semaphore = renderFinished ? RenderFinishedSemaphore : ImageAvailableSemaphore,
             HandleType = ExternalSemaphoreHandleTypeFlags.OpaqueFDBit
         };
-        ext.GetSemaphoreF(_resources.Device, info, out var fd).ThrowOnError();
+        ext.GetSemaphoreF(_resources.Device, in info, out var fd).ThrowOnError();
         return fd;
     }
     
@@ -62,7 +62,7 @@ class VulkanSemaphorePair : IDisposable
             Semaphore = renderFinished ? RenderFinishedSemaphore : ImageAvailableSemaphore,
             HandleType = ExternalSemaphoreHandleTypeFlags.OpaqueWin32Bit
         };
-        ext.GetSemaphoreWin32Handle(_resources.Device, info, out var fd).ThrowOnError();
+        ext.GetSemaphoreWin32Handle(_resources.Device, in info, out var fd).ThrowOnError();
         return fd;
     }
 

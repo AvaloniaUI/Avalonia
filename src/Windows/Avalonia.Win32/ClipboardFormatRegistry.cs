@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using Avalonia.Input;
+using Avalonia.Media.Imaging;
 using Avalonia.Utilities;
 using Avalonia.Win32.Interop;
 
@@ -12,17 +13,28 @@ namespace Avalonia.Win32
         private const int MaxFormatNameLength = 260;
         private const string AppPrefix = "avn-app-fmt:";
         public const string PngFormatMimeType = "image/png";
-        public const string JpegFormatMimeType = "image/jpeg";
+        public const string PngFormatSystemType = "PNG";
         public const string BitmapFormat = "CF_BITMAP";
         public const string DibFormat = "CF_DIB";
+        public const string DibV5Format = "CF_DIBV5";
         private static readonly List<(DataFormat Format, ushort Id)> s_formats = [];
+
+        public static DataFormat PngSystemDataFormat = DataFormat.FromSystemName<Bitmap>(PngFormatSystemType, AppPrefix);
+        public static DataFormat PngMimeDataFormat = DataFormat.FromSystemName<Bitmap>(PngFormatMimeType, AppPrefix);
+        public static DataFormat HBitmapDataFormat = DataFormat.FromSystemName<Bitmap>(BitmapFormat, AppPrefix);
+        public static DataFormat DibDataFormat = DataFormat.FromSystemName<Bitmap>(DibFormat, AppPrefix);
+        public static DataFormat DibV5DataFormat = DataFormat.FromSystemName<Bitmap>(DibV5Format, AppPrefix);
+
+        public static DataFormat[] ImageFormats = [PngMimeDataFormat, PngSystemDataFormat, DibDataFormat, DibV5DataFormat, HBitmapDataFormat];
 
         static ClipboardFormatRegistry()
         {
             AddDataFormat(DataFormat.Text, (ushort)UnmanagedMethods.ClipboardFormat.CF_UNICODETEXT);
             AddDataFormat(DataFormat.Text, (ushort)UnmanagedMethods.ClipboardFormat.CF_TEXT);
             AddDataFormat(DataFormat.File, (ushort)UnmanagedMethods.ClipboardFormat.CF_HDROP);
-            AddDataFormat(DataFormat.Bitmap, (ushort)UnmanagedMethods.ClipboardFormat.CF_DIB);
+            AddDataFormat(DibDataFormat, (ushort)UnmanagedMethods.ClipboardFormat.CF_DIB);
+            AddDataFormat(DibV5DataFormat, (ushort)UnmanagedMethods.ClipboardFormat.CF_DIBV5);
+            AddDataFormat(HBitmapDataFormat, (ushort)UnmanagedMethods.ClipboardFormat.CF_BITMAP);
         }
 
         private static void AddDataFormat(DataFormat format, ushort id)
@@ -62,24 +74,18 @@ namespace Avalonia.Win32
                 if (DataFormat.Bitmap.Equals(format))
                 {
                     (DataFormat, ushort)? pngFormat = null;
-                    (DataFormat, ushort)? jpgFormat = null;
                     (DataFormat, ushort)? dibFormat = null;
-                    (DataFormat, ushort)? bitFormat = null;
 
                     foreach (var currentFormat in s_formats)
                     {
                         if (currentFormat.Id == (ushort)UnmanagedMethods.ClipboardFormat.CF_DIB)
                             dibFormat = currentFormat;
-                        else if (currentFormat.Id == (ushort)UnmanagedMethods.ClipboardFormat.CF_BITMAP)
-                            bitFormat = currentFormat;
                         else if (currentFormat.Format.Identifier == PngFormatMimeType)
                             pngFormat = currentFormat;
-                        else if (currentFormat.Format.Identifier == JpegFormatMimeType)
-                            jpgFormat = currentFormat;
                     }
-                    var imageFormatId = dibFormat?.Item2 ?? bitFormat?.Item2 ?? pngFormat?.Item2 ?? jpgFormat?.Item2 ?? 0;
+                    var imageFormatId = pngFormat?.Item2 ?? dibFormat?.Item2 ?? 0;
 
-                    if(imageFormatId != 0)
+                    if (imageFormatId != 0)
                     {
                         return imageFormatId;
                     }

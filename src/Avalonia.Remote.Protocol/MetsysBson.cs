@@ -30,6 +30,7 @@ Code imported from https://github.com/elaberge/Metsys.Bson without any changes
 
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -695,7 +696,7 @@ namespace Metsys.Bson
     [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = "Bson uses reflection")]
     internal class TypeHelper
     {
-        private static readonly IDictionary<Type, TypeHelper> _cachedTypeLookup = new Dictionary<Type, TypeHelper>();
+        private static readonly ConcurrentDictionary<Type, TypeHelper> _cachedTypeLookup = new ConcurrentDictionary<Type, TypeHelper>();
         private static readonly BsonConfiguration _configuration = BsonConfiguration.Instance;
 
         private readonly IDictionary<string, MagicProperty> _properties;
@@ -725,13 +726,7 @@ namespace Metsys.Bson
 
         public static TypeHelper GetHelperForType(Type type)
         {
-            TypeHelper helper;
-            if (!_cachedTypeLookup.TryGetValue(type, out helper))
-            {
-                helper = new TypeHelper(type);
-                _cachedTypeLookup[type] = helper;
-            }
-            return helper;
+            return _cachedTypeLookup.GetOrAdd(type, t => new TypeHelper(t));
         }
 
         public static string FindProperty(LambdaExpression lambdaExpression)

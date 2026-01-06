@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using System.Linq;
 using Avalonia.Controls;
@@ -57,7 +55,7 @@ namespace Avalonia.Native
                 .OrderBy(x => x.Scaling)
                 .First(m => m.Bounds.Contains(Position));
 
-            Resize(new Size(monitor!.WorkingArea.Width * 0.75d, monitor.WorkingArea.Height * 0.7d), WindowResizeReason.Layout);
+            Resize(new Size(monitor.WorkingArea.Width * 0.75d, monitor.WorkingArea.Height * 0.7d), WindowResizeReason.Layout);
         }
 
         public void Activate()

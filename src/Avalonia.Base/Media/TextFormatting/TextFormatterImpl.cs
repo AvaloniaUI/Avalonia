@@ -93,6 +93,18 @@ namespace Avalonia.Media.TextFormatting
         internal static SplitResult<RentedList<TextRun>> SplitTextRuns(IReadOnlyList<TextRun> textRuns, int length,
             FormattingObjectPool objectPool)
         {
+            if(length == 0)
+            {
+                var second = objectPool.TextRunLists.Rent();
+
+                for (var i = 0; i < textRuns.Count; i++)
+                {
+                    second.Add(textRuns[i]);
+                }
+
+                return new SplitResult<RentedList<TextRun>>(null, second);
+            }
+
             var first = objectPool.TextRunLists.Rent();
             var currentLength = 0;
 
@@ -148,9 +160,15 @@ namespace Avalonia.Media.TextFormatting
                     {
                         var split = shapedTextCharacters.Split(length - currentLength);
 
-                        first.Add(split.First);
+                        if(split.First is not null)
+                        {
+                            first.Add(split.First);
+                        }
 
-                        second.Add(split.Second!);
+                        if (split.Second != null)
+                        {
+                            second.Add(split.Second);
+                        }
                     }
 
                     for (var j = 1; j < secondCount; j++)
@@ -379,7 +397,7 @@ namespace Avalonia.Media.TextFormatting
 
                 var splitResult = shapedBuffer.Split(previousLength + currentRun.Length);
 
-                if(splitResult.First.Length == 0)
+                if (splitResult.First is null || splitResult.First.Length == 0)
                 {
                     previousLength += currentRun.Length;
                 }
@@ -932,6 +950,11 @@ namespace Avalonia.Media.TextFormatting
                     textLineBreak = null;
                 }
 
+                if(preSplitRuns is null)
+                {
+                    return CreateEmptyTextLine(firstTextSourceIndex, paragraphWidth, paragraphProperties);
+                }
+
                 if (postSplitRuns?.Count > 0)
                 {
                     ResetTrailingWhitespaceBidiLevels(preSplitRuns, paragraphProperties.FlowDirection, objectPool);
@@ -1013,7 +1036,11 @@ namespace Avalonia.Media.TextFormatting
 
                     lineTextRuns.RemoveAt(lastTextRunIndex);
 
-                    lineTextRuns.AddRange(textRuns);
+                    if(textRuns is not null)
+                    {
+                        lineTextRuns.AddRange(textRuns);
+                    }
+
                     lineTextRuns.AddRange(trailingWhitespaceRuns);
                 }
             }

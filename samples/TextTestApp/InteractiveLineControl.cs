@@ -233,6 +233,7 @@ namespace TextTestApp
         }
 
         private GenericTextRunProperties? _textRunProperties;
+
         public GenericTextRunProperties TextRunProperties
         {
             get
@@ -241,9 +242,6 @@ namespace TextTestApp
             }
             set
             {
-                if (value == null)
-                    throw new ArgumentNullException(nameof(value));
-
                 _textRunProperties = value;
                 SetCurrentValue(FontFamilyProperty, value.Typeface.FontFamily);
                 SetCurrentValue(FontFeaturesProperty, value.FontFeatures);

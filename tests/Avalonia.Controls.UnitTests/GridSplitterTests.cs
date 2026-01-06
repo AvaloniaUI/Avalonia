@@ -1,3 +1,5 @@
+#nullable enable
+
 using System.Collections.Generic;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;

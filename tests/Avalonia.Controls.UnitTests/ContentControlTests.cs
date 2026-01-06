@@ -24,7 +24,7 @@ namespace Avalonia.Controls.UnitTests
             target.Content = "Foo";
             target.Template = GetTemplate();
             target.ApplyTemplate();
-            target.Presenter.UpdateChild();
+            target.Presenter!.UpdateChild();
 
             var child = target.VisualChildren.Single();
             Assert.IsType<Border>(child);
@@ -55,7 +55,7 @@ namespace Avalonia.Controls.UnitTests
             root.Child = target;
 
             target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            target.Presenter!.ApplyTemplate();
 
             foreach (Control child in target.GetTemplateChildren())
                 Assert.Equal("foo", child.Tag);
@@ -70,9 +70,10 @@ namespace Avalonia.Controls.UnitTests
             target.Template = GetTemplate();
             target.Content = child;
             target.ApplyTemplate();
-            target.Presenter.UpdateChild();
+            target.Presenter!.UpdateChild();
 
             var contentPresenter = child.GetVisualParent<ContentPresenter>();
+            Assert.NotNull(contentPresenter);
             Assert.Equal(target, contentPresenter.TemplatedParent);
         }
 
@@ -85,7 +86,7 @@ namespace Avalonia.Controls.UnitTests
             target.Template = GetTemplate();
             target.Content = child;
             target.ApplyTemplate();
-            target.Presenter.UpdateChild();
+            target.Presenter!.UpdateChild();
 
             Assert.Null(child.TemplatedParent);
         }
@@ -117,7 +118,7 @@ namespace Avalonia.Controls.UnitTests
             var child = new Control();
             target.Content = child;
             target.ApplyTemplate();
-            target.Presenter.UpdateChild();
+            target.Presenter!.UpdateChild();
 
             Assert.Equal(child.Parent, target);
             Assert.Equal(child.GetLogicalParent(), target);
@@ -135,7 +136,7 @@ namespace Avalonia.Controls.UnitTests
 
             target.Content = "Foo";
             target.ApplyTemplate();
-            target.Presenter.UpdateChild();
+            target.Presenter!.UpdateChild();
 
             var child = target.Presenter.Child;
 
@@ -152,7 +153,7 @@ namespace Avalonia.Controls.UnitTests
 
             target.Content = "Foo";
             target.ApplyTemplate();
-            target.Presenter.UpdateChild();
+            target.Presenter!.UpdateChild();
 
             var child = target.Presenter.Child;
 
@@ -192,7 +193,7 @@ namespace Avalonia.Controls.UnitTests
             target.Template = GetTemplate();
             target.Content = child;
             target.ApplyTemplate();
-            target.Presenter.UpdateChild();
+            target.Presenter!.UpdateChild();
 
             Assert.True(called);
         }
@@ -207,7 +208,7 @@ namespace Avalonia.Controls.UnitTests
             target.Template = GetTemplate();
             target.Content = child;
             target.ApplyTemplate();
-            target.Presenter.UpdateChild();
+            target.Presenter!.UpdateChild();
 
             ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) => called = true;
 
@@ -228,7 +229,7 @@ namespace Avalonia.Controls.UnitTests
             target.Template = GetTemplate();
             target.Content = child1;
             target.ApplyTemplate();
-            target.Presenter.UpdateChild();
+            target.Presenter!.UpdateChild();
 
             ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) => called = true;
 
@@ -245,14 +246,14 @@ namespace Avalonia.Controls.UnitTests
 
             target.Template = GetTemplate();
             target.ApplyTemplate();
-            target.Presenter.UpdateChild();
+            target.Presenter!.UpdateChild();
 
             target.Content = "Foo";
             target.Presenter.UpdateChild();
-            Assert.Equal("Foo", ((TextBlock)target.Presenter.Child).Text);
+            Assert.Equal("Foo", ((TextBlock)target.Presenter.Child!).Text);
             target.Content = "Bar";
             target.Presenter.UpdateChild();
-            Assert.Equal("Bar", ((TextBlock)target.Presenter.Child).Text);
+            Assert.Equal("Bar", ((TextBlock)target.Presenter.Child!).Text);
         }
 
         [Fact]
@@ -263,9 +264,9 @@ namespace Avalonia.Controls.UnitTests
             target.Template = GetTemplate();
             target.Content = "Foo";
             target.ApplyTemplate();
-            target.Presenter.UpdateChild();
+            target.Presenter!.UpdateChild();
 
-            Assert.Equal("Foo", target.Presenter.Child.DataContext);
+            Assert.Equal("Foo", target.Presenter.Child!.DataContext);
         }
 
         [Fact]
@@ -276,16 +277,16 @@ namespace Avalonia.Controls.UnitTests
             target.Template = GetTemplate();
             target.Content = new TextBlock();
             target.ApplyTemplate();
-            target.Presenter.UpdateChild();
+            target.Presenter!.UpdateChild();
 
-            Assert.Null(target.Presenter.Child.DataContext);
+            Assert.Null(target.Presenter.Child!.DataContext);
         }
 
         [Fact]
         public void Binding_ContentTemplate_After_Content_Does_Not_Leave_Orpaned_TextBlock()
         {
             // Test for #1271.
-            var children = new List<Control>();
+            var children = new List<Control?>();
             var presenter = new ContentPresenter();
 
             // The content and then the content template property need to be bound with delayed bindings
@@ -328,7 +329,7 @@ namespace Avalonia.Controls.UnitTests
                 x => Assert.IsType<TextBlock>(x),
                 x => Assert.IsType<Canvas>(x));
 
-            var textBlock = (TextBlock)children[1];
+            var textBlock = (TextBlock)children[1]!;
 
             // The leak in #1271 was caused by the TextBlock's logical parent not being cleared when
             // it is replaced by the Canvas.
@@ -356,9 +357,9 @@ namespace Avalonia.Controls.UnitTests
 
             target.Content = "Foo";
             target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            target.Presenter!.ApplyTemplate();
 
-            Assert.Equal(target, target.Presenter.Child.GetLogicalParent());
+            Assert.Equal(target, target.Presenter!.Child!.GetLogicalParent());
             Assert.Equal(new[] { target.Presenter.Child }, target.LogicalChildren);
 
             root.Child = null;
@@ -370,7 +371,7 @@ namespace Avalonia.Controls.UnitTests
             root.Child = target;
             target.Content = "Bar";
 
-            Assert.Equal(target, target.Presenter.Child.GetLogicalParent());
+            Assert.Equal(target, target.Presenter.Child!.GetLogicalParent());
             Assert.Equal(new[] { target.Presenter.Child }, target.LogicalChildren);
         }
 

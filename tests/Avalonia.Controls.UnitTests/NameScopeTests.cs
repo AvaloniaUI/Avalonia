@@ -56,7 +56,8 @@ namespace Avalonia.Controls.UnitTests
          that the object graph is completely ready to use after it's built
          rather than have pending continuations queued by SynchronizationContext.
         */
-        object _found = null;
+        private object? _found;
+
         async void FindAsync(INameScope scope, string name)
         {
             _found = await scope.FindAsync(name);

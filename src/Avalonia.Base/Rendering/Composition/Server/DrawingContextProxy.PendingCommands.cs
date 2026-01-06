@@ -50,6 +50,10 @@ internal partial class CompositorDrawingContextProxy
         [FieldOffset(0)] public bool IsRoundRect;
         [FieldOffset(4)] public RoundedRect RoundRect;
         [FieldOffset(4)] public Rect NormalRect;
+        
+        // PushEffect
+        [FieldOffset(0)]
+        public Rect? EffectClipRect;
     }
 
     struct PendingCommand
@@ -142,7 +146,7 @@ internal partial class CompositorDrawingContextProxy
         else if (cmd.Type == PendingCommandType.PushEffect)
         {
             if (_impl is IDrawingContextImplWithEffects effects)
-                effects.PushEffect(cmd.ObjectUnion.Effect!);
+                effects.PushEffect(cmd.DataUnion.EffectClipRect, cmd.ObjectUnion.Effect!);
         }
         else if (cmd.Type == PendingCommandType.PushRenderOptions)
             _impl.PushRenderOptions(cmd.DataUnion.RenderOptions);

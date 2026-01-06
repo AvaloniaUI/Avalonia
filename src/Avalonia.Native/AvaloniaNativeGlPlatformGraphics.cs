@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.OpenGL;
 using Avalonia.Native.Interop;
@@ -90,12 +91,12 @@ namespace Avalonia.Native
     class GlContext : IGlContext
     {
         private readonly GlDisplay _display;
-        private readonly GlContext _sharedWith;
+        private readonly GlContext? _sharedWith;
         private readonly GpuHandleWrapFeature _handleWrapFeature;
         private readonly GlExternalObjectsFeature _externalObjects;
-        public IAvnGlContext Context { get; private set; }
+        public IAvnGlContext? Context { get; private set; }
 
-        public GlContext(GlDisplay display, GlContext sharedWith, IAvnGlContext context, GlVersion version)
+        public GlContext(GlDisplay display, GlContext? sharedWith, IAvnGlContext context, GlVersion version)
         {
             _display = display;
             _sharedWith = sharedWith;
@@ -109,14 +110,25 @@ namespace Avalonia.Native
         public GlInterface GlInterface => _display.GlInterface;
         public int SampleCount => _display.SampleCount;
         public int StencilSize => _display.StencilSize;
-        public IDisposable MakeCurrent()
+
+        [MemberNotNull(nameof(Context))]
+        public void ThrowIfLost()
         {
             if (IsLost)
                 throw new PlatformGraphicsContextLostException();
+        }
+
+        [MemberNotNull(nameof(Context))]
+        public IDisposable MakeCurrent()
+        {
+            ThrowIfLost();
             return Context.MakeCurrent();
         }
 
+        [MemberNotNullWhen(false, nameof(Context))]
         public bool IsLost => Context == null;
+
+        [MemberNotNull(nameof(Context))]
         public IDisposable EnsureCurrent() => MakeCurrent();
 
         public bool IsSharedWith(IGlContext context)
@@ -130,16 +142,16 @@ namespace Avalonia.Native
 
         public bool CanCreateSharedContext => true;
 
-        public IGlContext CreateSharedContext(IEnumerable<GlVersion> preferredVersions = null) =>
+        public IGlContext CreateSharedContext(IEnumerable<GlVersion>? preferredVersions = null) =>
             _display.CreateSharedContext(_sharedWith ?? this);
 
         public void Dispose()
         {
-            Context.Dispose();
+            Context?.Dispose();
             Context = null;
         }
 
-        public object TryGetFeature(Type featureType)
+        public object? TryGetFeature(Type featureType)
         {
             if (featureType == typeof(IExternalObjectsHandleWrapRenderInterfaceContextFeature))
                 return _handleWrapFeature;
@@ -152,7 +164,7 @@ namespace Avalonia.Native
 
     class GlPlatformSurfaceRenderTarget : IGlPlatformSurfaceRenderTarget
     {
-        private IAvnGlSurfaceRenderTarget _target;
+        private IAvnGlSurfaceRenderTarget? _target;
         private readonly IGlContext _context;
 
         public GlPlatformSurfaceRenderTarget(IAvnGlSurfaceRenderTarget target, IGlContext context)
@@ -163,6 +175,7 @@ namespace Avalonia.Native
 
         public IGlPlatformSurfaceRenderingSession BeginDraw()
         {
+            ObjectDisposedException.ThrowIf(_target is null, this);
             return new GlPlatformSurfaceRenderingSession(_context, _target.BeginDrawing());
         }
 
@@ -175,7 +188,7 @@ namespace Avalonia.Native
 
     class GlPlatformSurfaceRenderingSession : IGlPlatformSurfaceRenderingSession
     {
-        private IAvnGlSurfaceRenderingSession _session;
+        private IAvnGlSurfaceRenderingSession? _session;
 
         public GlPlatformSurfaceRenderingSession(IGlContext context, IAvnGlSurfaceRenderingSession session)
         {
@@ -185,17 +198,25 @@ namespace Avalonia.Native
 
         public IGlContext Context { get; }
 
+        private IAvnGlSurfaceRenderingSession Session
+        {
+            get
+            {
+                ObjectDisposedException.ThrowIf(_session is null, this);
+                return _session;
+            }
+        }
+
         public PixelSize Size
         {
             get
             {
-                var s = _session.PixelSize;
+                var s = Session.PixelSize;
                 return new PixelSize(s.Width, s.Height);
             }
         }
 
-        public double Scaling => _session.Scaling;
-
+        public double Scaling => Session.Scaling;
 
         public bool IsYFlipped => true;
         
@@ -230,9 +251,12 @@ namespace Avalonia.Native
 
         public unsafe GlExternalObjectsFeature(GlContext context, GlDisplay display)
         {
+            context.ThrowIfLost();
+
             _context = context;
             _display = display;
             ulong registryId = 0;
+
             if (context.Context.GetIOKitRegistryId(&registryId) != 0)
             {
                 // We are reversing bytes to match MoltenVK (LUID is a Vulkan term after all)
@@ -306,8 +330,8 @@ namespace Avalonia.Native
                    CompositionGpuImportedImageSynchronizationCapabilities.TimelineSemaphores;
         }
 
-        public byte[] DeviceLuid { get; }
-        public byte[] DeviceUuid { get; }
+        public byte[]? DeviceLuid { get; }
+        public byte[]? DeviceUuid { get; }
     }
 
     class MtlEventSemaphore(IAvnMTLSharedEvent inner) : IGlExternalSemaphore

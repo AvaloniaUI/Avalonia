@@ -6,8 +6,7 @@ namespace Avalonia.UnitTests
 {
     public sealed class UnitTestSynchronizationContext : SynchronizationContext
     {
-        readonly List<Tuple<SendOrPostCallback, object>> _postedCallbacks =
-            new List<Tuple<SendOrPostCallback, object>>();
+        private readonly List<(SendOrPostCallback callback, object? state)> _postedCallbacks = [];
 
         public static Scope Begin()
         {
@@ -17,16 +16,16 @@ namespace Avalonia.UnitTests
             return new Scope(old, sync);
         }
 
-        public override void Send(SendOrPostCallback d, object state)
+        public override void Send(SendOrPostCallback d, object? state)
         {
             d(state);
         }
 
-        public override void Post(SendOrPostCallback d, object state)
+        public override void Post(SendOrPostCallback d, object? state)
         {
             lock (_postedCallbacks)
             {
-                _postedCallbacks.Add(Tuple.Create(d, state));
+                _postedCallbacks.Add((d, state));
             }
         }
 
@@ -34,17 +33,17 @@ namespace Avalonia.UnitTests
         {
             lock (_postedCallbacks)
             {
-                _postedCallbacks.ForEach(t => t.Item1(t.Item2));
+                _postedCallbacks.ForEach(t => t.callback(t.state));
                 _postedCallbacks.Clear();
             }
         }
 
         public class Scope : IDisposable
         {
-            private readonly SynchronizationContext _old;
+            private readonly SynchronizationContext? _old;
             private readonly UnitTestSynchronizationContext _new;
 
-            public Scope(SynchronizationContext old, UnitTestSynchronizationContext n)
+            public Scope(SynchronizationContext? old, UnitTestSynchronizationContext n)
             {
                 _old = old;
                 _new = n;

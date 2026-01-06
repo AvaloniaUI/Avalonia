@@ -65,6 +65,8 @@ namespace Avalonia.Rendering.Composition.Server
             return new(_transformedContentBounds, oldInvalidated, newInvalidated);
         }
 
+        protected override LtrbRect GetEffectBounds() => _transformedContentBounds ?? default;
+
         void AddEffectPaddedDirtyRect(IImmutableEffect effect, LtrbRect transformedBounds)
         {
             var padding = effect.GetEffectOutputPadding();

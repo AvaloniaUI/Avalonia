@@ -160,7 +160,7 @@ namespace Avalonia.Controls.UnitTests
             splitView.IsPaneOpen = true;
 
             splitView.RaiseEvent(new PointerReleasedEventArgs(splitView,
-                null, wnd, new Point(1270, 30), 0,
+                null!, wnd, new Point(1270, 30), 0,
                 new PointerPointProperties(),
                 KeyModifiers.None,
                 MouseButton.Left));
@@ -172,7 +172,7 @@ namespace Avalonia.Controls.UnitTests
             splitView.IsPaneOpen = true;
 
             splitView.RaiseEvent(new PointerReleasedEventArgs(splitView,
-                null, wnd, new Point(1270, 30), 0,
+                null!, wnd, new Point(1270, 30), 0,
                 new PointerPointProperties(),
                 KeyModifiers.None,
                 MouseButton.Left));
@@ -207,7 +207,7 @@ namespace Avalonia.Controls.UnitTests
             splitView.IsPaneOpen = true;
 
             clickBorder.RaiseEvent(new PointerReleasedEventArgs(splitView,
-                null, wnd, new Point(5, 5), 0,
+                null!, wnd, new Point(5, 5), 0,
                 new PointerPointProperties(),
                 KeyModifiers.None,
                 MouseButton.Left));
@@ -322,7 +322,7 @@ namespace Avalonia.Controls.UnitTests
             splitView.IsPaneOpen = true;
 
             splitView.RaiseEvent(new PointerReleasedEventArgs(splitView,
-                null, wnd, new Point(1270, 30), 0,
+                null!, wnd, new Point(1270, 30), 0,
                 new PointerPointProperties(),
                 KeyModifiers.None,
                 MouseButton.Left));
@@ -336,7 +336,7 @@ namespace Avalonia.Controls.UnitTests
             splitView.DisplayMode = SplitViewDisplayMode.Inline;
 
             splitView.RaiseEvent(new PointerReleasedEventArgs(splitView,
-                null, wnd, new Point(1270, 30), 0,
+                null!, wnd, new Point(1270, 30), 0,
                 new PointerPointProperties(),
                 KeyModifiers.None,
                 MouseButton.Left));

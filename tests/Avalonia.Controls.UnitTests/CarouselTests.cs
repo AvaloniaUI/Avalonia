@@ -257,7 +257,7 @@ namespace Avalonia.Controls.UnitTests
                 target.Bind(ComboBox.SelectedItemProperty, textObservable);
 
                 Assert.True(DataValidationErrors.GetHasErrors(target));
-                Assert.True(DataValidationErrors.GetErrors(target).SequenceEqual(new[] { exception }));
+                Assert.Equal([exception], DataValidationErrors.GetErrors(target));
             }
         }
 
@@ -336,7 +336,7 @@ namespace Avalonia.Controls.UnitTests
 
         private static void Layout(Carousel target)
         {
-            ((ILayoutRoot)target.GetVisualRoot()).LayoutManager.ExecuteLayoutPass();
+            ((ILayoutRoot)target.GetVisualRoot()!).LayoutManager.ExecuteLayoutPass();
         }
 
         private static IControlTemplate CarouselTemplate()
@@ -371,7 +371,7 @@ namespace Avalonia.Controls.UnitTests
                 });
         }
 
-        private static TextBlock GetContainerTextBlock(object control)
+        private static TextBlock GetContainerTextBlock(object? control)
         {
             var contentPresenter = Assert.IsType<ContentPresenter>(control);
             return Assert.IsType<TextBlock>(contentPresenter.Child);

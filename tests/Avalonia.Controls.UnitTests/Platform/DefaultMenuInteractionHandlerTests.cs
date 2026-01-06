@@ -2,10 +2,8 @@
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
-using Avalonia.Input.GestureRecognizers;
 using Avalonia.Interactivity;
 using Avalonia.UnitTests;
-using Avalonia.VisualTree;
 using Moq;
 using Xunit;
 
@@ -575,7 +573,7 @@ namespace Avalonia.Controls.UnitTests.Platform
             bool isTopLevel = false,
             bool hasSubMenu = false,
             bool isSubMenuOpen = false,
-            IMenuElement parent = null)
+            IMenuElement? parent = null)
         {
             var mock = new Mock<Control>();
             var item = mock.As<IMenuItem>();
@@ -589,17 +587,18 @@ namespace Avalonia.Controls.UnitTests.Platform
 
         private class TestTimer
         {
-            private Action _action;
+            private Action? _action;
 
             public bool ActionIsQueued => _action != null;
 
             public void Pulse()
             {
+                Assert.NotNull(_action);
                 _action();
                 _action = null;
             }
 
-            public void RunOnce(Action action, TimeSpan timeSpan)
+            public void RunOnce(Action? action, TimeSpan timeSpan)
             {
                 if (_action != null)
                 {
@@ -614,14 +613,14 @@ namespace Avalonia.Controls.UnitTests.Platform
         {
             public int Id { get; } = Pointer.GetNextFreeId();
 
-            public void Capture(IInputElement control)
+            public void Capture(IInputElement? control)
             {
                 Captured = control;
             }
 
-            public IInputElement Captured { get; set; }
-            public PointerType Type { get; }
-            public bool IsPrimary { get; } = true;
+            public IInputElement? Captured { get; set; }
+            public PointerType Type => PointerType.Mouse;
+            public bool IsPrimary => true;
         }
     }
 }

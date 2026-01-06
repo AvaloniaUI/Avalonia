@@ -56,7 +56,7 @@ internal class ManagedStorageProvider : BclStorageProvider
             options.FileTypeChoices[index] :
             null;
 
-        return new SaveFilePickerResult(file) { SelectedFileType = filterType };
+        return new SaveFilePickerResult { File = file, SelectedFileType = filterType };
     }
 
     public override async Task<IReadOnlyList<IStorageFolder>> OpenFolderPickerAsync(FolderPickerOpenOptions options)

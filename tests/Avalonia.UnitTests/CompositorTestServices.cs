@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Embedding;
 using Avalonia.Controls.Platform.Surfaces;
@@ -34,7 +33,7 @@ public class CompositorTestServices : IDisposable
         _app.Dispose();
     }
 
-    public CompositorTestServices(Size? size = null, IPlatformRenderInterface renderInterface = null)
+    public CompositorTestServices(Size? size = null, IPlatformRenderInterface? renderInterface = null)
     {
         var services = TestServices.MockPlatformRenderInterface;
         if (renderInterface != null)
@@ -63,7 +62,7 @@ public class CompositorTestServices : IDisposable
             TopLevel.Prepare();
             TopLevel.StartRendering();
             RunJobs();
-            Renderer = ((CompositingRenderer)TopLevel.Renderer);
+            Renderer = TopLevel.Renderer;
             Renderer.CompositionTarget.Server.DebugEvents = Events;
         }
         catch
@@ -96,17 +95,17 @@ public class CompositorTestServices : IDisposable
         Events.Rects.Clear();
     }
 
-    public void AssertHitTest(double x, double y, Func<Visual, bool> filter, params object[] expected)
+    public void AssertHitTest(double x, double y, Func<Visual, bool>? filter, params Visual[] expected)
         => AssertHitTest(new Point(x, y), filter, expected);
 
-    public void AssertHitTest(Point pt, Func<Visual, bool> filter, params object[] expected)
+    public void AssertHitTest(Point pt, Func<Visual, bool>? filter, params Visual[] expected)
     {
         RunJobs();
         var tested = Renderer.HitTest(pt, TopLevel, filter);
         Assert.Equal(expected, tested);
     }
 
-    public void AssertHitTestFirst(Point pt, Func<Visual, bool> filter, object expected)
+    public void AssertHitTestFirst(Point pt, Func<Visual, bool>? filter, Visual? expected)
     {
         RunJobs();
         var tested = Renderer.HitTest(pt, TopLevel, filter).First();
@@ -138,7 +137,7 @@ public class CompositorTestServices : IDisposable
 
     public class ManualRenderTimer : IRenderTimer
     {
-        public event Action<TimeSpan> Tick;
+        public event Action<TimeSpan>? Tick;
         public bool RunsInBackground => false;
         public void TriggerTick() => Tick?.Invoke(TimeSpan.Zero);
     }
@@ -159,16 +158,15 @@ public class CompositorTestServices : IDisposable
         }
 
         public double DesktopScaling => 1;
-        public IPlatformHandle Handle { get; }
+        public IPlatformHandle? Handle => null;
         public Size ClientSize { get; }
-        public Size? FrameSize { get; }
         public double RenderScaling => 1;
         public IEnumerable<object> Surfaces { get; } = new[] { new DummyFramebufferSurface() };
-        public Action<RawInputEventArgs> Input { get; set; }
-        public Action<Rect> Paint { get; set; }
-        public Action<Size, WindowResizeReason> Resized { get; set; }
-        public Action<double> ScalingChanged { get; set; }
-        public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
+        public Action<RawInputEventArgs>? Input { get; set; }
+        public Action<Rect>? Paint { get; set; }
+        public Action<Size, WindowResizeReason>? Resized { get; set; }
+        public Action<double>? ScalingChanged { get; set; }
+        public Action<WindowTransparencyLevel>? TransparencyLevelChanged { get; set; }
 
         class DummyFramebufferSurface : IFramebufferPlatformSurface
         {
@@ -184,10 +182,6 @@ public class CompositorTestServices : IDisposable
 
         public Compositor Compositor => _compositor;
 
-        public void Invalidate(Rect rect)
-        {
-        }
-
         public void SetInputRoot(IInputRoot inputRoot)
         {
         }
@@ -196,13 +190,13 @@ public class CompositorTestServices : IDisposable
 
         public PixelPoint PointToScreen(Point point) => new();
 
-        public void SetCursor(ICursorImpl cursor)
+        public void SetCursor(ICursorImpl? cursor)
         {
         }
 
-        public Action Closed { get; set; }
-        public Action LostFocus { get; set; }
-        public IMouseDevice MouseDevice { get; } = new MouseDevice();
+        public Action? Closed { get; set; }
+        public Action? LostFocus { get; set; }
+
         public IPopupImpl CreatePopup() => throw new NotImplementedException();
 
         public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevel)
@@ -215,9 +209,9 @@ public class CompositorTestServices : IDisposable
         {
         }
 
-        public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; }
+        public AcrylicPlatformCompensationLevels AcrylicCompensationLevels => new(1, 1, 1);
         
-        public object TryGetFeature(Type featureType) => null;
+        public object? TryGetFeature(Type featureType) => null;
     }
 }
 

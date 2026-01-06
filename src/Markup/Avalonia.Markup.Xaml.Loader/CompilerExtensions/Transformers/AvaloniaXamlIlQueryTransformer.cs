@@ -98,7 +98,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             }
             catch (Exception e)
             {
-                throw new XamlParseException("Unable to parse query: " + e.Message, node);
+                throw new XamlParseException("Unable to parse query: " + e, node);
             }
 
             var query = Create(parsed);

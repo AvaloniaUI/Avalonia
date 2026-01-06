@@ -51,7 +51,7 @@ namespace Avalonia.PropertyStore
         public AvaloniaProperty Property { get; }
         AvaloniaProperty IValueEntry.Property => Property;
         protected ValueFrame Frame { get; }
-        protected object Source { get; }
+        protected internal object Source { get; }
 
         public void Dispose()
         {

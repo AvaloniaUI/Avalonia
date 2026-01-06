@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFrameworks>$(AvsCurrentTargetFramework);netstandard2.0</TargetFrameworks>
+    <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <IncludeAvaloniaGenerators>true</IncludeAvaloniaGenerators>
     <!--<AvaloniaXamlIlDebuggerLaunch>true</AvaloniaXamlIlDebuggerLaunch>-->
@@ -23,4 +23,5 @@
   <Import Project="..\..\..\..\build\ReferenceCoreLibraries.props" />
   <Import Project="..\..\..\..\build\BuildTargets.targets" />
   <Import Project="..\..\..\..\build\SourceGenerators.props" />
+  <Import Project="..\..\..\..\build\NullableEnable.props" />
 </Project>

@@ -34,7 +34,7 @@ class DynamicReflectableType : IReflectableType, INotifyPropertyChanged, IEnumer
         }
     }
     
-    public event PropertyChangedEventHandler PropertyChanged;
+    public event PropertyChangedEventHandler? PropertyChanged;
     public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
     {
         return _dic.GetEnumerator();
@@ -48,8 +48,8 @@ class DynamicReflectableType : IReflectableType, INotifyPropertyChanged, IEnumer
 
     class FakeTypeInfo : TypeInfo
     {
-        protected override PropertyInfo GetPropertyImpl(string name, BindingFlags bindingAttr, Binder binder, Type returnType, Type[] types,
-            ParameterModifier[] modifiers)
+        protected override PropertyInfo GetPropertyImpl(string name, BindingFlags bindingAttr, Binder? binder, Type? returnType, Type[]? types,
+            ParameterModifier[]? modifiers)
         {
             var propInfo = new Mock<PropertyInfo>();
             propInfo.SetupGet(x => x.Name).Returns(name);
@@ -83,16 +83,16 @@ class DynamicReflectableType : IReflectableType, INotifyPropertyChanged, IEnumer
             throw new NotSupportedException();
         }
 
-        public override Module Module { get; }
-        public override string Namespace { get; }
-        public override string Name { get; }
+        public override Module Module => throw new NotSupportedException();
+        public override string? Namespace => null;
+        public override string Name => "";
         protected override TypeAttributes GetAttributeFlagsImpl()
         {
             throw new NotSupportedException();
         }
 
-        protected override ConstructorInfo GetConstructorImpl(BindingFlags bindingAttr, Binder binder, CallingConventions callConvention,
-            Type[] types, ParameterModifier[] modifiers)
+        protected override ConstructorInfo GetConstructorImpl(BindingFlags bindingAttr, Binder? binder, CallingConventions callConvention,
+            Type[] types, ParameterModifier[]? modifiers)
         {
             throw new NotSupportedException();
         }
@@ -132,8 +132,8 @@ class DynamicReflectableType : IReflectableType, INotifyPropertyChanged, IEnumer
             throw new NotSupportedException();
         }
 
-        protected override MethodInfo GetMethodImpl(string name, BindingFlags bindingAttr, Binder binder, CallingConventions callConvention,
-            Type[] types, ParameterModifier[] modifiers)
+        protected override MethodInfo GetMethodImpl(string name, BindingFlags bindingAttr, Binder? binder, CallingConventions callConvention,
+            Type[]? types, ParameterModifier[]? modifiers)
         {
             throw new NotSupportedException();
         }
@@ -148,13 +148,13 @@ class DynamicReflectableType : IReflectableType, INotifyPropertyChanged, IEnumer
             throw new NotSupportedException();
         }
 
-        public override object InvokeMember(string name, BindingFlags invokeAttr, Binder binder, object target, object[] args,
-            ParameterModifier[] modifiers, CultureInfo culture, string[] namedParameters)
+        public override object InvokeMember(string name, BindingFlags invokeAttr, Binder? binder, object? target, object?[]? args,
+            ParameterModifier[]? modifiers, CultureInfo? culture, string[]? namedParameters)
         {
             throw new NotSupportedException();
         }
 
-        public override Type UnderlyingSystemType { get; }
+        public override Type UnderlyingSystemType => throw new NotSupportedException();
 
         protected override bool IsArrayImpl()
         {
@@ -181,11 +181,11 @@ class DynamicReflectableType : IReflectableType, INotifyPropertyChanged, IEnumer
             throw new NotSupportedException();
         }
 
-        public override Assembly Assembly { get; }
-        public override string AssemblyQualifiedName { get; }
-        public override Type BaseType { get; }
-        public override string FullName { get; }
-        public override Guid GUID { get; }
+        public override Assembly Assembly => throw new NotSupportedException();
+        public override string? AssemblyQualifiedName => null;
+        public override Type? BaseType => null;
+        public override string? FullName => null;
+        public override Guid GUID => Guid.Empty;
 
         
 

@@ -97,11 +97,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="LetterSpacing"/> property.
         /// </summary>
-        public static readonly AttachedProperty<double> LetterSpacingProperty =
-            AvaloniaProperty.RegisterAttached<TextBlock, Control, double>(
-                nameof(LetterSpacing),
-                0,
-                inherits: true);
+        public static readonly StyledProperty<double> LetterSpacingProperty =
+            TextElement.LetterSpacingProperty.AddOwner<TextBlock>();
 
         /// <summary>
         /// Defines the <see cref="MaxLines"/> property.

@@ -3,8 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "mocha -r ts-node/register ./**/*Tests.ts",
-    "coverage": "nyc -r text -e .ts -x \"./*Tests.ts\" npm run test"
+    "test": "mocha -r ts-node/register ./**/*Tests.ts"
   },
   "type": "module",
   "keywords": [],
