@@ -312,10 +312,7 @@ public static class ApiDiffHelper
             memoryStream.Position = 0L;
             memoryStream.SetLength(0L);
 
-            if(!await DownloadBaselinePackageAsync(memoryStream, downloadContext, packageId, baselineVersion))
-            {
-                continue;
-            }
+            await DownloadBaselinePackageAsync(memoryStream, downloadContext, packageId, baselineVersion);
 
             memoryStream.Position = 0L;
 
