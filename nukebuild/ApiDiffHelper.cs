@@ -311,9 +311,7 @@ public static class ApiDiffHelper
             // Download baseline package
             memoryStream.Position = 0L;
             memoryStream.SetLength(0L);
-
             await DownloadBaselinePackageAsync(memoryStream, downloadContext, packageId, baselineVersion);
-
             memoryStream.Position = 0L;
 
             // Extract baseline package
@@ -381,7 +379,7 @@ public static class ApiDiffHelper
                $"Could not find a version less than {currentVersion} for package {MainPackageName} in source {context.PackageSource.Source}");
     }
 
-    static async Task<bool> DownloadBaselinePackageAsync(
+    static async Task DownloadBaselinePackageAsync(
         Stream destinationStream,
         NuGetDownloadContext context,
         string packageId,
@@ -389,13 +387,19 @@ public static class ApiDiffHelper
     {
         Information("Downloading {Id} {Version} baseline package", packageId, version);
 
-        return await context.FindPackageByIdResource.CopyNupkgToStreamAsync(
+        var downloaded = await context.FindPackageByIdResource.CopyNupkgToStreamAsync(
             packageId,
             version,
             destinationStream,
             context.CacheContext,
             NullLogger.Instance,
             CancellationToken.None);
+
+        if (!downloaded)
+        {
+            throw new InvalidOperationException(
+                $"Could not download version {version} for package {packageId} in source {context.PackageSource.Source}");
+        }
     }
 
     static Dictionary<NuGetFramework, string> ExtractDiffableAssembliesFromPackage(
