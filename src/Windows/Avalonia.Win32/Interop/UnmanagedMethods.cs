@@ -2300,10 +2300,6 @@ namespace Avalonia.Win32.Interop
         public enum ClipboardFormat
         {
             /// <summary>
-            /// Text format. Each line ends with a carriage return/linefeed (CR-LF) combination. A null character signals the end of the data. Use this format for ANSI text.
-            /// </summary>
-            CF_TEXT = 1,
-            /// <summary>
             /// A handle to a bitmap
             /// </summary>
             CF_BITMAP = 2,
