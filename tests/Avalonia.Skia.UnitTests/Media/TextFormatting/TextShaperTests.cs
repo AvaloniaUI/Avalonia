@@ -52,6 +52,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var splitResult = buffer.Split(1);
 
+                Assert.NotNull(splitResult.First);
                 Assert.Equal(1, splitResult.First.Length);
 
                 buffer = splitResult.Second;
@@ -61,6 +62,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 //\"๊  
                 splitResult = buffer.Split(1);
 
+                Assert.NotNull(splitResult.First);
                 Assert.Equal(2, splitResult.First.Length);
 
                 buffer = splitResult.Second;
@@ -86,6 +88,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var first = splitResult.First;
 
+                Assert.NotNull(first);
                 Assert.Equal(6, first.Length);
             }
         }
@@ -101,6 +104,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var splitResult = buffer.Split(0);
 
+                Assert.NotNull(splitResult.First);
                 Assert.Equal(0, splitResult.First.Length);
 
                 Assert.NotNull(splitResult.Second);

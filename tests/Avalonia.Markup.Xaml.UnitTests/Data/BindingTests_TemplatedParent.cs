@@ -28,7 +28,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
     </Button>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = window.FindControl<Button>("button");
+                var button = window.GetControl<Button>("button");
 
                 window.ApplyTemplate();
                 button.ApplyTemplate();
@@ -60,7 +60,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
     </Button>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = window.FindControl<Button>("button");
+                var button = window.GetControl<Button>("button");
 
                 button.Tag = new GridLength(5, GridUnitType.Star);
 

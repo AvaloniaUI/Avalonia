@@ -16,7 +16,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
         public static TextRange TextRange => new TextRange(0, 50);
 
-        public TextRun GetTextRun(int textSourceIndex)
+        public TextRun? GetTextRun(int textSourceIndex)
         {
             if (textSourceIndex >= 50)
             {

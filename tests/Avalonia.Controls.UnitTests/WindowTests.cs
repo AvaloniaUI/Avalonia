@@ -116,7 +116,7 @@ namespace Avalonia.Controls.UnitTests
                 window.Show();
                 Assert.True(window.IsVisible);
 
-                windowImpl.Object.Closed();
+                windowImpl.Object.Closed!();
 
                 Assert.False(window.IsVisible);
             }
@@ -196,7 +196,7 @@ namespace Avalonia.Controls.UnitTests
                 }
                 else
                 {
-                    var cancel = window.PlatformImpl.Closing(WindowCloseReason.WindowClosing);
+                    var cancel = window.PlatformImpl!.Closing!(WindowCloseReason.WindowClosing);
 
                     Assert.Equal(false, cancel);
                 }
@@ -258,7 +258,7 @@ namespace Avalonia.Controls.UnitTests
                 }
                 else
                 {
-                    var cancel = window.PlatformImpl.Closing(WindowCloseReason.WindowClosing);
+                    var cancel = window.PlatformImpl!.Closing!(WindowCloseReason.WindowClosing);
 
                     Assert.Equal(true, cancel);
                 }
@@ -344,7 +344,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new Window(windowImpl.Object);
                 var task = target.ShowDialog<bool>(parent);
 
-                windowImpl.Object.Closed();
+                windowImpl.Object.Closed!();
 
                 var result = await task;
                 Assert.False(result);
@@ -387,7 +387,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new Window(windowImpl.Object);
                 var task = target.ShowDialog<bool>(parent);
 
-                windowImpl.Object.Closed();
+                windowImpl.Object.Closed!();
                 await task;
 
                 var openedRaised = false;
@@ -927,8 +927,8 @@ namespace Avalonia.Controls.UnitTests
 
                     // Size before and after DPI change is a real-world example, with size after DPI
                     // change coming from Win32 WM_DPICHANGED.
-                    target.PlatformImpl.ScalingChanged(1.5);
-                    target.PlatformImpl.Resized(
+                    target.PlatformImpl!.ScalingChanged!(1.5);
+                    target.PlatformImpl!.Resized!(
                         new Size(210.66666666666666, 118.66666666666667),
                         WindowResizeReason.DpiChange);
 
@@ -987,7 +987,7 @@ namespace Avalonia.Controls.UnitTests
                     target.Width = 410;
                     target.LayoutManager.ExecuteLayoutPass();
 
-                    var windowImpl = Mock.Get(target.PlatformImpl);
+                    var windowImpl = Mock.Get(target.PlatformImpl!);
                     windowImpl.Verify(x => x.Resize(new Size(410, 800), WindowResizeReason.Application));
                     Assert.Equal(410, target.Width);
                 }
@@ -1013,7 +1013,7 @@ namespace Avalonia.Controls.UnitTests
                     Assert.Equal(400, target.Width);
                     Assert.Equal(800, target.Height);
 
-                    target.PlatformImpl.Resized(new Size(410, 800), WindowResizeReason.User);
+                    target.PlatformImpl!.Resized!(new Size(410, 800), WindowResizeReason.User);
 
                     Assert.Equal(410, target.Width);
                     Assert.Equal(800, target.Height);
@@ -1040,7 +1040,7 @@ namespace Avalonia.Controls.UnitTests
                     Assert.Equal(400, target.Width);
                     Assert.Equal(800, target.Height);
 
-                    target.PlatformImpl.Resized(new Size(400, 810), WindowResizeReason.User);
+                    target.PlatformImpl!.Resized!(new Size(400, 810), WindowResizeReason.User);
 
                     Assert.Equal(400, target.Width);
                     Assert.Equal(810, target.Height);
@@ -1068,7 +1068,7 @@ namespace Avalonia.Controls.UnitTests
                     Assert.Equal(400, target.Width);
                     Assert.Equal(800, target.Height);
 
-                    target.PlatformImpl.Resized(new Size(410, 810), WindowResizeReason.Unspecified);
+                    target.PlatformImpl!.Resized!(new Size(410, 810), WindowResizeReason.Unspecified);
 
                     Assert.Equal(400, target.Width);
                     Assert.Equal(800, target.Height);
