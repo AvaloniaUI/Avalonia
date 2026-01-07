@@ -322,7 +322,7 @@ partial class Build : NukeBuild
             BuildTasksPatcher.PatchBuildTasksInPackage(Parameters.NugetIntermediateRoot / "Avalonia.Build.Tasks." +
                                                        Parameters.Version + ".nupkg",
                                                        IlRepackTool);
-            var config = Numerge.MergeConfiguration.LoadFile(RootDirectory / "nukebuild" / "numerge.config");
+            var config = Numerge.MergeConfiguration.LoadFile(RootDirectory / "nukebuild" / "numerge.json");
             Parameters.NugetRoot.CreateOrCleanDirectory();
             if(!Numerge.NugetPackageMerger.Merge(Parameters.NugetIntermediateRoot, Parameters.NugetRoot, config,
                 new NumergeNukeLogger()))

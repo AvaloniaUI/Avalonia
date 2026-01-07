@@ -15,14 +15,13 @@ namespace Avalonia.Analyzers;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public class BitmapAnalyzer: DiagnosticAnalyzer
 {
-    public const string DiagnosticId = "AVA2002";
     private const string Title = "Cannot initialize Bitmap from \"avares\" scheme";
     private const string MessageFormat = "Cannot initialize Bitmap from \"avares\" scheme directly";
     private const string Description = "Cannot initialize Bitmap from \"avares\" scheme, use AssetLoader to open assets as stream first.";
     private const string Category = "Usage";
 
     private static readonly DiagnosticDescriptor _rule = new(
-        DiagnosticId, 
+        DiagnosticIds.Bitmap,
         Title, 
         MessageFormat, 
         Category,

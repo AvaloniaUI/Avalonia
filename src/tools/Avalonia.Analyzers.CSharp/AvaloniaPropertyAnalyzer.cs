@@ -5,16 +5,13 @@ using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Threading;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
 
 namespace Avalonia.Analyzers;
 
-[DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
 public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
 {
     private const string Category = "AvaloniaProperty";
@@ -333,6 +330,12 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
         return SymbolEqualityComparer.Default.Equals(x, y);
     }
 
+    private static partial TypeReference TypeReferenceFromInvocationTypeParameter(IInvocationOperation invocation, ITypeParameterSymbol typeParameter);
+
+    private static partial bool IsSimpleAssignmentNode(SyntaxNode node);
+
+    private static partial bool IsInvocationNode(SyntaxNode node);
+
     private class AvaloniaPropertyDescription
     {
         /// <summary>
@@ -450,28 +453,6 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
             Type = type;
             Location = location;
         }
-
-        public static TypeReference FromInvocationTypeParameter(IInvocationOperation invocation, ITypeParameterSymbol typeParameter)
-        {
-            var argument = invocation.TargetMethod.TypeArguments[typeParameter.Ordinal];
-
-            var typeArgumentSyntax = invocation.Syntax;
-            if (invocation.Language == LanguageNames.CSharp) // type arguments do not appear in the invocation, so search the code for them
-            {
-                try
-                {
-                    typeArgumentSyntax = invocation.Syntax.DescendantNodes()
-                        .First(n => n.IsKind(SyntaxKind.TypeArgumentList))
-                        .DescendantNodes().ElementAt(typeParameter.Ordinal);
-                }
-                catch
-                {
-                    // ignore, this is just a nicety
-                }
-            }
-
-            return new TypeReference(argument, typeArgumentSyntax.GetLocation());
-        }
     }
 
     private class SymbolEqualityComparer<T> : IEqualityComparer<T> where T : ISymbol
@@ -480,17 +461,5 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
         public int GetHashCode(T obj) => SymbolEqualityComparer.Default.GetHashCode(obj);
 
         public static SymbolEqualityComparer<T> Default { get; } = new();
-    }
-}
-
-[Serializable]
-public class AvaloniaAnalysisException : Exception
-{
-    public AvaloniaAnalysisException(string message, Exception? innerException = null) : base(message, innerException)
-    {
-    }
-
-    protected AvaloniaAnalysisException(SerializationInfo info, StreamingContext context) : base(info, context)
-    {
     }
 }

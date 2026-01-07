@@ -204,7 +204,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControlCatalog.Browser", "s
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GpuInterop", "samples\GpuInterop\GpuInterop.csproj", "{C810060E-3809-4B74-A125-F11533AF9C1B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Analyzers", "src\tools\Avalonia.Analyzers\Avalonia.Analyzers.csproj", "{C692FE73-43DB-49CE-87FC-F03ED61F25C9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Analyzers.CSharp", "src\tools\Avalonia.Analyzers.CSharp\Avalonia.Analyzers.CSharp.csproj", "{C692FE73-43DB-49CE-87FC-F03ED61F25C9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{176582E8-46AF-416A-85C1-13A5C6744497}"
 	ProjectSection(SolutionItems) = preProject
@@ -284,6 +284,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Headless.XUnit.PerTest.UnitTests", "tests\Avalonia.Headless.XUnit.PerTest.UnitTests\Avalonia.Headless.XUnit.PerTest.UnitTests.csproj", "{26918642-829D-4FA2-B60A-BE8D83F4E063}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.IntegrationTests.Win32", "tests\Avalonia.IntegrationTests.Win32\Avalonia.IntegrationTests.Win32.csproj", "{11522B0D-BF31-42D5-8FC5-41E58F319AF9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Analyzers.CodeFixes.CSharp", "src\tools\Avalonia.Analyzers.CodeFixes.CSharp\Avalonia.Analyzers.CodeFixes.CSharp.csproj", "{FDFB9C25-552D-420B-9D4A-DB0BB6472239}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Analyzers.VisualBasic", "src\tools\Avalonia.Analyzers.VisualBasic\Avalonia.Analyzers.VisualBasic.csproj", "{A7644C3B-B843-44F1-9940-560D56CB0936}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -659,6 +663,14 @@ Global
 		{11522B0D-BF31-42D5-8FC5-41E58F319AF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{11522B0D-BF31-42D5-8FC5-41E58F319AF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{11522B0D-BF31-42D5-8FC5-41E58F319AF9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A7644C3B-B843-44F1-9940-560D56CB0936}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A7644C3B-B843-44F1-9940-560D56CB0936}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A7644C3B-B843-44F1-9940-560D56CB0936}.Debug|Any CPU.ActiveCfg = Release|Any CPU
+		{A7644C3B-B843-44F1-9940-560D56CB0936}.Debug|Any CPU.Build.0 = Release|Any CPU
+		{FDFB9C25-552D-420B-9D4A-DB0BB6472239}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FDFB9C25-552D-420B-9D4A-DB0BB6472239}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FDFB9C25-552D-420B-9D4A-DB0BB6472239}.Debug|Any CPU.ActiveCfg = Release|Any CPU
+		{FDFB9C25-552D-420B-9D4A-DB0BB6472239}.Debug|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -743,6 +755,8 @@ Global
 		{342D2657-2F84-493C-B74B-9D2CAE5D9DAB} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 		{26918642-829D-4FA2-B60A-BE8D83F4E063} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 		{11522B0D-BF31-42D5-8FC5-41E58F319AF9} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
+		{A7644C3B-B843-44F1-9940-560D56CB0936} = {4ED8B739-6F4E-4CD4-B993-545E6B5CE637}
+		{FDFB9C25-552D-420B-9D4A-DB0BB6472239} = {4ED8B739-6F4E-4CD4-B993-545E6B5CE637}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {87366D66-1391-4D90-8999-95A620AD786A}
