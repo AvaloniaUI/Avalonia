@@ -336,11 +336,14 @@ partial class Build : NukeBuild
         .DependsOn(CreateNugetPackages)
         .Executes(async () =>
         {
+            var apiDiffPath = Parameters.ArtifactsDir / "api-diff";
+            apiDiffPath.DeleteDirectory();
+
             GlobalDiff = await ApiDiffHelper.DownloadAndExtractPackagesAsync(
                 Directory.EnumerateFiles(Parameters.NugetRoot, "*.nupkg").Select(path => (AbsolutePath)path),
                 NuGetVersion.Parse(Parameters.Version),
                 Parameters.IsReleaseBranch,
-                Parameters.ArtifactsDir / "api-diff" / "assemblies",
+                apiDiffPath / "assemblies",
                 Parameters.ForceApiValidationBaseline is { } forcedBaseline ? NuGetVersion.Parse(forcedBaseline) : null);
         });
 
