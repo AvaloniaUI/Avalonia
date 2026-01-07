@@ -1270,15 +1270,12 @@ namespace Avalonia.Media.TextFormatting
 
         private TextLineMetrics CreateLineMetrics()
         {
-            var fontMetrics = _paragraphProperties.DefaultTextRunProperties.CachedGlyphTypeface.Metrics;
-            var fontRenderingEmSize = _paragraphProperties.DefaultTextRunProperties.FontRenderingEmSize;
-            var scale = fontRenderingEmSize / fontMetrics.DesignEmHeight;
             var widthIncludingWhitespace = 0d;
             var trailingWhitespaceLength = 0;
             var newLineLength = 0;
-            var ascent = fontMetrics.Ascent * scale;
-            var descent = fontMetrics.Descent * scale;
-            var lineGap = fontMetrics.LineGap * scale;
+            var ascent = 0d;
+            var descent = 0d;
+            var lineGap = 0d;
 
             var lineHeight = _paragraphProperties.LineHeight;
             var lineSpacing = _paragraphProperties.LineSpacing;
