@@ -49,7 +49,7 @@ namespace Avalonia.Media
             set { SetValue(SpreadMethodProperty, value); }
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc cref="IGradientBrush.GradientStops"/>
         [Content]
         public GradientStops GradientStops
         {
