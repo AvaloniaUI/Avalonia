@@ -4,10 +4,12 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.UnitTests;
+using Avalonia.Utilities;
 using Xunit;
 
 namespace Avalonia.Skia.UnitTests.Media.TextFormatting
@@ -2306,6 +2308,28 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 Assert.Equal(3, backspaceHit.FirstCharacterIndex);
             }
         }
+        
+        [Fact]
+        public void Should_Create_TextLine_With_Single_EmbeddedControlRun()
+        {
+            using (Start())
+            {
+                var typeface = Typeface.Default;
+                var defaultProperties = new GenericTextRunProperties(typeface);
+                var textSource = new CustomTextBufferTextSource(new EmbeddedContentRun());
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
+                
+                Assert.Equal(100, textLine.Width);
+                Assert.Equal(100, textLine.Height);
+            }
+        }
 
         [Fact]
         public void Should_Collapse_With_TextPathSegmentTrimming_Without_PathSegment()
@@ -2525,6 +2549,20 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     fontManagerImpl: new CustomFontManagerImpl()));
 
             return disposable;
+        }
+        
+        internal class EmbeddedContentRun : DrawableTextRun
+        {
+            public override TextRunProperties? Properties { get; } = null;
+
+            public override Size Size => new Size(100, 100);
+
+            public override double Baseline => Size.Height;
+
+            public override void Draw(DrawingContext drawingContext, Point origin)
+            {
+                //noop            
+            }
         }
     }
 }

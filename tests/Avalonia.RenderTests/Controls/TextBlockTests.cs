@@ -386,5 +386,31 @@ namespace Avalonia.Skia.RenderTests
             };
         }
 
+        [Fact]
+        public async Task Should_Have_Zero_Descent_With_Single_InlineUIContainer()
+        {
+            Decorator target = new Decorator
+            {
+                Width = 200,
+                Height = 200,
+                Child = new Border
+                {
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    BorderBrush = Brushes.Black,
+                    BorderThickness = new Thickness(1),
+                    Child = new TextBlock
+                    {
+                        Inlines =
+                        [
+                            new InlineUIContainer(new Border { Background = Brushes.Red, Width = 100, Height = 100 })
+                        ]
+                    }
+                }
+            };
+
+            await RenderToFile(target);
+            CompareImages();
+        }
     }
 }

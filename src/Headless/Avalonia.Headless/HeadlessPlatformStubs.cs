@@ -78,15 +78,15 @@ namespace Avalonia.Headless
 
         public FontMetrics Metrics => new FontMetrics
         {
-            DesignEmHeight = 10,
-            Ascent = 2,
-            Descent = 10,
+            DesignEmHeight = 1000,
+            Ascent = -700,
+            Descent = 100,
             IsFixedPitch = true,
             LineGap = 0,
-            UnderlinePosition = 2,
-            UnderlineThickness = 1,
-            StrikethroughPosition = 2,
-            StrikethroughThickness = 1
+            UnderlinePosition = 400,
+            UnderlineThickness = 100,
+            StrikethroughPosition = 200,
+            StrikethroughThickness = 100
         };
 
         public int GlyphCount => 1337;
