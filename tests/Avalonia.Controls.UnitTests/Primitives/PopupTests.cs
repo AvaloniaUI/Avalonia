@@ -814,7 +814,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var window = PreparedWindow(popup);
                 window.Show();
                 popup.Open();
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.AfterRender);
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.AfterRender, TestContext.Current.CancellationToken);
 
                 var raised = false;
                 if (popup.Host is PopupRoot popupRoot)
@@ -837,7 +837,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     };
                 }
                 window.Position = new PixelPoint(10, 10);
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.AfterRender);
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.AfterRender, TestContext.Current.CancellationToken);
                 Assert.False(raised);
             }
         }
@@ -867,7 +867,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var window = PreparedWindow(placementTarget);
                 window.Show();
                 popup.Open();
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.AfterRender);
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.AfterRender, TestContext.Current.CancellationToken);
 
                 // The target's initial placement is (395,295) which is a 10x10 panel centered in a 800x600 window
                 Assert.Equal(placementTarget.Bounds, new Rect(395D, 295D, 10, 10));
@@ -898,7 +898,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     };
                 }
                 window.PlatformImpl?.Resize(new Size(700D, 500D), WindowResizeReason.Unspecified);
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.AfterRender);
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.AfterRender, TestContext.Current.CancellationToken);
                 Assert.True(raised);
             }
         }
@@ -928,7 +928,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var window = PreparedWindow(placementTarget);
                 window.Show();
                 popup.Open();
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.AfterRender);
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.AfterRender, TestContext.Current.CancellationToken);
 
                 // The target's initial placement is (395,295) which is a 10x10 panel centered in a 800x600 window
                 Assert.Equal(placementTarget.Bounds, new Rect(395D, 295D, 10, 10));
@@ -954,7 +954,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     };
                 }
                 window.PlatformImpl?.Resize(new Size(700D, 500D), WindowResizeReason.Unspecified);
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.AfterRender);
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.AfterRender, TestContext.Current.CancellationToken);
                 Assert.False(raised);
             }
         }
@@ -983,7 +983,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var window = PreparedWindow(placementTarget);
                 window.Show();
                 popup.Open();
-                Dispatcher.UIThread.RunJobs();
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
                 // The target's initial placement is (395,295) which is a 10x10 panel centered in a 800x600 window
                 Assert.Equal(placementTarget.Bounds, new Rect(395D, 295D, 10, 10));
@@ -1013,7 +1013,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     };
                 }
                 placementTarget.Margin = new Thickness(10, 0, 0, 0);
-                Dispatcher.UIThread.RunJobs();
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
                 Assert.True(raised);
             }
         }
@@ -1043,7 +1043,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var window = PreparedWindow(placementTarget);
                 window.Show();
                 popup.Open();
-                Dispatcher.UIThread.RunJobs();
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
                 // The target's initial placement is (395,295) which is a 10x10 panel centered in a 800x600 window
                 Assert.Equal(placementTarget.Bounds, new Rect(395D, 295D, 10, 10));
@@ -1069,7 +1069,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     };
                 }
                 placementTarget.Margin = new Thickness(10, 0, 0, 0);
-                Dispatcher.UIThread.RunJobs();
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
                 Assert.False(raised);
             }
         }
@@ -1240,7 +1240,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 root.LayoutManager.ExecuteInitialLayoutPass();
                 popup.Open();
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.AfterRender);
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.AfterRender, TestContext.Current.CancellationToken);
 
                 // X: Adorned Canvas.Left + Adorner Margin Left + Adorner Width
                 // Y: Adorned Canvas.Top + Adorner Margin Top + Adorner Height

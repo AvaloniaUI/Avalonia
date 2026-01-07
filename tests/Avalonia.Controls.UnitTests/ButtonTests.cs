@@ -103,7 +103,7 @@ namespace Avalonia.Controls.UnitTests
             };
             var root = new TestRoot { Child = target };
 
-            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded, TestContext.Current.CancellationToken);
 
             Assert.True(target.IsEnabled);
             Assert.False(target.IsEffectivelyEnabled);
@@ -341,7 +341,7 @@ namespace Avalonia.Controls.UnitTests
             target.Presenter!.UpdateChild();
             kd.SetFocusedElement(target, NavigationMethod.Unspecified, KeyModifiers.None);
 
-            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded, TestContext.Current.CancellationToken);
 
             var accessKey = Key.A;
             target.CommandParameter = true;

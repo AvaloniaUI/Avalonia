@@ -30,7 +30,7 @@ namespace Avalonia.Controls.UnitTests
                 };
                 TimeSpan value = TimeSpan.FromHours(10);
                 timePicker.SelectedTime = value;
-                Threading.Dispatcher.UIThread.RunJobs();
+                Threading.Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
                 Assert.True(handled);
             }
         }
@@ -249,7 +249,7 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.True(DataValidationErrors.GetHasErrors(timePicker));
 
-                Dispatcher.UIThread.RunJobs();
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
                 timePicker.SelectedTime = new TimeSpan(11, 12, 13);
                 Assert.True(handled);
             }
