@@ -28,6 +28,11 @@
     <ProjectReference Include="..\..\src\Avalonia.Themes.Simple\Avalonia.Themes.Simple.csproj" />
     <ProjectReference Include="..\..\src\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="NotoColorEmoji-Regular.ttf" />
+    <EmbeddedResource Include="NotoColorEmoji-Regular.ttf" />
+  </ItemGroup>
   
   <Import Project="..\..\build\SampleApp.props" />
   <Import Project="..\..\build\ReferenceCoreLibraries.props" />
