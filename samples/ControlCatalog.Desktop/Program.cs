@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Fonts.Inter;
 using Avalonia.Headless;
 using Avalonia.LinuxFramebuffer;
 using Avalonia.LinuxFramebuffer.Output;
@@ -22,21 +21,9 @@ namespace ControlCatalog.Desktop
 {
     static class Program
     {
-        private static bool s_useFramebuffer;
-        private static bool s_useDrm;
-        
         [STAThread]
         static int Main(string[] args)
         {
-            if (args.Contains("--fbdev"))
-            {
-                s_useFramebuffer = true;
-            }
-            if (args.Contains("--drm"))
-            {
-                s_useDrm = true;
-            }
-
             if (args.Contains("--wait-for-attach"))
             {
                 Console.WriteLine("Attach debugger and use 'Set next statement'");
@@ -66,14 +53,14 @@ namespace ControlCatalog.Desktop
                     return orientation;
                 return SurfaceOrientation.Rotation0;
             }
-            string GetCard()
+            string? GetCard()
             {
                 var idx = Array.IndexOf(args, "--card");
                 if (idx != 0 && args.Length > idx + 1)
                     return args[idx + 1];
                 return null;
             }
-            if (s_useFramebuffer)
+            if (args.Contains("--fbdev"))
             {
                  SilenceConsole();
                  return builder.StartLinuxFbDev(args, new FbDevOutputOptions()
@@ -128,7 +115,7 @@ namespace ControlCatalog.Desktop
                     })
                     .StartWithClassicDesktopLifetime(args);
             }
-            else if (s_useDrm)
+            else if (args.Contains("--drm"))
             {
                 SilenceConsole();
                 return builder.StartLinuxDrm(args, card: GetCard(), options: new DrmOutputOptions()
@@ -175,16 +162,9 @@ namespace ControlCatalog.Desktop
                 })
                 .UseSkia()
                 .WithInterFont()
+                .WithDeveloperTools()
                 .AfterSetup(builder =>
                 {
-                    if (!s_useFramebuffer && !s_useDrm)
-                    {
-                        builder.Instance!.AttachDevTools(new Avalonia.Diagnostics.DevToolsOptions()
-                        {
-                            StartupScreenIndex = 1,
-                        });
-                    }
-
                     EmbedSample.Implementation = OperatingSystem.IsWindows() ? (INativeDemoControl)new EmbedSampleWin()
                         : OperatingSystem.IsMacOS() ? new EmbedSampleMac()
                         : OperatingSystem.IsLinux() ? new EmbedSampleGtk()

@@ -46,6 +46,31 @@ namespace Avalonia.Skia.RenderTests
         }
 
         [Fact]
+        public async Task ImageDrawing_Viewbox()
+        {
+            Decorator target = new Decorator
+            {
+                Width = 200,
+                Height = 200,
+                Child = new Image
+                {
+                    Source = new DrawingImage
+                    {
+                        Viewbox = new Rect(48, 37, 100, 125),
+                        Drawing = new ImageDrawing
+                        {
+                            ImageSource = new Bitmap(BitmapPath),
+                            Rect = new Rect(0, 0, 200, 200),
+                        }
+                    }
+                }
+            };
+
+            await RenderToFile(target);
+            CompareImages();
+        }
+
+        [Fact]
         public async Task ImageDrawing_BottomRight()
         {
             Decorator target = new Decorator
@@ -85,7 +110,7 @@ namespace Avalonia.Skia.RenderTests
         {
             var target = new Border
             {
-                Width = 400, 
+                Width = 400,
                 Height = 400,
                 Child = new DrawingBrushTransformTest()
             };
