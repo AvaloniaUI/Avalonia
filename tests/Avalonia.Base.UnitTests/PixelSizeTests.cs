@@ -8,9 +8,9 @@ public class PixelSizeTests
 {
     [Theory]
     [MemberData(nameof(ParseArguments))]
-    public void Parse(string source, PixelSize expected, Exception exception)
+    public void Parse(string source, PixelSize expected, Exception? exception)
     {
-        Exception error = null;
+        Exception? error = null;
         PixelSize result = default;
         try
         {
@@ -26,9 +26,9 @@ public class PixelSizeTests
 
     [Theory]
     [MemberData(nameof(TryParseArguments))]
-    public void TryParse(string source, PixelSize? expected, Exception exception)
+    public void TryParse(string source, PixelSize? expected, Exception? exception)
     {
-        Exception error = null;
+        Exception? error = null;
         PixelSize result = PixelSize.Empty;
         try
         {
@@ -43,35 +43,35 @@ public class PixelSizeTests
         Assert.Equal(expected, result);
     }
 
-    public static IEnumerable<object[]> ParseArguments()
+    public static IEnumerable<object?[]> ParseArguments()
     {
-        yield return new object[]
-        {
+        yield return
+        [
             "1024,768",
             new PixelSize(1024, 768),
-            null,
-        };
-        yield return new object[]
-        {
+            null
+        ];
+        yield return
+        [
             "1024x768",
             default(PixelSize),
-            new FormatException("Invalid PixelSize."),
-        };
+            new FormatException("Invalid PixelSize.")
+        ];
     }
 
-    public static IEnumerable<object[]> TryParseArguments()
+    public static IEnumerable<object?[]> TryParseArguments()
     {
-        yield return new object[]
-        {
+        yield return
+        [
             "1024,768",
             new PixelSize(1024, 768),
-            null,
-        };
-        yield return new object[]
-        {
+            null
+        ];
+        yield return
+        [
             "1024x768",
             PixelSize.Empty,
-            null,
-        };
+            null
+        ];
     }
 }

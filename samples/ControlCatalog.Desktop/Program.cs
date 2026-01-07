@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Fonts.Inter;
 using Avalonia.Headless;
 using Avalonia.LinuxFramebuffer.Output;
 using Avalonia.LogicalTree;
@@ -74,12 +73,12 @@ namespace ControlCatalog.Desktop
                     {
                         DispatcherTimer.RunOnce(async () =>
                         {
-                            var window = ((IClassicDesktopStyleApplicationLifetime)Application.Current.ApplicationLifetime)
-                                .MainWindow;
+                            var window = ((IClassicDesktopStyleApplicationLifetime)Application.Current!.ApplicationLifetime!)
+                                .MainWindow!;
                             var tc = window.GetLogicalDescendants().OfType<TabControl>().First();
                             foreach (var page in tc.Items.Cast<TabItem>().ToList())
                             {
-                                if (page.Header.ToString() == "DatePicker" || page.Header.ToString() == "TreeView")
+                                if (page.Header?.ToString() is "DatePicker" or "TreeView")
                                     continue;
                                 Console.WriteLine("Selecting " + page.Header);
                                 tc.SelectedItem = page;
@@ -149,16 +148,9 @@ namespace ControlCatalog.Desktop
                 })
                 .UseSkia()
                 .WithInterFont()
+                .WithDeveloperTools()
                 .AfterSetup(builder =>
                 {
-                    if (!s_useFramebuffer)
-                    {
-                        builder.Instance!.AttachDevTools(new Avalonia.Diagnostics.DevToolsOptions()
-                        {
-                            StartupScreenIndex = 1,
-                        });
-                    }
-
                     EmbedSample.Implementation = OperatingSystem.IsWindows() ? (INativeDemoControl)new EmbedSampleWin()
                         : OperatingSystem.IsMacOS() ? new EmbedSampleMac()
                         : OperatingSystem.IsLinux() ? new EmbedSampleGtk()

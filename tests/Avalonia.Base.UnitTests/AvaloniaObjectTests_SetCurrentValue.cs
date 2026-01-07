@@ -516,9 +516,9 @@ namespace Avalonia.Base.UnitTests
 
         private class ViewModel : NotifyingBase
         {
-            private string _value;
+            private string? _value;
 
-            public string Value
+            public string? Value
             {
                 get => _value;
                 set

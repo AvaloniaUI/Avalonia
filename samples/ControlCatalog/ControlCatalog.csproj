@@ -2,7 +2,6 @@
   <PropertyGroup>
     <TargetFrameworks>$(AvsCurrentTargetFramework)</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Nullable>enable</Nullable>
     <IncludeAvaloniaGenerators>true</IncludeAvaloniaGenerators>
   </PropertyGroup>
   <ItemGroup>

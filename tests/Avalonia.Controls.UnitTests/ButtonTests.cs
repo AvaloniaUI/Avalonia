@@ -212,7 +212,7 @@ namespace Avalonia.Controls.UnitTests
             var pt = new Point(150, 50);
             renderer.Setup(r => r.HitTest(It.IsAny<Point>(), It.IsAny<Visual>(), It.IsAny<Func<Visual, bool>>()))
                 .Returns<Point, Visual, Func<Visual, bool>>((p, r, f) =>
-                    r.Bounds.Contains(p.Transform(r.RenderTransform.Value.Invert())) ?
+                    r.Bounds.Contains(p.Transform(r.RenderTransform!.Value.Invert())) ?
                     new Visual[] { r } : new Visual[0]);
 
             using var _ = UnitTestApplication.Start(TestServices.StyledWindow);
@@ -336,9 +336,9 @@ namespace Avalonia.Controls.UnitTests
             };
 
             root.ApplyTemplate();
-            root.Presenter.UpdateChild();
+            root.Presenter!.UpdateChild();
             target.ApplyTemplate();
-            target.Presenter.UpdateChild();
+            target.Presenter!.UpdateChild();
             kd.SetFocusedElement(target, NavigationMethod.Unspecified, KeyModifiers.None);
 
             Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
@@ -535,7 +535,7 @@ namespace Avalonia.Controls.UnitTests
         public void Button_CommandParameter_Does_Not_Change_While_Execution()
         {
             var target = new Button();
-            object lastParamenter = "A";
+            object? lastParamenter = "A";
             var generator = new Random();
             var onlyOnce = false;
             var command = new TestCommand(parameter =>
@@ -582,12 +582,12 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        private KeyEventArgs CreateKeyDownEvent(Key key, Interactive source = null)
+        private KeyEventArgs CreateKeyDownEvent(Key key, Interactive? source = null)
         {
             return new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = key, Source = source };
         }
 
-        private KeyEventArgs CreateKeyUpEvent(Key key, Interactive source = null)
+        private KeyEventArgs CreateKeyUpEvent(Key key, Interactive? source = null)
         {
             return new KeyEventArgs { RoutedEvent = InputElement.KeyUpEvent, Key = key, Source = source };
         }
@@ -682,6 +682,7 @@ namespace Avalonia.Controls.UnitTests
 
                 button.ApplyTemplate();
                 var presenter = button.Presenter;
+                Assert.NotNull(presenter);
 
                 button.LetterSpacing = 5.0;
 
@@ -758,7 +759,7 @@ namespace Avalonia.Controls.UnitTests
             private readonly ILayoutManager _layoutManager;
             public bool IsClosed { get; private set; }
 
-            public TestTopLevel(ITopLevelImpl impl, ILayoutManager layoutManager = null)
+            public TestTopLevel(ITopLevelImpl impl, ILayoutManager? layoutManager = null)
                 : base(impl)
             {
                 _layoutManager = layoutManager ?? new LayoutManager(this);
