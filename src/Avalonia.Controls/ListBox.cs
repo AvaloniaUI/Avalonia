@@ -77,14 +77,14 @@ namespace Avalonia.Controls
             private set => SetAndRaise(ScrollProperty, ref _scroll, value);
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc cref="SelectingItemsControl.SelectedItems"/>
         public new IList? SelectedItems
         {
             get => base.SelectedItems;
             set => base.SelectedItems = value;
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc cref="SelectingItemsControl.Selection"/>
         public new ISelectionModel Selection
         {
             get => base.Selection;

@@ -271,7 +271,7 @@ namespace Avalonia.Animation
         IDisposable IAnimation.Apply(Animatable control, IClock? clock, IObservable<bool> match, Action? onComplete)
             => Apply(control, clock, match, onComplete);
         
-        /// <inheritdoc/>
+        /// <inheritdoc cref="IAnimation.Apply"/>
         internal IDisposable Apply(Animatable control, IClock? clock, IObservable<bool> match, Action? onComplete)
         {
             var (animators, subscriptions) = InterpretKeyframes(control);
@@ -320,7 +320,7 @@ namespace Avalonia.Animation
         public Task RunAsync(Animatable control, CancellationToken cancellationToken = default) =>
             RunAsync(control, null, cancellationToken);
         
-        /// <inheritdoc/>
+        /// <inheritdoc cref="IAnimation.RunAsync"/>
         internal Task RunAsync(Animatable control, IClock? clock)
         {
             return RunAsync(control, clock, default);
@@ -329,7 +329,7 @@ namespace Avalonia.Animation
         Task IAnimation.RunAsync(Animatable control, IClock? clock, CancellationToken cancellationToken)
             => RunAsync(control, clock, cancellationToken);
         
-        /// <inheritdoc/>
+        /// <inheritdoc cref="IAnimation.RunAsync"/>
         internal Task RunAsync(Animatable control, IClock? clock, CancellationToken cancellationToken)
         {
             if (cancellationToken.IsCancellationRequested)

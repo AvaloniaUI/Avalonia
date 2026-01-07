@@ -541,13 +541,6 @@ public partial class Dispatcher
         return result;
     }
 
-    /// <inheritdoc/>
-    public void Post(Action action, DispatcherPriority priority = default)
-    {
-        _ = action ?? throw new ArgumentNullException(nameof(action));
-        InvokeAsyncImpl(new DispatcherOperation(this, priority, action, true), CancellationToken.None);
-    }
-
     /// <summary>
     ///     Executes the specified Func&lt;Task&gt; asynchronously on the
     ///     thread that the Dispatcher was created on
@@ -613,6 +606,17 @@ public partial class Dispatcher
     {
         _ = action ?? throw new ArgumentNullException(nameof(action));
         return InvokeAsync<Task<TResult>>(action, priority).GetTask().Unwrap();
+    }
+
+    /// <summary>
+    /// Posts an action that will be invoked on the dispatcher thread.
+    /// </summary>
+    /// <param name="action">The method.</param>
+    /// <param name="priority">The priority with which to invoke the method.</param>
+    public void Post(Action action, DispatcherPriority priority = default)
+    {
+        _ = action ?? throw new ArgumentNullException(nameof(action));
+        InvokeAsyncImpl(new DispatcherOperation(this, priority, action, true), CancellationToken.None);
     }
 
     /// <summary>

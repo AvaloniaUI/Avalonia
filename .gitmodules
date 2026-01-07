@@ -4,6 +4,3 @@
 [submodule "XamlX"]
 	path = external/XamlX
 	url = https://github.com/kekekeks/XamlX.git
-[submodule "Avalonia.Controls.DataGrid"]
-	path = external/Avalonia.Controls.DataGrid
-	url = https://github.com/AvaloniaUI/Avalonia.Controls.DataGrid.git

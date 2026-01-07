@@ -470,7 +470,10 @@ namespace Avalonia.Layout
             }
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Called when a child control's desired size changes.
+        /// </summary>
+        /// <param name="control">The child control.</param>
         internal void ChildDesiredSizeChanged(Layoutable control)
         {
             if (!_measuring)
