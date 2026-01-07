@@ -28,26 +28,34 @@ class MetalPlatformGraphics : IPlatformGraphics
 
 class MetalDevice : IMetalDevice
 {
-    public IAvnMetalDevice Native { get; private set; }
-    private DisposableLock _syncRoot = new();
+    private readonly DisposableLock _syncRoot = new();
     private readonly GpuHandleWrapFeature _handleWrapFeature;
     private readonly MetalExternalObjectsFeature _externalObjectsFeature;
-
+    private IAvnMetalDevice? _native;
 
     public MetalDevice(IAvaloniaNativeFactory factory, IAvnMetalDevice native)
     {
-        Native = native;
+        _native = native;
         _handleWrapFeature = new GpuHandleWrapFeature(factory);
         _externalObjectsFeature = new MetalExternalObjectsFeature(native);
     }
 
-    public void Dispose()
+    public IAvnMetalDevice Native
     {
-        Native?.Dispose();
-        Native = null;
+        get
+        {
+            ObjectDisposedException.ThrowIf(_native is null, this);
+            return _native;
+        }
     }
 
-    public object TryGetFeature(Type featureType)
+    public void Dispose()
+    {
+        _native?.Dispose();
+        _native = null;
+    }
+
+    public object? TryGetFeature(Type featureType)
     {
         if (featureType == typeof(IExternalObjectsHandleWrapRenderInterfaceContextFeature))
             return _handleWrapFeature;
@@ -105,7 +113,7 @@ internal class MetalExternalObjectsFeature : IMetalExternalObjectsFeature
     public IReadOnlyList<string> SupportedSemaphoreTypes { get; } =
         [KnownPlatformGraphicsExternalSemaphoreHandleTypes.MetalSharedEvent];
     
-    public byte[] DeviceLuid { get; }
+    public byte[]? DeviceLuid { get; }
 
     public CompositionGpuImportedImageSynchronizationCapabilities
         GetSynchronizationCapabilities(string imageHandleType) =>
@@ -166,11 +174,20 @@ internal class MetalExternalObjectsFeature : IMetalExternalObjectsFeature
 
 internal class MetalRenderTarget : IMetalPlatformSurfaceRenderTarget
 {
-    private IAvnMetalRenderTarget _native;
+    private IAvnMetalRenderTarget? _native;
 
     public MetalRenderTarget(IAvnMetalRenderTarget native)
     {
         _native = native;
+    }
+
+    private IAvnMetalRenderTarget Native
+    {
+        get
+        {
+            ObjectDisposedException.ThrowIf(_native is null, this);
+            return _native;
+        }
     }
 
     public void Dispose()
@@ -181,18 +198,27 @@ internal class MetalRenderTarget : IMetalPlatformSurfaceRenderTarget
 
     public IMetalPlatformSurfaceRenderingSession BeginRendering()
     {
-        var session = _native.BeginDrawing();
+        var session = Native.BeginDrawing();
         return new MetalDrawingSession(session);
     }
 }
 
 internal class MetalDrawingSession : IMetalPlatformSurfaceRenderingSession
 {
-    private IAvnMetalRenderingSession _session;
+    private IAvnMetalRenderingSession? _session;
 
     public MetalDrawingSession(IAvnMetalRenderingSession session)
     {
         _session = session;
+    }
+
+    public IAvnMetalRenderingSession Session
+    {
+        get
+        {
+            ObjectDisposedException.ThrowIf(_session is null, this);
+            return _session;
+        }
     }
 
     public void Dispose()
@@ -201,16 +227,18 @@ internal class MetalDrawingSession : IMetalPlatformSurfaceRenderingSession
         _session = null;
     }
 
-    public IntPtr Texture => _session.Texture;
+    public IntPtr Texture => Session.Texture;
+
     public PixelSize Size
     {
         get
         {
-            var size = _session.PixelSize;
+            var size = Session.PixelSize;
             return new(size.Width, size.Height);
         }
     }
 
-    public double Scaling => _session.Scaling;
+    public double Scaling => Session.Scaling;
+
     public bool IsYFlipped => false;
 }
