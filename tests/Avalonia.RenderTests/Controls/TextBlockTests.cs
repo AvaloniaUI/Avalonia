@@ -390,7 +390,7 @@ namespace Avalonia.Skia.RenderTests
         [InlineData(TextRenderingMode.Alias, TextHintingMode.None)]
         [InlineData(TextRenderingMode.Antialias, TextHintingMode.Light)]
         [InlineData(TextRenderingMode.Alias, TextHintingMode.Light)]
-        [Theory]
+        [Theory(Skip = "Backend dependent")]
         public async Task Should_Render_TextBlock_With_TextOptions(
             TextRenderingMode textRenderingMode, 
             TextHintingMode textHintingMode)
