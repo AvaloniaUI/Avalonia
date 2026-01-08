@@ -19,9 +19,7 @@ namespace Avalonia.Base.UnitTests.Animation
         {
             var conv = new KeySplineTypeConverter();
 
-            var keySpline = (KeySpline)conv.ConvertFrom(input);
-
-            Assert.NotNull(keySpline);
+            var keySpline = Assert.IsAssignableFrom<KeySpline>(conv.ConvertFrom(input));
 
             Assert.Equal(1, keySpline.ControlPointX1);
             Assert.Equal(2, keySpline.ControlPointY1);
@@ -36,7 +34,7 @@ namespace Avalonia.Base.UnitTests.Animation
         {
             var conv = new KeySplineTypeConverter();
 
-            Assert.ThrowsAny<Exception>(() => (KeySpline)conv.ConvertFrom(input));
+            Assert.ThrowsAny<Exception>(() => (KeySpline?)conv.ConvertFrom(input));
         }
 
         [Theory]

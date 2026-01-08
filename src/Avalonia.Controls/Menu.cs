@@ -43,7 +43,7 @@ namespace Avalonia.Controls
             AccessKeyHandler.AccessKeyPressedEvent.AddClassHandler<Menu>(OnAccessKeyPressed);
         }
         
-        /// <inheritdoc/>
+        /// <inheritdoc cref="IMainMenu.Close"/>
         public override void Close()
         {
             if (!IsOpen)
@@ -66,7 +66,7 @@ namespace Avalonia.Controls
             });
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc cref="IMainMenu.Open"/>
         public override void Open()
         {
             if (IsOpen)

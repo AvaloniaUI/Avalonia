@@ -12,9 +12,9 @@
   <Import Project="..\..\build\SharedVersion.props" />
 
   <ItemGroup>
-    <PackageReference Include="NUnit" Version="3.13.3" />
-    <PackageReference Include="NUnit3TestAdapter" Version="4.4.2" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.5.0" />
+    <PackageReference Include="NUnit" Version="4.4.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="6.0.1" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
   </ItemGroup>
 
   <ItemGroup>

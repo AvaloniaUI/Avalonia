@@ -564,6 +564,13 @@ namespace Avalonia.Controls
                 }
             }
         }
+        
+        /// <inheritdoc />
+        protected override void UpdateDataValidation(AvaloniaProperty property, BindingValueType state, Exception? error)
+        {
+            DataValidationErrors.SetError(this, error);
+            base.UpdateDataValidation(property, state, error);
+        }
 
         // Since we are resetting the dispatcher instance, the callback might never arrive
         internal static void ResetLoadedQueueForUnitTests()

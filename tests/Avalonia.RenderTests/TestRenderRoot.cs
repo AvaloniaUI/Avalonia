@@ -6,17 +6,13 @@ using Avalonia.Controls;
 using Avalonia.Platform;
 
 
-#if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests
-#else
-namespace Avalonia.Direct2D1.RenderTests
-#endif
 {
     public class TestRenderRoot : Decorator, IRenderRoot
     {
         private readonly IRenderTarget _renderTarget;
         public Size ClientSize { get; private set; }
-        internal IRenderer Renderer { get; private set; }
+        internal IRenderer Renderer { get; private set; } = null!;
         IRenderer IRenderRoot.Renderer => Renderer;
         IHitTester IRenderRoot.HitTester => new NullHitTester();
         public double RenderScaling { get; }
@@ -29,9 +25,9 @@ namespace Avalonia.Direct2D1.RenderTests
         
         class NullHitTester : IHitTester
         {
-            public IEnumerable<Visual> HitTest(Point p, Visual root, Func<Visual, bool> filter) => Array.Empty<Visual>();
+            public IEnumerable<Visual> HitTest(Point p, Visual root, Func<Visual, bool>? filter) => Array.Empty<Visual>();
 
-            public Visual HitTestFirst(Point p, Visual root, Func<Visual, bool> filter) => null;
+            public Visual? HitTestFirst(Point p, Visual root, Func<Visual, bool>? filter) => null;
         }
 
         internal void Initialize(IRenderer renderer, Control child)

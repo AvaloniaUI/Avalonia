@@ -58,7 +58,17 @@ internal abstract class BclStorageItem(FileSystemInfo fileSystemInfo) : IStorage
         _ => null
     };
 
-    internal static void DeleteCore(FileSystemInfo fileSystemInfo) => fileSystemInfo.Delete();
+    internal static void DeleteCore(FileSystemInfo fileSystemInfo)
+    {
+        if (fileSystemInfo is DirectoryInfo directoryInfo)
+        {
+            directoryInfo.Delete(true);
+        }
+        else
+        {
+            fileSystemInfo.Delete();
+        }
+    }
 
     internal static Uri GetPathCore(FileSystemInfo fileSystemInfo)
     {

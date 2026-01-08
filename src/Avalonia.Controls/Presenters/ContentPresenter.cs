@@ -119,6 +119,12 @@ namespace Avalonia.Controls.Presenters
             TextBlock.LineHeightProperty.AddOwner<ContentPresenter>();
 
         /// <summary>
+        /// Defines the <see cref="LetterSpacing"/> property
+        /// </summary>
+        public static readonly StyledProperty<double> LetterSpacingProperty =
+            TextElement.LetterSpacingProperty.AddOwner<ContentPresenter>();
+
+        /// <summary>
         /// Defines the <see cref="MaxLines"/> property
         /// </summary>
         public static readonly StyledProperty<int> MaxLinesProperty =
@@ -325,6 +331,15 @@ namespace Avalonia.Controls.Presenters
         {
             get => GetValue(LineHeightProperty);
             set => SetValue(LineHeightProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the letter spacing
+        /// </summary>
+        public double LetterSpacing
+        {
+            get => GetValue(LetterSpacingProperty);
+            set => SetValue(LetterSpacingProperty, value);
         }
 
         /// <summary>

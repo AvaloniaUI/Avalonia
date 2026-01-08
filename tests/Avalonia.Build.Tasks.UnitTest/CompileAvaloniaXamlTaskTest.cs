@@ -14,7 +14,7 @@ public class CompileAvaloniaXamlTaskTest
     public void Does_Not_Fail_When_Codebehind_Contains_DllImport()
     {
         using var engine = UnitTestBuildEngine.Start();
-        var basePath = Path.Combine(Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath), "Assets");
+        var basePath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "Assets");
         var assembly = new TaskItem(Path.Combine(basePath, "PInvoke.dll"));
         assembly.SetMetadata(CompileAvaloniaXamlTask.AvaloniaCompileOutputMetadataName, Path.Combine(basePath, "Avalonia", Path.GetFileName(assembly.ItemSpec)));
         var references = File.ReadAllLines(Path.Combine(basePath, "PInvoke.dll.refs")).Select(p => new TaskItem(p)).ToArray();

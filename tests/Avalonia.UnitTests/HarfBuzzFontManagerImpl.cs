@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
@@ -33,11 +35,11 @@ namespace Avalonia.UnitTests
 
         string[] IFontManagerImpl.GetInstalledFontFamilyNames(bool checkForUpdates)
         {
-            return _customTypefaces.Select(x => x.FontFamily!.Name).ToArray();
+            return _customTypefaces.Select(x => x.FontFamily.Name).ToArray();
         }
 
         public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight,
-            FontStretch fontStretch, CultureInfo culture, out Typeface fontKey)
+            FontStretch fontStretch, string? familyName, CultureInfo? culture, out Typeface fontKey)
         {
             foreach (var customTypeface in _customTypefaces)
             {
@@ -66,7 +68,7 @@ namespace Avalonia.UnitTests
         }
 
         public bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight, 
-            FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface glyphTypeface)
+            FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
         {
             glyphTypeface = null;
 

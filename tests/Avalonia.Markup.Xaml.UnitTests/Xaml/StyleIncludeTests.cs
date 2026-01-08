@@ -301,7 +301,7 @@ public class StyleIncludeTests : XamlTestBase
                 return diagnostic.Severity;
             } 
         });
-        Assert.IsAssignableFrom<IStyle>(((ResourceDictionary)control.Resources)!.MergedDictionaries[0]);
+        Assert.IsAssignableFrom<IStyle>(((ResourceDictionary)control.Resources).MergedDictionaries[0]);
         var warning = Assert.Single(diagnostics);
         Assert.Equal(RuntimeXamlDiagnosticSeverity.Warning, warning.Severity);
     }
@@ -319,10 +319,11 @@ public class StyleIncludeTests : XamlTestBase
         };
 
         var loaded = Assert.IsType<StyleWithServiceProvider>(styleInclude.Loaded);
+        Assert.NotNull(loaded.ServiceProvider);
         
         Assert.Equal(
-            sp.GetService<IAvaloniaXamlIlParentStackProvider>().Parents, 
-            loaded.ServiceProvider.GetService<IAvaloniaXamlIlParentStackProvider>().Parents);
+            sp.GetRequiredService<IAvaloniaXamlIlParentStackProvider>().Parents,
+            loaded.ServiceProvider.GetRequiredService<IAvaloniaXamlIlParentStackProvider>().Parents);
     }
 }
 
@@ -332,7 +333,7 @@ public class TestServiceProvider :
     IAvaloniaXamlIlEagerParentStackProvider
 {
     private IServiceProvider _root = XamlIlRuntimeHelpers.CreateRootServiceProviderV2();
-    public object GetService(Type serviceType)
+    public object? GetService(Type serviceType)
     {
         if (serviceType == typeof(IUriContext))
         {
@@ -345,9 +346,9 @@ public class TestServiceProvider :
         return _root.GetService(serviceType);
     }
 
-    public Uri BaseUri { get; set; }
+    public Uri BaseUri { get; set; } = null!;
     public List<object> ParentsStack { get; set; } = [new ContentControl()];
     IEnumerable<object> IAvaloniaXamlIlParentStackProvider.Parents => ParentsStack.AsEnumerable().Reverse();
     IReadOnlyList<object> IAvaloniaXamlIlEagerParentStackProvider.DirectParentsStack => ParentsStack;
-    IAvaloniaXamlIlEagerParentStackProvider IAvaloniaXamlIlEagerParentStackProvider.ParentProvider => null;
+    IAvaloniaXamlIlEagerParentStackProvider? IAvaloniaXamlIlEagerParentStackProvider.ParentProvider => null;
 }

@@ -1,3 +1,5 @@
+#nullable enable
+
 using System.IO;
 using System.Runtime.CompilerServices;
 using Avalonia.Media.Imaging;
@@ -5,8 +7,6 @@ using CrossUI;
 
 #if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests.CrossTests;
-#elif AVALONIA_D2D
-namespace Avalonia.Direct2D1.RenderTests.CrossTests;
 #else
 namespace Avalonia.RenderTests.WpfCompare.CrossTests;
 #endif
