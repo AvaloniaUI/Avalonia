@@ -42,7 +42,7 @@ namespace Avalonia.X11
 
         public unsafe IntPtr FindTopWindowUnderCursor(IntPtr root, int cursorX, int cursorY)
         {
-            if (!XLib.XTranslateCoordinates(_display, root, root, cursorX, cursorY, out int lx, out int ly, out IntPtr target))
+            if (!XLib.XTranslateCoordinates(_display, root, root, cursorX, cursorY, out int targetX, out int targetY, out IntPtr target))
             {
                 return IntPtr.Zero;
             }
@@ -57,13 +57,13 @@ namespace Avalonia.X11
                         return target;
                     }
 
-                    if (!XLib.XTranslateCoordinates(_display, scr, target, lx, ly, out int ch_x, out int ch_y, out IntPtr child))
+                    if (!XLib.XTranslateCoordinates(_display, scr, target, targetX, targetY, out int childX, out int childY, out IntPtr child))
                     {
                         return IntPtr.Zero;
                     }
 
-                    lx = ch_x;
-                    ly = ch_y;
+                    targetX = childX;
+                    targetY = childY;
                     target = child;
                 }
             }

@@ -34,14 +34,14 @@ namespace Avalonia.X11
         private Action<RawInputEventArgs>? Input => _window.Input;
         private IDragDropDevice? DragDropDevice  => _dragDropDevice ??= AvaloniaLocator.Current.GetService<IDragDropDevice>();
 
-        public X11DropTarget(X11Window window, IntPtr handle, X11Info info ) 
+        public X11DropTarget(X11Window window, IntPtr handle, X11Info info, AvaloniaX11Platform platform ) 
         { 
             _window = window;
             _handle = handle;
             _display = info.Display;
             _atoms = info.Atoms;
 
-            _receiver = new X11DataReceiver(handle, info);
+            _receiver = new X11DataReceiver(handle, info, platform);
             _receiver.DataReceived += OnDataReceived;
             
             SetupXdndProtocol();
@@ -57,14 +57,6 @@ namespace Avalonia.X11
             if (ev.type == XEventName.ClientMessage)
             {
                 return OnClientMessageEvent(ref ev.ClientMessageEvent);
-            }
-            else if (ev.type == XEventName.SelectionNotify)
-            {
-                return OnSelectionEvent(ref ev.SelectionEvent);
-            }
-            else if(ev.type == XEventName.PropertyNotify)
-            {
-                return _receiver.HandlePropertyEvent(ref ev.PropertyEvent);
             }
 
             return false;
@@ -127,14 +119,12 @@ namespace Avalonia.X11
             if(sourceTypes != null && sourceTypes.Length != 0)
             {
                 var sourceTypesName = sourceTypes
-                    .Where(a => a != (IntPtr)0)
-                    .Select(a => _atoms.GetAtomName(a) ?? string.Empty)
-                    .Where(n => !string.IsNullOrEmpty(n))
+                    .Where(a => a != IntPtr.Zero)
                     .ToArray() ;
 
                 if (sourceTypesName != null && sourceTypesName.Length != 0)
                 {
-                    _currentDrag = new X11DataTransfer(sourceTypesName, _receiver);
+                    _currentDrag = new X11DataTransfer(sourceTypesName, _receiver, _atoms);
 
                     //We do not have locations and actions here, so we will invoke DragEnter in first DragPosition
                     _enterEventSent = false;                  
@@ -187,22 +177,10 @@ namespace Avalonia.X11
             var point = _window.PointToClient(new PixelPoint(x, y));
             var serverEffect = clientMsg.ptr5;
             _locationData = (point, serverEffect);
+            var clientEffects = RaiseDragEnterOver(point, serverEffect);
 
-            if (_currentDrag.AllDataLoaded)
-            {
-                var clientEffects = RaiseDragEnterOver(point, serverEffect);
-
-                // Send response
-                SendXdndStatus(_dragSource, clientEffects, x, y);
-            }
-            else
-            {
-                if(!_receiver.LoadDataOnEnter(_currentDrag)) 
-                {
-                    var clientEffects = RaiseDragEnterOver(point, serverEffect);
-                    SendXdndStatus(_dragSource, clientEffects, x, y);
-                }
-            }           
+            // Send response
+            SendXdndStatus(_dragSource, clientEffects, x, y);           
         }
 
         private DragDropEffects RaiseDragEnterOver(Point point, WindowHandle serverEffect)
@@ -369,25 +347,7 @@ namespace Avalonia.X11
             _currentDrag.DropEnded();
         }
 
-        private bool OnSelectionEvent(ref XSelectionEvent selectionEvent)
-        {
-            if (selectionEvent.selection == _atoms.XdndSelection)
-            {
-                if (selectionEvent.property == IntPtr.Zero)
-                {
-                    return false;
-                }
-                    
-                if (DragDropDevice != null && _currentDrag != null)
-                {
-                    _receiver.HandleSelectionNotify(ref selectionEvent);                
-                }
-                                
-                return true;                
-            }
-
-            return false;
-        }       
+         
                 
         private void SendXdndFinished(WindowHandle source, bool success)
         {            

@@ -189,7 +189,7 @@ namespace Avalonia.X11
             Handle = new PlatformHandle(_handle, "XID");
 
             _mode.OnHandleCreated(_handle);
-            _dropTarget = new X11DropTarget(this, _handle, _x11);
+            _dropTarget = new X11DropTarget(this, _handle, _x11, _platform);
             _platform.RegisterDropTarget(Handle.Handle, new X11InnerDropTarget(this));
 
             _realSize = new PixelSize(defaultWidth, defaultHeight);

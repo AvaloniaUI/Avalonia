@@ -8,7 +8,7 @@ namespace Avalonia.X11.DragNDrop
     /// <summary>
     /// Drop target for Drag-N-Drop between one App without X11's selections.
     /// </summary>
-    internal class X11InnerDropTarget : Ix11InnerDropTarget
+    internal class X11InnerDropTarget : IX11InnerDropTarget
     {
         private readonly X11Window _window;
 
@@ -95,7 +95,7 @@ namespace Avalonia.X11.DragNDrop
             return args.Effects;
         }
 
-        public async Task<DragDropEffects> HandleDragLeave(PixelPoint coords, DragDropEffects effects)
+        public DragDropEffects HandleDragLeave(PixelPoint coords, DragDropEffects effects)
         {
             if (DragDropDevice == null || _currentDrag == null)
                 return DragDropEffects.None;
@@ -113,7 +113,7 @@ namespace Avalonia.X11.DragNDrop
                 RawInputModifiers.None
             );
 
-            await Task.Run(() => Input?.Invoke(args)).ConfigureAwait(false);
+            Input?.Invoke(args);
 
             _currentDrag = null;
 

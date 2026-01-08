@@ -314,46 +314,10 @@ namespace Avalonia.X11.Clipboard
             using var session = OpenReadSession();
 
             var formatAtoms = await session.SendFormatRequest();
-            if (formatAtoms is null)
-                return ([], []);
-
-            var formats = new List<DataFormat>(formatAtoms.Length);
-            List<IntPtr>? textFormatAtoms = null;
-
-            var hasImage = false;
-
-            foreach (var formatAtom in formatAtoms)
-            {
-                if (ClipboardDataFormatHelper.ToDataFormat(formatAtom, _x11.Atoms) is not { } format)
-                    continue;
-
-                if (DataFormat.Text.Equals(format))
-                {
-                    if (textFormatAtoms is null)
-                    {
-                        formats.Add(format);
-                        textFormatAtoms = [];
-                    }
-                    textFormatAtoms.Add(formatAtom);
-                }
-                else
-                {
-                    formats.Add(format);
-
-                    if(!hasImage)
-                    {
-                        if (format.Identifier is ClipboardDataFormatHelper.JpegFormatMimeType or ClipboardDataFormatHelper.PngFormatMimeType)
-                            hasImage = true;
-                    }
-                }
-            }
-
-            if (hasImage)
-                formats.Add(DataFormat.Bitmap);
-
-            return (formats.ToArray(), textFormatAtoms?.ToArray() ?? []);
+           
+            return ClipboardDataFormatHelper.GetDataFormats(formatAtoms, _x11.Atoms);
         }
-
+               
         private static async Task<IAsyncDataTransferItem[]> CreateItemsAsync(ClipboardDataReader reader, DataFormat[] formats)
         {
             List<DataFormat>? nonFileFormats = null;

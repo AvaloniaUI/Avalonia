@@ -21,6 +21,8 @@ namespace Avalonia.X11
         {
             _platform = platform ?? throw new ArgumentNullException(nameof(platform));
         }
+
+        [Obsolete($"Use {nameof(DoDragDropAsync)} instead.")]
         public async Task<DragDropEffects> DoDragDrop(PointerEventArgs triggerEvent, IDataObject data, DragDropEffects allowedEffects)
         {
             var dataTransfer = new DataObjectToDataTransferWrapper(data);

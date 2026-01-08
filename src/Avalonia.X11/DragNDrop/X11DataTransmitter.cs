@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Input;
+using Avalonia.X11.Clipboard;
 using WindowHandle = System.IntPtr;
 
 namespace Avalonia.X11
@@ -27,7 +28,7 @@ namespace Avalonia.X11
         public void StartTransfer(ref XSelectionRequestEvent requestEvent, IDataTransfer dataTransfer)
         {
             byte[] dataBytes = X11DataTransfer.ToTransfer(dataTransfer,
-                    X11DataTransfer.MimeFormatToDataFormat(_atoms.GetAtomName(requestEvent.target) ?? string.Empty));
+                    ClipboardDataFormatHelper.ToDataFormat(requestEvent.target, _atoms));
 
             if (dataBytes.Length > _maxSize)
             {
