@@ -1299,25 +1299,6 @@ namespace Avalonia.Base.UnitTests
                 AvaloniaProperty.Register<Class2, string>("Bar", "bardefault");
         }
 
-        private class TestOneTimeBinding : IBinding
-        {
-            private IObservable<object> _source;
-
-            public TestOneTimeBinding(IObservable<object> source)
-            {
-                _source = source;
-            }
-
-            public InstancedBinding Initiate(
-                AvaloniaObject target,
-                AvaloniaProperty? targetProperty,
-                object? anchor = null,
-                bool enableDataValidation = false)
-            {
-                return InstancedBinding.OneTime(_source);
-            }
-        }
-
         private class TestStackOverflowViewModel : INotifyPropertyChanged
         {
             public int SetterInvokedCount { get; private set; }

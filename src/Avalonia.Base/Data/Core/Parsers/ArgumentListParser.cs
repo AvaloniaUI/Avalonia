@@ -1,8 +1,7 @@
 using System.Collections.Generic;
-using Avalonia.Data.Core;
 using Avalonia.Utilities;
 
-namespace Avalonia.Markup.Parsers
+namespace Avalonia.Data.Core.Parsers
 {
     internal static class ArgumentListParser
     {

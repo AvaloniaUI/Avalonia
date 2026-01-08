@@ -1,10 +1,10 @@
 using System.Collections.Generic;
-using Avalonia.Markup.Parsers;
+using Avalonia.Data.Core.Parsers;
 using Avalonia.UnitTests;
 using Avalonia.Utilities;
 using Xunit;
 
-namespace Avalonia.Markup.UnitTests.Parsers
+namespace Avalonia.Base.UnitTests.Data.Core.Parsers
 {
     public partial class BindingExpressionGrammarTests : ScopedTestBase
     {

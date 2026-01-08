@@ -1,7 +1,7 @@
 using Avalonia.Data.Core;
 using Xunit;
 
-namespace Avalonia.Markup.UnitTests.Parsers
+namespace Avalonia.Base.UnitTests.Data.Core.Parsers
 {
     public partial class BindingExpressionGrammarTests
     {
