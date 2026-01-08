@@ -45,6 +45,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             // Targeted
             InsertBefore<PropertyReferenceResolver>(
                 new AvaloniaXamlIlResolveClassesPropertiesTransformer(),
+                new AvaloniaXamlIlResolveClassesPropertyTransformer(),
                 new AvaloniaXamlIlTransformInstanceAttachedProperties(),
                 new AvaloniaXamlIlTransformSyntheticCompiledBindingMembers());
             InsertAfter<PropertyReferenceResolver>(
