@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.Versioning;
 using Foundation;
 using Avalonia.Controls.ApplicationLifetimes;
 using UIKit;
@@ -27,6 +28,7 @@ namespace Avalonia.iOS
             add { _onActivated += value; }
             remove { _onActivated -= value; }
         }
+
         event EventHandler<ActivatedEventArgs> IAvaloniaAppDelegate.Deactivated
         {
             add { _onDeactivated += value; }
@@ -39,6 +41,17 @@ namespace Avalonia.iOS
         [Export("window")]
         public UIWindow? Window { get; set; }
 
+        [Export("application:configurationForConnectingSceneSession:options:")]
+        [SupportedOSPlatform("ios13.0")]
+        [SupportedOSPlatform("tvos13.0")]
+        [SupportedOSPlatform("maccatalyst")]
+        public UISceneConfiguration GetConfiguration(UIApplication application, UISceneSession connectingSceneSession, UISceneConnectionOptions options)
+        {
+            var config = new UISceneConfiguration(null, connectingSceneSession.Role);
+            config.DelegateType = typeof(AvaloniaSceneDelegate);
+            return config;
+        }
+
         [Export("application:didFinishLaunchingWithOptions:")]
         public bool FinishedLaunching(UIApplication application, NSDictionary? launchOptions)
         {
@@ -47,23 +60,21 @@ namespace Avalonia.iOS
 
             var lifetime = new SingleViewLifetime();
 
+            // In iOS 13+ the window is initialized in AvaloniaSceneDelegate instead.
             builder.AfterApplicationSetup(_ =>
             {
-                Window = new UIWindow();
-
-                var view = new AvaloniaView();
-                lifetime.View = view;
-                var controller = new DefaultAvaloniaViewController
+                if (!(OperatingSystem.IsIOSVersionAtLeast(13) ||
+                    OperatingSystem.IsTvOSVersionAtLeast(13) ||
+                    OperatingSystem.IsMacCatalystVersionAtLeast(13, 1)))
                 {
-                    View = view
-                };
-                Window.RootViewController = controller;
-                view.InitWithController(controller);
+                    Window = new UIWindow();
+                    AvaloniaSceneDelegate.InitWindow(Window, lifetime);
+                }
             });
 
             builder.SetupWithLifetime(lifetime);
 
-            Window!.MakeKeyAndVisible();
+            Window?.MakeKeyAndVisible();
 
             return true;
         }
