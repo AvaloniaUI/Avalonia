@@ -2012,7 +2012,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 Assert.Equal(button.IsEffectivelyEnabled, false);
 
                 vm.Parameter = true;
-                Threading.Dispatcher.UIThread.RunJobs();
+                Threading.Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
                 Assert.Equal(button.IsEffectivelyEnabled, true);
             }

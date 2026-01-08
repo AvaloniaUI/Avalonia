@@ -985,7 +985,7 @@ namespace Avalonia.Base.UnitTests
             {
                 target.Bind(Class1.QuxProperty, source);
 
-                await Task.Run(() => source.OnNext(6.7));
+                await Task.Run(() => source.OnNext(6.7), TestContext.Current.CancellationToken);
             }
         }
 

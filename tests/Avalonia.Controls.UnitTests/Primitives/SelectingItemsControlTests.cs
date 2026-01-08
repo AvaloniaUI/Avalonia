@@ -1649,7 +1649,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Prepare(target);
             target.AddHandler(Control.RequestBringIntoViewEvent, (s, e) => raised = true);
             target.SelectedIndex = 2;
-            Threading.Dispatcher.UIThread.RunJobs();
+            Threading.Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
             Assert.True(raised);
         }
 
@@ -1676,7 +1676,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.AddHandler(Control.RequestBringIntoViewEvent, (s, e) => raised = true);
             target.SelectedIndex = 2;
             Prepare(target);
-            Threading.Dispatcher.UIThread.RunJobs();
+            Threading.Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
             Assert.True(raised);
         }
 
@@ -1750,7 +1750,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             root.Child = null;
             target.SelectedIndex = 1;
             root.Child = target;
-            Threading.Dispatcher.UIThread.RunJobs();
+            Threading.Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
             Assert.True(raised);
         }
 
@@ -1811,11 +1811,11 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var raised = false;
             target.AddHandler(Control.RequestBringIntoViewEvent, (s, e) => raised = true);
             target.SelectedIndex = 2;
-            Threading.Dispatcher.UIThread.RunJobs();
+            Threading.Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
             Assert.False(raised);
 
             target.AutoScrollToSelectedItem = true;
-            Threading.Dispatcher.UIThread.RunJobs();
+            Threading.Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
             Assert.True(raised);
         }
 

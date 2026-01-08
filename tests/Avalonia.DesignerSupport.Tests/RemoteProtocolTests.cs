@@ -139,7 +139,7 @@ namespace Avalonia.DesignerSupport.Tests
                 foreach (var p in t.GetProperties())
                     p.SetValue(o, GetRandomValue(p.PropertyType, $"{t.FullName}.{p.Name}"));
 
-                _client.Send(o).Wait(TimeoutInMs);
+                _client.Send(o).Wait(TimeoutInMs, TestContext.Current.CancellationToken);
                 var received = TakeServer();
                 Helpers.StructDiff(received, o);
 
@@ -199,11 +199,11 @@ namespace Avalonia.DesignerSupport.Tests
                     {
                         exceptions.Add(ex);
                     }
-                });
+                }, TestContext.Current.CancellationToken);
                 tasks.Add(task);
             }
 
-            Task.WaitAll(tasks.ToArray(), TimeoutInMs * messages.Length * 10);
+            Task.WaitAll(tasks.ToArray(), TimeoutInMs * messages.Length * 10, TestContext.Current.CancellationToken);
             
             // Verify no exceptions occurred
             Assert.Empty(exceptions);
