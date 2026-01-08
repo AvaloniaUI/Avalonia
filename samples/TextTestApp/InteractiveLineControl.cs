@@ -336,7 +336,7 @@ namespace TextTestApp
             _textSource = new TextSource(this);
 
             RenderOptions.SetEdgeMode(this, EdgeMode.Aliased);
-            RenderOptions.SetTextRenderingMode(this, TextRenderingMode.SubpixelAntialias);
+            TextOptions.SetTextRenderingMode(this, TextRenderingMode.SubpixelAntialias);
         }
 
         private void InvalidateTextRunProperties()
