@@ -1,8 +1,8 @@
 ﻿<ProjectConfiguration>
   <Settings>
-    <CustomBuildProperties>
-      <Value>TargetFramework = netstandard2.0</Value>
-    </CustomBuildProperties>
+    <HiddenComponentWarnings>
+      <Value>DerivedFilesIncludedInWorkspace</Value>
+    </HiddenComponentWarnings>
     <IgnoreThisComponentCompletely>False</IgnoreThisComponentCompletely>
   </Settings>
 </ProjectConfiguration>
