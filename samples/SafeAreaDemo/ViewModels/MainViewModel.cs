@@ -3,6 +3,7 @@ using Avalonia;
 using Avalonia.Animation.Easings;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
+using Avalonia.Styling;
 using MiniMvvm;
 
 namespace SafeAreaDemo.ViewModels
@@ -33,7 +34,7 @@ namespace SafeAreaDemo.ViewModels
         public Rect InputPaneRect => _inputPane?.OccludedRect ?? default;
 
         public Rect CanvasSize { get; set; }
-        
+
         public Thickness SafeAreaPadding
         {
             get
@@ -105,7 +106,7 @@ namespace SafeAreaDemo.ViewModels
             set
             {
                 _autoSafeAreaPadding = value;
-                
+
                 RaisePropertyChanged();
                 RaiseSafeAreaChanged();
             }
@@ -159,7 +160,7 @@ namespace SafeAreaDemo.ViewModels
             this.RaisePropertyChanged(nameof(ViewPadding));
             this.RaisePropertyChanged(nameof(InputPaneMarkerMargin));
         }
-        
+
         private void RaiseKeyboardChanged()
         {
             this.RaisePropertyChanged(nameof(InputPaneState));
@@ -167,6 +168,30 @@ namespace SafeAreaDemo.ViewModels
             this.RaisePropertyChanged(nameof(InputPaneEasing));
             this.RaisePropertyChanged(nameof(InputPaneDuration));
             this.RaisePropertyChanged(nameof(InputPaneMarkerMargin));
+        }
+
+        public void SetLight()
+        {
+            if (Application.Current is { } application)
+            {
+                application.RequestedThemeVariant = ThemeVariant.Light;
+            }
+        }
+
+        public void SetDark()
+        {
+            if (Application.Current is { } application)
+            {
+                application.RequestedThemeVariant = ThemeVariant.Dark;
+            }
+        }
+
+        public void SetDefault()
+        {
+            if (Application.Current is { } application)
+            {
+                application.RequestedThemeVariant = ThemeVariant.Default;
+            }
         }
     }
 }

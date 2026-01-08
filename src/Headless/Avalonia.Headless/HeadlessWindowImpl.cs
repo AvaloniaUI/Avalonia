@@ -431,7 +431,7 @@ namespace Avalonia.Headless
             
         }
         
-        public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
+        public void SetFrameThemeVariant(PlatformThemeVariant? themeVariant)
         {
             
         }
