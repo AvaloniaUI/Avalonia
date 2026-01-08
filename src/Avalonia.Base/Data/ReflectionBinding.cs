@@ -16,6 +16,7 @@ namespace Avalonia.Data
     /// A binding that uses reflection to access members.
     /// </summary>
     [RequiresUnreferencedCode(TrimmingMessages.ReflectionBindingRequiresUnreferencedCodeMessage)]
+    [RequiresDynamicCode(TrimmingMessages.ReflectionBindingRequiresDynamicCodeMessage)]
     public class ReflectionBinding : BindingBase
     {
         /// <summary>
@@ -134,7 +135,6 @@ namespace Avalonia.Data
 
         internal WeakReference? DefaultAnchor { get; set; }
         internal WeakReference<INameScope?>? NameScope { get; set; }
-
 
         internal override BindingExpressionBase CreateInstance(
             AvaloniaObject target,
