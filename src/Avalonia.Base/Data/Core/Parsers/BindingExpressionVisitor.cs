@@ -140,14 +140,14 @@ internal class BindingExpressionVisitor<TIn>(LambdaExpression expression) : Expr
             if (!node.Type.IsValueType && !node.Operand.Type.IsValueType &&
                 (node.Type.IsAssignableFrom(node.Operand.Type) || node.Operand.Type.IsAssignableFrom(node.Type)))
             {
-                // Ignore reference type casts - the binding system will handle any runtime errors
-                return _head = base.VisitUnary(node);
+                // Create a cast node - the binding system will handle runtime errors
+                return Add(node.Operand, node, new ReflectionTypeCastNode(node.Type));
             }
         }
         else if (node.NodeType == ExpressionType.TypeAs)
         {
-            // Ignore as operator.
-            return _head = base.VisitUnary(node);
+            // TypeAs operator creates a cast node too
+            return Add(node.Operand, node, new ReflectionTypeCastNode(node.Type));
         }
 
         throw new ExpressionParseException(0, $"Invalid expression type in binding expression: {node.NodeType}.");

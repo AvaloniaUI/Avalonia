@@ -204,54 +204,56 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
         }
 
         [Fact]
-        public void BuildNodes_Should_Ignore_Upcast()
+        public void BuildNodes_Should_Create_Node_For_Upcast()
         {
-            // Upcasts (derived to base) should be ignored
-            // Empty nodes means "bind to the source object itself"
+            // Upcasts (derived to base) create a cast node
             Expression<Func<DerivedTestClass, TestClass>> expr = x => (TestClass)x;
 
             var nodes = BindingExpressionVisitor<DerivedTestClass>.BuildNodes(expr);
 
-            // Empty nodes = bind to source directly, cast is transparent
-            Assert.Empty(nodes);
+            var node = Assert.Single(nodes);
+            Assert.IsType<ReflectionTypeCastNode>(node);
         }
 
         [Fact]
-        public void BuildNodes_Should_Ignore_Upcast_In_Property_Chain()
+        public void BuildNodes_Should_Create_Node_For_Upcast_In_Property_Chain()
         {
-            // Cast should be transparent, only the property access creates a node
+            // Cast creates a node, then property access creates another
             Expression<Func<DerivedTestClass, string?>> expr = x => ((TestClass)x).StringProperty;
 
             var nodes = BindingExpressionVisitor<DerivedTestClass>.BuildNodes(expr);
 
-            var node = Assert.Single(nodes);
-            var propertyNode = Assert.IsType<DynamicPluginPropertyAccessorNode>(node);
+            Assert.Equal(2, nodes.Count);
+            Assert.IsType<ReflectionTypeCastNode>(nodes[0]);
+            var propertyNode = Assert.IsType<DynamicPluginPropertyAccessorNode>(nodes[1]);
             Assert.Equal("StringProperty", propertyNode.PropertyName);
         }
 
         [Fact]
-        public void BuildNodes_Should_Ignore_Downcast()
+        public void BuildNodes_Should_Create_Node_For_Downcast()
         {
-            // Downcasts (base to derived) should be allowed - the binding system will handle runtime errors
+            // Downcasts (base to derived) create a cast node - the binding system will handle runtime errors
             Expression<Func<TestClass, DerivedTestClass>> expr = x => (DerivedTestClass)x;
 
             var nodes = BindingExpressionVisitor<TestClass>.BuildNodes(expr);
 
-            Assert.Empty(nodes);
+            var node = Assert.Single(nodes);
+            Assert.IsType<ReflectionTypeCastNode>(node);
         }
 
         [Fact]
-        public void BuildNodes_Should_Ignore_Downcast_In_Property_Chain()
+        public void BuildNodes_Should_Create_Node_For_Downcast_In_Property_Chain()
         {
             // Practical example: casting to access derived type properties
             Expression<Func<TestClass, string?>> expr = x => ((DerivedTestClass)x.Child!).DerivedProperty;
 
             var nodes = BindingExpressionVisitor<TestClass>.BuildNodes(expr);
 
-            Assert.Equal(2, nodes.Count);
+            Assert.Equal(3, nodes.Count);
             var childNode = Assert.IsType<DynamicPluginPropertyAccessorNode>(nodes[0]);
             Assert.Equal("Child", childNode.PropertyName);
-            var derivedNode = Assert.IsType<DynamicPluginPropertyAccessorNode>(nodes[1]);
+            Assert.IsType<ReflectionTypeCastNode>(nodes[1]);
+            var derivedNode = Assert.IsType<DynamicPluginPropertyAccessorNode>(nodes[2]);
             Assert.Equal("DerivedProperty", derivedNode.PropertyName);
         }
 
@@ -269,28 +271,32 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
         }
 
         [Fact]
-        public void BuildNodes_Should_Allow_Cast_Through_Object()
+        public void BuildNodes_Should_Create_Nodes_For_Casting_Through_Object()
         {
-            // Casting through object is a common pattern - the binding system will handle runtime errors
+            // Casting through object creates cast nodes
             Expression<Func<TestClass, string>> expr = x => (string)(object)x.StringProperty!;
 
             var nodes = BindingExpressionVisitor<TestClass>.BuildNodes(expr);
 
-            var node = Assert.Single(nodes);
-            var propertyNode = Assert.IsType<DynamicPluginPropertyAccessorNode>(node);
+            Assert.Equal(3, nodes.Count);
+            var propertyNode = Assert.IsType<DynamicPluginPropertyAccessorNode>(nodes[0]);
             Assert.Equal("StringProperty", propertyNode.PropertyName);
+            Assert.IsType<ReflectionTypeCastNode>(nodes[1]); // cast to object
+            Assert.IsType<ReflectionTypeCastNode>(nodes[2]); // cast to string
         }
 
         [Fact]
-        public void BuildNodes_Should_Ignore_TypeAs_Operator()
+        public void BuildNodes_Should_Create_Node_For_TypeAs_Operator()
         {
+            // TypeAs operator creates a cast node
             Expression<Func<TestClass, object?>> expr = x => x.Child as object;
 
             var nodes = BindingExpressionVisitor<TestClass>.BuildNodes(expr);
 
-            var node = Assert.Single(nodes);
-            var propertyNode = Assert.IsType<DynamicPluginPropertyAccessorNode>(node);
+            Assert.Equal(2, nodes.Count);
+            var propertyNode = Assert.IsType<DynamicPluginPropertyAccessorNode>(nodes[0]);
             Assert.Equal("Child", propertyNode.PropertyName);
+            Assert.IsType<ReflectionTypeCastNode>(nodes[1]);
         }
 
         [Fact]
