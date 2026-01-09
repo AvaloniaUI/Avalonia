@@ -207,11 +207,26 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
         public void BuildNodes_Should_Ignore_Upcast()
         {
             // Upcasts (derived to base) should be ignored
+            // Empty nodes means "bind to the source object itself"
             Expression<Func<DerivedTestClass, TestClass>> expr = x => (TestClass)x;
 
             var nodes = BindingExpressionVisitor<DerivedTestClass>.BuildNodes(expr);
 
+            // Empty nodes = bind to source directly, cast is transparent
             Assert.Empty(nodes);
+        }
+
+        [Fact]
+        public void BuildNodes_Should_Ignore_Upcast_In_Property_Chain()
+        {
+            // Cast should be transparent, only the property access creates a node
+            Expression<Func<DerivedTestClass, string?>> expr = x => ((TestClass)x).StringProperty;
+
+            var nodes = BindingExpressionVisitor<DerivedTestClass>.BuildNodes(expr);
+
+            var node = Assert.Single(nodes);
+            var propertyNode = Assert.IsType<DynamicPluginPropertyAccessorNode>(node);
+            Assert.Equal("StringProperty", propertyNode.PropertyName);
         }
 
         [Fact]
