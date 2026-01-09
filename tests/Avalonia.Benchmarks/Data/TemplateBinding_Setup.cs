@@ -26,7 +26,7 @@ public class TemplateBinding_Setup
         {
             // Explicit cast to IBinding is required to prevent the IObservable<object?>
             // overload being selected.
-            using var d = target.Bind(Control.TagProperty, (IBinding)binding);
+            using var d = target.Bind(Control.TagProperty, (BindingBase)binding);
         }
     }
 
@@ -40,7 +40,7 @@ public class TemplateBinding_Setup
         {
             // Explicit cast to IBinding is required to prevent the IObservable<object?>
             // overload being selected.
-            using var d = target.Bind(Control.TagProperty, (IBinding)binding);
+            using var d = target.Bind(Control.TagProperty, (BindingBase)binding);
         }
     }
 }

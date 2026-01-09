@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xunit;
 
@@ -7,22 +8,19 @@ namespace Avalonia.IntegrationTests.Appium
 {
     internal class PlatformTheoryAttribute : TheoryAttribute
     {
-        private string? _skip;
-
-        public PlatformTheoryAttribute(TestPlatforms platforms = TestPlatforms.All) => Platforms = platforms;
+        public PlatformTheoryAttribute(
+            TestPlatforms platforms = TestPlatforms.All,
+            [CallerFilePath] string? sourceFilePath = null,
+            [CallerLineNumber] int sourceLineNumber = -1) : base(sourceFilePath, sourceLineNumber)
+        {
+            Platforms = platforms;
+            if (!IsSupported())
+            {
+                Skip = $"Ignored on {RuntimeInformation.OSDescription}";
+            }
+        }
 
         public TestPlatforms Platforms { get; }
-
-        public override string? Skip
-        {
-            get
-            {
-                if (_skip is not null)
-                    return _skip;
-                return !IsSupported() ? $"Ignored on {RuntimeInformation.OSDescription}" : null;
-            }
-            set => _skip = value;
-        }
 
         private bool IsSupported()
         {

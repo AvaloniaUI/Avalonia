@@ -551,7 +551,7 @@ namespace Avalonia.Markup.UnitTests.Data
             }
 
             // Forces WeakEvent compact
-            Dispatcher.UIThread.RunJobs();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
             Assert.Equal(0, source.SubscriberCount);
         }

@@ -111,6 +111,9 @@ partial class Build : NukeBuild
     DotNetTestSettings ApplySetting(DotNetTestSettings c, Configure<DotNetTestSettings> configurator = null) =>
         ApplySettingCore(c).Test.Apply(configurator);
 
+    DotNetRunSettings ApplySetting(DotNetRunSettings c, Configure<DotNetRunSettings> configurator = null) =>
+        ApplySettingCore(c).Run.Apply(configurator);
+
     Target Clean => _ => _.Executes(() =>
     {
         foreach (var buildDir in Parameters.BuildDirs)
@@ -182,7 +185,10 @@ partial class Build : NukeBuild
     {
         RunCoreTest(projectName, (project, tfm) =>
         {
-            DotNetTest(c => ApplySetting(c, project,tfm));
+            // NOTE: Nuke DotNetTest doesn't support Microsoft.Testing.Platform yet.
+            // Issue: https://github.com/nuke-build/nuke/issues/1584.
+            // However, we can easily use DotNetRun instead since MTP projects are executables.
+            DotNetRun(c => ApplySetting(c, project, tfm));
         });
     }
 
@@ -236,15 +242,17 @@ partial class Build : NukeBuild
         }
     }
 
-    DotNetTestSettings ApplySetting(DotNetTestSettings settings, string project, string tfm) =>
+    DotNetRunSettings ApplySetting(DotNetRunSettings settings, string project, string tfm) =>
         ApplySetting(settings)
         .SetProjectFile(project)
         .SetFramework(tfm)
         .EnableNoBuild()
         .EnableNoRestore()
+        // Disable progress output (works like terminal logger which isn't so nice in CI).
+        // See https://github.com/microsoft/testfx/issues/7056
+        .AddApplicationArguments("--no-progress")
         .When(_ => Parameters.PublishTestResults, _ => _
-            .SetLoggers("trx")
-            .SetResultsDirectory(Parameters.TestResultsRoot));
+            .AddApplicationArguments("--report-trx", "--results-directory", Parameters.TestResultsRoot));
 
     Target RunHtmlPreviewerTests => _ => _
         .OnlyWhenStatic(() => !(Parameters.SkipTests))

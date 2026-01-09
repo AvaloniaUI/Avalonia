@@ -14,12 +14,22 @@ namespace Avalonia.Skia.RenderTests;
 
 class CrossFactAttribute : FactAttribute
 {
-    
+    public CrossFactAttribute(
+        [CallerFilePath] string? sourceFilePath = null,
+        [CallerLineNumber] int sourceLineNumber = -1
+    ) : base(sourceFilePath, sourceLineNumber)
+    {
+    }
 }
 
 class CrossTheoryAttribute : TheoryAttribute
 {
-    
+    public CrossTheoryAttribute(
+        [CallerFilePath] string? sourceFilePath = null,
+        [CallerLineNumber] int sourceLineNumber = -1
+    ) : base(sourceFilePath, sourceLineNumber)
+    {
+    }
 }
 
 public class CrossTestBase : IDisposable

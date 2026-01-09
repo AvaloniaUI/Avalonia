@@ -1,8 +1,0 @@
-﻿<ProjectConfiguration>
-  <Settings>
-    <CustomBuildProperties>
-      <Value>TargetFramework = net8.0-tizen</Value>
-    </CustomBuildProperties>
-    <IgnoreThisComponentCompletely>True</IgnoreThisComponentCompletely>
-  </Settings>
-</ProjectConfiguration>

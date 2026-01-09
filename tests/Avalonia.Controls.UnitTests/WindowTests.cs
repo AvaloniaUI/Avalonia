@@ -718,7 +718,7 @@ namespace Avalonia.Controls.UnitTests
                     target.Width = 120;
                     target.Height = 70;
 
-                    Dispatcher.UIThread.RunJobs();
+                    Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
                     Assert.Equal(1, child.MeasureSizes.Count);
                     Assert.Equal(new Size(120, 70), child.MeasureSizes[0]);
