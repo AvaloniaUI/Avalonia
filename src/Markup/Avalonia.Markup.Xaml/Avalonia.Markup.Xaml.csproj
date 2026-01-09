@@ -20,7 +20,6 @@
     <Compile Include="Extensions.cs" />
     <Compile Include="MarkupExtension.cs" />
     <Compile Include="MarkupExtensions\CompiledBindingExtension.cs" />
-    <Compile Include="MarkupExtensions\CompiledBindings\CompiledBindingPath.cs" />
     <Compile Include="MarkupExtensions\CompiledBindings\PropertyInfoAccessorFactory.cs" />
     <Compile Include="MarkupExtensions\CompiledBindings\TaskStreamPlugin.cs" />
     <Compile Include="MarkupExtensions\DynamicResourceExtension.cs" />
