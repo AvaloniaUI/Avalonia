@@ -203,18 +203,10 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
             Assert.IsType<DynamicPluginStreamNode>(nodes[1]);
         }
 
-        [Fact(Skip = "Bug: Upcast check is backwards - should be Type.IsAssignableFrom(Operand.Type)")]
+        [Fact]
         public void BuildNodes_Should_Ignore_Upcast()
         {
-            // BUG: This test currently fails because line 139 in BindingExpressionVisitor.cs has
-            // the IsAssignableFrom check backwards. It checks:
-            //   node.Operand.Type.IsAssignableFrom(node.Type)
-            // but should check:
-            //   node.Type.IsAssignableFrom(node.Operand.Type)
-            // For an upcast from DerivedTestClass to TestClass, the current code checks if
-            // DerivedTestClass can be assigned from TestClass (false), when it should check if
-            // TestClass can be assigned from DerivedTestClass (true).
-
+            // Upcasts (derived to base) are safe and should be ignored
             Expression<Func<DerivedTestClass, TestClass>> expr = x => (TestClass)x;
 
             var nodes = BindingExpressionVisitor<DerivedTestClass>.BuildNodes(expr);
@@ -222,47 +214,14 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
             Assert.Empty(nodes);
         }
 
-        [Fact(Skip = "Bug: Upcast check is backwards - downcasts are incorrectly ignored")]
+        [Fact]
         public void BuildNodes_Should_Throw_For_Downcast()
         {
-            // BUG: Due to the same backwards IsAssignableFrom check (see BuildNodes_Should_Ignore_Upcast),
-            // downcasts are incorrectly being ignored when they should throw an exception.
-            // For a downcast (TestClass)x where x is TestClass:
-            //   node.Operand.Type = TestClass
-            //   node.Type = DerivedTestClass
-            // The current code checks TestClass.IsAssignableFrom(DerivedTestClass) which is TRUE,
-            // so the downcast is incorrectly ignored.
-
+            // Downcasts (base to derived) are not safe and should throw an exception
             Expression<Func<TestClass, DerivedTestClass>> expr = x => (DerivedTestClass)x;
 
             var ex = Assert.Throws<ExpressionParseException>(() =>
                 BindingExpressionVisitor<TestClass>.BuildNodes(expr));
-
-            Assert.Contains("Invalid expression type", ex.Message);
-            Assert.Contains("Convert", ex.Message);
-        }
-
-        [Fact]
-        public void BuildNodes_Currently_Ignores_Downcast_Due_To_Bug()
-        {
-            // This documents the CURRENT (broken) behavior where downcasts are incorrectly ignored.
-            // This test should be removed or updated once the bug is fixed.
-            Expression<Func<TestClass, DerivedTestClass>> expr = x => (DerivedTestClass)x;
-
-            var nodes = BindingExpressionVisitor<TestClass>.BuildNodes(expr);
-
-            Assert.Empty(nodes);
-        }
-
-        [Fact]
-        public void BuildNodes_Currently_Throws_For_Upcast_Due_To_Bug()
-        {
-            // This documents the CURRENT (broken) behavior where upcasts incorrectly throw.
-            // This test should be removed or updated once the bug is fixed.
-            Expression<Func<DerivedTestClass, TestClass>> expr = x => (TestClass)x;
-
-            var ex = Assert.Throws<ExpressionParseException>(() =>
-                BindingExpressionVisitor<DerivedTestClass>.BuildNodes(expr));
 
             Assert.Contains("Invalid expression type", ex.Message);
             Assert.Contains("Convert", ex.Message);

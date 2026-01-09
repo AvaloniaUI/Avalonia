@@ -136,9 +136,9 @@ internal class BindingExpressionVisitor<TIn>(LambdaExpression expression) : Expr
         }
         else if (node.NodeType == ExpressionType.Convert)
         {
-            if (node.Operand.Type.IsAssignableFrom(node.Type))
+            if (node.Type.IsAssignableFrom(node.Operand.Type))
             {
-                // Ignore inheritance casts 
+                // Ignore inheritance casts (upcasts from derived to base)
                 return _head = base.VisitUnary(node);
             }
         }
