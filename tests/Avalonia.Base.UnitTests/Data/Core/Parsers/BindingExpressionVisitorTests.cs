@@ -16,7 +16,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
         {
             Expression<Func<TestClass, string?>> expr = x => x.StringProperty;
 
-            var nodes = BindingExpressionVisitor<TestClass>.BuildNodes(expr);
+            var nodes = BuildNodes(expr);
 
             var node = Assert.Single(nodes);
             var propertyNode = Assert.IsType<PropertyAccessorNode>(node);
@@ -28,7 +28,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
         {
             Expression<Func<TestClass, string?>> expr = x => x.Child!.StringProperty;
 
-            var nodes = BindingExpressionVisitor<TestClass>.BuildNodes(expr);
+            var nodes = BuildNodes(expr);
 
             Assert.Equal(2, nodes.Count);
 
@@ -44,7 +44,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
         {
             Expression<Func<TestClass, string?>> expr = x => x.Child!.Child!.StringProperty;
 
-            var nodes = BindingExpressionVisitor<TestClass>.BuildNodes(expr);
+            var nodes = BuildNodes(expr);
 
             Assert.Equal(3, nodes.Count);
             Assert.All(nodes, n => Assert.IsType<PropertyAccessorNode>(n));
@@ -58,7 +58,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
         {
             Expression<Func<TestClass, TestClass?>> expr = x => x.IndexedProperty![0];
 
-            var nodes = BindingExpressionVisitor<TestClass>.BuildNodes(expr);
+            var nodes = BuildNodes(expr);
 
             Assert.Equal(2, nodes.Count);
 
@@ -73,7 +73,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
         {
             Expression<Func<TestClass, string?>> expr = x => x.ArrayProperty![0];
 
-            var nodes = BindingExpressionVisitor<TestClass>.BuildNodes(expr);
+            var nodes = BuildNodes(expr);
 
             Assert.Equal(2, nodes.Count);
 
@@ -88,7 +88,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
         {
             Expression<Func<TestClass, string?>> expr = x => x.MultiDimensionalArray![0, 1];
 
-            var nodes = BindingExpressionVisitor<TestClass>.BuildNodes(expr);
+            var nodes = BuildNodes(expr);
 
             Assert.Equal(2, nodes.Count);
 
@@ -103,7 +103,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
         {
             Expression<Func<StyledElement, object?>> expr = x => x[StyledElement.DataContextProperty];
 
-            var nodes = BindingExpressionVisitor<StyledElement>.BuildNodes(expr);
+            var nodes = BuildNodes(expr);
 
             var node = Assert.Single(nodes);
             var avaloniaPropertyNode = Assert.IsType<PropertyAccessorNode>(node);
@@ -115,7 +115,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
         {
             Expression<Func<TestClass, object?>> expr = x => x.StyledChild![StyledElement.DataContextProperty];
 
-            var nodes = BindingExpressionVisitor<TestClass>.BuildNodes(expr);
+            var nodes = BuildNodes(expr);
 
             Assert.Equal(2, nodes.Count);
 
@@ -131,7 +131,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
         {
             Expression<Func<TestClass, bool>> expr = x => !x.BoolProperty;
 
-            var nodes = BindingExpressionVisitor<TestClass>.BuildNodes(expr);
+            var nodes = BuildNodes(expr);
 
             Assert.Equal(2, nodes.Count);
 
@@ -146,7 +146,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
         {
             Expression<Func<TestClass, bool>> expr = x => !x.Child!.BoolProperty;
 
-            var nodes = BindingExpressionVisitor<TestClass>.BuildNodes(expr);
+            var nodes = BuildNodes(expr);
 
             Assert.Equal(3, nodes.Count);
             Assert.IsType<PropertyAccessorNode>(nodes[0]);
@@ -159,7 +159,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
         {
             Expression<Func<TestClass, string?>> expr = x => x.TaskProperty!.StreamBinding();
 
-            var nodes = BindingExpressionVisitor<TestClass>.BuildNodes(expr);
+            var nodes = BuildNodes(expr);
 
             Assert.Equal(2, nodes.Count);
 
@@ -174,7 +174,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
         {
             Expression<Func<TestClass, int>> expr = x => x.ObservableProperty!.StreamBinding();
 
-            var nodes = BindingExpressionVisitor<TestClass>.BuildNodes(expr);
+            var nodes = BuildNodes(expr);
 
             Assert.Equal(2, nodes.Count);
 
@@ -189,7 +189,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
         {
             Expression<Func<TestClass, object>> expr = x => x.VoidTaskProperty!.StreamBinding();
 
-            var nodes = BindingExpressionVisitor<TestClass>.BuildNodes(expr);
+            var nodes = BuildNodes(expr);
 
             Assert.Equal(2, nodes.Count);
 
@@ -205,7 +205,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
             // Upcasts (derived to base) create a cast node
             Expression<Func<DerivedTestClass, TestClass>> expr = x => (TestClass)x;
 
-            var nodes = BindingExpressionVisitor<DerivedTestClass>.BuildNodes(expr);
+            var nodes = BuildNodes(expr);
 
             var node = Assert.Single(nodes);
             Assert.IsType<FuncTransformNode>(node);
@@ -217,7 +217,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
             // Cast creates a node, then property access creates another
             Expression<Func<DerivedTestClass, string?>> expr = x => ((TestClass)x).StringProperty;
 
-            var nodes = BindingExpressionVisitor<DerivedTestClass>.BuildNodes(expr);
+            var nodes = BuildNodes(expr);
 
             Assert.Equal(2, nodes.Count);
             Assert.IsType<FuncTransformNode>(nodes[0]);
@@ -231,7 +231,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
             // Downcasts (base to derived) create a cast node - the binding system will handle runtime errors
             Expression<Func<TestClass, DerivedTestClass>> expr = x => (DerivedTestClass)x;
 
-            var nodes = BindingExpressionVisitor<TestClass>.BuildNodes(expr);
+            var nodes = BuildNodes(expr);
 
             var node = Assert.Single(nodes);
             Assert.IsType<FuncTransformNode>(node);
@@ -243,7 +243,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
             // Practical example: casting to access derived type properties
             Expression<Func<TestClass, string?>> expr = x => ((DerivedTestClass)x.Child!).DerivedProperty;
 
-            var nodes = BindingExpressionVisitor<TestClass>.BuildNodes(expr);
+            var nodes = BuildNodes(expr);
 
             Assert.Equal(3, nodes.Count);
             var childNode = Assert.IsType<PropertyAccessorNode>(nodes[0]);
@@ -260,7 +260,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
             Expression<Func<TestClass, long>> expr = x => (long)x.IntProperty;
 
             var ex = Assert.Throws<ExpressionParseException>(() =>
-                BindingExpressionVisitor<TestClass>.BuildNodes(expr));
+                BuildNodes(expr));
 
             Assert.Contains("Invalid expression type", ex.Message);
             Assert.Contains("Convert", ex.Message);
@@ -272,7 +272,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
             // Casting through object creates cast nodes
             Expression<Func<TestClass, string>> expr = x => (string)(object)x.StringProperty!;
 
-            var nodes = BindingExpressionVisitor<TestClass>.BuildNodes(expr);
+            var nodes = BuildNodes(expr);
 
             Assert.Equal(3, nodes.Count);
             var propertyNode = Assert.IsType<PropertyAccessorNode>(nodes[0]);
@@ -287,7 +287,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
             // TypeAs operator creates a cast node
             Expression<Func<TestClass, object?>> expr = x => x.Child as object;
 
-            var nodes = BindingExpressionVisitor<TestClass>.BuildNodes(expr);
+            var nodes = BuildNodes(expr);
 
             Assert.Equal(2, nodes.Count);
             var propertyNode = Assert.IsType<PropertyAccessorNode>(nodes[0]);
@@ -301,7 +301,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
             Expression<Func<TestClass, int>> expr = x => x.IntProperty + 1;
 
             var ex = Assert.Throws<ExpressionParseException>(() =>
-                BindingExpressionVisitor<TestClass>.BuildNodes(expr));
+                BuildNodes(expr));
 
             Assert.Contains("Invalid expression type", ex.Message);
             Assert.Contains("Add", ex.Message);
@@ -313,7 +313,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
             Expression<Func<TestClass, int>> expr = x => x.IntProperty - 1;
 
             var ex = Assert.Throws<ExpressionParseException>(() =>
-                BindingExpressionVisitor<TestClass>.BuildNodes(expr));
+                BuildNodes(expr));
 
             Assert.Contains("Invalid expression type", ex.Message);
             Assert.Contains("Subtract", ex.Message);
@@ -325,7 +325,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
             Expression<Func<TestClass, int>> expr = x => x.IntProperty * 2;
 
             var ex = Assert.Throws<ExpressionParseException>(() =>
-                BindingExpressionVisitor<TestClass>.BuildNodes(expr));
+                BuildNodes(expr));
 
             Assert.Contains("Invalid expression type", ex.Message);
             Assert.Contains("Multiply", ex.Message);
@@ -337,7 +337,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
             Expression<Func<TestClass, bool>> expr = x => x.IntProperty == 42;
 
             var ex = Assert.Throws<ExpressionParseException>(() =>
-                BindingExpressionVisitor<TestClass>.BuildNodes(expr));
+                BuildNodes(expr));
 
             Assert.Contains("Invalid expression type", ex.Message);
             Assert.Contains("Equal", ex.Message);
@@ -349,7 +349,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
             Expression<Func<TestClass, string?>> expr = x => x.BoolProperty ? "true" : "false";
 
             var ex = Assert.Throws<ExpressionParseException>(() =>
-                BindingExpressionVisitor<TestClass>.BuildNodes(expr));
+                BuildNodes(expr));
 
             Assert.Contains("Invalid expression type", ex.Message);
             Assert.Contains("Conditional", ex.Message);
@@ -361,7 +361,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
             Expression<Func<TestClass, string?>> expr = x => x.StringProperty!.ToUpper();
 
             var ex = Assert.Throws<ExpressionParseException>(() =>
-                BindingExpressionVisitor<TestClass>.BuildNodes(expr));
+                BuildNodes(expr));
 
             Assert.Contains("Invalid method call", ex.Message);
             Assert.Contains("ToUpper", ex.Message);
@@ -374,7 +374,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
             // expression tree, so it doesn't throw an exception.
             Expression<Func<TestClass, int>> expr = x => +x.IntProperty;
 
-            var nodes = BindingExpressionVisitor<TestClass>.BuildNodes(expr);
+            var nodes = BuildNodes(expr);
 
             var node = Assert.Single(nodes);
             var propertyNode = Assert.IsType<PropertyAccessorNode>(node);
@@ -387,7 +387,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
             Expression<Func<TestClass, int>> expr = x => -x.IntProperty;
 
             var ex = Assert.Throws<ExpressionParseException>(() =>
-                BindingExpressionVisitor<TestClass>.BuildNodes(expr));
+                BuildNodes(expr));
 
             Assert.Contains("Invalid expression type", ex.Message);
             Assert.Contains("Negate", ex.Message);
@@ -398,7 +398,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
         {
             Expression<Func<TestClass, string?>> expr = x => x.NestedIndexedProperty![0]![1];
 
-            var nodes = BindingExpressionVisitor<TestClass>.BuildNodes(expr);
+            var nodes = BuildNodes(expr);
 
             Assert.Equal(3, nodes.Count);
 
@@ -414,7 +414,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
         {
             Expression<Func<TestClass, string?>> expr = x => x.IndexedProperty![0]!.StringProperty;
 
-            var nodes = BindingExpressionVisitor<TestClass>.BuildNodes(expr);
+            var nodes = BuildNodes(expr);
 
             Assert.Equal(3, nodes.Count);
             Assert.IsType<PropertyAccessorNode>(nodes[0]);
@@ -427,7 +427,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
         {
             Expression<Func<TestClass, int>> expr = x => x.DictionaryProperty!["key"];
 
-            var nodes = BindingExpressionVisitor<TestClass>.BuildNodes(expr);
+            var nodes = BuildNodes(expr);
 
             Assert.Equal(2, nodes.Count);
 
@@ -443,7 +443,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
             var key = "test";
             Expression<Func<TestClass, int>> expr = x => x.DictionaryProperty![key];
 
-            var nodes = BindingExpressionVisitor<TestClass>.BuildNodes(expr);
+            var nodes = BuildNodes(expr);
 
             Assert.Equal(2, nodes.Count);
             Assert.IsType<PropertyAccessorNode>(nodes[0]);
@@ -455,7 +455,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
         {
             Expression<Func<TestClass, string?>> expr = x => x.Child!.TaskProperty!.StreamBinding();
 
-            var nodes = BindingExpressionVisitor<TestClass>.BuildNodes(expr);
+            var nodes = BuildNodes(expr);
 
             Assert.Equal(3, nodes.Count);
             Assert.IsType<PropertyAccessorNode>(nodes[0]);
@@ -468,7 +468,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
         {
             Expression<Func<TestClass, bool>> expr = x => !x.BoolTaskProperty!.StreamBinding();
 
-            var nodes = BindingExpressionVisitor<TestClass>.BuildNodes(expr);
+            var nodes = BuildNodes(expr);
 
             Assert.Equal(3, nodes.Count);
             Assert.IsType<PropertyAccessorNode>(nodes[0]);
@@ -481,7 +481,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
         {
             Expression<Func<TestClass, TestClass>> expr = x => x;
 
-            var nodes = BindingExpressionVisitor<TestClass>.BuildNodes(expr);
+            var nodes = BuildNodes(expr);
 
             Assert.Empty(nodes);
         }
@@ -491,7 +491,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
         {
             Expression<Func<TestClass, bool>> expr = x => !!x.BoolProperty;
 
-            var nodes = BindingExpressionVisitor<TestClass>.BuildNodes(expr);
+            var nodes = BuildNodes(expr);
 
             Assert.Equal(3, nodes.Count);
             Assert.IsType<PropertyAccessorNode>(nodes[0]);
@@ -521,5 +521,8 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
         {
             public string? DerivedProperty { get; set; }
         }
+
+        private static List<ExpressionNode> BuildNodes<TIn, TOut>(Expression<Func<TIn, TOut>> expression)
+            => BindingExpressionVisitorExtensions.BuildNodes(expression);
     }
 }

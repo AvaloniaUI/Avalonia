@@ -64,29 +64,6 @@ internal class BindingExpressionVisitor<TIn>(LambdaExpression expression) : Expr
         return visitor._builder.Build();
     }
 
-    /// <summary>
-    /// Builds a list of binding expression nodes from a lambda expression.
-    /// </summary>
-    /// <typeparam name="TOut">The output type of the binding expression.</typeparam>
-    /// <param name="expression">
-    /// The lambda expression to parse and convert into expression nodes.
-    /// </param>
-    /// <returns>
-    /// A list of <see cref="ExpressionNode"/> instances representing the binding path, ordered
-    /// from the root to the target property.
-    /// </returns>
-    /// <exception cref="ExpressionParseException">
-    /// Thrown when the expression contains unsupported operations or invalid syntax for binding
-    /// expressions.
-    /// </exception>
-    public static List<ExpressionNode> BuildNodes<TOut>(Expression<Func<TIn, TOut>> expression)
-    {
-        var path = BuildPath(expression);
-        var nodes = new List<ExpressionNode>();
-        path.BuildExpression(nodes, out var _);
-        return nodes;
-    }
-
     protected override Expression VisitBinary(BinaryExpression node)
     {
         // Indexers require more work since the compiler doesn't generate IndexExpressions:
