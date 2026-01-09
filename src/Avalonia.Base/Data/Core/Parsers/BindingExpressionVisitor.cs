@@ -154,15 +154,18 @@ internal class BindingExpressionVisitor<TIn>(LambdaExpression expression) : Expr
     }
 
     /// <summary>
-    /// Creates a cast function by extracting the delegate from TypeCastPathElement&lt;T&gt;.
-    /// This reuses the exact same code path as CompiledBindingPath, ensuring consistency.
+    /// Creates an efficient compiled cast function.
+    /// Compiles an expression tree to generate IL code similar to the 'is T' pattern,
+    /// avoiding reflection-based type checks at runtime.
     /// </summary>
     private static Func<object?, object?> CreateCastFunc(Type targetType)
     {
-        // Create TypeCastPathElement<targetType> and extract its Cast delegate
-        var typeCastElementType = typeof(TypeCastPathElement<>).MakeGenericType(targetType);
-        var instance = (ITypeCastElement)Activator.CreateInstance(typeCastElementType)!;
-        return instance.Cast;
+        // Compile: (object? obj) => obj as TargetType
+        // This generates efficient IL similar to TypeCastPathElement<T>.TryCast
+        var param = Expression.Parameter(typeof(object), "obj");
+        var castExpr = Expression.TypeAs(param, targetType);
+        var lambda = Expression.Lambda<Func<object?, object?>>(castExpr, param);
+        return lambda.Compile(preferInterpretation: true);
     }
 
     protected override Expression VisitBlock(BlockExpression node)
