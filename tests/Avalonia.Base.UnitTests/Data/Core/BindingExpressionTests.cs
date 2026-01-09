@@ -451,7 +451,7 @@ public abstract partial class BindingExpressionTests
                 return value;
 
             var s = value?.ToString() ?? string.Empty;
-            
+
             if (s.StartsWith(prefix))
                 return s.Substring(prefix.Length);
             else
