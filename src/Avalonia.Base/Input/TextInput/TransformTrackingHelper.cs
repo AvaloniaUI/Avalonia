@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using Avalonia.Media;
+using Avalonia.Reactive;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
@@ -7,13 +9,15 @@ namespace Avalonia.Input.TextInput
 {
     class TransformTrackingHelper : IDisposable
     {
+        private readonly bool _deferAfterRenderPass;
         private Visual? _visual;
         private bool _queuedForUpdate;
         private readonly EventHandler<AvaloniaPropertyChangedEventArgs> _propertyChangedHandler;
         private readonly List<Visual> _propertyChangedSubscriptions = new List<Visual>();
         
-        public TransformTrackingHelper()
+        public TransformTrackingHelper(bool deferAfterRenderPass)
         {
+            _deferAfterRenderPass = deferAfterRenderPass;
             _propertyChangedHandler = PropertyChangedHandler;
         }
 
@@ -91,7 +95,10 @@ namespace Avalonia.Input.TextInput
             if(_queuedForUpdate)
                 return;
             _queuedForUpdate = true;
-            Dispatcher.UIThread.Post(UpdateMatrix, DispatcherPriority.AfterRender);
+            if (_deferAfterRenderPass)
+                Dispatcher.UIThread.Post(UpdateMatrix, DispatcherPriority.AfterRender);
+            else
+                MediaContext.Instance.BeginInvokeOnRender(UpdateMatrix);
         }
 
         private void PropertyChangedHandler(object? sender, AvaloniaPropertyChangedEventArgs e)
@@ -106,12 +113,23 @@ namespace Avalonia.Input.TextInput
             UpdateMatrix();
         }
 
-        public static IDisposable Track(Visual visual, Action<Visual, Matrix?> cb)
+        public static IDisposable Track(Visual visual, bool deferAfterRenderPass, Action<Visual, Matrix?> cb)
         {
-            var rv = new TransformTrackingHelper();
+            var rv = new TransformTrackingHelper(deferAfterRenderPass);
             rv.MatrixChanged += () => cb(visual, rv.Matrix);
             rv.SetVisual(visual);
             return rv;
+        }
+        
+        public static IObservable<Matrix?> Observe(Visual visual, bool deferAfterRenderPass)
+        {
+            return Observable.Create<Matrix?>(observer =>
+            {
+                var rv = new TransformTrackingHelper(deferAfterRenderPass);
+                rv.MatrixChanged += () => observer.OnNext(rv.Matrix);
+                rv.SetVisual(visual);
+                return rv;
+            });
         }
     }
 }
