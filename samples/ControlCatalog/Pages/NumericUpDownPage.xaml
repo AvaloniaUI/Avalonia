@@ -114,6 +114,14 @@
       </StackPanel>
     </WrapPanel>
 
+    <StackPanel Orientation="Vertical" Margin="10">
+      <Label FontSize="14" FontWeight="Bold" Target="WatermarkForegroundUpDown"
+             Content="Watermark with custom foreground color:"/>
+      <NumericUpDown x:Name="WatermarkForegroundUpDown"
+                     Watermark="Enter amount"
+                     WatermarkForeground="Orange"/>
+    </StackPanel>
+
     <StackPanel Margin="10">
       <Label FontSize="14" FontWeight="Bold" Target="InnerContent"
              Content="Inner Contents"/>
