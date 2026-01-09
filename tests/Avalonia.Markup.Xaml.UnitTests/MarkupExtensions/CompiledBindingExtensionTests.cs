@@ -639,8 +639,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 target.ApplyTemplate();
 
                 // Assert DataGridLikeColumn.Binding data type.
-                var compiledPath = ((CompiledBindingExtension)column.Binding!).Path;
-                var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath.Elements));
+                var compiledPath = ((CompiledBinding)column.Binding!).Path;
+                var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath!.Elements));
 
                 Assert.Equal(typeof(string), node.Property.PropertyType);
                 Assert.Equal(nameof(TestData.StringProperty), node.Property.Name);
@@ -682,8 +682,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 target.ApplyTemplate();
 
                 // Assert DataGridLikeColumn.Binding data type.
-                var compiledPath = ((CompiledBindingExtension)column.Binding!).Path;
-                var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath.Elements));
+                var compiledPath = ((CompiledBinding)column.Binding!).Path;
+                var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath!.Elements));
                 Assert.Equal(typeof(int), node.Property.PropertyType);
                 
                 // Assert DataGridLikeColumn.Template data type by evaluating the template.
@@ -727,8 +727,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 target.ApplyTemplate();
 
                 // Assert DataGridLikeColumn.Binding data type.
-                var compiledPath = ((CompiledBindingExtension)column.Binding!).Path;
-                var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath.Elements));
+                var compiledPath = ((CompiledBinding)column.Binding!).Path;
+                var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath!.Elements));
                 Assert.Equal(typeof(int), node.Property.PropertyType);
                 
                 // Assert DataGridLikeColumn.Template data type by evaluating the template.
@@ -2060,9 +2060,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         x:DataType='local:TestDataContext'
         X='{CompiledBinding StringProperty}' />";
                 var control = (AssignBindingControl)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var compiledPath = ((CompiledBindingExtension)control.X!).Path;
+                var compiledPath = ((CompiledBinding)control.X!).Path;
 
-                var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath.Elements));
+                var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath!.Elements));
                 Assert.Equal(typeof(string), node.Property.PropertyType);
             }
         }
@@ -2078,9 +2078,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
         X='{CompiledBinding StringProperty, DataType=local:TestDataContext}' />";
                 var control = (AssignBindingControl)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var compiledPath = ((CompiledBindingExtension)control.X!).Path;
+                var compiledPath = ((CompiledBinding)control.X!).Path;
 
-                var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath.Elements));
+                var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath!.Elements));
                 Assert.Equal(typeof(string), node.Property.PropertyType);
             }
         }
@@ -2097,9 +2097,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         X='{CompiledBinding StringProperty, DataType=local:TestDataContext}' />";
                 var control = (AssignBindingControl)AvaloniaRuntimeXamlLoader.Load(new RuntimeXamlLoaderDocument(xaml),
                     new RuntimeXamlLoaderConfiguration { UseCompiledBindingsByDefault = true });
-                var compiledPath = ((CompiledBindingExtension)control.X!).Path;
+                var compiledPath = ((CompiledBinding)control.X!).Path;
 
-                var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath.Elements));
+                var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath!.Elements));
                 Assert.Equal(typeof(string), node.Property.PropertyType);
             }
         }

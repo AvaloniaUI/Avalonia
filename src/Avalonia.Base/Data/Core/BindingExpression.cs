@@ -174,59 +174,6 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
     }
 
     /// <summary>
-    /// Creates an <see cref="BindingExpression"/> from an expression tree.
-    /// </summary>
-    /// <typeparam name="TIn">The input type of the binding expression.</typeparam>
-    /// <typeparam name="TOut">The output type of the binding expression.</typeparam>
-    /// <param name="source">The source from which the binding value will be read.</param>
-    /// <param name="expression">The expression representing the binding path.</param>
-    /// <param name="converter">The converter to use.</param>
-    /// <param name="converterCulture">The converter culture to use.</param>
-    /// <param name="converterParameter">The converter parameter.</param>
-    /// <param name="enableDataValidation">Whether data validation should be enabled for the binding.</param>
-    /// <param name="fallbackValue">The fallback value.</param>
-    /// <param name="mode">The binding mode.</param>
-    /// <param name="priority">The binding priority.</param>
-    /// <param name="targetNullValue">The null target value.</param>
-    /// <param name="allowReflection">Whether to allow reflection for target type conversion.</param>
-    [RequiresUnreferencedCode(TrimmingMessages.ExpressionNodeRequiresUnreferencedCodeMessage)]
-#if NET8_0_OR_GREATER
-    [RequiresDynamicCode(TrimmingMessages.ExpressionNodeRequiresDynamicCodeMessage)]
-#endif
-    internal static BindingExpression Create<TIn, TOut>(
-        TIn source,
-        Expression<Func<TIn, TOut>> expression,
-        IValueConverter? converter = null,
-        CultureInfo? converterCulture = null,
-        object? converterParameter = null,
-        bool enableDataValidation = false,
-        Optional<object?> fallbackValue = default,
-        BindingMode mode = BindingMode.OneWay,
-        BindingPriority priority = BindingPriority.LocalValue,
-        object? targetNullValue = null,
-        bool allowReflection = true)
-            where TIn : class?
-    {
-        var nodes = BindingExpressionVisitor<TIn>.BuildNodes(expression, enableDataValidation);
-        var fallback = fallbackValue.HasValue ? fallbackValue.Value : AvaloniaProperty.UnsetValue;
-
-        return new BindingExpression(
-            source,
-            nodes,
-            fallback,
-            converter: converter,
-            converterCulture: converterCulture,
-            converterParameter: converterParameter,
-            enableDataValidation: enableDataValidation,
-            mode: mode,
-            priority: priority,
-            targetNullValue: targetNullValue,
-            targetTypeConverter: allowReflection ?
-                TargetTypeConverter.GetReflectionConverter() :
-                TargetTypeConverter.GetDefaultConverter());
-    }
-
-    /// <summary>
     /// Called by an <see cref="ExpressionNode"/> belonging to this binding when its
     /// <see cref="ExpressionNode.Value"/> changes.
     /// </summary>

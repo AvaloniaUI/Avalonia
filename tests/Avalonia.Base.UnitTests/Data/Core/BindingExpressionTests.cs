@@ -95,7 +95,7 @@ public abstract partial class BindingExpressionTests
             var target = new TargetClass { DataContext = dataContext };
             var nodes = new List<ExpressionNode>();
             var fallback = fallbackValue.HasValue ? fallbackValue.Value : AvaloniaProperty.UnsetValue;
-            var path = CompiledBindingPathFromExpressionBuilder.Build(expression, enableDataValidation);
+            var path = BindingExpressionVisitor<TIn>.BuildPath(expression);
 
             if (relativeSource is not null && relativeSource.Mode is not RelativeSourceMode.Self)
                 throw new NotImplementedException();
