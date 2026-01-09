@@ -206,7 +206,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
         [Fact]
         public void BuildNodes_Should_Ignore_Upcast()
         {
-            // Upcasts (derived to base) are safe and should be ignored
+            // Upcasts (derived to base) should be ignored
             Expression<Func<DerivedTestClass, TestClass>> expr = x => (TestClass)x;
 
             var nodes = BindingExpressionVisitor<DerivedTestClass>.BuildNodes(expr);
@@ -215,16 +215,29 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
         }
 
         [Fact]
-        public void BuildNodes_Should_Throw_For_Downcast()
+        public void BuildNodes_Should_Ignore_Downcast()
         {
-            // Downcasts (base to derived) are not safe and should throw an exception
+            // Downcasts (base to derived) should be allowed - the binding system will handle runtime errors
             Expression<Func<TestClass, DerivedTestClass>> expr = x => (DerivedTestClass)x;
 
-            var ex = Assert.Throws<ExpressionParseException>(() =>
-                BindingExpressionVisitor<TestClass>.BuildNodes(expr));
+            var nodes = BindingExpressionVisitor<TestClass>.BuildNodes(expr);
 
-            Assert.Contains("Invalid expression type", ex.Message);
-            Assert.Contains("Convert", ex.Message);
+            Assert.Empty(nodes);
+        }
+
+        [Fact]
+        public void BuildNodes_Should_Ignore_Downcast_In_Property_Chain()
+        {
+            // Practical example: casting to access derived type properties
+            Expression<Func<TestClass, string?>> expr = x => ((DerivedTestClass)x.Child!).DerivedProperty;
+
+            var nodes = BindingExpressionVisitor<TestClass>.BuildNodes(expr);
+
+            Assert.Equal(2, nodes.Count);
+            var childNode = Assert.IsType<DynamicPluginPropertyAccessorNode>(nodes[0]);
+            Assert.Equal("Child", childNode.PropertyName);
+            var derivedNode = Assert.IsType<DynamicPluginPropertyAccessorNode>(nodes[1]);
+            Assert.Equal("DerivedProperty", derivedNode.PropertyName);
         }
 
         [Fact]
@@ -238,6 +251,19 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
 
             Assert.Contains("Invalid expression type", ex.Message);
             Assert.Contains("Convert", ex.Message);
+        }
+
+        [Fact]
+        public void BuildNodes_Should_Allow_Cast_Through_Object()
+        {
+            // Casting through object is a common pattern - the binding system will handle runtime errors
+            Expression<Func<TestClass, string>> expr = x => (string)(object)x.StringProperty!;
+
+            var nodes = BindingExpressionVisitor<TestClass>.BuildNodes(expr);
+
+            var node = Assert.Single(nodes);
+            var propertyNode = Assert.IsType<DynamicPluginPropertyAccessorNode>(node);
+            Assert.Equal("StringProperty", propertyNode.PropertyName);
         }
 
         [Fact]
@@ -476,6 +502,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
 
         public class DerivedTestClass : TestClass
         {
+            public string? DerivedProperty { get; set; }
         }
     }
 }

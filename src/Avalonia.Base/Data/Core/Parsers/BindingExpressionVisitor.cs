@@ -136,9 +136,11 @@ internal class BindingExpressionVisitor<TIn>(LambdaExpression expression) : Expr
         }
         else if (node.NodeType == ExpressionType.Convert)
         {
-            if (node.Type.IsAssignableFrom(node.Operand.Type))
+            // Allow reference type casts (both upcasts and downcasts) but reject value type conversions
+            if (!node.Type.IsValueType && !node.Operand.Type.IsValueType &&
+                (node.Type.IsAssignableFrom(node.Operand.Type) || node.Operand.Type.IsAssignableFrom(node.Type)))
             {
-                // Ignore inheritance casts (upcasts from derived to base)
+                // Ignore reference type casts - the binding system will handle any runtime errors
                 return _head = base.VisitUnary(node);
             }
         }
