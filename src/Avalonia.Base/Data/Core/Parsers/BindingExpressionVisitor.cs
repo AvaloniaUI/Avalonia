@@ -1,22 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Threading.Tasks;
 using Avalonia.Data.Core.ExpressionNodes;
 using Avalonia.Data.Core.ExpressionNodes.Reflection;
+using Avalonia.Data.Core.Plugins;
+using Avalonia.Reactive;
+using Avalonia.Utilities;
 
 namespace Avalonia.Data.Core.Parsers;
 
 /// <summary>
-/// Visits and processes a LINQ expression to build a chain of binding expression nodes.
+/// Visits and processes a LINQ expression to build a compiled binding path.
 /// </summary>
 /// <typeparam name="TIn">The input parameter type for the binding expression.</typeparam>
 /// <remarks>
-/// This visitor traverses lambda expressions used in compiled bindings and converts them into a
-/// list of <see cref="ExpressionNode"/> instances that represent the binding path. It supports
-/// property access, indexers, AvaloniaProperty access, and stream bindings.
+/// This visitor traverses lambda expressions used in compiled bindings and uses
+/// <see cref="CompiledBindingPathBuilder"/> to construct a <see cref="CompiledBindingPath"/>, which
+/// can then be converted into <see cref="ExpressionNode"/> instances. It supports property access,
+/// indexers, AvaloniaProperty access, stream bindings, type casts, and logical operators.
 /// </remarks>
 [RequiresDynamicCode(TrimmingMessages.ExpressionNodeRequiresDynamicCodeMessage)]
 [RequiresUnreferencedCode(TrimmingMessages.ExpressionNodeRequiresUnreferencedCodeMessage)]
@@ -27,13 +34,34 @@ internal class BindingExpressionVisitor<TIn>(LambdaExpression expression) : Expr
     private static readonly PropertyInfo s_avaloniaObjectIndexer;
     private static readonly MethodInfo s_createDelegateMethod;
     private readonly LambdaExpression _rootExpression = expression;
-    private readonly List<ExpressionNode> _nodes = [];
+    private readonly CompiledBindingPathBuilder _builder = new();
     private Expression? _head;
 
     static BindingExpressionVisitor()
     {
         s_avaloniaObjectIndexer = typeof(AvaloniaObject).GetProperty("Item", [typeof(AvaloniaProperty)])!;
         s_createDelegateMethod = typeof(MethodInfo).GetMethod("CreateDelegate", [typeof(Type), typeof(object)])!;
+    }
+
+    /// <summary>
+    /// Builds a compiled binding path from a lambda expression.
+    /// </summary>
+    /// <typeparam name="TOut">The output type of the binding expression.</typeparam>
+    /// <param name="expression">
+    /// The lambda expression to parse and convert into a binding path.
+    /// </param>
+    /// <returns>
+    /// A <see cref="CompiledBindingPath"/> representing the binding path.
+    /// </returns>
+    /// <exception cref="ExpressionParseException">
+    /// Thrown when the expression contains unsupported operations or invalid syntax for binding
+    /// expressions.
+    /// </exception>
+    public static CompiledBindingPath BuildPath<TOut>(Expression<Func<TIn, TOut>> expression)
+    {
+        var visitor = new BindingExpressionVisitor<TIn>(expression);
+        visitor.Visit(expression);
+        return visitor._builder.Build();
     }
 
     /// <summary>
@@ -53,9 +81,10 @@ internal class BindingExpressionVisitor<TIn>(LambdaExpression expression) : Expr
     /// </exception>
     public static List<ExpressionNode> BuildNodes<TOut>(Expression<Func<TIn, TOut>> expression)
     {
-        var visitor = new BindingExpressionVisitor<TIn>(expression);
-        visitor.Visit(expression);
-        return visitor._nodes;
+        var path = BuildPath(expression);
+        var nodes = new List<ExpressionNode>();
+        path.BuildExpression(nodes, out var _);
+        return nodes;
     }
 
     protected override Expression VisitBinary(BinaryExpression node)
@@ -73,12 +102,45 @@ internal class BindingExpressionVisitor<TIn>(LambdaExpression expression) : Expr
         if (node.Indexer == s_avaloniaObjectIndexer)
         {
             var property = GetValue<AvaloniaProperty>(node.Arguments[0]);
-            return Add(node.Object, node, new AvaloniaPropertyAccessorNode(property));
+            return Add(node.Object, node, x => x.Property(property, CreateAvaloniaPropertyAccessor));
         }
-        else
+        else if (node.Object?.Type.IsArray == true)
         {
-            return Add(node.Object, node, new ExpressionTreeIndexerNode(node));
+            var indexes = node.Arguments.Select(GetValue<int>).ToArray();
+            return Add(node.Object, node, x => x.ArrayElement(indexes, node.Type));
         }
+        else if (node.Indexer?.GetMethod is not null &&
+            node.Arguments.Count == 1 &&
+            node.Arguments[0].Type == typeof(int))
+        {
+            var getMethod = node.Indexer.GetMethod;
+            var setMethod = node.Indexer.SetMethod;
+            var index = GetValue<int>(node.Arguments[0]);
+            var info = new ClrPropertyInfo(
+                CommonPropertyNames.IndexerName,
+                x => getMethod.Invoke(x, new object[] { index }),
+                setMethod is not null ? (o, v) => setMethod.Invoke(o, new[] { index, v }) : null,
+                getMethod.ReturnType);
+            return Add(node.Object, node, x => x.Property(
+                info,
+                (weakRef, propInfo) => CreateIndexerPropertyAccessor(weakRef, propInfo, index)));
+        }
+        else if (node.Indexer?.GetMethod is not null)
+        {
+            var getMethod = node.Indexer.GetMethod;
+            var setMethod = node.Indexer?.SetMethod;
+            var indexes = node.Arguments.Select(GetValue<object>).ToArray();
+            var info = new ClrPropertyInfo(
+                CommonPropertyNames.IndexerName,
+                x => getMethod.Invoke(x, indexes),
+                setMethod is not null ? (o, v) => setMethod.Invoke(o, indexes.Append(v).ToArray()) : null,
+                getMethod.ReturnType);
+            return Add(node.Object, node, x => x.Property(
+                info,
+                CreateInpcPropertyAccessor));
+        }
+
+        throw new ExpressionParseException(0, $"Invalid indexer in binding expression: {node.NodeType}.");
     }
 
     protected override Expression VisitMember(MemberExpression node)
@@ -102,20 +164,40 @@ internal class BindingExpressionVisitor<TIn>(LambdaExpression expression) : Expr
         else if (method.Name == MultiDimensionalArrayGetterMethodName &&
                  node.Object is not null)
         {
-            var expression = Expression.MakeIndex(node.Object, null, node.Arguments);
-            return Add(node.Object, node, new ExpressionTreeIndexerNode(expression));
+            var indexes = node.Arguments.Select(GetValue<int>).ToArray();
+            return Add(node.Object, node, x => x.ArrayElement(indexes, node.Type));
         }
         else if (method.Name.StartsWith(StreamBindingExtensions.StreamBindingName) &&
                  method.DeclaringType == typeof(StreamBindingExtensions))
         {
             var instance = node.Method.IsStatic ? node.Arguments[0] : node.Object;
-            Add(instance, node, new DynamicPluginStreamNode());
-            return node;
+            var genericArgs = method.GetGenericArguments();
+            var genericArg = genericArgs.Length > 0 ? genericArgs[0] : typeof(object);
+
+            if (typeof(Task<>).MakeGenericType(genericArg).IsAssignableFrom(instance?.Type) ||
+                (genericArg == typeof(object) && typeof(Task).IsAssignableFrom(instance?.Type ?? typeof(void))))
+            {
+                var builderMethod = typeof(CompiledBindingPathBuilder)
+                    .GetMethod(nameof(CompiledBindingPathBuilder.StreamTask))!
+                    .MakeGenericMethod(genericArg);
+                return Add(instance, node, x => builderMethod.Invoke(x, null));
+            }
+            else if (typeof(IObservable<>).MakeGenericType(genericArg).IsAssignableFrom(instance?.Type))
+            {
+                var builderMethod = typeof(CompiledBindingPathBuilder)
+                    .GetMethod(nameof(CompiledBindingPathBuilder.StreamObservable))!
+                    .MakeGenericMethod(genericArg);
+                return Add(instance, node, x => builderMethod.Invoke(x, null));
+            }
         }
         else if (method == s_createDelegateMethod)
         {
-            var accessor = new DynamicPluginPropertyAccessorNode(GetValue<MethodInfo>(node.Object!).Name, acceptsNull: false);
-            return Add(node.Arguments[1], node, accessor);
+            var methodInfo = GetValue<MethodInfo>(node.Object!);
+            var delegateType = GetValue<Type>(node.Arguments[0]);
+            return Add(node.Arguments[1], node, x => x.Method(
+                methodInfo.MethodHandle,
+                delegateType.TypeHandle,
+                acceptsNull: false));
         }
 
         throw new ExpressionParseException(0, $"Invalid method call in binding expression: '{node.Method.DeclaringType}.{node.Method.Name}'.");
@@ -132,7 +214,7 @@ internal class BindingExpressionVisitor<TIn>(LambdaExpression expression) : Expr
     {
         if (node.NodeType == ExpressionType.Not && node.Type == typeof(bool))
         {
-            return Add(node.Operand, node, new LogicalNotNode());
+            return Add(node.Operand, node, x => x.Not());
         }
         else if (node.NodeType == ExpressionType.Convert)
         {
@@ -140,34 +222,21 @@ internal class BindingExpressionVisitor<TIn>(LambdaExpression expression) : Expr
             if (!node.Type.IsValueType && !node.Operand.Type.IsValueType &&
                 (node.Type.IsAssignableFrom(node.Operand.Type) || node.Operand.Type.IsAssignableFrom(node.Type)))
             {
-                // Create an efficient compiled cast function (like TypeCastPathElement does)
-                return Add(node.Operand, node, new FuncTransformNode(CreateCastFunc(node.Type)));
+                var castMethod = typeof(CompiledBindingPathBuilder)
+                    .GetMethod(nameof(CompiledBindingPathBuilder.TypeCast))!
+                    .MakeGenericMethod(node.Type);
+                return Add(node.Operand, node, x => castMethod.Invoke(x, null));
             }
         }
         else if (node.NodeType == ExpressionType.TypeAs)
         {
-            // TypeAs operator creates a cast node using a compiled function
-            return Add(node.Operand, node, new FuncTransformNode(CreateCastFunc(node.Type)));
+            var castMethod = typeof(CompiledBindingPathBuilder)
+                .GetMethod(nameof(CompiledBindingPathBuilder.TypeCast))!
+                .MakeGenericMethod(node.Type);
+            return Add(node.Operand, node, x => castMethod.Invoke(x, null));
         }
 
         throw new ExpressionParseException(0, $"Invalid expression type in binding expression: {node.NodeType}.");
-    }
-
-    /// <summary>
-    /// Creates an efficient compiled cast function.
-    /// </summary>
-    /// <remarks>
-    /// Compiles an expression tree to generate IL code similar to the 'is T' pattern,
-    /// avoiding reflection-based type checks at runtime.
-    /// </remarks>
-    private static Func<object?, object?> CreateCastFunc(Type targetType)
-    {
-        // Compile: (object? obj) => obj as TargetType
-        // This generates efficient IL similar to TypeCastPathElement<T>.TryCast
-        var param = Expression.Parameter(typeof(object), "obj");
-        var castExpr = Expression.TypeAs(param, targetType);
-        var lambda = Expression.Lambda<Func<object?, object?>>(castExpr, param);
-        return lambda.Compile(preferInterpretation: true);
     }
 
     protected override Expression VisitBlock(BlockExpression node)
@@ -240,25 +309,67 @@ internal class BindingExpressionVisitor<TIn>(LambdaExpression expression) : Expr
         throw new ExpressionParseException(0, $"Invalid expression type in binding expression: {node.NodeType}.");
     }
 
-    private Expression Add(Expression? instance, Expression expression, ExpressionNode node)
+    private Expression Add(Expression? instance, Expression expression, Action<CompiledBindingPathBuilder> build)
     {
         var visited = Visit(instance);
-        
+
         if (visited != _head)
         {
             throw new ExpressionParseException(
-                0, 
+                0,
                 $"Unable to parse '{expression}': expected an instance of '{_head}' but got '{visited}'.");
         }
 
-        _nodes.Add(node);
+        build(_builder);
         return _head = expression;
     }
 
-    private Expression AddPropertyNode(MemberExpression property)
+    private Expression AddPropertyNode(MemberExpression node)
     {
-        var node = new DynamicPluginPropertyAccessorNode(property.Member.Name, acceptsNull: false);
-        return Add(property.Expression, property, node);
+        // Check if it's an AvaloniaProperty accessed via CLR wrapper
+        if (typeof(AvaloniaObject).IsAssignableFrom(node.Expression?.Type) &&
+            AvaloniaPropertyRegistry.Instance.FindRegistered(node.Expression.Type, node.Member.Name) is { } avaloniaProperty)
+        {
+            return Add(
+                node.Expression,
+                node,
+                x => x.Property(avaloniaProperty, CreateAvaloniaPropertyAccessor));
+        }
+        else
+        {
+            var property = (PropertyInfo)node.Member;
+            var info = new ClrPropertyInfo(
+                property.Name,
+                CreateGetter(property),
+                CreateSetter(property),
+                property.PropertyType);
+            return Add(node.Expression, node, x => x.Property(info, CreateInpcPropertyAccessor));
+        }
+    }
+
+    private static Func<object, object>? CreateGetter(PropertyInfo info)
+    {
+        if (info.GetMethod == null)
+            return null;
+        var target = Expression.Parameter(typeof(object), "target");
+        return Expression.Lambda<Func<object, object>>(
+                Expression.Convert(Expression.Call(Expression.Convert(target, info.DeclaringType!), info.GetMethod),
+                    typeof(object)),
+                target)
+            .Compile();
+    }
+
+    private static Action<object, object?>? CreateSetter(PropertyInfo info)
+    {
+        if (info.SetMethod == null)
+            return null;
+        var target = Expression.Parameter(typeof(object), "target");
+        var value = Expression.Parameter(typeof(object), "value");
+        return Expression.Lambda<Action<object, object?>>(
+                Expression.Call(Expression.Convert(target, info.DeclaringType!), info.SetMethod,
+                    Expression.Convert(value, info.SetMethod.GetParameters()[0].ParameterType)),
+                target, value)
+            .Compile();
     }
 
     private static T GetValue<T>(Expression expr)
@@ -272,5 +383,169 @@ internal class BindingExpressionVisitor<TIn>(LambdaExpression expression) : Expr
     {
         var type = method.DeclaringType;
         return type?.GetRuntimeProperties().FirstOrDefault(prop => prop.GetMethod == method);
+    }
+
+    // Accessor factory methods
+    private static IPropertyAccessor CreateInpcPropertyAccessor(WeakReference<object?> target, IPropertyInfo property)
+        => new InpcPropertyAccessor(target, property);
+
+    private static IPropertyAccessor CreateAvaloniaPropertyAccessor(WeakReference<object?> target, IPropertyInfo property)
+        => new AvaloniaPropertyAccessor(
+            new WeakReference<AvaloniaObject?>((AvaloniaObject?)(target.TryGetTarget(out var o) ? o : null)),
+            (AvaloniaProperty)property);
+
+    private static IPropertyAccessor CreateIndexerPropertyAccessor(WeakReference<object?> target, IPropertyInfo property, int argument)
+        => new IndexerAccessor(target, property, argument);
+
+    // Accessor implementations
+    private class AvaloniaPropertyAccessor : PropertyAccessorBase, IWeakEventSubscriber<AvaloniaPropertyChangedEventArgs>
+    {
+        private readonly WeakReference<AvaloniaObject?> _reference;
+        private readonly AvaloniaProperty _property;
+
+        public AvaloniaPropertyAccessor(WeakReference<AvaloniaObject?> reference, AvaloniaProperty property)
+        {
+            _reference = reference ?? throw new ArgumentNullException(nameof(reference));
+            _property = property ?? throw new ArgumentNullException(nameof(property));
+        }
+
+        public override Type PropertyType => _property.PropertyType;
+        public override object? Value => _reference.TryGetTarget(out var instance) ? instance?.GetValue(_property) : null;
+
+        public override bool SetValue(object? value, BindingPriority priority)
+        {
+            if (!_property.IsReadOnly && _reference.TryGetTarget(out var instance) && instance is not null)
+            {
+                instance.SetValue(_property, value, priority);
+                return true;
+            }
+            return false;
+        }
+
+        public void OnEvent(object? sender, WeakEvent ev, AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.Property == _property)
+                PublishValue(Value);
+        }
+
+        protected override void SubscribeCore()
+        {
+            if (_reference.TryGetTarget(out var reference) && reference is not null)
+            {
+                PublishValue(reference.GetValue(_property));
+                WeakEvents.AvaloniaPropertyChanged.Subscribe(reference, this);
+            }
+        }
+
+        protected override void UnsubscribeCore()
+        {
+            if (_reference.TryGetTarget(out var reference) && reference is not null)
+                WeakEvents.AvaloniaPropertyChanged.Unsubscribe(reference, this);
+        }
+    }
+
+    private class InpcPropertyAccessor : PropertyAccessorBase, IWeakEventSubscriber<PropertyChangedEventArgs>
+    {
+        protected readonly WeakReference<object?> _reference;
+        private readonly IPropertyInfo _property;
+
+        public InpcPropertyAccessor(WeakReference<object?> reference, IPropertyInfo property)
+        {
+            _reference = reference ?? throw new ArgumentNullException(nameof(reference));
+            _property = property ?? throw new ArgumentNullException(nameof(property));
+        }
+
+        public override Type PropertyType => _property.PropertyType;
+        public override object? Value => _reference.TryGetTarget(out var o) ? _property.Get(o) : null;
+
+        public override bool SetValue(object? value, BindingPriority priority)
+        {
+            if (_property.CanSet && _reference.TryGetTarget(out var o))
+            {
+                _property.Set(o, value);
+                SendCurrentValue();
+                return true;
+            }
+            return false;
+        }
+
+        public void OnEvent(object? sender, WeakEvent ev, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == _property.Name || string.IsNullOrEmpty(e.PropertyName))
+                SendCurrentValue();
+        }
+
+        protected override void SubscribeCore()
+        {
+            SendCurrentValue();
+            if (_reference.TryGetTarget(out var o) && o is INotifyPropertyChanged inpc)
+                WeakEvents.ThreadSafePropertyChanged.Subscribe(inpc, this);
+        }
+
+        protected override void UnsubscribeCore()
+        {
+            if (_reference.TryGetTarget(out var o) && o is INotifyPropertyChanged inpc)
+                WeakEvents.ThreadSafePropertyChanged.Unsubscribe(inpc, this);
+        }
+
+        protected void SendCurrentValue()
+        {
+            try
+            {
+                PublishValue(Value);
+            }
+            catch (Exception e)
+            {
+                PublishValue(new BindingNotification(e, BindingErrorType.Error));
+            }
+        }
+    }
+
+    private class IndexerAccessor : InpcPropertyAccessor, IWeakEventSubscriber<NotifyCollectionChangedEventArgs>
+    {
+        private readonly int _index;
+
+        public IndexerAccessor(WeakReference<object?> target, IPropertyInfo basePropertyInfo, int argument)
+            : base(target, basePropertyInfo)
+        {
+            _index = argument;
+        }
+
+        protected override void SubscribeCore()
+        {
+            base.SubscribeCore();
+            if (_reference.TryGetTarget(out var o) && o is INotifyCollectionChanged incc)
+                WeakEvents.CollectionChanged.Subscribe(incc, this);
+        }
+
+        protected override void UnsubscribeCore()
+        {
+            base.UnsubscribeCore();
+            if (_reference.TryGetTarget(out var o) && o is INotifyCollectionChanged incc)
+                WeakEvents.CollectionChanged.Unsubscribe(incc, this);
+        }
+
+        public void OnEvent(object? sender, WeakEvent ev, NotifyCollectionChangedEventArgs args)
+        {
+            if (ShouldNotifyListeners(args))
+                SendCurrentValue();
+        }
+
+        private bool ShouldNotifyListeners(NotifyCollectionChangedEventArgs e)
+        {
+            return e.Action switch
+            {
+                NotifyCollectionChangedAction.Add => _index >= e.NewStartingIndex,
+                NotifyCollectionChangedAction.Remove => _index >= e.OldStartingIndex,
+                NotifyCollectionChangedAction.Replace => _index >= e.NewStartingIndex &&
+                                                          _index < e.NewStartingIndex + e.NewItems!.Count,
+                NotifyCollectionChangedAction.Move => (_index >= e.NewStartingIndex &&
+                                                         _index < e.NewStartingIndex + e.NewItems!.Count) ||
+                                                        (_index >= e.OldStartingIndex &&
+                                                         _index < e.OldStartingIndex + e.OldItems!.Count),
+                NotifyCollectionChangedAction.Reset => true,
+                _ => false
+            };
+        }
     }
 }

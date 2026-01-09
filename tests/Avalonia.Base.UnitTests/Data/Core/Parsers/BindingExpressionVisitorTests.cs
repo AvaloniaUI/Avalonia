@@ -4,7 +4,6 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.ExpressionNodes;
-using Avalonia.Data.Core.ExpressionNodes.Reflection;
 using Avalonia.Data.Core.Parsers;
 using Xunit;
 
@@ -20,7 +19,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
             var nodes = BindingExpressionVisitor<TestClass>.BuildNodes(expr);
 
             var node = Assert.Single(nodes);
-            var propertyNode = Assert.IsType<DynamicPluginPropertyAccessorNode>(node);
+            var propertyNode = Assert.IsType<PropertyAccessorNode>(node);
             Assert.Equal("StringProperty", propertyNode.PropertyName);
         }
 
@@ -33,10 +32,10 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
 
             Assert.Equal(2, nodes.Count);
 
-            var firstNode = Assert.IsType<DynamicPluginPropertyAccessorNode>(nodes[0]);
+            var firstNode = Assert.IsType<PropertyAccessorNode>(nodes[0]);
             Assert.Equal("Child", firstNode.PropertyName);
 
-            var secondNode = Assert.IsType<DynamicPluginPropertyAccessorNode>(nodes[1]);
+            var secondNode = Assert.IsType<PropertyAccessorNode>(nodes[1]);
             Assert.Equal("StringProperty", secondNode.PropertyName);
         }
 
@@ -48,10 +47,10 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
             var nodes = BindingExpressionVisitor<TestClass>.BuildNodes(expr);
 
             Assert.Equal(3, nodes.Count);
-            Assert.All(nodes, n => Assert.IsType<DynamicPluginPropertyAccessorNode>(n));
-            Assert.Equal("Child", ((DynamicPluginPropertyAccessorNode)nodes[0]).PropertyName);
-            Assert.Equal("Child", ((DynamicPluginPropertyAccessorNode)nodes[1]).PropertyName);
-            Assert.Equal("StringProperty", ((DynamicPluginPropertyAccessorNode)nodes[2]).PropertyName);
+            Assert.All(nodes, n => Assert.IsType<PropertyAccessorNode>(n));
+            Assert.Equal("Child", ((PropertyAccessorNode)nodes[0]).PropertyName);
+            Assert.Equal("Child", ((PropertyAccessorNode)nodes[1]).PropertyName);
+            Assert.Equal("StringProperty", ((PropertyAccessorNode)nodes[2]).PropertyName);
         }
 
         [Fact]
@@ -63,10 +62,10 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
 
             Assert.Equal(2, nodes.Count);
 
-            var propertyNode = Assert.IsType<DynamicPluginPropertyAccessorNode>(nodes[0]);
+            var propertyNode = Assert.IsType<PropertyAccessorNode>(nodes[0]);
             Assert.Equal("IndexedProperty", propertyNode.PropertyName);
 
-            Assert.IsType<ExpressionTreeIndexerNode>(nodes[1]);
+            Assert.IsType<PropertyAccessorNode>(nodes[1]);  // List indexer, not array
         }
 
         [Fact]
@@ -78,10 +77,10 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
 
             Assert.Equal(2, nodes.Count);
 
-            var propertyNode = Assert.IsType<DynamicPluginPropertyAccessorNode>(nodes[0]);
+            var propertyNode = Assert.IsType<PropertyAccessorNode>(nodes[0]);
             Assert.Equal("ArrayProperty", propertyNode.PropertyName);
 
-            Assert.IsType<ExpressionTreeIndexerNode>(nodes[1]);
+            Assert.IsType<ArrayIndexerNode>(nodes[1]);
         }
 
         [Fact]
@@ -93,10 +92,10 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
 
             Assert.Equal(2, nodes.Count);
 
-            var propertyNode = Assert.IsType<DynamicPluginPropertyAccessorNode>(nodes[0]);
+            var propertyNode = Assert.IsType<PropertyAccessorNode>(nodes[0]);
             Assert.Equal("MultiDimensionalArray", propertyNode.PropertyName);
 
-            Assert.IsType<ExpressionTreeIndexerNode>(nodes[1]);
+            Assert.IsType<ArrayIndexerNode>(nodes[1]);
         }
 
         [Fact]
@@ -107,8 +106,8 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
             var nodes = BindingExpressionVisitor<StyledElement>.BuildNodes(expr);
 
             var node = Assert.Single(nodes);
-            var avaloniaPropertyNode = Assert.IsType<AvaloniaPropertyAccessorNode>(node);
-            Assert.Equal(StyledElement.DataContextProperty, avaloniaPropertyNode.Property);
+            var avaloniaPropertyNode = Assert.IsType<PropertyAccessorNode>(node);
+            Assert.Equal("DataContext", avaloniaPropertyNode.PropertyName);  // AvaloniaProperty accessed as property
         }
 
         [Fact]
@@ -120,11 +119,11 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
 
             Assert.Equal(2, nodes.Count);
 
-            var propertyNode = Assert.IsType<DynamicPluginPropertyAccessorNode>(nodes[0]);
+            var propertyNode = Assert.IsType<PropertyAccessorNode>(nodes[0]);
             Assert.Equal("StyledChild", propertyNode.PropertyName);
 
-            var avaloniaPropertyNode = Assert.IsType<AvaloniaPropertyAccessorNode>(nodes[1]);
-            Assert.Equal(StyledElement.DataContextProperty, avaloniaPropertyNode.Property);
+            var avaloniaPropertyNode = Assert.IsType<PropertyAccessorNode>(nodes[1]);
+            Assert.Equal("DataContext", avaloniaPropertyNode.PropertyName);  // AvaloniaProperty accessed as property
         }
 
         [Fact]
@@ -136,7 +135,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
 
             Assert.Equal(2, nodes.Count);
 
-            var propertyNode = Assert.IsType<DynamicPluginPropertyAccessorNode>(nodes[0]);
+            var propertyNode = Assert.IsType<PropertyAccessorNode>(nodes[0]);
             Assert.Equal("BoolProperty", propertyNode.PropertyName);
 
             Assert.IsType<LogicalNotNode>(nodes[1]);
@@ -150,8 +149,8 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
             var nodes = BindingExpressionVisitor<TestClass>.BuildNodes(expr);
 
             Assert.Equal(3, nodes.Count);
-            Assert.IsType<DynamicPluginPropertyAccessorNode>(nodes[0]);
-            Assert.IsType<DynamicPluginPropertyAccessorNode>(nodes[1]);
+            Assert.IsType<PropertyAccessorNode>(nodes[0]);
+            Assert.IsType<PropertyAccessorNode>(nodes[1]);
             Assert.IsType<LogicalNotNode>(nodes[2]);
         }
 
@@ -164,10 +163,10 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
 
             Assert.Equal(2, nodes.Count);
 
-            var propertyNode = Assert.IsType<DynamicPluginPropertyAccessorNode>(nodes[0]);
+            var propertyNode = Assert.IsType<PropertyAccessorNode>(nodes[0]);
             Assert.Equal("TaskProperty", propertyNode.PropertyName);
 
-            Assert.IsType<DynamicPluginStreamNode>(nodes[1]);
+            Assert.IsType<StreamNode>(nodes[1]);
         }
 
         [Fact]
@@ -179,10 +178,10 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
 
             Assert.Equal(2, nodes.Count);
 
-            var propertyNode = Assert.IsType<DynamicPluginPropertyAccessorNode>(nodes[0]);
+            var propertyNode = Assert.IsType<PropertyAccessorNode>(nodes[0]);
             Assert.Equal("ObservableProperty", propertyNode.PropertyName);
 
-            Assert.IsType<DynamicPluginStreamNode>(nodes[1]);
+            Assert.IsType<StreamNode>(nodes[1]);
         }
 
         [Fact]
@@ -194,10 +193,10 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
 
             Assert.Equal(2, nodes.Count);
 
-            var propertyNode = Assert.IsType<DynamicPluginPropertyAccessorNode>(nodes[0]);
+            var propertyNode = Assert.IsType<PropertyAccessorNode>(nodes[0]);
             Assert.Equal("VoidTaskProperty", propertyNode.PropertyName);
 
-            Assert.IsType<DynamicPluginStreamNode>(nodes[1]);
+            Assert.IsType<StreamNode>(nodes[1]);
         }
 
         [Fact]
@@ -222,7 +221,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
 
             Assert.Equal(2, nodes.Count);
             Assert.IsType<FuncTransformNode>(nodes[0]);
-            var propertyNode = Assert.IsType<DynamicPluginPropertyAccessorNode>(nodes[1]);
+            var propertyNode = Assert.IsType<PropertyAccessorNode>(nodes[1]);
             Assert.Equal("StringProperty", propertyNode.PropertyName);
         }
 
@@ -247,10 +246,10 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
             var nodes = BindingExpressionVisitor<TestClass>.BuildNodes(expr);
 
             Assert.Equal(3, nodes.Count);
-            var childNode = Assert.IsType<DynamicPluginPropertyAccessorNode>(nodes[0]);
+            var childNode = Assert.IsType<PropertyAccessorNode>(nodes[0]);
             Assert.Equal("Child", childNode.PropertyName);
             Assert.IsType<FuncTransformNode>(nodes[1]);
-            var derivedNode = Assert.IsType<DynamicPluginPropertyAccessorNode>(nodes[2]);
+            var derivedNode = Assert.IsType<PropertyAccessorNode>(nodes[2]);
             Assert.Equal("DerivedProperty", derivedNode.PropertyName);
         }
 
@@ -276,7 +275,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
             var nodes = BindingExpressionVisitor<TestClass>.BuildNodes(expr);
 
             Assert.Equal(3, nodes.Count);
-            var propertyNode = Assert.IsType<DynamicPluginPropertyAccessorNode>(nodes[0]);
+            var propertyNode = Assert.IsType<PropertyAccessorNode>(nodes[0]);
             Assert.Equal("StringProperty", propertyNode.PropertyName);
             Assert.IsType<FuncTransformNode>(nodes[1]); // cast to object
             Assert.IsType<FuncTransformNode>(nodes[2]); // cast to string
@@ -291,7 +290,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
             var nodes = BindingExpressionVisitor<TestClass>.BuildNodes(expr);
 
             Assert.Equal(2, nodes.Count);
-            var propertyNode = Assert.IsType<DynamicPluginPropertyAccessorNode>(nodes[0]);
+            var propertyNode = Assert.IsType<PropertyAccessorNode>(nodes[0]);
             Assert.Equal("Child", propertyNode.PropertyName);
             Assert.IsType<FuncTransformNode>(nodes[1]);
         }
@@ -378,7 +377,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
             var nodes = BindingExpressionVisitor<TestClass>.BuildNodes(expr);
 
             var node = Assert.Single(nodes);
-            var propertyNode = Assert.IsType<DynamicPluginPropertyAccessorNode>(node);
+            var propertyNode = Assert.IsType<PropertyAccessorNode>(node);
             Assert.Equal("IntProperty", propertyNode.PropertyName);
         }
 
@@ -403,11 +402,11 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
 
             Assert.Equal(3, nodes.Count);
 
-            var propertyNode = Assert.IsType<DynamicPluginPropertyAccessorNode>(nodes[0]);
+            var propertyNode = Assert.IsType<PropertyAccessorNode>(nodes[0]);
             Assert.Equal("NestedIndexedProperty", propertyNode.PropertyName);
 
-            Assert.IsType<ExpressionTreeIndexerNode>(nodes[1]);
-            Assert.IsType<ExpressionTreeIndexerNode>(nodes[2]);
+            Assert.IsType<PropertyAccessorNode>(nodes[1]);  // List indexer
+            Assert.IsType<PropertyAccessorNode>(nodes[2]);  // List indexer
         }
 
         [Fact]
@@ -418,9 +417,9 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
             var nodes = BindingExpressionVisitor<TestClass>.BuildNodes(expr);
 
             Assert.Equal(3, nodes.Count);
-            Assert.IsType<DynamicPluginPropertyAccessorNode>(nodes[0]);
-            Assert.IsType<ExpressionTreeIndexerNode>(nodes[1]);
-            Assert.IsType<DynamicPluginPropertyAccessorNode>(nodes[2]);
+            Assert.IsType<PropertyAccessorNode>(nodes[0]);
+            Assert.IsType<PropertyAccessorNode>(nodes[1]);  // List indexer
+            Assert.IsType<PropertyAccessorNode>(nodes[2]);
         }
 
         [Fact]
@@ -432,10 +431,10 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
 
             Assert.Equal(2, nodes.Count);
 
-            var propertyNode = Assert.IsType<DynamicPluginPropertyAccessorNode>(nodes[0]);
+            var propertyNode = Assert.IsType<PropertyAccessorNode>(nodes[0]);
             Assert.Equal("DictionaryProperty", propertyNode.PropertyName);
 
-            Assert.IsType<ExpressionTreeIndexerNode>(nodes[1]);
+            Assert.IsType<PropertyAccessorNode>(nodes[1]);  // Dictionary indexer
         }
 
         [Fact]
@@ -447,8 +446,8 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
             var nodes = BindingExpressionVisitor<TestClass>.BuildNodes(expr);
 
             Assert.Equal(2, nodes.Count);
-            Assert.IsType<DynamicPluginPropertyAccessorNode>(nodes[0]);
-            Assert.IsType<ExpressionTreeIndexerNode>(nodes[1]);
+            Assert.IsType<PropertyAccessorNode>(nodes[0]);
+            Assert.IsType<PropertyAccessorNode>(nodes[1]);  // Dictionary indexer
         }
 
         [Fact]
@@ -459,9 +458,9 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
             var nodes = BindingExpressionVisitor<TestClass>.BuildNodes(expr);
 
             Assert.Equal(3, nodes.Count);
-            Assert.IsType<DynamicPluginPropertyAccessorNode>(nodes[0]);
-            Assert.IsType<DynamicPluginPropertyAccessorNode>(nodes[1]);
-            Assert.IsType<DynamicPluginStreamNode>(nodes[2]);
+            Assert.IsType<PropertyAccessorNode>(nodes[0]);
+            Assert.IsType<PropertyAccessorNode>(nodes[1]);
+            Assert.IsType<StreamNode>(nodes[2]);
         }
 
         [Fact]
@@ -472,8 +471,8 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
             var nodes = BindingExpressionVisitor<TestClass>.BuildNodes(expr);
 
             Assert.Equal(3, nodes.Count);
-            Assert.IsType<DynamicPluginPropertyAccessorNode>(nodes[0]);
-            Assert.IsType<DynamicPluginStreamNode>(nodes[1]);
+            Assert.IsType<PropertyAccessorNode>(nodes[0]);
+            Assert.IsType<StreamNode>(nodes[1]);
             Assert.IsType<LogicalNotNode>(nodes[2]);
         }
 
@@ -495,7 +494,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
             var nodes = BindingExpressionVisitor<TestClass>.BuildNodes(expr);
 
             Assert.Equal(3, nodes.Count);
-            Assert.IsType<DynamicPluginPropertyAccessorNode>(nodes[0]);
+            Assert.IsType<PropertyAccessorNode>(nodes[0]);
             Assert.IsType<LogicalNotNode>(nodes[1]);
             Assert.IsType<LogicalNotNode>(nodes[2]);
         }
