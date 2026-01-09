@@ -8,7 +8,7 @@
         /// <summary>
         ///     Gets the font design units per em.
         /// </summary>
-        public short DesignEmHeight { get; init; }
+        public ushort DesignEmHeight { get; init; }
 
         /// <summary>
         ///     A <see cref="bool"/> value indicating whether all glyphs in the font have the same advancement. 

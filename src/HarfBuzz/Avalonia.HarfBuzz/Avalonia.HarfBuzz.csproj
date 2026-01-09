@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsLegacyTargetFrameworks)</TargetFrameworks>
+        <IncludeLinuxSkia>true</IncludeLinuxSkia>
+        <IncludeWasmSkia>true</IncludeWasmSkia>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <!-- No obsolete code usage -->
+        <WarningsAsErrors>$(WarningsAsErrors);CS0618</WarningsAsErrors>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\packages\Avalonia\Avalonia.csproj" />
+    </ItemGroup>
+
+    <Import Project="..\..\..\build\HarfBuzzSharp.props" />
+    <Import Project="..\..\..\build\DevAnalyzers.props" />
+    <Import Project="..\..\..\build\TrimmingEnable.props" />
+    <Import Project="..\..\..\build\NullableEnable.props" />
+
+    <ItemGroup Label="InternalsVisibleTo">
+        <InternalsVisibleTo Include="Avalonia.Benchmarks, PublicKey=$(AvaloniaPublicKey)" />
+    </ItemGroup>
+</Project>

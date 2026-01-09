@@ -3,6 +3,7 @@ using System.Buffers;
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.Runtime.InteropServices;
+using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Platform;
@@ -10,9 +11,9 @@ using HarfBuzzSharp;
 using Buffer = HarfBuzzSharp.Buffer;
 using GlyphInfo = HarfBuzzSharp.GlyphInfo;
 
-namespace Avalonia.Skia
+namespace Avalonia.Harfbuzz
 {
-    internal class TextShaperImpl : ITextShaperImpl
+    public class HarfBuzzTextShaper : ITextShaperImpl
     {
         [ThreadStatic]
         private static Buffer? s_buffer;
@@ -22,7 +23,14 @@ namespace Avalonia.Skia
         public ShapedBuffer ShapeText(ReadOnlyMemory<char> text, TextShaperOptions options)
         {
             var textSpan = text.Span;
-            var typeface = options.Typeface;
+
+            var glyphTypeface = options.GlyphTypeface;
+
+            if (glyphTypeface.TextShaperTypeface is not HarfBuzzTypeface harfBuzzTypeface)
+            {
+                throw new NotSupportedException("The provided GlyphTypeface is not supported by this text shaper.");
+            }
+
             var fontRenderingEmSize = options.FontRenderingEmSize;
             var bidiLevel = options.BidiLevel;
             var culture = options.Culture;
@@ -48,7 +56,7 @@ namespace Avalonia.Skia
                 static (_, culture) => new Language(culture),
                 usedCulture);
 
-            var font = ((GlyphTypefaceImpl)typeface).Font;
+            var font = harfBuzzTypeface.HBFont;
 
             font.Shape(buffer, GetFeatures(options));
 
@@ -63,7 +71,7 @@ namespace Avalonia.Skia
 
             var bufferLength = buffer.Length;
 
-            var shapedBuffer = new ShapedBuffer(text, bufferLength, typeface, fontRenderingEmSize, bidiLevel);
+            var shapedBuffer = new ShapedBuffer(text, bufferLength, glyphTypeface, fontRenderingEmSize, bidiLevel);
 
             var glyphInfos = buffer.GetGlyphInfoSpan();
 
@@ -83,17 +91,30 @@ namespace Avalonia.Skia
 
                 if (glyphCluster < containingText.Length && containingText[glyphCluster] == '\t')
                 {
-                    glyphIndex = typeface.GetGlyph(' ');
+                    glyphIndex = glyphTypeface.CharacterToGlyphMap[' '];
 
-                    glyphAdvance = options.IncrementalTabWidth > 0 ?
-                        options.IncrementalTabWidth :
-                        4 * typeface.GetGlyphAdvance(glyphIndex) * textScale;
+                    if(options.IncrementalTabWidth > 0)
+                    {
+                        glyphAdvance = options.IncrementalTabWidth;
+                    }
+                    else
+                    {
+                        glyphTypeface.TryGetHorizontalGlyphAdvance(glyphIndex, out var advance);
+
+                        glyphAdvance = 4 * advance * textScale;
+                    }                          
                 }
 
                 shapedBuffer[i] = new Media.TextFormatting.GlyphInfo(glyphIndex, glyphCluster, glyphAdvance, glyphOffset);
             }
 
             return shapedBuffer;
+        }
+
+
+        public ITextShaperTypeface CreateTypeface(GlyphTypeface glyphTypeface)
+        {
+            return new HarfBuzzTypeface(glyphTypeface);
         }
 
         private static void MergeBreakPair(Buffer buffer)
@@ -193,18 +214,18 @@ namespace Avalonia.Skia
             }
 
             var features = new Feature[options.FontFeatures.Count];
-            
+
             for (var i = 0; i < options.FontFeatures.Count; i++)
             {
                 var fontFeature = options.FontFeatures[i];
 
                 features[i] = new Feature(
-                    Tag.Parse(fontFeature.Tag), 
+                    Tag.Parse(fontFeature.Tag),
                     (uint)fontFeature.Value,
                     (uint)fontFeature.Start,
                     (uint)fontFeature.End);
             }
-            
+
             return features;
         }
     }
