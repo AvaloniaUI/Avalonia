@@ -58,6 +58,9 @@
     <Style Selector="Label.h3">
       <Setter Property="FontSize" Value="12" />
     </Style>
+    <Style Selector="RefreshContainer">
+      <Setter Property="IsMouseEnabled" Value="true" />
+    </Style>
   </Application.Styles>
   <TrayIcon.Icons>
     <TrayIcons>
