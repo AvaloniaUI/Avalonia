@@ -70,15 +70,15 @@ namespace Avalonia.Headless
 
     internal class HeadlessPlatformTypeface : IPlatformTypeface
     {
-        private readonly UnmanagedFontMemory _fontMemory;
+        private readonly UnmanagedFontMemory? _fontMemory;
 
-        public HeadlessPlatformTypeface(Stream stream, string familyName = "Custom")
+        public HeadlessPlatformTypeface(Stream stream, string? familyName = null)
         {
             _fontMemory = UnmanagedFontMemory.LoadFromStream(stream);
 
             var dummy = new GlyphTypeface(this);
 
-            FamilyName = familyName;
+            FamilyName = familyName ?? dummy.FamilyName;
             Weight = dummy.Weight;
             Style = dummy.Style;
             Stretch = dummy.Stretch;
@@ -96,11 +96,18 @@ namespace Avalonia.Headless
 
         public void Dispose()
         {
-            _fontMemory.Dispose();
+            _fontMemory?.Dispose();
         }
 
         public bool TryGetStream([NotNullWhen(true)] out Stream? stream)
         {
+            stream = null;
+            
+            if (_fontMemory is null)
+            {
+                return false;
+            }
+            
             var data = _fontMemory.Memory.Span;
 
             stream = new MemoryStream(data.ToArray());
@@ -108,16 +115,23 @@ namespace Avalonia.Headless
             return true;
         }
 
-        public bool TryGetTable(OpenTypeTag tag, out ReadOnlyMemory<byte> table) => _fontMemory.TryGetTable(tag, out table);
+        public bool TryGetTable(OpenTypeTag tag, out ReadOnlyMemory<byte> table)
+        {
+            table = default;
+            
+            return _fontMemory is not null && _fontMemory.TryGetTable(tag, out table);
+        }
     }
 }
 
 internal class HeadlessFontManagerStub : IFontManagerImpl
 {
-    private readonly string _interFontUri = "avares://Avalonia.Fonts.Inter/Assets/Inter-Regular.ttf";
-    private readonly string _defaultFamilyName = "avares://Avalonia.Fonts.Inter/Assets#Inter";
-
-    public int TryCreateGlyphTypefaceCount { get; private set; }
+    private readonly string _defaultFamilyName;
+    
+    public HeadlessFontManagerStub(string defaultFamilyName = "Default")
+    {
+        _defaultFamilyName = defaultFamilyName;
+    }
 
     public string GetDefaultFontFamilyName() => _defaultFamilyName;
 
@@ -143,34 +157,29 @@ internal class HeadlessFontManagerStub : IFontManagerImpl
     public virtual bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight,
         FontStretch stretch, [NotNullWhen(true)] out IPlatformTypeface? platformTypeface)
     {
-        platformTypeface = null;
+        var defaultFontUri = new Uri("resm:Avalonia.Headless.BareMinimum.ttf?assembly=Avalonia.Headless");
 
-        if (familyName == "MyFont")
-        {
-            var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
-
-            var stream = assetLoader.Open(new Uri(_interFontUri));
-
-            platformTypeface = new HeadlessPlatformTypeface(stream);
-        }
-
-        TryCreateGlyphTypefaceCount++;
-
-        return platformTypeface != null;
+        var assetLoader = new StandardAssetLoader(typeof(HeadlessFontManagerStub).Assembly);
+        
+        var stream = assetLoader.Open(defaultFontUri);
+        
+        platformTypeface = new HeadlessPlatformTypeface(stream, familyName);
+        
+        return true;
     }
 
     public virtual bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, [NotNullWhen(true)] out IPlatformTypeface? platformTypeface)
     {
         platformTypeface = new HeadlessPlatformTypeface(stream);
-
-        TryCreateGlyphTypefaceCount++;
-
+        
         return true;
     }
 
     public bool TryGetFamilyTypefaces(string familyName, [NotNullWhen(true)] out IReadOnlyList<Typeface>? familyTypefaces)
     {
-        throw new NotImplementedException();
+        familyTypefaces = null;
+        
+        return false;
     }
 }
 
@@ -201,23 +210,31 @@ internal class HeadlessFontManagerWithMultipleSystemFontsStub : IFontManagerImpl
 
     public bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight, FontStretch stretch, [NotNullWhen(true)] out IPlatformTypeface? platformTypeface)
     {
-        throw new NotImplementedException();
+        platformTypeface = null;
+        
+        return false;
     }
 
     public bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, [NotNullWhen(true)] out IPlatformTypeface? platformTypeface)
     {
-        throw new NotImplementedException();
+        platformTypeface = null;
+        
+        return false;
     }
 
     public bool TryGetFamilyTypefaces(string familyName, [NotNullWhen(true)] out IReadOnlyList<Typeface>? familyTypefaces)
     {
-        throw new NotImplementedException();
+        familyTypefaces = null;
+        
+        return false;
     }
 
     public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight, FontStretch fontStretch, 
         string? familyName, CultureInfo? culture, [NotNullWhen(true)] out IPlatformTypeface? platformTypeface)
     {
-        throw new NotImplementedException();
+        platformTypeface = null;
+        
+        return false;
     }
 }
 

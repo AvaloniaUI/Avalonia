@@ -25,4 +25,9 @@
     <InternalsVisibleTo Include="Avalonia.Controls.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Skia.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="BareMinimum.ttf" />
+    <EmbeddedResource Include="BareMinimum.ttf" />
+  </ItemGroup>
 </Project>

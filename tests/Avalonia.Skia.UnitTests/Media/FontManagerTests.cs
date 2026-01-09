@@ -95,7 +95,7 @@ namespace Avalonia.Skia.UnitTests.Media
         [Fact]
         public void Should_Only_Try_To_Create_GlyphTypeface_Once()
         {
-            var fontManagerImpl = new HeadlessFontManagerStub();
+            var fontManagerImpl = new TestFontManager();
 
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: fontManagerImpl)))
             {

@@ -22,14 +22,14 @@ namespace Avalonia.UnitTests
             standardCursorFactory: new HeadlessCursorFactoryStub(),
             theme: () => CreateSimpleTheme(),
             dispatcherImpl: new NullDispatcherImpl(),
-            fontManagerImpl: new HeadlessFontManagerStub(),
+            fontManagerImpl: new TestFontManager(),
             textShaperImpl: new HarfBuzzTextShaper(),
             windowingPlatform: new MockWindowingPlatform());
 
         public static readonly TestServices MockPlatformRenderInterface = new TestServices(
             assetLoader: new StandardAssetLoader(),
             renderInterface: new HeadlessPlatformRenderInterface(),
-            fontManagerImpl: new HeadlessFontManagerStub(),
+            fontManagerImpl: new TestFontManager(),
             textShaperImpl: new HarfBuzzTextShaper());
 
         public static readonly TestServices MockPlatformWrapper = new TestServices(
@@ -48,7 +48,7 @@ namespace Avalonia.UnitTests
             inputManager: new InputManager(),
             assetLoader: new StandardAssetLoader(),
             renderInterface: new HeadlessPlatformRenderInterface(),
-            fontManagerImpl: new HeadlessFontManagerStub(),
+            fontManagerImpl: new TestFontManager(),
             textShaperImpl: new HarfBuzzTextShaper());
 
         public static readonly TestServices FocusableWindow = new TestServices(
@@ -61,14 +61,14 @@ namespace Avalonia.UnitTests
             standardCursorFactory: new HeadlessCursorFactoryStub(),
             theme: () => CreateSimpleTheme(),
             dispatcherImpl: new NullDispatcherImpl(),
-            fontManagerImpl: new HeadlessFontManagerStub(),
+            fontManagerImpl: new TestFontManager(),
             textShaperImpl: new HarfBuzzTextShaper(),
             windowingPlatform: new MockWindowingPlatform());
 
         public static readonly TestServices TextServices = new TestServices(
             assetLoader: new StandardAssetLoader(),
             renderInterface: new HeadlessPlatformRenderInterface(),
-            fontManagerImpl: new HeadlessFontManagerImpl(),
+            fontManagerImpl: new TestFontManager(),
             textShaperImpl: new HarfBuzzTextShaper());
 
         internal TestServices(

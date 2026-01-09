@@ -2155,13 +2155,13 @@ namespace Avalonia.Controls.UnitTests
             inputManager: new InputManager(),
             standardCursorFactory: Mock.Of<ICursorFactory>(),
             textShaperImpl: new HarfBuzzTextShaper(),
-            fontManagerImpl: new HeadlessFontManagerStub());
+            fontManagerImpl: new TestFontManager());
 
         private static TestServices Services => TestServices.MockThreadingInterface.With(
             standardCursorFactory: Mock.Of<ICursorFactory>(),
             renderInterface: new HeadlessPlatformRenderInterface(),
             textShaperImpl: new HarfBuzzTextShaper(), 
-            fontManagerImpl: new HeadlessFontManagerStub(),
+            fontManagerImpl: new TestFontManager(),
             assetLoader: new StandardAssetLoader());
 
         internal static IControlTemplate CreateTemplate()

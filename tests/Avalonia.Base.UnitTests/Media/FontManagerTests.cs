@@ -64,8 +64,7 @@ namespace Avalonia.Base.UnitTests.Media
                 }
             };
 
-            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface
-                .With(fontManagerImpl: new HeadlessFontManagerStub())))
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
                 AvaloniaLocator.CurrentMutable.Bind<FontManagerOptions>().ToConstant(options);
 
