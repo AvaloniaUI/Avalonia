@@ -1,18 +1,16 @@
 ﻿using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Avalonia.Controls;
-using Avalonia.Controls.Shapes;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Rendering.Composition;
-using Avalonia.Threading;
 
 namespace Avalonia.Headless.UnitTests;
 
 public class RenderingTests
 {
 #if NUNIT
-    [AvaloniaTest, Timeout(10000)]
+    [AvaloniaTest]
 #elif XUNIT
     [AvaloniaFact]
 #endif
@@ -37,11 +35,11 @@ public class RenderingTests
 
         var frame = window.CaptureRenderedFrame();
 
-        Assert.NotNull(frame);
+        AssertHelper.NotNull(frame);
     }
 
 #if NUNIT
-    [AvaloniaTest, Timeout(10000)]
+    [AvaloniaTest]
 #elif XUNIT
     [AvaloniaFact]
 #endif
@@ -73,11 +71,11 @@ public class RenderingTests
 
         var frame = window.CaptureRenderedFrame();
 
-        Assert.NotNull(frame);
+        AssertHelper.NotNull(frame);
     }
     
 #if NUNIT
-    [AvaloniaTest, Timeout(10000)]
+    [AvaloniaTest]
 #elif XUNIT
     [AvaloniaFact]
 #endif
@@ -104,11 +102,11 @@ public class RenderingTests
 
         var frame = window.CaptureRenderedFrame();
 
-        Assert.NotNull(frame);
+        AssertHelper.NotNull(frame);
     }
 
 #if NUNIT
-    [AvaloniaTest, Timeout(10000)]
+    [AvaloniaTest]
 #elif XUNIT
     [AvaloniaFact]
 #endif
@@ -136,13 +134,13 @@ public class RenderingTests
         window.Show();
 
         var frame = window.CaptureRenderedFrame();
-        Assert.NotNull(frame);
+        AssertHelper.NotNull(frame);
     }
 
 #if NUNIT
-    [AvaloniaTest, Timeout(10000)]
+    [AvaloniaTest]
 #elif XUNIT
-    [AvaloniaFact(Timeout = 10000)]
+    [AvaloniaFact]
 #endif
     public async Task Should_Render_To_A_Compositor_Snapshot_Capture()
     {
@@ -164,10 +162,8 @@ public class RenderingTests
         var compositionVisual = ElementComposition.GetElementVisual(window)!;
         var snapshot = await compositionVisual.Compositor.CreateCompositionVisualSnapshot(compositionVisual, 1);
 
-        Assert.NotNull(snapshot);
-        // ReSharper disable CompareOfFloatsByEqualityOperator
-        Assert.True(100 == snapshot.Size.Width);
-        Assert.True(100 == snapshot.Size.Height);
-        // ReSharper restore CompareOfFloatsByEqualityOperator
+        AssertHelper.NotNull(snapshot);
+        AssertHelper.Equal(100, snapshot.Size.Width);
+        AssertHelper.Equal(100, snapshot.Size.Height);
     }
 }
