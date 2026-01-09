@@ -1,0 +1,219 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:panels="using:Avalonia.Labs.Panels"
+             xmlns:conv="using:ControlCatalog.Converter"
+             xmlns:vm="using:ControlCatalog.ViewModels"
+             mc:Ignorable="d"
+             d:DesignWidth="800"
+             d:DesignHeight="450"
+             x:DataType="vm:FlexViewModel"
+             HorizontalContentAlignment="Stretch"
+             VerticalContentAlignment="Stretch"
+             x:Class="ControlCatalog.Pages.FlexPage">
+  <UserControl.Resources>
+    <conv:FlexDemoNumberToThicknessConverter x:Key="NumberToThicknessConverter" />
+    <DataTemplate x:Key="ItemTemplate"
+                  x:DataType="vm:FlexItemViewModel">
+      <ListBoxItem Padding="{Binding Value, Converter={StaticResource NumberToThicknessConverter}}"
+                   IsSelected="{Binding IsSelected}"
+                   Background="{Binding Color}"
+                   Gestures.Tapped="OnItemTapped">
+        <ListBoxItem.Styles>
+          <Style Selector="ListBoxItem:selected">
+            <Setter Property="Background" Value="DodgerBlue" />
+          </Style>
+        </ListBoxItem.Styles>
+        <TextBlock HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Text="{Binding Value}" />
+      </ListBoxItem>
+    </DataTemplate>
+  </UserControl.Resources>
+  <UserControl.Styles>
+    <Style Selector="CheckBox">
+      <Setter Property="MinWidth" Value="0" />
+      <Setter Property="Padding" Value="8,0,0,0" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="ComboBox">
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+    </Style>
+    <Style Selector="RadioButton">
+      <Setter Property="MinWidth" Value="0" />
+      <Setter Property="Padding" Value="8,0,0,0" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+  </UserControl.Styles>
+
+  <DockPanel Margin="16">
+
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                  Padding="0,0,16,0"
+                  MinWidth="200">
+
+      <StackPanel Spacing="16">
+
+        <TextBlock FontSize="16"
+                   Text="Properties" />
+
+        <!--<panels:FlexPanel ColumnSpacing="16">
+          <RadioButton IsChecked="{Binding IsItemsControl}"
+                       Content="ItemsControl" />
+          <RadioButton IsChecked="{Binding IsItemsRepeater}"
+                       Content="ItemsRepeater" />
+        </panels:FlexPanel>-->
+
+        <StackPanel Spacing="8">
+          <TextBlock Text="Direction:" />
+          <ComboBox ItemsSource="{Binding DirectionValues}"
+                    SelectedItem="{Binding Direction}" />
+        </StackPanel>
+
+        <StackPanel Spacing="8">
+          <TextBlock Text="JustifyContent:" />
+          <ComboBox ItemsSource="{Binding JustifyContentValues}"
+                    SelectedItem="{Binding JustifyContent}" />
+        </StackPanel>
+
+        <StackPanel Spacing="8">
+          <TextBlock Text="AlignItems:" />
+          <ComboBox ItemsSource="{Binding AlignItemsValues}"
+                    SelectedItem="{Binding AlignItems}" />
+        </StackPanel>
+
+        <StackPanel Spacing="8">
+          <TextBlock Text="AlignContent:" />
+          <ComboBox ItemsSource="{Binding AlignContentValues}"
+                    SelectedItem="{Binding AlignContent}" />
+        </StackPanel>
+
+        <StackPanel Spacing="8">
+          <TextBlock Text="Wrap:" />
+          <ComboBox ItemsSource="{Binding WrapValues}"
+                    SelectedItem="{Binding Wrap}" />
+        </StackPanel>
+
+        <StackPanel Spacing="8">
+          <TextBlock Text="ColumnSpacing:" />
+          <NumericUpDown Minimum="0"
+                          Value="{Binding ColumnSpacing}" />
+        </StackPanel>
+
+        <StackPanel Spacing="8">
+          <TextBlock Text="RowSpacing:" />
+          <NumericUpDown Minimum="0"
+                         Value="{Binding RowSpacing}" />
+        </StackPanel>
+
+        <CheckBox IsEnabled="{Binding SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+                  Content="SelectedItem IsVisible"
+                  IsChecked="{Binding SelectedItem.IsVisible}" />
+
+        <StackPanel Spacing="8">
+          <TextBlock Text="SelectedItem AlignSelf:" />
+          <ComboBox IsEnabled="{Binding SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+                    ItemsSource="{Binding AlignSelfValues}"
+                    SelectedItem="{Binding SelectedItem.AlignSelfItem}" />
+        </StackPanel>
+
+        <StackPanel Spacing="8">
+          <TextBlock Text="SelectedItem Order:" />
+          <NumericUpDown IsEnabled="{Binding SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+                         Value="{Binding SelectedItem.Order}" />
+        </StackPanel>
+
+        <StackPanel Spacing="8">
+          <TextBlock Text="SelectedItem Shrink:" />
+          <NumericUpDown Minimum="0.0"
+                         IsEnabled="{Binding SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+                         Value="{Binding SelectedItem.Shrink}" />
+        </StackPanel>
+
+        <StackPanel Spacing="8">
+          <TextBlock Text="SelectedItem Grow:" />
+          <NumericUpDown Minimum="0.0"
+                         IsEnabled="{Binding SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+                         Value="{Binding SelectedItem.Grow}" />
+        </StackPanel>
+
+        <StackPanel Spacing="8">
+          <TextBlock Text="SelectedItem Basis:" />
+          <ComboBox IsEnabled="{Binding SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+                    ItemsSource="{Binding FlexBasisKindValues}"
+                    SelectedItem="{Binding SelectedItem.BasisKind}" />
+          <NumericUpDown Minimum="0.0"
+                         IsEnabled="{Binding SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+                         Value="{Binding SelectedItem.BasisValue}" />
+        </StackPanel>
+
+        <StackPanel Spacing="8">
+          <TextBlock Text="SelectedItem HorizontalAlignment:" />
+          <ComboBox IsEnabled="{Binding SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+                    ItemsSource="{Binding HorizontalAlignmentValues}"
+                    SelectedItem="{Binding SelectedItem.HorizontalAlignment}" />
+        </StackPanel>
+
+        <StackPanel Spacing="8">
+          <TextBlock Text="SelectedItem VerticalAlignment:" />
+          <ComboBox IsEnabled="{Binding SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+                    ItemsSource="{Binding VerticalAlignmentValues}"
+                    SelectedItem="{Binding SelectedItem.VerticalAlignment}" />
+        </StackPanel>
+
+        <Grid ColumnDefinitions="*,8,*">
+
+          <Button Grid.Column="0"
+                  HorizontalAlignment="Stretch"
+                  HorizontalContentAlignment="Center"
+                  Command="{Binding AddItemCommand}"
+                  Content="Add Item" />
+
+          <Button Grid.Column="2"
+                  HorizontalAlignment="Stretch"
+                  HorizontalContentAlignment="Center"
+                  Command="{Binding RemoveItemCommand}"
+                  Content="Remove Item" />
+
+        </Grid>
+
+      </StackPanel>
+
+    </ScrollViewer>
+
+    <ItemsControl BorderBrush="#777"
+                  BorderThickness="1"
+                  ItemsSource="{Binding Numbers}"
+                  ItemTemplate="{StaticResource ItemTemplate}">
+      <ItemsControl.Styles>
+        <Style Selector="ContentPresenter"
+               x:DataType="vm:FlexItemViewModel">
+          <Setter Property="Flex.AlignSelf" Value="{Binding AlignSelf}" />
+          <Setter Property="Flex.Order" Value="{Binding Order}" />
+          <Setter Property="Flex.Shrink" Value="{Binding Shrink}" />
+          <Setter Property="Flex.Grow" Value="{Binding Grow}" />
+          <Setter Property="Flex.Basis" Value="{Binding Basis}" />
+          <Setter Property="HorizontalAlignment" Value="{Binding HorizontalAlignment}" />
+          <Setter Property="VerticalAlignment" Value="{Binding VerticalAlignment}" />
+          <Setter Property="IsVisible" Value="{Binding IsVisible}" />
+        </Style>
+      </ItemsControl.Styles>
+      <ItemsControl.ItemsPanel>
+        <ItemsPanelTemplate>
+          <FlexPanel Direction="{Binding Direction}"
+                          JustifyContent="{Binding JustifyContent}"
+                          AlignItems="{Binding AlignItems}"
+                          AlignContent="{Binding AlignContent}"
+                          Wrap="{Binding Wrap}"
+                          ColumnSpacing="{Binding ColumnSpacing}"
+                          RowSpacing="{Binding RowSpacing}" />
+        </ItemsPanelTemplate>
+      </ItemsControl.ItemsPanel>
+    </ItemsControl>
+
+  </DockPanel>
+
+
+
+</UserControl>

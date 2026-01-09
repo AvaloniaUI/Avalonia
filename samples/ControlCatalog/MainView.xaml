@@ -102,6 +102,9 @@
       <TabItem Header="Flyouts">
         <pages:FlyoutsPage />
       </TabItem>
+      <TabItem Header="Flex Panel">
+        <pages:FlexPage />
+      </TabItem>
       <TabItem Header="Focus">
         <pages:FocusPage />
       </TabItem>
