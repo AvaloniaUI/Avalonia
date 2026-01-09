@@ -155,9 +155,11 @@ internal class BindingExpressionVisitor<TIn>(LambdaExpression expression) : Expr
 
     /// <summary>
     /// Creates an efficient compiled cast function.
+    /// </summary>
+    /// <remarks>
     /// Compiles an expression tree to generate IL code similar to the 'is T' pattern,
     /// avoiding reflection-based type checks at runtime.
-    /// </summary>
+    /// </remarks>
     private static Func<object?, object?> CreateCastFunc(Type targetType)
     {
         // Compile: (object? obj) => obj as TargetType

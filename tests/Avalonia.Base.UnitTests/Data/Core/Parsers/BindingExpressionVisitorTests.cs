@@ -2,14 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using Avalonia.Data;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.ExpressionNodes;
 using Avalonia.Data.Core.ExpressionNodes.Reflection;
 using Avalonia.Data.Core.Parsers;
 using Xunit;
-
-#nullable enable
 
 namespace Avalonia.Base.UnitTests.Data.Core.Parsers
 {
