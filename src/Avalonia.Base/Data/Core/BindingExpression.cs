@@ -207,7 +207,7 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
         bool allowReflection = true)
             where TIn : class?
     {
-        var nodes = BindingExpressionVisitor<TIn>.BuildNodes(expression, enableDataValidation);
+        var nodes = BindingExpressionVisitor<TIn>.BuildNodes(expression);
         var fallback = fallbackValue.HasValue ? fallbackValue.Value : AvaloniaProperty.UnsetValue;
 
         return new BindingExpression(

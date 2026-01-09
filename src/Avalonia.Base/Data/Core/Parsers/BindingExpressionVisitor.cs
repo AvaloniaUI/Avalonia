@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -10,36 +9,51 @@ using Avalonia.Data.Core.ExpressionNodes.Reflection;
 
 namespace Avalonia.Data.Core.Parsers;
 
-[RequiresUnreferencedCode(TrimmingMessages.ExpressionNodeRequiresUnreferencedCodeMessage)]
-#if NET8_0_OR_GREATER
+/// <summary>
+/// Visits and processes a LINQ expression to build a chain of binding expression nodes.
+/// </summary>
+/// <typeparam name="TIn">The input parameter type for the binding expression.</typeparam>
+/// <remarks>
+/// This visitor traverses lambda expressions used in compiled bindings and converts them into a
+/// list of <see cref="ExpressionNode"/> instances that represent the binding path. It supports
+/// property access, indexers, AvaloniaProperty access, and stream bindings.
+/// </remarks>
 [RequiresDynamicCode(TrimmingMessages.ExpressionNodeRequiresDynamicCodeMessage)]
-#endif
-internal class BindingExpressionVisitor<TIn> : ExpressionVisitor
+[RequiresUnreferencedCode(TrimmingMessages.ExpressionNodeRequiresUnreferencedCodeMessage)]
+internal class BindingExpressionVisitor<TIn>(LambdaExpression expression) : ExpressionVisitor
 {
-    private static readonly PropertyInfo AvaloniaObjectIndexer;
-    private static readonly MethodInfo CreateDelegateMethod;
     private const string IndexerGetterName = "get_Item";
     private const string MultiDimensionalArrayGetterMethodName = "Get";
-    private readonly bool _enableDataValidation;
-    private readonly LambdaExpression _rootExpression;
-    private readonly List<ExpressionNode> _nodes = new();
+    private static readonly PropertyInfo s_avaloniaObjectIndexer;
+    private static readonly MethodInfo s_createDelegateMethod;
+    private readonly LambdaExpression _rootExpression = expression;
+    private readonly List<ExpressionNode> _nodes = [];
     private Expression? _head;
-
-    public BindingExpressionVisitor(LambdaExpression expression, bool enableDataValidation)
-    {
-        _rootExpression = expression;
-        _enableDataValidation = enableDataValidation;
-    }
 
     static BindingExpressionVisitor()
     {
-        AvaloniaObjectIndexer = typeof(AvaloniaObject).GetProperty("Item", new[] { typeof(AvaloniaProperty) })!;
-        CreateDelegateMethod = typeof(MethodInfo).GetMethod("CreateDelegate", new[] { typeof(Type), typeof(object) })!;
+        s_avaloniaObjectIndexer = typeof(AvaloniaObject).GetProperty("Item", [typeof(AvaloniaProperty)])!;
+        s_createDelegateMethod = typeof(MethodInfo).GetMethod("CreateDelegate", [typeof(Type), typeof(object)])!;
     }
 
-    public static List<ExpressionNode> BuildNodes<TOut>(Expression<Func<TIn, TOut>> expression, bool enableDataValidation)
+    /// <summary>
+    /// Builds a list of binding expression nodes from a lambda expression.
+    /// </summary>
+    /// <typeparam name="TOut">The output type of the binding expression.</typeparam>
+    /// <param name="expression">
+    /// The lambda expression to parse and convert into expression nodes.
+    /// </param>
+    /// <returns>
+    /// A list of <see cref="ExpressionNode"/> instances representing the binding path, ordered
+    /// from the root to the target property.
+    /// </returns>
+    /// <exception cref="ExpressionParseException">
+    /// Thrown when the expression contains unsupported operations or invalid syntax for binding
+    /// expressions.
+    /// </exception>
+    public static List<ExpressionNode> BuildNodes<TOut>(Expression<Func<TIn, TOut>> expression)
     {
-        var visitor = new BindingExpressionVisitor<TIn>(expression, enableDataValidation);
+        var visitor = new BindingExpressionVisitor<TIn>(expression);
         visitor.Visit(expression);
         return visitor._nodes;
     }
@@ -49,14 +63,14 @@ internal class BindingExpressionVisitor<TIn> : ExpressionVisitor
         // Indexers require more work since the compiler doesn't generate IndexExpressions:
         // they weren't in System.Linq.Expressions v1 and so must be generated manually.
         if (node.NodeType == ExpressionType.ArrayIndex)
-            return Visit(Expression.MakeIndex(node.Left, null, new[] { node.Right }));
+            return Visit(Expression.MakeIndex(node.Left, null, [node.Right]));
 
         throw new ExpressionParseException(0, $"Invalid expression type in binding expression: {node.NodeType}.");
     }
 
     protected override Expression VisitIndex(IndexExpression node)
     {
-        if (node.Indexer == AvaloniaObjectIndexer)
+        if (node.Indexer == s_avaloniaObjectIndexer)
         {
             var property = GetValue<AvaloniaProperty>(node.Arguments[0]);
             return Add(node.Object, node, new AvaloniaPropertyAccessorNode(property));
@@ -69,13 +83,11 @@ internal class BindingExpressionVisitor<TIn> : ExpressionVisitor
 
     protected override Expression VisitMember(MemberExpression node)
     {
-        switch (node.Member.MemberType)
+        return node.Member.MemberType switch
         {
-            case MemberTypes.Property:
-                return Add(node.Expression, node, new DynamicPluginPropertyAccessorNode(node.Member.Name, acceptsNull: false));
-            default:
-                throw new ExpressionParseException(0, $"Invalid expression type in binding expression: {node.NodeType}.");
-        }
+            MemberTypes.Property => AddPropertyNode(node),
+            _ => throw new ExpressionParseException(0, $"Invalid expression type in binding expression: {node.NodeType}."),
+        };
     }
 
     protected override Expression VisitMethodCall(MethodCallExpression node)
@@ -100,7 +112,7 @@ internal class BindingExpressionVisitor<TIn> : ExpressionVisitor
             Add(instance, node, new DynamicPluginStreamNode());
             return node;
         }
-        else if (method == CreateDelegateMethod)
+        else if (method == s_createDelegateMethod)
         {
             var accessor = new DynamicPluginPropertyAccessorNode(GetValue<MethodInfo>(node.Object!).Name, acceptsNull: false);
             return Add(node.Arguments[1], node, accessor);
@@ -146,7 +158,7 @@ internal class BindingExpressionVisitor<TIn> : ExpressionVisitor
 
     protected override CatchBlock VisitCatchBlock(CatchBlock node)
     {
-        throw new ExpressionParseException(0, $"Catch blocks are not allowed in binding expressions.");
+        throw new ExpressionParseException(0, "Catch blocks are not allowed in binding expressions.");
     }
 
     protected override Expression VisitConditional(ConditionalExpression node)
@@ -156,17 +168,17 @@ internal class BindingExpressionVisitor<TIn> : ExpressionVisitor
 
     protected override Expression VisitDynamic(DynamicExpression node)
     {
-        throw new ExpressionParseException(0, $"Dynamic expressions are not allowed in binding expressions.");
+        throw new ExpressionParseException(0, "Dynamic expressions are not allowed in binding expressions.");
     }
 
     protected override ElementInit VisitElementInit(ElementInit node)
     {
-        throw new ExpressionParseException(0, $"Element init expressions are not valid in a binding expression.");
+        throw new ExpressionParseException(0, "Element init expressions are not valid in a binding expression.");
     }
 
     protected override Expression VisitGoto(GotoExpression node)
     {
-        throw new ExpressionParseException(0, $"Goto expressions not supported in binding expressions.");
+        throw new ExpressionParseException(0, "Goto expressions are not supported in binding expressions.");
     }
 
     protected override Expression VisitInvocation(InvocationExpression node)
@@ -191,7 +203,7 @@ internal class BindingExpressionVisitor<TIn> : ExpressionVisitor
 
     protected override MemberAssignment VisitMemberAssignment(MemberAssignment node)
     {
-        throw new ExpressionParseException(0, $"Member assignments not supported in binding expressions.");
+        throw new ExpressionParseException(0, "Member assignments not supported in binding expressions.");
     }
 
     protected override Expression VisitSwitch(SwitchExpression node)
@@ -212,12 +224,22 @@ internal class BindingExpressionVisitor<TIn> : ExpressionVisitor
     private Expression Add(Expression? instance, Expression expression, ExpressionNode node)
     {
         var visited = Visit(instance);
+        
         if (visited != _head)
+        {
             throw new ExpressionParseException(
                 0, 
                 $"Unable to parse '{expression}': expected an instance of '{_head}' but got '{visited}'.");
+        }
+
         _nodes.Add(node);
         return _head = expression;
+    }
+
+    private Expression AddPropertyNode(MemberExpression property)
+    {
+        var node = new DynamicPluginPropertyAccessorNode(property.Member.Name, acceptsNull: false);
+        return Add(property.Expression, property, node);
     }
 
     private static T GetValue<T>(Expression expr)
