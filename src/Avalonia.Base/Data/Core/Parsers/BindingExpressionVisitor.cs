@@ -140,17 +140,32 @@ internal class BindingExpressionVisitor<TIn>(LambdaExpression expression) : Expr
             if (!node.Type.IsValueType && !node.Operand.Type.IsValueType &&
                 (node.Type.IsAssignableFrom(node.Operand.Type) || node.Operand.Type.IsAssignableFrom(node.Type)))
             {
-                // Create a cast node - the binding system will handle runtime errors
-                return Add(node.Operand, node, new ReflectionTypeCastNode(node.Type));
+                // Create an efficient compiled cast function (like TypeCastPathElement does)
+                return Add(node.Operand, node, new FuncTransformNode(CreateCastFunc(node.Type)));
             }
         }
         else if (node.NodeType == ExpressionType.TypeAs)
         {
-            // TypeAs operator creates a cast node too
-            return Add(node.Operand, node, new ReflectionTypeCastNode(node.Type));
+            // TypeAs operator creates a cast node using a compiled function
+            return Add(node.Operand, node, new FuncTransformNode(CreateCastFunc(node.Type)));
         }
 
         throw new ExpressionParseException(0, $"Invalid expression type in binding expression: {node.NodeType}.");
+    }
+
+    /// <summary>
+    /// Creates an efficient compiled cast function that mimics TypeCastPathElement behavior.
+    /// Uses expression compilation to generate IL code similar to the 'is T' pattern,
+    /// avoiding reflection-based type checks.
+    /// </summary>
+    private static Func<object?, object?> CreateCastFunc(Type targetType)
+    {
+        // Compile: (object? obj) => obj as TargetType
+        // This generates efficient IL like TypeCastPathElement<T>.TryCast does
+        var param = Expression.Parameter(typeof(object), "obj");
+        var castExpr = Expression.TypeAs(param, targetType);
+        var lambda = Expression.Lambda<Func<object?, object?>>(castExpr, param);
+        return lambda.Compile(preferInterpretation: true);
     }
 
     protected override Expression VisitBlock(BlockExpression node)

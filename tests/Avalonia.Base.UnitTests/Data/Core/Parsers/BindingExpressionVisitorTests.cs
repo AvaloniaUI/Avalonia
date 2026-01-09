@@ -212,7 +212,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
             var nodes = BindingExpressionVisitor<DerivedTestClass>.BuildNodes(expr);
 
             var node = Assert.Single(nodes);
-            Assert.IsType<ReflectionTypeCastNode>(node);
+            Assert.IsType<FuncTransformNode>(node);
         }
 
         [Fact]
@@ -224,7 +224,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
             var nodes = BindingExpressionVisitor<DerivedTestClass>.BuildNodes(expr);
 
             Assert.Equal(2, nodes.Count);
-            Assert.IsType<ReflectionTypeCastNode>(nodes[0]);
+            Assert.IsType<FuncTransformNode>(nodes[0]);
             var propertyNode = Assert.IsType<DynamicPluginPropertyAccessorNode>(nodes[1]);
             Assert.Equal("StringProperty", propertyNode.PropertyName);
         }
@@ -238,7 +238,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
             var nodes = BindingExpressionVisitor<TestClass>.BuildNodes(expr);
 
             var node = Assert.Single(nodes);
-            Assert.IsType<ReflectionTypeCastNode>(node);
+            Assert.IsType<FuncTransformNode>(node);
         }
 
         [Fact]
@@ -252,7 +252,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
             Assert.Equal(3, nodes.Count);
             var childNode = Assert.IsType<DynamicPluginPropertyAccessorNode>(nodes[0]);
             Assert.Equal("Child", childNode.PropertyName);
-            Assert.IsType<ReflectionTypeCastNode>(nodes[1]);
+            Assert.IsType<FuncTransformNode>(nodes[1]);
             var derivedNode = Assert.IsType<DynamicPluginPropertyAccessorNode>(nodes[2]);
             Assert.Equal("DerivedProperty", derivedNode.PropertyName);
         }
@@ -281,8 +281,8 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
             Assert.Equal(3, nodes.Count);
             var propertyNode = Assert.IsType<DynamicPluginPropertyAccessorNode>(nodes[0]);
             Assert.Equal("StringProperty", propertyNode.PropertyName);
-            Assert.IsType<ReflectionTypeCastNode>(nodes[1]); // cast to object
-            Assert.IsType<ReflectionTypeCastNode>(nodes[2]); // cast to string
+            Assert.IsType<FuncTransformNode>(nodes[1]); // cast to object
+            Assert.IsType<FuncTransformNode>(nodes[2]); // cast to string
         }
 
         [Fact]
@@ -296,7 +296,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
             Assert.Equal(2, nodes.Count);
             var propertyNode = Assert.IsType<DynamicPluginPropertyAccessorNode>(nodes[0]);
             Assert.Equal("Child", propertyNode.PropertyName);
-            Assert.IsType<ReflectionTypeCastNode>(nodes[1]);
+            Assert.IsType<FuncTransformNode>(nodes[1]);
         }
 
         [Fact]
