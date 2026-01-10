@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Presenters
 {
-    public class TextPresenter_Tests
+    public class TextPresenter_Tests : ScopedTestBase
     {
         [Fact]
         public void TextPresenter_Can_Contain_Null_With_Password_Char_Set()
@@ -72,7 +72,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
                 Assert.Equal(1, presenter.TextLayout.TextLines.Count);
                 Assert.Equal(1, presenter.TextLayout.TextLines[0].TextRuns.Count);
                 Assert.NotNull(presenter.TextLayout.TextLines[0].TextRuns[0].Properties);
-                Assert.Equal(fontStretch, presenter.TextLayout.TextLines[0].TextRuns[0].Properties.Typeface.Stretch);
+                Assert.Equal(fontStretch, presenter.TextLayout.TextLines[0].TextRuns[0].Properties!.Typeface.Stretch);
             }
         }
     }

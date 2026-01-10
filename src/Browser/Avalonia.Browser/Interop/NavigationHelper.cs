@@ -16,7 +16,7 @@ internal static partial class NavigationHelper
             .OnBackRequested() ?? false;
         return Task.FromResult(handled);
     }
-    
-    [JSImport("globalThis.open")]
-    public static partial JSObject? WindowOpen(string uri, string target);
+
+    [JSImport("NavigationHelper.openUri", AvaloniaModule.MainModuleName)]
+    public static partial bool WindowOpen(string uri, string target);
 }

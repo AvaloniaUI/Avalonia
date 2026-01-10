@@ -61,6 +61,20 @@ public class MatrixTests
 
         AssertCoordinatesEqualWithReducedPrecision(expected, actual);
     }
+
+    [Fact]
+    public void Transform_Point_Should_Return_Correct_Value_For_Rotate_Matrix_With_Center_Point()
+    {
+        var expected = Vector2.Transform(
+            new Vector2(0, 10), 
+            Matrix3x2.CreateRotation((float)Matrix.ToRadians(30), new Vector2(3, 5)));
+
+        var matrix = Matrix.CreateRotation(Matrix.ToRadians(30), new Point(3, 5));
+        var point = new Point(0, 10);
+        var actual = matrix.Transform(point);
+
+        AssertCoordinatesEqualWithReducedPrecision(expected, actual);
+    }
     
     [Fact]
     public void Transform_Point_Should_Return_Correct_Value_For_Scaled_Matrix()

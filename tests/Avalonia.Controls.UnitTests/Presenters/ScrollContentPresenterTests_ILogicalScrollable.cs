@@ -3,11 +3,12 @@ using System.Reactive.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class ScrollContentPresenterTests_ILogicalScrollable
+    public class ScrollContentPresenterTests_ILogicalScrollable : ScopedTestBase
     {
         [Fact]
         public void Measure_Should_Pass_Unchanged_Bounds_To_ILogicalScrollable()
@@ -322,7 +323,7 @@ namespace Avalonia.Controls.UnitTests
             private Size _extent;
             private Vector _offset;
             private Size _viewport;
-            private EventHandler _scrollInvalidated;
+            private EventHandler? _scrollInvalidated;
 
             public bool CanHorizontallyScroll { get; set; }
             public bool CanVerticallyScroll { get; set; }
@@ -331,7 +332,7 @@ namespace Avalonia.Controls.UnitTests
 
             public bool HasScrollInvalidatedSubscriber => _scrollInvalidated != null;
             
-            public event EventHandler ScrollInvalidated
+            public event EventHandler? ScrollInvalidated
             {
                 add => _scrollInvalidated += value;
                 remove => _scrollInvalidated -= value;
@@ -399,7 +400,7 @@ namespace Avalonia.Controls.UnitTests
                 return new Size(150, 150);
             }
 
-            public Control GetControlInDirection(NavigationDirection direction, Control from)
+            public Control GetControlInDirection(NavigationDirection direction, Control? from)
             {
                 throw new NotImplementedException();
             }

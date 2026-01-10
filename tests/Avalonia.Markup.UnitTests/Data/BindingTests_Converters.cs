@@ -4,12 +4,13 @@ using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
+using Avalonia.UnitTests;
 using Moq;
 using Xunit;
 
 namespace Avalonia.Markup.UnitTests.Data
 {
-    public class BindingTests_Converters
+    public class BindingTests_Converters : ScopedTestBase
     {
         [Fact]
         public void Converter_Should_Be_Used()
@@ -24,11 +25,12 @@ namespace Avalonia.Markup.UnitTests.Data
                 Converter = StringConverters.IsNullOrEmpty,
             };
 
-            var expressionObserver = (BindingExpression)target.Initiate(
+            var expression = (BindingExpression)target.CreateInstance(
                 textBlock,
-                TextBlock.TextProperty).Expression;
+                TextBlock.TextProperty,
+                null);
 
-            Assert.Same(StringConverters.IsNullOrEmpty, expressionObserver.Converter);
+            Assert.Same(StringConverters.IsNullOrEmpty, expression.Converter);
         }
 
         [Fact]

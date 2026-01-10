@@ -4,6 +4,7 @@ using Avalonia.Styling;
 
 namespace Avalonia.Markup.Xaml.Templates
 {
+    [ControlTemplateScope]
     public class ItemsPanelTemplate : ITemplate<Panel?>
     {
         [Content]

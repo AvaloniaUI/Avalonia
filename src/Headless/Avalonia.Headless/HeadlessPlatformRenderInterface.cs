@@ -5,11 +5,9 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Avalonia.Media;
-using Avalonia.Platform;
-using Avalonia.Rendering.SceneGraph;
-using Avalonia.Utilities;
 using Avalonia.Media.Imaging;
 using Avalonia.Media.TextFormatting;
+using Avalonia.Platform;
 
 namespace Avalonia.Headless
 {
@@ -19,11 +17,8 @@ namespace Avalonia.Headless
         {
             AvaloniaLocator.CurrentMutable
                 .Bind<IPlatformRenderInterface>().ToConstant(new HeadlessPlatformRenderInterface())
-                .Bind<IFontManagerImpl>().ToConstant(new HeadlessFontManagerStub())
-                .Bind<ITextShaperImpl>().ToConstant(new HeadlessTextShaperStub());
+                .Bind<IFontManagerImpl>().ToConstant(new HeadlessFontManagerStub());
         }
-
-        public IEnumerable<string> InstalledFontNames { get; } = new[] { "Tahoma" };
 
         public IPlatformRenderInterfaceContext CreateBackendContext(IPlatformGraphicsContext? graphicsContext) => this;
 
@@ -136,7 +131,7 @@ namespace Avalonia.Headless
         }
 
         public IGlyphRunImpl CreateGlyphRun(
-            IGlyphTypeface glyphTypeface, 
+            GlyphTypeface glyphTypeface, 
             double fontRenderingEmSize,
             IReadOnlyList<GlyphInfo> glyphInfos, 
             Point baselineOrigin)
@@ -147,7 +142,7 @@ namespace Avalonia.Headless
         internal class HeadlessGlyphRunStub : IGlyphRunImpl
         {
             public HeadlessGlyphRunStub(
-                IGlyphTypeface glyphTypeface,
+                GlyphTypeface glyphTypeface,
                 double fontRenderingEmSize,
                 Point baselineOrigin)
             {
@@ -160,7 +155,7 @@ namespace Avalonia.Headless
 
             public Point BaselineOrigin { get; }
 
-            public IGlyphTypeface GlyphTypeface { get; }
+            public GlyphTypeface GlyphTypeface { get; }
 
             public double FontRenderingEmSize { get; }           
 
@@ -452,8 +447,6 @@ namespace Avalonia.Headless
 
             public Matrix Transform { get; set; }
 
-            public RenderOptions RenderOptions { get; set; }
-
             public void Clear(Color color)
             {
 
@@ -517,16 +510,6 @@ namespace Avalonia.Headless
 
             }
 
-            public void PushBitmapBlendMode(BitmapBlendingMode blendingMode)
-            {
-                
-            }
-
-            public void PopBitmapBlendMode()
-            {
-                
-            }
-            
             public object? GetFeature(Type t)
             {
                 return null;
@@ -537,10 +520,6 @@ namespace Avalonia.Headless
             }
 
             public void DrawGeometry(IBrush? brush, IPen? pen, IGeometryImpl geometry)
-            {
-            }
-
-            public void DrawRectangle(IPen pen, Rect rect, float cornerRadius = 0)
             {
             }
 

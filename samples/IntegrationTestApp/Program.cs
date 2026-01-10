@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using Avalonia;
 using IntegrationTestApp.Embedding;
 
@@ -32,6 +31,7 @@ namespace IntegrationTestApp
         public static AppBuilder BuildAvaloniaApp()
             => AppBuilder.Configure<App>()
                 .UsePlatformDetect()
+                .WithDeveloperTools()
                 .AfterSetup(builder =>
                 {
                     NativeTextBox.Factory = 

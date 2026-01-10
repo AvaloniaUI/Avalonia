@@ -82,7 +82,7 @@ namespace Avalonia.Skia
                 _pathCache.UpdateIfNeeded(StrokePath, pen);
                 var bounds = _pathCache.RenderBounds;
                 if (StrokePath != FillPath && FillPath != null)
-                    bounds = bounds.Union(FillPath.Bounds.ToAvaloniaRect());
+                    bounds = bounds.Union(FillPath.TightBounds.ToAvaloniaRect());
                 return bounds;
             }
         }
@@ -178,7 +178,7 @@ namespace Avalonia.Skia
             private Rect? _renderBounds;
             private static readonly SKPath s_emptyPath = new();
             
-            public Rect RenderBounds => _renderBounds ??= (_path ?? _cachedFor ?? s_emptyPath).Bounds.ToAvaloniaRect();
+            public Rect RenderBounds => _renderBounds ??= (_path ?? _cachedFor ?? s_emptyPath).TightBounds.ToAvaloniaRect();
             public SKPath ExpandedPath => _path ?? s_emptyPath;
 
             public void UpdateIfNeeded(SKPath? strokePath, IPen? pen)

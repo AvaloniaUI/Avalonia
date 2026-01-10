@@ -102,6 +102,15 @@
       <StaticResource x:Key="ToggleButtonBorderBrushIndeterminateDisabled"
                       ResourceKey="SystemControlDisabledTransparentBrush" />
 
+      <!--  GroupBox  -->
+      <Thickness x:Key="GroupBoxPadding">4</Thickness>
+      <x:Double x:Key="GroupBoxHeaderFontSize">16</x:Double>
+      <Thickness x:Key="GroupBoxHeaderMargin">0,4,0,12</Thickness>
+      <Thickness x:Key="GroupBoxBorderThickness">1</Thickness>
+      <SolidColorBrush x:Key="GroupBoxBackground" Color="Transparent" />
+      <StaticResource x:Key="GroupBoxBorderBrush" ResourceKey="SystemControlForegroundBaseMediumBrush" />
+      <StaticResource x:Key="GroupBoxHeaderForeground" ResourceKey="SystemBaseHighColor" />
+
       <!-- Resources for HyperlinkButton.xaml -->
       <Color x:Key="HyperlinkVisitedColor">#FF681DA8</Color>
       <SolidColorBrush x:Key="HyperlinkVisitedBrush" Color="{StaticResource HyperlinkVisitedColor}" />
@@ -240,6 +249,7 @@
       <StaticResource x:Key="TextControlBackgroundDisabled" ResourceKey="SystemControlBackgroundBaseLowBrush" />
       <StaticResource x:Key="TextControlBorderBrushFocused" ResourceKey="SystemControlHighlightAccentBrush" />
       <StaticResource x:Key="TextControlBorderBrushDisabled" ResourceKey="SystemControlDisabledBaseLowBrush" />
+      <x:Double x:Key="TextControlPlaceholderOpacity">0.5</x:Double>
       <StaticResource x:Key="TextControlPlaceholderForeground" ResourceKey="SystemControlPageTextBaseMediumBrush" />
       <StaticResource x:Key="TextControlPlaceholderForegroundPointerOver"
                       ResourceKey="SystemControlPageTextBaseMediumBrush" />
@@ -915,6 +925,15 @@
                       ResourceKey="SystemControlHighlightTransparentBrush" />
       <StaticResource x:Key="ToggleButtonBorderBrushIndeterminateDisabled"
                       ResourceKey="SystemControlDisabledTransparentBrush" />
+
+      <!--  GroupBox  -->
+      <Thickness x:Key="GroupBoxPadding">4</Thickness>
+      <x:Double x:Key="GroupBoxHeaderFontSize">16</x:Double>
+      <Thickness x:Key="GroupBoxHeaderMargin">0,4,0,12</Thickness>
+      <Thickness x:Key="GroupBoxBorderThickness">1</Thickness>
+      <SolidColorBrush x:Key="GroupBoxBackground" Color="Transparent" />
+      <StaticResource x:Key="GroupBoxBorderBrush" ResourceKey="SystemControlForegroundBaseMediumBrush" />
+      <StaticResource x:Key="GroupBoxHeaderForeground" ResourceKey="SystemBaseHighColor" />
 
       <!-- Resources for HyperlinkButton.xaml -->
       <Color x:Key="HyperlinkVisitedColor">#FFC58AF9</Color>

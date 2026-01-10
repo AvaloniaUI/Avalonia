@@ -439,7 +439,7 @@ namespace Avalonia.Controls
             if (!_settingItemTemplateFromValueMemberBinding)
                 _itemTemplateIsFromValueMemberBinding = false;
         }
-        private void OnValueMemberBindingChanged(IBinding? value)
+        private void OnValueMemberBindingChanged(BindingBase? value)
         {
             if (_itemTemplateIsFromValueMemberBinding)
             {
@@ -653,24 +653,6 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Called to update the validation state for properties for which data validation is
-        /// enabled.
-        /// </summary>
-        /// <param name="property">The property.</param>
-        /// <param name="state">The current data binding state.</param>
-        /// <param name="error">The current data binding error, if any.</param>
-        protected override void UpdateDataValidation(
-            AvaloniaProperty property,
-            BindingValueType state,
-            Exception? error)
-        {
-            if (property == TextProperty || property == SelectedItemProperty)
-            {
-                DataValidationErrors.SetError(this, error);
-            }
-        }
-
-        /// <summary>
         /// Provides handling for the
         /// <see cref="E:Avalonia.InputElement.KeyDown" /> event.
         /// </summary>
@@ -812,7 +794,14 @@ namespace Avalonia.Controls
                 }
 
                 _userCalledPopulate = false;
-                ClearTextBoxSelection();
+
+                var textBoxContextMenuIsOpen = TextBox?.ContextFlyout?.IsOpen == true || TextBox?.ContextMenu?.IsOpen == true;
+                var contextMenuIsOpen = ContextFlyout?.IsOpen == true || ContextMenu?.IsOpen == true;
+
+                if (!textBoxContextMenuIsOpen && !contextMenuIsOpen && ClearSelectionOnLostFocus)
+                {
+                    ClearTextBoxSelection();
+                }
             }
 
             _isFocused = hasFocus;
@@ -1403,74 +1392,75 @@ namespace Avalonia.Controls
             // Indicate that filtering is ongoing
             _filterInAction = true;
 
-            if (_items == null)
+            try
             {
-                ClearView();
-                return;
+                if (_items == null)
+                {
+                    ClearView();
+                    return;
+                }
+
+                // Cache the current text value
+                string text = Text ?? string.Empty;
+
+                // Determine if any filtering mode is on
+                bool stringFiltering = TextFilter != null;
+                bool objectFiltering = FilterMode == AutoCompleteFilterMode.Custom && TextFilter == null;
+
+                List<object> items = _items;
+
+                // cache properties
+                var textFilter = TextFilter;
+                var itemFilter = ItemFilter;
+                var _newViewItems = new Collection<object>();
+
+                // if the mode is objectFiltering and itemFilter is null, we throw an exception
+                if (objectFiltering && itemFilter is null)
+                {
+                    throw new Exception(
+                        "ItemFilter property can not be null when FilterMode has value AutoCompleteFilterMode.Custom");
+                }
+
+                foreach (object item in items)
+                {
+                    // Exit the fitter when requested if cancellation is requested
+                    if (_cancelRequested)
+                    {
+                        return;
+                    }
+
+                    bool inResults = !(stringFiltering || objectFiltering);
+
+                    if (!inResults)
+                    {
+                        if (stringFiltering)
+                        {
+                            inResults = textFilter!(text, FormatValue(item));
+                        }
+                        else if (objectFiltering)
+                        {
+                            inResults = itemFilter!(text, item);
+                        }
+                    }
+
+                    if (inResults)
+                    {
+                        _newViewItems.Add(item);
+                    }
+                }
+
+                _view?.Clear();
+                _view?.AddRange(_newViewItems);
+
+                // Clear the evaluator to discard a reference to the last item
+                _valueBindingEvaluator?.ClearDataContext();
             }
-
-            // Cache the current text value
-            string text = Text ?? string.Empty;
-
-            // Determine if any filtering mode is on
-            bool stringFiltering = TextFilter != null;
-            bool objectFiltering = FilterMode == AutoCompleteFilterMode.Custom && TextFilter == null;
-            
-            List<object> items = _items;
-
-            // cache properties
-            var textFilter = TextFilter;
-            var itemFilter = ItemFilter;
-            var _newViewItems = new Collection<object>();
-            
-            // if the mode is objectFiltering and itemFilter is null, we throw an exception
-            if (objectFiltering && itemFilter is null)
+            finally
             {
                 // indicate that filtering is not ongoing anymore
                 _filterInAction = false;
                 _cancelRequested = false;
-                
-                throw new Exception(
-                    "ItemFilter property can not be null when FilterMode has value AutoCompleteFilterMode.Custom");
             }
-
-            foreach (object item in items)
-            {
-                // Exit the fitter when requested if cancellation is requested
-                if (_cancelRequested)
-                {
-                    return;
-                }
-
-                bool inResults = !(stringFiltering || objectFiltering);
-
-                if (!inResults)
-                {
-                    if (stringFiltering)
-                    {
-                        inResults = textFilter!(text, FormatValue(item));
-                    }
-                    else if (objectFiltering)
-                    {
-                        inResults = itemFilter!(text, item);
-                    }
-                }
-
-                if (inResults)
-                {
-                    _newViewItems.Add(item);
-                }
-            }
-
-            _view?.Clear();
-            _view?.AddRange(_newViewItems);
-
-            // Clear the evaluator to discard a reference to the last item
-            _valueBindingEvaluator?.ClearDataContext();
-
-            // indicate that filtering is not ongoing anymore
-            _filterInAction = false;
-            _cancelRequested = false;
         }
 
         /// <summary>
@@ -2031,6 +2021,7 @@ namespace Avalonia.Controls
             }
         }
 
+        // TODO12: Remove, this shouldn't be part of the public API. Use our internal BindingEvaluator instead.
         /// <summary>
         /// A framework element that permits a binding to be evaluated in a new data
         /// context leaf node.
@@ -2041,7 +2032,7 @@ namespace Avalonia.Controls
             /// <summary>
             /// Gets or sets the string value binding used by the control.
             /// </summary>
-            private IBinding? _binding;
+            private BindingBase? _binding;
 
             /// <summary>
             /// Identifies the Value dependency property.
@@ -2063,7 +2054,7 @@ namespace Avalonia.Controls
             /// <summary>
             /// Gets or sets the value binding.
             /// </summary>
-            public IBinding? ValueBinding
+            public BindingBase? ValueBinding
             {
                 get => _binding;
                 set
@@ -2085,7 +2076,7 @@ namespace Avalonia.Controls
             /// setting the initial binding to the provided parameter.
             /// </summary>
             /// <param name="binding">The initial string value binding.</param>
-            public BindingEvaluator(IBinding? binding)
+            public BindingEvaluator(BindingBase? binding)
                 : this()
             {
                 ValueBinding = binding;

@@ -26,7 +26,8 @@ namespace Avalonia.Input.Raw
         TouchCancel,
         Magnify,
         Rotate,
-        Swipe
+        Swipe,
+        CancelCapture
     }
 
     /// <summary>
@@ -143,6 +144,14 @@ namespace Avalonia.Input.Raw
         /// <inheritdoc cref="PointerPointProperties.YTilt" />
         public float YTilt { get; set; }
 
+        /// <inheritdoc cref="PointerPointProperties.ContactRect" />
+        public Rect ContactRect
+        {
+            get => _contactRect ?? new Rect(Position, new Size());
+            set => _contactRect = value;
+        }
+
+        private Rect? _contactRect;
 
         public RawPointerPoint()
         {

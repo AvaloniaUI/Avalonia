@@ -1,17 +1,12 @@
 using System;
-
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using ControlCatalog.ViewModels;
 
 namespace ControlCatalog.Pages
 {
-    using System.Collections.Generic;
-
-    public class TabControlPage : UserControl
+    public partial class TabControlPage : UserControl
     {
         public TabControlPage()
         {
@@ -42,11 +37,6 @@ namespace ControlCatalog.Pages
                 },
                 TabPlacement = Dock.Top,
             };
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
         }
 
         private static Bitmap LoadBitmap(string uri)

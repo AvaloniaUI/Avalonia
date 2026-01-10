@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows.Input;
 using Avalonia.Automation.Peers;
@@ -104,7 +105,7 @@ namespace Avalonia.Controls
         static Button()
         {
             FocusableProperty.OverrideDefaultValue(typeof(Button), true);
-            AccessKeyHandler.AccessKeyPressedEvent.AddClassHandler<Button>((lbl, args) => lbl.OnAccessKey(args));
+            AccessKeyHandler.AccessKeyPressedEvent.AddClassHandler<Button>(OnAccessKeyPressed);
         }
 
         /// <summary>
@@ -199,7 +200,7 @@ namespace Avalonia.Controls
 
         /// <inheritdoc/>
         protected override bool IsEnabledCore => base.IsEnabledCore && _commandCanExecute;
-
+        
         /// <inheritdoc/>
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
@@ -278,7 +279,18 @@ namespace Avalonia.Controls
             }
         }
 
-        protected virtual void OnAccessKey(RoutedEventArgs e) => OnClick();
+        /// <inheritdoc />
+        protected override void OnAccessKey(RoutedEventArgs e)
+        {
+            if (e is AccessKeyEventArgs { IsMultiple: true })
+            {
+                base.OnAccessKey(e);
+            }
+            else
+            {
+                OnClick();    
+            }
+        }
 
         /// <inheritdoc/>
         protected override void OnKeyDown(KeyEventArgs e)
@@ -560,9 +572,17 @@ namespace Avalonia.Controls
                 }
             }
         }
-
+        
         internal void PerformClick() => OnClick();
 
+        private static void OnAccessKeyPressed(Button sender, AccessKeyPressedEventArgs e)
+        {
+            if (e.Handled || e.Target is not null) 
+                return;
+            e.Target = sender;
+            e.Handled = true;
+        }
+        
         /// <summary>
         /// Called when the <see cref="ICommand.CanExecuteChanged"/> event fires.
         /// </summary>
@@ -659,7 +679,7 @@ namespace Avalonia.Controls
         /// <param name="e">The event args.</param>
         private void RootDefaultKeyDown(object? sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Enter && IsVisible && IsEnabled)
+            if (e.Key == Key.Enter && IsEffectivelyVisible && IsEffectivelyEnabled)
             {
                 OnClick();
                 e.Handled = true;
@@ -673,7 +693,7 @@ namespace Avalonia.Controls
         /// <param name="e">The event args.</param>
         private void RootCancelKeyDown(object? sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Escape && IsVisible && IsEnabled)
+            if (e.Key == Key.Escape && IsEffectivelyVisible && IsEffectivelyEnabled)
             {
                 OnClick();
                 e.Handled = true;

@@ -16,21 +16,21 @@ namespace BindingDemo.ViewModels
     {
         private string _booleanString = "True";
         private double _doubleValue = 5.0;
-        private string _stringValue = "Simple Binding";
+        private string? _stringValue = "Simple Binding";
         private bool _booleanFlag = false;
-        private string _currentTime;
-        private NestedCommandViewModel _nested;
+        private string? _currentTime;
+        private NestedCommandViewModel? _nested;
 
         public MainWindowViewModel()
         {
-            Items = new ObservableCollection<TestItem>(
-                Enumerable.Range(0, 20).Select(x => new TestItem
+            Items = new ObservableCollection<TestItem<string>>(
+                Enumerable.Range(0, 20).Select(x => new TestItem<string>
                 {
-                    StringValue = "Item " + x,
+                    Value = "Item " + x,
                     Detail = "Item " + x + " details",
                 }));
 
-            Selection = new SelectionModel<TestItem> { SingleSelect = false };
+            Selection = new SelectionModel<TestItem<string>> { SingleSelect = false };
 
             ShuffleItems = MiniCommand.Create(() =>
             {
@@ -58,8 +58,8 @@ namespace BindingDemo.ViewModels
                 .Select(x => DateTimeOffset.Now);
         }
 
-        public ObservableCollection<TestItem> Items { get; }
-        public SelectionModel<TestItem> Selection { get; }
+        public ObservableCollection<TestItem<string>> Items { get; }
+        public SelectionModel<TestItem<string>> Selection { get; }
         public MiniCommand ShuffleItems { get; }
 
         public string BooleanString
@@ -74,7 +74,7 @@ namespace BindingDemo.ViewModels
             set { this.RaiseAndSetIfChanged(ref _doubleValue, value); }
         }
 
-        public string StringValue
+        public string? StringValue
         {
             get { return _stringValue; }
             set { this.RaiseAndSetIfChanged(ref _stringValue, value); }
@@ -86,7 +86,7 @@ namespace BindingDemo.ViewModels
             set { this.RaiseAndSetIfChanged(ref _booleanFlag, value); }
         }
 
-        public string CurrentTime
+        public string? CurrentTime
         {
             get { return _currentTime; }
             private set { this.RaiseAndSetIfChanged(ref _currentTime, value); }
@@ -99,7 +99,7 @@ namespace BindingDemo.ViewModels
         public ExceptionErrorViewModel ExceptionDataValidation { get; } = new ExceptionErrorViewModel();
         public IndeiErrorViewModel IndeiDataValidation { get; } = new IndeiErrorViewModel();
 
-        public NestedCommandViewModel NestedModel
+        public NestedCommandViewModel? NestedModel
         {
             get { return _nested; }
             private set { this.RaiseAndSetIfChanged(ref _nested, value); }
@@ -114,6 +114,25 @@ namespace BindingDemo.ViewModels
         bool CanDo(object parameter)
         {
             return BooleanFlag;
+        }
+
+        // Nested class, jsut so we can test it in XAML
+        public class TestItem<T> : ViewModelBase
+        {
+            private T? _value;
+            private string? _detail;
+
+            public T? Value
+            {
+                get { return _value; }
+                set { this.RaiseAndSetIfChanged(ref this._value, value); }
+            }
+
+            public string? Detail
+            {
+                get { return _detail; }
+                set { this.RaiseAndSetIfChanged(ref this._detail, value); }
+            }
         }
     }
 }

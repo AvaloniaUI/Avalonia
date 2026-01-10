@@ -26,7 +26,7 @@ namespace Avalonia.X11
 
         internal IntPtr _handle;
         private readonly AvaloniaX11Platform _platform;
-        private readonly X11PlatformThreading.EventHandler _ownerEventHandler;
+        private readonly X11EventDispatcher.EventHandler _ownerEventHandler;
 
         /// <summary>
         ///     Initializes instance and creates the underlying X window.
@@ -36,7 +36,7 @@ namespace Avalonia.X11
         /// <param name="parent">The parent window to proxy the focus for.</param>
         /// <param name="eventHandler">An event handler that will handle X events that come to the proxy.</param>
         internal X11FocusProxy(AvaloniaX11Platform platform, IntPtr parent,
-            X11PlatformThreading.EventHandler eventHandler)
+            X11EventDispatcher.EventHandler eventHandler)
         {
             _handle = PrepareXWindow(platform.Info.Display, parent);
             _platform = platform;

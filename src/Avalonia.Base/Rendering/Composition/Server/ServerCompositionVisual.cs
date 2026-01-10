@@ -62,9 +62,8 @@ namespace Avalonia.Rendering.Composition.Server
 
             if (applyRenderOptions)
                 canvas.PushRenderOptions(RenderOptions);
-            if (Effect != null)
-                canvas.PushEffect(Effect);
-            
+            var needPopEffect = PushEffect(canvas);
+
             if (Opacity != 1)
                 canvas.PushOpacity(Opacity, ClipToBounds ? boundsRect : null);
             if (ClipToBounds && !HandlesClipToBounds)
@@ -87,10 +86,26 @@ namespace Avalonia.Rendering.Composition.Server
             if (Opacity != 1)
                 canvas.PopOpacity();
             
-            if (Effect != null)
+            if (needPopEffect)
                 canvas.PopEffect();
             if(applyRenderOptions)
                 canvas.PopRenderOptions();
+        }
+
+        protected virtual LtrbRect GetEffectBounds() => TransformedOwnContentBounds;
+        
+        private bool PushEffect(CompositorDrawingContextProxy canvas)
+        {
+            if (Effect == null)
+                return false;
+            var clip = GetEffectBounds();
+            if (clip.IsZeroSize)
+                return false;
+            var oldMatrix = canvas.Transform;
+            canvas.Transform = Matrix.Identity;
+            canvas.PushEffect(GetEffectBounds().ToRect(), Effect!);
+            canvas.Transform = oldMatrix;
+            return true;
         }
 
         protected virtual bool HandlesClipToBounds => false;
@@ -254,6 +269,12 @@ namespace Avalonia.Rendering.Composition.Server
         {
             if (rc == default)
                 return;
+
+            // If the visual isn't using layout rounding, it's possible that antialiasing renders to pixels
+            // outside the current bounds. Extend the dirty rect by 1px in all directions in this case.
+            if (ShouldExtendDirtyRect && RenderOptions.EdgeMode != EdgeMode.Aliased)
+                rc = rc.Inflate(new Thickness(1));
+
             Root?.AddDirtyRect(rc);
         }
 

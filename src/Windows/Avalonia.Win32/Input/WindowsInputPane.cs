@@ -21,6 +21,7 @@ internal unsafe class WindowsInputPane : InputPaneBase, IDisposable
     private IFrameworkInputPane? _inputPane;
     private readonly uint _cookie;
     private Handler _eventHandler;
+    private bool _disposed;
 
     private WindowsInputPane(WindowImpl windowImpl)
     {
@@ -71,6 +72,9 @@ internal unsafe class WindowsInputPane : InputPaneBase, IDisposable
 
     public void Dispose()
     {
+        if (_disposed)
+            return; 
+        _disposed = true;
         _windowImpl = null!;
         _eventHandler?.Dispose();
         _eventHandler = null!;
@@ -84,6 +88,8 @@ internal unsafe class WindowsInputPane : InputPaneBase, IDisposable
             _inputPane.Dispose();
             _inputPane = null;
         }
+        // Suppress finalization.
+        GC.SuppressFinalize(this);
     }
 
     private class Handler : IUnknown, IMicroComShadowContainer, IFrameworkInputPaneHandler

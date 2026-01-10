@@ -237,6 +237,8 @@ namespace Avalonia.Controls
 
         private bool _isShiftPressed;
         private bool _displayDateIsChanging;
+        private bool _isTapRangeSelectionActive;
+        private DateTime? _tapRangeStart;
 
         internal CalendarDayButton? FocusButton { get; set; }
         internal CalendarButton? FocusCalendarButton { get; set; }
@@ -437,6 +439,11 @@ namespace Avalonia.Controls
                 nameof(SelectionMode),
                 defaultValue: CalendarSelectionMode.SingleDate);
 
+        public static readonly StyledProperty<bool> AllowTapRangeSelectionProperty =
+            AvaloniaProperty.Register<Calendar, bool>(
+                nameof(AllowTapRangeSelection),
+                defaultValue: true);
+
         /// <summary>
         /// Gets or sets a value that indicates what kind of selections are
         /// allowed.
@@ -462,6 +469,24 @@ namespace Avalonia.Controls
             set => SetValue(SelectionModeProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether tap-to-select range mode is enabled.
+        /// When enabled, users can tap a start date and then tap an end date to select a range.
+        /// </summary>
+        /// <value>
+        /// True to enable tap range selection; otherwise, false. The default is false.
+        /// </value>
+        /// <remarks>
+        /// This feature only works when SelectionMode is set to SingleRange.
+        /// When enabled, the first tap selects the start date, and the second tap selects 
+        /// the end date to complete the range. Tapping a third date starts a new range.
+        /// </remarks>
+        public bool AllowTapRangeSelection
+        {
+            get => GetValue(AllowTapRangeSelectionProperty);
+            set => SetValue(AllowTapRangeSelectionProperty, value);
+        }
+
         private void OnSelectionModeChanged(AvaloniaPropertyChangedEventArgs e)
         {
             if (IsValidSelectionMode(e.NewValue!))
@@ -470,11 +495,21 @@ namespace Avalonia.Controls
                 SetCurrentValue(SelectedDateProperty, null);
                 _displayDateIsChanging = false;
                 SelectedDates.Clear();
+                
+                // Reset tap range selection state when mode changes
+                _isTapRangeSelectionActive = false;
+                _tapRangeStart = null;
             }
             else
             {
                 throw new ArgumentOutOfRangeException(nameof(e), "Invalid SelectionMode");
             }
+        }
+
+        private void OnAllowTapRangeSelectionChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            _isTapRangeSelectionActive = false;
+            _tapRangeStart = null;
         }
 
         /// <summary>
@@ -1450,6 +1485,94 @@ namespace Avalonia.Controls
                 SelectedDates.AddRange(HoverStart.Value, HoverEnd.Value);
             }
         }
+
+        /// <summary>
+        /// Handles tap range selection logic for date range selection.
+        /// </summary>
+        /// <param name="selectedDate">The date that was tapped.</param>
+        /// <returns>True if the tap was handled as part of range selection; otherwise, false.</returns>
+        internal bool ProcessTapRangeSelection(DateTime selectedDate)
+        {
+            if (!AllowTapRangeSelection || 
+                (SelectionMode != CalendarSelectionMode.SingleRange && SelectionMode != CalendarSelectionMode.MultipleRange))
+            {
+                return false;
+            }
+
+            if (!IsValidDateSelection(this, selectedDate))
+            {
+                return false;
+            }
+
+            if (!_isTapRangeSelectionActive || !_tapRangeStart.HasValue)
+            {
+                _isTapRangeSelectionActive = true;
+                _tapRangeStart = selectedDate;
+                
+                if (SelectionMode == CalendarSelectionMode.SingleRange)
+                {
+                    foreach (DateTime item in SelectedDates)
+                    {
+                        RemovedItems.Add(item);
+                    }
+                    SelectedDates.ClearInternal();
+                }
+
+                if (!SelectedDates.Contains(selectedDate))
+                {
+                    SelectedDates.Add(selectedDate);
+                }
+
+                return true;
+            }
+            else
+            {
+                DateTime startDate = _tapRangeStart.Value;
+                DateTime endDate = selectedDate;
+
+                if (DateTime.Compare(startDate, endDate) > 0)
+                {
+                    (startDate, endDate) = (endDate, startDate);
+                }
+
+                CalendarDateRange range = new CalendarDateRange(startDate, endDate);
+                if (BlackoutDates.ContainsAny(range))
+                {
+                    _tapRangeStart = selectedDate;
+                    
+                    if (SelectionMode == CalendarSelectionMode.SingleRange)
+                    {
+                        foreach (DateTime item in SelectedDates)
+                        {
+                            RemovedItems.Add(item);
+                        }
+                        SelectedDates.ClearInternal();
+                    }
+                    
+                    if (!SelectedDates.Contains(selectedDate))
+                    {
+                        SelectedDates.Add(selectedDate);
+                    }
+                    return true;
+                }
+
+                if (SelectionMode == CalendarSelectionMode.SingleRange)
+                {
+                    foreach (DateTime item in SelectedDates)
+                    {
+                        RemovedItems.Add(item);
+                    }
+                    SelectedDates.ClearInternal();
+                }
+
+                SelectedDates.AddRange(startDate, endDate);
+
+                _isTapRangeSelectionActive = false;
+                _tapRangeStart = null;
+
+                return true;
+            }
+        }
         private void ProcessSelection(bool shift, DateTime? lastSelectedDate, int? index)
         {
             if (SelectionMode == CalendarSelectionMode.None && lastSelectedDate != null)
@@ -1457,6 +1580,17 @@ namespace Avalonia.Controls
                 OnDayClick(lastSelectedDate.Value);
                 return;
             }
+
+            // Handle tap range selection.
+            if (lastSelectedDate != null && index == null && !shift)
+            {
+                if (ProcessTapRangeSelection(lastSelectedDate.Value))
+                {
+                    OnDayClick(lastSelectedDate.Value);
+                    return;
+                }
+            }
+
             if (lastSelectedDate != null && IsValidKeyboardSelection(this, lastSelectedDate.Value))
             {
                 if (SelectionMode == CalendarSelectionMode.SingleRange || SelectionMode == CalendarSelectionMode.MultipleRange)
@@ -2069,6 +2203,7 @@ namespace Avalonia.Controls
             IsTodayHighlightedProperty.Changed.AddClassHandler<Calendar>((x, e) => x.OnIsTodayHighlightedChanged(e));
             DisplayModeProperty.Changed.AddClassHandler<Calendar>((x, e) => x.OnDisplayModePropertyChanged(e));
             SelectionModeProperty.Changed.AddClassHandler<Calendar>((x, e) => x.OnSelectionModeChanged(e));
+            AllowTapRangeSelectionProperty.Changed.AddClassHandler<Calendar>((x, e) => x.OnAllowTapRangeSelectionChanged(e));
             SelectedDateProperty.Changed.AddClassHandler<Calendar>((x, e) => x.OnSelectedDateChanged(e));
             DisplayDateProperty.Changed.AddClassHandler<Calendar>((x, e) => x.OnDisplayDateChanged(e));
             DisplayDateStartProperty.Changed.AddClassHandler<Calendar>((x, e) => x.OnDisplayDateStartChanged(e));

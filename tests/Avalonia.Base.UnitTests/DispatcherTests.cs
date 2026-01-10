@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,11 +25,11 @@ public partial class DispatcherTests
                 AskedForSignal = true;
         }
 
-        public event Action Signaled;
-        public event Action Timer;
+        public event Action? Signaled;
+        public event Action? Timer;
         public long? NextTimer { get; private set; }
         public bool AskedForSignal { get; private set; }
-        
+
         public void UpdateTimer(long? dueTimeInTicks)
         {
             NextTimer = dueTimeInTicks;
@@ -62,7 +64,7 @@ public partial class DispatcherTests
     class SimpleDispatcherWithBackgroundProcessingImpl : SimpleDispatcherImpl, IDispatcherImplWithExplicitBackgroundProcessing
     {
         public bool AskedForBackgroundProcessing { get; private set; }
-        public event Action ReadyForBackgroundProcessing;
+        public event Action? ReadyForBackgroundProcessing;
         public void RequestBackgroundProcessing()
         {
             if (!CurrentThreadIsLoopThread)
@@ -78,16 +80,16 @@ public partial class DispatcherTests
             ReadyForBackgroundProcessing?.Invoke();
         }
     }
-    
+
     class SimpleControlledDispatcherImpl : SimpleDispatcherWithBackgroundProcessingImpl, IControlledDispatcherImpl
     {
         private readonly bool _useTestTimeout = true;
         private readonly CancellationToken? _cancel;
         public int RunLoopCount { get; private set; }
-        
+
         public SimpleControlledDispatcherImpl()
         {
-            
+
         }
 
         public SimpleControlledDispatcherImpl(CancellationToken cancel, bool useTestTimeout = false)
@@ -95,7 +97,7 @@ public partial class DispatcherTests
             _useTestTimeout = useTestTimeout;
             _cancel = cancel;
         }
-        
+
         public void RunLoop(CancellationToken token)
         {
             RunLoopCount++;
@@ -113,8 +115,8 @@ public partial class DispatcherTests
 
 
     }
-    
-    
+
+
     [Fact]
     public void DispatcherExecutesJobsAccordingToPriority()
     {
@@ -128,23 +130,23 @@ public partial class DispatcherTests
         impl.ExecuteSignal();
         Assert.Equal(new[] { "Render", "Input", "Background" }, actions);
     }
-    
+
     [Fact]
     public void DispatcherPreservesOrderWhenChangingPriority()
     {
         var impl = new SimpleDispatcherImpl();
         var disp = new Dispatcher(impl);
         var actions = new List<string>();
-        var toPromote = disp.InvokeAsync(()=>actions.Add("PromotedRender"), DispatcherPriority.Background);
-        var toPromote2 = disp.InvokeAsync(()=>actions.Add("PromotedRender2"), DispatcherPriority.Input);
+        var toPromote = disp.InvokeAsync(()=>actions.Add("PromotedRender"), DispatcherPriority.Background, TestContext.Current.CancellationToken);
+        var toPromote2 = disp.InvokeAsync(()=>actions.Add("PromotedRender2"), DispatcherPriority.Input, TestContext.Current.CancellationToken);
         disp.Post(() => actions.Add("Render"), DispatcherPriority.Render);
-        
+
         toPromote.Priority = DispatcherPriority.Render;
         toPromote2.Priority = DispatcherPriority.Render;
-        
+
         Assert.True(impl.AskedForSignal);
         impl.ExecuteSignal();
-        
+
         Assert.Equal(new[] { "PromotedRender", "PromotedRender2", "Render" }, actions);
     }
 
@@ -177,7 +179,7 @@ public partial class DispatcherTests
             var expectedCount = (c + 1) * 3;
             if (c == 3)
                 expectedCount = 10;
-            
+
             Assert.Equal(Enumerable.Range(0, expectedCount), actions);
             Assert.False(impl.AskedForSignal);
             if (c < 3)
@@ -188,8 +190,8 @@ public partial class DispatcherTests
                 Assert.Null(impl.NextTimer);
         }
     }
-    
-    
+
+
     [Fact]
     public void DispatcherStopsItemProcessingWhenInputIsPending()
     {
@@ -224,7 +226,7 @@ public partial class DispatcherTests
                 3 => 10,
                 _ => throw new InvalidOperationException($"Unexpected value {c}")
             };
-            
+
             Assert.Equal(Enumerable.Range(0, expectedCount), actions);
             Assert.False(impl.AskedForSignal);
             if (c < 3)
@@ -254,7 +256,7 @@ public partial class DispatcherTests
             foreground ? DispatcherPriority.Default : DispatcherPriority.Background).Wait();
 
         Assert.True(finished);
-        if (controlled) 
+        if (controlled)
             Assert.Equal(foreground ? 0 : 1, ((SimpleControlledDispatcherImpl)impl).RunLoopCount);
     }
 
@@ -270,7 +272,7 @@ public partial class DispatcherTests
             Dispatcher.ResetForUnitTests();
             SynchronizationContext.SetSynchronizationContext(null);
         }
-        
+
         public void Dispose()
         {
             Dispatcher.ResetForUnitTests();
@@ -278,7 +280,7 @@ public partial class DispatcherTests
             SynchronizationContext.SetSynchronizationContext(null);
         }
     }
-    
+
     [Fact]
     public void ExitAllFramesShouldExitAllFramesAndBeAbleToContinue()
     {
@@ -300,10 +302,10 @@ public partial class DispatcherTests
 
 
             disp.MainLoop(CancellationToken.None);
-            
+
             Assert.Equal(new[] { "Nested frame", "ExitAllFrames", "Nested frame exited" }, actions);
             actions.Clear();
-            
+
             var secondLoop = new CancellationTokenSource();
             disp.Post(() =>
             {
@@ -314,8 +316,8 @@ public partial class DispatcherTests
             Assert.Equal(new[] { "Callback after exit" }, actions);
         }
     }
-    
-        
+
+
     [Fact]
     public void ShutdownShouldExitAllFramesAndNotAllowNewFrames()
     {
@@ -334,7 +336,7 @@ public partial class DispatcherTests
                 actions.Add("Shutdown");
                 disp.BeginInvokeShutdown(DispatcherPriority.Normal);
             });
-            
+
             disp.Post(() =>
             {
                 actions.Add("Nested frame after shutdown");
@@ -342,12 +344,12 @@ public partial class DispatcherTests
                 Dispatcher.UIThread.MainLoop(CancellationToken.None);
                 actions.Add("Nested frame after shutdown exited");
             });
-            
+
             var criticalFrameAfterShutdown = new DispatcherFrame(false);
             disp.Post(() =>
             {
                 actions.Add("Critical frame after shutdown");
-                
+
                 Dispatcher.UIThread.PushFrame(criticalFrameAfterShutdown);
                 actions.Add("Critical frame after shutdown exited");
             });
@@ -361,7 +363,7 @@ public partial class DispatcherTests
 
             Assert.Equal(new[]
             {
-                "Nested frame", 
+                "Nested frame",
                 "Shutdown",
                 // Normal nested frames are supposed to exit immediately
                 "Nested frame after shutdown", "Nested frame after shutdown exited",
@@ -371,7 +373,7 @@ public partial class DispatcherTests
                 "Nested frame exited"
             }, actions);
             actions.Clear();
-            
+
             disp.Post(()=>actions.Add("Frame after shutdown finished"));
             Assert.Throws<InvalidOperationException>(() => disp.MainLoop(CancellationToken.None));
             Assert.Empty(actions);
@@ -387,7 +389,7 @@ public partial class DispatcherTests
             return base.Wait(waitHandles, waitAll, millisecondsTimeout);
         }
     }
-    
+
     [Fact]
     public void DisableProcessingShouldStopProcessing()
     {
@@ -406,7 +408,7 @@ public partial class DispatcherTests
             SynchronizationContext.SetSynchronizationContext(avaloniaContext);
 
             var waitHandle = new ManualResetEvent(true);
-            
+
             helper.WaitCount = 0;
             waitHandle.WaitOne(100);
             Assert.Equal(0, helper.WaitCount);
@@ -430,8 +432,8 @@ public partial class DispatcherTests
 
             void DumpCurrentPriority() =>
                 priorities.Add(((AvaloniaSynchronizationContext)SynchronizationContext.Current!).Priority);
-                
-                
+
+
             disp.Post(DumpCurrentPriority, DispatcherPriority.Normal);
             disp.Post(DumpCurrentPriority, DispatcherPriority.Loaded);
             disp.Post(DumpCurrentPriority, DispatcherPriority.Input);
@@ -442,7 +444,7 @@ public partial class DispatcherTests
             }, DispatcherPriority.Background);
             disp.MainLoop(CancellationToken.None);
 
-            disp.Invoke(DumpCurrentPriority, DispatcherPriority.Send);
+            disp.Invoke(DumpCurrentPriority, DispatcherPriority.Send, TestContext.Current.CancellationToken);
             disp.Invoke(() =>
             {
                 DumpCurrentPriority();
@@ -462,45 +464,316 @@ public partial class DispatcherTests
     }
 
     [Fact]
+    [SuppressMessage("Usage", "xUnit1031:Do not use blocking task operations in test method", Justification = "Tests the dispatcher itself")]
     public void DispatcherInvokeAsyncUnwrapsTasks()
     {
         int asyncMethodStage = 0;
-        
+
         async Task AsyncMethod()
         {
             asyncMethodStage = 1;
             await Task.Delay(200);
             asyncMethodStage = 2;
         }
-        
+
         async Task<int> AsyncMethodWithResult()
         {
             await Task.Delay(100);
             return 1;
         }
-        
+
         async Task Test()
         {
             await Dispatcher.UIThread.InvokeAsync(AsyncMethod);
             Assert.Equal(2, asyncMethodStage);
             Assert.Equal(1, await Dispatcher.UIThread.InvokeAsync(AsyncMethodWithResult));
             asyncMethodStage = 0;
-            
+
             await Dispatcher.UIThread.InvokeAsync(AsyncMethod, DispatcherPriority.Default);
             Assert.Equal(2, asyncMethodStage);
             Assert.Equal(1, await Dispatcher.UIThread.InvokeAsync(AsyncMethodWithResult, DispatcherPriority.Default));
-            
+
             Dispatcher.UIThread.ExitAllFrames();
         }
-        
+
         using (new DispatcherServices(new ManagedDispatcherImpl(null)))
         {
             var t = Test();
             var cts = new CancellationTokenSource();
-            Task.Delay(3000).ContinueWith(_ => cts.Cancel());
+            Task.Delay(3000, TestContext.Current.CancellationToken).ContinueWith(_ => cts.Cancel(), TestContext.Current.CancellationToken);
             Dispatcher.UIThread.MainLoop(cts.Token);
             Assert.True(t.IsCompletedSuccessfully);
             t.GetAwaiter().GetResult();
         }
     }
+
+
+    [Fact]
+    public async Task DispatcherResumeContinuesOnUIThread()
+    {
+        using var services = new DispatcherServices(new SimpleControlledDispatcherImpl());
+
+        var tokenSource = new CancellationTokenSource();
+        var workload = Dispatcher.UIThread.InvokeAsync(
+            async () =>
+            {
+                Assert.True(Dispatcher.UIThread.CheckAccess());
+
+                await Task.Delay(1).ConfigureAwait(false);
+                Assert.False(Dispatcher.UIThread.CheckAccess());
+
+                await Dispatcher.UIThread.Resume();
+                Assert.True(Dispatcher.UIThread.CheckAccess());
+
+                tokenSource.Cancel();
+            });
+
+        Dispatcher.UIThread.MainLoop(tokenSource.Token);
+    }
+
+    [Fact]
+    public async Task DispatcherYieldContinuesOnUIThread()
+    {
+        using var services = new DispatcherServices(new SimpleControlledDispatcherImpl());
+
+        var tokenSource = new CancellationTokenSource();
+        var workload = Dispatcher.UIThread.InvokeAsync(
+            async () =>
+            {
+                Assert.True(Dispatcher.UIThread.CheckAccess());
+
+                await Dispatcher.Yield();
+                Assert.True(Dispatcher.UIThread.CheckAccess());
+
+                tokenSource.Cancel();
+            });
+
+        Dispatcher.UIThread.MainLoop(tokenSource.Token);
+    }
+
+    [Fact]
+    public async Task DispatcherYieldThrowsOnNonUIThread()
+    {
+        using var services = new DispatcherServices(new SimpleControlledDispatcherImpl());
+
+        var tokenSource = new CancellationTokenSource();
+        var workload = Dispatcher.UIThread.InvokeAsync(
+            async () =>
+            {
+                Assert.True(Dispatcher.UIThread.CheckAccess());
+
+                await Task.Delay(1).ConfigureAwait(false);
+                Assert.False(Dispatcher.UIThread.CheckAccess());
+                await Assert.ThrowsAsync<InvalidOperationException>(async () => await Dispatcher.Yield());
+
+                tokenSource.Cancel();
+            });
+
+        Dispatcher.UIThread.MainLoop(tokenSource.Token);
+    }
+
+    [Fact]
+    public async Task AwaitWithPriorityRunsOnUIThread()
+    {
+        static async Task<int> Workload()
+        {
+            await Task.Delay(1).ConfigureAwait(false);
+            Assert.False(Dispatcher.UIThread.CheckAccess());
+
+            return Thread.CurrentThread.ManagedThreadId;
+        }
+
+        using var services = new DispatcherServices(new SimpleControlledDispatcherImpl());
+
+        var tokenSource = new CancellationTokenSource();
+        var workload = Dispatcher.UIThread.InvokeAsync(
+            async () =>
+            {
+                Assert.True(Dispatcher.UIThread.CheckAccess());
+                Task taskWithoutResult = Workload();
+
+                await Dispatcher.UIThread.AwaitWithPriority(taskWithoutResult, DispatcherPriority.Default);
+
+                Assert.True(Dispatcher.UIThread.CheckAccess());
+                Task<int> taskWithResult = Workload();
+
+                await Dispatcher.UIThread.AwaitWithPriority(taskWithResult, DispatcherPriority.Default);
+
+                Assert.True(Dispatcher.UIThread.CheckAccess());
+
+                tokenSource.Cancel();
+            });
+
+        Dispatcher.UIThread.MainLoop(tokenSource.Token);
+    }
+
+    private class AsyncLocalTestClass
+    {
+        public AsyncLocal<string?> AsyncLocalField { get; set; } = new AsyncLocal<string?>();
+    }
+
+    [Fact]
+    public async Task ExecutionContextIsPreservedInDispatcherInvokeAsync()
+    {
+        using var services = new DispatcherServices(new SimpleControlledDispatcherImpl());
+        var tokenSource = new CancellationTokenSource();
+        string? test1 = null;
+        string? test2 = null;
+        string? test3 = null;
+
+        // All test code must run inside Task.Run to avoid interfering with the test:
+        //  1. Prevent the execution context from being captured by MainLoop.
+        //  2. Prevent the execution context from remaining effective when set on the same thread.
+        var task = Task.Run(() =>
+        {
+            var testObject = new AsyncLocalTestClass();
+
+            // Test 1: Verify Task.Run preserves the execution context.
+            // First, test Task.Run to ensure that the preceding validation always passes, serving as a baseline for the subsequent Invoke/InvokeAsync tests.
+            // This way, if a later test fails, we have the .NET framework's baseline behavior for reference.
+            testObject.AsyncLocalField.Value = "Initial Value";
+            var task1 = Task.Run(() =>
+            {
+                test1 = testObject.AsyncLocalField.Value;
+            });
+
+            // Test 2: Verify Invoke preserves the execution context.
+            testObject.AsyncLocalField.Value = "Initial Value";
+            Dispatcher.UIThread.Invoke(() =>
+            {
+                test2 = testObject.AsyncLocalField.Value;
+            });
+
+            // Test 3: Verify InvokeAsync preserves the execution context.
+            testObject.AsyncLocalField.Value = "Initial Value";
+            _ = Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                test3 = testObject.AsyncLocalField.Value;
+            });
+
+            _ = Dispatcher.UIThread.InvokeAsync(async () =>
+            {
+                await Task.WhenAll(task1);
+                tokenSource.Cancel();
+            });
+
+        }, TestContext.Current.CancellationToken);
+
+        Dispatcher.UIThread.MainLoop(tokenSource.Token);
+        await Task.WhenAll(task);
+
+        // Assertions
+        // Task.Run: Always passes (guaranteed by the .NET runtime).
+        Assert.Equal("Initial Value", test1);
+        // Invoke: Always passes because the context is not changed.
+        Assert.Equal("Initial Value", test2);
+        // InvokeAsync: See https://github.com/AvaloniaUI/Avalonia/pull/19163
+        Assert.Equal("Initial Value", test3);
+    }
+
+    [Fact]
+    public async Task ExecutionContextIsNotPreservedAmongDispatcherInvokeAsync()
+    {
+        using var services = new DispatcherServices(new SimpleControlledDispatcherImpl());
+        var tokenSource = new CancellationTokenSource();
+        string? test = null;
+
+        // All test code must run inside Task.Run to avoid interfering with the test:
+        //  1. Prevent the execution context from being captured by MainLoop.
+        //  2. Prevent the execution context from remaining effective when set on the same thread.
+        var task = Task.Run(() =>
+        {
+            var testObject = new AsyncLocalTestClass();
+
+            // Test: Verify that InvokeAsync calls do not share execution context between each other.
+            _ = Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                testObject.AsyncLocalField.Value = "Initial Value";
+            });
+            _ = Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                test = testObject.AsyncLocalField.Value;
+            });
+
+            _ = Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                tokenSource.Cancel();
+            });
+        }, TestContext.Current.CancellationToken);
+
+        Dispatcher.UIThread.MainLoop(tokenSource.Token);
+        await Task.WhenAll(task);
+
+        // Assertions
+        // The value should NOT flow between different InvokeAsync execution contexts.
+        Assert.Null(test);
+    }
+
+    [Fact]
+    public async Task ExecutionContextCultureInfoIsPreservedInDispatcherInvokeAsync()
+    {
+        using var services = new DispatcherServices(new SimpleControlledDispatcherImpl());
+        var tokenSource = new CancellationTokenSource();
+        string? test1 = null;
+        string? test2 = null;
+        string? test3 = null;
+        var oldCulture = Thread.CurrentThread.CurrentCulture;
+
+        // All test code must run inside Task.Run to avoid interfering with the test:
+        //  1. Prevent the execution context from being captured by MainLoop.
+        //  2. Prevent the execution context from remaining effective when set on the same thread.
+        var task = Task.Run(() =>
+        {
+            // This culture tag is Sumerian and is extremely unlikely to be set as the default on any device,
+            // ensuring that this test will not be affected by the user's environment.
+            Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("sux-Shaw-UM");
+
+            // Test 1: Verify Task.Run preserves the culture in the execution context.
+            // First, test Task.Run to ensure that the preceding validation always passes, serving as a baseline for the subsequent Invoke/InvokeAsync tests.
+            // This way, if a later test fails, we have the .NET framework's baseline behavior for reference.
+            var task1 = Task.Run(() =>
+            {
+                test1 = Thread.CurrentThread.CurrentCulture.Name;
+            });
+
+            // Test 2: Verify Invoke preserves the execution context.
+            Dispatcher.UIThread.Invoke(() =>
+            {
+                test2 = Thread.CurrentThread.CurrentCulture.Name;
+            });
+
+            // Test 3: Verify InvokeAsync preserves the culture in the execution context.
+            _ = Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                test3 = Thread.CurrentThread.CurrentCulture.Name;
+            });
+
+            _ = Dispatcher.UIThread.InvokeAsync(async () =>
+            {
+                await Task.WhenAll(task1);
+                tokenSource.Cancel();
+            });
+        }, TestContext.Current.CancellationToken);
+
+        try
+        {
+            Dispatcher.UIThread.MainLoop(tokenSource.Token);
+            await Task.WhenAll(task);
+
+            // Assertions
+            // Task.Run: Always passes (guaranteed by the .NET runtime).
+            Assert.Equal("sux-Shaw-UM", test1);
+            // Invoke: Always passes because the context is not changed.
+            Assert.Equal("sux-Shaw-UM", test2);
+            // InvokeAsync: See https://github.com/AvaloniaUI/Avalonia/pull/19163
+            Assert.Equal("sux-Shaw-UM", test3);
+        }
+        finally
+        {
+            Thread.CurrentThread.CurrentCulture = oldCulture;
+            // Ensure that this test does not have a negative impact on other tests.
+            Assert.NotEqual("sux-Shaw-UM", oldCulture.Name);
+        }
+    }
+
 }

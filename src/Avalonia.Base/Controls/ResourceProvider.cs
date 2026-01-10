@@ -7,7 +7,7 @@ namespace Avalonia.Controls;
 /// Base implementation for IResourceProvider interface.
 /// Includes Owner property management.
 /// </summary>
-public abstract class ResourceProvider : IResourceProvider
+public abstract class ResourceProvider : AvaloniaObject, IResourceProvider
 {
     private IResourceHost? _owner;
 
@@ -45,7 +45,7 @@ public abstract class ResourceProvider : IResourceProvider
 
     protected void RaiseResourcesChanged()
     {
-        Owner?.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
+        Owner?.NotifyHostedResourcesChanged(ResourcesChangedToken.Create());
     }
 
     /// <summary>
@@ -57,7 +57,7 @@ public abstract class ResourceProvider : IResourceProvider
     {
         if (HasResources)
         {
-            owner.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
+            owner.NotifyHostedResourcesChanged(ResourcesChangedToken.Create());
         }
     }
 
@@ -70,7 +70,7 @@ public abstract class ResourceProvider : IResourceProvider
     {
         if (HasResources)
         {
-            owner.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
+            owner.NotifyHostedResourcesChanged(ResourcesChangedToken.Create());
         }
     }
 

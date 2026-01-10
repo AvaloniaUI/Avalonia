@@ -67,6 +67,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal("1 ", actual);
 
+                Assert.NotNull(textRun.Properties);
                 Assert.Equal(foreground, textRun.Properties.ForegroundBrush);
             }
         }
@@ -236,6 +237,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal("01", actual);
 
+                Assert.NotNull(textRun.Properties);
                 Assert.Equal(foreground, textRun.Properties.ForegroundBrush);
             }
         }
@@ -272,6 +274,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal("89", actual);
 
+                Assert.NotNull(textRun.Properties);
                 Assert.Equal(foreground, textRun.Properties.ForegroundBrush);
             }
         }
@@ -304,6 +307,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(1, textRun.Length);
 
+                Assert.NotNull(textRun.Properties);
                 Assert.Equal(foreground, textRun.Properties.ForegroundBrush);
             }
         }
@@ -342,6 +346,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal("😄", actual);
 
+                Assert.NotNull(textRun.Properties);
                 Assert.Equal(foreground, textRun.Properties.ForegroundBrush);
             }
         }
@@ -435,9 +440,9 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     maxHeight: 125,
                     textStyleOverrides: spans);
 
-                Assert.Equal(foreground, layout.TextLines[0].TextRuns[1].Properties.ForegroundBrush);
-                Assert.Equal(foreground, layout.TextLines[1].TextRuns[0].Properties.ForegroundBrush);
-                Assert.Equal(foreground, layout.TextLines[2].TextRuns[0].Properties.ForegroundBrush);
+                Assert.Equal(foreground, layout.TextLines[0].TextRuns[1].Properties?.ForegroundBrush);
+                Assert.Equal(foreground, layout.TextLines[1].TextRuns[0].Properties?.ForegroundBrush);
+                Assert.Equal(foreground, layout.TextLines[2].TextRuns[0].Properties?.ForegroundBrush);
             }
         }
 
@@ -566,7 +571,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(7, textRun.Length);
 
-                var replacementGlyph = Typeface.Default.GlyphTypeface.GetGlyph(Codepoint.ReplacementCodepoint);
+                var replacementGlyph = Typeface.Default.GlyphTypeface.CharacterToGlyphMap[Codepoint.ReplacementCodepoint];
 
                 foreach (var glyphInfo in textRun.GlyphRun.GlyphInfos)
                 {
@@ -865,7 +870,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     Brushes.Black,
                     flowDirection: FlowDirection.RightToLeft);
 
-                var firstRun = layout.TextLines[0].TextRuns[0] as ShapedTextRun;
+                var firstRun = Assert.IsType<ShapedTextRun>(layout.TextLines[0].TextRuns[0]);
 
                 var hit = layout.HitTestPoint(new Point());
 
@@ -891,7 +896,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     currentX += advance;
                 }
 
-                var secondRun = layout.TextLines[0].TextRuns[1] as ShapedTextRun;
+                var secondRun = Assert.IsType<ShapedTextRun>(layout.TextLines[0].TextRuns[1]);
 
                 hit = layout.HitTestPoint(new Point(firstRun.Size.Width, 0));
 
@@ -1147,11 +1152,81 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Fact]
+        public void Should_Measure_TextLayoutSymbolWithAndWidthIncludingTrailingWhitespace()
+        {
+            const string symbolsFont = "resm:Avalonia.Skia.UnitTests.Fonts?assembly=Avalonia.Skia.UnitTests#Symbols";
+            using (Start())
+            {
+                var textLayout = new TextLayout("\ue971", new Typeface(symbolsFont), 12.0, Brushes.White);
+
+                Assert.Equal(new Size(12.0, 12.0), new Size(textLayout.Width, textLayout.Height));
+                Assert.Equal(12.0, textLayout.WidthIncludingTrailingWhitespace);
+            }
+        }
+
+        [Fact]
+        public void Should_Wrap_With_LineEnd()
+        {
+            using (Start())
+            {
+                var defaultProperties =
+                   new GenericTextRunProperties(Typeface.Default, 72, foregroundBrush: Brushes.Black);
+
+                var paragraphProperties = new GenericTextParagraphProperties(defaultProperties, textWrapping: TextWrapping.Wrap);
+
+                var textLayout = new TextLayout(new SingleBufferTextSource("01", defaultProperties, true), paragraphProperties, maxWidth: 36);
+
+                Assert.Equal(2, textLayout.TextLines.Count);
+
+                var lastLine = textLayout.TextLines.Last();
+
+                Assert.Equal(2, lastLine.TextRuns.Count);
+
+                var lastRun = lastLine.TextRuns.Last();
+
+                Assert.IsAssignableFrom<TextEndOfLine>(lastRun);
+            }
+        }
+
+        [Fact]
+        public void Should_Measure_TextLayoutSymbolWithAndWidthIncludingTrailingWhitespaceAndMinTextWidth()
+        {
+            using (Start())
+            {
+                const string monospaceFont = "resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Noto Mono";
+
+                var typeFace = new Typeface(monospaceFont);
+
+                var glyphTypeface = typeFace.GlyphTypeface;
+
+                var textLayout0 = new TextLayout("aaaa", typeFace, 12.0, Brushes.White);
+                Assert.Equal(textLayout0.WidthIncludingTrailingWhitespace, textLayout0.Width);
+
+                var textLayout01 = new TextLayout("a a", typeFace, 12.0, Brushes.White);
+                var textLayout1 = new TextLayout("a a ", typeFace, 12.0, Brushes.White);
+                Assert.Equal(new Size(textLayout0.Width, textLayout0.Height), new Size(textLayout1.WidthIncludingTrailingWhitespace, textLayout1.Height));
+                Assert.Equal(textLayout0.WidthIncludingTrailingWhitespace, textLayout1.WidthIncludingTrailingWhitespace);
+
+
+                var textLayout2 = new TextLayout(" aa ", typeFace, 12.0, Brushes.White);
+                Assert.Equal(new Size(textLayout1.Width, textLayout1.Height), new Size(textLayout2.Width, textLayout2.Height));
+                Assert.Equal(textLayout0.WidthIncludingTrailingWhitespace, textLayout2.WidthIncludingTrailingWhitespace);
+                Assert.Equal(textLayout01.Width, textLayout2.Width);
+                
+                var textLayout3 = new TextLayout("    ", typeFace, 12.0, Brushes.White);
+                Assert.Equal(new Size(0, textLayout0.Height), new Size(textLayout3.Width, textLayout3.Height));
+                Assert.Equal(textLayout0.WidthIncludingTrailingWhitespace, textLayout3.WidthIncludingTrailingWhitespace);
+                Assert.Equal(0, textLayout3.Width);
+            }
+        }
+        
+        private static void AssertGreaterThan(double x, double y, string message) => Assert.True(x > y, $"{message}. {x} is not > {y}");
+
         private static IDisposable Start()
         {
             var disposable = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface
                 .With(renderInterface: new PlatformRenderInterface(null),
-                    textShaperImpl: new TextShaperImpl(),
                     fontManagerImpl: new CustomFontManagerImpl()));
 
             return disposable;

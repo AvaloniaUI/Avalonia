@@ -6,9 +6,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
+using MicroCom.Runtime;
 using Windows.Win32;
 using Windows.Win32.Graphics.Gdi;
-using MicroCom.Runtime;
 
 // ReSharper disable InconsistentNaming
 #pragma warning disable 169, 649
@@ -112,7 +112,7 @@ namespace Avalonia.Win32.Interop
             /// </summary>
             Hide = 0,
             /// <summary>
-            /// Activates and displays a window. If the window is minimized, maximized, or arranged, the system restores it to its original 
+            /// Activates and displays a window. If the window is minimized, maximized, or arranged, the system restores it to its original
             /// size and position. An application should specify this flag when displaying the window for the first time.
             /// </summary>
             Normal = 1,
@@ -147,12 +147,12 @@ namespace Avalonia.Win32.Interop
             /// </summary>
             ShowNA = 8,
             /// <summary>
-            /// Activates and displays the window. If the window is minimized, maximized, or arranged, the system restores it to its original size and position. 
+            /// Activates and displays the window. If the window is minimized, maximized, or arranged, the system restores it to its original size and position.
             /// An application should specify this flag when restoring a minimized window.
             /// </summary>
             Restore = 9,
             /// <summary>
-            /// Sets the show state based on the <see cref="ShowWindowCommand"/> value specified in the STARTUPINFO structure passed to the CreateProcess function 
+            /// Sets the show state based on the <see cref="ShowWindowCommand"/> value specified in the STARTUPINFO structure passed to the CreateProcess function
             /// by the program that started the application.
             /// </summary>
             ShowDefault = 10,
@@ -869,6 +869,14 @@ namespace Avalonia.Win32.Interop
             DWMWCP_ROUNDSMALL
         }
 
+        public enum DwmNCRenderingPolicy : uint
+        {
+            DWMNCRP_USEWINDOWSTYLE,
+            DWMNCRP_DISABLED,
+            DWMNCRP_ENABLED,
+            DWMNCRP_LAST
+        }
+
         public enum MapVirtualKeyMapTypes : uint
         {
             MAPVK_VK_TO_VSC = 0x00,
@@ -885,6 +893,23 @@ namespace Avalonia.Win32.Interop
             BI_BITFIELDS = 3,
             BI_JPEG = 4,
             BI_PNG = 5
+        }
+
+        public enum BitmapColorSpace : uint
+        {
+            LCS_CALIBRATED_RGB = 0,
+            LCS_sRGB = 0x73524742,
+            LCS_WINDOWS_COLOR_SPACE = 0x57696E20,
+            PROFILE_LINKED = 0x4C494E4B,
+            PROFILE_EMBEDDED = 0x4D424544
+        }
+
+        public enum BitmapIntent : uint
+        {
+            LCS_GM_ABS_COLORIMETRIC = 1,
+            LCS_GM_BUSINESS = 2,
+            LCS_GM_GRAPHICS = 4,
+            LCS_GM_IMAGES = 8,
         }
 
         public enum DIBColorTable
@@ -1074,6 +1099,17 @@ namespace Avalonia.Win32.Interop
             public byte rgbReserved;
         }
 
+        public struct BITMAP
+        {
+            public int bmType;
+            public int bmWidth;
+            public int bmHeight;
+            public int bmWidthBytes;
+            public ushort bmPlanes;
+            public short bmBitsPixel;
+            public IntPtr bmBits;
+        }
+
         [StructLayout(LayoutKind.Sequential)]
         public struct BITMAPINFOHEADER
         {
@@ -1082,7 +1118,7 @@ namespace Avalonia.Win32.Interop
             public int biHeight;
             public ushort biPlanes;
             public ushort biBitCount;
-            public uint biCompression;
+            public BitmapCompressionMode biCompression;
             public uint biSizeImage;
             public int biXPelsPerMeter;
             public int biYPelsPerMeter;
@@ -1093,6 +1129,56 @@ namespace Avalonia.Win32.Interop
             {
                 biSize = (uint)sizeof(BITMAPINFOHEADER);
             }
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct BITMAPV5HEADER
+        {
+            public uint bV5Size;
+            public int bV5Width;
+            public int bV5Height;
+            public ushort bV5Planes;
+            public ushort bV5BitCount;
+            public BitmapCompressionMode bV5Compression;
+            public uint bV5SizeImage;
+            public int bV5XPelsPerMeter;
+            public int bV5YPelsPerMeter;
+            public uint bV5ClrUsed;
+            public uint bV5ClrImportant;
+            public uint bV5RedMask;
+            public uint bV5GreenMask;
+            public uint bV5BlueMask;
+            public uint bV5AlphaMask;
+            public BitmapColorSpace bV5CSType;
+            public CIEXYZTRIPLE bV5Endpoints;
+            public uint bV5GammaRed;
+            public uint bV5GammaGreen;
+            public uint bV5GammaBlue;
+            public BitmapIntent bV5Intent;
+            public uint bV5ProfileData;
+            public uint bV5ProfileSize;
+            public uint bV5Reserved;
+
+            public void Init()
+            {
+                bV5Size = (uint)sizeof(BITMAPV5HEADER);
+            }
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct CIEXYZTRIPLE
+        {
+            public CIEXYZ ciexyzRed;
+            public CIEXYZ ciexyzGreen;
+            public CIEXYZ ciexyzBlue;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct CIEXYZ
+        {
+            public int ciexyzX;
+            public int ciexyzY;
+            public int ciexyzZ;
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -1115,9 +1201,10 @@ namespace Avalonia.Win32.Interop
             public uint biClrUsed;
             public uint biClrImportant;
             //}
+            public uint biRedMask;
+            public uint biGreenMask;
+            public uint biBlueMask;
 
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 256)]
-            public uint[] cols;
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -1174,6 +1261,9 @@ namespace Avalonia.Win32.Interop
         public static extern bool GetPointerTouchInfo(uint pointerId, out POINTER_TOUCH_INFO touchInfo);
 
         [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool GetPointerDeviceRects(IntPtr device, out RECT pointerDeviceRect, out RECT displayRect);
+
+        [DllImport("user32.dll", SetLastError = true)]
         public static extern bool GetPointerTouchInfoHistory(uint pointerId, ref int entriesCount, [MarshalAs(UnmanagedType.LPArray), In, Out] POINTER_TOUCH_INFO[] touchInfos);
 
         [DllImport("user32.dll", SetLastError = true)]
@@ -1185,6 +1275,15 @@ namespace Avalonia.Win32.Interop
             int XSrc, int YSrc,
             uint uStartScan, uint cScanLines,
            IntPtr lpvBits, [In] ref BITMAPINFO lpbmi, uint fuColorUse);
+
+        [DllImport("gdi32.dll")]
+        public static extern int SetDIBits(IntPtr hdc, IntPtr hbm, uint start, uint cLines, IntPtr lpBits, in BITMAPINFO lpbmi, uint fuColorUse);
+
+        [DllImport("gdi32.dll")]
+        public static extern int SetDIBits(IntPtr hdc, IntPtr hbm, uint start, uint cLines, IntPtr lpBits, in BITMAPINFOHEADER lpbmi, uint fuColorUse);
+
+        [DllImport("gdi32.dll")]
+        public static extern int SetDIBits(IntPtr hdc, IntPtr hbm, uint start, uint cLines, IntPtr lpBits, in BITMAPV5HEADER lpbmi, uint fuColorUse);
 
         [DllImport("gdi32.dll", SetLastError = false, ExactSpelling = true)]
         public static extern IntPtr CreateRectRgn(int x1, int y1, int x2, int y2);
@@ -1221,12 +1320,12 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("user32.dll", EntryPoint = "DefWindowProcW")]
         public static extern IntPtr DefWindowProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
-        
+
         public const int SC_MOUSEMOVE = 0xf012;
- 
+
         [DllImport("user32.dll", CharSet = CharSet.Unicode, EntryPoint = "SendMessageW")]
         public static extern IntPtr SendMessage(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam);
-        
+
         [DllImport("user32.dll", EntryPoint = "DispatchMessageW")]
         public static extern IntPtr DispatchMessage(ref MSG lpmsg);
 
@@ -1367,10 +1466,10 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll", EntryPoint = "LoadCursorW", ExactSpelling = true)]
         public static extern IntPtr LoadCursor(IntPtr hInstance, IntPtr lpCursorName);
 
-        [DllImport("user32.dll")]
+        [DllImport("user32.dll", SetLastError = true)]
         public static extern IntPtr CreateIconIndirect([In] ref ICONINFO iconInfo);
 
-        [DllImport("user32.dll")]
+        [DllImport("user32.dll", SetLastError = true)]
         public static extern IntPtr CreateIconFromResourceEx(byte* pbIconBits, uint cbIconBits,
             int fIcon, int dwVersion, int csDesired, int cyDesired, int flags);
 
@@ -1499,6 +1598,21 @@ namespace Avalonia.Win32.Interop
         [DllImport("shell32", CharSet = CharSet.Auto)]
         public static extern int Shell_NotifyIcon(NIM dwMessage, NOTIFYICONDATA lpData);
 
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool ChangeWindowMessageFilterEx(
+            IntPtr hWnd,
+            uint message,
+            MessageFilterFlag action,
+            IntPtr pChangeFilterStruct
+        );
+
+        public enum MessageFilterFlag
+        {
+            MSGFLT_RESET = 0,
+            MSGFLT_ALLOW = 1,
+            MSGFLT_DISALLOW = 2,
+        }
+
         [DllImport("shell32", CharSet = CharSet.Auto)]
         public static extern nint SHAppBarMessage(AppBarMessage dwMessage, ref APPBARDATA lpData);
 
@@ -1534,7 +1648,7 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("user32.dll", EntryPoint = "SetCursor")]
         internal static extern IntPtr SetCursor(IntPtr hCursor);
-        
+
         [DllImport("ole32.dll", PreserveSig = true)]
         internal static extern int CoCreateInstance(in Guid clsid,
             IntPtr ignore1, int ignore2, in Guid iid, [Out] out IntPtr pUnkOuter);
@@ -1570,9 +1684,14 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("ole32.dll", PreserveSig = true)]
         public static extern int OleGetClipboard(out IntPtr dataObject);
+        [DllImport("ole32.dll", PreserveSig = true)]
+        public static extern int OleFlushClipboard();
 
         [DllImport("ole32.dll", PreserveSig = true)]
         public static extern int OleSetClipboard(IntPtr dataObject);
+
+        [DllImport("ole32.dll", PreserveSig = true)]
+        public static extern int OleIsCurrentClipboard(IntPtr dataObject);
 
         [DllImport("kernel32.dll", ExactSpelling = true)]
         public static extern IntPtr GlobalLock(IntPtr handle);
@@ -1581,7 +1700,7 @@ namespace Avalonia.Win32.Interop
         public static extern bool GlobalUnlock(IntPtr handle);
 
         [DllImport("kernel32.dll", ExactSpelling = true)]
-        public static extern IntPtr GlobalAlloc(int uFlags, int dwBytes);
+        public static extern IntPtr GlobalAlloc(GlobalAllocFlags uFlags, int dwBytes);
 
         [DllImport("kernel32.dll", ExactSpelling = true)]
         public static extern IntPtr GlobalFree(IntPtr hMem);
@@ -1628,7 +1747,7 @@ namespace Avalonia.Win32.Interop
         public static extern IntPtr MonitorFromPoint(POINT pt, MONITOR dwFlags);
 
         [DllImport("user32.dll")]
-        public static extern IntPtr MonitorFromRect(RECT rect, MONITOR dwFlags);
+        public static extern IntPtr MonitorFromRect(RECT* rect, MONITOR dwFlags);
 
         [DllImport("user32.dll")]
         public static extern IntPtr MonitorFromWindow(IntPtr hwnd, MONITOR dwFlags);
@@ -1655,15 +1774,31 @@ namespace Avalonia.Win32.Interop
         [DllImport("gdi32.dll")]
         public static extern int SetDIBitsToDevice(IntPtr hdc, int XDest, int YDest, uint
                 dwWidth, uint dwHeight, int XSrc, int YSrc, uint uStartScan, uint cScanLines,
-            IntPtr lpvBits, [In] ref BITMAPINFOHEADER lpbmi, uint fuColorUse);
+            IntPtr lpvBits, [In] ref BITMAPINFOHEADER lpbmi, DIBColorTable fuColorUse);
 
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool CloseHandle(IntPtr hObject);
-        [DllImport("gdi32.dll", SetLastError = true)]
-        public static extern IntPtr CreateDIBSection(IntPtr hDC, ref BITMAPINFOHEADER pBitmapInfo, int un, out IntPtr lplpVoid, IntPtr handle, int dw);
-        [DllImport("gdi32.dll", SetLastError = true)]
+        [DllImport("gdi32.dll")]
+        public static extern IntPtr CreateDIBSection(IntPtr hDC, ref BITMAPINFOHEADER pBitmapInfo, DIBColorTable usage, out IntPtr lplpVoid, IntPtr handle, int dw);
+        [DllImport("gdi32.dll")]
+        public static extern IntPtr CreateDIBSection(IntPtr hDC, in BITMAPV5HEADER pBitmapInfo, DIBColorTable usage, out IntPtr lplpVoid, IntPtr handle, int dw);
+        [DllImport("gdi32.dll")]
+        public static extern IntPtr CreateDIBitmap(IntPtr hDC, in BITMAPV5HEADER pBitmapInfo, int flInit, IntPtr lplpVoid, in BITMAPINFO pbmi, DIBColorTable iUsage);
+        [DllImport("gdi32.dll")]
+        public static extern bool GdiFlush();
+
+        [DllImport("gdi32.dll")]
+        public static extern bool BitBlt(IntPtr hDC, int x, int y, int cx, int cy, IntPtr hdcSrc, int x1, int y1, uint rop);
+
+        [DllImport("gdi32.dll")]
+        public static extern IntPtr CreateCompatibleBitmap(IntPtr hDC, int cx, int cy);
+        [DllImport("gdi32.dll")]
         public static extern IntPtr CreateBitmap(int width, int height, int planes, int bitCount, IntPtr data);
+        [DllImport("gdi32.dll")]
+        public static extern int GetObject(IntPtr h, int c, IntPtr pv);
+        [DllImport("gdi32.dll")]
+        public static extern int GetBitmapDimensionEx(IntPtr hbit, ref SIZE lpsize);
         [DllImport("gdi32.dll")]
         public static extern int DeleteObject(IntPtr hObject);
         [DllImport("gdi32.dll", SetLastError = true)]
@@ -1680,9 +1815,14 @@ namespace Avalonia.Win32.Interop
         [DllImport("gdi32.dll")]
         public static extern int SetPixelFormat(IntPtr hdc, int iPixelFormat, ref PixelFormatDescriptor pfd);
 
-
         [DllImport("gdi32.dll")]
         public static extern int DescribePixelFormat(IntPtr hdc, int iPixelFormat, int bytes, ref PixelFormatDescriptor pfd);
+
+        [DllImport("gdi32.dll")]
+        public static extern int StretchDIBits(IntPtr hdc, int xDest, int yDest, int DestWidth, int DestHeight, int xSrc, int ySrc, int SrcWidth, int SrcHeight, IntPtr lpBits, [In] ref BITMAPINFO lpbmi, uint iUsage, uint rop);
+
+        [DllImport("gdi32.dll")]
+        public static extern int StretchBlt(IntPtr hdc, int xDest, int yDest, int DestWidth, int DestHeight, IntPtr hdcSrc, int xSrc, int ySrc, int SrcWidth, int SrcHeight, uint rop);
 
         [DllImport("gdi32.dll")]
         public static extern bool SwapBuffers(IntPtr hdc);
@@ -2160,25 +2300,22 @@ namespace Avalonia.Win32.Interop
         public enum ClipboardFormat
         {
             /// <summary>
-            /// Text format. Each line ends with a carriage return/linefeed (CR-LF) combination. A null character signals the end of the data. Use this format for ANSI text.
-            /// </summary>
-            CF_TEXT = 1,
-            /// <summary>
             /// A handle to a bitmap
             /// </summary>
             CF_BITMAP = 2,
             /// <summary>
             /// A memory object containing a BITMAPINFO structure followed by the bitmap bits.
             /// </summary>
-            CF_DIB = 3,
+            CF_DIB = 8,
             /// <summary>
             /// Unicode text format. Each line ends with a carriage return/linefeed (CR-LF) combination. A null character signals the end of the data.
             /// </summary>
             CF_UNICODETEXT = 13,
             /// <summary>
-            /// A handle to type HDROP that identifies a list of files. 
+            /// A handle to type HDROP that identifies a list of files.
             /// </summary>
             CF_HDROP = 15,
+            CF_DIBV5 = 17,
         }
 
         public struct MSG
@@ -2274,6 +2411,13 @@ namespace Avalonia.Win32.Interop
             public IntPtr hwndTrack;
             public int dwHoverTime;
         }
+
+        // TrackMouseEvent flags
+        public const uint TME_HOVER = 0x00000001;
+        public const uint TME_LEAVE = 0x00000002;
+        public const uint TME_NONCLIENT = 0x00000010;
+        public const uint TME_QUERY = 0x40000000;
+        public const uint TME_CANCEL = 0x80000000;
 
         [Flags]
         public enum WindowPlacementFlags : uint
@@ -2432,7 +2576,7 @@ namespace Avalonia.Win32.Interop
             E_OUTOFMEMORY = 0x8007000E,
             E_NOTIMPL = 0x80004001,
             E_UNEXPECTED = 0x8000FFFF,
-            E_CANCELLED = 0x800704C7,
+            E_CANCELLED = 0x800704C7
         }
 
         public enum Icons
@@ -2508,34 +2652,50 @@ namespace Avalonia.Win32.Interop
                 cbSize = s_size;
             }
         }
-    }
 
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct _DROPFILES
-    {
-        public Int32 pFiles;
-        public Int32 X;
-        public Int32 Y;
-        public bool fNC;
-        public bool fWide;
-    }
+        public const uint STG_E_MEDIUMFULL = 0x80030070;
+        public const uint DV_E_TYMED = 0x80040069;
+        public const uint DV_E_DVASPECT = 0x8004006B;
+        public const uint DV_E_FORMATETC = 0x80040064;
+        public const uint OLE_E_ADVISENOTSUPPORTED = 0x80040003;
+        public const uint COR_E_OBJECTDISPOSED = 0x80131622;
 
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct STGMEDIUM
-    {
-        public TYMED tymed;
-        public IntPtr unionmember;
-        public IntPtr pUnkForRelease;
-    }
+        [StructLayout(LayoutKind.Sequential)]
+        public struct DROPFILES
+        {
+            public uint pFiles;
+            public POINT pt;
+            public int fNC;
+            public int fWide;
+        }
 
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct FORMATETC
-    {
-        public ushort cfFormat;
-        public IntPtr ptd;
-        public DVASPECT dwAspect;
-        public int lindex;
-        public TYMED tymed;
+        [StructLayout(LayoutKind.Sequential)]
+        public struct STGMEDIUM
+        {
+            public TYMED tymed;
+            public IntPtr unionmember;
+            public IntPtr pUnkForRelease;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct FORMATETC
+        {
+            public ushort cfFormat;
+            public IntPtr ptd;
+            public DVASPECT dwAspect;
+            public int lindex;
+            public TYMED tymed;
+        }
+
+        [Flags]
+        public enum GlobalAllocFlags : uint
+        {
+            GMEM_FIXED = 0x0000,
+            GMEM_MOVEABLE = 0x0002,
+            GMEM_ZEROINIT = 0x0040,
+            GPTR = GMEM_FIXED | GMEM_ZEROINIT,
+            GHND = GMEM_MOVEABLE | GMEM_ZEROINIT
+        }
     }
 
     [Flags]

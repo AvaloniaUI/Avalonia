@@ -70,6 +70,8 @@ namespace Avalonia.Android.Platform.Specific.Helpers
 
             _view.Input?.Invoke(rawKeyEvent);
 
+            bool handled = rawKeyEvent.Handled;
+
             if ((e.Action == KeyEventActions.Down && e.UnicodeChar >= 32)
                 || unicodeTextInput != null)
             {
@@ -80,6 +82,8 @@ namespace Avalonia.Android.Platform.Specific.Helpers
                   unicodeTextInput ?? Convert.ToChar(e.UnicodeChar).ToString()
                   );
                 _view.Input?.Invoke(rawTextEvent);
+
+                handled = handled || rawTextEvent.Handled;
             }
 
             if (e.Action == KeyEventActions.Up)
@@ -90,7 +94,7 @@ namespace Avalonia.Android.Platform.Specific.Helpers
             }
 
             callBase = false;
-            return false;
+            return handled;
         }
 
         private static RawInputModifiers GetModifierKeys(KeyEvent e)

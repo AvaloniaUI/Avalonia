@@ -64,18 +64,18 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="DisplayMemberBinding" /> property
         /// </summary>
-        public static readonly StyledProperty<IBinding?> DisplayMemberBindingProperty =
-            AvaloniaProperty.Register<ItemsControl, IBinding?>(nameof(DisplayMemberBinding));
+        public static readonly StyledProperty<BindingBase?> DisplayMemberBindingProperty =
+            AvaloniaProperty.Register<ItemsControl, BindingBase?>(nameof(DisplayMemberBinding));
 
         private static readonly AttachedProperty<ControlTheme?> AppliedItemContainerTheme =
             AvaloniaProperty.RegisterAttached<ItemsControl, Control, ControlTheme?>("AppliedItemContainerTheme");
 
         /// <summary>
-        /// Gets or sets the <see cref="IBinding"/> to use for binding to the display member of each item.
+        /// Gets or sets the <see cref="BindingBase"/> to use for binding to the display member of each item.
         /// </summary>
         [AssignBinding]
         [InheritDataTypeFromItems(nameof(ItemsSource))]
-        public IBinding? DisplayMemberBinding
+        public BindingBase? DisplayMemberBinding
         {
             get => GetValue(DisplayMemberBindingProperty);
             set => SetValue(DisplayMemberBindingProperty, value);
@@ -211,6 +211,15 @@ namespace Avalonia.Controls
             add => _childIndexChanged += value;
             remove => _childIndexChanged -= value;
         }
+
+        /// <summary>
+        /// Occurs immediately before a container is prepared for use.
+        /// </summary>
+        /// <remarks>
+        /// The prepared element might be newly created or an existing container that is being re-
+        /// used.
+        /// </remarks>
+        public event EventHandler<ContainerPreparedEventArgs>? PreparingContainer;
 
         /// <summary>
         /// Occurs each time a container is prepared for use.
@@ -702,6 +711,8 @@ namespace Avalonia.Controls
 
         internal void PrepareItemContainer(Control container, object? item, int index)
         {
+            PreparingContainer?.Invoke(this, new(container, index));
+
             // If the container has no theme set, or we've already applied our ItemContainerTheme
             // (and it hasn't changed since) then we're in control of the container's Theme and may
             // need to update it.

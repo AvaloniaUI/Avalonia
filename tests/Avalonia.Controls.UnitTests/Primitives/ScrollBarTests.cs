@@ -4,11 +4,12 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Media;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Primitives
 {
-    public class ScrollBarTests
+    public class ScrollBarTests : ScopedTestBase
     {
         [Fact]
         public void Setting_Value_Should_Update_Track_Value()
@@ -80,7 +81,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                         Vector = new Vector(0, 0)
                     };
 
-                    track.Thumb.RaiseEvent(ev);
+                    track.Thumb!.RaiseEvent(ev);
                 });
 
             Assert.Equal(ScrollEventType.ThumbTrack, raisedEvent.Arguments.ScrollEventType);
@@ -109,7 +110,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                         Vector = new Vector(0, 0)
                     };
 
-                    track.Thumb.RaiseEvent(ev);
+                    track.Thumb!.RaiseEvent(ev);
                 });
 
             Assert.Equal(ScrollEventType.EndScroll, raisedEvent.Arguments.ScrollEventType);

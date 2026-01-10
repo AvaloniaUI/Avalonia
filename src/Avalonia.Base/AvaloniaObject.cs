@@ -98,7 +98,7 @@ namespace Avalonia
         /// Gets or sets a binding for a <see cref="AvaloniaProperty"/>.
         /// </summary>
         /// <param name="binding">The binding information.</param>
-        public IBinding this[IndexerDescriptor binding]
+        public BindingBase this[IndexerDescriptor binding]
         {
             get { return new IndexerBinding(this, binding.Property!, binding.Mode); }
             set { this.Bind(binding.Property!, value); }
@@ -417,14 +417,14 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Binds a <see cref="AvaloniaProperty"/> to an <see cref="IBinding"/>.
+        /// Binds a <see cref="AvaloniaProperty"/> to an <see cref="BindingBase"/>.
         /// </summary>
         /// <param name="property">The property.</param>
         /// <param name="binding">The binding.</param>
         /// <returns>
         /// The binding expression which represents the binding instance on this object.
         /// </returns>
-        public BindingExpressionBase Bind(AvaloniaProperty property, IBinding binding)
+        public BindingExpressionBase Bind(AvaloniaProperty property, BindingBase binding)
         {
             return Bind(property, binding, null);
         }
@@ -458,26 +458,39 @@ namespace Avalonia
             IObservable<object?> source,
             BindingPriority priority = BindingPriority.LocalValue)
         {
+            return TryBindStyledPropertyUntyped(property, source, priority)
+                ?? _values.AddBinding(property, source, priority);
+        }
+
+        // Non-generic path extracted to avoid unnecessary generic code duplication
+        private BindingExpressionBase? TryBindStyledPropertyUntyped(
+            AvaloniaProperty property,
+            IObservable<object?> source,
+            BindingPriority priority)
+        {
+            Debug.Assert(!property.IsDirect);
             ThrowHelper.ThrowIfNull(property, nameof(property));
             ThrowHelper.ThrowIfNull(source, nameof(source));
             VerifyAccess();
             ValidatePriority(priority);
 
-            if (source is IBinding2 b)
+            if (source is BindingBase b)
             {
-                if (b.Instance(this, property, null) is not UntypedBindingExpressionBase expression)
-                    throw new NotSupportedException("Binding returned unsupported IBindingExpression.");
+                if (b.CreateInstance(this, property, null) is not UntypedBindingExpressionBase expression)
+                    throw new NotSupportedException($"Binding returned unsupported {nameof(BindingExpressionBase)}.");
+
                 if (priority != expression.Priority)
+                {
                     throw new NotSupportedException(
                         $"The binding priority passed to AvaloniaObject.Bind ('{priority}') " +
                         "conflicts with the binding priority of the provided binding expression " +
                         $" ({expression.Priority}').");
+                }
+
                 return GetValueStore().AddBinding(property, expression);
             }
-            else
-            {
-                return _values.AddBinding(property, source, priority);
-            }
+
+            return null;
         }
 
         /// <summary>
@@ -539,26 +552,36 @@ namespace Avalonia
             DirectPropertyBase<T> property,
             IObservable<object?> source)
         {
+            AvaloniaProperty untypedProperty = property;
+
+            return TryBindDirectPropertyUntyped(ref untypedProperty, source)
+                ?? _values.AddBinding((DirectPropertyBase<T>)untypedProperty, source);
+        }
+
+        // Non-generic path extracted to avoid unnecessary generic code duplication
+        private BindingExpressionBase? TryBindDirectPropertyUntyped(
+            ref AvaloniaProperty property,
+            IObservable<object?> source)
+        {
+            Debug.Assert(property.IsDirect);
             ThrowHelper.ThrowIfNull(property, nameof(property));
             VerifyAccess();
 
-            property = AvaloniaPropertyRegistry.Instance.GetRegisteredDirect(this, property);
+            property = AvaloniaPropertyRegistry.Instance.GetRegisteredDirectUntyped(this, property);
 
             if (property.IsReadOnly)
             {
                 throw new ArgumentException($"The property {property.Name} is readonly.");
             }
 
-            if (source is IBinding2 b)
+            if (source is BindingBase b)
             {
-                if (b.Instance(this, property, null) is not UntypedBindingExpressionBase expression)
-                    throw new NotSupportedException("Binding returned unsupported IBindingExpression.");
+                if (b.CreateInstance(this, property, null) is not UntypedBindingExpressionBase expression)
+                    throw new NotSupportedException($"Binding returned unsupported {nameof(BindingExpressionBase)}.");
                 return GetValueStore().AddBinding(property, expression);
             }
-            else
-            {
-                return _values.AddBinding(property, source);
-            }
+
+            return null;
         }
 
         /// <summary>
@@ -620,7 +643,7 @@ namespace Avalonia
         public void CoerceValue(AvaloniaProperty property) => _values.CoerceValue(property);
 
         /// <summary>
-        /// Binds a <see cref="AvaloniaProperty"/> to an <see cref="IBinding"/>.
+        /// Binds a <see cref="AvaloniaProperty"/> to an <see cref="BindingBase"/>.
         /// </summary>
         /// <param name="property">The property.</param>
         /// <param name="binding">The binding.</param>
@@ -633,12 +656,10 @@ namespace Avalonia
         /// <returns>
         /// The binding expression which represents the binding instance on this object.
         /// </returns>
-        internal BindingExpressionBase Bind(AvaloniaProperty property, IBinding binding, object? anchor)
+        internal BindingExpressionBase Bind(AvaloniaProperty property, BindingBase binding, object? anchor)
         {
-            if (binding is not IBinding2 b)
-                throw new NotSupportedException($"Unsupported IBinding implementation '{binding}'.");
-            if (b.Instance(this, property, anchor) is not UntypedBindingExpressionBase expression)
-                throw new NotSupportedException("Binding returned unsupported IBindingExpression.");
+            if (binding.CreateInstance(this, property, anchor) is not UntypedBindingExpressionBase expression)
+                throw new NotSupportedException($"Binding returned unsupported {nameof(BindingExpressionBase)}.");
 
             return GetValueStore().AddBinding(property, expression);
         }
@@ -724,6 +745,24 @@ namespace Avalonia
             T newValue)
         {
             RaisePropertyChanged(property, oldValue, newValue, BindingPriority.LocalValue, true);
+        }
+
+        /// <summary>
+        /// This is an optimized path for <see cref="RaisePropertyChanged{T}(Avalonia.DirectPropertyBase{T},T,T)"/>.
+        /// This will reuse the event args in situations where many allocations would otherwise happen.
+        /// </summary>
+        /// <param name="args">Avalonia property change args</param>
+        /// <param name="inpcArgs">INPC event args/</param>
+        internal void RaisePropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> args, PropertyChangedEventArgs? inpcArgs)
+        {
+            OnPropertyChangedCore(args);
+
+            if (args.IsEffectiveValueChange && inpcArgs is not null)
+            {
+                args.Property.NotifyChanged(args);
+                _propertyChanged?.Invoke(this, args);
+                _inpcChanged?.Invoke(this, inpcArgs);
+            }
         }
 
         /// <summary>

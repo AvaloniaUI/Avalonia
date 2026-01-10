@@ -80,12 +80,16 @@ namespace Avalonia.Controls.Platform
         protected internal virtual void AccessKeyPressed(object? sender, RoutedEventArgs e)
         {
             var item = GetMenuItemCore(e.Source as Control);
+            if (item is null)
+                return;
 
-            if (item == null)
+            if (e is AccessKeyEventArgs { IsMultiple: true })
             {
+                // in case we have multiple matches, only focus item and bail
+                item.Focus(NavigationMethod.Tab);
                 return;
             }
-
+            
             if (item.HasSubMenu && item.IsEffectivelyEnabled)
             {
                 Open(item, true);
@@ -290,7 +294,7 @@ namespace Avalonia.Controls.Platform
             Menu.KeyDown += KeyDown;
             Menu.PointerPressed += PointerPressed;
             Menu.PointerReleased += PointerReleased;
-            Menu.AddHandler(AccessKeyHandler.AccessKeyPressedEvent, AccessKeyPressed);
+            Menu.AddHandler(AccessKeyHandler.AccessKeyEvent, AccessKeyPressed);
             Menu.AddHandler(MenuBase.OpenedEvent, MenuOpened);
             Menu.AddHandler(MenuItem.PointerEnteredItemEvent, PointerEntered);
             Menu.AddHandler(MenuItem.PointerExitedItemEvent, PointerExited);
@@ -332,7 +336,7 @@ namespace Avalonia.Controls.Platform
             Menu.KeyDown -= KeyDown;
             Menu.PointerPressed -= PointerPressed;
             Menu.PointerReleased -= PointerReleased;
-            Menu.RemoveHandler(AccessKeyHandler.AccessKeyPressedEvent, AccessKeyPressed);
+            Menu.RemoveHandler(AccessKeyHandler.AccessKeyEvent, AccessKeyPressed);
             Menu.RemoveHandler(MenuBase.OpenedEvent, MenuOpened);
             Menu.RemoveHandler(MenuItem.PointerEnteredItemEvent, PointerEntered);
             Menu.RemoveHandler(MenuItem.PointerExitedItemEvent, PointerExited);

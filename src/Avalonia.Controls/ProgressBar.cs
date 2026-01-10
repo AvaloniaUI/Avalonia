@@ -378,16 +378,16 @@ namespace Avalonia.Controls
                 // Indicator size calculation should consider the ProgressBar's Padding property setting
                 if (Orientation == Orientation.Horizontal)
                 {
-                    _indicator.Width = (barSize.Width - _indicator.Margin.Left - _indicator.Margin.Right) * percent;
+                    var width = (barSize.Width - _indicator.Margin.Left - _indicator.Margin.Right) * percent;
+                    _indicator.Width = width > 0 ? width : 0;
                     _indicator.Height = double.NaN;
                 }
                 else
                 {
                     _indicator.Width = double.NaN;
-                    _indicator.Height = (barSize.Height - _indicator.Margin.Top - _indicator.Margin.Bottom) *
-                                        percent;
+                    var height = (barSize.Height - _indicator.Margin.Top - _indicator.Margin.Bottom) * percent;
+                    _indicator.Height = height > 0 ? height : 0;
                 }
-
 
                 Percentage = percent * 100;
             }

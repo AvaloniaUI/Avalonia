@@ -106,6 +106,13 @@ HRESULT WindowBaseImpl::Show(bool activate, bool isDialog) {
 
         _shown = true;
         [Window setCollectionBehavior:collectionBehavior];
+        
+        // Ensure that we call needsDisplay = YES so that AvnView.updateLayer is called after the
+        // window is shown: if the client is pumping messages during the window creation/show
+        // process, it's possible that updateLayer gets called after the window is created but
+        // before it's is shown.
+        [View.layer setNeedsDisplay];
+        
         return S_OK;
     }
 }
@@ -136,6 +143,19 @@ HRESULT WindowBaseImpl::Hide() {
 
     @autoreleasepool {
         if (Window != nullptr) {
+            
+            // If window is hidden without ending attached sheet first, it will stuck in "order out" state,
+            // and block any new sheets from being attached.
+            // Additionaly, we don't know if user would define any custom panels, so we only end/close file dialog sheets.
+            auto attachedSheet = Window.attachedSheet;
+            if (attachedSheet
+                && ([attachedSheet isKindOfClass: [NSOpenPanel class]]
+                    || [attachedSheet isKindOfClass: [NSSavePanel class]]))
+            {
+                [Window endSheet:attachedSheet];
+                [attachedSheet close];
+            }
+
             auto frame = [Window frame];
 
             AvnPoint point;
@@ -391,50 +411,6 @@ HRESULT WindowBaseImpl::SetFrameThemeVariant(AvnPlatformThemeVariant variant) {
     return S_OK;
 }
 
-HRESULT WindowBaseImpl::BeginDragAndDropOperation(AvnDragDropEffects effects, AvnPoint point, IAvnClipboard *clipboard, IAvnDndResultCallback *cb, void *sourceHandle) {
-    START_COM_CALL;
-
-    auto item = TryGetPasteboardItem(clipboard);
-    [item setString:@"" forType:GetAvnCustomDataType()];
-    if (item == nil)
-        return E_INVALIDARG;
-    if (View == NULL)
-        return E_FAIL;
-
-    auto nsevent = [NSApp currentEvent];
-    auto nseventType = [nsevent type];
-
-    // If current event isn't a mouse one (probably due to malfunctioning user app)
-    // attempt to forge a new one
-    if (!((nseventType >= NSEventTypeLeftMouseDown && nseventType <= NSEventTypeMouseExited)
-            || (nseventType >= NSEventTypeOtherMouseDown && nseventType <= NSEventTypeOtherMouseDragged))) {
-        NSRect convertRect = [Window convertRectToScreen:NSMakeRect(point.X, point.Y, 0.0, 0.0)];
-        auto nspoint = NSMakePoint(convertRect.origin.x, convertRect.origin.y);
-        CGPoint cgpoint = NSPointToCGPoint(nspoint);
-        auto cgevent = CGEventCreateMouseEvent(NULL, kCGEventLeftMouseDown, cgpoint, kCGMouseButtonLeft);
-        nsevent = [NSEvent eventWithCGEvent:cgevent];
-        CFRelease(cgevent);
-    }
-
-    auto dragItem = [[NSDraggingItem alloc] initWithPasteboardWriter:item];
-
-    auto dragItemImage = [NSImage imageNamed:NSImageNameMultipleDocuments];
-    NSRect dragItemRect = {(float) point.X, (float) point.Y, [dragItemImage size].width, [dragItemImage size].height};
-    [dragItem setDraggingFrame:dragItemRect contents:dragItemImage];
-
-    int op = 0;
-    int ieffects = (int) effects;
-    if ((ieffects & (int) AvnDragDropEffects::Copy) != 0)
-        op |= NSDragOperationCopy;
-    if ((ieffects & (int) AvnDragDropEffects::Link) != 0)
-        op |= NSDragOperationLink;
-    if ((ieffects & (int) AvnDragDropEffects::Move) != 0)
-        op |= NSDragOperationMove;
-    [View beginDraggingSessionWithItems:@[dragItem] event:nsevent
-                                 source:CreateDraggingSource((NSDragOperation) op, cb, sourceHandle)];
-    return S_OK;
-}
-
 bool WindowBaseImpl::IsModal() {
     return false;
 }
@@ -482,18 +458,19 @@ HRESULT WindowBaseImpl::SetParent(IAvnWindowBase *parent) {
     START_COM_CALL;
 
     @autoreleasepool {
-        if(Parent != nullptr)
+        
+        auto oldParent = Parent.tryGet();
+        
+        if(oldParent != nullptr)
         {
-            Parent->_children.remove(this);
+            oldParent->_children.remove(this);
         }
 
         auto cparent = dynamic_cast<WindowImpl *>(parent);
         
         Parent = cparent;
-
-        _isModal = Parent != nullptr;
-        
-        if(Parent != nullptr && Window != nullptr){
+       
+        if(cparent != nullptr && Window != nullptr){
             // If one tries to show a child window with a minimized parent window, then the parent window will be
             // restored but macOS isn't kind enough to *tell* us that, so the window will be left in a non-interactive
             // state. Detect this and explicitly restore the parent window ourselves to avoid this situation.

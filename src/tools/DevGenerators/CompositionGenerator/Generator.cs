@@ -310,8 +310,9 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
             var fieldName = PropertyBackingFieldName(prop);
             return client
                     .AddMembers(DeclareField(prop.Type, fieldName))
-                    .AddMembers(PropertyDeclaration(propType, prop.Name)
-                        .AddModifiers(prop.Internal ? SyntaxKind.InternalKeyword : SyntaxKind.PublicKeyword)
+                    .AddMembers(PropertyDeclaration(propType, prop.ClientName ?? prop.Name)
+                        .AddModifiers(
+                            prop.Private ? SyntaxKind.PrivateKeyword : prop.Internal ? SyntaxKind.InternalKeyword : SyntaxKind.PublicKeyword)
                         .AddAccessorListAccessors(
                             AccessorDeclaration(SyntaxKind.GetAccessorDeclaration,
                                 Block(ReturnStatement(IdentifierName(fieldName)))),
@@ -527,19 +528,6 @@ return;
 ";
             code += $"{prop.Name} =  {readValueCode};";
             return body.AddStatements(ParseStatement(code));
-        }
-
-        static ClassDeclarationSyntax WithGetPropertyForAnimation(ClassDeclarationSyntax cl, BlockSyntax body)
-        {
-            if (body.Statements.Count == 0)
-                return cl;
-            body = body.AddStatements(
-                ParseStatement("return base.GetPropertyForAnimation(name);"));
-            var method = ((MethodDeclarationSyntax) ParseMemberDeclaration(
-                    $"public override Avalonia.Rendering.Composition.Expressions.ExpressionVariant GetPropertyForAnimation(string name){{}}")!)
-                .WithBody(body);
-
-            return cl.AddMembers(method);
         }
 
         static ClassDeclarationSyntax WithGetCompositionProperty(ClassDeclarationSyntax cl, BlockSyntax body)

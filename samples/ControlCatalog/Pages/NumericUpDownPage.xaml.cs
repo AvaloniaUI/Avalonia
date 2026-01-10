@@ -9,18 +9,13 @@ using MiniMvvm;
 
 namespace ControlCatalog.Pages
 {
-    public class NumericUpDownPage : UserControl
+    public partial class NumericUpDownPage : UserControl
     {
         public NumericUpDownPage()
         {
-            this.InitializeComponent();
+            InitializeComponent();
             var viewModel = new NumbersPageViewModel();
             DataContext = viewModel;
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
         }
 
         public static IValueConverter CultureConverter =

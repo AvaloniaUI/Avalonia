@@ -21,7 +21,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class TabControlTests
+    public class TabControlTests : ScopedTestBase
     {
         static TabControlTests()
         {
@@ -281,8 +281,8 @@ namespace Avalonia.Controls.UnitTests
 
             ApplyTemplate(target);
 
-            target.ContentPart.UpdateChild();
-            var dataContext = ((TextBlock)target.ContentPart.Child).DataContext;
+            target.ContentPart!.UpdateChild();
+            var dataContext = ((TextBlock)target.ContentPart.Child!).DataContext;
             Assert.Equal(items[0], dataContext);
 
             target.SelectedIndex = 1;
@@ -337,7 +337,7 @@ namespace Avalonia.Controls.UnitTests
                 .Select(x => x.Header)
                 .ToList();
 
-            Assert.Equal(new object[] { null, null }, result);
+            Assert.Equal(new object?[] { null, null }, result);
         }
 
         [Fact]
@@ -358,7 +358,7 @@ namespace Avalonia.Controls.UnitTests
 
             target.SelectedIndex = 2;
 
-            var page = (TabItem)target.SelectedItem;
+            var page = Assert.IsType<TabItem>(target.SelectedItem);
 
             Assert.Null(page.Content);
         }
@@ -376,7 +376,7 @@ namespace Avalonia.Controls.UnitTests
             var root = new TestRoot(target);
 
             ApplyTemplate(target);
-            target.ContentPart.UpdateChild();
+            target.ContentPart!.UpdateChild();
 
             var content = Assert.IsType<TextBlock>(target.ContentPart.Child);
             Assert.Equal("bar", content.Tag);
@@ -395,7 +395,7 @@ namespace Avalonia.Controls.UnitTests
             var root = new TestRoot(target);
 
             ApplyTemplate(target);
-            ((ContentPresenter)target.ContentPart).UpdateChild();
+            target.ContentPart!.UpdateChild();
 
             Assert.Equal(null, Assert.IsType<TextBlock>(target.ContentPart.Child).Tag);
 
@@ -403,6 +403,43 @@ namespace Avalonia.Controls.UnitTests
                     new TextBlock { Tag = "bar", Text = x });
 
             Assert.Equal("bar", Assert.IsType<TextBlock>(target.ContentPart.Child).Tag);
+        }
+
+        [Fact]
+        public void Previous_ContentTemplate_Is_Not_Reused_When_TabItem_Changes()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            int templatesBuilt = 0;
+
+            var target = new TabControl
+            {
+                Template = TabControlTemplate(),
+                Items =
+                {
+                    TabItemFactory("First tab content"),
+                    TabItemFactory("Second tab content"),
+                },
+            };
+
+            var root = new TestRoot(target);
+            ApplyTemplate(target);
+
+            target.SelectedIndex = 0;
+            target.SelectedIndex = 1;
+
+            Assert.Equal(2, templatesBuilt);
+
+            TabItem TabItemFactory(object content) => new()
+            {
+                Content = content,
+                ContentTemplate = new FuncDataTemplate<object>((actual, ns) =>
+                {
+                    Assert.Equal(content, actual);
+                    templatesBuilt++;
+                    return new Border();
+                })
+            };
         }
 
         [Fact]
@@ -436,7 +473,7 @@ namespace Avalonia.Controls.UnitTests
     <TabControl Name='tabs' ItemsSource='{Binding Tabs}'/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var tabControl = window.FindControl<TabControl>("tabs");
+                var tabControl = window.GetControl<TabControl>("tabs");
 
                 tabControl.DataContext = new { Tabs = new List<string>() };
                 window.ApplyTemplate();
@@ -472,7 +509,6 @@ namespace Avalonia.Controls.UnitTests
         public void Tab_Navigation_Should_Move_To_First_TabItem_When_No_Anchor_Element_Selected()
         {
             var services = TestServices.StyledWindow.With(
-                focusManager: new FocusManager(),
                 keyboardDevice: () => new KeyboardDevice());
             using var app = UnitTestApplication.Start(services);
 
@@ -521,7 +557,6 @@ namespace Avalonia.Controls.UnitTests
         public void Tab_Navigation_Should_Move_To_Anchor_TabItem()
         {
             var services = TestServices.StyledWindow.With(
-                focusManager: new FocusManager(),
                 keyboardDevice: () => new KeyboardDevice());
             using var app = UnitTestApplication.Start(services);
 
@@ -566,6 +601,7 @@ namespace Avalonia.Controls.UnitTests
             RaiseKeyEvent(button, Key.Tab);
 
             var item = target.ContainerFromIndex(1);
+            Assert.NotNull(item);
             Assert.Same(item, root.FocusManager.GetFocusedElement());
 
             RaiseKeyEvent(item, Key.Tab);
@@ -689,7 +725,12 @@ namespace Avalonia.Controls.UnitTests
         public void Should_TabControl_Recognizes_AccessKey(Key accessKey, int selectedTabIndex)
         {
             var ah = new AccessKeyHandler();
-            using (UnitTestApplication.Start(TestServices.StyledWindow.With(accessKeyHandler: ah)))
+            var kd = new KeyboardDevice();
+            using (UnitTestApplication.Start(TestServices.StyledWindow
+                       .With(
+                           accessKeyHandler: ah,
+                           keyboardDevice: () => kd)
+                   ))
             {
                 var impl = CreateMockTopLevelImpl();
 
@@ -707,7 +748,8 @@ namespace Avalonia.Controls.UnitTests
                         new TabItem { Header = "_Disabled", IsEnabled = false },
                     }
                 };
-
+                kd.SetFocusedElement((TabItem?)tabControl.Items[selectedTabIndex], NavigationMethod.Unspecified, KeyModifiers.None);
+                
                 var root = new TestTopLevel(impl.Object)
                 {
                     Template = CreateTemplate(),
@@ -715,7 +757,7 @@ namespace Avalonia.Controls.UnitTests
                 };
 
                 root.ApplyTemplate();
-                root.Presenter.UpdateChild();
+                root.Presenter!.UpdateChild();
                 ApplyTemplate(tabControl);
 
                 KeyDown(root, Key.LeftAlt);
@@ -806,7 +848,7 @@ namespace Avalonia.Controls.UnitTests
             private readonly ILayoutManager _layoutManager;
             public bool IsClosed { get; private set; }
 
-            public TestTopLevel(ITopLevelImpl impl, ILayoutManager layoutManager = null)
+            public TestTopLevel(ITopLevelImpl impl, ILayoutManager? layoutManager = null)
                 : base(impl)
             {
                 _layoutManager = layoutManager ?? new LayoutManager(this);
@@ -836,7 +878,7 @@ namespace Avalonia.Controls.UnitTests
         {
             target.ApplyTemplate();
 
-            target.Presenter.ApplyTemplate();
+            target.Presenter!.ApplyTemplate();
 
             foreach (var tabItem in target.GetLogicalChildren().OfType<TabItem>())
             {
@@ -844,10 +886,10 @@ namespace Avalonia.Controls.UnitTests
 
                 tabItem.ApplyTemplate();
 
-                tabItem.Presenter.UpdateChild();
+                tabItem.Presenter!.UpdateChild();
             }
 
-            target.ContentPart.ApplyTemplate();
+            target.ContentPart!.ApplyTemplate();
         }
 
         private class Item

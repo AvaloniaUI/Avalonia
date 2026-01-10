@@ -168,6 +168,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 public bool IsPrivate => false;
                 public bool IsFamily => false;
                 public bool IsStatic => true;
+                public bool ContainsGenericParameters => false;
+                public bool IsGenericMethod => false;
+                public bool IsGenericMethodDefinition => false;
                 public string Name { get; protected set; }
                 public IXamlType DeclaringType { get; }
                 public IXamlMethod MakeGenericMethod(IReadOnlyList<IXamlType> typeArguments) 
@@ -181,6 +184,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
                 public IReadOnlyList<IXamlCustomAttribute> CustomAttributes => DeclaringType.CustomAttributes;
                 public IXamlParameterInfo GetParameterInfo(int index) => new AnonymousParameterInfo(Parameters[index], index);
+                public IReadOnlyList<IXamlType> GenericParameters => [];
+                public IReadOnlyList<IXamlType> GenericArguments => [];
 
                 public void EmitCall(IXamlILEmitter emitter)
                 {

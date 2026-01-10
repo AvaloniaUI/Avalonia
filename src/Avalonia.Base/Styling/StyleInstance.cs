@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Avalonia.Animation;
 using Avalonia.Data;
+using Avalonia.Diagnostics;
 using Avalonia.PropertyStore;
 using Avalonia.Reactive;
 using Avalonia.Styling.Activators;
@@ -24,6 +25,7 @@ namespace Avalonia.Styling
         private bool _isActive;
         private List<ISetterInstance>? _setters;
         private List<IAnimation>? _animations;
+        private List<IDisposable>? _animationApplyDisposables;
         private LightweightSubject<bool>? _animationTrigger;
 
         public StyleInstance(
@@ -68,8 +70,9 @@ namespace Avalonia.Styling
             if (_animations is not null && control is Animatable animatable)
             {
                 _animationTrigger ??= new LightweightSubject<bool>();
+                _animationApplyDisposables ??= new List<IDisposable>();
                 foreach (var animation in _animations)
-                    animation.Apply(animatable, null, _animationTrigger);
+                    _animationApplyDisposables.Add(animation.Apply(animatable, null, _animationTrigger));
 
                 if (_activator is null)
                     _animationTrigger.OnNext(true);
@@ -80,6 +83,13 @@ namespace Avalonia.Styling
         {
             base.Dispose();
             _activator?.Dispose();
+            if (_animationApplyDisposables != null)
+            {
+                foreach (var item in _animationApplyDisposables)
+                {
+                    item.Dispose();
+                }
+            }
         }
 
         public new void MakeShared() => base.MakeShared();
@@ -100,8 +110,15 @@ namespace Avalonia.Styling
                 _animationTrigger?.OnNext(_activator.GetIsActive());
             }
 
+            using var activity = _activator is null ? null : Diagnostic.EvaluatingStyle()?
+                .AddTag(Diagnostic.Tags.Activator, _activator)
+                .AddTag(Diagnostic.Tags.Selector, (Source as Style)?.Selector)
+                .AddTag(Diagnostic.Tags.Style, Source as StyleBase);
+
             _isActive = _activator?.GetIsActive() ?? true;
             hasChanged = _isActive != previous;
+
+            activity?.AddTag(Diagnostic.Tags.IsActive, _isActive);
             return _isActive;
         }
 

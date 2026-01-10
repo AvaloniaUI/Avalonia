@@ -1,4 +1,5 @@
-﻿using Avalonia.Controls.Metadata;
+﻿using Avalonia.Automation.Peers;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Data;
@@ -267,6 +268,8 @@ namespace Avalonia.Controls
             }
         }
 
+        protected override AutomationPeer OnCreateAutomationPeer() => new DatePickerAutomationPeer(this);
+
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
@@ -289,6 +292,10 @@ namespace Avalonia.Controls
 
                 var (oldValue, newValue) = change.GetOldAndNewValue<DateTimeOffset?>();
                 OnSelectedDateChanged(this, new DatePickerSelectedValueChangedEventArgs(oldValue, newValue));
+            }
+            else if (change.Property == MonthFormatProperty || change.Property == YearFormatProperty || change.Property == DayFormatProperty)
+            {
+                SetSelectedDateText();
             }
         }
 
@@ -418,14 +425,6 @@ namespace Avalonia.Controls
         public void Clear()
         {
             SetCurrentValue(SelectedDateProperty, null);
-        }
-
-        protected override void UpdateDataValidation(AvaloniaProperty property, BindingValueType state, Exception? error)
-        {
-            base.UpdateDataValidation(property, state, error);
-
-            if (property == SelectedDateProperty)
-                DataValidationErrors.SetError(this, error);
         }
     }
 }

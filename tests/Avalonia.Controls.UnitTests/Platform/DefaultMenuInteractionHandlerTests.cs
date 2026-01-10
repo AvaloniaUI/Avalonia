@@ -2,15 +2,14 @@
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
-using Avalonia.Input.GestureRecognizers;
 using Avalonia.Interactivity;
-using Avalonia.VisualTree;
+using Avalonia.UnitTests;
 using Moq;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Platform
 {
-    public class DefaultMenuInteractionHandlerTests
+    public class DefaultMenuInteractionHandlerTests : ScopedTestBase
     {
         static PointerPressedEventArgs CreatePressed(object source) => new PointerPressedEventArgs(source,
             new FakePointer(), (Visual)source, default,0, new PointerPointProperties (RawInputModifiers.None, PointerUpdateKind.LeftButtonPressed),
@@ -21,7 +20,7 @@ namespace Avalonia.Controls.UnitTests.Platform
             new PointerPointProperties(RawInputModifiers.None, PointerUpdateKind.LeftButtonReleased),
             default, MouseButton.Left);
 
-        public class TopLevel
+        public class TopLevel : ScopedTestBase
         {
             [Fact]
             public void Up_Opens_MenuItem_With_SubMenu()
@@ -227,7 +226,7 @@ namespace Avalonia.Controls.UnitTests.Platform
             }
         }
 
-        public class NonTopLevel
+        public class NonTopLevel : ScopedTestBase
         {
             [Fact]
             public void Up_Selects_Previous_MenuItem()
@@ -546,7 +545,7 @@ namespace Avalonia.Controls.UnitTests.Platform
             }
         }
 
-        public class ContextMenu
+        public class ContextMenu : ScopedTestBase
         {
             [Fact]
             public void Down_Selects_Selects_First_MenuItem_When_No_Selection()
@@ -574,7 +573,7 @@ namespace Avalonia.Controls.UnitTests.Platform
             bool isTopLevel = false,
             bool hasSubMenu = false,
             bool isSubMenuOpen = false,
-            IMenuElement parent = null)
+            IMenuElement? parent = null)
         {
             var mock = new Mock<Control>();
             var item = mock.As<IMenuItem>();
@@ -588,17 +587,18 @@ namespace Avalonia.Controls.UnitTests.Platform
 
         private class TestTimer
         {
-            private Action _action;
+            private Action? _action;
 
             public bool ActionIsQueued => _action != null;
 
             public void Pulse()
             {
+                Assert.NotNull(_action);
                 _action();
                 _action = null;
             }
 
-            public void RunOnce(Action action, TimeSpan timeSpan)
+            public void RunOnce(Action? action, TimeSpan timeSpan)
             {
                 if (_action != null)
                 {
@@ -613,14 +613,14 @@ namespace Avalonia.Controls.UnitTests.Platform
         {
             public int Id { get; } = Pointer.GetNextFreeId();
 
-            public void Capture(IInputElement control)
+            public void Capture(IInputElement? control)
             {
                 Captured = control;
             }
 
-            public IInputElement Captured { get; set; }
-            public PointerType Type { get; }
-            public bool IsPrimary { get; } = true;
+            public IInputElement? Captured { get; set; }
+            public PointerType Type => PointerType.Mouse;
+            public bool IsPrimary => true;
         }
     }
 }

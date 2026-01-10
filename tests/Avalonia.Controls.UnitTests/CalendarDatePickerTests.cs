@@ -1,21 +1,17 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.ComponentModel;
+using System;
 using System.Linq;
 using Avalonia.Controls.Primitives;
-using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
-using Avalonia.Data;
-using Avalonia.Markup.Data;
+using Avalonia.Input;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
+using System.Globalization;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class CalendarDatePickerTests
+    public class CalendarDatePickerTests : ScopedTestBase
     {
         private static bool CompareDates(DateTime first, DateTime second)
         {
@@ -37,7 +33,7 @@ namespace Avalonia.Controls.UnitTests
                 };
                 DateTime value = new DateTime(2000, 10, 10);
                 datePicker.SelectedDate = value;
-                Threading.Dispatcher.UIThread.RunJobs();
+                Threading.Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
                 Assert.True(handled);
             }
         }
@@ -48,6 +44,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(Services))
             {
                 CalendarDatePicker datePicker = CreateControl();
+                Assert.NotNull(datePicker.BlackoutDates);
                 datePicker.BlackoutDates.AddDatesInPast();
 
                 DateTime goodValue = DateTime.Today.AddDays(1);
@@ -69,7 +66,35 @@ namespace Avalonia.Controls.UnitTests
                 datePicker.SelectedDate = DateTime.Today.AddDays(5);
 
                 Assert.ThrowsAny<ArgumentOutOfRangeException>(
-                    () => datePicker.BlackoutDates.Add(new CalendarDateRange(DateTime.Today, DateTime.Today.AddDays(10))));
+                    () => datePicker.BlackoutDates!.Add(new CalendarDateRange(DateTime.Today, DateTime.Today.AddDays(10))));
+            }
+        }
+
+        [Fact]
+        public void Setting_Date_Manually_With_CustomDateFormatString_Should_Be_Accepted()
+        {
+            CultureInfo.CurrentCulture = CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("en-US");
+            using (UnitTestApplication.Start(Services))
+            {
+                CalendarDatePicker datePicker = CreateControl();
+                datePicker.SelectedDateFormat = CalendarDatePickerFormat.Custom;
+                datePicker.CustomDateFormatString = "dd.MM.yyyy";
+
+                var tb = GetTextBox(datePicker);
+
+                tb.Clear();
+                RaiseTextEvent(tb, "17.10.2024");
+                RaiseKeyEvent(tb, Key.Enter, KeyModifiers.None);
+
+                Assert.Equal("17.10.2024", datePicker.Text);
+                Assert.True(CompareDates(datePicker.SelectedDate!.Value, new DateTime(2024, 10, 17)));
+
+                tb.Clear();
+                RaiseTextEvent(tb, "12.10.2024");
+                RaiseKeyEvent(tb, Key.Enter, KeyModifiers.None);
+
+                Assert.Equal("12.10.2024", datePicker.Text);
+                Assert.True(CompareDates(datePicker.SelectedDate.Value, new DateTime(2024, 10, 12)));
             }
         }
 
@@ -127,5 +152,32 @@ namespace Avalonia.Controls.UnitTests
             });
 
         }
+
+        private TextBox GetTextBox(CalendarDatePicker control)
+        {
+            return control.GetTemplateChildren()
+                .OfType<TextBox>()
+                .First();
+        }
+
+        private static void RaiseKeyEvent(TextBox textBox, Key key, KeyModifiers inputModifiers)
+        {
+            textBox.RaiseEvent(new KeyEventArgs
+            {
+                RoutedEvent = InputElement.KeyDownEvent,
+                KeyModifiers = inputModifiers,
+                Key = key
+            });
+        }
+
+        private static void RaiseTextEvent(TextBox textBox, string text)
+        {
+            textBox.RaiseEvent(new TextInputEventArgs
+            {
+                RoutedEvent = InputElement.TextInputEvent,
+                Text = text
+            });
+        }
+
     }
 }

@@ -35,7 +35,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
                         node = null;
                         break;
                     case PropertyElement prop:
-                        node = new PropertyAccessorNode(prop.Property.Name, new PropertyInfoAccessorPlugin(prop.Property, prop.AccessorFactory));
+                        node = new PropertyAccessorNode(prop.Property.Name, new PropertyInfoAccessorPlugin(prop.Property, prop.AccessorFactory), prop.AcceptsNull);
                         break;
                     case MethodAsCommandElement methodAsCommand:
                         node = new MethodCommandNode(
@@ -45,7 +45,10 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
                             methodAsCommand.DependsOnProperties);
                         break;
                     case MethodAsDelegateElement methodAsDelegate:
-                        node = new PropertyAccessorNode(methodAsDelegate.Method.Name, new MethodAccessorPlugin(methodAsDelegate.Method, methodAsDelegate.DelegateType));
+                        node = new PropertyAccessorNode(
+                            methodAsDelegate.Method.Name,
+                            new MethodAccessorPlugin(methodAsDelegate.Method, methodAsDelegate.DelegateType),
+                            methodAsDelegate.AcceptsNull);
                         break;
                     case ArrayElementPathElement arr:
                         node = new ArrayIndexerNode(arr.Indices);
@@ -91,9 +94,6 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
         internal IEnumerable<ICompiledBindingPathElement> Elements => _elements;
 
-        internal SourceMode SourceMode => Array.Exists(_elements, e => e is IControlSourceBindingPathElement)
-            ? SourceMode.Control : SourceMode.Data;
-
         /// <inheritdoc />
         public override string ToString()
             => string.Concat((IEnumerable<ICompiledBindingPathElement>) _elements);
@@ -132,15 +132,33 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
             }
             else
             {
-                _elements.Add(new PropertyElement(info, accessorFactory, _elements.Count == 0));
+                return Property(info, accessorFactory, acceptsNull: false);
             }
 
             return this;
         }
 
+        public CompiledBindingPathBuilder Property(
+            IPropertyInfo info,
+            Func<WeakReference<object?>, IPropertyInfo, IPropertyAccessor> accessorFactory,
+            bool acceptsNull)
+        {
+            _elements.Add(new PropertyElement(info, accessorFactory, _elements.Count == 0, acceptsNull));
+            return this;
+        }
+
         public CompiledBindingPathBuilder Method(RuntimeMethodHandle handle, RuntimeTypeHandle delegateType)
         {
-            _elements.Add(new MethodAsDelegateElement(handle, delegateType));
+            Method(handle, delegateType, acceptsNull: false);
+            return this;
+        }
+
+        public CompiledBindingPathBuilder Method(
+            RuntimeMethodHandle handle,
+            RuntimeTypeHandle delegateType,
+            bool acceptsNull)
+        {
+            _elements.Add(new MethodAsDelegateElement(handle, delegateType, acceptsNull));
             return this;
         }
 
@@ -228,16 +246,23 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
     {
         private readonly bool _isFirstElement;
 
-        public PropertyElement(IPropertyInfo property, Func<WeakReference<object?>, IPropertyInfo, IPropertyAccessor> accessorFactory, bool isFirstElement)
+        public PropertyElement(
+            IPropertyInfo property,
+            Func<WeakReference<object?>, IPropertyInfo, IPropertyAccessor> accessorFactory,
+            bool isFirstElement,
+            bool acceptsNull)
         {
             Property = property;
             AccessorFactory = accessorFactory;
             _isFirstElement = isFirstElement;
+            AcceptsNull = acceptsNull;
         }
 
         public IPropertyInfo Property { get; }
 
         public Func<WeakReference<object?>, IPropertyInfo, IPropertyAccessor> AccessorFactory { get; }
+
+        public bool AcceptsNull { get; }
 
         public override string ToString()
             => _isFirstElement ? Property.Name : $".{Property.Name}";
@@ -245,17 +270,23 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
     internal class MethodAsDelegateElement : ICompiledBindingPathElement
     {
-        public MethodAsDelegateElement(RuntimeMethodHandle method, RuntimeTypeHandle delegateType)
+        public MethodAsDelegateElement(
+            RuntimeMethodHandle method,
+            RuntimeTypeHandle delegateType,
+            bool acceptsNull)
         {
             Method = MethodBase.GetMethodFromHandle(method) as MethodInfo
                 ?? throw new ArgumentException("Invalid method handle", nameof(method));
             DelegateType = Type.GetTypeFromHandle(delegateType)
                 ?? throw new ArgumentException("Unexpected null returned from Type.GetTypeFromHandle in MethodAsDelegateElement");
+            AcceptsNull = acceptsNull;
         }
 
         public MethodInfo Method { get; }
 
         public Type DelegateType { get; }
+        
+        public bool AcceptsNull { get; }
     }
 
     internal class MethodAsCommandElement : ICompiledBindingPathElement

@@ -14,13 +14,13 @@ namespace Avalonia.Themes.Fluent;
 /// <remarks>
 /// This class can only be used in <see cref="FluentTheme.Palettes"/>.
 /// </remarks>
-public partial class ColorPaletteResources : AvaloniaObject, IResourceNode
+public partial class ColorPaletteResources : ResourceProvider
 {
     private readonly Dictionary<string, Color> _colors = new(StringComparer.InvariantCulture);
 
-    public bool HasResources => _hasAccentColor || _colors.Count > 0;
+    public override bool HasResources => _hasAccentColor || _colors.Count > 0;
 
-    public bool TryGetResource(object key, ThemeVariant? theme, out object? value)
+    public override bool TryGetResource(object key, ThemeVariant? theme, out object? value)
     {
         if (key is string strKey)
         {
@@ -86,7 +86,7 @@ public partial class ColorPaletteResources : AvaloniaObject, IResourceNode
 
         return default;
     }
-    
+
     private void SetColor(string key, Color value)
     {
         if (value == default)
@@ -113,6 +113,7 @@ public partial class ColorPaletteResources : AvaloniaObject, IResourceNode
                         _accentColorLight1, _accentColorLight2, _accentColorLight3) =
                     SystemAccentColors.CalculateAccentShades(_accentColor);
             }
+            RaiseResourcesChanged();
         }
     }
 }

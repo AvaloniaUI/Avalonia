@@ -22,11 +22,13 @@
             <Panel x:Name="PART_Container">
               <Border x:Name="PART_Background"
                       Background="{TemplateBinding Background}"
-                      IsHitTestVisible="False"/>
+                      IsHitTestVisible="False"
+                      Win32Properties.NonClientHitTestResult="Caption" />
               <CaptionButtons x:Name="PART_CaptionButtons"
                               VerticalAlignment="Top" 
                               HorizontalAlignment="Right"
-                              Foreground="{TemplateBinding Foreground}" />
+                              Foreground="{TemplateBinding Foreground}"
+                              Win32Properties.NonClientHitTestResult="Client" />
             </Panel>
           </Panel>
         </ControlTemplate>

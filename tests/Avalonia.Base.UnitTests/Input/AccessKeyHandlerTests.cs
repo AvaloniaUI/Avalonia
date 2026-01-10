@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests.Input
 {
-    public class AccessKeyHandlerTests
+    public class AccessKeyHandlerTests : ScopedTestBase
     {
         [Fact]
         public void Should_Raise_Key_Events_For_Unregistered_Access_Key()
@@ -142,68 +142,85 @@ namespace Avalonia.Base.UnitTests.Input
         }
 
         [Fact]
-        public void Should_Raise_AccessKeyPressed_For_Registered_Access_Key()
+        public void Should_Raise_AccessKey_For_Registered_Access_Key()
         {
-            var button = new Button();
-            var root = new TestRoot(button);
-            var target = new AccessKeyHandler();
-            var raised = 0;
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var button = new Button();
+                var root = new TestRoot(button);
+                var target = new AccessKeyHandler();
+                var raised = 0;
 
-            target.SetOwner(root);
-            target.Register('A', button);
-            button.AddHandler(AccessKeyHandler.AccessKeyPressedEvent, (s, e) => ++raised);
+                KeyboardDevice.Instance?.SetFocusedElement(button, NavigationMethod.Unspecified, KeyModifiers.None);
 
-            KeyDown(root, Key.LeftAlt);
-            Assert.Equal(0, raised);
+                target.SetOwner(root);
+                target.Register('A', button);
+                button.AddHandler(AccessKeyHandler.AccessKeyEvent, (s, e) => ++raised);
 
-            KeyDown(root, Key.A, KeyModifiers.Alt);
-            Assert.Equal(1, raised);
+                KeyDown(root, Key.LeftAlt);
+                Assert.Equal(0, raised);
 
-            KeyUp(root, Key.A, KeyModifiers.Alt);
-            KeyUp(root, Key.LeftAlt);
+                KeyDown(root, Key.A, KeyModifiers.Alt);
+                Assert.Equal(1, raised);
 
-            Assert.Equal(1, raised);
+                KeyUp(root, Key.A, KeyModifiers.Alt);
+                KeyUp(root, Key.LeftAlt);
+
+                Assert.Equal(1, raised);
+            }
         }
 
-        [Fact]
-        public void Should_Not_Raise_AccessKeyPressed_For_Registered_Access_Key_When_Not_Effectively_Enabled()
+        [Theory]
+        [InlineData(false, 0)]
+        [InlineData(true, 1)]
+        public void Should_Raise_AccessKey_For_Registered_Access_Key_When_Effectively_Enabled(bool enabled, int expected)
         {
-            var button = new Button();
-            var root = new TestRoot(button) { IsEnabled = false };
-            var target = new AccessKeyHandler();
-            var raised = 0;
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var button = new Button();
+                var root = new TestRoot(button) { IsEnabled = enabled };
+                var target = new AccessKeyHandler();
+                var raised = 0;
+                
+                KeyboardDevice.Instance?.SetFocusedElement(button, NavigationMethod.Unspecified, KeyModifiers.None);
+                
+                target.SetOwner(root);
+                target.Register('A', button);
+                button.AddHandler(AccessKeyHandler.AccessKeyEvent, (s, e) => ++raised);
 
-            target.SetOwner(root);
-            target.Register('A', button);
-            button.AddHandler(AccessKeyHandler.AccessKeyPressedEvent, (s, e) => ++raised);
+                KeyDown(root, Key.LeftAlt);
+                Assert.Equal(0, raised);
 
-            KeyDown(root, Key.LeftAlt);
-            Assert.Equal(0, raised);
+                KeyDown(root, Key.A, KeyModifiers.Alt);
+                Assert.Equal(expected, raised);
 
-            KeyDown(root, Key.A, KeyModifiers.Alt);
-            Assert.Equal(0, raised);
-
-            KeyUp(root, Key.A, KeyModifiers.Alt);
-            KeyUp(root, Key.LeftAlt);
-
-            Assert.Equal(0, raised);
+                KeyUp(root, Key.A, KeyModifiers.Alt);
+                KeyUp(root, Key.LeftAlt);
+                Assert.Equal(expected, raised);
+            }
         }
 
         [Fact]
         public void Should_Open_MainMenu_On_Alt_KeyUp()
         {
-            var root = new TestRoot();
-            var target = new AccessKeyHandler();
-            var menu = new Mock<IMainMenu>();
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var target = new AccessKeyHandler();
+                var menu = new FakeMenu();
+                var root = new TestRoot(menu);
 
-            target.SetOwner(root);
-            target.MainMenu = menu.Object;
+                KeyboardDevice.Instance?.SetFocusedElement(menu, NavigationMethod.Unspecified,
+                    KeyModifiers.None);
 
-            KeyDown(root, Key.LeftAlt);
-            menu.Verify(x => x.Open(), Times.Never);
+                target.SetOwner(root);
+                target.MainMenu = menu;
 
-            KeyUp(root, Key.LeftAlt);
-            menu.Verify(x => x.Open(), Times.Once);
+                KeyDown(root, Key.LeftAlt);
+                Assert.Equal(0, menu.TimesOpenCalled);
+                
+                KeyUp(root, Key.LeftAlt);
+                Assert.Equal(1, menu.TimesOpenCalled);
+            }
         }
 
         private static void KeyDown(IInputElement target, Key key, KeyModifiers modifiers = KeyModifiers.None)
@@ -224,6 +241,16 @@ namespace Avalonia.Base.UnitTests.Input
                 Key = key,
                 KeyModifiers = modifiers,
             });
+        }
+        
+        class FakeMenu : Menu
+        {
+            public int TimesOpenCalled { get; set; }
+            
+            public override void Open()
+            {
+                TimesOpenCalled++;
+            }
         }
     }
 }

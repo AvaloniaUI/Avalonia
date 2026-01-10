@@ -30,8 +30,6 @@ ComPtr<IAvnApplicationEvents> _events;
             break;
         }
         
-        [[NSApplication sharedApplication] setActivationPolicy: AvnDesiredActivationPolicy];
-        
         [[NSUserDefaults standardUserDefaults] setBool:NO forKey:@"NSFullScreenMenuItemEverywhere"];
         
         [[NSApplication sharedApplication] setHelpMenu: [[NSMenu new] initWithTitle:@""]];
@@ -57,6 +55,16 @@ ComPtr<IAvnApplicationEvents> _events;
 - (void)applicationDidUnhide:(NSNotification *)notification
 {
     _events->OnUnhide();
+}
+
+- (void) applicationDidBecomeActive:(NSNotification *) notification
+{
+    _events->OnActivate();
+}
+
+- (void) applicationDidResignActive:(NSNotification *) notification
+{
+    _events->OnDeactivate();
 }
 
 - (void)application:(NSApplication *)sender openFiles:(NSArray<NSString *> *)filenames

@@ -84,6 +84,8 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 
         private void ResourcesChanged(object? sender, ResourcesChangedEventArgs e) => PublishValue();
 
+        private void ResourcesChanged2(object? sender, ResourcesChangedToken token) => PublishValue();
+
         private void ActualThemeVariantChanged(object? sender, EventArgs e)
         {
             if (!IsRunning)
@@ -132,8 +134,8 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
         {
             if (host is not null)
             {
-                host.ResourcesChanged += ResourcesChanged;
-                
+                host.SubscribeToResourcesChanged(ResourcesChanged, ResourcesChanged2);
+
                 if (!_overrideThemeVariant && _host is IThemeVariantHost themeVariantHost)
                 {
                     _themeVariant = themeVariantHost.ActualThemeVariant;
@@ -146,7 +148,8 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
         {
             if (host is not null)
             {
-                host.ResourcesChanged -= ResourcesChanged;
+                host.UnsubscribeFromResourcesChanged(ResourcesChanged, ResourcesChanged2);
+
                 if (!_overrideThemeVariant && _host is IThemeVariantHost themeVariantHost)
                     themeVariantHost.ActualThemeVariantChanged -= ActualThemeVariantChanged;
             }

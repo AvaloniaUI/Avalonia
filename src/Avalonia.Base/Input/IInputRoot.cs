@@ -12,7 +12,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Gets or sets the keyboard navigation handler.
         /// </summary>
-        IKeyboardNavigationHandler KeyboardNavigationHandler { get; }
+        IKeyboardNavigationHandler? KeyboardNavigationHandler { get; }
 
         /// <summary>
         /// Gets focus manager of the root.

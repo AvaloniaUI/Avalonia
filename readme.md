@@ -1,7 +1,5 @@
-
-![Star Banner](https://github.com/AvaloniaUI/Avalonia/assets/552074/0f7f683f-2ddd-401f-ba28-3f703cc78ee0)
-![Header](https://github.com/AvaloniaUI/Avalonia/assets/552074/d8388fc4-469e-47c5-926d-faf25233ad4e)
-
+[![Star_Banner@3x](https://github.com/user-attachments/assets/d55eb468-fa5c-499f-858e-54618beb6f92)](https://github.com/sponsors/AvaloniaUI)
+[![Hero](https://github.com/user-attachments/assets/7436f0e7-8aea-4cff-886a-e2faef29ca37)](https://avaloniaui.net?utm_source=github&utm_medium=referral&utm_content=readme_link)
 
 [![Telegram](https://raw.githubusercontent.com/Patrolavia/telegram-badge/master/chat.svg)](https://t.me/Avalonia)
  [![Build Status](https://dev.azure.com/AvaloniaUI/AvaloniaUI/_apis/build/status/AvaloniaUI.Avalonia)](https://dev.azure.com/AvaloniaUI/AvaloniaUI/_build/latest?definitionId=4) [![Backers on Open Collective](https://img.shields.io/opencollective/backers/Avalonia?logo=opencollective)](#backers) [![Sponsors on Open Collective](https://img.shields.io/opencollective/sponsors/Avalonia?logo=opencollective)](#sponsors) [![GitHub Sponsors](https://img.shields.io/github/sponsors/AvaloniaUI?logo=github)](https://github.com/sponsors/AvaloniaUI) ![License](https://img.shields.io/github/license/avaloniaui/avalonia.svg)
@@ -10,14 +8,14 @@
 
 ## 📖 About 
 
-[Avalonia](https://avaloniaui.net) is a cross-platform UI framework for dotnet, providing a flexible styling system and supporting a wide range of platforms such as Windows, macOS, Linux, iOS, Android and WebAssembly. Avalonia is mature and production ready and is used by companies, including [Schneider Electric](https://avaloniaui.net/showcase#se), [Unity](https://avaloniaui.net/showcase#unity), [JetBrains](https://avaloniaui.net/showcase#rider) and [GitHub](https://avaloniaui.net/showcase#github).
+[Avalonia](https://avaloniaui.net?utm_source=github&utm_medium=referral&utm_content=readme_link) is a cross-platform UI framework for dotnet, providing a flexible styling system and supporting a wide range of platforms such as Windows, macOS, Linux, iOS, Android and WebAssembly. Avalonia is mature and production ready and is used by companies, including [Schneider Electric](https://avaloniaui.net/showcase#se), [Unity](https://avaloniaui.net/showcase#unity), [JetBrains](https://avaloniaui.net/showcase#rider) and [GitHub](https://avaloniaui.net/showcase#github).
 
 Considered by many to be the spiritual successor to WPF, Avalonia UI provides a familiar, modern development experience for XAML developers creating cross-platform applications. While Avalonia UI is [similar to WPF](https://docs.avaloniaui.net/docs/next/get-started/wpf/), it isn't a 1:1 copy, and you'll find plenty of improvements. 
 
-For those seeking a cross-platform WPF, we have created [Avalonia XPF](https://avaloniaui.net/xpf), enabling WPF applications to run on macOS and Linux with little to no code changes. Avalonia XPF is a commercial product and is licensed per-app, per-platform. 
+For those seeking a cross-platform WPF, we have created [Avalonia XPF]([https://avaloniaui.net/xpf](https://avaloniaui.net/xpf?utm_source=github&utm_medium=referral&utm_content=readme_link)), enabling WPF applications to run on macOS and Linux with little to no code changes. Avalonia XPF is a commercial product and is licensed per-app, per-platform. 
 
 #### Blog
-To see the latest announcements and read about the state of Avalonia, check out the [Avalonia UI Blog](https://www.avaloniaui.net/Blog/).
+To see the latest announcements and read about the state of Avalonia, check out the [Avalonia UI Blog](https://www.avaloniaui.net/blog?utm_source=github&utm_medium=referral&utm_content=readme_link).
 
 #### Breaking Changes
 You can also see what [breaking changes](https://github.com/AvaloniaUI/Avalonia/issues/3538) we have planned and what our [past breaking changes](https://github.com/AvaloniaUI/Avalonia/wiki/Breaking-Changes) have been. 
@@ -27,10 +25,10 @@ You can also see what [breaking changes](https://github.com/AvaloniaUI/Avalonia/
 
 ## 🚀 Getting Started
 
-See our [Get Started](https://avaloniaui.net/GettingStarted) guide to begin developing apps with Avalonia UI. 
+See our [Get Started](https://avaloniaui.net/gettingstarted?utm_source=github&utm_medium=referral&utm_content=readme_link) guide to begin developing apps with Avalonia UI. 
 
 ### Visual Studio 
-The Avalonia [Visual Studio Extension](https://marketplace.visualstudio.com/items?itemName=AvaloniaTeam.AvaloniaforVisualStudio) contains project and control templates that will help you get started, or you can use the .NET Core CLI. For a starter guide see our [documentation](https://docs.avaloniaui.net/docs/getting-started).
+The Avalonia [Visual Studio Extension](https://marketplace.visualstudio.com/items?itemName=AvaloniaTeam.AvaloniaVS) contains project and control templates that will help you get started, or you can use the .NET Core CLI. For a starter guide see our [documentation](https://docs.avaloniaui.net/docs/getting-started).
 
 ### JetBrains Rider
 [JetBrains Rider](https://www.jetbrains.com/rider/whatsnew/?mkt_tok=eyJpIjoiTURBNU1HSmhNV0kwTUdFMiIsInQiOiJtNnU2VEc1TlNLa1ZRVkROYmdZYVpYREJsaU1qdUhmS3dxSzRHczdYWHl0RVlTNDMwSFwvNUs3VENTNVM0bVcyNFdaRmVYZzVWTTF1N3VrQWNGTkJreEhlam1hMlB4UVVWcHBGM1dNOUxoXC95YnRQdGgyUXl1YmZCM3h3d3BVWWdBIn0%3D#avalonia-support) now has official support for Avalonia.
@@ -47,9 +45,19 @@ Install-Package Avalonia.Desktop
 ```
 
 ## Showcase
-[![Showcase_Banner@3x](https://github.com/AvaloniaUI/Avalonia/assets/552074/8a0af0e9-e45e-442c-830d-4af3767d6469)](https://avaloniaui.net/showcase)
+[![Showcase_Banner@3x](https://github.com/user-attachments/assets/42d21506-3d5a-4213-a4b4-7889a48acdc8)](https://avaloniaui.net/showcase?utm_source=github&utm_medium=referral&utm_content=readme_link)
 
-See what others have built with Avalonia UI on our [Showcase](https://avaloniaui.net/Showcase). We welcome submissions! 
+See what others have built with Avalonia UI on our [Showcase](https://avaloniaui.net/showcase?utm_source=github&utm_medium=referral&utm_content=readme_link). We welcome submissions! 
+
+## Sponsors 
+Avalonia development is supported by the generous sponsorship of [Devolutions](https://devolutions.net/?utm_source=pr&utm_medium=partnership&utm_campaign=avalonia&utm_id=C086&member_status=responded). 
+
+<a href="https://devolutions.net/?utm_source=pr&utm_medium=partnership&utm_campaign=avalonia&utm_id=C086&member_status=responded"><img width="200" alt="devolutions-color-hr" src="https://github.com/user-attachments/assets/597e3650-0b80-496e-84b2-db51fbe7e06e"/></a>
+
+
+## Community 
+Join our community hub to get early access to upcoming features, share your thoughts, and connect directly with the Avalonia team. 
+[![communityannouncement-banner 1](https://github.com/user-attachments/assets/21950b56-cd28-4574-9a0a-73bb17b89d31)](https://avaloniaui.community) 
 
 ## Bleeding Edge Builds
 
@@ -68,7 +76,7 @@ We have a [range of samples](https://github.com/AvaloniaUI/Avalonia.Samples) to 
 
 ## Building and Using
 
-See the [build instructions here](Documentation/build.md).
+See the [build instructions here](docs/build.md).
 
 ## Contributing
 
@@ -104,11 +112,10 @@ Thank you to all our backers! 🙏 [[Become a backer](https://opencollective.com
 
 ## Commercial Support 
 
-We have a range of [support plans available](https://avaloniaui.net/support) for those looking to partner with the creators of Avalonia, enabling access to the best support at every step of the development process.
+We have a range of [support plans available](https://avaloniaui.net/support?utm_source=github&utm_medium=referral&utm_content=readme_link) for those looking to partner with the creators of Avalonia, enabling access to the best support at every step of the development process.
 
 *Please note that donations are not considered payment for commercial support agreements. Please contact us to discuss your needs first. [team@avaloniaui.net](mailto://team@avaloniaui.net)*
 
-## Avalonia XPF
+## Avalonia XPF - Our cross-platform WPF
 Unleash the full potential of your existing WPF apps with our cross-platform UI framework, enabling WPF apps to run on macOS and Linux without requiring expensive and risky rewrites.
-
-[![GH_Banner](https://user-images.githubusercontent.com/552074/218457976-92e76834-9e22-4e35-acfa-aa50281bc0f9.png)](https://avaloniaui.net/xpf)
+[![GH_Banner](https://github.com/user-attachments/assets/a6176267-1187-45ff-b82b-fcc7048e54b7)](https://avaloniaui.net/xpf?utm_source=github&utm_medium=referral&utm_content=readme_ad)

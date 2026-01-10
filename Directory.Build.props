@@ -4,10 +4,14 @@
   <Import Project="$(MSBuildThisFileDirectory)/build/WarnAsErrors.props" />
   <PropertyGroup>
       <PackageOutputPath Condition="'$(PackageOutputPath)' == ''">$(MSBuildThisFileDirectory)build-intermediate/nuget</PackageOutputPath>
-      <AvaloniaPreviewerNetCoreToolPath>$(MSBuildThisFileDirectory)\src\tools\Avalonia.Designer.HostApp\bin\$(Configuration)\netstandard2.0\Avalonia.Designer.HostApp.dll</AvaloniaPreviewerNetCoreToolPath>
+      <AvaloniaPreviewerNetCoreToolPath>$(MSBuildThisFileDirectory)\src\tools\Avalonia.Designer.HostApp\bin\$(Configuration)\$(AvsCurrentTargetFramework)\Avalonia.Designer.HostApp.dll</AvaloniaPreviewerNetCoreToolPath>
       <!-- https://github.com/dotnet/msbuild/issues/2661 -->
       <AddSyntheticProjectReferencesForSolutionDependencies>false</AddSyntheticProjectReferencesForSolutionDependencies>
       <RunApiCompat>False</RunApiCompat>
-      <LangVersion>12</LangVersion>
+      <LangVersion>14.0</LangVersion>
+      <CreateHardLinksForCopyAdditionalFilesIfPossible>true</CreateHardLinksForCopyAdditionalFilesIfPossible>
+      <CreateHardLinksForCopyFilesToOutputDirectoryIfPossible>true</CreateHardLinksForCopyFilesToOutputDirectoryIfPossible>
+      <CreateHardLinksForCopyLocalIfPossible>true</CreateHardLinksForCopyLocalIfPossible>
+      <CreateHardLinksForPublishFilesIfPossible>true</CreateHardLinksForPublishFilesIfPossible>
   </PropertyGroup>
 </Project>

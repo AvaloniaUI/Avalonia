@@ -97,11 +97,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="LetterSpacing"/> property.
         /// </summary>
-        public static readonly AttachedProperty<double> LetterSpacingProperty =
-            AvaloniaProperty.RegisterAttached<TextBlock, Control, double>(
-                nameof(LetterSpacing),
-                0,
-                inherits: true);
+        public static readonly StyledProperty<double> LetterSpacingProperty =
+            TextElement.LetterSpacingProperty.AddOwner<TextBlock>();
 
         /// <summary>
         /// Defines the <see cref="MaxLines"/> property.
@@ -162,7 +159,7 @@ namespace Avalonia.Controls
                 nameof(Inlines), t => t.Inlines, (t, v) => t.Inlines = v);
 
         private TextLayout? _textLayout;
-        protected Size _constraint;
+        protected Size _constraint = new(double.NaN, double.NaN);
         protected IReadOnlyList<TextRun>? _textRuns;
         private InlineCollection? _inlines;
 
@@ -365,6 +362,13 @@ namespace Avalonia.Controls
         protected override bool BypassFlowDirectionPolicies => true;
 
         internal bool HasComplexContent => Inlines != null && Inlines.Count > 0;
+
+        private protected Size GetMaxSizeFromConstraint()
+        {
+            var maxWidth = double.IsNaN(_constraint.Width) ? 0.0 : _constraint.Width;
+            var maxHeight = double.IsNaN(_constraint.Height) ? 0.0 : _constraint.Height;
+            return new Size(maxWidth, maxHeight);
+        }
 
         /// <summary>
         /// The BaselineOffset property provides an adjustment to baseline offset
@@ -597,8 +601,13 @@ namespace Avalonia.Controls
                 context.FillRectangle(background, new Rect(Bounds.Size));
             }
 
-            var scale = LayoutHelper.GetLayoutScale(this);
-            var padding = LayoutHelper.RoundLayoutThickness(Padding, scale, scale);
+            var padding = Padding;
+            if (UseLayoutRounding)
+            {
+                var scale = LayoutHelper.GetLayoutScale(this);
+                padding = LayoutHelper.RoundLayoutThickness(padding, scale);
+            }
+
             var top = padding.Top;
             var textHeight = TextLayout.Height;
 
@@ -621,7 +630,7 @@ namespace Avalonia.Controls
 
         protected virtual void RenderTextLayout(DrawingContext context, Point origin)
         {
-            TextLayout.Draw(context, origin + new Point(TextLayout.OverhangLeading, 0));
+            TextLayout.Draw(context, origin);
         }
 
         private bool _clearTextInternal;
@@ -653,7 +662,7 @@ namespace Avalonia.Controls
                 TextDecorations,
                 Foreground);
 
-            var paragraphProperties = new GenericTextParagraphProperties(FlowDirection, TextAlignment, true, false,
+            var paragraphProperties = new GenericTextParagraphProperties(FlowDirection, IsMeasureValid ? TextAlignment : TextAlignment.Left, true, false,
                 defaultProperties, TextWrapping, LineHeight, 0, LetterSpacing)
             {
                 LineSpacing = LineSpacing
@@ -670,12 +679,14 @@ namespace Avalonia.Controls
                 textSource = new SimpleTextSource(text ?? "", defaultProperties);
             }
 
+            var maxSize = GetMaxSizeFromConstraint();
+
             return new TextLayout(
                 textSource,
                 paragraphProperties,
                 TextTrimming,
-                _constraint.Width,
-                _constraint.Height,
+                maxSize.Width,
+                maxSize.Height,
                 MaxLines);
         }
 
@@ -699,15 +710,27 @@ namespace Avalonia.Controls
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            var scale = LayoutHelper.GetLayoutScale(this);
-            var padding = LayoutHelper.RoundLayoutThickness(Padding, scale, scale);
+            var padding = Padding;
 
-            _constraint = availableSize.Deflate(padding);
+            if (UseLayoutRounding)
+            {
+                var scale = LayoutHelper.GetLayoutScale(this);
+                padding = LayoutHelper.RoundLayoutThickness(Padding, scale);
+            }
 
-            //Reset TextLayout otherwise constraint might be outdated.
-            _textLayout?.Dispose();
-            _textLayout = null;
+            var deflatedSize = availableSize.Deflate(padding);
 
+            if (_constraint != deflatedSize)
+            {
+                //Reset TextLayout when the constraint is not matching.
+                _textLayout?.Dispose();
+                _textLayout = null;
+                _constraint = deflatedSize;
+
+                //Force arrange so text will be properly aligned.
+                InvalidateArrange();
+            }
+           
             var inlines = Inlines;
 
             if (HasComplexContent)
@@ -716,35 +739,48 @@ namespace Avalonia.Controls
 
                 foreach (var inline in inlines!)
                 {
-                    inline.BuildTextRun(textRuns);
+                    inline.BuildTextRun(textRuns, deflatedSize);
                 }
 
                 _textRuns = textRuns;
             }
 
-            var width = TextLayout.OverhangLeading + TextLayout.WidthIncludingTrailingWhitespace + TextLayout.OverhangTrailing;
+            //This implicitly recreated the TextLayout with a new constraint if we previously reset it.
+            var textLayout = TextLayout;
 
-            return new Size(width, TextLayout.Height).Inflate(padding);
+            // The textWidth used here is matching that TextPresenter uses to measure the text.
+            return new Size(textLayout.WidthIncludingTrailingWhitespace, textLayout.Height).Inflate(padding);
         }
 
         protected override Size ArrangeOverride(Size finalSize)
         {
-            var scale = LayoutHelper.GetLayoutScale(this);
-            var padding = LayoutHelper.RoundLayoutThickness(Padding, scale, scale);
+            var scale = 1.0;
+            var padding = Padding;
 
-            //Fixes: #11019
-            if (finalSize.Width < _constraint.Width)
+            if (UseLayoutRounding)
             {
-                _textLayout?.Dispose();
-                _textLayout = null;
-                _constraint = finalSize.Deflate(padding);
+                scale = LayoutHelper.GetLayoutScale(this);
+                padding = LayoutHelper.RoundLayoutThickness(Padding, scale);
             }
 
+            var availableSize = finalSize.Deflate(padding);
+
+            //ToDo: Introduce a text run cache to be able to reuse shaped runs etc.
+            _textLayout?.Dispose();
+            _textLayout = null;
+            _constraint = availableSize;
+
+            //This implicitly recreated the TextLayout with a new constraint.
+            var textLayout = TextLayout;
+
             if (HasComplexContent)
-            {             
+            {
+                //Clear visual children before complex run arrangement
+                VisualChildren.Clear();
+
                 var currentY = padding.Top;
 
-                foreach (var textLine in TextLayout.TextLines)
+                foreach (var textLine in textLayout.TextLines)
                 {
                     var currentX = padding.Left + textLine.Start;
 
@@ -755,9 +791,15 @@ namespace Avalonia.Controls
                             if (drawable is EmbeddedControlRun controlRun
                                 && controlRun.Control is Control control)
                             {
+                                //Add again to prevent clipping
+                                //Fixes: #17194
+                                VisualChildren.Add(control);
+
+                                var offsetY = TextLineImpl.GetBaselineOffset(textLine, drawable);
+
                                 control.Arrange(
-                                    new Rect(new Point(currentX, currentY),
-                                    new Size(control.DesiredSize.Width, textLine.Height)));
+                                    new Rect((new Point(currentX, currentY + offsetY)),
+                                    control.DesiredSize));
                             }
 
                             currentX += drawable.Size.Width;
@@ -946,6 +988,6 @@ namespace Avalonia.Controls
 
                 return new TextEndOfParagraph();
             }
-         }
+        }
     }
 }

@@ -10,6 +10,18 @@
         /// <summary>
         /// Sends a request to activate a control and initiate its single, unambiguous action.
         /// </summary>
+        /// <remarks>
+        /// <list type="table">
+        ///   <item>
+        ///     <term>Windows</term>
+        ///     <description><c>IInvokeProvider.Invoke</c></description>
+        ///   </item>
+        ///   <item>
+        ///     <term>macOS</term>
+        ///     <description><c>NSAccessibilityProtocol.accessibilityPerformPress</c></description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
         void Invoke();
     }
 }

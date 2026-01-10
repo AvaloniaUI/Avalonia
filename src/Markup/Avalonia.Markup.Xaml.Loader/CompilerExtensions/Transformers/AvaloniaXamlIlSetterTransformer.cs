@@ -60,6 +60,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     avaloniaPropertyNode = XamlIlAvaloniaPropertyHelper.CreateNode(context, propertyName,
                         new XamlAstClrTypeReference(on, targetType, false), property.Values[0]);
 
+                    if (avaloniaPropertyNode is IXamlIlAvaloniaClassPropertyNode && HasComplexActivator(styleParent!))
+                    {
+                        throw new XamlStyleTransformException($"Cannot set Classes Binding property '{propertyName}' because the style has an activator."
+                            , node);
+                    }
+
                     property.Values = new List<IXamlAstValueNode> {avaloniaPropertyNode};
                 }
 
@@ -71,18 +77,31 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     .FirstOrDefault(x => x.Property.GetClrProperty().Name == "PropertyPath");
                 if (propertyPath == null)
                     throw new XamlStyleTransformException("Setter without a property or property path is not valid", node);
-                if (propertyPath.Values[0] is IXamlIlPropertyPathNode ppn
-                    && ppn.PropertyType != null)
-                    propType = ppn.PropertyType;
                 else
                     throw new XamlStyleTransformException("Unable to get the property path property type", node);
             }
 
             var valueProperty = on.Children
                 .OfType<XamlAstXamlPropertyValueNode>()
-                .FirstOrDefault(p => p.Property.GetClrProperty().Name == "Value" && p.Values.Count == 1 && p.Values[0] is XamlAstTextNode);
-            var textValue = valueProperty?.Values.FirstOrDefault() as XamlAstTextNode
-                            ?? on.Children.OfType<XamlAstTextNode>().FirstOrDefault();
+                .FirstOrDefault(p => p.Property.GetClrProperty().Name == "Value");
+
+            XamlAstTextNode? textValue = null;
+
+            if (valueProperty is not null)
+            {
+                if (valueProperty.Values.Count == 1)
+                    textValue = valueProperty.Values[0] as XamlAstTextNode;
+            }
+            else
+            {
+                var nonPropertyChildren = on.Children
+                    .Where(child => child is not XamlAstXamlPropertyValueNode)
+                    .ToArray();
+
+                if (nonPropertyChildren.Length == 1)
+                    textValue = nonPropertyChildren[0] as XamlAstTextNode;
+            }
+
             if (textValue is not null
                 && XamlTransformHelpers.TryGetCorrectlyTypedValue(context, textValue,
                     propType, out _))
@@ -121,6 +140,24 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             }
 
             return node;
+
+            // Check that the style has selector activator and complexity
+            bool HasComplexActivator(AvaloniaXamlIlTargetTypeMetadataNode style)
+            {
+                if (style.Value is XamlAstObjectNode valueNode &&
+                    valueNode.Children
+                        .FirstOrDefault(n => n is XamlAstXamlPropertyValueNode
+                            { 
+                                Property: XamlAstClrProperty{ Name : "Selector" }
+                            }) is XamlAstXamlPropertyValueNode { Values.Count : >= 1  } selectorNone
+                    )
+                {
+                    return selectorNone.Values.Count > 1 ||
+                        (selectorNone.Values[0] is not XamlIlTypeSelector);
+                }
+                return false;
+            }
+
         }
 
         class SetterValueProperty : XamlAstClrProperty
@@ -131,7 +168,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             {
                 Getter = setterType.Methods.First(m => m.Name == "get_Value");
                 var method = setterType.Methods.First(m => m.Name == "set_Value");
-                Setters.Add(new XamlIlDirectCallPropertySetter(method, types.IBinding, false));
+                Setters.Add(new XamlIlDirectCallPropertySetter(method, types.BindingBase, false));
                 Setters.Add(new XamlIlDirectCallPropertySetter(method, types.UnsetValueType, false));
                 Setters.Add(new XamlIlDirectCallPropertySetter(method, targetType, targetType.AcceptsNull()));
             }

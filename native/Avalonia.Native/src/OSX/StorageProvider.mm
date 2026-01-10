@@ -173,8 +173,7 @@ public:
             if(initialDirectory != nullptr)
             {
                 auto directoryString = [NSString stringWithUTF8String:initialDirectory];
-                panel.directoryURL = [NSURL fileURLWithPath:directoryString
-                                            isDirectory:true];
+                panel.directoryURL = [NSURL URLWithString:directoryString];
             }
             
             auto handler = ^(NSModalResponse result) {
@@ -236,12 +235,6 @@ public:
                 panel.title = [NSString stringWithUTF8String:title];
             }
             
-            if(initialDirectory != nullptr)
-            {
-                auto directoryString = [NSString stringWithUTF8String:initialDirectory];
-                panel.directoryURL = [NSURL fileURLWithPath:directoryString
-                                            isDirectory:true];
-            }
             
             if(initialFile != nullptr)
             {
@@ -249,6 +242,12 @@ public:
             }
             
             SetAccessoryView(panel, filters, false);
+            
+            if(initialDirectory != nullptr)
+            {
+                auto directoryString = [NSString stringWithUTF8String:initialDirectory];
+                panel.directoryURL = [NSURL URLWithString:directoryString];
+            }
             
             auto handler = ^(NSModalResponse result) {
                 if(result == NSFileHandlingPanelOKButton)
@@ -306,12 +305,6 @@ public:
                 panel.title = [NSString stringWithUTF8String:title];
             }
             
-            if(initialDirectory != nullptr)
-            {
-                auto directoryString = [NSString stringWithUTF8String:initialDirectory];
-                panel.directoryURL = [NSURL fileURLWithPath:directoryString
-                                            isDirectory:true];
-            }
             
             if(initialFile != nullptr)
             {
@@ -320,13 +313,29 @@ public:
             
             SetAccessoryView(panel, filters, true);
             
+            if(initialDirectory != nullptr)
+            {
+                auto directoryString = [NSString stringWithUTF8String:initialDirectory];
+                panel.directoryURL = [NSURL URLWithString:directoryString];
+            }
+            
             auto handler = ^(NSModalResponse result) {
+                int selectedIndex = -1;
+                if (panel.accessoryView != nil)
+                {
+                    auto popup = [panel.accessoryView viewWithTag:kFileTypePopupTag];
+                    if ([popup isKindOfClass:[NSPopUpButton class]])
+                    {
+                        selectedIndex = (int)[(NSPopUpButton*)popup indexOfSelectedItem];
+                    }
+                }
+
                 if(result == NSFileHandlingPanelOKButton)
                 {
                     auto url = [panel URL];
                     auto urls = [NSArray<NSURL*> arrayWithObject:url];
                     auto uriStrings = CreateAvnStringArray(urls);
-                    events->OnCompleted(uriStrings);
+                    events->OnCompletedWithFilter(uriStrings, selectedIndex);
 
                     [panel orderOut:panel];
                     
@@ -339,7 +348,7 @@ public:
                     return;
                 }
                 
-                events->OnCompleted(nullptr);
+                events->OnCompletedWithFilter(nullptr, selectedIndex);
                 
             };
             
@@ -355,6 +364,35 @@ public:
             }
         }
     }
+    
+    virtual HRESULT TryResolveFileReferenceUri(IAvnString* fileUriStr, IAvnString** ret) override {
+        if (ret == nullptr)
+            return E_POINTER;
+        
+        if (fileUriStr == nullptr)
+        {
+            *ret = nullptr;
+            return S_OK;
+        }
+        
+        auto fileUri = [NSURL URLWithString:GetNSStringAndRelease(fileUriStr)];
+        if (fileUri == nil)
+        {
+            *ret = nullptr;
+            return S_OK;
+        }
+        
+        auto filePathUri = [fileUri filePathURL];
+        if (fileUri == nil)
+        {
+            *ret = nullptr;
+            return S_OK;
+        }
+        
+        *ret = CreateAvnString([filePathUri absoluteString]);
+        return S_OK;
+    }
+    
     
 private:
     NSView* CreateAccessoryView() {

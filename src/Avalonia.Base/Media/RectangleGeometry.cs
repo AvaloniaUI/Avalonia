@@ -100,7 +100,7 @@ namespace Avalonia.Media
         }
 
         /// <inheritdoc/>
-        public override Geometry Clone() => new RectangleGeometry(Rect);
+        public override Geometry Clone() => new RectangleGeometry(Rect, RadiusX, RadiusY);
 
         private protected sealed override IGeometryImpl? CreateDefiningGeometry()
         {

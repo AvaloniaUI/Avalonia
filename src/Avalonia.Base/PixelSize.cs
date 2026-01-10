@@ -92,7 +92,7 @@ namespace Avalonia
             {
                 return false;
             }
-            using (var tokenizer = new StringTokenizer(source, exceptionMessage: "Invalid PixelSize."))
+            using (var tokenizer = new SpanStringTokenizer(source, exceptionMessage: "Invalid PixelSize."))
             {
                 if (tokenizer.TryReadInt32(out var w) && tokenizer.TryReadInt32(out var h))
                 {

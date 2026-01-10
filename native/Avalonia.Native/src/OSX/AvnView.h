@@ -18,6 +18,7 @@
 -(NSEvent* _Nonnull) lastMouseDownEvent;
 -(AvnPoint) translateLocalPoint:(AvnPoint)pt;
 -(void) onClosed;
+-(void) setModifiers:(NSEventModifierFlags)modifierFlags;
 
 -(AvnPlatformResizeReason) getResizeReason;
 -(void) setResizeReason:(AvnPlatformResizeReason)reason;

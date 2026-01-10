@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using Avalonia.Data;
 using Avalonia.PropertyStore;
 using Avalonia.Utilities;
+using static Avalonia.StyledPropertyNonGenericHelper;
 
 namespace Avalonia
 {
@@ -44,9 +45,7 @@ namespace Avalonia
 
             if (validate?.Invoke(metadata.DefaultValue) == false)
             {
-                throw new ArgumentException(
-                    $"'{metadata.DefaultValue}' is not a valid default value for '{name}'.",
-                    nameof(metadata));
+                ThrowInvalidDefaultValue(name, metadata.DefaultValue, name);
             }
 
             _singleDefaultValue = metadata.DefaultValue;
@@ -175,8 +174,7 @@ namespace Avalonia
             {
                 if (!ValidateValue(metadata.DefaultValue))
                 {
-                    throw new ArgumentException(
-                        $"'{metadata.DefaultValue}' is not a valid default value for '{Name}'.");
+                    ThrowInvalidDefaultValue(Name, metadata.DefaultValue, nameof(metadata));
                 }
             }
 
@@ -273,27 +271,25 @@ namespace Avalonia
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.ImplicitTypeConversionSupressWarningMessage)]
         private bool ShouldSetValue(AvaloniaObject target, object? value, [NotNullWhen(true)] out TValue? converted)
         {
-            if (value == BindingOperations.DoNothing)
+            if (value != BindingOperations.DoNothing)
             {
-                converted = default;
-                return false; 
+                if (value == UnsetValue)
+                {
+                    target.ClearValue(this);
+                }
+                else if (TypeUtilities.TryConvertImplicit(PropertyType, value, out var v))
+                {
+                    converted = (TValue)v!;
+                    return true;
+                }
+                else
+                {
+                    ThrowInvalidValue(Name, value, nameof(value));
+                }
             }
-            if (value == UnsetValue)
-            {
-                target.ClearValue(this);
-                converted = default;
-                return false;
-            }
-            else if (TypeUtilities.TryConvertImplicit(PropertyType, value, out var v))
-            {
-                converted = (TValue)v!;
-                return true;
-            }
-            else
-            {
-                var type = value?.GetType().FullName ?? "(null)";
-                throw new ArgumentException($"Invalid value for Property '{Name}': '{value}' ({type})");
-            }
+
+            converted = default;
+            return false;
         }
     }
 }

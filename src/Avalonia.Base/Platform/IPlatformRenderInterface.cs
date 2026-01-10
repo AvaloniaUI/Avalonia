@@ -170,7 +170,7 @@ namespace Avalonia.Platform
         /// <param name="glyphInfos">The list of glyphs.</param>
         /// <param name="baselineOrigin">The baseline origin of the run. Can be null.</param>
         /// <returns>An <see cref="IGlyphRunImpl"/>.</returns>
-        IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<GlyphInfo> glyphInfos, Point baselineOrigin);
+        IGlyphRunImpl CreateGlyphRun(GlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<GlyphInfo> glyphInfos, Point baselineOrigin);
 
         /// <summary>
         /// Creates a backend-specific object using a low-level API graphics context

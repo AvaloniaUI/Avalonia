@@ -8,16 +8,16 @@ using Avalonia.Base.UnitTests.Media.TextFormatting;
 
 namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
 {
-    internal class BiDiClassTestDataGenerator : IEnumerable<BiDiClassData>
+    public class BiDiClassTestDataGenerator : IEnumerable<object[]>
     {
-        private readonly List<BiDiClassData> _testData;
+        private readonly List<object[]> _testData;
 
         public BiDiClassTestDataGenerator()
         {
             _testData = ReadData();
         }
         
-        public IEnumerator<BiDiClassData> GetEnumerator()
+        public IEnumerator<object[]> GetEnumerator()
         {
             return _testData.GetEnumerator();
         }
@@ -27,9 +27,9 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
             return GetEnumerator();
         }
         
-        private static List<BiDiClassData> ReadData()
+        private static List<object[]> ReadData()
         {
-            var testData = new List<BiDiClassData>();
+            var testData = new List<object[]>();
             
             using (var client = new HttpClient())
             {
@@ -80,14 +80,14 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
                             // Parse field 4 - resolved levels
                             var resolvedOrder = fields[4].Split(' ').Select(x => x.Trim()).Where(x => !string.IsNullOrEmpty(x)).Select(x => Convert.ToInt32(x)).ToArray();
 
-                            testData.Add(new BiDiClassData
+                            testData.Add(new object[]
                             {
-                                LineNumber = lineNumber,
-                                CodePoints = codePoints,
-                                ParagraphLevel = paragraphLevel,
-                                ResolvedParagraphLevel = resolvedParagraphLevel,
-                                ResolvedLevels = resolvedLevels,
-                                ResolvedOrder = resolvedOrder
+                                 lineNumber,
+                                 codePoints,
+                                 paragraphLevel,
+                                 resolvedParagraphLevel,
+                                 resolvedLevels,
+                                 resolvedOrder
                             });
                         }
                     }
@@ -100,7 +100,7 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
        
     }
     
-    internal struct BiDiClassData
+    public struct BiDiClassData
     {
         public int LineNumber { get; set; }
         public int[] CodePoints{ get; set; }

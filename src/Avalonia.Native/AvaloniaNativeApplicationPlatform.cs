@@ -12,11 +12,11 @@ namespace Avalonia.Native
 {
     internal class AvaloniaNativeApplicationPlatform : NativeCallbackBase, IAvnApplicationEvents, IPlatformLifetimeEventsImpl
     {
-        public event EventHandler<ShutdownRequestedEventArgs> ShutdownRequested;
+        public event EventHandler<ShutdownRequestedEventArgs>? ShutdownRequested;
 
         void IAvnApplicationEvents.FilesOpened(IAvnStringArray urls)
         {
-            ((IApplicationPlatformEvents)Application.Current)?.RaiseUrlsOpened(urls.ToStringArray());
+            ((IApplicationPlatformEvents?)Application.Current)?.RaiseUrlsOpened(urls.ToStringArray());
 
             if (AvaloniaLocator.Current.GetService<IActivatableLifetime>() is ActivatableLifetimeBase lifetime
                 && AvaloniaLocator.Current.GetService<IStorageProviderFactory>() is StorageProviderApi storageApi)
@@ -42,7 +42,7 @@ namespace Avalonia.Native
         void IAvnApplicationEvents.UrlsOpened(IAvnStringArray urls)
         {
             // Raise the urls opened event to be compatible with legacy behavior.
-            ((IApplicationPlatformEvents)Application.Current)?.RaiseUrlsOpened(urls.ToStringArray());
+            ((IApplicationPlatformEvents?)Application.Current)?.RaiseUrlsOpened(urls.ToStringArray());
 
             if (AvaloniaLocator.Current.GetService<IActivatableLifetime>() is ActivatableLifetimeBase lifetime
                 && AvaloniaLocator.Current.GetService<IStorageProviderFactory>() is StorageProviderApi storageApi)
@@ -88,17 +88,25 @@ namespace Avalonia.Native
 
         void IAvnApplicationEvents.OnHide()
         {
-            if (AvaloniaLocator.Current.GetService<IActivatableLifetime>() is ActivatableLifetimeBase lifetime)
-            {
-                lifetime.OnActivated(ActivationKind.Background);    
-            }
         }
 
         void IAvnApplicationEvents.OnUnhide()
         {
+        }
+
+        void IAvnApplicationEvents.OnActivate()
+        {
             if (AvaloniaLocator.Current.GetService<IActivatableLifetime>() is ActivatableLifetimeBase lifetime)
             {
-                lifetime.OnActivated(ActivationKind.Background);    
+                lifetime.OnActivated(ActivationKind.Background);
+            }
+        }
+
+        void IAvnApplicationEvents.OnDeactivate()
+        {
+            if (AvaloniaLocator.Current.GetService<IActivatableLifetime>() is ActivatableLifetimeBase lifetime)
+            {
+                lifetime.OnDeactivated(ActivationKind.Background);
             }
         }
 

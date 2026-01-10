@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Controls;
 
-#nullable enable
-
 namespace Avalonia.X11
 {
     internal class TransparencyHelper :  IDisposable

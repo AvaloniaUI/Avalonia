@@ -38,11 +38,28 @@ namespace Avalonia.Controls
                 defaultValue: true);
 
         /// <summary>
+        /// Identifies the HorizontalSpacing dependency property.
+        /// </summary>
+        /// <returns>The identifier for the <see cref="HorizontalSpacing"/> dependency property.</returns>
+        public static readonly StyledProperty<double> HorizontalSpacingProperty =
+            AvaloniaProperty.Register<DockPanel, double>(
+                nameof(HorizontalSpacing));
+
+        /// <summary>
+        /// Identifies the VerticalSpacing dependency property.
+        /// </summary>
+        /// <returns>The identifier for the <see cref="VerticalSpacing"/> dependency property.</returns>
+        public static readonly StyledProperty<double> VerticalSpacingProperty =
+                AvaloniaProperty.Register<DockPanel, double>(
+                    nameof(VerticalSpacing));
+
+        /// <summary>
         /// Initializes static members of the <see cref="DockPanel"/> class.
         /// </summary>
         static DockPanel()
         {
             AffectsParentMeasure<DockPanel>(DockProperty);
+            AffectsMeasure<DockPanel>(LastChildFillProperty, HorizontalSpacingProperty, VerticalSpacingProperty);
         }
 
         /// <summary>
@@ -76,38 +93,55 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets or sets the horizontal distance between the child objects.
+        /// </summary>
+        public double HorizontalSpacing
+        {
+            get => GetValue(HorizontalSpacingProperty);
+            set => SetValue(HorizontalSpacingProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the vertical distance between the child objects.
+        /// </summary>
+        public double VerticalSpacing
+        {
+            get => GetValue(VerticalSpacingProperty);
+            set => SetValue(VerticalSpacingProperty, value);
+        }
+
+
+        /// <summary>
         /// Updates DesiredSize of the DockPanel.  Called by parent Control.  This is the first pass of layout.
         /// </summary>
         /// <remarks>
         /// Children are measured based on their sizing properties and <see cref="Dock" />.  
-        /// Each child is allowed to consume all of the space on the side on which it is docked; Left/Right docked
+        /// Each child is allowed to consume all the space on the side on which it is docked; Left/Right docked
         /// children are granted all vertical space for their entire width, and Top/Bottom docked children are
         /// granted all horizontal space for their entire height.
         /// </remarks>
-        /// <param name="constraint">Constraint size is an "upper limit" that the return value should not exceed.</param>
+        /// <param name="availableSize">Constraint size is an "upper limit" that the return value should not exceed.</param>
         /// <returns>The Panel's desired size.</returns>
-        protected override Size MeasureOverride(Size constraint)
+        protected override Size MeasureOverride(Size availableSize)
         {
-            var children = Children;
+            var parentWidth = 0d;
+            var parentHeight = 0d;
+            var accumulatedWidth = 0d;
+            var accumulatedHeight = 0d;
 
-            double parentWidth = 0;   // Our current required width due to children thus far.
-            double parentHeight = 0;   // Our current required height due to children thus far.
-            double accumulatedWidth = 0;   // Total width consumed by children.
-            double accumulatedHeight = 0;   // Total height consumed by children.
+            var horizontalSpacing = false;
+            var verticalSpacing = false;
+            var childrenCount = LastChildFill ? Children.Count - 1 : Children.Count;
 
-            for (int i = 0, count = children.Count; i < count; ++i)
+            for (var index = 0; index < childrenCount; ++index)
             {
-                var child = children[i];
-                Size childConstraint;             // Contains the suggested input constraint for this child.
-                Size childDesiredSize;            // Contains the return size from child measure.
+                var child = Children[index];
+                var childConstraint = new Size(
+                    Math.Max(0, availableSize.Width - accumulatedWidth),
+                    Math.Max(0, availableSize.Height - accumulatedHeight));
 
-                // Child constraint is the remaining size; this is total size minus size consumed by previous children.
-                childConstraint = new Size(Math.Max(0.0, constraint.Width - accumulatedWidth),
-                                           Math.Max(0.0, constraint.Height - accumulatedHeight));
-
-                // Measure child.
                 child.Measure(childConstraint);
-                childDesiredSize = child.DesiredSize;
+                var childDesiredSize = child.DesiredSize;
 
                 // Now, we adjust:
                 // 1. Size consumed by children (accumulatedSize).  This will be used when computing subsequent
@@ -119,88 +153,125 @@ namespace Avalonia.Controls
                 // will deal with computing our minimum size (parentSize) due to that accumulation.
                 // Therefore, we only need to compute our minimum size (parentSize) in dimensions that this child does
                 //   not accumulate: Width for Top/Bottom, Height for Left/Right.
-                switch (GetDock(child))
+                switch (child.GetValue(DockProperty))
                 {
                     case Dock.Left:
                     case Dock.Right:
                         parentHeight = Math.Max(parentHeight, accumulatedHeight + childDesiredSize.Height);
+                        if (child.IsVisible)
+                        {
+                            accumulatedWidth += HorizontalSpacing;
+                            horizontalSpacing = true;
+                        }
                         accumulatedWidth += childDesiredSize.Width;
                         break;
 
                     case Dock.Top:
                     case Dock.Bottom:
                         parentWidth = Math.Max(parentWidth, accumulatedWidth + childDesiredSize.Width);
+                        if (child.IsVisible)
+                        {
+                            accumulatedHeight += VerticalSpacing;
+                            verticalSpacing = true;
+                        }
                         accumulatedHeight += childDesiredSize.Height;
                         break;
                 }
             }
 
+            if (LastChildFill && Children.Count > 0)
+            {
+                var child = Children[Children.Count - 1];
+                var childConstraint = new Size(
+                    Math.Max(0, availableSize.Width - accumulatedWidth),
+                    Math.Max(0, availableSize.Height - accumulatedHeight));
+
+                child.Measure(childConstraint);
+                var childDesiredSize = child.DesiredSize;
+                parentHeight = Math.Max(parentHeight, accumulatedHeight + childDesiredSize.Height);
+                parentWidth = Math.Max(parentWidth, accumulatedWidth + childDesiredSize.Width);
+                accumulatedHeight += childDesiredSize.Height;
+                accumulatedWidth += childDesiredSize.Width;
+            }
+            else
+            {
+                if (horizontalSpacing)
+                    accumulatedWidth -= HorizontalSpacing;
+                if (verticalSpacing)
+                    accumulatedHeight -= VerticalSpacing;
+            }
+
             // Make sure the final accumulated size is reflected in parentSize.
             parentWidth = Math.Max(parentWidth, accumulatedWidth);
             parentHeight = Math.Max(parentHeight, accumulatedHeight);
-
-            return (new Size(parentWidth, parentHeight));
+            return new Size(parentWidth, parentHeight);
         }
 
         /// <summary>
         /// DockPanel computes a position and final size for each of its children based upon their
         /// <see cref="Dock" /> enum and sizing properties.
         /// </summary>
-        /// <param name="arrangeSize">Size that DockPanel will assume to position children.</param>
-        protected override Size ArrangeOverride(Size arrangeSize)
+        /// <param name="finalSize">Size that DockPanel will assume to position children.</param>
+        protected override Size ArrangeOverride(Size finalSize)
         {
-            var children = Children;
-            int totalChildrenCount = children.Count;
-            int nonFillChildrenCount = totalChildrenCount - (LastChildFill ? 1 : 0);
+            if (Children.Count is 0)
+                return finalSize;
 
-            double accumulatedLeft = 0;
-            double accumulatedTop = 0;
-            double accumulatedRight = 0;
-            double accumulatedBottom = 0;
+            var currentBounds = new Rect(finalSize);
+            var childrenCount = LastChildFill ? Children.Count - 1 : Children.Count;
 
-            for (int i = 0; i < totalChildrenCount; ++i)
+            for (var index = 0; index < childrenCount; ++index)
             {
-                var child = children[i];
+                var child = Children[index];
+                if (!child.IsVisible)
+                    continue;
 
-                Size childDesiredSize = child.DesiredSize;
-                Rect rcChild = new Rect(
-                    accumulatedLeft,
-                    accumulatedTop,
-                    Math.Max(0.0, arrangeSize.Width - (accumulatedLeft + accumulatedRight)),
-                    Math.Max(0.0, arrangeSize.Height - (accumulatedTop + accumulatedBottom)));
-
-                if (i < nonFillChildrenCount)
+                var dock = child.GetValue(DockProperty);
+                double width, height;
+                switch (dock)
                 {
-                    switch (GetDock(child))
-                    {
-                        case Dock.Left:
-                            accumulatedLeft += childDesiredSize.Width;
-                            rcChild = rcChild.WithWidth(childDesiredSize.Width);
-                            break;
+                    case Dock.Left:
 
-                        case Dock.Right:
-                            accumulatedRight += childDesiredSize.Width;
-                            rcChild = rcChild.WithX(Math.Max(0.0, arrangeSize.Width - accumulatedRight));
-                            rcChild = rcChild.WithWidth(childDesiredSize.Width);
-                            break;
+                        width = Math.Min(child.DesiredSize.Width, currentBounds.Width);
+                        child.Arrange(currentBounds.WithWidth(width));
+                        width += HorizontalSpacing;
+                        currentBounds = new Rect(currentBounds.X + width, currentBounds.Y, Math.Max(0, currentBounds.Width - width), currentBounds.Height);
 
-                        case Dock.Top:
-                            accumulatedTop += childDesiredSize.Height;
-                            rcChild = rcChild.WithHeight(childDesiredSize.Height);
-                            break;
+                        break;
+                    case Dock.Top:
 
-                        case Dock.Bottom:
-                            accumulatedBottom += childDesiredSize.Height;
-                            rcChild = rcChild.WithY(Math.Max(0.0, arrangeSize.Height - accumulatedBottom));
-                            rcChild = rcChild.WithHeight(childDesiredSize.Height);
-                            break;
-                    }
+                        height = Math.Min(child.DesiredSize.Height, currentBounds.Height);
+                        child.Arrange(currentBounds.WithHeight(height));
+                        height += VerticalSpacing;
+                        currentBounds = new Rect(currentBounds.X, currentBounds.Y + height, currentBounds.Width, Math.Max(0, currentBounds.Height - height));
+
+                        break;
+                    case Dock.Right:
+
+                        width = Math.Min(child.DesiredSize.Width, currentBounds.Width);
+                        child.Arrange(new Rect(currentBounds.X + currentBounds.Width - width, currentBounds.Y, width, currentBounds.Height));
+                        width += HorizontalSpacing;
+                        currentBounds = currentBounds.WithWidth(Math.Max(0, currentBounds.Width - width));
+
+                        break;
+                    case Dock.Bottom:
+
+                        height = Math.Min(child.DesiredSize.Height, currentBounds.Height);
+                        child.Arrange(new Rect(currentBounds.X, currentBounds.Y + currentBounds.Height - height, currentBounds.Width, height));
+                        height += VerticalSpacing;
+                        currentBounds = currentBounds.WithHeight(Math.Max(0, currentBounds.Height - height));
+
+                        break;
                 }
-
-                child.Arrange(rcChild);
             }
 
-            return (arrangeSize);
+            if (LastChildFill && Children.Count > 0)
+            {
+                var child = Children[Children.Count - 1];
+                child.Arrange(new Rect(currentBounds.X, currentBounds.Y, currentBounds.Width, currentBounds.Height));
+            }
+
+            return finalSize;
         }
     }
 }

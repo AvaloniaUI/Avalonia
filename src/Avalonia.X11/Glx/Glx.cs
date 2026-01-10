@@ -115,6 +115,9 @@ namespace Avalonia.X11.Glx
         public string[] GetExtensions(IntPtr display)
         {
             var s = Marshal.PtrToStringAnsi(QueryExtensionsString(display, 0));
+            if (string.IsNullOrEmpty(s))
+                return [];
+
             return s.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
                 .Select(x => x.Trim()).ToArray();
 

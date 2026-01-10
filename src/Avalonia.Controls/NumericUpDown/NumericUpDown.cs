@@ -379,6 +379,7 @@ namespace Avalonia.Controls
 
             FocusableProperty.OverrideDefaultValue<NumericUpDown>(true);
             IsTabStopProperty.OverrideDefaultValue<NumericUpDown>(false);
+            KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue<NumericUpDown>(KeyboardNavigationMode.Local);
         }
 
         /// <inheritdoc />
@@ -408,6 +409,7 @@ namespace Avalonia.Controls
             if (TextBox != null)
             {
                 TextBox.Text = Text;
+                TextBox[!TabIndexProperty] = this[!TabIndexProperty];
                 TextBox.PointerPressed += TextBoxOnPointerPressed;
                 _textBoxTextChangedSubscription = TextBox.GetObservable(TextBox.TextProperty).Subscribe(txt => TextBoxOnTextChanged());
             }
@@ -440,24 +442,6 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Called to update the validation state for properties for which data validation is
-        /// enabled.
-        /// </summary>
-        /// <param name="property">The property.</param>
-        /// <param name="state">The current data binding state.</param>
-        /// <param name="error">The current data binding error, if any.</param>
-        protected override void UpdateDataValidation(
-            AvaloniaProperty property,
-            BindingValueType state,
-            Exception? error)
-        {
-            if (property == TextProperty || property == ValueProperty)
-            {
-                DataValidationErrors.SetError(this, error);
-            }
-        }
-
-        /// <summary>
         /// Called when the <see cref="NumberFormat"/> property value changed.
         /// </summary>
         /// <param name="oldValue">The old value.</param>
@@ -466,7 +450,7 @@ namespace Avalonia.Controls
         {
             if (IsInitialized)
             {
-                SyncTextAndValueProperties(false, null);
+                SyncTextAndValueProperties(false, null, true);
             }
         }
 
@@ -630,9 +614,6 @@ namespace Avalonia.Controls
                 throw new ArgumentNullException(nameof(e));
             }
 
-            var handler = Spinned;
-            handler?.Invoke(this, e);
-
             if (e.Direction == SpinDirection.Increase)
             {
                 DoIncrement();
@@ -641,6 +622,8 @@ namespace Avalonia.Controls
             {
                 DoDecrement();
             }
+
+            Spinned?.Invoke(this, e);
         }
 
         /// <summary>
@@ -1137,7 +1120,7 @@ namespace Avalonia.Controls
                     {
                         // extract non-digit characters
                         var currentValueTextSpecialCharacters = currentValueText.Where(c => !char.IsDigit(c));
-                        var textSpecialCharacters = text.Where(c => !char.IsDigit(c));
+                        var textSpecialCharacters = text.Where(c => !char.IsDigit(c)).ToArray();
                         // same non-digit characters on currentValueText and new text => remove them on new Text to parse it again.
                         if (!currentValueTextSpecialCharacters.Except(textSpecialCharacters).Any())
                         {

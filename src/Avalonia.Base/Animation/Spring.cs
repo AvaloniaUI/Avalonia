@@ -61,7 +61,7 @@ internal class Spring
             culture = CultureInfo.InvariantCulture;
         }
 
-        using var tokenizer = new StringTokenizer(value, culture, exceptionMessage: $"Invalid Spring string: \"{value}\".");
+        using var tokenizer = new SpanStringTokenizer(value, culture, exceptionMessage: $"Invalid Spring string: \"{value}\".");
         return new Spring(tokenizer.ReadDouble(), tokenizer.ReadDouble(), tokenizer.ReadDouble(), tokenizer.ReadDouble());
     }
 

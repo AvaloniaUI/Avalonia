@@ -1,9 +1,10 @@
 ﻿using System;
-using System.Linq;
+using System.Collections.Generic;
 using Avalonia.Fonts.Inter;
 using Avalonia.Headless;
 using Avalonia.Media;
 using Avalonia.Media.Fonts;
+using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.UnitTests;
 using SkiaSharp;
 using Xunit;
@@ -94,18 +95,41 @@ namespace Avalonia.Skia.UnitTests.Media
         [Fact]
         public void Should_Only_Try_To_Create_GlyphTypeface_Once()
         {
-            var fontManagerImpl = new HeadlessFontManagerStub();
+            var fontManagerImpl = new TestFontManager();
 
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: fontManagerImpl)))
             {
                 Assert.True(FontManager.Current.TryGetGlyphTypeface(Typeface.Default, out _));
 
-                for (int i = 0;i < 10; i++)
+                var countBefore = fontManagerImpl.TryCreateGlyphTypefaceCount;
+
+                for (int i = 0; i < 10; i++)
                 {
                     FontManager.Current.TryGetGlyphTypeface(new Typeface("Unknown"), out _);
                 }
 
-                Assert.Equal(fontManagerImpl.TryCreateGlyphTypefaceCount, 2);
+                Assert.Equal(countBefore + 1, fontManagerImpl.TryCreateGlyphTypefaceCount);
+            }
+        }
+
+        [Fact]
+        public void Should_Cache_MatchCharacter()
+        {
+            var fontManagerImpl = new CustomFontManagerImpl();
+
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: fontManagerImpl)))
+            {
+                var emoji = Codepoint.ReadAt("😀", 0, out _);
+
+                Assert.True(FontManager.Current.TryMatchCharacter((int)emoji, FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, null, null, out var firstMatch));
+
+                var firstGlyphTypeface = firstMatch.GlyphTypeface;
+
+                Assert.True(FontManager.Current.TryMatchCharacter((int)emoji, FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, null, null, out var secondMatch));
+
+                var secondGlyphTypeface = secondMatch.GlyphTypeface;
+
+                Assert.Equal(firstGlyphTypeface, secondGlyphTypeface);
             }
         }
 
@@ -121,7 +145,7 @@ namespace Avalonia.Skia.UnitTests.Media
                     var result = FontManager.Current.TryGetGlyphTypeface(Typeface.Default, out var glyphTypeface);
 
                     Assert.True(result);
-
+                    Assert.NotNull(glyphTypeface);
                     Assert.Equal("Noto Mono", glyphTypeface.FamilyName);
                 }
             }
@@ -204,7 +228,7 @@ namespace Avalonia.Skia.UnitTests.Media
         [Theory]
         [InlineData("NotFound, Unknown", null)] // system fonts
         [InlineData("/#NotFound, /#Unknown", "avares://some/path")] // embedded fonts
-        public void Should_Match_Character_With_Fallbacks(string familyName, string baseUri)
+        public void Should_Match_Character_With_Fallbacks(string familyName, string? baseUri)
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
             {
@@ -289,13 +313,18 @@ namespace Avalonia.Skia.UnitTests.Media
                         new Uri(s_fontUri, UriKind.Absolute)));
 
                     Assert.True(FontManager.Current.TryGetGlyphTypeface(new Typeface("Noto Mono", FontStyle.Italic, FontWeight.Bold),
-                        out var glyphTypeface));
+                        out var italicBoldTypeface));
 
-                    Assert.Equal("Noto Mono", glyphTypeface.FamilyName);
+                    Assert.Equal("Noto Mono", italicBoldTypeface.FamilyName);
 
-                    Assert.Equal(FontWeight.Bold, glyphTypeface.Weight);
+                    Assert.True(italicBoldTypeface.PlatformTypeface.FontSimulations.HasFlag(FontSimulations.Bold));
 
-                    Assert.Equal(FontStyle.Italic, glyphTypeface.Style);
+                    Assert.True(italicBoldTypeface.PlatformTypeface.FontSimulations.HasFlag(FontSimulations.Oblique));
+
+                    Assert.True(FontManager.Current.TryGetGlyphTypeface(new Typeface("Noto Mono", FontStyle.Normal, FontWeight.Normal),
+                       out var regularTypeface));
+
+                    Assert.NotEqual(((SkiaTypeface)regularTypeface.PlatformTypeface).SKTypeface, ((SkiaTypeface)italicBoldTypeface.PlatformTypeface).SKTypeface);
                 }
             }
         }
@@ -310,7 +339,7 @@ namespace Avalonia.Skia.UnitTests.Media
                 {
                     Assert.True(FontManager.Current.TryGetGlyphTypeface(new Typeface("微軟正黑體"), out var glyphTypeface));
 
-                    Assert.Equal("Microsoft JhengHei",glyphTypeface.FamilyName);
+                    Assert.Equal("Microsoft JhengHei", glyphTypeface.FamilyName);
                 }
             }
         }
@@ -322,16 +351,146 @@ namespace Avalonia.Skia.UnitTests.Media
             {
                 using (AvaloniaLocator.EnterScope())
                 {
-                     FontManager.Current.AddFontCollection(new InterFontCollection());
+                    FontManager.Current.AddFontCollection(new InterFontCollection());
 
                     Assert.True(FontManager.Current.TryGetGlyphTypeface(new Typeface("fonts:Inter#Inter"),
                         out var glyphTypeface));
 
                     Assert.Equal("Inter", glyphTypeface.FamilyName);
 
-                    var features = ((IGlyphTypeface2)glyphTypeface).SupportedFeatures;
+                    var features = glyphTypeface.SupportedFeatures;
 
                     Assert.NotEmpty(features);
+                }
+            }
+        }
+
+        [Fact]
+        public void Should_Map_FontFamily()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                using (AvaloniaLocator.EnterScope())
+                {
+                    AvaloniaLocator.CurrentMutable.BindToSelf(new FontManagerOptions
+                    {
+                        DefaultFamilyName = s_fontUri,
+                        FontFamilyMappings = new Dictionary<string, FontFamily>
+                        {
+                            { "Segoe UI", new FontFamily("fonts:Inter#Inter") }
+                        }
+                    });
+
+                    FontManager.Current.AddFontCollection(new InterFontCollection());
+
+                    var result = FontManager.Current.TryGetGlyphTypeface(new Typeface("Abc, Segoe UI"), out var glyphTypeface);
+
+                    Assert.True(result);
+                    Assert.NotNull(glyphTypeface);
+                    Assert.Equal("Inter", glyphTypeface.FamilyName);
+                }
+            }
+        }
+
+        [Fact]
+        public void Should_Get_FamilyTypefaces()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                using (AvaloniaLocator.EnterScope())
+                {
+                    FontManager.Current.AddFontCollection(new InterFontCollection());
+
+                    var familyTypefaces = FontManager.Current.GetFamilyTypefaces(new FontFamily("fonts:Inter#Inter"));
+
+                    Assert.Equal(6, familyTypefaces.Count);
+                }
+            }
+        }
+
+        [Fact]
+        public void Should_Use_FontCollection_MatchCharacter()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                using (AvaloniaLocator.EnterScope())
+                {
+                    FontManager.Current.AddFontCollection(
+                        new EmbeddedFontCollection(
+                            new Uri("fonts:MyCollection"), //key
+                            new Uri("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests"))); //source
+
+                    var fontFamily = new FontFamily("fonts:MyCollection#Noto Mono");
+
+                    var character = "א";
+
+                    var codepoint = Codepoint.ReadAt(character, 0, out _);
+
+                    Assert.True(FontManager.Current.TryMatchCharacter(codepoint, FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, fontFamily, null, out var typeface));
+
+                    //Typeface should come from the font collection
+                    Assert.NotNull(typeface.FontFamily.Key);
+
+                    Assert.Equal("Noto Sans Hebrew", typeface.GlyphTypeface.FamilyName);
+                }
+            }
+        }
+
+        [InlineData("Arial")]
+        [InlineData("#Arial")]
+        [Win32Theory("Windows specific font")]
+        public void Should_Get_SystemFont_With_BaseUri(string name)
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                using (AvaloniaLocator.EnterScope())
+                {
+                    var fontFamily = new FontFamily(new Uri("avares://Avalonia.Skia.UnitTests/NotFound"), name);
+
+                    var glyphTypeface = new Typeface(fontFamily).GlyphTypeface;
+
+                    Assert.Equal("Arial", glyphTypeface.FamilyName);
+                }
+            }
+        }
+
+
+        [Win32Fact("Windows specific font")]
+        public void Should_Get_Regular_Font_After_Matching_Italic_Font()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                using (AvaloniaLocator.EnterScope())
+                {
+                    Assert.True(FontManager.Current.TryMatchCharacter('こ', FontStyle.Italic, FontWeight.Normal, FontStretch.Normal, null, null, out var italicTypeface));
+
+                    Assert.Equal(FontSimulations.None, italicTypeface.GlyphTypeface.FontSimulations);
+
+                    Assert.Equal("Yu Gothic UI", italicTypeface.GlyphTypeface.FamilyName);
+
+                    Assert.NotEqual(FontStyle.Normal, italicTypeface.Style);
+
+                    Assert.True(FontManager.Current.TryMatchCharacter('こ', FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, null, null, out var regularTypeface));
+
+                    Assert.Equal("Yu Gothic UI", regularTypeface.GlyphTypeface.FamilyName);
+
+                    Assert.Equal(FontStyle.Normal, regularTypeface.Style);
+
+                    Assert.NotEqual(((SkiaTypeface)italicTypeface.GlyphTypeface.PlatformTypeface).SKTypeface, ((SkiaTypeface)regularTypeface.GlyphTypeface.PlatformTypeface).SKTypeface);
+                }
+            }
+        }
+
+        [Fact]
+        public void Should_Fallback_When_Font_Family_Is_Empty()
+        {
+            using (UnitTestApplication.Start(
+                TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                using (AvaloniaLocator.EnterScope())
+                {
+                    var typeface = new Typeface(string.Empty);
+                    Assert.NotNull(typeface.FontFamily);
                 }
             }
         }

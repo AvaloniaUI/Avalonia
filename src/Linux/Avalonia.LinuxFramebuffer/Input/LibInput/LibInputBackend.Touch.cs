@@ -18,7 +18,7 @@ public partial class LibInputBackend
             return;
         if (type < LibInputEventType.LIBINPUT_EVENT_TOUCH_FRAME)
         {
-            var info = _screen.ScaledSize;
+            var info = _screen!.ScaledSize;
             var slot = libinput_event_touch_get_slot(tev);
             Point pt;
 

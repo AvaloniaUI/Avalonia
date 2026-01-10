@@ -1,7 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:dialogs="using:Avalonia.Dialogs"
-        MaxWidth="400"
+        MaxWidth="430"
         MaxHeight="475"
         MinWidth="430"
         MinHeight="475"

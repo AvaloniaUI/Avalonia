@@ -76,6 +76,17 @@ namespace Avalonia.iOS
             {
 #if !TVOS
                 MultipleTouchEnabled = true;
+                
+                if (OperatingSystem.IsIOSVersionAtLeast(13, 4) || OperatingSystem.IsMacCatalyst())
+                {
+                    var scrollGestureRecognizer = new UIPanGestureRecognizer(_input.HandleScrollWheel)
+                    {
+                        // Only respond to scroll events, not touches
+                        MaximumNumberOfTouches = 0,
+                        AllowedScrollTypesMask = UIScrollTypeMask.Discrete | UIScrollTypeMask.Continuous
+                    };
+                    AddGestureRecognizer(scrollGestureRecognizer);
+                }
 #endif
             }
         }
@@ -156,6 +167,8 @@ namespace Avalonia.iOS
             public TopLevelImpl(AvaloniaView view)
             {
                 _view = view;
+                Handle = new UIViewControlHandle(_view);
+
                 _nativeControlHost = new NativeControlHostImpl(view);
 #if TVOS
                 _storageProvider = null;
@@ -163,7 +176,7 @@ namespace Avalonia.iOS
                 _inputPane = null;
 #else
                 _storageProvider = new Storage.IOSStorageProvider(view);
-                _clipboard = new ClipboardImpl();
+                _clipboard = new Input.Platform.Clipboard(new Clipboard.ClipboardImpl(UIPasteboard.General));
                 _inputPane = UIKitInputPane.Instance;
 #endif
                 _insetsManager = new InsetsManager();
@@ -373,6 +386,11 @@ namespace Avalonia.iOS
         {
             _topLevelImpl.Resized?.Invoke(_topLevelImpl.ClientSize, WindowResizeReason.Layout);
             var scaling = (double)ContentScaleFactor;
+            if (_latestLayoutProps.scaling != scaling)
+            {
+                _topLevelImpl.ScalingChanged?.Invoke(scaling);
+            }
+
             _latestLayoutProps = (new PixelSize((int)(Bounds.Width * scaling), (int)(Bounds.Height * scaling)), scaling);
             if (_currentRenderTarget is not null)
             {

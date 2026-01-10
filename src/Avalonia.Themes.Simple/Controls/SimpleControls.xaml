@@ -29,6 +29,7 @@
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/DataValidationErrors.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/FlyoutPresenter.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/MenuFlyoutPresenter.xaml" />
+        <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/GroupBox.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/GridSplitter.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/HyperlinkButton.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/ItemsControl.xaml" />

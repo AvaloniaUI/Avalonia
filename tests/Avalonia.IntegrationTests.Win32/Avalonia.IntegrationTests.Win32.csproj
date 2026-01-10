@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+
+  <PropertyGroup>
+    <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/Skia/Avalonia.Skia/Avalonia.Skia.csproj" />
+    <ProjectReference Include="../../src/Windows/Avalonia.Win32/Avalonia.Win32.csproj" />
+    <ProjectReference Include="../../src/Avalonia.Themes.Fluent/Avalonia.Themes.Fluent.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit.v3.mtp-v2" Version="3.2.1" />
+  </ItemGroup>
+  
+  <Import Project="../../build/SharedVersion.props" />
+  <Import Project="../../build/ReferenceCoreLibraries.props" />
+  <Import Project="../../build/BuildTargets.targets" />
+
+</Project>

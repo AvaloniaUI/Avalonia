@@ -6,14 +6,14 @@ namespace Avalonia.Base.UnitTests.Utilities;
 internal class DelegateCommand : ICommand
 {
     private readonly Action _action;
-    private readonly Func<object, bool> _canExecute;
-    public DelegateCommand(Action action, Func<object, bool> canExecute = default)
+    private readonly Func<object?, bool> _canExecute;
+    public DelegateCommand(Action action, Func<object?, bool>? canExecute = null)
     {
         _action = action;
-        _canExecute = canExecute ?? new(_ => true);
+        _canExecute = canExecute ?? (_ => true);
     }
 
-    public event EventHandler CanExecuteChanged { add { } remove { } }
-    public bool CanExecute(object parameter) => _canExecute(parameter);
-    public void Execute(object parameter) => _action();
+    public event EventHandler? CanExecuteChanged { add { } remove { } }
+    public bool CanExecute(object? parameter) => _canExecute(parameter);
+    public void Execute(object? parameter) => _action();
 }

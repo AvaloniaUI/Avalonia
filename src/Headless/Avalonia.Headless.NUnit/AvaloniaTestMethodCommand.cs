@@ -109,6 +109,7 @@ internal class AvaloniaTestMethodCommand : TestCommand
         if (context.ExecutionStatus != TestExecutionStatus.AbortRequested)
         {
             _afterTest.ForEach(a => a());
+            Dispatcher.UIThread.RunJobs();
         }
         
         return context.CurrentResult;

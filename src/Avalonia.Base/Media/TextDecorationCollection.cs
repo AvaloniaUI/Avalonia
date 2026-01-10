@@ -29,9 +29,9 @@ namespace Avalonia.Media
         {
             var locations = new List<TextDecorationLocation>();
 
-            using (var tokenizer = new StringTokenizer(s, ',', "Invalid text decoration."))
+            using (var tokenizer = new SpanStringTokenizer(s, ',', "Invalid text decoration."))
             {
-                while (tokenizer.TryReadString(out var name))
+                while (tokenizer.TryReadSpan(out var name))
                 {
                     var location = GetTextDecorationLocation(name);
 
@@ -59,9 +59,9 @@ namespace Avalonia.Media
         /// </summary>
         /// <param name="s">The string.</param>
         /// <returns>The <see cref="TextDecorationLocation"/>.</returns>
-        private static TextDecorationLocation GetTextDecorationLocation(string s)
+        private static TextDecorationLocation GetTextDecorationLocation(ReadOnlySpan<char> s)
         {
-            if (Enum.TryParse<TextDecorationLocation>(s,true, out var location))
+            if (SpanHelpers.TryParseEnum<TextDecorationLocation>(s,true, out var location))
             {
                 return location;
             }

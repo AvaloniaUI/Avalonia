@@ -54,7 +54,7 @@ namespace Avalonia.Themes.Fluent
             get => _densityStyle;
             set => SetAndRaise(DensityStyleProperty, ref _densityStyle, value);
         }
-        
+
         public IDictionary<ThemeVariant, ColorPaletteResources> Palettes { get; }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

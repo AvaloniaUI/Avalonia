@@ -1,9 +1,9 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
-using Avalonia.Input;
+﻿using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.MicroCom;
 using Avalonia.Platform;
+using Avalonia.Utilities;
 using Avalonia.Win32.Interop;
 using MicroCom.Runtime;
 using DropEffect = Avalonia.Win32.Win32Com.DropEffect;
@@ -16,7 +16,7 @@ namespace Avalonia.Win32
         private readonly ITopLevelImpl _topLevel;
         private readonly IDragDropDevice _dragDevice;
         
-        private IDataObject? _currentDrag;
+        private IDataTransfer? _currentDrag;
 
         public OleDropTarget(ITopLevelImpl topLevel, IInputRoot target, IDragDropDevice dragDevice)
         {
@@ -74,11 +74,18 @@ namespace Avalonia.Win32
             var dispatch = _topLevel.Input;
             if (dispatch == null)
             {
-                *pdwEffect= (int)DropEffect.None;
+                *pdwEffect = DropEffect.None;
                 return;
             }
 
             SetDataObject(pDataObj);
+
+            // Can happen if the DataTransferToOleDataObjectWrapper was somehow disposed
+            if (_currentDrag is null)
+            {
+                *pdwEffect = DropEffect.None;
+                return;
+            }
 
             var args = new RawDragEvent(
                 _dragDevice,
@@ -98,7 +105,7 @@ namespace Avalonia.Win32
             var dispatch = _topLevel.Input;
             if (dispatch == null || _currentDrag is null)
             {
-                *pdwEffect = (int)DropEffect.None;
+                *pdwEffect = DropEffect.None;
                 return;
             }
             
@@ -148,11 +155,18 @@ namespace Avalonia.Win32
                 var dispatch = _topLevel.Input;
                 if (dispatch == null)
                 {
-                    *pdwEffect = (int)DropEffect.None;
+                    *pdwEffect = DropEffect.None;
                     return;
                 }
 
                 SetDataObject(pDataObj);
+
+                // Can happen if the DataTransferToOleDataObjectWrapper was somehow disposed
+                if (_currentDrag is null)
+                {
+                    *pdwEffect = DropEffect.None;
+                    return;
+                }
 
                 var args = new RawDragEvent(
                     _dragDevice, 
@@ -172,10 +186,9 @@ namespace Avalonia.Win32
             }
         }
 
-        [MemberNotNull(nameof(_currentDrag))]
         private void SetDataObject(Win32Com.IDataObject pDataObj)
         {
-            var newDrag = GetAvaloniaObjectFromCOM(pDataObj);
+            var newDrag = TryGetDataTransferFromOleDataObject(pDataObj);
             if (_currentDrag != newDrag)
             {
                 ReleaseDataObject();
@@ -185,8 +198,8 @@ namespace Avalonia.Win32
 
         private void ReleaseDataObject()
         {
-            // OleDataObject keeps COM reference, so it should be disposed.
-            if (_currentDrag is OleDataObject oleDragSource)
+            // OleDataObjectToDataTransferWrapper keeps COM reference, so it should be disposed.
+            if (_currentDrag is OleDataObjectToDataTransferWrapper oleDragSource)
             {
                 oleDragSource.Dispose();
             }
@@ -204,22 +217,16 @@ namespace Avalonia.Win32
             ReleaseDataObject();
         }
 
-        public static IDataObject GetAvaloniaObjectFromCOM(Win32Com.IDataObject pDataObj)
+        public static IDataTransfer? TryGetDataTransferFromOleDataObject(Win32Com.IDataObject pDataObj)
         {
-            if (pDataObj is null)
+            ThrowHelper.ThrowIfNull(pDataObj);
+
+            if (MicroComRuntime.TryUnwrapManagedObject(pDataObj) is DataTransferToOleDataObjectWrapper dataObject)
             {
-                throw new ArgumentNullException(nameof(pDataObj));
-            }
-            if (pDataObj is IDataObject disposableDataObject)
-            {
-                return disposableDataObject;
+                return dataObject.DataTransfer;
             }
 
-            if (MicroComRuntime.TryUnwrapManagedObject(pDataObj) is DataObject dataObject)
-            {
-                return dataObject.Wrapped;
-            }
-            return new OleDataObject(pDataObj);
+            return new OleDataObjectToDataTransferWrapper(pDataObj);
         }
     }
 }

@@ -1,5 +1,10 @@
+#nullable enable
+
+using System.Collections.Generic;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.Markup.Xaml;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
 using Moq;
@@ -380,5 +385,164 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(columnDefinitions[0].Width, new GridLength(1, GridUnitType.Star));
             Assert.Equal(columnDefinitions[2].Width, new GridLength(1, GridUnitType.Star));
         }
+  
+        [Fact]
+        public void Works_In_ItemsControl_ItemsSource()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var xaml = @"<ItemsControl xmlns='https://github.com/avaloniaui'
+                                  xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                                  xmlns:local='clr-namespace:Avalonia.Controls.UnitTests'>
+    <ItemsControl.Resources>
+      <ControlTheme x:Key='{x:Type ItemsControl}' TargetType='ItemsControl'>
+        <Setter Property='Template'>
+          <ControlTemplate>
+            <Border Background='{TemplateBinding Background}'
+                    BorderBrush='{TemplateBinding BorderBrush}'
+                    BorderThickness='{TemplateBinding BorderThickness}'
+                    CornerRadius='{TemplateBinding CornerRadius}'
+                    Padding='{TemplateBinding Padding}'>
+              <ItemsPresenter Name='PART_ItemsPresenter'
+                              ItemsPanel='{TemplateBinding ItemsPanel}'/>
+            </Border>
+          </ControlTemplate>
+        </Setter>
+      </ControlTheme>
+    </ItemsControl.Resources>
+    <ItemsControl.Styles>
+        <Style Selector='ItemsControl > ContentPresenter'>
+            <Setter Property='(Grid.Column)' Value='{Binding Column}'/>
+        </Style>
+    </ItemsControl.Styles>
+    <ItemsControl.DataTemplates>
+        <DataTemplate DataType='local:TextItem'>
+            <Border><TextBlock Text='{Binding Text}'/></Border>
+        </DataTemplate>
+        <DataTemplate DataType='local:SplitterItem'>
+            <GridSplitter ResizeDirection='Columns'/>
+        </DataTemplate>
+    </ItemsControl.DataTemplates>
+    <ItemsControl.ItemsPanel>
+        <ItemsPanelTemplate>
+            <Grid ColumnDefinitions='*,10,*'/>
+        </ItemsPanelTemplate>
+    </ItemsControl.ItemsPanel>
+</ItemsControl>";
+
+            var itemsControl = AvaloniaRuntimeXamlLoader.Parse<ItemsControl>(xaml);
+            itemsControl.ItemsSource = new List<IGridItem>
+            {
+                new TextItem { Column = 0, Text = "A" },
+                new SplitterItem { Column = 1 },
+                new TextItem { Column = 2, Text = "B" },
+            };
+
+            var root = new TestRoot { Child = itemsControl };
+            root.Measure(new Size(200, 100));
+            root.Arrange(new Rect(0, 0, 200, 100));
+
+            var panel = Assert.IsType<Grid>(itemsControl.ItemsPanelRoot);
+            var cp = Assert.IsType<ContentPresenter>(panel.Children[1]);
+            cp.UpdateChild();
+            var splitter = Assert.IsType<GridSplitter>(cp.Child);
+
+            splitter.RaiseEvent(new VectorEventArgs { RoutedEvent = Thumb.DragStartedEvent });
+            splitter.RaiseEvent(new VectorEventArgs { RoutedEvent = Thumb.DragDeltaEvent, Vector = new Vector(-20, 0) });
+            splitter.RaiseEvent(new VectorEventArgs { RoutedEvent = Thumb.DragCompletedEvent });
+
+            Assert.NotEqual(panel.ColumnDefinitions[0].Width, panel.ColumnDefinitions[2].Width);
+        }
+
+        [Fact]
+        public void Works_In_ItemsControl_Items()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var xaml = @"<ItemsControl xmlns='https://github.com/avaloniaui'
+                                  xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <ItemsControl.Resources>
+      <ControlTheme x:Key='{x:Type ItemsControl}' TargetType='ItemsControl'>
+        <Setter Property='Template'>
+          <ControlTemplate>
+            <Border Background='{TemplateBinding Background}'
+                    BorderBrush='{TemplateBinding BorderBrush}'
+                    BorderThickness='{TemplateBinding BorderThickness}'
+                    CornerRadius='{TemplateBinding CornerRadius}'
+                    Padding='{TemplateBinding Padding}'>
+              <ItemsPresenter Name='PART_ItemsPresenter'
+                              ItemsPanel='{TemplateBinding ItemsPanel}'/>
+            </Border>
+          </ControlTemplate>
+        </Setter>
+      </ControlTheme>
+    </ItemsControl.Resources>
+    <ItemsControl.Items>
+        <Border Grid.Column='0'/>
+        <GridSplitter Grid.Column='1' ResizeDirection='Columns'/>
+        <Border Grid.Column='2'/>
+    </ItemsControl.Items>
+    <ItemsControl.ItemsPanel>
+        <ItemsPanelTemplate>
+            <Grid ColumnDefinitions='*,10,*'/>
+        </ItemsPanelTemplate>
+    </ItemsControl.ItemsPanel>
+</ItemsControl>";
+
+            var itemsControl = AvaloniaRuntimeXamlLoader.Parse<ItemsControl>(xaml);
+            var root = new TestRoot { Child = itemsControl };
+            root.Measure(new Size(200, 100));
+            root.Arrange(new Rect(0, 0, 200, 100));
+
+            var panel = Assert.IsType<Grid>(itemsControl.ItemsPanelRoot);
+            var splitter = Assert.IsType<GridSplitter>(panel.Children[1]);
+
+            splitter.RaiseEvent(new VectorEventArgs { RoutedEvent = Thumb.DragStartedEvent });
+            splitter.RaiseEvent(new VectorEventArgs { RoutedEvent = Thumb.DragDeltaEvent, Vector = new Vector(-20, 0) });
+            splitter.RaiseEvent(new VectorEventArgs { RoutedEvent = Thumb.DragCompletedEvent });
+
+            Assert.NotEqual(panel.ColumnDefinitions[0].Width, panel.ColumnDefinitions[2].Width);
+        }
+
+        [Fact]
+        public void Works_In_Grid()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var xaml = @"<Grid xmlns='https://github.com/avaloniaui' ColumnDefinitions='*,10,*'>
+    <Border Grid.Column='0'/>
+    <GridSplitter Grid.Column='1' ResizeDirection='Columns'/>
+    <Border Grid.Column='2'/>
+</Grid>";
+
+            var grid = AvaloniaRuntimeXamlLoader.Parse<Grid>(xaml);
+            var root = new TestRoot { Child = grid };
+            root.Measure(new Size(200, 100));
+            root.Arrange(new Rect(0, 0, 200, 100));
+
+            var splitter = Assert.IsType<GridSplitter>(grid.Children[1]);
+
+            splitter.RaiseEvent(new VectorEventArgs { RoutedEvent = Thumb.DragStartedEvent });
+            splitter.RaiseEvent(new VectorEventArgs { RoutedEvent = Thumb.DragDeltaEvent, Vector = new Vector(-20, 0) });
+            splitter.RaiseEvent(new VectorEventArgs { RoutedEvent = Thumb.DragCompletedEvent });
+
+            Assert.NotEqual(grid.ColumnDefinitions[0].Width, grid.ColumnDefinitions[2].Width);
+        }
+    }
+
+    public interface IGridItem
+    {
+        int Column { get; set; }
+    }
+
+    public class TextItem : IGridItem
+    {
+        public int Column { get; set; }
+        public string? Text { get; set; }
+    }
+
+    public class SplitterItem : IGridItem
+    {
+        public int Column { get; set; }
     }
 }

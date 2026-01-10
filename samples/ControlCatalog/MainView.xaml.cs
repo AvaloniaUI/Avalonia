@@ -1,102 +1,85 @@
 using System;
-using System.Collections;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.LogicalTree;
-using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
-using Avalonia.Platform;
-using Avalonia.VisualTree;
 using Avalonia.Styling;
 using ControlCatalog.Models;
-using ControlCatalog.Pages;
 using ControlCatalog.ViewModels;
 
 namespace ControlCatalog
 {
-    public class MainView : UserControl
+    public partial class MainView : UserControl
     {
+        private Action? _disposeTransparencySetters;
+
         public MainView()
         {
-            AvaloniaXamlLoader.Load(this);
-            
-            var sideBar = this.Get<TabControl>("Sidebar");
+            InitializeComponent();
+        }
 
-            var themes = this.Get<ComboBox>("Themes");
-            themes.SelectedItem = App.CurrentTheme;
-            themes.SelectionChanged += (sender, e) =>
+        private void Themes_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            if (e.AddedItems.Count > 0 && e.AddedItems[0] is CatalogTheme theme)
             {
-                if (themes.SelectedItem is CatalogTheme theme)
-                {
-                    App.SetCatalogThemes(theme);
-                }
-            };
-            var themeVariants = this.Get<ComboBox>("ThemeVariants");
-            themeVariants.SelectedItem = Application.Current!.RequestedThemeVariant;
-            themeVariants.SelectionChanged += (sender, e) =>
-            {
-                if (themeVariants.SelectedItem is ThemeVariant themeVariant)
-                {
-                    Application.Current!.RequestedThemeVariant = themeVariant;
-                }
-            };
+                App.SetCatalogThemes(theme);
+            }
+        }
 
-            var flowDirections = this.Get<ComboBox>("FlowDirection");
-            flowDirections.SelectionChanged += (sender, e) =>
+        private void ThemeVariants_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            if (Application.Current is { } app && e.AddedItems.Count > 0 && e.AddedItems[0] is ThemeVariant themeVariant)
             {
-                if (flowDirections.SelectedItem is FlowDirection flowDirection)
-                {
-                    TopLevel.GetTopLevel(this)!.FlowDirection = flowDirection;
-                }
-            };
+                app.RequestedThemeVariant = themeVariant;
+            }
+        }
 
-            var decorations = this.Get<ComboBox>("Decorations");
-            decorations.SelectionChanged += (sender, e) =>
+        private void FlowDirection_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            if (TopLevel.GetTopLevel(this) is { } topLevel && e.AddedItems.Count > 0 && e.AddedItems[0] is FlowDirection flowDirection)
             {
-                if (VisualRoot is Window window
-                    && decorations.SelectedItem is SystemDecorations systemDecorations)
-                {
-                    window.SystemDecorations = systemDecorations;
-                }
-            };
+                topLevel.FlowDirection = flowDirection;
+            }
+        }
 
-            var transparencyLevels = this.Get<ComboBox>("TransparencyLevels");
-            IDisposable? topLevelBackgroundSideSetter = null, sideBarBackgroundSetter = null, paneBackgroundSetter = null;
-            transparencyLevels.SelectionChanged += (sender, e) =>
+        private void Decorations_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            if (VisualRoot is Window window && e.AddedItems.Count > 0 && e.AddedItems[0] is SystemDecorations systemDecorations)
             {
-                topLevelBackgroundSideSetter?.Dispose();
-                sideBarBackgroundSetter?.Dispose();
-                paneBackgroundSetter?.Dispose();
-                if (transparencyLevels.SelectedItem is WindowTransparencyLevel selected)
-                {
-                    var topLevel = (TopLevel)this.GetVisualRoot()!;
-                    topLevel.TransparencyLevelHint = new[] { selected };
+                window.SystemDecorations = systemDecorations;
+            }
+        }
 
-                    if (topLevel.ActualTransparencyLevel != WindowTransparencyLevel.None &&
-                        topLevel.ActualTransparencyLevel == selected)
-                    {
-                        var transparentBrush = new ImmutableSolidColorBrush(Colors.White, 0);
-                        var semiTransparentBrush = new ImmutableSolidColorBrush(Colors.Gray, 0.2);
-                        topLevelBackgroundSideSetter = topLevel.SetValue(BackgroundProperty, transparentBrush, Avalonia.Data.BindingPriority.Style);
-                        sideBarBackgroundSetter = sideBar.SetValue(BackgroundProperty, semiTransparentBrush, Avalonia.Data.BindingPriority.Style);
-                        paneBackgroundSetter = sideBar.SetValue(SplitView.PaneBackgroundProperty, semiTransparentBrush, Avalonia.Data.BindingPriority.Style);
-                    }
+        private void TransparencyLevels_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            _disposeTransparencySetters?.Invoke();
+
+            if (TopLevel.GetTopLevel(this) is { } topLevel && e.AddedItems.Count > 0 && e.AddedItems[0] is WindowTransparencyLevel transparencyLevel)
+            {
+                topLevel.TransparencyLevelHint = [transparencyLevel];
+
+                if (topLevel.ActualTransparencyLevel != WindowTransparencyLevel.None &&
+                    topLevel.ActualTransparencyLevel == transparencyLevel)
+                {
+                    var transparentBrush = new ImmutableSolidColorBrush(Colors.White, 0);
+                    var semiTransparentBrush = new ImmutableSolidColorBrush(Colors.Gray, 0.2);
+                    _disposeTransparencySetters =
+                        (Action)topLevel.SetValue(BackgroundProperty, transparentBrush, Avalonia.Data.BindingPriority.Style)!.Dispose +
+                        Sidebar.SetValue(BackgroundProperty, semiTransparentBrush, Avalonia.Data.BindingPriority.Style)!.Dispose +
+                        Sidebar.SetValue(SplitView.PaneBackgroundProperty, semiTransparentBrush, Avalonia.Data.BindingPriority.Style)!.Dispose;
                 }
-            };
+            }
         }
 
         internal MainWindowViewModel ViewModel => (MainWindowViewModel)DataContext!;
-        
+
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
 
-            var decorations = this.Get<ComboBox>("Decorations");
             if (VisualRoot is Window window)
-                decorations.SelectedIndex = (int)window.SystemDecorations;
+                Decorations.SelectedIndex = (int)window.SystemDecorations;
 
             var insets = TopLevel.GetTopLevel(this)!.InsetsManager;
             if (insets != null)
@@ -108,14 +91,14 @@ namespace ControlCatalog
                     ViewModel.SafeAreaPadding = insets.SafeAreaPadding;
                 };
 
-                ViewModel.DisplayEdgeToEdge = insets.DisplayEdgeToEdge;
+                ViewModel.DisplayEdgeToEdge = insets.DisplayEdgeToEdgePreference;
                 ViewModel.IsSystemBarVisible = insets.IsSystemBarVisible ?? true;
 
                 ViewModel.PropertyChanged += async (sender, args) =>
                 {
                     if (args.PropertyName == nameof(ViewModel.DisplayEdgeToEdge))
                     {
-                        insets.DisplayEdgeToEdge = ViewModel.DisplayEdgeToEdge;
+                        insets.DisplayEdgeToEdgePreference = ViewModel.DisplayEdgeToEdge;
                     }
                     else if (args.PropertyName == nameof(ViewModel.IsSystemBarVisible))
                     {
@@ -124,7 +107,7 @@ namespace ControlCatalog
 
                     // Give the OS some time to apply new values and refresh the view model.
                     await Task.Delay(100);
-                    ViewModel.DisplayEdgeToEdge = insets.DisplayEdgeToEdge;
+                    ViewModel.DisplayEdgeToEdge = insets.DisplayEdgeToEdgePreference;
                     ViewModel.IsSystemBarVisible = insets.IsSystemBarVisible ?? true;
                 };
             }

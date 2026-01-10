@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Avalonia.Controls.Primitives.UnitTests
 {
-    public class ToggleButtonTests
+    public class ToggleButtonTests : ScopedTestBase
     {
         private const string uncheckedClass = ":unchecked";
         private const string checkedClass = ":checked";

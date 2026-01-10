@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Avalonia.Data;
 using Avalonia.PropertyStore;
 using Avalonia.Styling;
@@ -14,7 +15,7 @@ internal sealed class ValueFrameDiagnostic : IValueFrameDiagnostic
         _valueFrame = valueFrame;
     }
 
-    public string? Description => (_valueFrame.Owner?.Owner as StyledElement)?.StyleKey.Name;
+    public object? Source => _valueFrame.Owner?.Owner;
 
     public IValueFrameDiagnostic.FrameType Type => IValueFrameDiagnostic.FrameType.Template;
 

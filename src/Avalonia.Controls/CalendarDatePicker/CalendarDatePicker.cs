@@ -326,17 +326,6 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        protected override void UpdateDataValidation(AvaloniaProperty property, BindingValueType state, Exception? error)
-        {
-            if (property == SelectedDateProperty)
-            {
-                DataValidationErrors.SetError(this, error);
-            }
-
-            base.UpdateDataValidation(property, state, error);
-        }
-
-        /// <inheritdoc/>
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             base.OnPointerPressed(e);
@@ -730,7 +719,9 @@ namespace Avalonia.Controls
             // the TextParseError event
             try
             {
-                newSelectedDate = DateTime.Parse(text, DateTimeHelper.GetCurrentDateFormat());
+                newSelectedDate = SelectedDateFormat == CalendarDatePickerFormat.Custom && !string.IsNullOrEmpty(CustomDateFormatString) ?
+                    DateTime.ParseExact(text, CustomDateFormatString, DateTimeHelper.GetCurrentDateFormat()) :
+                    DateTime.Parse(text, DateTimeHelper.GetCurrentDateFormat());
 
                 if (Calendar.IsValidDateSelection(this._calendar!, newSelectedDate))
                 {
@@ -899,6 +890,11 @@ namespace Avalonia.Controls
 
                     switch (SelectedDateFormat)
                     {
+                        case CalendarDatePickerFormat.Custom:
+                            {
+                                watermarkText = string.Format(CultureInfo.CurrentCulture, watermarkFormat, CustomDateFormatString);
+                                break;
+                            }
                         case CalendarDatePickerFormat.Long:
                             {
                                 watermarkText = string.Format(CultureInfo.CurrentCulture, watermarkFormat, dtfi.LongDatePattern.ToString());
@@ -911,6 +907,7 @@ namespace Avalonia.Controls
                                 break;
                             }
                     }
+
                     _textBox.Watermark = watermarkText;
                 }
                 else

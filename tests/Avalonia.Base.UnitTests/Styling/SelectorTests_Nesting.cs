@@ -22,7 +22,7 @@ namespace Avalonia.Base.UnitTests.Styling
                 }
             };
 
-            var match = nested.Selector.Match(control, parent);
+            var match = nested.Selector!.Match(control, parent);
             Assert.Equal(SelectorMatchResult.NeverThisType, match.Result);
         }
 
@@ -41,7 +41,7 @@ namespace Avalonia.Base.UnitTests.Styling
                 }
             };
 
-            var match = nested.Selector.Match(control, parent);
+            var match = nested.Selector!.Match(control, parent);
             Assert.Equal(SelectorMatchResult.NeverThisType, match.Result);
         }
 
@@ -61,7 +61,7 @@ namespace Avalonia.Base.UnitTests.Styling
                 }
             };
 
-            var match = nested.Selector.Match(control, parent);
+            var match = nested.Selector!.Match(control, parent);
             Assert.Equal(SelectorMatchResult.NeverThisInstance, match.Result);
         }
 
@@ -89,7 +89,7 @@ namespace Avalonia.Base.UnitTests.Styling
                 }
             };
 
-            var match = nested.Selector.Match(control, parent);
+            var match = nested.Selector!.Match(control, parent);
             Assert.Equal(SelectorMatchResult.NeverThisType, match.Result);
         }
 
@@ -106,8 +106,9 @@ namespace Avalonia.Base.UnitTests.Styling
                 }
             };
 
-            var match = nested.Selector.Match(control, parent);
+            var match = nested.Selector!.Match(control, parent);
             Assert.Equal(SelectorMatchResult.Sometimes, match.Result);
+            Assert.NotNull(match.Activator);
 
             var sink = new ActivatorSink(match.Activator);
 
@@ -140,8 +141,9 @@ namespace Avalonia.Base.UnitTests.Styling
                 }
             };
 
-            var match = nested.Selector.Match(control, parent);
+            var match = nested.Selector!.Match(control, parent);
             Assert.Equal(SelectorMatchResult.Sometimes, match.Result);
+            Assert.NotNull(match.Activator);
 
             var sink = new ActivatorSink(match.Activator);
 
@@ -165,8 +167,9 @@ namespace Avalonia.Base.UnitTests.Styling
                 }
             };
 
-            var match = nested.Selector.Match(control, parent);
+            var match = nested.Selector!.Match(control, parent);
             Assert.Equal(SelectorMatchResult.Sometimes, match.Result);
+            Assert.NotNull(match.Activator);
 
             var sink = new ActivatorSink(match.Activator);
 
@@ -191,7 +194,7 @@ namespace Avalonia.Base.UnitTests.Styling
                 }
             };
 
-            var match = nested.Selector.Match(control, parent);
+            var match = nested.Selector!.Match(control, parent);
             Assert.Equal(SelectorMatchResult.AlwaysThisInstance, match.Result);
         }
 
@@ -201,7 +204,7 @@ namespace Avalonia.Base.UnitTests.Styling
             var control = new Control1();
             var style = new Style(x => x.Nesting().OfType<Control1>());
 
-            Assert.Throws<InvalidOperationException>(() => style.Selector.Match(control, null));
+            Assert.Throws<InvalidOperationException>(() => style.Selector!.Match(control, null));
         }
 
         [Fact]
@@ -217,7 +220,7 @@ namespace Avalonia.Base.UnitTests.Styling
                 }
             };
 
-            Assert.Throws<InvalidOperationException>(() => nested.Selector.Match(control, parent));
+            Assert.Throws<InvalidOperationException>(() => nested.Selector!.Match(control, parent));
         }
 
         [Fact]
@@ -272,8 +275,9 @@ namespace Avalonia.Base.UnitTests.Styling
                 }
             };
 
-            var match = nested.Selector.Match(control, parent);
+            var match = nested.Selector!.Match(control, parent);
             Assert.Equal(SelectorMatchResult.Sometimes, match.Result);
+            Assert.NotNull(match.Activator);
 
             var sink = new ActivatorSink(match.Activator);
 

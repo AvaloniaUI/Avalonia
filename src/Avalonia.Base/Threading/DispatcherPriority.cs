@@ -112,7 +112,7 @@ namespace Avalonia.Threading
         /// <summary>
         /// The job will be processed with the same priority as data binding.
         /// </summary>
-        [Obsolete("WPF compatibility"), EditorBrowsable(EditorBrowsableState.Never)] public static readonly DispatcherPriority DataBind = new(Render);
+        [Obsolete("WPF compatibility"), EditorBrowsable(EditorBrowsableState.Never)] public static readonly DispatcherPriority DataBind = new(AsyncRenderTargetResize + 1);
         
         /// <summary>
         /// The job will be processed with normal priority.

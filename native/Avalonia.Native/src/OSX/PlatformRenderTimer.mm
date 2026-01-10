@@ -72,6 +72,7 @@ public:
     
     static CVReturn OnTick(CVDisplayLinkRef displayLink, const CVTimeStamp *inNow, const CVTimeStamp *inOutputTime, CVOptionFlags flagsIn, CVOptionFlags *flagsOut, void *displayLinkContext)
     {
+        START_ARP_CALL;
         PlatformRenderTimer *object = (PlatformRenderTimer *)displayLinkContext;
         object->_callback->Run();
         return kCVReturnSuccess;

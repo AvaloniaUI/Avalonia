@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -7,21 +6,20 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Harfbuzz;
 using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
-using Avalonia.Rendering;
-using Avalonia.Rendering.Composition;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class MaskedTextBoxTests
+    public class MaskedTextBoxTests : ScopedTestBase
     {
         [Fact]
         public void Opening_Context_Menu_Does_not_Lose_Selection()
@@ -804,7 +802,7 @@ namespace Avalonia.Controls.UnitTests
         [InlineData("abc", "ddd", 3, 0, 2, true, "ddc")]
         [InlineData("abc", "dddd", 4, 1, 3, true, "addd")]
         [InlineData("abc", "ddddd", 5, 3, 3, true, "abcdd")]
-        public void MaxLength_Works_Properly(
+        public async Task MaxLength_Works_Properly(
             string initalText,
             string textInput,
             int maxLength,
@@ -838,10 +836,10 @@ namespace Avalonia.Controls.UnitTests
 
                 if (fromClipboard)
                 {
-                    topLevel.Clipboard?.SetTextAsync(textInput).GetAwaiter().GetResult();
+                    await topLevel.Clipboard!.SetTextAsync(textInput);
 
                     RaiseKeyEvent(target, Key.V, KeyModifiers.Control);
-                    topLevel.Clipboard?.ClearAsync().GetAwaiter().GetResult();
+                    await topLevel.Clipboard!.ClearAsync();
                 }
                 else
                 {
@@ -884,24 +882,58 @@ namespace Avalonia.Controls.UnitTests
 
                 RaiseKeyEvent(target, key, modifiers);
                 RaiseKeyEvent(target, Key.Z, KeyModifiers.Control); // undo
-                Assert.True(target.Text == "0123");
+                Assert.Equal("0123", target.Text);
+            }
+        }
+
+        [Fact]
+        public void Invalid_Text_Is_Coerced_Without_Raising_Intermediate_Change()
+        {
+            using (Start())
+            {
+                var target = new MaskedTextBox
+                {
+                    Template = CreateTemplate()
+                };
+
+                var impl = CreateMockTopLevelImpl();
+                var topLevel = new TestTopLevel(impl.Object) {
+                    Template = CreateTopLevelTemplate(),
+                    Content = target
+                };
+                topLevel.ApplyTemplate();
+                topLevel.LayoutManager.ExecuteInitialLayoutPass();
+
+                var texts = new System.Collections.Generic.List<string>();
+
+                target.PropertyChanged += (_, e) =>
+                {
+                    if (e.Property == TextBox.TextProperty)
+                        texts.Add(e.GetNewValue<string>());
+                };
+
+                target.Mask = "000";
+
+                target.Text = "123";
+                target.Text = "abc";
+
+                Assert.Equal(["___", "123"], texts);
             }
         }
 
         private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
-            focusManager: new FocusManager(),
             keyboardDevice: () => new KeyboardDevice(),
             keyboardNavigation: () => new KeyboardNavigationHandler(),
             inputManager: new InputManager(),
             renderInterface: new HeadlessPlatformRenderInterface(),
             fontManagerImpl: new HeadlessFontManagerStub(),
-            textShaperImpl: new HeadlessTextShaperStub(),
+            textShaperImpl: new HarfBuzzTextShaper(),
             standardCursorFactory: Mock.Of<ICursorFactory>());
 
         private static TestServices Services => TestServices.MockThreadingInterface.With(
             renderInterface: new HeadlessPlatformRenderInterface(),
-            standardCursorFactory: Mock.Of<ICursorFactory>(),     
-            textShaperImpl: new HeadlessTextShaperStub(), 
+            standardCursorFactory: Mock.Of<ICursorFactory>(),
+            textShaperImpl: new HarfBuzzTextShaper(),
             fontManagerImpl: new HeadlessFontManagerStub());
 
         private static IControlTemplate CreateTemplate()
@@ -946,16 +978,16 @@ namespace Avalonia.Controls.UnitTests
             });
         }
 
-        private static IDisposable Start(TestServices services = null)
+        private static IDisposable Start(TestServices? services = null)
         {
             CultureInfo.CurrentCulture = CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("en-US");
-            return UnitTestApplication.Start(services ?? Services);
+            return UnitTestApplication.Start((services ?? Services).With(assetLoader: new StandardAssetLoader()));
         }
 
         private class Class1 : NotifyingBase
         {
             private int _foo;
-            private string _bar;
+            private string? _bar;
 
             public int Foo
             {
@@ -963,43 +995,18 @@ namespace Avalonia.Controls.UnitTests
                 set { _foo = value; RaisePropertyChanged(); }
             }
 
-            public string Bar
+            public string? Bar
             {
                 get { return _bar; }
                 set { _bar = value; RaisePropertyChanged(); }
             }
         }
 
-        internal class ClipboardStub : IClipboard // in order to get tests working that use the clipboard
-        {
-            private string _text;
-
-            public Task<string> GetTextAsync() => Task.FromResult(_text);
-
-            public Task SetTextAsync(string text)
-            {
-                _text = text;
-                return Task.CompletedTask;
-            }
-
-            public Task ClearAsync()
-            {
-                _text = null;
-                return Task.CompletedTask;
-            }
-
-            public Task SetDataObjectAsync(IDataObject data) => Task.CompletedTask;
-
-            public Task<string[]> GetFormatsAsync() => Task.FromResult(Array.Empty<string>());
-
-            public Task<object> GetDataAsync(string format) => Task.FromResult((object)null);
-        }
-
         private class TestTopLevel : TopLevel
         {
             private readonly ILayoutManager _layoutManager;
 
-            public TestTopLevel(ITopLevelImpl impl, ILayoutManager layoutManager = null)
+            public TestTopLevel(ITopLevelImpl impl, ILayoutManager? layoutManager = null)
                 : base(impl)
             {
                 _layoutManager = layoutManager ?? new LayoutManager(this);
@@ -1013,7 +1020,7 @@ namespace Avalonia.Controls.UnitTests
             var clipboard = new Mock<ITopLevelImpl>();
             clipboard.Setup(x => x.Compositor).Returns(RendererMocks.CreateDummyCompositor());
             clipboard.Setup(r => r.TryGetFeature(typeof(IClipboard)))
-                .Returns(new ClipboardStub());
+                .Returns(new Clipboard(new HeadlessClipboardImplStub()));
             clipboard.SetupGet(x => x.RenderScaling).Returns(1);
             return clipboard;
         }

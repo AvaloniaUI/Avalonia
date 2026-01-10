@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Avalonia.Controls;
+using Avalonia.Layout;
 using Avalonia.UnitTests;
 using BenchmarkDotNet.Attributes;
 
@@ -31,12 +32,23 @@ namespace Avalonia.Benchmarks.Layout
         [Benchmark, MethodImpl(MethodImplOptions.NoInlining)]
         public void Remeasure()
         {
+            _root.InvalidateMeasure();
+
             foreach (var control in _controls)
             {
-                control.InvalidateMeasure();
+                // Use an unsafe accessor instead of InvalidateMeasure, otherwise a lot of time is spent invalidating
+                // controls, which we don't want: this benchmark is supposed to be focused on Measure/Arrange.
+                SetIsMeasureValid(control, false);
+                SetIsArrangeValid(control, false);
             }
 
             _root.LayoutManager.ExecuteLayoutPass();
         }
+
+        [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "set_" + nameof(Layoutable.IsMeasureValid))]
+        private static extern void SetIsMeasureValid(Layoutable layoutable, bool value);
+
+        [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "set_" + nameof(Layoutable.IsArrangeValid))]
+        private static extern void SetIsArrangeValid(Layoutable layoutable, bool value);
     }
 }

@@ -1,28 +1,37 @@
-using Avalonia.Data;
 using System;
-using Avalonia.Controls;
-using Avalonia.Data.Converters;
 using System.Diagnostics.CodeAnalysis;
-using System.ComponentModel;
-using System.Globalization;
+using Avalonia.Controls;
+using Avalonia.Data;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
     [RequiresUnreferencedCode(TrimmingMessages.ReflectionBindingRequiresUnreferencedCodeMessage)]
-    public class ReflectionBindingExtension
+#if NET8_0_OR_GREATER
+    [RequiresDynamicCode(TrimmingMessages.ReflectionBindingRequiresDynamicCodeMessage)]
+#endif
+    public sealed class ReflectionBindingExtension : ReflectionBinding
     {
-        public ReflectionBindingExtension()
-        {
-        }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ReflectionBinding"/> class.
+        /// </summary>
+        public ReflectionBindingExtension() { }
 
-        public ReflectionBindingExtension(string path)
-        {
-            Path = path;
-        }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ReflectionBinding"/> class.
+        /// </summary>
+        /// <param name="path">The binding path.</param>
+        public ReflectionBindingExtension(string path) : base(path) { }
 
-        public Binding ProvideValue(IServiceProvider serviceProvider)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ReflectionBinding"/> class.
+        /// </summary>
+        /// <param name="path">The binding path.</param>
+        /// <param name="mode">The binding mode.</param>
+        public ReflectionBindingExtension(string path, BindingMode mode) : base(path, mode) { }
+
+        public ReflectionBinding ProvideValue(IServiceProvider serviceProvider)
         {
-            return new Binding
+            return new ReflectionBinding
             {
                 TypeResolver = serviceProvider.ResolveType,
                 Converter = Converter,
@@ -33,39 +42,15 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 Mode = Mode,
                 Path = Path,
                 Priority = Priority,
+                Delay = Delay,
                 Source = Source,
                 StringFormat = StringFormat,
                 RelativeSource = RelativeSource,
                 DefaultAnchor = new WeakReference(serviceProvider.GetDefaultAnchor()),
                 TargetNullValue = TargetNullValue,
-                NameScope = new WeakReference<INameScope?>(serviceProvider.GetService<INameScope>())
+                NameScope = new WeakReference<INameScope?>(serviceProvider.GetService<INameScope>()),
+                UpdateSourceTrigger = UpdateSourceTrigger,
             };
         }
-
-        public IValueConverter? Converter { get; set; }
-
-        [TypeConverter(typeof(CultureInfoIetfLanguageTagConverter))]
-        public CultureInfo? ConverterCulture { get; set; }
-
-        public object? ConverterParameter { get; set; }
-
-        public string? ElementName { get; set; }
-
-        public object? FallbackValue { get; set; } = AvaloniaProperty.UnsetValue;
-
-        public BindingMode Mode { get; set; }
-
-        [ConstructorArgument("path")]
-        public string Path { get; set; } = "";
-
-        public BindingPriority Priority { get; set; } = BindingPriority.LocalValue;
-
-        public object? Source { get; set; } = AvaloniaProperty.UnsetValue;
-
-        public string? StringFormat { get; set; }
-
-        public RelativeSource? RelativeSource { get; set; }
-
-        public object? TargetNullValue { get; set; } = AvaloniaProperty.UnsetValue;
     }
 }

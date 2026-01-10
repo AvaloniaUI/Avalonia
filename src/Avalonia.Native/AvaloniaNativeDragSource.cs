@@ -19,7 +19,7 @@ namespace Avalonia.Native
 
         class DndCallback : NativeCallbackBase, IAvnDndResultCallback
         {
-            private TaskCompletionSource<DragDropEffects> _tcs;
+            private TaskCompletionSource<DragDropEffects>? _tcs;
 
             public DndCallback(TaskCompletionSource<DragDropEffects> tcs)
             {
@@ -31,29 +31,36 @@ namespace Avalonia.Native
                 _tcs = null;
             }
         }
-        
-        public Task<DragDropEffects> DoDragDrop(PointerEventArgs triggerEvent, IDataObject data, DragDropEffects allowedEffects)
+
+        [Obsolete($"Use {nameof(DoDragDropAsync)} instead.")]
+        Task<DragDropEffects> IPlatformDragSource.DoDragDrop(
+            PointerEventArgs triggerEvent,
+            IDataObject data,
+            DragDropEffects allowedEffects)
+            => DoDragDropAsync(triggerEvent, new DataObjectToDataTransferWrapper(data), allowedEffects);
+
+        public Task<DragDropEffects> DoDragDropAsync(
+            PointerEventArgs triggerEvent,
+            IDataTransfer dataTransfer,
+            DragDropEffects allowedEffects)
         {
             // Sanity check
             var tl = TopLevel.GetTopLevel(triggerEvent.Source as Visual);
-            var view = tl?.PlatformImpl as WindowBaseImpl;
+            var view = tl?.PlatformImpl as TopLevelImpl;
             if (view == null)
                 throw new ArgumentException();
 
             triggerEvent.Pointer.Capture(null);
             
             var tcs = new TaskCompletionSource<DragDropEffects>();
-            
-            var clipboardImpl = _factory.CreateDndClipboard();
-            using (var clipboard = new ClipboardImpl(clipboardImpl))
+
             using (var cb = new DndCallback(tcs))
             {
-                // Native API is synchronous, so it's OK. For now.
-                clipboard.SetDataObjectAsync(data).GetAwaiter().GetResult();
+                var dataSource = new DataTransferToAvnClipboardDataSourceWrapper(dataTransfer);
 
                 view.BeginDraggingSession((AvnDragDropEffects)allowedEffects,
-                    triggerEvent.GetPosition(tl).ToAvnPoint(), clipboardImpl, cb,
-                    GCHandle.ToIntPtr(GCHandle.Alloc(data)));
+                    triggerEvent.GetPosition(tl).ToAvnPoint(), dataSource, cb,
+                    GCHandle.ToIntPtr(GCHandle.Alloc(dataTransfer)));
             }
 
             return tcs.Task;

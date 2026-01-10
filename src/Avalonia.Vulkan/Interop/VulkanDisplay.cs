@@ -13,7 +13,7 @@ internal class VulkanDisplay : IDisposable
     private IVulkanPlatformGraphicsContext _context;
     private VulkanSemaphorePair _semaphorePair;
     private uint _nextImage;
-    private VulkanKhrSurface _surface;
+    private VulkanKhrSurface? _surface;
     private VkSurfaceFormatKHR _surfaceFormat;
     private VkSwapchainKHR _swapchain;
     private VkExtent2D _swapchainExtent;
@@ -40,7 +40,7 @@ internal class VulkanDisplay : IDisposable
     {
         get
         {
-            if (_surfaceFormat.format == VkFormat.VK_FORMAT_UNDEFINED)
+            if (_surfaceFormat.format == VkFormat.VK_FORMAT_UNDEFINED && _surface != null)
                 _surfaceFormat = _surface.GetSurfaceFormat();
             return _surfaceFormat;
         }
@@ -193,6 +193,11 @@ internal class VulkanDisplay : IDisposable
     
     private void RecreateSwapchain()
     {
+        if (_surface == null)
+        {
+            RecreateSurface();
+            return;
+        }
         _context.DeviceApi.DeviceWaitIdle(_context.DeviceHandle);
         _swapchain = CreateSwapchain(_context, _surface, out var extent, this);
         _swapchainExtent = extent;
@@ -202,6 +207,7 @@ internal class VulkanDisplay : IDisposable
     private void RecreateSurface()
     {
         _surface?.Dispose();
+        _surface = null;
         _surface = new VulkanKhrSurface(_context, _platformSurface);
         DestroySwapchain();
         RecreateSwapchain();
@@ -209,7 +215,7 @@ internal class VulkanDisplay : IDisposable
     
     public bool EnsureSwapchainAvailable()
     {
-        if (Size != _surface.Size)
+        if (Size != _surface?.Size)
         {
             RecreateSwapchain();
             return true;

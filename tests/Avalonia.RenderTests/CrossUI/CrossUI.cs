@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia;
+using Avalonia.Media.Imaging;
 
 namespace CrossUI;
 
@@ -193,6 +194,9 @@ public interface ICrossStreamGeometryContextImplProvider
 
 public interface ICrossDrawingContext
 {
+    void PushTransform(Matrix  matrix);
+    void Pop();
+    void DrawLine(CrossPen pen, Point p1, Point p2);
     void DrawRectangle(CrossBrush? brush, CrossPen? pen, Rect rc);
     void DrawGeometry(CrossBrush? brush, CrossPen? pen, CrossGeometry geometry);
     void DrawImage(CrossImage image, Rect rc);
@@ -226,6 +230,7 @@ public class CrossControl
     public CrossPen? Outline;
     public List<CrossControl> Children = new();
     public Matrix RenderTransform = Matrix.Identity;
+    public BitmapInterpolationMode BitmapInterpolationMode;
     
     public virtual void Render(ICrossDrawingContext ctx)
     {

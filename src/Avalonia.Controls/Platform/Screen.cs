@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using Avalonia.Diagnostics;
 using Avalonia.Metadata;
 using Avalonia.Utilities;
@@ -122,13 +123,19 @@ namespace Avalonia.Platform
         /// </returns>
         public virtual IPlatformHandle? TryGetPlatformHandle() => null;
 
+        // TODO12: make abstract
+        /// <inheritdoc />
+        public override int GetHashCode()
+            => RuntimeHelpers.GetHashCode(this);
+
+        /// <inheritdoc />
+        public override bool Equals(object? obj)
+            => obj is Screen other && Equals(other);
+
+        // TODO12: make abstract
         /// <inheritdoc/>
-        public bool Equals(Screen? other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return base.Equals(other);
-        }
+        public virtual bool Equals(Screen? other)
+            => ReferenceEquals(this, other);
 
         public static bool operator ==(Screen? left, Screen? right)
         {

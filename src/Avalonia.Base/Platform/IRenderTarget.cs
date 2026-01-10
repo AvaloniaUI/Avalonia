@@ -25,30 +25,39 @@ namespace Avalonia.Platform
         public bool IsCorrupted { get; }
     }
 
-    [PrivateApi]
+    [PrivateApi, Obsolete("Use IRenderTarget2", true)]
+    // TODO12: Remove
     public interface IRenderTargetWithProperties : IRenderTarget
+    {
+        RenderTargetProperties Properties { get; }
+    }
+    
+    [PrivateApi]
+    // TODO12: Merge into IRenderTarget
+    public interface IRenderTarget2 : IRenderTarget
     {
         RenderTargetProperties Properties { get; }
 
         /// <summary>
         /// Creates an <see cref="IDrawingContextImpl"/> for a rendering session.
         /// </summary>
-        /// <param name="useScaledDrawing">Apply DPI reported by the render target as a hidden transform matrix</param>
+        /// <param name="expectedPixelSize">The pixel size of the surface</param>
         /// <param name="properties">Returns various properties about the returned drawing context</param>
-        IDrawingContextImpl CreateDrawingContext(bool useScaledDrawing, out RenderTargetDrawingContextProperties properties);
+        IDrawingContextImpl CreateDrawingContext(PixelSize expectedPixelSize,
+            out RenderTargetDrawingContextProperties properties);
     }
     
     internal static class RenderTargetExtensions
     {
         public static IDrawingContextImpl CreateDrawingContextWithProperties(
             this IRenderTarget renderTarget,
-            bool useScaledDrawing,
+            PixelSize expectedPixelSize,
             out RenderTargetDrawingContextProperties properties)
         {
-            if (renderTarget is IRenderTargetWithProperties target)
-                return target.CreateDrawingContext(useScaledDrawing, out properties);
+            if (renderTarget is IRenderTarget2 target)
+                return target.CreateDrawingContext(expectedPixelSize, out properties);
             properties = default;
-            return renderTarget.CreateDrawingContext(useScaledDrawing);
+            return renderTarget.CreateDrawingContext(false);
         }
     }
 }

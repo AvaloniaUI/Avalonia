@@ -48,6 +48,10 @@ internal partial class CompositorDrawingContextProxy
         [FieldOffset(0)] public bool IsRoundRect;
         [FieldOffset(4)] public RoundedRect RoundRect;
         [FieldOffset(4)] public Rect NormalRect;
+        
+        // PushEffect
+        [FieldOffset(0)]
+        public Rect? EffectClipRect;
     }
 
     struct PendingCommand
@@ -88,19 +92,21 @@ internal partial class CompositorDrawingContextProxy
     }
 
 
-    private bool TryDiscard(PendingCommandType type)
+    private bool TryDiscardOrFlush(PendingCommandType type)
     {
-        while (_commands.Count > 0 && _commands[_commands.Count - 1].Type == PendingCommandType.SetTransform)
-            _commands.RemoveAt(_commands.Count - 1);
-        if (_commands.Count == 0)
-            return false;
-        if (_commands[_commands.Count - 1].Type == type)
+        for (var c = _commands.Count - 1; c >= 0; c--)
         {
-            _commands.RemoveAt(_commands.Count - 1);
-            return true;
+            if(_commands[c].Type == PendingCommandType.SetTransform)
+                continue;
+            if (_commands[c].Type == type)
+            {
+                _commands.RemoveRange(c, _commands.Count - c);
+                return true;
+            }
+            break;
         }
-
-        // Not sure how exactly can we get here, but flush commands just in case
+        
+        // We've failed to collapse PushX,SetTransform,PopX stack, so we need to execute any pending commands
         Flush();
         return false;
     }
@@ -116,8 +122,13 @@ internal partial class CompositorDrawingContextProxy
     void ExecCommand(ref PendingCommand cmd)
     {
         if (cmd.Type == PendingCommandType.SetTransform)
+        {
             SetImplTransform(cmd.DataUnion.Transform);
-        else if (cmd.Type == PendingCommandType.PushOpacity)
+            return;
+        }
+        
+        SaveTransform();
+        if (cmd.Type == PendingCommandType.PushOpacity)
             _impl.PushOpacity(cmd.DataUnion.Opacity, cmd.DataUnion.NullableOpacityRect);
         else if (cmd.Type == PendingCommandType.PushOpacityMask)
             _impl.PushOpacityMask(cmd.ObjectUnion.Mask!, cmd.DataUnion.NormalRect);
@@ -133,7 +144,7 @@ internal partial class CompositorDrawingContextProxy
         else if (cmd.Type == PendingCommandType.PushEffect)
         {
             if (_impl is IDrawingContextImplWithEffects effects)
-                effects.PushEffect(cmd.ObjectUnion.Effect!);
+                effects.PushEffect(cmd.DataUnion.EffectClipRect, cmd.ObjectUnion.Effect!);
         }
         else if (cmd.Type == PendingCommandType.PushRenderOptions)
             _impl.PushRenderOptions(cmd.DataUnion.RenderOptions);
@@ -148,5 +159,6 @@ internal partial class CompositorDrawingContextProxy
             ExecCommand(ref commands[index]);
 
         _commands.Clear();
+        
     }
 }

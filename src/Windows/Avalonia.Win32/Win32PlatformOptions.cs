@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
 
@@ -168,4 +169,11 @@ public class Win32PlatformOptions
     /// Gets or sets the application's DPI awareness.
     /// </summary>
     public Win32DpiAwareness DpiAwareness { get; set; } = Win32DpiAwareness.PerMonitorDpiAware;
+    
+    /// <summary>
+    /// Specifies a callback method to be called when compositor needs to create a platform graphics device
+    /// Currently is only called for AngleEgl rendering mode when DirectX 11 is used
+    /// </summary>
+    public Func<IReadOnlyList<PlatformGraphicsDeviceAdapterDescription>, int>?
+        GraphicsAdapterSelectionCallback { get; set; }
 }

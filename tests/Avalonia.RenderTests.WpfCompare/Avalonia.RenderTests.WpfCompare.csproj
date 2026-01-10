@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>$(AvsCurrentWindowsTargetFramework)</TargetFramework>
+    <OutputType>Exe</OutputType>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <Nullable>enable</Nullable>
     <UseWpf>true</UseWpf>
@@ -12,7 +13,10 @@
     <Compile Include="..\Avalonia.RenderTests\CrossTests\**\*.cs"/>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Xunit.StaFact" Version="1.2.46-alpha" />
+    <Content Include="../Avalonia.RenderTests/**/*.png" CopyToOutputDirectory="Always" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Xunit.StaFact" Version="3.0.13" />
   </ItemGroup>
   <Import Project="..\..\build\Moq.props" />
   <Import Project="..\..\build\Rx.props" />

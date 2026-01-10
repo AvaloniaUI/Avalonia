@@ -33,14 +33,14 @@ namespace Avalonia.iOS
             remove { _onDeactivated -= value; }
         }
 
-        protected virtual AppBuilder CreateAppBuilder() => AppBuilder.Configure<TApp>().UseiOS();
+        protected virtual AppBuilder CreateAppBuilder() => AppBuilder.Configure<TApp>().UseiOS(this);
         protected virtual AppBuilder CustomizeAppBuilder(AppBuilder builder) => builder;
 
         [Export("window")]
         public UIWindow? Window { get; set; }
 
         [Export("application:didFinishLaunchingWithOptions:")]
-        public bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
+        public bool FinishedLaunching(UIApplication application, NSDictionary? launchOptions)
         {
             var builder = CreateAppBuilder();
             builder = CustomizeAppBuilder(builder);
@@ -83,6 +83,19 @@ namespace Avalonia.iOS
                 {
                     _onActivated?.Invoke(this, new ProtocolActivatedEventArgs(uri));   
                 }
+                return true;
+            }
+
+            return false;
+        }
+
+        [Export("application:continueUserActivity:restorationHandler:")]
+        public bool ContinueUserActivity(UIApplication application, NSUserActivity userActivity, UIApplicationRestorationHandler completionHandler)
+        {
+            if (userActivity.ActivityType == NSUserActivityType.BrowsingWeb && Uri.TryCreate(userActivity.WebPageUrl?.ToString(), UriKind.RelativeOrAbsolute, out var uri))
+            {
+                // Activation using a univeral link or web browser-to-native app Handoff
+                _onActivated?.Invoke(this, new ProtocolActivatedEventArgs(uri));
                 return true;
             }
 

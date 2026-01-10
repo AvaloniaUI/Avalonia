@@ -152,7 +152,7 @@ namespace Avalonia
                     Rect.Width * size.Width,
                     Rect.Height * size.Height);
         }
-        
+
         /// <summary>
         /// Converts a <see cref="RelativeRect"/> into pixels.
         /// </summary>
@@ -176,20 +176,20 @@ namespace Avalonia
         /// <returns>The parsed <see cref="RelativeRect"/>.</returns>
         public static RelativeRect Parse(string s)
         {
-            using (var tokenizer = new StringTokenizer(s, exceptionMessage: "Invalid RelativeRect."))
+            using (var tokenizer = new SpanStringTokenizer(s, exceptionMessage: "Invalid RelativeRect."))
             {
-                var x = tokenizer.ReadString();
-                var y = tokenizer.ReadString();
-                var width = tokenizer.ReadString();
-                var height = tokenizer.ReadString();
+                var x = tokenizer.ReadSpan();
+                var y = tokenizer.ReadSpan();
+                var width = tokenizer.ReadSpan();
+                var height = tokenizer.ReadSpan();
 
                 var unit = RelativeUnit.Absolute;
                 var scale = 1.0;
 
-                var xRelative = x.EndsWith("%", StringComparison.Ordinal);
-                var yRelative = y.EndsWith("%", StringComparison.Ordinal);
-                var widthRelative = width.EndsWith("%", StringComparison.Ordinal);
-                var heightRelative = height.EndsWith("%", StringComparison.Ordinal);
+                var xRelative = x.EndsWith(PercentChar, StringComparison.Ordinal);
+                var yRelative = y.EndsWith(PercentChar, StringComparison.Ordinal);
+                var widthRelative = width.EndsWith(PercentChar, StringComparison.Ordinal);
+                var heightRelative = height.EndsWith(PercentChar, StringComparison.Ordinal);
 
                 if (xRelative && yRelative && widthRelative && heightRelative)
                 {
@@ -207,10 +207,10 @@ namespace Avalonia
                 }
 
                 return new RelativeRect(
-                    double.Parse(x, CultureInfo.InvariantCulture) * scale,
-                    double.Parse(y, CultureInfo.InvariantCulture) * scale,
-                    double.Parse(width, CultureInfo.InvariantCulture) * scale,
-                    double.Parse(height, CultureInfo.InvariantCulture) * scale,
+                    SpanHelpers.ParseDouble(x, CultureInfo.InvariantCulture) * scale,
+                    SpanHelpers.ParseDouble(y, CultureInfo.InvariantCulture) * scale,
+                    SpanHelpers.ParseDouble(width, CultureInfo.InvariantCulture) * scale,
+                    SpanHelpers.ParseDouble(height, CultureInfo.InvariantCulture) * scale,
                     unit);
             }
         }

@@ -1,30 +1,41 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using Avalonia.Media;
 using Avalonia.Media.Fonts;
 using Avalonia.Platform;
 using SkiaSharp;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
 
 namespace Avalonia.Skia.UnitTests.Media
 {
-    public class CustomFontManagerImpl : IFontManagerImpl
+    public class CustomFontManagerImpl : IFontManagerImpl, IDisposable
     {
         private readonly string _defaultFamilyName;
-        private readonly IFontCollection _customFonts;
-        private bool _isInitialized;
+        private readonly string[] _bcp47 = { CultureInfo.CurrentCulture.ThreeLetterISOLanguageName, CultureInfo.CurrentCulture.TwoLetterISOLanguageName };
+        private IFontCollection? _systemFonts;
 
         public CustomFontManagerImpl()
         {
-            _defaultFamilyName = "Noto Mono";
-
-            var source = new Uri("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests");
-
-            _customFonts = new EmbeddedFontCollection(source, source);
+            _defaultFamilyName = FontManager.SystemFontsKey + "#Noto Mono";
         }
 
+        public IFontCollection SystemFonts
+        {
+            get
+            {
+                if (_systemFonts is null)
+                {
+                    var source = new Uri("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests");
+
+                    _systemFonts = new EmbeddedFontCollection(FontManager.SystemFontsKey, source);
+                }
+
+                return _systemFonts;
+            }
+        }
         public string GetDefaultFontFamilyName()
         {
             return _defaultFamilyName;
@@ -32,65 +43,114 @@ namespace Avalonia.Skia.UnitTests.Media
 
         public string[] GetInstalledFontFamilyNames(bool checkForUpdates = false)
         {
-            if (!_isInitialized)
+            // Directly load from assets to avoid creating the full font collection
+            try
             {
-                _customFonts.Initialize(this);
+                var key = new Uri("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests");
 
-                _isInitialized = true;
+                var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
+
+                var fontAssets = FontFamilyLoader.LoadFontAssets(key);
+                var names = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
+
+                foreach (var fontAsset in fontAssets)
+                {
+                    try
+                    {
+                        using var stream = assetLoader.Open(fontAsset);
+                        using var sk = SKTypeface.FromStream(stream);
+
+                        if (sk != null && !string.IsNullOrEmpty(sk.FamilyName))
+                        {
+                            names.Add(sk.FamilyName);
+                        }
+                    }
+                    catch
+                    {
+                        // Ignore faulty assets
+                    }
+                }
+
+                return names.ToArray();
             }
-
-            return _customFonts.Select(x=> x.Name).ToArray();
+            catch
+            {
+                return Array.Empty<string>();
+            }
         }
 
-        private readonly string[] _bcp47 = { CultureInfo.CurrentCulture.ThreeLetterISOLanguageName, CultureInfo.CurrentCulture.TwoLetterISOLanguageName };
-
         public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight, FontStretch fontStretch,
-            CultureInfo culture, out Typeface typeface)
+            string? familyName, CultureInfo? culture, out IPlatformTypeface platformTypeface)
         {
-            if (!_isInitialized)
+            if (SystemFonts.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, familyName, culture, out var glyphTypeface))
             {
-                _customFonts.Initialize(this);
-            }
+                platformTypeface = glyphTypeface.GlyphTypeface.PlatformTypeface;
 
-            if(_customFonts.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, null, culture, out typeface))
-            {
                 return true;
             }
 
-            var fallback = SKFontManager.Default.MatchCharacter(null, (SKFontStyleWeight)fontWeight,
+            var fallback = SKFontManager.Default.MatchCharacter(familyName, (SKFontStyleWeight)fontWeight,
                 (SKFontStyleWidth)fontStretch, (SKFontStyleSlant)fontStyle, _bcp47, codepoint);
 
-            typeface = new Typeface(fallback?.FamilyName ?? _defaultFamilyName, fontStyle, fontWeight);
+            platformTypeface = new SkiaTypeface(fallback, FontSimulations.None);
 
             return true;
         }
 
         public bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight,
-            FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface glyphTypeface)
+            FontStretch stretch, [NotNullWhen(true)] out IPlatformTypeface platformTypeface)
         {
-            if (!_isInitialized)
+            if (SystemFonts.TryGetGlyphTypeface(familyName, style, weight, stretch, out var glyphTypeface))
             {
-                _customFonts.Initialize(this);
-            }
+                platformTypeface = glyphTypeface.PlatformTypeface;
 
-            if (_customFonts.TryGetGlyphTypeface(familyName, style, weight, stretch, out glyphTypeface))
-            {
                 return true;
             }
 
             var skTypeface = SKTypeface.FromFamilyName(familyName,
                         (SKFontStyleWeight)weight, SKFontStyleWidth.Normal, (SKFontStyleSlant)style);
 
-            glyphTypeface = new GlyphTypefaceImpl(skTypeface, FontSimulations.None);
+            platformTypeface = new SkiaTypeface(skTypeface, FontSimulations.None);
 
             return true;
         }
 
-        public bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, [NotNullWhen(true)] out IGlyphTypeface glyphTypeface)
+        public bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, [NotNullWhen(true)] out IPlatformTypeface platformTypeface)
         {
             var skTypeface = SKTypeface.FromStream(stream);
 
-            glyphTypeface = new GlyphTypefaceImpl(skTypeface, fontSimulations);
+            platformTypeface = new SkiaTypeface(skTypeface, fontSimulations);
+
+            return true;
+        }
+
+        public void Dispose()
+        {
+            _systemFonts?.Dispose();
+        }
+
+        public bool TryGetFamilyTypefaces(string familyName, [NotNullWhen(true)] out IReadOnlyList<Typeface>? familyTypefaces)
+        {
+            if (SystemFonts.TryGetFamilyTypefaces(familyName, out familyTypefaces))
+            {
+                return true;
+            }
+
+            var set = SKFontManager.Default.GetFontStyles(familyName);
+
+            if (set.Count == 0)
+            {
+                return false;
+            }
+
+            var typefaces = new List<Typeface>(set.Count);
+
+            foreach (var fontStyle in set)
+            {
+                typefaces.Add(new Typeface(familyName, fontStyle.Slant.ToAvalonia(), (FontWeight)fontStyle.Weight, (FontStretch)fontStyle.Width));
+            }
+
+            familyTypefaces = typefaces;
 
             return true;
         }

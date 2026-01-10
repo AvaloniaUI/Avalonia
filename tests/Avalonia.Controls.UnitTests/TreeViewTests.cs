@@ -9,12 +9,14 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Data.Core;
+using Avalonia.Harfbuzz;
 using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml.Templates;
+using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
@@ -1528,6 +1530,48 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(selected[0], target.SelectedItem);
             Assert.Equal(selected, target.SelectedItems);
         }
+        
+        [Fact]
+        public void CollapseEvent_Can_Be_Captured_By_TreeView_When_Collapsing_TreeViewItem()
+        {
+            using var app = Start();
+            var data = CreateTestTreeData();
+            var target = CreateTarget(data: data);
+            var item = data[0];
+            var container = Assert.IsType<TreeViewItem>(target.TreeContainerFromItem(item));
+
+            var raised = false;
+            object? source = null;
+            target.AddHandler(TreeViewItem.CollapsedEvent, (o, e) =>
+            {
+                raised = true;
+                source = e.Source;
+            });
+            container.IsExpanded = false;
+            Assert.True(raised);
+            Assert.Equal(container, source);
+        }
+        
+        [Fact]
+        public void CollapseEvent_Should_Be_Raised_When_Collapsing_TreeViewItem()
+        {
+            using var app = Start();
+            var data = CreateTestTreeData();
+            var target = CreateTarget(data: data);
+            var item = data[0];
+            var container = Assert.IsType<TreeViewItem>(target.TreeContainerFromItem(item));
+
+            var raised = false;
+            object? source = null;
+            container.AddHandler(TreeViewItem.CollapsedEvent, (o, e) =>
+            {
+                raised = true;
+                source = e.Source;
+            });
+            container.IsExpanded = false;
+            Assert.True(raised);
+            Assert.Equal(container, source);
+        }
 
         private static TreeView CreateTarget(Optional<IList<Node>?> data = default,
             bool expandAll = true,
@@ -1570,7 +1614,17 @@ namespace Avalonia.Controls.UnitTests
                 },
                 DataTemplates =
                 {
-                    new TestTreeDataTemplate(),
+                    new TreeDataTemplate
+                    {
+                        DataType = typeof(Node),
+                        ItemsSource = new Binding(nameof(Node.Children)),
+                        Content = (IServiceProvider? _) => new TemplateResult<Control>(
+                            new TextBlock
+                            {
+                                [!TextBlock.TextProperty] = new Binding(nameof(Node.Value)),
+                            },
+                            new NameScope())
+                    },
                 },
                 Child = child,
             };
@@ -1794,13 +1848,13 @@ namespace Avalonia.Controls.UnitTests
         {
             return UnitTestApplication.Start(
                 TestServices.MockThreadingInterface.With(
-                    focusManager: new FocusManager(),
                     fontManagerImpl: new HeadlessFontManagerStub(),
                     keyboardDevice: () => new KeyboardDevice(),
                     keyboardNavigation: () => new KeyboardNavigationHandler(),
                     inputManager: new InputManager(),
                     renderInterface: new HeadlessPlatformRenderInterface(),
-                    textShaperImpl: new HeadlessTextShaperStub()));
+                    textShaperImpl: new HarfBuzzTextShaper(),
+                    assetLoader: new StandardAssetLoader()));
         }
 
         private class Node : NotifyingBase
@@ -1834,26 +1888,6 @@ namespace Avalonia.Controls.UnitTests
             }
 
             public override string ToString() => Value ?? string.Empty;
-        }
-
-        private class TestTreeDataTemplate : ITreeDataTemplate
-        {
-            public Control Build(object? param)
-            {
-                var node = (Node)param!;
-                return new TextBlock { Text = node.Value };
-            }
-
-            public InstancedBinding ItemsSelector(object item)
-            {
-                var obs = BindingExpression.Create(item, o => ((Node)o).Children);
-                return new InstancedBinding(obs, BindingMode.OneWay, BindingPriority.LocalValue);
-            }
-
-            public bool Match(object? data)
-            {
-                return data is Node;
-            }
         }
 
         private class DerivedTreeView : TreeView

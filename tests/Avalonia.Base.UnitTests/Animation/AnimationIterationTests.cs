@@ -34,7 +34,7 @@ namespace Avalonia.Base.UnitTests.Animation
 
             var clock = new TestClock();
 
-            animation.RunAsync(border, clock);
+            animation.RunAsync(border, clock, TestContext.Current.CancellationToken);
 
             clock.Step(TimeSpan.Zero);
             Assert.Equal(border.Width, 0d);
@@ -69,7 +69,7 @@ namespace Avalonia.Base.UnitTests.Animation
             var border = new Border() { Height = 100d, Width = 100d };
 
             var clock = new TestClock();
-            var animationRun = animation.RunAsync(border, clock);
+            var animationRun = animation.RunAsync(border, clock, TestContext.Current.CancellationToken);
 
             border.Measure(Size.Infinity);
             border.Arrange(new Rect(border.DesiredSize));
@@ -118,7 +118,7 @@ namespace Avalonia.Base.UnitTests.Animation
 
             var clock = new TestClock();
 
-            animation.RunAsync(border, clock);
+            animation.RunAsync(border, clock, TestContext.Current.CancellationToken);
 
             clock.Step(TimeSpan.FromSeconds(0d));
             Assert.Equal(border.Width, 0d);
@@ -167,7 +167,7 @@ namespace Avalonia.Base.UnitTests.Animation
             
             var clock = new TestClock();
             
-            animation.RunAsync(border, clock);
+            animation.RunAsync(border, clock, TestContext.Current.CancellationToken);
             
             clock.Step(TimeSpan.Zero);
             
@@ -211,7 +211,7 @@ namespace Avalonia.Base.UnitTests.Animation
             
             var clock = new TestClock();
             
-            animation.RunAsync(border, clock);
+            animation.RunAsync(border, clock, TestContext.Current.CancellationToken);
             
             clock.Step(TimeSpan.FromSeconds(0));
             clock.Step(TimeSpan.FromSeconds(20));
@@ -317,7 +317,7 @@ namespace Avalonia.Base.UnitTests.Animation
         }
 
         [Fact]
-        public void Cancellation_Should_Stop_Animation()
+        public async Task Cancellation_Should_Stop_Animation()
         {
             var keyframe1 = new KeyFrame()
             {
@@ -364,7 +364,7 @@ namespace Avalonia.Base.UnitTests.Animation
             clock.Step(TimeSpan.FromSeconds(2));
             clock.Step(TimeSpan.FromSeconds(3));
 
-            animationRun.Wait();
+            await animationRun;
 
             clock.Step(TimeSpan.FromSeconds(6));
             Assert.True(animationRun.IsCompleted);
@@ -404,7 +404,7 @@ namespace Avalonia.Base.UnitTests.Animation
         }
 
         [Fact]
-        public void Cancellation_Of_Completed_Animation_Does_Not_Fail()
+        public async Task Cancellation_Of_Completed_Animation_Does_Not_Fail()
         {
             var keyframe1 = new KeyFrame()
             {
@@ -450,12 +450,12 @@ namespace Avalonia.Base.UnitTests.Animation
             Assert.Equal(2, propertyChangedCount);
 
             cancellationTokenSource.Cancel();
-            animationRun.Wait();
+            await animationRun;
         }
 
         // https://github.com/AvaloniaUI/Avalonia/issues/12582
         [Fact]
-        public void Interpolator_Is_Not_Called_After_Last_Iteration()
+        public async Task Interpolator_Is_Not_Called_After_Last_Iteration()
         {
             var animator = new FakeAnimator();
 
@@ -495,7 +495,7 @@ namespace Avalonia.Base.UnitTests.Animation
             };
 
             var clock = new TestClock();
-            var animationRun = animation.RunAsync(border, clock);
+            var animationRun = animation.RunAsync(border, clock, TestContext.Current.CancellationToken);
 
             clock.Step(TimeSpan.Zero);
             Assert.Equal(1, animator.CallCount);
@@ -511,7 +511,7 @@ namespace Avalonia.Base.UnitTests.Animation
             Assert.Equal(3, animator.CallCount);
             Assert.Equal(1.0d, animator.LastProgress);
 
-            animationRun.Wait();
+            await animationRun;
         }
 
         [Theory]
@@ -556,7 +556,7 @@ namespace Avalonia.Base.UnitTests.Animation
             };
 
             var clock = new TestClock();
-            animation.RunAsync(border, clock);
+            animation.RunAsync(border, clock, TestContext.Current.CancellationToken);
 
             clock.Step(TimeSpan.Zero);
             Assert.Equal(100.0, border.Width);
@@ -597,7 +597,7 @@ namespace Avalonia.Base.UnitTests.Animation
             };
 
             var clock = new TestClock();
-            animation.RunAsync(border, clock);
+            animation.RunAsync(border, clock, TestContext.Current.CancellationToken);
 
             clock.Step(TimeSpan.Zero);
             clock.Step(TimeSpan.FromSeconds(cue));

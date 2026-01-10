@@ -30,6 +30,7 @@ Code imported from https://github.com/elaberge/Metsys.Bson without any changes
 
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -38,10 +39,10 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
 using System.Reflection;
-using System.Runtime.Serialization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using Avalonia;
 using Metsys.Bson.Configuration;
 // ReSharper disable All
 
@@ -695,7 +696,7 @@ namespace Metsys.Bson
     [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = "Bson uses reflection")]
     internal class TypeHelper
     {
-        private static readonly IDictionary<Type, TypeHelper> _cachedTypeLookup = new Dictionary<Type, TypeHelper>();
+        private static readonly ConcurrentDictionary<Type, TypeHelper> _cachedTypeLookup = new ConcurrentDictionary<Type, TypeHelper>();
         private static readonly BsonConfiguration _configuration = BsonConfiguration.Instance;
 
         private readonly IDictionary<string, MagicProperty> _properties;
@@ -725,13 +726,7 @@ namespace Metsys.Bson
 
         public static TypeHelper GetHelperForType(Type type)
         {
-            TypeHelper helper;
-            if (!_cachedTypeLookup.TryGetValue(type, out helper))
-            {
-                helper = new TypeHelper(type);
-                _cachedTypeLookup[type] = helper;
-            }
-            return helper;
+            return _cachedTypeLookup.GetOrAdd(type, t => new TypeHelper(t));
         }
 
         public static string FindProperty(LambdaExpression lambdaExpression)
@@ -1422,6 +1417,9 @@ namespace Metsys.Bson.Configuration
         ITypeConfiguration<T> IgnoreIfNull(Expression<Func<T, object>> expression);
     }
 
+#if NET8_0_OR_GREATER
+    [RequiresDynamicCode(TrimmingMessages.ExpressionNodeRequiresDynamicCodeMessage)]
+#endif
     internal class TypeConfiguration<T> : ITypeConfiguration<T>
     {
         private readonly BsonConfiguration _configuration;
@@ -1461,6 +1459,9 @@ namespace Metsys.Bson.Configuration
 
 namespace Metsys.Bson.Configuration
 {
+#if NET8_0_OR_GREATER
+    [RequiresDynamicCode(TrimmingMessages.ExpressionNodeRequiresDynamicCodeMessage)]
+#endif
     public static class ExpressionHelper
     {
         public static string GetName(this MemberExpression expression)
@@ -1493,6 +1494,9 @@ namespace Metsys.Bson.Configuration
             return null;
         }
 
+#if NET8_0_OR_GREATER
+        [RequiresDynamicCode(TrimmingMessages.ExpressionNodeRequiresDynamicCodeMessage)]
+#endif
         private class ExpressionNameVisitor
         {
             public string Visit(Expression expression)
@@ -1580,6 +1584,9 @@ namespace Metsys.Bson.Configuration
 
         private BsonConfiguration() { }
 
+#if NET8_0_OR_GREATER
+        [RequiresDynamicCode(TrimmingMessages.ExpressionNodeRequiresDynamicCodeMessage)]
+#endif
         public static void ForType<T>(Action<ITypeConfiguration<T>> action)
         {
             action(new TypeConfiguration<T>(Instance));

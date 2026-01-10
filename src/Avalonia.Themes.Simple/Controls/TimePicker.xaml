@@ -173,12 +173,6 @@
                              FontSize="{TemplateBinding FontSize}"
                              FontWeight="{TemplateBinding FontWeight}" />
                 </Border>
-                
-                <Rectangle Name="PART_ThirdColumnDivider"
-                           Grid.Column="5"
-                           Width="{DynamicResource TimePickerSpacerThemeWidth}"
-                           HorizontalAlignment="Center"
-                           Fill="{DynamicResource TimePickerSpacerFill}" />
               </Grid>
             </Button>
 

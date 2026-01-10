@@ -663,25 +663,36 @@ namespace Avalonia.Controls
             return result;
         }
 
-        /// <inheritdoc/>
-        protected override void OnPointerPressed(PointerPressedEventArgs e)
+        /// <inheritdoc cref="ItemSelectionEventTriggers.ShouldTriggerSelection(Visual, PointerEventArgs)"/>
+        /// <seealso cref="UpdateSelectionFromEvent"/>
+        protected virtual bool ShouldTriggerSelection(Visual selectable, PointerEventArgs eventArgs) => ItemSelectionEventTriggers.ShouldTriggerSelection(selectable, eventArgs);
+
+        /// <inheritdoc cref="ItemSelectionEventTriggers.ShouldTriggerSelection(Visual, PointerEventArgs)"/>
+        protected virtual bool ShouldTriggerSelection(Visual selectable, KeyEventArgs eventArgs) => ItemSelectionEventTriggers.ShouldTriggerSelection(selectable, eventArgs);
+
+        /// <inheritdoc cref="SelectingItemsControl.UpdateSelectionFromEvent"/>
+        /// <seealso cref="SelectingItemsControl.UpdateSelectionFromEvent"/>
+        public virtual bool UpdateSelectionFromEvent(Control container, RoutedEventArgs eventArgs)
         {
-            base.OnPointerPressed(e);
-
-            if (e.Source is Visual source)
+            if (eventArgs.Handled)
             {
-                var point = e.GetCurrentPoint(source);
+                return false;
+            }
 
-                if (point.Properties.IsLeftButtonPressed || point.Properties.IsRightButtonPressed)
-                {
-                    var keymap = Application.Current!.PlatformSettings!.HotkeyConfiguration;
-                    e.Handled = UpdateSelectionFromEventSource(
-                        e.Source,
-                        true,
-                        e.KeyModifiers.HasAllFlags(KeyModifiers.Shift),
-                        e.KeyModifiers.HasAllFlags(keymap.CommandModifiers),
-                        point.Properties.IsRightButtonPressed);
-                }
+            switch (eventArgs)
+            {
+                case PointerEventArgs pointerEvent when ShouldTriggerSelection(container, pointerEvent):
+                case KeyEventArgs keyEvent when ShouldTriggerSelection(container, keyEvent):
+                    UpdateSelectionFromContainer(container, true,
+                        ItemSelectionEventTriggers.HasRangeSelectionModifier(container, eventArgs),
+                        ItemSelectionEventTriggers.HasToggleSelectionModifier(container, eventArgs),
+                        eventArgs is PointerEventArgs { Properties.IsRightButtonPressed: true });
+
+                    eventArgs.Handled = true;
+                    return true;
+
+                default:
+                    return false;
             }
         }
 
@@ -966,20 +977,43 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="items">The items collection.</param>
         /// <param name="desired">The desired items.</param>
-        private static void SynchronizeItems(IList items, IEnumerable<object> desired)
+        private static void SynchronizeItems(IList items, List<object> desired)
         {
-            var list = items.Cast<object>();
-            var toRemove = list.Except(desired).ToList();
-            var toAdd = desired.Except(list).ToList();
-
-            foreach (var i in toRemove)
+            var itemsCount = items.Count;
+            if (desired is not null)
             {
-                items.Remove(i);
-            }
+                var desiredCount = desired.Count;
+                if (itemsCount == 0 && desiredCount > 0)
+                {
+                    // Add all desired
+                    foreach (var item in desired)
+                    {
+                        items.Add(item);
+                    }
+                }
+                else if (itemsCount > 0 && desiredCount == 0)
+                {
+                    // Remove all
+                    items.Clear();
+                }
+                // Intersect
+                else
+                {
+                    var list = new object[items.Count];
+                    items.CopyTo(list, 0);
+                    var toRemove = list.Except(desired).ToArray();
+                    var toAdd = desired.Except(list).ToArray();
 
-            foreach (var i in toAdd)
-            {
-                items.Add(i);
+                    foreach (var i in toRemove)
+                    {
+                        items.Remove(i);
+                    }
+
+                    foreach (var i in toAdd)
+                    {
+                        items.Add(i);
+                    }
+                }
             }
         }
     }

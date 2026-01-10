@@ -11,15 +11,10 @@ namespace Avalonia.Controls
     /// </summary>
     public class ItemCollection : ItemsSourceView, IList
     {
-// Suppress "Avoid zero-length array allocations": This is a sentinel value and must be unique.
-#pragma warning disable CA1825
-        private static readonly object?[] s_uninitialized = new object?[0];
-#pragma warning restore CA1825
-
         private Mode _mode;
 
         internal ItemCollection()
-            : base(s_uninitialized)
+            : base(UninitializedSource)
         {
         }
 
@@ -100,7 +95,7 @@ namespace Avalonia.Controls
             {
                 if (IsReadOnly)
                     ThrowIsItemsSource();
-                if (Source == s_uninitialized)
+                if (Source == UninitializedSource)
                     SetSource(CreateDefaultCollection());
                 return Source;
             }

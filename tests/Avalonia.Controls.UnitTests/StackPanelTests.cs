@@ -1,10 +1,11 @@
 using System.Linq;
 using Avalonia.Layout;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class StackPanelTests
+    public class StackPanelTests : ScopedTestBase
     {
         [Fact]
         public void Lays_Out_Children_Vertically()

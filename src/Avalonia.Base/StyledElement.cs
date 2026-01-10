@@ -29,6 +29,7 @@ namespace Avalonia
         IDataContextProvider, 
         ILogical,
         IThemeVariantHost,
+        IResourceHost2,
         IStyleHost,
         ISetLogicalParent,
         ISetInheritanceParent,
@@ -84,7 +85,7 @@ namespace Avalonia
         private string? _name;
         private Classes? _classes;
         private ILogicalRoot? _logicalRoot;
-        private IAvaloniaList<ILogical>? _logicalChildren;
+        private AvaloniaList<ILogical>? _logicalChildren;
         private IResourceDictionary? _resources;
         private Styles? _styles;
         private bool _stylesApplied;
@@ -93,6 +94,8 @@ namespace Avalonia
         private AvaloniaObject? _templatedParent;
         private bool _dataContextUpdating;
         private ControlTheme? _implicitTheme;
+        private EventHandler<ResourcesChangedToken>? _resourcesChanged2;
+        private ResourcesChangedToken _lastResourcesChangedToken;
 
         /// <summary>
         /// Initializes static members of the <see cref="StyledElement"/> class.
@@ -147,6 +150,12 @@ namespace Avalonia
         /// </summary>
         public event EventHandler<ResourcesChangedEventArgs>? ResourcesChanged;
 
+        event EventHandler<ResourcesChangedToken>? IResourceHost2.ResourcesChanged2
+        {
+            add => _resourcesChanged2 += value;
+            remove => _resourcesChanged2 -= value;
+        }
+
         /// <inheritdoc />
         public event EventHandler? ActualThemeVariantChanged;
         
@@ -179,12 +188,6 @@ namespace Avalonia
         /// <para>
         /// Classes can be used to apply user-defined styling to styled elements, or to allow styled elements
         /// that share a common purpose to be easily selected.
-        /// </para>
-        /// <para>
-        /// Even though this property can be set, the setter is only intended for use in object
-        /// initializers. Assigning to this property does not change the underlying collection,
-        /// it simply clears the existing collection and adds the contents of the assigned
-        /// collection.
         /// </para>
         /// </remarks>
         public Classes Classes => _classes ??= new();
@@ -433,10 +436,15 @@ namespace Avalonia
         }
 
         /// <inheritdoc/>
-        void ILogical.NotifyResourcesChanged(ResourcesChangedEventArgs e) => NotifyResourcesChanged(e);
+        void ILogical.NotifyResourcesChanged(ResourcesChangedEventArgs e)
+            => NotifyResourcesChanged(ResourcesChangedToken.Create());
 
         /// <inheritdoc/>
-        void IResourceHost.NotifyHostedResourcesChanged(ResourcesChangedEventArgs e) => NotifyResourcesChanged(e);
+        void IResourceHost.NotifyHostedResourcesChanged(ResourcesChangedEventArgs e)
+            => NotifyResourcesChanged(ResourcesChangedToken.Create());
+
+        void IResourceHost2.NotifyHostedResourcesChanged(ResourcesChangedToken token)
+            => NotifyResourcesChanged(token);
 
         /// <inheritdoc/>
         public bool TryGetResource(object key, ThemeVariant? theme, out object? value)
@@ -491,7 +499,7 @@ namespace Avalonia
                     // non-rooted control beacuse it's unlikely that dynamic resources need to be 
                     // correct until the control is added to the tree, and it causes a *lot* of
                     // notifications.
-                    NotifyResourcesChanged();
+                    NotifyResourcesChanged(ResourcesChangedToken.Create());
                 }
 
                 RaisePropertyChanged(ParentProperty, old, Parent);
@@ -544,8 +552,8 @@ namespace Avalonia
         /// <summary>
         /// Notifies child controls that a change has been made to resources that apply to them.
         /// </summary>
-        /// <param name="e">The event args.</param>
-        internal virtual void NotifyChildResourcesChanged(ResourcesChangedEventArgs e)
+        /// <param name="token">The change token.</param>
+        internal virtual void NotifyChildResourcesChanged(ResourcesChangedToken token)
         {
             if (_logicalChildren is object)
             {
@@ -553,11 +561,9 @@ namespace Avalonia
 
                 if (count > 0)
                 {
-                    e ??= ResourcesChangedEventArgs.Empty;
-
                     for (var i = 0; i < count; ++i)
                     {
-                        _logicalChildren[i].NotifyResourcesChanged(e);
+                        _logicalChildren[i].NotifyResourcesChanged(token);
                     }
                 }
             }
@@ -834,6 +840,9 @@ namespace Avalonia
 
         private void ApplyStyle(IStyle style, IStyleHost? host, FrameType type)
         {
+            if (style is Styling.ContainerQuery m)
+                m.TryAttach(this, host, type);
+
             if (style is Style s)
                 s.TryAttach(this, host, type);
 
@@ -886,7 +895,7 @@ namespace Avalonia
 
                 ReevaluateImplicitTheme();
                 ApplyStyling();
-                NotifyResourcesChanged(propagate: false);
+                NotifyResourcesChanged(ResourcesChangedToken.Create(), propagate: false);
 
                 OnAttachedToLogicalTree(e);
                 AttachedToLogicalTree?.Invoke(this, e);
@@ -989,20 +998,24 @@ namespace Avalonia
             }
         }
 
-        private void NotifyResourcesChanged(
-            ResourcesChangedEventArgs? e = null,
+        internal void NotifyResourcesChanged(
+            ResourcesChangedToken token,
             bool propagate = true)
         {
-            if (ResourcesChanged is object)
+            // We already got a notification for this element, ignore.
+            if (token.Equals(_lastResourcesChangedToken))
             {
-                e ??= ResourcesChangedEventArgs.Empty;
-                ResourcesChanged(this, e);
+                return;
             }
+
+            _lastResourcesChangedToken = token;
+
+            _resourcesChanged2?.Invoke(this, token);
+            ResourcesChanged?.Invoke(this, ResourcesChangedEventArgs.Empty);
 
             if (propagate)
             {
-                e ??= ResourcesChangedEventArgs.Empty;
-                NotifyChildResourcesChanged(e);
+                NotifyChildResourcesChanged(token);
             }
         }
 

@@ -23,10 +23,13 @@ public partial class WindowPage : UserControl
     private void ShowWindow_Click(object? sender, RoutedEventArgs e)
     {
         var size = !string.IsNullOrWhiteSpace(ShowWindowSize.Text) ? Size.Parse(ShowWindowSize.Text) : (Size?)null;
+        var canResize = ShowWindowCanResize.IsChecked ?? false;
         var window = new ShowWindowTest
         {
             WindowStartupLocation = (WindowStartupLocation)ShowWindowLocation.SelectedIndex,
-            CanResize = ShowWindowCanResize.IsChecked ?? false,
+            CanResize = canResize,
+            CanMinimize = ShowWindowCanMinimize.IsChecked ?? false,
+            CanMaximize = canResize && (ShowWindowCanMaximize.IsChecked ?? false)
         };
 
         if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)
@@ -133,6 +136,7 @@ public partial class WindowPage : UserControl
             Width = 200,
             Height = 200,
             Background = Brushes.Green,
+            SystemDecorations = SystemDecorations.None,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
             Content = new Border
             {
@@ -142,7 +146,7 @@ public partial class WindowPage : UserControl
             }
         };
 
-        backgroundWindow.PointerPressed += (_, _) => backgroundWindow.Close();
+        popup.PointerPressed += (_, _) => backgroundWindow.Close();
         backgroundWindow.Show(Window);
 
         popup.Open();

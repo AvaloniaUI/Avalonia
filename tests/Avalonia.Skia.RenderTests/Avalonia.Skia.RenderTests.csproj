@@ -1,24 +1,26 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
+    <OutputType>Exe</OutputType>
     <DefineConstants>$(DefineConstants);AVALONIA_SKIA</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IncludeLinuxSkia>true</IncludeLinuxSkia>
     <IncludeWasmSkia>true</IncludeWasmSkia>
-
-<!--    <AvaSkiaRenderTestsIncludeSkiaSharp3>true</AvaSkiaRenderTestsIncludeSkiaSharp3>-->
-    <AvsIncludeSkiaSharp3 Condition="'$(AvsIncludeSkiaSharp3)' == '' AND '$(AvaSkiaRenderTestsIncludeSkiaSharp3)' == 'true'">true</AvsIncludeSkiaSharp3>
-    <DefineConstants Condition="'$(AvsIncludeSkiaSharp3)' == 'true'">$(DefineConstants);AVALONIA_SKIA3</DefineConstants>
-    <DefineConstants Condition="'$(AvsIncludeSkiaSharp3)' != 'true'">$(DefineConstants);AVALONIA_SKIA2</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\Avalonia.RenderTests\**\*.cs" />
     <Compile Update="..\Avalonia.RenderTests\Media\EffectTests.cs">
       <Link>Media\EffectTests.cs</Link>
     </Compile>
+    <Compile Update="..\Avalonia.RenderTests\Media\BitmapMemoryTests.cs">
+      <Link>Media\BitmapMemoryTests.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="..\Avalonia.RenderTests\*\*.ttf" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="../Avalonia.RenderTests/**/*.png" CopyToOutputDirectory="Always" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
@@ -35,4 +37,5 @@
   <Import Project="..\..\build\ImageSharp.props" />
   <Import Project="..\..\build\SkiaSharp.props" />
   <Import Project="..\..\build\SharedVersion.props" />
+  <Import Project="..\..\build\NullableEnable.props" />
 </Project>

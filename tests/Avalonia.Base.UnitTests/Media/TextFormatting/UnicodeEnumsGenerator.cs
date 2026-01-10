@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using Xunit;
 
 namespace Avalonia.Base.UnitTests.Media.TextFormatting
 {
@@ -25,6 +26,33 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
                 writer.WriteLine("namespace Avalonia.Media.TextFormatting.Unicode");
                 writer.WriteLine("{");
                 writer.WriteLine("    public enum Script");
+                writer.WriteLine("    {");
+
+                foreach (var entry in entries)
+                {
+                    writer.WriteLine("        " + entry.Name.Replace("_", "") + ", //" + entry.Tag +
+                                     (string.IsNullOrEmpty(entry.Comment) ? string.Empty : "#" + entry.Comment));
+                }
+
+                writer.WriteLine("    }");
+                writer.WriteLine("}");
+            }
+
+            return entries;
+        }
+
+        public static List<DataEntry> CreateEastAsianWidthClassEnum()
+        {
+            var entries = new List<DataEntry>();
+
+            ParseDataEntries("# East_Asian_Width (ea)", entries);
+
+            using (var stream = File.Create("Generated\\EastAsianWidthClass.cs"))
+            using (var writer = new StreamWriter(stream))
+            {
+                writer.WriteLine("namespace Avalonia.Media.TextFormatting.Unicode");
+                writer.WriteLine("{");
+                writer.WriteLine("    public enum EastAsianWidthClass");
                 writer.WriteLine("    {");
 
                 foreach (var entry in entries)
@@ -102,12 +130,13 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
 
             using (var stream =
                 typeof(UnicodeEnumsGenerator).Assembly.GetManifestResourceStream(
-                    "Avalonia.Base.UnitTests.Media.TextFormatting.BreakPairTable.txt"))
+                    "Avalonia.Base.UnitTests.Media.TextFormatting.BreakPairTable.txt")!)
             using (var reader = new StreamReader(stream))
             {
                 while (!reader.EndOfStream)
                 {
                     var line = reader.ReadLine();
+                    Assert.NotNull(line);
 
                     var columns = line.Split('\t');
 
@@ -320,9 +349,9 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
                 
                 WritePropertyValueAlias(writer, unicodeDataEntries.LineBreakClasses, "LineBreakClass", "Unknown");
 
-                WritePropertyValueAlias(writer, biDiDataEntries.PairedBracketTypes, "BiDiPairedBracketType", "None");
+                WritePropertyValueAlias(writer, biDiDataEntries.PairedBracketTypes, "BidiPairedBracketType", "None");
                 
-                WritePropertyValueAlias(writer, biDiDataEntries.BiDiClasses, "BiDiClass", "LeftToRight");
+                WritePropertyValueAlias(writer, biDiDataEntries.BiDiClasses, "BidiClass", "LeftToRight");
 
                 writer.WriteLine("    }");
                 writer.WriteLine("}");
@@ -420,11 +449,11 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
 
             writer.WriteLine($"        public static string GetTag({typeName} {typeName.ToLower()})");
             writer.WriteLine("        {");
-            writer.WriteLine($"            if(!s_{typeName.ToLower()}ToTag.ContainsKey({typeName.ToLower()}))");
+            writer.WriteLine($"            if (!s_{typeName.ToLower()}ToTag.TryGetValue({typeName.ToLower()}, out var value))");
             writer.WriteLine("            {");
             writer.WriteLine($"                return \"{defaultValue}\";");
             writer.WriteLine("            }");
-            writer.WriteLine($"            return s_{typeName.ToLower()}ToTag[{typeName.ToLower()}];");
+            writer.WriteLine($"            return value;");
             writer.WriteLine("        }");
 
             writer.WriteLine();
@@ -447,11 +476,11 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
 
             writer.WriteLine($"        public static {typeName} Get{typeName}(string tag)");
             writer.WriteLine("        {");
-            writer.WriteLine($"            if(!s_tagTo{typeName}.ContainsKey(tag))");
+            writer.WriteLine($"            if (!s_tagTo{typeName}.TryGetValue(tag, out var value))");
             writer.WriteLine("            {");
             writer.WriteLine($"                return {typeName}.{defaultValue};");
             writer.WriteLine("            }");
-            writer.WriteLine($"            return s_tagTo{typeName}[tag];");
+            writer.WriteLine($"            return value;");
             writer.WriteLine("        }");
 
             writer.WriteLine();

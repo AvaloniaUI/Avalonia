@@ -262,10 +262,10 @@ HRESULT AvnAppMenuItem::SetIcon(void *data, size_t length)
             NSSize originalSize = [image size];
              
             NSSize size;
-            size.height = [[NSFont menuFontOfSize:0] pointSize] * 1.333333;
+            size.height = floor([[NSFont menuFontOfSize:0] pointSize] * 1.333333);
             
             auto scaleFactor = size.height / originalSize.height;
-            size.width = originalSize.width * scaleFactor;
+            size.width = floor(originalSize.width * scaleFactor);
             
             [image setSize: size];
             [_native setImage:image];

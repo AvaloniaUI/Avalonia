@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class PanelTests
+    public class PanelTests : ScopedTestBase
     {
         [Fact]
         public void Adding_Control_To_Panel_Should_Set_Child_Controls_Parent()

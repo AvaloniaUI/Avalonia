@@ -1,0 +1,13 @@
+<Project>
+
+  <PropertyGroup>
+    <EnforceExtendedAnalyzerRules Condition="'$(EnforceExtendedAnalyzerRules)' == ''">true</EnforceExtendedAnalyzerRules>
+    <IsRoslynComponent Condition="'$(IsRoslynComponent)' == ''">true</IsRoslynComponent>
+    <NoWarn>$(NoWarn);RS2008</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" PrivateAssets="all"/>
+  </ItemGroup>
+
+</Project>

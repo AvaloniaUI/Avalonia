@@ -22,7 +22,7 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<int> CaretIndexProperty =
             TextBox.CaretIndexProperty.AddOwner<AutoCompleteBox>(new(
                 defaultValue: 0,
-                defaultBindingMode:BindingMode.TwoWay));
+                defaultBindingMode: BindingMode.TwoWay));
 
         public static readonly StyledProperty<string?> WatermarkProperty =
             TextBox.WatermarkProperty.AddOwner<AutoCompleteBox>();
@@ -71,6 +71,12 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<IDataTemplate> ItemTemplateProperty =
             AvaloniaProperty.Register<AutoCompleteBox, IDataTemplate>(
                 nameof(ItemTemplate));
+
+        /// <summary>
+        /// Defines the <see cref="ClearSelectionOnLostFocus"/> property
+        /// </summary>
+        public static readonly StyledProperty<bool> ClearSelectionOnLostFocusProperty =
+            TextBox.ClearSelectionOnLostFocusProperty.AddOwner<AutoCompleteBox>();
 
         /// <summary>
         /// Identifies the <see cref="IsDropDownOpen" /> property.
@@ -296,6 +302,15 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value that determines whether the <see cref="AutoCompleteBox"/> clears its selection after it loses focus.
+        /// </summary>
+        public bool ClearSelectionOnLostFocus
+        {
+            get => GetValue(ClearSelectionOnLostFocusProperty);
+            set => SetValue(ClearSelectionOnLostFocusProperty, value);
+        }
+
+        /// <summary>
         /// Gets or sets the  <see cref="T:Avalonia.Data.Binding" /> that
         /// is used to get the values for display in the text portion of
         /// the <see cref="AutoCompleteBox" />
@@ -305,7 +320,7 @@ namespace Avalonia.Controls
         /// when binding to a collection property.</value>
         [AssignBinding]
         [InheritDataTypeFromItems(nameof(ItemsSource))]
-        public IBinding? ValueMemberBinding
+        public BindingBase? ValueMemberBinding
         {
             get => _valueBindingEvaluator?.ValueBinding;
             set
@@ -484,7 +499,7 @@ namespace Avalonia.Controls
             get => GetValue(ItemsSourceProperty);
             set => SetValue(ItemsSourceProperty, value);
         }
-       
+
         /// <summary>
         /// Gets or sets the maximum number of characters that the <see cref="AutoCompleteBox"/> can accept.
         /// This constraint only applies for manually entered (user-inputted) text.
@@ -494,7 +509,7 @@ namespace Avalonia.Controls
             get => GetValue(MaxLengthProperty);
             set => SetValue(MaxLengthProperty, value);
         }
-      
+
         /// <summary>
         /// Gets or sets custom content that is positioned on the left side of the text layout box
         /// </summary>
@@ -511,6 +526,6 @@ namespace Avalonia.Controls
         {
             get => GetValue(InnerRightContentProperty);
             set => SetValue(InnerRightContentProperty, value);
-        }      
+        }
     }
 }

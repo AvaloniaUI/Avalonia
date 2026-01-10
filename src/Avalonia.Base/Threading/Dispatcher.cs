@@ -44,9 +44,18 @@ public partial class Dispatcher : IDispatcher
         _exceptionFilterEventArgs = new DispatcherUnhandledExceptionFilterEventArgs(this);
     }
     
-    public static Dispatcher UIThread => s_uiThread ??= CreateUIThreadDispatcher();
+    public static Dispatcher UIThread
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get
+        {
+            return s_uiThread ??= CreateUIThreadDispatcher();
+        }
+    }
+
     public bool SupportsRunLoops => _controlledImpl != null;
 
+    [MethodImpl(MethodImplOptions.NoInlining)]
     private static Dispatcher CreateUIThreadDispatcher()
     {
         var impl = AvaloniaLocator.Current.GetService<IDispatcherImpl>();
@@ -64,7 +73,7 @@ public partial class Dispatcher : IDispatcher
     /// <summary>
     /// Checks that the current thread is the UI thread.
     /// </summary>
-    public bool CheckAccess() => _impl?.CurrentThreadIsLoopThread ?? true;
+    public bool CheckAccess() => _impl.CurrentThreadIsLoopThread;
 
     /// <summary>
     /// Checks that the current thread is the UI thread and throws if not.

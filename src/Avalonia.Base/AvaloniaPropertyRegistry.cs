@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Threading;
 
 namespace Avalonia
 {
@@ -259,7 +257,12 @@ namespace Avalonia
             AvaloniaObject o,
             DirectPropertyBase<T> property)
         {
-            return FindRegisteredDirect(o, property) ??
+            return (DirectPropertyBase<T>)GetRegisteredDirectUntyped(o, property);
+        }
+
+        internal AvaloniaProperty GetRegisteredDirectUntyped(AvaloniaObject o, AvaloniaProperty property)
+        {
+            return FindRegisteredDirectUntyped(o, property) ??
                    throw new ArgumentException($"Property '{property.Name} not registered on '{o.GetType()}");
         }
 
@@ -331,7 +334,14 @@ namespace Avalonia
             AvaloniaObject o,
             DirectPropertyBase<T> property)
         {
-            if (property.Owner == o.GetType())
+            return (DirectPropertyBase<T>?)FindRegisteredDirectUntyped(o, property);
+        }
+
+        private AvaloniaProperty? FindRegisteredDirectUntyped(AvaloniaObject o, AvaloniaProperty property)
+        {
+            Debug.Assert(property.IsDirect);
+
+            if (property.OwnerType == o.GetType())
             {
                 return property;
             }
@@ -345,7 +355,7 @@ namespace Avalonia
 
                 if (p == property)
                 {
-                    return (DirectPropertyBase<T>)p;
+                    return p;
                 }
             }
 

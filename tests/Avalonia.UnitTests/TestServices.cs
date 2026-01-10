@@ -1,14 +1,15 @@
 using System;
-using Moq;
-using Avalonia.Input;
-using Avalonia.Platform;
-using Avalonia.Styling;
-using Avalonia.Themes.Simple;
-using Avalonia.Rendering;
 using System.Reactive.Concurrency;
 using Avalonia.Animation;
+using Avalonia.Harfbuzz;
 using Avalonia.Headless;
+using Avalonia.Input;
+using Avalonia.Platform;
+using Avalonia.Rendering;
+using Avalonia.Styling;
+using Avalonia.Themes.Simple;
 using Avalonia.Threading;
+using Moq;
 
 namespace Avalonia.UnitTests
 {
@@ -21,37 +22,36 @@ namespace Avalonia.UnitTests
             standardCursorFactory: new HeadlessCursorFactoryStub(),
             theme: () => CreateSimpleTheme(),
             dispatcherImpl: new NullDispatcherImpl(),
-            fontManagerImpl: new HeadlessFontManagerStub(),
-            textShaperImpl: new HeadlessTextShaperStub(),
+            fontManagerImpl: new TestFontManager(),
+            textShaperImpl: new HarfBuzzTextShaper(),
             windowingPlatform: new MockWindowingPlatform());
 
         public static readonly TestServices MockPlatformRenderInterface = new TestServices(
             assetLoader: new StandardAssetLoader(),
             renderInterface: new HeadlessPlatformRenderInterface(),
-            fontManagerImpl: new HeadlessFontManagerStub(),
-            textShaperImpl: new HeadlessTextShaperStub());
+            fontManagerImpl: new TestFontManager(),
+            textShaperImpl: new HarfBuzzTextShaper());
 
         public static readonly TestServices MockPlatformWrapper = new TestServices(
             platform: Mock.Of<IRuntimePlatform>());
 
         public static readonly TestServices MockThreadingInterface = new TestServices(
-            dispatcherImpl: new NullDispatcherImpl());
+            dispatcherImpl: new NullDispatcherImpl(),
+            assetLoader: new StandardAssetLoader());
 
         public static readonly TestServices MockWindowingPlatform = new TestServices(
             windowingPlatform: new MockWindowingPlatform());
 
         public static readonly TestServices RealFocus = new TestServices(
-            focusManager: new FocusManager(),
             keyboardDevice: () => new KeyboardDevice(),
             keyboardNavigation: () => new KeyboardNavigationHandler(),
             inputManager: new InputManager(),
             assetLoader: new StandardAssetLoader(),
             renderInterface: new HeadlessPlatformRenderInterface(),
-            fontManagerImpl: new HeadlessFontManagerStub(),
-            textShaperImpl: new HeadlessTextShaperStub());
+            fontManagerImpl: new TestFontManager(),
+            textShaperImpl: new HarfBuzzTextShaper());
 
         public static readonly TestServices FocusableWindow = new TestServices(
-            focusManager: new FocusManager(),
             keyboardDevice: () => new KeyboardDevice(),
             keyboardNavigation: () => new KeyboardNavigationHandler(),
             inputManager: new InputManager(),
@@ -61,37 +61,38 @@ namespace Avalonia.UnitTests
             standardCursorFactory: new HeadlessCursorFactoryStub(),
             theme: () => CreateSimpleTheme(),
             dispatcherImpl: new NullDispatcherImpl(),
-            fontManagerImpl: new HeadlessFontManagerStub(),
-            textShaperImpl: new HeadlessTextShaperStub(),
+            fontManagerImpl: new TestFontManager(),
+            textShaperImpl: new HarfBuzzTextShaper(),
             windowingPlatform: new MockWindowingPlatform());
-        
+
         public static readonly TestServices TextServices = new TestServices(
             assetLoader: new StandardAssetLoader(),
             renderInterface: new HeadlessPlatformRenderInterface(),
-            fontManagerImpl: new HarfBuzzFontManagerImpl(),
-            textShaperImpl: new HarfBuzzTextShaperImpl());
-        
-        public TestServices(
-            IAssetLoader assetLoader = null,
-            IFocusManager focusManager = null,
-            IInputManager inputManager = null,
-            Func<IKeyboardDevice> keyboardDevice = null,
-            Func<IKeyboardNavigationHandler> keyboardNavigation = null,
-            Func<IMouseDevice> mouseDevice = null,
-            IRuntimePlatform platform = null,
-            IPlatformRenderInterface renderInterface = null,
-            IRenderTimer renderLoop = null,
-            ICursorFactory standardCursorFactory = null,
-            Func<IStyle> theme = null,
-            IDispatcherImpl dispatcherImpl = null,
-            IFontManagerImpl fontManagerImpl = null,
-            ITextShaperImpl textShaperImpl = null,
-            IWindowImpl windowImpl = null,
-            IWindowingPlatform windowingPlatform = null)
+            fontManagerImpl: new TestFontManager(),
+            textShaperImpl: new HarfBuzzTextShaper());
+
+        internal TestServices(
+            IAssetLoader? assetLoader = null,
+            IInputManager? inputManager = null,
+            IGlobalClock? globalClock = null,
+            Func<IKeyboardDevice?>? keyboardDevice = null,
+            Func<IKeyboardNavigationHandler?>? keyboardNavigation = null,
+            Func<IMouseDevice?>? mouseDevice = null,
+            IRuntimePlatform? platform = null,
+            IPlatformRenderInterface? renderInterface = null,
+            ICursorFactory? standardCursorFactory = null,
+            Func<IStyle>? theme = null,
+            IDispatcherImpl? dispatcherImpl = null,
+            IFontManagerImpl? fontManagerImpl = null,
+            ITextShaperImpl? textShaperImpl = null,
+            IWindowImpl? windowImpl = null,
+            IWindowingPlatform? windowingPlatform = null,
+            IAccessKeyHandler? accessKeyHandler = null)
         {
             AssetLoader = assetLoader;
-            FocusManager = focusManager;
             InputManager = inputManager;
+            GlobalClock = globalClock;
+            AccessKeyHandler = accessKeyHandler;
             KeyboardDevice = keyboardDevice;
             KeyboardNavigation = keyboardNavigation;
             MouseDevice = mouseDevice;
@@ -106,78 +107,48 @@ namespace Avalonia.UnitTests
             WindowingPlatform = windowingPlatform;
         }
 
-        internal TestServices(
-            IGlobalClock globalClock,
-            IAssetLoader assetLoader = null,
-            IFocusManager focusManager = null,
-            IInputManager inputManager = null,
-            Func<IKeyboardDevice> keyboardDevice = null,
-            Func<IKeyboardNavigationHandler> keyboardNavigation = null,
-            Func<IMouseDevice> mouseDevice = null,
-            IRuntimePlatform platform = null,
-            IPlatformRenderInterface renderInterface = null,
-            IRenderTimer renderLoop = null,
-            ICursorFactory standardCursorFactory = null,
-            Func<IStyle> theme = null,
-            IDispatcherImpl dispatcherImpl = null,
-            IFontManagerImpl fontManagerImpl = null,
-            ITextShaperImpl textShaperImpl = null,
-            IWindowImpl windowImpl = null,
-            IWindowingPlatform windowingPlatform = null,
-            IAccessKeyHandler accessKeyHandler = null
-            ) : this(assetLoader, focusManager, inputManager, keyboardDevice,
-            keyboardNavigation,
-            mouseDevice, platform, renderInterface, renderLoop, standardCursorFactory, theme,
-            dispatcherImpl, fontManagerImpl, textShaperImpl, windowImpl, windowingPlatform)
-        {
-            GlobalClock = globalClock;
-            AccessKeyHandler = accessKeyHandler;
-        }
-
-        public IAssetLoader AssetLoader { get; }
-        public IInputManager InputManager { get; }
-        public IFocusManager FocusManager { get; }
-        internal IGlobalClock GlobalClock { get; set; }
-        internal IAccessKeyHandler AccessKeyHandler { get; }
-        public Func<IKeyboardDevice> KeyboardDevice { get; }
-        public Func<IKeyboardNavigationHandler> KeyboardNavigation { get; }
-        public Func<IMouseDevice> MouseDevice { get; }
-        public IRuntimePlatform Platform { get; }
-        public IPlatformRenderInterface RenderInterface { get; }
-        public IFontManagerImpl FontManagerImpl { get; }
-        public ITextShaperImpl TextShaperImpl { get; }
-        public ICursorFactory StandardCursorFactory { get; }
-        public Func<IStyle> Theme { get; }
-        public IDispatcherImpl DispatcherImpl { get; }
-        public IWindowImpl WindowImpl { get; }
-        public IWindowingPlatform WindowingPlatform { get; }
+        public IAssetLoader? AssetLoader { get; }
+        public IInputManager? InputManager { get; }
+        internal IGlobalClock? GlobalClock { get; set; }
+        internal IAccessKeyHandler? AccessKeyHandler { get; }
+        public Func<IKeyboardDevice?>? KeyboardDevice { get; }
+        public Func<IKeyboardNavigationHandler?>? KeyboardNavigation { get; }
+        public Func<IMouseDevice?>? MouseDevice { get; }
+        public IRuntimePlatform? Platform { get; }
+        public IPlatformRenderInterface? RenderInterface { get; }
+        public IFontManagerImpl? FontManagerImpl { get; }
+        public ITextShaperImpl? TextShaperImpl { get; }
+        public ICursorFactory? StandardCursorFactory { get; }
+        public Func<IStyle>? Theme { get; }
+        public IDispatcherImpl? DispatcherImpl { get; }
+        public IWindowImpl? WindowImpl { get; }
+        public IWindowingPlatform? WindowingPlatform { get; }
 
         internal TestServices With(
-            IAssetLoader assetLoader = null,
-            IFocusManager focusManager = null,
-            IInputManager inputManager = null,
-            Func<IKeyboardDevice> keyboardDevice = null,
-            Func<IKeyboardNavigationHandler> keyboardNavigation = null,
-            Func<IMouseDevice> mouseDevice = null,
-            IRuntimePlatform platform = null,
-            IPlatformRenderInterface renderInterface = null,
-            IRenderTimer renderLoop = null,
-            IScheduler scheduler = null,
-            ICursorFactory standardCursorFactory = null,
-            Func<IStyle> theme = null,
-            IDispatcherImpl dispatcherImpl = null,
-            IFontManagerImpl fontManagerImpl = null,
-            ITextShaperImpl textShaperImpl = null,
-            IWindowImpl windowImpl = null,
-            IWindowingPlatform windowingPlatform = null,
-            IGlobalClock globalClock = null,
-            IAccessKeyHandler accessKeyHandler = null)
+            IAssetLoader? assetLoader = null,
+            IInputManager? inputManager = null,
+            IGlobalClock? globalClock = null,
+            IAccessKeyHandler? accessKeyHandler = null,
+            Func<IKeyboardDevice?>? keyboardDevice = null,
+            Func<IKeyboardNavigationHandler?>? keyboardNavigation = null,
+            Func<IMouseDevice?>? mouseDevice = null,
+            IRuntimePlatform? platform = null,
+            IPlatformRenderInterface? renderInterface = null,
+            IRenderTimer? renderLoop = null,
+            IScheduler? scheduler = null,
+            ICursorFactory? standardCursorFactory = null,
+            Func<IStyle>? theme = null,
+            IDispatcherImpl? dispatcherImpl = null,
+            IFontManagerImpl? fontManagerImpl = null,
+            ITextShaperImpl? textShaperImpl = null,
+            IWindowImpl? windowImpl = null,
+            IWindowingPlatform? windowingPlatform = null)
         {
             return new TestServices(
-                globalClock ?? GlobalClock,
                 assetLoader: assetLoader ?? AssetLoader,
-                focusManager: focusManager ?? FocusManager,
                 inputManager: inputManager ?? InputManager,
+                globalClock: globalClock ?? GlobalClock,
+                accessKeyHandler: accessKeyHandler ?? AccessKeyHandler,
                 keyboardDevice: keyboardDevice ?? KeyboardDevice,
                 keyboardNavigation: keyboardNavigation ?? KeyboardNavigation,
                 mouseDevice: mouseDevice ?? MouseDevice,
@@ -189,9 +160,7 @@ namespace Avalonia.UnitTests
                 theme: theme ?? Theme,
                 dispatcherImpl: dispatcherImpl ?? DispatcherImpl,
                 windowingPlatform: windowingPlatform ?? WindowingPlatform,
-                windowImpl: windowImpl ?? WindowImpl,
-                accessKeyHandler: accessKeyHandler ?? AccessKeyHandler
-                );
+                windowImpl: windowImpl ?? WindowImpl);
         }
 
         private static IStyle CreateSimpleTheme()

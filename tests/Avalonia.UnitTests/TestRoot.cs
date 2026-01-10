@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using Avalonia.Controls;
@@ -15,6 +17,7 @@ namespace Avalonia.UnitTests
     public class TestRoot : Decorator, IFocusScope, ILayoutRoot, IInputRoot, IRenderRoot, IStyleHost, ILogicalRoot
     {
         private readonly NameScope _nameScope = new NameScope();
+        private FocusManager? _focusManager;
 
         public TestRoot()
         {
@@ -27,17 +30,17 @@ namespace Avalonia.UnitTests
 
         class NullHitTester : IHitTester
         {
-            public IEnumerable<Visual> HitTest(Point p, Visual root, Func<Visual, bool> filter) => Array.Empty<Visual>();
+            public IEnumerable<Visual> HitTest(Point p, Visual root, Func<Visual, bool>? filter) => Array.Empty<Visual>();
 
-            public Visual HitTestFirst(Point p, Visual root, Func<Visual, bool> filter) => null;
+            public Visual? HitTestFirst(Point p, Visual root, Func<Visual, bool>? filter) => null;
         }
 
-        public TestRoot(Control child)
+        public TestRoot(Control? child)
             : this(false, child)
         {
         }
 
-        public TestRoot(bool useGlobalStyles, Control child)
+        public TestRoot(bool useGlobalStyles, Control? child)
             : this()
         {
             if (useGlobalStyles)
@@ -62,17 +65,17 @@ namespace Avalonia.UnitTests
         IRenderer IRenderRoot.Renderer => Renderer;
         IHitTester IRenderRoot.HitTester => HitTester;
 
-        public IKeyboardNavigationHandler KeyboardNavigationHandler => null;
-        public IFocusManager FocusManager => AvaloniaLocator.Current.GetService<IFocusManager>();
-        public IPlatformSettings PlatformSettings => AvaloniaLocator.Current.GetService<IPlatformSettings>();
+        public IKeyboardNavigationHandler? KeyboardNavigationHandler => null;
+        public IFocusManager FocusManager => _focusManager ??= new FocusManager(this);
+        public IPlatformSettings? PlatformSettings => AvaloniaLocator.Current.GetService<IPlatformSettings>();
 
-        public IInputElement PointerOverElement { get; set; }
+        public IInputElement? PointerOverElement { get; set; }
         
         public bool ShowAccessKeys { get; set; }
 
-        public IStyleHost StylingParent { get; set; }
+        public IStyleHost? StylingParent { get; set; }
 
-        IStyleHost IStyleHost.StylingParent => StylingParent;
+        IStyleHost? IStyleHost.StylingParent => StylingParent;
 
         public IRenderTarget CreateRenderTarget()
         {

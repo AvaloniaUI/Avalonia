@@ -2,6 +2,7 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Avalonia.Diagnostics;
 using Avalonia.Logging;
 using Avalonia.Media;
 using Avalonia.Metadata;
@@ -213,9 +214,7 @@ namespace Avalonia.Layout
         void ILayoutManager.RegisterEffectiveViewportListener(Layoutable control)
         {
             _effectiveViewportChangedListeners ??= new List<EffectiveViewportChangedListener>();
-            _effectiveViewportChangedListeners.Add(new EffectiveViewportChangedListener(
-                control,
-                CalculateEffectiveViewport(control)));
+            _effectiveViewportChangedListeners.Add(new EffectiveViewportChangedListener(control));
         }
 
         void ILayoutManager.UnregisterEffectiveViewportListener(Layoutable control)
@@ -248,6 +247,7 @@ namespace Avalonia.Layout
 
         private void ExecuteMeasurePass()
         {
+            using var _ = Diagnostic.BeginLayoutMeasurePass();
             while (_toMeasure.Count > 0)
             {
                 var control = _toMeasure.Dequeue();
@@ -263,6 +263,7 @@ namespace Avalonia.Layout
 
         private void ExecuteArrangePass()
         {
+            using var _ = Diagnostic.BeginLayoutArrangePass();
             while (_toArrange.Count > 0)
             {
                 var control = _toArrange.Dequeue();
@@ -438,14 +439,13 @@ namespace Avalonia.Layout
 
         private class EffectiveViewportChangedListener
         {
-            public EffectiveViewportChangedListener(Layoutable listener, Rect viewport)
+            public EffectiveViewportChangedListener(Layoutable listener)
             {
                 Listener = listener;
-                Viewport = viewport;
             }
 
             public Layoutable Listener { get; }
-            public Rect Viewport { get; set; }
+            public Rect? Viewport { get; set; }
         }
 
         private enum ArrangeResult

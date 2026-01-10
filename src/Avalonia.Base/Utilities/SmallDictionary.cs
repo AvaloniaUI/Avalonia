@@ -77,9 +77,17 @@ internal struct InlineDictionary<TKey, TValue> : IEnumerable<KeyValuePair<TKey, 
         }
         else
         {
-            // We have a single element, upgrade to array
+            // We have a single element, check if we should update the value.
+            var data = (TKey)_data;
+            if (data == key && overwrite)
+            {
+                _value = value;
+
+                return;
+            }
+            // If we do not replace it, upgrade to array.
             arr = new KeyValuePair[6];
-            arr[0] = new KeyValuePair((TKey)_data, _value);
+            arr[0] = new KeyValuePair(data, _value);
             arr[1] = new KeyValuePair(key, value);
             _data = arr;
             _value = default;
@@ -284,9 +292,8 @@ internal struct InlineDictionary<TKey, TValue> : IEnumerable<KeyValuePair<TKey, 
         }
         else if (_data is Dictionary<TKey, TValue?> dic)
         {
-            if (!dic.TryGetValue(key, out value))
+            if (!dic.Remove(key, out value))
                 return false;
-            dic.Remove(key);
         }
 
         value = default;

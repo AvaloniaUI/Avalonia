@@ -22,7 +22,7 @@ namespace Avalonia.Base.UnitTests.Input
                     (newParent = new Border { Child = newCapture = new Border() })
                 }
             };
-            var receivers = new List<object>();
+            var receivers = new List<object?>();
             var root = new TestRoot(el);
             foreach (InputElement d in root.GetSelfAndVisualDescendants())
                 d.PointerCaptureLost += (s, e) => receivers.Add(s);
@@ -35,6 +35,23 @@ namespace Avalonia.Base.UnitTests.Input
             receivers.Clear();
             pointer.Capture(null);
             Assert.True(receivers.SequenceEqual(new object[] { newCapture, newParent, el, root }));
+        }
+
+        [Fact]
+        public void Capture_Captured_ShouldNot_Call_Platform()
+        {
+            var pointer = new TestPointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
+
+            Border capture = new Border();
+            pointer.Capture(capture);
+            pointer.Capture(capture);
+
+            Assert.Equal(1, pointer.PlatformCaptureCalled);
+
+            pointer.Capture(null);
+            pointer.Capture(null);
+
+            Assert.Equal(2, pointer.PlatformCaptureCalled);
         }
     }
 }

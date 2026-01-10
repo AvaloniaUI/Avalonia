@@ -666,7 +666,7 @@ namespace Avalonia.X11 {
 				if (!string.IsNullOrEmpty(result)) {
 					result += ", ";
 				}
-				object value = fields [i].GetValue (ev);
+				var value = fields [i].GetValue(ev);
 				result += fields [i].Name + "=" + (value == null ? "<null>" : value.ToString ());
 			}
 			return type.Name + " (" + result + ")";

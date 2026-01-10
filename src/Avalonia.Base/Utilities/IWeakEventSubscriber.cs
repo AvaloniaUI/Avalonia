@@ -6,12 +6,12 @@ namespace Avalonia.Utilities;
 /// Defines a listener to a event subscribed vis the <see cref="WeakEvent{TTarget, TEventArgs}"/>.
 /// </summary>
 /// <typeparam name="TEventArgs">The type of the event arguments.</typeparam>
-public interface IWeakEventSubscriber<in TEventArgs> where TEventArgs : EventArgs
+public interface IWeakEventSubscriber<in TEventArgs>
 {
     void OnEvent(object? sender, WeakEvent ev, TEventArgs e);
 }
 
-public sealed class WeakEventSubscriber<TEventArgs> : IWeakEventSubscriber<TEventArgs> where TEventArgs : EventArgs 
+public sealed class WeakEventSubscriber<TEventArgs> : IWeakEventSubscriber<TEventArgs>
 {
     public event Action<object?, WeakEvent, TEventArgs>? Event;
 
@@ -21,7 +21,7 @@ public sealed class WeakEventSubscriber<TEventArgs> : IWeakEventSubscriber<TEven
     }
 }
 
-public sealed class TargetWeakEventSubscriber<TTarget, TEventArgs> : IWeakEventSubscriber<TEventArgs> where TEventArgs : EventArgs
+public sealed class TargetWeakEventSubscriber<TTarget, TEventArgs> : IWeakEventSubscriber<TEventArgs>
 {
     private readonly TTarget _target;
     private readonly Action<TTarget, object?, WeakEvent, TEventArgs> _dispatchFunc;

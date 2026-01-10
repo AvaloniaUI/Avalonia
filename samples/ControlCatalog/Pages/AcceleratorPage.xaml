@@ -1,0 +1,115 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.AcceleratorPage">
+  <StackPanel Orientation="Vertical" Spacing="4">
+
+    <WrapPanel HorizontalAlignment="Left">
+      <StackPanel>
+        <Menu>
+          <MenuItem Header="_First">
+            <MenuItem Header="Standard _Menu Item" InputGesture="Ctrl+A" />
+            <MenuItem Header="_Disabled Menu Item" IsEnabled="False" InputGesture="Ctrl+D" />
+            <Separator />
+            <MenuItem Header="Menu with Sub _Menu">
+              <MenuItem Header="Submenu _1" />
+              <MenuItem Header="Submenu _2 with Submenu">
+                <MenuItem Header="Submenu Level 2" />
+              </MenuItem>
+              <MenuItem Header="Submenu _3 with Submenu Disabled" IsEnabled="False">
+                <MenuItem Header="Submenu Level 2" />
+              </MenuItem>
+            </MenuItem>
+            <MenuItem Header="Menu Item with _Icon" InputGesture="Ctrl+Shift+B">
+              <MenuItem.Icon>
+                <Image Source="/Assets/github_icon.png" />
+              </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="Menu Item with _Checkbox" ToggleType="CheckBox" />
+          </MenuItem>
+          <MenuItem Header="_Second">
+            <MenuItem Header="Second _Menu Item" />
+            <MenuItem IsChecked="True" Header="Second _Menu toggle item" ToggleType="CheckBox" />
+            <Separator />
+            <MenuItem GroupName="A" Header="Radio 1 - group" ToggleType="Radio" />
+            <MenuItem IsChecked="True" GroupName="A" Header="Radio 2 - group" ToggleType="Radio" />
+            <MenuItem GroupName="A" Header="Radio 3 - group" ToggleType="Radio">
+              <MenuItem Header="Radio 4 - group" ToggleType="Radio" GroupName="A" />
+              <MenuItem Header="Radio 5 - group" ToggleType="Radio" GroupName="A" />
+            </MenuItem>
+            <Separator />
+            <MenuItem Header="Radio 1" ToggleType="Radio" />
+            <MenuItem IsChecked="True" Header="Radio 2" ToggleType="Radio" />
+            <MenuItem Header="Radio 3" ToggleType="Radio">
+              <MenuItem Header="Radio 4" ToggleType="Radio" />
+              <MenuItem Header="Radio 5" ToggleType="Radio" />
+            </MenuItem>
+          </MenuItem>
+          <MenuItem Header="Thir_d">
+            <MenuItem Header="About"/>
+            <MenuItem Header="_Child">
+              <MenuItem Header="_Grandchild"/>
+            </MenuItem>
+          </MenuItem>
+        </Menu>
+      </StackPanel>
+
+    </WrapPanel>
+
+    <StackPanel Spacing="10">
+      <TextBlock Classes="h2">Accelerator Support</TextBlock>
+
+      <TabControl Margin="10" BorderBrush="Gray" BorderThickness="1">
+        <TabItem Header="_Tab 1">
+          <StackPanel>
+            <TextBlock Margin="5">This is tab 1 content</TextBlock>
+            <Label Name="Tab1Label1" Target="Tab1TextBox1">_Label Tab1Label1</Label>
+            <TextBox Name="Tab1TextBox1" Margin="5">This is tab 1 content</TextBox>
+            <Label Name="Tab1Label2" Target="Tab1TextBox2">Label _Tab1Label2</Label>
+            <TextBox Name="Tab1TextBox2" Margin="5">This is tab 1 content</TextBox>
+          </StackPanel>
+
+        </TabItem>
+        <TabItem Header="T_ab 2">
+          <TextBlock Margin="5">This is tab 2 content</TextBlock>
+        </TabItem>
+        <TabItem Header="_Tab 3">
+
+        </TabItem>
+        <TabItem Header="_Tab 4">
+          <TextBlock Margin="5">This is tab 4 content</TextBlock>
+        </TabItem>
+        <TabItem Header="_Fab 5">
+          <TextBlock Margin="5">This is fab 5 content</TextBlock>
+        </TabItem>
+      </TabControl>
+    </StackPanel>
+
+
+    <StackPanel Spacing="10">
+      <Label Name="Label0">Label with Ac_celerator 'C' and no Target</Label>
+      <TextBox Name="TextBox0" Text="Some Text"></TextBox>
+
+      <Label Name="Label1" Target="TextBox1">_Label with Accelerator 'L'</Label>
+      <TextBox Name="TextBox1" Text="Some Text"></TextBox>
+
+      <Label Name="Label2" Target="TextBox2">La_bel with Accelerator 'B'</Label>
+      <TextBox Name="TextBox2" Text="Some Text"></TextBox>
+
+      <Label Name="Label3" Target="TextBox3">L_abel with Accelerator 'A'</Label>
+      <TextBox Name="TextBox3" Text="Some Text"></TextBox>
+
+      <Label Name="Label4" Target="TextBox4">La_bel with Accelerator 'B'</Label>
+      <TextBox Name="TextBox4" Text="Some Text"></TextBox>
+
+      <Label Name="Label5" Target="TextBox5">_Flabel with Accelerator 'F' (Same as in Menu > File)</Label>
+      <TextBox Name="TextBox5" Text="Some Text"></TextBox>
+
+    </StackPanel>
+
+    <StackPanel Spacing="10" Orientation="Horizontal">
+      <Button Name="Button1">_Button 1</Button>
+      <Button Name="Button2">_Button 2</Button>
+      <Button Name="Button3">_Button 3</Button>
+    </StackPanel>
+  </StackPanel>
+</UserControl>

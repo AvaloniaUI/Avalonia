@@ -1,5 +1,8 @@
 using System;
 using Avalonia.Data;
+using Avalonia.Data.Converters;
+using Avalonia.Data.Core;
+using Avalonia.UnitTests;
 using Xunit;
 
 #nullable enable
@@ -95,6 +98,16 @@ public abstract partial class BindingExpressionTests
     }
 
     [Fact]
+    public void TargetNullValue_Should_Be_Used_When_Source_Is_Data_Context_And_Null()
+    {
+        var target = CreateTarget<string?, string?>(
+            o => o,
+            targetNullValue: "bar");
+
+        Assert.Equal("bar", target.String);
+    }
+
+    [Fact]
     public void Can_Use_UpdateTarget_To_Update_From_Non_INPC_Data()
     {
         var data = new PodViewModel { StringValue = "foo" };
@@ -140,5 +153,42 @@ public abstract partial class BindingExpressionTests
         target.DataContext = data;
 
         Assert.Equal("fooBar", target.String);
+    }
+
+    [Fact]
+    public void Should_Use_Converter_For_Null_DataContext_Without_Path()
+    {
+        var converter = new PrefixConverter();
+        var target = CreateTarget<string?, string?>(
+            o => o,
+            converter: converter,
+            converterParameter: "foo");
+
+        Assert.Equal("foo", target.String);
+    }
+
+    [Fact]
+    public void LeafNode_Should_Be_Null_When_Nodes_List_Is_Empty()
+    {
+        using (UnitTestApplication.Start(TestServices.StyledWindow))
+        {
+            // Reproduces issue #20441
+            // Create a binding expression with no nodes (e.g., {Binding Source='Elements', Converter={...}})
+            var bindingExpression = new BindingExpression(
+                source: "Elements",
+                nodes: null,  // This results in an empty nodes list
+                fallbackValue: AvaloniaProperty.UnsetValue,
+                converter: new PrefixConverter("Prefix"),
+                mode: BindingMode.OneWay,
+                targetProperty: TargetClass.StringProperty,
+                targetTypeConverter: TargetTypeConverter.GetReflectionConverter());
+
+            // These should not throw
+            var leafNode = bindingExpression.LeafNode;
+            var description = bindingExpression.Description;
+
+            // LeafNode should be null when there are no nodes
+            Assert.Null(leafNode);
+        }
     }
 }

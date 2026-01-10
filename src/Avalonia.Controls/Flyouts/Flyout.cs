@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Templates;
 using Avalonia.Metadata;
 using Avalonia.Styling;
 
@@ -10,8 +11,14 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Content"/> property
         /// </summary>
-        public static readonly StyledProperty<object> ContentProperty =
-            AvaloniaProperty.Register<Flyout, object>(nameof(Content));
+        public static readonly StyledProperty<object?> ContentProperty =
+            AvaloniaProperty.Register<Flyout, object?>(nameof(Content));
+
+        /// <summary>
+        /// Defines the <see cref="ContentTemplate"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IDataTemplate?> ContentTemplateProperty =
+            AvaloniaProperty.Register<Flyout, IDataTemplate?>(nameof(ContentTemplate));
 
         private Classes? _classes;
 
@@ -39,17 +46,27 @@ namespace Avalonia.Controls
         /// Gets or sets the content to display in this flyout
         /// </summary>
         [Content]
-        public object Content
+        public object? Content
         {
             get => GetValue(ContentProperty);
             set => SetValue(ContentProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the data template used to display the content of the flyout.
+        /// </summary>
+        public IDataTemplate? ContentTemplate
+        {
+            get => GetValue(ContentTemplateProperty);
+            set => SetValue(ContentTemplateProperty, value);
         }
 
         protected override Control CreatePresenter()
         {
             return new FlyoutPresenter
             {
-                [!ContentControl.ContentProperty] = this[!ContentProperty]
+                [!ContentControl.ContentProperty] = this[!ContentProperty],
+                [!ContentControl.ContentTemplateProperty] = this[!ContentTemplateProperty]
             };
         }
 

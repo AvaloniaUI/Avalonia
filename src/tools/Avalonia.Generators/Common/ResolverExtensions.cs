@@ -1,4 +1,4 @@
-using System.Linq;
+using System;
 using XamlX.TypeSystem;
 
 namespace Avalonia.Generators.Common;
@@ -6,20 +6,14 @@ namespace Avalonia.Generators.Common;
 internal static class ResolverExtensions
 {
     public static bool IsAvaloniaStyledElement(this IXamlType clrType) =>
-        clrType.HasStyledElementBaseType() ||
-        clrType.HasIStyledElementInterface();
+        Inherits(clrType, "Avalonia.StyledElement");
+    public static bool IsAvaloniaWindow(this IXamlType clrType) =>
+        Inherits(clrType, "Avalonia.Controls.Window");
 
-    private static bool HasStyledElementBaseType(this IXamlType clrType)
+    private static bool Inherits(IXamlType clrType, string metadataName)
     {
-        // Check for the base type since IStyledElement interface is removed.
-        // https://github.com/AvaloniaUI/Avalonia/pull/9553
-        if (clrType.FullName == "Avalonia.StyledElement")
+        if (string.Equals(clrType.FullName, metadataName, StringComparison.Ordinal))
             return true;
-        return clrType.BaseType != null && IsAvaloniaStyledElement(clrType.BaseType);
+        return clrType.BaseType is { } baseType && Inherits(baseType, metadataName);
     }
-
-    private static bool HasIStyledElementInterface(this IXamlType clrType) =>
-        clrType.Interfaces.Any(abstraction =>
-            abstraction.IsInterface &&
-            abstraction.FullName == "Avalonia.IStyledElement");
 }

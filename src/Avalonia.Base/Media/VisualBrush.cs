@@ -56,8 +56,8 @@ namespace Avalonia.Media
                 initialize.EnsureInitialized();
             
             using var recorder = new RenderDataDrawingContext(null);
-            ImmediateRenderer.Render(recorder, Visual, Visual.Bounds);
-            return recorder.GetImmediateSceneBrushContent(this, new(Visual.Bounds.Size), false);
+            ImmediateRenderer.Render(recorder, Visual);
+            return recorder.GetImmediateSceneBrushContent(this, new(Visual.Bounds.Size), true);
         }
         
         internal override Func<Compositor, ServerCompositionSimpleBrush> Factory =>
@@ -99,7 +99,7 @@ namespace Avalonia.Media
                 }
 
                 if (data != null)
-                    content = new(data.Data.Server, data.Rect, false);
+                    content = new(data.Data.Server, data.Rect, true);
             }
             
             writer.WriteObject(content);
@@ -130,7 +130,7 @@ namespace Avalonia.Media
                 initialize.EnsureInitialized();
 
             using var recorder = new RenderDataDrawingContext(c);
-            ImmediateRenderer.Render(recorder, Visual, Visual.Bounds);
+            ImmediateRenderer.Render(recorder, Visual);
             var renderData = recorder.GetRenderResults();
             if (renderData == null)
                 return null;

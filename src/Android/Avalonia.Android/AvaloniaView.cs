@@ -5,6 +5,8 @@ using Android.Content.Res;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
+using AndroidX.Core.View;
+using AndroidX.CustomView.Widget;
 using Avalonia.Android.Platform;
 using Avalonia.Android.Platform.SkiaPlatform;
 using Avalonia.Controls;
@@ -15,10 +17,11 @@ using Avalonia.Rendering;
 
 namespace Avalonia.Android
 {
-    public class AvaloniaView : FrameLayout
+    public partial class AvaloniaView : FrameLayout
     {
         private EmbeddableControlRoot _root;
         private readonly ViewImpl _view;
+        private readonly ExploreByTouchHelper _accessHelper;
 
         private IDisposable? _timerSubscription;
         private bool _surfaceCreated;
@@ -26,6 +29,7 @@ namespace Avalonia.Android
         public AvaloniaView(Context context) : base(context)
         {
             _view = new ViewImpl(this);
+
             AddView(_view.View);
 
             _root = new EmbeddableControlRoot(_view);
@@ -35,6 +39,9 @@ namespace Avalonia.Android
             OnConfigurationChanged();
 
             _view.InternalView.SurfaceWindowCreated += InternalView_SurfaceWindowCreated;
+
+            _accessHelper = new AvaloniaAccessHelper(this);
+            ViewCompat.SetAccessibilityDelegate(this, _accessHelper);
         }
 
         private void InternalView_SurfaceWindowCreated(object? sender, EventArgs e)
@@ -62,11 +69,6 @@ namespace Avalonia.Android
             _surfaceCreated = false;
             _root?.Dispose();
             _root = null!;
-        }
-
-        public override bool DispatchKeyEvent(KeyEvent? e)
-        {
-            return _view.View.DispatchKeyEvent(e);
         }
 
         [SupportedOSPlatform("android24.0")]
@@ -129,7 +131,6 @@ namespace Avalonia.Android
         {
             public ViewImpl(AvaloniaView avaloniaView) : base(avaloniaView)
             {
-                View.Focusable = true;
                 View.FocusChange += ViewImpl_FocusChange;
             }
 

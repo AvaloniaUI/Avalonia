@@ -117,7 +117,7 @@ namespace Avalonia
         /// <returns>The <see cref="PixelPoint"/>.</returns>
         public static PixelPoint Parse(string s)
         {
-            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid PixelPoint."))
+            using (var tokenizer = new SpanStringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid PixelPoint."))
             {
                 return new PixelPoint(
                     tokenizer.ReadInt32(),

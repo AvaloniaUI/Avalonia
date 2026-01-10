@@ -107,6 +107,8 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
         [XmlAttribute]
         public string Name { get; set; }
         [XmlAttribute]
+        public string ClientName { get; set; }
+        [XmlAttribute]
         public string Type { get; set; }
         [XmlAttribute]
         public string DefaultValue { get; set; }
@@ -116,6 +118,8 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
         public bool InternalSet { get; set; }
         [XmlAttribute]
         public bool Internal { get; set; }
+        [XmlAttribute]
+        public bool Private { get; set; }
     }
 
     public class GAnimationType

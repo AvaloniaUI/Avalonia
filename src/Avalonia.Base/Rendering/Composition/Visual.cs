@@ -1,6 +1,7 @@
 using System;
 using System.Numerics;
 using Avalonia.Media;
+using Avalonia.Rendering.Composition.Drawing;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.Composition
@@ -25,9 +26,25 @@ namespace Avalonia.Rendering.Composition
             get => _opacityMask;
             set
             {
-                if (_opacityMask == value)
+                if (ReferenceEquals(_opacityMask, value))
                     return;
-                OpacityMaskBrush = (_opacityMask = value)?.ToImmutable();
+                
+                // Release the previous compositor-resource based brush
+                if (_opacityMask is ICompositionRenderResource<IBrush> oldCompositorBrush)
+                {
+                    oldCompositorBrush.ReleaseOnCompositor(Compositor);
+                    _opacityMask = null;
+                    OpacityMaskBrushTransportField = null;
+                }
+
+                if (value is ICompositionRenderResource<IBrush> newCompositorBrush)
+                {
+                    newCompositorBrush.AddRefOnCompositor(Compositor);
+                    OpacityMaskBrushTransportField = newCompositorBrush.GetForCompositor(Compositor);
+                    _opacityMask = value;
+                }
+                else
+                    OpacityMaskBrushTransportField = (_opacityMask = value)?.ToImmutable();
             }
         }
 

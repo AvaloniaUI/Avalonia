@@ -11,6 +11,9 @@ using Avalonia.Data.Core.ExpressionNodes.Reflection;
 namespace Avalonia.Data.Core.Parsers;
 
 [RequiresUnreferencedCode(TrimmingMessages.ExpressionNodeRequiresUnreferencedCodeMessage)]
+#if NET8_0_OR_GREATER
+[RequiresDynamicCode(TrimmingMessages.ExpressionNodeRequiresDynamicCodeMessage)]
+#endif
 internal class BindingExpressionVisitor<TIn> : ExpressionVisitor
 {
     private static readonly PropertyInfo AvaloniaObjectIndexer;
@@ -69,7 +72,7 @@ internal class BindingExpressionVisitor<TIn> : ExpressionVisitor
         switch (node.Member.MemberType)
         {
             case MemberTypes.Property:
-                return Add(node.Expression, node, new DynamicPluginPropertyAccessorNode(node.Member.Name));
+                return Add(node.Expression, node, new DynamicPluginPropertyAccessorNode(node.Member.Name, acceptsNull: false));
             default:
                 throw new ExpressionParseException(0, $"Invalid expression type in binding expression: {node.NodeType}.");
         }
@@ -99,7 +102,7 @@ internal class BindingExpressionVisitor<TIn> : ExpressionVisitor
         }
         else if (method == CreateDelegateMethod)
         {
-            var accessor = new DynamicPluginPropertyAccessorNode(GetValue<MethodInfo>(node.Object!).Name);
+            var accessor = new DynamicPluginPropertyAccessorNode(GetValue<MethodInfo>(node.Object!).Name, acceptsNull: false);
             return Add(node.Arguments[1], node, accessor);
         }
 

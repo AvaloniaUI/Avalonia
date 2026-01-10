@@ -20,9 +20,12 @@ namespace Avalonia.Rendering.Composition.Server
         {
             base.RenderCore(context, currentTransformedClip);
 
-            foreach (var ch in Children)
+            if (context.RenderChildren)
             {
-                ch.Render(context, currentTransformedClip);
+                foreach (var ch in Children)
+                {
+                    ch.Render(context, currentTransformedClip);
+                }
             }
         }
 
@@ -61,6 +64,8 @@ namespace Avalonia.Rendering.Composition.Server
             IsDirtyComposition = false;
             return new(_transformedContentBounds, oldInvalidated, newInvalidated);
         }
+
+        protected override LtrbRect GetEffectBounds() => _transformedContentBounds ?? default;
 
         void AddEffectPaddedDirtyRect(IImmutableEffect effect, LtrbRect transformedBounds)
         {

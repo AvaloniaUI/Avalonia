@@ -21,7 +21,7 @@ namespace IntegrationTestApp
         
         public static long GetOrderedIndex(Window window)
         {
-            return Int64_objc_msgSend(window.PlatformImpl!.Handle.Handle, s_orderedIndexSelector);
+            return Int64_objc_msgSend(window.PlatformImpl!.Handle!.Handle, s_orderedIndexSelector);
         }
     }
 }
