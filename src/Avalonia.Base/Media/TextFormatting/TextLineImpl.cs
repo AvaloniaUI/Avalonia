@@ -1328,7 +1328,7 @@ namespace Avalonia.Media.TextFormatting
                 }
             }
 
-            var inkBounds = new Rect();
+            Rect? inkBounds = null;
 
             for (var index = 0; index < _textRuns.Length; index++)
             {
@@ -1342,7 +1342,14 @@ namespace Avalonia.Media.TextFormatting
 
                             var runBounds = glyphRun.InkBounds.Translate(new Vector(widthIncludingWhitespace, offsetY));
 
-                            inkBounds = inkBounds.Union(runBounds);
+                            if (inkBounds == null)
+                            {
+                                inkBounds = runBounds;
+                            }
+                            else
+                            {
+                                inkBounds = inkBounds.Value.Union(runBounds);
+                            }
 
                             widthIncludingWhitespace += textRun.Size.Width;
 
@@ -1354,7 +1361,16 @@ namespace Avalonia.Media.TextFormatting
                             //Align the bounds at the common baseline
                             var offsetY = -ascent - drawableTextRun.Baseline;
 
-                            inkBounds = inkBounds.Union(new Rect(new Point(widthIncludingWhitespace, offsetY), drawableTextRun.Size));
+                            var drawableBounds = new Rect(new Point(widthIncludingWhitespace, offsetY), drawableTextRun.Size);
+                            
+                            if (inkBounds == null)
+                            {
+                                inkBounds = drawableBounds;
+                            }
+                            else
+                            {
+                                inkBounds = inkBounds.Value.Union(drawableBounds);
+                            }
 
                             widthIncludingWhitespace += drawableTextRun.Size.Width;
 
@@ -1362,6 +1378,8 @@ namespace Avalonia.Media.TextFormatting
                         }
                 }
             }
+            
+            var finalInkBounds = inkBounds ?? new Rect();
 
             var halfLineGap = lineGap * 0.5;
             var naturalHeight = descent - ascent + lineGap;
@@ -1416,18 +1434,15 @@ namespace Avalonia.Media.TextFormatting
                 }
             }
 
-            var extent = inkBounds.Height;
-            //The height of overhanging pixels at the bottom
-            var overhangAfter = inkBounds.Bottom - height + halfLineGap;
-            //The width of overhanging pixels at the natural alignment point. Positive value means we are inside.
-            var overhangLeading = inkBounds.Left;
-            //The width of overhanging pixels at the end of the natural bounds. Positive value means we are inside.
-            var overhangTrailing = widthIncludingWhitespace - inkBounds.Right;
+            var extent = finalInkBounds.Height;
+            var overhangAfter = finalInkBounds.Bottom - height + halfLineGap;
+            var overhangLeading = finalInkBounds.Left;
+            var overhangTrailing = widthIncludingWhitespace - finalInkBounds.Right;
             var hasOverflowed = width > _paragraphWidth;
 
-            var start = GetParagraphOffsetX(width, widthIncludingWhitespace);
+            var start = GetParagraphOffsetX(width, widthIncludingWhitespace, overhangTrailing);
 
-            _inkBounds = inkBounds.Translate(new Vector(start, 0));
+            _inkBounds = finalInkBounds.Translate(new Vector(start, 0));
 
             _bounds = new Rect(start, 0, widthIncludingWhitespace, height);
 
@@ -1453,9 +1468,10 @@ namespace Avalonia.Media.TextFormatting
         /// </summary>
         /// <param name="width">The line width.</param>
         /// <param name="widthIncludingTrailingWhitespace">The paragraph width including whitespace.</param>
+        /// <param name="trailingOverhang">The trailing overhang.</param>
 
         /// <returns>The paragraph offset.</returns>
-        private double GetParagraphOffsetX(double width, double widthIncludingTrailingWhitespace)
+        private double GetParagraphOffsetX(double width, double widthIncludingTrailingWhitespace, double trailingOverhang)
         {
             if (double.IsPositiveInfinity(_paragraphWidth))
             {
@@ -1501,7 +1517,8 @@ namespace Avalonia.Media.TextFormatting
 
                     return Math.Max(0, start);
                 case TextAlignment.Right:
-                    return Math.Max(0, _paragraphWidth - widthIncludingTrailingWhitespace);
+                    var overhangAdjustment = Math.Min(0, trailingOverhang);
+                    return Math.Max(0, _paragraphWidth - widthIncludingTrailingWhitespace + overhangAdjustment);
                 default:
                     return 0;
             }

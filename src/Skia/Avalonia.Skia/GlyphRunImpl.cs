@@ -64,26 +64,36 @@ namespace Avalonia.Skia
             // "F" text with Inter size 14 has a 0px left bound with SubpixelAntialias but 1px with Antialias.
             using var font = CreateFont(SKFontEdging.SubpixelAntialias);
 
-            var runBounds = new Rect();
             var glyphBounds = ArrayPool<SKRect>.Shared.Rent(count);
 
             font.GetGlyphWidths(_glyphIndices, null, glyphBounds.AsSpan(0, count));
 
             currentX = 0;
+            
+            Rect? runBounds = null;
 
             for (var i = 0; i < count; i++)
             {
                 var gBounds = glyphBounds[i];
                 var advance = glyphInfos[i].GlyphAdvance;
 
-                runBounds = runBounds.Union(new Rect(currentX + gBounds.Left, gBounds.Top, gBounds.Width, gBounds.Height));
+                var glyphRect = new Rect(currentX + gBounds.Left, gBounds.Top, gBounds.Width, gBounds.Height);
+                
+                if (runBounds == null)
+                {
+                    runBounds = glyphRect;
+                }
+                else
+                {
+                    runBounds = runBounds.Value.Union(glyphRect);
+                }
 
                 currentX += advance;
             }
             ArrayPool<SKRect>.Shared.Return(glyphBounds);
 
             BaselineOrigin = baselineOrigin;
-            Bounds = runBounds.Translate(new Vector(baselineOrigin.X, baselineOrigin.Y));
+            Bounds = (runBounds ?? new Rect()).Translate(new Vector(baselineOrigin.X, baselineOrigin.Y));
         }
 
         public double FontRenderingEmSize { get; }
