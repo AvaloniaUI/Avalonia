@@ -24,6 +24,7 @@ namespace Avalonia
             return builder
                 .UseAndroidRuntimePlatformSubsystem()
                 .UseWindowingSubsystem(() => AndroidPlatform.Initialize(), "Android")
+                .UseHarfBuzz()
                 .UseSkia();
         }
     }

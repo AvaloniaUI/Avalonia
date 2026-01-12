@@ -435,7 +435,7 @@ namespace Avalonia.Controls.UnitTests
                 items.Remove("1");
                 lm.ExecuteLayoutPass();
 
-                Threading.Dispatcher.UIThread.RunJobs();
+                Threading.Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
                 Assert.Equal("30", target.ContainerFromIndex(items.Count - 1)!.DataContext);
                 Assert.Equal("29", target.ContainerFromIndex(items.Count - 2)!.DataContext);
@@ -462,12 +462,12 @@ namespace Avalonia.Controls.UnitTests
 
                 Prepare(target);
 
-                Threading.Dispatcher.UIThread.RunJobs();
+                Threading.Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
                 // First an item that is not index 0 must be selected.
                 _mouse.Click(target.Presenter!.Panel!.Children[1]);
 
-                Threading.Dispatcher.UIThread.RunJobs();
+                Threading.Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
                 Assert.Equal(1, target.Selection.AnchorIndex);
 
@@ -489,7 +489,7 @@ namespace Avalonia.Controls.UnitTests
                 // Click item 9.
                 _mouse.Click(item);
 
-                Threading.Dispatcher.UIThread.RunJobs();
+                Threading.Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
                 Assert.Equal(1, raised);
             }
@@ -732,7 +732,7 @@ namespace Avalonia.Controls.UnitTests
             items.Reverse();
             Layout(target);
 
-            Threading.Dispatcher.UIThread.RunJobs();
+            Threading.Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
             realized = target.GetRealizedContainers()
                 .Cast<ListBoxItem>()
@@ -1216,10 +1216,10 @@ namespace Avalonia.Controls.UnitTests
 
             var panel = Assert.IsType<VirtualizingStackPanel>(target.ItemsPanelRoot);
             Assert.Equal(0, panel.FirstRealizedIndex);
-            Assert.Equal(9, panel.LastRealizedIndex);
+            Assert.Equal(6, panel.LastRealizedIndex);
 
             Assert.Equal(
-                Enumerable.Range(0, 10).Select(x => $"Item{x}"),
+                Enumerable.Range(0, 7).Select(x => $"Item{x}"),
                 data.GetRealizedItems());
         }
 

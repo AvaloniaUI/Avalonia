@@ -33,7 +33,7 @@ namespace Avalonia.Controls.UnitTests
                 };
                 DateTime value = new DateTime(2000, 10, 10);
                 datePicker.SelectedDate = value;
-                Threading.Dispatcher.UIThread.RunJobs();
+                Threading.Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
                 Assert.True(handled);
             }
         }

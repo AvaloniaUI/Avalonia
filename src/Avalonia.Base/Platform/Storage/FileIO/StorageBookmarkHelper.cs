@@ -41,10 +41,16 @@ internal static class StorageBookmarkHelper
 
         var arrayLength = HeaderLength + nativeBookmarkBytes.Length;
         var arrayPool = ArrayPool<byte>.Shared.Rent(arrayLength);
+
         try
         {
             // Write platform into first 16 bytes.
             var arraySpan = arrayPool.AsSpan(0, arrayLength);
+
+            // Ensure any leftover data from the pooled array is cleared before we use it so
+            // that bytes we don't overwrite (e.g. header padding) won't leak into the encoded bookmark.
+            arraySpan.Clear();
+
             AvaHeaderPrefix.CopyTo(arraySpan);
             platform.CopyTo(arraySpan.Slice(AvaHeaderPrefix.Length));
 

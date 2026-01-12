@@ -59,10 +59,10 @@ namespace Avalonia.Collections
         /// </summary>
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        /// <inheritdoc cref="IDictionary{TKey,TValue}.Count"/>
+        /// <inheritdoc cref="ICollection{T}.Count"/>
         public int Count => _inner.Count;
 
-        /// <inheritdoc cref="IDictionary{TKey,TValue}.IsReadOnly"/>
+        /// <inheritdoc cref="ICollection{T}.IsReadOnly"/>
         public bool IsReadOnly => false;
 
         /// <inheritdoc/>
@@ -131,7 +131,7 @@ namespace Avalonia.Collections
             NotifyAdd(key, value);
         }
 
-        /// <inheritdoc cref="IDictionary{TKey,TValue}.Clear"/>
+        /// <inheritdoc cref="ICollection{T}.Clear"/>
         public void Clear()
         {
             var old = _inner;

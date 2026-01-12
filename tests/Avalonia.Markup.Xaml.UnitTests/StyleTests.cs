@@ -19,7 +19,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
                 var style = (Style)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var setter = (Setter)(style.Setters.First());
 
-                Assert.IsType<Binding>(setter.Value);
+                Assert.IsType<ReflectionBinding>(setter.Value);
             }
         }
 
@@ -40,7 +40,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
                      """);
                 var setter = (Setter)style.Setters.First();
 
-                Assert.IsType<Binding>(setter.Value);
+                Assert.IsType<ReflectionBinding>(setter.Value);
             }
         }
 

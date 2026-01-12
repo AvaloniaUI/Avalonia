@@ -37,7 +37,7 @@ public partial class DispatcherTests
         disp.Post(() => ThrowAnException());
         disp.Post(() => executed = true);
 
-        disp.RunJobs();
+        disp.RunJobs(null, TestContext.Current.CancellationToken);
         
         Assert.True(handled);
         Assert.True(executed);
@@ -62,7 +62,7 @@ public partial class DispatcherTests
         syncContext.Post(_ => ThrowAnException(), null);
         syncContext.Post(_ => executed = true, null);
 
-        disp.RunJobs();
+        disp.RunJobs(null, TestContext.Current.CancellationToken);
 
         Assert.True(handled);
         Assert.True(executed);
@@ -88,7 +88,7 @@ public partial class DispatcherTests
         try
         {
             dispatcher.Post(ThrowAnException, DispatcherPriority.Normal);
-            dispatcher.RunJobs();
+            dispatcher.RunJobs(null, TestContext.Current.CancellationToken);
         }
         catch (Exception e)
         {
@@ -115,7 +115,7 @@ public partial class DispatcherTests
         try
         {
             dispatcher.Post(ThrowAnException, DispatcherPriority.Normal);
-            dispatcher.RunJobs();
+            dispatcher.RunJobs(null, TestContext.Current.CancellationToken);
         }
         catch (Exception)
         {
@@ -143,8 +143,8 @@ public partial class DispatcherTests
         try
         {
             // Since both Invoke and InvokeAsync can throw exception, there is no need to pass them to the UnhandledException.
-            dispatcher.Invoke(ThrowAnException, DispatcherPriority.Normal);
-            dispatcher.RunJobs();
+            dispatcher.Invoke(ThrowAnException, DispatcherPriority.Normal, TestContext.Current.CancellationToken);
+            dispatcher.RunJobs(null, TestContext.Current.CancellationToken);
         }
         catch (Exception e)
         {
@@ -172,9 +172,9 @@ public partial class DispatcherTests
         try
         {
             // Since both Invoke and InvokeAsync can throw exception, there is no need to pass them to the UnhandledException.
-            var op = dispatcher.InvokeAsync(ThrowAnException, DispatcherPriority.Normal);
+            var op = dispatcher.InvokeAsync(ThrowAnException, DispatcherPriority.Normal, TestContext.Current.CancellationToken);
             op.Wait();
-            dispatcher.RunJobs();
+            dispatcher.RunJobs(null, TestContext.Current.CancellationToken);
         }
         catch (Exception e)
         {
@@ -202,7 +202,7 @@ public partial class DispatcherTests
         try
         {
             dispatcher.Post(ThrowAnException, DispatcherPriority.Normal);
-            dispatcher.RunJobs();
+            dispatcher.RunJobs(null, TestContext.Current.CancellationToken);
         }
         catch (Exception e)
         {
@@ -233,7 +233,7 @@ public partial class DispatcherTests
         try
         {
             dispatcher.Post(ThrowAnException, DispatcherPriority.Normal);
-            dispatcher.RunJobs();
+            dispatcher.RunJobs(null, TestContext.Current.CancellationToken);
         }
         catch (Exception e)
         {
@@ -263,7 +263,7 @@ public partial class DispatcherTests
         try
         {
             dispatcher.Post(ThrowAnException, DispatcherPriority.Normal);
-            dispatcher.RunJobs();
+            dispatcher.RunJobs(null, TestContext.Current.CancellationToken);
         }
         catch (Exception)
         {
@@ -291,7 +291,7 @@ public partial class DispatcherTests
         try
         {
             dispatcher.Post(ThrowAnException, DispatcherPriority.Normal);
-            dispatcher.RunJobs();
+            dispatcher.RunJobs(null, TestContext.Current.CancellationToken);
         }
         catch (Exception e)
         {
