@@ -157,9 +157,6 @@ public static class BrowserAppBuilder
             builder = builder.UseBrowser();
         }
         
-        // Ensure that HarfBuzz was correctly initiated; Otherwise the wasm-App will fail to load.
-        builder.UseHarfBuzz();
-
         return builder;
     }
 
@@ -169,6 +166,7 @@ public static class BrowserAppBuilder
         return builder
             .UseBrowserRuntimePlatformSubsystem()
             .UseWindowingSubsystem(BrowserWindowingPlatform.Register)
-            .UseSkia();
+            .UseSkia()
+            .UseHarfBuzz();
     }
 }
