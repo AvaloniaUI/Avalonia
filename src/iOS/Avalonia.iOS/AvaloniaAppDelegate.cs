@@ -59,24 +59,25 @@ namespace Avalonia.iOS
             builder = CustomizeAppBuilder(builder);
 
             var lifetime = new SingleViewLifetime();
-
-            // In iOS 13+ the window is initialized in AvaloniaSceneDelegate instead.
-            builder.AfterApplicationSetup(_ =>
-            {
-                if (!(OperatingSystem.IsIOSVersionAtLeast(13) ||
-                    OperatingSystem.IsTvOSVersionAtLeast(13) ||
-                    OperatingSystem.IsMacCatalystVersionAtLeast(13, 1)))
-                {
-                    Window = new UIWindow();
-                    AvaloniaSceneDelegate.InitWindow(Window, lifetime);
-                }
-            });
-
+            builder.AfterApplicationSetup(_ => CreateAndInitWindow(lifetime));
             builder.SetupWithLifetime(lifetime);
 
             Window?.MakeKeyAndVisible();
 
             return true;
+        }
+
+        private void CreateAndInitWindow(SingleViewLifetime lifetime)
+        {
+            if (OperatingSystem.IsIOSVersionAtLeast(13) ||
+                OperatingSystem.IsTvOSVersionAtLeast(13) ||
+                OperatingSystem.IsMacCatalyst())
+            {
+                return;
+            }
+
+            Window = new UIWindow();
+            AvaloniaSceneDelegate.InitWindow(Window, lifetime);
         }
 
         [Export("application:openURL:options:")]
