@@ -60,9 +60,10 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Null(DataValidationErrors.GetErrors(target));
                 target.Text = "20";
 
-                IEnumerable<object> errors = DataValidationErrors.GetErrors(target);
-                Assert.Single(errors);
-                Assert.IsType<InvalidOperationException>(errors.Single());
+                var errors = DataValidationErrors.GetErrors(target);
+                Assert.NotNull(errors);
+                var error = Assert.Single(errors);
+                Assert.IsType<InvalidOperationException>(error);
                 target.Text = "1";
                 Assert.Null(DataValidationErrors.GetErrors(target));
             }
@@ -85,9 +86,9 @@ namespace Avalonia.Controls.UnitTests
 
                 target.Text = "20";
 
-                IEnumerable<object> errors = DataValidationErrors.GetErrors(target);
-                Assert.Single(errors);
-                var error = Assert.IsType<string>(errors.Single());
+                var errors = DataValidationErrors.GetErrors(target);
+                Assert.NotNull(errors);
+                var error = Assert.IsType<string>(Assert.Single(errors));
                 Assert.StartsWith("Error: ", error);
             }
         }
@@ -122,7 +123,7 @@ namespace Avalonia.Controls.UnitTests
                 new ClrPropertyInfo(
                     nameof(ExceptionTest.LessThan10),
                     target => ((ExceptionTest)target).LessThan10,
-                    (target, value) => ((ExceptionTest)target).LessThan10 = (int)value,
+                    (target, value) => ((ExceptionTest)target).LessThan10 = (int)value!,
                     typeof(int)),
                 PropertyInfoAccessorFactory.CreateInpcPropertyAccessor)
             .Build();
@@ -216,13 +217,13 @@ namespace Avalonia.Controls.UnitTests
 
             public bool HasErrors => _lessThan10 >= 10;
 
-            public event EventHandler<DataErrorsChangedEventArgs> ErrorsChanged;
+            public event EventHandler<DataErrorsChangedEventArgs>? ErrorsChanged;
 
-            public IEnumerable GetErrors(string propertyName)
+            public IEnumerable GetErrors(string? propertyName)
             {
-                IList<string> result;
-                _errors.TryGetValue(propertyName, out result);
-                return result;
+                if (propertyName is not null && _errors.TryGetValue(propertyName, out var result))
+                    return result;
+                return Array.Empty<string?>();
             }
         }
     }

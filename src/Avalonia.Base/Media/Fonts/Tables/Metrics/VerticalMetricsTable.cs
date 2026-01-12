@@ -18,7 +18,7 @@ namespace Avalonia.Media.Fonts.Tables.Metrics
             _numGlyphs = numGlyphs;
         }
 
-        public static VerticalMetricsTable? Load(IGlyphTypeface glyphTypeface, ushort numberOfVMetrics, int glyphCount)
+        public static VerticalMetricsTable? Load(GlyphTypeface glyphTypeface, ushort numberOfVMetrics, int glyphCount)
         {
             if (glyphTypeface.PlatformTypeface.TryGetTable(Tag, out var table))
             {
@@ -101,6 +101,124 @@ namespace Avalonia.Media.Fonts.Tables.Metrics
                 reader.Seek((_numOfVMetrics - 1) * 4);
 
                 advance = reader.ReadUInt16();
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Attempts to retrieve advance heights for multiple glyphs in a single operation.
+        /// </summary>
+        /// <param name="glyphIndices">Read-only span of glyph indices to query.</param>
+        /// <param name="advances">Output span to write the advance heights. Must be at least as long as <paramref name="glyphIndices"/>.</param>
+        /// <returns><c>true</c> if all glyph indices are valid and advances were retrieved; otherwise, <c>false</c>.</returns>
+        /// <remarks>
+        /// This method is more efficient than calling <see cref="TryGetAdvance"/> multiple times as it reuses
+        /// the same reader and span reference. If any glyph index is invalid, the method returns <c>false</c>
+        /// and the contents of <paramref name="advances"/> are undefined.
+        /// </remarks>
+        public bool TryGetAdvances(ReadOnlySpan<ushort> glyphIndices, Span<ushort> advances)
+        {
+            if (advances.Length < glyphIndices.Length)
+            {
+                return false;
+            }
+
+            var data = _data.Span;
+            var reader = new BigEndianBinaryReader(data);
+
+            // Cache the last advance height for glyphs beyond numOfVMetrics
+            ushort? lastAdvanceHeight = null;
+
+            for (int i = 0; i < glyphIndices.Length; i++)
+            {
+                ushort glyphIndex = glyphIndices[i];
+
+                if (glyphIndex >= _numGlyphs)
+                {
+                    return false;
+                }
+
+                if (glyphIndex < _numOfVMetrics)
+                {
+                    reader.Seek(glyphIndex * 4);
+                    advances[i] = reader.ReadUInt16();
+                }
+                else
+                {
+                    // All glyphs beyond numOfVMetrics share the same advance height
+                    if (!lastAdvanceHeight.HasValue)
+                    {
+                        reader.Seek((_numOfVMetrics - 1) * 4);
+                        lastAdvanceHeight = reader.ReadUInt16();
+                    }
+
+                    advances[i] = lastAdvanceHeight.Value;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Attempts to retrieve vertical glyph metrics for multiple glyphs in a single operation.
+        /// </summary>
+        /// <param name="glyphIndices">Read-only span of glyph indices to query.</param>
+        /// <param name="metrics">Output span to write the metrics. Must be at least as long as <paramref name="glyphIndices"/>.</param>
+        /// <returns><c>true</c> if all glyph indices are valid and metrics were retrieved; otherwise, <c>false</c>.</returns>
+        /// <remarks>
+        /// This method is more efficient than calling <see cref="TryGetMetrics(ushort, out VerticalGlyphMetric)"/> multiple times as it reuses
+        /// the same reader and span reference. If any glyph index is invalid, the method returns <c>false</c>
+        /// and the contents of <paramref name="metrics"/> are undefined.
+        /// </remarks>
+        public bool TryGetMetrics(ReadOnlySpan<ushort> glyphIndices, Span<VerticalGlyphMetric> metrics)
+        {
+            if (metrics.Length < glyphIndices.Length)
+            {
+                return false;
+            }
+
+            var data = _data.Span;
+            var reader = new BigEndianBinaryReader(data);
+
+            // Cache the last advance height for glyphs beyond numOfVMetrics
+            ushort? lastAdvanceHeight = null;
+
+            for (int i = 0; i < glyphIndices.Length; i++)
+            {
+                ushort glyphIndex = glyphIndices[i];
+
+                if (glyphIndex >= _numGlyphs)
+                {
+                    return false;
+                }
+
+                if (glyphIndex < _numOfVMetrics)
+                {
+                    reader.Seek(glyphIndex * 4);
+
+                    ushort advanceHeight = reader.ReadUInt16();
+                    short topSideBearing = reader.ReadInt16();
+
+                    metrics[i] = new VerticalGlyphMetric(advanceHeight, topSideBearing);
+                }
+                else
+                {
+                    // All glyphs beyond numOfVMetrics share the same advance height
+                    if (!lastAdvanceHeight.HasValue)
+                    {
+                        reader.Seek((_numOfVMetrics - 1) * 4);
+                        lastAdvanceHeight = reader.ReadUInt16();
+                    }
+
+                    int tsbIndex = glyphIndex - _numOfVMetrics;
+                    int tsbOffset = _numOfVMetrics * 4 + tsbIndex * 2;
+
+                    reader.Seek(tsbOffset);
+                    short topSideBearing = reader.ReadInt16();
+
+                    metrics[i] = new VerticalGlyphMetric(lastAdvanceHeight.Value, topSideBearing);
+                }
             }
 
             return true;

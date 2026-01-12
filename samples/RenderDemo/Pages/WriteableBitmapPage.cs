@@ -13,8 +13,8 @@ namespace RenderDemo.Pages
 {
     public class WriteableBitmapPage : Control
     {
-        private WriteableBitmap _unpremulBitmap;
-        private WriteableBitmap _premulBitmap;
+        private WriteableBitmap? _unpremulBitmap;
+        private WriteableBitmap? _premulBitmap;
         private readonly Stopwatch _st = Stopwatch.StartNew();
 
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
@@ -38,6 +38,9 @@ namespace RenderDemo.Pages
 
         public override void Render(DrawingContext context)
         {
+            if (_unpremulBitmap is null || _premulBitmap is null)
+                return;
+
             void FillPixels(WriteableBitmap bitmap, byte fillAlpha, bool premul)
             {
                 using (var fb = bitmap.Lock())

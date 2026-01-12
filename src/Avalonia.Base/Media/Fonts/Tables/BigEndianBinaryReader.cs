@@ -111,6 +111,17 @@ namespace Avalonia.Media.Fonts.Tables
             return value;
         }
 
+        public FontVersion ReadVersion16Dot16()
+        {
+            EnsureAvailable(4);
+
+            uint value = BinaryPrimitives.ReadUInt32BigEndian(_span.Slice(_position, 4));
+
+            _position += 4;
+
+            return new FontVersion(value);
+        }
+
         public int ReadInt32()
         {
             EnsureAvailable(4);
@@ -257,60 +268,22 @@ namespace Avalonia.Media.Fonts.Tables
         {
             EnsureAvailable(bytesToRead);
 
-#if NETSTANDARD2_0
-            byte[] buffer = System.Buffers.ArrayPool<byte>.Shared.Rent(bytesToRead);
-
-            try
-            {
-                _span.Slice(_position, bytesToRead).CopyTo(buffer);
-
-                string result = encoding.GetString(buffer, 0, bytesToRead);
-
-                _position += bytesToRead;
-
-                return result;
-            }
-            finally
-            {
-                System.Buffers.ArrayPool<byte>.Shared.Return(buffer);
-            }
-#else
             string result = encoding.GetString(_span.Slice(_position, bytesToRead));
 
             _position += bytesToRead;
 
             return result;
-#endif
         }
 
         public string ReadTag()
         {
             EnsureAvailable(4);
 
-#if NETSTANDARD2_0
-            byte[] buffer = System.Buffers.ArrayPool<byte>.Shared.Rent(4);
-
-            try
-            {
-                _span.Slice(_position, 4).CopyTo(buffer);
-
-                string tag = Encoding.UTF8.GetString(buffer, 0, 4);
-
-                _position += 4;
-
-                return tag;
-            }
-            finally
-            {
-                System.Buffers.ArrayPool<byte>.Shared.Return(buffer);
-            }
-#else
             string tag = Encoding.UTF8.GetString(_span.Slice(_position, 4));
 
             _position += 4;
 
             return tag;
-#endif
         }
 
         public int ReadOffset(int size)

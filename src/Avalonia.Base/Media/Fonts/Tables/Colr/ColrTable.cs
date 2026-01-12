@@ -90,19 +90,27 @@ namespace Avalonia.Media.Fonts.Tables.Colr
         public ReadOnlyMemory<byte> ColrData => _colrData;
 
         /// <summary>
-        /// Loads the COLR table from the specified glyph typeface.
-        /// Returns null if the table is not present.
+        /// Attempts to load the COLR (Color) table from the specified glyph typeface.
         /// </summary>
-        public static ColrTable? Load(IGlyphTypeface glyphTypeface)
+        /// <remarks>This method supports both COLR version 0 and version 1 tables, as defined in the
+        /// OpenType specification. If the COLR table is not present or is invalid, the method returns false and sets
+        /// colrTable to null.</remarks>
+        /// <param name="glyphTypeface">The glyph typeface from which to load the COLR table. Cannot be null.</param>
+        /// <param name="colrTable">When this method returns, contains the loaded COLR table if successful; otherwise, null. This parameter is
+        /// passed uninitialized.</param>
+        /// <returns>true if the COLR table was successfully loaded; otherwise, false.</returns>
+        public static bool TryLoad(GlyphTypeface glyphTypeface, [NotNullWhen(true)] out ColrTable? colrTable)
         {
+            colrTable = null;
+
             if (!glyphTypeface.PlatformTypeface.TryGetTable(Tag, out var colrData))
             {
-                return null;
+                return false;
             }
 
             if (colrData.Length < 14)
             {
-                return null; // Minimum size for COLR v0 header
+                return false; // Minimum size for COLR v0 header
             }
 
             var span = colrData.Span;
@@ -123,7 +131,7 @@ namespace Avalonia.Media.Fonts.Tables.Colr
             // Validate v0 offsets
             if (baseGlyphRecordsOffset >= colrData.Length || layerRecordsOffset >= colrData.Length)
             {
-                return null;
+                return false;
             }
 
             // Parse COLR v1 extensions if present
@@ -180,7 +188,7 @@ namespace Avalonia.Media.Fonts.Tables.Colr
                 itemVariationStore = ItemVariationStore.Load(colrData, itemVariationStoreOffset);
             }
 
-            return new ColrTable(
+            colrTable = new ColrTable(
                 colrData,
                 version,
                 numBaseGlyphRecords,
@@ -194,6 +202,8 @@ namespace Avalonia.Media.Fonts.Tables.Colr
                 itemVariationStoreOffset,
                 deltaSetIndexMap,
                 itemVariationStore);
+
+            return true;
         }
 
         /// <summary>

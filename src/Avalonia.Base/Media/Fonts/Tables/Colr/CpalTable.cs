@@ -1,5 +1,6 @@
 using System;
 using System.Buffers.Binary;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Platform;
 
 namespace Avalonia.Media.Fonts.Tables.Colr
@@ -52,19 +53,27 @@ namespace Avalonia.Media.Fonts.Tables.Colr
         public int PaletteCount => _numPalettes;
 
         /// <summary>
-        /// Loads the CPAL table from the specified glyph typeface.
-        /// Returns null if the table is not present.
+        /// Attempts to load the CPAL (Color Palette) table from the specified glyph typeface.
         /// </summary>
-        public static CpalTable? Load(IGlyphTypeface glyphTypeface)
+        /// <remarks>This method supports CPAL table versions 0 and 1. If the glyph typeface does not
+        /// contain a valid CPAL table, or if the table version is not supported, the method returns false and sets
+        /// cpalTable to null.</remarks>
+        /// <param name="glyphTypeface">The glyph typeface from which to load the CPAL table. Cannot be null.</param>
+        /// <param name="cpalTable">When this method returns, contains the loaded CPAL table if successful; otherwise, null. This parameter is
+        /// passed uninitialized.</param>
+        /// <returns>true if the CPAL table was successfully loaded; otherwise, false.</returns>
+        public static bool TryLoad(GlyphTypeface glyphTypeface, [NotNullWhen(true)] out CpalTable? cpalTable)
         {
+            cpalTable = null;
+
             if (!glyphTypeface.PlatformTypeface.TryGetTable(Tag, out var cpalData))
             {
-                return null;
+                return false;
             }
 
             if (cpalData.Length < 12)
             {
-                return null; // Minimum size for CPAL header
+                return false; // Minimum size for CPAL header
             }
 
             var span = cpalData.Span;
@@ -85,22 +94,24 @@ namespace Avalonia.Media.Fonts.Tables.Colr
             // Currently support CPAL v0 and v1
             if (version > 1)
             {
-                return null;
+                return false;
             }
 
             // Validate offset
             if (colorRecordsArrayOffset >= cpalData.Length)
             {
-                return null;
+                return false;
             }
 
-            return new CpalTable(
+            cpalTable = new CpalTable(
                 cpalData,
                 version,
                 numPaletteEntries,
                 numPalettes,
                 numColorRecords,
                 colorRecordsArrayOffset);
+
+            return true;
         }
 
         /// <summary>

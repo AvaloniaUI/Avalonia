@@ -25,7 +25,7 @@ namespace Avalonia.Base.UnitTests.Collections
         {
             var target = new AvaloniaList<int>();
 
-            Assert.Throws<ArgumentNullException>(() => target.AddRange(null));
+            Assert.Throws<ArgumentNullException>(() => target.AddRange(null!));
         }
 
         [Fact]
@@ -33,7 +33,7 @@ namespace Avalonia.Base.UnitTests.Collections
         {
             var target = new AvaloniaList<int>();
 
-            Assert.Throws<ArgumentNullException>(() => target.RemoveAll(null));
+            Assert.Throws<ArgumentNullException>(() => target.RemoveAll(null!));
         }
 
         [Fact]
@@ -41,7 +41,7 @@ namespace Avalonia.Base.UnitTests.Collections
         {
             var target = new AvaloniaList<int>();
 
-            Assert.Throws<ArgumentNullException>(() => target.InsertRange(1, null));
+            Assert.Throws<ArgumentNullException>(() => target.InsertRange(1, null!));
         }
 
         [Fact]
@@ -140,6 +140,7 @@ namespace Avalonia.Base.UnitTests.Collections
             {
                 Assert.Equal(target, s);
                 Assert.Equal(NotifyCollectionChangedAction.Add, e.Action);
+                Assert.NotNull(e.NewItems);
                 Assert.Equal(new[] { 3 }, e.NewItems.Cast<int>());
                 Assert.Equal(2, e.NewStartingIndex);
 
@@ -161,6 +162,7 @@ namespace Avalonia.Base.UnitTests.Collections
             {
                 Assert.Equal(target, s);
                 Assert.Equal(NotifyCollectionChangedAction.Add, e.Action);
+                Assert.NotNull(e.NewItems);
                 Assert.Equal(new[] { 3, 4 }, e.NewItems.Cast<int>());
                 Assert.Equal(2, e.NewStartingIndex);
 
@@ -198,6 +200,7 @@ namespace Avalonia.Base.UnitTests.Collections
 
             target.CollectionChanged += (sender, args) =>
             {
+                Assert.NotNull(args.NewItems);
                 eventItems.AddRange(args.NewItems.Cast<object>());
             };
             
@@ -216,7 +219,9 @@ namespace Avalonia.Base.UnitTests.Collections
             {
                 Assert.Equal(target, s);
                 Assert.Equal(NotifyCollectionChangedAction.Replace, e.Action);
+                Assert.NotNull(e.OldItems);
                 Assert.Equal(new[] { 2 }, e.OldItems.Cast<int>());
+                Assert.NotNull(e.NewItems);
                 Assert.Equal(new[] { 3 }, e.NewItems.Cast<int>());
                 Assert.Equal(1, e.OldStartingIndex);
                 Assert.Equal(1, e.NewStartingIndex);
@@ -239,6 +244,7 @@ namespace Avalonia.Base.UnitTests.Collections
             {
                 Assert.Equal(target, s);
                 Assert.Equal(NotifyCollectionChangedAction.Add, e.Action);
+                Assert.NotNull(e.NewItems);
                 Assert.Equal(new[] { 3 }, e.NewItems.Cast<int>());
                 Assert.Equal(1, e.NewStartingIndex);
 
@@ -260,6 +266,7 @@ namespace Avalonia.Base.UnitTests.Collections
             {
                 Assert.Equal(target, s);
                 Assert.Equal(NotifyCollectionChangedAction.Add, e.Action);
+                Assert.NotNull(e.NewItems);
                 Assert.Equal(new[] { 3, 4 }, e.NewItems.Cast<int>());
                 Assert.Equal(1, e.NewStartingIndex);
 
@@ -281,6 +288,7 @@ namespace Avalonia.Base.UnitTests.Collections
             {
                 Assert.Equal(target, s);
                 Assert.Equal(NotifyCollectionChangedAction.Remove, e.Action);
+                Assert.NotNull(e.OldItems);
                 Assert.Equal(new[] { 3 }, e.OldItems.Cast<int>());
                 Assert.Equal(2, e.OldStartingIndex);
 
@@ -302,7 +310,9 @@ namespace Avalonia.Base.UnitTests.Collections
             {
                 Assert.Equal(target, s);
                 Assert.Equal(NotifyCollectionChangedAction.Move, e.Action);
+                Assert.NotNull(e.OldItems);
                 Assert.Equal(new[] { 3 }, e.OldItems.Cast<int>());
+                Assert.NotNull(e.NewItems);
                 Assert.Equal(new[] { 3 }, e.NewItems.Cast<int>());
                 Assert.Equal(2, e.OldStartingIndex);
                 Assert.Equal(0, e.NewStartingIndex);
@@ -325,7 +335,9 @@ namespace Avalonia.Base.UnitTests.Collections
             {
                 Assert.Equal(target, s);
                 Assert.Equal(NotifyCollectionChangedAction.Move, e.Action);
+                Assert.NotNull(e.OldItems);
                 Assert.Equal(new[] { 2, 3 }, e.OldItems.Cast<int>());
+                Assert.NotNull(e.NewItems);
                 Assert.Equal(new[] { 2, 3 }, e.NewItems.Cast<int>());
                 Assert.Equal(1, e.OldStartingIndex);
                 Assert.Equal(0, e.NewStartingIndex);
@@ -368,6 +380,7 @@ namespace Avalonia.Base.UnitTests.Collections
             {
                 Assert.Equal(target, s);
                 Assert.Equal(NotifyCollectionChangedAction.Remove, e.Action);
+                Assert.NotNull(e.OldItems);
                 Assert.Equal(new[] { 1, 2, 3 }, e.OldItems.Cast<int>());
                 Assert.Equal(0, e.OldStartingIndex);
 
@@ -580,7 +593,7 @@ namespace Avalonia.Base.UnitTests.Collections
 
             return;
 
-            void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs actualEvent)
+            void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs actualEvent)
             {
                 Assert.Multiple(() =>
                 {

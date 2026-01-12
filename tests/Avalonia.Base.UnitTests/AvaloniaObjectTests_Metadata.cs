@@ -61,15 +61,15 @@ namespace Avalonia.Base.UnitTests
 
         private class Class1 : AvaloniaObject
         {
-            public static readonly StyledProperty<string> StyledProperty =
-                AvaloniaProperty.Register<Class1, string>("Styled", "foo");
+            public static readonly StyledProperty<string?> StyledProperty =
+                AvaloniaProperty.Register<Class1, string?>("Styled", "foo");
 
-            public static readonly DirectProperty<Class1, string> DirectProperty =
-                AvaloniaProperty.RegisterDirect<Class1, string>("Styled", o => o.Direct, unsetValue: "foo");
+            public static readonly DirectProperty<Class1, string?> DirectProperty =
+                AvaloniaProperty.RegisterDirect<Class1, string?>("Styled", o => o.Direct, unsetValue: "foo");
 
-            private string _direct = default;
+            private string? _direct = null;
 
-            public string Direct
+            public string? Direct
             {
                 get => _direct;
             }
@@ -80,26 +80,26 @@ namespace Avalonia.Base.UnitTests
             static Class2()
             {
                 StyledProperty.OverrideDefaultValue<Class2>("bar");
-                DirectProperty.OverrideMetadata<Class2>(new DirectPropertyMetadata<string>("bar"));
+                DirectProperty.OverrideMetadata<Class2>(new DirectPropertyMetadata<string?>("bar"));
             }
         }
 
         private class Class3 : AvaloniaObject
         {
-            public static readonly StyledProperty<string> StyledProperty =
+            public static readonly StyledProperty<string?> StyledProperty =
                 Class1.StyledProperty.AddOwner<Class3>();
 
-            public static readonly DirectProperty<Class3, string> DirectProperty =
+            public static readonly DirectProperty<Class3, string?> DirectProperty =
                 Class1.DirectProperty.AddOwner<Class3>(o => o.Direct, unsetValue: "baz");
 
-            private string _direct = default;
+            private string? _direct = null;
 
             static Class3()
             {
                 StyledProperty.OverrideDefaultValue<Class3>("baz");
             }
 
-            public string Direct
+            public string? Direct
             {
                 get => _direct;
             }

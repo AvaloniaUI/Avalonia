@@ -13,31 +13,10 @@ namespace Avalonia.Media.Fonts.Tables
         /// </summary>
         internal static OpenTypeTag Tag { get; } = OpenTypeTag.Parse(TableName);
 
-        public HorizontalHeaderTable(
-            short ascender,
-            short descender,
-            short lineGap,
-            ushort advanceWidthMax,
-            short minLeftSideBearing,
-            short minRightSideBearing,
-            short xMaxExtent,
-            short caretSlopeRise,
-            short caretSlopeRun,
-            short caretOffset,
-            ushort numberOfHMetrics)
-        {
-            Ascender = ascender;
-            Descender = descender;
-            LineGap = lineGap;
-            AdvanceWidthMax = advanceWidthMax;
-            MinLeftSideBearing = minLeftSideBearing;
-            MinRightSideBearing = minRightSideBearing;
-            XMaxExtent = xMaxExtent;
-            CaretSlopeRise = caretSlopeRise;
-            CaretSlopeRun = caretSlopeRun;
-            CaretOffset = caretOffset;
-            NumberOfHMetrics = numberOfHMetrics;
-        }
+        /// <summary>
+        /// Gets the version of the horizontal header table.
+        /// </summary>
+        public FontVersion Version { get; }
 
         /// <summary>
         /// Gets the maximum advance width value for all glyphs in the font.
@@ -94,24 +73,56 @@ namespace Avalonia.Media.Fonts.Tables
         /// </summary>
         public short XMaxExtent { get; }
 
-        public static HorizontalHeaderTable? Load(IGlyphTypeface fontFace)
+        public HorizontalHeaderTable(
+            FontVersion version,
+            short ascender,
+            short descender,
+            short lineGap,
+            ushort advanceWidthMax,
+            short minLeftSideBearing,
+            short minRightSideBearing,
+            short xMaxExtent,
+            short caretSlopeRise,
+            short caretSlopeRun,
+            short caretOffset,
+            ushort numberOfHMetrics)
         {
+            Version = version;
+            Ascender = ascender;
+            Descender = descender;
+            LineGap = lineGap;
+            AdvanceWidthMax = advanceWidthMax;
+            MinLeftSideBearing = minLeftSideBearing;
+            MinRightSideBearing = minRightSideBearing;
+            XMaxExtent = xMaxExtent;
+            CaretSlopeRise = caretSlopeRise;
+            CaretSlopeRun = caretSlopeRun;
+            CaretOffset = caretOffset;
+            NumberOfHMetrics = numberOfHMetrics;
+        }
+
+        public static bool TryLoad(GlyphTypeface fontFace, out HorizontalHeaderTable horizontalHeaderTable)
+        {
+            horizontalHeaderTable = default;
+
             if (!fontFace.PlatformTypeface.TryGetTable(Tag, out var table))
             {
-                return null;
+                return false;
             }
 
             var binaryReader = new BigEndianBinaryReader(table.Span);
 
-            return Load(binaryReader);
+            return TryLoad(ref binaryReader, out horizontalHeaderTable);
         }
 
-        private static HorizontalHeaderTable Load(BigEndianBinaryReader reader)
+        private static bool TryLoad(ref BigEndianBinaryReader reader, out HorizontalHeaderTable horizontalHeaderTable)
         {
+            horizontalHeaderTable = default;
+
             // +--------+---------------------+---------------------------------------------------------------------------------+
             // | Type   | Name                | Description                                                                     |
             // +========+=====================+=================================================================================+
-            // | Fixed  | version             | 0x00010000 (1.0)                                                                |
+            // | Version16Dot16 | version     | 0x00010000 (1.0)                                                                |
             // +--------+---------------------+---------------------------------------------------------------------------------+
             // | FWord  | ascent              | Distance from baseline of highest ascender                                      |
             // +--------+---------------------+---------------------------------------------------------------------------------+
@@ -145,8 +156,7 @@ namespace Avalonia.Media.Fonts.Tables
             // +--------+---------------------+---------------------------------------------------------------------------------+
             // | uint16 | numOfLongHorMetrics | number of advance widths in metrics table                                       |
             // +--------+---------------------+---------------------------------------------------------------------------------+
-            ushort majorVersion = reader.ReadUInt16();
-            ushort minorVersion = reader.ReadUInt16();
+            FontVersion version = reader.ReadVersion16Dot16();
             short ascender = reader.ReadFWORD();
             short descender = reader.ReadFWORD();
             short lineGap = reader.ReadFWORD();
@@ -162,14 +172,16 @@ namespace Avalonia.Media.Fonts.Tables
             reader.ReadInt16(); // reserved
             reader.ReadInt16(); // reserved
             short metricDataFormat = reader.ReadInt16(); // 0
+
             if (metricDataFormat != 0)
             {
-                throw new InvalidFontTableException($"Expected metricDataFormat = 0 found {metricDataFormat}", TableName);
+                return false;
             }
 
             ushort numberOfHMetrics = reader.ReadUInt16();
 
-            return new HorizontalHeaderTable(
+            horizontalHeaderTable = new HorizontalHeaderTable(
+                version,
                 ascender,
                 descender,
                 lineGap,
@@ -181,6 +193,8 @@ namespace Avalonia.Media.Fonts.Tables
                 caretSlopeRun,
                 caretOffset,
                 numberOfHMetrics);
+
+            return true;
         }
     }
 }

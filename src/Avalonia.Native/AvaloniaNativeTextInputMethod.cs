@@ -1,9 +1,6 @@
 ﻿using System;
 using Avalonia.Input.TextInput;
-using Avalonia.Media.TextFormatting;
 using Avalonia.Native.Interop;
-
-#nullable enable
 
 namespace Avalonia.Native
 {

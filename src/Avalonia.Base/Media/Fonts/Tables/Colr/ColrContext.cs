@@ -11,7 +11,7 @@ namespace Avalonia.Media.Fonts.Tables.Colr
     internal readonly struct ColrContext
     {
         public ColrContext(
-            IGlyphTypeface glyphTypeface,
+            GlyphTypeface glyphTypeface,
             ColrTable colrTable,
             CpalTable cpalTable,
             int paletteIndex)
@@ -23,7 +23,7 @@ namespace Avalonia.Media.Fonts.Tables.Colr
             PaletteIndex = paletteIndex;
         }
 
-        public IGlyphTypeface GlyphTypeface { get; }
+        public GlyphTypeface GlyphTypeface { get; }
         public ReadOnlyMemory<byte> ColrData { get; }
         public ColrTable ColrTable { get; }
         public CpalTable CpalTable { get; }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using Xunit;
 
 namespace Avalonia.Base.UnitTests.Media.TextFormatting
 {
@@ -129,12 +130,13 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
 
             using (var stream =
                 typeof(UnicodeEnumsGenerator).Assembly.GetManifestResourceStream(
-                    "Avalonia.Base.UnitTests.Media.TextFormatting.BreakPairTable.txt"))
+                    "Avalonia.Base.UnitTests.Media.TextFormatting.BreakPairTable.txt")!)
             using (var reader = new StreamReader(stream))
             {
                 while (!reader.EndOfStream)
                 {
                     var line = reader.ReadLine();
+                    Assert.NotNull(line);
 
                     var columns = line.Split('\t');
 

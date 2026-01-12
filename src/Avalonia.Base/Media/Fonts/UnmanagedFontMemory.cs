@@ -20,7 +20,6 @@ namespace Avalonia.Media.Fonts
     {
         private IntPtr _ptr;
         private int _length;
-        private bool _disposed;
         private int _pinCount;
 
         // Reader/writer lock to protect lifetime and cache access.
@@ -67,11 +66,6 @@ namespace Avalonia.Media.Fonts
 
             try
             {
-                if (_disposed)
-                {
-                    throw new ObjectDisposedException(nameof(UnmanagedFontMemory));
-                }
-
                 if (_ptr == IntPtr.Zero || _length < 12)
                 {
                     return false;
@@ -115,26 +109,22 @@ namespace Avalonia.Media.Fonts
                         continue;
                     }
 
-                    var offset = (int)BinaryPrimitives.ReadUInt32BigEndian(entrySlice.Slice(8, 4));
-                    var length = (int)BinaryPrimitives.ReadUInt32BigEndian(entrySlice.Slice(12, 4));
+                    var offset = BinaryPrimitives.ReadUInt32BigEndian(entrySlice.Slice(8, 4));
+                    var length = BinaryPrimitives.ReadUInt32BigEndian(entrySlice.Slice(12, 4));
 
                     // Bounds checks - ensure values fit within the span
-                    if (offset > fontData.Length || length > fontData.Length)
+                    if (offset > (uint)fontData.Length || length > (uint)fontData.Length)
                     {
                         return false;
                     }
 
-                    if (offset + length > fontData.Length)
+                    if (offset + length > (uint)fontData.Length)
                     {
                         return false;
                     }
 
-                    if (offset < 0 || length < 0 || offset + length > fontData.Length)
-                    {
-                        return false;
-                    }
-
-                    table = Memory.Slice(offset, length);
+                    // Safe to cast to int for Slice since we validated bounds
+                    table = Memory.Slice((int)offset, (int)length);
 
                     // Acquire write lock to update cache
                     _lock.EnterWriteLock();
@@ -252,10 +242,7 @@ namespace Avalonia.Media.Fonts
                 {
                     unsafe
                     {
-                        fixed (byte* src = &MemoryMarshal.GetReference(data))
-                        {
-                            Buffer.MemoryCopy(src, (void*)ptr, len, len);
-                        }
+                        data.CopyTo(new Span<byte>((void*)ptr, len));
                     }
                 }
 
@@ -275,11 +262,6 @@ namespace Avalonia.Media.Fonts
 
             try
             {
-                if (_disposed)
-                {
-                    throw new ObjectDisposedException(nameof(UnmanagedFontMemory));
-                }
-
                 if (_ptr == IntPtr.Zero || _length <= 0)
                 {
                     return Span<byte>.Empty;
@@ -311,11 +293,6 @@ namespace Avalonia.Media.Fonts
 
             try
             {
-                if (_disposed)
-                {
-                    throw new ObjectDisposedException(nameof(UnmanagedFontMemory));
-                }
-
                 if (_ptr == IntPtr.Zero || _length == 0)
                 {
                     return new MemoryHandle();
@@ -347,60 +324,32 @@ namespace Avalonia.Media.Fonts
         public void Dispose()
         {
             Dispose(true);
-
-            GC.SuppressFinalize(this);
         }
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing)
+            // Always use lock for disposal since we don't have a finalizer
+            _lock.EnterWriteLock();
+
+            try
             {
-                // Explicit dispose: use lock to synchronize with other threads and dispose managed resources.
-                _lock.EnterWriteLock();
-
-                try
+                if (Volatile.Read(ref _pinCount) > 0)
                 {
-                    if (_disposed)
-                    {
-                        return;
-                    }
-
-                    if (Volatile.Read(ref _pinCount) > 0)
-                    {
-                        throw new InvalidOperationException("Cannot dispose while memory is pinned.");
-                    }
-
-                    if (_ptr != IntPtr.Zero)
-                    {
-                        Marshal.FreeHGlobal(_ptr);
-                        _ptr = IntPtr.Zero;
-                    }
-
-                    _length = 0;
-
-                    _disposed = true;
+                    throw new InvalidOperationException("Cannot dispose while memory is pinned.");
                 }
-                finally
+
+                if (_ptr != IntPtr.Zero)
                 {
-                    _lock.ExitWriteLock();
-                    // Dispose the lock (managed resource) only on explicit dispose.
-                    _lock.Dispose();
+                    Marshal.FreeHGlobal(_ptr);
+                    _ptr = IntPtr.Zero;
                 }
+
+                _length = 0;
             }
-            else
+            finally
             {
-                // Finalizer: do not touch managed objects. Free only unmanaged memory.
-                var ptr = Interlocked.Exchange(ref _ptr, IntPtr.Zero);
-
-                if (ptr != IntPtr.Zero)
-                {
-                    Marshal.FreeHGlobal(ptr);
-                }
-
-                Interlocked.Exchange(ref _length, 0);
-
-                // Mark as disposed to prevent further attempts to use the memory.
-                _disposed = true;
+                _lock.ExitWriteLock();
+                _lock.Dispose();
             }
         }
     }

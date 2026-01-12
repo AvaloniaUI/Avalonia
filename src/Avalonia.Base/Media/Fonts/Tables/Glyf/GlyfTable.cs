@@ -40,44 +40,36 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
         public int GlyphCount => _locaTable.GlyphCount;
 
         /// <summary>
-        /// Loads the 'glyf' table from the specified glyph typeface.
+        /// Attempts to load the 'glyf' table from the specified font data.
         /// </summary>
-        /// <param name="glyphTypeface">The glyph typeface from which to load the 'glyf' table. Cannot be null.</param>
-        /// <returns>A <see cref="GlyfTable"/> instance representing the loaded 'glyf' table, or <see langword="null"/> if the
-        /// table is not present in the typeface.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if the 'maxp' table cannot be loaded from the specified glyph typeface.</exception>
-        public static GlyfTable? Load(IGlyphTypeface glyphTypeface)
+        /// <remarks>This method does not throw an exception if the 'glyf' table cannot be loaded.
+        /// Instead, it returns <see langword="false"/> and sets <paramref name="glyfTable"/> to <see
+        /// langword="null"/>.</remarks>
+        /// <param name="glyphTypeface">The glyph typeface from which to retrieve the 'glyf' table.</param>
+        /// <param name="head">The 'head' table containing font header information required for loading the 'glyf' table.</param>
+        /// <param name="maxp">The 'maxp' table providing maximum profile information needed to interpret the 'glyf' table.</param>
+        /// <param name="glyfTable">When this method returns, contains the loaded 'glyf' table if successful; otherwise, <see langword="null"/>.
+        /// This parameter is passed uninitialized.</param>
+        /// <returns><see langword="true"/> if the 'glyf' table was successfully loaded; otherwise, <see langword="false"/>.</returns>
+        public static bool TryLoad(GlyphTypeface glyphTypeface, HeadTable head, MaxpTable maxp, out GlyfTable? glyfTable)
         {
-            var head = HeadTable.Load(glyphTypeface);
-            var maxp = MaxpTable.Load(glyphTypeface) ?? throw new InvalidOperationException("Could not load the 'maxp' table.");
+            glyfTable = null;
 
-            return Load(glyphTypeface, head, maxp);
-        }
-
-        /// <summary>
-        /// Loads the 'glyf' table from the specified glyph typeface, using the provided head and maxp tables.
-        /// </summary>
-        /// <param name="glyphTypeface">The glyph typeface from which to load the 'glyf' table. Cannot be null.</param>
-        /// <param name="head">The head table associated with the font. Provides font header information required for loading the 'glyf'
-        /// table.</param>
-        /// <param name="maxp">The maxp table associated with the font. Contains maximum profile information required for loading the
-        /// 'glyf' table.</param>
-        /// <returns>A GlyfTable instance if the 'glyf' and 'loca' tables are present and successfully loaded; otherwise, null.</returns>
-        public static GlyfTable? Load(IGlyphTypeface glyphTypeface, HeadTable head, MaxpTable maxp)
-        {
-            if (!glyphTypeface.PlatformTypeface.TryGetTable(Tag, out var glyfTable))
+            if (!glyphTypeface.PlatformTypeface.TryGetTable(Tag, out var glyfTableData))
             {
-                return null;
+                return false;
             }
 
             var locaTable = LocaTable.Load(glyphTypeface, head, maxp);
 
             if (locaTable == null)
             {
-                return null;
+                return false;
             }
 
-            return new GlyfTable(glyfTable, locaTable);
+            glyfTable = new GlyfTable(glyfTableData, locaTable);
+
+            return true;
         }
 
         /// <summary>
@@ -159,7 +151,7 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
             try
             {
                 var endPtsOfContours = simpleGlyph.EndPtsOfContours;
-                
+
                 if (endPtsOfContours.Length == 0)
                 {
                     return false;
@@ -195,7 +187,7 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
                         // Start processing from the next point (or wrap to first if only one point)
                         int i = pointCount == 1 ? startPointIndex : startPointIndex + 1;
                         int processingStartIndex = i;
-                        
+
                         var maxSegments = Math.Max(1, pointCount * 3);
                         var segmentsProcessed = 0;
 
@@ -203,7 +195,7 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
                         {
                             // Wrap index to contour range
                             int currentIdx = startPointIndex + ((i - startPointIndex) % pointCount);
-                            
+
                             var curFlag = flags[currentIdx];
                             var curIsOnCurve = (curFlag & GlyphFlag.OnCurvePoint) != 0;
                             var curPoint = new Point(xCoords[currentIdx], yCoords[currentIdx]);
@@ -266,7 +258,7 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
                         var firstY = yCoords[startPointIndex];
                         var lastX = xCoords[lastIdx];
                         var lastY = yCoords[lastIdx];
-                        
+
                         var impliedStartX = (lastX + firstX) / 2.0;
                         var impliedStartY = (lastY + firstY) / 2.0;
                         var impliedStart = new Point(impliedStartX, impliedStartY);
@@ -434,7 +426,7 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
             try
             {
                 var components = compositeGlyph.Components;
-                
+
                 if (components.Length == 0)
                 {
                     return false;

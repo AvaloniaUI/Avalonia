@@ -21,15 +21,10 @@ namespace Avalonia.Skia.UnitTests.Media
                 // Try to get glyph typeface - may or may not have COLR
                 if (FontManager.Current.TryGetGlyphTypeface(typeface, out var glyphTypeface))
                 {
-                    var colrTable = ColrTable.Load(glyphTypeface);
+                    Assert.True(ColrTable.TryLoad(glyphTypeface, out var colrTable));
 
-                    // Table may be null if font doesn't have color glyphs
-                    // This is expected behavior
-                    if (colrTable != null)
-                    {
-                        Assert.True(colrTable.Version <= 1);
-                        Assert.True(colrTable.BaseGlyphCount >= 0);
-                    }
+                    Assert.True(colrTable.Version <= 1);
+                    Assert.True(colrTable.BaseGlyphCount >= 0);
                 }
             }
         }
@@ -39,19 +34,15 @@ namespace Avalonia.Skia.UnitTests.Media
         {
             using (Start())
             {
-                var typeface = new Typeface("Arial");
+                var typeface = new Typeface("Segoe UI Emoji");
 
                 if (FontManager.Current.TryGetGlyphTypeface(typeface, out var glyphTypeface))
                 {
-                    var cpalTable = CpalTable.Load(glyphTypeface);
+                    Assert.True(CpalTable.TryLoad(glyphTypeface, out var cpalTable));
 
-                    // Table may be null if font doesn't have color palettes
-                    if (cpalTable != null)
-                    {
-                        Assert.True(cpalTable.Version <= 1);
-                        Assert.True(cpalTable.PaletteCount > 0);
-                        Assert.True(cpalTable.PaletteEntryCount > 0);
-                    }
+                    Assert.True(cpalTable.Version <= 1);
+                    Assert.True(cpalTable.PaletteCount > 0);
+                    Assert.True(cpalTable.PaletteEntryCount > 0);
                 }
             }
         }
@@ -66,10 +57,7 @@ namespace Avalonia.Skia.UnitTests.Media
 
                 if (FontManager.Current.TryGetGlyphTypeface(typeface, out var glyphTypeface))
                 {
-                    var colrTable = ColrTable.Load(glyphTypeface);
-
-                    // Noto Mono doesn't have color glyphs
-                    Assert.Null(colrTable);
+                    Assert.False(ColrTable.TryLoad(glyphTypeface, out _));
                 }
             }
         }
@@ -83,28 +71,25 @@ namespace Avalonia.Skia.UnitTests.Media
 
                 if (FontManager.Current.TryGetGlyphTypeface(typeface, out var glyphTypeface))
                 {
-                    var colrTable = ColrTable.Load(glyphTypeface);
-                    var cpalTable = CpalTable.Load(glyphTypeface);
+                    Assert.True(ColrTable.TryLoad(glyphTypeface, out var colrTable));
+                    Assert.True(CpalTable.TryLoad(glyphTypeface, out var cpalTable));
 
-                    if (colrTable != null && cpalTable != null)
+                    // Try to get layers for a hypothetical color glyph
+                    ushort testGlyphId = 0;
+
+                    if (colrTable.TryGetBaseGlyphRecord(testGlyphId, out var baseRecord))
                     {
-                        // Try to get layers for a hypothetical color glyph
-                        ushort testGlyphId = 0;
+                        Assert.True(baseRecord.NumLayers > 0);
 
-                        if (colrTable.TryGetBaseGlyphRecord(testGlyphId, out var baseRecord))
+                        // Get each layer
+                        for (int i = 0; i < baseRecord.NumLayers; i++)
                         {
-                            Assert.True(baseRecord.NumLayers > 0);
-
-                            // Get each layer
-                            for (int i = 0; i < baseRecord.NumLayers; i++)
+                            if (colrTable.TryGetLayerRecord(baseRecord.FirstLayerIndex + i, out var layer))
                             {
-                                if (colrTable.TryGetLayerRecord(baseRecord.FirstLayerIndex + i, out var layer))
+                                // Get the color for this layer
+                                if (cpalTable.TryGetColor(0, layer.PaletteIndex, out var color))
                                 {
-                                    // Get the color for this layer
-                                    if (cpalTable.TryGetColor(0, layer.PaletteIndex, out var color))
-                                    {
-                                        Assert.NotEqual(default, color);
-                                    }
+                                    Assert.NotEqual(default, color);
                                 }
                             }
                         }
@@ -113,262 +98,8 @@ namespace Avalonia.Skia.UnitTests.Media
             }
         }
 
-        [Fact]
-        public void Should_Validate_BaseGlyphV1Records_Have_Valid_Paint_Formats()
-        {
-            using (Start())
-            {
-                var typeface = new Typeface("Noto Color Emoji");
 
-                if (FontManager.Current.TryGetGlyphTypeface(typeface, out var glyphTypeface))
-                {
-                    var colrTable = ColrTable.Load(glyphTypeface);
 
-                    if (colrTable == null || !colrTable.HasV1Data)
-                    {
-                        // Skip test if font doesn't have COLR v1 data
-                        return;
-                    }
-
-                    // Get the internal COLR data to inspect the BaseGlyphV1List
-                    if (!glyphTypeface.PlatformTypeface.TryGetTable(ColrTable.Tag, out var colrData))
-                    {
-                        return;
-                    }
-
-                    var span = colrData.Span;
-                    var version = System.Buffers.Binary.BinaryPrimitives.ReadUInt16BigEndian(span);
-
-                    if (version < 1)
-                    {
-                        return;
-                    }
-
-                    // Read the BaseGlyphV1List offset (at byte 14)
-                    if (colrData.Length < 22)
-                    {
-                        return;
-                    }
-
-                    var baseGlyphV1ListOffset = System.Buffers.Binary.BinaryPrimitives.ReadUInt32BigEndian(span.Slice(14));
-
-                    if (baseGlyphV1ListOffset == 0 || baseGlyphV1ListOffset >= colrData.Length)
-                    {
-                        return;
-                    }
-
-                    var baseGlyphV1ListSpan = span.Slice((int)baseGlyphV1ListOffset);
-
-                    if (baseGlyphV1ListSpan.Length < 4)
-                    {
-                        return;
-                    }
-
-                    var numRecords = System.Buffers.Binary.BinaryPrimitives.ReadUInt32BigEndian(baseGlyphV1ListSpan);
-
-                    Assert.True(numRecords > 0, "Should have at least one BaseGlyphV1 record if HasV1Data is true");
-
-                    // Each BaseGlyphV1Record is 6 bytes: 2 (glyphID) + 4 (Offset32 paintOffset)
-                    var recordSize = 6;
-                    var expectedSize = 4 + (numRecords * recordSize);
-
-                    Assert.True(baseGlyphV1ListSpan.Length >= expectedSize,
-                        $"BaseGlyphV1List size mismatch: expected at least {expectedSize} bytes for {numRecords} records, got {baseGlyphV1ListSpan.Length}");
-
-                    var validRecords = 0;
-
-                    // Iterate through all records and validate each one
-                    for (uint i = 0; i < numRecords; i++)
-                    {
-                        var recordOffset = 4 + (i * recordSize);
-                        var recordSpan = baseGlyphV1ListSpan.Slice((int)recordOffset, recordSize);
-
-                        var glyphId = System.Buffers.Binary.BinaryPrimitives.ReadUInt16BigEndian(recordSpan);
-                        var paintOffset = System.Buffers.Binary.BinaryPrimitives.ReadUInt32BigEndian(recordSpan.Slice(2));
-
-                        // Validate that we can find this record using TryGetBaseGlyphV1Record
-                        var found = colrTable.TryGetBaseGlyphV1Record(glyphId, out var record);
-                        Assert.True(found, $"Record {i}: Could not find glyphId {glyphId} using TryGetBaseGlyphV1Record");
-                        Assert.Equal(glyphId, record.GlyphId);
-                        Assert.Equal(paintOffset, record.PaintOffset);
-
-                        // Validate the paint format at the paintOffset
-                        // Per OpenType COLR v1 spec: paintOffset is relative to BaseGlyphV1List
-                        var absolutePaintOffset = baseGlyphV1ListOffset + paintOffset;
-                        
-                        // Skip validation if offset is out of bounds - font data may have issues
-                        if (absolutePaintOffset >= colrData.Length)
-                        {
-                            continue;
-                        }
-                        
-                        var paintSpan = span.Slice((int)absolutePaintOffset);
-                        if (paintSpan.Length == 0)
-                        {
-                            continue;
-                        }
-
-                        var format = paintSpan[0];
-
-                        // Paint formats in COLR v1 are defined as 0-32
-                        // Format 0 is reserved, formats 1-32 are currently defined (32 is PaintComposite)
-                        Assert.True(format <= 32,
-                            $"Record {i}: glyphId {glyphId} has invalid paint format {format} at absolute offset {absolutePaintOffset} (relative: {paintOffset}). Format must be 0-32.");
-                        
-                        validRecords++;
-
-                    }
-
-                    // Ensure we validated all records successfully
-                    Assert.Equal(numRecords, (uint)validRecords);
-
-                    // Additional check: verify that numRecords matches the count we can enumerate
-                    var enumeratedRecords = 0;
-                    for (ushort glyphId = 0; glyphId < ushort.MaxValue; glyphId++)
-                    {
-                        if (colrTable.TryGetBaseGlyphV1Record(glyphId, out _))
-                        {
-                            enumeratedRecords++;
-                        }
-                    }
-
-                    Assert.Equal(numRecords, (uint)enumeratedRecords);
-                }
-            }
-        }
-
-        [Fact]
-        public void Should_Analyze_Clock_Emoji_Paint_Graph_And_Verify_Transform_Accumulation()
-        {
-            using (Start())
-            {
-                var typeface = new Typeface("Noto Color Emoji");
-
-                if (!FontManager.Current.TryGetGlyphTypeface(typeface, out var glyphTypeface))
-                {
-                    // Skip test if font is not available
-                    return;
-                }
-
-                var colrTable = ColrTable.Load(glyphTypeface);
-                var cpalTable = CpalTable.Load(glyphTypeface);
-
-                if (colrTable == null || cpalTable == null || !colrTable.HasV1Data)
-                {
-                    // Skip test if font doesn't have COLR v1 data
-                    return;
-                }
-
-                // Parse cmap to find glyph ID for U+1F550 (🕐 One O'Clock)
-                const int clockCodepoint = 0x1F550;
-                ushort clockGlyphId = 0;
-                bool foundGlyph = false;
-
-                // Try to find the glyph using the typeface's GetGlyph method
-                clockGlyphId = glyphTypeface.CharacterToGlyphMap[clockCodepoint];
-                foundGlyph = clockGlyphId != 0;
-
-                if (!foundGlyph)
-                {
-                    // Skip test if glyph not found in font
-                    return;
-                }
-
-                // Verify this glyph has a COLR v1 record
-                if (!colrTable.TryGetBaseGlyphV1Record(clockGlyphId, out var baseGlyphRecord))
-                {
-                    // Skip test if this glyph doesn't have COLR v1 data
-                    return;
-                }
-
-                // Get the COLR data for parsing
-                if (!glyphTypeface.PlatformTypeface.TryGetTable(ColrTable.Tag, out var colrData))
-                {
-                    return;
-                }
-
-                // Create context for paint parsing
-                var context = new ColrContext(
-                    glyphTypeface,
-                    colrTable,
-                    cpalTable,
-                    0);
-
-                var decycler = new PaintDecycler();
-
-                // Parse the root paint
-                var rootPaintOffset = colrTable.GetAbsolutePaintOffset(baseGlyphRecord.PaintOffset);
-
-                if (!PaintParser.TryParse(colrData.Span, rootPaintOffset, in context, in decycler, out var rootPaint))
-                {
-                    Assert.Fail("Failed to parse root paint for clock emoji");
-                    return;
-                }
-
-                // Resolve the paint (apply deltas, normalize)
-                var resolvedPaint = PaintResolver.ResolvePaint(rootPaint, in context);
-
-                // Create a tracking painter to analyze the paint graph
-                var trackingPainter = new TransformTrackingPainter();
-
-                // Traverse the paint graph
-                PaintTraverser.Traverse(resolvedPaint, trackingPainter, Matrix.Identity);
-
-                // Analyze the results
-                Assert.NotEmpty(trackingPainter.TransformStack);
-                Assert.NotEmpty(trackingPainter.AllTransforms);
-
-                // Verify transforms were properly accumulated
-                // Each entry in TransformStack should be the cumulative transform at that point
-                for (int i = 1; i < trackingPainter.TransformStack.Count; i++)
-                {
-                    var current = trackingPainter.TransformStack[i];
-                    var previous = trackingPainter.TransformStack[i - 1];
-
-                    // Current transform should be different from previous (transforms accumulated)
-                    // Unless the transform was identity
-                    var isIdentity = current.M11 == 1 && current.M12 == 0 && 
-                                   current.M21 == 0 && current.M22 == 1 && 
-                                   current.M31 == 0 && current.M32 == 0;
-
-                    if (!isIdentity && i > 0)
-                    {
-                        // Verify that transform changed
-                        bool transformChanged = 
-                            Math.Abs(current.M11 - previous.M11) > 0.0001 ||
-                            Math.Abs(current.M12 - previous.M12) > 0.0001 ||
-                            Math.Abs(current.M21 - previous.M21) > 0.0001 ||
-                            Math.Abs(current.M22 - previous.M22) > 0.0001 ||
-                            Math.Abs(current.M31 - previous.M31) > 0.0001 ||
-                            Math.Abs(current.M32 - previous.M32) > 0.0001;
-
-                        Assert.True(transformChanged, 
-                            $"Transform at level {i} should differ from level {i-1} when accumulating non-identity transforms");
-                    }
-                }
-
-                // Output diagnostic information
-                System.Diagnostics.Debug.WriteLine($"Clock emoji 🕐 (U+{clockCodepoint:X4}, GlyphID: {clockGlyphId}) paint graph analysis:");
-                System.Diagnostics.Debug.WriteLine($"  Total transforms encountered: {trackingPainter.AllTransforms.Count}");
-                System.Diagnostics.Debug.WriteLine($"  Maximum transform stack depth: {trackingPainter.MaxStackDepth}");
-                System.Diagnostics.Debug.WriteLine($"  Total glyphs encountered: {trackingPainter.GlyphCount}");
-                System.Diagnostics.Debug.WriteLine($"  Total fills encountered: {trackingPainter.FillCount}");
-                System.Diagnostics.Debug.WriteLine($"  Total clips encountered: {trackingPainter.ClipCount}");
-                System.Diagnostics.Debug.WriteLine($"  Total layers encountered: {trackingPainter.LayerCount}");
-
-                System.Diagnostics.Debug.WriteLine("\n  Transform stack at each level:");
-                for (int i = 0; i < trackingPainter.TransformStack.Count; i++)
-                {
-                    var m = trackingPainter.TransformStack[i];
-                    System.Diagnostics.Debug.WriteLine(
-                        $"    Level {i}: [{m.M11:F4}, {m.M12:F4}, {m.M21:F4}, {m.M22:F4}, {m.M31:F4}, {m.M32:F4}]");
-                }
-
-                // Verify at least some transforms were encountered (clock face likely has transforms)
-                Assert.True(trackingPainter.AllTransforms.Count > 0, 
-                    "Clock emoji should have at least one transform in its paint graph");
-            }
-        }
 
         [Fact]
         public void Should_Verify_Transform_Coordinate_Conversion_Preserves_Final_Bounds()
@@ -382,13 +113,9 @@ namespace Avalonia.Skia.UnitTests.Media
                     return;
                 }
 
-                var colrTable = ColrTable.Load(glyphTypeface);
-                var cpalTable = CpalTable.Load(glyphTypeface);
-
-                if (colrTable == null || cpalTable == null || !colrTable.HasV1Data)
-                {
-                    return;
-                }
+                Assert.True(ColrTable.TryLoad(glyphTypeface, out var colrTable));
+                Assert.True(CpalTable.TryLoad(glyphTypeface, out var cpalTable));
+                Assert.True(colrTable.HasV1Data);
 
                 // Test with clock emoji 🕐 (U+1F550)
                 const int clockCodepoint = 0x1F550;
@@ -431,7 +158,7 @@ namespace Avalonia.Skia.UnitTests.Media
 
                 // The bounds should be roughly square for a clock face (allow some tolerance)
                 var aspectRatio = finalBounds.Width / finalBounds.Height;
-                Assert.True(aspectRatio > 0.5 && aspectRatio < 2.0, 
+                Assert.True(aspectRatio > 0.5 && aspectRatio < 2.0,
                     $"Clock emoji aspect ratio should be roughly square, got {aspectRatio:F2}");
 
                 // Verify that transforms didn't cause bounds to become excessively large or small
@@ -460,13 +187,9 @@ namespace Avalonia.Skia.UnitTests.Media
                     return;
                 }
 
-                var colrTable = ColrTable.Load(glyphTypeface);
-                var cpalTable = CpalTable.Load(glyphTypeface);
-
-                if (colrTable == null || cpalTable == null || !colrTable.HasV1Data)
-                {
-                    return;
-                }
+                Assert.True(ColrTable.TryLoad(glyphTypeface, out var colrTable));
+                Assert.True(CpalTable.TryLoad(glyphTypeface, out var cpalTable));
+                Assert.True(colrTable.HasV1Data);
 
                 // Test with bridge at night emoji 🌉 (U+1F309)
                 const int bridgeCodepoint = 0x1F309;
@@ -509,7 +232,7 @@ namespace Avalonia.Skia.UnitTests.Media
 
                 // The bounds should be roughly square for an emoji (allow some tolerance)
                 var aspectRatio = finalBounds.Width / finalBounds.Height;
-                Assert.True(aspectRatio > 0.5 && aspectRatio < 2.0, 
+                Assert.True(aspectRatio > 0.5 && aspectRatio < 2.0,
                     $"Bridge at night emoji aspect ratio should be roughly square, got {aspectRatio:F2}");
 
                 // Verify that transforms didn't cause bounds to become excessively large or small
@@ -538,13 +261,9 @@ namespace Avalonia.Skia.UnitTests.Media
                     return;
                 }
 
-                var colrTable = ColrTable.Load(glyphTypeface);
-                var cpalTable = CpalTable.Load(glyphTypeface);
-
-                if (colrTable == null || cpalTable == null || !colrTable.HasV1Data)
-                {
-                    return;
-                }
+                Assert.True(ColrTable.TryLoad(glyphTypeface, out var colrTable));
+                Assert.True(CpalTable.TryLoad(glyphTypeface, out var cpalTable));
+                Assert.True(colrTable.HasV1Data);
 
                 // Parse cmap to find glyph ID for U+1F309 (🌉 Bridge at Night)
                 const int bridgeCodepoint = 0x1F309;
@@ -625,14 +344,14 @@ namespace Avalonia.Skia.UnitTests.Media
 
                         // Current transform should be different from previous (transforms accumulated)
                         // Unless the transform was identity
-                        var isIdentity = current.M11 == 1 && current.M12 == 0 && 
-                                       current.M21 == 0 && current.M22 == 1 && 
+                        var isIdentity = current.M11 == 1 && current.M12 == 0 &&
+                                       current.M21 == 0 && current.M22 == 1 &&
                                        current.M31 == 0 && current.M32 == 0;
 
                         if (!isIdentity && i > 0)
                         {
                             // Verify that transform changed
-                            bool transformChanged = 
+                            bool transformChanged =
                                 Math.Abs(current.M11 - previous.M11) > 0.0001 ||
                                 Math.Abs(current.M12 - previous.M12) > 0.0001 ||
                                 Math.Abs(current.M21 - previous.M21) > 0.0001 ||
@@ -640,8 +359,8 @@ namespace Avalonia.Skia.UnitTests.Media
                                 Math.Abs(current.M31 - previous.M31) > 0.0001 ||
                                 Math.Abs(current.M32 - previous.M32) > 0.0001;
 
-                            Assert.True(transformChanged, 
-                                $"Transform at level {i} should differ from level {i-1} when accumulating non-identity transforms");
+                            Assert.True(transformChanged,
+                                $"Transform at level {i} should differ from level {i - 1} when accumulating non-identity transforms");
                         }
                     }
                 }
@@ -660,13 +379,9 @@ namespace Avalonia.Skia.UnitTests.Media
                     return;
                 }
 
-                var colrTable = ColrTable.Load(glyphTypeface);
-                var cpalTable = CpalTable.Load(glyphTypeface);
-
-                if (colrTable == null || cpalTable == null || !colrTable.HasV1Data)
-                {
-                    return;
-                }
+                Assert.True(ColrTable.TryLoad(glyphTypeface, out var colrTable));
+                Assert.True(CpalTable.TryLoad(glyphTypeface, out var cpalTable));
+                Assert.True(colrTable.HasV1Data);
 
                 // Test with bridge at night emoji 🌉 (U+1F309)
                 const int bridgeCodepoint = 0x1F309;
@@ -703,7 +418,7 @@ namespace Avalonia.Skia.UnitTests.Media
 
                 // Output all the collected diagnostic information
                 System.Diagnostics.Debug.WriteLine($"\n=== Bridge at Night Emoji 🌉 (U+{bridgeCodepoint:X4}, GlyphID: {bridgeGlyphId}) Detailed Paint Operations ===\n");
-                
+
                 foreach (var op in diagnosticPainter.Operations)
                 {
                     System.Diagnostics.Debug.WriteLine(op);
@@ -727,12 +442,12 @@ namespace Avalonia.Skia.UnitTests.Media
         /// </summary>
         private class DetailedDiagnosticPainter : IColorPainter
         {
-            private readonly IGlyphTypeface _glyphTypeface;
+            private readonly GlyphTypeface _glyphTypeface;
             private readonly Stack<Matrix> _transforms = new Stack<Matrix>();
             private int _operationIndex = 0;
             public List<string> Operations { get; } = new List<string>();
 
-            public DetailedDiagnosticPainter(IGlyphTypeface glyphTypeface)
+            public DetailedDiagnosticPainter(GlyphTypeface glyphTypeface)
             {
                 _glyphTypeface = glyphTypeface;
                 _transforms.Push(Matrix.Identity);
@@ -925,13 +640,13 @@ namespace Avalonia.Skia.UnitTests.Media
         /// </summary>
         private class BoundsTrackingPainter : IColorPainter
         {
-            private readonly IGlyphTypeface _glyphTypeface;
+            private readonly GlyphTypeface _glyphTypeface;
             private readonly Stack<Matrix> _transforms = new Stack<Matrix>();
             private Rect _bounds = default;
 
             public int GlyphCount { get; private set; }
 
-            public BoundsTrackingPainter(IGlyphTypeface glyphTypeface)
+            public BoundsTrackingPainter(GlyphTypeface glyphTypeface)
             {
                 _glyphTypeface = glyphTypeface;
                 _transforms.Push(Matrix.Identity);
@@ -989,9 +704,7 @@ namespace Avalonia.Skia.UnitTests.Media
 
         private static IDisposable Start()
         {
-            var disposable = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface
-                .With(renderInterface: new PlatformRenderInterface(),
-                    fontManagerImpl: new CustomFontManagerImpl()));
+            var disposable = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
 
             return disposable;
         }

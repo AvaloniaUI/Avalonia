@@ -27,7 +27,7 @@ namespace Avalonia.Media.Fonts.Tables
 
         public IReadOnlyList<OpenTypeTag> Features { get; }
 
-        public static FeatureListTable? LoadGSub(IGlyphTypeface glyphTypeface)
+        public static FeatureListTable? LoadGSub(GlyphTypeface glyphTypeface)
         {
             if (!glyphTypeface.PlatformTypeface.TryGetTable(GSubTag, out var gPosTable))
             {
@@ -36,10 +36,10 @@ namespace Avalonia.Media.Fonts.Tables
 
             var reader = new BigEndianBinaryReader(gPosTable.Span);
 
-            return Load(reader);
+            return Load(ref reader);
         }
 
-        public static FeatureListTable? LoadGPos(IGlyphTypeface glyphTypeface)
+        public static FeatureListTable? LoadGPos(GlyphTypeface glyphTypeface)
         {
             if (!glyphTypeface.PlatformTypeface.TryGetTable(GPosTag, out var gSubTable))
             {
@@ -48,10 +48,10 @@ namespace Avalonia.Media.Fonts.Tables
 
             var reader = new BigEndianBinaryReader(gSubTable.Span);
 
-            return Load(reader);
+            return Load(ref reader);
         }
 
-        private static FeatureListTable Load(BigEndianBinaryReader reader)
+        private static FeatureListTable Load(ref BigEndianBinaryReader reader)
         {
             // GPOS/GSUB Header, Version 1.0
             // +----------+-------------------+-----------------------------------------------------------+
@@ -74,10 +74,10 @@ namespace Avalonia.Media.Fonts.Tables
 
             var featureListOffset = reader.ReadOffset16();
 
-            return Load(reader, featureListOffset);
+            return Load(ref reader, featureListOffset);
         }
 
-        private static FeatureListTable Load(BigEndianBinaryReader reader, int offset)
+        private static FeatureListTable Load(ref BigEndianBinaryReader reader, int offset)
         {
             // FeatureList
             // +---------------+------------------------------+-----------------------------------------------------------------------------------------------------------------+
@@ -119,15 +119,7 @@ namespace Avalonia.Media.Fonts.Tables
                 var tag = new OpenTypeTag(featureTag);
 
                 // Check for duplicates in already added features
-                bool isDuplicate = false;
-                for (int j = 0; j < uniqueCount; j++)
-                {
-                    if (tempFeatures[j].Equals(tag))
-                    {
-                        isDuplicate = true;
-                        break;
-                    }
-                }
+                bool isDuplicate = tempFeatures.Contains(tag);
 
                 if (!isDuplicate)
                 {

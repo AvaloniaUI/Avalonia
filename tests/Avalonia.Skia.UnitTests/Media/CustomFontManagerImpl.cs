@@ -129,7 +129,7 @@ namespace Avalonia.Skia.UnitTests.Media
             _systemFonts?.Dispose();
         }
 
-        public bool TryGetFamilyTypefaces(string familyName, [NotNullWhen(true)] out IReadOnlyList<Typeface> familyTypefaces)
+        public bool TryGetFamilyTypefaces(string familyName, [NotNullWhen(true)] out IReadOnlyList<Typeface>? familyTypefaces)
         {
             if (SystemFonts.TryGetFamilyTypefaces(familyName, out familyTypefaces))
             {

@@ -23,7 +23,7 @@ namespace Avalonia.Skia
         private const int FontEdgingsCount = (int)SKFontEdging.SubpixelAntialias + 1;
         private readonly SKTextBlob?[] _textBlobCache = new SKTextBlob?[FontEdgingsCount];
 
-        public GlyphRunImpl(IGlyphTypeface glyphTypeface, double fontRenderingEmSize,
+        public GlyphRunImpl(GlyphTypeface glyphTypeface, double fontRenderingEmSize,
             IReadOnlyList<GlyphInfo> glyphInfos, Point baselineOrigin)
         {
             if (glyphTypeface == null)

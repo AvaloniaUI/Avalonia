@@ -7,7 +7,7 @@ namespace Avalonia.Harfbuzz
 {
     internal class HarfBuzzTypeface : ITextShaperTypeface
     {
-        public HarfBuzzTypeface(IGlyphTypeface glyphTypeface)
+        public HarfBuzzTypeface(GlyphTypeface glyphTypeface)
         {
             GlyphTypeface = glyphTypeface;
 
@@ -18,7 +18,7 @@ namespace Avalonia.Harfbuzz
             HBFont.SetFunctionsOpenType();
         }
 
-        public IGlyphTypeface GlyphTypeface { get; }
+        public GlyphTypeface GlyphTypeface { get; }
         public Face HBFace { get; }
         public Font HBFont { get; }
 
@@ -46,10 +46,7 @@ namespace Avalonia.Harfbuzz
 
             unsafe
             {
-                fixed (byte* src = table.Span)
-                {
-                    System.Buffer.MemoryCopy(src, (void*)nativePtr, table.Length, table.Length);
-                }
+                table.Span.CopyTo(new Span<byte>((void*)nativePtr, table.Length));
             }
 
             var releaseDelegate = new ReleaseDelegate(() => Marshal.FreeHGlobal(nativePtr));

@@ -28,21 +28,11 @@ namespace Avalonia.Media.Fonts.Tables.Colr
         }
 
         /// <summary>
-        /// Converts a variation delta based on the target type it modifies.
+        /// Specifies the numeric format used to represent delta values in font tables.
         /// </summary>
-        /// <param name="deltaValue">The raw delta value from the font (int or short)</param>
-        /// <param name="targetType">The type of value being modified</param>
-        /// <returns>The converted delta value</returns>
-        /// <remarks>
-        /// Variation deltas are stored as integers in the font file and must be converted 
-        /// using the same conversion method as their target value:
-        /// 
-        /// - FWORD deltas (translate dx/dy, gradient coordinates, center points): NO conversion
-        /// - F2DOT14 deltas (scale, rotate angle, skew angle, solid alpha): use F2Dot14ToDouble
-        /// - Fixed deltas (Affine2x3 matrix components): use FixedToDouble
-        /// 
-        /// OpenType spec: "Deltas for a given item are in the same representation as the corresponding item."
-        /// </remarks>
+        /// <remarks>Use this enumeration to indicate how a delta value should be interpreted or converted
+        /// when processing font data. Each member corresponds to a specific numeric representation commonly found in
+        /// OpenType and TrueType font tables.</remarks>
         public enum DeltaTargetType
         {
             /// <summary>FWORD - design units (int16) - no conversion needed</summary>

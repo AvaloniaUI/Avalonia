@@ -13,6 +13,8 @@ namespace Avalonia.Media.Fonts.Tables.Name
         internal const string TableName = "name";
         internal static readonly OpenTypeTag Tag = OpenTypeTag.Parse(TableName);
 
+        private const ushort USEnglishLanguageId = 0x0409;
+
         private readonly NameRecord[] _names;
         private string? _cachedFamilyName;
         private string? _cachedTypographicFamilyName;
@@ -48,14 +50,14 @@ namespace Avalonia.Media.Fonts.Tables.Name
         /// </value>
         public string FontFamilyName(ushort culture)
         {
-            if (culture == 0x0409 && _cachedFamilyName is not null)
+            if (culture == USEnglishLanguageId && _cachedFamilyName is not null)
             {
                 return _cachedFamilyName;
             }
 
             var value = GetNameById(culture, KnownNameIds.FontFamilyName);
 
-            if (culture == 0x0409)
+            if (culture == USEnglishLanguageId)
             {
                 _cachedFamilyName = value;
             }
@@ -74,7 +76,7 @@ namespace Avalonia.Media.Fonts.Tables.Name
 
         public string GetNameById(ushort culture, KnownNameIds nameId)
         {
-            if (nameId == KnownNameIds.TypographicFamilyName && culture == 0x0409 && _cachedTypographicFamilyName is not null)
+            if (nameId == KnownNameIds.TypographicFamilyName && culture == USEnglishLanguageId && _cachedTypographicFamilyName is not null)
             {
                 return _cachedTypographicFamilyName;
             }
@@ -92,25 +94,25 @@ namespace Avalonia.Media.Fonts.Tables.Name
                     if (name.Platform == PlatformID.Windows)
                     {
                         firstWindows ??= name;
-                        if (name.LanguageID == 0x0409)
+                        if (name.LanguageID == USEnglishLanguageId)
                         {
                             usaVersion ??= name;
                         }
 
                         if (name.LanguageID == languageId)
                         {
-                            return name.Value;
+                            return name.GetValue();
                         }
                     }
                 }
             }
 
-            var value = usaVersion?.Value ??
-                       firstWindows?.Value ??
-                       first?.Value ??
+            var value = usaVersion?.GetValue() ??
+                       firstWindows?.GetValue() ??
+                       first?.GetValue() ??
                        string.Empty;
 
-            if (nameId == KnownNameIds.TypographicFamilyName && culture == 0x0409)
+            if (nameId == KnownNameIds.TypographicFamilyName && culture == USEnglishLanguageId)
             {
                 _cachedTypographicFamilyName = value;
             }
@@ -121,7 +123,7 @@ namespace Avalonia.Media.Fonts.Tables.Name
         public string GetNameById(ushort culture, ushort nameId)
             => GetNameById(culture, (KnownNameIds)nameId);
 
-        public static NameTable? Load(IGlyphTypeface glyphTypeface)
+        public static NameTable? Load(GlyphTypeface glyphTypeface)
         {
             if (!glyphTypeface.PlatformTypeface.TryGetTable(Tag, out var table))
             {

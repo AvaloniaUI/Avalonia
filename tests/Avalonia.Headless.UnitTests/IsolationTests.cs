@@ -10,11 +10,15 @@ public class IsolationTests
     private static WeakReference<Dispatcher> s_previousDispatcherRef;
 
 #if NUNIT
-    [AvaloniaTheory, Timeout(10000)]
+    [AvaloniaTheory]
     [TestCase(1), TestCase(2), TestCase(3)]
 #elif XUNIT
     [AvaloniaTheory]
     [InlineData(1), InlineData(2), InlineData(3)]
+    [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage(
+        "Usage",
+        "xUnit1026:Theory methods should use all of their parameters",
+        Justification = "Used to run the test several times with the proper isolation level")]
 #endif
     public void Application_Instance_Should_Match_Isolation_Level(int runIndex)
     {
@@ -33,23 +37,23 @@ public class IsolationTests
                 GC.WaitForPendingFinalizers();
                 GC.Collect();
 
-                Assert.False(s_previousAppRef.TryGetTarget(out var previousApp),
+                AssertHelper.False(s_previousAppRef.TryGetTarget(out var previousApp),
                     "Previous Application instance should have been collected.");
-                Assert.False(s_previousDispatcherRef.TryGetTarget(out var previousDispatcher),
+                AssertHelper.False(s_previousDispatcherRef.TryGetTarget(out var previousDispatcher),
                     "Previous Dispatcher instance should have been collected.");
 
-                Assert.False(previousApp == currentApp);
-                Assert.False(previousDispatcher == currentDispatcher);
+                AssertHelper.False(previousApp == currentApp);
+                AssertHelper.False(previousDispatcher == currentDispatcher);
             }
             else if (isolationLevel == AvaloniaTestIsolationLevel.PerAssembly)
             {
-                Assert.True(s_previousAppRef.TryGetTarget(out var previousApp),
+                AssertHelper.True(s_previousAppRef.TryGetTarget(out var previousApp),
                     "Previous Application instance should still be alive.");
-                Assert.True(s_previousDispatcherRef.TryGetTarget(out var previousDispatcher),
+                AssertHelper.True(s_previousDispatcherRef.TryGetTarget(out var previousDispatcher),
                     "Previous Dispatcher instance should still be alive.");
 
-                Assert.True(previousApp == currentApp);
-                Assert.True(previousDispatcher == currentDispatcher);
+                AssertHelper.True(previousApp == currentApp);
+                AssertHelper.True(previousDispatcher == currentDispatcher);
             }
             else
             {

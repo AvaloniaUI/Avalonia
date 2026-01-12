@@ -39,7 +39,7 @@ namespace Avalonia.Media
         /// <param name="baselineOrigin">The baseline origin of the run.</param>
         /// <param name="biDiLevel">The bidi level.</param>
         public GlyphRun(
-            IGlyphTypeface glyphTypeface,
+            GlyphTypeface glyphTypeface,
             double fontRenderingEmSize,
             ReadOnlyMemory<char> characters,
             IReadOnlyList<ushort> glyphIndices,
@@ -61,7 +61,7 @@ namespace Avalonia.Media
         /// <param name="baselineOrigin">The baseline origin of the run.</param>
         /// <param name="biDiLevel">The bidi level.</param>
         public GlyphRun(
-            IGlyphTypeface glyphTypeface,
+            GlyphTypeface glyphTypeface,
             double fontRenderingEmSize,
             ReadOnlyMemory<char> characters,
             IReadOnlyList<GlyphInfo> glyphInfos,
@@ -90,22 +90,25 @@ namespace Avalonia.Media
         }
 
         private static IReadOnlyList<GlyphInfo> CreateGlyphInfos(IReadOnlyList<ushort> glyphIndices,
-            double fontRenderingEmSize, IGlyphTypeface glyphTypeface)
+            double fontRenderingEmSize, GlyphTypeface glyphTypeface)
         {
             var glyphIndexSpan = ListToSpan(glyphIndices);
 
             var glyphInfos = new GlyphInfo[glyphIndexSpan.Length];
             var scale = fontRenderingEmSize / glyphTypeface.Metrics.DesignEmHeight;
 
-            for (var i = 0; i < glyphIndexSpan.Length; ++i)
+            var advances = glyphIndexSpan.Length <= 256
+                ? stackalloc ushort[glyphIndexSpan.Length]
+                : new ushort[glyphIndexSpan.Length];
+
+            if (glyphTypeface.TryGetHorizontalGlyphAdvances(glyphIndexSpan, advances))
             {
-                var glyphIndex = glyphIndexSpan[i];
-
-                var advance = glyphTypeface.GetGlyphAdvance(glyphIndex) * scale;
-
-                glyphInfos[i] = new GlyphInfo(glyphIndex, i, advance);
+                for (var i = 0; i < glyphIndexSpan.Length; ++i)
+                {
+                    glyphInfos[i] = new GlyphInfo(glyphIndexSpan[i], i, advances[i] * scale);
+                }
             }
-
+            
             return glyphInfos;
         }
 
@@ -142,7 +145,7 @@ namespace Avalonia.Media
         /// <summary>
         ///     Gets the <see cref="GlyphTypeface"/> for the <see cref="GlyphRun"/>.
         /// </summary>
-        public IGlyphTypeface GlyphTypeface { get; }
+        public GlyphTypeface GlyphTypeface { get; }
 
         /// <summary>
         ///     Gets or sets the em size used for rendering the <see cref="GlyphRun"/>.
@@ -208,7 +211,7 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Gets the scale of the current <see cref="IPlatformTypeface"/>
+        /// Gets the scale of the current <see cref="GlyphTypeface"/>
         /// </summary>
         internal double Scale => FontRenderingEmSize / GlyphTypeface.Metrics.DesignEmHeight;
 

@@ -185,6 +185,7 @@ namespace Avalonia.Controls.UnitTests
 
                 var e = CreatePointerPressedEventArgs(window, new Point(90, 90));
                 var overlay = LightDismissOverlayLayer.GetLightDismissOverlayLayer(window);
+                Assert.NotNull(overlay);
                 overlay.RaiseEvent(e);
 
                 Assert.Equal(1, tracker);
@@ -218,6 +219,7 @@ namespace Avalonia.Controls.UnitTests
 
                 var e = CreatePointerPressedEventArgs(window, new Point(90, 90));
                 var overlay = LightDismissOverlayLayer.GetLightDismissOverlayLayer(window);
+                Assert.NotNull(overlay);
                 overlay.RaiseEvent(e);
 
                 Assert.False(f.IsOpen);
@@ -259,6 +261,7 @@ namespace Avalonia.Controls.UnitTests
 
                 var e = CreatePointerPressedEventArgs(window, new Point(90, 90));
                 var overlay = LightDismissOverlayLayer.GetLightDismissOverlayLayer(window);
+                Assert.NotNull(overlay);
                 overlay.RaiseEvent(e);
 
                 Assert.False(f.IsOpen);
@@ -301,6 +304,7 @@ namespace Avalonia.Controls.UnitTests
 
                 var e = CreatePointerPressedEventArgs(window, new Point(90, 90));
                 var overlay = LightDismissOverlayLayer.GetLightDismissOverlayLayer(window);
+                Assert.NotNull(overlay);
                 overlay.RaiseEvent(e);
 
                 Assert.False(f.IsOpen);
@@ -410,9 +414,9 @@ namespace Avalonia.Controls.UnitTests
                 window.Show();
 
                 button.Focus();
-                Assert.True(window.FocusManager.GetFocusedElement() == button);
+                Assert.Same(button, window.FocusManager?.GetFocusedElement());
                 button.Flyout.ShowAt(button);
-                Assert.True(window.FocusManager.GetFocusedElement() == button);
+                Assert.Same(button, window.FocusManager?.GetFocusedElement());
             }
         }
 
@@ -586,8 +590,8 @@ namespace Avalonia.Controls.UnitTests
 </Window>";
 
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var target1 = window.Find<TextBlock>("target1");
-                var target2 = window.Find<TextBlock>("target2");
+                var target1 = window.Get<TextBlock>("target1");
+                var target2 = window.Get<TextBlock>("target2");
                 var mouse = new MouseTestHelper();
 
                 Assert.NotNull(target1.ContextFlyout);
@@ -632,13 +636,13 @@ namespace Avalonia.Controls.UnitTests
                 window.Content = button;
                 window.Show();
 
-                (button.Flyout as Flyout).FlyoutPresenterClasses.Add("TestClass");
+                ((Flyout)button.Flyout).FlyoutPresenterClasses.Add("TestClass");
 
                 button.Flyout.ShowAt(button);
 
                 var presenter = flyoutPanel.GetVisualAncestors().OfType<FlyoutPresenter>().FirstOrDefault();
                 Assert.NotNull(presenter);
-                Assert.True((presenter.Background as ISolidColorBrush).Color == Colors.Red);
+                Assert.Equal(Colors.Red, (presenter.Background as ISolidColorBrush)?.Color);
             }
         }
 
@@ -650,7 +654,7 @@ namespace Avalonia.Controls.UnitTests
                     keyboardDevice: () => new KeyboardDevice()));
         }
 
-        private static Window PreparedWindow(object content = null)
+        private static Window PreparedWindow(object? content = null)
         {
             var platform = AvaloniaLocator.Current.GetRequiredService<IWindowingPlatform>();
             var windowImpl = Mock.Get(platform.CreateWindow());

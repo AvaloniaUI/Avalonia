@@ -4,6 +4,9 @@
     <SupportedOSPlatformVersion>$(AvsMinSupportedAndroidVersion)</SupportedOSPlatformVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AndroidResgenNamespace>Avalonia.Android.Internal</AndroidResgenNamespace>
+
+    <!-- Xamarin.AndroidX assemblies are not signed -->
+    <NoWarn>$(NoWarn);CS8002</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\packages\Avalonia\Avalonia.csproj" />
@@ -13,6 +16,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\..\Harfbuzz\Avalonia.Harfbuzz\Avalonia.Harfbuzz.csproj" />
+    <ProjectReference Include="..\..\HarfBuzz\Avalonia.HarfBuzz\Avalonia.HarfBuzz.csproj" />
     <ProjectReference Include="..\..\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
   </ItemGroup>
 

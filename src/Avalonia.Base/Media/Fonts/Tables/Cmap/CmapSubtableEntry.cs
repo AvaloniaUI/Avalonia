@@ -5,7 +5,7 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
     // Representation of a subtable entry in the 'cmap' table directory
     internal readonly record struct CmapSubtableEntry
     {
-        public CmapSubtableEntry(PlatformID platform, CmapEncoding encoding, int offset, CmapFormat format) : this()
+        public CmapSubtableEntry(PlatformID platform, CmapEncoding encoding, int offset, CmapFormat format)
         {
             Platform = platform;
             Encoding = encoding;
@@ -16,23 +16,23 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
         /// <summary>
         /// Gets the platform identifier for the current environment.
         /// </summary>
-        public PlatformID Platform { get; init; }
+        public PlatformID Platform { get; }
 
         /// <summary>
         /// Gets the character map (CMap) encoding associated with this instance.
         /// </summary>
         /// 
-        public CmapEncoding Encoding { get; init; }
+        public CmapEncoding Encoding { get; }
 
         /// <summary>
         /// Gets the offset of the sub table.
         /// </summary>
-        public int Offset { get; init; }
+        public int Offset { get; }
 
         /// <summary>
         /// Gets the format of the character-to-glyph mapping (cmap) table.
         /// </summary>
-        public CmapFormat Format { get; init; }
+        public CmapFormat Format { get; }
 
         public ReadOnlyMemory<byte> GetSubtableMemory(ReadOnlyMemory<byte> table)
         {

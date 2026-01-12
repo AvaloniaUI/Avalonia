@@ -36,7 +36,7 @@ namespace Avalonia.Media.Fonts.Tables
         /// <param name="head">The head table containing the index format.</param>
         /// <param name="maxp">The maxp table containing the glyph count.</param>
         /// <returns>A LocaTable instance, or null if the table cannot be loaded.</returns>
-        public static LocaTable? Load(IGlyphTypeface glyphTypeface, HeadTable head, MaxpTable maxp)
+        public static LocaTable? Load(GlyphTypeface glyphTypeface, HeadTable head, MaxpTable maxp)
         {
             if (!glyphTypeface.PlatformTypeface.TryGetTable(Tag, out var locaData))
             {

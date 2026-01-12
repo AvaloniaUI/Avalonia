@@ -65,7 +65,7 @@ namespace Sandbox
                 VerticalAlignment = VerticalAlignment.Center
             };
 
-            foreach (var (c, g) in notoColorEmojiGlyphTypeface.CharacterToGlyphMap)
+            foreach (var (c, g) in notoColorEmojiGlyphTypeface.CharacterToGlyphMap.AsReadOnlyDictionary())
             {
                 // Create a glyph control for each glyph
                 var glyphControl = new GlyphControl
@@ -101,8 +101,8 @@ namespace Sandbox
         /// </summary>
         public class GlyphControl : Control
         {
-            public static readonly StyledProperty<IGlyphTypeface?> GlyphTypefaceProperty =
-                AvaloniaProperty.Register<GlyphControl, IGlyphTypeface?>(nameof(GlyphTypeface));
+            public static readonly StyledProperty<GlyphTypeface?> GlyphTypefaceProperty =
+                AvaloniaProperty.Register<GlyphControl, GlyphTypeface?>(nameof(GlyphTypeface));
 
             public static readonly StyledProperty<ushort> GlyphIdProperty =
                 AvaloniaProperty.Register<GlyphControl, ushort>(nameof(GlyphId));
@@ -115,7 +115,7 @@ namespace Sandbox
                 AffectsRender<GlyphControl>(GlyphTypefaceProperty, GlyphIdProperty, ForegroundProperty);
             }
 
-            public IGlyphTypeface? GlyphTypeface
+            public GlyphTypeface? GlyphTypeface
             {
                 get => GetValue(GlyphTypefaceProperty);
                 set => SetValue(GlyphTypefaceProperty, value);

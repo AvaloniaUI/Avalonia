@@ -39,13 +39,13 @@ namespace Avalonia.Base.UnitTests.Media
 
             Assert.NotNull(map);
 
-            Assert.True(map.ContainsKey('A'));
+            Assert.True(map.ContainsGlyph('A'));
             Assert.True(map['A'] != 0);
 
-            Assert.True(map.ContainsKey('a'));
+            Assert.True(map.ContainsGlyph('a'));
             Assert.True(map['a'] != 0);
 
-            Assert.True(map.ContainsKey(' '));
+            Assert.True(map.ContainsGlyph(' '));
             Assert.True(map[' '] != 0);
         }
 
@@ -60,14 +60,15 @@ namespace Avalonia.Base.UnitTests.Media
 
             var map = typeface.CharacterToGlyphMap;
 
-            Assert.True(map.ContainsKey('A'));
+            Assert.True(map.ContainsGlyph('A'));
 
             var glyphId = map['A'];
 
             // Ensure metrics are available for this glyph
             Assert.True(typeface.TryGetGlyphMetrics(glyphId, out var metrics));
 
-            var advance = typeface.GetGlyphAdvance(glyphId);
+            // Ensure advance can be retrieved
+            Assert.True(typeface.TryGetHorizontalGlyphAdvance(glyphId, out var advance));
 
             // Advance returned by GetGlyphAdvance should match the metrics width
             Assert.Equal(metrics.Width, advance);
@@ -207,7 +208,7 @@ namespace Avalonia.Base.UnitTests.Media
 
             var features = typeface.SupportedFeatures;
 
-            Assert.NotNull(features);
+            Assert.NotEmpty(features);
         }
 
         [Fact]
@@ -226,7 +227,7 @@ namespace Avalonia.Base.UnitTests.Media
         }
 
         [Fact]
-        public void GetGlyphAdvance_Should_Return_Zero_For_Invalid_GlyphId()
+        public void TryGetGlyphAdvance_Should_Return_False_For_Invalid_GlyphId()
         {
             var assetLoader = new StandardAssetLoader();
 
@@ -234,9 +235,7 @@ namespace Avalonia.Base.UnitTests.Media
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
-            var advance = typeface.GetGlyphAdvance(ushort.MaxValue);
-
-            Assert.True(advance >= 0);
+            Assert.False(typeface.TryGetHorizontalGlyphAdvance(ushort.MaxValue, out var advance));
         }
 
         [Fact]
@@ -264,7 +263,7 @@ namespace Avalonia.Base.UnitTests.Media
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
             var map = typeface.CharacterToGlyphMap;
-            Assert.True(map.ContainsKey('A'));
+            Assert.True(map.ContainsGlyph('A'));
 
             var glyphId = map['A'];
             var result = typeface.TryGetGlyphMetrics(glyphId, out var metrics);
@@ -313,8 +312,8 @@ namespace Avalonia.Base.UnitTests.Media
 
             var map = typeface.CharacterToGlyphMap;
 
-            Assert.True(map.ContainsKey('A'));
-            Assert.True(map.ContainsKey('B'));
+            Assert.True(map.ContainsGlyph('A'));
+            Assert.True(map.ContainsGlyph('B'));
 
             var glyphA = map['A'];
             var glyphB = map['B'];
@@ -353,7 +352,7 @@ namespace Avalonia.Base.UnitTests.Media
 
             foreach (var ch in testCharacters)
             {
-                Assert.True(map.ContainsKey(ch), $"Character '{ch}' not found in glyph map");
+                Assert.True(map.ContainsGlyph(ch), $"Character '{ch}' not found in glyph map");
             }
         }
 
@@ -405,7 +404,7 @@ namespace Avalonia.Base.UnitTests.Media
 
             public void Dispose()
             {
-                _fontMemory.Dispose();
+                ((IDisposable)_fontMemory).Dispose();
             }
 
             public unsafe bool TryGetStream([NotNullWhen(true)] out Stream stream)
