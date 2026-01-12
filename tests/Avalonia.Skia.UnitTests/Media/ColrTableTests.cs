@@ -16,7 +16,7 @@ namespace Avalonia.Skia.UnitTests.Media
         {
             using (Start())
             {
-                var typeface = new Typeface("Segoe UI Emoji");
+                var typeface = new Typeface("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Noto Color Emoji");
 
                 // Try to get glyph typeface - may or may not have COLR
                 if (FontManager.Current.TryGetGlyphTypeface(typeface, out var glyphTypeface))
@@ -34,7 +34,7 @@ namespace Avalonia.Skia.UnitTests.Media
         {
             using (Start())
             {
-                var typeface = new Typeface("Segoe UI Emoji");
+                var typeface = new Typeface("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Noto Color Emoji");
 
                 if (FontManager.Current.TryGetGlyphTypeface(typeface, out var glyphTypeface))
                 {
@@ -67,7 +67,7 @@ namespace Avalonia.Skia.UnitTests.Media
         {
             using (Start())
             {
-                var typeface = new Typeface("Noto Color Emoji");
+                var typeface = new Typeface("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Noto Color Emoji");
 
                 if (FontManager.Current.TryGetGlyphTypeface(typeface, out var glyphTypeface))
                 {
@@ -106,7 +106,7 @@ namespace Avalonia.Skia.UnitTests.Media
         {
             using (Start())
             {
-                var typeface = new Typeface("Noto Color Emoji");
+                var typeface = new Typeface("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Noto Color Emoji");
 
                 if (!FontManager.Current.TryGetGlyphTypeface(typeface, out var glyphTypeface))
                 {
@@ -180,7 +180,7 @@ namespace Avalonia.Skia.UnitTests.Media
         {
             using (Start())
             {
-                var typeface = new Typeface("Noto Color Emoji");
+                var typeface = new Typeface("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Noto Color Emoji");
 
                 if (!FontManager.Current.TryGetGlyphTypeface(typeface, out var glyphTypeface))
                 {
@@ -254,7 +254,7 @@ namespace Avalonia.Skia.UnitTests.Media
         {
             using (Start())
             {
-                var typeface = new Typeface("Noto Color Emoji");
+                var typeface = new Typeface("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Noto Color Emoji");
 
                 if (!FontManager.Current.TryGetGlyphTypeface(typeface, out var glyphTypeface))
                 {
@@ -372,7 +372,7 @@ namespace Avalonia.Skia.UnitTests.Media
         {
             using (Start())
             {
-                var typeface = new Typeface("Noto Color Emoji");
+                var typeface = new Typeface("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Noto Color Emoji");
 
                 if (!FontManager.Current.TryGetGlyphTypeface(typeface, out var glyphTypeface))
                 {
