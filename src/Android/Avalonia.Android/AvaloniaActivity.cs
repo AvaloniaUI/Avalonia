@@ -29,6 +29,7 @@ public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity
     private bool _contentViewSet;
     internal AvaloniaView? _view;
     private BackPressedCallback? _currentBackPressedCallback;
+    private bool _shouldNavigateBack;
 
     public Action<int, Result, Intent?>? ActivityResult { get; set; }
     public Action<int, string[], Permission[]>? RequestPermissionsResult { get; set; }
@@ -62,6 +63,20 @@ public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity
                     _view.Content = _content;
                 }
             }
+        }
+    }
+
+    /// <summary>
+    /// Gets whether to call the default back handler after our back handler is called.
+    /// </summary>
+    internal bool ShouldNavigateBack
+    {
+        get
+        {
+            var goBack = _shouldNavigateBack;
+            _shouldNavigateBack = false;
+
+            return goBack;
         }
     }
 
@@ -214,6 +229,8 @@ public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity
         var eventArgs = new AndroidBackRequestedEventArgs();
 
         BackRequested?.Invoke(this, eventArgs);
+
+        _shouldNavigateBack = !eventArgs.Handled;
     }
 
     private class GlobalLayoutListener : Java.Lang.Object, ViewTreeObserver.IOnGlobalLayoutListener
