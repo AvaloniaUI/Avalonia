@@ -36,9 +36,7 @@ internal sealed class DataTransferToDataObjectWrapper(IDataTransfer dataTransfer
                 .ToArray();
         }
 
-        var typedFormat = DataFormat.CreateBytesPlatformFormat(dataFormat);
-        var bytes = DataTransfer.TryGetValue(typedFormat);
-        return BinaryFormatterHelper.TryDeserializeUsingBinaryFormatter(bytes) ?? bytes;
+        return null;
     }
 
 }
