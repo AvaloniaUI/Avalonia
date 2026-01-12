@@ -45,6 +45,7 @@ namespace Avalonia.X11
         private bool _triggeredExpose;
         private IInputRoot? _inputRoot;
         private readonly MouseDevice _mouse;
+        private readonly PenDevice _pen;
         private readonly TouchDevice _touch;
         private readonly IKeyboardDevice _keyboard;
         private readonly ITopLevelNativeMenuExporter? _nativeMenuExporter;
@@ -99,6 +100,7 @@ namespace Avalonia.X11
             _overrideRedirect = _popup || overrideRedirect;
             _x11 = platform.Info;
             _mouse = Avalonia.Input.MouseDevice.Primary;
+            _pen = new PenDevice();
             _touch = new TouchDevice();
             _keyboard = platform.KeyboardDevice;
 
@@ -1080,6 +1082,7 @@ namespace Avalonia.X11
                 _platform.UnregisterDropTarget(_handle);
                 var handle = _handle;
                 _handle = IntPtr.Zero;
+                _pen.Dispose();
                 _touch.Dispose();
                 if (!fromDestroyNotification) 
                     XDestroyWindow(_x11.Display, handle);
@@ -1246,6 +1249,7 @@ namespace Avalonia.X11
         }
 
         public IMouseDevice MouseDevice => _mouse;
+        public IPenDevice PenDevice => _pen;
         public TouchDevice TouchDevice => _touch;
 
         public IPopupImpl? CreatePopup() 

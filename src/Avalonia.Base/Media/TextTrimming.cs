@@ -36,6 +36,14 @@ namespace Avalonia.Media
         public static TextTrimming LeadingCharacterEllipsis { get; } = new TextLeadingPrefixTrimming(DefaultEllipsisChar, 0);
 
         /// <summary>
+        /// Gets a text trimming strategy that inserts an ellipsis to indicate omitted segments in a path string.
+        /// </summary>
+        /// <remarks>Use this property to display long file or directory paths in a shortened form, with
+        /// an ellipsis representing omitted segments. This is useful for UI scenarios where space is limited and the
+        /// full path cannot be shown.</remarks>
+        public static TextTrimming PathSegmentEllipsis { get; } = new TextPathSegmentTrimming(DefaultEllipsisChar);
+
+        /// <summary>
         /// Creates properties that will be used for collapsing lines of text.
         /// </summary>
         /// <param name="createInfo">Contextual info about text that will be collapsed.</param>
@@ -68,6 +76,10 @@ namespace Avalonia.Media
             else if (Matches(nameof(PrefixCharacterEllipsis)))
             {
                 return PrefixCharacterEllipsis;
+            }
+            else if (Matches(nameof(PathSegmentEllipsis)))
+            {
+                return PathSegmentEllipsis;
             }
 
             throw new FormatException($"Invalid text trimming string: '{s}'.");

@@ -12,7 +12,6 @@ using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using MicroCom.Runtime;
-#nullable enable
 
 namespace Avalonia.Native
 {
@@ -199,7 +198,7 @@ namespace Avalonia.Native
 
         public IWindowImpl CreateWindow()
         {
-            return new WindowImpl(_factory, _options);
+            return new WindowImpl(_factory, _options ?? new AvaloniaNativePlatformOptions());
         }
 
         public IWindowImpl CreateEmbeddableWindow()

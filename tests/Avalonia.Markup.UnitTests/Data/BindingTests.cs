@@ -88,9 +88,9 @@ namespace Avalonia.Markup.UnitTests.Data
 
         private class DummyObject : ICloneable
         {
-            private readonly string _val;
+            private readonly string? _val;
 
-            public DummyObject(string val)
+            public DummyObject(string? val)
             {
                 _val = val;
             }
@@ -105,7 +105,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 return string.Equals(_val, other._val);
             }
 
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 if (ReferenceEquals(null, obj))
                     return false;
@@ -294,7 +294,7 @@ namespace Avalonia.Markup.UnitTests.Data
             };
 
             var child = new Control();
-            var values = new List<object>();
+            var values = new List<object?>();
 
             child.GetObservable(Control.DataContextProperty).Subscribe(x => values.Add(x));
             child.Bind(Control.DataContextProperty, new Binding("Foo"));
@@ -551,7 +551,7 @@ namespace Avalonia.Markup.UnitTests.Data
             }
 
             // Forces WeakEvent compact
-            Dispatcher.UIThread.RunJobs();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
             Assert.Equal(0, source.SubscriberCount);
         }
@@ -717,7 +717,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
         private class NullableValuesViewModel : INotifyPropertyChanged
         {
-            public event PropertyChangedEventHandler PropertyChanged;
+            public event PropertyChangedEventHandler? PropertyChanged;
 
             private double? _nullableDouble;
             public double? NullableDouble
@@ -739,7 +739,7 @@ namespace Avalonia.Markup.UnitTests.Data
             private bool _boolValue;
             private double _value;
 
-            public event PropertyChangedEventHandler PropertyChanged;
+            public event PropertyChangedEventHandler? PropertyChanged;
 
             public bool BoolValue
             {
@@ -815,10 +815,10 @@ namespace Avalonia.Markup.UnitTests.Data
 
         public class Source : INotifyPropertyChanged
         {
-            private PropertyChangedEventHandler _propertyChanged;
-            private string _foo;
+            private PropertyChangedEventHandler? _propertyChanged;
+            private string? _foo;
 
-            public string Foo
+            public string? Foo
             {
                 get => _foo;
                 set
@@ -834,7 +834,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             public int SubscriberCount { get; private set; }
 
-            public event PropertyChangedEventHandler PropertyChanged
+            public event PropertyChangedEventHandler? PropertyChanged
             {
                 add { _propertyChanged += value; ++SubscriberCount; }
                 remove { _propertyChanged += value; --SubscriberCount; }
@@ -848,9 +848,9 @@ namespace Avalonia.Markup.UnitTests.Data
 
         public class WeakRefSource : INotifyPropertyChanged
         {
-            private WeakReference<object> _foo;
+            private WeakReference<object?>? _foo;
 
-            public object Foo
+            public object? Foo
             {
                 get
                 {
@@ -859,7 +859,7 @@ namespace Avalonia.Markup.UnitTests.Data
                         return null;
                     }
 
-                    if (_foo.TryGetTarget(out object target))
+                    if (_foo.TryGetTarget(out var target))
                     {
                         if (target is ICloneable cloneable)
                         {
@@ -873,13 +873,13 @@ namespace Avalonia.Markup.UnitTests.Data
                 }
                 set
                 {
-                    _foo = new WeakReference<object>(value);
+                    _foo = new WeakReference<object?>(value);
 
                     RaisePropertyChanged();
                 }
             }
 
-            public event PropertyChangedEventHandler PropertyChanged;
+            public event PropertyChangedEventHandler? PropertyChanged;
 
             private void RaisePropertyChanged([CallerMemberName] string prop = "")
             {
@@ -895,15 +895,15 @@ namespace Avalonia.Markup.UnitTests.Data
 
         private class TestControl : Control
         {
-            public static readonly DirectProperty<TestControl, object> ValueProperty =
-                AvaloniaProperty.RegisterDirect<TestControl, object>(
+            public static readonly DirectProperty<TestControl, object?> ValueProperty =
+                AvaloniaProperty.RegisterDirect<TestControl, object?>(
                     nameof(Value),
                     o => o.Value,
                     (o, v) => o.Value = v);
 
-            private object _value;
+            private object? _value;
 
-            public object Value
+            public object? Value
             {
                 get => _value;
                 set => SetAndRaise(ValueProperty, ref _value, value);

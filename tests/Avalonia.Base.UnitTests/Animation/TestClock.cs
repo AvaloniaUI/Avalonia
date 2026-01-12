@@ -7,7 +7,7 @@ namespace Avalonia.Base.UnitTests.Animation
     {
         private TimeSpan _curTime;
 
-        private IObserver<TimeSpan> _observer;
+        private IObserver<TimeSpan>? _observer;
 
         public PlayState PlayState { get; set; } = PlayState.Run;
 

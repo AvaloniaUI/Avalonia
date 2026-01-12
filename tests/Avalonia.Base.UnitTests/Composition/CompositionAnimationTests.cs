@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading.Tasks;
 using Avalonia.Animation.Easings;
 using Avalonia.Base.UnitTests.Rendering;
 using Avalonia.Rendering;
@@ -12,6 +13,7 @@ using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Xunit;
 using Xunit.Sdk;
+using Xunit.v3;
 
 namespace Avalonia.Base.UnitTests.Composition;
 
@@ -54,13 +56,19 @@ public class CompositionAnimationTests : ScopedTestBase
                 }
             };
 
-        public override IEnumerable<object[]> GetData(MethodInfo testMethod)
+        public override ValueTask<IReadOnlyCollection<ITheoryDataRow>> GetData(MethodInfo testMethod, DisposalTracker disposalTracker)
         {
+            var list = new List<ITheoryDataRow>();
             foreach (var ani in Generate())
             {
-                yield return new Object[] { ani };
+                list.Add(new TheoryDataRow<AnimationData>(ani));
             }
+
+            return ValueTask.FromResult<IReadOnlyCollection<ITheoryDataRow>>(list);
         }
+
+        public override bool SupportsDiscoveryEnumeration()
+            => true;
     }
 
     class DummyDispatcher : IDispatcher
@@ -82,7 +90,7 @@ public class CompositionAnimationTests : ScopedTestBase
         var compositor =
             new Compositor(new RenderLoop(new CompositorTestServices.ManualRenderTimer()), null);
         var target = compositor.CreateSolidColorVisual();
-        var ani = new ScalarKeyFrameAnimation(null);
+        var ani = new ScalarKeyFrameAnimation(compositor);
         foreach (var frame in data.Frames)
             ani.InsertKeyFrame(frame.key, frame.value, new LinearEasing());
         ani.Duration = TimeSpan.FromSeconds(1);

@@ -30,7 +30,6 @@ namespace GpuInterop
                 }
             };
 
-            this.AttachDevTools();
             RendererDiagnostics.DebugOverlays = RendererDebugOverlays.Fps;
         }
 

@@ -9,12 +9,14 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Harfbuzz;
 using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Media;
+using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
@@ -1054,7 +1056,7 @@ namespace Avalonia.Controls.UnitTests
 
         private static ItemsControl CreateTarget(
             object? dataContext = null,
-            IBinding? displayMemberBinding = null,
+            BindingBase? displayMemberBinding = null,
             IList? items = null,
             IList? itemsSource = null,
             ControlTheme? itemContainerTheme = null,
@@ -1077,7 +1079,7 @@ namespace Avalonia.Controls.UnitTests
 
         private static T CreateTarget<T>(
             object? dataContext = null,
-            IBinding? displayMemberBinding = null,
+            BindingBase? displayMemberBinding = null,
             IList? items = null,
             IList? itemsSource = null,
             ControlTheme? itemContainerTheme = null,
@@ -1238,7 +1240,8 @@ namespace Avalonia.Controls.UnitTests
                     keyboardNavigation: () => new KeyboardNavigationHandler(),
                     inputManager: new InputManager(),
                     renderInterface: new HeadlessPlatformRenderInterface(),
-                    textShaperImpl: new HeadlessTextShaperStub()));
+                    textShaperImpl: new HarfBuzzTextShaper(),
+                    assetLoader: new StandardAssetLoader()));
         }
 
         private class ItemsControlWithContainer : ItemsControl

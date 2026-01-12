@@ -92,7 +92,7 @@ namespace Avalonia.Skia.RenderTests
             }
         }
 
-        protected void CompareImagesNoRenderer([CallerMemberName] string testName = "", string expectedName = null)
+        protected void CompareImagesNoRenderer([CallerMemberName] string testName = "", string? expectedName = null)
         {
             var expectedPath = Path.Combine(OutputPath, (expectedName ?? testName) + ".expected.png");
             var actualPath = Path.Combine(OutputPath, testName + ".out.png");

@@ -1,4 +1,5 @@
-﻿using Avalonia.Native.Interop;
+﻿using System.Diagnostics.CodeAnalysis;
+using Avalonia.Native.Interop;
 
 namespace Avalonia.Native
 {
@@ -34,7 +35,8 @@ namespace Avalonia.Native
             return new AvnSize { Height = size.Height, Width = size.Width };
         }
 
-        public static IAvnString ToAvnString(this string s)
+        [return: NotNullIfNotNull(nameof(s))]
+        public static IAvnString? ToAvnString(this string? s)
         {
             return s != null ? new AvnString(s) : null;
         }

@@ -102,7 +102,7 @@ namespace Avalonia.FreeDesktop
         public override async Task<SaveFilePickerResult> SaveFilePickerWithResultAsync(FilePickerSaveOptions options)
         {
             var (file, selectedType) = await SaveFilePickerCoreAsync(options).ConfigureAwait(false);
-            return new SaveFilePickerResult(file) { SelectedFileType = selectedType };
+            return new SaveFilePickerResult { File = file, SelectedFileType = selectedType };
         }
 
         private async Task<(IStorageFile? file, FilePickerFileType? selectedType)> SaveFilePickerCoreAsync(

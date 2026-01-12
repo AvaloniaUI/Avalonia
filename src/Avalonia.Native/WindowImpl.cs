@@ -13,7 +13,7 @@ namespace Avalonia.Native
     internal class WindowImpl : WindowBaseImpl, IWindowImpl
     {
         private readonly AvaloniaNativePlatformOptions _opts;
-        IAvnWindow _native;
+        private readonly IAvnWindow _native;
         private double _extendTitleBarHeight = -1;
         private DoubleClickHelper _doubleClickHelper;
         private readonly ITopLevelNativeMenuExporter _nativeMenuExporter;
@@ -99,7 +99,7 @@ namespace Avalonia.Native
             _native.SetTitleBarColor(new AvnColor { Alpha = color.A, Red = color.R, Green = color.G, Blue = color.B });
         }
 
-        public void SetTitle(string title)
+        public void SetTitle(string? title)
         {
             _native.SetTitle(title ?? "");
         }
@@ -110,9 +110,9 @@ namespace Avalonia.Native
             set => _native.SetWindowState((AvnWindowState)value);
         }
 
-        public Action<WindowState> WindowStateChanged { get; set; }        
+        public Action<WindowState>? WindowStateChanged { get; set; }
 
-        public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
+        public Action<bool>? ExtendClientAreaToDecorationsChanged { get; set; }
 
         public Thickness ExtendedMargins { get; private set; }
 
@@ -226,23 +226,23 @@ namespace Avalonia.Native
             // NO OP On OSX
         }
 
-        public void SetIcon(IWindowIconImpl icon)
+        public void SetIcon(IWindowIconImpl? icon)
         {
             // NO OP on OSX
         }
 
-        public Func<WindowCloseReason, bool> Closing { get; set; }
+        public Func<WindowCloseReason, bool>? Closing { get; set; }
 
         public void Move(PixelPoint point) => Position = point;
 
-        public override IPopupImpl CreatePopup() =>
+        public override IPopupImpl? CreatePopup() =>
             _opts.OverlayPopups ? null : new PopupImpl(Factory, this);
 
-        public Action GotInputWhenDisabled { get; set; }
+        public Action? GotInputWhenDisabled { get; set; }
 
-        public void SetParent(IWindowImpl parent)
+        public void SetParent(IWindowImpl? parent)
         {
-            _native.SetParent(((WindowImpl)parent)?.Native);
+            _native.SetParent(((WindowImpl?)parent)?.Native);
         }
 
         public void SetEnabled(bool enable)
@@ -257,7 +257,7 @@ namespace Avalonia.Native
                 mouse.PlatformCaptureLost();
         }
 
-        public override object TryGetFeature(Type featureType)
+        public override object? TryGetFeature(Type featureType)
         {
             if(featureType == typeof(ITextInputMethodImpl))
             {

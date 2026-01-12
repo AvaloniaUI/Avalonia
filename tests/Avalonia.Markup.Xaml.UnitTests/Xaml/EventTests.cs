@@ -51,7 +51,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
             Assert.NotNull(target);
 
-            target.RaiseEvent(new TappedEventArgs(Gestures.DoubleTappedEvent, default));
+            target.RaiseEvent(new TappedEventArgs(Gestures.DoubleTappedEvent, null!));
 
             Assert.True(host.WasTapped);
         }
@@ -75,7 +75,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
             AvaloniaRuntimeXamlLoader.Load(xaml, rootInstance: host);
 
-            var target = host.FindControl<Button>("target");
+            var target = host.GetControl<Button>("target");
             target.RaiseEvent(new RoutedEventArgs
             {
                 RoutedEvent = Button.ClickEvent,
