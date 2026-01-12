@@ -511,6 +511,17 @@ namespace Avalonia.Media
             return true;
         }
 
+        /// <summary>
+        /// Gets a color glyph drawing for the specified glyph ID, if color data is available.
+        /// </summary>
+        /// <remarks>If the glyph does not have color data (such as COLR v1 or COLR v0 layers), this
+        /// method returns null. For outline-only glyphs, use GetGlyphOutline instead to obtain the vector
+        /// outline.</remarks>
+        /// <param name="glyphId">The identifier of the glyph to retrieve. Must be less than or equal to the total number of glyphs in the
+        /// font.</param>
+        /// <param name="variation">The font variation settings to use when selecting the glyph drawing, or null to use the default variation.</param>
+        /// <returns>An object representing the color glyph drawing for the specified glyph ID, or null if no color drawing is
+        /// available for the glyph.</returns>
         public IGlyphDrawing? GetGlyphDrawing(ushort glyphId, FontVariationSettings? variation = null)
         {
             if (glyphId > GlyphCount)
@@ -537,6 +548,20 @@ namespace Avalonia.Media
             return null;
         }
 
+        /// <summary>
+        /// Retrieves the vector outline geometry for the specified glyph, optionally applying a transformation and font
+        /// variation settings.
+        /// </summary>
+        /// <remarks>The returned geometry reflects any transformation and variation settings provided. If
+        /// the font does not contain outline data for the specified glyph, or if the glyph identifier is out of range,
+        /// the method returns null.</remarks>
+        /// <param name="glyphId">The identifier of the glyph to retrieve. Must be less than or equal to the total number of glyphs in the
+        /// font.</param>
+        /// <param name="transform">A transformation matrix to apply to the glyph outline geometry.</param>
+        /// <param name="variation">Optional font variation settings to use when retrieving the glyph outline. If null, default font variations
+        /// are used.</param>
+        /// <returns>A Geometry object representing the outline of the specified glyph, or null if the glyph does not exist or
+        /// the outline cannot be retrieved.</returns>
         public Geometry? GetGlyphOutline(ushort glyphId, Matrix transform, FontVariationSettings? variation = null)
         {
             if (glyphId > GlyphCount)
@@ -722,33 +747,6 @@ namespace Avalonia.Media
             }
 
             PlatformTypeface.Dispose();
-        }
-
-        /// <summary>
-        /// Attempts to create a new instance of the ColrContext using the specified palette index and paint decycler.
-        /// </summary>
-        /// <remarks>This method returns false if the required COLR or CPAL tables are not available. The
-        /// output parameter is set to its default value in this case.</remarks>
-        /// <param name="paletteIndex">The zero-based index of the color palette to use when creating the context.</param>
-        /// <param name="context">When this method returns, contains the created ColrContext if the operation succeeds; otherwise, the default
-        /// value.</param>
-        /// <returns>true if the ColrContext was successfully created; otherwise, false.</returns>
-        internal bool TryCreateColrContext(int paletteIndex, out ColrContext context)
-        {
-            context = default;
-
-            if (_colrTable == null || _cpalTable == null)
-            {
-                return false;
-            }
-
-            context = new ColrContext(
-                this,
-                _colrTable,
-                _cpalTable,
-                paletteIndex);
-
-            return true;
         }
 
         /// <summary>
