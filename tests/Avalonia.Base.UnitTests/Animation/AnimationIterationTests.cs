@@ -643,12 +643,16 @@ namespace Avalonia.Base.UnitTests.Animation
                 var animationTask = animation.RunAsync(border, clock);
 
                 // Pulse the clock - this should not throw even though
-                // the first keyframe's value is null
+                // the first keyframe's value is null (falls back to neutral value)
                 var exception = Record.Exception(() => clock.Pulse(TimeSpan.Zero));
                 Assert.Null(exception);
 
-                // The animation should complete gracefully
+                // The animation should continue running (using neutral value as fallback)
                 clock.Pulse(TimeSpan.FromSeconds(0.5));
+                Assert.False(animationTask.IsCompleted);
+
+                // Animation completes after its full duration
+                clock.Pulse(TimeSpan.FromSeconds(1));
                 Assert.True(animationTask.IsCompleted);
             }
         }
@@ -693,10 +697,15 @@ namespace Avalonia.Base.UnitTests.Animation
                 var task = animation.RunAsync(control, clock);
 
                 // The fix ensures this doesn't throw NullReferenceException
+                // Animation falls back to neutral value and continues
                 clock.Pulse(TimeSpan.Zero);
                 clock.Pulse(TimeSpan.FromSeconds(0.1));
 
-                // Animation should have completed (gracefully stopped due to null value)
+                // Animation should still be running (uses neutral value as fallback)
+                Assert.False(task.IsCompleted);
+
+                // Animation completes after its full duration
+                clock.Pulse(TimeSpan.FromSeconds(1));
                 Assert.True(task.IsCompleted);
             }
         }

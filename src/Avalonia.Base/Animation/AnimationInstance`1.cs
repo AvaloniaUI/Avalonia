@@ -138,15 +138,7 @@ namespace Avalonia.Animation
             if (!_gotFirstKFValue)
             {
                 var firstKeyFrame = _animator.First();
-                if (firstKeyFrame.Value is null)
-                {
-                    // KeyFrame value binding hasn't resolved yet, likely due to the control
-                    // being detached from the visual tree. Stop the animation gracefully.
-                    DoComplete();
-                    return;
-                }
-                
-                _firstKFValue = (T)firstKeyFrame.Value;
+                _firstKFValue = firstKeyFrame.Value is T value ? value : _neutralValue;
                 _gotFirstKFValue = true;
             }
         }
