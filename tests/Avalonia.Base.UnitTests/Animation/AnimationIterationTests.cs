@@ -640,7 +640,7 @@ namespace Avalonia.Base.UnitTests.Animation
                 var root = new TestRoot(border);
                 root.LayoutManager.ExecuteInitialLayoutPass();
 
-                var animationTask = animation.RunAsync(border, clock);
+                var animationTask = animation.RunAsync(border, clock, TestContext.Current.CancellationToken);
 
                 // Pulse the clock - this should not throw even though
                 // the first keyframe's value is null (falls back to neutral value)
@@ -694,7 +694,7 @@ namespace Avalonia.Base.UnitTests.Animation
                 root.LayoutManager.ExecuteInitialLayoutPass();
 
                 // Start animation - the first keyframe value will be null due to unresolved binding
-                var task = animation.RunAsync(control, clock);
+                var task = animation.RunAsync(control, clock, TestContext.Current.CancellationToken);
 
                 // The fix ensures this doesn't throw NullReferenceException
                 // Animation falls back to neutral value and continues
