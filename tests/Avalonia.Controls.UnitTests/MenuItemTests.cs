@@ -139,7 +139,7 @@ namespace Avalonia.Controls.UnitTests
             };
             var root = new TestRoot { Child = target };
 
-            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded, TestContext.Current.CancellationToken);
 
             Assert.True(target.IsEnabled);
             Assert.False(target.IsEffectivelyEnabled);
@@ -213,7 +213,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new MenuItem { Command = command };
             var root = new TestRoot { Child = target };
 
-            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded, TestContext.Current.CancellationToken);
 
             target.CommandParameter = true;
             Assert.True(target.IsEffectivelyEnabled);
@@ -239,7 +239,7 @@ namespace Avalonia.Controls.UnitTests
                 window.ApplyStyling();
                 window.ApplyTemplate();
                 window.Presenter!.ApplyTemplate();
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded, TestContext.Current.CancellationToken);
 
                 Assert.True(target.IsEffectivelyEnabled);
                 target.Command = command;
@@ -252,7 +252,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(0, canExecuteCallCount);
 
                 contextMenu.Open();
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded, TestContext.Current.CancellationToken);
                 Assert.Equal(3, canExecuteCallCount);// 3 because popup is changing logical child and moreover we need to invalidate again after the item is attached to the visual tree
 
                 command.RaiseCanExecuteChanged();
@@ -281,7 +281,7 @@ namespace Avalonia.Controls.UnitTests
                 window.ApplyStyling();
                 window.ApplyTemplate();
                 window.Presenter!.ApplyTemplate();
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded, TestContext.Current.CancellationToken);
                 Assert.True(target.IsEffectivelyEnabled);
                 target.Command = command;
                 Assert.Equal(0, canExecuteCallCount);
@@ -293,7 +293,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(0, canExecuteCallCount);
 
                 flyout.ShowAt(button);
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded, TestContext.Current.CancellationToken);
                 Assert.Equal(2, canExecuteCallCount); // 2 because we need to invalidate after the item is attached to the visual tree
 
                 command.RaiseCanExecuteChanged();
@@ -324,7 +324,7 @@ namespace Avalonia.Controls.UnitTests
                 window.Presenter!.ApplyTemplate();
                 contextMenu.Open();
 
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded, TestContext.Current.CancellationToken);
 
                 Assert.True(target.IsEffectivelyEnabled);
                 target.Command = command;

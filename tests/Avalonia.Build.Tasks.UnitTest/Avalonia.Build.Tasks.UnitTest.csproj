@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>$(AvsCurrentTargetFramework);net481</TargetFrameworks>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <OutputType>Library</OutputType>
+    <OutputType>Exe</OutputType>
     <IsPackable>false</IsPackable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Configuration Condition="'$(Configuration)'==''">Debug</Configuration>

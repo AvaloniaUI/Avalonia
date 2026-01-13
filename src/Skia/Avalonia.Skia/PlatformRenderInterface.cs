@@ -2,15 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.Media.TextFormatting;
+using Avalonia.Metal;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
-using Avalonia.Media.Imaging;
+using Avalonia.Skia.Metal;
 using Avalonia.Skia.Vulkan;
 using Avalonia.Vulkan;
 using SkiaSharp;
-using Avalonia.Media.TextFormatting;
-using Avalonia.Metal;
-using Avalonia.Skia.Metal;
 
 namespace Avalonia.Skia
 {
@@ -81,7 +81,7 @@ namespace Avalonia.Skia
 
         public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun)
         {
-            if (glyphRun.GlyphTypeface is not GlyphTypefaceImpl glyphTypeface)
+            if (glyphRun.GlyphTypeface.PlatformTypeface is not SkiaTypeface glyphTypeface)
             {
                 throw new InvalidOperationException("PlatformImpl can't be null.");
             }
@@ -205,7 +205,7 @@ namespace Avalonia.Skia
             return new WriteableBitmapImpl(size, dpi, format, alphaFormat);
         }
 
-        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, 
+        public IGlyphRunImpl CreateGlyphRun(GlyphTypeface glyphTypeface, double fontRenderingEmSize, 
             IReadOnlyList<GlyphInfo> glyphInfos, Point baselineOrigin)
         {
             return new GlyphRunImpl(glyphTypeface, fontRenderingEmSize, glyphInfos, baselineOrigin);

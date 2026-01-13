@@ -127,7 +127,7 @@ namespace Avalonia.Base.UnitTests.Animation
             var rect = new Rectangle() { Width = 11, };
 
             var clock = new TestClock();
-            animation.RunAsync(rect, clock);
+            animation.RunAsync(rect, clock, TestContext.Current.CancellationToken);
 
             clock.Step(TimeSpan.Zero);
             Assert.Equal(1, rect.Width);

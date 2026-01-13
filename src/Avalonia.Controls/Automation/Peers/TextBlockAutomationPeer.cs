@@ -16,7 +16,7 @@ namespace Avalonia.Automation.Peers
             return AutomationControlType.Text;
         }
 
-        protected override string? GetNameCore() => Owner.Text;
+        protected override string? GetNameCore() => Owner.Inlines?.Text ?? Owner.Text;
 
         protected override bool IsControlElementCore()
         {

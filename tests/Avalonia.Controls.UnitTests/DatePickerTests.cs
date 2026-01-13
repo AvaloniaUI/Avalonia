@@ -5,6 +5,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Harfbuzz;
 using Avalonia.Headless;
 using Avalonia.Platform;
 using Avalonia.Threading;
@@ -30,7 +31,7 @@ namespace Avalonia.Controls.UnitTests
                 };
                 DateTimeOffset value = new DateTimeOffset(2000, 10, 10, 0, 0, 0, TimeSpan.Zero);
                 datePicker.SelectedDate = value;
-                Threading.Dispatcher.UIThread.RunJobs();
+                Threading.Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
                 Assert.True(handled);
             }
         }
@@ -46,7 +47,7 @@ namespace Avalonia.Controls.UnitTests
                     DayVisible = false
                 };
                 datePicker.ApplyTemplate();
-                Threading.Dispatcher.UIThread.RunJobs();
+                Threading.Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
                 var desc = datePicker.GetVisualDescendants();
                 Assert.True(desc.Count() > 1);//Should be layoutroot grid & button
@@ -81,7 +82,7 @@ namespace Avalonia.Controls.UnitTests
                     MonthVisible = false
                 };
                 datePicker.ApplyTemplate();
-                Threading.Dispatcher.UIThread.RunJobs();
+                Threading.Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
                 var desc = datePicker.GetVisualDescendants();
                 Assert.True(desc.Count() > 1);//Should be layoutroot grid & button
@@ -116,7 +117,7 @@ namespace Avalonia.Controls.UnitTests
                     YearVisible = false
                 };
                 datePicker.ApplyTemplate();
-                Threading.Dispatcher.UIThread.RunJobs();
+                Threading.Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
                 var desc = datePicker.GetVisualDescendants();
                 Assert.True(desc.Count() > 1);//Should be layoutroot grid & button
@@ -151,7 +152,7 @@ namespace Avalonia.Controls.UnitTests
                     YearVisible = false
                 };
                 datePicker.ApplyTemplate();
-                Threading.Dispatcher.UIThread.RunJobs();
+                Threading.Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
                 var desc = datePicker.GetVisualDescendants();
                 Assert.True(desc.Count() > 1);//Should be layoutroot grid & button
@@ -232,7 +233,7 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.True(DataValidationErrors.GetHasErrors(datePicker));
 
-            Dispatcher.UIThread.RunJobs();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
             datePicker.SelectedDate = new DateTimeOffset(2005, 5, 10, 11, 12, 13, TimeSpan.Zero);
             Assert.True(handled);
         }
@@ -274,7 +275,7 @@ namespace Avalonia.Controls.UnitTests
         private static TestServices Services => TestServices.MockThreadingInterface.With(
             fontManagerImpl: new HeadlessFontManagerStub(),
             standardCursorFactory: Mock.Of<ICursorFactory>(),
-            textShaperImpl: new HeadlessTextShaperStub(),
+            textShaperImpl: new HarfBuzzTextShaper(),
             renderInterface: new HeadlessPlatformRenderInterface());
 
         private static IControlTemplate CreateTemplate()

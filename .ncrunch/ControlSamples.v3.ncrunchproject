@@ -1,8 +1,5 @@
 ﻿<ProjectConfiguration>
   <Settings>
-    <CustomBuildProperties>
-      <Value>TargetFramework = netstandard2.0</Value>
-    </CustomBuildProperties>
     <IgnoreThisComponentCompletely>True</IgnoreThisComponentCompletely>
   </Settings>
 </ProjectConfiguration>

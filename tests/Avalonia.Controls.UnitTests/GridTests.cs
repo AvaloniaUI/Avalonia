@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Avalonia.UnitTests;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Avalonia.Controls.UnitTests
 {
@@ -1818,6 +1817,7 @@ namespace Avalonia.Controls.UnitTests
                         [Grid.ColumnSpanProperty] = 3,
                         Content = new TextBlock()
                         {
+                            FontSize = 10,
                             Text = @"0: 1234567890 1234567890 1234567890 1234567890 1234567890 1234567890
 1: 1234567890 1234567890 1234567890 1234567890 1234567890 1234567890
 2: 1234567890 1234567890 1234567890 1234567890 1234567890 1234567890
@@ -1878,6 +1878,7 @@ namespace Avalonia.Controls.UnitTests
                     {
                         [Grid.ColumnProperty] = 1,
                         Height = 20,
+                        Width = 100,
                         Text="1234567890"
                     }
                 }
