@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using Avalonia.Media;
 using Avalonia.Media.Fonts;
 using Avalonia.Platform;
 using SkiaSharp;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
 
 namespace Avalonia.Skia.UnitTests.Media
 {
@@ -26,7 +26,7 @@ namespace Avalonia.Skia.UnitTests.Media
         {
             get
             {
-                if(_systemFonts is null)
+                if (_systemFonts is null)
                 {
                     var source = new Uri("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests");
 
@@ -80,42 +80,46 @@ namespace Avalonia.Skia.UnitTests.Media
         }
 
         public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight, FontStretch fontStretch,
-            string? familyName, CultureInfo? culture, out Typeface typeface)
+            string? familyName, CultureInfo? culture, out IPlatformTypeface platformTypeface)
         {
-            if(SystemFonts.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, familyName, culture, out typeface))
+            if (SystemFonts.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, familyName, culture, out var glyphTypeface))
             {
+                platformTypeface = glyphTypeface.GlyphTypeface.PlatformTypeface;
+
                 return true;
             }
 
-            var fallback = SKFontManager.Default.MatchCharacter(null, (SKFontStyleWeight)fontWeight,
+            var fallback = SKFontManager.Default.MatchCharacter(familyName, (SKFontStyleWeight)fontWeight,
                 (SKFontStyleWidth)fontStretch, (SKFontStyleSlant)fontStyle, _bcp47, codepoint);
 
-            typeface = new Typeface(fallback?.FamilyName ?? _defaultFamilyName, fontStyle, fontWeight);
+            platformTypeface = new SkiaTypeface(fallback, FontSimulations.None);
 
             return true;
         }
 
         public bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight,
-            FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface glyphTypeface)
+            FontStretch stretch, [NotNullWhen(true)] out IPlatformTypeface platformTypeface)
         {
-            if (SystemFonts.TryGetGlyphTypeface(familyName, style, weight, stretch, out glyphTypeface))
+            if (SystemFonts.TryGetGlyphTypeface(familyName, style, weight, stretch, out var glyphTypeface))
             {
+                platformTypeface = glyphTypeface.PlatformTypeface;
+
                 return true;
             }
 
             var skTypeface = SKTypeface.FromFamilyName(familyName,
                         (SKFontStyleWeight)weight, SKFontStyleWidth.Normal, (SKFontStyleSlant)style);
 
-            glyphTypeface = new GlyphTypefaceImpl(skTypeface, FontSimulations.None);
+            platformTypeface = new SkiaTypeface(skTypeface, FontSimulations.None);
 
             return true;
         }
 
-        public bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, [NotNullWhen(true)] out IGlyphTypeface glyphTypeface)
+        public bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, [NotNullWhen(true)] out IPlatformTypeface platformTypeface)
         {
             var skTypeface = SKTypeface.FromStream(stream);
 
-            glyphTypeface = new GlyphTypefaceImpl(skTypeface, fontSimulations);
+            platformTypeface = new SkiaTypeface(skTypeface, fontSimulations);
 
             return true;
         }
@@ -123,6 +127,32 @@ namespace Avalonia.Skia.UnitTests.Media
         public void Dispose()
         {
             _systemFonts?.Dispose();
+        }
+
+        public bool TryGetFamilyTypefaces(string familyName, [NotNullWhen(true)] out IReadOnlyList<Typeface>? familyTypefaces)
+        {
+            if (SystemFonts.TryGetFamilyTypefaces(familyName, out familyTypefaces))
+            {
+                return true;
+            }
+
+            var set = SKFontManager.Default.GetFontStyles(familyName);
+
+            if (set.Count == 0)
+            {
+                return false;
+            }
+
+            var typefaces = new List<Typeface>(set.Count);
+
+            foreach (var fontStyle in set)
+            {
+                typefaces.Add(new Typeface(familyName, fontStyle.Slant.ToAvalonia(), (FontWeight)fontStyle.Weight, (FontStretch)fontStyle.Width));
+            }
+
+            familyTypefaces = typefaces;
+
+            return true;
         }
     }
 }

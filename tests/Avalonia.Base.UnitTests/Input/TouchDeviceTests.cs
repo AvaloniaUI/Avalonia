@@ -24,7 +24,7 @@ namespace Avalonia.Input.UnitTests
                 isTapped = true;
                 executedTimes++;
             };
-            TapOnce(InputManager.Instance, touchDevice, root);
+            TapOnce(InputManager.Instance!, touchDevice, root);
             Assert.True(isTapped);
             Assert.Equal(1, executedTimes);
 
@@ -49,8 +49,9 @@ namespace Avalonia.Input.UnitTests
             {
                 tappedExecutedTimes++;
             };
-            TapOnce(InputManager.Instance, touchDevice, root);
-            TapOnce(InputManager.Instance, touchDevice, root, touchPointId: 1);
+            var inputManager = InputManager.Instance!;
+            TapOnce(inputManager, touchDevice, root);
+            TapOnce(inputManager, touchDevice, root, touchPointId: 1);
             Assert.Equal(1, tappedExecutedTimes);
             Assert.True(isDoubleTapped);
             Assert.Equal(1, doubleTappedExecutedTimes);
@@ -75,9 +76,10 @@ namespace Avalonia.Input.UnitTests
                 pointerPressedClicks = e.ClickCount;
                 pointerPressedExecutedTimes++;
             };
+            var inputManager = InputManager.Instance!;
             for (int i = 0; i < clickCount; i++)
             {
-                TapOnce(InputManager.Instance, touchDevice, root, touchPointId: i);
+                TapOnce(inputManager, touchDevice, root, touchPointId: i);
             }
 
             Assert.Equal(clickCount, pointerPressedExecutedTimes);
@@ -103,8 +105,9 @@ namespace Avalonia.Input.UnitTests
             {
                 tappedExecutedTimes++;
             };
-            TapOnce(InputManager.Instance, touchDevice, root);
-            TapOnce(InputManager.Instance, touchDevice, root, 21, 1);
+            var inputManager = InputManager.Instance!;
+            TapOnce(inputManager, touchDevice, root);
+            TapOnce(inputManager, touchDevice, root, 21, 1);
             Assert.Equal(2, tappedExecutedTimes);
             Assert.False(isDoubleTapped);
             Assert.Equal(0, doubleTappedExecutedTimes);
@@ -130,8 +133,9 @@ namespace Avalonia.Input.UnitTests
             {
                 tappedExecutedTimes++;
             };
-            SendXTouchContactsWithIds(InputManager.Instance, touchDevice, root, RawPointerEventType.TouchBegin, 0, 1);
-            SendXTouchContactsWithIds(InputManager.Instance, touchDevice, root, RawPointerEventType.TouchEnd, 0, 1);
+            var inputManager = InputManager.Instance!;
+            SendXTouchContactsWithIds(inputManager, touchDevice, root, RawPointerEventType.TouchBegin, 0, 1);
+            SendXTouchContactsWithIds(inputManager, touchDevice, root, RawPointerEventType.TouchEnd, 0, 1);
             Assert.Equal(2, tappedExecutedTimes);
             Assert.False(isDoubleTapped);
             Assert.Equal(0, doubleTappedExecutedTimes);
@@ -191,14 +195,15 @@ namespace Avalonia.Input.UnitTests
             {
                 tappedExecutedTimes++;
             };
-            SendXTouchContactsWithIds(InputManager.Instance, touchDevice, root, RawPointerEventType.TouchBegin, 0, 1);
-            SendXTouchContactsWithIds(InputManager.Instance, touchDevice, root, RawPointerEventType.TouchEnd, 0, 1);
-            TapOnce(InputManager.Instance, touchDevice, root, touchPointId: 2);
-            TapOnce(InputManager.Instance, touchDevice, root, touchPointId: 3);
-            TapOnce(InputManager.Instance, touchDevice, root, touchPointId: 4);
-            SendXTouchContactsWithIds(InputManager.Instance, touchDevice, root, RawPointerEventType.TouchBegin, 5, 6, 7);
-            SendXTouchContactsWithIds(InputManager.Instance, touchDevice, root, RawPointerEventType.TouchEnd, 5, 6, 7);
-            TapOnce(InputManager.Instance, touchDevice, root, touchPointId: 8);
+            var inputManager = InputManager.Instance!;
+            SendXTouchContactsWithIds(inputManager, touchDevice, root, RawPointerEventType.TouchBegin, 0, 1);
+            SendXTouchContactsWithIds(inputManager, touchDevice, root, RawPointerEventType.TouchEnd, 0, 1);
+            TapOnce(inputManager, touchDevice, root, touchPointId: 2);
+            TapOnce(inputManager, touchDevice, root, touchPointId: 3);
+            TapOnce(inputManager, touchDevice, root, touchPointId: 4);
+            SendXTouchContactsWithIds(inputManager, touchDevice, root, RawPointerEventType.TouchBegin, 5, 6, 7);
+            SendXTouchContactsWithIds(inputManager, touchDevice, root, RawPointerEventType.TouchEnd, 5, 6, 7);
+            TapOnce(inputManager, touchDevice, root, touchPointId: 8);
             Assert.Equal(6, tappedExecutedTimes);
             Assert.Equal(9, pointerPressedExecutedTimes);
             Assert.True(isDoubleTapped);

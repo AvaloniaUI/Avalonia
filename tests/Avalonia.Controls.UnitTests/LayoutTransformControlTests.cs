@@ -198,6 +198,7 @@ namespace Avalonia.Controls.UnitTests
                                         25,
                                         new RotateTransform() { Angle = 90 });
 
+            Assert.NotNull(lt.TransformRoot);
             Assert.NotNull(lt.TransformRoot.RenderTransform);
 
             Matrix m = lt.TransformRoot.RenderTransform.Value;
@@ -222,6 +223,7 @@ namespace Avalonia.Controls.UnitTests
                                         25,
                                         new RotateTransform() { Angle = -90 });
 
+            Assert.NotNull(lt.TransformRoot);
             Assert.NotNull(lt.TransformRoot.RenderTransform);
 
             var m = lt.TransformRoot.RenderTransform.Value;
@@ -246,6 +248,7 @@ namespace Avalonia.Controls.UnitTests
                                         50,
                                         new ScaleTransform() { ScaleX = 2, ScaleY = 2 });
 
+            Assert.NotNull(lt.TransformRoot);
             Assert.NotNull(lt.TransformRoot.RenderTransform);
 
             Matrix m = lt.TransformRoot.RenderTransform.Value;
@@ -269,6 +272,7 @@ namespace Avalonia.Controls.UnitTests
                                         100,
                                         new SkewTransform() { AngleX = 45, AngleY = 45 });
 
+            Assert.NotNull(lt.TransformRoot);
             Assert.NotNull(lt.TransformRoot.RenderTransform);
 
             Matrix m = lt.TransformRoot.RenderTransform.Value;
@@ -293,6 +297,7 @@ namespace Avalonia.Controls.UnitTests
                                         100,
                                         new SkewTransform() { AngleX = -45, AngleY = -45 });
 
+            Assert.NotNull(lt.TransformRoot);
             Assert.NotNull(lt.TransformRoot.RenderTransform);
 
             Matrix m = lt.TransformRoot.RenderTransform.Value;
@@ -325,6 +330,8 @@ namespace Avalonia.Controls.UnitTests
                 var window = new Window { Content = lt };
                 window.Show();
 
+                Assert.NotNull(lt.TransformRoot);
+                Assert.NotNull(lt.TransformRoot.RenderTransform);
                 Matrix actual = lt.TransformRoot.RenderTransform.Value;
                 Matrix expected = Matrix.CreateSkew(Matrix.ToRadians(45), Matrix.ToRadians(45));
                 Assert.Equal(expected.M11, actual.M11, 3);
@@ -357,6 +364,7 @@ namespace Avalonia.Controls.UnitTests
 
             LayoutTransformControl lt = CreateWithChildAndMeasureAndTransform(size.Width, size.Height, transform);
 
+            Assert.NotNull(lt.TransformRoot);
             Rect outBounds = lt.TransformRoot.Bounds;
 
             Assert.Equal(outBounds.X, expectedBounds.X);

@@ -75,9 +75,7 @@ internal sealed class Clipboard(IClipboardImpl clipboardImpl) : IClipboard
                 .ToArray();
         }
 
-        var typedFormat = DataFormat.CreateBytesPlatformFormat(format);
-        var bytes = await dataTransfer.TryGetValueAsync(typedFormat).ConfigureAwait(false);
-        return BinaryFormatterHelper.TryDeserializeUsingBinaryFormatter(bytes) ?? bytes;
+        return null;
     }
 
     public Task<IAsyncDataTransfer?> TryGetDataAsync()

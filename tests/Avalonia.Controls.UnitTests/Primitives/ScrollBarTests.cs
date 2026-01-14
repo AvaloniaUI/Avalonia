@@ -81,7 +81,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                         Vector = new Vector(0, 0)
                     };
 
-                    track.Thumb.RaiseEvent(ev);
+                    track.Thumb!.RaiseEvent(ev);
                 });
 
             Assert.Equal(ScrollEventType.ThumbTrack, raisedEvent.Arguments.ScrollEventType);
@@ -110,7 +110,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                         Vector = new Vector(0, 0)
                     };
 
-                    track.Thumb.RaiseEvent(ev);
+                    track.Thumb!.RaiseEvent(ev);
                 });
 
             Assert.Equal(ScrollEventType.EndScroll, raisedEvent.Arguments.ScrollEventType);

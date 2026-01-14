@@ -11,7 +11,7 @@ namespace Avalonia.Base.UnitTests.Styling
         public void Cannot_Add_Null_Key()
         {
             var target = new ResourceDictionary();
-            Assert.Throws<ArgumentNullException>(() => target.Add(null, "null"));
+            Assert.Throws<ArgumentNullException>(() => target.Add(null!, "null"));
         }
 
         [Fact]

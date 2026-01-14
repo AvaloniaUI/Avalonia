@@ -21,7 +21,7 @@ namespace Avalonia.UnitTests
 
         }
 
-        public UnitTestApplication(TestServices services)
+        public UnitTestApplication(TestServices? services)
         {
             _services = services ?? new TestServices();
             AvaloniaLocator.CurrentMutable.BindToSelf<Application>(this);
@@ -33,11 +33,11 @@ namespace Avalonia.UnitTests
             AssetLoader.RegisterResUriParsers();
         }
 
-        public static new UnitTestApplication Current => (UnitTestApplication)Application.Current;
+        public static new UnitTestApplication Current => (UnitTestApplication)Application.Current!;
 
         public TestServices Services => _services;
 
-        public static IDisposable Start(TestServices services = null)
+        public static IDisposable Start(TestServices? services = null)
         {
             var scope = AvaloniaLocator.EnterScope();
             var oldContext = SynchronizationContext.Current;
@@ -50,7 +50,7 @@ namespace Avalonia.UnitTests
                     Dispatcher.UIThread.RunJobs();
                 }
 
-                ((ToolTipService)AvaloniaLocator.Current.GetService<IToolTipService>())?.Dispose();
+                (AvaloniaLocator.Current.GetService<IToolTipService>() as ToolTipService)?.Dispose();
                 (AvaloniaLocator.Current.GetService<FontManager>() as IDisposable)?.Dispose();
 
                 Dispatcher.ResetForUnitTests();
@@ -62,25 +62,34 @@ namespace Avalonia.UnitTests
 
         public override void RegisterServices()
         {
+            // Arrange (as part of layouting) calls TaskScheduler.FromCurrentSynchronizationContext, which needs a non-null context.
+            // If it's null, it will fail. So we need to ensure it's not null.
+            // Historically, this line wasn't needed because xunit itself used to always install its own SynchronizationContext.
+            // This was changed in xunit.v3.
+            if (SynchronizationContext.Current is null)
+            {
+                SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
+            }
+
             AvaloniaLocator.CurrentMutable
-                .Bind<IAssetLoader>().ToConstant(Services.AssetLoader)
-                .Bind<IGlobalClock>().ToConstant(Services.GlobalClock)
+                .Bind<IAssetLoader?>().ToConstant(Services.AssetLoader)
+                .Bind<IGlobalClock?>().ToConstant(Services.GlobalClock)
                 .BindToSelf<IGlobalStyles>(this)
-                .Bind<IInputManager>().ToConstant(Services.InputManager)
-                .Bind<IToolTipService>().ToConstant(Services.InputManager == null ? null : new ToolTipService(Services.InputManager))
-                .Bind<IKeyboardDevice>().ToConstant(Services.KeyboardDevice?.Invoke())
-                .Bind<IMouseDevice>().ToConstant(Services.MouseDevice?.Invoke())
-                .Bind<IKeyboardNavigationHandler>().ToFunc(Services.KeyboardNavigation ?? (() => null))
-                .Bind<IRuntimePlatform>().ToConstant(Services.Platform)
-                .Bind<IPlatformRenderInterface>().ToConstant(Services.RenderInterface)
-                .Bind<IFontManagerImpl>().ToConstant(Services.FontManagerImpl)
-                .Bind<ITextShaperImpl>().ToConstant(Services.TextShaperImpl)
-                .Bind<IDispatcherImpl>().ToConstant(Services.DispatcherImpl)
-                .Bind<ICursorFactory>().ToConstant(Services.StandardCursorFactory)
-                .Bind<IWindowingPlatform>().ToConstant(Services.WindowingPlatform)
+                .Bind<IInputManager?>().ToConstant(Services.InputManager)
+                .Bind<IToolTipService?>().ToConstant(Services.InputManager == null ? null : new ToolTipService(Services.InputManager))
+                .Bind<IKeyboardDevice?>().ToConstant(Services.KeyboardDevice?.Invoke())
+                .Bind<IMouseDevice?>().ToConstant(Services.MouseDevice?.Invoke())
+                .Bind<IKeyboardNavigationHandler?>().ToFunc(Services.KeyboardNavigation ?? (() => null))
+                .Bind<IRuntimePlatform?>().ToConstant(Services.Platform)
+                .Bind<IPlatformRenderInterface?>().ToConstant(Services.RenderInterface)
+                .Bind<IFontManagerImpl?>().ToConstant(Services.FontManagerImpl)
+                .Bind<ITextShaperImpl?>().ToConstant(Services.TextShaperImpl)
+                .Bind<IDispatcherImpl?>().ToConstant(Services.DispatcherImpl)
+                .Bind<ICursorFactory?>().ToConstant(Services.StandardCursorFactory)
+                .Bind<IWindowingPlatform?>().ToConstant(Services.WindowingPlatform)
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
                 .Bind<IPlatformSettings>().ToSingleton<DefaultPlatformSettings>()
-                .Bind<IAccessKeyHandler>().ToConstant(Services.AccessKeyHandler)
+                .Bind<IAccessKeyHandler?>().ToConstant(Services.AccessKeyHandler)
                 ;
             
             // This is a hack to make tests work, we need to refactor the way font manager is registered

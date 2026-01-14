@@ -27,7 +27,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 </Window>";
 
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = window.FindControl<TextBlock>("textBlock");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
 
                 window.Show();
 
@@ -51,7 +51,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 </Window>";
 
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = window.FindControl<TextBlock>("textBlock");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
 
                 window.DataContext = new FooBar();
                 window.Show();
@@ -72,7 +72,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 </Window>";
 
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = window.FindControl<TextBlock>("textBlock");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
 
                 window.DataContext = new FooBar();
                 window.Show();
@@ -94,7 +94,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <ContentControl Content='{Binding $parent.((local:TestDataContext)DataContext).StringProperty}' Name='contentControl' />
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var contentControl = window.FindControl<ContentControl>("contentControl");
+                var contentControl = window.GetControl<ContentControl>("contentControl");
 
                 var dataContext = new TestDataContext
                 {
@@ -120,7 +120,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <ContentControl Content='{Binding $parent.((local:TestDataContext)DataContext)}' Name='contentControl' />
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var contentControl = window.FindControl<ContentControl>("contentControl");
+                var contentControl = window.GetControl<ContentControl>("contentControl");
 
                 var dataContext = "foo";
 
@@ -131,13 +131,12 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         }
         private class FooBar
         {
-            public object Foo { get; } = null;
+            public object? Foo { get; } = null;
         }
 
-        private static IDisposable StyledWindow(params (string, string)[] assets)
+        private static IDisposable StyledWindow()
         {
             var services = TestServices.StyledWindow.With(
-                assetLoader: new MockAssetLoader(assets),
                 theme: () => new Styles
                 {
                     WindowStyle(),

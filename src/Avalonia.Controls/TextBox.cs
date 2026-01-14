@@ -181,12 +181,6 @@ namespace Avalonia.Controls
             TextBlock.LineHeightProperty.AddOwner<TextBox>(new(defaultValue: double.NaN));
 
         /// <summary>
-        /// Defines see <see cref="TextBlock.LetterSpacing"/> property.
-        /// </summary>
-        public static readonly StyledProperty<double> LetterSpacingProperty =
-            TextBlock.LetterSpacingProperty.AddOwner<TextBox>();
-
-        /// <summary>
         /// Defines the <see cref="Watermark"/> property
         /// </summary>
         public static readonly StyledProperty<string?> WatermarkProperty =
@@ -568,15 +562,6 @@ namespace Avalonia.Controls
         {
             get => GetValue(MinLinesProperty);
             set => SetValue(MinLinesProperty, value);
-        }
-
-        /// <summary>
-        /// Gets or sets the spacing between characters
-        /// </summary>
-        public double LetterSpacing
-        {
-            get => GetValue(LetterSpacingProperty);
-            set => SetValue(LetterSpacingProperty, value);
         }
 
         /// <summary>

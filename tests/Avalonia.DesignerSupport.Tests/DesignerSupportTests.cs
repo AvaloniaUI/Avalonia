@@ -13,21 +13,20 @@ using Avalonia.Remote.Protocol;
 using Avalonia.Remote.Protocol.Designer;
 using Avalonia.Remote.Protocol.Viewport;
 using Xunit;
-using Xunit.Extensions;
 
 namespace Avalonia.DesignerSupport.Tests
 {
     public class DesignerSupportTests
     {
         private const string DesignerAppPath = "../../../../../src/tools/Avalonia.Designer.HostApp/bin/$BUILD/$TFM/Avalonia.Designer.HostApp.dll";
-        private readonly Xunit.Abstractions.ITestOutputHelper outputHelper;
+        private readonly ITestOutputHelper outputHelper;
 
-        public DesignerSupportTests(Xunit.Abstractions.ITestOutputHelper outputHelper)
+        public DesignerSupportTests(ITestOutputHelper outputHelper)
         {
             this.outputHelper = outputHelper;
         }
 
-        [SkippableTheory,
+        [Theory,
          InlineData(
             @"..\..\..\..\..\tests/Avalonia.DesignerSupport.TestApp/bin/$BUILD/$TFM/",
             "Avalonia.DesignerSupport.TestApp",
@@ -63,7 +62,7 @@ namespace Avalonia.DesignerSupport.Tests
             xamlFile = Path.GetFullPath(xamlFile.Replace('\\', Path.DirectorySeparatorChar));
             
             if (method == "win32")
-                Skip.IfNot(RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
+                Assert.SkipUnless(RuntimeInformation.IsOSPlatform(OSPlatform.Windows), "Windows-only");
 
             var xaml = File.ReadAllText(xamlFile);
             string buildType;
@@ -82,7 +81,7 @@ namespace Avalonia.DesignerSupport.Tests
             var sessionId = Guid.NewGuid();
             long handle = 0;
             bool success = false;
-            string error = null;
+            string? error = null;
 
             var resultMessageReceivedToken = new CancellationTokenSource();
 

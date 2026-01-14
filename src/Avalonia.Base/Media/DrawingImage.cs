@@ -22,6 +22,12 @@ namespace Avalonia.Media
         public static readonly StyledProperty<Drawing?> DrawingProperty =
             AvaloniaProperty.Register<DrawingImage, Drawing?>(nameof(Drawing));
 
+        /// <summary>
+        /// Defines the <see cref="Viewbox"/> property.
+        /// </summary>
+        public static readonly StyledProperty<Rect?> ViewboxProperty =
+            AvaloniaProperty.Register<DrawingImage, Rect?>(nameof(Viewbox));
+
         /// <inheritdoc/>
         public event EventHandler? Invalidated;
 
@@ -35,8 +41,25 @@ namespace Avalonia.Media
             set => SetValue(DrawingProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets a rectangular region of <see cref="Drawing"/>, in device independent pixels, to display 
+        /// when rendering this image.
+        /// </summary>
+        /// <remarks>
+        /// This value can be used to display only part of <see cref="Drawing"/>, or to surround it with empty 
+        /// space. If null, <see cref="Drawing"/> will provide its own viewbox.
+        /// </remarks>
+        /// <seealso cref="Drawing.GetBounds"/>
+        public Rect? Viewbox
+        {
+            get => GetValue(ViewboxProperty);
+            set => SetValue(ViewboxProperty, value);
+        }
+
         /// <inheritdoc/>
-        public Size Size => Drawing?.GetBounds().Size ?? default;
+        public Size Size => GetBounds().Size;
+
+        private Rect GetBounds() => Viewbox ?? Drawing?.GetBounds() ?? default;
 
         /// <inheritdoc/>
         void IImage.Draw(
@@ -44,14 +67,18 @@ namespace Avalonia.Media
             Rect sourceRect,
             Rect destRect)
         {
-            var drawing = Drawing;
-
-            if (drawing == null)
+            if (Drawing is not { } drawing || sourceRect.Size == default || destRect.Size == default)
             {
                 return;
             }
 
-            var bounds = drawing.GetBounds();
+            var bounds = GetBounds();
+
+            if (bounds.Size == default)
+            {
+                return;
+            }
+
             var scale = Matrix.CreateScale(
                 destRect.Width / sourceRect.Width,
                 destRect.Height / sourceRect.Height);
@@ -62,7 +89,7 @@ namespace Avalonia.Media
             using (context.PushClip(destRect))
             using (context.PushTransform(translate * scale))
             {
-                Drawing?.Draw(context);
+                drawing.Draw(context);
             }
         }
 
@@ -71,7 +98,7 @@ namespace Avalonia.Media
         {
             base.OnPropertyChanged(change);
 
-            if (change.Property == DrawingProperty)
+            if (change.Property == DrawingProperty || change.Property == ViewboxProperty)
             {
                 RaiseInvalidated(EventArgs.Empty);
             }
