@@ -49,6 +49,15 @@ namespace Avalonia.Animation
         private TimeSpan _timeOfLastChange;
         private long _animTimeOfLastChange;
 
+        /// <summary>
+        /// Animation's smallest unit of time in terms of TimeSpan Ticks. This can be used
+        /// to increase possible runtime of animation before reaching over/under-flow.
+        /// </summary>
+        /// <remarks>
+        /// Value to use here can be found with <code>TimeSpan.FromMilliseconds(x).Ticks</code>
+        /// </remarks>
+        private const long PRECISION_IN_TICKS = 10_000;
+
         public AnimationInstance(Animation animation, Animatable control, Animator<T> animator, IClock baseClock, Action? OnComplete, Func<double, T, T> Interpolator)
         {
             _lastInterpValue = default!;
@@ -85,7 +94,6 @@ namespace Avalonia.Animation
             _initialDelay = _animation.Delay;
             _duration = _animation.Duration;
             _iterationDelay = _animation.DelayBetweenIterations;
-
 
             if (_animation.IterationCount.RepeatType == IterationType.Many)
             {
@@ -238,7 +246,7 @@ namespace Avalonia.Animation
         private bool ApplyInitialDelay(ref long animTime)
         {
             // Handle all possible cases of applying initial delay and clamping.
-            long delay = _initialDelay.Ticks;
+            long delay = _initialDelay.Ticks / PRECISION_IN_TICKS;
             if (_iterationCount.HasValue)
             {
                 animTime -= delay;
@@ -319,7 +327,7 @@ namespace Avalonia.Animation
             // Calculate animation time. That's time that has passed inside
             // the animation since its beginning.
             var timeSinceLastChange = time - _timeOfLastChange;
-            var animTimeSinceLastChange = (long)(timeSinceLastChange.Ticks * speedRatio);
+            var animTimeSinceLastChange = (long)(timeSinceLastChange.Ticks / PRECISION_IN_TICKS * speedRatio);
             var animTime = _animTimeOfLastChange + animTimeSinceLastChange;
 
             if (_iterationCount.HasValue)
@@ -347,8 +355,8 @@ namespace Avalonia.Animation
                 _isInFirstInitialDelay = false;
             }
 
-            var iterDuration = _duration.Ticks;
-            var iterDelay = _iterationDelay.Ticks;
+            var iterDuration = _duration.Ticks / PRECISION_IN_TICKS;
+            var iterDelay = _iterationDelay.Ticks / PRECISION_IN_TICKS;
             var iterDurationTotal = iterDuration + iterDelay;
 
             if (iterDurationTotal <= 0)
