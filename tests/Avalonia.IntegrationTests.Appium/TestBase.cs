@@ -18,6 +18,11 @@ public class TestBase
                 var pager = Session.FindElementByAccessibilityId("Pager");
                 var page = pager.FindElementByName(pageName);
                 page.Click();
+
+                // If the mouse was captured, the first click might have just released the capture, try again
+                if (!page.Selected)
+                    page.Click();
+
                 break;
             }
             catch (WebDriverException) when (retry++ < 3)

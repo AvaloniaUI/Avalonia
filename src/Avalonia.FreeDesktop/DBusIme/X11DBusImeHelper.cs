@@ -31,6 +31,17 @@ namespace Avalonia.FreeDesktop.DBusIme
                     return factory;
             }
 
+            var modifiers = Environment.GetEnvironmentVariable("XMODIFIERS");
+            if (modifiers is not null && modifiers.Contains("@im="))
+            {
+                int imNameStart = modifiers.IndexOf("@im=") + "@im=".Length;
+                int imNameEnd = modifiers.IndexOf("@", imNameStart);
+                string imName = imNameEnd == -1 ? modifiers.Substring(imNameStart) : modifiers.Substring(imNameStart, imNameEnd - imNameStart);
+
+                if (KnownMethods.TryGetValue(imName, out var factory))
+                    return factory;
+            }
+
             return null;
         }
 

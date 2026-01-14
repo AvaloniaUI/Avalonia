@@ -30,12 +30,12 @@
         "CiAzureWindows",
         "Clean",
         "Compile",
-        "CompileHtmlPreviewer",
         "CompileNative",
         "CreateIntermediateNugetPackages",
         "CreateNugetPackages",
         "DownloadApiBaselinePackages",
         "GenerateCppHeaders",
+        "InitDnx",
         "OutputApiDiff",
         "OutputVersion",
         "Package",
@@ -129,9 +129,6 @@
         },
         "force-nuget-version": {
           "type": "string"
-        },
-        "skip-previewer": {
-          "type": "boolean"
         },
         "skip-tests": {
           "type": "boolean"

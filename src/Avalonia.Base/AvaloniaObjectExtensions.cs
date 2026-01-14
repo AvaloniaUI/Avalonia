@@ -11,12 +11,12 @@ namespace Avalonia
     public static class AvaloniaObjectExtensions
     {
         /// <summary>
-        /// Converts an <see cref="IObservable{T}"/> to an <see cref="IBinding"/>.
+        /// Converts an <see cref="IObservable{T}"/> to an <see cref="BindingBase"/>.
         /// </summary>
         /// <typeparam name="T">The type produced by the observable.</typeparam>
         /// <param name="source">The observable</param>
-        /// <returns>An <see cref="IBinding"/>.</returns>
-        public static IBinding ToBinding<T>(this IObservable<T> source)
+        /// <returns>An <see cref="BindingBase"/>.</returns>
+        public static BindingBase ToBinding<T>(this IObservable<T> source)
         {
             return new BindingAdaptor(
                 typeof(T).IsValueType
@@ -228,7 +228,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Binds a property on an <see cref="AvaloniaObject"/> to an <see cref="IBinding"/>.
+        /// Binds a property on an <see cref="AvaloniaObject"/> to an <see cref="BindingBase"/>.
         /// </summary>
         /// <param name="target">The object.</param>
         /// <param name="property">The property to bind.</param>
@@ -244,7 +244,7 @@ namespace Avalonia
         public static IDisposable Bind(
             this AvaloniaObject target,
             AvaloniaProperty property,
-            IBinding binding,
+            BindingBase binding,
             object? anchor = null)
         {
             target = target ?? throw new ArgumentNullException(nameof(target));
@@ -359,7 +359,7 @@ namespace Avalonia
             return observable.Subscribe(new ClassHandlerObserver<TTarget, TValue>(action));
         }
 
-        private class BindingAdaptor : IBinding2
+        private class BindingAdaptor : BindingBase
         {
             private readonly IObservable<object?> _source;
 
@@ -368,17 +368,10 @@ namespace Avalonia
                 this._source = source;
             }
 
-            public InstancedBinding? Initiate(
+            internal override BindingExpressionBase CreateInstance(
                 AvaloniaObject target,
-                AvaloniaProperty? targetProperty,
-                object? anchor = null,
-                bool enableDataValidation = false)
-            {
-                var expression = new UntypedObservableBindingExpression(_source, BindingPriority.LocalValue);
-                return new InstancedBinding(expression, BindingMode.OneWay, BindingPriority.LocalValue);
-            }
-
-            BindingExpressionBase IBinding2.Instance(AvaloniaObject target, AvaloniaProperty? property, object? anchor)
+                AvaloniaProperty? property,
+                object? anchor)
             {
                 return new UntypedObservableBindingExpression(_source, BindingPriority.LocalValue);
             }

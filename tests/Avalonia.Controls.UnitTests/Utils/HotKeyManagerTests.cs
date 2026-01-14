@@ -6,7 +6,7 @@ using Avalonia.Input.Raw;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
 using Xunit;
-using Factory = System.Func<int, System.Action<object>, Avalonia.Controls.Window, Avalonia.AvaloniaObject>;
+using Factory = System.Func<int, System.Action<object?>?, Avalonia.Controls.Window, Avalonia.AvaloniaObject>;
 
 namespace Avalonia.Controls.UnitTests.Utils
 {
@@ -28,7 +28,7 @@ namespace Avalonia.Controls.UnitTests.Utils
                 tl.Content = button;
                 tl.Template = CreateWindowTemplate();
                 tl.ApplyTemplate();
-                tl.Presenter.ApplyTemplate();
+                tl.Presenter!.ApplyTemplate();
 
                 HotKeyManager.SetHotKey(button, gesture1);
 
@@ -53,7 +53,7 @@ namespace Avalonia.Controls.UnitTests.Utils
         }
 
         [Theory]
-        [MemberData(nameof(ElementsFactory), parameters: true)]
+        [MemberData(nameof(ElementsFactory), arguments: true)]
         public void HotKeyManager_Should_Use_CommandParameter(string factoryName, Factory factory)
         {
             using (AvaloniaLocator.EnterScope())
@@ -66,7 +66,7 @@ namespace Avalonia.Controls.UnitTests.Utils
 
                 var gesture = new KeyGesture(Key.A, KeyModifiers.Control);
 
-                var action = new Action<object>(parameter =>
+                var action = new Action<object?>(parameter =>
                 {
                     if (parameter is int value)
                     {
@@ -79,7 +79,7 @@ namespace Avalonia.Controls.UnitTests.Utils
 
                 root.Template = CreateWindowTemplate();
                 root.ApplyTemplate();
-                root.Presenter.ApplyTemplate();
+                root.Presenter!.ApplyTemplate();
 
                 HotKeyManager.SetHotKey(element, gesture);
 
@@ -98,7 +98,7 @@ namespace Avalonia.Controls.UnitTests.Utils
 
 
         [Theory]
-        [MemberData(nameof(ElementsFactory), parameters: true)]
+        [MemberData(nameof(ElementsFactory), arguments: true)]
         public void HotKeyManager_Should_Do_Not_Executed_When_IsEnabled_False(string factoryName, Factory factory)
         {
             using (AvaloniaLocator.EnterScope())
@@ -110,19 +110,20 @@ namespace Avalonia.Controls.UnitTests.Utils
 
                 var gesture = new KeyGesture(Key.A, KeyModifiers.Control);
 
-                var action = new Action<object>(parameter =>
+                var action = new Action<object?>(parameter =>
                 {
                     isExecuted = true;
                 });
 
                 var root = new Window();
-                var element = factory(0, action, root) as InputElement;
+                var element = (InputElement)factory(0, action, root);
+                Assert.NotNull(element);
 
                 element.IsEnabled = false;
 
                 root.Template = CreateWindowTemplate();
                 root.ApplyTemplate();
-                root.Presenter.ApplyTemplate();
+                root.Presenter!.ApplyTemplate();
 
                 HotKeyManager.SetHotKey(element, gesture);
 
@@ -140,7 +141,7 @@ namespace Avalonia.Controls.UnitTests.Utils
         }
 
         [Theory]
-        [MemberData(nameof(ElementsFactory), parameters:false)]
+        [MemberData(nameof(ElementsFactory), arguments:false)]
         public void HotKeyManager_Should_Invoke_Event_Click_When_Command_Is_Null(string factoryName, Factory factory)
         {
             using (AvaloniaLocator.EnterScope())
@@ -152,13 +153,13 @@ namespace Avalonia.Controls.UnitTests.Utils
 
                 var gesture = new KeyGesture(Key.A, KeyModifiers.Control);
 
-                void Clickable_Click(object sender, Interactivity.RoutedEventArgs e)
+                void Clickable_Click(object? sender, Interactivity.RoutedEventArgs e)
                 {
                     clickExecutedCount++;
                 }
 
                 var root = new Window();
-                var element = factory(0, default, root) as InputElement;
+                var element = (InputElement)factory(0, null, root);
                 if (element is IClickableControl clickable)
                 {
                     clickable.Click += Clickable_Click;
@@ -166,7 +167,7 @@ namespace Avalonia.Controls.UnitTests.Utils
 
                 root.Template = CreateWindowTemplate();
                 root.ApplyTemplate();
-                root.Presenter.ApplyTemplate();
+                root.Presenter!.ApplyTemplate();
 
                 HotKeyManager.SetHotKey(element, gesture);
 
@@ -196,7 +197,7 @@ namespace Avalonia.Controls.UnitTests.Utils
         }
 
         [Theory]
-        [MemberData(nameof(ElementsFactory), parameters: true)]
+        [MemberData(nameof(ElementsFactory), arguments: true)]
         public void HotKeyManager_Should_Not_Invoke_Event_Click_When_Command_Is_Not_Null(string factoryName, Factory factory)
         {
             using (AvaloniaLocator.EnterScope())
@@ -209,18 +210,18 @@ namespace Avalonia.Controls.UnitTests.Utils
 
                 var gesture = new KeyGesture(Key.A, KeyModifiers.Control);
 
-                void DoExecute(object parameter)
+                void DoExecute(object? parameter)
                 {
                     commandExecutedCount++;
                 }
 
-                void Clickable_Click(object sender, Interactivity.RoutedEventArgs e)
+                void Clickable_Click(object? sender, Interactivity.RoutedEventArgs e)
                 {
                     clickExecutedCount++;
                 }
 
                 var root = new Window();
-                var element = factory(0, DoExecute, root) as InputElement;
+                var element = (InputElement)factory(0, DoExecute, root);
                 if (element is IClickableControl clickable)
                 {
                     clickable.Click += Clickable_Click;
@@ -228,7 +229,7 @@ namespace Avalonia.Controls.UnitTests.Utils
 
                 root.Template = CreateWindowTemplate();
                 root.ApplyTemplate();
-                root.Presenter.ApplyTemplate();
+                root.Presenter!.ApplyTemplate();
 
                 HotKeyManager.SetHotKey(element, gesture);
 
@@ -266,7 +267,7 @@ namespace Avalonia.Controls.UnitTests.Utils
                 {nameof(MenuItem),withCommand ? MakeMenu : MakeMenuWithoutCommand},
             };
 
-        private static AvaloniaObject MakeMenu(int expectedParameter, Action<object> action, Window root)
+        private static AvaloniaObject MakeMenu(int expectedParameter, Action<object?>? action, Window root)
         {
             var menuitem = new MenuItem()
             {
@@ -281,7 +282,7 @@ namespace Avalonia.Controls.UnitTests.Utils
             return menuitem;
         }
 
-        private static AvaloniaObject MakeButton(int expectedParameter, Action<object> action, Window root)
+        private static AvaloniaObject MakeButton(int expectedParameter, Action<object?>? action, Window root)
         {
             var button = new Button()
             {
@@ -293,7 +294,7 @@ namespace Avalonia.Controls.UnitTests.Utils
             return button;
         }
 
-        private static AvaloniaObject MakeMenuWithoutCommand(int expectedParameter, Action<object> action, Window root)
+        private static AvaloniaObject MakeMenuWithoutCommand(int expectedParameter, Action<object?>? action, Window root)
         {
             var menuitem = new MenuItem()
             {
@@ -306,7 +307,7 @@ namespace Avalonia.Controls.UnitTests.Utils
             return menuitem;
         }
 
-        private static AvaloniaObject MakeButtonWithoutCommand(int expectedParameter, Action<object> action, Window root)
+        private static AvaloniaObject MakeButtonWithoutCommand(int expectedParameter, Action<object?>? action, Window root)
         {
             var button = new Button()
             {
@@ -330,19 +331,19 @@ namespace Avalonia.Controls.UnitTests.Utils
 
         class Command : System.Windows.Input.ICommand
         {
-            private readonly Action<object> _execeute;
+            private readonly Action<object?>? _execute;
 
 #pragma warning disable 67 // Event not used
-            public event EventHandler CanExecuteChanged;
+            public event EventHandler? CanExecuteChanged;
 #pragma warning restore 67 // Event not used
 
-            public Command(Action<object> execeute)
+            public Command(Action<object?>? execute)
             {
-                _execeute = execeute;
+                _execute = execute;
             }
-            public bool CanExecute(object parameter) => true;
+            public bool CanExecute(object? parameter) => true;
 
-            public void Execute(object parameter) => _execeute?.Invoke(parameter);
+            public void Execute(object? parameter) => _execute?.Invoke(parameter);
         }
     }
 }

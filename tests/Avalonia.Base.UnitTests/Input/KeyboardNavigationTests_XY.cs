@@ -459,4 +459,44 @@ public class KeyboardNavigationTests_XY : ScopedTestBase
 
         Assert.Null(KeyboardNavigationHandler.GetNext(current, NavigationDirection.Down));
     }
+
+    [Fact]
+    public void XYFocus_Skips_Effectively_Disabled_Controls()
+    {
+        using var _ = UnitTestApplication.Start(TestServices.FocusableWindow);
+
+        var current = new TestControl() { Height = 20, Width = 20, IsEnabled = true, IsVisible = true, Focusable = true, ShouldEnable = true};
+        var disabled = new TestControl() { Height = 20, Width = 20, IsEnabled = true, IsVisible = true, Focusable = true, ShouldEnable = false };
+        var candidate = new TestControl() { Height = 20, Width = 20, IsEnabled = true, IsVisible = true, Focusable = true, ShouldEnable = true };
+        
+        var parent = new StackPanel
+        {
+            Orientation = Orientation.Vertical,
+            Spacing = 20,
+            Children = { current, disabled, candidate }
+        };
+        
+        var window = new Window
+        {
+            [XYFocus.NavigationModesProperty] = XYFocusNavigationModes.Enabled,
+            Content = parent,
+            Height = 300
+        };
+        window.Show();
+
+        Assert.Equal(candidate, KeyboardNavigationHandler.GetNext(current, NavigationDirection.Down));
+    }
+
+    private class TestControl : Decorator
+    {
+        private bool _shouldEnable;
+
+        public bool ShouldEnable
+        {
+            get => _shouldEnable;
+            set { _shouldEnable = value; UpdateIsEffectivelyEnabled(); }
+        }
+
+        protected override bool IsEnabledCore => IsEnabled && _shouldEnable;
+    }
 }

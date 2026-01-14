@@ -15,10 +15,10 @@ namespace Avalonia.Native
         private readonly IAvaloniaNativeFactory _factory;
         private bool _resetQueued = true;
         private bool _exported;
-        private readonly IAvnWindow _nativeWindow;
-        private NativeMenu _menu;
-        private __MicroComIAvnMenuProxy _nativeMenu;
-        private readonly IAvnTrayIcon _trayIcon;
+        private readonly IAvnWindow? _nativeWindow;
+        private NativeMenu? _menu;
+        private __MicroComIAvnMenuProxy? _nativeMenu;
+        private readonly IAvnTrayIcon? _trayIcon;
         private readonly IAvnApplicationCommands _applicationCommands;
 
         public AvaloniaNativeMenuExporter(IAvnWindow nativeWindow, IAvaloniaNativeFactory factory)
@@ -51,7 +51,7 @@ namespace Avalonia.Native
 
         public event EventHandler OnIsNativeMenuExportedChanged { add { } remove { } }
 
-        public void SetNativeMenu(NativeMenu menu)
+        public void SetNativeMenu(NativeMenu? menu)
         {
             _menu = menu ?? new NativeMenu();
             DoLayoutReset(true);
@@ -152,7 +152,7 @@ namespace Avalonia.Native
 
         private void DoLayoutReset() => DoLayoutReset(false);
 
-        private void DoLayoutReset(bool forceUpdate = false)
+        private void DoLayoutReset(bool forceUpdate)
         {
             var macOpts = AvaloniaLocator.Current.GetService<MacOSPlatformOptions>() ?? new MacOSPlatformOptions();
 
@@ -169,12 +169,15 @@ namespace Avalonia.Native
                 {
                     if (_trayIcon is null)
                     {
-                        var appMenu = NativeMenu.GetMenu(Application.Current);
+                        var app = Application.Current;
+                        var appMenu = app is null ? null : NativeMenu.GetMenu(app);
 
                         if (appMenu == null)
                         {
                             appMenu = CreateDefaultAppMenu();
-                            NativeMenu.SetMenu(Application.Current, appMenu);
+
+                            if (app is not null)
+                                NativeMenu.SetMenu(app, appMenu);
                         }
 
                         SetMenu(appMenu);

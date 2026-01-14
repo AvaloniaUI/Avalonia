@@ -22,7 +22,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
     <TextBlock Name='textBlock' Text='{Binding Converter={x:Static c:TestConverter.Instance}, FallbackValue=bar}'/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = window.FindControl<TextBlock>("textBlock");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
 
                 window.ApplyTemplate();
 
@@ -42,7 +42,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
     {
         public static readonly TestConverter Instance = new TestConverter();
 
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (value is int i)
             {
@@ -62,7 +62,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
             return "(default)";
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
         }

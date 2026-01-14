@@ -16,13 +16,14 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Avalonia.DesignerSupport\Avalonia.DesignerSupport.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.OpenGL\Avalonia.OpenGL.csproj" />
+    <ProjectReference Include="..\..\src\HarfBuzz\Avalonia.HarfBuzz\Avalonia.HarfBuzz.csproj" />
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup\Avalonia.Markup.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Controls\Avalonia.Controls.csproj" />
-    <ProjectReference Include="..\..\src\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Themes.Simple\Avalonia.Themes.Simple.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Desktop\Avalonia.Desktop.csproj" />
   </ItemGroup>
   <Import Project="..\..\build\BuildTargets.targets" />
+  <Import Project="..\..\build\NullableEnable.props" />
 </Project>

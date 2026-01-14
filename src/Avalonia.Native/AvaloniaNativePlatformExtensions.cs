@@ -79,7 +79,7 @@ namespace Avalonia
         /// This property should be used in case you want to build Avalonia OSX native part by yourself
         /// and make your Avalonia app run with it. The default value is null.
         /// </summary>
-        public string AvaloniaNativeLibraryPath { get; set; }
+        public string? AvaloniaNativeLibraryPath { get; set; }
 
         /// <summary>
         /// If you distribute your app in App Store - it should be with sandbox enabled.

@@ -474,7 +474,6 @@ namespace Avalonia.Skia.UnitTests.Media
         {
             var disposable = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface
                 .With(renderInterface: new PlatformRenderInterface(),
-                    textShaperImpl: new TextShaperImpl(),
                     fontManagerImpl: new CustomFontManagerImpl()));
 
             return disposable;

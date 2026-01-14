@@ -74,12 +74,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             {
                 _types = types;
                 _className = className;
-                Parameters = new[] {types.IBinding};
+                Parameters = new[] {types.BindingBase};
             }
             
             public void Emit(IXamlILEmitter emitter)
             {
-                using (var bloc = emitter.LocalsPool.GetLocal(_types.IBinding))
+                using (var bloc = emitter.LocalsPool.GetLocal(_types.BindingBase))
                     emitter
                         .Stloc(bloc.Local)
                         .Ldstr(_className)

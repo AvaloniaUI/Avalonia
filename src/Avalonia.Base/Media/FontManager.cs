@@ -98,7 +98,7 @@ namespace Avalonia.Media
         /// <returns>
         ///     <c>True</c>, if the <see cref="FontManager"/> could create the glyph typeface, <c>False</c> otherwise.
         /// </returns>
-        public bool TryGetGlyphTypeface(Typeface typeface, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
+        public bool TryGetGlyphTypeface(Typeface typeface, [NotNullWhen(true)] out GlyphTypeface? glyphTypeface)
         {
             glyphTypeface = null;
 
@@ -109,7 +109,7 @@ namespace Avalonia.Media
                 return TryGetGlyphTypeface(new Typeface(DefaultFontFamily, typeface.Style, typeface.Weight, typeface.Stretch), out glyphTypeface);
             }
 
-            
+
             if (fontFamily.Key != null)
             {
                 if (fontFamily.Key is CompositeFontFamilyKey compositeKey)
@@ -187,7 +187,7 @@ namespace Avalonia.Media
             }
         }
 
-        private bool TryGetGlyphTypefaceByKeyAndName(Typeface typeface, FontFamilyKey key, string familyName, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
+        private bool TryGetGlyphTypefaceByKeyAndName(Typeface typeface, FontFamilyKey key, string familyName, [NotNullWhen(true)] out GlyphTypeface? glyphTypeface)
         {
             var source = key.Source.EnsureAbsolute(key.BaseUri);
 
@@ -271,7 +271,7 @@ namespace Avalonia.Media
                     {
                         typeface = new Typeface(fallback.FontFamily, fontStyle, fontWeight, fontStretch);
 
-                        if (TryGetGlyphTypeface(typeface, out var glyphTypeface) && glyphTypeface.TryGetGlyph((uint)codepoint, out _))
+                        if (TryGetGlyphTypeface(typeface, out var glyphTypeface) && glyphTypeface.CharacterToGlyphMap.TryGetGlyph(codepoint, out _))
                         {
                             return true;
                         }
@@ -300,6 +300,11 @@ namespace Avalonia.Media
                             fontCollection.TryGetGlyphTypeface(familyName, fontStyle, fontWeight, fontStretch, out _) &&
                             fontCollection.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, familyName, culture, out typeface))
                         {
+                            if (typeface.FontFamily.Name == DefaultFontFamily.Name && i + 1 < compositeKey.Keys.Count)
+                            {
+                                continue;
+                            }
+
                             return true;
                         }
                     }
@@ -328,24 +333,18 @@ namespace Avalonia.Media
 
             if (key == null)
             {
-                if (SystemFonts is IFontCollection2 fontCollection2)
+                if (SystemFonts.TryGetFamilyTypefaces(fontFamily.Name, out var familyTypefaces))
                 {
-                    if (fontCollection2.TryGetFamilyTypefaces(fontFamily.Name, out var familyTypefaces))
-                    {
-                        return familyTypefaces;
-                    }
+                    return familyTypefaces;
                 }
             }
             else
             {
                 var source = key.Source.EnsureAbsolute(key.BaseUri);
 
-                if (TryGetFontCollection(source, out var fontCollection) && fontCollection is IFontCollection2 fontCollection2)
+                if (TryGetFontCollection(source, out var fontCollection) && fontCollection.TryGetFamilyTypefaces(fontFamily.Name, out var familyTypefaces))
                 {
-                    if (fontCollection2.TryGetFamilyTypefaces(fontFamily.Name, out var familyTypefaces))
-                    {
-                        return familyTypefaces;
-                    }
+                    return familyTypefaces;
                 }
             }
 
@@ -374,7 +373,7 @@ namespace Avalonia.Media
                         fontCollection = new EmbeddedFontCollection(source, source);
                     }
                 }
-                
+
                 if (fontCollection != null)
                 {
                     return _fontCollections.TryAdd(fontCollection.Key, fontCollection);

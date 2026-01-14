@@ -1,5 +1,8 @@
 using System;
 using Avalonia.Data;
+using Avalonia.Data.Converters;
+using Avalonia.Data.Core;
+using Avalonia.UnitTests;
 using Xunit;
 
 #nullable enable
@@ -162,5 +165,30 @@ public abstract partial class BindingExpressionTests
             converterParameter: "foo");
 
         Assert.Equal("foo", target.String);
+    }
+
+    [Fact]
+    public void LeafNode_Should_Be_Null_When_Nodes_List_Is_Empty()
+    {
+        using (UnitTestApplication.Start(TestServices.StyledWindow))
+        {
+            // Reproduces issue #20441
+            // Create a binding expression with no nodes (e.g., {Binding Source='Elements', Converter={...}})
+            var bindingExpression = new BindingExpression(
+                source: "Elements",
+                nodes: null,  // This results in an empty nodes list
+                fallbackValue: AvaloniaProperty.UnsetValue,
+                converter: new PrefixConverter("Prefix"),
+                mode: BindingMode.OneWay,
+                targetProperty: TargetClass.StringProperty,
+                targetTypeConverter: TargetTypeConverter.GetReflectionConverter());
+
+            // These should not throw
+            var leafNode = bindingExpression.LeafNode;
+            var description = bindingExpression.Description;
+
+            // LeafNode should be null when there are no nodes
+            Assert.Null(leafNode);
+        }
     }
 }
