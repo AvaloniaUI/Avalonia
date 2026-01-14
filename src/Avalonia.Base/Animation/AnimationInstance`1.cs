@@ -77,23 +77,24 @@ namespace Avalonia.Animation
 
         private void FetchProperties()
         {
-            if (_animation.SpeedRatio < 0d)
-                throw new InvalidOperationException("SpeedRatio value should not be negative.");
-
-            if (_animation.Duration < TimeSpan.Zero)
-                throw new InvalidOperationException("Duration value cannot be negative.");
-
-            if (_animation.Delay < TimeSpan.Zero)
-                throw new InvalidOperationException("Delay value cannot be negative.");
-
             _easeFunc = _animation.Easing;
 
             _speedRatioPrev = _speedRatio;
             _speedRatio = _animation.SpeedRatio;
+            if (_speedRatio < 0d)
+                throw new InvalidOperationException("SpeedRatio value cannot be negative.");
 
             _initialDelay = _animation.Delay;
+            if (_initialDelay < TimeSpan.Zero)
+                throw new InvalidOperationException("Delay value cannot be negative.");
+
             _duration = _animation.Duration;
+            if (_duration < TimeSpan.Zero)
+                throw new InvalidOperationException("Duration value cannot be negative.");
+
             _iterationDelay = _animation.DelayBetweenIterations;
+            if (_iterationDelay < TimeSpan.Zero)
+                throw new InvalidOperationException("DelayBetweenIterations value cannot be negative.");
 
             if (_animation.IterationCount.RepeatType == IterationType.Many)
             {
@@ -391,8 +392,6 @@ namespace Avalonia.Animation
                 DoComplete(false);
                 return;
             }
-
-            var timeUntilIterEnd = iterDurationTotal - iterTime;
 
             if (iterTime > iterDuration && iterTime <= iterDurationTotal && iterDelay > 0)
             {
