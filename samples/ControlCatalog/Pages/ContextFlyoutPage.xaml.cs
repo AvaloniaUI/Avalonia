@@ -1,44 +1,17 @@
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
-using ControlCatalog.ViewModels;
-using Avalonia.Interactivity;
 using System;
 using System.ComponentModel;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using ControlCatalog.ViewModels;
 
 namespace ControlCatalog.Pages
 {
-    public class ContextFlyoutPage : UserControl
+    public partial class ContextFlyoutPage : UserControl
     {
-        private TextBox _textBox;
-
         public ContextFlyoutPage()
         {
             InitializeComponent();
-
             DataContext = new ContextPageViewModel();
-
-            _textBox = this.Get<TextBox>("TextBox");
-
-            var cutButton = this.Get<Button>("CutButton");
-            cutButton.Click += CloseFlyout;
-
-            var copyButton = this.Get<Button>("CopyButton");
-            copyButton.Click += CloseFlyout;
-
-            var pasteButton = this.Get<Button>("PasteButton");
-            pasteButton.Click += CloseFlyout;
-
-            var clearButton = this.Get<Button>("ClearButton");
-            clearButton.Click += CloseFlyout;
-
-            var customContextRequestedBorder = this.Get<Border>("CustomContextRequestedBorder");
-            customContextRequestedBorder.AddHandler(ContextRequestedEvent, CustomContextRequested, RoutingStrategies.Tunnel);
-
-            var cancellableContextBorder = this.Get<Border>("CancellableContextBorder");
-            var flyout = (Flyout)cancellableContextBorder.ContextFlyout!;
-            flyout.Closing += ContextFlyoutPage_Closing;
-            flyout.Opening += ContextFlyoutPage_Opening;
         }
 
         private ContextPageViewModel? _model;
@@ -55,22 +28,20 @@ namespace ControlCatalog.Pages
 
         private void ContextFlyoutPage_Closing(object? sender, CancelEventArgs e)
         {
-            var cancelCloseCheckBox = this.FindControl<CheckBox>("CancelCloseCheckBox");
-            e.Cancel = cancelCloseCheckBox?.IsChecked ?? false;
+            e.Cancel = CancelCloseCheckBox?.IsChecked ?? false;
         }
 
         private void ContextFlyoutPage_Opening(object? sender, EventArgs e)
         {
             if (e is CancelEventArgs cancelArgs)
             {
-                var cancelCloseCheckBox = this.FindControl<CheckBox>("CancelOpenCheckBox");
-                cancelArgs.Cancel = cancelCloseCheckBox?.IsChecked ?? false;
+                cancelArgs.Cancel = CancelCloseCheckBox?.IsChecked ?? false;
             }
         }
 
         private void CloseFlyout(object? sender, RoutedEventArgs e)
         {
-            _textBox.ContextFlyout?.Hide();
+            TextBox.ContextFlyout?.Hide();
         }
 
         public void CustomContextRequested(object? sender, ContextRequestedEventArgs e)
@@ -82,11 +53,6 @@ namespace ControlCatalog.Pages
                     : "Context was requested without pointer";
                 e.Handled = true;
             }
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
         }
     }
 }

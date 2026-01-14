@@ -100,7 +100,6 @@
                                 ContentTemplate="{TemplateBinding HeaderTemplate}"
                                 VerticalAlignment="Center"
                                 HorizontalAlignment="Stretch"
-                                RecognizesAccessKey="True"
                                 Grid.Column="2"/>
               <TextBlock x:Name="PART_InputGestureText"
                          Grid.Column="3"
@@ -145,6 +144,10 @@
         </Panel>
       </ControlTemplate>
     </Setter>
+
+    <Style Selector="^ /template/ ContentPresenter#PART_HeaderPresenter">
+      <Setter Property="RecognizesAccessKey" Value="True" />
+    </Style> 
 
     <Style Selector="^:icon /template/ ContentControl#PART_IconPresenter">
       <Setter Property="IsVisible" Value="True" />

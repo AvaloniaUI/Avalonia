@@ -9,6 +9,8 @@ namespace Avalonia.Generators.Common;
 internal class EquatableList<T>(IList<T> collection)
     : ReadOnlyCollection<T>(collection), IEquatable<EquatableList<T>>
 {
+    public static readonly EquatableList<T> Empty = new([]);
+
     public bool Equals(EquatableList<T>? other)
     {
         // If the other list is null or a different size, they're not equal
