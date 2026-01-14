@@ -41,6 +41,7 @@ namespace Avalonia.Native
         public int HeadingLevel => _inner.GetHeadingLevel();
         public IAvnAutomationPeer? Parent => Wrap(_inner.GetParent());
         public IAvnAutomationPeer? VisualRoot => Wrap(_inner.GetVisualRoot());
+        public AvnLiveSetting LiveSetting => (AvnLiveSetting)_inner.GetLiveSetting();
 
         public int HasKeyboardFocus() => _inner.HasKeyboardFocus().AsComBool();
         public int IsContentElement() => _inner.IsContentElement().AsComBool();

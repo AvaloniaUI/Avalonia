@@ -11,6 +11,7 @@
     IAvnAutomationPeer* _peer;
     AvnAutomationNode* _node;
     NSMutableArray* _children;
+    NSArray<NSString*>* _attributeNames;
 }
 
 + (NSAccessibilityElement *)acquire:(IAvnAutomationPeer *)peer
@@ -163,6 +164,32 @@
         case LandmarkSearch: return @"search";
     }
     return NSAccessibilityRoleDescription([self accessibilityRole], [self accessibilitySubrole]);
+}
+
+// Note: Apple has deprecated this API, but it's still used to set attributes not supported by NSAccessibility
+- (NSArray<NSString *> *)accessibilityAttributeNames
+{
+    if (_attributeNames == nil)
+    {
+        _attributeNames = @[
+            @"AXARIALive",
+        ];
+    }
+    return _attributeNames;
+}
+
+- (id)accessibilityAttributeValue:(NSAccessibilityAttributeName)attribute
+{
+    if ([attribute isEqualToString:@"AXARIALive"])
+    {
+        switch (_peer->GetLiveSetting())
+        {
+            case LiveSettingPolite: return @"polite";
+            case LiveSettingAssertive: return @"assertive";
+        }
+        return nil;
+    }
+    return nil;
 }
 
 - (NSString *)accessibilityIdentifier
@@ -420,8 +447,17 @@
         @{ NSAccessibilityUIElementsKey: [changed allObjects]});
 }
 
-- (void)raisePropertyChanged
+- (void)raisePropertyChanged:(AvnAutomationProperty)property
 {
+    if (property == AutomationPeer_Name && _peer->GetLiveSetting() != LiveSettingOff)
+    {
+        [self raiseLiveRegionChanged];
+    }
+}
+
+- (void)raiseLiveRegionChanged
+{
+    NSAccessibilityPostNotification(self, @"AXLiveRegionChanged");
 }
 
 - (void)setAccessibilityFocused:(BOOL)accessibilityFocused

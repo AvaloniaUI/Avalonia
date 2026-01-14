@@ -143,6 +143,7 @@ namespace Avalonia.Win32.Automation
                 UiaPropertyId.LandmarkType => InvokeSync(() => ToUiaLandmarkType(Peer.GetLandmarkType())),
                 UiaPropertyId.LocalizedLandmarkType => InvokeSync(() => ToUiaLocalizedLandmarkType(Peer.GetLandmarkType())),
                 UiaPropertyId.HeadingLevel => InvokeSync(() => ToUiaHeadingLevel(Peer.GetHeadingLevel())),
+                UiaPropertyId.LiveSetting => InvokeSync(() => ToUiaLiveSetting(Peer.GetLiveSetting())),
                 UiaPropertyId.ProcessId => s_pid,
                 UiaPropertyId.RuntimeId => _runtimeId,
                 _ => null,
@@ -275,6 +276,13 @@ namespace Avalonia.Win32.Automation
                 (int)UiaEventId.AutomationFocusChanged);
         }
 
+        protected void RaiseLiveRegionChanged()
+        {
+            UiaCoreProviderApi.UiaRaiseAutomationEvent(
+                this,
+                (int)UiaEventId.LiveRegionChanged);
+        }
+
         private RootAutomationNode? GetRoot()
         {
             Dispatcher.UIThread.VerifyAccess();
@@ -295,6 +303,11 @@ namespace Avalonia.Win32.Automation
                     (int)id,
                     e.OldValue as IConvertible,
                     e.NewValue as IConvertible);
+            }
+
+            if (id == UiaPropertyId.Name && Peer.GetLiveSetting() != AutomationLiveSetting.Off)
+            {
+                RaiseLiveRegionChanged();
             }
         }
 
@@ -407,6 +420,8 @@ namespace Avalonia.Win32.Automation
                 _ => UiaHeadingLevel.None,
             };
         }
+
+        private static UiaLiveSetting ToUiaLiveSetting(AutomationLiveSetting liveSetting) => (UiaLiveSetting)liveSetting;
 
         private static int GetProcessId()
         {
