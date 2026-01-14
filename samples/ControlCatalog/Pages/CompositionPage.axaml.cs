@@ -335,8 +335,6 @@ public partial class CompositionPage : UserControl
             : CustomVisualHandler.UseNonPreciseDirtyRects);
     }
 
-    // ===== Composition Brush Demo =====
-
     private void SolidBrushCreateAnimate_Click(object? sender, RoutedEventArgs e)
     {
         var visual = ElementComposition.GetElementVisual(SolidBrushHost);
@@ -373,10 +371,10 @@ public partial class CompositionPage : UserControl
                     ?? compositor.CreateLinearGradientBrush();
 
         brush.GradientStops.Clear();
-        brush.GradientStops.Add(compositor.CreateCompositionGradientStop(0f, Color.FromRgb(168, 213, 85)));
-        brush.GradientStops.Add(compositor.CreateCompositionGradientStop(0.33f, Color.FromRgb(31, 167, 168)));
-        brush.GradientStops.Add(compositor.CreateCompositionGradientStop(0.66f, Color.FromRgb(44, 121, 251)));
-        brush.GradientStops.Add(compositor.CreateCompositionGradientStop(1f, Color.FromRgb(168, 213, 85)));
+        brush.GradientStops.Add(compositor.CreateGradientStop(0f, Color.FromRgb(168, 213, 85)));
+        brush.GradientStops.Add(compositor.CreateGradientStop(0.33f, Color.FromRgb(31, 167, 168)));
+        brush.GradientStops.Add(compositor.CreateGradientStop(0.66f, Color.FromRgb(44, 121, 251)));
+        brush.GradientStops.Add(compositor.CreateGradientStop(1f, Color.FromRgb(168, 213, 85)));
         brush.StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative);
         brush.EndPoint = new RelativePoint(1, 0, RelativeUnit.Relative);
 
@@ -414,9 +412,9 @@ public partial class CompositionPage : UserControl
                     ?? compositor.CreateRadialGradientBrush();
 
         brush.GradientStops.Clear();
-        brush.GradientStops.Add(compositor.CreateCompositionGradientStop(0f, Colors.Yellow));
-        brush.GradientStops.Add(compositor.CreateCompositionGradientStop(0.6f, Colors.Orange));
-        brush.GradientStops.Add(compositor.CreateCompositionGradientStop(1f, Colors.Red));
+        brush.GradientStops.Add(compositor.CreateGradientStop(0f, Colors.Yellow));
+        brush.GradientStops.Add(compositor.CreateGradientStop(0.6f, Colors.Orange));
+        brush.GradientStops.Add(compositor.CreateGradientStop(1f, Colors.Red));
         brush.Center = RelativePoint.Center;
         brush.GradientOrigin = RelativePoint.Center;
 
@@ -462,11 +460,11 @@ public partial class CompositionPage : UserControl
                     ?? compositor.CreateConicGradientBrush();
 
         brush.GradientStops.Clear();
-        brush.GradientStops.Add(compositor.CreateCompositionGradientStop(0f, Colors.Cyan));
-        brush.GradientStops.Add(compositor.CreateCompositionGradientStop(0.25f, Colors.Magenta));
-        brush.GradientStops.Add(compositor.CreateCompositionGradientStop(0.5f, Colors.Yellow));
-        brush.GradientStops.Add(compositor.CreateCompositionGradientStop(0.75f, Colors.Lime));
-        brush.GradientStops.Add(compositor.CreateCompositionGradientStop(1f, Colors.Cyan));
+        brush.GradientStops.Add(compositor.CreateGradientStop(0f, Colors.Cyan));
+        brush.GradientStops.Add(compositor.CreateGradientStop(0.25f, Colors.Magenta));
+        brush.GradientStops.Add(compositor.CreateGradientStop(0.5f, Colors.Yellow));
+        brush.GradientStops.Add(compositor.CreateGradientStop(0.75f, Colors.Lime));
+        brush.GradientStops.Add(compositor.CreateGradientStop(1f, Colors.Cyan));
 
         brush.Center = RelativePoint.Center;
 
