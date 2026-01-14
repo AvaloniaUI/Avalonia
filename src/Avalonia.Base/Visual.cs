@@ -154,7 +154,7 @@ namespace Avalonia
             // Disable transitions until we're added to the visual tree.
             DisableTransitions();
 
-            var visualChildren = new AvaloniaList<Visual>();
+            var visualChildren = new SafeEnumerableList<Visual>();
             visualChildren.ResetBehavior = ResetBehavior.Remove;
             visualChildren.Validator = this;
             visualChildren.CollectionChanged += VisualChildrenChanged;

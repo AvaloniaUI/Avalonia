@@ -19,14 +19,14 @@ namespace Avalonia.Base.UnitTests.Collections
     {
         private class ViewModel1
         {
-            public string FirstName { get; set; }
-            public string LastName { get; set; }
+            public string FirstName { get; set; } = "";
+            public string LastName { get; set; } = "";
         }
 
         private class ViewModel2
         {
-            public string CarProducer { get; set; }
-            public string CarModel { get; set; }
+            public string CarProducer { get; set; } = "";
+            public string CarModel { get; set; } = "";
         }
 
         [Fact]
@@ -50,114 +50,9 @@ namespace Avalonia.Base.UnitTests.Collections
                             }
                         };
                     });
-                /*IDataTemplate windowTemplate = new FuncDataTemplate<object?>((i, ns) =>
-                {
-
-                });*/
+            
                 var window = new Window
                 {
-                    /*DataTemplates =
-                    {
-                        new FuncDataTemplate<ViewModel1>(
-                            (vm1,ns) =>
-                            {
-                                return new Grid
-                                {
-                                    ColumnDefinitions = { new(GridLength.Auto), new(1, GridUnitType.Star) },
-                                    RowDefinitions = { new(GridLength.Auto), new(GridLength.Auto), new(new GridLength(1, GridUnitType.Star)) },
-                                    Children =
-                                    {
-                                        new TextBlock
-                                        {
-                                            Text = "FirstName",
-                                            VerticalAlignment = VerticalAlignment.Center,
-                                            HorizontalAlignment = HorizontalAlignment.Left,
-                                            [Grid.ColumnProperty] = 0,
-                                            [Grid.RowProperty] = 0,
-                                        },
-                                        new TextBox
-                                        {
-                                            [TextBox.TextProperty.Bind()] = new Binding(nameof(ViewModel1.FirstName)),
-                                            VerticalAlignment = VerticalAlignment.Center,
-                                            HorizontalAlignment = HorizontalAlignment.Stretch,
-                                            [Grid.ColumnProperty] = 1,
-                                            [Grid.RowProperty] = 0,
-                                        },
-                                        new TextBlock
-                                        {
-                                            Text = "LastName",
-                                            VerticalAlignment = VerticalAlignment.Center,
-                                            HorizontalAlignment = HorizontalAlignment.Left,
-                                            [Grid.ColumnProperty] = 0,
-                                            [Grid.RowProperty] = 1,
-                                        },
-                                        new TextBox
-                                        {
-                                            [TextBox.TextProperty.Bind()] = new Binding(nameof(ViewModel1.LastName)),
-                                            VerticalAlignment = VerticalAlignment.Center,
-                                            HorizontalAlignment = HorizontalAlignment.Stretch,
-                                            [Grid.ColumnProperty] = 1,
-                                            [Grid.RowProperty] = 1,
-                                        },
-                                    }
-                                };
-                            }),
-                        new FuncDataTemplate<ViewModel2>(
-                            (vm2,ns) =>
-                            {
-                                return new Grid
-                                {
-                                    ColumnDefinitions = { new(GridLength.Auto), new(1, GridUnitType.Star) },
-                                    RowDefinitions = { new(GridLength.Auto), new(GridLength.Auto), new(GridLength.Auto), new(new GridLength(1, GridUnitType.Star)) },
-                                    Children =
-                                    {
-                                        new TextBlock
-                                        {
-                                            Text = "Car",
-                                            VerticalAlignment = VerticalAlignment.Center,
-                                            Margin = new Thickness(24, 12),
-                                            FontWeight = FontWeight.Bold,
-                                            FontSize = 24,
-                                            [Grid.ColumnProperty] = 0,
-                                            [Grid.ColumnSpanProperty] = 2,
-                                            [Grid.RowProperty] = 0,
-                                        },
-                                        new TextBlock
-                                        {
-                                            Text = "Producer",
-                                            VerticalAlignment = VerticalAlignment.Center,
-                                            HorizontalAlignment = HorizontalAlignment.Left,
-                                            [Grid.ColumnProperty] = 0,
-                                            [Grid.RowProperty] = 1,
-                                        },
-                                        new TextBox
-                                        {
-                                            [TextBox.TextProperty.Bind()] = new Binding(nameof(ViewModel2.CarProducer)),
-                                            VerticalAlignment = VerticalAlignment.Center,
-                                            HorizontalAlignment = HorizontalAlignment.Stretch,
-                                            [Grid.ColumnProperty] = 1,
-                                            [Grid.RowProperty] = 1,
-                                        },
-                                        new TextBlock
-                                        {
-                                            Text = "Model",
-                                            VerticalAlignment = VerticalAlignment.Center,
-                                            HorizontalAlignment = HorizontalAlignment.Left,
-                                            [Grid.ColumnProperty] = 0,
-                                            [Grid.RowProperty] = 2,
-                                        },
-                                        new TextBox
-                                        {
-                                            [TextBox.TextProperty.Bind()] = new Binding(nameof(ViewModel2.CarModel)),
-                                            VerticalAlignment = VerticalAlignment.Center,
-                                            HorizontalAlignment = HorizontalAlignment.Stretch,
-                                            [Grid.ColumnProperty] = 1,
-                                            [Grid.RowProperty] = 2,
-                                        },
-                                    }
-                                };
-                            }),
-                    },*/
                     Content = tabControl = new TabControl
                     {
                         ItemsSource = new object[]

@@ -20,6 +20,8 @@ namespace Avalonia.Utilities
         public event NotifyCollectionChangedEventHandler? CollectionChanged;
         public event PropertyChangedEventHandler? PropertyChanged;
 
+        //for test purposes
+        internal AvaloniaList<T> Inner => _list;
         public SafeEnumerableList()
         {
             _list.CollectionChanged += List_CollectionChanged;
@@ -107,32 +109,32 @@ namespace Avalonia.Utilities
 
         public void AddRange(IEnumerable<T> items)
         {
-            ((IAvaloniaList<T>)GetList()).AddRange(items);
+            GetList().AddRange(items);
         }
 
         public void InsertRange(int index, IEnumerable<T> items)
         {
-            ((IAvaloniaList<T>)GetList()).InsertRange(index, items);
+            GetList().InsertRange(index, items);
         }
 
         public void Move(int oldIndex, int newIndex)
         {
-            ((IAvaloniaList<T>)GetList()).Move(oldIndex, newIndex);
+            GetList().Move(oldIndex, newIndex);
         }
 
         public void MoveRange(int oldIndex, int count, int newIndex)
         {
-            ((IAvaloniaList<T>)GetList()).MoveRange(oldIndex, count, newIndex);
+            GetList().MoveRange(oldIndex, count, newIndex);
         }
 
         public void RemoveAll(IEnumerable<T> items)
         {
-            ((IAvaloniaList<T>)GetList()).RemoveAll(items);
+            GetList().RemoveAll(items);
         }
 
         public void RemoveRange(int index, int count)
         {
-            ((IAvaloniaList<T>)GetList()).RemoveRange(index, count);
+            GetList().RemoveRange(index, count);
         }
 
         public int Count => _list.Count;
