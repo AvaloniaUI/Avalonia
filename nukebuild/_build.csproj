@@ -7,8 +7,6 @@
     <NoWarn>$(NoWarn);CS0649;CA1847</NoWarn>
     <NukeTelemetryVersion>1</NukeTelemetryVersion>
     <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
-    <!-- See https://github.com/nuke-build/nuke/issues/818 -->
-    <EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
   </PropertyGroup>
 
   <ItemGroup>
