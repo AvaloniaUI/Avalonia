@@ -837,6 +837,79 @@ namespace Avalonia.Base.UnitTests.Animation
             }
         }
 
+        [Fact]
+        public void DelayBetweenIterations_Behind_Initial_Point_Is_In_Front_Of_Iterations()
+        {
+            using (Start())
+            {
+                var keyframe1 = new KeyFrame()
+                {
+                    Setters = { new Setter(Visual.OpacityProperty, 0d), },
+                    KeyTime = TimeSpan.FromSeconds(0)
+                };
+
+                var keyframe2 = new KeyFrame()
+                {
+                    Setters = { new Setter(Visual.OpacityProperty, 1d), },
+                    KeyTime = TimeSpan.FromSeconds(1)
+                };
+
+                var animation = new Avalonia.Animation.Animation()
+                {
+                    Duration = TimeSpan.FromSeconds(1),
+                    DelayBetweenIterations = TimeSpan.FromSeconds(0.5),
+                    Children = { keyframe1, keyframe2 },
+                    IterationCount = IterationCount.Infinite,
+                    PlaybackDirection = PlaybackDirection.Normal
+                };
+
+                Border target;
+                var clock = new TestClock();
+                var root = new TestRoot
+                {
+                    Clock = clock,
+                    Styles = { new Style(x => x.OfType<Border>()) { Animations = { animation }, } },
+                    Child = target = new Border { Background = Brushes.Red, }
+                };
+
+                root.Measure(Size.Infinity);
+                root.Arrange(new Rect(root.DesiredSize));
+
+                clock.Step(TimeSpan.FromSeconds(0));
+                Assert.Equal(0, target.Opacity);
+
+                clock.Step(TimeSpan.FromSeconds(0.1));
+                Assert.Equal(0.1, target.Opacity);
+                animation.PlaybackDirection = PlaybackDirection.Reverse;
+                clock.Step(TimeSpan.FromSeconds(0.1));
+                Assert.Equal(0.1, target.Opacity);
+
+                clock.Step(TimeSpan.FromSeconds(0.2));
+                Assert.Equal(0, target.Opacity);
+
+                clock.Step(TimeSpan.FromSeconds(0.2 + 0.1));
+                Assert.Equal(0.9, target.Opacity);
+
+                clock.Step(TimeSpan.FromSeconds(0.2 + 0.9));
+                Assert.Equal(0.1, target.Opacity, 0.000001);
+
+                clock.Step(TimeSpan.FromSeconds(0.2 + 1));
+                Assert.Equal(0, target.Opacity);
+
+                clock.Step(TimeSpan.FromSeconds(0.2 + 1 + 0.25));
+                Assert.Equal(0, target.Opacity);
+
+                clock.Step(TimeSpan.FromSeconds(0.2 + 1 + 0.499));
+                Assert.Equal(0, target.Opacity);
+
+                clock.Step(TimeSpan.FromSeconds(0.2 + 1 + 0.5));
+                Assert.Equal(1, target.Opacity);
+
+                clock.Step(TimeSpan.FromSeconds(0.2 + 1 + 0.5 + 0.1));
+                Assert.Equal(0.9, target.Opacity);
+            }
+        }
+
         private static IDisposable Start()
         {
             var clock = new MockGlobalClock();
