@@ -185,7 +185,7 @@ namespace Avalonia.Animation
 
             if (_isFirstFrame)
             {
-                // In first frame of animation we determine the expected direction of time and animation time origin.
+                // In first frame of animation we determine the expected direction of time.
                 _timeMovesBackwards =
                     _animation.PlaybackDirection == PlaybackDirection.Reverse ||
                     _animation.PlaybackDirection == PlaybackDirection.AlternateReverse;
@@ -205,7 +205,7 @@ namespace Avalonia.Animation
             }
         }
 
-        private bool IsIterationReversed(bool isAlternatingPlaybackDirection, long? iterationIndex)
+        private static bool IsIterationReversed(bool isAlternatingPlaybackDirection, long? iterationIndex)
         {
             if (isAlternatingPlaybackDirection)
                 return (iterationIndex & 1) != 0;
@@ -283,7 +283,7 @@ namespace Avalonia.Animation
             return false;
         }
 
-        private void ApplyLimitedClamp(ref long animTime, long animTimeOrigin)
+        private void ApplyLimitedClamp(ref long animTime)
         {
             if (_timeMovesBackwards)
             {
@@ -302,12 +302,11 @@ namespace Avalonia.Animation
             DoPlayStates();
             FetchProperties();
 
-            bool hasSpeedChanged = _speedRatio != _speedRatioPrev || _playbackDirection != _playbackDirectionPrev;
-            if (hasSpeedChanged)
+            if (_speedRatio != _speedRatioPrev || _playbackDirection != _playbackDirectionPrev)
             {
                 // Remember the time when speed changed.
                 // All we can know is that it changed some time between current and prev frame.
-                // We assume it to have happened exactly at prev frame.
+                // We assume that this happened exactly at prev frame.
                 _timeOfLastChange = _timePrev;
                 _animTimeOfLastChange = _animTimePrev;
             }
@@ -315,11 +314,7 @@ namespace Avalonia.Animation
             bool isAnimTimeGoingBackwards = IsAnimTimeGoingBackwards();
 
             // Combine SpeedRatio and PlaybackDirection into a single signed speed ratio.
-            double speedRatio;
-            if (isAnimTimeGoingBackwards)
-                speedRatio = -_speedRatio;
-            else
-                speedRatio = _speedRatio;
+            double speedRatio = isAnimTimeGoingBackwards ? -_speedRatio : _speedRatio;
 
             // Calculate animation time. That's time that has passed inside
             // the animation since its beginning.
@@ -330,17 +325,15 @@ namespace Avalonia.Animation
             if (_iterationCount.HasValue)
             {
                 // Make sure animation time is inside a valid interval.
-                ApplyLimitedClamp(ref animTime, 0);
+                ApplyLimitedClamp(ref animTime);
             }
 
             _timePrev = time;
             _animTimePrev = animTime;
 
-            long animTimePositive;
-            if (_timeMovesBackwards)
-                animTimePositive = -animTime;
-            else
-                animTimePositive = animTime;
+            // Get animation time oriented in the direction of time. Animation running in
+            // same direction as it was on first frame will always increase this variable.
+            long animTimePositive = _timeMovesBackwards ? -animTime : animTime;
 
             if (_initialDelay > TimeSpan.Zero)
             {
@@ -368,18 +361,19 @@ namespace Avalonia.Animation
             var iterIndex = animTimePositive / iterDurationTotal;
             var iterTime = animTimePositive % iterDurationTotal;
 
-            bool playbackReversed;
-            if (animTimePositive < 0)
+            bool playbackReversed = animTimePositive < 0;
+            if (playbackReversed)
             {
+                // Animation time is behind the starting point of animation.
+
+                // First negative iteration has index -1, first positive iteration has index 0.
                 iterIndex--;
+
+                // Move iteration delay to the front of iteration, which is (when moving
+                // backwards through animation time) effectively at the end of iteration.
                 iterTime = -iterTime;
-                playbackReversed = _timeMovesBackwards ^ IsIterationReversed(IsAlternatingPlaybackDirection(), iterIndex);
-                playbackReversed = !playbackReversed;
             }
-            else
-            {
-                playbackReversed = _timeMovesBackwards ^ IsIterationReversed(IsAlternatingPlaybackDirection(), iterIndex);
-            }
+            playbackReversed ^= _timeMovesBackwards ^ IsIterationReversed(IsAlternatingPlaybackDirection(), iterIndex);
 
             var itersUntilEnd = _iterationCount - iterIndex;
 
@@ -390,7 +384,6 @@ namespace Avalonia.Animation
                 return;
             }
 
-            var timeUntilIterDelay = iterDuration - iterTime;
             var timeUntilIterEnd = iterDurationTotal - iterTime;
 
             if (iterTime > iterDuration && iterTime <= iterDurationTotal && iterDelay > 0)
