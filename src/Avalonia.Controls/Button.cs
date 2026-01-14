@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows.Input;
 using Avalonia.Automation.Peers;
@@ -571,7 +572,7 @@ namespace Avalonia.Controls
                 }
             }
         }
-
+        
         internal void PerformClick() => OnClick();
 
         private static void OnAccessKeyPressed(Button sender, AccessKeyPressedEventArgs e)

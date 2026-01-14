@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reactive.Subjects;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
-using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Xunit;
@@ -26,7 +26,7 @@ namespace Avalonia.Controls.UnitTests
                 Dispatcher.UIThread.RunJobs();
 
                 Assert.True(DataValidationErrors.GetHasErrors(control));
-                Assert.True(DataValidationErrors.GetErrors(control).SequenceEqual(new[] { exception }));
+                Assert.Equal([exception], DataValidationErrors.GetErrors(control));
             });
         }
 
@@ -41,7 +41,7 @@ namespace Avalonia.Controls.UnitTests
                 Dispatcher.UIThread.RunJobs();
 
                 Assert.True(DataValidationErrors.GetHasErrors(control));
-                Assert.True(DataValidationErrors.GetErrors(control).SequenceEqual(new[] { exception }));
+                Assert.Equal([exception], DataValidationErrors.GetErrors(control));
             });
         }
 
@@ -80,19 +80,39 @@ namespace Avalonia.Controls.UnitTests
             });
         }
 
-        public static IEnumerable<object[]> Increment_Decrement_TestData()
+        [Fact]
+        public void NumberFormat_Is_Applied_Immediately()
+        {
+            RunTest((control, textbox) =>
+            {
+                const decimal value = 10.11m;
+                var initialNumberFormat = new NumberFormatInfo { NumberDecimalSeparator = "." };
+                var newNumberFormat = new NumberFormatInfo { NumberDecimalSeparator = ";" };
+
+                // Establish and verify initial conditions.
+                control.NumberFormat = initialNumberFormat;
+                control.Value = value;
+                Assert.Equal(value.ToString(initialNumberFormat), control.Text);
+
+                // Check that NumberFormat is applied.
+                control.NumberFormat = newNumberFormat;
+                Assert.Equal(value.ToString(newNumberFormat), control.Text);
+            });
+        }
+
+        public static IEnumerable<object?[]> Increment_Decrement_TestData()
         {
             // if min and max are not defined and value was null, 0 should be ne new value after spin
-            yield return new object[] { decimal.MinValue, decimal.MaxValue, null, SpinDirection.Decrease, 0m };
-            yield return new object[] { decimal.MinValue, decimal.MaxValue, null, SpinDirection.Increase, 0m };
+            yield return [decimal.MinValue, decimal.MaxValue, null, SpinDirection.Decrease, 0m];
+            yield return [decimal.MinValue, decimal.MaxValue, null, SpinDirection.Increase, 0m];
             
             // if no value was defined, but Min or Max are defined, use these as the new value
-            yield return new object[] { -400m, -200m, null, SpinDirection.Decrease, -200m };
-            yield return new object[] { 200m, 400m, null, SpinDirection.Increase, 200m };
+            yield return [-400m, -200m, null, SpinDirection.Decrease, -200m];
+            yield return [200m, 400m, null, SpinDirection.Increase, 200m];
             
             // Value should be clamped to Min / Max after spinning
-            yield return new object[] { 200m, 400m, 5m, SpinDirection.Increase, 200m };
-            yield return new object[] { 200m, 400m, 200m, SpinDirection.Decrease, 200m };
+            yield return [200m, 400m, 5m, SpinDirection.Increase, 200m];
+            yield return [200m, 400m, 200m, SpinDirection.Decrease, 200m];
         }
         
         private void RunTest(Action<NumericUpDown, TextBox> test)
@@ -104,7 +124,7 @@ namespace Avalonia.Controls.UnitTests
                 var window = new Window { Content = control };
                 window.ApplyStyling();
                 window.ApplyTemplate();
-                window.Presenter.ApplyTemplate();
+                window.Presenter!.ApplyTemplate();
                 Dispatcher.UIThread.RunJobs();
                 test.Invoke(control, textBox);
             }

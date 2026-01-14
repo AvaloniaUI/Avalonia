@@ -5,11 +5,9 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Avalonia.Media;
-using Avalonia.Platform;
-using Avalonia.Rendering.SceneGraph;
-using Avalonia.Utilities;
 using Avalonia.Media.Imaging;
 using Avalonia.Media.TextFormatting;
+using Avalonia.Platform;
 
 namespace Avalonia.Headless
 {
@@ -19,8 +17,7 @@ namespace Avalonia.Headless
         {
             AvaloniaLocator.CurrentMutable
                 .Bind<IPlatformRenderInterface>().ToConstant(new HeadlessPlatformRenderInterface())
-                .Bind<IFontManagerImpl>().ToConstant(new HeadlessFontManagerStub())
-                .Bind<ITextShaperImpl>().ToConstant(new HeadlessTextShaperStub());
+                .Bind<IFontManagerImpl>().ToConstant(new HeadlessFontManagerStub());
         }
 
         public IPlatformRenderInterfaceContext CreateBackendContext(IPlatformGraphicsContext? graphicsContext) => this;
@@ -134,7 +131,7 @@ namespace Avalonia.Headless
         }
 
         public IGlyphRunImpl CreateGlyphRun(
-            IGlyphTypeface glyphTypeface, 
+            GlyphTypeface glyphTypeface, 
             double fontRenderingEmSize,
             IReadOnlyList<GlyphInfo> glyphInfos, 
             Point baselineOrigin)
@@ -145,7 +142,7 @@ namespace Avalonia.Headless
         internal class HeadlessGlyphRunStub : IGlyphRunImpl
         {
             public HeadlessGlyphRunStub(
-                IGlyphTypeface glyphTypeface,
+                GlyphTypeface glyphTypeface,
                 double fontRenderingEmSize,
                 Point baselineOrigin)
             {
@@ -158,7 +155,7 @@ namespace Avalonia.Headless
 
             public Point BaselineOrigin { get; }
 
-            public IGlyphTypeface GlyphTypeface { get; }
+            public GlyphTypeface GlyphTypeface { get; }
 
             public double FontRenderingEmSize { get; }           
 

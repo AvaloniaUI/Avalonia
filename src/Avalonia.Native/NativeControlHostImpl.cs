@@ -10,11 +10,20 @@ namespace Avalonia.Native
 {
     class NativeControlHostImpl : IDisposable, INativeControlHostImpl
     {
-        private IAvnNativeControlHost _host;
+        private IAvnNativeControlHost? _host;
 
         public NativeControlHostImpl(IAvnNativeControlHost host)
         {
             _host = host;
+        }
+
+        private IAvnNativeControlHost Host
+        {
+            get
+            {
+                ObjectDisposedException.ThrowIf(_host is null, this);
+                return _host;
+            }
         }
 
         public void Dispose()
@@ -25,7 +34,7 @@ namespace Avalonia.Native
 
         class DestroyableNSView : INativeControlHostDestroyableControlHandle
         {
-            private IAvnNativeControlHost _impl;
+            private IAvnNativeControlHost? _impl;
             private IntPtr _nsView;
 
             public DestroyableNSView(IAvnNativeControlHost impl)
@@ -49,12 +58,12 @@ namespace Avalonia.Native
         }
         
         public INativeControlHostDestroyableControlHandle CreateDefaultChild(IPlatformHandle parent) 
-            => new DestroyableNSView(_host);
+            => new DestroyableNSView(Host);
 
         public INativeControlHostControlTopLevelAttachment CreateNewAttachment(
             Func<IPlatformHandle, IPlatformHandle> create)
         {
-            var a = new Attachment(_host.CreateAttachment());
+            var a = new Attachment(Host.CreateAttachment());
             try
             {
                 var child = create(a.GetParentHandle());
@@ -71,7 +80,7 @@ namespace Avalonia.Native
 
         public INativeControlHostControlTopLevelAttachment CreateNewAttachment(IPlatformHandle handle)
         {
-            var a = new Attachment(_host.CreateAttachment());
+            var a = new Attachment(Host.CreateAttachment());
             a.InitWithChild(handle);
             a.AttachedTo = this;
             return a;
@@ -81,14 +90,25 @@ namespace Avalonia.Native
 
         class Attachment : INativeControlHostControlTopLevelAttachment
         {
-            private IAvnNativeControlHostTopLevelAttachment _native;
-            private NativeControlHostImpl _attachedTo;
-            public IPlatformHandle GetParentHandle() => new PlatformHandle(_native.ParentHandle, "NSView");
+            private IAvnNativeControlHostTopLevelAttachment? _native;
+            private NativeControlHostImpl? _attachedTo;
+
             public Attachment(IAvnNativeControlHostTopLevelAttachment native)
             {
                 _native = native;
             }
-            
+
+            private IAvnNativeControlHostTopLevelAttachment Native
+            {
+                get
+                {
+                    ObjectDisposedException.ThrowIf(_native is null, this);
+                    return _native;
+                }
+            }
+
+            public IPlatformHandle GetParentHandle() => new PlatformHandle(Native.ParentHandle, "NSView");
+
             public void Dispose()
             {
                 if (_native != null)
@@ -99,16 +119,13 @@ namespace Avalonia.Native
                 }
             }
 
-            public INativeControlHostImpl AttachedTo
+            public INativeControlHostImpl? AttachedTo
             {
                 get => _attachedTo;
                 set
                 {
-                    var host = (NativeControlHostImpl)value;
-                    if(host == null)
-                        _native.AttachTo(null);
-                    else
-                        _native.AttachTo(host._host);
+                    var host = (NativeControlHostImpl?)value;
+                    Native.AttachTo(host?._host);
                     _attachedTo = host;
                 }
             }
@@ -117,7 +134,7 @@ namespace Avalonia.Native
 
             public void HideWithSize(Size size)
             {
-                _native.HideWithSize(Math.Max(1, (float)size.Width), Math.Max(1, (float)size.Height));
+                Native.HideWithSize(Math.Max(1, (float)size.Width), Math.Max(1, (float)size.Height));
             }
             
             public void ShowInBounds(Rect bounds)
@@ -126,11 +143,11 @@ namespace Avalonia.Native
                     throw new InvalidOperationException("Native control isn't attached to a toplevel");
                 bounds = new Rect(bounds.X, bounds.Y, Math.Max(1, bounds.Width),
                     Math.Max(1, bounds.Height));
-                _native.ShowInBounds((float) bounds.X, (float) bounds.Y, (float) bounds.Width, (float) bounds.Height);
+                Native.ShowInBounds((float) bounds.X, (float) bounds.Y, (float) bounds.Width, (float) bounds.Height);
             }
 
             public void InitWithChild(IPlatformHandle handle) 
-                => _native.InitializeWithChildHandle(handle.Handle);
+                => Native.InitializeWithChildHandle(handle.Handle);
         }
     }
 }

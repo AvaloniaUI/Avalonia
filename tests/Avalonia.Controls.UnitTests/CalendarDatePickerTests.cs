@@ -33,7 +33,7 @@ namespace Avalonia.Controls.UnitTests
                 };
                 DateTime value = new DateTime(2000, 10, 10);
                 datePicker.SelectedDate = value;
-                Threading.Dispatcher.UIThread.RunJobs();
+                Threading.Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
                 Assert.True(handled);
             }
         }
@@ -44,6 +44,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(Services))
             {
                 CalendarDatePicker datePicker = CreateControl();
+                Assert.NotNull(datePicker.BlackoutDates);
                 datePicker.BlackoutDates.AddDatesInPast();
 
                 DateTime goodValue = DateTime.Today.AddDays(1);
@@ -65,7 +66,7 @@ namespace Avalonia.Controls.UnitTests
                 datePicker.SelectedDate = DateTime.Today.AddDays(5);
 
                 Assert.ThrowsAny<ArgumentOutOfRangeException>(
-                    () => datePicker.BlackoutDates.Add(new CalendarDateRange(DateTime.Today, DateTime.Today.AddDays(10))));
+                    () => datePicker.BlackoutDates!.Add(new CalendarDateRange(DateTime.Today, DateTime.Today.AddDays(10))));
             }
         }
 
@@ -86,7 +87,7 @@ namespace Avalonia.Controls.UnitTests
                 RaiseKeyEvent(tb, Key.Enter, KeyModifiers.None);
 
                 Assert.Equal("17.10.2024", datePicker.Text);
-                Assert.True(CompareDates(datePicker.SelectedDate.Value, new DateTime(2024, 10, 17)));
+                Assert.True(CompareDates(datePicker.SelectedDate!.Value, new DateTime(2024, 10, 17)));
 
                 tb.Clear();
                 RaiseTextEvent(tb, "12.10.2024");

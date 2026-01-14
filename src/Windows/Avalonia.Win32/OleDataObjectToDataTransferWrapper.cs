@@ -32,6 +32,25 @@ internal sealed class OleDataObjectToDataTransferWrapper(Win32Com.IDataObject ol
         while (Next(enumFormat) is { } format)
             formats.Add(format);
 
+        bool hasSupportedImageFormat = false;
+
+        foreach (var format in formats)
+        {
+            if (format.Identifier is ClipboardFormatRegistry.DibFormat 
+                or ClipboardFormatRegistry.BitmapFormat 
+                or ClipboardFormatRegistry.PngFormatMimeType
+                or ClipboardFormatRegistry.PngFormatSystemType)
+            {
+                hasSupportedImageFormat = true;
+                break;
+            }
+        }
+
+        if (hasSupportedImageFormat)
+        {
+            formats.Add(DataFormat.Bitmap);
+        }
+
         return formats.ToArray();
 
         static unsafe DataFormat? Next(IEnumFORMATETC enumFormat)

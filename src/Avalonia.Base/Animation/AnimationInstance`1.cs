@@ -198,17 +198,9 @@ namespace Avalonia.Animation
                 _timeMovesBackwards =
                     _animation.PlaybackDirection == PlaybackDirection.Reverse ||
                     _animation.PlaybackDirection == PlaybackDirection.AlternateReverse;
-
-                if (_timeMovesBackwards)
-                {
-                    if (_animator.Last().Value is T last)
-                        _initialKFValue = last;
-                }
-                else
-                {
-                    if (_animator.First().Value is T first)
-                        _initialKFValue = first;
-                }
+					
+                var initialKeyFrame = _timeMovesBackwards ? _animator.Last() : _animator.First();
+                _initialKFValue = initialKeyFrame.Value is T initialValue ? initialValue : _neutralValue;
 
                 _isFirstFrame = false;
             }

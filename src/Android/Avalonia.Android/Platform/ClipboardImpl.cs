@@ -85,7 +85,7 @@ namespace Avalonia.Android.Platform
                 if (DataFormat.Text.Equals(dataFormat))
                 {
                     var text = await item.TryGetValueAsync(DataFormat.Text);
-                    return new ClipData.Item(text, string.Empty);
+                    return new ClipData.Item(text);
                 }
 
                 if (DataFormat.File.Equals(dataFormat))

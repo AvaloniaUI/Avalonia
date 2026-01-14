@@ -25,8 +25,8 @@ public partial class DispatcherTests
                 AskedForSignal = true;
         }
 
-        public event Action Signaled;
-        public event Action Timer;
+        public event Action? Signaled;
+        public event Action? Timer;
         public long? NextTimer { get; private set; }
         public bool AskedForSignal { get; private set; }
 
@@ -64,7 +64,7 @@ public partial class DispatcherTests
     class SimpleDispatcherWithBackgroundProcessingImpl : SimpleDispatcherImpl, IDispatcherImplWithExplicitBackgroundProcessing
     {
         public bool AskedForBackgroundProcessing { get; private set; }
-        public event Action ReadyForBackgroundProcessing;
+        public event Action? ReadyForBackgroundProcessing;
         public void RequestBackgroundProcessing()
         {
             if (!CurrentThreadIsLoopThread)
@@ -137,8 +137,8 @@ public partial class DispatcherTests
         var impl = new SimpleDispatcherImpl();
         var disp = new Dispatcher(impl);
         var actions = new List<string>();
-        var toPromote = disp.InvokeAsync(()=>actions.Add("PromotedRender"), DispatcherPriority.Background);
-        var toPromote2 = disp.InvokeAsync(()=>actions.Add("PromotedRender2"), DispatcherPriority.Input);
+        var toPromote = disp.InvokeAsync(()=>actions.Add("PromotedRender"), DispatcherPriority.Background, TestContext.Current.CancellationToken);
+        var toPromote2 = disp.InvokeAsync(()=>actions.Add("PromotedRender2"), DispatcherPriority.Input, TestContext.Current.CancellationToken);
         disp.Post(() => actions.Add("Render"), DispatcherPriority.Render);
 
         toPromote.Priority = DispatcherPriority.Render;
@@ -444,7 +444,7 @@ public partial class DispatcherTests
             }, DispatcherPriority.Background);
             disp.MainLoop(CancellationToken.None);
 
-            disp.Invoke(DumpCurrentPriority, DispatcherPriority.Send);
+            disp.Invoke(DumpCurrentPriority, DispatcherPriority.Send, TestContext.Current.CancellationToken);
             disp.Invoke(() =>
             {
                 DumpCurrentPriority();
@@ -500,7 +500,7 @@ public partial class DispatcherTests
         {
             var t = Test();
             var cts = new CancellationTokenSource();
-            Task.Delay(3000).ContinueWith(_ => cts.Cancel());
+            Task.Delay(3000, TestContext.Current.CancellationToken).ContinueWith(_ => cts.Cancel(), TestContext.Current.CancellationToken);
             Dispatcher.UIThread.MainLoop(cts.Token);
             Assert.True(t.IsCompletedSuccessfully);
             t.GetAwaiter().GetResult();
@@ -607,7 +607,6 @@ public partial class DispatcherTests
         Dispatcher.UIThread.MainLoop(tokenSource.Token);
     }
 
-#nullable enable
     private class AsyncLocalTestClass
     {
         public AsyncLocal<string?> AsyncLocalField { get; set; } = new AsyncLocal<string?>();
@@ -658,7 +657,7 @@ public partial class DispatcherTests
                 tokenSource.Cancel();
             });
 
-        });
+        }, TestContext.Current.CancellationToken);
 
         Dispatcher.UIThread.MainLoop(tokenSource.Token);
         await Task.WhenAll(task);
@@ -700,7 +699,7 @@ public partial class DispatcherTests
             {
                 tokenSource.Cancel();
             });
-        });
+        }, TestContext.Current.CancellationToken);
 
         Dispatcher.UIThread.MainLoop(tokenSource.Token);
         await Task.WhenAll(task);
@@ -754,7 +753,7 @@ public partial class DispatcherTests
                 await Task.WhenAll(task1);
                 tokenSource.Cancel();
             });
-        });
+        }, TestContext.Current.CancellationToken);
 
         try
         {
@@ -776,6 +775,5 @@ public partial class DispatcherTests
             Assert.NotEqual("sux-Shaw-UM", oldCulture.Name);
         }
     }
-#nullable restore
 
 }

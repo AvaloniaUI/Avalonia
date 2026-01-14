@@ -2,91 +2,94 @@
 using System.Collections.Generic;
 using Avalonia.Collections;
 using Avalonia.Data.Core;
-using Avalonia.Markup.Data;
 using Avalonia.UnitTests;
-using JetBrains.dotMemoryUnit;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Avalonia.LeakTests
 {
-    [DotMemoryUnit(FailIfRunWithoutSupport = false)]
-    public class BindingExpressionTests
+    public class BindingExpressionTests : ScopedTestBase
     {
-        public BindingExpressionTests(ITestOutputHelper atr)
-        {
-            DotMemoryUnitTestOutput.SetOutputMethod(atr.WriteLine);
-        }
-
         [Fact]
         public void Should_Not_Keep_Source_Alive_ObservableCollection()
         {
-            Func<BindingExpression> run = () =>
+            static WeakReference CreateExpression()
             {
-                var source = new { Foo = new AvaloniaList<string> { "foo", "bar" } };
+                var list = new AvaloniaList<string> { "foo", "bar" };
+                var source = new { Foo = list };
                 var target = BindingExpression.Create(source, o => o.Foo);
 
                 target.ToObservable().Subscribe(_ => { });
-                return target;
-            };
+                return new WeakReference(list);
+            }
 
-            var result = run();
+            var weakSource = CreateExpression();
+            Assert.True(weakSource.IsAlive);
 
-            dotMemory.Check(memory =>
-                Assert.Equal(0, memory.GetObjects(where => where.Type.Is<AvaloniaList<string>>()).ObjectsCount));
+            GC.Collect();
+
+            Assert.False(weakSource.IsAlive);
         }
 
         [Fact]
         public void Should_Not_Keep_Source_Alive_ObservableCollection_With_DataValidation()
         {
-            Func<BindingExpression> run = () =>
+            static WeakReference CreateExpression()
             {
-                var source = new { Foo = new AvaloniaList<string> { "foo", "bar" } };
+                var list = new AvaloniaList<string> { "foo", "bar" };
+                var source = new { Foo = list };
                 var target = BindingExpression.Create(source, o => o.Foo, enableDataValidation: true);
 
                 target.ToObservable().Subscribe(_ => { });
-                return target;
-            };
+                return new WeakReference(list);
+            }
 
-            var result = run();
+            var weakSource = CreateExpression();
+            Assert.True(weakSource.IsAlive);
 
-            dotMemory.Check(memory =>
-                Assert.Equal(0, memory.GetObjects(where => where.Type.Is<AvaloniaList<string>>()).ObjectsCount));
+            GC.Collect();
+
+            Assert.False(weakSource.IsAlive);
         }
 
         [Fact]
         public void Should_Not_Keep_Source_Alive_NonIntegerIndexer()
         {
-            Func<BindingExpression> run = () =>
+            static WeakReference CreateExpression()
             {
-                var source = new { Foo = new NonIntegerIndexer() };
+                var indexer = new NonIntegerIndexer();
+                var source = new { Foo = indexer };
                 var target = BindingExpression.Create(source, o => o.Foo);
 
                 target.ToObservable().Subscribe(_ => { });
-                return target;
-            };
+                return new WeakReference(indexer);
+            }
 
-            var result = run();
+            var weakSource = CreateExpression();
+            Assert.True(weakSource.IsAlive);
 
-            dotMemory.Check(memory =>
-                Assert.Equal(0, memory.GetObjects(where => where.Type.Is<NonIntegerIndexer>()).ObjectsCount));
+            GC.Collect();
+
+            Assert.False(weakSource.IsAlive);
         }
 
         [Fact]
         public void Should_Not_Keep_Source_Alive_MethodBinding()
         {
-            Func<BindingExpression> run = () =>
+            static WeakReference CreateExpression()
             {
-                var source = new { Foo = new MethodBound() };
+                var methodBound = new MethodBound();
+                var source = new { Foo = methodBound };
                 var target = BindingExpression.Create(source, o => (Action)o.Foo.A);
                 target.ToObservable().Subscribe(_ => { });
-                return target;
-            };
+                return new WeakReference(methodBound);
+            }
 
-            var result = run();
+            var weakSource = CreateExpression();
+            Assert.True(weakSource.IsAlive);
 
-            dotMemory.Check(memory =>
-                Assert.Equal(0, memory.GetObjects(where => where.Type.Is<MethodBound>()).ObjectsCount));
+            GC.Collect();
+
+            Assert.False(weakSource.IsAlive);
         }
 
         private class MethodBound

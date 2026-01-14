@@ -1,13 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
     <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
-    <OutputType>Library</OutputType>
+    <OutputType>Exe</OutputType>
+    <WebAppDir>$(MSBuildThisFileDirectory)Remote/HtmlTransport/webapp</WebAppDir>
   </PropertyGroup>
   <Import Project="..\..\build\UnitTests.NetCore.targets" />
   <Import Project="..\..\build\Moq.props" />
   <Import Project="..\..\build\XUnit.props" />
   <Import Project="..\..\build\Rx.props" />
   <Import Project="..\..\build\Microsoft.Reactive.Testing.props" />
+  <Import Project="..\..\build\NullableEnable.props" />
   <ItemGroup>
     <ProjectReference Include="..\..\src\Avalonia.Controls\Avalonia.Controls.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.DesignerSupport\Avalonia.DesignerSupport.csproj" />
@@ -15,4 +17,16 @@
   <ItemGroup>
     <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
   </ItemGroup>
+
+
+  <Target Name="BunInstall" Inputs="$(WebAppDir)\package.json" Outputs="$(WebAppDir)\node_modules\.install-stamp">
+    <!-- We use bun packages as .NET tool, to avoid preinstalled node.js dependency -->
+    <Exec Command="dnx Bun.Unofficial.Tool --yes -- install --silent" WorkingDirectory="$(WebAppDir)" />
+    <!-- Write the stamp file, so incremental builds work -->
+    <Touch Files="$(WebAppDir)/node_modules/.install-stamp" AlwaysCreate="true" />
+  </Target>
+  <Target Name="BunRunTests" DependsOnTargets="BunInstall">
+    <Exec Command="dnx Bun.Unofficial.Tool run test" WorkingDirectory="$(WebAppDir)" />
+  </Target>
+
 </Project>

@@ -138,11 +138,30 @@ public static class HeadlessWindowExtensions
 
     private static void RunJobsOnImpl(this TopLevel topLevel, Action<IHeadlessWindow> action)
     {
-        Dispatcher.UIThread.RunJobs();
-        AvaloniaHeadlessPlatform.ForceRenderTimerTick();
-        Dispatcher.UIThread.RunJobs();
+        RunJobsAndRender();
         action(GetImpl(topLevel));
-        Dispatcher.UIThread.RunJobs();
+        RunJobsAndRender();
+
+        static void RunJobsAndRender()
+        {
+            var dispatcher = Dispatcher.UIThread;
+
+            // Run jobs and render frames until everything is stable.
+            // We use a simple approach: run jobs, render, and repeat until
+            // there are no more pending jobs. The render timer tick can schedule
+            // new jobs, so we loop until stable.
+            for (var i = 0; i < 10; i++)
+            {
+                dispatcher.RunJobs();
+                AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+
+                if (!dispatcher.HasJobsWithPriority(DispatcherPriority.MinimumActiveValue))
+                    return;
+            }
+
+            // Final attempt: run remaining jobs without rendering
+            dispatcher.RunJobs();
+        }
     }
 
     private static IHeadlessWindow GetImpl(this TopLevel topLevel)

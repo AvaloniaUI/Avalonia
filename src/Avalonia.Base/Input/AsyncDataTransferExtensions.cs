@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Logging;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 
 namespace Avalonia.Input;
@@ -113,7 +114,7 @@ public static class AsyncDataTransferExtensions
     /// <summary>
     /// Returns a text, if available, from a <see cref="IAsyncDataTransfer"/> instance.
     /// </summary>
-    /// <param name="dataTransfer">The data transfer instance.</param>
+    /// <param name="dataTransfer">The <see cref="IAsyncDataTransfer"/> instance.</param>
     /// <returns>A string, or null if the format isn't available.</returns>
     /// <seealso cref="DataFormat.Text"/>.
     public static Task<string?> TryGetTextAsync(this IAsyncDataTransfer dataTransfer)
@@ -122,7 +123,7 @@ public static class AsyncDataTransferExtensions
     /// <summary>
     /// Returns a file, if available, from a <see cref="IAsyncDataTransfer"/> instance.
     /// </summary>
-    /// <param name="dataTransfer">The data transfer instance.</param>
+    /// <param name="dataTransfer">The <see cref="IAsyncDataTransfer"/> instance.</param>
     /// <returns>An <see cref="IStorageItem"/> (file or folder), or null if the format isn't available.</returns>
     /// <seealso cref="DataFormat.File"/>.
     public static Task<IStorageItem?> TryGetFileAsync(this IAsyncDataTransfer dataTransfer)
@@ -131,9 +132,18 @@ public static class AsyncDataTransferExtensions
     /// <summary>
     /// Returns a list of files, if available, from a <see cref="IAsyncDataTransfer"/> instance.
     /// </summary>
-    /// <param name="dataTransfer">The data transfer instance.</param>
+    /// <param name="dataTransfer">The <see cref="IAsyncDataTransfer"/> instance.</param>
     /// <returns>An array of <see cref="IStorageItem"/> (files or folders), or null if the format isn't available.</returns>
     /// <seealso cref="DataFormat.File"/>.
     public static Task<IStorageItem[]?> TryGetFilesAsync(this IAsyncDataTransfer dataTransfer)
         => dataTransfer.TryGetValuesAsync(DataFormat.File);
+
+    /// <summary>
+    /// Returns a bitmap, if available, from a <see cref="IAsyncDataTransfer"/> instance.
+    /// </summary>
+    /// <param name="dataTransfer">The <see cref="IAsyncDataTransfer"/> instance.</param>
+    /// <returns>A <see cref="Bitmap"/>, or null if the format isn't available.</returns>
+    /// <seealso cref="DataFormat.Bitmap"/>.
+    public static Task<Bitmap?> TryGetBitmapAsync(this IAsyncDataTransfer dataTransfer)
+        => dataTransfer.TryGetValueAsync(DataFormat.Bitmap);
 }

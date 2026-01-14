@@ -1,7 +1,4 @@
-﻿#nullable enable
-
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.ComponentModel;
 using System.Reactive.Subjects;
 using System.Runtime.CompilerServices;
@@ -12,20 +9,12 @@ using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
-using JetBrains.dotMemoryUnit;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Avalonia.LeakTests
 {
-    [DotMemoryUnit(FailIfRunWithoutSupport = false)]
     public class AvaloniaObjectTests : ScopedTestBase
     {
-        public AvaloniaObjectTests(ITestOutputHelper atr)
-        {
-            DotMemoryUnitTestOutput.SetOutputMethod(atr.WriteLine);
-        }
-
         [Fact]
         public void Binding_To_Direct_Property_Does_Not_Get_Collected()
         {
@@ -63,7 +52,7 @@ namespace Avalonia.LeakTests
 
             Action completeSource = () =>
             {
-                ((ISubject<string>)weakSource.Target).OnCompleted();
+                ((ISubject<string>)weakSource.Target!).OnCompleted();
             };
 
             completeSource();

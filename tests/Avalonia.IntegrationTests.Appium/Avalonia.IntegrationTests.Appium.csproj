@@ -2,21 +2,39 @@
 
   <PropertyGroup>
     <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
+    <OutputType>Exe</OutputType>
     <Nullable>enable</Nullable>
 
     <IsRunningAppium2 Condition="'$(IsRunningAppium2)' == ''">false</IsRunningAppium2>
     <DefineConstants Condition="'$(IsRunningAppium2)' == 'false'">$(DefineConstants);APPIUM1</DefineConstants>
     <DefineConstants Condition="'$(IsRunningAppium2)' == 'true'">$(DefineConstants);APPIUM2</DefineConstants>
+
+    <!--
+      References to System.Net.Http and System.Text.RegularExpressions are explicitly added to
+      avoid deprecated versions, we don't care about them not being pruned.
+    -->
+    <NoWarn>$(NoWarn);NU1510</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Avalonia.Controls\Avalonia.Controls.csproj" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(IsRunningAppium2)' == 'false'">
+    <PackageReference Include="Appium.WebDriver" Version="4.4.5" />
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
+    <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(IsRunningAppium2)' == 'true'">
+    <PackageReference Include="Appium.WebDriver" Version="5.2.0"/>
+  </ItemGroup>
+
   <ItemGroup>
-    <PackageReference Include="Appium.WebDriver" Version="4.4.0" Condition="'$(IsRunningAppium2)' == 'false'" />
-    <PackageReference Include="Appium.WebDriver" Version="5.0.0-rc.8" Condition="'$(IsRunningAppium2)' == 'true'" />
-    <PackageReference Include="Xunit.Extensions.Ordering" Version="1.4.5" />
+    <!-- This test project is run in CI via VSTest Azure Task, to have video recorder support -->
+    <!-- Video recorder isn't yet supported by Microsoft.Testing.Platform, we keep this project compatible with both VSTest and Microsoft.Testing.Platform. -->
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5" />
   </ItemGroup>
 
   <Import Project="..\..\build\XUnit.props" />

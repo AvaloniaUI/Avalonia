@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net461;netstandard2.0;$(AvsCurrentTargetFramework)</TargetFrameworks>
+    <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsLegacyTargetFrameworks)</TargetFrameworks>
     <DefineConstants>$(DefineConstants);XAMLX_INTERNAL</DefineConstants>
     <IsAotCompatible>false</IsAotCompatible>
   </PropertyGroup>
@@ -16,6 +16,11 @@
     <Compile Include="..\..\..\src\Markup\Avalonia.Markup.Xaml.Loader\CompilerDynamicDependencies.cs" />
     <Compile Include="..\..\..\src\Avalonia.Base\Compatibility\NullableAttributes.cs" Link="Compatibility\NullableAttributes.cs" />
     <Compile Include="..\..\..\src\Avalonia.Base\Compatibility\TrimmingAttributes.cs" Link="Compatibility\TrimmingAttributes.cs" />
+    <Compile Include="..\..\..\src\Avalonia.Base\Data\Core\Parsers\ArgumentListParser.cs" Link="Parsers\ArgumentListParser.cs" />
+    <Compile Include="..\..\..\src\Avalonia.Base\Data\Core\Parsers\BindingExpressionGrammar.cs" Link="Parsers\BindingExpressionGrammar.cs" />
+    <Compile Include="..\..\..\src\Avalonia.Base\Utilities\CharacterReader.cs" Link="Utilities\CharacterReader.cs" />
+    <Compile Include="..\..\..\src\Avalonia.Base\Utilities\IdentifierParser.cs" Link="Utilities\IdentifierParser.cs" />
+    <Compile Include="..\..\..\src\Avalonia.Base\Diagnostics\TrimmingMessages.cs" Link="Diagnostics/AvaloniaTrimmingMessages.cs" />
     <Compile Include="..\..\Shared\StringCompatibilityExtensions.cs" Link="Compatibility\StringCompatibilityExtensions.cs" />
     <Compile Include="..\..\..\src\Shared\IsExternalInit.cs" Link="Compatibility\IsExternalInit.cs" />
   </ItemGroup>

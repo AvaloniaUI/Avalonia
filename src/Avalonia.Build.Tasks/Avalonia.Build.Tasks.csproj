@@ -71,13 +71,13 @@
         <Link>Markup\AssetLoader.cs</Link>
       </Compile>
       <Compile Include="..\Avalonia.Base\Utilities\StringBuilderCache.cs" Link="Utilities\StringBuilderCache.cs" />
-      <Compile Include="..\Markup\Avalonia.Markup\Markup\Parsers\ArgumentListParser.cs">
+      <Compile Include="..\Avalonia.Base\Data\Core\Parsers\ArgumentListParser.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
       <Compile Include="../Avalonia.Base/Utilities/KeywordParser.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
-      <Compile Include="..\Markup\Avalonia.Markup\Markup\Parsers\BindingExpressionGrammar.cs">
+      <Compile Include="..\Avalonia.Base\Data\Core\Parsers\BindingExpressionGrammar.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
       <Compile Include="../Avalonia.Base/Utilities/StyleClassParser.cs">
@@ -128,11 +128,12 @@
       <Compile Include="../Avalonia.Base/Compatibility/NullableAttributes.cs" Link="Compatibility/NullableAttributes.cs" />
       <Compile Include="../Avalonia.Base/Compatibility/TrimmingAttributes.cs" Link="Compatibility/TrimmingAttributes.cs" />
       <Compile Include="../Avalonia.Base/Utilities/SpanHelpers.cs" Link="Utilities/SpanHelpers.cs" />
+      <Compile Include="../Avalonia.Base/Diagnostics/TrimmingMessages.cs" Link="Diagnostics/TrimmingMessages.cs" />
       <Compile Include="../Shared/StringCompatibilityExtensions.cs" Link="Compatibility/StringCompatibilityExtensions.cs" />
       <Compile Include="../Shared/IsExternalInit.cs" Link="Compatibility/IsExternalInit.cs" />
-      <PackageReference Include="Mono.Cecil" Version="0.11.5" />
+      <PackageReference Include="Mono.Cecil" Version="0.11.6" />
       <PackageReference Include="Microsoft.Build.Framework" Version="15.1.548" PrivateAssets="All" />
-      <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
+      <PackageReference Include="System.Numerics.Vectors" Version="4.6.1" />
     </ItemGroup>
   <Import Project="../../build/SourceGenerators.props" />
   <Import Project="../../build/NullableEnable.props" />
