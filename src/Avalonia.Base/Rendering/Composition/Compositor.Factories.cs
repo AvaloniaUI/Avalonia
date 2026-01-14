@@ -17,9 +17,9 @@ public partial class Compositor
     {
         return new CompositionTarget(this, new ServerCompositionTarget(_server, surfaces, DiagnosticTextRenderer));
     }
-    
+
     public CompositionContainerVisual CreateContainerVisual() => new(this, new ServerCompositionContainerVisual(_server));
-        
+
     public ExpressionAnimation CreateExpressionAnimation() => new ExpressionAnimation(this);
 
     public ExpressionAnimation CreateExpressionAnimation(string expression) => new ExpressionAnimation(this)
@@ -41,10 +41,16 @@ public partial class Compositor
     public CompositionDrawingSurface CreateDrawingSurface() => new(this);
 
     public CompositionSolidColorBrush CreateSolidColorBrush() => new(this, new ServerCompositionSolidColorBrush(Server));
+
     public CompositionSolidColorBrush CreateSolidColorBrush(Color color) => new(this, new ServerCompositionSolidColorBrush(Server), color);
+
     public CompositionLinearGradientBrush CreateLinearGradientBrush() => new(this, new ServerCompositionLinearGradientBrush(Server));
+
     public CompositionConicGradientBrush CreateConicGradientBrush() => new(this, new ServerCompositionConicGradientBrush(Server));
+
     public CompositionRadialGradientBrush CreateRadialGradientBrush() => new(this, new ServerCompositionRadialGradientBrush(Server));
-    public CompositionGradientStop CreateCompositionGradientStop(double offset, Color color) => new(this, new ServerCompositionGradientStop(Server), offset, color);
-    public CompositionGradientStop CreateCompositionGradientStop() => new(this, new ServerCompositionGradientStop(Server));
+
+    public CompositionGradientStop CreateGradientStop(double offset, Color color) => new(this, new ServerCompositionGradientStop(Server), offset, color);
+
+    public CompositionGradientStop CreateGradientStop() => new(this, new ServerCompositionGradientStop(Server));
 }
