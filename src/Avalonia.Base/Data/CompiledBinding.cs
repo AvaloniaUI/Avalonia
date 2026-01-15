@@ -31,7 +31,6 @@ public class CompiledBinding : BindingBase
 
     /// <summary>
     /// Creates a <see cref="CompiledBinding"/> from a lambda expression.
-    /// The binding will use the target's DataContext as the source.
     /// </summary>
     /// <typeparam name="TIn">The input type of the binding expression.</typeparam>
     /// <typeparam name="TOut">The output type of the binding expression.</typeparam>
@@ -39,19 +38,41 @@ public class CompiledBinding : BindingBase
     /// The lambda expression representing the binding path
     /// (e.g., <c>vm => vm.PropertyName</c>).
     /// </param>
-    /// <param name="converter">Optional value converter to transform values between source and target.</param>
+    /// <param name="source"
+    /// >The source object for the binding. If null, uses the target's DataContext.
+    /// </param>
+    /// <param name="converter">
+    /// Optional value converter to transform values between source and target.
+    /// </param>
     /// <param name="mode">
     /// The binding mode. Default is <see cref="BindingMode.Default"/> which resolves to the
     /// property's default binding mode.
     /// </param>
-    /// <returns>A configured <see cref="CompiledBinding"/> instance ready to be applied to a property.</returns>
+    /// <param name="priority">The binding priority.</param>
+    /// <param name="converterCulture">The culture in which to evaluate the converter.</param>
+    /// <param name="converterParameter">A parameter to pass to the converter.</param>
+    /// <param name="fallbackValue">
+    /// The value to use when the binding is unable to produce a value.
+    /// </param>
+    /// <param name="stringFormat">The string format for the binding result.</param>
+    /// <param name="targetNullValue">The value to use when the binding result is null.</param>
+    /// <param name="updateSourceTrigger">
+    /// The timing of binding source updates for TwoWay/OneWayToSource bindings.
+    /// </param>
+    /// <param name="delay">
+    /// The amount of time, in milliseconds, to wait before updating the binding source.
+    /// </param>
+    /// <returns>
+    /// A configured <see cref="CompiledBinding"/> instance ready to be applied to a property.
+    /// </returns>
     /// <exception cref="ExpressionParseException">
-    /// Thrown when the expression contains unsupported operations or invalid syntax for binding expressions.
+    /// Thrown when the expression contains unsupported operations or invalid syntax for binding
+    /// expressions.
     /// </exception>
     /// <remarks>
-    /// This method uses <see cref="BindingExpressionVisitor{TIn}"/> to convert the lambda expression
-    /// into a strongly-typed <see cref="CompiledBindingPath"/>. The resulting binding avoids reflection
-    /// for property access, providing better performance than reflection-based bindings.
+    /// This builds a <see cref="CompiledBinding"/> with a path described by a lambda expression.
+    /// The resulting binding avoids reflection for property access, providing better performance
+    /// than reflection-based bindings.
     ///
     /// Supported expressions include:
     /// <list type="bullet">
@@ -68,56 +89,32 @@ public class CompiledBinding : BindingBase
     [RequiresUnreferencedCode(TrimmingMessages.ExpressionNodeRequiresUnreferencedCodeMessage)]
     public static CompiledBinding Create<TIn, TOut>(
         Expression<Func<TIn, TOut>> expression,
+        object? source = null,
         IValueConverter? converter = null,
-        BindingMode mode = BindingMode.Default)
+        BindingMode mode = BindingMode.Default,
+        BindingPriority priority = BindingPriority.LocalValue,
+        CultureInfo? converterCulture = null,
+        object? converterParameter = null,
+        object? fallbackValue = null,
+        string? stringFormat = null,
+        object? targetNullValue = null,
+        UpdateSourceTrigger updateSourceTrigger = UpdateSourceTrigger.Default,
+        int delay = 0)
     {
         var path = BindingExpressionVisitor<TIn>.BuildPath(expression);
         return new CompiledBinding(path)
         {
+            Source = source ?? AvaloniaProperty.UnsetValue,
             Converter = converter,
-            Mode = mode
-        };
-    }
-
-    /// <summary>
-    /// Creates a <see cref="CompiledBinding"/> from a lambda expression with an explicit source object.
-    /// </summary>
-    /// <typeparam name="TIn">The input type of the binding expression.</typeparam>
-    /// <typeparam name="TOut">The output type of the binding expression.</typeparam>
-    /// <param name="source">The source object for the binding.</param>
-    /// <param name="expression">
-    /// The lambda expression representing the binding path
-    /// (e.g., <c>vm => vm.PropertyName</c>).
-    /// </param>
-    /// <param name="converter">Optional value converter to transform values between source and target.</param>
-    /// <param name="mode">
-    /// The binding mode. Default is <see cref="BindingMode.Default"/> which resolves to the
-    /// property's default binding mode.
-    /// </param>
-    /// <returns>A configured <see cref="CompiledBinding"/> instance ready to be applied to a property.</returns>
-    /// <exception cref="ExpressionParseException">
-    /// Thrown when the expression contains unsupported operations or invalid syntax for binding expressions.
-    /// </exception>
-    /// <remarks>
-    /// This overload allows specifying an explicit binding source instead of using the target's DataContext.
-    /// See <see cref="Create{TIn, TOut}(Expression{Func{TIn, TOut}}, IValueConverter?, BindingMode)"/>
-    /// for more details on supported expression syntax.
-    /// </remarks>
-    [RequiresDynamicCode(TrimmingMessages.ExpressionNodeRequiresDynamicCodeMessage)]
-    [RequiresUnreferencedCode(TrimmingMessages.ExpressionNodeRequiresUnreferencedCodeMessage)]
-    public static CompiledBinding Create<TIn, TOut>(
-        TIn source,
-        Expression<Func<TIn, TOut>> expression,
-        IValueConverter? converter = null,
-        BindingMode mode = BindingMode.Default)
-        where TIn : class
-    {
-        var path = BindingExpressionVisitor<TIn>.BuildPath(expression);
-        return new CompiledBinding(path)
-        {
-            Source = source,
-            Converter = converter,
-            Mode = mode
+            ConverterCulture = converterCulture,
+            ConverterParameter = converterParameter,
+            FallbackValue = fallbackValue ?? AvaloniaProperty.UnsetValue,
+            Mode = mode,
+            Priority = priority,
+            StringFormat = stringFormat,
+            TargetNullValue = targetNullValue ?? AvaloniaProperty.UnsetValue,
+            UpdateSourceTrigger = updateSourceTrigger,
+            Delay = delay
         };
     }
 

@@ -26,7 +26,9 @@ public class CompiledBindingTests_Create
     public void Create_Should_Create_Binding_With_Source()
     {
         var source = new TestViewModel { StringProperty = "Test" };
-        var binding = CompiledBinding.Create(source, vm => vm.StringProperty);
+        var binding = CompiledBinding.Create<TestViewModel, string?>(
+            vm => vm.StringProperty,
+            source: source);
 
         Assert.NotNull(binding);
         Assert.NotNull(binding.Path);
@@ -84,7 +86,9 @@ public class CompiledBindingTests_Create
         {
             var target = new TextBlock();
             var viewModel = new TestViewModel { StringProperty = "Hello" };
-            var binding = CompiledBinding.Create<TestViewModel, string?>(viewModel, vm => vm.StringProperty);
+            var binding = CompiledBinding.Create<TestViewModel, string?>(
+                vm => vm.StringProperty,
+                source: viewModel);
 
             target.Bind(TextBlock.TextProperty, binding);
 
@@ -99,7 +103,9 @@ public class CompiledBindingTests_Create
         {
             var target = new TextBlock();
             var viewModel = new TestViewModel { StringProperty = "Initial" };
-            var binding = CompiledBinding.Create<TestViewModel, string?>(viewModel, vm => vm.StringProperty);
+            var binding = CompiledBinding.Create<TestViewModel, string?>(
+                vm => vm.StringProperty,
+                source: viewModel);
 
             target.Bind(TextBlock.TextProperty, binding);
             Assert.Equal("Initial", target.Text);
