@@ -22,7 +22,7 @@ namespace Avalonia.Controls.Automation.Peers
 
         protected override AutomationControlType GetAutomationControlTypeCore()
         {
-            return AutomationControlType.ComboBox;
+            return AutomationControlType.Expander;
         }
 
         private void OwnerPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)

@@ -652,6 +652,7 @@ enum AvnAutomationControlType
     AutomationTable,
     AutomationTitleBar,
     AutomationSeparator,
+    AutomationExpander,
 }
 
 enum AvnLandmarkType
