@@ -450,9 +450,7 @@
 - (void)raisePropertyChanged:(AvnAutomationProperty)property
 {
     if (property == AutomationPeer_Name && _peer->GetLiveSetting() != LiveSettingOff)
-    {
         [self raiseLiveRegionChanged];
-    }
 }
 
 - (void)raiseLiveRegionChanged
