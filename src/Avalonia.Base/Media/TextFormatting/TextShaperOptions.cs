@@ -10,7 +10,7 @@ namespace Avalonia.Media.TextFormatting
     {
         // TODO12: Remove in 12.0.0 and make fontFeatures parameter in main ctor optional
         public TextShaperOptions(
-            IGlyphTypeface typeface,
+            GlyphTypeface typeface,
             double fontRenderingEmSize = 12,
             sbyte bidiLevel = 0,
             CultureInfo? culture = null,
@@ -22,7 +22,7 @@ namespace Avalonia.Media.TextFormatting
 
         // TODO12:Change signature in 12.0.0
         public TextShaperOptions(
-            IGlyphTypeface typeface, 
+            GlyphTypeface typeface, 
             IReadOnlyList<FontFeature>? fontFeatures,
             double fontRenderingEmSize = 12, 
             sbyte bidiLevel = 0, 
@@ -30,7 +30,7 @@ namespace Avalonia.Media.TextFormatting
             double incrementalTabWidth = 0,
             double letterSpacing = 0)
         {
-            Typeface = typeface;
+            GlyphTypeface = typeface;
             FontRenderingEmSize = fontRenderingEmSize;
             BidiLevel = bidiLevel;
             Culture = culture;
@@ -42,7 +42,7 @@ namespace Avalonia.Media.TextFormatting
         /// <summary>
         /// Get the typeface.
         /// </summary>
-        public IGlyphTypeface Typeface { get; }
+        public GlyphTypeface GlyphTypeface { get; }
         /// <summary>
         /// Get the font rendering em size.
         /// </summary>

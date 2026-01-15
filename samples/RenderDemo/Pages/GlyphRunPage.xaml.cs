@@ -22,7 +22,7 @@ namespace RenderDemo.Pages
 
     public class GlyphRunControl : Control
     {
-        private IGlyphTypeface _glyphTypeface = Typeface.Default.GlyphTypeface;
+        private GlyphTypeface _glyphTypeface = Typeface.Default.GlyphTypeface;
         private readonly Random _rand = new Random();
         private ushort[] _glyphIndices = new ushort[1];
         private char[] _characters = new char[1];
@@ -69,7 +69,7 @@ namespace RenderDemo.Pages
 
             _fontSize += _direction;
 
-            _glyphIndices[0] = _glyphTypeface.GetGlyph(c);
+            _glyphIndices[0] = _glyphTypeface.CharacterToGlyphMap[c];
 
             _characters[0] = c;
 
@@ -81,7 +81,7 @@ namespace RenderDemo.Pages
 
     public class GlyphRunGeometryControl : Control
     {
-        private IGlyphTypeface _glyphTypeface = Typeface.Default.GlyphTypeface;
+        private GlyphTypeface _glyphTypeface = Typeface.Default.GlyphTypeface;
         private readonly Random _rand = new Random();
         private ushort[] _glyphIndices = new ushort[1];
         private char[] _characters = new char[1];
@@ -128,7 +128,7 @@ namespace RenderDemo.Pages
 
             _fontSize += _direction;
 
-            _glyphIndices[0] = _glyphTypeface.GetGlyph(c);
+            _glyphIndices[0] = _glyphTypeface.CharacterToGlyphMap[c];
 
             _characters[0] = c;
 

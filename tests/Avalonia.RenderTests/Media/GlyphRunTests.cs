@@ -16,7 +16,7 @@ namespace Avalonia.Skia.RenderTests
             : base(@"Media\GlyphRun")
         {
         }
-         
+
         [Fact]
         public async Task Should_Render_GlyphRun_Geometry()
         {
@@ -136,7 +136,7 @@ namespace Avalonia.Skia.RenderTests
             {
                 var glyphTypeface = new Typeface(TestFontFamily).GlyphTypeface;
 
-                var glyphIndices = new[] { glyphTypeface.GetGlyph('A'), glyphTypeface.GetGlyph('B'), glyphTypeface.GetGlyph('C') };
+                var glyphIndices = new[] { glyphTypeface.CharacterToGlyphMap['A'], glyphTypeface.CharacterToGlyphMap['B'], glyphTypeface.CharacterToGlyphMap['C'] };
 
                 var characters = new[] { 'A', 'B', 'C' };
 
@@ -145,7 +145,7 @@ namespace Avalonia.Skia.RenderTests
                 Geometry = glyphRun.BuildGeometry();
             }
 
-           public Geometry Geometry { get; }
+            public Geometry Geometry { get; }
 
             public override void Render(DrawingContext context)
             {
@@ -161,7 +161,7 @@ namespace Avalonia.Skia.RenderTests
             {
                 var glyphTypeface = new Typeface(TestFontFamily).GlyphTypeface;
 
-                var glyphIndices = new[] { glyphTypeface.GetGlyph('A'), glyphTypeface.GetGlyph('B'), glyphTypeface.GetGlyph('C') };
+                var glyphIndices = new[] { glyphTypeface.CharacterToGlyphMap['A'], glyphTypeface.CharacterToGlyphMap['B'], glyphTypeface.CharacterToGlyphMap['C'] };
 
                 var characters = new[] { 'A', 'B', 'C' };
 
@@ -184,17 +184,19 @@ namespace Avalonia.Skia.RenderTests
             {
                 var glyphTypeface = new Typeface(TestFontFamily).GlyphTypeface;
 
-                var glyphIndices = new[] { glyphTypeface.GetGlyph('A'), glyphTypeface.GetGlyph('B'), glyphTypeface.GetGlyph('C') };
+                var glyphIndices = new[] { glyphTypeface.CharacterToGlyphMap['A'], glyphTypeface.CharacterToGlyphMap['B'], glyphTypeface.CharacterToGlyphMap['C'] };
 
                 var scale = 100.0 / glyphTypeface.Metrics.DesignEmHeight;
 
-                var advance = glyphTypeface.GetGlyphAdvance(glyphIndices[0]) * scale;
+                glyphTypeface.TryGetHorizontalGlyphAdvance(glyphIndices[0], out var advance);
+
+                var glyphAdvance = advance * scale;
 
                 var glyphInfos = new[]
                 {
-                    new GlyphInfo(glyphIndices[0], 0, advance),
-                    new GlyphInfo(glyphIndices[1], 1, advance),
-                    new GlyphInfo(glyphIndices[2], 2, advance)
+                    new GlyphInfo(glyphIndices[0], 0, glyphAdvance),
+                    new GlyphInfo(glyphIndices[1], 1, glyphAdvance),
+                    new GlyphInfo(glyphIndices[2], 2, glyphAdvance)
                 };
 
                 var characters = new[] { 'A', 'B', 'C' };

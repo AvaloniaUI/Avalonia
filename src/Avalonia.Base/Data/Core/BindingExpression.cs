@@ -138,7 +138,7 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
         get
         {
             var b = new StringBuilder();
-            LeafNode.BuildString(b, _nodes);
+            LeafNode?.BuildString(b, _nodes);
             return b.ToString();
         }
     }
@@ -149,7 +149,7 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
     public CultureInfo ConverterCulture => _uncommon?._converterCulture ?? CultureInfo.CurrentCulture;
     public object? ConverterParameter => _uncommon?._converterParameter;
     public object? FallbackValue => _uncommon is not null ? _uncommon._fallbackValue : AvaloniaProperty.UnsetValue;
-    public ExpressionNode LeafNode => _nodes[_nodes.Count - 1];
+    public ExpressionNode? LeafNode => _nodes.Count > 0 ? _nodes[_nodes.Count - 1] : null;
     public string? StringFormat => _uncommon?._stringFormat;
     public object? TargetNullValue => _uncommon?._targetNullValue ?? AvaloniaProperty.UnsetValue;
     public UpdateSourceTrigger UpdateSourceTrigger => _uncommon?._updateSourceTrigger ?? UpdateSourceTrigger.PropertyChanged;
@@ -307,7 +307,7 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
 
         // Don't set the value if it's unchanged. If there is a binding error, we still have to set the value
         // in order to clear the error.
-        if (TypeUtilities.IdentityEquals(LeafNode.Value, value, type) && ErrorType == BindingErrorType.None)
+        if (TypeUtilities.IdentityEquals(LeafNode!.Value, value, type) && ErrorType == BindingErrorType.None)
             return true;
 
         try
@@ -462,7 +462,8 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
         if (TryGetTarget(out var target) &&
             TargetProperty is not null &&
             target.GetValue(TargetProperty) is var value &&
-            !TypeUtilities.IdentityEquals(value, LeafNode.Value, TargetType))
+            LeafNode is { } leafNode &&
+            !TypeUtilities.IdentityEquals(value, leafNode.Value, TargetType))
         {
             WriteValueToSource(value);
         }
