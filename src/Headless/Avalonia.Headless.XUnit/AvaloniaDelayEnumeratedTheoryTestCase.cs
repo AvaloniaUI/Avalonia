@@ -9,20 +9,21 @@ using Xunit.v3;
 
 namespace Avalonia.Headless.XUnit;
 
-internal sealed class AvaloniaTestCase : XunitTestCase, ISelfExecutingXunitTestCase
+internal sealed class AvaloniaDelayEnumeratedTheoryTestCase
+    : XunitDelayEnumeratedTheoryTestCase, ISelfExecutingXunitTestCase
 {
-    public AvaloniaTestCase(
+    public AvaloniaDelayEnumeratedTheoryTestCase(
         IXunitTestMethod testMethod,
         string testCaseDisplayName,
         string uniqueID,
         bool @explicit,
+        bool skipTestWithoutData,
         Type[]? skipExceptions = null,
         string? skipReason = null,
         Type? skipType = null,
         string? skipUnless = null,
         string? skipWhen = null,
         Dictionary<string, HashSet<string>>? traits = null,
-        object?[]? testMethodArguments = null,
         string? sourceFilePath = null,
         int? sourceLineNumber = null,
         int? timeout = null)
@@ -31,13 +32,13 @@ internal sealed class AvaloniaTestCase : XunitTestCase, ISelfExecutingXunitTestC
             testCaseDisplayName,
             uniqueID,
             @explicit,
+            skipTestWithoutData,
             skipExceptions,
             skipReason,
             skipType,
             skipUnless,
             skipWhen,
             traits,
-            testMethodArguments,
             sourceFilePath,
             sourceLineNumber,
             timeout)
@@ -46,7 +47,7 @@ internal sealed class AvaloniaTestCase : XunitTestCase, ISelfExecutingXunitTestC
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Obsolete("Called by the de-serializer; should only be called by deriving classes for de-serialization purposes")]
-    public AvaloniaTestCase()
+    public AvaloniaDelayEnumeratedTheoryTestCase()
     {
     }
 
