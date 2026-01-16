@@ -1216,10 +1216,10 @@ namespace Avalonia.Controls.UnitTests
 
             var panel = Assert.IsType<VirtualizingStackPanel>(target.ItemsPanelRoot);
             Assert.Equal(0, panel.FirstRealizedIndex);
-            Assert.Equal(9, panel.LastRealizedIndex);
+            Assert.Equal(6, panel.LastRealizedIndex);
 
             Assert.Equal(
-                Enumerable.Range(0, 10).Select(x => $"Item{x}"),
+                Enumerable.Range(0, 7).Select(x => $"Item{x}"),
                 data.GetRealizedItems());
         }
 

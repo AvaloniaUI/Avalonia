@@ -10,6 +10,7 @@ using Xunit;
 using System.Collections.ObjectModel;
 using System.Reactive.Subjects;
 using Avalonia.Headless;
+using Avalonia.Harfbuzz;
 using Avalonia.Input;
 using Avalonia.Platform;
 using Moq;
@@ -367,7 +368,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(textbox.Text, control.Text);
             });
         }
-        
+
         [Fact]
         public void Custom_TextSelector()
         {
@@ -386,7 +387,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(control.Text, control.TextSelector(input, selectedItem.ToString()));
             });
         }
-        
+
         [Fact]
         public void Custom_ItemSelector()
         {
@@ -1272,7 +1273,7 @@ namespace Avalonia.Controls.UnitTests
             keyboardNavigation: () => new KeyboardNavigationHandler(),
             inputManager: new InputManager(),
             standardCursorFactory: Mock.Of<ICursorFactory>(),
-            textShaperImpl: new HeadlessTextShaperStub(),
+            textShaperImpl: new HarfBuzzTextShaper(),
             fontManagerImpl: new HeadlessFontManagerStub());
 
         private class TestContextMenu : ContextMenu

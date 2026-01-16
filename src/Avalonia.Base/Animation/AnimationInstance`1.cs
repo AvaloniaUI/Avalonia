@@ -137,7 +137,8 @@ namespace Avalonia.Animation
 
             if (!_gotFirstKFValue)
             {
-                _firstKFValue = (T)_animator.First().Value!;
+                var firstKeyFrame = _animator.First();
+                _firstKFValue = firstKeyFrame.Value is T value ? value : _neutralValue;
                 _gotFirstKFValue = true;
             }
         }

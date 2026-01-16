@@ -7,7 +7,7 @@ namespace Avalonia.Media.Fonts.Tables
     /// <summary>
     /// platforms ids
     /// </summary>
-    internal enum PlatformIDs : ushort
+    internal enum PlatformID : ushort
     {
         /// <summary>
         /// Unicode platform
