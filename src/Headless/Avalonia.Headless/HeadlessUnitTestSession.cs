@@ -18,7 +18,7 @@ namespace Avalonia.Headless;
 /// All UI tests are supposed to be executed from one of the <see cref="Dispatch"/> methods to keep execution flow on the UI thread.
 /// Disposing unit test session stops internal dispatcher loop. 
 /// </summary>
-public sealed class HeadlessUnitTestSession : IDisposable
+public sealed class HeadlessUnitTestSession : IDisposable, IAsyncDisposable
 {
     private static readonly Dictionary<Assembly, HeadlessUnitTestSession> s_session = new();
 
@@ -181,6 +181,14 @@ public sealed class HeadlessUnitTestSession : IDisposable
         _cancellationTokenSource.Cancel();
         _queue.CompleteAdding();
         _dispatchTask.Wait();
+        _cancellationTokenSource.Dispose();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await _cancellationTokenSource.CancelAsync().ConfigureAwait(false);
+        _queue.CompleteAdding();
+        await _dispatchTask.ConfigureAwait(false);
         _cancellationTokenSource.Dispose();
     }
 
