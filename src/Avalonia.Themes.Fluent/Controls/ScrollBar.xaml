@@ -170,7 +170,8 @@
                          Width="{DynamicResource ScrollBarSize}"
                          MinHeight="{DynamicResource ScrollBarSize}"
                          RenderTransform="{DynamicResource VerticalSmallScrollThumbScaleTransform}"
-                         RenderTransformOrigin="100%,50%" />
+                         RenderTransformOrigin="100%,50%"
+                         AutomationProperties.Name="Position"/>
                 </Track>
 
                 <RepeatButton Name="PART_LineDownButton"
@@ -251,7 +252,8 @@
                          Height="{DynamicResource ScrollBarSize}"
                          MinWidth="{DynamicResource ScrollBarSize}"
                          RenderTransform="{DynamicResource HorizontalSmallScrollThumbScaleTransform}"
-                         RenderTransformOrigin="50%,100%" />
+                         RenderTransformOrigin="50%,100%"
+                         AutomationProperties.Name="Position"/>
                 </Track>
 
                 <RepeatButton Name="PART_LineDownButton"

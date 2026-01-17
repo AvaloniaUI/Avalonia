@@ -8,6 +8,5 @@ namespace Avalonia.Controls.Automation.Peers
         public ThumbAutomationPeer(Thumb owner) : base(owner) { }
         protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Thumb;
         protected override bool IsContentElementCore() => false;
-        protected override string? GetNameCore() => "Position";
     }
 }
