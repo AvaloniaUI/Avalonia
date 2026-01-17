@@ -281,6 +281,7 @@ namespace Avalonia.X11.Clipboard
                     PropertyMode.Replace, atoms, atoms.Length);
                 XConvertSelection(_x11.Display, _x11.Atoms.CLIPBOARD_MANAGER, _x11.Atoms.SAVE_TARGETS,
                     _avaloniaSaveTargetsAtom, _handle, IntPtr.Zero);
+                _storeAtomTcs.TrySetResult(true);
                 await _storeAtomTcs.Task;
             }
         }
