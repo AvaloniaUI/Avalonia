@@ -137,7 +137,8 @@
                               Grid.Row="0"
                               Focusable="False"
                               MinWidth="{DynamicResource ScrollBarSize}"
-                              Height="{DynamicResource ScrollBarSize}">
+                              Height="{DynamicResource ScrollBarSize}"
+                              AutomationProperties.Name="Line up">
                   <PathIcon Data="M 19.091797 14.970703 L 10 5.888672 L 0.908203 14.970703 L 0.029297 14.091797 L 10 4.111328 L 19.970703 14.091797 Z"
                             Width="{DynamicResource ScrollBarButtonArrowIconFontSize}"
                             Height="{DynamicResource ScrollBarButtonArrowIconFontSize}"/>
@@ -155,13 +156,15 @@
                     <RepeatButton Name="PART_PageUpButton"
                                   Classes="largeIncrease"
                                   Theme="{StaticResource FluentScrollBarPageButton}"
-                                  Focusable="False" />
+                                  Focusable="False"
+                                  AutomationProperties.Name="Page up"/>
                   </Track.DecreaseButton>
                   <Track.IncreaseButton>
                     <RepeatButton Name="PART_PageDownButton"
                                   Classes="largeIncrease"
                                   Theme="{StaticResource FluentScrollBarPageButton}"
-                                  Focusable="False" />
+                                  Focusable="False"
+                                  AutomationProperties.Name="Page down"/>
                   </Track.IncreaseButton>
                   <Thumb Theme="{StaticResource FluentScrollBarThumb}"
                          Width="{DynamicResource ScrollBarSize}"
@@ -176,7 +179,8 @@
                               Grid.Row="2"
                               Focusable="False"
                               MinWidth="{DynamicResource ScrollBarSize}"
-                              Height="{DynamicResource ScrollBarSize}">
+                              Height="{DynamicResource ScrollBarSize}"
+                              AutomationProperties.Name="Line down">
                   <PathIcon Data="M 18.935547 4.560547 L 19.814453 5.439453 L 10 15.253906 L 0.185547 5.439453 L 1.064453 4.560547 L 10 13.496094 Z"
                             Width="{DynamicResource ScrollBarButtonArrowIconFontSize}"
                             Height="{DynamicResource ScrollBarButtonArrowIconFontSize}"/>
@@ -215,7 +219,8 @@
                               Grid.Column="0"
                               Focusable="False"
                               MinHeight="{DynamicResource ScrollBarSize}"
-                              Width="{DynamicResource ScrollBarSize}">
+                              Width="{DynamicResource ScrollBarSize}"
+                              AutomationProperties.Name="Column left">
                   <PathIcon Data="M 14.091797 19.970703 L 4.111328 10 L 14.091797 0.029297 L 14.970703 0.908203 L 5.888672 10 L 14.970703 19.091797 Z"
                             Width="{DynamicResource ScrollBarButtonArrowIconFontSize}"
                             Height="{DynamicResource ScrollBarButtonArrowIconFontSize}"/>
@@ -232,13 +237,15 @@
                     <RepeatButton Name="PART_PageUpButton"
                                   Classes="largeIncrease"
                                   Theme="{StaticResource FluentScrollBarPageButton}"
-                                  Focusable="False" />
+                                  Focusable="False"
+                                  AutomationProperties.Name="Page left"/>
                   </Track.DecreaseButton>
                   <Track.IncreaseButton>
                     <RepeatButton Name="PART_PageDownButton"
                                   Classes="largeIncrease"
                                   Theme="{StaticResource FluentScrollBarPageButton}"
-                                  Focusable="False" />
+                                  Focusable="False"
+                                  AutomationProperties.Name="Page right"/>
                   </Track.IncreaseButton>
                   <Thumb Theme="{StaticResource FluentScrollBarThumb}"
                          Height="{DynamicResource ScrollBarSize}"
@@ -253,7 +260,8 @@
                               Grid.Column="2"
                               Focusable="False"
                               MinHeight="{DynamicResource ScrollBarSize}"
-                              Width="{DynamicResource ScrollBarSize}">
+                              Width="{DynamicResource ScrollBarSize}"
+                              AutomationProperties.Name="Column right">
                   <PathIcon Data="M 5.029297 19.091797 L 14.111328 10 L 5.029297 0.908203 L 5.908203 0.029297 L 15.888672 10 L 5.908203 19.970703 Z"
                             Width="{DynamicResource ScrollBarButtonArrowIconFontSize}"
                             Height="{DynamicResource ScrollBarButtonArrowIconFontSize}"/>
