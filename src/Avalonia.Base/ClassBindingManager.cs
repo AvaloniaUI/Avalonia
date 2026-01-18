@@ -17,7 +17,7 @@ namespace Avalonia
             AvaloniaProperty.RegisterAttached<StyledElement, string>(
                 "Classes", typeof(ClassBindingManager), "");
 
-        public static readonly AttachedProperty<HashSet<string>?> BoundClassesProperty =
+        private static readonly AttachedProperty<HashSet<string>?> BoundClassesProperty =
             AvaloniaProperty.RegisterAttached<StyledElement, HashSet<string>?>(
                 "BoundClasses", typeof(ClassBindingManager));
 
@@ -33,13 +33,13 @@ namespace Avalonia
             return element.GetValue(ClassesProperty);
         }
 
-        public static void SetBoundClasses(StyledElement element, HashSet<string>? value)
+        private static void SetBoundClasses(StyledElement element, HashSet<string>? value)
         {
             _ = element ?? throw new ArgumentNullException(nameof(element));
             element.SetValue(BoundClassesProperty, value);
         }
 
-        public static HashSet<string>? GetBoundClasses(StyledElement element)
+        private static HashSet<string>? GetBoundClasses(StyledElement element)
         {
             _ = element ?? throw new ArgumentNullException(nameof(element));
             return element.GetValue(BoundClassesProperty);
@@ -55,7 +55,9 @@ namespace Avalonia
             var boundClasses = GetBoundClasses(sender);
 
             var newValue = e.GetNewValue<string?>() ?? "";
-            var newValues = newValue.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            var newValues = newValue.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Where(c => boundClasses?.Contains(c) != true)
+                .ToList();
             var currentValues = sender.Classes
                 .Where(c => !c.StartsWith(":", StringComparison.Ordinal) && boundClasses?.Contains(c) != true)
                 .ToList();
@@ -76,9 +78,9 @@ namespace Avalonia
             boundClasses.Add(className);
         }
 
-        public static IDisposable BindClasses(StyledElement target, BindingBase source, object anchor)
+        public static IDisposable BindClasses(StyledElement target, BindingBase source, object? anchor)
         {
-            return target.Bind(ClassesProperty, source);
+            return target.Bind(ClassesProperty, source, anchor);
         }
 
         public static void SetClass(StyledElement target, string className, bool value)
@@ -87,11 +89,11 @@ namespace Avalonia
             target.Classes.Set(className, value);
         }
 
-        public static IDisposable BindClass(StyledElement target, string className, BindingBase source, object anchor)
+        public static IDisposable BindClass(StyledElement target, string className, BindingBase source, object? anchor)
         {
             AddBoundClass(target, className);
             var prop = GetClassProperty(className);
-            return target.Bind(prop, source);
+            return target.Bind(prop, source, anchor);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1001:The same AvaloniaProperty should not be registered twice",
@@ -120,11 +122,10 @@ namespace Avalonia
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static bool IsClassesBindingProperty(AvaloniaProperty property, [NotNullWhen(true)] out string? classPropertyName)
         {
-            
-            classPropertyName = default;
-            if(property.Name?.StartsWith(ClassPropertyPrefix, StringComparison.OrdinalIgnoreCase) == true)
+            classPropertyName = null;
+            if (property.Name?.StartsWith(ClassPropertyPrefix, StringComparison.OrdinalIgnoreCase) == true)
             {
-                classPropertyName = property.Name.Substring(ClassPropertyPrefix.Length + 1);
+                classPropertyName = property.Name.Substring(ClassPropertyPrefix.Length);
                 return true;
             }
             return false;

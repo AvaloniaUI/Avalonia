@@ -6,13 +6,13 @@ namespace Avalonia
 {
     public static class StyledElementExtensions
     {
-        public static IDisposable BindClasses(this StyledElement target, BindingBase source, object anchor) =>
+        public static IDisposable BindClasses(this StyledElement target, BindingBase source, object? anchor = null) =>
             ClassBindingManager.BindClasses(target, source, anchor);
 
         public static void SetClasses(this StyledElement target, string classNames) =>
             ClassBindingManager.SetClasses(target, classNames);
 
-        public static IDisposable BindClass(this StyledElement target, string className, BindingBase source, object anchor) =>
+        public static IDisposable BindClass(this StyledElement target, string className, BindingBase source, object? anchor = null) =>
             ClassBindingManager.BindClass(target, className, source, anchor);
 
         public static void SetClass(this StyledElement target, string className, bool value) =>
