@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Controls.Shapes;
 using Avalonia.Media;
 using Xunit;
 #pragma warning disable CS0649
@@ -35,6 +36,43 @@ public class EffectTests : TestBase
             }
         };
         
+        await RenderToFile(target);
+        CompareImages(skipImmediate: true);
+    }
+
+    [Fact]
+    public async Task EffectFollowedByNonEffect()
+    {
+        var target = new Border
+        {
+            Background = Brushes.White,
+            Width = 200,
+            Height = 200,
+            Child = new Panel
+            {
+                Margin = new Thickness(25),
+                Children =
+                {
+                    new Rectangle
+                    {
+                        Fill = Brushes.Yellow,
+                        Effect = new DropShadowEffect
+                        {
+                            Opacity = 1,
+                            OffsetX = 0,
+                            OffsetY = 0,
+                            Color = Colors.Black,
+                            BlurRadius = 50
+                        }
+                    },
+                    new Rectangle
+                    {
+                        Fill = new SolidColorBrush(0x7F007FFF)
+                    }
+                }
+            }
+        };
+
         await RenderToFile(target);
         CompareImages(skipImmediate: true);
     }
