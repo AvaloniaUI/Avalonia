@@ -357,6 +357,7 @@ namespace Avalonia.Win32.Automation
                 AutomationControlType.Table => UiaControlTypeId.Table,
                 AutomationControlType.TitleBar => UiaControlTypeId.TitleBar,
                 AutomationControlType.Separator => UiaControlTypeId.Separator,
+                AutomationControlType.Expander => UiaControlTypeId.Group,
                 _ => UiaControlTypeId.Custom,
             };
         }
