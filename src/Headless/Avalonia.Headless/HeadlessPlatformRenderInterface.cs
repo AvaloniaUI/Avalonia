@@ -59,11 +59,13 @@ namespace Avalonia.Headless
             => new HeadlessGeometryStub(g1.Bounds.Union(g2.Bounds));
 
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces) => new HeadlessRenderTarget();
-        public IDrawingContextLayerImpl CreateOffscreenRenderTarget(PixelSize pixelSize, double scaling) => 
-            new HeadlessBitmapStub(pixelSize, new Vector(96 * scaling, 96 * scaling));
+        public IDrawingContextLayerImpl CreateOffscreenRenderTarget(PixelSize pixelSize, Vector scaling,
+            bool enableTextAntialiasing) => 
+            new HeadlessBitmapStub(pixelSize, scaling * 96);
 
         public bool IsLost => false;
         public IReadOnlyDictionary<Type, object> PublicFeatures { get; } = new Dictionary<Type, object>();
+        public PixelSize? MaxOffscreenRenderTargetPixelSize => null;
         public object? TryGetFeature(Type featureType) => null;
 
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(PixelSize size, Vector dpi)
