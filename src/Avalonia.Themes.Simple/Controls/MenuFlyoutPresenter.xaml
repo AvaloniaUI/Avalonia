@@ -17,7 +17,6 @@
                 CornerRadius="{TemplateBinding CornerRadius}">
           <ScrollViewer HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
                         Theme="{StaticResource SimpleMenuScrollViewer}"
-                        ScrollViewer.IsScrollChainingEnabled="False"
                         VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}">
             <ItemsPresenter Name="PART_ItemsPresenter"
                             Margin="{TemplateBinding Padding}"
