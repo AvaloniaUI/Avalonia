@@ -29,10 +29,10 @@ internal partial class ServerCompositionVisual
 
         private void PushCacheIfNeeded(ServerCompositionVisual visual)
         {
-            if (visual.CacheMode is ServerCompositionBitmapCache bitmapCache)
+            if (visual.Cache != null)
             {
                 _dirtyRegionCollectorStack.Push(_dirtyRegion);
-                _dirtyRegion = bitmapCache.DirtyRectCollector;
+                _dirtyRegion = visual.Cache.DirtyRectCollector;
                 _dirtyRegionDisableCountStack.Push(_dirtyRegionDisableCount);
                 _dirtyRegionDisableCount = 0;
                 
@@ -43,13 +43,13 @@ internal partial class ServerCompositionVisual
 
         private void PopCacheIfNeeded(ServerCompositionVisual visual)
         {
-            if (visual.CacheMode is ServerCompositionBitmapCache bitmapCache)
+            if (visual.Cache != null)
             {
                 _context.PopClip();
                 _context.PopTransform();
                 _dirtyRegion = _dirtyRegionCollectorStack.Pop();
                 _dirtyRegionDisableCount = _dirtyRegionDisableCountStack.Pop();
-                if (bitmapCache.IsDirty)
+                if (visual.Cache.IsDirty)
                     AddToDirtyRegion(visual._subTreeBounds);
             }
         }

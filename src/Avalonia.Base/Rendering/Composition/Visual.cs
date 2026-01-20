@@ -102,23 +102,5 @@ namespace Avalonia.Rendering.Composition
         internal object? Tag { get; set; }
 
         internal virtual bool HitTest(Point point) => true;
-
-        partial void OnCacheModeChanging()
-        {
-            if (CacheMode is CompositionBitmapCache bmp)
-                bmp.TargetVisual = null;
-        }
-        
-        partial void OnCacheModeChanged()
-        {
-            if (CacheMode is CompositionBitmapCache bmp)
-            {
-                // FIXME: SyncCompositionProperties is called in non-deterministic way, so we simply reset
-                // the previous target visual
-                if (bmp.TargetVisual != null)
-                    bmp.TargetVisual.CacheMode = null;
-                bmp.TargetVisual = this;
-            }
-        }
     }
 }

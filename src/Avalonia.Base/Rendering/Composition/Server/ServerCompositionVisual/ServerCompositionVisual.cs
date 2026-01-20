@@ -19,6 +19,7 @@ namespace Avalonia.Rendering.Composition.Server
     partial class ServerCompositionVisual : ServerObject
     {
         public ServerCompositionVisualCollection? Children { get; private set; } = null!;
+        public ServerCompositionVisualCache? Cache { get; private set; }
 
         partial void OnRootChanging()
         {
@@ -41,7 +42,7 @@ namespace Avalonia.Rendering.Composition.Server
                 OnAttachedToRoot(Root);
                 AdornerHelper_AttachedToRoot();
             }
-            CacheMode?.FreeResources();
+            Cache?.FreeResources();
         }
 
         protected virtual void OnAttachedToRoot(ServerCompositionTarget target)
@@ -50,12 +51,23 @@ namespace Avalonia.Rendering.Composition.Server
 
         partial void OnCacheModeChanging()
         {
-            CacheMode?.FreeResources();
+            CacheMode?.Unsubscribe(this);
+            Cache?.FreeResources();
+            Cache = null;
         }
         
-        partial void OnCacheModeChanged() => OnCacheModeStateChanged();
+        partial void OnCacheModeChanged()
+        {
+            Cache = CacheMode is ServerCompositionBitmapCache bitmapCache ? new ServerCompositionVisualCache(this, bitmapCache) : null;
+            CacheMode?.Subscribe(this);
+            OnCacheModeStateChanged();
+        }
 
-        public void OnCacheModeStateChanged() => InvalidateContent();
+        public void OnCacheModeStateChanged()
+        {
+            Cache?.InvalidateProperties();
+            InvalidateContent();
+        }
 
 
         protected virtual void RenderCore(ServerVisualRenderContext context, LtrbRect currentTransformedClip)

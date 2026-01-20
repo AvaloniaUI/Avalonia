@@ -134,9 +134,9 @@ partial class ServerCompositionVisual
                     AdornerHelper_RenderPreGraphPushAdornerClip(visual);
 
                 // If caching is enabled, draw from cache and skip rendering
-                if (visual.CacheMode is ServerCompositionBitmapCache bitmapCache)
+                if (visual.Cache != null)
                 {
-                    var (visited, rendered) = bitmapCache.Draw(_canvas);
+                    var (visited, rendered) = visual.Cache.Draw(_canvas);
                     VisitedVisuals += visited;
                     RenderedVisuals += rendered;
                     _usedCache = true;

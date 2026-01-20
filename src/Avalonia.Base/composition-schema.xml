@@ -113,7 +113,6 @@
     <Object Name="CompositionCacheMode" Internal="true">
     </Object>
     <Object Name="CompositionBitmapCache" Internal="true" Inherits="CompositionCacheMode">
-        <Property Name="TargetVisual" Type="CompositionVisual?" Internal="true"/>
         <Property Name="RenderAtScale" Type="double" Animated="true" DefaultValue="1.0"/>
         <Property Name="SnapsToDevicePixels" Type="bool" Animated="true" DefaultValue="false"/>
         <Property Name="EnableClearType" Type="bool" Animated="true" DefaultValue="false"/>
