@@ -345,20 +345,25 @@ partial class Build : NukeBuild
 
     Target DownloadApiBaselinePackages => _ => _
         .DependsOn(CreateNugetPackages)
+        .OnlyWhenStatic(() => false)
         .Executes(async () =>
         {
+            
             GlobalDiff = await ApiDiffHelper.DownloadAndExtractPackagesAsync(
                 Directory.EnumerateFiles(Parameters.NugetRoot, "*.nupkg").Select(path => (AbsolutePath)path),
                 NuGetVersion.Parse(Parameters.Version),
                 Parameters.IsReleaseBranch,
                 Parameters.ArtifactsDir / "api-diff" / "assemblies",
                 Parameters.ForceApiValidationBaseline is { } forcedBaseline ? NuGetVersion.Parse(forcedBaseline) : null);
+                
         });
 
     Target ValidateApiDiff => _ => _
         .DependsOn(DownloadApiBaselinePackages)
+        .OnlyWhenStatic(() => false)
         .Executes(() =>
         {
+            
             var globalDiff = GlobalDiff!;
 
             Parallel.ForEach(
@@ -369,12 +374,15 @@ partial class Build : NukeBuild
                     Parameters.ArtifactsDir / "api-diff" / "assemblies",
                     Parameters.ApiValidationSuppressionFiles,
                     Parameters.UpdateApiValidationSuppression));
+                    
         });
     
     Target OutputApiDiff => _ => _
         .DependsOn(DownloadApiBaselinePackages)
+        .OnlyWhenStatic(() => false)
         .Executes(() =>
         {
+            
             var globalDiff = GlobalDiff!;
             var outputFolderPath = Parameters.ArtifactsDir / "api-diff" / "markdown";
             var baselineDisplay = globalDiff.BaselineVersion.ToString();
@@ -390,6 +398,7 @@ partial class Build : NukeBuild
                     currentDisplay));
 
             ApiDiffHelper.MergePackageMarkdownDiffFiles(outputFolderPath, baselineDisplay, currentDisplay);
+            
         });
 
     Target RunTests => _ => _
