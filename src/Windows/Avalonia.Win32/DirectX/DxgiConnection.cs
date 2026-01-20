@@ -168,6 +168,7 @@ namespace Avalonia.Win32.DirectX
             });
             thread.IsBackground = true;
             thread.SetApartmentState(System.Threading.ApartmentState.STA);
+            thread.Name = "DxgiRenderTimerLoop";
             thread.Start();
             // block until 
             return tcs.Task.Result;
