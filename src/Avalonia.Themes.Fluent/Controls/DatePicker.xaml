@@ -79,6 +79,8 @@
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="MinWidth" Value="{DynamicResource DatePickerThemeMinWidth}" />
+    <Setter Property="MaxWidth" Value="{DynamicResource DatePickerThemeMaxWidth}" />
     <Setter Property="Template">
       <ControlTemplate>
         <DataValidationErrors>
@@ -91,8 +93,7 @@
                     BorderThickness="{TemplateBinding BorderThickness}"
                     CornerRadius="{TemplateBinding CornerRadius}"
                     IsEnabled="{TemplateBinding IsEnabled}"
-                    MinWidth="{DynamicResource DatePickerThemeMinWidth}"
-                    MaxWidth="{DynamicResource DatePickerThemeMaxWidth}"
+                    MaxWidth="{TemplateBinding MaxWidth}"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
                     TemplatedControl.IsTemplateFocusTarget="True">
