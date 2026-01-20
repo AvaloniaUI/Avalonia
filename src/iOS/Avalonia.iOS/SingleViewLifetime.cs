@@ -1,6 +1,4 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 
 namespace Avalonia.iOS;
@@ -10,9 +8,9 @@ internal class SingleViewLifetime : ISingleViewApplicationLifetime, ISingleTopLe
     private Control? _mainView;
     private AvaloniaView? _view;
 
-    public AvaloniaView View
+    public AvaloniaView? View
     {
-        [return: MaybeNull] get => _view!;
+        get => _view;
         internal set
         {
             if (_view != null)
@@ -21,7 +19,7 @@ internal class SingleViewLifetime : ISingleViewApplicationLifetime, ISingleTopLe
                 _view.Dispose();
             }
             _view = value;
-            _view.Content = _mainView;
+            _view?.Content = _mainView;
         }
     }
 
@@ -33,10 +31,7 @@ internal class SingleViewLifetime : ISingleViewApplicationLifetime, ISingleTopLe
             if (_mainView != value)
             {
                 _mainView = value;
-                if (_view != null)
-                {
-                    _view.Content = _mainView;
-                }
+                _view?.Content = _mainView;
             }
         }
     }
