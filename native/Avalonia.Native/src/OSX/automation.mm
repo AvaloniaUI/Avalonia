@@ -126,6 +126,7 @@
         case AutomationHeaderItem:  return NSAccessibilityButtonRole;
         case AutomationTable: return NSAccessibilityTableRole;
         case AutomationTitleBar: return NSAccessibilityGroupRole;
+        case AutomationExpander: return NSAccessibilityDisclosureTriangleRole;
         // Treat unknown roles as generic group container items. Returning
         // NSAccessibilityUnknownRole is also possible but makes the screen
        // reader focus on the item instead of passing focus to child items.
