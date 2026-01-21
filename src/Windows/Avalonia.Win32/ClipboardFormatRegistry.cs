@@ -15,11 +15,11 @@ namespace Avalonia.Win32
         private const string AppPrefix = "avn-app-fmt:";
         private static readonly List<(DataFormat Format, ushort Id)> s_formats = [];
 
-        public static DataFormat PngSystemDataFormat = new DataFormat<Bitmap>(DataFormatKind.Platform, "PNG");
-        public static DataFormat PngMimeDataFormat = new DataFormat<Bitmap>(DataFormatKind.Platform, "image/png");
-        public static DataFormat HBitmapDataFormat = new DataFormat<Bitmap>(DataFormatKind.Platform, "CF_BITMAP");
-        public static DataFormat DibDataFormat = new DataFormat<Bitmap>(DataFormatKind.Platform, "CF_DIB");
-        public static DataFormat DibV5DataFormat = new DataFormat<Bitmap>(DataFormatKind.Platform, "CF_DIBV5");
+        public static readonly DataFormat PngSystemDataFormat = new DataFormat<Bitmap>(DataFormatKind.Platform, "PNG");
+        public static readonly DataFormat PngMimeDataFormat = new DataFormat<Bitmap>(DataFormatKind.Platform, "image/png");
+        public static readonly DataFormat HBitmapDataFormat = new DataFormat<Bitmap>(DataFormatKind.Platform, "CF_BITMAP");
+        public static readonly DataFormat DibDataFormat = new DataFormat<Bitmap>(DataFormatKind.Platform, "CF_DIB");
+        public static readonly DataFormat DibV5DataFormat = new DataFormat<Bitmap>(DataFormatKind.Platform, "CF_DIBV5");
 
         // Ordered from the most preferred to the least preferred
         public static DataFormat[] ImageFormats = [PngMimeDataFormat, PngSystemDataFormat, DibDataFormat, DibV5DataFormat, HBitmapDataFormat];
