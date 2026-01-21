@@ -71,7 +71,7 @@ And run tests:
 Or if you need to create nuget packages as well (it will compile and run tests automatically):
 `nuke --target Package --configuration Release`
 
-Alternatively, you can run nuke build direclty without installing Nuke global tool:
+Alternatively, you can run nuke build directly without installing Nuke global tool:
 `dotnet run --project nukebuild/_build.csproj -- --configuration Debug`
 
 # Linux/macOS
