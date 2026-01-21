@@ -93,6 +93,7 @@
                     BorderThickness="{TemplateBinding BorderThickness}"
                     CornerRadius="{TemplateBinding CornerRadius}"
                     IsEnabled="{TemplateBinding IsEnabled}"
+                    MinWidth="{TemplateBinding MinWidth}"
                     MaxWidth="{TemplateBinding MaxWidth}"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
