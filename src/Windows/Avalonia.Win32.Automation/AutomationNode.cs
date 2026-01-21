@@ -54,10 +54,8 @@ namespace Avalonia.Win32.Automation
             { SelectionPatternIdentifiers.IsSelectionRequiredProperty, UiaPropertyId.SelectionIsSelectionRequired },
             { SelectionPatternIdentifiers.SelectionProperty, UiaPropertyId.SelectionSelection },
             { SelectionItemPatternIdentifiers.IsSelectedProperty, UiaPropertyId.SelectionItemIsSelected },
-            {
-                SelectionItemPatternIdentifiers.SelectionContainerProperty,
-                UiaPropertyId.SelectionItemSelectionContainer
-            }
+            { SelectionItemPatternIdentifiers.SelectionContainerProperty, UiaPropertyId.SelectionItemSelectionContainer },
+            { TogglePatternIdentifiers.ToggleStateProperty, UiaPropertyId.ToggleToggleState },
         };
 
         private static ConditionalWeakTable<AutomationPeer, AutomationNode> s_nodes = new();
@@ -372,6 +370,7 @@ namespace Avalonia.Win32.Automation
                 AutomationControlType.Table => UiaControlTypeId.Table,
                 AutomationControlType.TitleBar => UiaControlTypeId.TitleBar,
                 AutomationControlType.Separator => UiaControlTypeId.Separator,
+                AutomationControlType.Expander => UiaControlTypeId.Group,
                 _ => UiaControlTypeId.Custom,
             };
         }

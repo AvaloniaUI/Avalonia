@@ -47,6 +47,7 @@ namespace Avalonia.Automation.Peers
         Table,
         TitleBar,
         Separator,
+        Expander,
     }
 
     public enum AutomationLandmarkType
@@ -542,6 +543,7 @@ namespace Avalonia.Automation.Peers
                 AutomationControlType.SplitButton => "split button",
                 AutomationControlType.HeaderItem => "header item",
                 AutomationControlType.TitleBar => "title bar",
+                AutomationControlType.Expander => "group",
                 AutomationControlType.None => (GetLandmarkType()?.ToString() ?? controlType.ToString()).ToLowerInvariant(),
                 _ => controlType.ToString().ToLowerInvariant(),
             };
