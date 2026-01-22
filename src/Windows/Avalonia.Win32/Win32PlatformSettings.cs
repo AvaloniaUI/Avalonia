@@ -13,6 +13,7 @@ internal class Win32PlatformSettings : DefaultPlatformSettings
         && WinRTApiInformation.IsTypePresent("Windows.UI.ViewManagement.AccessibilitySettings")); 
 
     private PlatformColorValues? _lastColorValues;
+    private string? _lastLanguage;
 
     public override Size GetTapSize(PointerType type)
     {
@@ -33,6 +34,27 @@ internal class Win32PlatformSettings : DefaultPlatformSettings
     }
 
     public override TimeSpan GetDoubleTapTime(PointerType type) => TimeSpan.FromMilliseconds(GetDoubleClickTime());
+
+    public override string PreferredApplicationLanguage
+    {
+        get
+        {
+            if (_lastLanguage is null)
+            {
+                unsafe
+                {
+                    const int LOCALE_NAME_MAX_LENGTH = 85;
+                    var buffer = stackalloc char[LOCALE_NAME_MAX_LENGTH];
+                    var length = GetUserDefaultLocaleName(buffer, LOCALE_NAME_MAX_LENGTH);
+                    _lastLanguage = length > 0
+                        ? new string(buffer, 0, length - 1)
+                        : base.PreferredApplicationLanguage;
+                }
+            }
+
+            return _lastLanguage;
+        }
+    }
     
     public override PlatformColorValues GetColorValues()
     {
@@ -86,6 +108,18 @@ internal class Win32PlatformSettings : DefaultPlatformSettings
         if (oldColorValues != colorValues)
         {
             OnColorValuesChanged(colorValues);
+        }
+    }
+
+    internal void OnLanguageChanged()
+    {
+        var oldLanguage = _lastLanguage;
+        _lastLanguage = null;
+        var newLanguage = PreferredApplicationLanguage;
+
+        if (oldLanguage != newLanguage)
+        {
+            OnPreferredApplicationLanguageChanged();
         }
     }
 }
