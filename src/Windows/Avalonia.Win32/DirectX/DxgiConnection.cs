@@ -131,7 +131,7 @@ namespace Avalonia.Win32.DirectX
                     using var output = MicroComRuntime.CreateProxyFor<IDXGIOutput>(outputPointer, true);
                     DXGI_OUTPUT_DESC outputDesc = output.Desc;
 
-                    var hMonitor = new HMONITOR(outputDesc.Monitor.Value);
+                    var hMonitor = new HMONITOR((IntPtr)outputDesc.Monitor.Value);
 
                     var frequency =
                         monitorFrequencies.TryGetValue(hMonitor, out uint frequencyValue) ?
