@@ -415,7 +415,7 @@ public partial class XYFocus
         while (parent != null)
         {
             var element = parent;
-            if (element is IInternalScroller scrollable)
+            if (element is IScrollable scrollable)
             {
                 var isHorizontallyScrollable = scrollable.CanHorizontallyScroll;
                 var isVerticallyScrollable = scrollable.CanVerticallyScroll;
