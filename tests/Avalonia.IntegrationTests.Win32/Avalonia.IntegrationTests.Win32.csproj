@@ -13,10 +13,7 @@
     <ProjectReference Include="../../src/Avalonia.Themes.Fluent/Avalonia.Themes.Fluent.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="xunit.v3.mtp-v2" Version="3.2.1" />
-  </ItemGroup>
-  
+  <Import Project="../../build/XUnit.props" />
   <Import Project="../../build/SharedVersion.props" />
   <Import Project="../../build/ReferenceCoreLibraries.props" />
   <Import Project="../../build/BuildTargets.targets" />
