@@ -173,7 +173,7 @@
     if (_attributeNames == nil)
     {
         _attributeNames = @[
-            @"AXARIALive",
+            kAXARIALiveAttribute,
         ];
     }
     return _attributeNames;
@@ -181,7 +181,7 @@
 
 - (id)accessibilityAttributeValue:(NSAccessibilityAttributeName)attribute
 {
-    if ([attribute isEqualToString:@"AXARIALive"])
+    if ([attribute isEqualToString:kAXARIALiveAttribute])
     {
         switch (_peer->GetLiveSetting())
         {
@@ -456,7 +456,7 @@
 
 - (void)raiseLiveRegionChanged
 {
-    NSAccessibilityPostNotification(self, @"AXLiveRegionChanged");
+    NSAccessibilityPostNotification(self, kAXLiveRegionChangedNotification);
 }
 
 - (void)setAccessibilityFocused:(BOOL)accessibilityFocused
