@@ -135,8 +135,6 @@ namespace Avalonia.Win32.DirectX
                 var res = base.BeginDraw(_surface, _window.Size, _window.Scaling, () =>
                 {
                     _swapChain.Present((ushort)0U, (ushort)0U);
-                    // No need to Dispose here. The _surface only Dispose when _renderTexture Disposed.
-                    //_surface.Dispose();
                     transaction?.Dispose();
                     contextLock?.Dispose();
                 }, true);
