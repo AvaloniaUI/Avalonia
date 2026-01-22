@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- https://learn.microsoft.com/dotnet/fundamentals/package-validation/diagnostic-ids -->
+<Suppressions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Headless.HeadlessWindowExtensions.DragDrop(Avalonia.Controls.TopLevel,Avalonia.Point,Avalonia.Input.Raw.RawDragEventType,Avalonia.Input.IDataObject,Avalonia.Input.DragDropEffects,Avalonia.Input.RawInputModifiers)</Target>
+    <Left>baseline/Avalonia.Headless/lib/net10.0/Avalonia.Headless.dll</Left>
+    <Right>current/Avalonia.Headless/lib/net10.0/Avalonia.Headless.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Headless.HeadlessWindowExtensions.DragDrop(Avalonia.Controls.TopLevel,Avalonia.Point,Avalonia.Input.Raw.RawDragEventType,Avalonia.Input.IDataObject,Avalonia.Input.DragDropEffects,Avalonia.Input.RawInputModifiers)</Target>
+    <Left>baseline/Avalonia.Headless/lib/net8.0/Avalonia.Headless.dll</Left>
+    <Right>current/Avalonia.Headless/lib/net8.0/Avalonia.Headless.dll</Right>
+  </Suppression>
+</Suppressions>
