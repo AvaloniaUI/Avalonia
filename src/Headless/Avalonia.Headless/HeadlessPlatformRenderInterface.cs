@@ -559,12 +559,22 @@ namespace Avalonia.Headless
 
             public void PushRenderOptions(RenderOptions renderOptions)
             {
-               
+                
             }
 
             public void PopRenderOptions()
             {
-               
+                
+            }
+
+            public void PushTextOptions(TextOptions textOptions)
+            {
+                // No-op in headless stub
+            }
+
+            public void PopTextOptions()
+            {
+                // No-op in headless stub
             }
         }
 

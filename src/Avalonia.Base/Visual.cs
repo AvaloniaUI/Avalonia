@@ -1,5 +1,3 @@
-
-
 #nullable enable
 
 using System;
@@ -125,6 +123,8 @@ namespace Avalonia
         private Visual? _visualParent;
         private bool _hasMirrorTransform;
         private TargetWeakEventSubscriber<Visual, EventArgs>? _affectsRenderWeakSubscriber;
+        private RenderOptions _renderOptions;
+        private TextOptions _textOptions;
 
         /// <summary>
         /// Initializes static members of the <see cref="Visual"/> class.
@@ -327,7 +327,25 @@ namespace Avalonia
         /// </summary>
         protected internal IRenderRoot? VisualRoot => _visualRoot;
 
-        internal RenderOptions RenderOptions { get; set; }
+        internal RenderOptions RenderOptions 
+        { 
+            get => _renderOptions;
+            set 
+            { 
+                _renderOptions = value;
+                InvalidateVisual();
+            }
+        }
+
+        internal TextOptions TextOptions
+        {
+            get => _textOptions;
+            set
+            {
+                _textOptions = value;
+                InvalidateVisual();
+            }
+        }
 
         internal bool HasNonUniformZIndexChildren { get; private set; }
 
