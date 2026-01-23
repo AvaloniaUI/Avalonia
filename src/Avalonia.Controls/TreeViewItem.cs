@@ -192,12 +192,16 @@ namespace Avalonia.Controls
                 }
 
                 var header = _headerPresenter ?? _header;
-                var m = header?.TransformToVisual(this);
-                if (m.HasValue)
+                if (header is not null)
                 {
-                    var bounds = new Rect(header.Bounds.Size);
-                    var rect = bounds.TransformToAABB(m.Value);
-                    e.TargetRect = rect;
+                    var m = header.TransformToVisual(this);
+
+                    if (m.HasValue)
+                    {
+                        var bounds = new Rect(header.Bounds.Size);
+                        var rect = bounds.TransformToAABB(m.Value);
+                        e.TargetRect = rect;
+                    }
                 }
             }
         }
