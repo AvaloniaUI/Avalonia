@@ -7,6 +7,7 @@ using Avalonia.Controls.Documents;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Xunit;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Avalonia.Skia.RenderTests
 {
@@ -386,5 +387,29 @@ namespace Avalonia.Skia.RenderTests
             };
         }
 
+        [Win32Fact("Has text")]
+        public async Task Should_Justify_With_Spaces()
+        {
+            var target = new StackPanel
+            {
+                Width = 300,
+                Height = 400,
+                Background = new SolidColorBrush(Colors.White), // Required antialiasing to work for Overhang
+            };
+
+            target.Children.Add(CreateText("今天的晚饭很好"));
+            target.Children.Add(CreateText("今 天 的 晚 饭 很 好"));
+
+            await RenderToFile(target);
+
+            CompareImages();
+
+            static TextBlock CreateText(string text) => new TextBlock
+            {
+                TextAlignment = TextAlignment.Justify,
+                FontSize = 28,
+                Text = text
+            };
+        }
     }
 }
