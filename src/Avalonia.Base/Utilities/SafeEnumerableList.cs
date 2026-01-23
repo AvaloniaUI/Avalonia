@@ -11,7 +11,7 @@ using Avalonia.Collections;
 
 namespace Avalonia.Utilities
 {
-    internal class SafeEnumerableList<T> : IAvaloniaList<T>, INotifyCollectionChanged
+    internal class SafeEnumerableList<T> : IAvaloniaList<T>, IList, INotifyCollectionChanged
     {
         private AvaloniaList<T> _list = new();
         private int _generation;
@@ -137,6 +137,36 @@ namespace Avalonia.Utilities
             GetList().RemoveRange(index, count);
         }
 
+        public int Add(object? value)
+        {
+            return ((IList)GetList()).Add(value);
+        }
+
+        public bool Contains(object? value)
+        {
+            return ((IList)_list).Contains(value);
+        }
+
+        public int IndexOf(object? value)
+        {
+            return ((IList)_list).IndexOf(value);
+        }
+
+        public void Insert(int index, object? value)
+        {
+            ((IList)GetList()).Insert(index, value);
+        }
+
+        public void Remove(object? value)
+        {
+            ((IList)GetList()).Remove(value);
+        }
+
+        public void CopyTo(Array array, int index)
+        {
+            ((ICollection)_list).CopyTo(array, index);
+        }
+
         public int Count => _list.Count;
 
         public bool IsReadOnly => ((ICollection<T>)_list).IsReadOnly;
@@ -144,6 +174,13 @@ namespace Avalonia.Utilities
         public ResetBehavior ResetBehavior { get => _list.ResetBehavior; set => _list.ResetBehavior = value; }
         public IAvaloniaListItemValidator<T>? Validator { get => _list.Validator; set => _list.Validator = value; }
 
+        public bool IsFixedSize => ((IList)_list).IsFixedSize;
+
+        public bool IsSynchronized => ((ICollection)_list).IsSynchronized;
+
+        public object SyncRoot => ((ICollection)_list).SyncRoot;
+
+        object? IList.this[int index] { get => ((IList)_list)[index]; set => ((IList)GetList())[index] = value; }
         public T this[int index] { get => _list[index]; set => GetList()[index] = value; }
 
         public struct SafeListEnumerator : IEnumerator<T>
