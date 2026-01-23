@@ -518,11 +518,11 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Window_Should_Not_Be_Centered_When_WindowStartupLocation_Is_CenterScreen_And_Window_Is_Hidden_And_Shown()
         {
-            var screen1 = new Mock<Screen>(1.0, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 1040)), true);
+            var screen1 = new MockScreen(1.0, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 1040)), true);
 
             var screens = new Mock<IScreenImpl>();
-            screens.Setup(x => x.AllScreens).Returns(new Screen[] { screen1.Object });
-            screens.Setup(x => x.ScreenFromPoint(It.IsAny<PixelPoint>())).Returns(screen1.Object);
+            screens.Setup(x => x.AllScreens).Returns(new Screen[] { screen1 });
+            screens.Setup(x => x.ScreenFromPoint(It.IsAny<PixelPoint>())).Returns(screen1);
 
 
             var windowImpl = MockWindowingPlatform.CreateWindowMock();
@@ -553,12 +553,12 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Window_Should_Be_Centered_When_WindowStartupLocation_Is_CenterScreen()
         {
-            var screen1 = new Mock<Screen>(1.0, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 1040)), true);
-            var screen2 = new Mock<Screen>(1.0, new PixelRect(new PixelSize(1366, 768)), new PixelRect(new PixelSize(1366, 728)), false);
+            var screen1 = new MockScreen(1.0, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 1040)), true);
+            var screen2 = new MockScreen(1.0, new PixelRect(new PixelSize(1366, 768)), new PixelRect(new PixelSize(1366, 728)), false);
 
             var screens = new Mock<IScreenImpl>();
-            screens.Setup(x => x.AllScreens).Returns(new Screen[] { screen1.Object, screen2.Object });
-            screens.Setup(x => x.ScreenFromPoint(It.IsAny<PixelPoint>())).Returns(screen1.Object);
+            screens.Setup(x => x.AllScreens).Returns(new Screen[] { screen1, screen2 });
+            screens.Setup(x => x.ScreenFromPoint(It.IsAny<PixelPoint>())).Returns(screen1);
             
 
             var windowImpl = MockWindowingPlatform.CreateWindowMock();
@@ -576,8 +576,8 @@ namespace Avalonia.Controls.UnitTests
                 window.Show();
 
                 var expectedPosition = new PixelPoint(
-                    (int)(screen1.Object.WorkingArea.Size.Width / 2 - window.ClientSize.Width / 2),
-                    (int)(screen1.Object.WorkingArea.Size.Height / 2 - window.ClientSize.Height / 2));
+                    (int)(screen1.WorkingArea.Size.Width / 2 - window.ClientSize.Width / 2),
+                    (int)(screen1.WorkingArea.Size.Height / 2 - window.ClientSize.Height / 2));
 
                 Assert.Equal(window.Position, expectedPosition);
             }
@@ -586,10 +586,10 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Window_Should_Be_Sized_To_MinSize_If_InitialSize_Less_Than_MinSize()
         {
-            var screen1 = new Mock<Screen>(1.75, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 966)), true);
+            var screen1 = new MockScreen(1.75, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 966)), true);
             var screens = new Mock<IScreenImpl>();
-            screens.Setup(x => x.AllScreens).Returns(new Screen[] { screen1.Object });
-            screens.Setup(x => x.ScreenFromPoint(It.IsAny<PixelPoint>())).Returns(screen1.Object);
+            screens.Setup(x => x.AllScreens).Returns(new Screen[] { screen1 });
+            screens.Setup(x => x.ScreenFromPoint(It.IsAny<PixelPoint>())).Returns(screen1);
             
             var windowImpl = MockWindowingPlatform.CreateWindowMock(400, 300);
             windowImpl.Setup(x => x.DesktopScaling).Returns(1.75);
@@ -1146,9 +1146,9 @@ namespace Avalonia.Controls.UnitTests
 
         private static Mock<IWindowImpl> CreateImpl()
         {
-            var screen1 = new Mock<Screen>(1.75, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 966)), true);
+            var screen1 = new MockScreen(1.75, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 966)), true);
             var screens = new Mock<IScreenImpl>();
-            screens.Setup(x => x.ScreenFromWindow(It.IsAny<IWindowBaseImpl>())).Returns(screen1.Object);
+            screens.Setup(x => x.ScreenFromWindow(It.IsAny<IWindowBaseImpl>())).Returns(screen1);
 
             var windowImpl = new Mock<IWindowImpl>();
             windowImpl.Setup(r => r.Compositor).Returns(RendererMocks.CreateDummyCompositor());
