@@ -13,8 +13,6 @@ namespace Avalonia.Markup.Xaml.Diagnostics
     {
         private static ConditionalWeakTable<object, XamlSourceInfo?> s_sourceInfo = [];
 
-        public int Version { get; private set; } = 4;
-
         /// <summary>
         /// Gets the full path of the source file containing the element, or <c>null</c> if unavailable.
         /// </summary>
