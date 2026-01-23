@@ -479,30 +479,6 @@ namespace Avalonia.Build.Tasks
                             classTypeDefinition.Fields.Add(designLoaderField);
                             typeSystem.AddCompilerGeneratedAttribute(designLoaderField);
 
-                            // Add [XamlSourceInfoAttribute] to the generated class.
-                            // Used at design time to locate the original .axaml file,
-                            // since the runtime loader substitutes a fake file name.
-                            if (createSourceInfo && document.FileSource.FilePath is { } filePath) 
-                            {
-                                var attrType = typeSystem.FindType("Avalonia.Markup.Xaml.Diagnostics.XamlSourceInfoAttribute");
-                                var attrTypeRef = asm.MainModule.ImportReference(typeSystem.GetTypeReference(attrType));
-
-                                var attrCtorDef = attrTypeRef.Resolve()
-                                    .Methods.First(m => m.IsConstructor
-                                                     && m.Parameters.Count == 1
-                                                     && m.Parameters[0].ParameterType.FullName == "System.String");
-
-                                var attrCtorRef = asm.MainModule.ImportReference(attrCtorDef);
-                                var designFilenameAttribute = new CustomAttribute(attrCtorRef);
-                                designFilenameAttribute.ConstructorArguments.Add(
-                                    new CustomAttributeArgument(
-                                        asm.MainModule.TypeSystem.String,
-                                        filePath
-                                    )
-                                );
-                                classTypeDefinition.CustomAttributes.Add(designFilenameAttribute);
-                            }
-
                             const string TrampolineName = "!XamlIlPopulateTrampoline";
                             var trampolineMethodWithoutSP = new Lazy<MethodDefinition>(() => CreateTrampolineMethod(false));
                             var trampolineMethodWithSP = new Lazy<MethodDefinition>(() => CreateTrampolineMethod(true));
