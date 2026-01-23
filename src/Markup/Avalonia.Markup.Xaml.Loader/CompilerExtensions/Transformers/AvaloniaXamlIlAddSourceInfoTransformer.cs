@@ -38,39 +38,27 @@ namespace Avalonia.Markup.Xaml.Loader.CompilerExtensions.Transformers
             {
                 var avaloniaTypes = context.GetAvaloniaTypes();
 
-                var clrType = objNode.Type.GetClrType();
-                if (avaloniaTypes.Control.IsAssignableFrom(clrType))
+                var line = node.Line;
+                var col = node.Position;
+
+                // Create a CLR property representation for the attached SourceInfo property.
+                var sourceProperty = new XamlAstClrProperty(node,
+                    "XamlSourceInfo",
+                    avaloniaTypes.XamlSourceInfo,
+                    null,
+                    [avaloniaTypes.XamlSourceInfoSetter], null);
+
+                var sourceInfoTypeRef = new XamlAstClrTypeReference(node, avaloniaTypes.XamlSourceInfo, false);
+                XamlAstNewClrObjectNode valueNode;
+
+                if(context.Document != null)
                 {
-                    var line = node.Line;
-                    var col = node.Position;
-
-                    // Create a CLR property representation for the attached SourceInfo property.
-                    var sourceProperty = new XamlAstClrProperty(node,
-                        "SourceInfo",
-                        avaloniaTypes.VisualDiagnosticsType,
-                        null,
-                        [avaloniaTypes.SourceInfoPropertySetter], null);
-
-                    var sourceInfoTypeRef = new XamlAstClrTypeReference(node, avaloniaTypes.SourceInfoType, false);
-                    XamlAstNewClrObjectNode valueNode;
-
-                    if(context.Document != null)
-                    {
-                        valueNode = new XamlAstNewClrObjectNode(node, sourceInfoTypeRef, avaloniaTypes.SourceInfoConstructorFull,
-                        [
-                            new XamlConstantNode(node, avaloniaTypes.XamlIlTypes.Int32, line),
-                            new XamlConstantNode(node, avaloniaTypes.XamlIlTypes.Int32, col),
-                            new XamlConstantNode(node, avaloniaTypes.XamlIlTypes.String, context.Document)
-                        ]);
-                    }
-                    else
-                    {
-                        valueNode = new XamlAstNewClrObjectNode(node, sourceInfoTypeRef, avaloniaTypes.SourceInfoConstructor,
-                        [
-                            new XamlConstantNode(node, avaloniaTypes.XamlIlTypes.Int32, line),
-                            new XamlConstantNode(node, avaloniaTypes.XamlIlTypes.Int32, col)
-                        ]);
-                    }
+                    valueNode = new XamlAstNewClrObjectNode(node, sourceInfoTypeRef, avaloniaTypes.XamlSourceInfoConstructor,
+                    [
+                        new XamlConstantNode(node, avaloniaTypes.XamlIlTypes.Int32, line),
+                        new XamlConstantNode(node, avaloniaTypes.XamlIlTypes.Int32, col),
+                        new XamlConstantNode(node, avaloniaTypes.XamlIlTypes.String, context.Document)
+                    ]);
 
                     var propNode = new XamlAstXamlPropertyValueNode(
                         node,
