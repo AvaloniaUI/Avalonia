@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>$(AvsCurrentTargetFramework);net481</TargetFrameworks>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <OutputType>Library</OutputType>
+    <OutputType>Exe</OutputType>
     <IsPackable>false</IsPackable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Configuration Condition="'$(Configuration)'==''">Debug</Configuration>
@@ -14,6 +14,7 @@
   <Import Project="..\..\build\HarfBuzzSharp.props" />
   <Import Project="..\..\build\XUnit.props" />
   <Import Project="..\..\build\SharedVersion.props" />
+  <Import Project="..\..\build\NullableEnable.props" />
   <ItemGroup>
     <Content Include="..\TestFiles\BuildTasks\PInvoke\bin\$(Configuration)\$(AvsCurrentTargetFramework)\PInvoke.dll" Link="Assets\PInvoke.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

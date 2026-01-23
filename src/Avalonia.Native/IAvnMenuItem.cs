@@ -18,13 +18,13 @@ namespace Avalonia.Native.Interop.Impl
 {
     partial class __MicroComIAvnMenuItemProxy
     {
-        private __MicroComIAvnMenuProxy _subMenu;
+        private __MicroComIAvnMenuProxy? _subMenu;
         private CompositeDisposable _propertyDisposables = new CompositeDisposable();
-        private IDisposable _currentActionDisposable;
+        private IDisposable? _currentActionDisposable;
 
         public NativeMenuItemBase ManagedMenuItem { get; set; }
 
-        private void UpdateTitle(string title)
+        private void UpdateTitle(string? title)
         {
             if (OperatingSystemEx.IsMacOS())
             {
@@ -38,7 +38,7 @@ namespace Avalonia.Native.Interop.Impl
             SetTitle(title);
         }
 
-        private void UpdateToolTip(string toolTip) => SetToolTip(toolTip ?? "");
+        private void UpdateToolTip(string? toolTip) => SetToolTip(toolTip ?? "");
 
         private void UpdateIsVisible(bool isVisible) => SetIsVisible(isVisible.AsComBool());
         private void UpdateIsChecked(bool isChecked) => SetIsChecked(isChecked.AsComBool());
@@ -48,7 +48,7 @@ namespace Avalonia.Native.Interop.Impl
             SetToggleType((AvnMenuItemToggleType)toggleType);
         }
 
-        private unsafe void UpdateIcon (IBitmap icon)
+        private unsafe void UpdateIcon (IBitmap? icon)
         {
             if(icon is null)
             {
@@ -70,20 +70,20 @@ namespace Avalonia.Native.Interop.Impl
             }
         }
 
-        private void UpdateGesture(Input.KeyGesture gesture)
+        private void UpdateGesture(Input.KeyGesture? gesture)
         {
             var modifiers = gesture == null ? AvnInputModifiers.AvnInputModifiersNone : (AvnInputModifiers)gesture.KeyModifiers;
             var key = gesture == null ? AvnKey.AvnKeyNone : (AvnKey)gesture.Key;
             SetGesture(key, modifiers);
         }
 
-        private void UpdateAction(NativeMenuItem item)
+        private void UpdateAction(NativeMenuItem? item)
         {
             _currentActionDisposable?.Dispose();
 
             var action = new PredicateCallback(() =>
             {
-                if (item.Command != null || item.HasClickHandlers)
+                if (item is not null && (item.Command is not null || item.HasClickHandlers))
                 {
                     return item.IsEnabled;
                 }
@@ -160,7 +160,7 @@ namespace Avalonia.Native.Interop.Impl
                 _subMenu = null;
             }
 
-            _propertyDisposables?.Dispose();
+            _propertyDisposables.Dispose();
             _currentActionDisposable?.Dispose();
         }
 

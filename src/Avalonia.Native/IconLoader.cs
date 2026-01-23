@@ -27,13 +27,13 @@ namespace Avalonia.Native
         public IWindowIconImpl LoadIcon(string fileName)
         {
             return new IconStub(
-                AvaloniaLocator.Current.GetService<IPlatformRenderInterface>().LoadBitmap(fileName));
+                AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>().LoadBitmap(fileName));
         }
 
         public IWindowIconImpl LoadIcon(Stream stream)
         {
             return new IconStub(
-                AvaloniaLocator.Current.GetService<IPlatformRenderInterface>().LoadBitmap(stream));
+                AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>().LoadBitmap(stream));
         }
 
         public IWindowIconImpl LoadIcon(IBitmapImpl bitmap)

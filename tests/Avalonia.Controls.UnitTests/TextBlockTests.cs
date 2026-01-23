@@ -141,7 +141,7 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.True(target.IsMeasureValid);
 
-                target.Inlines.Add(new Run("Hello"));
+                target.Inlines!.Add(new Run("Hello"));
 
                 Assert.False(target.IsMeasureValid);
 
@@ -177,7 +177,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 var target = new TextBlock();
 
-                target.Inlines.Add(new TextBox { Text = "Hello"});
+                target.Inlines!.Add(new TextBox { Text = "Hello"});
 
                 target.Measure(Size.Infinity);
 
@@ -201,7 +201,7 @@ namespace Avalonia.Controls.UnitTests
 
                 var textBox = new TextBox { Text = "Hello", Template = TextBoxTests.CreateTemplate() };
 
-                target.Inlines.Add(textBox);
+                target.Inlines!.Add(textBox);
 
                 target.Measure(Size.Infinity);
 
@@ -228,7 +228,7 @@ namespace Avalonia.Controls.UnitTests
 
                 var inline = new Run("Hello");
 
-                target.Inlines.Add(inline);
+                target.Inlines!.Add(inline);
 
                 target.Measure(Size.Infinity);
 
@@ -268,7 +268,7 @@ namespace Avalonia.Controls.UnitTests
 
                 var run = new Run("Hello");
 
-                target.Inlines.Add(run);
+                target.Inlines!.Add(run);
 
                 target.Measure(Size.Infinity);
 
@@ -308,7 +308,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 var target = new TextBlock();
 
-                target.Inlines.Add(new Border());
+                target.Inlines!.Add(new Border());
 
                 target.Measure(Size.Infinity);
 
@@ -331,7 +331,7 @@ namespace Avalonia.Controls.UnitTests
 
                 var run = new InlineUIContainer(control);
 
-                target.Inlines.Add(run);
+                target.Inlines!.Add(run);
 
                 target.Measure(Size.Infinity);
 
@@ -402,7 +402,7 @@ namespace Avalonia.Controls.UnitTests
                 Image imageControl = new Image { Source = image };
                 InlineUIContainer container = new InlineUIContainer(imageControl);
 
-                target.Inlines.Add(new Run("The child should not be limited by position on line."));
+                target.Inlines!.Add(new Run("The child should not be limited by position on line."));
                 target.Inlines.Add(container);
 
                 target.Measure(new Size(100, 100));
@@ -420,7 +420,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 var target = new TextBlock();
 
-                target.Inlines.Add(new Run("Hello World"));
+                target.Inlines!.Add(new Run("Hello World"));
 
                 Assert.Equal(null, target.Text);
 
@@ -441,7 +441,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 var target = new TextBlock();
 
-                target.Inlines.Add(new Run("Hello World"));
+                target.Inlines!.Add(new Run("Hello World"));
 
                 Assert.Equal(1, target.Inlines.Count);
 

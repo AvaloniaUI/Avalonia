@@ -12,12 +12,13 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
             var parsed = AvaloniaRuntimeXamlLoader.Parse<TestClassWithUri>(
                 $"<{testClass.Name} xmlns='clr-namespace:{testClass.Namespace}' Uri='/test'/>", testClass.Assembly);
 
+            Assert.NotNull(parsed.Uri);
             Assert.False(parsed.Uri.IsAbsoluteUri);
         }
     }
     
     public class TestClassWithUri
     {
-        public Uri Uri { get; set; }
+        public Uri? Uri { get; set; }
     }
 }

@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
+    <OutputType>Exe</OutputType>
     <DefineConstants>$(DefineConstants);AVALONIA_SKIA</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IncludeLinuxSkia>true</IncludeLinuxSkia>
@@ -36,4 +37,5 @@
   <Import Project="..\..\build\ImageSharp.props" />
   <Import Project="..\..\build\SkiaSharp.props" />
   <Import Project="..\..\build\SharedVersion.props" />
+  <Import Project="..\..\build\NullableEnable.props" />
 </Project>

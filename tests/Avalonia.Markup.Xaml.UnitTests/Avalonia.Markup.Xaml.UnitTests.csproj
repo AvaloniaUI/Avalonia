@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
     <TargetFrameworks>$(AvsCurrentTargetFramework)</TargetFrameworks>
-    <OutputType>Library</OutputType>
+    <OutputType>Exe</OutputType>
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
   <Import Project="..\..\build\UnitTests.NetCore.targets" />
@@ -11,6 +11,7 @@
   <Import Project="..\..\build\Rx.props" />
   <Import Project="..\..\build\Microsoft.Reactive.Testing.props" />
   <Import Project="..\..\build\SharedVersion.props" />
+  <Import Project="..\..\build\NullableEnable.props" />
   <ItemGroup>
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup.Xaml.Loader\Avalonia.Markup.Xaml.Loader.csproj" />
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
@@ -36,16 +37,6 @@
       <Link>PlatformFactAttribute.cs</Link>
     </Compile>
     <Compile Include="../Shared/ScopedSanityCheck.cs"/>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Update="xunit.runner.console" Version="2.9.2">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Update="xunit.runner.visualstudio" Version="2.8.2">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
   </ItemGroup>
   <Import Project="..\..\build\BuildTargets.targets" />
 </Project>

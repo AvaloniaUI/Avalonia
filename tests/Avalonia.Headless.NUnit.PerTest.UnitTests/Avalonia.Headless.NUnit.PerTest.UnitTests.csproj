@@ -3,6 +3,8 @@
     <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
     <IsTestProject>true</IsTestProject>
     <DefineConstants>$(DefineConstants);NUNIT</DefineConstants>
+    <EnableNUnitRunner>true</EnableNUnitRunner>
+    <OutputType>Exe</OutputType>
   </PropertyGroup>
 
   <Import Project="..\..\build\UnitTests.NetCore.targets" />
@@ -12,9 +14,8 @@
   <Import Project="..\..\build\SharedVersion.props" />
 
   <ItemGroup>
-    <PackageReference Include="NUnit" Version="3.13.3" />
-    <PackageReference Include="NUnit3TestAdapter" Version="4.4.2" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.0" />
+    <PackageReference Include="NUnit" Version="4.4.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="6.0.1" />
   </ItemGroup>
 
   <ItemGroup>

@@ -8,7 +8,7 @@ using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.ExpressionNodes;
-using Avalonia.Markup.Parsers;
+using Avalonia.Data.Core.Parsers;
 using Avalonia.UnitTests;
 using Avalonia.Utilities;
 
@@ -451,7 +451,7 @@ public abstract partial class BindingExpressionTests
                 return value;
 
             var s = value?.ToString() ?? string.Empty;
-            
+
             if (s.StartsWith(prefix))
                 return s.Substring(prefix.Length);
             else
