@@ -3,7 +3,6 @@
     <TargetFramework>$(AvsCurrentAndroidTargetFramework)</TargetFramework>
     <SupportedOSPlatformVersion>$(AvsMinSupportedAndroidVersion)</SupportedOSPlatformVersion>
     <OutputType>Exe</OutputType>
-    <Nullable>enable</Nullable>
     <ApplicationId>com.Avalonia.ControlCatalog</ApplicationId>
     <ApplicationVersion>1</ApplicationVersion>
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>

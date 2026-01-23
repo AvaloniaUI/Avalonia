@@ -1,4 +1,3 @@
-using Avalonia;
 using Avalonia.Controls;
 using VirtualizationDemo.ViewModels;
 
@@ -9,7 +8,6 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        this.AttachDevTools();
         DataContext = new MainWindowViewModel();
     }
 }

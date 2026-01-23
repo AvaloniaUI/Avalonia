@@ -1,7 +1,0 @@
-﻿<ProjectConfiguration>
-  <Settings>
-    <CustomBuildProperties>
-      <Value>TargetFramework = net8.0</Value>
-    </CustomBuildProperties>
-  </Settings>
-</ProjectConfiguration>

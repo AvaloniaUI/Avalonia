@@ -242,8 +242,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             var border = contentControl.GetTemplateChildren().OfType<Border>().Single();
             var presenter = contentControl.GetTemplateChildren().OfType<ContentPresenter>().Single();
-            var decorator = (Decorator)presenter.Content;
-            var textBlock = (TextBlock)decorator.Child;
+            var decorator = (Decorator)presenter.Content!;
+            var textBlock = (TextBlock)decorator.Child!;
 
             Assert.Equal(target, contentControl.TemplatedParent);
             Assert.Equal(contentControl, border.TemplatedParent);
@@ -289,7 +289,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.ApplyTemplate();
 
             var decorator = (Decorator)target.GetVisualChildren().Single();
-            var border = (Border)decorator.Child;
+            var border = (Border)decorator.Child!;
 
             Assert.Equal(target, decorator.TemplatedParent);
             Assert.Equal(target, border.TemplatedParent);

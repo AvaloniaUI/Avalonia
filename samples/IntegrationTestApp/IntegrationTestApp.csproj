@@ -2,7 +2,6 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
-    <Nullable>enable</Nullable>
     <NoWarn>$(NoWarn);AVP1012;AVLN3001</NoWarn>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <IncludeAvaloniaGenerators>true</IncludeAvaloniaGenerators>
@@ -25,7 +24,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Themes.Fluent\Avalonia.Themes.Fluent.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Fonts.Inter\Avalonia.Fonts.Inter.csproj" />
     <ProjectReference Include="..\MiniMvvm\MiniMvvm.csproj" />

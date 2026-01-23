@@ -17,7 +17,7 @@ namespace Avalonia.Controls.UnitTests
 {
     public class MenuItemTests : ScopedTestBase
     {
-        private Mock<IPopupImpl> popupImpl;
+        private Mock<IPopupImpl>? _popupImpl;
 
         [Fact]
         public void Header_Of_Minus_Should_Apply_Separator_Pseudoclass()
@@ -139,7 +139,7 @@ namespace Avalonia.Controls.UnitTests
             };
             var root = new TestRoot { Child = target };
 
-            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded, TestContext.Current.CancellationToken);
 
             Assert.True(target.IsEnabled);
             Assert.False(target.IsEffectivelyEnabled);
@@ -213,7 +213,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new MenuItem { Command = command };
             var root = new TestRoot { Child = target };
 
-            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded, TestContext.Current.CancellationToken);
 
             target.CommandParameter = true;
             Assert.True(target.IsEffectivelyEnabled);
@@ -238,8 +238,8 @@ namespace Avalonia.Controls.UnitTests
                 var window = new Window { Content = new Panel { ContextMenu = contextMenu } };
                 window.ApplyStyling();
                 window.ApplyTemplate();
-                window.Presenter.ApplyTemplate();
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+                window.Presenter!.ApplyTemplate();
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded, TestContext.Current.CancellationToken);
 
                 Assert.True(target.IsEffectivelyEnabled);
                 target.Command = command;
@@ -252,7 +252,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(0, canExecuteCallCount);
 
                 contextMenu.Open();
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded, TestContext.Current.CancellationToken);
                 Assert.Equal(3, canExecuteCallCount);// 3 because popup is changing logical child and moreover we need to invalidate again after the item is attached to the visual tree
 
                 command.RaiseCanExecuteChanged();
@@ -280,8 +280,8 @@ namespace Avalonia.Controls.UnitTests
                 var window = new Window { Content = button };
                 window.ApplyStyling();
                 window.ApplyTemplate();
-                window.Presenter.ApplyTemplate();
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+                window.Presenter!.ApplyTemplate();
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded, TestContext.Current.CancellationToken);
                 Assert.True(target.IsEffectivelyEnabled);
                 target.Command = command;
                 Assert.Equal(0, canExecuteCallCount);
@@ -293,7 +293,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(0, canExecuteCallCount);
 
                 flyout.ShowAt(button);
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded, TestContext.Current.CancellationToken);
                 Assert.Equal(2, canExecuteCallCount); // 2 because we need to invalidate after the item is attached to the visual tree
 
                 command.RaiseCanExecuteChanged();
@@ -321,10 +321,10 @@ namespace Avalonia.Controls.UnitTests
                 var window = new Window { Content = new Panel { ContextMenu = contextMenu } };
                 window.ApplyStyling();
                 window.ApplyTemplate();
-                window.Presenter.ApplyTemplate();
+                window.Presenter!.ApplyTemplate();
                 contextMenu.Open();
 
-                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded, TestContext.Current.CancellationToken);
 
                 Assert.True(target.IsEffectivelyEnabled);
                 target.Command = command;
@@ -421,7 +421,7 @@ namespace Avalonia.Controls.UnitTests
             window.Show();
             window.LayoutManager.ExecuteInitialLayoutPass();
 
-            var panel = Assert.IsType<StackPanel>(menu.Presenter.Panel);
+            var panel = Assert.IsType<StackPanel>(menu.Presenter!.Panel);
             Assert.Equal(2, panel.Children.Count);
 
             for (var i = 0; i < panel.Children.Count; i++)
@@ -819,7 +819,7 @@ namespace Avalonia.Controls.UnitTests
         public void MenuItem_CommandParameter_Does_Not_Change_While_Execution()
         {
             var target = new MenuItem();
-            object lastParamenter = "A";
+            object? lastParamenter = "A";
             var generator = new Random();
             var onlyOnce = false;
             var command = new TestCommand(parameter =>
@@ -851,16 +851,16 @@ namespace Avalonia.Controls.UnitTests
             screenImpl.Setup(X => X.AllScreens).Returns(new[] { new Screen(1, screen, screen, true) });
 
             var windowImpl = MockWindowingPlatform.CreateWindowMock();
-            popupImpl = MockWindowingPlatform.CreatePopupMock(windowImpl.Object);
-            popupImpl.SetupGet(x => x.RenderScaling).Returns(1);
-            windowImpl.Setup(x => x.CreatePopup()).Returns(popupImpl.Object);
+            _popupImpl = MockWindowingPlatform.CreatePopupMock(windowImpl.Object);
+            _popupImpl.SetupGet(x => x.RenderScaling).Returns(1);
+            windowImpl.Setup(x => x.CreatePopup()).Returns(_popupImpl.Object);
 
             windowImpl.Setup(x => x.TryGetFeature(It.Is<Type>(t => t == typeof(IScreenImpl)))).Returns(screenImpl.Object);
 
             var services = TestServices.StyledWindow.With(
                 inputManager: new InputManager(),
                 windowImpl: windowImpl.Object,
-                windowingPlatform: new MockWindowingPlatform(() => windowImpl.Object, x => popupImpl.Object));
+                windowingPlatform: new MockWindowingPlatform(() => windowImpl.Object, x => _popupImpl.Object));
 
             return UnitTestApplication.Start(services);
         }
@@ -868,7 +868,7 @@ namespace Avalonia.Controls.UnitTests
 
         private record MenuViewModel(string Header)
         {
-            public IList<MenuViewModel> Children { get; set; }
+            public IList<MenuViewModel> Children { get; set; } = [];
         }
     }
 }

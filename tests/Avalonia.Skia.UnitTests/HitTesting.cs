@@ -34,8 +34,8 @@ namespace Avalonia.Skia.UnitTests
                     }
                 };
 
-                services.AssertHitTest(10, 10, null, Array.Empty<object>());
-                services.AssertHitTest(50, 50, null, services.TopLevel.Content);
+                services.AssertHitTest(10, 10, null, Array.Empty<Visual>());
+                services.AssertHitTest(50, 50, null, (Visual)services.TopLevel.Content);
             }
         }
 
@@ -64,8 +64,8 @@ namespace Avalonia.Skia.UnitTests
                 };
                 
                 
-                services.AssertHitTest(50, 50, null, Array.Empty<object>());
-                services.AssertHitTest(1, 50, null, services.TopLevel.Content);
+                services.AssertHitTest(50, 50, null, Array.Empty<Visual>());
+                services.AssertHitTest(1, 50, null, (Visual)services.TopLevel.Content);
             }
         }
     }
