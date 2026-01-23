@@ -358,14 +358,7 @@ namespace Avalonia.VisualTree
                 return Array.Empty<Visual>();
             }
 
-            var rootPoint = visual.TranslatePoint(p, (Visual)root);
-
-            if (rootPoint.HasValue)
-            {
-                return root.HitTester.HitTest(rootPoint.Value, visual, filter);
-            }
-
-            return Enumerable.Empty<Visual>();
+            return root.HitTester.HitTest(p, visual, filter);
         }
 
         /// <summary>
