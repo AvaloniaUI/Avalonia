@@ -82,12 +82,13 @@ namespace Avalonia.Controls.Documents
 
             return new GenericTextRunProperties(
                 typeface,
-                FontFeatures, 
                 FontSize,
-                TextDecorations, 
+                TextDecorations,
                 Foreground,
                 parentOrSelfBackground,
-                BaselineAlignment);
+                BaselineAlignment,
+                null,
+                FontFeatures);
         }
 
         /// <summary>
