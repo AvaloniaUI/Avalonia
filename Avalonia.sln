@@ -106,7 +106,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Props", "Props", "{F3AC8BC1
 		build\TargetFrameworks.props = build\TargetFrameworks.props
 		build\TrimmingEnable.props = build\TrimmingEnable.props
 		build\UnitTests.NetFX.props = build\UnitTests.NetFX.props
-		build\WarnAsErrors.props = build\WarnAsErrors.props
 		build\XUnit.props = build\XUnit.props
 	EndProjectSection
 EndProject

@@ -260,11 +260,32 @@ internal partial class CompositorDrawingContextProxy : IDrawingContextImpl,
         });
     }
 
+    public void PushTextOptions(TextOptions textOptions)
+    {
+        AddCommand(new()
+        {
+            Type = PendingCommandType.PushTextOptions,
+            DataUnion =
+            {
+                TextOptions = textOptions
+            }
+        });
+    }
+
     public void PopRenderOptions()
     {
         if (!TryDiscardOrFlush(PendingCommandType.PushRenderOptions))
         {
             _impl.PopRenderOptions();
+            RestoreTransform();
+        }
+    }
+
+    public void PopTextOptions()
+    {
+        if (!TryDiscardOrFlush(PendingCommandType.PushTextOptions))
+        {
+            _impl.PopTextOptions();
             RestoreTransform();
         }
     }

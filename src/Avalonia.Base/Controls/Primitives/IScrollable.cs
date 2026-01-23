@@ -19,5 +19,15 @@ namespace Avalonia.Controls.Primitives
         /// Gets the size of the viewport, in logical units.
         /// </summary>
         Size Viewport { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether the content can be scrolled horizontally.
+        /// </summary>
+        bool CanHorizontallyScroll { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether the content can be scrolled horizontally.
+        /// </summary>
+        bool CanVerticallyScroll { get; }
     }
 }
