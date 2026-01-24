@@ -184,13 +184,13 @@ namespace Avalonia.Media
 
                 var newProps = new GenericTextRunProperties(
                     runProps.Typeface,
-                    runProps.FontFeatures,
                     runProps.FontRenderingEmSize,
                     runProps.TextDecorations,
                     foregroundBrush,
                     runProps.BackgroundBrush,
                     runProps.BaselineAlignment,
-                    runProps.CultureInfo
+                    runProps.CultureInfo,
+                    runProps.FontFeatures
                 );
 
 #pragma warning restore 6506
@@ -240,13 +240,13 @@ namespace Avalonia.Media
 
                 var newProps = new GenericTextRunProperties(
                     runProps.Typeface,
-                    fontFeatures,
                     runProps.FontRenderingEmSize,
                     runProps.TextDecorations,
                     runProps.ForegroundBrush,
                     runProps.BackgroundBrush,
                     runProps.BaselineAlignment,
-                    runProps.CultureInfo
+                    runProps.CultureInfo,
+                    fontFeatures
                 );
 
 #pragma warning restore 6506
@@ -328,14 +328,13 @@ namespace Avalonia.Media
 
                 var newProps = new GenericTextRunProperties(
                     new Typeface(fontFamily, oldTypeface.Style, oldTypeface.Weight),
-                    runProps.FontFeatures,
                     runProps.FontRenderingEmSize,
                     runProps.TextDecorations,
                     runProps.ForegroundBrush,
                     runProps.BackgroundBrush,
                     runProps.BaselineAlignment,
-                    runProps.CultureInfo
-                    );
+                    runProps.CultureInfo,
+                    runProps.FontFeatures);
 
 #pragma warning restore 6506
                 _latestPosition = _formatRuns.SetValue(formatRider.CurrentPosition, i - formatRider.CurrentPosition,
@@ -388,13 +387,13 @@ namespace Avalonia.Media
 
                 var newProps = new GenericTextRunProperties(
                     runProps.Typeface,
-                    runProps.FontFeatures,
                     emSize,
                     runProps.TextDecorations,
                     runProps.ForegroundBrush,
                     runProps.BackgroundBrush,
                     runProps.BaselineAlignment,
-                    runProps.CultureInfo
+                    runProps.CultureInfo,
+                    runProps.FontFeatures
                 );
 
                 _latestPosition = _formatRuns.SetValue(formatRider.CurrentPosition, i - formatRider.CurrentPosition,
@@ -451,13 +450,13 @@ namespace Avalonia.Media
 
                 var newProps = new GenericTextRunProperties(
                     runProps.Typeface,
-                    runProps.FontFeatures,
                     runProps.FontRenderingEmSize,
                     runProps.TextDecorations,
                     runProps.ForegroundBrush,
                     runProps.BackgroundBrush,
                     runProps.BaselineAlignment,
-                    culture
+                    culture,
+                    runProps.FontFeatures
                 );
 
 #pragma warning restore 6506
@@ -511,13 +510,13 @@ namespace Avalonia.Media
 
                 var newProps = new GenericTextRunProperties(
                     new Typeface(oldTypeface.FontFamily, oldTypeface.Style, weight),
-                    runProps.FontFeatures,
                     runProps.FontRenderingEmSize,
                     runProps.TextDecorations,
                     runProps.ForegroundBrush,
                     runProps.BackgroundBrush,
                     runProps.BaselineAlignment,
-                    runProps.CultureInfo
+                    runProps.CultureInfo,
+                    runProps.FontFeatures
                     );
 #pragma warning restore 6506 
                 _latestPosition = _formatRuns.SetValue(formatRider.CurrentPosition, i - formatRider.CurrentPosition, newProps, formatRider.SpanPosition);
@@ -568,13 +567,13 @@ namespace Avalonia.Media
 
                 var newProps = new GenericTextRunProperties(
                     new Typeface(oldTypeface.FontFamily, style, oldTypeface.Weight),
-                    runProps.FontFeatures,
                     runProps.FontRenderingEmSize,
                     runProps.TextDecorations,
                     runProps.ForegroundBrush,
                     runProps.BackgroundBrush,
                     runProps.BaselineAlignment,
-                    runProps.CultureInfo
+                    runProps.CultureInfo,
+                    runProps.FontFeatures
                     );
 #pragma warning restore 6506
 
@@ -625,13 +624,13 @@ namespace Avalonia.Media
 
                 var newProps = new GenericTextRunProperties(
                     typeface,
-                    runProps.FontFeatures,
                     runProps.FontRenderingEmSize,
                     runProps.TextDecorations,
                     runProps.ForegroundBrush,
                     runProps.BackgroundBrush,
                     runProps.BaselineAlignment,
-                    runProps.CultureInfo
+                    runProps.CultureInfo,
+                    runProps.FontFeatures
                     );
 #pragma warning restore 6506
 
@@ -683,13 +682,13 @@ namespace Avalonia.Media
 
                 var newProps = new GenericTextRunProperties(
                     runProps.Typeface,
-                    runProps.FontFeatures,
                     runProps.FontRenderingEmSize,
                     textDecorations,
                     runProps.ForegroundBrush,
                     runProps.BackgroundBrush,
                     runProps.BaselineAlignment,
-                    runProps.CultureInfo
+                    runProps.CultureInfo,
+                    runProps.FontFeatures
                     );
 #pragma warning restore 6506
 

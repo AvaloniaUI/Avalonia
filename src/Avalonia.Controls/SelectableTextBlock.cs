@@ -186,10 +186,10 @@ namespace Avalonia.Controls
 
             var defaultProperties = new GenericTextRunProperties(
                 typeface,
-                FontFeatures,
                 FontSize,
                 TextDecorations,
-                Foreground);
+                Foreground,
+                fontFeatures: FontFeatures);
 
             var paragraphProperties = new GenericTextParagraphProperties(FlowDirection, TextAlignment, true, false,
                 defaultProperties, TextWrapping, LineHeight, 0, LetterSpacing)
@@ -235,9 +235,9 @@ namespace Avalonia.Controls
                                 overlapLength,
                                 new GenericTextRunProperties(
                                     textRun.Properties?.Typeface ?? typeface,
-                                    textRun.Properties?.FontFeatures ?? FontFeatures,
                                     FontSize,
-                                    foregroundBrush: SelectionForegroundBrush)));
+                                    foregroundBrush: SelectionForegroundBrush,
+                                    fontFeatures: textRun.Properties?.FontFeatures ?? FontFeatures)));
 
                         accumulatedLength += runLength;
                     }
@@ -247,8 +247,11 @@ namespace Avalonia.Controls
                     textStyleOverrides =
                     [
                         new ValueSpan<TextRunProperties>(start, length,
-                            new GenericTextRunProperties(typeface, FontFeatures, FontSize,
-                                foregroundBrush: SelectionForegroundBrush))
+                            new GenericTextRunProperties(
+                                typeface,
+                                FontSize,
+                                foregroundBrush: SelectionForegroundBrush,
+                                fontFeatures: FontFeatures))
                     ];
                 }
             }
