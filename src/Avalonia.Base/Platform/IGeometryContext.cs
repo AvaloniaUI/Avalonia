@@ -18,7 +18,8 @@ namespace Avalonia.Platform
         /// <param name="sweepDirection">
         /// A value that indicates whether the arc is drawn in the Clockwise or Counterclockwise direction.
         /// </param>
-        void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection);
+        /// <param name="isStroked">Whether the segment is stroked</param>
+        void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection, bool isStroked = true);
 
         /// <summary>
         /// Begins a new figure.
@@ -33,20 +34,23 @@ namespace Avalonia.Platform
         /// <param name="controlPoint1">The first control point used to specify the shape of the curve.</param>
         /// <param name="controlPoint2">The second control point used to specify the shape of the curve.</param>
         /// <param name="endPoint">The destination point for the end of the curve.</param>
-        void CubicBezierTo(Point controlPoint1, Point controlPoint2, Point endPoint);
+        /// <param name="isStroked">Whether the segment is stroked</param>
+        void CubicBezierTo(Point controlPoint1, Point controlPoint2, Point endPoint, bool isStroked = true);
 
         /// <summary>
         /// Draws a quadratic Bezier curve to the specified point
         /// </summary>
-        /// <param name="controlPoint ">Control point</param>
-        /// <param name="endPoint">DestinationPoint</param>
-        void QuadraticBezierTo(Point controlPoint , Point endPoint);
+        /// <param name="controlPoint">The control point used to specify the shape of the curve.</param>
+        /// <param name="endPoint">The destination point for the end of the curve.</param>
+        /// <param name="isStroked">Whether the segment is stroked</param>
+        void QuadraticBezierTo(Point controlPoint, Point endPoint, bool isStroked = true);
 
         /// <summary>
         /// Draws a line to the specified point.
         /// </summary>
-        /// <param name="endPoint">The destination point.</param>
-        void LineTo(Point endPoint);
+        /// <param name="point">The destination point.</param>
+        /// <param name="isStroked">Whether the segment is stroked</param>
+        void LineTo(Point point, bool isStroked = true);
 
         /// <summary>
         /// Ends the figure started by <see cref="BeginFigure(Point, bool)"/>.
