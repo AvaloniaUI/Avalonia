@@ -173,7 +173,7 @@
     if (_attributeNames == nil)
     {
         _attributeNames = @[
-            (NSString*)kAXARIALiveAttribute,
+            @"AXARIALive", // kAXARIALiveAttribute
         ];
     }
     return _attributeNames;
@@ -181,7 +181,7 @@
 
 - (id)accessibilityAttributeValue:(NSAccessibilityAttributeName)attribute
 {
-    if ([attribute isEqualToString:(NSString*)kAXARIALiveAttribute])
+    if ([attribute isEqualToString:@"AXARIALive" /* kAXARIALiveAttribute */])
     {
         switch (_peer->GetLiveSetting())
         {
@@ -456,7 +456,7 @@
 
 - (void)raiseLiveRegionChanged
 {
-    NSAccessibilityPostNotification(self, (NSString*)kAXLiveRegionChangedNotification);
+    NSAccessibilityPostNotification(self, @"AXLiveRegionChanged" /* kAXLiveRegionChangedNotification */);
 }
 
 - (void)setAccessibilityFocused:(BOOL)accessibilityFocused
