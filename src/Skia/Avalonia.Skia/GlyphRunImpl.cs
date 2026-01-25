@@ -15,13 +15,9 @@ namespace Avalonia.Skia
         private readonly ushort[] _glyphIndices;
         private readonly SKPoint[] _glyphPositions;
 
-        // We use an array as opposed to a ConcurrentDictionary to prevent a large amount of lock object allocations.
-        // This is possible because the SKFontEdging enum has consecutive integer elements 0, 1, 2, etc. and thus
-        // can be mapped directly to array indices.
-        //
-        // Should Skia update the enum with more elements, then the size of this array should be updated appropriately.
-        private const int FontEdgingsCount = (int)SKFontEdging.SubpixelAntialias + 1;
-        private readonly SKTextBlob?[] _textBlobCache = new SKTextBlob?[FontEdgingsCount];
+        // A two level cache optimized for single-entry read. Uses TextOptions as a key.
+        private readonly TwoLevelCache<TextOptions, SKTextBlob> _textBlobCache =
+            new TwoLevelCache<TextOptions, SKTextBlob>(secondarySize: 3, evictionAction: b => b?.Dispose());
 
         public GlyphRunImpl(GlyphTypeface glyphTypeface, double fontRenderingEmSize,
             IReadOnlyList<GlyphInfo> glyphInfos, Point baselineOrigin)
@@ -62,7 +58,14 @@ namespace Avalonia.Skia
             // But the bounds depends on the edging: for now, always use SubpixelAntialias so we have consistent values.
             // The resulting bounds may be shifted by 1px on some fonts:
             // "F" text with Inter size 14 has a 0px left bound with SubpixelAntialias but 1px with Antialias.
-            using var font = CreateFont(SKFontEdging.SubpixelAntialias);
+            var defaultTextOptions = default(TextOptions) with
+            {
+                TextRenderingMode = TextRenderingMode.SubpixelAntialias,
+                TextHintingMode = TextHintingMode.Strong,
+                BaselinePixelAlignment = BaselinePixelAlignment.Unaligned
+            };
+
+            using var font = CreateFont(defaultTextOptions);
 
             var runBounds = new Rect();
             var glyphBounds = ArrayPool<SKRect>.Shared.Rent(count);
@@ -92,26 +95,19 @@ namespace Avalonia.Skia
 
         public Rect Bounds { get; }
 
-        public SKTextBlob GetTextBlob(RenderOptions renderOptions)
+        public SKTextBlob GetTextBlob(TextOptions textOptions, RenderOptions renderOptions)
         {
-            var edging = SKFontEdging.SubpixelAntialias;
-
-            switch (renderOptions.TextRenderingMode)
+            if (textOptions.TextRenderingMode == TextRenderingMode.Unspecified)
             {
-                case TextRenderingMode.Alias:
-                    edging = SKFontEdging.Alias;
-                    break;
-                case TextRenderingMode.Antialias:
-                    edging = SKFontEdging.Antialias;
-                    break;
-                case TextRenderingMode.Unspecified:
-                    edging = renderOptions.EdgeMode == EdgeMode.Aliased ? SKFontEdging.Alias : SKFontEdging.SubpixelAntialias;
-                    break;
+                textOptions = textOptions with
+                {
+                    TextRenderingMode = renderOptions.EdgeMode == EdgeMode.Aliased ? TextRenderingMode.Alias : TextRenderingMode.SubpixelAntialias
+                };
             }
 
-            if (_textBlobCache[(int)edging] is null)
+            return _textBlobCache.GetOrAdd(textOptions, k =>
             {
-                using var font = CreateFont(edging);
+                using var font = CreateFont(textOptions);
 
                 var builder = SKTextBlobBuilderCache.Shared.Get();
 
@@ -121,37 +117,59 @@ namespace Avalonia.Skia
                 runBuffer.SetGlyphs(_glyphIndices);
 
                 var textBlob = builder.Build()!;
-
                 SKTextBlobBuilderCache.Shared.Return(builder);
-
-                Interlocked.CompareExchange(ref _textBlobCache[(int)edging], textBlob, null);
-            }
-
-            return _textBlobCache[(int)edging]!;
+                return textBlob;
+            });
         }
 
-        private SKFont CreateFont(SKFontEdging edging)
+        private SKFont CreateFont(TextOptions textOptions)
         {
+            // Determine edging from TextRenderingMode
+            var edging = textOptions.TextRenderingMode switch
+            {
+                TextRenderingMode.Alias => SKFontEdging.Alias,
+                TextRenderingMode.Antialias => SKFontEdging.Antialias,
+                TextRenderingMode.SubpixelAntialias => SKFontEdging.SubpixelAntialias,
+                _ => SKFontEdging.SubpixelAntialias
+            };
+
+            // Determine hinting
+            var hinting = textOptions.TextHintingMode switch
+            {
+                TextHintingMode.None => SKFontHinting.None,
+                TextHintingMode.Light => SKFontHinting.Slight,
+                TextHintingMode.Strong => SKFontHinting.Full,
+                _ => SKFontHinting.Full,
+            };
+
+            // Force auto-hinting for "Slight" mode (prefer autohinter over bytecode hints), otherwise default.
+            var forceAutoHinting = textOptions.TextHintingMode == TextHintingMode.Light;
+
+            // Subpixel rendering enabled when edging is not alias.
+            var subpixel = edging != SKFontEdging.Alias;
+
+            // Baseline snap defaults to true unless explicitly disabled.
+            var baselineSnap = textOptions.BaselinePixelAlignment != BaselinePixelAlignment.Unaligned;
+
             var font = _glyphTypefaceImpl.CreateSKFont((float)FontRenderingEmSize);
 
-            font.Hinting = SKFontHinting.Full;
-            font.Subpixel = edging != SKFontEdging.Alias;
+            font.ForceAutoHinting = forceAutoHinting;
+            font.Hinting = hinting;
+            font.Subpixel = subpixel;
             font.Edging = edging;
+            font.BaselineSnap = baselineSnap;
 
             return font;
         }
 
         public void Dispose()
         {
-            foreach (var textBlob in _textBlobCache)
-            {
-                textBlob?.Dispose();
-            }
+            _textBlobCache.ClearAndDispose();
         }
 
         public IReadOnlyList<float> GetIntersections(float lowerLimit, float upperLimit)
         {
-            var textBlob = GetTextBlob(default);
+            var textBlob = GetTextBlob(default, default);
 
             return textBlob.GetIntercepts(lowerLimit, upperLimit);
         }
