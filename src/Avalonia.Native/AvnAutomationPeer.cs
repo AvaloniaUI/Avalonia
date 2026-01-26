@@ -16,6 +16,14 @@ namespace Avalonia.Native
 {
     internal class AvnAutomationPeer : NativeCallbackBase, IAvnAutomationPeer
     {
+        private static readonly Dictionary<AutomationProperty, AvnAutomationProperty> s_propertyMap = new()
+        {
+            { AutomationElementIdentifiers.BoundingRectangleProperty, AvnAutomationProperty.AutomationPeer_BoundingRectangle },
+            { AutomationElementIdentifiers.ClassNameProperty, AvnAutomationProperty.AutomationPeer_ClassName },
+            { AutomationElementIdentifiers.NameProperty, AvnAutomationProperty.AutomationPeer_Name },
+            { RangeValuePatternIdentifiers.ValueProperty, AvnAutomationProperty.RangeValueProvider_Value },
+        };
+
         private static readonly ConditionalWeakTable<AutomationPeer, AvnAutomationPeer> s_wrappers = new();
         private readonly AutomationPeer _inner;
 
@@ -23,6 +31,7 @@ namespace Avalonia.Native
         {
             _inner = inner;
             _inner.ChildrenChanged += (_, _) => Node?.ChildrenChanged();
+            _inner.PropertyChanged += OnPeerPropertyChanged;
             if (inner is IRootProvider root)
                 root.FocusChanged += (_, _) => Node?.FocusChanged(); 
         }
@@ -44,6 +53,7 @@ namespace Avalonia.Native
         public int HeadingLevel => _inner.GetHeadingLevel();
         public IAvnAutomationPeer? Parent => Wrap(_inner.GetParent());
         public IAvnAutomationPeer? VisualRoot => Wrap(_inner.GetVisualRoot());
+        public AvnLiveSetting LiveSetting => (AvnLiveSetting)_inner.GetLiveSetting();
 
         public int HasKeyboardFocus() => _inner.HasKeyboardFocus().AsComBool();
         public int IsContentElement() => _inner.IsContentElement().AsComBool();
@@ -189,6 +199,12 @@ namespace Avalonia.Native
         }
 
         private int IsProvider<T>() => (_inner.GetProvider<T>() is not null).AsComBool();
+
+        private void OnPeerPropertyChanged(object? sender, AutomationPropertyChangedEventArgs e)
+        {
+            if (s_propertyMap.TryGetValue(e.Property, out var property))
+                Node?.PropertyChanged(property);
+        }
     }
 
     internal class AvnAutomationPeerArray : NativeCallbackBase, IAvnAutomationPeerArray

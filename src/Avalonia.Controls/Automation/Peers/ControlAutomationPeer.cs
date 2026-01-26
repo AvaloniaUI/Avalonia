@@ -178,6 +178,8 @@ namespace Avalonia.Automation.Peers
             return false;
         }
 
+        protected override AutomationLiveSetting GetLiveSettingCore() => AutomationProperties.GetLiveSetting(Owner);
+
         protected internal override bool TrySetParent(AutomationPeer? parent)
         {
             _parent = parent;
