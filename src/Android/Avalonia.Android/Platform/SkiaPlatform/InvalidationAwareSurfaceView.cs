@@ -18,6 +18,8 @@ namespace Avalonia.Android
         private double _scaling = 1;
 
         public event EventHandler? SurfaceWindowCreated;
+        public event EventHandler? SurfaceWindowDestroyed;
+
         public PixelSize Size => _size;
         public double Scaling => _scaling;
 
@@ -61,6 +63,7 @@ namespace Avalonia.Android
                 .Log(this, "InvalidationAwareSurfaceView Destroyed");
             ReleaseNativeWindowHandle();
             _size = new PixelSize(1, 1);
+            SurfaceWindowDestroyed?.Invoke(this, EventArgs.Empty);
         }
 
         public virtual void SurfaceRedrawNeeded(ISurfaceHolder holder)
