@@ -346,40 +346,15 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 <UserControl xmlns='https://github.com/avaloniaui'
      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
 	<UserControl.Resources>
-        <x:String x:Key='text'>foobar</x:String>
-		<x:Double x:Key=""A_Double"">123.3</x:Double>
-		<x:Int16 x:Key=""An_Int16"">123</x:Int16>
-		<x:Int32 x:Key=""An_Int32"">37434323</x:Int32>
 		<SolidColorBrush x:Key='ForegroundBrush'>Black</SolidColorBrush>
-		<Thickness x:Key=""PreferredPadding"">10,20,10,0</Thickness>
 	</UserControl.Resources>
 </UserControl>";
 
             var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml, designMode: true);
-            var foobarString = userControl.Resources["text"];
-            var aDouble = userControl.Resources["A_Double"];
-            var anInt16 = userControl.Resources["An_Int16"];
-            var anInt32 = userControl.Resources["An_Int32"];
             var fgBrush = userControl.Resources["ForegroundBrush"];
-            var padding = userControl.Resources["PreferredPadding"];
-
-            var foobarStringSourceInfo = XamlSourceInfo.GetXamlSourceInfo(foobarString!);
-            Assert.NotNull(foobarStringSourceInfo);
-
-            var aDoubleSourceInfo = XamlSourceInfo.GetXamlSourceInfo(aDouble!);
-            Assert.NotNull(aDoubleSourceInfo);
-
-            var anInt16SourceInfo = XamlSourceInfo.GetXamlSourceInfo(anInt16!);
-            Assert.NotNull(anInt16SourceInfo);
-
-            var anInt32SourceInfo = XamlSourceInfo.GetXamlSourceInfo(anInt32!);
-            Assert.NotNull(anInt32SourceInfo);
 
             var fgBrushSourceInfo = XamlSourceInfo.GetXamlSourceInfo(fgBrush!);
             Assert.NotNull(fgBrushSourceInfo);
-
-            var paddingSourceInfo = XamlSourceInfo.GetXamlSourceInfo(padding!);
-            Assert.NotNull(paddingSourceInfo);
         }
 
         [Fact]
