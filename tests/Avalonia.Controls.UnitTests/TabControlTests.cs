@@ -281,7 +281,7 @@ namespace Avalonia.Controls.UnitTests
             var root = CreateRoot(target);
             root.LayoutManager.ExecuteInitialLayoutPass();
 
-            var dataContext = ((TextBlock)target.ContentPart.Child!).DataContext;
+            var dataContext = ((TextBlock)target.ContentPart!.Child!).DataContext;
             Assert.Equal(items[0], dataContext);
 
             target.SelectedIndex = 1;
