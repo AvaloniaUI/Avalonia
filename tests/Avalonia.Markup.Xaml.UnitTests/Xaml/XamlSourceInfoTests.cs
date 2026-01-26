@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Avalonia.Animation;
 using Avalonia.Controls;
@@ -15,6 +16,27 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 {
     public class XamlSourceInfoTests : XamlTestBase
     {
+        [Fact]
+        public void Root_UserControl_With_BaseUri_Gets_XamlSourceInfo_SourceUri_Set()
+        {
+            var documentUri = new Uri("file:///TestFolder/TestFile.xaml");
+            var xamlDocument = new RuntimeXamlLoaderDocument(
+                documentUri,
+                """
+                <UserControl xmlns='https://github.com/avaloniaui'
+                     xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+                </UserControl>
+                """);
+            var config = new RuntimeXamlLoaderConfiguration { DesignMode = true };
+
+            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xamlDocument, config);
+
+            var sourceInfo = XamlSourceInfo.GetXamlSourceInfo(userControl);
+
+            Assert.NotNull(sourceInfo);
+            Assert.Equal(documentUri, sourceInfo.SourceUri);
+        }
+
         [Fact]
         public void Root_UserControl_Gets_XamlSourceInfo_Set()
         {
