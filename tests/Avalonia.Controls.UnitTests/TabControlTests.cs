@@ -283,19 +283,19 @@ namespace Avalonia.Controls.UnitTests
 
             var dataContext = ((TextBlock)target.ContentPart.Child!).DataContext;
             Assert.Equal(items[0], dataContext);
-            
+
             target.SelectedIndex = 1;
             dataContext = ((Button)target.ContentPart.Child).DataContext;
             Assert.Equal(items[1], dataContext);
-            
+
             target.SelectedIndex = 2;
             dataContext = ((TextBlock)target.ContentPart.Child).DataContext;
             Assert.Equal("Base", dataContext);
-            
+
             target.SelectedIndex = 3;
             dataContext = ((TextBlock)target.ContentPart.Child).DataContext;
             Assert.Equal("Qux", dataContext);
-            
+
             target.SelectedIndex = 4;
             dataContext = target.ContentPart.DataContext;
             Assert.Equal("Base", dataContext);
