@@ -1,6 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
 using XamlX.Ast;
+using XamlX.Emit;
+using XamlX.IL;
 using XamlX.Transform;
 
 namespace Avalonia.Markup.Xaml.Loader.CompilerExtensions.Transformers
@@ -34,43 +37,47 @@ namespace Avalonia.Markup.Xaml.Loader.CompilerExtensions.Transformers
 
         public IXamlAstNode Transform(AstTransformationContext context, IXamlAstNode node)
         {
-            if (CreateSourceInfo && node is XamlAstObjectNode objNode)
+            if (CreateSourceInfo
+                && node is XamlAstNewClrObjectNode objNode
+                && context.ParentNodes().FirstOrDefault() is not XamlSourceInfoImperativeValueManipulation
+                && !objNode.Type.GetClrType().IsValueType)
             {
                 var avaloniaTypes = context.GetAvaloniaTypes();
 
-                var line = node.Line;
-                var col = node.Position;
-
-                // Create a CLR property representation for the attached SourceInfo property.
-                var sourceProperty = new XamlAstClrProperty(node,
-                    "XamlSourceInfo",
-                    avaloniaTypes.XamlSourceInfo,
-                    null,
-                    [avaloniaTypes.XamlSourceInfoSetter], null);
-
-                var sourceInfoTypeRef = new XamlAstClrTypeReference(node, avaloniaTypes.XamlSourceInfo, false);
-                XamlAstNewClrObjectNode valueNode;
-
                 if(context.Document != null)
                 {
-                    valueNode = new XamlAstNewClrObjectNode(node, sourceInfoTypeRef, avaloniaTypes.XamlSourceInfoConstructor,
-                    [
-                        new XamlConstantNode(node, avaloniaTypes.XamlIlTypes.Int32, line),
-                        new XamlConstantNode(node, avaloniaTypes.XamlIlTypes.Int32, col),
-                        new XamlConstantNode(node, avaloniaTypes.XamlIlTypes.String, context.Document)
-                    ]);
-
-                    var propNode = new XamlAstXamlPropertyValueNode(
-                        node,
-                        sourceProperty,
-                        valueNode,
-                        isAttributeSyntax: true);
-
-                    objNode.Children.Add(propNode);
+                    return new XamlSourceInfoImperativeValueManipulation(
+                        avaloniaTypes, objNode, context.Document);
                 }
             }
 
             return node;
+        }
+
+        private class XamlSourceInfoImperativeValueManipulation(
+            AvaloniaXamlIlWellKnownTypes avaloniaTypes,
+            XamlAstNewClrObjectNode objNode, string document)
+            : XamlAstNode(objNode), IXamlAstValueNode, IXamlAstImperativeNode, IXamlAstILEmitableNode
+        {
+            public IXamlAstTypeReference Type { get; } = objNode.Type;
+
+            public XamlILNodeEmitResult Emit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
+            {
+                context.Emit(objNode, codeGen, objNode.Type.GetClrType());
+                // Duplicate the current object reference on the stack
+                codeGen.Dup();
+
+                // var local = new XamlSourceInfo(Line, Position, Document);
+                codeGen.Ldc_I4(Line);
+                codeGen.Ldc_I4(Position);
+                codeGen.Ldstr(document);
+                codeGen.Newobj(avaloniaTypes.XamlSourceInfoConstructor);
+
+                // Set the XamlSourceInfo property on the current object
+                codeGen.EmitCall(avaloniaTypes.XamlSourceInfoSetter);
+
+                return XamlILNodeEmitResult.Type(0, objNode.Type.GetClrType());
+            }
         }
     }
 }

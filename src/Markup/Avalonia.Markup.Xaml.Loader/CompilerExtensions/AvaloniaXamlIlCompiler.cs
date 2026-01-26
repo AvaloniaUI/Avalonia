@@ -48,9 +48,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             InsertBefore<PropertyReferenceResolver>(
                 new AvaloniaXamlIlResolveClassesPropertiesTransformer(),
                 new AvaloniaXamlIlTransformInstanceAttachedProperties(),
-                new AvaloniaXamlIlTransformSyntheticCompiledBindingMembers(),
-                _addSourceInfoTransformer = new AvaloniaXamlIlAddSourceInfoTransformer()
-                );
+                new AvaloniaXamlIlTransformSyntheticCompiledBindingMembers());
 
 
             InsertAfter<PropertyReferenceResolver>(
@@ -100,6 +98,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             Transformers.Add(new AvaloniaXamlIlEnsureResourceDictionaryCapacityTransformer());
             Transformers.Add(new AvaloniaXamlIlRootObjectScope());
 
+            Transformers.Add(_addSourceInfoTransformer = new AvaloniaXamlIlAddSourceInfoTransformer());
+            
             Emitters.Add(new AvaloniaNameScopeRegistrationXamlIlNodeEmitter());
             Emitters.Add(new AvaloniaXamlIlRootObjectScope.Emitter());
             
