@@ -40,10 +40,10 @@ namespace Avalonia.Controls
         Justify,
 
         /// <summary>
-        /// Items are laid out with equal spacing between them within each column/row.
+        /// Items are stretched evenly to fill the entire height/width of each column/row.
         /// </summary>
         /// <remarks>
-        /// <see cref="WrapPanel.ItemWidth"/> or <see cref="WrapPanel.ItemHeight"/> is become the minimum spacing between items,
+        /// <see cref="WrapPanel.ItemWidth"/> or <see cref="WrapPanel.ItemHeight"/> is become the minimum size of items,
         /// </remarks>
         Stretch
     }
