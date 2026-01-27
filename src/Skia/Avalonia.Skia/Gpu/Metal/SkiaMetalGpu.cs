@@ -6,7 +6,7 @@ using SkiaSharp;
 
 namespace Avalonia.Skia.Metal;
 
-internal class SkiaMetalGpu : ISkiaGpu, ISkiaGpuWithPlatformGraphicsContext
+internal class SkiaMetalGpu : ISkiaGpu
 {
     private GRContext? _context;
     private readonly IMetalDevice _device;
