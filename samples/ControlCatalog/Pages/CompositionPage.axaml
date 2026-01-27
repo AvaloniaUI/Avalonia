@@ -5,6 +5,16 @@
   <TabControl>
     <TabItem Header="Implicit animations">
       <StackPanel>
+        <StackPanel.Resources>
+          <ImplicitAnimationCollection x:Key="ImplAnimations">
+            <OffsetCompositionAnimation Duration="0:0:0.4"/>
+          </ImplicitAnimationCollection>
+        </StackPanel.Resources>
+        <StackPanel.Styles>
+          <Style Selector="ItemsControl ContentPresenter">
+            <Setter Property="Animations.ImplicitAnimations" Value="{DynamicResource ImplAnimations}"/>
+          </Style>
+        </StackPanel.Styles>
         <Grid ColumnDefinitions="*,10,40" Margin="0 0 40 0">
           <ItemsControl x:Name="Items">
             <ItemsControl.ItemsPanel>
@@ -14,8 +24,7 @@
             </ItemsControl.ItemsPanel>
             <ItemsControl.DataTemplates>
               <DataTemplate DataType="pages:CompositionPageColorItem">
-                <Border 
-                  pages:CompositionPage.EnableAnimations="True"
+                <Border
                   Padding="10" BorderBrush="Gray" BorderThickness="2"
                   Background="{Binding ColorBrush}" Width="100" Height="100" Margin="10">
                     <TextBlock Text="{Binding ColorHexValue}"/>
