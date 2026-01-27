@@ -49,6 +49,7 @@ internal partial class RenderWorker
         return tcs.Task;
     }
 
+    // Even though this API is public in the .NET code, it's not part of ref assemblies and is not a stable API.
     [UnsafeAccessor(UnsafeAccessorKind.StaticMethod, Name = "RunAsync")]
     private static extern Task JSWebWorkerRunAsync(
         [UnsafeAccessorType("System.Runtime.InteropServices.JavaScript.JSWebWorker, System.Runtime.InteropServices.JavaScript")] object? instance,
