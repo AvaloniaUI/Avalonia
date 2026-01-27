@@ -4,6 +4,8 @@
 // Licensed to The Avalonia Project under MIT License, courtesy of The .NET Foundation.
 
 using System;
+using System.Diagnostics;
+using Avalonia.Controls.Utils;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Utilities;
@@ -28,6 +30,22 @@ namespace Avalonia.Controls
         /// Items are laid out so the last one in each column/row touches the bottom/right of the panel.
         /// </summary>
         End,
+
+        /// <summary>
+        /// Items are laid out with equal spacing between them within each column/row.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="WrapPanel.ItemSpacing"/> is become the minimum spacing between items,
+        /// </remarks>
+        Justify,
+
+        /// <summary>
+        /// Items are laid out with equal spacing between them within each column/row.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="WrapPanel.ItemWidth"/> or <see cref="WrapPanel.ItemHeight"/> is become the minimum spacing between items,
+        /// </remarks>
+        Stretch
     }
 
     /// <summary>
@@ -36,7 +54,7 @@ namespace Avalonia.Controls
     /// Subsequent ordering happens sequentially from top to bottom or from right to left, 
     /// depending on the value of the <see cref="Orientation"/> property.
     /// </summary>
-    public class WrapPanel : Panel, INavigableContainer
+    public class WrapPanel : Panel, INavigableContainer, IOrientationBasedMeasures
     {
         /// <summary>
         /// Defines the <see cref="ItemSpacing"/> dependency property.
@@ -137,6 +155,20 @@ namespace Avalonia.Controls
             set => SetValue(ItemHeightProperty, value);
         }
 
+        private ScrollOrientation ScrollOrientation { get; set; } = ScrollOrientation.Vertical;
+
+        ScrollOrientation IOrientationBasedMeasures.ScrollOrientation => ScrollOrientation;
+
+        /// <inheritdoc />
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+            if (change.Property == OrientationProperty)
+                ScrollOrientation = Orientation is Orientation.Horizontal ?
+                    ScrollOrientation.Vertical :
+                    ScrollOrientation.Horizontal;
+        }
+
         /// <summary>
         /// Gets the next control in the specified direction.
         /// </summary>
@@ -183,10 +215,8 @@ namespace Avalonia.Controls
             {
                 return children[index];
             }
-            else
-            {
-                return null;
-            }
+
+            return null;
         }
 
         /// <inheritdoc/>
@@ -196,36 +226,39 @@ namespace Avalonia.Controls
             double itemHeight = ItemHeight;
             double itemSpacing = ItemSpacing;
             double lineSpacing = LineSpacing;
-            var orientation = Orientation;
-            var children = Children;
-            var curLineSize = new UVSize(orientation);
-            var panelSize = new UVSize(orientation);
-            var uvConstraint = new UVSize(orientation, constraint.Width, constraint.Height);
+            var curLineSize = new Size();
+            var panelSize = new Size();
             bool itemWidthSet = !double.IsNaN(itemWidth);
             bool itemHeightSet = !double.IsNaN(itemHeight);
             bool itemExists = false;
             bool lineExists = false;
+            var itemsAlignment = ItemsAlignment;
+            // If we have infinite space on minor axis, we always use Start alignment to avoid strange behavior
+            if (this.Minor(constraint) is double.PositiveInfinity)
+                itemsAlignment = WrapPanelItemsAlignment.Start;
+            // Stretch/Justify need to measure with full constraint on minor axis
+            if (itemsAlignment is WrapPanelItemsAlignment.Stretch or WrapPanelItemsAlignment.Justify)
+                this.SetMinor(ref panelSize, this.Minor(constraint));
 
             var childConstraint = new Size(
                 itemWidthSet ? itemWidth : constraint.Width,
                 itemHeightSet ? itemHeight : constraint.Height);
 
-            for (int i = 0, count = children.Count; i < count; ++i)
+            foreach (var child in Children)
             {
-                var child = children[i];
                 // Flow passes its own constraint to children
                 child.Measure(childConstraint);
 
-                // This is the size of the child in UV space
-                UVSize childSize = new UVSize(orientation,
+                var childSize = new Size(
                     itemWidthSet ? itemWidth : child.DesiredSize.Width,
                     itemHeightSet ? itemHeight : child.DesiredSize.Height);
 
                 var nextSpacing = itemExists && child.IsVisible ? itemSpacing : 0;
-                if (MathUtilities.GreaterThan(curLineSize.U + childSize.U + nextSpacing, uvConstraint.U)) // Need to switch to another line
+                if (MathUtilities.GreaterThan(this.Minor(curLineSize) + this.Minor(childSize) + nextSpacing, this.Minor(constraint))) // Need to switch to another line
                 {
-                    panelSize.U = Max(curLineSize.U, panelSize.U);
-                    panelSize.V += curLineSize.V + (lineExists ? lineSpacing : 0);
+                    panelSize = this.MinorMajorSize(
+                        Max(this.Minor(curLineSize), this.Minor(panelSize)),
+                        this.Major(panelSize) + this.Major(curLineSize) + (lineExists ? lineSpacing : 0));
                     curLineSize = childSize;
 
                     itemExists = child.IsVisible;
@@ -233,19 +266,20 @@ namespace Avalonia.Controls
                 }
                 else // Continue to accumulate a line
                 {
-                    curLineSize.U += childSize.U + nextSpacing;
-                    curLineSize.V = Max(childSize.V, curLineSize.V);
+                    curLineSize = this.MinorMajorSize(
+                        this.Minor(curLineSize) + this.Minor(childSize) + nextSpacing,
+                        Max(this.Major(childSize), this.Major(curLineSize)));
                     
                     itemExists |= child.IsVisible; // keep true
                 }
             }
 
             // The last line size, if any should be added
-            panelSize.U = Max(curLineSize.U, panelSize.U);
-            panelSize.V += curLineSize.V + (lineExists ? lineSpacing : 0);
+            panelSize = this.MinorMajorSize(
+                Max(this.Minor(curLineSize), this.Minor(panelSize)),
+                this.Major(panelSize) + this.Major(curLineSize) + (lineExists ? lineSpacing : 0));
 
-            // Go from UV space to W/H space
-            return new Size(panelSize.Width, panelSize.Height);
+            return panelSize;
         }
 
         /// <inheritdoc/>
@@ -255,32 +289,33 @@ namespace Avalonia.Controls
             double itemHeight = ItemHeight;
             double itemSpacing = ItemSpacing;
             double lineSpacing = LineSpacing;
-            var orientation = Orientation;
-            bool isHorizontal = orientation == Orientation.Horizontal;
             var children = Children;
             int firstInLine = 0;
-            double accumulatedV = 0;
-            double itemU = isHorizontal ? itemWidth : itemHeight;
-            var curLineSize = new UVSize(orientation);
-            var uvFinalSize = new UVSize(orientation, finalSize.Width, finalSize.Height);
+            double accumulatedMajor = 0;
+            double itemMinor = this.Minor(itemWidth, itemHeight);
+            var curLineSize = new Size();
             bool itemWidthSet = !double.IsNaN(itemWidth);
             bool itemHeightSet = !double.IsNaN(itemHeight);
             bool itemExists = false;
             bool lineExists = false;
+            var itemsAlignment = ItemsAlignment;
+            // If we have infinite space on minor axis, we always use Start alignment to avoid strange behavior
+            if (this.Minor(finalSize) is double.PositiveInfinity)
+                itemsAlignment = WrapPanelItemsAlignment.Start;
 
             for (int i = 0; i < children.Count; ++i)
             {
                 var child = children[i];
-                var childSize = new UVSize(orientation,
+                var childSize = new Size(
                     itemWidthSet ? itemWidth : child.DesiredSize.Width,
                     itemHeightSet ? itemHeight : child.DesiredSize.Height);
 
                 var nextSpacing = itemExists && child.IsVisible ? itemSpacing : 0;
-                if (MathUtilities.GreaterThan(curLineSize.U + childSize.U + nextSpacing, uvFinalSize.U)) // Need to switch to another line
+                if (MathUtilities.GreaterThan(this.Minor(curLineSize) + this.Minor(childSize) + nextSpacing, this.Minor(finalSize))) // Need to switch to another line
                 {
-                    accumulatedV += lineExists ? lineSpacing : 0; // add spacing to arrange line first
-                    ArrangeLine(curLineSize.V, firstInLine, i);
-                    accumulatedV += curLineSize.V; // add the height of the line just arranged
+                    accumulatedMajor += lineExists ? lineSpacing : 0; // add spacing to arrange line first
+                    ArrangeLine(this.Major(curLineSize), firstInLine, i);
+                    accumulatedMajor += this.Major(curLineSize); // add the height of the line just arranged
                     curLineSize = childSize;
 
                     firstInLine = i;
@@ -290,8 +325,9 @@ namespace Avalonia.Controls
                 }
                 else // Continue to accumulate a line
                 {
-                    curLineSize.U += childSize.U + nextSpacing;
-                    curLineSize.V = Max(childSize.V, curLineSize.V);
+                    curLineSize = this.MinorMajorSize(
+                        this.Minor(curLineSize) + this.Minor(childSize) + nextSpacing,
+                        Max(this.Major(childSize), this.Major(curLineSize)));
 
                     itemExists |= child.IsVisible; // keep true
                 }
@@ -300,75 +336,68 @@ namespace Avalonia.Controls
             // Arrange the last line, if any
             if (firstInLine < children.Count)
             {
-                accumulatedV += lineExists ? lineSpacing : 0; // add spacing to arrange line first
-                ArrangeLine(curLineSize.V, firstInLine, children.Count);
+                accumulatedMajor += lineExists ? lineSpacing : 0; // add spacing to arrange line first
+                ArrangeLine(this.Major(curLineSize), firstInLine, children.Count);
             }
 
             return finalSize;
 
-            void ArrangeLine(double lineV, int start, int end)
+            void ArrangeLine(double lineMajor, int start, int endExcluded)
             {
-                bool useItemU = isHorizontal ? itemWidthSet : itemHeightSet;
-                double u = 0;
-                if (ItemsAlignment != WrapPanelItemsAlignment.Start)
-                {
-                    double totalU = -itemSpacing;
-                    for (int i = start; i < end; ++i)
-                    {
-                        totalU += GetChildU(i) + (!children[i].IsVisible ? 0 : itemSpacing);
-                    }
+                bool useItemMinor = this.Minor(itemWidthSet, itemHeightSet);
+                double minorStart = 0d;
+                var minorSpacing = itemSpacing;
+                // Count of spacings between items
+                var minorSpacingCount = -1;
+                double totalMinor = 0d;
+                double minorStretchRatio = 1d;
 
-                    u = ItemsAlignment switch
+                if (itemsAlignment is not WrapPanelItemsAlignment.Start)
+                {
+                    for (int i = start; i < endExcluded; ++i)
                     {
-                        WrapPanelItemsAlignment.Center => (uvFinalSize.U - totalU) / 2,
-                        WrapPanelItemsAlignment.End => uvFinalSize.U - totalU,
-                        WrapPanelItemsAlignment.Start => 0,
-                        _ => throw new ArgumentOutOfRangeException(nameof(ItemsAlignment), ItemsAlignment, null),
-                    };
+                        totalMinor += GetChildMinor(i);
+                        if (children[i].IsVisible)
+                            ++minorSpacingCount;
+                    }
                 }
 
-                for (int i = start; i < end; ++i)
+                Debug.Assert(this.Minor(finalSize) >= totalMinor + minorSpacing * minorSpacingCount);
+
+                switch (itemsAlignment)
                 {
-                    double layoutSlotU = GetChildU(i);
-                    children[i].Arrange(isHorizontal ? new(u, accumulatedV, layoutSlotU, lineV) : new(accumulatedV, u, lineV, layoutSlotU));
-                    u += layoutSlotU + (!children[i].IsVisible ? 0 : itemSpacing);
+                    case WrapPanelItemsAlignment.Start:
+                        break;
+                    case WrapPanelItemsAlignment.Center:
+                        totalMinor += minorSpacing * minorSpacingCount;
+                        minorStart = (this.Minor(finalSize) - totalMinor) / 2;
+                        break;
+                    case WrapPanelItemsAlignment.End:
+                        totalMinor += minorSpacing * minorSpacingCount;
+                        minorStart = this.Minor(finalSize) - totalMinor;
+                        break;
+                    case WrapPanelItemsAlignment.Justify:
+                        var totalMinorSpacing = this.Minor(finalSize) - totalMinor - 0.01; // small epsilon to avoid rounding issues
+                        if (minorSpacingCount > 0)
+                            minorSpacing = totalMinorSpacing / minorSpacingCount;
+                        break;
+                    case WrapPanelItemsAlignment.Stretch:
+                        var finalMinorWithoutSpacing = this.Minor(finalSize) - minorSpacing * minorSpacingCount - 0.01; // small epsilon to avoid rounding issues
+                        minorStretchRatio = finalMinorWithoutSpacing / totalMinor;
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(itemsAlignment), itemsAlignment, null);
+                }
+
+                for (int i = start; i < endExcluded; ++i)
+                {
+                    double layoutSlotMinor = GetChildMinor(i) * minorStretchRatio;
+                    children[i].Arrange(this.MinorMajorRect(minorStart, accumulatedMajor, layoutSlotMinor, lineMajor));
+                    minorStart += layoutSlotMinor + (children[i].IsVisible ? minorSpacing : 0);
                 }
 
                 return;
-                double GetChildU(int i) => useItemU ? itemU :
-                    isHorizontal ? children[i].DesiredSize.Width : children[i].DesiredSize.Height;
-            }
-        }
-
-        private struct UVSize
-        {
-            internal UVSize(Orientation orientation, double width, double height)
-            {
-                U = V = 0d;
-                _orientation = orientation;
-                Width = width;
-                Height = height;
-            }
-
-            internal UVSize(Orientation orientation)
-            {
-                U = V = 0d;
-                _orientation = orientation;
-            }
-
-            internal double U;
-            internal double V;
-            private Orientation _orientation;
-
-            internal double Width
-            {
-                get => _orientation == Orientation.Horizontal ? U : V;
-                set { if (_orientation == Orientation.Horizontal) U = value; else V = value; }
-            }
-            internal double Height
-            {
-                get => _orientation == Orientation.Horizontal ? V : U;
-                set { if (_orientation == Orientation.Horizontal) V = value; else U = value; }
+                double GetChildMinor(int i) => useItemMinor ? itemMinor : this.Minor(children[i].DesiredSize);
             }
         }
     }
