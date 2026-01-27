@@ -2297,7 +2297,7 @@ namespace Avalonia.Win32.Interop
             MDT_DEFAULT = MDT_EFFECTIVE_DPI
         }
 
-        public enum ClipboardFormat
+        public enum ClipboardFormat : ushort
         {
             /// <summary>
             /// A handle to a bitmap
