@@ -345,7 +345,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
                 EnableIlVerification = true,
                 DefaultCompileBindings = configuration.UseCompiledBindingsByDefault,
                 IsDesignMode = configuration.DesignMode,
-                CreateSourceInfo = configuration.DesignMode,
+                CreateSourceInfo = configuration.CreateSourceInfo,
             };
 
             var parsedDocuments = new List<XamlDocumentResource>();

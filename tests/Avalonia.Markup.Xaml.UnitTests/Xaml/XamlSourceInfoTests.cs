@@ -16,6 +16,11 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 {
     public class XamlSourceInfoTests : XamlTestBase
     {
+        private static readonly RuntimeXamlLoaderConfiguration s_configuration = new RuntimeXamlLoaderConfiguration
+        {
+            CreateSourceInfo = true
+        };
+
         [Fact]
         public void Root_UserControl_With_BaseUri_Gets_XamlSourceInfo_SourceUri_Set()
         {
@@ -27,9 +32,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
                 </UserControl>
                 """);
-            var config = new RuntimeXamlLoaderConfiguration { DesignMode = true };
 
-            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xamlDocument, config);
+            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xamlDocument, s_configuration);
 
             var sourceInfo = XamlSourceInfo.GetXamlSourceInfo(userControl);
 
@@ -40,12 +44,12 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void Root_UserControl_Gets_XamlSourceInfo_Set()
         {
-            var xaml = @"
+            var xaml = new RuntimeXamlLoaderDocument(@"
 <UserControl xmlns='https://github.com/avaloniaui'
      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
-</UserControl>";
+</UserControl>");
 
-            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml, designMode: true);
+            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml, s_configuration);
 
             var sourceInfo = XamlSourceInfo.GetXamlSourceInfo(userControl);
 
@@ -55,16 +59,16 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void Nested_Controls_All_Get_XamlSourceInfo_Set()
         {
-            var xaml = @"
+            var xaml = new RuntimeXamlLoaderDocument(@"
 <UserControl xmlns='https://github.com/avaloniaui'
      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
     <StackPanel>
         <Button />
         <TextBlock />
     </StackPanel>
-</UserControl>";
+</UserControl>");
 
-            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml, designMode: true);
+            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml, s_configuration);
             var stackPanel = (StackPanel)userControl.Content!;
             var button = (Button)stackPanel.Children[0];
             var textblock = (TextBlock)stackPanel.Children[1];
@@ -85,7 +89,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void Property_Elements_Get_XamlSourceInfo_Set()
         {
-            var xaml = @"
+            var xaml = new RuntimeXamlLoaderDocument(@"
 <UserControl xmlns='https://github.com/avaloniaui'
      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
     <Rectangle Fill=""Blue"" Width=""63"" Height=""41"">
@@ -98,9 +102,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             </LinearGradientBrush>
         </Rectangle.OpacityMask>
     </Rectangle>
-</UserControl>";
+</UserControl>");
 
-            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml, designMode: true);
+            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml, s_configuration);
             var rect = (Rectangle)userControl.Content!;
             var gradient = (LinearGradientBrush)rect.OpacityMask!;
             var stopOne = (GradientStop)gradient.GradientStops.First();
@@ -122,7 +126,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void Shapes_Get_XamlSourceInfo_Set()
         {
-            var xaml = @"
+            var xaml = new RuntimeXamlLoaderDocument(@"
 <UserControl xmlns='https://github.com/avaloniaui'
      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
     <Canvas Name=""TheCanvas"" Background=""Yellow"" Width=""300"" Height=""400"">
@@ -143,9 +147,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         <Line StartPoint=""120,185"" EndPoint=""30,115"" Stroke=""Red"" StrokeThickness=""2""/>
         <Polygon Points=""75,0 120,120 0,45 150,45 30,120"" Stroke=""DarkBlue"" StrokeThickness=""1"" Fill=""Violet"" Canvas.Left=""150"" Canvas.Top=""31""/>
     </Canvas>
-</UserControl>";
+</UserControl>");
 
-            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml, designMode: true);
+            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml, s_configuration);
             var canvas = (Canvas)userControl.Content!;
             var ellipse = (Ellipse)canvas.Children[0];
             var path1 = (Path)canvas.Children[1];
@@ -199,7 +203,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void Styles_Get_XamlSourceInfo_Set()
         {
-            var xaml = @"
+            var xaml = new RuntimeXamlLoaderDocument(@"
 <UserControl xmlns='https://github.com/avaloniaui'
      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
 	<UserControl.Styles>
@@ -214,9 +218,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 			</Style>
 		</ContainerQuery>
     </UserControl.Styles>
-</UserControl>";
+</UserControl>");
 
-            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml, designMode: true);
+            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml, s_configuration);
             var style = (Style)userControl.Styles[0];
             var query = (ContainerQuery)userControl.Styles[1];
 
@@ -230,7 +234,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void Animations_Get_XamlSourceInfo_Set()
         {
-            var xaml = @"
+            var xaml = new RuntimeXamlLoaderDocument(@"
 <UserControl xmlns='https://github.com/avaloniaui'
      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
 	<UserControl.Styles>
@@ -248,9 +252,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 			</Style.Animations>
 		</Style>
     </UserControl.Styles>
-</UserControl>";
+</UserControl>");
 
-            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml, designMode: true);
+            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml, s_configuration);
             var style = (Style)userControl.Styles[0];
             var animation = (Animation.Animation)style.Animations[0];
             var frame1 = (KeyFrame)animation.Children[0];
@@ -272,7 +276,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void DataTemplates_And_Deferred_Contents_Get_XamlSourceInfo_Set()
         {
-            var xaml = @"
+            var xaml = new RuntimeXamlLoaderDocument(@"
 <UserControl xmlns='https://github.com/avaloniaui'
      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
      xmlns:local='using:Avalonia.Markup.Xaml.UnitTests.Xaml'>
@@ -283,9 +287,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 			</Border>
 		</DataTemplate>
 	</UserControl.DataTemplates>
-</UserControl>";
+</UserControl>");
 
-            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml, designMode: true);
+            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml, s_configuration);
             var datatemplate = (DataTemplate)userControl.DataTemplates[0];
 
             Border border;
@@ -316,7 +320,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void Resources_Get_XamlSourceInfo_Set()
         {
-            var xaml = @"
+            var xaml = new RuntimeXamlLoaderDocument(@"
 <UserControl xmlns='https://github.com/avaloniaui'
      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
 	<UserControl.Resources>
@@ -336,9 +340,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
 		</ResourceDictionary>
 	</UserControl.Resources>
-</UserControl>";
+</UserControl>");
 
-            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml, designMode: true);
+            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml, s_configuration);
             var backgroundBrush = userControl.Resources["Background"];
             var lightDictionary = (ResourceDictionary)userControl.Resources.ThemeDictionaries[ThemeVariant.Light];
             var darkDictionary = (ResourceDictionary)userControl.Resources.ThemeDictionaries[ThemeVariant.Dark];
@@ -364,15 +368,15 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void More_Resources_Get_XamlSourceInfo_Set()
         {
-            var xaml = @"
+            var xaml = new RuntimeXamlLoaderDocument(@"
 <UserControl xmlns='https://github.com/avaloniaui'
      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
 	<UserControl.Resources>
 		<SolidColorBrush x:Key='ForegroundBrush'>Black</SolidColorBrush>
 	</UserControl.Resources>
-</UserControl>";
+</UserControl>");
 
-            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml, designMode: true);
+            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml, s_configuration);
             var fgBrush = userControl.Resources["ForegroundBrush"];
 
             var fgBrushSourceInfo = XamlSourceInfo.GetXamlSourceInfo(fgBrush!);
@@ -382,7 +386,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void Gestures_Get_XamlSourceInfo_Set()
         {
-            var xaml = @"
+            var xaml = new RuntimeXamlLoaderDocument(@"
 <UserControl xmlns='https://github.com/avaloniaui'
      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
 	<UserControl.GestureRecognizers>
@@ -390,9 +394,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 								 CanVerticallyScroll=""True""/>
 		<PullGestureRecognizer PullDirection=""TopToBottom""/>
 	</UserControl.GestureRecognizers>
-</UserControl>";
+</UserControl>");
 
-            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml, designMode: true);
+            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml, s_configuration);
             var scroll = (ScrollGestureRecognizer)userControl.GestureRecognizers.First();
             var pull = (PullGestureRecognizer)userControl.GestureRecognizers.Last();
 
@@ -406,7 +410,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void Transitions_Get_XamlSourceInfo_Set()
         {
-            var xaml = @"
+            var xaml = new RuntimeXamlLoaderDocument(@"
 <UserControl xmlns='https://github.com/avaloniaui'
      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
 	<UserControl.Transitions>
@@ -415,9 +419,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 			<DoubleTransition Property=""Height"" Duration=""0:0:1.5""/>
 		</Transitions>
 	</UserControl.Transitions>
-</UserControl>";
+</UserControl>");
 
-            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml, designMode: true);
+            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml, s_configuration);
             var width = (DoubleTransition)userControl.Transitions!.First();
             var height = (DoubleTransition)userControl.Transitions!.Last();
 
