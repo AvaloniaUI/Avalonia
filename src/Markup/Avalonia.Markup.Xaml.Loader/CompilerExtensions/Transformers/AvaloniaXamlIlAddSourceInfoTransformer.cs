@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
 using XamlX.Ast;
 using XamlX.Emit;
@@ -39,14 +38,14 @@ namespace Avalonia.Markup.Xaml.Loader.CompilerExtensions.Transformers
         {
             if (CreateSourceInfo
                 && node is XamlAstNewClrObjectNode objNode
-                && context.ParentNodes().FirstOrDefault() is not XamlSourceInfoImperativeValueManipulation
+                && context.ParentNodes().FirstOrDefault() is not XamlSourceInfoValueWithManipulationNode
                 && !objNode.Type.GetClrType().IsValueType)
             {
                 var avaloniaTypes = context.GetAvaloniaTypes();
 
                 if(context.Document != null)
                 {
-                    return new XamlSourceInfoImperativeValueManipulation(
+                    return new XamlSourceInfoValueWithManipulationNode(
                         avaloniaTypes, objNode, context.Document);
                 }
             }
@@ -54,29 +53,41 @@ namespace Avalonia.Markup.Xaml.Loader.CompilerExtensions.Transformers
             return node;
         }
 
-        private class XamlSourceInfoImperativeValueManipulation(
+        private class XamlSourceInfoValueManipulation(
             AvaloniaXamlIlWellKnownTypes avaloniaTypes,
             XamlAstNewClrObjectNode objNode, string document)
-            : XamlAstNode(objNode), IXamlAstValueNode, IXamlAstImperativeNode, IXamlAstILEmitableNode
+            : XamlAstNode(objNode), IXamlAstManipulationNode, IXamlAstILEmitableNode
         {
-            public IXamlAstTypeReference Type { get; } = objNode.Type;
-
             public XamlILNodeEmitResult Emit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
             {
-                context.Emit(objNode, codeGen, objNode.Type.GetClrType());
-                // Duplicate the current object reference on the stack
-                codeGen.Dup();
+                // Target object is already on stack.
 
-                // var local = new XamlSourceInfo(Line, Position, Document);
+                // var info = new XamlSourceInfo(Line, Position, Document);
                 codeGen.Ldc_I4(Line);
                 codeGen.Ldc_I4(Position);
                 codeGen.Ldstr(document);
                 codeGen.Newobj(avaloniaTypes.XamlSourceInfoConstructor);
 
                 // Set the XamlSourceInfo property on the current object
+                // XamlSourceInfo.SetValue(@this, info);
                 codeGen.EmitCall(avaloniaTypes.XamlSourceInfoSetter);
 
-                return XamlILNodeEmitResult.Type(0, objNode.Type.GetClrType());
+                return XamlILNodeEmitResult.Void(1);
+            }
+        }
+
+        private class XamlSourceInfoValueWithManipulationNode(
+            AvaloniaXamlIlWellKnownTypes avaloniaTypes,
+            XamlAstNewClrObjectNode objNode, string document)
+            : XamlValueWithManipulationNode(objNode, objNode, new XamlSourceInfoValueManipulation(avaloniaTypes, objNode, document)),
+                IXamlAstImperativeNode, IXamlAstILEmitableNode, IXamlAstManipulationNode
+        {
+            public XamlILNodeEmitResult Emit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
+            {
+                context.Emit(Value, codeGen, objNode.Type.GetClrType());
+                context.Emit(Manipulation!, codeGen, null);
+
+                return XamlILNodeEmitResult.Void(0);
             }
         }
     }
