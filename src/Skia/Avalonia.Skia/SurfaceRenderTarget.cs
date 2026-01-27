@@ -72,6 +72,8 @@ namespace Avalonia.Skia
             _canvas = canvas;
         }
 
+        public RenderTargetProperties Properties => default;
+
         /// <summary>
         /// Create backing Skia surface.
         /// </summary>
@@ -112,6 +114,13 @@ namespace Avalonia.Skia
             };
 
             return new DrawingContextImpl(createInfo, Disposable.Create(() => Version++));
+        }
+
+        public IDrawingContextImpl CreateDrawingContext(PixelSize expectedPixelSize,
+            out RenderTargetDrawingContextProperties properties)
+        {
+            properties = default;
+            return CreateDrawingContext(false);
         }
 
         public bool IsCorrupted => _gpu?.IsLost == true;

@@ -5,7 +5,7 @@ namespace Avalonia.Skia
     /// <summary>
     /// Adapts <see cref="ISkiaGpuRenderTarget"/> to be used within our rendering pipeline.
     /// </summary>
-    internal class SkiaGpuRenderTarget : IRenderTarget2
+    internal class SkiaGpuRenderTarget : IRenderTarget
     {
         private readonly ISkiaGpu _skiaGpu;
         private readonly ISkiaGpuRenderTarget _renderTarget;
