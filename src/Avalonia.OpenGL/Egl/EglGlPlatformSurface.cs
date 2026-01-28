@@ -54,8 +54,9 @@ namespace Avalonia.OpenGL.Egl
 
             public override void Dispose() => _glSurface?.Dispose();
 
-            public override IGlPlatformSurfaceRenderingSession BeginDrawCore()
+            public override IGlPlatformSurfaceRenderingSession BeginDrawCore(PixelSize? expectedPixelSize)
             {
+                // TODO: use expectedPixelSize
                 if (_info.Size != _currentSize 
                     || _handle != _info.Handle
                     || _glSurface == null)

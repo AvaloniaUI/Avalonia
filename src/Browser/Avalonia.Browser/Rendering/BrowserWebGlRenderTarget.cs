@@ -65,14 +65,17 @@ partial class BrowserWebGlRenderTarget : BrowserRenderTarget, IGlPlatformSurface
         {
             _target = target;
         }
-        
+
+        public bool IsCorrupted => false;
+
         public void Dispose()
         {
             // No-op
         }
 
-        public IGlPlatformSurfaceRenderingSession BeginDraw()
+        public IGlPlatformSurfaceRenderingSession BeginDraw(PixelSize? expectedPixelSize)
         {
+            // TODO: use expectedPixelSize
             var s = _target._sizeGetter();
             _target.UpdateSize(s.Size);
             var restoreContext = _target.GlContext.EnsureCurrent();

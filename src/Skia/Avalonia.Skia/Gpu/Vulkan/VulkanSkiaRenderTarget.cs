@@ -21,8 +21,9 @@ class VulkanSkiaRenderTarget : ISkiaGpuRenderTarget
         _target.Dispose();
     }
 
-    public ISkiaGpuRenderSession BeginRenderingSession()
+    public ISkiaGpuRenderSession BeginRenderingSession(PixelSize? expectedPixelSize)
     {
+        // TODO: use expectedPixelSize
         var session = _target.BeginDraw();
         bool success = false;
         try
