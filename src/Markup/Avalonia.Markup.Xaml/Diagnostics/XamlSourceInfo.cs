@@ -44,7 +44,7 @@ namespace Avalonia.Markup.Xaml.Diagnostics
         {
             LineNumber = line;
             LinePosition = column;
-            SourceUri = filePath is not null ? new UriBuilder { Path = filePath }.Uri : null;
+            SourceUri = filePath is not null ? new UriBuilder("file", "") { Path = filePath }.Uri : null;
         }
 
         /// <summary>
