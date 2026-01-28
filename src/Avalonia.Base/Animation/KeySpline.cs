@@ -275,13 +275,9 @@ namespace Avalonia.Animation
             double bottom = 0;
             double top = 1;
 
-            if (time == 0)
+            if (time == 0 || time == 1)
             {
-                _parameter = 0;
-            }
-            else if (time == 1)
-            {
-                _parameter = 1;
+                _parameter = time;
             }
             else
             {

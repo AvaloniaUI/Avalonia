@@ -9,22 +9,12 @@ namespace Avalonia.Animation
     /// </summary>
     /// <typeparam name="T">Type of the transitioned value.</typeparam>
     /// <typeparam name="TAnimator">Type of the animator.</typeparam>
-    internal class AnimatorTransitionObservable<T, TAnimator> : TransitionObservableBase<T> where TAnimator : Animator<T>
+    internal class AnimatorTransitionObservable<T, TAnimator>(TAnimator animator, IObservable<double> progress, IEasing easing, T oldValue, T newValue) : TransitionObservableBase<T> where TAnimator : Animator<T>
     {
-        private readonly TAnimator _animator;
-        private readonly T _oldValue;
-        private readonly T _newValue;
-
-        public AnimatorTransitionObservable(TAnimator animator, IObservable<double> progress, IEasing easing, T oldValue, T newValue) : base(progress, easing)
-        {
-            _animator = animator;
-            _oldValue = oldValue;
-            _newValue = newValue;
-        }
 
         protected override T ProduceValue(double progress)
         {
-            return _animator.Interpolate(progress, _oldValue, _newValue);
+            return _animator.Interpolate(progress, oldValue, newValue);
         }
     }
 }
