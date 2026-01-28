@@ -257,8 +257,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml, s_configuration);
             var style = (Style)userControl.Styles[0];
             var animation = (Animation.Animation)style.Animations[0];
-            var frame1 = (KeyFrame)animation.Children[0];
-            var frame2 = (KeyFrame)animation.Children[1];
+            var frame1 = animation.Children[0];
+            var frame2 = animation.Children[1];
 
             var styleSourceInfo = XamlSourceInfo.GetXamlSourceInfo(style);
             Assert.NotNull(styleSourceInfo);
@@ -373,7 +373,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void ResourceDictionary_Value_Types_Do_Not_Set_XamlSourceInfo()
         {
-            var xaml = @"
+            var xaml = new RuntimeXamlLoaderDocument(@"
 <UserControl xmlns='https://github.com/avaloniaui'
      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
 	<UserControl.Resources>
@@ -382,17 +382,15 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 		<x:Int16 x:Key=""An_Int16"">123</x:Int16>
 		<x:Int32 x:Key=""An_Int32"">37434323</x:Int32>
 		<Thickness x:Key=""PreferredPadding"">10,20,10,0</Thickness>
-		<x:Uri x:Key='homepage'>http://avaloniaui.net</x:Uri>
 	</UserControl.Resources>
-</UserControl>";
+</UserControl>");
 
-            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml, designMode: true);
+            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml, s_configuration);
             var foobarString = userControl.Resources["text"];
             var aDouble = userControl.Resources["A_Double"];
             var anInt16 = userControl.Resources["An_Int16"];
             var anInt32 = userControl.Resources["An_Int32"];
             var padding = userControl.Resources["PreferredPadding"];
-            var homepageUri = userControl.Resources["homepage"];
 
             // Value types shouldn't get source info
             var foobarStringSourceInfo = XamlSourceInfo.GetXamlSourceInfo(foobarString!);
@@ -409,9 +407,118 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
             var paddingSourceInfo = XamlSourceInfo.GetXamlSourceInfo(padding!);
             Assert.Null(paddingSourceInfo);
+        }
 
-            var homepageUriSourceInfo = XamlSourceInfo.GetXamlSourceInfo(homepageUri!);
-            Assert.Null(homepageUriSourceInfo);
+        [Fact]
+        public void ResourceDictionary_Set_Resource_Source_Info()
+        {
+            var xaml = new RuntimeXamlLoaderDocument(@"
+<UserControl xmlns='https://github.com/avaloniaui'
+     xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+	<UserControl.Resources>
+		<x:String x:Key='text'>foobar</x:String>
+		<x:Double x:Key=""A_Double"">123.3</x:Double>
+		<x:Int16 x:Key=""An_Int16"">123</x:Int16>
+		<x:Int32 x:Key=""An_Int32"">37434323</x:Int32>
+		<Thickness x:Key=""PreferredPadding"">10,20,10,0</Thickness>
+        <x:Uri x:Key='homepage'>http://avaloniaui.net</x:Uri>
+        <SolidColorBrush x:Key='MyBrush' Color='Red'/>
+	</UserControl.Resources>
+</UserControl>");
+
+            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml, s_configuration);
+            var resources = userControl.Resources;
+
+            var foobarStringSourceInfo = XamlSourceInfo.GetXamlSourceInfo(resources, "text");
+            Assert.NotNull(foobarStringSourceInfo);
+
+            var aDoubleSourceInfo = XamlSourceInfo.GetXamlSourceInfo(resources, "A_Double");
+            Assert.NotNull(aDoubleSourceInfo);
+
+            var anInt16SourceInfo = XamlSourceInfo.GetXamlSourceInfo(resources, "An_Int16");
+            Assert.NotNull(anInt16SourceInfo);
+
+            var anInt32SourceInfo = XamlSourceInfo.GetXamlSourceInfo(resources, "An_Int32");
+            Assert.NotNull(anInt32SourceInfo);
+
+            var paddingSourceInfo = XamlSourceInfo.GetXamlSourceInfo(resources, "PreferredPadding");
+            Assert.NotNull(paddingSourceInfo);
+
+            var homepageSourceInfo = XamlSourceInfo.GetXamlSourceInfo(resources, "homepage");
+            Assert.NotNull(homepageSourceInfo);
+
+            var myBrushSourceInfo = XamlSourceInfo.GetXamlSourceInfo(resources, "MyBrush");
+            Assert.NotNull(myBrushSourceInfo);
+        }
+
+        [Fact]
+        public void ResourceDictionary_Set_Resource_Source_Info_With_Nested_Dictionaries()
+        {
+            var xaml = new RuntimeXamlLoaderDocument(@"
+<UserControl xmlns='https://github.com/avaloniaui'
+     xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+	<UserControl.Resources>
+        <ResourceDictionary>
+            <x:String x:Key='text'>foobar</x:String>
+            <x:Double x:Key=""A_Double"">123.3</x:Double>
+            <x:Int16 x:Key=""An_Int16"">123</x:Int16>
+            <x:Int32 x:Key=""An_Int32"">37434323</x:Int32>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary>
+                    <Thickness x:Key=""PreferredPadding"">10,20,10,0</Thickness>
+                    <x:Uri x:Key='homepage'>http://avaloniaui.net</x:Uri>
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key='Light'>
+                    <SolidColorBrush x:Key='MyBrush' Color='Red'/>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
+	</UserControl.Resources>
+</UserControl>");
+
+            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml, s_configuration);
+            var resources = userControl.Resources;
+            var innerResources = (IResourceDictionary)resources.MergedDictionaries[0];
+            var themeResources = (IResourceDictionary)resources.ThemeDictionaries[ThemeVariant.Light];
+
+            // Outer define source info
+            var foobarStringSourceInfo = XamlSourceInfo.GetXamlSourceInfo(resources, "text");
+            Assert.NotNull(foobarStringSourceInfo);
+
+            var aDoubleSourceInfo = XamlSourceInfo.GetXamlSourceInfo(resources, "A_Double");
+            Assert.NotNull(aDoubleSourceInfo);
+
+            var anInt16SourceInfo = XamlSourceInfo.GetXamlSourceInfo(resources, "An_Int16");
+            Assert.NotNull(anInt16SourceInfo);
+
+            var anInt32SourceInfo = XamlSourceInfo.GetXamlSourceInfo(resources, "An_Int32");
+            Assert.NotNull(anInt32SourceInfo);
+
+            // Outer one should not have source info for inner resources
+            var paddingSourceInfo = XamlSourceInfo.GetXamlSourceInfo(resources, "PreferredPadding");
+            Assert.Null(paddingSourceInfo);
+
+            var homepageSourceInfo = XamlSourceInfo.GetXamlSourceInfo(resources, "homepage");
+            Assert.NotNull(homepageSourceInfo);
+
+            var myBrushSourceInfo = XamlSourceInfo.GetXamlSourceInfo(resources, "MyBrush");
+            Assert.Null(myBrushSourceInfo);
+
+            // Inner defined source info
+            homepageSourceInfo = XamlSourceInfo.GetXamlSourceInfo(innerResources, "homepage");
+            Assert.NotNull(homepageSourceInfo);
+
+            myBrushSourceInfo = XamlSourceInfo.GetXamlSourceInfo(themeResources, "MyBrush");
+            Assert.NotNull(myBrushSourceInfo);
+
+            // Non-value types should have source info themselves
+            var homepage = XamlSourceInfo.GetXamlSourceInfo(innerResources["homepage"]!);
+            Assert.NotNull(homepage);
+
+            var myBrush = XamlSourceInfo.GetXamlSourceInfo(themeResources["MyBrush"]!);
+            Assert.NotNull(myBrush);
         }
 
         [Fact]
