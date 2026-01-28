@@ -11,16 +11,9 @@ namespace Avalonia.Markup.Xaml.Loader.CompilerExtensions.Transformers
     /// An XAMLIL AST transformer that injects <see cref="Avalonia.Markup.Xaml.Diagnostics.XamlSourceInfo"/> metadata into the generated XAML code.
     /// </summary>
     /// <remarks>
-    /// This transformer runs during XAML compilation and attaches <see cref="Avalonia.Markup.Xaml.Diagnostics.XamlSourceInfo"/> 
-    /// values to each created control node, allowing runtime and design-time tools to map visual elements 
-    /// back to their original XAML source locations.
-    /// <para/>
-    /// The transformation is only applied when <see cref="CreateSourceInfo"/> is set to <c>true</c>, which 
-    /// typically occurs when the MSBuild property <c>AvaloniaXamlCreateSourceInfo</c> is enabled 
-    /// (for example, in Debug or design-time builds).
-    /// <para/>
-    /// Adding <see cref="Avalonia.Markup.Xaml.Diagnostics.XamlSourceInfo"/> helps tooling like the Avalonia designer or visual inspectors 
-    /// jump directly to the defining <c>.axaml</c> file and line number of a selected element.
+    /// This transformer wraps object creation nodes with a manipulation node that adds source information.
+    /// This source information includes line number, position, and document name, which can be useful for debugging and diagnostics.
+    /// Note: ResourceDictionary source info is handled separately in <see cref="AvaloniaXamlResourceTransformer"/>.
     /// </remarks>
     internal class AvaloniaXamlIlAddSourceInfoTransformer : IXamlAstTransformer
     {

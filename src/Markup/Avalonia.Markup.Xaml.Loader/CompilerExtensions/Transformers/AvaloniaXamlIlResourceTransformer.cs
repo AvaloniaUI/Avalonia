@@ -12,7 +12,9 @@ using XamlX.TypeSystem;
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 {
     /// <summary>
-    /// TODO: handles AddDeferred, x:Shared=false and XamlSourceInfo
+    /// Transforms ResourceDictionary and IResourceDictionary property assignments
+    /// to use Add method calls with deferred content where applicable.
+    /// Additionally, handles x:Shared on assignments and injects XamlSourceInfo.
     /// </summary>
     internal class AvaloniaXamlResourceTransformer : IXamlAstTransformer
     {
