@@ -28,10 +28,6 @@ namespace Avalonia.Markup.Xaml.Loader.CompilerExtensions.Transformers
         /// Gets or sets a value indicating whether source information should be generated
         /// and injected into the compiled XAML output.
         /// </summary>
-        /// <remarks>
-        /// This is usually enabled automatically by the build system when 
-        /// <c>AvaloniaXamlCreateSourceInfo</c> is set.
-        /// </remarks>
         public bool CreateSourceInfo { get; set; }
 
         public IXamlAstNode Transform(AstTransformationContext context, IXamlAstNode node)
@@ -43,11 +39,8 @@ namespace Avalonia.Markup.Xaml.Loader.CompilerExtensions.Transformers
             {
                 var avaloniaTypes = context.GetAvaloniaTypes();
 
-                if(context.Document != null)
-                {
-                    return new XamlSourceInfoValueWithManipulationNode(
-                        avaloniaTypes, objNode, context.Document);
-                }
+                return new XamlSourceInfoValueWithManipulationNode(
+                    avaloniaTypes, objNode, context.Document);
             }
 
             return node;
@@ -55,7 +48,7 @@ namespace Avalonia.Markup.Xaml.Loader.CompilerExtensions.Transformers
 
         private class XamlSourceInfoValueManipulation(
             AvaloniaXamlIlWellKnownTypes avaloniaTypes,
-            XamlAstNewClrObjectNode objNode, string document)
+            XamlAstNewClrObjectNode objNode, string? document)
             : XamlAstNode(objNode), IXamlAstManipulationNode, IXamlAstILEmitableNode
         {
             public XamlILNodeEmitResult Emit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
@@ -65,7 +58,10 @@ namespace Avalonia.Markup.Xaml.Loader.CompilerExtensions.Transformers
                 // var info = new XamlSourceInfo(Line, Position, Document);
                 codeGen.Ldc_I4(Line);
                 codeGen.Ldc_I4(Position);
-                codeGen.Ldstr(document);
+                if (document is not null)
+                    codeGen.Ldstr(document);
+                else
+                    codeGen.Ldnull();
                 codeGen.Newobj(avaloniaTypes.XamlSourceInfoConstructor);
 
                 // Set the XamlSourceInfo property on the current object
@@ -78,7 +74,7 @@ namespace Avalonia.Markup.Xaml.Loader.CompilerExtensions.Transformers
 
         private class XamlSourceInfoValueWithManipulationNode(
             AvaloniaXamlIlWellKnownTypes avaloniaTypes,
-            XamlAstNewClrObjectNode objNode, string document)
+            XamlAstNewClrObjectNode objNode, string? document)
             : XamlValueWithManipulationNode(objNode, objNode, new XamlSourceInfoValueManipulation(avaloniaTypes, objNode, document)),
                 IXamlAstImperativeNode, IXamlAstILEmitableNode, IXamlAstManipulationNode
         {
