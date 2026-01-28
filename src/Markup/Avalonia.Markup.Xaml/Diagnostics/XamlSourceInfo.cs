@@ -11,13 +11,14 @@ namespace Avalonia.Markup.Xaml.Diagnostics
     // ReSharper disable once ClassNeverInstantiated.Global //This class is instantiated through the XAML compiler.
     public record XamlSourceInfo : IEquatable<XamlSourceInfo>
     {
-        private static ConditionalWeakTable<object, XamlSourceInfo?> s_sourceInfo = [];
+        private static readonly ConditionalWeakTable<object, XamlSourceInfo?> s_sourceInfo = [];
+        private static readonly ConditionalWeakTable<IResourceDictionary, Dictionary<object, XamlSourceInfo?>> s_keyedSourceInfo = [];
 
         /// <summary>
         /// Gets the full path of the source file containing the element, or <c>null</c> if unavailable.
         /// </summary>
-        public Uri SourceUri { get; }
-        
+        public Uri? SourceUri { get; }
+
         /// <summary>
         /// Gets the 1-based line number in the source file where the element is defined.
         /// </summary>
@@ -39,7 +40,7 @@ namespace Avalonia.Markup.Xaml.Diagnostics
         {
             LineNumber = line;
             LinePosition = column;
-            SourceUri = new Uri(filePath ?? string.Empty);
+            SourceUri = filePath is not null ? new Uri(filePath) : null;
         }
 
         /// <summary>
@@ -56,6 +57,25 @@ namespace Avalonia.Markup.Xaml.Diagnostics
         }
 
         /// <summary>
+        /// Associates XAML source information with the specified key in the given resource dictionary.
+        /// </summary>
+        /// <param name="dictionary"> The resource dictionary to associate with the XAML source information.</param>
+        /// <param name="key">The key associated with the source info.</param>
+        /// <param name="info">The XAML source information to associate with the object, or null to remove any existing association.</param>
+        public static void SetXamlSourceInfo(IResourceDictionary dictionary, object key, XamlSourceInfo? info)
+        {
+            var dict = s_keyedSourceInfo.GetOrCreateValue(dictionary);
+            if (info == null)
+            {
+                _ = dict.Remove(key);
+            }
+            else
+            {
+                dict[key] = info;
+            }
+        }
+
+        /// <summary>
         /// Retrieves the XAML source information associated with the specified object, if available.
         /// </summary>
         /// <param name="obj">The object for which to obtain XAML source information. Cannot be null.</param>
@@ -69,6 +89,24 @@ namespace Avalonia.Markup.Xaml.Diagnostics
         }
 
         /// <summary>
+        /// Retrieves the XAML source information associated with the specified key in the given resource dictionary, if available.
+        /// </summary>
+        /// <param name="dictionary"> The resource dictionary associated with the XAML source information.</param>
+        /// <param name="key">The key associated with the source info.</param>
+        /// <returns>A <see cref="XamlSourceInfo"/> instance containing the XAML source information for the specified key, or
+        /// <see langword="null"/> if no source information is available.</returns>
+        public static XamlSourceInfo? GetXamlSourceInfo(IResourceDictionary dictionary, object key)
+        {
+            if (s_keyedSourceInfo.TryGetValue(dictionary, out var dict)
+                && dict.TryGetValue(key, out var info))
+            {
+                return info;
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Returns a string that represents the current <see cref="XamlSourceInfo"/>.
         /// </summary>
         /// <returns>
@@ -77,7 +115,8 @@ namespace Avalonia.Markup.Xaml.Diagnostics
         /// </returns>
         public override string ToString()
         {
-            return $"{SourceUri.OriginalString}:{LineNumber},{LinePosition}";
+            var filePath = SourceUri?.LocalPath ?? "(unknown)";
+            return $"{filePath}:{LineNumber},{LinePosition}";
         }
     }
 }

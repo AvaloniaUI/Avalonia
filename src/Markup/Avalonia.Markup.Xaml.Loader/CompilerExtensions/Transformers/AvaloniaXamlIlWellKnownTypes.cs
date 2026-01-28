@@ -134,9 +134,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType ControlTemplate { get; }
         public IXamlType EventHandlerT {  get; }
         public IXamlMethod GetClassProperty { get; }
-        public IXamlType XamlSourceInfo { get; }
         public IXamlConstructor XamlSourceInfoConstructor { get; }
         public IXamlMethod XamlSourceInfoSetter { get; }
+        public IXamlMethod XamlSourceInfoDictionarySetter { get; }
 
         sealed internal class InteractivityWellKnownTypes
         {
@@ -347,12 +347,14 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 cfg.WellKnownTypes.String
                 );
 
-            XamlSourceInfo = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.Diagnostics.XamlSourceInfo");
-            XamlSourceInfoConstructor = XamlSourceInfo.GetConstructor([
+            var xamlSourceInfo = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.Diagnostics.XamlSourceInfo");
+            XamlSourceInfoConstructor = xamlSourceInfo.GetConstructor([
                 XamlIlTypes.Int32, XamlIlTypes.Int32, XamlIlTypes.String
             ]);
             XamlSourceInfoSetter =
-               XamlSourceInfo.GetMethod("SetXamlSourceInfo", XamlIlTypes.Void, false, XamlIlTypes.Object, XamlSourceInfo);
+                xamlSourceInfo.GetMethod("SetXamlSourceInfo", XamlIlTypes.Void, false, XamlIlTypes.Object, xamlSourceInfo);
+            XamlSourceInfoDictionarySetter =
+                xamlSourceInfo.GetMethod("SetXamlSourceInfo", XamlIlTypes.Void, false, IResourceDictionary, XamlIlTypes.Object, xamlSourceInfo);
         }
     }
 
