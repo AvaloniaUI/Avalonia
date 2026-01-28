@@ -144,5 +144,18 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
         { 
             return new CodepointRangeEnumerator(_format, _format4, _format12);
         }
+
+        /// <summary>
+        /// Exposes the character-to-glyph map as an <see cref="IReadOnlyDictionary{TKey, TValue}"/>.
+        /// </summary>
+        /// <remarks>This method returns a lightweight wrapper that provides dictionary-like access to the glyph mappings.
+        /// The wrapper does not allocate memory for storing all mappings; instead, it dynamically computes keys and values
+        /// from the underlying cmap table using the mapped code point ranges and the GetGlyph method.</remarks>
+        /// <returns>An <see cref="IReadOnlyDictionary{TKey, TValue}"/> view of this character-to-glyph map.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public IReadOnlyDictionary<int, ushort> AsReadOnlyDictionary()
+        {
+            return new CharacterToGlyphMapDictionary(this);
+        }
     }
 }
