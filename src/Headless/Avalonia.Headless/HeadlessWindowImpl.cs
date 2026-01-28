@@ -200,6 +200,7 @@ namespace Avalonia.Headless
             public int RowBytes => _fb.RowBytes;
             public Vector Dpi => _fb.Dpi;
             public PixelFormat Format => _fb.Format;
+            public AlphaFormat AlphaFormat => _fb.AlphaFormat;
         }
 
         public ILockedFramebuffer Lock()

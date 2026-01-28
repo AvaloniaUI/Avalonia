@@ -61,7 +61,7 @@ namespace Avalonia.X11
             {
                 _fb?.Dispose();
                 _fb = null;
-                _fb = new RetainedFramebuffer(new PixelSize(width, height), PixelFormat.Bgra8888);
+                _fb = new RetainedFramebuffer(new PixelSize(width, height), PixelFormat.Bgra8888, AlphaFormat.Premul);
             }
 
             properties = new FramebufferLockProperties(framebufferValid);

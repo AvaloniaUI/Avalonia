@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.CompilerServices;
 using Avalonia.Platform;
@@ -177,7 +176,7 @@ namespace Avalonia.Media.Imaging
 
         public virtual PixelFormat? Format => (PlatformImpl.Item as IReadableBitmapImpl)?.Format;
 
-        public virtual AlphaFormat? AlphaFormat => (PlatformImpl.Item as IReadableBitmapWithAlphaImpl)?.AlphaFormat;
+        public virtual AlphaFormat? AlphaFormat => (PlatformImpl.Item as IReadableBitmapImpl)?.AlphaFormat;
 
         private protected unsafe void CopyPixelsCore(PixelRect sourceRect, IntPtr buffer, int bufferSize, int stride,
             ILockedFramebuffer fb)
@@ -237,16 +236,15 @@ namespace Avalonia.Media.Imaging
         /// Copies pixels to the target buffer and transcodes the pixel and alpha format if needed.
         /// </summary>
         /// <param name="buffer">The target buffer.</param>
-        /// <param name="alphaFormat">The alpha format.</param>
         /// <exception cref="NotSupportedException"></exception>
-        public void CopyPixels(ILockedFramebuffer buffer, AlphaFormat alphaFormat)
+        public void CopyPixels(ILockedFramebuffer buffer)
         {
-            if (PlatformImpl.Item is not IReadableBitmapWithAlphaImpl readable || readable.Format == null || readable.AlphaFormat == null)
+            if (PlatformImpl.Item is not IReadableBitmapImpl readable || readable.Format == null || readable.AlphaFormat == null)
             {
                 throw new NotSupportedException("CopyPixels is not supported for this bitmap type");
             }
 
-            if (buffer.Format != readable.Format || alphaFormat != readable.AlphaFormat)
+            if (buffer.Format != readable.Format || buffer.AlphaFormat != readable.AlphaFormat)
             {
                 using (var fb = readable.Lock())
                 {
@@ -255,11 +253,11 @@ namespace Avalonia.Media.Imaging
                         fb.Size,
                         fb.RowBytes,
                         fb.Format,
-                        readable.AlphaFormat.Value, 
+                        fb.AlphaFormat,
                         buffer.Address, 
                         buffer.RowBytes,
                         buffer.Format,
-                        alphaFormat);
+                        buffer.AlphaFormat);
                 }
             }
             else

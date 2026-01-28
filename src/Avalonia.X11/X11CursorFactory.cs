@@ -133,7 +133,7 @@ namespace Avalonia.X11
                 return new LockedFramebuffer(
                     _blob.Address + Marshal.SizeOf<XcursorImage>(),
                     _pixelSize, _pixelSize.Width * 4,
-                    new Vector(96, 96), PixelFormat.Bgra8888, null);
+                    new Vector(96, 96), PixelFormat.Bgra8888, AlphaFormat.Premul, null);
             }
             
             public IFramebufferRenderTarget CreateFramebufferRenderTarget() => new FuncFramebufferRenderTarget(Lock);
