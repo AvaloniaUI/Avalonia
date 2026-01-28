@@ -27,13 +27,14 @@ namespace Avalonia.Markup.Xaml.Loader.CompilerExtensions.Transformers
         {
             if (CreateSourceInfo
                 && node is XamlAstNewClrObjectNode objNode
-                && context.ParentNodes().FirstOrDefault() is not XamlSourceInfoValueWithManipulationNode
+                && context.ParentNodes().FirstOrDefault() is not XamlValueWithManipulationNode { Manipulation: XamlSourceInfoValueManipulation }
                 && !objNode.Type.GetClrType().IsValueType)
             {
                 var avaloniaTypes = context.GetAvaloniaTypes();
 
-                return new XamlSourceInfoValueWithManipulationNode(
-                    avaloniaTypes, objNode, context.Document);
+                return new XamlValueWithManipulationNode(
+                    objNode, objNode,
+                    new XamlSourceInfoValueManipulation(avaloniaTypes, objNode, context.Document));
             }
 
             return node;
@@ -62,21 +63,6 @@ namespace Avalonia.Markup.Xaml.Loader.CompilerExtensions.Transformers
                 codeGen.EmitCall(avaloniaTypes.XamlSourceInfoSetter);
 
                 return XamlILNodeEmitResult.Void(1);
-            }
-        }
-
-        private class XamlSourceInfoValueWithManipulationNode(
-            AvaloniaXamlIlWellKnownTypes avaloniaTypes,
-            XamlAstNewClrObjectNode objNode, string? document)
-            : XamlValueWithManipulationNode(objNode, objNode, new XamlSourceInfoValueManipulation(avaloniaTypes, objNode, document)),
-                IXamlAstImperativeNode, IXamlAstILEmitableNode, IXamlAstManipulationNode
-        {
-            public XamlILNodeEmitResult Emit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
-            {
-                context.Emit(Value, codeGen, objNode.Type.GetClrType());
-                context.Emit(Manipulation!, codeGen, null);
-
-                return XamlILNodeEmitResult.Void(0);
             }
         }
     }
