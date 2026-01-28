@@ -364,9 +364,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
                 }
 
                 var parsed = compiler.Parse(xaml, overrideType);
-                parsed.Document = document.BaseUri is { } uri
-                    ? uri.ToString()
-                    : "runtimexaml:" + parsedDocuments.Count;
+                parsed.Document = document.Document ?? ("runtimexaml:" + parsedDocuments.Count);
                 compiler.Transform(parsed);
 
                 var xamlName = GetSafeUriIdentifier(document.BaseUri)

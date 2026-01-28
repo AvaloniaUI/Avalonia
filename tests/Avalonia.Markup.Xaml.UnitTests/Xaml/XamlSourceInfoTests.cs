@@ -21,24 +21,27 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             CreateSourceInfo = true
         };
 
-        [Fact]
-        public void Root_UserControl_With_BaseUri_Gets_XamlSourceInfo_SourceUri_Set()
+        [Theory]
+        [InlineData(@"C:\TestFolder\TestFile.xaml")] // Windows-style path
+        [InlineData("/TestFolder/TestFile.xaml")] // Unix-style path
+        public void Root_UserControl_With_BaseUri_Gets_XamlSourceInfo_SourceUri_Set(string document)
         {
-            var documentUri = new Uri("file:///TestFolder/TestFile.xaml");
             var xamlDocument = new RuntimeXamlLoaderDocument(
-                documentUri,
                 """
                 <UserControl xmlns='https://github.com/avaloniaui'
                      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
                 </UserControl>
-                """);
+                """)
+            {
+                Document = document
+            };
 
             var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xamlDocument, s_configuration);
 
             var sourceInfo = XamlSourceInfo.GetXamlSourceInfo(userControl);
 
             Assert.NotNull(sourceInfo);
-            Assert.Equal(documentUri, sourceInfo.SourceUri);
+            Assert.Equal(document, sourceInfo.SourceUri!.AbsolutePath);
         }
 
         [Fact]
