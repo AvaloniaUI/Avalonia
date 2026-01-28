@@ -21,12 +21,14 @@ using Avalonia.X11.Glx;
 using Avalonia.X11.Vulkan;
 using Avalonia.X11.Screens;
 using static Avalonia.X11.XLib;
+using Avalonia.X11.DragNDrop;
 
 namespace Avalonia.X11
 {
     internal class AvaloniaX11Platform : IWindowingPlatform
     {
         private Lazy<KeyboardDevice> _keyboardDevice = new Lazy<KeyboardDevice>(() => new KeyboardDevice());
+        private readonly Dictionary<IntPtr, IX11InnerDropTarget> _dropTargets = new Dictionary<IntPtr, IX11InnerDropTarget>();
         public KeyboardDevice KeyboardDevice => _keyboardDevice.Value;
         public Dictionary<IntPtr, X11EventDispatcher.EventHandler> Windows { get; } = new ();
         public XI2Manager? XI2 { get; private set; }
@@ -90,8 +92,10 @@ namespace Avalonia.X11
                 .Bind<IPlatformSettings>().ToSingleton<DBusPlatformSettings>()
                 .Bind<IPlatformIconLoader>().ToConstant(new X11IconLoader())
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new LinuxMountedVolumeInfoProvider())
-                .Bind<IPlatformLifetimeEventsImpl>().ToConstant(new X11PlatformLifetimeEvents(this));
-            
+                .Bind<IPlatformLifetimeEventsImpl>().ToConstant(new X11PlatformLifetimeEvents(this))
+                .Bind<IPlatformDragSource>().ToConstant(new X11DragSource(this));
+
+
             Screens = X11Screens = new X11Screens(this);
             if (Info.XInputVersion != null)
             {
@@ -140,6 +144,27 @@ namespace Avalonia.X11
         public IWindowImpl CreateEmbeddableWindow()
         {
             throw new NotSupportedException();
+        }
+
+        public void RegisterDropTarget(IntPtr window, IX11InnerDropTarget dropTarget)
+        {
+            _dropTargets[window] = dropTarget;
+        }
+
+        public void UnregisterDropTarget(IntPtr window)
+        {
+            _dropTargets.Remove(window);
+        }
+
+        public IX11InnerDropTarget? GetDropTarget(IntPtr window)
+        {
+            _dropTargets.TryGetValue(window, out var dropTarget);
+            return dropTarget;
+        }
+
+        public bool IsAppWindow(IntPtr windowHandle)
+        {   
+            return _dropTargets.ContainsKey(windowHandle);            
         }
 
         private static bool EnableIme(X11PlatformOptions options)
