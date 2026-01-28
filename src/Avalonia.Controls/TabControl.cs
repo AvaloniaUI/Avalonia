@@ -1,4 +1,4 @@
-using System.Linq;
+using System.Diagnostics;
 using Avalonia.Collections;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Presenters;
@@ -7,7 +7,6 @@ using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
-using Avalonia.VisualTree;
 using Avalonia.Automation;
 using Avalonia.Controls.Metadata;
 using Avalonia.Reactive;
@@ -76,7 +75,7 @@ namespace Avalonia.Controls
             SelectionModeProperty.OverrideDefaultValue<TabControl>(SelectionMode.AlwaysSelected);
             ItemsPanelProperty.OverrideDefaultValue<TabControl>(DefaultPanel);
             AffectsMeasure<TabControl>(TabStripPlacementProperty);
-            SelectedItemProperty.Changed.AddClassHandler<TabControl>((x, e) => x.UpdateSelectedContent());
+            SelectedItemProperty.Changed.AddClassHandler<TabControl>((x, _) => x.UpdateSelectedContent());
             AutomationProperties.ControlTypeOverrideProperty.OverrideDefaultValue<TabControl>(AutomationControlType.Tab);
         }
 
@@ -171,10 +170,15 @@ namespace Avalonia.Controls
             {
                 tabItem.TabStripPlacement = TabStripPlacement;
             }
+        }
+
+        protected internal override void ContainerForItemPreparedOverride(Control container, object? item, int index)
+        {
+            base.ContainerForItemPreparedOverride(container, item, index);
             
             if (index == SelectedIndex)
             {
-                UpdateSelectedContent(element);
+                UpdateSelectedContent(container);
             }
         }
 
@@ -231,7 +235,24 @@ namespace Avalonia.Controls
                     }
 
                     _selectedItemSubscriptions = new CompositeDisposable(
-                        container.GetObservable(ContentControl.ContentProperty).Subscribe(v => SelectedContent = v),
+                        container.GetObservable(ContentControl.ContentProperty).Subscribe(content =>
+                        {
+                            var contentElement = content as StyledElement;
+                            var contentDataContext = contentElement?.DataContext;
+                            SelectedContent = content;
+
+                            // Reset the TabItem Content's DataContext since it gets set to TabControl's DataContext
+                            // when SelectedContent is set to TabItem's Content. Happens when the content's parent
+                            // is set to ContentPart (ContentPresenter) and the DataContext property is inherited.
+                            if (contentElement is not null &&
+                                contentElement.DataContext != contentDataContext)
+                            {
+                                // Unfortunately this forces the property to go from inherited to set with local
+                                // priority
+                                Debug.Assert(!contentElement.IsSet(DataContextProperty));
+                                contentElement.DataContext = contentDataContext;
+                            }
+                        }),
                         container.GetObservable(ContentControl.ContentTemplateProperty).Subscribe(v => SelectedContentTemplate = SelectContentTemplate(v)));
 
                     // Note how we fall back to our own ContentTemplate if the container doesn't specify one
