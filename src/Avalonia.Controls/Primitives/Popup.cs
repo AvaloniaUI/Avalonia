@@ -470,7 +470,7 @@ namespace Avalonia.Controls.Primitives
 
             if (InheritsTransform)
             {
-                TransformTrackingHelper.Track(placementTarget, PlacementTargetTransformChanged)
+                TransformTrackingHelper.Track(placementTarget, true, PlacementTargetTransformChanged)
                     .DisposeWith(handlerCleanup);
             }
             else
