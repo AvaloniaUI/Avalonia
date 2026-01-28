@@ -11,7 +11,7 @@ using XamlX.TypeSystem;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 {
-    internal class AvaloniaXamlIlDeferredResourceTransformer : IXamlAstTransformer
+    internal class AvaloniaXamlIlResourceTransformer : IXamlAstTransformer
     {
         public IXamlAstNode Transform(AstTransformationContext context, IXamlAstNode node)
         {
