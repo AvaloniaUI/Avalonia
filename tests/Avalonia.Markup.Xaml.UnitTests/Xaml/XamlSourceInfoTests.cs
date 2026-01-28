@@ -501,7 +501,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             Assert.Null(paddingSourceInfo);
 
             var homepageSourceInfo = XamlSourceInfo.GetXamlSourceInfo(resources, "homepage");
-            Assert.NotNull(homepageSourceInfo);
+            Assert.Null(homepageSourceInfo);
 
             var myBrushSourceInfo = XamlSourceInfo.GetXamlSourceInfo(resources, "MyBrush");
             Assert.Null(myBrushSourceInfo);
