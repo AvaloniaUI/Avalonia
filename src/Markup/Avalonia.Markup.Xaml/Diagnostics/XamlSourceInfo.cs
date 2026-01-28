@@ -9,8 +9,12 @@ namespace Avalonia.Markup.Xaml.Diagnostics
     /// Represents source location information for an element within a XAML or code file.
     /// </summary>
     // ReSharper disable once ClassNeverInstantiated.Global //This class is instantiated through the XAML compiler.
-    public record XamlSourceInfo : IEquatable<XamlSourceInfo>
+    public record XamlSourceInfo
     {
+        private static readonly AttachedProperty<XamlSourceInfo?> s_xamlSourceInfo =
+            AvaloniaProperty.RegisterAttached<AvaloniaObject, XamlSourceInfo?>(
+                "XamlSourceInfo", typeof(XamlSourceInfo));
+
         private static readonly ConditionalWeakTable<object, XamlSourceInfo?> s_sourceInfo = [];
         private static readonly ConditionalWeakTable<IResourceDictionary, Dictionary<object, XamlSourceInfo?>> s_keyedSourceInfo = [];
 
@@ -53,7 +57,17 @@ namespace Avalonia.Markup.Xaml.Diagnostics
         /// <param name="info">The XAML source information to associate with the object, or null to remove any existing association.</param>
         public static void SetXamlSourceInfo(object obj, XamlSourceInfo? info)
         {
-            s_sourceInfo.AddOrUpdate(obj, info);
+            if (obj is null)
+                throw new ArgumentNullException(nameof(obj));
+
+            if (obj is AvaloniaObject avaloniaObject)
+            {
+                avaloniaObject.SetValue(s_xamlSourceInfo, info);
+            }
+            else
+            {
+                s_sourceInfo.AddOrUpdate(obj, info);
+            }
         }
 
         /// <summary>
@@ -64,6 +78,9 @@ namespace Avalonia.Markup.Xaml.Diagnostics
         /// <param name="info">The XAML source information to associate with the object, or null to remove any existing association.</param>
         public static void SetXamlSourceInfo(IResourceDictionary dictionary, object key, XamlSourceInfo? info)
         {
+            if (dictionary is null)
+                throw new ArgumentNullException(nameof(dictionary));
+
             var dict = s_keyedSourceInfo.GetOrCreateValue(dictionary);
             if (info == null)
             {
@@ -83,9 +100,18 @@ namespace Avalonia.Markup.Xaml.Diagnostics
         /// <see langword="null"/> if no source information is available.</returns>
         public static XamlSourceInfo? GetXamlSourceInfo(object obj)
         {
-            s_sourceInfo.TryGetValue(obj, out var info);
+            if (obj is null)
+                throw new ArgumentNullException(nameof(obj));
 
-            return info;
+            if (obj is AvaloniaObject avaloniaObject)
+            {
+                return avaloniaObject.GetValue(s_xamlSourceInfo);
+            }
+            else
+            {
+                s_sourceInfo.TryGetValue(obj, out var info);
+                return info;
+            }
         }
 
         /// <summary>
@@ -97,6 +123,9 @@ namespace Avalonia.Markup.Xaml.Diagnostics
         /// <see langword="null"/> if no source information is available.</returns>
         public static XamlSourceInfo? GetXamlSourceInfo(IResourceDictionary dictionary, object key)
         {
+            if (dictionary is null)
+                throw new ArgumentNullException(nameof(dictionary));
+
             if (s_keyedSourceInfo.TryGetValue(dictionary, out var dict)
                 && dict.TryGetValue(key, out var info))
             {
