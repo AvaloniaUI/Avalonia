@@ -73,7 +73,7 @@
                   MinHeight="{TemplateBinding MinHeight}"
                   TemplatedControl.IsTemplateFocusTarget="True">
             <Grid Name="PART_Header"
-                  ColumnDefinitions="Auto, *">
+                  ColumnDefinitions="Auto, Auto">
               <Grid.Margin>
                 <MultiBinding Converter="{x:Static converters:TreeViewItemIndentConverter.Instance}">
                   <Binding Path="Level" RelativeSource="{RelativeSource TemplatedParent}" />
