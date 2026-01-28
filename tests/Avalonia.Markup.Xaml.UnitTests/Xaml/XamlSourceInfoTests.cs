@@ -41,7 +41,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             var sourceInfo = XamlSourceInfo.GetXamlSourceInfo(userControl);
 
             Assert.NotNull(sourceInfo);
-            Assert.Equal(document, sourceInfo.SourceUri!.AbsolutePath);
+            Assert.Equal(new UriBuilder{Path = document}.Uri, sourceInfo.SourceUri);
         }
 
         [Fact]
