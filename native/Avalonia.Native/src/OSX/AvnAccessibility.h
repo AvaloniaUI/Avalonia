@@ -7,7 +7,6 @@
 @protocol AvnAccessibility <NSAccessibility>
 @required
 - (void) raiseChildrenChanged;
-@optional
 - (void) raiseFocusChanged;
 - (void) raisePropertyChanged:(AvnAutomationProperty)property;
 @end

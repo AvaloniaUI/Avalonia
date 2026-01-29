@@ -62,9 +62,6 @@
       <Compile Include="../Avalonia.Base/Utilities/IdentifierParser.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
-      <Compile Include="../Avalonia.Base/Utilities/StringTokenizer.cs">
-        <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
-      </Compile>
       <Compile Include="../Avalonia.Base/Utilities/MathUtilities.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
