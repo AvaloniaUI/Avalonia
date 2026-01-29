@@ -136,6 +136,7 @@ public partial class WindowPage : UserControl
             Width = 200,
             Height = 200,
             Background = Brushes.Green,
+            SystemDecorations = SystemDecorations.None,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
             Content = new Border
             {
@@ -145,7 +146,7 @@ public partial class WindowPage : UserControl
             }
         };
 
-        backgroundWindow.PointerPressed += (_, _) => backgroundWindow.Close();
+        popup.PointerPressed += (_, _) => backgroundWindow.Close();
         backgroundWindow.Show(Window);
 
         popup.Open();

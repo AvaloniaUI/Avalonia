@@ -143,8 +143,8 @@ namespace Avalonia.Base.UnitTests
             public static readonly StyledProperty<string> StyledProperty =
                 AvaloniaProperty.Register<Class1, string>("Foo", "foodefault");
 
-            public static readonly DirectProperty<Class1, string> DirectProperty =
-                AvaloniaProperty.RegisterDirect<Class1, string>("Qux", _ => null, (o, v) => { });
+            public static readonly DirectProperty<Class1, string?> DirectProperty =
+                AvaloniaProperty.RegisterDirect<Class1, string?>("Qux", _ => null, (o, v) => { });
         }
 
         private class TestDipatcherImpl : IDispatcherImpl
@@ -157,16 +157,14 @@ namespace Avalonia.Base.UnitTests
 
             public bool CurrentThreadIsLoopThread { get; set; }
 
-#pragma warning disable 67
-            public event Action Signaled;
-            public event Action Timer;
+            public event Action? Signaled { add { } remove { } }
+            public event Action? Timer { add { } remove { } }
             public long Now => 0;
             public void UpdateTimer(long? dueTimeInMs)
             {
                 throw new NotImplementedException();
             }
             public void Signal() => throw new NotImplementedException();
-#pragma warning restore 67
 
             
         }

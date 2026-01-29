@@ -39,6 +39,7 @@
                        BorderThickness="0"
                        Foreground="{TemplateBinding Foreground}"
                        ItemTemplate="{TemplateBinding ItemTemplate}"
+                       ScrollViewer.IsScrollChainingEnabled="False"
                        ScrollViewer.HorizontalScrollBarVisibility="Auto"
                        ScrollViewer.VerticalScrollBarVisibility="Auto" />
             </Border>

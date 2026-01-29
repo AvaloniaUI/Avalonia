@@ -233,6 +233,7 @@ namespace TextTestApp
         }
 
         private GenericTextRunProperties? _textRunProperties;
+
         public GenericTextRunProperties TextRunProperties
         {
             get
@@ -241,9 +242,6 @@ namespace TextTestApp
             }
             set
             {
-                if (value == null)
-                    throw new ArgumentNullException(nameof(value));
-
                 _textRunProperties = value;
                 SetCurrentValue(FontFamilyProperty, value.Typeface.FontFamily);
                 SetCurrentValue(FontFeaturesProperty, value.FontFeatures);
@@ -338,7 +336,7 @@ namespace TextTestApp
             _textSource = new TextSource(this);
 
             RenderOptions.SetEdgeMode(this, EdgeMode.Aliased);
-            RenderOptions.SetTextRenderingMode(this, TextRenderingMode.SubpixelAntialias);
+            TextOptions.SetTextRenderingMode(this, TextRenderingMode.SubpixelAntialias);
         }
 
         private void InvalidateTextRunProperties()

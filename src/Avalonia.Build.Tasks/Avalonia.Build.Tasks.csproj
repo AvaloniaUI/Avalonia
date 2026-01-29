@@ -6,6 +6,7 @@
       <BuildOutputTargetFolder>tools</BuildOutputTargetFolder>
       <DefineConstants>$(DefineConstants);BUILDTASK;XAMLX_CECIL_INTERNAL;XAMLX_INTERNAL</DefineConstants>
       <CopyLocalLockFileAssemblies Condition="$(TargetFramework) == 'netstandard2.0'">true</CopyLocalLockFileAssemblies>
+      <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
       <NoWarn>$(NoWarn);NU1605;CS8632</NoWarn>
       <DebugType>embedded</DebugType>
       <IncludeSymbols>false</IncludeSymbols>
@@ -61,9 +62,6 @@
       <Compile Include="../Avalonia.Base/Utilities/IdentifierParser.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
-      <Compile Include="../Avalonia.Base/Utilities/StringTokenizer.cs">
-        <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
-      </Compile>
       <Compile Include="../Avalonia.Base/Utilities/MathUtilities.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
@@ -71,13 +69,13 @@
         <Link>Markup\AssetLoader.cs</Link>
       </Compile>
       <Compile Include="..\Avalonia.Base\Utilities\StringBuilderCache.cs" Link="Utilities\StringBuilderCache.cs" />
-      <Compile Include="..\Markup\Avalonia.Markup\Markup\Parsers\ArgumentListParser.cs">
+      <Compile Include="..\Avalonia.Base\Data\Core\Parsers\ArgumentListParser.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
       <Compile Include="../Avalonia.Base/Utilities/KeywordParser.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
-      <Compile Include="..\Markup\Avalonia.Markup\Markup\Parsers\BindingExpressionGrammar.cs">
+      <Compile Include="..\Avalonia.Base\Data\Core\Parsers\BindingExpressionGrammar.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
       <Compile Include="../Avalonia.Base/Utilities/StyleClassParser.cs">

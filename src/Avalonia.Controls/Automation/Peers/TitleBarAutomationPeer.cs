@@ -10,7 +10,7 @@ internal class TitleBarAutomationPeer : ControlAutomationPeer
     {
     }
 
-    protected override bool IsContentElementCore() => true;
+    protected override bool IsContentElementCore() => false;
 
     protected override string GetClassNameCore()
     {

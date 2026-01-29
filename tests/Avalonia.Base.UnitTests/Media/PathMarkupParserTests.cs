@@ -19,6 +19,7 @@ namespace Avalonia.Base.UnitTests.Media
             {
                 parser.Parse("M10 10");
 
+                Assert.NotNull(pathGeometry.Figures);
                 var figure = pathGeometry.Figures[0];
 
                 Assert.Equal(new Point(10, 10), figure.StartPoint);
@@ -34,8 +35,10 @@ namespace Avalonia.Base.UnitTests.Media
             {
                 parser.Parse("M0 0L10 10");
 
+                Assert.NotNull(pathGeometry.Figures);
                 var figure = pathGeometry.Figures[0];
 
+                Assert.NotNull(figure.Segments);
                 var segment = figure.Segments[0];
 
                 Assert.IsType<LineSegment>(segment);
@@ -55,6 +58,7 @@ namespace Avalonia.Base.UnitTests.Media
             {
                 parser.Parse("M0 0L10 10z");
 
+                Assert.NotNull(pathGeometry.Figures);
                 var figure = pathGeometry.Figures[0];
 
                 Assert.True(figure.IsClosed);
@@ -86,8 +90,10 @@ namespace Avalonia.Base.UnitTests.Media
             {
                 parser.Parse(pathData);
 
+                Assert.NotNull(pathGeometry.Figures);
                 var figure = pathGeometry.Figures[0];
 
+                Assert.NotNull(figure.Segments);
                 var segment = figure.Segments[0];
 
                 Assert.IsType<LineSegment>(segment);
@@ -118,8 +124,10 @@ namespace Avalonia.Base.UnitTests.Media
             {
                 parser.Parse(pathData);
 
+                Assert.NotNull(pathGeometry.Figures);
                 var figure = pathGeometry.Figures[0];
 
+                Assert.NotNull(figure.Segments);
                 var segment = figure.Segments[0];
 
                 Assert.IsType<LineSegment>(segment);
@@ -147,6 +155,7 @@ namespace Avalonia.Base.UnitTests.Media
             {
                 parser.Parse("M -1.01725E-005 -1.01725e-005");
 
+                Assert.NotNull(pathGeometry.Figures);
                 var figure = pathGeometry.Figures[0];
 
                 Assert.Equal(
@@ -281,6 +290,7 @@ namespace Avalonia.Base.UnitTests.Media
             {
                 parser.Parse("M10,10L100,100Z m10,10");
 
+                Assert.NotNull(pathGeometry.Figures);
                 Assert.Equal(2, pathGeometry.Figures.Count);
 
                 var figure = pathGeometry.Figures[0];
@@ -289,6 +299,7 @@ namespace Avalonia.Base.UnitTests.Media
 
                 Assert.Equal(true, figure.IsClosed);
 
+                Assert.NotNull(figure.Segments);
                 Assert.Equal(new Point(100, 100), ((LineSegment)figure.Segments[0]).Point);
 
                 figure = pathGeometry.Figures[1];
@@ -306,6 +317,7 @@ namespace Avalonia.Base.UnitTests.Media
             {
                 parser.Parse("a.898.898 0 01.27.188");
 
+                Assert.NotNull(pathGeometry.Figures);
                 var figure = pathGeometry.Figures[0];
 
                 var segments = figure.Segments;
@@ -328,6 +340,7 @@ namespace Avalonia.Base.UnitTests.Media
             using var parser = new PathMarkupParser(context);
             parser.Parse("M50,50z l -5,-5");
 
+            Assert.NotNull(pathGeometry.Figures);
             Assert.Equal(2, pathGeometry.Figures.Count);
 
             var firstFigure = pathGeometry.Figures[0];

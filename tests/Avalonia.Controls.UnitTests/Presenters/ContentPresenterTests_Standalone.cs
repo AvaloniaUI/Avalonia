@@ -109,7 +109,8 @@ namespace Avalonia.Controls.UnitTests.Presenters
             (contentControl as ISetLogicalParent).SetParent(parentMock.Object);
 
             contentControl.ApplyTemplate();
-            var target = contentControl.Presenter as ContentPresenter;
+            var target = contentControl.Presenter;
+            Assert.NotNull(target);
 
             contentControl.Content = "foo";
 
@@ -199,8 +200,8 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             logicalChildren = target.GetLogicalChildren();
 
-            Assert.Single(logicalChildren);
-            Assert.NotEqual(foo, logicalChildren.First());
+            var logicalChild = Assert.Single(logicalChildren);
+            Assert.NotEqual(foo, logicalChild);
         }
 
         [Fact]

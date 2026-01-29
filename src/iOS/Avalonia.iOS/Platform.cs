@@ -52,6 +52,7 @@ namespace Avalonia
             return builder
                 .UseStandardRuntimePlatformSubsystem()
                 .UseWindowingSubsystem(() => iOS.Platform.Register(appDelegate), "iOS")
+                .UseHarfBuzz()
                 .UseSkia();
         }
 

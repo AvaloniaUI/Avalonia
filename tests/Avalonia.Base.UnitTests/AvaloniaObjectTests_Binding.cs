@@ -985,7 +985,7 @@ namespace Avalonia.Base.UnitTests
             {
                 target.Bind(Class1.QuxProperty, source);
 
-                await Task.Run(() => source.OnNext(6.7));
+                await Task.Run(() => source.OnNext(6.7), TestContext.Current.CancellationToken);
             }
         }
 
@@ -1297,25 +1297,6 @@ namespace Avalonia.Base.UnitTests
         {
             public static readonly StyledProperty<string> BarProperty =
                 AvaloniaProperty.Register<Class2, string>("Bar", "bardefault");
-        }
-
-        private class TestOneTimeBinding : IBinding
-        {
-            private IObservable<object> _source;
-
-            public TestOneTimeBinding(IObservable<object> source)
-            {
-                _source = source;
-            }
-
-            public InstancedBinding Initiate(
-                AvaloniaObject target,
-                AvaloniaProperty? targetProperty,
-                object? anchor = null,
-                bool enableDataValidation = false)
-            {
-                return InstancedBinding.OneTime(_source);
-            }
         }
 
         private class TestStackOverflowViewModel : INotifyPropertyChanged

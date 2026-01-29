@@ -11,8 +11,8 @@ public class FilePickerOpenOptions : PickerOptions
     /// Gets or sets the file type that should be preselected when the dialog is opened.
     /// </summary>
     /// <remarks>
-    /// This value should reference one of the items in <see cref="FileTypeChoices"/>.
-    /// If not set, the first file type in <see cref="FileTypeChoices"/> may be selected by default.
+    /// This value should reference one of the items in <see cref="FileTypeFilter"/>.
+    /// If not set, the first file type in <see cref="FileTypeFilter"/> may be selected by default.
     /// </remarks>
     public FilePickerFileType? SuggestedFileType { get; set; }
 

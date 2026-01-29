@@ -3,18 +3,16 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection.Emit;
-using Avalonia.Markup.Parsers;
+using Avalonia.Data.Core.Parsers;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
+using XamlX;
 using XamlX.Ast;
+using XamlX.Emit;
+using XamlX.IL;
 using XamlX.Transform;
 using XamlX.Transform.Transformers;
 using XamlX.TypeSystem;
-using XamlX;
-using XamlX.Emit;
-using XamlX.IL;
-
 using XamlIlEmitContext = XamlX.Emit.XamlEmitContextWithLocals<XamlX.IL.IXamlILEmitter, XamlX.IL.XamlILNodeEmitResult>;
-using System.Xml.Linq;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 {
@@ -1015,11 +1013,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 var intType = context.Configuration.TypeSystem.GetType("System.Int32");
                 var types = context.GetAvaloniaTypes();
 
-                // We're calling the CompiledBindingPathBuilder(int apiVersion) with an apiVersion 
-                // of 1 to indicate that we don't want TemplatedParent compatibility hacks enabled.
-                codeGen
-                    .Ldc_I4(1)
-                    .Newobj(types.CompiledBindingPathBuilder.GetConstructor(new() { intType }));
+                codeGen.Newobj(types.CompiledBindingPathBuilder.GetConstructor());
 
                 foreach (var transform in _transformElements)
                 {

@@ -142,7 +142,7 @@ namespace Avalonia.Controls.UnitTests
 
                 // The user has resized the window, so we can no longer auto-size.
                 var target = new TestTopLevel(impl.Object);
-                impl.Object.Resized(new Size(100, 200), WindowResizeReason.Unspecified);
+                impl.Object.Resized!(new Size(100, 200), WindowResizeReason.Unspecified);
 
                 Assert.Equal(100, target.Width);
                 Assert.Equal(200, target.Height);
@@ -160,7 +160,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TestTopLevel(impl.Object);
                 target.Closed += (s, e) => raised = true;
 
-                impl.Object.Closed();
+                impl.Object.Closed!();
 
                 Assert.True(raised);
             }
@@ -184,7 +184,7 @@ namespace Avalonia.Controls.UnitTests
                     ++raised;
                 };
 
-                impl.Object.Closed();
+                impl.Object.Closed!();
 
                 Assert.Equal(1, raised);
             }
@@ -215,7 +215,7 @@ namespace Avalonia.Controls.UnitTests
                     PhysicalKey.A,
                     "a");
 
-                impl.Object.Input(input);
+                impl.Object.Input!(input);
 
                 inputManagerMock.Verify(x => x.ProcessInput(input));
             }
@@ -234,7 +234,7 @@ namespace Avalonia.Controls.UnitTests
                 target.Content = child;
                 target.ApplyTemplate();
 
-                Assert.Throws<InvalidOperationException>(() => target.Presenter.ApplyTemplate());
+                Assert.Throws<InvalidOperationException>(() => target.Presenter!.ApplyTemplate());
             }
         }
 
@@ -248,7 +248,7 @@ namespace Avalonia.Controls.UnitTests
                 var raised = false;
 
                 target.ResourcesChanged += (_, __) => raised = true;
-                Application.Current.Resources.Add("foo", "bar");
+                Application.Current!.Resources.Add("foo", "bar");
 
                 Assert.True(raised);
             }
@@ -264,7 +264,7 @@ namespace Avalonia.Controls.UnitTests
                 var layoutManager = new Mock<ILayoutManager>();
                 var target = new TestTopLevel(impl.Object, layoutManager.Object);
 
-                impl.Object.Closed();
+                impl.Object.Closed!();
 
                 layoutManager.Verify(x => x.Dispose());
             }
@@ -297,12 +297,13 @@ namespace Avalonia.Controls.UnitTests
                     }
                 };
 
-                Application.Current.Styles.Add(style);
+                var application = Application.Current!;
+                application.Styles.Add(style);
                 target.LayoutManager.ExecuteInitialLayoutPass();
 
                 Assert.Equal(new Thickness(2), child.BorderThickness);
 
-                Application.Current.Styles.Remove(style);
+                application.Styles.Remove(style);
 
                 Assert.Equal(new Thickness(0), child.BorderThickness);
             }
@@ -333,7 +334,7 @@ namespace Avalonia.Controls.UnitTests
             private readonly ILayoutManager _layoutManager;
             public bool IsClosed { get; private set; }
 
-            public TestTopLevel(ITopLevelImpl impl, ILayoutManager layoutManager = null)
+            public TestTopLevel(ITopLevelImpl impl, ILayoutManager? layoutManager = null)
                 : base(impl)
             {
                 _layoutManager = layoutManager ?? new LayoutManager(this);

@@ -300,9 +300,9 @@ namespace Avalonia.Controls.UnitTests
             windowImpl.Setup(x => x.DesktopScaling).Returns(1);
             windowImpl.Setup(x => x.RenderScaling).Returns(1);
 
-            var screen1 = new Mock<Screen>(1.75, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 966)), true);
+            var screen1 = new MockScreen(1.75, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 966)), true);
             var screens = new Mock<IScreenImpl>();
-            screens.Setup(x => x.ScreenFromWindow(It.IsAny<IWindowBaseImpl>())).Returns(screen1.Object);
+            screens.Setup(x => x.ScreenFromWindow(It.IsAny<IWindowBaseImpl>())).Returns(screen1);
             windowImpl.Setup(x => x.TryGetFeature(It.Is<Type>(t => t == typeof(IScreenImpl)))).Returns(screens.Object);
             
             var services = TestServices.StyledWindow.With(
@@ -317,7 +317,7 @@ namespace Avalonia.Controls.UnitTests
 
                 window.Show();
                 Assert.Equal(1, lifetime.Windows.Count);
-                windowImpl.Object.Closed();
+                windowImpl.Object.Closed!();
 
                 Assert.Empty(lifetime.Windows);
             }
@@ -443,7 +443,7 @@ namespace Avalonia.Controls.UnitTests
                 lifetime.Exit += (_, _) => Assert.Fail("lifetime.Exit was called.");
                 Dispatcher.UIThread.ShutdownStarted += UiThreadOnShutdownStarted;
 
-                static void UiThreadOnShutdownStarted(object sender, EventArgs e)
+                static void UiThreadOnShutdownStarted(object? sender, EventArgs e)
                 {
                     Assert.Fail("Dispatcher.UIThread.ShutdownStarted was called.");
                 }

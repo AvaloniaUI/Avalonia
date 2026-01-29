@@ -21,6 +21,7 @@ using Avalonia.UnitTests;
 using Avalonia.Utilities;
 using SixLabors.ImageSharp.PixelFormats;
 using Image = SixLabors.ImageSharp.Image;
+using Avalonia.Harfbuzz;
 using Avalonia.Skia;
 
 namespace Avalonia.Skia.RenderTests;
@@ -38,12 +39,15 @@ static class TestRenderHelper
             .ToConstant(s_dispatcherImpl);
         
         AvaloniaLocator.CurrentMutable.Bind<IAssetLoader>().ToConstant(new StandardAssetLoader());
+        AvaloniaLocator.CurrentMutable.Bind<ITextShaperImpl>().ToConstant(new HarfBuzzTextShaper());
     }
     
     
     public static Task RenderToFile(Control target, string path, bool immediate, double dpi = 96)
     {
         var dir = Path.GetDirectoryName(path);
+        Assert.NotNull(dir);
+
         if (!Directory.Exists(dir)) 
             Directory.CreateDirectory(dir);
         
@@ -119,24 +123,23 @@ static class TestRenderHelper
     {
         var path = Directory.GetCurrentDirectory();
 
-        while (path.Length > 0 && Path.GetFileName(path) != "tests")
+        while (!string.IsNullOrEmpty(path) && Path.GetFileName(path) != "tests")
         {
             path = Path.GetDirectoryName(path);
         }
 
+        Assert.NotNull(path);
         return path;
     }
     
     private class TestDispatcherImpl : IDispatcherImpl
     {
-        public bool CurrentThreadIsLoopThread => MainThread.ManagedThreadId == Thread.CurrentThread.ManagedThreadId;
+        public bool CurrentThreadIsLoopThread => MainThread?.ManagedThreadId == Thread.CurrentThread.ManagedThreadId;
 
-        public Thread MainThread { get; set; }
+        public Thread? MainThread { get; set; }
 
-#pragma warning disable 67
-        public event Action Signaled;
-        public event Action Timer;
-#pragma warning restore 67
+        public event Action? Signaled { add { } remove { } }
+        public event Action? Timer { add { } remove { } }
 
         public void Signal()
         {

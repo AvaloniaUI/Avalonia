@@ -50,6 +50,7 @@ internal class ImmediateRenderer
             transform = Matrix.CreateTranslation(bounds.Position);
         }
 
+        using (visual.TextOptions != default ? context.PushTextOptions(visual.TextOptions) : default(DrawingContext.PushedState?))
         using (visual.RenderOptions != default ? context.PushRenderOptions(visual.RenderOptions) : default(DrawingContext.PushedState?))
         using (context.PushTransform(transform))
         using (visual.HasMirrorTransform ? context.PushTransform(new Matrix(-1.0, 0.0, 0.0, 1.0, visual.Bounds.Width, 0)) : default(DrawingContext.PushedState?))

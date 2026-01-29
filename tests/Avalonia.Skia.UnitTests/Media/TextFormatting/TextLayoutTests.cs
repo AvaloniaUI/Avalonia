@@ -67,6 +67,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal("1 ", actual);
 
+                Assert.NotNull(textRun.Properties);
                 Assert.Equal(foreground, textRun.Properties.ForegroundBrush);
             }
         }
@@ -236,6 +237,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal("01", actual);
 
+                Assert.NotNull(textRun.Properties);
                 Assert.Equal(foreground, textRun.Properties.ForegroundBrush);
             }
         }
@@ -272,6 +274,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal("89", actual);
 
+                Assert.NotNull(textRun.Properties);
                 Assert.Equal(foreground, textRun.Properties.ForegroundBrush);
             }
         }
@@ -304,6 +307,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(1, textRun.Length);
 
+                Assert.NotNull(textRun.Properties);
                 Assert.Equal(foreground, textRun.Properties.ForegroundBrush);
             }
         }
@@ -342,6 +346,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal("😄", actual);
 
+                Assert.NotNull(textRun.Properties);
                 Assert.Equal(foreground, textRun.Properties.ForegroundBrush);
             }
         }
@@ -435,9 +440,9 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     maxHeight: 125,
                     textStyleOverrides: spans);
 
-                Assert.Equal(foreground, layout.TextLines[0].TextRuns[1].Properties.ForegroundBrush);
-                Assert.Equal(foreground, layout.TextLines[1].TextRuns[0].Properties.ForegroundBrush);
-                Assert.Equal(foreground, layout.TextLines[2].TextRuns[0].Properties.ForegroundBrush);
+                Assert.Equal(foreground, layout.TextLines[0].TextRuns[1].Properties?.ForegroundBrush);
+                Assert.Equal(foreground, layout.TextLines[1].TextRuns[0].Properties?.ForegroundBrush);
+                Assert.Equal(foreground, layout.TextLines[2].TextRuns[0].Properties?.ForegroundBrush);
             }
         }
 
@@ -566,7 +571,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(7, textRun.Length);
 
-                var replacementGlyph = Typeface.Default.GlyphTypeface.GetGlyph(Codepoint.ReplacementCodepoint);
+                var replacementGlyph = Typeface.Default.GlyphTypeface.CharacterToGlyphMap[Codepoint.ReplacementCodepoint];
 
                 foreach (var glyphInfo in textRun.GlyphRun.GlyphInfos)
                 {
@@ -865,7 +870,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     Brushes.Black,
                     flowDirection: FlowDirection.RightToLeft);
 
-                var firstRun = layout.TextLines[0].TextRuns[0] as ShapedTextRun;
+                var firstRun = Assert.IsType<ShapedTextRun>(layout.TextLines[0].TextRuns[0]);
 
                 var hit = layout.HitTestPoint(new Point());
 
@@ -891,7 +896,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     currentX += advance;
                 }
 
-                var secondRun = layout.TextLines[0].TextRuns[1] as ShapedTextRun;
+                var secondRun = Assert.IsType<ShapedTextRun>(layout.TextLines[0].TextRuns[1]);
 
                 hit = layout.HitTestPoint(new Point(firstRun.Size.Width, 0));
 
@@ -1189,7 +1194,12 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         {
             using (Start())
             {
-                var typeFace = new Typeface("Courier New");
+                const string monospaceFont = "resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Noto Mono";
+
+                var typeFace = new Typeface(monospaceFont);
+
+                var glyphTypeface = typeFace.GlyphTypeface;
+
                 var textLayout0 = new TextLayout("aaaa", typeFace, 12.0, Brushes.White);
                 Assert.Equal(textLayout0.WidthIncludingTrailingWhitespace, textLayout0.Width);
 
@@ -1217,7 +1227,6 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         {
             var disposable = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface
                 .With(renderInterface: new PlatformRenderInterface(null),
-                    textShaperImpl: new TextShaperImpl(),
                     fontManagerImpl: new CustomFontManagerImpl()));
 
             return disposable;

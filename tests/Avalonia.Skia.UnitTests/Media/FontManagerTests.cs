@@ -95,18 +95,20 @@ namespace Avalonia.Skia.UnitTests.Media
         [Fact]
         public void Should_Only_Try_To_Create_GlyphTypeface_Once()
         {
-            var fontManagerImpl = new HeadlessFontManagerStub();
+            var fontManagerImpl = new TestFontManager();
 
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: fontManagerImpl)))
             {
                 Assert.True(FontManager.Current.TryGetGlyphTypeface(Typeface.Default, out _));
+
+                var countBefore = fontManagerImpl.TryCreateGlyphTypefaceCount;
 
                 for (int i = 0; i < 10; i++)
                 {
                     FontManager.Current.TryGetGlyphTypeface(new Typeface("Unknown"), out _);
                 }
 
-                Assert.Equal(fontManagerImpl.TryCreateGlyphTypefaceCount, 2);
+                Assert.Equal(countBefore + 1, fontManagerImpl.TryCreateGlyphTypefaceCount);
             }
         }
 
@@ -143,7 +145,7 @@ namespace Avalonia.Skia.UnitTests.Media
                     var result = FontManager.Current.TryGetGlyphTypeface(Typeface.Default, out var glyphTypeface);
 
                     Assert.True(result);
-
+                    Assert.NotNull(glyphTypeface);
                     Assert.Equal("Noto Mono", glyphTypeface.FamilyName);
                 }
             }
@@ -226,7 +228,7 @@ namespace Avalonia.Skia.UnitTests.Media
         [Theory]
         [InlineData("NotFound, Unknown", null)] // system fonts
         [InlineData("/#NotFound, /#Unknown", "avares://some/path")] // embedded fonts
-        public void Should_Match_Character_With_Fallbacks(string familyName, string baseUri)
+        public void Should_Match_Character_With_Fallbacks(string familyName, string? baseUri)
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
             {
@@ -311,13 +313,18 @@ namespace Avalonia.Skia.UnitTests.Media
                         new Uri(s_fontUri, UriKind.Absolute)));
 
                     Assert.True(FontManager.Current.TryGetGlyphTypeface(new Typeface("Noto Mono", FontStyle.Italic, FontWeight.Bold),
-                        out var glyphTypeface));
+                        out var italicBoldTypeface));
 
-                    Assert.Equal("Noto Mono", glyphTypeface.FamilyName);
+                    Assert.Equal("Noto Mono", italicBoldTypeface.FamilyName);
 
-                    Assert.Equal(FontWeight.Bold, glyphTypeface.Weight);
+                    Assert.True(italicBoldTypeface.PlatformTypeface.FontSimulations.HasFlag(FontSimulations.Bold));
 
-                    Assert.Equal(FontStyle.Italic, glyphTypeface.Style);
+                    Assert.True(italicBoldTypeface.PlatformTypeface.FontSimulations.HasFlag(FontSimulations.Oblique));
+
+                    Assert.True(FontManager.Current.TryGetGlyphTypeface(new Typeface("Noto Mono", FontStyle.Normal, FontWeight.Normal),
+                       out var regularTypeface));
+
+                    Assert.NotEqual(((SkiaTypeface)regularTypeface.PlatformTypeface).SKTypeface, ((SkiaTypeface)italicBoldTypeface.PlatformTypeface).SKTypeface);
                 }
             }
         }
@@ -351,7 +358,7 @@ namespace Avalonia.Skia.UnitTests.Media
 
                     Assert.Equal("Inter", glyphTypeface.FamilyName);
 
-                    var features = ((IGlyphTypeface2)glyphTypeface).SupportedFeatures;
+                    var features = glyphTypeface.SupportedFeatures;
 
                     Assert.NotEmpty(features);
                 }
@@ -379,7 +386,7 @@ namespace Avalonia.Skia.UnitTests.Media
                     var result = FontManager.Current.TryGetGlyphTypeface(new Typeface("Abc, Segoe UI"), out var glyphTypeface);
 
                     Assert.True(result);
-
+                    Assert.NotNull(glyphTypeface);
                     Assert.Equal("Inter", glyphTypeface.FamilyName);
                 }
             }
@@ -469,7 +476,7 @@ namespace Avalonia.Skia.UnitTests.Media
 
                     Assert.Equal(FontStyle.Normal, regularTypeface.Style);
 
-                    Assert.NotEqual(((GlyphTypefaceImpl)italicTypeface.GlyphTypeface).SKTypeface, ((GlyphTypefaceImpl)regularTypeface.GlyphTypeface).SKTypeface);
+                    Assert.NotEqual(((SkiaTypeface)italicTypeface.GlyphTypeface.PlatformTypeface).SKTypeface, ((SkiaTypeface)regularTypeface.GlyphTypeface.PlatformTypeface).SKTypeface);
                 }
             }
         }
