@@ -32,9 +32,7 @@ internal class NativeMenuBarPresenter : Menu
                 [!MenuItem.CommandParameterProperty] =
                     nativeItem.GetObservable(NativeMenuItem.CommandParameterProperty).ToBinding(),
                 [!MenuItem.InputGestureProperty] = nativeItem.GetObservable(NativeMenuItem.GestureProperty).ToBinding(),
-                [!MenuItem.ToggleTypeProperty] = nativeItem.GetObservable(NativeMenuItem.ToggleTypeProperty)
-                    // TODO12 remove NativeMenuItemToggleType
-                    .Select(v => (MenuItemToggleType)v).ToBinding(),
+                [!MenuItem.ToggleTypeProperty] = nativeItem.GetObservable(NativeMenuItem.ToggleTypeProperty).ToBinding(),
                 [!ToolTip.TipProperty] =
                     nativeItem.GetObservable(NativeMenuItem.ToolTipProperty).ToBinding(),
             };
