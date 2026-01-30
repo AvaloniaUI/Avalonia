@@ -47,6 +47,7 @@ namespace Avalonia.Automation.Peers
         Table,
         TitleBar,
         Separator,
+        Expander,
     }
 
     public enum AutomationLandmarkType
@@ -476,6 +477,12 @@ namespace Avalonia.Automation.Peers
         public bool ShowContextMenu() => ShowContextMenuCore();
 
         /// <summary>
+        /// Gets the current live setting that is associated with this this automation peer.
+        /// </summary>
+        /// <returns>The live setting to use for automation.</returns>
+        public AutomationLiveSetting GetLiveSetting() => GetLiveSettingCore();
+
+        /// <summary>
         /// Tries to get a provider of the specified type from the peer.
         /// </summary>
         /// <typeparam name="T">The provider type.</typeparam>
@@ -536,6 +543,7 @@ namespace Avalonia.Automation.Peers
                 AutomationControlType.SplitButton => "split button",
                 AutomationControlType.HeaderItem => "header item",
                 AutomationControlType.TitleBar => "title bar",
+                AutomationControlType.Expander => "group",
                 AutomationControlType.None => (GetLandmarkType()?.ToString() ?? controlType.ToString()).ToLowerInvariant(),
                 _ => controlType.ToString().ToLowerInvariant(),
             };
@@ -563,6 +571,7 @@ namespace Avalonia.Automation.Peers
         protected virtual bool IsOffscreenCore() => false;
         protected abstract void SetFocusCore();
         protected abstract bool ShowContextMenuCore();
+        protected virtual AutomationLiveSetting GetLiveSettingCore() => AutomationLiveSetting.Off;
 
         protected virtual AutomationControlType GetControlTypeOverrideCore()
         {

@@ -300,6 +300,13 @@ internal enum UiaHeadingLevel
     Level9
 };
 
+internal enum UiaLiveSetting
+{
+    Off = 0,
+    Polite,
+    Assertive,
+};
+
 #if NET8_0_OR_GREATER
 [GeneratedComInterface]
 #else
