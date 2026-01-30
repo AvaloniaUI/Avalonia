@@ -27,8 +27,9 @@ internal class AngleD3DTextureFeature  : IGlPlatformSurfaceRenderTargetFactory
             _target = target;
         }
 
-        public override IGlPlatformSurfaceRenderingSession BeginDrawCore()
+        public override IGlPlatformSurfaceRenderingSession BeginDrawCore(PixelSize? expectedPixelSize)
         {
+            // TODO: use expectedPixelSize
             var success = false;
             var contextLock = Context.EnsureCurrent();
             IDirect3D11TextureRenderTargetRenderSession? session = null;

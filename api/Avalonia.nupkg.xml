@@ -21,6 +21,18 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Platform.IRenderTarget2</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Platform.IRenderTargetWithProperties</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:Avalonia.Utilities.StringTokenizer</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
@@ -30,6 +42,18 @@
     <Target>T:Avalonia.Controls.Primitives.IScrollable</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.OpenGL.Surfaces.IGlPlatformSurfaceRenderTarget2</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.OpenGL.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.OpenGL.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.OpenGL.Surfaces.IGlPlatformSurfaceRenderTargetWithCorruptionInfo</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.OpenGL.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.OpenGL.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
@@ -57,6 +81,18 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Platform.IRenderTarget2</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Platform.IRenderTargetWithProperties</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:Avalonia.Utilities.StringTokenizer</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
@@ -66,6 +102,18 @@
     <Target>T:Avalonia.Controls.Primitives.IScrollable</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.OpenGL.Surfaces.IGlPlatformSurfaceRenderTarget2</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.OpenGL.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.OpenGL.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.OpenGL.Surfaces.IGlPlatformSurfaceRenderTargetWithCorruptionInfo</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.OpenGL.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.OpenGL.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
@@ -354,6 +402,24 @@
     <Target>M:Avalonia.Platform.Screen.set_WorkingArea(Avalonia.PixelRect)</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.OpenGL.Egl.EglPlatformSurfaceRenderTargetBase.BeginDraw</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.OpenGL.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.OpenGL.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.OpenGL.Egl.EglPlatformSurfaceRenderTargetBase.BeginDrawCore</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.OpenGL.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.OpenGL.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.OpenGL.Surfaces.IGlPlatformSurfaceRenderTarget.BeginDraw</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.OpenGL.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.OpenGL.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
@@ -675,6 +741,24 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.OpenGL.Egl.EglPlatformSurfaceRenderTargetBase.BeginDraw</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.OpenGL.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.OpenGL.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.OpenGL.Egl.EglPlatformSurfaceRenderTargetBase.BeginDrawCore</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.OpenGL.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.OpenGL.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.OpenGL.Surfaces.IGlPlatformSurfaceRenderTarget.BeginDraw</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.OpenGL.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.OpenGL.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>F:Avalonia.Media.Fonts.FontCollectionBase._glyphTypefaceCache</Target>
     <Left>baseline/Avalonia/lib/netstandard2.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/netstandard2.0/Avalonia.Base.dll</Right>
@@ -716,6 +800,18 @@
     <Right>target/netstandard2.0/Avalonia.Base.dll</Right>
   </Suppression>
   <Suppression>
+    <DiagnosticId>CP0005</DiagnosticId>
+    <Target>M:Avalonia.OpenGL.Egl.EglPlatformSurfaceRenderTargetBase.BeginDrawCore(System.Nullable{Avalonia.PixelSize})</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.OpenGL.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.OpenGL.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0005</DiagnosticId>
+    <Target>M:Avalonia.OpenGL.Egl.EglPlatformSurfaceRenderTargetBase.BeginDrawCore(System.Nullable{Avalonia.PixelSize})</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.OpenGL.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.OpenGL.dll</Right>
+  </Suppression>
+  <Suppression>
     <DiagnosticId>CP0006</DiagnosticId>
     <Target>M:Avalonia.Input.IKeyboardNavigationHandler.Move(Avalonia.Input.IInputElement,Avalonia.Input.NavigationDirection,Avalonia.Input.KeyModifiers,System.Nullable{Avalonia.Input.KeyDeviceType})</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
@@ -768,6 +864,30 @@
     <Target>M:Avalonia.Platform.IGeometryContext.QuadraticBezierTo(Avalonia.Point,Avalonia.Point,System.Boolean)</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>M:Avalonia.Platform.IRenderTarget.CreateDrawingContext(Avalonia.PixelSize,Avalonia.Platform.RenderTargetDrawingContextProperties@)</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>P:Avalonia.Platform.IRenderTarget.Properties</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>M:Avalonia.OpenGL.Surfaces.IGlPlatformSurfaceRenderTarget.BeginDraw(System.Nullable{Avalonia.PixelSize})</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.OpenGL.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.OpenGL.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>P:Avalonia.OpenGL.Surfaces.IGlPlatformSurfaceRenderTarget.IsCorrupted</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.OpenGL.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.OpenGL.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0006</DiagnosticId>
@@ -915,7 +1035,19 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0006</DiagnosticId>
+    <Target>M:Avalonia.Platform.IRenderTarget.CreateDrawingContext(Avalonia.PixelSize,Avalonia.Platform.RenderTargetDrawingContextProperties@)</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
     <Target>M:Avalonia.Platform.Storage.IStorageProvider.SaveFilePickerWithResultAsync(Avalonia.Platform.Storage.FilePickerSaveOptions)</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>P:Avalonia.Platform.IRenderTarget.Properties</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
   </Suppression>
@@ -933,7 +1065,19 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0006</DiagnosticId>
+    <Target>M:Avalonia.OpenGL.Surfaces.IGlPlatformSurfaceRenderTarget.BeginDraw(System.Nullable{Avalonia.PixelSize})</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.OpenGL.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.OpenGL.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
     <Target>P:Avalonia.OpenGL.IGlExternalImageTexture.TextureType</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.OpenGL.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.OpenGL.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>P:Avalonia.OpenGL.Surfaces.IGlPlatformSurfaceRenderTarget.IsCorrupted</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.OpenGL.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.OpenGL.dll</Right>
   </Suppression>
@@ -1005,9 +1149,21 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:Avalonia.OpenGL.Egl.EglPlatformSurfaceRenderTargetBase</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.OpenGL.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.OpenGL.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
     <Target>T:Avalonia.Media.StreamGeometryContext</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:Avalonia.OpenGL.Egl.EglPlatformSurfaceRenderTargetBase</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.OpenGL.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.OpenGL.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0009</DiagnosticId>

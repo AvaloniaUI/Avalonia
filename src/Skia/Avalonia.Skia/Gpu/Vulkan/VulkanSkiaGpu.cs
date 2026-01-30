@@ -2,12 +2,11 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Vulkan;
 using Avalonia.Platform;
-using Avalonia.Rendering;
 using SkiaSharp;
 
 namespace Avalonia.Skia.Vulkan;
 
-internal class VulkanSkiaGpu : ISkiaGpuWithPlatformGraphicsContext
+internal class VulkanSkiaGpu : ISkiaGpu
 {
     private readonly VulkanSkiaExternalObjectsFeature? _externalObjects;
     public IVulkanPlatformGraphicsContext Vulkan { get; private set; }

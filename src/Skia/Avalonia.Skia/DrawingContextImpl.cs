@@ -170,8 +170,7 @@ namespace Avalonia.Skia
                 public ISkiaSharpPlatformGraphicsApiLease? TryLeasePlatformGraphicsApi()
                 {
                     CheckLease();
-                    if (_context._gpu is ISkiaGpuWithPlatformGraphicsContext gpu &&
-                        gpu.PlatformGraphicsContext is { } context)
+                    if (_context._gpu?.PlatformGraphicsContext is { } context)
                         return new PlatformApiLease(this, context);
                     return null;
                 }
