@@ -527,6 +527,7 @@ namespace Avalonia
             if (_visualRoot.Renderer is IRendererWithCompositor compositingRenderer)
             {
                 AttachToCompositor(compositingRenderer.Compositor);
+                InvalidateCompositionTransitions();
             }
             InvalidateMirrorTransform();
             UpdateIsEffectivelyVisible(_visualParent.IsEffectivelyVisible);

@@ -5,14 +5,13 @@
   <TabControl>
     <TabItem Header="Implicit animations">
       <StackPanel>
-        <StackPanel.Resources>
-          <ImplicitAnimationCollection x:Key="ImplAnimations">
-            <OffsetCompositionAnimation Duration="0:0:0.4"/>
-          </ImplicitAnimationCollection>
-        </StackPanel.Resources>
         <StackPanel.Styles>
           <Style Selector="ItemsControl ContentPresenter">
-            <Setter Property="Animations.ImplicitAnimations" Value="{DynamicResource ImplAnimations}"/>
+            <Setter Property="Transitions">
+              <Transitions>
+                <OffsetCompositionAnimation Duration="0:0:0.4"/>
+              </Transitions>
+            </Setter>
           </Style>
         </StackPanel.Styles>
         <Grid ColumnDefinitions="*,10,40" Margin="0 0 40 0">

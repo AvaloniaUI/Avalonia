@@ -153,7 +153,7 @@
   <sys:Double x:Key="IconElementThemeWidth">20</sys:Double>
 
   <sys:Double x:Key="TextControlPlaceholderOpacity">0.5</sys:Double>
-  <ImplicitAnimationCollection x:Key="RefreshVisualizerAnimations">
+  <Transitions x:Key="RefreshVisualizerTransitions">
     <RotationAngleCompositionAnimation Duration="0:0:0.1">
       <ExpressionKeyFrame Easing="LinearEasing" Value="this.FinalValue" NormalizedProgressKey="1.0" />
     </RotationAngleCompositionAnimation>
@@ -166,5 +166,5 @@
     <ScaleCompositionAnimation Duration="0:0:0.1">
       <ExpressionKeyFrame Easing="LinearEasing" Value="this.FinalValue" NormalizedProgressKey="1.0" />
     </ScaleCompositionAnimation>
-  </ImplicitAnimationCollection>
+  </Transitions>
 </ResourceDictionary>

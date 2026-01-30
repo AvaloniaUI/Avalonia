@@ -87,11 +87,11 @@ namespace Avalonia.Animation
 
         private static void AttachAnimation(Visual visual, CompositionAnimation animation)
         {
-            if (animation.GetCompositionAnimationInternal(visual) is KeyFrameAnimation newAnimation
-                                && newAnimation.Target is { } target)
-            {
-                animation.Attach(visual, newAnimation);
-            }
+            // if (animation.GetCompositionAnimationInternal(visual) is KeyFrameAnimation newAnimation
+            //                     && newAnimation.Target is { } target)
+            // {
+            //     animation.Attach(visual, newAnimation);
+            // }
         }
     }
 }

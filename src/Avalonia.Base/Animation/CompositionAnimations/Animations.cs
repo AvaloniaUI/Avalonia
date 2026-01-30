@@ -5,27 +5,27 @@ namespace Avalonia.Animation
 {
     public static class Animations
     {
-        public static readonly AttachedProperty<ImplicitAnimationCollection?> ImplicitAnimationsProperty =
-            AvaloniaProperty.RegisterAttached<Visual, ImplicitAnimationCollection?>(
-                "ImplicitAnimations",
-                typeof(Animations));
+        // public static readonly AttachedProperty<ImplicitAnimationCollection?> ImplicitAnimationsProperty =
+        //     AvaloniaProperty.RegisterAttached<Visual, ImplicitAnimationCollection?>(
+        //         "ImplicitAnimations",
+        //         typeof(Animations));
 
         public static readonly AttachedProperty<ExplicitAnimationCollection?> ExplicitAnimationsProperty =
             AvaloniaProperty.RegisterAttached<Visual, ExplicitAnimationCollection?>(
                 "ExplicitAnimations",
                 typeof(Animations));
-
-        public static void SetImplicitAnimations(Visual visual, ImplicitAnimationCollection? value)
-        {
-            visual?.SetValue(ImplicitAnimationsProperty, value);
-        }
+        //
+        // public static void SetImplicitAnimations(Visual visual, ImplicitAnimationCollection? value)
+        // {
+        //     visual?.SetValue(ImplicitAnimationsProperty, value);
+        // }
 
         public static void SetExplicitAnimations(Visual visual, ExplicitAnimationCollection? value)
         {
             visual?.SetValue(ExplicitAnimationsProperty, value);
         }
 
-        public static ImplicitAnimationCollection? GetImplicitAnimations(Visual visual) => visual.GetValue(ImplicitAnimationsProperty);
+        // public static ImplicitAnimationCollection? GetImplicitAnimations(Visual visual) => visual.GetValue(ImplicitAnimationsProperty);
 
         public static ExplicitAnimationCollection? GetExplicitAnimations(Visual visual) => visual.GetValue(ExplicitAnimationsProperty);
 
@@ -43,7 +43,7 @@ namespace Avalonia.Animation
 
         static Animations()
         {
-            ImplicitAnimationsProperty.Changed.AddClassHandler<Visual>(OnAnimationsPropertyChanged);
+            //ImplicitAnimationsProperty.Changed.AddClassHandler<Visual>(OnAnimationsPropertyChanged);
             ExplicitAnimationsProperty.Changed.AddClassHandler<Visual>(OnAnimationsPropertyChanged);
             EnableAnimationsProperty.Changed.AddClassHandler<Visual>(OnAnimationsPropertyChanged);
         }
@@ -55,23 +55,24 @@ namespace Avalonia.Animation
                 Invalidate(visual);
             }
 
-            if (args.Property == ImplicitAnimationsProperty)
-            {
-                if (args.OldValue is ImplicitAnimationCollection oldImplicitSet)
-                {
-                    oldImplicitSet.Invalidated -= (s, e) => UpdateAnimations(s as AvaloniaList<CompositionAnimation>, visual);
-                    visual.AttachedToVisualTree -= AttachedToVisualTree;
-                }
-
-
-                if (args.NewValue is ImplicitAnimationCollection newImplicitSet)
-                {
-                    newImplicitSet.Invalidated += (s, e) => UpdateAnimations(s as AvaloniaList<CompositionAnimation>,  visual);
-                    UpdateAnimations(newImplicitSet, visual);
-                    visual.AttachedToVisualTree += AttachedToVisualTree;
-                }
-            }
-            else if (args.Property == ExplicitAnimationsProperty)
+            // if (args.Property == ImplicitAnimationsProperty)
+            // {
+            //     // if (args.OldValue is ImplicitAnimationCollection oldImplicitSet)
+            //     // {
+            //     //     oldImplicitSet.Invalidated -= (s, e) => UpdateAnimations(s as AvaloniaList<CompositionAnimation>, visual);
+            //     //     visual.AttachedToVisualTree -= AttachedToVisualTree;
+            //     // }
+            //     //
+            //     //
+            //     // if (args.NewValue is ImplicitAnimationCollection newImplicitSet)
+            //     // {
+            //     //     newImplicitSet.Invalidated += (s, e) => UpdateAnimations(s as AvaloniaList<CompositionAnimation>,  visual);
+            //     //     UpdateAnimations(newImplicitSet, visual);
+            //     //     visual.AttachedToVisualTree += AttachedToVisualTree;
+            //     // }
+            // }
+            // else
+            if (args.Property == ExplicitAnimationsProperty)
             {
                 if (args.OldValue is ExplicitAnimationCollection oldExplicitSet)
                 {
@@ -99,7 +100,7 @@ namespace Avalonia.Animation
             if (visual == null)
                 return;
 
-            UpdateAnimations(GetImplicitAnimations(visual), visual);
+            //UpdateAnimations(GetImplicitAnimations(visual), visual);
             var explicitAnimationCollection = GetExplicitAnimations(visual);
             explicitAnimationCollection?.Detach(visual);
             UpdateAnimations(explicitAnimationCollection, visual);
@@ -107,15 +108,16 @@ namespace Avalonia.Animation
 
         private static void UpdateAnimations(AvaloniaList<CompositionAnimation>? collections, Visual visual)
         {
-            if (collections is ImplicitAnimationCollection implicitCollection)
-            {
-                if (ElementComposition.GetElementVisual(visual) is { } compositionVisual)
-                {
-                    compositionVisual.ImplicitAnimations =
-                        GetEnableAnimations(visual) ? implicitCollection.GetAnimations(visual) : null;
-                }
-            }
-            else if (collections is ExplicitAnimationCollection explicitCollection)
+            // if (collections is ImplicitAnimationCollection implicitCollection)
+            // {
+            //     if (ElementComposition.GetElementVisual(visual) is { } compositionVisual)
+            //     {
+            //         compositionVisual.ImplicitAnimations =
+            //             GetEnableAnimations(visual) ? implicitCollection.GetAnimations(visual) : null;
+            //     }
+            // }
+            // else
+            if (collections is ExplicitAnimationCollection explicitCollection)
             {
                 if (ElementComposition.GetElementVisual(visual) is { } compositionVisual && GetEnableAnimations(visual))
                 {

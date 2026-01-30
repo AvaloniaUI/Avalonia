@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Data;
 using Avalonia.PropertyStore;
+using Avalonia.Rendering.Composition;
 
 #nullable enable
 
@@ -223,35 +224,67 @@ namespace Avalonia.Animation
             }
 
             _transitionState ??= new Dictionary<ITransition, TransitionState>();
+            var compTransitionsChanged = false;
 
             for (var i = 0; i < items.Count; ++i)
             {
-                if (items[i] is IPropertyTransition t)
+                switch (items[i])
                 {
-                    _transitionState.Add(t, new TransitionState
-                    {
-                        BaseValue = GetAnimationBaseValue(t.Property),
-                    });
+                    case ICompositionTransition ct:
+                        compTransitionsChanged = true;
+                        ct.AnimationInvalidated += CompositionOnAnimationInvalidated; 
+                        break;
+                    case IPropertyTransition t:
+                        _transitionState.Add(t, new TransitionState
+                        {
+                            BaseValue = GetAnimationBaseValue(t.Property),
+                        });
+                        break;
                 }
+            }
+
+            if (compTransitionsChanged)
+            {
+                InvalidateCompositionTransitions();
             }
         }
 
         private void RemoveTransitions(IList items)
         {
-            if (_transitionState is null)
-            {
-                return;
-            }
+            var compTransitionsChanged = false;
 
             for (var i = 0; i < items.Count; ++i)
             {
-                var t = (ITransition)items[i]!;
-
-                if (_transitionState.TryGetValue(t, out var state))
+                switch (items[i])
                 {
-                    state.Instance?.Dispose();
-                    _transitionState.Remove(t);
+                    case ICompositionTransition ct:
+                        compTransitionsChanged = true;
+                        ct.AnimationInvalidated -= CompositionOnAnimationInvalidated;
+                        break;
+                    case IPropertyTransition t when _transitionState?.TryGetValue(t, out var state) == true:
+                        state.Instance?.Dispose();
+                        _transitionState.Remove(t);
+                        break;
                 }
+            }
+
+            if (compTransitionsChanged)
+            {
+                InvalidateCompositionTransitions();
+            }
+        }
+
+        private void CompositionOnAnimationInvalidated(object? sender, EventArgs e)
+        {
+            InvalidateCompositionTransitions();
+        }
+
+        private protected void InvalidateCompositionTransitions()
+        {
+            if (this is Visual { CompositionVisual: { } compVisual } visual
+                && Transitions is { } transitions)
+            {
+                compVisual.ImplicitAnimations = transitions.GetImplicitAnimations(visual);
             }
         }
 

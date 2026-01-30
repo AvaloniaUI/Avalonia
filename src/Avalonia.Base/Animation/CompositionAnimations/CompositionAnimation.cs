@@ -10,9 +10,9 @@ using Avalonia.Rendering.Composition.Animations;
 
 namespace Avalonia.Animation
 {
-    public abstract class CompositionAnimation : AvaloniaObject
+    public abstract class CompositionAnimation : AvaloniaObject, ICompositionTransition
     {
-        internal event EventHandler? AnimationInvalidated;
+        public event EventHandler? AnimationInvalidated;
 
         public static readonly StyledProperty<bool> IsEnabledProperty = AvaloniaProperty.Register<CompositionAnimation, bool>(
             nameof(IsEnabled), defaultValue: true);
@@ -74,7 +74,7 @@ namespace Avalonia.Animation
             set => SetValue(StopBehaviorProperty, value);
         }
 
-        internal Rendering.Composition.Animations.CompositionAnimation? GetCompositionAnimationInternal(Visual parent)
+        Rendering.Composition.Animations.CompositionAnimation? ICompositionTransition.GetCompositionAnimation(Visual parent)
         {
             return !IsEnabled ? null : GetCompositionAnimation(parent);
         }
