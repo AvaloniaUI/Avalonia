@@ -30,6 +30,7 @@ namespace Avalonia.Rendering.Composition.Server
         private readonly List<ServerCompositionTarget> _activeTargets = new();
         internal BatchStreamObjectPool<object?> BatchObjectPool;
         internal BatchStreamMemoryPool BatchMemoryPool;
+        public CompositorPools Pools { get; } = new();
         private readonly object _lock = new object();
         private Thread? _safeThread;
         private bool _uiThreadIsInsideRender;
@@ -41,6 +42,7 @@ namespace Avalonia.Rendering.Composition.Server
         internal static readonly object RenderThreadPostTargetJobsEndMarker = new();
         public CompositionOptions Options { get; }
         public ServerCompositorAnimations Animations { get; }
+        public ReadbackIndices Readback { get; } = new();
 
         public ServerCompositor(IRenderLoop renderLoop, IPlatformGraphics? platformGraphics,
             CompositionOptions options,
@@ -212,17 +214,32 @@ namespace Avalonia.Rendering.Composition.Server
                 }
             }
         }
-        
-        private void RenderCore(bool catchExceptions)
+
+        private TimeSpan ExecuteGlobalPasses()
         {
-            UpdateServerTime();
+            var compositorGlobalPassesStopwatch = Stopwatch.StartNew();
             ApplyPendingBatches();
             NotifyBatchesProcessed();
 
             Animations.Process();
 
+            ApplyEnqueuedRenderResourceChangesPass();
+            
+            VisualOwnPropertiesUpdatePass();
+            
+            // Adorners need to be updated after own properties recompute pass,
+            // because they may depend on ancestor's transform chain to be consistent
+            AdornerUpdatePass();
 
-            ApplyEnqueuedRenderResourceChanges();
+            return compositorGlobalPassesStopwatch.Elapsed;
+        }
+        
+        private void RenderCore(bool catchExceptions)
+        {
+            
+            UpdateServerTime();
+            
+            var compositorGlobalPassesElapsed = ExecuteGlobalPasses();
             
             try
             {
@@ -230,8 +247,15 @@ namespace Avalonia.Rendering.Composition.Server
                     return;
                 RenderInterface.EnsureValidBackendContext();
                 ExecuteServerJobs(_receivedJobQueue);
+
                 foreach (var t in _activeTargets)
+                {
+                    t.Update(compositorGlobalPassesElapsed);
                     t.Render();
+                }
+
+                VisualReadbackUpdatePass();
+                
                 ExecuteServerJobs(_receivedPostTargetJobQueue);
             }
             catch (Exception e) when(RT_OnContextLostExceptionFilterObserver(e) && catchExceptions)

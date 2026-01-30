@@ -61,16 +61,14 @@ internal partial class ServerCompositor
             IDrawingContextLayerImpl? target = null;
             try
             {
-                target = RenderInterface.Value.CreateOffscreenRenderTarget(pixelSize, scaling);
+                target = RenderInterface.Value.CreateOffscreenRenderTarget(pixelSize, new(scaling, scaling), true);
                 using (var canvas = target.CreateDrawingContext(false))
                 {
-                    var proxy = new CompositorDrawingContextProxy(canvas)
-                    {
-                        PostTransform = invertRootTransform * scaleTransform,
-                        Transform = Matrix.Identity
-                    };
-                    var ctx = new ServerVisualRenderContext(proxy, null, true, renderChildren);
-                    visual.Render(ctx, null);
+                    canvas.Transform = scaleTransform;
+                    visual.Render(canvas,
+                        new LtrbRect(double.NegativeInfinity, double.NegativeInfinity, double.PositiveInfinity,
+                            double.PositiveInfinity),
+                        null, renderChildren);
                 }
 
                 if (target is IDrawingContextLayerWithRenderContextAffinityImpl affined

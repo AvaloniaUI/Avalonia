@@ -212,7 +212,7 @@ namespace Avalonia.Controls.UnitTests
             var pt = new Point(150, 50);
             renderer.Setup(r => r.HitTest(It.IsAny<Point>(), It.IsAny<Visual>(), It.IsAny<Func<Visual, bool>>()))
                 .Returns<Point, Visual, Func<Visual, bool>>((p, r, f) =>
-                    r.Bounds.Contains(p.Transform(r.RenderTransform!.Value.Invert())) ?
+                    r.Bounds.Contains(p) ?
                     new Visual[] { r } : new Visual[0]);
 
             using var _ = UnitTestApplication.Start(TestServices.StyledWindow);
@@ -238,6 +238,8 @@ namespace Avalonia.Controls.UnitTests
 
             bool clicked = false;
 
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+            
             target.Click += (s, e) => clicked = true;
 
             RaisePointerEntered(target);

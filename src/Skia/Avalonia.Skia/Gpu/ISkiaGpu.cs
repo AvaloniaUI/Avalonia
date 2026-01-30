@@ -6,6 +6,8 @@ using SkiaSharp;
 
 namespace Avalonia.Skia
 {
+    //TODO12: Make it private
+    
     /// <summary>
     /// Custom Skia gpu instance.
     /// </summary>

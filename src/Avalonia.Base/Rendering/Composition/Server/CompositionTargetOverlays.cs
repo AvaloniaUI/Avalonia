@@ -11,6 +11,7 @@ internal class CompositionTargetOverlays
 {
     private FpsCounter? _fpsCounter;
     private FrameTimeGraph? _renderTimeGraph;
+    private FrameTimeGraph? _compositorUpdateTimeGraph;
     private FrameTimeGraph? _updateTimeGraph;
     private FrameTimeGraph? _layoutTimeGraph;
     private Rect? _oldFpsCounterRect;
@@ -36,9 +37,12 @@ internal class CompositionTargetOverlays
 
     private FrameTimeGraph? RenderTimeGraph
         => _renderTimeGraph ??= CreateTimeGraph("Render");
+
+    private FrameTimeGraph? CompositorUpdateTimeGraph
+        => _compositorUpdateTimeGraph ??= CreateTimeGraph("GUpdate");
     
     private FrameTimeGraph? UpdateTimeGraph
-        => _updateTimeGraph ??= CreateTimeGraph("RUpdate");
+        => _updateTimeGraph ??= CreateTimeGraph("TUpdate");
 
 
 
@@ -108,6 +112,12 @@ internal class CompositionTargetOverlays
         if (CaptureTiming)
             UpdateTimeGraph?.AddFrameValue(StopwatchHelper.GetElapsedTime(_updateStarted).TotalMilliseconds);
     }
+    
+    public void RecordGlobalCompositorUpdateTime(TimeSpan elapsed)
+    {
+        if (CaptureTiming)
+            CompositorUpdateTimeGraph?.AddFrameValue(elapsed.TotalMilliseconds);
+    }
 
     private void DrawOverlays(ImmediateDrawingContext targetContext, bool hasLayer, Size logicalSize)
     {
@@ -122,7 +132,7 @@ internal class CompositionTargetOverlays
                 IntPtr.Size), false);
 
             _oldFpsCounterRect = FpsCounter?.RenderFps(targetContext,
-                FormattableString.Invariant($"M:{managedMem} / N:{nativeMem} R:{_target.RenderedVisuals:0000}"),
+                FormattableString.Invariant($"M:{managedMem} / N:{nativeMem} V:{_target.VisitedVisuals:0000} R:{_target.RenderedVisuals:0000}"),
                 hasLayer, _oldFpsCounterRect);
         }
 
@@ -147,6 +157,7 @@ internal class CompositionTargetOverlays
         if (DebugOverlays.HasFlag(RendererDebugOverlays.RenderTimeGraph))
         {
             DrawTimeGraph(RenderTimeGraph);
+            DrawTimeGraph(CompositorUpdateTimeGraph);
             DrawTimeGraph(UpdateTimeGraph);
         }
     }
