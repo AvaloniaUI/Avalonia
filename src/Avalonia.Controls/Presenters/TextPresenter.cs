@@ -385,6 +385,11 @@ namespace Avalonia.Controls.Presenters
 
             var top = 0d;
             var left = 0.0;
+            
+            foreach (var line in TextLayout.TextLines)
+            {
+                left = Math.Max(left, -Math.Min(0, line.OverhangLeading));
+            }
 
             var textHeight = TextLayout.Height;
 
@@ -646,8 +651,16 @@ namespace Avalonia.Controls.Presenters
 
             InvalidateArrange();
 
-            // The textWidth used here is matching that TextBlock uses to measure the text.
-            var textWidth = TextLayout.OverhangLeading + TextLayout.WidthIncludingTrailingWhitespace + TextLayout.OverhangTrailing;
+            var textWidth = TextLayout.WidthIncludingTrailingWhitespace;
+            
+            foreach (var line in TextLayout.TextLines)
+            {
+                var lineInkWidth = line.WidthIncludingTrailingWhitespace 
+                    - Math.Min(0, line.OverhangLeading) 
+                    - Math.Min(0, line.OverhangTrailing);
+                textWidth = Math.Max(textWidth, lineInkWidth);
+            }
+            
             return new Size(textWidth, TextLayout.Height);
         }
 
@@ -655,7 +668,15 @@ namespace Avalonia.Controls.Presenters
         {
             var finalWidth = finalSize.Width;
 
-            var textWidth = TextLayout.OverhangLeading + TextLayout.WidthIncludingTrailingWhitespace + TextLayout.OverhangTrailing;
+            var textWidth = TextLayout.WidthIncludingTrailingWhitespace;
+            
+            foreach (var line in TextLayout.TextLines)
+            {
+                var lineInkWidth = line.WidthIncludingTrailingWhitespace 
+                    - Math.Min(0, line.OverhangLeading) 
+                    - Math.Min(0, line.OverhangTrailing);
+                textWidth = Math.Max(textWidth, lineInkWidth);
+            }
             textWidth = Math.Ceiling(textWidth);
 
             if (finalSize.Width < textWidth)

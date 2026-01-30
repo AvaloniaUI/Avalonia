@@ -630,7 +630,13 @@ namespace Avalonia.Controls
 
         protected virtual void RenderTextLayout(DrawingContext context, Point origin)
         {
-            TextLayout.Draw(context, origin);
+            var maxLeadingOverhang = 0.0;
+            foreach (var line in TextLayout.TextLines)
+            {
+                maxLeadingOverhang = Math.Max(maxLeadingOverhang, -Math.Min(0, line.OverhangLeading));
+            }
+            
+            TextLayout.Draw(context, new Point(origin.X + maxLeadingOverhang, origin.Y));
         }
 
         private bool _clearTextInternal;
@@ -748,8 +754,17 @@ namespace Avalonia.Controls
             //This implicitly recreated the TextLayout with a new constraint if we previously reset it.
             var textLayout = TextLayout;
 
-            // The textWidth used here is matching that TextPresenter uses to measure the text.
-            return new Size(textLayout.WidthIncludingTrailingWhitespace, textLayout.Height).Inflate(padding);
+            var totalWidth = textLayout.WidthIncludingTrailingWhitespace;
+            
+            foreach (var line in textLayout.TextLines)
+            {
+                var lineInkWidth = line.WidthIncludingTrailingWhitespace 
+                    - Math.Min(0, line.OverhangLeading) 
+                    - Math.Min(0, line.OverhangTrailing);
+                totalWidth = Math.Max(totalWidth, lineInkWidth);
+            }
+            
+            return new Size(totalWidth, textLayout.Height).Inflate(padding);
         }
 
         protected override Size ArrangeOverride(Size finalSize)
