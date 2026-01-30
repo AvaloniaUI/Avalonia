@@ -15,6 +15,12 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Input.IDataObject</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:Avalonia.Media.Fonts.FontFamilyLoader</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
@@ -39,6 +45,12 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Markup.Xaml.Diagnostics.XamlSourceInfo</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Markup.Xaml.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Markup.Xaml.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:Avalonia.Media.Fonts.FontFamilyLoader</Target>
     <Left>baseline/Avalonia/lib/net6.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net6.0/Avalonia.Base.dll</Right>
@@ -52,6 +64,12 @@
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:Avalonia.Input.DataObjectExtensions</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Input.IDataObject</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
   </Suppression>
@@ -78,6 +96,12 @@
     <Target>T:Avalonia.Controls.Primitives.IScrollable</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Markup.Xaml.Diagnostics.XamlSourceInfo</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Markup.Xaml.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Markup.Xaml.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
@@ -498,6 +522,30 @@
     <Target>M:Avalonia.Platform.Screen.set_WorkingArea(Avalonia.PixelRect)</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Markup.Xaml.RuntimeXamlLoaderConfiguration.get_CreateSourceInfo</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Markup.Xaml.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Markup.Xaml.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Markup.Xaml.RuntimeXamlLoaderConfiguration.set_CreateSourceInfo(System.Boolean)</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Markup.Xaml.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Markup.Xaml.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Markup.Xaml.RuntimeXamlLoaderDocument.get_Document</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Markup.Xaml.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Markup.Xaml.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Markup.Xaml.RuntimeXamlLoaderDocument.set_Document(System.String)</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Markup.Xaml.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Markup.Xaml.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
@@ -951,6 +999,30 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Markup.Xaml.RuntimeXamlLoaderConfiguration.get_CreateSourceInfo</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Markup.Xaml.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Markup.Xaml.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Markup.Xaml.RuntimeXamlLoaderConfiguration.set_CreateSourceInfo(System.Boolean)</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Markup.Xaml.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Markup.Xaml.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Markup.Xaml.RuntimeXamlLoaderDocument.get_Document</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Markup.Xaml.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Markup.Xaml.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Markup.Xaml.RuntimeXamlLoaderDocument.set_Document(System.String)</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Markup.Xaml.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Markup.Xaml.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>F:Avalonia.Media.Fonts.FontCollectionBase._glyphTypefaceCache</Target>
     <Left>baseline/Avalonia/lib/netstandard2.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/netstandard2.0/Avalonia.Base.dll</Right>
@@ -1275,9 +1347,21 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:Avalonia.Input.DataObject</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
     <Target>T:Avalonia.Media.StreamGeometryContext</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:Avalonia.Input.DataObject</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0008</DiagnosticId>
@@ -1287,9 +1371,21 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0009</DiagnosticId>
+    <Target>T:Avalonia.Input.DataObject</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0009</DiagnosticId>
     <Target>T:Avalonia.Platform.Screen</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0009</DiagnosticId>
+    <Target>T:Avalonia.Input.DataObject</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0009</DiagnosticId>

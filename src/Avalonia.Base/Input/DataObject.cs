@@ -8,4 +8,4 @@ namespace Avalonia.Input;
 /// Use <see cref="DataTransfer"/> instead.
 /// </summary>
 [Obsolete($"Use {nameof(DataTransfer)} instead", true)]
-public class DataObject : IDataObject;
+public sealed class DataObject;
