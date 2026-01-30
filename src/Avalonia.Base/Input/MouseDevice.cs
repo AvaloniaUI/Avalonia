@@ -34,6 +34,8 @@ namespace Avalonia.Input
             _pointer = pointer ?? new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
         }
 
+        internal Pointer Pointer => _pointer;
+
         internal static TMouseDevice GetOrCreatePrimary<TMouseDevice>() where TMouseDevice : MouseDevice, new()
         {
             if (_primary is TMouseDevice device)
