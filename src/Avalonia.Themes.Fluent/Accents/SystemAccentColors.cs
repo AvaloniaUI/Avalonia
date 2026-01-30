@@ -154,6 +154,6 @@ internal sealed class SystemAccentColors : ResourceProvider
     private void PlatformSettingsOnColorValuesChanged(object? sender, PlatformColorValues e)
     {
         _invalidateColors = true;
-        Owner?.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
+        Owner?.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Create());
     }
 }
