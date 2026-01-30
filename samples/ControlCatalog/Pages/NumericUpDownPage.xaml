@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:sys="using:System"
              xmlns:converter="using:ControlCatalog.Converter"
@@ -48,8 +48,8 @@
         <ComboBox x:Name="CultureSelector" Grid.Row="2" Grid.Column="1" ItemsSource="{Binding Cultures}"
                   VerticalAlignment="Center" Margin="2"/>
 
-        <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Margin="2">Placeholder:</TextBlock>
-        <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding #upDown.Placeholder}" VerticalAlignment="Center" Margin="2" />
+        <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Margin="2">PlaceholderText:</TextBlock>
+        <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding #upDown.PlaceholderText}" VerticalAlignment="Center" Margin="2" />
 
         <TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Margin="2">Text:</TextBlock>
         <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding #upDown.Text}" VerticalAlignment="Center" Margin="2" />
@@ -81,23 +81,23 @@
         <NumericUpDown Name="upDown" Minimum="0" Maximum="10" Increment="0.5"
                        NumberFormat="{Binding #CultureSelector.SelectedItem, Converter={x:Static pages:NumericUpDownPage.CultureConverter}}"
                        VerticalAlignment="Center" Value="{Binding DecimalValue}"
-                       Placeholder="Enter text" FormatString="{Binding SelectedFormat.Value}"/>
+                       PlaceholderText="Enter text" FormatString="{Binding SelectedFormat.Value}"/>
       </StackPanel>
 
       <StackPanel Orientation="Vertical" Margin="10">
         <Label Target="DoubleUpDown" FontSize="14" FontWeight="Bold" VerticalAlignment="Center">Usage of double NumericUpDown:</Label>
         <NumericUpDown Name="DoubleUpDown" Minimum="0" Maximum="10" Increment="0.5"
                        VerticalAlignment="Center" Value="{Binding DoubleValue}"
-                       Placeholder="Enter text" FormatString="{Binding SelectedFormat.Value}"/>
+                       PlaceholderText="Enter text" FormatString="{Binding SelectedFormat.Value}"/>
       </StackPanel>
-      
+
       <StackPanel Orientation="Vertical" Margin="10">
         <Label Target="ValidationUpDown" FontSize="14" FontWeight="Bold" VerticalAlignment="Center">NumericUpDown with Validation Errors:</Label>
         <NumericUpDown x:Name="ValidationUpDown" Minimum="0" Maximum="10" Increment="0.5"
                        VerticalAlignment="Center"
-                       Placeholder="Enter text" FormatString="{Binding SelectedFormat.Value}">
+                       PlaceholderText="Enter text" FormatString="{Binding SelectedFormat.Value}">
           <DataValidationErrors.Error>
-            <sys:Exception /> 
+            <sys:Exception />
           </DataValidationErrors.Error>
         </NumericUpDown>
       </StackPanel>
@@ -110,7 +110,7 @@
             <converter:HexConverter></converter:HexConverter>
           </NumericUpDown.TextConverter>
         </NumericUpDown>
-        
+
       </StackPanel>
     </WrapPanel>
 
@@ -118,7 +118,7 @@
       <Label FontSize="14" FontWeight="Bold" Target="PlaceholderForegroundUpDown"
              Content="Placeholder with custom foreground color:"/>
       <NumericUpDown x:Name="PlaceholderForegroundUpDown"
-                     Placeholder="Enter amount"
+                     PlaceholderText="Enter amount"
                      PlaceholderForeground="Orange"/>
     </StackPanel>
 

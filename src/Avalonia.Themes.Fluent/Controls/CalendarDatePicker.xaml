@@ -1,4 +1,4 @@
-﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:sys="using:System"
                     x:ClassModifier="internal">
@@ -92,9 +92,9 @@
                        CornerRadius="{TemplateBinding CornerRadius}"
                        Margin="{TemplateBinding BorderThickness}"
                        Padding="{TemplateBinding Padding}"
-                       Placeholder="{TemplateBinding Placeholder}"
+                       PlaceholderText="{TemplateBinding PlaceholderText}"
                        PlaceholderForeground="{TemplateBinding PlaceholderForeground}"
-                       UseFloatingPlaceholder="{TemplateBinding UseFloatingPlaceholder}"
+                       UseFloatingPlaceholderText="{TemplateBinding UseFloatingPlaceholderText}"
                        HorizontalAlignment="Stretch"
                        VerticalAlignment="Stretch"
                        VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"

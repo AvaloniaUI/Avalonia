@@ -6,7 +6,7 @@
              x:Class="IntegrationTestApp.Pages.WindowPage">
   <Grid ColumnDefinitions="*,8,*">
     <StackPanel Grid.Column="0">
-      <TextBox Name="ShowWindowSize" Placeholder="Window Size"/>
+      <TextBox Name="ShowWindowSize" PlaceholderText="Window Size"/>
       <ComboBox Name="ShowWindowMode" SelectedIndex="0">
         <ComboBoxItem>NonOwned</ComboBoxItem>
         <ComboBoxItem>Owned</ComboBoxItem>

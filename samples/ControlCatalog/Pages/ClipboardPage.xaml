@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="ControlCatalog.Pages.ClipboardPage"
+<UserControl x:Class="ControlCatalog.Pages.ClipboardPage"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <StackPanel Orientation="Vertical" Spacing="4">
@@ -21,7 +21,7 @@
     <TextBox x:Name="ClipboardContent"
              MinHeight="100"
              AcceptsReturn="True"
-             Placeholder="Text to copy of file names per line" />
+             PlaceholderText="Text to copy of file names per line" />
     <Viewbox Width="420" Height="360">
       <Image x:Name="ClipboardImage"
       />

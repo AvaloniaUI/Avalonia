@@ -48,13 +48,13 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="IsInactiveSelectionHighlightEnabled"/> property
         /// </summary>
-        public static readonly StyledProperty<bool> IsInactiveSelectionHighlightEnabledProperty = 
+        public static readonly StyledProperty<bool> IsInactiveSelectionHighlightEnabledProperty =
             AvaloniaProperty.Register<TextBox, bool>(nameof(IsInactiveSelectionHighlightEnabled), defaultValue: true);
 
         /// <summary>
         /// Defines the <see cref="ClearSelectionOnLostFocus"/> property
         /// </summary>
-        public static readonly StyledProperty<bool> ClearSelectionOnLostFocusProperty = 
+        public static readonly StyledProperty<bool> ClearSelectionOnLostFocusProperty =
             AvaloniaProperty.Register<TextBox, bool>(nameof(ClearSelectionOnLostFocus), defaultValue: true);
 
         /// <summary>
@@ -181,28 +181,28 @@ namespace Avalonia.Controls
             TextBlock.LineHeightProperty.AddOwner<TextBox>(new(defaultValue: double.NaN));
 
         /// <summary>
-        /// Defines the <see cref="Placeholder"/> property.
+        /// Defines the <see cref="PlaceholderText"/> property.
         /// </summary>
-        public static readonly StyledProperty<string?> PlaceholderProperty =
-            AvaloniaProperty.Register<TextBox, string?>(nameof(Placeholder));
+        public static readonly StyledProperty<string?> PlaceholderTextProperty =
+            AvaloniaProperty.Register<TextBox, string?>(nameof(PlaceholderText));
 
         /// <summary>
         /// Defines the <see cref="Watermark"/> property.
         /// </summary>
-        [Obsolete("Use PlaceholderProperty instead.", false)]
-        public static readonly StyledProperty<string?> WatermarkProperty = PlaceholderProperty;
+        [Obsolete("Use PlaceholderTextProperty instead.", false)]
+        public static readonly StyledProperty<string?> WatermarkProperty = PlaceholderTextProperty;
 
         /// <summary>
-        /// Defines the <see cref="UseFloatingPlaceholder"/> property.
+        /// Defines the <see cref="UseFloatingPlaceholderText"/> property.
         /// </summary>
-        public static readonly StyledProperty<bool> UseFloatingPlaceholderProperty =
-            AvaloniaProperty.Register<TextBox, bool>(nameof(UseFloatingPlaceholder));
+        public static readonly StyledProperty<bool> UseFloatingPlaceholderTextProperty =
+            AvaloniaProperty.Register<TextBox, bool>(nameof(UseFloatingPlaceholderText));
 
         /// <summary>
         /// Defines the <see cref="UseFloatingWatermark"/> property.
         /// </summary>
-        [Obsolete("Use UseFloatingPlaceholderProperty instead.", false)]
-        public static readonly StyledProperty<bool> UseFloatingWatermarkProperty = UseFloatingPlaceholderProperty;
+        [Obsolete("Use UseFloatingPlaceholderTextProperty instead.", false)]
+        public static readonly StyledProperty<bool> UseFloatingWatermarkProperty = UseFloatingPlaceholderTextProperty;
 
         /// <summary>
         /// Defines the <see cref="PlaceholderForeground"/> property.
@@ -418,8 +418,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool ClearSelectionOnLostFocus
         {
-            get=> GetValue(ClearSelectionOnLostFocusProperty);
-            set=> SetValue(ClearSelectionOnLostFocusProperty, value);
+            get => GetValue(ClearSelectionOnLostFocusProperty);
+            set => SetValue(ClearSelectionOnLostFocusProperty, value);
         }
 
         /// <summary>
@@ -432,7 +432,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value that determins whether the TextBox allows and displays tabs
+        /// Gets or sets a value that determines whether the TextBox allows and displays tabs
         /// </summary>
         public bool AcceptsTab
         {
@@ -540,7 +540,7 @@ namespace Avalonia.Controls
         /// Gets or sets the end position of the text selected in the TextBox
         /// </summary>
         /// <remarks>
-        /// When the SelectionEnd is equal to <see cref="SelectionStart"/>, there is no 
+        /// When the SelectionEnd is equal to <see cref="SelectionStart"/>, there is no
         /// selected text and it marks the caret position
         /// </remarks>
         public int SelectionEnd
@@ -689,42 +689,42 @@ namespace Avalonia.Controls
         /// Gets or sets the placeholder or descriptive text that is displayed even if the <see cref="Text"/>
         /// property is not yet set.
         /// </summary>
-        public string? Placeholder
+        public string? PlaceholderText
         {
-            get => GetValue(PlaceholderProperty);
-            set => SetValue(PlaceholderProperty, value);
+            get => GetValue(PlaceholderTextProperty);
+            set => SetValue(PlaceholderTextProperty, value);
         }
 
         /// <summary>
         /// Gets or sets the placeholder or descriptive text that is displayed even if the <see cref="Text"/>
         /// property is not yet set.
         /// </summary>
-        [Obsolete("Use Placeholder instead.", false)]
+        [Obsolete("Use PlaceholderText instead.", false)]
         public string? Watermark
         {
-            get => Placeholder;
-            set => Placeholder = value;
+            get => PlaceholderText;
+            set => PlaceholderText = value;
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the <see cref="Placeholder"/> will still be shown above the
+        /// Gets or sets a value indicating whether the <see cref="PlaceholderText"/> will still be shown above the
         /// <see cref="Text"/> even after a text value is set.
         /// </summary>
-        public bool UseFloatingPlaceholder
+        public bool UseFloatingPlaceholderText
         {
-            get => GetValue(UseFloatingPlaceholderProperty);
-            set => SetValue(UseFloatingPlaceholderProperty, value);
+            get => GetValue(UseFloatingPlaceholderTextProperty);
+            set => SetValue(UseFloatingPlaceholderTextProperty, value);
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the <see cref="Placeholder"/> will still be shown above the
+        /// Gets or sets a value indicating whether the <see cref="PlaceholderText"/> will still be shown above the
         /// <see cref="Text"/> even after a text value is set.
         /// </summary>
-        [Obsolete("Use UseFloatingPlaceholder instead.", false)]
+        [Obsolete("Use UseFloatingPlaceholderText instead.", false)]
         public bool UseFloatingWatermark
         {
-            get => UseFloatingPlaceholder;
-            set => UseFloatingPlaceholder = value;
+            get => UseFloatingPlaceholderText;
+            set => UseFloatingPlaceholderText = value;
         }
 
         /// <summary>
@@ -1083,7 +1083,7 @@ namespace Avalonia.Controls
             if(_presenter != null)
             {
                 _presenter.ShowSelectionHighlight = true;
-            }           
+            }
 
             // when navigating to a textbox via the tab key, select all text if
             //   1) this textbox is *not* a multiline textbox

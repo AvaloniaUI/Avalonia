@@ -19,9 +19,9 @@
                    CaretIndex="{TemplateBinding CaretIndex, Mode=TwoWay}"
                    ClearSelectionOnLostFocus="{TemplateBinding ClearSelectionOnLostFocus}"
                    DataValidationErrors.Errors="{TemplateBinding (DataValidationErrors.Errors)}"
-                   Placeholder="{TemplateBinding Placeholder}"
+                   PlaceholderText="{TemplateBinding PlaceholderText}"
                    PlaceholderForeground="{TemplateBinding PlaceholderForeground}"
-                   MaxLength="{TemplateBinding MaxLength}"                   
+                   MaxLength="{TemplateBinding MaxLength}"
                    InnerLeftContent="{TemplateBinding InnerLeftContent}"
                    InnerRightContent="{TemplateBinding InnerRightContent}"
                    />

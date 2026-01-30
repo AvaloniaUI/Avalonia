@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="using:Generators.Sandbox.Controls"
         xmlns:vm="clr-namespace:Generators.Sandbox.ViewModels"
@@ -17,8 +17,8 @@
         <controls:CustomTextBox Margin="0 10 0 0"
                  x:Name="UserNameTextBox"
                  Text="{Binding UserName}"
-                 Placeholder="Please, enter user name..."
-                 UseFloatingPlaceholder="True" />
+                  PlaceholderText="Please, enter user name..."
+                  UseFloatingPlaceholderText="True" />
         <TextBlock x:Name="UserNameValidation"
                    Text="{Binding UserNameValidation}"
                    Foreground="Green"
@@ -26,8 +26,8 @@
         <TextBox Margin="0 10 0 0"
                  x:Name="PasswordTextBox"
                  Text="{Binding Password}"
-                 Placeholder="Please, enter your password..."
-                 UseFloatingPlaceholder="True"
+                 PlaceholderText="Please, enter your password..."
+                 UseFloatingPlaceholderText="True"
                  PasswordChar="*" />
         <TextBlock x:Name="PasswordValidation"
                    Text="{Binding PasswordValidation}"
@@ -36,8 +36,8 @@
         <TextBox Margin="0 10 0 0"
                  x:Name="ConfirmPasswordTextBox"
                  Text="{Binding ConfirmPassword}"
-                 Placeholder="Please, confirm the password..."
-                 UseFloatingPlaceholder="True"
+                 PlaceholderText="Please, confirm the password..."
+                 UseFloatingPlaceholderText="True"
                  PasswordChar="*" />
         <TextBlock x:Name="ConfirmPasswordValidation"
                    Text="{Binding ConfirmPasswordValidation}"

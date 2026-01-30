@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -109,16 +109,16 @@ namespace Avalonia.Controls
                 defaultBindingMode: BindingMode.TwoWay, enableDataValidation: true);
 
         /// <summary>
-        /// Defines the <see cref="Placeholder"/> property.
+        /// Defines the <see cref="PlaceholderText"/> property.
         /// </summary>
-        public static readonly StyledProperty<string?> PlaceholderProperty =
-            AvaloniaProperty.Register<NumericUpDown, string?>(nameof(Placeholder));
+        public static readonly StyledProperty<string?> PlaceholderTextProperty =
+            AvaloniaProperty.Register<NumericUpDown, string?>(nameof(PlaceholderText));
 
         /// <summary>
         /// Defines the <see cref="Watermark"/> property.
         /// </summary>
-        [Obsolete("Use PlaceholderProperty instead.", false)]
-        public static readonly StyledProperty<string?> WatermarkProperty = PlaceholderProperty;
+        [Obsolete("Use PlaceholderTextProperty instead.", false)]
+        public static readonly StyledProperty<string?> WatermarkProperty = PlaceholderTextProperty;
 
         /// <summary>
         /// Defines the <see cref="PlaceholderForeground"/> property.
@@ -271,7 +271,7 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Gets or sets the parsing style (AllowLeadingWhite, Float, AllowHexSpecifier, ...). By default, Any.
-        /// Note that Hex style does not work with decimal. 
+        /// Note that Hex style does not work with decimal.
         /// For hexadecimal display, use <see cref="TextConverter"/>.
         /// </summary>
         public NumberStyles ParsingNumberStyle
@@ -291,7 +291,7 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Gets or sets the custom bidirectional Text-Value converter.
-        /// Non-null converter overrides <see cref="ParsingNumberStyle"/>, providing finer control over 
+        /// Non-null converter overrides <see cref="ParsingNumberStyle"/>, providing finer control over
         /// string representation of the underlying value.
         /// </summary>
         public IValueConverter? TextConverter
@@ -312,20 +312,20 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the object to use as a placeholder if the <see cref="Value"/> is null.
         /// </summary>
-        public string? Placeholder
+        public string? PlaceholderText
         {
-            get => GetValue(PlaceholderProperty);
-            set => SetValue(PlaceholderProperty, value);
+            get => GetValue(PlaceholderTextProperty);
+            set => SetValue(PlaceholderTextProperty, value);
         }
 
         /// <summary>
         /// Gets or sets the object to use as a placeholder if the <see cref="Value"/> is null.
         /// </summary>
-        [Obsolete("Use Placeholder instead.", false)]
+        [Obsolete("Use PlaceholderText instead.", false)]
         public string? Watermark
         {
-            get => Placeholder;
-            set => Placeholder = value;
+            get => PlaceholderText;
+            set => PlaceholderText = value;
         }
 
         /// <summary>
@@ -747,8 +747,8 @@ namespace Avalonia.Controls
             }
             else
             {
-                // if Minimum is set we set value to Minimum on Increment. 
-                // otherwise we set value to 0. It ill be clamped to be between Minimum and Maximum later, so we don't need to do it here. 
+                // if Minimum is set we set value to Minimum on Increment.
+                // otherwise we set value to 0. It ill be clamped to be between Minimum and Maximum later, so we don't need to do it here.
                 result = IsSet(MinimumProperty) ? Minimum : 0;
             }
 
@@ -768,8 +768,8 @@ namespace Avalonia.Controls
             }
             else
             {
-                // if Maximum is set we set value to Maximum on decrement. 
-                // otherwise we set value to 0. It ill be clamped to be between Minimum and Maximum later, so we don't need to do it here. 
+                // if Maximum is set we set value to Maximum on decrement.
+                // otherwise we set value to 0. It ill be clamped to be between Minimum and Maximum later, so we don't need to do it here.
                 result = IsSet(MaximumProperty) ? Maximum : 0;
             }
 

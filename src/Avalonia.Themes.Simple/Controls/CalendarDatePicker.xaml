@@ -101,8 +101,8 @@
                    BorderThickness="{TemplateBinding BorderThickness}"
                    CornerRadius="{TemplateBinding CornerRadius}"
                    DataValidationErrors.Errors="{TemplateBinding (DataValidationErrors.Errors)}"
-                   UseFloatingPlaceholder="{TemplateBinding UseFloatingPlaceholder}"
-                   Placeholder="{TemplateBinding Placeholder}"
+                   UseFloatingPlaceholderText="{TemplateBinding UseFloatingPlaceholderText}"
+                   PlaceholderText="{TemplateBinding PlaceholderText}"
                    PlaceholderForeground="{TemplateBinding PlaceholderForeground}" />
 
           <Button Name="PART_Button"

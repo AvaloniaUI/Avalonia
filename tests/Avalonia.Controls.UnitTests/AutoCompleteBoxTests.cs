@@ -406,7 +406,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(control.Text, control.ItemSelector(input, selectedItem));
             });
         }
-        
+
         [Fact]
         public void Text_Validation()
         {
@@ -421,7 +421,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal([exception], DataValidationErrors.GetErrors(control));
             });
         }
-        
+
         [Fact]
         public void Text_Validation_TextBox_Errors_Binding()
         {
@@ -430,20 +430,20 @@ namespace Avalonia.Controls.UnitTests
                 // simulate the TemplateBinding that would be used within the AutoCompleteBox control theme for the inner PART_TextBox
                 //      DataValidationErrors.Errors="{TemplateBinding (DataValidationErrors.Errors)}"
                 textbox.Bind(DataValidationErrors.ErrorsProperty, control.GetBindingObservable(DataValidationErrors.ErrorsProperty));
-                
+
                 var exception = new InvalidCastException("failed validation");
                 var textObservable = new BehaviorSubject<BindingNotification>(new BindingNotification(exception, BindingErrorType.DataValidationError));
                 control.Bind(AutoCompleteBox.TextProperty, textObservable);
                 Dispatcher.UIThread.RunJobs();
-                
+
                 Assert.True(DataValidationErrors.GetHasErrors(control));
                 Assert.Equal([exception], DataValidationErrors.GetErrors(control));
-                
+
                 Assert.True(DataValidationErrors.GetHasErrors(textbox));
                 Assert.Equal([exception], DataValidationErrors.GetErrors(textbox));
             });
         }
-        
+
         [Fact]
         public void SelectedItem_Validation()
         {
@@ -583,7 +583,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         /// <summary>
-        /// Retrieves a defined predicate filter through a new AutoCompleteBox 
+        /// Retrieves a defined predicate filter through a new AutoCompleteBox
         /// control instance.
         /// </summary>
         /// <param name="mode">The FilterMode of interest.</param>
@@ -1290,7 +1290,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
                 var control = CreateControl();
-                control.Placeholder = "Search...";
+                control.PlaceholderText = "Search...";
                 control.PlaceholderForeground = Media.Brushes.Green;
 
                 Assert.Equal(Media.Brushes.Green, control.PlaceholderForeground);

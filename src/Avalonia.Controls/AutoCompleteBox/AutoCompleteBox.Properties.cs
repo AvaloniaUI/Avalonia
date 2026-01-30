@@ -1,4 +1,4 @@
-﻿// (c) Copyright Microsoft Corporation.
+// (c) Copyright Microsoft Corporation.
 // This source is subject to the Microsoft Public License (Ms-PL).
 // Please see https://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
@@ -25,16 +25,16 @@ namespace Avalonia.Controls
                 defaultBindingMode: BindingMode.TwoWay));
 
         /// <summary>
-        /// Defines the <see cref="Placeholder"/> property.
+        /// Defines the <see cref="PlaceholderText"/> property.
         /// </summary>
-        public static readonly StyledProperty<string?> PlaceholderProperty =
-            TextBox.PlaceholderProperty.AddOwner<AutoCompleteBox>();
+        public static readonly StyledProperty<string?> PlaceholderTextProperty =
+            TextBox.PlaceholderTextProperty.AddOwner<AutoCompleteBox>();
 
         /// <summary>
         /// Defines the <see cref="Watermark"/> property.
         /// </summary>
-        [Obsolete("Use PlaceholderProperty instead.", false)]
-        public static readonly StyledProperty<string?> WatermarkProperty = PlaceholderProperty;
+        [Obsolete("Use PlaceholderTextProperty instead.", false)]
+        public static readonly StyledProperty<string?> WatermarkProperty = PlaceholderTextProperty;
 
         /// <summary>
         /// Defines the <see cref="PlaceholderForeground"/> property.
@@ -332,7 +332,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the  <see cref="T:Avalonia.Data.Binding" /> that
+        /// Gets or sets the <see cref="T:Avalonia.Data.Binding" /> that
         /// is used to get the values for display in the text portion of
         /// the <see cref="AutoCompleteBox" />
         /// control.
@@ -434,20 +434,20 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the placeholder or descriptive text that is displayed even if the text is not yet set.
         /// </summary>
-        public string? Placeholder
+        public string? PlaceholderText
         {
-            get => GetValue(PlaceholderProperty);
-            set => SetValue(PlaceholderProperty, value);
+            get => GetValue(PlaceholderTextProperty);
+            set => SetValue(PlaceholderTextProperty, value);
         }
 
         /// <summary>
         /// Gets or sets the placeholder or descriptive text that is displayed even if the text is not yet set.
         /// </summary>
-        [Obsolete("Use Placeholder instead.", false)]
+        [Obsolete("Use PlaceholderText instead.", false)]
         public string? Watermark
         {
-            get => Placeholder;
-            set => Placeholder = value;
+            get => PlaceholderText;
+            set => PlaceholderText = value;
         }
 
         /// <summary>

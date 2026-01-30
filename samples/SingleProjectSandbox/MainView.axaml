@@ -5,10 +5,10 @@
              x:DataType="local:MainView">
   <StackPanel Margin="100 50" Spacing="50">
     <TextBlock Text="Login" Foreground="White" />
-    <TextBox TextInputOptions.Multiline="True" AcceptsReturn="True" Placeholder="Text" Height="200" TextWrapping="Wrap"/>
-    <TextBox Placeholder="Username" TextInputOptions.ContentType="Email" TextInputOptions.ReturnKeyType="Done" />
-    <TextBox Placeholder="Password" PasswordChar="*" TextInputOptions.ContentType="Password" />
-    <TextBox Placeholder="Pin" PasswordChar="*" TextInputOptions.ContentType="Digits" TextInputOptions.ReturnKeyType="Next" />
+    <TextBox TextInputOptions.Multiline="True" AcceptsReturn="True" PlaceholderText="Text" Height="200" TextWrapping="Wrap"/>
+    <TextBox PlaceholderText="Username" TextInputOptions.ContentType="Email" TextInputOptions.ReturnKeyType="Done" />
+    <TextBox PlaceholderText="Password" PasswordChar="*" TextInputOptions.ContentType="Password" />
+    <TextBox PlaceholderText="Pin" PasswordChar="*" TextInputOptions.ContentType="Digits" TextInputOptions.ReturnKeyType="Next" />
     <Button Content="Login" Command="{Binding ButtonCommand}" />
   </StackPanel>
 </UserControl>

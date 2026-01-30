@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Layout;
@@ -53,7 +53,7 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<DateTime?> SelectedDateProperty =
             AvaloniaProperty.Register<CalendarDatePicker, DateTime?>(
                 nameof(SelectedDate),
-                enableDataValidation: true, 
+                enableDataValidation: true,
                 defaultBindingMode:BindingMode.TwoWay);
 
         /// <summary>
@@ -81,28 +81,28 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<CalendarDatePicker, string?>(nameof(Text));
 
         /// <summary>
-        /// Defines the <see cref="Placeholder"/> property.
+        /// Defines the <see cref="PlaceholderText"/> property.
         /// </summary>
-        public static readonly StyledProperty<string?> PlaceholderProperty =
-            TextBox.PlaceholderProperty.AddOwner<CalendarDatePicker>();
+        public static readonly StyledProperty<string?> PlaceholderTextProperty =
+            TextBox.PlaceholderTextProperty.AddOwner<CalendarDatePicker>();
 
         /// <summary>
         /// Defines the <see cref="Watermark"/> property.
         /// </summary>
-        [Obsolete("Use PlaceholderProperty instead.", false)]
-        public static readonly StyledProperty<string?> WatermarkProperty = PlaceholderProperty;
+        [Obsolete("Use PlaceholderTextProperty instead.", false)]
+        public static readonly StyledProperty<string?> WatermarkProperty = PlaceholderTextProperty;
 
         /// <summary>
-        /// Defines the <see cref="UseFloatingPlaceholder"/> property.
+        /// Defines the <see cref="UseFloatingPlaceholderText"/> property.
         /// </summary>
-        public static readonly StyledProperty<bool> UseFloatingPlaceholderProperty =
-            TextBox.UseFloatingPlaceholderProperty.AddOwner<CalendarDatePicker>();
+        public static readonly StyledProperty<bool> UseFloatingPlaceholderTextProperty =
+            TextBox.UseFloatingPlaceholderTextProperty.AddOwner<CalendarDatePicker>();
 
         /// <summary>
         /// Defines the <see cref="UseFloatingWatermark"/> property.
         /// </summary>
-        [Obsolete("Use UseFloatingPlaceholderProperty instead.", false)]
-        public static readonly StyledProperty<bool> UseFloatingWatermarkProperty = UseFloatingPlaceholderProperty;
+        [Obsolete("Use UseFloatingPlaceholderTextProperty instead.", false)]
+        public static readonly StyledProperty<bool> UseFloatingWatermarkProperty = UseFloatingPlaceholderTextProperty;
 
         /// <summary>
         /// Defines the <see cref="PlaceholderForeground"/> property.
@@ -154,7 +154,7 @@ namespace Avalonia.Controls
             get => GetValue(DisplayDateProperty);
             set => SetValue(DisplayDateProperty, value);
         }
-        
+
         /// <summary>
         /// Gets or sets the first date to be displayed.
         /// </summary>
@@ -278,34 +278,34 @@ namespace Avalonia.Controls
             set => SetValue(TextProperty, value);
         }
 
-        /// <inheritdoc cref="TextBox.Placeholder"/>
-        public string? Placeholder
+        /// <inheritdoc cref="TextBox.PlaceholderText"/>
+        public string? PlaceholderText
         {
-            get => GetValue(PlaceholderProperty);
-            set => SetValue(PlaceholderProperty, value);
+            get => GetValue(PlaceholderTextProperty);
+            set => SetValue(PlaceholderTextProperty, value);
         }
 
         /// <inheritdoc cref="TextBox.Watermark"/>
-        [Obsolete("Use Placeholder instead.", false)]
+        [Obsolete("Use PlaceholderText instead.", false)]
         public string? Watermark
         {
-            get => Placeholder;
-            set => Placeholder = value;
+            get => PlaceholderText;
+            set => PlaceholderText = value;
         }
 
-        /// <inheritdoc cref="TextBox.UseFloatingPlaceholder"/>
-        public bool UseFloatingPlaceholder
+        /// <inheritdoc cref="TextBox.UseFloatingPlaceholderText"/>
+        public bool UseFloatingPlaceholderText
         {
-            get => GetValue(UseFloatingPlaceholderProperty);
-            set => SetValue(UseFloatingPlaceholderProperty, value);
+            get => GetValue(UseFloatingPlaceholderTextProperty);
+            set => SetValue(UseFloatingPlaceholderTextProperty, value);
         }
 
         /// <inheritdoc cref="TextBox.UseFloatingWatermark"/>
-        [Obsolete("Use UseFloatingPlaceholder instead.", false)]
+        [Obsolete("Use UseFloatingPlaceholderText instead.", false)]
         public bool UseFloatingWatermark
         {
-            get => UseFloatingPlaceholder;
-            set => UseFloatingPlaceholder = value;
+            get => UseFloatingPlaceholderText;
+            set => UseFloatingPlaceholderText = value;
         }
 
         /// <inheritdoc cref="TextBox.PlaceholderForeground"/>

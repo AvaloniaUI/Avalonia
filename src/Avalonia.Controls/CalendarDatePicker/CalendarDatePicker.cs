@@ -570,7 +570,7 @@ namespace Avalonia.Controls
 
         private void Calendar_PointerReleased(object? sender, PointerReleasedEventArgs e)
         {
-             
+
             if (e.InitialPressMouseButton == MouseButton.Left)
             {
                 e.Handled = true;
@@ -779,7 +779,7 @@ namespace Avalonia.Controls
                         return true;
                     }
                 case Key.Down:
-                    { 
+                    {
                         if ((e.KeyModifiers & KeyModifiers.Control) == KeyModifiers.Control)
                         {
                             TogglePopUp();
@@ -816,7 +816,7 @@ namespace Avalonia.Controls
                         }
                     }
                     DateTime? d = SetTextBoxValue(s);
-                    
+
                     if (SelectedDate != d)
                     {
                         SetCurrentValue(SelectedDateProperty, d);
@@ -880,8 +880,8 @@ namespace Avalonia.Controls
             if (_textBox != null)
             {
                 SetCurrentValue(TextProperty, String.Empty);
-                
-                if (string.IsNullOrEmpty(Placeholder) && !UseFloatingPlaceholder)
+
+                if (string.IsNullOrEmpty(PlaceholderText) && !UseFloatingPlaceholderText)
                 {
                     DateTimeFormatInfo dtfi = DateTimeHelper.GetCurrentDateFormat();
                     _defaultText = string.Empty;
@@ -908,11 +908,11 @@ namespace Avalonia.Controls
                             }
                     }
 
-                    _textBox.Placeholder = placeholderText;
+                    _textBox.PlaceholderText = placeholderText;
                 }
                 else
                 {
-                    _textBox.ClearValue(TextBox.PlaceholderProperty);
+                    _textBox.ClearValue(TextBox.PlaceholderTextProperty);
                 }
             }
         }

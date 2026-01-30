@@ -39,12 +39,12 @@
         <AutoCompleteBox MaxDropDownHeight="60" />
       </StackPanel>
       <StackPanel>
-        <TextBlock Text="Placeholder" />
-        <AutoCompleteBox Placeholder="Hello World" />
+        <TextBlock Text="PlaceholderText" />
+        <AutoCompleteBox PlaceholderText="Hello World" />
       </StackPanel>
       <StackPanel>
-        <TextBlock Text="Placeholder with custom color" />
-        <AutoCompleteBox Placeholder="Search here..." PlaceholderForeground="Green" />
+        <TextBlock Text="PlaceholderText with custom color" />
+        <AutoCompleteBox PlaceholderText="Search here..." PlaceholderForeground="Green" />
       </StackPanel>
       <StackPanel>
         <TextBlock Text="Disabled" />

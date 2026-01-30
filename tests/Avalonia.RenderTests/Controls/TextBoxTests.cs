@@ -32,7 +32,7 @@ namespace Avalonia.Skia.RenderTests
                 var placeholder = new TextBlock
                 {
                     Name = "PART_Placeholder",
-                    [!TextBlock.TextProperty] = textBox[!TextBox.PlaceholderProperty],
+                    [!TextBlock.TextProperty] = textBox[!TextBox.PlaceholderTextProperty],
                     [!TextBlock.ForegroundProperty] = textBox[!TextBox.PlaceholderForegroundProperty],
                     FontFamily = textBox.FontFamily,
                     FontSize = textBox.FontSize,
@@ -72,7 +72,7 @@ namespace Avalonia.Skia.RenderTests
                     FontFamily = TestFontFamily,
                     FontSize = 12,
                     Background = Brushes.White,
-                    Placeholder = "Red placeholder",
+                    PlaceholderText = "Red placeholder",
                     PlaceholderForeground = Brushes.Red,
                 }
             };
@@ -96,7 +96,7 @@ namespace Avalonia.Skia.RenderTests
                     FontFamily = TestFontFamily,
                     FontSize = 12,
                     Background = Brushes.White,
-                    Placeholder = "Blue placeholder",
+                    PlaceholderText = "Blue placeholder",
                     PlaceholderForeground = Brushes.Blue,
                 }
             };
@@ -120,7 +120,7 @@ namespace Avalonia.Skia.RenderTests
                     FontFamily = TestFontFamily,
                     FontSize = 12,
                     Background = Brushes.White,
-                    Placeholder = "Default placeholder",
+                    PlaceholderText = "Default placeholder",
                     PlaceholderForeground = Brushes.Gray,
                 }
             };

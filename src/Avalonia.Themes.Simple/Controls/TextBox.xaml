@@ -107,10 +107,10 @@
                        DockPanel.Dock="Top"
                        FontSize="{DynamicResource FontSizeSmall}"
                        Foreground="{TemplateBinding PlaceholderForeground}"
-                       Text="{TemplateBinding Placeholder}">
+                       Text="{TemplateBinding PlaceholderText}">
               <TextBlock.IsVisible>
                 <MultiBinding Converter="{x:Static BoolConverters.And}">
-                  <Binding Path="UseFloatingPlaceholder"
+                  <Binding Path="UseFloatingPlaceholderText"
                            RelativeSource="{RelativeSource TemplatedParent}" />
                   <Binding Converter="{x:Static StringConverters.IsNotNullOrEmpty}"
                            Path="Text"
@@ -137,9 +137,9 @@
                     <TextBlock Name="placeholder"
                                Foreground="{TemplateBinding PlaceholderForeground}"
                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                               VerticalAlignment="{TemplateBinding VerticalContentAlignment}"   
+                               VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                Opacity="{DynamicResource TextControlPlaceholderOpacity}"
-                               Text="{TemplateBinding Placeholder}"
+                               Text="{TemplateBinding PlaceholderText}"
                                TextAlignment="{TemplateBinding TextAlignment}"
                                TextWrapping="{TemplateBinding TextWrapping}">
                       <TextBlock.IsVisible>
@@ -205,7 +205,7 @@
         <Template>
           <Button Command="{Binding $parent[TextBox].Clear}"
                   Focusable="False"
-                  Theme="{StaticResource SimpleTextBoxClearButtonTheme}" 
+                  Theme="{StaticResource SimpleTextBoxClearButtonTheme}"
                   ClipToBounds="True" />
         </Template>
       </Setter>

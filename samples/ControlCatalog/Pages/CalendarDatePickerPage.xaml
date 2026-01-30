@@ -5,7 +5,7 @@
              x:Class="ControlCatalog.Pages.CalendarDatePickerPage">
   <StackPanel Orientation="Vertical" Spacing="4">
     <TextBlock Classes="h2">A control for selecting dates with a calendar drop-down</TextBlock>
-        
+
     <StackPanel Orientation="Horizontal"
                 Margin="0,16,0,0"
                 HorizontalAlignment="Center"
@@ -32,24 +32,24 @@
                     Margin="0,0,0,8"/>
 
         <CalendarDatePicker Margin="0,0,0,8"
-                    Placeholder="Placeholder"/>
+                    PlaceholderText="Placeholder"/>
         <CalendarDatePicker Margin="0,0,0,8"
                     Name="DatePicker5"
-                    Placeholder="Floating Placeholder"
-                    UseFloatingPlaceholder="True"/>
+                    PlaceholderText="Floating Placeholder"
+                    UseFloatingPlaceholderText="True"/>
 
-        <TextBlock Text="Placeholder with custom color"/>
+        <TextBlock Text="PlaceholderText with custom color"/>
         <CalendarDatePicker Margin="0,0,0,8"
-                    Placeholder="Select a date"
+                    PlaceholderText="Select a date"
                     PlaceholderForeground="Purple"/>
-                
+
         <TextBlock Text="Disabled"/>
         <CalendarDatePicker IsEnabled="False"/>
-        
+
         <TextBlock Text="Validation Example"/>
         <CalendarDatePicker SelectedDate="{CompiledBinding ValidatedDateExample, Mode=TwoWay}"/>
       </StackPanel>
 
-    </StackPanel> 
+    </StackPanel>
   </StackPanel>
 </UserControl>

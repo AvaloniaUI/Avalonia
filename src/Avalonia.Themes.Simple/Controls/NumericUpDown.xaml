@@ -37,7 +37,7 @@
                      Text="{TemplateBinding Text}"
                      TextAlignment="{TemplateBinding TextAlignment}"
                      TextWrapping="NoWrap"
-                     Placeholder="{TemplateBinding Placeholder}"
+                     PlaceholderText="{TemplateBinding PlaceholderText}"
                      PlaceholderForeground="{TemplateBinding PlaceholderForeground}"
                      InnerLeftContent="{Binding InnerLeftContent, RelativeSource={RelativeSource TemplatedParent}}"
                      InnerRightContent="{Binding InnerRightContent, RelativeSource={RelativeSource TemplatedParent}}"/>
