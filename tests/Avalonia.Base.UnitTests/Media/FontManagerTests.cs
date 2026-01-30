@@ -1,5 +1,4 @@
 ﻿using System;
-using Avalonia.Headless;
 using Avalonia.Media;
 using Avalonia.UnitTests;
 using Xunit;
@@ -65,12 +64,11 @@ namespace Avalonia.Base.UnitTests.Media
                 }
             };
 
-            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface
-                .With(fontManagerImpl: new HeadlessFontManagerStub())))
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
                 AvaloniaLocator.CurrentMutable.Bind<FontManagerOptions>().ToConstant(options);
 
-                FontManager.Current.TryMatchCharacter(1, FontStyle.Normal, FontWeight.Normal, FontStretch.Normal,
+                FontManager.Current.TryMatchCharacter('A', FontStyle.Normal, FontWeight.Normal, FontStretch.Normal,
                     FontFamily.Default, null, out var typeface);
 
                 Assert.Equal("MyFont", typeface.FontFamily.Name);

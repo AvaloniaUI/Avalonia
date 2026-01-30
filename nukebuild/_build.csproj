@@ -4,11 +4,9 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <RootNamespace></RootNamespace>
     <IsPackable>False</IsPackable>
-    <NoWarn>$(NoWarn);CS0649;CS0169;SYSLIB0011</NoWarn>
+    <NoWarn>$(NoWarn);CS0649;CA1847</NoWarn>
     <NukeTelemetryVersion>1</NukeTelemetryVersion>
     <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
-    <!-- See https://github.com/nuke-build/nuke/issues/818 -->
-    <EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
   </PropertyGroup>
 
   <ItemGroup>

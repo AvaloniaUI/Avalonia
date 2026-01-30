@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using Avalonia.Compatibility;
-using Avalonia.Logging;
 
 namespace Avalonia.Input.Platform;
 
@@ -73,7 +70,7 @@ internal sealed class DataObjectToDataTransferItemWrapper(
                 return buffer;
 
             default:
-                return BinaryFormatterHelper.TrySerializeUsingBinaryFormatter(data, format);
+                return null;
         }
     }
 }

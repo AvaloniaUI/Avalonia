@@ -11,10 +11,11 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\packages\Avalonia\Avalonia.csproj" />
     <PackageReference Include="Xamarin.AndroidX.AppCompat" Version="1.7.1.1" />
-    <PackageReference Include="Xamarin.AndroidX.Window" Version="1.5.0" />
+    <PackageReference Include="Xamarin.AndroidX.Window" Version="1.5.1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj" />
+    <ProjectReference Include="..\..\HarfBuzz\Avalonia.HarfBuzz\Avalonia.HarfBuzz.csproj" />
     <ProjectReference Include="..\..\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
   </ItemGroup>
 

@@ -4,7 +4,6 @@
     <OutputType>Exe</OutputType>
     <IsTestProject>true</IsTestProject>
     <DefineConstants>$(DefineConstants);XUNIT</DefineConstants>
-    <IsXUnit2>true</IsXUnit2>
   </PropertyGroup>
 
   <Import Project="..\..\build\UnitTests.NetCore.targets" />
@@ -20,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Avalonia.Themes.Simple\Avalonia.Themes.Simple.csproj" />
+    <ProjectReference Include="..\..\src\HarfBuzz\Avalonia.HarfBuzz\Avalonia.HarfBuzz.csproj" />
     <ProjectReference Include="..\..\src\Headless\Avalonia.Headless.XUnit\Avalonia.Headless.XUnit.csproj" />
     <ProjectReference Include="..\..\src\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
   </ItemGroup>

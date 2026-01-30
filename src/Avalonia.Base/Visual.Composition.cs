@@ -152,6 +152,7 @@ public partial class Visual
             comp.Effect = Effect?.ToImmutable();
 
         comp.RenderOptions = RenderOptions;
+        comp.TextOptions = TextOptions;
 
         var renderTransform = Matrix.Identity;
 

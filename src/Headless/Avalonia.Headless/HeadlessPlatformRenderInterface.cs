@@ -5,11 +5,9 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Avalonia.Media;
-using Avalonia.Platform;
-using Avalonia.Rendering.SceneGraph;
-using Avalonia.Utilities;
 using Avalonia.Media.Imaging;
 using Avalonia.Media.TextFormatting;
+using Avalonia.Platform;
 
 namespace Avalonia.Headless
 {
@@ -19,8 +17,7 @@ namespace Avalonia.Headless
         {
             AvaloniaLocator.CurrentMutable
                 .Bind<IPlatformRenderInterface>().ToConstant(new HeadlessPlatformRenderInterface())
-                .Bind<IFontManagerImpl>().ToConstant(new HeadlessFontManagerStub())
-                .Bind<ITextShaperImpl>().ToConstant(new HeadlessTextShaperStub());
+                .Bind<IFontManagerImpl>().ToConstant(new HeadlessFontManagerStub());
         }
 
         public IPlatformRenderInterfaceContext CreateBackendContext(IPlatformGraphicsContext? graphicsContext) => this;
@@ -136,7 +133,7 @@ namespace Avalonia.Headless
         }
 
         public IGlyphRunImpl CreateGlyphRun(
-            IGlyphTypeface glyphTypeface, 
+            GlyphTypeface glyphTypeface, 
             double fontRenderingEmSize,
             IReadOnlyList<GlyphInfo> glyphInfos, 
             Point baselineOrigin)
@@ -147,7 +144,7 @@ namespace Avalonia.Headless
         internal class HeadlessGlyphRunStub : IGlyphRunImpl
         {
             public HeadlessGlyphRunStub(
-                IGlyphTypeface glyphTypeface,
+                GlyphTypeface glyphTypeface,
                 double fontRenderingEmSize,
                 Point baselineOrigin)
             {
@@ -160,7 +157,7 @@ namespace Avalonia.Headless
 
             public Point BaselineOrigin { get; }
 
-            public IGlyphTypeface GlyphTypeface { get; }
+            public GlyphTypeface GlyphTypeface { get; }
 
             public double FontRenderingEmSize { get; }           
 
@@ -318,25 +315,25 @@ namespace Avalonia.Headless
                     _parent.Bounds = CalculateBounds();
                 }
 
-                public void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection)
+                public void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection, bool isStroked = true)
                     => Track(point);
 
                 public void BeginFigure(Point startPoint, bool isFilled = true) => Track(startPoint);
 
-                public void CubicBezierTo(Point point1, Point point2, Point point3)
+                public void CubicBezierTo(Point point1, Point point2, Point point3, bool isStroked = true)
                 {
                     Track(point1);
                     Track(point2);
                     Track(point3);
                 }
 
-                public void QuadraticBezierTo(Point control, Point endPoint)
+                public void QuadraticBezierTo(Point control, Point endPoint, bool isStroked = true)
                 {
                     Track(control);
                     Track(endPoint);
                 }
 
-                public void LineTo(Point point) => Track(point);
+                public void LineTo(Point point, bool isStroked = true) => Track(point);
 
                 public void EndFigure(bool isClosed)
                 {
@@ -564,12 +561,22 @@ namespace Avalonia.Headless
 
             public void PushRenderOptions(RenderOptions renderOptions)
             {
-               
+                
             }
 
             public void PopRenderOptions()
             {
-               
+                
+            }
+
+            public void PushTextOptions(TextOptions textOptions)
+            {
+                // No-op in headless stub
+            }
+
+            public void PopTextOptions()
+            {
+                // No-op in headless stub
             }
         }
 

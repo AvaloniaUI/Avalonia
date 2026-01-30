@@ -24,22 +24,20 @@ namespace Avalonia.Controls.Primitives
         public static readonly AttachedProperty<BindingBase?> TextBindingProperty
             = AvaloniaProperty.RegisterAttached<Interactive, BindingBase?>("TextBinding", typeof(TextSearch));
 
-        // TODO12: Control should be Interactive to match the property definition.
         /// <summary>
         /// Sets the value of the <see cref="TextProperty"/> attached property to a given <see cref="Control"/>.
         /// </summary>
         /// <param name="control">The control.</param>
         /// <param name="text">The search text to set.</param>
-        public static void SetText(Control control, string? text)
+        public static void SetText(Interactive control, string? text)
             => control.SetValue(TextProperty, text);
 
-        // TODO12: Control should be Interactive to match the property definition.
         /// <summary>
         /// Gets the value of the <see cref="TextProperty"/> attached property from a given <see cref="Control"/>.
         /// </summary>
         /// <param name="control">The control.</param>
         /// <returns>The search text.</returns>
-        public static string? GetText(Control control)
+        public static string? GetText(Interactive control)
             => control.GetValue(TextProperty);
 
         /// <summary>

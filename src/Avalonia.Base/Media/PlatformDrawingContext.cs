@@ -85,6 +85,8 @@ internal sealed class PlatformDrawingContext : DrawingContext
     }
 
     protected override void PushRenderOptionsCore(RenderOptions renderOptions) => _impl.PushRenderOptions(renderOptions);
+    
+    protected override void PushTextOptionsCore(TextOptions textOptions) => _impl.PushTextOptions(textOptions);
 
     protected override void PopClipCore() => _impl.PopClip();
 
@@ -99,6 +101,8 @@ internal sealed class PlatformDrawingContext : DrawingContext
             (_transforms ?? throw new ObjectDisposedException(nameof(PlatformDrawingContext))).Pop();
 
     protected override void PopRenderOptionsCore() => _impl.PopRenderOptions();
+    
+    protected override void PopTextOptionsCore() => _impl.PopTextOptions();
 
     protected override void DisposeCore()
     {

@@ -51,6 +51,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType ClrPropertyInfo { get; }
         public IXamlType IPropertyAccessor { get; }
         public IXamlType PropertyInfoAccessorFactory { get; }
+        public IXamlType CompiledBinding { get; }
         public IXamlType CompiledBindingPathBuilder { get; }
         public IXamlType CompiledBindingPath { get; }
         public IXamlType CompiledBindingExtension { get; }
@@ -133,6 +134,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType ControlTemplate { get; }
         public IXamlType EventHandlerT {  get; }
         public IXamlMethod GetClassProperty { get; }
+        public IXamlConstructor XamlSourceInfoConstructor { get; }
+        public IXamlMethod XamlSourceInfoSetter { get; }
+        public IXamlMethod XamlSourceInfoDictionarySetter { get; }
 
         sealed internal class InteractivityWellKnownTypes
         {
@@ -242,8 +246,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             ClrPropertyInfo = cfg.TypeSystem.GetType("Avalonia.Data.Core.ClrPropertyInfo");
             IPropertyAccessor = cfg.TypeSystem.GetType("Avalonia.Data.Core.Plugins.IPropertyAccessor");
             PropertyInfoAccessorFactory = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings.PropertyInfoAccessorFactory");
-            CompiledBindingPathBuilder = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings.CompiledBindingPathBuilder");
-            CompiledBindingPath = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings.CompiledBindingPath");
+            CompiledBinding = cfg.TypeSystem.GetType("Avalonia.Data.CompiledBinding");
+            CompiledBindingPathBuilder = cfg.TypeSystem.GetType("Avalonia.Data.CompiledBindingPathBuilder");
+            CompiledBindingPath = cfg.TypeSystem.GetType("Avalonia.Data.CompiledBindingPath");
             CompiledBindingExtension = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindingExtension");
             ResolveByNameExtension = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.MarkupExtensions.ResolveByNameExtension");
             DataTemplate = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.Templates.DataTemplate");
@@ -341,6 +346,15 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 allowDowncast:false,
                 cfg.WellKnownTypes.String
                 );
+
+            var xamlSourceInfo = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.Diagnostics.XamlSourceInfo");
+            XamlSourceInfoConstructor = xamlSourceInfo.GetConstructor([
+                XamlIlTypes.Int32, XamlIlTypes.Int32, XamlIlTypes.String
+            ]);
+            XamlSourceInfoSetter =
+                xamlSourceInfo.GetMethod("SetXamlSourceInfo", XamlIlTypes.Void, false, XamlIlTypes.Object, xamlSourceInfo);
+            XamlSourceInfoDictionarySetter =
+                xamlSourceInfo.GetMethod("SetXamlSourceInfo", XamlIlTypes.Void, false, IResourceDictionary, XamlIlTypes.Object, xamlSourceInfo);
         }
     }
 
