@@ -79,7 +79,7 @@ namespace Avalonia.Styling
                     }
                     else if (animation is ICompositionAnimation compositionAnimation && animatable is Visual visual)
                     {
-                        _animationApplyDisposables.Add(compositionAnimation.Apply(visual));
+                        _animationApplyDisposables.Add(compositionAnimation.Apply(visual, _animationTrigger));
                     }
                 }
 

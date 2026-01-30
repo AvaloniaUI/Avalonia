@@ -24,7 +24,7 @@ namespace Avalonia.Animation
         /// <summary>
         /// Apply the animation to the specified visual and return a disposable to remove it.
         /// </summary>
-        IDisposable Apply(Visual parent);
+        IDisposable Apply(Visual parent, IObservable<bool> match);
     }
 
     /// <summary>

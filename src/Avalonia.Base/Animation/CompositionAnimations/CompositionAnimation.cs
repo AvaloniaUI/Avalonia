@@ -75,21 +75,82 @@ namespace Avalonia.Animation
             set => SetValue(StopBehaviorProperty, value);
         }
 
-        IDisposable ICompositionAnimation.Apply(Visual parent)
+        private CompositionKeyFrameInstance[]? _keyFramesInstances;
+
+        IDisposable ICompositionAnimation.Apply(Visual parent, IObservable<bool> match)
         {
-            var subscription = IsEnabledProperty.Changed
-                .Where(args => args.GetNewValue<bool>())
+            // Terrible terrible terrible code ahead
+            // Just a proof of concept, trying to make it work
+            
+            var disposable = new CompositeDisposable();
+
+            var shouldContinue = false;
+            var subject = new LightweightSubject<bool>();
+            var count = Children.Count;
+            var instances = new CompositionKeyFrameInstance[count];
+            var hasInitialValue = new bool[count];
+            for (var i = 0; i < count; i++)
+            {
+                var index = i;
+                instances[index] = Children[index].Instance(parent);
+                disposable.Add(instances[index]);
+                hasInitialValue[index] = instances[index].IsSet(CompositionKeyFrameInstance.InstanceValueProperty);
+                instances[index].PropertyChanged += InstancePropChanged;
+                disposable.Add(Disposable.Create(() =>
+                {
+                    instances[index].PropertyChanged -= InstancePropChanged;
+                }));
+
+                void InstancePropChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+                {
+                    if (e.Property == CompositionKeyFrameInstance.InstanceValueProperty)
+                    {
+                        hasInitialValue[index] = true;
+                        subject.OnNext(true);
+                    }
+                }
+            }
+            _keyFramesInstances = instances;
+
+            disposable.Add(match.Subscribe(value =>
+            {
+                shouldContinue = value;
+                subject.OnNext(true);
+            }));
+            
+            PropertyChanged += ThisOnPropertyChanged;
+            disposable.Add(Disposable.Create(() =>
+            {
+                PropertyChanged -= ThisOnPropertyChanged;
+            }));
+
+            void ThisOnPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+            {
+                if (e.Property == IsEnabledProperty)
+                {
+                    subject.OnNext(true);
+                }
+            }
+
+            disposable.Add(subject
+                .Where(_ => shouldContinue && IsEnabled && hasInitialValue.All(b => b))
                 .Subscribe(_ =>
                 {
+                    _keyFramesInstances = instances;
                     if (GetCompositionAnimation(parent) is KeyFrameAnimation { Target: not null } newAnimation)
                     {
                         Attach(parent, newAnimation);
                     }
-                });
+                }));
 
             return Disposable.Create(() =>
             {
-                subscription.Dispose();
+                if (_keyFramesInstances == instances)
+                {
+                    _keyFramesInstances = null;
+                }
+
+                disposable.Dispose();
                 Detach();
             });
         }
@@ -111,11 +172,20 @@ namespace Avalonia.Animation
                 keyFrameAnimation.IterationCount = IterationCount;
                 keyFrameAnimation.StopBehavior = StopBehavior;
 
-                if (Children.Any())
+                if (_keyFramesInstances is not null)
+                {
+                    foreach (var instanceKeyFrame in _keyFramesInstances)
+                    {
+                        SetKeyFrame(keyFrameAnimation, instanceKeyFrame.KeyFrame, instanceKeyFrame.Value);
+                    }
+                }
+                else if (Children.Any())
+                {
                     foreach (var frame in Children)
                     {
-                        SetKeyFrame(keyFrameAnimation, frame);
+                        SetKeyFrame(keyFrameAnimation, frame, frame.Value);
                     }
+                }
                 else
                 {
                     keyFrameAnimation.InsertExpressionKeyFrame(1.0f, "this.FinalValue");
@@ -123,47 +193,51 @@ namespace Avalonia.Animation
             }
         }
 
-        private static void SetKeyFrame(KeyFrameAnimation animation, CompositionKeyFrame frame)
+        private static void SetKeyFrame(KeyFrameAnimation animation, CompositionKeyFrame frame, object? value)
         {
             var easing = (frame.Easing ?? animation.Compositor.DefaultEasing) as Easing;
 
-            if(frame is ExpressionKeyFrame expressionKeyFrame && expressionKeyFrame.Value is string value)
+            if(frame is ExpressionKeyFrame && value is string str)
             {
-                animation.InsertExpressionKeyFrame(frame.NormalizedProgressKey, value, easing);
+                animation.InsertExpressionKeyFrame(frame.NormalizedProgressKey, str, easing);
             }
-            else if(animation is VectorKeyFrameAnimation vectorKeyFrameAnimation && frame.Value is Vector vector)
+            else if(animation is VectorKeyFrameAnimation vectorKeyFrameAnimation && value is Vector vector)
             {
                 vectorKeyFrameAnimation.InsertKeyFrame(frame.NormalizedProgressKey, vector, easing!);
             }
-            else if (animation is Vector2KeyFrameAnimation vector2KeyFrameAnimation && frame.Value is Vector2 vector2)
+            else if (animation is Vector2KeyFrameAnimation vector2KeyFrameAnimation && value is Vector2 vector2)
             {
                 vector2KeyFrameAnimation.InsertKeyFrame(frame.NormalizedProgressKey, vector2, easing!);
             }
-            else if (animation is Vector3KeyFrameAnimation vector3KeyFrameAnimation && frame.Value is Vector3 vector3)
+            else if (animation is Vector3KeyFrameAnimation vector3KeyFrameAnimation && value is Vector3 vector3)
             {
                 vector3KeyFrameAnimation.InsertKeyFrame(frame.NormalizedProgressKey, vector3, easing!);
             }
-            else if (animation is Vector4KeyFrameAnimation vector4KeyFrameAnimation && frame.Value is Vector4 vector4)
+            else if (animation is Vector3KeyFrameAnimation vector3KeyFrameAnimation1 && value is double vector3X)
+            {
+                vector3KeyFrameAnimation1.InsertKeyFrame(frame.NormalizedProgressKey, new Vector3((float)vector3X, 0, 0), easing!);
+            }
+            else if (animation is Vector4KeyFrameAnimation vector4KeyFrameAnimation && value is Vector4 vector4)
             {
                 vector4KeyFrameAnimation.InsertKeyFrame(frame.NormalizedProgressKey, vector4, easing!);
             }
-            else if (animation is ScalarKeyFrameAnimation scalarKeyFrameAnimation && frame.Value is float scalar)
+            else if (animation is ScalarKeyFrameAnimation scalarKeyFrameAnimation && value is float scalar)
             {
                 scalarKeyFrameAnimation.InsertKeyFrame(frame.NormalizedProgressKey, scalar, easing!);
             }
-            else if (animation is QuaternionKeyFrameAnimation quaternionKeyFrameAnimation && frame.Value is Quaternion quaternion)
+            else if (animation is QuaternionKeyFrameAnimation quaternionKeyFrameAnimation && value is Quaternion quaternion)
             {
                 quaternionKeyFrameAnimation.InsertKeyFrame(frame.NormalizedProgressKey, quaternion, easing!);
             }
-            else if (animation is BooleanKeyFrameAnimation booleanKeyFrameAnimation && frame.Value is bool boolean)
+            else if (animation is BooleanKeyFrameAnimation booleanKeyFrameAnimation && value is bool boolean)
             {
                 booleanKeyFrameAnimation.InsertKeyFrame(frame.NormalizedProgressKey, boolean, easing!);
             }
-            else if (animation is DoubleKeyFrameAnimation doubleKeyFrameAnimation && frame.Value is double val)
+            else if (animation is DoubleKeyFrameAnimation doubleKeyFrameAnimation && value is double val)
             {
                 doubleKeyFrameAnimation.InsertKeyFrame(frame.NormalizedProgressKey, val, easing!);
             }
-            else if (animation is ColorKeyFrameAnimation colorKeyFrameAnimation && frame.Value is Color color)
+            else if (animation is ColorKeyFrameAnimation colorKeyFrameAnimation && value is Color color)
             {
                 colorKeyFrameAnimation.InsertKeyFrame(frame.NormalizedProgressKey, color, easing!);
             }

@@ -22,6 +22,29 @@ namespace Avalonia.Animation
         }
     }
 
+    /// <summary>
+    /// Shouldn't really exist.
+    /// </summary>
+    public class OffsetXCompositionAnimation : CompositionAnimation
+    {
+        /// <inheritdoc/>
+        protected override Rendering.Composition.Animations.CompositionAnimation? GetCompositionAnimation(Visual visual)
+        {
+            var compositor = ElementComposition.GetElementVisual(visual)?.Compositor;
+
+            if (compositor == null)
+                return null;
+
+            var animation = compositor.CreateVector3KeyFrameAnimation();
+
+            animation.Target = "Offset";
+
+            SetAnimationValues(animation);
+
+            return animation;
+        }
+    }
+
     public class OpacityCompositionAnimation : CompositionAnimation
     {
         /// <inheritdoc/>
