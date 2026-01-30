@@ -37,7 +37,8 @@
                      Text="{TemplateBinding Text}"
                      TextAlignment="{TemplateBinding TextAlignment}"
                      TextWrapping="NoWrap"
-                     Watermark="{TemplateBinding Watermark}"
+                     PlaceholderText="{TemplateBinding PlaceholderText}"
+                     PlaceholderForeground="{TemplateBinding PlaceholderForeground}"
                      InnerLeftContent="{Binding InnerLeftContent, RelativeSource={RelativeSource TemplatedParent}}"
                      InnerRightContent="{Binding InnerRightContent, RelativeSource={RelativeSource TemplatedParent}}"/>
           </ButtonSpinner>

@@ -1,4 +1,4 @@
-﻿// (c) Copyright Microsoft Corporation.
+// (c) Copyright Microsoft Corporation.
 // This source is subject to the Microsoft Public License (Ms-PL).
 // Please see https://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
@@ -24,8 +24,29 @@ namespace Avalonia.Controls
                 defaultValue: 0,
                 defaultBindingMode: BindingMode.TwoWay));
 
-        public static readonly StyledProperty<string?> WatermarkProperty =
-            TextBox.WatermarkProperty.AddOwner<AutoCompleteBox>();
+        /// <summary>
+        /// Defines the <see cref="PlaceholderText"/> property.
+        /// </summary>
+        public static readonly StyledProperty<string?> PlaceholderTextProperty =
+            TextBox.PlaceholderTextProperty.AddOwner<AutoCompleteBox>();
+
+        /// <summary>
+        /// Defines the <see cref="Watermark"/> property.
+        /// </summary>
+        [Obsolete("Use PlaceholderTextProperty instead.", false)]
+        public static readonly StyledProperty<string?> WatermarkProperty = PlaceholderTextProperty;
+
+        /// <summary>
+        /// Defines the <see cref="PlaceholderForeground"/> property.
+        /// </summary>
+        public static readonly StyledProperty<Media.IBrush?> PlaceholderForegroundProperty =
+            TextBox.PlaceholderForegroundProperty.AddOwner<AutoCompleteBox>();
+
+        /// <summary>
+        /// Defines the <see cref="WatermarkForeground"/> property.
+        /// </summary>
+        [Obsolete("Use PlaceholderForegroundProperty instead.", false)]
+        public static readonly StyledProperty<Media.IBrush?> WatermarkForegroundProperty = PlaceholderForegroundProperty;
 
         /// <summary>
         /// Identifies the <see cref="MinimumPrefixLength" /> property.
@@ -311,7 +332,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the  <see cref="T:Avalonia.Data.Binding" /> that
+        /// Gets or sets the <see cref="T:Avalonia.Data.Binding" /> that
         /// is used to get the values for display in the text portion of
         /// the <see cref="AutoCompleteBox" />
         /// control.
@@ -410,10 +431,42 @@ namespace Avalonia.Controls
             set => SetValue(FilterModeProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets the placeholder or descriptive text that is displayed even if the text is not yet set.
+        /// </summary>
+        public string? PlaceholderText
+        {
+            get => GetValue(PlaceholderTextProperty);
+            set => SetValue(PlaceholderTextProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the placeholder or descriptive text that is displayed even if the text is not yet set.
+        /// </summary>
+        [Obsolete("Use PlaceholderText instead.", false)]
         public string? Watermark
         {
-            get => GetValue(WatermarkProperty);
-            set => SetValue(WatermarkProperty, value);
+            get => PlaceholderText;
+            set => PlaceholderText = value;
+        }
+
+        /// <summary>
+        /// Gets or sets the brush used for the foreground color of the placeholder text.
+        /// </summary>
+        public Media.IBrush? PlaceholderForeground
+        {
+            get => GetValue(PlaceholderForegroundProperty);
+            set => SetValue(PlaceholderForegroundProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the brush used for the foreground color of the placeholder text.
+        /// </summary>
+        [Obsolete("Use PlaceholderForeground instead.", false)]
+        public Media.IBrush? WatermarkForeground
+        {
+            get => PlaceholderForeground;
+            set => PlaceholderForeground = value;
         }
 
         /// <summary>
