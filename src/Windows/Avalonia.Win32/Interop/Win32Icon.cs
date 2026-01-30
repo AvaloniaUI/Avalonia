@@ -96,14 +96,14 @@ internal class Win32Icon : IDisposable
 
     static IntPtr CreateHBitmap(Bitmap source)
     {
-        using var fb = AllocFramebuffer(source.PixelSize, PixelFormats.Bgra8888);
-        source.CopyPixels(fb, AlphaFormat.Unpremul);
+        using var fb = AllocFramebuffer(source.PixelSize, PixelFormats.Bgra8888, AlphaFormat.Unpremul);
+        source.CopyPixels(fb);
         return UnmanagedMethods.CreateBitmap(source.PixelSize.Width, source.PixelSize.Height, 1, 32, fb.Address);
     }
 
     static unsafe IntPtr AlphaToMask(Bitmap source)
     {
-        using var alphaMaskBuffer = AllocFramebuffer(source.PixelSize, PixelFormats.BlackWhite);
+        using var alphaMaskBuffer = AllocFramebuffer(source.PixelSize, PixelFormats.BlackWhite, AlphaFormat.Opaque);
         var height = alphaMaskBuffer.Size.Height;
         var width = alphaMaskBuffer.Size.Width;
 
@@ -114,8 +114,8 @@ internal class Win32Icon : IDisposable
         }
         else
         {
-            using var argbBuffer = AllocFramebuffer(source.PixelSize, PixelFormat.Bgra8888);
-            source.CopyPixels(argbBuffer, AlphaFormat.Unpremul);
+            using var argbBuffer = AllocFramebuffer(source.PixelSize, PixelFormat.Bgra8888, AlphaFormat.Unpremul);
+            source.CopyPixels(argbBuffer);
             var pSource = (byte*)argbBuffer.Address;
             var pDest = (byte*)alphaMaskBuffer.Address;
 
@@ -140,7 +140,7 @@ internal class Win32Icon : IDisposable
         return UnmanagedMethods.CreateBitmap(width, height, 1, 1, alphaMaskBuffer.Address);
     }
 
-    static LockedFramebuffer AllocFramebuffer(PixelSize size, PixelFormat format)
+    static LockedFramebuffer AllocFramebuffer(PixelSize size, PixelFormat format, AlphaFormat alphaFormat)
     {
         if (size.Width < 1 || size.Height < 1)
             throw new ArgumentOutOfRangeException();
@@ -149,7 +149,7 @@ internal class Win32Icon : IDisposable
         var data = Marshal.AllocHGlobal(size.Height * stride);
         if (data == IntPtr.Zero)
             throw new OutOfMemoryException();
-        return new LockedFramebuffer(data, size, stride, new Vector(96, 96), format,
+        return new LockedFramebuffer(data, size, stride, new Vector(96, 96), format, alphaFormat,
             () => Marshal.FreeHGlobal(data));
     }
     

@@ -83,7 +83,7 @@ namespace Avalonia.X11
         {
             var h = GCHandle.Alloc(_bdata, GCHandleType.Pinned);
             return new LockedFramebuffer(h.AddrOfPinnedObject(), new PixelSize(_width, _height), _width * 4,
-                new Vector(96, 96), PixelFormat.Bgra8888,
+                new Vector(96, 96), PixelFormat.Bgra8888, AlphaFormat.Premul,
                 () => h.Free());
         }
         

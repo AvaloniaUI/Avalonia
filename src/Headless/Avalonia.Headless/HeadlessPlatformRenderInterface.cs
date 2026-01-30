@@ -416,8 +416,8 @@ namespace Avalonia.Headless
 
             public Vector Dpi { get; }
             public PixelSize PixelSize { get; }
-            public PixelFormat? Format { get; }
-            public AlphaFormat? AlphaFormat { get; }
+            public PixelFormat? Format => PixelFormat.Rgba8888;
+            public AlphaFormat? AlphaFormat => Platform.AlphaFormat.Premul;
             public int Version { get; set; }
 
             public void Save(string fileName, int? quality = null)
@@ -436,7 +436,7 @@ namespace Avalonia.Headless
                 Version++;
                 var mem = Marshal.AllocHGlobal(PixelSize.Width * PixelSize.Height * 4);
                 return new LockedFramebuffer(mem, PixelSize, PixelSize.Width * 4, Dpi, PixelFormat.Rgba8888,
-                    () => Marshal.FreeHGlobal(mem));
+                    Platform.AlphaFormat.Premul, () => Marshal.FreeHGlobal(mem));
             }
         }
 

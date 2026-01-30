@@ -39,7 +39,7 @@ public class CompositionTargetUpdateOnly : IDisposable
         private static readonly IntPtr Buffer = Marshal.AllocHGlobal(4);
         public IFramebufferRenderTarget CreateFramebufferRenderTarget() =>
             new FuncFramebufferRenderTarget(() => new LockedFramebuffer(Buffer, new PixelSize(1, 1), 4, new Vector(96, 96), PixelFormat.Rgba8888,
-                null));
+                AlphaFormat.Premul, null));
     }
 
 
