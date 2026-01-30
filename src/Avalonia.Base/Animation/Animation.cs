@@ -13,7 +13,7 @@ namespace Avalonia.Animation
     /// <summary>
     /// Tracks the progress of an animation.
     /// </summary>
-    public sealed partial class Animation : AvaloniaObject, IAnimation
+    public sealed partial class Animation : AvaloniaObject, IPropertyAnimation
     {
         /// <summary>
         /// Defines the <see cref="Duration"/> property.
@@ -268,10 +268,10 @@ namespace Avalonia.Animation
             return (newAnimatorInstances, subscriptions);
         }
 
-        IDisposable IAnimation.Apply(Animatable control, IClock? clock, IObservable<bool> match, Action? onComplete)
+        IDisposable IPropertyAnimation.Apply(Animatable control, IClock? clock, IObservable<bool> match, Action? onComplete)
             => Apply(control, clock, match, onComplete);
         
-        /// <inheritdoc cref="IAnimation.Apply"/>
+        /// <inheritdoc cref="IPropertyAnimation.Apply"/>
         internal IDisposable Apply(Animatable control, IClock? clock, IObservable<bool> match, Action? onComplete)
         {
             var (animators, subscriptions) = InterpretKeyframes(control);
@@ -320,16 +320,16 @@ namespace Avalonia.Animation
         public Task RunAsync(Animatable control, CancellationToken cancellationToken = default) =>
             RunAsync(control, null, cancellationToken);
         
-        /// <inheritdoc cref="IAnimation.RunAsync"/>
+        /// <inheritdoc cref="IPropertyAnimation.RunAsync"/>
         internal Task RunAsync(Animatable control, IClock? clock)
         {
             return RunAsync(control, clock, default);
         }
 
-        Task IAnimation.RunAsync(Animatable control, IClock? clock, CancellationToken cancellationToken)
+        Task IPropertyAnimation.RunAsync(Animatable control, IClock? clock, CancellationToken cancellationToken)
             => RunAsync(control, clock, cancellationToken);
         
-        /// <inheritdoc cref="IAnimation.RunAsync"/>
+        /// <inheritdoc cref="IPropertyAnimation.RunAsync"/>
         internal Task RunAsync(Animatable control, IClock? clock, CancellationToken cancellationToken)
         {
             if (cancellationToken.IsCancellationRequested)

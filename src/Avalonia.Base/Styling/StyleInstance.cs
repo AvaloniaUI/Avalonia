@@ -72,7 +72,16 @@ namespace Avalonia.Styling
                 _animationTrigger ??= new LightweightSubject<bool>();
                 _animationApplyDisposables ??= new List<IDisposable>();
                 foreach (var animation in _animations)
-                    _animationApplyDisposables.Add(animation.Apply(animatable, null, _animationTrigger));
+                {
+                    if (animation is IPropertyAnimation propertyAnimation)
+                    {
+                        _animationApplyDisposables.Add(propertyAnimation.Apply(animatable, null, _animationTrigger));
+                    }
+                    else if (animation is ICompositionAnimation compositionAnimation && animatable is Visual visual)
+                    {
+                        _animationApplyDisposables.Add(compositionAnimation.Apply(visual));
+                    }
+                }
 
                 if (_activator is null)
                     _animationTrigger.OnNext(true);

@@ -5,7 +5,6 @@ using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Data;
 using Avalonia.PropertyStore;
-using Avalonia.Rendering.Composition;
 
 #nullable enable
 

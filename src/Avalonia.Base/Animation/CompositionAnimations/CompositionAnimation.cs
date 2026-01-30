@@ -5,15 +5,14 @@ using Avalonia.Animation.Easings;
 using Avalonia.Collections;
 using Avalonia.Media;
 using Avalonia.Metadata;
+using Avalonia.Reactive;
 using Avalonia.Rendering.Composition;
 using Avalonia.Rendering.Composition.Animations;
 
 namespace Avalonia.Animation
 {
-    public abstract class CompositionAnimation : AvaloniaObject, ICompositionTransition
+    public abstract class CompositionAnimation : AvaloniaObject, ICompositionTransition, ICompositionAnimation
     {
-        public event EventHandler? AnimationInvalidated;
-
         public static readonly StyledProperty<bool> IsEnabledProperty = AvaloniaProperty.Register<CompositionAnimation, bool>(
             nameof(IsEnabled), defaultValue: true);
 
@@ -34,6 +33,8 @@ namespace Avalonia.Animation
         
         private Visual? _attachedVisual;
         private KeyFrameAnimation? _animation;
+
+        public event EventHandler? AnimationInvalidated;
 
         [Content]
         public AvaloniaList<CompositionKeyFrame> Children { get; } = new();
@@ -72,6 +73,25 @@ namespace Avalonia.Animation
         {
             get => GetValue(StopBehaviorProperty);
             set => SetValue(StopBehaviorProperty, value);
+        }
+
+        IDisposable ICompositionAnimation.Apply(Visual parent)
+        {
+            var subscription = IsEnabledProperty.Changed
+                .Where(args => args.GetNewValue<bool>())
+                .Subscribe(_ =>
+                {
+                    if (GetCompositionAnimation(parent) is KeyFrameAnimation { Target: not null } newAnimation)
+                    {
+                        Attach(parent, newAnimation);
+                    }
+                });
+
+            return Disposable.Create(() =>
+            {
+                subscription.Dispose();
+                Detach();
+            });
         }
 
         Rendering.Composition.Animations.CompositionAnimation? ICompositionTransition.GetCompositionAnimation(Visual parent)
