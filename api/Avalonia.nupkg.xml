@@ -153,6 +153,48 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Media.TextFormatting.GenericTextRunProperties.#ctor(Avalonia.Media.Typeface,Avalonia.Media.FontFeatureCollection,System.Double,Avalonia.Media.TextDecorationCollection,Avalonia.Media.IBrush,Avalonia.Media.IBrush,Avalonia.Media.BaselineAlignment,System.Globalization.CultureInfo)</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Media.TextFormatting.GenericTextRunProperties.#ctor(Avalonia.Media.Typeface,System.Double,Avalonia.Media.TextDecorationCollection,Avalonia.Media.IBrush,Avalonia.Media.IBrush,Avalonia.Media.BaselineAlignment,System.Globalization.CultureInfo)</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Media.TextFormatting.TextCollapsingProperties.CreateCollapsedRuns(Avalonia.Media.TextFormatting.TextLine,System.Int32,Avalonia.Media.FlowDirection,Avalonia.Media.TextFormatting.TextRun)</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Media.TextFormatting.TextLayout.#ctor(System.String,Avalonia.Media.Typeface,Avalonia.Media.FontFeatureCollection,System.Double,Avalonia.Media.IBrush,Avalonia.Media.TextAlignment,Avalonia.Media.TextWrapping,Avalonia.Media.TextTrimming,Avalonia.Media.TextDecorationCollection,Avalonia.Media.FlowDirection,System.Double,System.Double,System.Double,System.Double,System.Int32,System.Collections.Generic.IReadOnlyList{Avalonia.Utilities.ValueSpan{Avalonia.Media.TextFormatting.TextRunProperties}})</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Media.TextFormatting.TextLayout.#ctor(System.String,Avalonia.Media.Typeface,System.Double,Avalonia.Media.IBrush,Avalonia.Media.TextAlignment,Avalonia.Media.TextWrapping,Avalonia.Media.TextTrimming,Avalonia.Media.TextDecorationCollection,Avalonia.Media.FlowDirection,System.Double,System.Double,System.Double,System.Double,System.Int32,System.Collections.Generic.IReadOnlyList{Avalonia.Utilities.ValueSpan{Avalonia.Media.TextFormatting.TextRunProperties}})</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Media.TextFormatting.TextShaperOptions.#ctor(Avalonia.Media.GlyphTypeface,System.Collections.Generic.IReadOnlyList{Avalonia.Media.FontFeature},System.Double,System.SByte,System.Globalization.CultureInfo,System.Double,System.Double)</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Media.TextFormatting.TextShaperOptions.#ctor(Avalonia.Media.GlyphTypeface,System.Double,System.SByte,System.Globalization.CultureInfo,System.Double,System.Double)</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Platform.IDrawingContextImplWithEffects.PushEffect(Avalonia.Media.IEffect)</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
@@ -460,6 +502,48 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Media.StreamGeometryContext.QuadraticBezierTo(Avalonia.Point,Avalonia.Point)</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Media.TextFormatting.GenericTextRunProperties.#ctor(Avalonia.Media.Typeface,Avalonia.Media.FontFeatureCollection,System.Double,Avalonia.Media.TextDecorationCollection,Avalonia.Media.IBrush,Avalonia.Media.IBrush,Avalonia.Media.BaselineAlignment,System.Globalization.CultureInfo)</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Media.TextFormatting.GenericTextRunProperties.#ctor(Avalonia.Media.Typeface,System.Double,Avalonia.Media.TextDecorationCollection,Avalonia.Media.IBrush,Avalonia.Media.IBrush,Avalonia.Media.BaselineAlignment,System.Globalization.CultureInfo)</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Media.TextFormatting.TextCollapsingProperties.CreateCollapsedRuns(Avalonia.Media.TextFormatting.TextLine,System.Int32,Avalonia.Media.FlowDirection,Avalonia.Media.TextFormatting.TextRun)</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Media.TextFormatting.TextLayout.#ctor(System.String,Avalonia.Media.Typeface,Avalonia.Media.FontFeatureCollection,System.Double,Avalonia.Media.IBrush,Avalonia.Media.TextAlignment,Avalonia.Media.TextWrapping,Avalonia.Media.TextTrimming,Avalonia.Media.TextDecorationCollection,Avalonia.Media.FlowDirection,System.Double,System.Double,System.Double,System.Double,System.Int32,System.Collections.Generic.IReadOnlyList{Avalonia.Utilities.ValueSpan{Avalonia.Media.TextFormatting.TextRunProperties}})</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Media.TextFormatting.TextLayout.#ctor(System.String,Avalonia.Media.Typeface,System.Double,Avalonia.Media.IBrush,Avalonia.Media.TextAlignment,Avalonia.Media.TextWrapping,Avalonia.Media.TextTrimming,Avalonia.Media.TextDecorationCollection,Avalonia.Media.FlowDirection,System.Double,System.Double,System.Double,System.Double,System.Int32,System.Collections.Generic.IReadOnlyList{Avalonia.Utilities.ValueSpan{Avalonia.Media.TextFormatting.TextRunProperties}})</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Media.TextFormatting.TextShaperOptions.#ctor(Avalonia.Media.GlyphTypeface,System.Collections.Generic.IReadOnlyList{Avalonia.Media.FontFeature},System.Double,System.SByte,System.Globalization.CultureInfo,System.Double,System.Double)</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Media.TextFormatting.TextShaperOptions.#ctor(Avalonia.Media.GlyphTypeface,System.Double,System.SByte,System.Globalization.CultureInfo,System.Double,System.Double)</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
   </Suppression>
