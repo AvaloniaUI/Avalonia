@@ -107,4 +107,10 @@ namespace Avalonia.X11
         CWColormap = (1 << 13),
         CWCursor = (1 << 14),
     }
+
+    internal enum PropertyNotification : int
+    {
+        NewValue = 0,
+        Delete = 1
+    }
 }
