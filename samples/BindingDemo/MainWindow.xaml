@@ -20,22 +20,22 @@
         <StackPanel Orientation="Horizontal">
           <StackPanel Margin="18" Spacing="4" Width="200">
             <TextBlock FontSize="16" Text="Simple Bindings"/>
-            <TextBox Watermark="Two Way" UseFloatingWatermark="True" Text="{Binding Path=StringValue}" Name="first"/>
-            <TextBox Watermark="Two Way (LostFocus)" UseFloatingWatermark="True" Text="{Binding Path=StringValue, UpdateSourceTrigger=LostFocus}"/>
-            <TextBox Watermark="One Way" UseFloatingWatermark="True" Text="{Binding Path=StringValue, Mode=OneWay}"/>
-            <TextBox Watermark="One Time" UseFloatingWatermark="True" Text="{Binding Path=StringValue, Mode=OneTime}"/>
+            <TextBox Placeholder="Two Way" UseFloatingPlaceholder="True" Text="{Binding Path=StringValue}" Name="first"/>
+            <TextBox Placeholder="Two Way (LostFocus)" UseFloatingPlaceholder="True" Text="{Binding Path=StringValue, UpdateSourceTrigger=LostFocus}"/>
+            <TextBox Placeholder="One Way" UseFloatingPlaceholder="True" Text="{Binding Path=StringValue, Mode=OneWay}"/>
+            <TextBox Placeholder="One Time" UseFloatingPlaceholder="True" Text="{Binding Path=StringValue, Mode=OneTime}"/>
             <!-- Removed due to #2983: reinstate when that's fixed.
-              <TextBox Watermark="One Way to Source" UseFloatingWatermark="True" Text="{Binding Path=StringValue, Mode=OneWayToSource}"/>
+              <TextBox Placeholder="One Way to Source" UseFloatingPlaceholder="True" Text="{Binding Path=StringValue, Mode=OneWayToSource}"/>
             -->
           </StackPanel>
           <StackPanel Margin="18" Spacing="4" Width="200">
             <TextBlock FontSize="16" Text="Collection Bindings"/>
-            <TextBox Watermark="Items[1].Value" UseFloatingWatermark="True" Text="{Binding Path=Items[1].Value}"/>
+            <TextBox Placeholder="Items[1].Value" UseFloatingPlaceholder="True" Text="{Binding Path=Items[1].Value}"/>
             <Button Command="{Binding ShuffleItems}">Shuffle</Button>
           </StackPanel>
           <StackPanel Margin="18" Spacing="4" Width="200">
             <TextBlock FontSize="16" Text="Negated Bindings"/>
-            <TextBox Watermark="Boolean String" UseFloatingWatermark="True" Text="{Binding Path=BooleanString}"/>
+            <TextBox Placeholder="Boolean String" UseFloatingPlaceholder="True" Text="{Binding Path=BooleanString}"/>
             <CheckBox IsChecked="{Binding !BooleanString}">!BooleanString</CheckBox>
             <CheckBox IsChecked="{Binding !!BooleanString}">!!BooleanString</CheckBox>
           </StackPanel>
@@ -43,24 +43,24 @@
         <StackPanel Orientation="Horizontal">
           <StackPanel Margin="18" Spacing="4" Width="200" HorizontalAlignment="Left">
             <TextBlock FontSize="16" Text="Numeric Bindings"/>
-            <TextBox Watermark="Double" UseFloatingWatermark="True" Text="{Binding Path=DoubleValue, Mode=TwoWay}"/>
+            <TextBox Placeholder="Double" UseFloatingPlaceholder="True" Text="{Binding Path=DoubleValue, Mode=TwoWay}"/>
             <TextBlock Text="{Binding Path=DoubleValue}"/>
             <ProgressBar Maximum="10" Value="{Binding DoubleValue}"/>
           </StackPanel>
           <StackPanel Margin="18" Spacing="4" Width="200" HorizontalAlignment="Left">
             <TextBlock FontSize="16" Text="Binding Sources"/>
-            <TextBox Watermark="Value of first TextBox" UseFloatingWatermark="True" 
+            <TextBox Placeholder="Value of first TextBox" UseFloatingPlaceholder="True" 
                      Text="{Binding #first.Text, Mode=TwoWay}"/>
-            <TextBox Watermark="Value of SharedItem.StringValue" UseFloatingWatermark="True"
+            <TextBox Placeholder="Value of SharedItem.StringValue" UseFloatingPlaceholder="True"
                      Text="{Binding Value, Source={StaticResource SharedItem}, Mode=TwoWay, DataType={x:Type vm:MainWindowViewModel+TestItem, x:TypeArguments=x:String}}"/>
-            <TextBox Watermark="Value of SharedItem.StringValue (duplicate)" UseFloatingWatermark="True"
+            <TextBox Placeholder="Value of SharedItem.StringValue (duplicate)" UseFloatingPlaceholder="True"
                      Text="{Binding Value, Source={StaticResource SharedItem}, Mode=TwoWay, DataType={x:Type vm:MainWindowViewModel+TestItem, x:TypeArguments=x:String}}"/>
           </StackPanel>
           <StackPanel Margin="18" Spacing="4" Width="200" HorizontalAlignment="Left">
             <TextBlock FontSize="16" Text="Scheduler"/>
-            <TextBox Watermark="Background Thread" Text="{Binding CurrentTime, Mode=OneWay}"/>
+            <TextBox Placeholder="Background Thread" Text="{Binding CurrentTime, Mode=OneWay}"/>
             <TextBlock FontSize="16" Text="Stream Operator"/>
-            <TextBox Watermark="StreamOperator" Text="{CompiledBinding CurrentTimeObservable^, Mode=OneWay}"/>
+            <TextBox Placeholder="StreamOperator" Text="{CompiledBinding CurrentTimeObservable^, Mode=OneWay}"/>
           </StackPanel>
         </StackPanel>
       </StackPanel>
@@ -93,17 +93,17 @@
       <StackPanel Orientation="Horizontal">
         <StackPanel Margin="18" Spacing="4" MinWidth="200" DataContext="{Binding ExceptionDataValidation}">
           <TextBlock FontSize="16" Text="Exception Validation"/>
-          <TextBox Watermark="Less Than 10" UseFloatingWatermark="True" Text="{Binding Path=LessThan10}"/>
+          <TextBox Placeholder="Less Than 10" UseFloatingPlaceholder="True" Text="{Binding Path=LessThan10}"/>
         </StackPanel>
         <StackPanel Margin="18" Spacing="4" MinWidth="200" DataContext="{Binding IndeiDataValidation}">
           <TextBlock FontSize="16" Text="INotifyDataErrorInfo Validation"/>
-          <TextBox Watermark="Maximum" UseFloatingWatermark="True" Text="{Binding Path=Maximum}"/>
-          <TextBox Watermark="Value" UseFloatingWatermark="True" Text="{Binding Path=Value}"/>
+          <TextBox Placeholder="Maximum" UseFloatingPlaceholder="True" Text="{Binding Path=Maximum}"/>
+          <TextBox Placeholder="Value" UseFloatingPlaceholder="True" Text="{Binding Path=Value}"/>
         </StackPanel>
         <StackPanel Margin="18" Spacing="4" MinWidth="200" DataContext="{Binding DataAnnotationsValidation}">
           <TextBlock FontSize="16" Text="Data Annotations Validation"/>
-          <TextBox Watermark="Phone #" UseFloatingWatermark="True" Text="{Binding PhoneNumber}"/>
-          <TextBox Watermark="Less Than 10" UseFloatingWatermark="True" Text="{Binding Path=LessThan10}"/>
+          <TextBox Placeholder="Phone #" UseFloatingPlaceholder="True" Text="{Binding PhoneNumber}"/>
+          <TextBox Placeholder="Less Than 10" UseFloatingPlaceholder="True" Text="{Binding Path=LessThan10}"/>
         </StackPanel>
       </StackPanel>
     </TabItem>

@@ -2150,57 +2150,57 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void WatermarkForeground_Can_Be_Set()
+        public void PlaceholderForeground_Can_Be_Set()
         {
             using (UnitTestApplication.Start(Services))
             {
                 var target = new TextBox
                 {
                     Template = CreateTemplate(),
-                    Watermark = "Enter text",
-                    WatermarkForeground = Brushes.Red
+                    Placeholder = "Enter text",
+                    PlaceholderForeground = Brushes.Red
                 };
 
                 target.ApplyTemplate();
 
-                Assert.Equal(Brushes.Red, target.WatermarkForeground);
+                Assert.Equal(Brushes.Red, target.PlaceholderForeground);
             }
         }
 
         [Fact]
-        public void WatermarkForeground_Defaults_To_Null()
+        public void PlaceholderForeground_Defaults_To_Null()
         {
             using (UnitTestApplication.Start(Services))
             {
                 var target = new TextBox
                 {
                     Template = CreateTemplate(),
-                    Watermark = "Enter text"
+                    Placeholder = "Enter text"
                 };
 
                 target.ApplyTemplate();
 
-                Assert.Null(target.WatermarkForeground);
+                Assert.Null(target.PlaceholderForeground);
             }
         }
 
         [Fact]
-        public void WatermarkForeground_Can_Be_Set_To_Null()
+        public void PlaceholderForeground_Can_Be_Set_To_Null()
         {
             using (UnitTestApplication.Start(Services))
             {
                 var target = new TextBox
                 {
                     Template = CreateTemplate(),
-                    Watermark = "Enter text",
-                    WatermarkForeground = Brushes.Blue
+                    Placeholder = "Enter text",
+                    PlaceholderForeground = Brushes.Blue
                 };
 
                 target.ApplyTemplate();
-                
-                target.WatermarkForeground = null;
 
-                Assert.Null(target.WatermarkForeground);
+                target.PlaceholderForeground = null;
+
+                Assert.Null(target.PlaceholderForeground);
             }
         }
 

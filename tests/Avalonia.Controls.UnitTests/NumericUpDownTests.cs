@@ -191,15 +191,15 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void WatermarkForeground_Can_Be_Set()
+        public void PlaceholderForeground_Can_Be_Set()
         {
             using (UnitTestApplication.Start(Services))
             {
                 var control = CreateControl();
-                control.Watermark = "Enter value";
-                control.WatermarkForeground = Media.Brushes.Red;
+                control.Placeholder = "Enter value";
+                control.PlaceholderForeground = Media.Brushes.Red;
 
-                Assert.Equal(Media.Brushes.Red, control.WatermarkForeground);
+                Assert.Equal(Media.Brushes.Red, control.PlaceholderForeground);
             }
         }
     }

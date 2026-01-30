@@ -32,16 +32,16 @@
                     Margin="0,0,0,8"/>
 
         <CalendarDatePicker Margin="0,0,0,8"
-                    Watermark="Watermark"/>
+                    Placeholder="Placeholder"/>
         <CalendarDatePicker Margin="0,0,0,8"
                     Name="DatePicker5"
-                    Watermark="Floating Watermark"
-                    UseFloatingWatermark="True"/>
+                    Placeholder="Floating Placeholder"
+                    UseFloatingPlaceholder="True"/>
 
-        <TextBlock Text="Watermark with custom color"/>
+        <TextBlock Text="Placeholder with custom color"/>
         <CalendarDatePicker Margin="0,0,0,8"
-                    Watermark="Select a date"
-                    WatermarkForeground="Purple"/>
+                    Placeholder="Select a date"
+                    PlaceholderForeground="Purple"/>
                 
         <TextBlock Text="Disabled"/>
         <CalendarDatePicker IsEnabled="False"/>

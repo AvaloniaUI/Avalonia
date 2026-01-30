@@ -17,8 +17,8 @@
         <controls:CustomTextBox Margin="0 10 0 0"
                  x:Name="UserNameTextBox"
                  Text="{Binding UserName}"
-                 Watermark="Please, enter user name..."
-                 UseFloatingWatermark="True" />
+                 Placeholder="Please, enter user name..."
+                 UseFloatingPlaceholder="True" />
         <TextBlock x:Name="UserNameValidation"
                    Text="{Binding UserNameValidation}"
                    Foreground="Green"
@@ -26,8 +26,8 @@
         <TextBox Margin="0 10 0 0"
                  x:Name="PasswordTextBox"
                  Text="{Binding Password}"
-                 Watermark="Please, enter your password..."
-                 UseFloatingWatermark="True"
+                 Placeholder="Please, enter your password..."
+                 UseFloatingPlaceholder="True"
                  PasswordChar="*" />
         <TextBlock x:Name="PasswordValidation"
                    Text="{Binding PasswordValidation}"
@@ -36,8 +36,8 @@
         <TextBox Margin="0 10 0 0"
                  x:Name="ConfirmPasswordTextBox"
                  Text="{Binding ConfirmPassword}"
-                 Watermark="Please, confirm the password..."
-                 UseFloatingWatermark="True"
+                 Placeholder="Please, confirm the password..."
+                 UseFloatingPlaceholder="True"
                  PasswordChar="*" />
         <TextBlock x:Name="ConfirmPasswordValidation"
                    Text="{Binding ConfirmPasswordValidation}"

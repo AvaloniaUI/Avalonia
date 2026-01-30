@@ -17,19 +17,19 @@
             </Flyout>
           </TextBox.ContextFlyout>
         </TextBox>
-        <TextBox Width="200" Watermark="ReadOnly" IsReadOnly="True" Text="This is read only"/>
-        <TextBox Width="200" Watermark="Numeric with watermark" TextInputOptions.ContentType="Number" />
+        <TextBox Width="200" Placeholder="ReadOnly" IsReadOnly="True" Text="This is read only"/>
+        <TextBox Width="200" Placeholder="Numeric with placeholder" TextInputOptions.ContentType="Number" />
         <TextBox Width="200"
-                 Watermark="Floating Watermark"
-                 UseFloatingWatermark="True"
+                 Placeholder="Floating Placeholder"
+                 UseFloatingPlaceholder="True"
                  Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit."/>
         <TextBox Width="200"
-                 Watermark="Custom Watermark Color"
-                 WatermarkForeground="Red"/>
+                 Placeholder="Custom Placeholder Color"
+                 PlaceholderForeground="Red"/>
         <TextBox Width="200"
-                 Watermark="Floating Watermark Color"
-                 UseFloatingWatermark="True"
-                 WatermarkForeground="Purple"/>
+                 Placeholder="Floating Placeholder Color"
+                 UseFloatingPlaceholder="True"
+                 PlaceholderForeground="Purple"/>
         <MaskedTextBox Width="200" ResetOnSpace="False"  Mask="(LLL) 999-0000"/>
         
         <TextBox Width="200" Text="Validation Error">
@@ -39,13 +39,13 @@
         </TextBox>
 
         <TextBox Width="200"
-                 Watermark="Password Box"
+                 Placeholder="Password Box"
                  Classes="revealPasswordButton"
                  TextInputOptions.ContentType="Password"
-                 UseFloatingWatermark="True"
+                 UseFloatingPlaceholder="True"
                  PasswordChar="*"
                  Text="Password" />
-        <TextBox Width="200" Watermark="Suggestions are hidden" TextInputOptions.ShowSuggestions="False" />
+        <TextBox Width="200" Placeholder="Suggestions are hidden" TextInputOptions.ShowSuggestions="False" />
         <TextBox Width="200" Text="Left aligned text" TextAlignment="Left" AcceptsTab="True" />
         <TextBox Width="200" Text="Center aligned text" TextAlignment="Center" />
         <TextBox Width="200" Text="Right aligned text" TextAlignment="Right" />
@@ -61,7 +61,7 @@
         <TextBox AcceptsReturn="True" Width="200" Height="125"
                  Text="Multiline TextBox with no TextWrapping.&#xD;&#xD;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est." />
 
-        <TextBox Classes="clearButton" Text="Clear Content" Width="200" FontWeight="Normal" FontStyle="Normal" Watermark="Watermark" FontFamily="avares://ControlCatalog/Assets/Fonts#Source Sans Pro"/>
+        <TextBox Classes="clearButton" Text="Clear Content" Width="200" FontWeight="Normal" FontStyle="Normal" Placeholder="Placeholder" FontFamily="avares://ControlCatalog/Assets/Fonts#Source Sans Pro"/>
         <TextBox Text="IME small font" Width="200"
          FontFamily="Comic Sans MS"
          FontSize="10"

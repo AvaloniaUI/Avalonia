@@ -881,38 +881,38 @@ namespace Avalonia.Controls
             {
                 SetCurrentValue(TextProperty, String.Empty);
                 
-                if (string.IsNullOrEmpty(Watermark) && !UseFloatingWatermark)
+                if (string.IsNullOrEmpty(Placeholder) && !UseFloatingPlaceholder)
                 {
                     DateTimeFormatInfo dtfi = DateTimeHelper.GetCurrentDateFormat();
                     _defaultText = string.Empty;
-                    var watermarkFormat = "<{0}>";
-                    string watermarkText;
+                    var placeholderFormat = "<{0}>";
+                    string placeholderText;
 
                     switch (SelectedDateFormat)
                     {
                         case CalendarDatePickerFormat.Custom:
                             {
-                                watermarkText = string.Format(CultureInfo.CurrentCulture, watermarkFormat, CustomDateFormatString);
+                                placeholderText = string.Format(CultureInfo.CurrentCulture, placeholderFormat, CustomDateFormatString);
                                 break;
                             }
                         case CalendarDatePickerFormat.Long:
                             {
-                                watermarkText = string.Format(CultureInfo.CurrentCulture, watermarkFormat, dtfi.LongDatePattern.ToString());
+                                placeholderText = string.Format(CultureInfo.CurrentCulture, placeholderFormat, dtfi.LongDatePattern.ToString());
                                 break;
                             }
                         case CalendarDatePickerFormat.Short:
                         default:
                             {
-                                watermarkText = string.Format(CultureInfo.CurrentCulture, watermarkFormat, dtfi.ShortDatePattern.ToString());
+                                placeholderText = string.Format(CultureInfo.CurrentCulture, placeholderFormat, dtfi.ShortDatePattern.ToString());
                                 break;
                             }
                     }
 
-                    _textBox.Watermark = watermarkText;
+                    _textBox.Placeholder = placeholderText;
                 }
                 else
                 {
-                    _textBox.ClearValue(TextBox.WatermarkProperty);
+                    _textBox.ClearValue(TextBox.PlaceholderProperty);
                 }
             }
         }

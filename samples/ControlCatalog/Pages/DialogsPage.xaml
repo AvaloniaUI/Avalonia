@@ -61,14 +61,14 @@
     
     <Expander Header="Launcher dialogs">
       <StackPanel Spacing="4">
-        <TextBox Name="UriToLaunch" Watermark="Uri to launch" Text="https://avaloniaui.net/" />
+        <TextBox Name="UriToLaunch" Placeholder="Uri to launch" Text="https://avaloniaui.net/" />
         <Button Name="LaunchUri">Launch Uri</Button>
         <Button Name="LaunchFile">Launch File</Button>
         <TextBlock Name="LaunchStatus" />
       </StackPanel>
     </Expander>
 
-    <AutoCompleteBox x:Name="CurrentFolderBox" Watermark="Write full path/uri or well known folder name">
+    <AutoCompleteBox x:Name="CurrentFolderBox" Placeholder="Write full path/uri or well known folder name">
       <AutoCompleteBox.ItemsSource>
         <generic:List x:TypeArguments="storage:WellKnownFolder">
           <storage:WellKnownFolder>Desktop</storage:WellKnownFolder>
@@ -87,10 +87,10 @@
                Text="Last picker results:" />
     <ItemsControl x:Name="PickerLastResults" />
 
-    <TextBox Name="BookmarkContainer" Watermark="Bookmark" />
+    <TextBox Name="BookmarkContainer" Placeholder="Bookmark" />
     <TextBox Name="OpenedFileContent"
              MaxLines="10"
-             Watermark="Picked file content" />
+             Placeholder="Picked file content" />
 
   </StackPanel>
 </UserControl>

@@ -115,7 +115,7 @@
             <TextBox DockPanel.Dock="Bottom"
                      IsVisible="{Binding !SelectingFolder}"
                      Text="{Binding FileName}"
-                     Watermark="{DynamicResource StringManagedFileChooserFileNameWatermark}" />
+                     Placeholder="{DynamicResource StringManagedFileChooserFileNamePlaceholder}" />
 
             <ListBox x:Name="PART_QuickLinks"
                      MaxWidth="200"

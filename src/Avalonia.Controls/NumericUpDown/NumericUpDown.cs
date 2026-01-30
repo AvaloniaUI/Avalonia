@@ -109,17 +109,28 @@ namespace Avalonia.Controls
                 defaultBindingMode: BindingMode.TwoWay, enableDataValidation: true);
 
         /// <summary>
+        /// Defines the <see cref="Placeholder"/> property.
+        /// </summary>
+        public static readonly StyledProperty<string?> PlaceholderProperty =
+            AvaloniaProperty.Register<NumericUpDown, string?>(nameof(Placeholder));
+
+        /// <summary>
         /// Defines the <see cref="Watermark"/> property.
         /// </summary>
-        public static readonly StyledProperty<string?> WatermarkProperty =
-            AvaloniaProperty.Register<NumericUpDown, string?>(nameof(Watermark));
+        [Obsolete("Use PlaceholderProperty instead.", false)]
+        public static readonly StyledProperty<string?> WatermarkProperty = PlaceholderProperty;
+
+        /// <summary>
+        /// Defines the <see cref="PlaceholderForeground"/> property.
+        /// </summary>
+        public static readonly StyledProperty<Media.IBrush?> PlaceholderForegroundProperty =
+            TextBox.PlaceholderForegroundProperty.AddOwner<NumericUpDown>();
 
         /// <summary>
         /// Defines the <see cref="WatermarkForeground"/> property.
         /// </summary>
-        public static readonly StyledProperty<Media.IBrush?> WatermarkForegroundProperty =
-            TextBox.WatermarkForegroundProperty.AddOwner<NumericUpDown>();
-
+        [Obsolete("Use PlaceholderForegroundProperty instead.", false)]
+        public static readonly StyledProperty<Media.IBrush?> WatermarkForegroundProperty = PlaceholderForegroundProperty;
 
         /// <summary>
         /// Defines the <see cref="HorizontalContentAlignment"/> property.
@@ -299,23 +310,42 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the object to use as a watermark if the <see cref="Value"/> is null.
+        /// Gets or sets the object to use as a placeholder if the <see cref="Value"/> is null.
         /// </summary>
-        public string? Watermark
+        public string? Placeholder
         {
-            get => GetValue(WatermarkProperty);
-            set => SetValue(WatermarkProperty, value);
+            get => GetValue(PlaceholderProperty);
+            set => SetValue(PlaceholderProperty, value);
         }
 
         /// <summary>
-        /// Gets or sets the brush used for the foreground color of the watermark text.
+        /// Gets or sets the object to use as a placeholder if the <see cref="Value"/> is null.
         /// </summary>
-        public Media.IBrush? WatermarkForeground
+        [Obsolete("Use Placeholder instead.", false)]
+        public string? Watermark
         {
-            get => GetValue(WatermarkForegroundProperty);
-            set => SetValue(WatermarkForegroundProperty, value);
+            get => Placeholder;
+            set => Placeholder = value;
         }
 
+        /// <summary>
+        /// Gets or sets the brush used for the foreground color of the placeholder text.
+        /// </summary>
+        public Media.IBrush? PlaceholderForeground
+        {
+            get => GetValue(PlaceholderForegroundProperty);
+            set => SetValue(PlaceholderForegroundProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the brush used for the foreground color of the placeholder text.
+        /// </summary>
+        [Obsolete("Use PlaceholderForeground instead.", false)]
+        public Media.IBrush? WatermarkForeground
+        {
+            get => PlaceholderForeground;
+            set => PlaceholderForeground = value;
+        }
 
         /// <summary>
         /// Gets or sets the horizontal alignment of the content within the control.

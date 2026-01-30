@@ -8,14 +8,14 @@
         <NumericUpDown Minimum="0"
                        Maximum="10"
                        Increment="0.5"
-                       Watermark="Enter text" />
+                       Placeholder="Enter text" />
         <NumericUpDown Minimum="0"
                        Maximum="10"
                        Increment="0.5"
                        VerticalContentAlignment="Center"
                        HorizontalContentAlignment="Center"
                        ButtonSpinnerLocation="Left"
-                       Watermark="Enter text" />
+                       Placeholder="Enter text" />
         <NumericUpDown ButtonSpinnerLocation="Left">
           <NumericUpDown.InnerLeftContent>
             <TextBlock Text="m"
@@ -81,8 +81,8 @@
                      Padding="{TemplateBinding Padding}"
                      MinWidth="0"
                      Foreground="{TemplateBinding Foreground}"
-                     Watermark="{TemplateBinding Watermark}"
-                     WatermarkForeground="{TemplateBinding WatermarkForeground}"
+                     Placeholder="{TemplateBinding Placeholder}"
+                     PlaceholderForeground="{TemplateBinding PlaceholderForeground}"
                      IsReadOnly="{TemplateBinding IsReadOnly}"
                      VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                      HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"

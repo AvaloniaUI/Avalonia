@@ -92,9 +92,9 @@
                        CornerRadius="{TemplateBinding CornerRadius}"
                        Margin="{TemplateBinding BorderThickness}"
                        Padding="{TemplateBinding Padding}"
-                       Watermark="{TemplateBinding Watermark}"
-                       WatermarkForeground="{TemplateBinding WatermarkForeground}"
-                       UseFloatingWatermark="{TemplateBinding UseFloatingWatermark}"
+                       Placeholder="{TemplateBinding Placeholder}"
+                       PlaceholderForeground="{TemplateBinding PlaceholderForeground}"
+                       UseFloatingPlaceholder="{TemplateBinding UseFloatingPlaceholder}"
                        HorizontalAlignment="Stretch"
                        VerticalAlignment="Stretch"
                        VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
@@ -113,7 +113,7 @@
                       <Setter Property="Background" Value="Transparent" />
                       <Setter Property="BorderBrush" Value="Transparent" />
                     </Style>
-                    <Style Selector="^ /template/ TextBlock#PART_Watermark, ^ TextBlock#PART_FloatingWatermark">
+                    <Style Selector="^ /template/ TextBlock#PART_Placeholder, ^ TextBlock#PART_FloatingPlaceholder">
                       <Setter Property="TextElement.Foreground" Value="{DynamicResource CalendarDatePickerTextForegroundDisabled}" />
                     </Style>
                   </Style>

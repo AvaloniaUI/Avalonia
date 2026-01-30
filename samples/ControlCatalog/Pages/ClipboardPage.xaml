@@ -21,7 +21,7 @@
     <TextBox x:Name="ClipboardContent"
              MinHeight="100"
              AcceptsReturn="True"
-             Watermark="Text to copy of file names per line" />
+             Placeholder="Text to copy of file names per line" />
     <Viewbox Width="420" Height="360">
       <Image x:Name="ClipboardImage"
       />

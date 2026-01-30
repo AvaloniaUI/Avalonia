@@ -101,9 +101,9 @@
                    BorderThickness="{TemplateBinding BorderThickness}"
                    CornerRadius="{TemplateBinding CornerRadius}"
                    DataValidationErrors.Errors="{TemplateBinding (DataValidationErrors.Errors)}"
-                   UseFloatingWatermark="{TemplateBinding UseFloatingWatermark}"
-                   Watermark="{TemplateBinding Watermark}"
-                   WatermarkForeground="{TemplateBinding WatermarkForeground}" />
+                   UseFloatingPlaceholder="{TemplateBinding UseFloatingPlaceholder}"
+                   Placeholder="{TemplateBinding Placeholder}"
+                   PlaceholderForeground="{TemplateBinding PlaceholderForeground}" />
 
           <Button Name="PART_Button"
                   Grid.Column="1"

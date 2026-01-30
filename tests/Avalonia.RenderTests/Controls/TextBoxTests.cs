@@ -6,11 +6,7 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Xunit;
 
-#if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests
-#else
-namespace Avalonia.Direct2D1.RenderTests.Controls
-#endif
 {
     public class TextBoxTests : TestBase
     {
@@ -33,11 +29,11 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
 
                 var panel = new Panel();
 
-                var watermark = new TextBlock
+                var placeholder = new TextBlock
                 {
-                    Name = "PART_Watermark",
-                    [!TextBlock.TextProperty] = textBox[!TextBox.WatermarkProperty],
-                    [!TextBlock.ForegroundProperty] = textBox[!TextBox.WatermarkForegroundProperty],
+                    Name = "PART_Placeholder",
+                    [!TextBlock.TextProperty] = textBox[!TextBox.PlaceholderProperty],
+                    [!TextBlock.ForegroundProperty] = textBox[!TextBox.PlaceholderForegroundProperty],
                     FontFamily = textBox.FontFamily,
                     FontSize = textBox.FontSize,
                     VerticalAlignment = VerticalAlignment.Center,
@@ -53,7 +49,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                     FontSize = textBox.FontSize,
                 }.RegisterInNameScope(scope);
 
-                panel.Children.Add(watermark);
+                panel.Children.Add(placeholder);
                 panel.Children.Add(presenter);
                 border.Child = panel;
 
@@ -62,7 +58,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
         }
 
         [Fact]
-        public async Task Watermark_With_Red_Foreground()
+        public async Task Placeholder_With_Red_Foreground()
         {
             var target = new Border
             {
@@ -76,8 +72,8 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                     FontFamily = TestFontFamily,
                     FontSize = 12,
                     Background = Brushes.White,
-                    Watermark = "Red watermark",
-                    WatermarkForeground = Brushes.Red,
+                    Placeholder = "Red placeholder",
+                    PlaceholderForeground = Brushes.Red,
                 }
             };
 
@@ -86,7 +82,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
         }
 
         [Fact]
-        public async Task Watermark_With_Blue_Foreground()
+        public async Task Placeholder_With_Blue_Foreground()
         {
             var target = new Border
             {
@@ -100,8 +96,8 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                     FontFamily = TestFontFamily,
                     FontSize = 12,
                     Background = Brushes.White,
-                    Watermark = "Blue watermark",
-                    WatermarkForeground = Brushes.Blue,
+                    Placeholder = "Blue placeholder",
+                    PlaceholderForeground = Brushes.Blue,
                 }
             };
 
@@ -110,7 +106,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
         }
 
         [Fact]
-        public async Task Watermark_With_Default_Foreground()
+        public async Task Placeholder_With_Default_Foreground()
         {
             var target = new Border
             {
@@ -124,8 +120,8 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                     FontFamily = TestFontFamily,
                     FontSize = 12,
                     Background = Brushes.White,
-                    Watermark = "Default watermark",
-                    WatermarkForeground = Brushes.Gray,
+                    Placeholder = "Default placeholder",
+                    PlaceholderForeground = Brushes.Gray,
                 }
             };
 

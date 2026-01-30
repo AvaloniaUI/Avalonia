@@ -34,8 +34,8 @@
         <ControlTemplate>
           <Grid Name="PART_LayoutRoot">
             <TextBox Name="PART_TextBox"
-                     Watermark="{TemplateBinding Watermark}"
-                     WatermarkForeground="{TemplateBinding WatermarkForeground}"
+                     Placeholder="{TemplateBinding Placeholder}"
+                     PlaceholderForeground="{TemplateBinding PlaceholderForeground}"
                      Width="{TemplateBinding Width}"
                      Foreground="{TemplateBinding Foreground}"
                      Background="{TemplateBinding Background}"

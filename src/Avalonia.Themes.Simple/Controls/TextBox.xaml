@@ -85,7 +85,7 @@
     <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
     <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}" />
     <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
-    <Setter Property="WatermarkForeground" Value="{DynamicResource ThemeForegroundLowBrush}" />
+    <Setter Property="PlaceholderForeground" Value="{DynamicResource ThemeForegroundLowBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}" />
     <Setter Property="SelectionBrush" Value="{DynamicResource HighlightBrush}" />
     <Setter Property="SelectionForegroundBrush" Value="{DynamicResource HighlightForegroundBrush}" />
@@ -103,14 +103,14 @@
                      HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
 
-            <TextBlock Name="floatingWatermark"
+            <TextBlock Name="floatingPlaceholder"
                        DockPanel.Dock="Top"
                        FontSize="{DynamicResource FontSizeSmall}"
-                       Foreground="{TemplateBinding WatermarkForeground}"
-                       Text="{TemplateBinding Watermark}">
+                       Foreground="{TemplateBinding PlaceholderForeground}"
+                       Text="{TemplateBinding Placeholder}">
               <TextBlock.IsVisible>
                 <MultiBinding Converter="{x:Static BoolConverters.And}">
-                  <Binding Path="UseFloatingWatermark"
+                  <Binding Path="UseFloatingPlaceholder"
                            RelativeSource="{RelativeSource TemplatedParent}" />
                   <Binding Converter="{x:Static StringConverters.IsNotNullOrEmpty}"
                            Path="Text"
@@ -134,12 +134,12 @@
                               IsScrollChainingEnabled="{TemplateBinding (ScrollViewer.IsScrollChainingEnabled)}"
                               VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
                   <Panel>
-                    <TextBlock Name="watermark"
-                               Foreground="{TemplateBinding WatermarkForeground}"
+                    <TextBlock Name="placeholder"
+                               Foreground="{TemplateBinding PlaceholderForeground}"
                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"   
                                Opacity="{DynamicResource TextControlPlaceholderOpacity}"
-                               Text="{TemplateBinding Watermark}"
+                               Text="{TemplateBinding Placeholder}"
                                TextAlignment="{TemplateBinding TextAlignment}"
                                TextWrapping="{TemplateBinding TextWrapping}">
                       <TextBlock.IsVisible>
@@ -196,7 +196,7 @@
     <Style Selector="^:disabled /template/ Border#border">
       <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}" />
     </Style>
-    <Style Selector="^ /template/ TextBlock#floatingWatermark">
+    <Style Selector="^ /template/ TextBlock#floatingPlaceholder">
       <Setter Property="Cursor" Value="IBeam"/>
     </Style>
 

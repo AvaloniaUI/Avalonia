@@ -81,23 +81,40 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<CalendarDatePicker, string?>(nameof(Text));
 
         /// <summary>
+        /// Defines the <see cref="Placeholder"/> property.
+        /// </summary>
+        public static readonly StyledProperty<string?> PlaceholderProperty =
+            TextBox.PlaceholderProperty.AddOwner<CalendarDatePicker>();
+
+        /// <summary>
         /// Defines the <see cref="Watermark"/> property.
         /// </summary>
-        public static readonly StyledProperty<string?> WatermarkProperty =
-            TextBox.WatermarkProperty.AddOwner<CalendarDatePicker>();
+        [Obsolete("Use PlaceholderProperty instead.", false)]
+        public static readonly StyledProperty<string?> WatermarkProperty = PlaceholderProperty;
+
+        /// <summary>
+        /// Defines the <see cref="UseFloatingPlaceholder"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> UseFloatingPlaceholderProperty =
+            TextBox.UseFloatingPlaceholderProperty.AddOwner<CalendarDatePicker>();
 
         /// <summary>
         /// Defines the <see cref="UseFloatingWatermark"/> property.
         /// </summary>
-        public static readonly StyledProperty<bool> UseFloatingWatermarkProperty =
-            TextBox.UseFloatingWatermarkProperty.AddOwner<CalendarDatePicker>();
+        [Obsolete("Use UseFloatingPlaceholderProperty instead.", false)]
+        public static readonly StyledProperty<bool> UseFloatingWatermarkProperty = UseFloatingPlaceholderProperty;
+
+        /// <summary>
+        /// Defines the <see cref="PlaceholderForeground"/> property.
+        /// </summary>
+        public static readonly StyledProperty<Media.IBrush?> PlaceholderForegroundProperty =
+            TextBox.PlaceholderForegroundProperty.AddOwner<CalendarDatePicker>();
 
         /// <summary>
         /// Defines the <see cref="WatermarkForeground"/> property.
         /// </summary>
-        public static readonly StyledProperty<Media.IBrush?> WatermarkForegroundProperty =
-            TextBox.WatermarkForegroundProperty.AddOwner<CalendarDatePicker>();
-
+        [Obsolete("Use PlaceholderForegroundProperty instead.", false)]
+        public static readonly StyledProperty<Media.IBrush?> WatermarkForegroundProperty = PlaceholderForegroundProperty;
 
         /// <summary>
         /// Defines the <see cref="HorizontalContentAlignment"/> property.
@@ -261,27 +278,50 @@ namespace Avalonia.Controls
             set => SetValue(TextProperty, value);
         }
 
+        /// <inheritdoc cref="TextBox.Placeholder"/>
+        public string? Placeholder
+        {
+            get => GetValue(PlaceholderProperty);
+            set => SetValue(PlaceholderProperty, value);
+        }
+
         /// <inheritdoc cref="TextBox.Watermark"/>
+        [Obsolete("Use Placeholder instead.", false)]
         public string? Watermark
         {
-            get => GetValue(WatermarkProperty);
-            set => SetValue(WatermarkProperty, value);
+            get => Placeholder;
+            set => Placeholder = value;
+        }
+
+        /// <inheritdoc cref="TextBox.UseFloatingPlaceholder"/>
+        public bool UseFloatingPlaceholder
+        {
+            get => GetValue(UseFloatingPlaceholderProperty);
+            set => SetValue(UseFloatingPlaceholderProperty, value);
         }
 
         /// <inheritdoc cref="TextBox.UseFloatingWatermark"/>
+        [Obsolete("Use UseFloatingPlaceholder instead.", false)]
         public bool UseFloatingWatermark
         {
-            get => GetValue(UseFloatingWatermarkProperty);
-            set => SetValue(UseFloatingWatermarkProperty, value);
+            get => UseFloatingPlaceholder;
+            set => UseFloatingPlaceholder = value;
+        }
+
+        /// <inheritdoc cref="TextBox.PlaceholderForeground"/>
+        public Media.IBrush? PlaceholderForeground
+        {
+            get => GetValue(PlaceholderForegroundProperty);
+            set => SetValue(PlaceholderForegroundProperty, value);
         }
 
         /// <inheritdoc cref="TextBox.WatermarkForeground"/>
+        [Obsolete("Use PlaceholderForeground instead.", false)]
         public Media.IBrush? WatermarkForeground
         {
-            get => GetValue(WatermarkForegroundProperty);
-            set => SetValue(WatermarkForegroundProperty, value);
+            get => PlaceholderForeground;
+            set => PlaceholderForeground = value;
         }
-
 
         /// <summary>
         /// Gets or sets the horizontal alignment of the content within the control.

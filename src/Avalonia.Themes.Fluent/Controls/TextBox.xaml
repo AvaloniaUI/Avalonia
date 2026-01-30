@@ -9,9 +9,9 @@
         <TextBox Classes="clearButton">Clear</TextBox>
         <TextBox PasswordChar="*" Classes="revealPasswordButton">Reveal Password</TextBox>
         <TextBox PasswordChar="*" Classes="revealPasswordButton" RevealPassword="True">Password Revealed</TextBox>
-        <TextBox Watermark="Watermark"/>
-        <TextBox Watermark="Floating Watermark" UseFloatingWatermark="True"/>
-        <TextBox Watermark="Floating Watermark" UseFloatingWatermark="True">Content</TextBox>
+        <TextBox Placeholder="Placeholder"/>
+        <TextBox Placeholder="Floating Placeholder" UseFloatingPlaceholder="True"/>
+        <TextBox Placeholder="Floating Placeholder" UseFloatingPlaceholder="True">Content</TextBox>
       </StackPanel>
     </Border>
   </Design.PreviewWith>
@@ -99,7 +99,7 @@
     <Setter Property="CaretBrush" Value="{DynamicResource TextControlForeground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrush}" />
     <Setter Property="SelectionBrush" Value="{DynamicResource TextControlSelectionHighlightColor}" />
-    <Setter Property="WatermarkForeground" Value="{DynamicResource TextControlPlaceholderForeground}" />
+    <Setter Property="PlaceholderForeground" Value="{DynamicResource TextControlPlaceholderForeground}" />
     <Setter Property="BorderThickness" Value="{DynamicResource TextControlBorderThemeThickness}" />
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="MinHeight" Value="{DynamicResource TextControlThemeMinHeight}" />
@@ -133,10 +133,10 @@
                            Grid.Column="1"
                            Grid.ColumnSpan="1"
                            Margin="{TemplateBinding Padding}">
-                  <TextBlock Name="PART_FloatingWatermark"
-                             Foreground="{TemplateBinding WatermarkForeground}"
+                  <TextBlock Name="PART_FloatingPlaceholder"
+                             Foreground="{TemplateBinding PlaceholderForeground}"
                              IsVisible="False"
-                             Text="{TemplateBinding Watermark}"
+                             Text="{TemplateBinding Placeholder}"
                              DockPanel.Dock="Top" />
 
                   <ScrollViewer Name="PART_ScrollViewer"
@@ -146,10 +146,10 @@
                                 AllowAutoHide="{TemplateBinding (ScrollViewer.AllowAutoHide)}"
                                 BringIntoViewOnFocusChange="{TemplateBinding (ScrollViewer.BringIntoViewOnFocusChange)}">
                     <Panel>
-                      <TextBlock Name="PART_Watermark"
-                              Foreground="{TemplateBinding WatermarkForeground}"
+                      <TextBlock Name="PART_Placeholder"
+                              Foreground="{TemplateBinding PlaceholderForeground}"
                               Opacity="{DynamicResource TextControlPlaceholderOpacity}"
-                              Text="{TemplateBinding Watermark}"
+                              Text="{TemplateBinding Placeholder}"
                               TextAlignment="{TemplateBinding TextAlignment}"
                               TextWrapping="{TemplateBinding TextWrapping}"
                               HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
@@ -235,11 +235,11 @@
       <Setter Property="BorderBrush" Value="{DynamicResource SystemControlErrorTextForegroundBrush}"/>
     </Style>
 
-    <Style Selector="^ /template/ TextBlock#PART_FloatingWatermark">
+    <Style Selector="^ /template/ TextBlock#PART_FloatingPlaceholder">
       <Setter Property="Cursor" Value="IBeam"/>
     </Style>
     
-    <Style Selector="^[UseFloatingWatermark=true]:not(:empty) /template/ TextBlock#PART_FloatingWatermark">
+    <Style Selector="^[UseFloatingPlaceholder=true]:not(:empty) /template/ TextBlock#PART_FloatingPlaceholder">
       <Setter Property="IsVisible" Value="True" />
     </Style>
 

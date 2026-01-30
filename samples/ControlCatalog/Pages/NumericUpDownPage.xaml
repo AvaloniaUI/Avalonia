@@ -48,8 +48,8 @@
         <ComboBox x:Name="CultureSelector" Grid.Row="2" Grid.Column="1" ItemsSource="{Binding Cultures}"
                   VerticalAlignment="Center" Margin="2"/>
 
-        <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Margin="2">Watermark:</TextBlock>
-        <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding #upDown.Watermark}" VerticalAlignment="Center" Margin="2" />
+        <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Margin="2">Placeholder:</TextBlock>
+        <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding #upDown.Placeholder}" VerticalAlignment="Center" Margin="2" />
 
         <TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Margin="2">Text:</TextBlock>
         <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding #upDown.Text}" VerticalAlignment="Center" Margin="2" />
@@ -81,21 +81,21 @@
         <NumericUpDown Name="upDown" Minimum="0" Maximum="10" Increment="0.5"
                        NumberFormat="{Binding #CultureSelector.SelectedItem, Converter={x:Static pages:NumericUpDownPage.CultureConverter}}"
                        VerticalAlignment="Center" Value="{Binding DecimalValue}"
-                       Watermark="Enter text" FormatString="{Binding SelectedFormat.Value}"/>
+                       Placeholder="Enter text" FormatString="{Binding SelectedFormat.Value}"/>
       </StackPanel>
 
       <StackPanel Orientation="Vertical" Margin="10">
         <Label Target="DoubleUpDown" FontSize="14" FontWeight="Bold" VerticalAlignment="Center">Usage of double NumericUpDown:</Label>
         <NumericUpDown Name="DoubleUpDown" Minimum="0" Maximum="10" Increment="0.5"
                        VerticalAlignment="Center" Value="{Binding DoubleValue}"
-                       Watermark="Enter text" FormatString="{Binding SelectedFormat.Value}"/>
+                       Placeholder="Enter text" FormatString="{Binding SelectedFormat.Value}"/>
       </StackPanel>
       
       <StackPanel Orientation="Vertical" Margin="10">
         <Label Target="ValidationUpDown" FontSize="14" FontWeight="Bold" VerticalAlignment="Center">NumericUpDown with Validation Errors:</Label>
         <NumericUpDown x:Name="ValidationUpDown" Minimum="0" Maximum="10" Increment="0.5"
                        VerticalAlignment="Center"
-                       Watermark="Enter text" FormatString="{Binding SelectedFormat.Value}">
+                       Placeholder="Enter text" FormatString="{Binding SelectedFormat.Value}">
           <DataValidationErrors.Error>
             <sys:Exception /> 
           </DataValidationErrors.Error>
@@ -115,11 +115,11 @@
     </WrapPanel>
 
     <StackPanel Orientation="Vertical" Margin="10">
-      <Label FontSize="14" FontWeight="Bold" Target="WatermarkForegroundUpDown"
-             Content="Watermark with custom foreground color:"/>
-      <NumericUpDown x:Name="WatermarkForegroundUpDown"
-                     Watermark="Enter amount"
-                     WatermarkForeground="Orange"/>
+      <Label FontSize="14" FontWeight="Bold" Target="PlaceholderForegroundUpDown"
+             Content="Placeholder with custom foreground color:"/>
+      <NumericUpDown x:Name="PlaceholderForegroundUpDown"
+                     Placeholder="Enter amount"
+                     PlaceholderForeground="Orange"/>
     </StackPanel>
 
     <StackPanel Margin="10">

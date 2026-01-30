@@ -24,15 +24,29 @@ namespace Avalonia.Controls
                 defaultValue: 0,
                 defaultBindingMode: BindingMode.TwoWay));
 
-        public static readonly StyledProperty<string?> WatermarkProperty =
-            TextBox.WatermarkProperty.AddOwner<AutoCompleteBox>();
+        /// <summary>
+        /// Defines the <see cref="Placeholder"/> property.
+        /// </summary>
+        public static readonly StyledProperty<string?> PlaceholderProperty =
+            TextBox.PlaceholderProperty.AddOwner<AutoCompleteBox>();
+
+        /// <summary>
+        /// Defines the <see cref="Watermark"/> property.
+        /// </summary>
+        [Obsolete("Use PlaceholderProperty instead.", false)]
+        public static readonly StyledProperty<string?> WatermarkProperty = PlaceholderProperty;
+
+        /// <summary>
+        /// Defines the <see cref="PlaceholderForeground"/> property.
+        /// </summary>
+        public static readonly StyledProperty<Media.IBrush?> PlaceholderForegroundProperty =
+            TextBox.PlaceholderForegroundProperty.AddOwner<AutoCompleteBox>();
 
         /// <summary>
         /// Defines the <see cref="WatermarkForeground"/> property.
         /// </summary>
-        public static readonly StyledProperty<Media.IBrush?> WatermarkForegroundProperty =
-            TextBox.WatermarkForegroundProperty.AddOwner<AutoCompleteBox>();
-
+        [Obsolete("Use PlaceholderForegroundProperty instead.", false)]
+        public static readonly StyledProperty<Media.IBrush?> WatermarkForegroundProperty = PlaceholderForegroundProperty;
 
         /// <summary>
         /// Identifies the <see cref="MinimumPrefixLength" /> property.
@@ -417,21 +431,43 @@ namespace Avalonia.Controls
             set => SetValue(FilterModeProperty, value);
         }
 
-        public string? Watermark
+        /// <summary>
+        /// Gets or sets the placeholder or descriptive text that is displayed even if the text is not yet set.
+        /// </summary>
+        public string? Placeholder
         {
-            get => GetValue(WatermarkProperty);
-            set => SetValue(WatermarkProperty, value);
+            get => GetValue(PlaceholderProperty);
+            set => SetValue(PlaceholderProperty, value);
         }
 
         /// <summary>
-        /// Gets or sets the brush used for the foreground color of the watermark text.
+        /// Gets or sets the placeholder or descriptive text that is displayed even if the text is not yet set.
         /// </summary>
-        public Media.IBrush? WatermarkForeground
+        [Obsolete("Use Placeholder instead.", false)]
+        public string? Watermark
         {
-            get => GetValue(WatermarkForegroundProperty);
-            set => SetValue(WatermarkForegroundProperty, value);
+            get => Placeholder;
+            set => Placeholder = value;
         }
 
+        /// <summary>
+        /// Gets or sets the brush used for the foreground color of the placeholder text.
+        /// </summary>
+        public Media.IBrush? PlaceholderForeground
+        {
+            get => GetValue(PlaceholderForegroundProperty);
+            set => SetValue(PlaceholderForegroundProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the brush used for the foreground color of the placeholder text.
+        /// </summary>
+        [Obsolete("Use PlaceholderForeground instead.", false)]
+        public Media.IBrush? WatermarkForeground
+        {
+            get => PlaceholderForeground;
+            set => PlaceholderForeground = value;
+        }
 
         /// <summary>
         /// Gets or sets the custom method that uses user-entered text to filter

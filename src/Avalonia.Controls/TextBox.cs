@@ -181,23 +181,40 @@ namespace Avalonia.Controls
             TextBlock.LineHeightProperty.AddOwner<TextBox>(new(defaultValue: double.NaN));
 
         /// <summary>
-        /// Defines the <see cref="Watermark"/> property
+        /// Defines the <see cref="Placeholder"/> property.
         /// </summary>
-        public static readonly StyledProperty<string?> WatermarkProperty =
-            AvaloniaProperty.Register<TextBox, string?>(nameof(Watermark));
+        public static readonly StyledProperty<string?> PlaceholderProperty =
+            AvaloniaProperty.Register<TextBox, string?>(nameof(Placeholder));
 
         /// <summary>
-        /// Defines the <see cref="UseFloatingWatermark"/> property
+        /// Defines the <see cref="Watermark"/> property.
         /// </summary>
-        public static readonly StyledProperty<bool> UseFloatingWatermarkProperty =
-            AvaloniaProperty.Register<TextBox, bool>(nameof(UseFloatingWatermark));
+        [Obsolete("Use PlaceholderProperty instead.", false)]
+        public static readonly StyledProperty<string?> WatermarkProperty = PlaceholderProperty;
 
         /// <summary>
-        /// Defines the <see cref="WatermarkForeground"/> property
+        /// Defines the <see cref="UseFloatingPlaceholder"/> property.
         /// </summary>
-        public static readonly StyledProperty<IBrush?> WatermarkForegroundProperty =
-            AvaloniaProperty.Register<TextBox, IBrush?>(nameof(WatermarkForeground));
+        public static readonly StyledProperty<bool> UseFloatingPlaceholderProperty =
+            AvaloniaProperty.Register<TextBox, bool>(nameof(UseFloatingPlaceholder));
 
+        /// <summary>
+        /// Defines the <see cref="UseFloatingWatermark"/> property.
+        /// </summary>
+        [Obsolete("Use UseFloatingPlaceholderProperty instead.", false)]
+        public static readonly StyledProperty<bool> UseFloatingWatermarkProperty = UseFloatingPlaceholderProperty;
+
+        /// <summary>
+        /// Defines the <see cref="PlaceholderForeground"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IBrush?> PlaceholderForegroundProperty =
+            AvaloniaProperty.Register<TextBox, IBrush?>(nameof(PlaceholderForeground));
+
+        /// <summary>
+        /// Defines the <see cref="WatermarkForeground"/> property.
+        /// </summary>
+        [Obsolete("Use PlaceholderForegroundProperty instead.", false)]
+        public static readonly StyledProperty<IBrush?> WatermarkForegroundProperty = PlaceholderForegroundProperty;
 
         /// <summary>
         /// Defines the <see cref="NewLine"/> property
@@ -672,31 +689,62 @@ namespace Avalonia.Controls
         /// Gets or sets the placeholder or descriptive text that is displayed even if the <see cref="Text"/>
         /// property is not yet set.
         /// </summary>
+        public string? Placeholder
+        {
+            get => GetValue(PlaceholderProperty);
+            set => SetValue(PlaceholderProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the placeholder or descriptive text that is displayed even if the <see cref="Text"/>
+        /// property is not yet set.
+        /// </summary>
+        [Obsolete("Use Placeholder instead.", false)]
         public string? Watermark
         {
-            get => GetValue(WatermarkProperty);
-            set => SetValue(WatermarkProperty, value);
+            get => Placeholder;
+            set => Placeholder = value;
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the <see cref="Watermark"/> will still be shown above the
+        /// Gets or sets a value indicating whether the <see cref="Placeholder"/> will still be shown above the
         /// <see cref="Text"/> even after a text value is set.
         /// </summary>
-        public bool UseFloatingWatermark
+        public bool UseFloatingPlaceholder
         {
-            get => GetValue(UseFloatingWatermarkProperty);
-            set => SetValue(UseFloatingWatermarkProperty, value);
+            get => GetValue(UseFloatingPlaceholderProperty);
+            set => SetValue(UseFloatingPlaceholderProperty, value);
         }
 
         /// <summary>
-        /// Gets or sets the brush used for the foreground color of the watermark text.
+        /// Gets or sets a value indicating whether the <see cref="Placeholder"/> will still be shown above the
+        /// <see cref="Text"/> even after a text value is set.
         /// </summary>
-        public IBrush? WatermarkForeground
+        [Obsolete("Use UseFloatingPlaceholder instead.", false)]
+        public bool UseFloatingWatermark
         {
-            get => GetValue(WatermarkForegroundProperty);
-            set => SetValue(WatermarkForegroundProperty, value);
+            get => UseFloatingPlaceholder;
+            set => UseFloatingPlaceholder = value;
         }
 
+        /// <summary>
+        /// Gets or sets the brush used for the foreground color of the placeholder text.
+        /// </summary>
+        public IBrush? PlaceholderForeground
+        {
+            get => GetValue(PlaceholderForegroundProperty);
+            set => SetValue(PlaceholderForegroundProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the brush used for the foreground color of the placeholder text.
+        /// </summary>
+        [Obsolete("Use PlaceholderForeground instead.", false)]
+        public IBrush? WatermarkForeground
+        {
+            get => PlaceholderForeground;
+            set => PlaceholderForeground = value;
+        }
 
         /// <summary>
         /// Gets or sets custom content that is positioned on the left side of the text layout box
