@@ -259,7 +259,7 @@ partial class MultiDirtyRectTracker
         {
             if (_maxSurfaceFallback)
             {
-                return new ReadOnlySpan<LtrbRect>(_surfaceBounds);
+                return new ReadOnlySpan<LtrbRect>(in _surfaceBounds);
             }
 
             if (!_optimized)

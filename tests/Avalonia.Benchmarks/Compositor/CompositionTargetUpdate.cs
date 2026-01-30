@@ -22,8 +22,8 @@ public class CompositionTargetUpdateOnly : IDisposable
 
     class Timer : IRenderTimer
     {
-        public event Action<TimeSpan> Tick;
-        public bool RunsInBackground { get; }
+        event Action<TimeSpan> IRenderTimer.Tick { add { } remove { } }
+        public bool RunsInBackground => false;
     }
 
     class ManualScheduler : ICompositorScheduler

@@ -238,7 +238,7 @@ namespace Avalonia.Controls.UnitTests
 
             bool clicked = false;
 
-            Dispatcher.UIThread.RunJobs();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
             
             target.Click += (s, e) => clicked = true;
 

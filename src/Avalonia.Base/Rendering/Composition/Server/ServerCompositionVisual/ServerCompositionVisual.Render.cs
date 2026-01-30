@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using Avalonia.Platform;
 
 namespace Avalonia.Rendering.Composition.Server;
 
 partial class ServerCompositionVisual
 {
+    [StructLayout(LayoutKind.Auto)]
     partial struct RenderContext : IServerTreeVisitor, IDisposable
     {
         private readonly IDrawingContextImpl _canvas;
