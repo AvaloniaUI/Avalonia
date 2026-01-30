@@ -14,10 +14,32 @@
     <Setter Property="Content">
       <Template>
         <PathIcon Name="PART_Icon"
+                  Animations.ImplicitAnimations="{DynamicResource RefreshVisualizerAnimations}"
                   Data="M18.6195264,3.31842271 C19.0080059,3.31842271 19.3290603,3.60710385 19.3798716,3.9816481 L19.3868766,4.08577298 L19.3868766,6.97963208 C19.3868766,7.36811161 19.0981955,7.68916605 18.7236513,7.73997735 L18.6195264,7.74698235 L15.7256673,7.74698235 C15.3018714,7.74698235 14.958317,7.40342793 14.958317,6.97963208 C14.958317,6.59115255 15.2469981,6.27009811 15.6215424,6.21928681 L15.7256673,6.21228181 L16.7044011,6.21182461 C13.7917384,3.87107476 9.52212532,4.05209336 6.81933829,6.75488039 C3.92253872,9.65167996 3.92253872,14.34832 6.81933829,17.2451196 C9.71613786,20.1419192 14.4127779,20.1419192 17.3095775,17.2451196 C19.0725398,15.4821573 19.8106555,12.9925923 19.3476248,10.58925 C19.2674502,10.173107 19.5398064,9.77076216 19.9559494,9.69058758 C20.3720923,9.610413 20.7744372,9.88276918 20.8546118,10.2989121 C21.4129973,13.1971899 20.5217103,16.2033812 18.3947747,18.3303168 C14.8986373,21.8264542 9.23027854,21.8264542 5.73414113,18.3303168 C2.23800371,14.8341794 2.23800371,9.16582064 5.73414113,5.66968323 C9.05475132,2.34907304 14.3349409,2.18235834 17.8523166,5.16953912 L17.8521761,4.08577298 C17.8521761,3.66197713 18.1957305,3.31842271 18.6195264,3.31842271 Z"
                   Width="{DynamicResource RefreshVisualizerIndicatorSize}"
-                  Height="{DynamicResource RefreshVisualizerIndicatorSize}"
-        />
+                  Height="{DynamicResource RefreshVisualizerIndicatorSize}">
+          <Animations.ExplicitAnimations>
+            <ExplicitAnimationCollection>
+              <RotationAngleCompositionAnimation IterationBehavior="Forever"
+                                                 StopBehavior="LeaveCurrentValue"
+                                                 IsEnabled="{Binding $parent[RefreshVisualizer].TemplateSettings.IsRotationAnimating}" 
+                                                 Duration="0:0:0.5">
+                <CompositionKeyFrame NormalizedProgressKey="0" 
+                                     Value="{Binding $parent[RefreshVisualizer].TemplateSettings.RotationStartAngle}" 
+                                     Easing="LinearEasing" />
+                <CompositionKeyFrame NormalizedProgressKey="1" 
+                                     Value="{Binding $parent[RefreshVisualizer].TemplateSettings.RotationEndAngle}" 
+                                     Easing="LinearEasing" />
+              </RotationAngleCompositionAnimation>
+              <ScaleCompositionAnimation Duration="0:0:0.3" IsEnabled="{Binding $parent[RefreshVisualizer].TemplateSettings.TriggerScaleAnimation}" >
+                <CompositionKeyFrame NormalizedProgressKey="0.5" 
+                                     Value="{Binding $parent[RefreshVisualizer].TemplateSettings.ScaleStartValue}" />
+                <CompositionKeyFrame NormalizedProgressKey="1" 
+                                     Value="{Binding $parent[RefreshVisualizer].TemplateSettings.ScaleEndValue}" />
+              </ScaleCompositionAnimation>
+            </ExplicitAnimationCollection>
+          </Animations.ExplicitAnimations>
+        </PathIcon>
       </Template>
     </Setter>
     <Setter Property="Template">
