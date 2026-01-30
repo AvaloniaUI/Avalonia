@@ -661,7 +661,7 @@ namespace Avalonia.Base.UnitTests.Animation
             return UnitTestApplication.Start(services);
         }
 
-        private static Mock<ITransition> CreateTarget()
+        private static Mock<IPropertyTransition> CreateTarget()
         {
             return CreateTransition(Visual.OpacityProperty);
         }
@@ -714,9 +714,9 @@ namespace Avalonia.Base.UnitTests.Animation
             return control;
         }
 
-        private static Mock<ITransition> CreateTransition(AvaloniaProperty property)
+        private static Mock<IPropertyTransition> CreateTransition(AvaloniaProperty property)
         {
-            var target = new Mock<ITransition>();
+            var target = new Mock<IPropertyTransition>();
             var sub = new Mock<IDisposable>();
 
             target.Setup(x => x.Property).Returns(property);

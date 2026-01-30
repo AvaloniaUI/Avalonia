@@ -30,9 +30,9 @@ namespace Avalonia.Animation
         private bool _transitionsEnabled = true;
         private bool _isSubscribedToTransitionsCollection = false;
         private Dictionary<ITransition, TransitionState>? _transitionState;
-        private NotifyCollectionChangedEventHandler? _collectionChanged;
+
         private NotifyCollectionChangedEventHandler TransitionsCollectionChangedHandler => 
-            _collectionChanged ??= TransitionsCollectionChanged;
+            field ??= TransitionsCollectionChanged;
 
         /// <summary>
         /// Gets or sets the clock which controls the animations on the control.
@@ -65,7 +65,7 @@ namespace Avalonia.Animation
             {
                 _transitionsEnabled = true;
 
-                if (Transitions is Transitions transitions)
+                if (Transitions is { } transitions)
                 {
                     if (!_isSubscribedToTransitionsCollection)
                     {
@@ -90,7 +90,7 @@ namespace Avalonia.Animation
             {
                 _transitionsEnabled = false;
 
-                if (Transitions is Transitions transitions)
+                if (Transitions is { } transitions)
                 {
                     if (_isSubscribedToTransitionsCollection)
                     {
@@ -115,7 +115,7 @@ namespace Avalonia.Animation
                 // change, there is a corresponding entry in `_transitionStates`. This means that we
                 // need to account for any transitions present in both the old and new transitions
                 // collections.
-                if (newTransitions is object)
+                if (newTransitions is not null)
                 {
                     var toAdd = (IList)newTransitions;
 
@@ -135,7 +135,7 @@ namespace Avalonia.Animation
                     AddTransitions(toAdd);
                 }
 
-                if (oldTransitions is object)
+                if (oldTransitions is not null)
                 {
                     var toRemove = (IList)oldTransitions;
 
@@ -149,16 +149,15 @@ namespace Avalonia.Animation
                 }
             }
             else if (_transitionsEnabled &&
-                     Transitions is Transitions transitions &&
-                     _transitionState is object &&
+                     Transitions is { } transitions &&
+                     _transitionState is not null &&
                      !change.Property.IsDirect &&
                      change.Priority > BindingPriority.Animation)
             {
                 for (var i = transitions.Count - 1; i >= 0; --i)
                 {
-                    var transition = transitions[i];
-
-                    if (transition.Property == change.Property &&
+                    if (transitions[i] is IPropertyTransition transition &&
+                        transition.Property == change.Property &&
                         _transitionState.TryGetValue(transition, out var state))
                     {
                         var oldValue = state.BaseValue;
@@ -227,12 +226,13 @@ namespace Avalonia.Animation
 
             for (var i = 0; i < items.Count; ++i)
             {
-                var t = (ITransition)items[i]!;
-
-                _transitionState.Add(t, new TransitionState
+                if (items[i] is IPropertyTransition t)
                 {
-                    BaseValue = GetAnimationBaseValue(t.Property),
-                });
+                    _transitionState.Add(t, new TransitionState
+                    {
+                        BaseValue = GetAnimationBaseValue(t.Property),
+                    });
+                }
             }
         }
 

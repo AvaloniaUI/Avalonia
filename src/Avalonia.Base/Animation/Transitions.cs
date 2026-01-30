@@ -22,8 +22,7 @@ namespace Avalonia.Animation
         {
             Dispatcher.UIThread.VerifyAccess();
 
-            var property = item.Property;
-            if (property.IsDirect)
+            if (item is IPropertyTransition { Property: { IsDirect: true } property })
             {
                 var display = item is TransitionBase transition ? transition.DebugDisplay : item.ToString();
                 throw new InvalidOperationException($"Cannot animate direct property {property} on {display}.");
