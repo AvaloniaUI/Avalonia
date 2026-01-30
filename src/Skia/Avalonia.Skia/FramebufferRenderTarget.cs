@@ -67,7 +67,7 @@ namespace Avalonia.Skia
             var framebuffer = _renderTargetWithProperties?.Lock(out lockProperties) ?? _renderTarget.Lock();
             var framebufferImageInfo = new SKImageInfo(framebuffer.Size.Width, framebuffer.Size.Height,
                 framebuffer.Format.ToSkColorType(),
-                framebuffer.Format == PixelFormat.Rgb565 ? SKAlphaType.Opaque : SKAlphaType.Premul);
+                framebuffer.AlphaFormat.ToSkAlphaType());
 
             CreateSurface(framebufferImageInfo, framebuffer);
             _hadConversionShim |= _conversionShim != null;
