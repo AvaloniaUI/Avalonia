@@ -5,7 +5,7 @@ namespace Avalonia.Animation
     public class OffsetCompositionAnimation : CompositionAnimation
     {
         /// <inheritdoc/>
-        public override Rendering.Composition.Animations.CompositionAnimation? GetCompositionAnimation(Visual visual)
+        protected override Rendering.Composition.Animations.CompositionAnimation? GetCompositionAnimation(Visual visual)
         {
             var compositor = ElementComposition.GetElementVisual(visual)?.Compositor;
 
@@ -25,7 +25,7 @@ namespace Avalonia.Animation
     public class OpacityCompositionAnimation : CompositionAnimation
     {
         /// <inheritdoc/>
-        public override Rendering.Composition.Animations.CompositionAnimation? GetCompositionAnimation(Visual visual)
+        protected override Rendering.Composition.Animations.CompositionAnimation? GetCompositionAnimation(Visual visual)
         {
             var compositor = ElementComposition.GetElementVisual(visual)?.Compositor;
 
@@ -45,7 +45,7 @@ namespace Avalonia.Animation
     public class VisibleCompositionAnimation : CompositionAnimation
     {
         /// <inheritdoc/>
-        public override Rendering.Composition.Animations.CompositionAnimation? GetCompositionAnimation(Visual visual)
+        protected override Rendering.Composition.Animations.CompositionAnimation? GetCompositionAnimation(Visual visual)
         {
             var compositor = ElementComposition.GetElementVisual(visual)?.Compositor;
 
@@ -65,7 +65,7 @@ namespace Avalonia.Animation
     public class ClipToBoundsCompositionAnimation : CompositionAnimation
     {
         /// <inheritdoc/>
-        public override Rendering.Composition.Animations.CompositionAnimation? GetCompositionAnimation(Visual visual)
+        protected override Rendering.Composition.Animations.CompositionAnimation? GetCompositionAnimation(Visual visual)
         {
             var compositor = ElementComposition.GetElementVisual(visual)?.Compositor;
 
@@ -85,7 +85,7 @@ namespace Avalonia.Animation
     public class SizeCompositionAnimation : CompositionAnimation
     {
         /// <inheritdoc/>
-        public override Rendering.Composition.Animations.CompositionAnimation? GetCompositionAnimation(Visual visual)
+        protected override Rendering.Composition.Animations.CompositionAnimation? GetCompositionAnimation(Visual visual)
         {
             var compositor = ElementComposition.GetElementVisual(visual)?.Compositor;
 
@@ -105,7 +105,7 @@ namespace Avalonia.Animation
     public class AnchorPointCompositionAnimation : CompositionAnimation
     {
         /// <inheritdoc/>
-        public override Rendering.Composition.Animations.CompositionAnimation? GetCompositionAnimation(Visual visual)
+        protected override Rendering.Composition.Animations.CompositionAnimation? GetCompositionAnimation(Visual visual)
         {
             var compositor = ElementComposition.GetElementVisual(visual)?.Compositor;
 
@@ -125,7 +125,7 @@ namespace Avalonia.Animation
     public class CenterPointCompositionAnimation : CompositionAnimation
     {
         /// <inheritdoc/>
-        public override Rendering.Composition.Animations.CompositionAnimation? GetCompositionAnimation(Visual visual)
+        protected override Rendering.Composition.Animations.CompositionAnimation? GetCompositionAnimation(Visual visual)
         {
             var compositor = ElementComposition.GetElementVisual(visual)?.Compositor;
 
@@ -145,7 +145,7 @@ namespace Avalonia.Animation
     public class RotationAngleCompositionAnimation : CompositionAnimation
     {
         /// <inheritdoc/>
-        public override Rendering.Composition.Animations.CompositionAnimation? GetCompositionAnimation(Visual visual)
+        protected override Rendering.Composition.Animations.CompositionAnimation? GetCompositionAnimation(Visual visual)
         {
             var compositor = ElementComposition.GetElementVisual(visual)?.Compositor;
 
@@ -165,7 +165,7 @@ namespace Avalonia.Animation
     public class OrientationCompositionAnimation : CompositionAnimation
     {
         /// <inheritdoc/>
-        public override Rendering.Composition.Animations.CompositionAnimation? GetCompositionAnimation(Visual visual)
+        protected override Rendering.Composition.Animations.CompositionAnimation? GetCompositionAnimation(Visual visual)
         {
             var compositor = ElementComposition.GetElementVisual(visual)?.Compositor;
 
@@ -185,7 +185,7 @@ namespace Avalonia.Animation
     public class ScaleCompositionAnimation : CompositionAnimation
     {
         /// <inheritdoc/>
-        public override Rendering.Composition.Animations.CompositionAnimation? GetCompositionAnimation(Visual visual)
+        protected override Rendering.Composition.Animations.CompositionAnimation? GetCompositionAnimation(Visual visual)
         {
             var compositor = ElementComposition.GetElementVisual(visual)?.Compositor;
 
@@ -205,7 +205,7 @@ namespace Avalonia.Animation
     public class TransformMatrixCompositionAnimation : CompositionAnimation
     {
         /// <inheritdoc/>
-        public override Rendering.Composition.Animations.CompositionAnimation? GetCompositionAnimation(Visual visual)
+        protected override Rendering.Composition.Animations.CompositionAnimation? GetCompositionAnimation(Visual visual)
         {
             var compositor = ElementComposition.GetElementVisual(visual)?.Compositor;
 
@@ -253,7 +253,7 @@ namespace Avalonia.Animation
         }
 
         /// <inheritdoc/>
-        public override Rendering.Composition.Animations.CompositionAnimation? GetCompositionAnimation(Visual visual)
+        protected override Rendering.Composition.Animations.CompositionAnimation? GetCompositionAnimation(Visual visual)
         {
             var compositor = ElementComposition.GetElementVisual(visual)?.Compositor;
 

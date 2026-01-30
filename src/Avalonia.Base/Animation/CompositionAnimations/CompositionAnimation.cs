@@ -79,7 +79,7 @@ namespace Avalonia.Animation
             return !IsEnabled ? null : GetCompositionAnimation(parent);
         }
 
-        public abstract Rendering.Composition.Animations.CompositionAnimation? GetCompositionAnimation(Visual parent);
+        protected abstract Rendering.Composition.Animations.CompositionAnimation? GetCompositionAnimation(Visual parent);
 
         protected virtual void SetAnimationValues(Rendering.Composition.Animations.CompositionAnimation animation)
         {
