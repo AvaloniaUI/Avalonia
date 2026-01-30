@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Avalonia.Markup.Xaml.Loader.CompilerExtensions.Transformers;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.GroupTransformers;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
 using XamlX;
@@ -20,6 +21,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
         private readonly IXamlType _contextType = null!;
         private readonly AvaloniaXamlIlDesignPropertiesTransformer _designTransformer;
         private readonly AvaloniaBindingExtensionTransformer _bindingTransformer;
+        private readonly AvaloniaXamlIlAddSourceInfoTransformer _addSourceInfoTransformer;
+        private readonly AvaloniaXamlResourceTransformer _resourceTransformer;
 
         private AvaloniaXamlIlCompiler(TransformerConfiguration configuration, XamlLanguageEmitMappings<IXamlILEmitter, XamlILNodeEmitResult> emitMappings)
             : base(configuration, emitMappings, true)
@@ -47,6 +50,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 new AvaloniaXamlIlResolveClassesPropertiesTransformer(),
                 new AvaloniaXamlIlTransformInstanceAttachedProperties(),
                 new AvaloniaXamlIlTransformSyntheticCompiledBindingMembers());
+
+
             InsertAfter<PropertyReferenceResolver>(
                 new AvaloniaXamlIlAvaloniaPropertyResolver(),
                 new AvaloniaXamlIlReorderClassesPropertiesTransformer(),
@@ -86,7 +91,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 );
 
             InsertBeforeMany(new [] { typeof(DeferredContentTransformer), typeof(AvaloniaXamlIlCompiledBindingsMetadataRemover) },
-                new AvaloniaXamlIlDeferredResourceTransformer());
+                _resourceTransformer = new AvaloniaXamlResourceTransformer());
 
             InsertBefore<AvaloniaXamlIlTransformInstanceAttachedProperties>(new AvaloniaXamlIlTransformRoutedEvent());
 
@@ -95,6 +100,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             Transformers.Add(new AvaloniaXamlIlEnsureResourceDictionaryCapacityTransformer());
             Transformers.Add(new AvaloniaXamlIlRootObjectScope());
 
+            Transformers.Add(_addSourceInfoTransformer = new AvaloniaXamlIlAddSourceInfoTransformer());
+            
             Emitters.Add(new AvaloniaNameScopeRegistrationXamlIlNodeEmitter());
             Emitters.Add(new AvaloniaXamlIlRootObjectScope.Emitter());
             
@@ -122,6 +129,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
         public const string PopulateName = "__AvaloniaXamlIlPopulate";
         public const string BuildName = "__AvaloniaXamlIlBuild";
+
+        public bool CreateSourceInfo
+        {
+            get => _addSourceInfoTransformer.CreateSourceInfo || _resourceTransformer.CreateSourceInfo; 
+            set => _addSourceInfoTransformer.CreateSourceInfo = _resourceTransformer.CreateSourceInfo = value; 
+        }
 
         public bool IsDesignMode
         {
