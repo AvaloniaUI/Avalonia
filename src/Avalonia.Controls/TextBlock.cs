@@ -657,10 +657,10 @@ namespace Avalonia.Controls
 
             var defaultProperties = new GenericTextRunProperties(
                 typeface,
-                FontFeatures,
                 FontSize,
                 TextDecorations,
-                Foreground);
+                Foreground,
+                fontFeatures: FontFeatures);
 
             var paragraphProperties = new GenericTextParagraphProperties(FlowDirection, IsMeasureValid ? TextAlignment : TextAlignment.Left, true, false,
                 defaultProperties, TextWrapping, LineHeight, 0, LetterSpacing)

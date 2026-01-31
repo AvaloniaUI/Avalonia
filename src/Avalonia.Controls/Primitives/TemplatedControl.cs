@@ -362,7 +362,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <inheritdoc />
-        internal sealed override void NotifyChildResourcesChanged(ResourcesChangedToken token)
+        internal sealed override void NotifyChildResourcesChanged(ResourcesChangedEventArgs e)
         {
             var count = VisualChildren.Count;
 
@@ -370,11 +370,11 @@ namespace Avalonia.Controls.Primitives
             {
                 if (VisualChildren[i] is ILogical logical)
                 {
-                    logical.NotifyResourcesChanged(token);
+                    logical.NotifyResourcesChanged(e);
                 }
             }
 
-            base.NotifyChildResourcesChanged(token);
+            base.NotifyChildResourcesChanged(e);
         }
 
         /// <inheritdoc/>

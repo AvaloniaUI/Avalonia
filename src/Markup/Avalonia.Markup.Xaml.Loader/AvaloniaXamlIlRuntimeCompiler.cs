@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -344,7 +344,8 @@ namespace Avalonia.Markup.Xaml.XamlIl
             {
                 EnableIlVerification = true,
                 DefaultCompileBindings = configuration.UseCompiledBindingsByDefault,
-                IsDesignMode = configuration.DesignMode
+                IsDesignMode = configuration.DesignMode,
+                CreateSourceInfo = configuration.CreateSourceInfo,
             };
 
             var parsedDocuments = new List<XamlDocumentResource>();
@@ -363,7 +364,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
                 }
 
                 var parsed = compiler.Parse(xaml, overrideType);
-                parsed.Document = "runtimexaml:" + parsedDocuments.Count;
+                parsed.Document = document.Document ?? ("runtimexaml" + parsedDocuments.Count);
                 compiler.Transform(parsed);
 
                 var xamlName = GetSafeUriIdentifier(document.BaseUri)
