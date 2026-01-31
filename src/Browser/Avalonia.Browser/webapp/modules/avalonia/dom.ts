@@ -72,6 +72,7 @@ export class AvaloniaDOM {
 
         // IME
         const inputElement = document.createElement("input");
+        inputElement.contentEditable = "true";
         inputElement.id = `inputElement${containerId}`;
         inputElement.classList.add("avalonia-input-element");
         inputElement.autocapitalize = "none";
