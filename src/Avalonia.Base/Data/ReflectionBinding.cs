@@ -8,6 +8,7 @@ using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.ExpressionNodes;
 using Avalonia.Data.Core.Parsers;
+using Avalonia.Metadata;
 using Avalonia.Utilities;
 
 namespace Avalonia.Data
@@ -90,11 +91,13 @@ namespace Avalonia.Data
         /// <summary>
         /// Gets or sets the binding mode.
         /// </summary>
+        [ConstructorArgument("mode")]
         public BindingMode Mode { get; set; }
 
         /// <summary>
         /// Gets or sets the binding path.
         /// </summary>
+        [ConstructorArgument("path")]
         public string Path { get; set; } = "";
 
         /// <summary>
