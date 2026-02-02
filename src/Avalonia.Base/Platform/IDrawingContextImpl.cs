@@ -205,6 +205,7 @@ namespace Avalonia.Platform
     public interface IDrawingContextImplWithEffects : IDrawingContextImpl
     {
         void PushEffect(Rect? clipRect, IEffect effect);
+        void DrawBackdropEffect(Rect rect, IEffect effect);
         void PopEffect();
     }
 

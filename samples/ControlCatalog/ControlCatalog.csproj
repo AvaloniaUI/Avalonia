@@ -13,6 +13,13 @@
     </AvaloniaXaml>
     <AvaloniaResource Include="Assets\*" />
     <AvaloniaResource Include="Assets\Fonts\*" />
+    <Compile Update="Pages\BackdropPage.axaml.cs">
+      <DependentUpon>BitmapCachePage.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Pages\BitmapCachePage.axaml.cs">
+      <DependentUpon>BackdropPage.axaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Remove="Assets\image1.jpg" />
@@ -40,6 +47,10 @@
     <ProjectReference Include="..\..\src\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
     <ProjectReference Include="..\MiniMvvm\MiniMvvm.csproj" />
     <ProjectReference Include="..\SampleControls\ControlSamples.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="Pages\BackdropPage.axaml" />
   </ItemGroup>
 
   <Import Project="..\..\build\BuildTargets.targets" />

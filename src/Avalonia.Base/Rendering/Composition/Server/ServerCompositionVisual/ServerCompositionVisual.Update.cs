@@ -7,7 +7,7 @@ namespace Avalonia.Rendering.Composition.Server;
 
 internal partial class ServerCompositionVisual
 {
-    protected virtual bool HasEffect => Effect != null;
+    protected virtual bool HasEffect => Effect != null || BackdropEffect != null;
     
     struct UpdateContext : IServerTreeVisitor, IDisposable
     {
@@ -61,7 +61,21 @@ internal partial class ServerCompositionVisual
         
         public void PreSubgraph(ServerCompositionVisual node, out bool visitChildren)
         {
-            visitChildren = node._isDirtyForRenderInSubgraph || node._needsBoundingBoxUpdate;
+            visitChildren = node._isDirtyForRenderInSubgraph // Something is marked as dirty
+                            || node._needsBoundingBoxUpdate; // Something changed that affects bounds
+
+            if (!visitChildren && node.BackdropEffect == null && node._subTreeBackdropBounds.HasValue)
+            {
+                // We need to visit unchanged subtrees too if their backdrop area is affected by already visited ones.
+                
+                // This node has backdrop effect somewhere in its subtree, but doesn't have it itself.
+                // If it had backdrop itself, we don't need to visit the subtree, since its own backdrop
+                // would already covered any child's backdrop.
+                
+                // So check if subtree backdrop bounds intersect the accumulated dirty region.
+                visitChildren |= _dirtyRegion.UninflatedIntersects(node._subTreeBackdropBounds.Value);
+
+            }
             
             // If this node has an alpha mask an we caused its inner bounds to change
             // then treat the node as if _isDirtyForRender was set.
@@ -110,6 +124,11 @@ internal partial class ServerCompositionVisual
                 // children will union their bbox into their parent's bbox. PostSubgraph will clip the bbox and transform it
                 // to outer space.
                 node._subTreeBounds = node._ownContentBounds;
+                
+                // Backdrop bounds follow the same logic as normal bounds, but we don't initially set them to own bounds
+                // and handle BackdropEffect in FinalizeSubtreeBounds since we need _subTreeBounds of all children
+                // to compute backdrop bounds.
+                node._subTreeBackdropBounds = null;
             }
         }
         
@@ -133,7 +152,10 @@ internal partial class ServerCompositionVisual
             {
                 // Update the bounding box on the parent.
                 if (parent._needsBoundingBoxUpdate)
+                {
                     parent._subTreeBounds = LtrbRect.FullUnion(parent._subTreeBounds, node._transformedSubTreeBounds);
+                    parent._subTreeBackdropBounds = LtrbRect.FullUnion(parent._subTreeBackdropBounds, node._transformedSubTreeBackdropBounds);
+                }
             }
             
             //
@@ -145,6 +167,8 @@ internal partial class ServerCompositionVisual
             {
                 AddToDirtyRegion(node._extraDirtyRect);
             }
+
+            ApplyBackdropDirtyRegion(node);
 
             // If we pushed transforms here, we need to pop them again.  If we're handling a cache we need
             // to finish handling it here as well.
@@ -186,13 +210,36 @@ internal partial class ServerCompositionVisual
                 if (node._ownClipRect.HasValue)
                     node._subTreeBounds = node._subTreeBounds.Value.IntersectOrNull(node._ownClipRect.Value);
             }
-
+            
             if (node._subTreeBounds == null)
+            {
                 node._transformedSubTreeBounds = null;
-            else if (node._ownTransform.HasValue)
-                node._transformedSubTreeBounds = node._subTreeBounds?.TransformToAABB(node._ownTransform.Value);
+                node._subTreeBackdropBounds = null;
+            }
             else
-                node._transformedSubTreeBounds = node._subTreeBounds;
+            {
+                if (node.BackdropEffect != null)
+                {
+                    // This node applies a backdrop effect, include its own bounds in the backdrop bounds
+                    node._subTreeBackdropBounds = LtrbRect.FullUnion(node._subTreeBackdropBounds,
+                        node._subTreeBounds?.Inflate(node.BackdropEffect.GetEffectInputPadding()));
+                }
+
+                if (node._ownTransform.HasValue)
+                {
+                    node._transformedSubTreeBounds = node._subTreeBounds?.TransformToAABB(node._ownTransform.Value);
+                    node._transformedSubTreeBackdropBounds =
+                        node._subTreeBackdropBounds?.TransformToAABB(node._ownTransform.Value);
+                }
+                else
+                {
+                    node._transformedSubTreeBounds = node._subTreeBounds;
+                    node._transformedSubTreeBackdropBounds = node._subTreeBackdropBounds;
+                }
+            }
+
+
+
 
             node.EnqueueForReadbackUpdate();
         }
@@ -208,7 +255,17 @@ internal partial class ServerCompositionVisual
 
             _dirtyRegion.AddRect(transformed);
         }
-        
+
+        private void ApplyBackdropDirtyRegion(ServerCompositionVisual node)
+        {
+            if (_dirtyRegionDisableCount != 0 || node.BackdropEffect == null || !node._subTreeBackdropBounds.HasValue)
+                return;
+
+            var transformed = node._subTreeBackdropBounds.Value.TransformToAABB(_context.Transform);
+            if (_dirtyRegion.UninflatedIntersects(transformed))
+                _dirtyRegion.AddRect(transformed);
+        }
+
         private void PushBoundsAffectingProperties(ServerCompositionVisual node)
         {
             if (node._ownTransform.HasValue)

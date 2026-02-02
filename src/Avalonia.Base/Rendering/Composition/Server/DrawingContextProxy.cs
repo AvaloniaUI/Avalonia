@@ -301,6 +301,16 @@ internal partial class CompositorDrawingContextProxy : IDrawingContextImpl,
         });
     }
 
+    public void DrawBackdropEffect(Rect rect, IEffect effect)
+    {
+        if (_impl is IDrawingContextImplWithEffects effects)
+        {
+            Flush();
+            effects.DrawBackdropEffect(rect, effect);
+        }
+
+    }
+
     public void PopEffect()
     {
         if (!TryDiscardOrFlush(PendingCommandType.PushEffect))

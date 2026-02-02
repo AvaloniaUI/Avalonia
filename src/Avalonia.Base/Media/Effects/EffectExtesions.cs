@@ -11,6 +11,15 @@ public static class EffectExtensions
             return 0;
         return Math.Ceiling(radius) + 1;
     }
+    
+    internal static Thickness GetEffectInputPadding(this IEffect? effect)
+    {
+        // Invert left/right and top/bottom for now 
+        
+        var padding = GetEffectOutputPadding(effect);
+        return new Thickness(padding.Right, padding.Bottom, padding.Left, padding.Top);
+    }
+
     internal static Thickness GetEffectOutputPadding(this IEffect? effect)
     {
         if (effect == null)

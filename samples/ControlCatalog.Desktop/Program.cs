@@ -144,7 +144,7 @@ namespace ControlCatalog.Desktop
                 })
                 .With(new CompositionOptions()
                 {
-                    UseRegionDirtyRectClipping = true
+                    UseRegionDirtyRectClipping = false
                 })
                 .UseSkia()
                 .WithInterFont()

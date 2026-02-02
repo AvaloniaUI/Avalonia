@@ -19,6 +19,24 @@ internal class RegionDirtyRectTracker : IDirtyRectTracker
     }
     
     public void AddRect(LtrbRect rect) => _rects.Add(rect);
+    public LtrbRect? UninflatedCombinedIntersect(LtrbRect rect)
+    {
+        // We maybe want to disallow backdrop effects when this tracker is used this mode,
+        // since that's rather expensive, but so is SKRegion
+        LtrbRect? combined = null;
+        foreach (var rc in _rects) 
+            combined = LtrbRect.FullUnion(combined, rc.IntersectOrNull(rect));
+        
+        return combined;
+    }
+
+    public bool UninflatedIntersects(LtrbRect rect)
+    {
+        foreach (var rc in _rects) 
+            if (rc.Intersects(rect))
+                return true;
+        return false;
+    }
 
     private LtrbPixelRect GetInflatedPixelRect(LtrbRect rc)
     {

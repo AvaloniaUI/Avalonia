@@ -81,6 +81,13 @@ namespace Avalonia
         /// </summary>
         public static readonly StyledProperty<IEffect?> EffectProperty =
             AvaloniaProperty.Register<Visual, IEffect?>(nameof(Effect));
+        
+                
+        /// <summary>
+        /// Defines the <see cref="BackdropEffect"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IEffect?> BackdropEffectProperty =
+            AvaloniaProperty.Register<Visual, IEffect?>(nameof(BackdropEffect));
 
         /// <summary>
         /// Defines the <see cref="HasMirrorTransform"/> property.
@@ -278,6 +285,15 @@ namespace Avalonia
         {
             get => GetValue(EffectProperty);
             set => SetValue(EffectProperty, value);
+        }        
+        
+        /// <summary>
+        /// Gets or sets the backdrop effect of the control.
+        /// </summary>
+        public IEffect? BackdropEffect
+        {
+            get => GetValue(BackdropEffectProperty);
+            set => SetValue(BackdropEffectProperty, value);
         }
 
 

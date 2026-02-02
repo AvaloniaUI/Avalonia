@@ -16,6 +16,9 @@
       </Style>
     </Grid.Styles>
     <controls:HamburgerMenu Name="Sidebar">
+      <TabItem Header="Backdrop">
+        <pages:BackdropPage />
+      </TabItem>      
       <TabItem Header="Composition">
         <pages:CompositionPage />
       </TabItem>

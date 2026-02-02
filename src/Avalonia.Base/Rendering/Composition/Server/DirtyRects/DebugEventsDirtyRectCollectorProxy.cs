@@ -10,4 +10,7 @@ internal class DebugEventsDirtyRectCollectorProxy(IDirtyRectCollector inner, ICo
         inner.AddRect(rect);
         events.RectInvalidated(rect);
     }
+
+    public LtrbRect? UninflatedCombinedIntersect(LtrbRect rect) => inner.UninflatedCombinedIntersect(rect);
+    public bool UninflatedIntersects(LtrbRect rect) => inner.UninflatedIntersects(rect);
 }

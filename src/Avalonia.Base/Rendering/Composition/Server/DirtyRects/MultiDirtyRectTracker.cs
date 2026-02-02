@@ -24,6 +24,24 @@ internal partial class MultiDirtyRectTracker : IDirtyRectTracker
     }
     
     public void AddRect(LtrbRect rect) => _regions.Add(rect);
+    public LtrbRect? UninflatedCombinedIntersect(LtrbRect rect)
+    {
+        var dirtyRegions = _regions.GetUninflatedDirtyRegions();
+        LtrbRect? combined = null;
+        foreach (var rc in dirtyRegions) 
+            combined = LtrbRect.FullUnion(combined, rc.IntersectOrNull(rect));
+        
+        return combined;
+    }
+
+    public bool UninflatedIntersects(LtrbRect rect)
+    {
+        var dirtyRegions = _regions.GetUninflatedDirtyRegions();
+        foreach (var rc in dirtyRegions) 
+            if (rc.Intersects(rect))
+                return true;
+        return false;
+    }
 
     public void FinalizeFrame(LtrbRect bounds)
     {

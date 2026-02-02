@@ -33,6 +33,7 @@
         <Property Name="AdornerIsClipped" Type="bool" Internal="true" />
         <Property Name="OpacityMaskBrush" ClientName="OpacityMaskBrushTransportField" Type="Avalonia.Media.IBrush?" Private="true"  />
         <Property Name="Effect" Type="Avalonia.Media.IImmutableEffect?" Internal="true" />
+        <Property Name="BackdropEffect" Type="Avalonia.Media.IImmutableEffect?" Internal="true" />
         <Property Name="RenderOptions" Type="Avalonia.Media.RenderOptions" />
         <Property Name="CacheMode" Type="CompositionCacheMode?" Internal="true" />
     </Object>

@@ -65,11 +65,18 @@ internal class ServerCompositionVisualCache
             parent._needToFinalizeFrame = true;
             
             // scale according to our render transform, since those values come in local space of the visual
-            parent._dirtyRectTracker.AddRect(new LtrbRect((rect.Left + parent._drawAtOffset.X) * parent._scaleX,
-                (rect.Top + parent._drawAtOffset.Y) * parent._scaleY,
-                (rect.Right + parent._drawAtOffset.X) * parent._scaleX,
-                (rect.Bottom + parent._drawAtOffset.Y) * parent._scaleY));
+            parent._dirtyRectTracker.AddRect(Transform(rect));
         }
+
+        private LtrbRect Transform(LtrbRect rect) => new LtrbRect((rect.Left + parent._drawAtOffset.X) * parent._scaleX,
+            (rect.Top + parent._drawAtOffset.Y) * parent._scaleY,
+            (rect.Right + parent._drawAtOffset.X) * parent._scaleX,
+            (rect.Bottom + parent._drawAtOffset.Y) * parent._scaleY);
+
+        public LtrbRect? UninflatedCombinedIntersect(LtrbRect rect) =>
+            parent._dirtyRectTracker.UninflatedCombinedIntersect(Transform(rect));
+
+        public bool UninflatedIntersects(LtrbRect rect) => parent._dirtyRectTracker.UninflatedIntersects(Transform(rect));
     }
     
     private readonly IDirtyRectTracker _dirtyRectTracker = new SingleDirtyRectTracker();

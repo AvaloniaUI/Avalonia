@@ -15,7 +15,7 @@
             <Slider Minimum="0.1" Maximum="4" Value="{Binding Source={StaticResource Cache}, Path=RenderAtScale, Mode=TwoWay}" Width="200"/>
             <TextBlock>Scale</TextBlock>
             <Slider Minimum="0.1" Maximum="4" Value="{Binding Source={StaticResource Transform}, Path=ScaleX, Mode=TwoWay}" Width="200"/>
-            <CheckBox IsChecked="{Binding Source={StaticResource Cache}, Path=EnableClearType, Mode=TwoWay}">Enable clear type</CheckBox>
+            <CheckBox IsChecked="{Binding Source={StaticResource Cache}, Path=EnableClearType, Mode=TwoWay}">Enablze clear type</CheckBox>
 
             <CheckBox IsChecked="{Binding Source={StaticResource Cache}, Path=SnapsToDevicePixels, Mode=TwoWay}">Snap to device pixels</CheckBox>
             <TextBlock>Subpixel offset X</TextBlock>

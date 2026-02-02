@@ -1,0 +1,54 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="ControlCatalog.Pages.BackdropPage">
+    <DockPanel>
+        <DockPanel.Resources>
+            
+        </DockPanel.Resources>
+        <StackPanel DockPanel.Dock="Right" ZIndex="1">
+            <!--
+            <TextBlock>Render at scale</TextBlock>
+            <Slider Minimum="0.1" Maximum="4" Value="{Binding Source={StaticResource Cache}, Path=RenderAtScale, Mode=TwoWay}" Width="200"/>
+            <TextBlock>Scale</TextBlock>
+            <Slider Minimum="0.1" Maximum="4" Value="{Binding Source={StaticResource Transform}, Path=ScaleX, Mode=TwoWay}" Width="200"/>
+            <CheckBox IsChecked="{Binding Source={StaticResource Cache}, Path=EnableClearType, Mode=TwoWay}">Enable clear type</CheckBox>
+
+            <CheckBox IsChecked="{Binding Source={StaticResource Cache}, Path=SnapsToDevicePixels, Mode=TwoWay}">Snap to device pixels</CheckBox>
+            <TextBlock>Subpixel offset X</TextBlock>
+            <Slider Minimum="0" Maximum="1" Value="{Binding Source={StaticResource SubPixelTransform}, Path=X, Mode=TwoWay}" Width="200"/>-->
+        </StackPanel>
+        <Border>
+            <Border.Background>
+                <DrawingBrush
+                    TileMode="Tile"
+                    Stretch="Uniform"
+                    DestinationRect="0,0,64,64">
+                    <DrawingBrush.Drawing>
+                        <DrawingGroup>
+                            <GeometryDrawing Geometry="M0,0 L2,0 2,2, 0,2Z"
+                                             Brush="White" />
+                            <GeometryDrawing Geometry="M0,1 L2,1 2,2, 1,2 1,0 0,0Z"
+                                             Brush="#ff808080" />
+                        </DrawingGroup>
+                    </DrawingBrush.Drawing>                    
+                </DrawingBrush>
+
+            </Border.Background>
+            <Grid ColumnDefinitions="0.2*, *, 0.2*" RowDefinitions="0.2*, *, 0.2*">
+                <Border Grid.Row="1" Grid.Column="1">
+                    <Grid>
+                        
+                        <ProgressBar IsIndeterminate="True" Margin="0 30"></ProgressBar>
+                        <Border Background="#20808080" Margin="20" BackdropEffect="blur(20)"/>
+                    </Grid>
+                    
+                </Border>
+                
+            </Grid>
+            
+        </Border>
+    </DockPanel>
+</UserControl>

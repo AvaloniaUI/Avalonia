@@ -21,4 +21,7 @@ internal interface IDirtyRectTracker : IDirtyRectCollector
 internal interface IDirtyRectCollector
 {
     void AddRect(LtrbRect rect);
+    LtrbRect? UninflatedCombinedIntersect(LtrbRect rect);
+    bool UninflatedIntersects(LtrbRect rect);
+    
 }

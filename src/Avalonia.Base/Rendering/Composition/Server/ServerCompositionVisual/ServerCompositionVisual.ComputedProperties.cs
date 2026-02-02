@@ -39,11 +39,21 @@ partial class ServerCompositionVisual
     private LtrbRect? _subTreeBounds;
 
     public LtrbRect? SubTreeBounds => _subTreeBounds;
-
+    
     // The bounds of this visual and its subtree
     // Coordinate space: parent
     // Updated by: PostSubgraph
     private LtrbRect? _transformedSubTreeBounds;
+
+    // The bounds backdrop effect in this Visual's subtree, we use it for dirty rects only
+    // Coordinate space: local
+    // Updated by: PreSubgraph, PostSubraph (recursive)
+    private LtrbRect? _subTreeBackdropBounds;
+    
+    // The bounds backdrop effect in this Visual's subtree, we use it for dirty rects only
+    // Coordinate space: parent
+    // Updated by: PreSubgraph, PostSubraph (recursive)
+    private LtrbRect? _transformedSubTreeBackdropBounds;
 
     // Visual's own clip area
     // Coordinate space: local

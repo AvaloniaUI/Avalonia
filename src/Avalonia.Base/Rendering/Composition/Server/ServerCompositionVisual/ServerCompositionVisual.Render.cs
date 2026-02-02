@@ -153,6 +153,9 @@ partial class ServerCompositionVisual
             
             if (visual.Effect != null && _canvas is IDrawingContextImplWithEffects effects)
                 effects.PushEffect(visual._subTreeBounds!.Value.ToRect(), visual.Effect);
+            
+            if(visual.BackdropEffect != null && _canvas is IDrawingContextImplWithEffects backdropCanvas)
+                backdropCanvas.DrawBackdropEffect(visual._subTreeBounds!.Value.ToRect(), visual.BackdropEffect);
 
             visual.RenderCore(_publicContext, _walkContext.Clip);
             

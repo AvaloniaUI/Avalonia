@@ -2,6 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Rendering;
 
 namespace ControlCatalog
 {
@@ -30,6 +31,26 @@ namespace ControlCatalog
         public void OnCloseClicked(object sender, EventArgs args)
         {
             Close();
+        }
+        
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            
+            var flag = e.Key switch
+            {
+                Key.F5 => RendererDebugOverlays.Fps,
+                Key.F6 => RendererDebugOverlays.DirtyRects,
+                Key.F7 => RendererDebugOverlays.RenderTimeGraph,
+                Key.F8 => RendererDebugOverlays.LayoutTimeGraph,
+                    
+                _ => default(RendererDebugOverlays)
+            };
+            if(RendererDiagnostics.DebugOverlays.HasFlag(flag))
+                RendererDiagnostics.DebugOverlays &= ~flag;
+            else
+                RendererDiagnostics.DebugOverlays |= flag;
+
+            base.OnKeyDown(e);
         }
     }
 }

@@ -19,6 +19,9 @@ internal class SingleDirtyRectTracker : IDirtyRectTracker
         _rect = LtrbRect.FullUnion(_rect, rect);
     }
 
+    public LtrbRect? UninflatedCombinedIntersect(LtrbRect rect) => _rect?.IntersectOrNull(rect);
+    public bool UninflatedIntersects(LtrbRect rect) => _rect?.Intersects(rect) ?? false;
+
     public void FinalizeFrame(LtrbRect bounds)
     {
 

@@ -20,6 +20,48 @@ partial class DrawingContextImpl
         SKPaintCache.Shared.ReturnReset(paint);
     }
 
+    public void DrawBackdropEffect(Rect rect, IEffect effect)
+    {
+        if (Surface == null) return;
+
+        var sourceSnapshotRect = PixelRect.FromRect(rect.TransformToAABB(Transform), 1);
+        if (sourceSnapshotRect.Width == 0 || sourceSnapshotRect.Height == 0)
+            return;
+
+        var transform = Transform * Matrix.CreateTranslation(-sourceSnapshotRect.X, -sourceSnapshotRect.Y);
+        
+        if (!transform.TryInvert(out var matrix))
+            return;
+            
+        Canvas.Flush();
+
+        using var filter = CreateEffect(effect);
+        if (filter == null)
+            return;
+
+        using var snapshot = Surface.Snapshot(sourceSnapshotRect.ToSKRectI());
+             
+            
+        //matrix = matrix * Matrix.CreateTranslation(-sourceSnapshotRect.X, -sourceSnapshotRect.Y);
+            
+            
+        using var sourceShader =SKShader.CreateImage(snapshot, SKShaderTileMode.Clamp, SKShaderTileMode.Clamp, matrix.ToSKMatrix());
+
+        var paint = SKPaintCache.Shared.Get();
+        try
+        {
+            paint.Shader = sourceShader;
+            paint.ImageFilter = filter;
+            Canvas.DrawRect(rect.ToSKRect(), paint);
+        }
+        finally
+        {
+            SKPaintCache.Shared.ReturnReset(paint);
+        }
+
+        Canvas.Flush();
+    }
+
     public void PopEffect()
     {
         CheckLease();
