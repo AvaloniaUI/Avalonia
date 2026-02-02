@@ -35,17 +35,6 @@ namespace Avalonia.Data
         {
             Path = path;
         }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ReflectionBinding"/> class.
-        /// </summary>
-        /// <param name="path">The binding path.</param>
-        /// <param name="mode">The binding mode.</param>
-        public ReflectionBinding(string path, BindingMode mode)
-        {
-            Path = path;
-            Mode = mode;
-        }
         
         /// <summary>
         /// Gets or sets the amount of time, in milliseconds, to wait before updating the binding 
@@ -91,7 +80,6 @@ namespace Avalonia.Data
         /// <summary>
         /// Gets or sets the binding mode.
         /// </summary>
-        [ConstructorArgument("mode")]
         public BindingMode Mode { get; set; }
 
         /// <summary>
