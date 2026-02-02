@@ -48,7 +48,7 @@ namespace ControlCatalog.Desktop
             SurfaceOrientation GetOrientation()
             {
                 var idx = Array.IndexOf(args, "--orientation");
-                if (idx != 0 && args.Length > idx + 1 &&
+                if (idx >= 0 && args.Length > idx + 1 &&
                     Enum.TryParse<SurfaceOrientation>(args[idx + 1], true, out var orientation))
                     return orientation;
                 return SurfaceOrientation.Rotation0;
@@ -56,7 +56,7 @@ namespace ControlCatalog.Desktop
             string? GetCard()
             {
                 var idx = Array.IndexOf(args, "--card");
-                if (idx != 0 && args.Length > idx + 1)
+                if (idx >= 0 && args.Length > idx + 1)
                     return args[idx + 1];
                 return null;
             }
