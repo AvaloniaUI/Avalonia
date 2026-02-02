@@ -119,22 +119,14 @@ public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity
             activatableLifetime.CurrentIntendActivity = this;
         }
 
-        if (Intent?.Data is { } androidUri
-            && androidUri.IsAbsolute
-            && Uri.TryCreate(androidUri.ToString(), UriKind.Absolute, out var uri))
-        {
-            if (uri.Scheme == Uri.UriSchemeFile)
-            {
-                if (AndroidStorageItem.CreateItem(this, androidUri) is { } item)
-                {
-                    _onActivated?.Invoke(this, new FileActivatedEventArgs(new [] { item }));
-                }
-            }
-            else
-            {
-                _onActivated?.Invoke(this, new ProtocolActivatedEventArgs(uri));
-            }
-        }
+        HandleIntent(Intent);
+    }
+
+    protected override void OnNewIntent(Intent? intent)
+    {
+        base.OnNewIntent(intent);
+
+        HandleIntent(intent);
     }
 
     protected override void OnStop()
@@ -216,6 +208,26 @@ public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity
         }
 
         _view = new AvaloniaView(this) { Content = initialContent };
+    }
+
+    private void HandleIntent(Intent? intent)
+    {
+        if (intent?.Data is { } androidUri
+            && androidUri.IsAbsolute
+            && Uri.TryCreate(androidUri.ToString(), UriKind.Absolute, out var uri))
+        {
+            if (uri.Scheme == Uri.UriSchemeFile || uri.Scheme == "content")
+            {
+                if (AndroidStorageItem.CreateItem(this, androidUri) is { } item)
+                {
+                    _onActivated?.Invoke(this, new FileActivatedEventArgs(new[] { item }));
+                }
+            }
+            else
+            {
+                _onActivated?.Invoke(this, new ProtocolActivatedEventArgs(uri));
+            }
+        }
     }
 
     public void OnBackInvoked()
