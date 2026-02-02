@@ -158,7 +158,7 @@ namespace Avalonia.Controls
 
             protected override void Initialize()
             {
-                _target.SubscribeToResourcesChanged(ResourcesChanged, ResourcesChanged2);
+                _target.ResourcesChanged += ResourcesChanged;
 
                 if (_target is IThemeVariantHost themeVariantHost)
                 {
@@ -168,7 +168,7 @@ namespace Avalonia.Controls
 
             protected override void Deinitialize()
             {
-                _target.UnsubscribeFromResourcesChanged(ResourcesChanged, ResourcesChanged2);
+                _target.ResourcesChanged -= ResourcesChanged;
 
                 if (_target is IThemeVariantHost themeVariantHost)
                 {
@@ -182,11 +182,6 @@ namespace Avalonia.Controls
             }
 
             private void ResourcesChanged(object? sender, ResourcesChangedEventArgs e)
-            {
-                PublishNext(GetValue());
-            }
-
-            private void ResourcesChanged2(object? sender, ResourcesChangedToken token)
             {
                 PublishNext(GetValue());
             }
@@ -230,7 +225,7 @@ namespace Avalonia.Controls
                 _target.OwnerChanged += OwnerChanged;
                 _owner = _target.Owner;
 
-                _owner?.SubscribeToResourcesChanged(ResourcesChanged, ResourcesChanged2);
+                _owner?.ResourcesChanged += ResourcesChanged;
 
                 if (_overrideThemeVariant is null && _owner is IThemeVariantHost themeVariantHost)
                 {
@@ -242,7 +237,7 @@ namespace Avalonia.Controls
             {
                 _target.OwnerChanged -= OwnerChanged;
 
-                _owner?.UnsubscribeFromResourcesChanged(ResourcesChanged, ResourcesChanged2);
+                _owner?.ResourcesChanged -= ResourcesChanged;
 
                 if (_overrideThemeVariant is null && _owner is IThemeVariantHost themeVariantHost)
                 {
@@ -270,7 +265,7 @@ namespace Avalonia.Controls
 
             private void OwnerChanged(object? sender, EventArgs e)
             {
-                _owner?.UnsubscribeFromResourcesChanged(ResourcesChanged, ResourcesChanged2);
+                _owner?.ResourcesChanged -= ResourcesChanged;
 
                 if (_overrideThemeVariant is null && _owner is IThemeVariantHost themeVariantHost)
                 {
@@ -279,7 +274,7 @@ namespace Avalonia.Controls
 
                 _owner = _target.Owner;
 
-                _owner?.SubscribeToResourcesChanged(ResourcesChanged, ResourcesChanged2);
+                _owner?.ResourcesChanged += ResourcesChanged;
 
                 if (_overrideThemeVariant is null && _owner is IThemeVariantHost themeVariantHost2)
                 {
@@ -295,11 +290,6 @@ namespace Avalonia.Controls
             }
 
             private void ResourcesChanged(object? sender, ResourcesChangedEventArgs e)
-            {
-                PublishNext();
-            }
-
-            private void ResourcesChanged2(object? sender, ResourcesChangedToken token)
             {
                 PublishNext();
             }

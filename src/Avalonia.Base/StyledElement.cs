@@ -29,7 +29,7 @@ namespace Avalonia
         IDataContextProvider, 
         ILogical,
         IThemeVariantHost,
-        IResourceHost2,
+        IResourceHost,
         IStyleHost,
         ISetLogicalParent,
         ISetInheritanceParent,
@@ -94,8 +94,7 @@ namespace Avalonia
         private AvaloniaObject? _templatedParent;
         private bool _dataContextUpdating;
         private ControlTheme? _implicitTheme;
-        private EventHandler<ResourcesChangedToken>? _resourcesChanged2;
-        private ResourcesChangedToken _lastResourcesChangedToken;
+        private ResourcesChangedEventArgs _lastResourcesChangedEventArgs;
 
         /// <summary>
         /// Initializes static members of the <see cref="StyledElement"/> class.
@@ -149,12 +148,6 @@ namespace Avalonia
         /// Occurs when a resource in this styled element or a parent styled element has changed.
         /// </summary>
         public event EventHandler<ResourcesChangedEventArgs>? ResourcesChanged;
-
-        event EventHandler<ResourcesChangedToken>? IResourceHost2.ResourcesChanged2
-        {
-            add => _resourcesChanged2 += value;
-            remove => _resourcesChanged2 -= value;
-        }
 
         /// <inheritdoc />
         public event EventHandler? ActualThemeVariantChanged;
@@ -437,14 +430,11 @@ namespace Avalonia
 
         /// <inheritdoc/>
         void ILogical.NotifyResourcesChanged(ResourcesChangedEventArgs e)
-            => NotifyResourcesChanged(ResourcesChangedToken.Create());
+            => NotifyResourcesChanged(e);
 
         /// <inheritdoc/>
         void IResourceHost.NotifyHostedResourcesChanged(ResourcesChangedEventArgs e)
-            => NotifyResourcesChanged(ResourcesChangedToken.Create());
-
-        void IResourceHost2.NotifyHostedResourcesChanged(ResourcesChangedToken token)
-            => NotifyResourcesChanged(token);
+            => NotifyResourcesChanged(e);
 
         /// <inheritdoc/>
         public bool TryGetResource(object key, ThemeVariant? theme, out object? value)
@@ -499,7 +489,7 @@ namespace Avalonia
                     // non-rooted control beacuse it's unlikely that dynamic resources need to be 
                     // correct until the control is added to the tree, and it causes a *lot* of
                     // notifications.
-                    NotifyResourcesChanged(ResourcesChangedToken.Create());
+                    NotifyResourcesChanged(ResourcesChangedEventArgs.Create());
                 }
 
                 RaisePropertyChanged(ParentProperty, old, Parent);
@@ -552,8 +542,8 @@ namespace Avalonia
         /// <summary>
         /// Notifies child controls that a change has been made to resources that apply to them.
         /// </summary>
-        /// <param name="token">The change token.</param>
-        internal virtual void NotifyChildResourcesChanged(ResourcesChangedToken token)
+        /// <param name="e">The change token.</param>
+        internal virtual void NotifyChildResourcesChanged(ResourcesChangedEventArgs e)
         {
             if (_logicalChildren is object)
             {
@@ -563,7 +553,7 @@ namespace Avalonia
                 {
                     for (var i = 0; i < count; ++i)
                     {
-                        _logicalChildren[i].NotifyResourcesChanged(token);
+                        _logicalChildren[i].NotifyResourcesChanged(e);
                     }
                 }
             }
@@ -895,7 +885,7 @@ namespace Avalonia
 
                 ReevaluateImplicitTheme();
                 ApplyStyling();
-                NotifyResourcesChanged(ResourcesChangedToken.Create(), propagate: false);
+                NotifyResourcesChanged(ResourcesChangedEventArgs.Create(), propagate: false);
 
                 OnAttachedToLogicalTree(e);
                 AttachedToLogicalTree?.Invoke(this, e);
@@ -999,23 +989,22 @@ namespace Avalonia
         }
 
         internal void NotifyResourcesChanged(
-            ResourcesChangedToken token,
+            ResourcesChangedEventArgs e,
             bool propagate = true)
         {
             // We already got a notification for this element, ignore.
-            if (token.Equals(_lastResourcesChangedToken))
+            if (e.Equals(_lastResourcesChangedEventArgs))
             {
                 return;
             }
 
-            _lastResourcesChangedToken = token;
+            _lastResourcesChangedEventArgs = e;
 
-            _resourcesChanged2?.Invoke(this, token);
-            ResourcesChanged?.Invoke(this, ResourcesChangedEventArgs.Empty);
+            ResourcesChanged?.Invoke(this, e);
 
             if (propagate)
             {
-                NotifyChildResourcesChanged(token);
+                NotifyChildResourcesChanged(e);
             }
         }
 
