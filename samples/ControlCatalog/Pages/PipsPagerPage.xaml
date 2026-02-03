@@ -1,0 +1,262 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="ControlCatalog.Pages.PipsPagerPage">
+    <ScrollViewer>
+        <StackPanel Spacing="20" Margin="20">
+            <StackPanel Orientation="Vertical" Spacing="4">
+                <TextBlock Classes="h2" TextWrapping="Wrap">PipsPager control lets the user navigate through a paginated collection using a set of pips. It supports automatic scrolling when the number of pages exceeds the maximum visible pips.</TextBlock>
+                <TextBlock FontSize="14" FontWeight="Bold" Margin="0,10,0,0">Features:</TextBlock>
+                <TextBlock TextWrapping="Wrap" Margin="10,0,0,0">• Configurable maximum visible pips</TextBlock>
+                <TextBlock TextWrapping="Wrap" Margin="10,0,0,0">• Automatic scrolling for large collections</TextBlock>
+                <TextBlock TextWrapping="Wrap" Margin="10,0,0,0">• Horizontal and Vertical orientation</TextBlock>
+                <TextBlock TextWrapping="Wrap" Margin="10,0,0,0">• Previous/Next navigation buttons</TextBlock>
+                <TextBlock TextWrapping="Wrap" Margin="10,0,0,0">• Customizable Pips and Buttons</TextBlock>
+            </StackPanel>
+
+            <!-- Default PipsPager -->
+            <StackPanel Spacing="10">
+                <TextBlock Text="Default PipsPager" FontWeight="SemiBold" FontSize="16"/>
+                <PipsPager NumberOfPages="5" />
+            </StackPanel>
+
+            <!-- PipsPager with NON Visible Buttons -->
+            <StackPanel Spacing="10">
+                <TextBlock Text="PipsPager with NON Visible Previous/Next Buttons" FontWeight="SemiBold" FontSize="16"/>
+                <PipsPager NumberOfPages="10" 
+                           IsPreviousButtonVisible="False" 
+                           IsNextButtonVisible="False"
+                           MaxVisiblePips="5"/>
+            </StackPanel>
+
+            <!-- Vertical Orientation -->
+            <StackPanel Spacing="10">
+                <TextBlock Text="Vertical Orientation" FontWeight="SemiBold" FontSize="16"/>
+                <PipsPager NumberOfPages="5" 
+                           Orientation="Vertical" />
+            </StackPanel>
+
+            <!-- Integration with Carousel (FlipView equivalent) -->
+            <StackPanel Spacing="10">
+                <TextBlock Text="Integration with Carousel (Gallery)" FontWeight="SemiBold" FontSize="16"/>
+                <Grid RowDefinitions="*,Auto" Height="300">
+                    <Carousel Name="GalleryCarousel" 
+                              SelectedIndex="{Binding #GalleryPager.SelectedPageIndex, Mode=TwoWay}">
+                        <Carousel.Items>
+                            <Border Background="Red" Height="250"><TextBlock Text="Page 1" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="White" FontSize="30"/></Border>
+                            <Border Background="Green" Height="250"><TextBlock Text="Page 2" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="White" FontSize="30"/></Border>
+                            <Border Background="Blue" Height="250"><TextBlock Text="Page 3" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="White" FontSize="30"/></Border>
+                            <Border Background="Orange" Height="250"><TextBlock Text="Page 4" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="White" FontSize="30"/></Border>
+                            <Border Background="Purple" Height="250"><TextBlock Text="Page 5" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="White" FontSize="30"/></Border>
+                        </Carousel.Items>
+                    </Carousel>
+                    
+                    <PipsPager Name="GalleryPager"
+                               Grid.Row="1"
+                               NumberOfPages="5"
+                               HorizontalAlignment="Center"
+                               Margin="0,10,0,0"/>
+                </Grid>
+            </StackPanel>
+            
+            <!-- Infinite PipsPager -->
+            <StackPanel Spacing="10">
+                <TextBlock Text="Large Number of Pages (MaxVisiblePips=7)" FontWeight="SemiBold" FontSize="16"/>
+                <PipsPager Name="LargePager"
+                           NumberOfPages="50" 
+                           MaxVisiblePips="7" 
+                           SelectedPageIndex="25"
+                           IsPreviousButtonVisible="True"
+                           IsNextButtonVisible="True"/>
+                <TextBlock HorizontalAlignment="Left">
+                    <Run Text="Items: " FontWeight="SemiBold"/>
+                    <Run Text="{Binding #LargePager.NumberOfPages}"/>
+                    <Run Text=" | Visible: " FontWeight="SemiBold"/>
+                    <Run Text="{Binding #LargePager.MaxVisiblePips}"/>
+                    <Run Text=" | Selected Index: " FontWeight="SemiBold"/>
+                    <Run Text="{Binding #LargePager.SelectedPageIndex}"/>
+                </TextBlock>
+            </StackPanel>
+            
+            <!-- Custom Navigation Buttons -->
+            <StackPanel Spacing="10">
+                <TextBlock Text="Custom Navigation Buttons" FontWeight="SemiBold" FontSize="16"/>
+                <PipsPager NumberOfPages="5" MaxVisiblePips="5" IsPreviousButtonVisible="True" IsNextButtonVisible="True">
+                    <PipsPager.Resources>
+                        <ControlTheme x:Key="CustomPreviousButtonStyle" TargetType="Button">
+                            <Setter Property="Content" Value="Prev" />
+                            <Setter Property="Background" Value="LightGray" />
+                            <Setter Property="Foreground" Value="Black" />
+                            <Setter Property="Padding" Value="8,2" />
+                            <Setter Property="Margin" Value="0,0,8,0" />
+                            <Setter Property="Template">
+                                <ControlTemplate>
+                                    <Border Background="{TemplateBinding Background}" CornerRadius="4">
+                                        <ContentPresenter Content="{TemplateBinding Content}" Margin="{TemplateBinding Padding}" />
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter>
+                        </ControlTheme>
+                        <ControlTheme x:Key="CustomNextButtonStyle" TargetType="Button">
+                            <Setter Property="Content" Value="Next" />
+                            <Setter Property="Background" Value="LightGray" />
+                            <Setter Property="Foreground" Value="Black" />
+                            <Setter Property="Padding" Value="8,2" />
+                            <Setter Property="Margin" Value="8,0,0,0" />
+                            <Setter Property="Template">
+                                <ControlTemplate>
+                                    <Border Background="{TemplateBinding Background}" CornerRadius="4">
+                                        <ContentPresenter Content="{TemplateBinding Content}" Margin="{TemplateBinding Padding}" />
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter>
+                        </ControlTheme>
+                    </PipsPager.Resources>
+                    <PipsPager.PreviousButtonStyle>
+                        <StaticResource ResourceKey="CustomPreviousButtonStyle" />
+                    </PipsPager.PreviousButtonStyle>
+                    <PipsPager.NextButtonStyle>
+                        <StaticResource ResourceKey="CustomNextButtonStyle" />
+                    </PipsPager.NextButtonStyle>
+                </PipsPager>
+            </StackPanel>
+
+            <!-- Custom Colors -->
+            <StackPanel Spacing="10">
+                <TextBlock Text="Custom Colors" FontWeight="SemiBold" FontSize="16"/>
+                <PipsPager NumberOfPages="5" MaxVisiblePips="5">
+                    <PipsPager.Resources>
+                        <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForeground" Color="Orange" />
+                        <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundSelected" Color="Blue" />
+                        <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundPointerOver" Color="Gold" />
+                    </PipsPager.Resources>
+                </PipsPager>
+            </StackPanel>
+
+            <!-- Custom Pip Template (Square) -->
+            <StackPanel Spacing="10">
+                <TextBlock Text="Custom Pip Template (Squares)" FontWeight="SemiBold" FontSize="16"/>
+                <PipsPager NumberOfPages="5">
+                    <PipsPager.Styles>
+                        <Style Selector="PipsPager /template/ ListBox ListBoxItem">
+                            <Setter Property="Template">
+                                <ControlTemplate>
+                                    <Grid Background="Transparent">
+                                        <Rectangle Name="Pip" 
+                                                   Width="4" 
+                                                   Height="4"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"
+                                                   Fill="{DynamicResource PipsPagerSelectionIndicatorForeground}">
+                                            <Rectangle.Transitions>
+                                                <Transitions>
+                                                    <DoubleTransition Property="Width" Duration="0:0:0.167" />
+                                                    <DoubleTransition Property="Height" Duration="0:0:0.167" />
+                                                    <BrushTransition Property="Fill" Duration="0:0:0.167" />
+                                                </Transitions>
+                                            </Rectangle.Transitions>
+                                        </Rectangle>
+                                    </Grid>
+                                </ControlTemplate>
+                            </Setter>
+                        </Style>
+                        <Style Selector="PipsPager /template/ ListBox ListBoxItem:pointerover /template/ Rectangle#Pip">
+                            <Setter Property="Width" Value="6" />
+                            <Setter Property="Height" Value="6" />
+                            <Setter Property="Fill" Value="{DynamicResource PipsPagerSelectionIndicatorForegroundPointerOver}" />
+                        </Style>
+                        <Style Selector="PipsPager /template/ ListBox ListBoxItem:selected /template/ Rectangle#Pip">
+                            <Setter Property="Width" Value="6" />
+                            <Setter Property="Height" Value="6" />
+                            <Setter Property="Fill" Value="{DynamicResource PipsPagerSelectionIndicatorForegroundSelected}" />
+                        </Style>
+                        <Style Selector="PipsPager /template/ ListBox ListBoxItem:selected:pointerover /template/ Rectangle#Pip">
+                            <Setter Property="Width" Value="6" />
+                            <Setter Property="Height" Value="6" />
+                            <Setter Property="Fill" Value="{DynamicResource PipsPagerSelectionIndicatorForegroundSelected}" />
+                        </Style>
+                        <Style Selector="PipsPager /template/ ListBox ListBoxItem:pressed /template/ Rectangle#Pip">
+                            <Setter Property="Width" Value="4" />
+                            <Setter Property="Height" Value="4" />
+                            <Setter Property="Fill" Value="{DynamicResource PipsPagerSelectionIndicatorForegroundPressed}" />
+                        </Style>
+                    </PipsPager.Styles>
+                </PipsPager>
+            </StackPanel>
+
+            <!-- Custom Pip Template (Numbers) -->
+            <StackPanel Spacing="10">
+                <TextBlock Text="Custom Pip Template (Numbers)" FontWeight="SemiBold" FontSize="16"/>
+                <PipsPager NumberOfPages="10" 
+                           MaxVisiblePips="4"
+                           IsNextButtonVisible="True"
+                           IsPreviousButtonVisible="True"
+                           ClipToBounds="False">
+                    <PipsPager.Styles>
+                        <Style Selector="PipsPager /template/ ListBox ListBoxItem">
+                            <Setter Property="Width" Value="44" />
+                            <Setter Property="Height" Value="44" />
+                            <Setter Property="Padding" Value="0" />
+                            <Setter Property="Margin" Value="2" />
+                            <Setter Property="ClipToBounds" Value="False" />
+                            <Setter Property="Template">
+                                <ControlTemplate>
+                                    <Border Name="PipBorder" 
+                                            Width="30" 
+                                            Height="30"
+                                            VerticalAlignment="Center"
+                                            HorizontalAlignment="Center"
+                                            CornerRadius="10"
+                                            ClipToBounds="False"
+                                            Background="LightGray">
+                                        <Border.Transitions>
+                                            <Transitions>
+                                                <DoubleTransition Property="Width" Duration="0:0:0.2" Easing="CubicEaseOut" />
+                                                <DoubleTransition Property="Height" Duration="0:0:0.2" Easing="CubicEaseOut" />
+                                                <BrushTransition Property="Background" Duration="0:0:0.2" />
+                                            </Transitions>
+                                        </Border.Transitions>
+                                        <TextBlock Text="{TemplateBinding Content}" 
+                                                   VerticalAlignment="Center" 
+                                                   HorizontalAlignment="Center"
+                                                   Foreground="Black"
+                                                   FontWeight="SemiBold"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter>
+                        </Style>
+                        
+                        <!-- PointerOver State -->
+                        <Style Selector="PipsPager /template/ ListBox ListBoxItem:pointerover /template/ Border#PipBorder">
+                            <Setter Property="Background" Value="DarkGray" />
+                        </Style>
+
+                        <!-- Pressed State -->
+                        <Style Selector="PipsPager /template/ ListBox ListBoxItem:pressed /template/ Border#PipBorder">
+                            <Setter Property="Width" Value="28" />
+                            <Setter Property="Height" Value="28" />
+                        </Style>
+
+                        <!-- Selected State -->
+                        <Style Selector="PipsPager /template/ ListBox ListBoxItem:selected /template/ Border#PipBorder">
+                            <Setter Property="Background" Value="#0078D7" />
+                            <Setter Property="Width" Value="36" />
+                            <Setter Property="Height" Value="36" />
+                        </Style>
+                        <Style Selector="PipsPager /template/ ListBox ListBoxItem:selected /template/ TextBlock">
+                            <Setter Property="Foreground" Value="White" />
+                        </Style>
+
+                        <!-- Selected & PointerOver State -->
+                        <Style Selector="PipsPager /template/ ListBox ListBoxItem:selected:pointerover /template/ Border#PipBorder">
+                            <Setter Property="Background" Value="#106EBE" />
+                        </Style>
+                    </PipsPager.Styles>
+                </PipsPager>
+            </StackPanel>
+            
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
