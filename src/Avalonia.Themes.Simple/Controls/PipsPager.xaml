@@ -1,0 +1,141 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Design.PreviewWith>
+    <PipsPager NumberOfPages="5" SelectedPageIndex="2" />
+  </Design.PreviewWith>
+
+  <ControlTheme x:Key="{x:Type PipsPager}" TargetType="PipsPager">
+    <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <StackPanel Name="PART_RootPanel" 
+                    Orientation="{TemplateBinding Orientation}"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    ClipToBounds="False">
+            
+            <Button Name="PART_PreviousButton"
+                    Width="24"
+                    Height="24"
+                    Padding="0"
+                    HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center"
+                    IsVisible="{TemplateBinding IsPreviousButtonVisible}"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center"
+                    Margin="4">
+                <PathIcon Width="12" Height="12" Data="M 8.12,2.29 L 3.41,7.00 C 3.14,7.27 3.14,7.71 3.41,7.98 L 8.12,12.69 C 8.57,13.14 9.33,12.82 9.33,12.19 L 9.33,2.79 C 9.33,2.16 8.57,1.84 8.12,2.29 Z" />
+            </Button>
+
+            <ListBox Name="PART_PipsPagerList"
+                     Background="Transparent"
+                     BorderThickness="0"
+                     Padding="0"
+                     HorizontalAlignment="Center"
+                     VerticalAlignment="Center"
+                     ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                     ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                     ItemsSource="{Binding TemplateSettings.Pips, RelativeSource={RelativeSource TemplatedParent}}"
+                     SelectedIndex="{Binding SelectedPageIndex, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                     ClipToBounds="False">
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="{Binding Orientation, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=PipsPager}}"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Spacing="4" />
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                <ListBox.Styles>
+                    <Style Selector="ScrollViewer">
+                        <Setter Property="ClipToBounds" Value="False" />
+                    </Style>
+                    <Style Selector="ListBoxItem">
+                         <Setter Property="Width" Value="12" />
+                         <Setter Property="Height" Value="24" />
+                         <Setter Property="Padding" Value="0" />
+                         <Setter Property="Margin" Value="0" />
+                         <Setter Property="MinHeight" Value="0" />
+                         <Setter Property="MinWidth" Value="0" />
+                         <Setter Property="ClipToBounds" Value="False" />
+                         <Setter Property="VerticalAlignment" Value="Center" />
+                         <Setter Property="Template">
+                            <ControlTemplate>
+                                <Panel Background="Transparent">
+                                    <Ellipse Name="Pip" Width="12" Height="12" Fill="{DynamicResource ThemeControlLowBrush}">
+                                        <Ellipse.Transitions>
+                                            <Transitions>
+                                                <BrushTransition Property="Fill" Duration="0:0:0.1" />
+                                            </Transitions>
+                                        </Ellipse.Transitions>
+                                    </Ellipse>
+                                </Panel>
+                            </ControlTemplate>
+                         </Setter>
+                    </Style>
+                    <Style Selector="ListBoxItem:pointerover /template/ Ellipse#Pip">
+                        <Setter Property="Fill" Value="{DynamicResource ThemeControlHighBrush}" />
+                    </Style>
+                    <Style Selector="ListBoxItem:selected /template/ Ellipse#Pip">
+                        <Setter Property="Fill" Value="{DynamicResource ThemeAccentBrush}" />
+                    </Style>
+
+                    <Style Selector="PipsPager:vertical ListBoxItem">
+                        <Setter Property="Width" Value="24" />
+                        <Setter Property="Height" Value="12" />
+                    </Style>
+                    <Style Selector="ListBoxItem:selected:pointerover /template/ Ellipse#Pip">
+                        <Setter Property="Fill" Value="{DynamicResource ThemeAccentBrush2}" />
+                    </Style>
+                    <Style Selector="ListBoxItem:pressed /template/ Ellipse#Pip">
+                        <Setter Property="Fill" Value="{DynamicResource ThemeAccentBrush3}" />
+                    </Style>
+                </ListBox.Styles>
+            </ListBox>
+
+            <Button Name="PART_NextButton"
+                    Width="24"
+                    Height="24"
+                    Padding="0"
+                    HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center"
+                    IsVisible="{TemplateBinding IsNextButtonVisible}"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center"
+                    Margin="4">
+                <PathIcon Width="12" Height="12" Data="M 3.88,2.29 L 8.59,7.00 C 8.86,7.27 8.86,7.71 8.59,7.98 L 3.88,12.69 C 3.43,13.14 2.67,12.82 2.67,12.19 L 2.67,2.79 C 2.67,2.16 3.43,1.84 3.88,2.29 Z" />
+            </Button>
+        </StackPanel>
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^:vertical /template/ Button#PART_PreviousButton PathIcon">
+      <Setter Property="Data" Value="M 2.29,9.33 L 7.00,4.62 C 7.27,4.35 7.71,4.35 7.98,4.62 L 12.69,9.33 C 13.14,9.78 12.82,10.54 12.19,10.54 L 2.79,10.54 C 2.16,10.54 1.84,9.78 2.29,9.33 Z" />
+    </Style>
+
+    <Style Selector="^:vertical /template/ Button#PART_NextButton PathIcon">
+      <Setter Property="Data" Value="M 2.29,4.46 L 7.00,9.17 C 7.27,9.44 7.71,9.44 7.98,9.17 L 12.69,4.46 C 13.14,4.01 12.82,3.25 12.19,3.25 L 2.79,3.25 C 2.16,3.25 1.84,4.01 2.29,4.46 Z" />
+    </Style>
+
+    <Style Selector="^ /template/ Button">
+      <Setter Property="Transitions">
+        <Transitions>
+          <BrushTransition Property="Background" Duration="0:0:0.1" />
+        </Transitions>
+      </Setter>
+    </Style>
+
+    <Style Selector="^:first-page /template/ Button#PART_PreviousButton">
+      <Setter Property="Opacity" Value="0" />
+      <Setter Property="IsHitTestVisible" Value="False" />
+    </Style>
+
+    <Style Selector="^:last-page /template/ Button#PART_NextButton">
+      <Setter Property="Opacity" Value="0" />
+      <Setter Property="IsHitTestVisible" Value="False" />
+    </Style>
+  </ControlTheme>
+</ResourceDictionary>

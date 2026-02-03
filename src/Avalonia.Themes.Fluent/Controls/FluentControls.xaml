@@ -38,6 +38,7 @@
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/OverlayPopupHost.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/PopupRoot.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/PathIcon.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/PipsPager.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/RepeatButton.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ScrollBar.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ScrollViewer.xaml" />
