@@ -66,7 +66,6 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
     /// requirement that a popup must intersect with or be at least partially adjacent to its parent
     /// surface.
     /// </remarks>
-    [Unstable(ObsoletionMessages.MayBeRemovedInAvalonia12)]
     public record struct PopupPositionerParameters
     {
         private PopupGravity _gravity;
