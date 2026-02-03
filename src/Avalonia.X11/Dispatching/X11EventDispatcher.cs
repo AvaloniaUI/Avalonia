@@ -47,7 +47,12 @@ internal class X11EventDispatcher
                     }
                 }
                 else if (_eventHandlers.TryGetValue(xev.AnyEvent.window, out var handler))
+                {
+                    if (handler is null)
+                        throw new NullReferenceException($"Event handler for event '{xev.AnyEvent}' and window '{xev.AnyEvent.window}' is null");
+
                     handler(ref xev);
+                }
             }
             finally
             {
