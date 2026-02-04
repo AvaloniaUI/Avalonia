@@ -190,6 +190,8 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Watermark"/> property.
         /// </summary>
         [Obsolete("Use PlaceholderTextProperty instead.", false)]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1022",
+            Justification = "Obsolete property alias for backward compatibility.")]
         public static readonly StyledProperty<string?> WatermarkProperty = PlaceholderTextProperty;
 
         /// <summary>
@@ -202,6 +204,8 @@ namespace Avalonia.Controls
         /// Defines the <see cref="UseFloatingWatermark"/> property.
         /// </summary>
         [Obsolete("Use UseFloatingPlaceholderTextProperty instead.", false)]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1022",
+            Justification = "Obsolete property alias for backward compatibility.")]
         public static readonly StyledProperty<bool> UseFloatingWatermarkProperty = UseFloatingPlaceholderTextProperty;
 
         /// <summary>
@@ -214,6 +218,8 @@ namespace Avalonia.Controls
         /// Defines the <see cref="WatermarkForeground"/> property.
         /// </summary>
         [Obsolete("Use PlaceholderForegroundProperty instead.", false)]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1022",
+            Justification = "Obsolete property alias for backward compatibility.")]
         public static readonly StyledProperty<IBrush?> WatermarkForegroundProperty = PlaceholderForegroundProperty;
 
         /// <summary>
@@ -703,6 +709,8 @@ namespace Avalonia.Controls
         public string? Watermark
         {
             get => PlaceholderText;
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012",
+                Justification = "Obsolete property setter for backward compatibility.")]
             set => PlaceholderText = value;
         }
 
@@ -724,6 +732,8 @@ namespace Avalonia.Controls
         public bool UseFloatingWatermark
         {
             get => UseFloatingPlaceholderText;
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012",
+                Justification = "Obsolete property setter for backward compatibility.")]
             set => UseFloatingPlaceholderText = value;
         }
 
@@ -743,6 +753,8 @@ namespace Avalonia.Controls
         public IBrush? WatermarkForeground
         {
             get => PlaceholderForeground;
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012",
+                Justification = "Obsolete property setter for backward compatibility.")]
             set => PlaceholderForeground = value;
         }
 

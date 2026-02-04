@@ -118,11 +118,15 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Watermark"/> property.
         /// </summary>
         [Obsolete("Use PlaceholderTextProperty instead.", false)]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1022",
+            Justification = "Obsolete property alias for backward compatibility.")]
         public static readonly StyledProperty<string?> WatermarkProperty = PlaceholderTextProperty;
 
         /// <summary>
         /// Defines the <see cref="PlaceholderForeground"/> property.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1013",
+            Justification = "We keep WatermarkForegroundProperty for backward compatibility.")]
         public static readonly StyledProperty<Media.IBrush?> PlaceholderForegroundProperty =
             TextBox.PlaceholderForegroundProperty.AddOwner<NumericUpDown>();
 
@@ -130,6 +134,8 @@ namespace Avalonia.Controls
         /// Defines the <see cref="WatermarkForeground"/> property.
         /// </summary>
         [Obsolete("Use PlaceholderForegroundProperty instead.", false)]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1022",
+            Justification = "Obsolete property alias for backward compatibility.")]
         public static readonly StyledProperty<Media.IBrush?> WatermarkForegroundProperty = PlaceholderForegroundProperty;
 
         /// <summary>
@@ -325,6 +331,8 @@ namespace Avalonia.Controls
         public string? Watermark
         {
             get => PlaceholderText;
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012",
+                Justification = "Obsolete property setter for backward compatibility.")]
             set => PlaceholderText = value;
         }
 
@@ -344,6 +352,8 @@ namespace Avalonia.Controls
         public Media.IBrush? WatermarkForeground
         {
             get => PlaceholderForeground;
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012",
+                Justification = "Obsolete property setter for backward compatibility.")]
             set => PlaceholderForeground = value;
         }
 
