@@ -1,8 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 
-// TODO12: move to Avalonia namespace. 
-namespace Avalonia.Platform;
+namespace Avalonia;
 
 public interface IOptionalFeatureProvider
 {

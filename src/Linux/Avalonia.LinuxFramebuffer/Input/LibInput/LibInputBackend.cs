@@ -1,8 +1,10 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Platform;
 using static Avalonia.LinuxFramebuffer.Input.LibInput.LibInputNativeUnsafeMethods;
 namespace Avalonia.LinuxFramebuffer.Input.LibInput
 {
@@ -30,9 +32,22 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
         private unsafe void InputThread(IntPtr ctx, LibInputBackendOptions options)
         {
             var fd = libinput_get_fd(ctx);
+            IntPtr[] devices = [.. options.Events!.Select(f => libinput_path_add_device(ctx, f)).Where(d => d != IntPtr.Zero)];
+            var screenOrientation = _screen is ISurfaceOrientation surfaceOrientation ? surfaceOrientation.Orientation : SurfaceOrientation.Rotation0;
+            
+            float[] matrix = screenOrientation switch
+            {
+                SurfaceOrientation.Rotation90 => [0, 1, 0, -1, 0, 1],
+                SurfaceOrientation.Rotation180 => [-1, 0, 1, 0, -1, 1],
+                SurfaceOrientation.Rotation270 => [0, -1, 1, 1, 0, 0],
+                _ => [1, 0, 0, 0, 1, 0],    // Normal
+            };
 
-            foreach (var f in options.Events!)
-                libinput_path_add_device(ctx, f);
+            foreach (var device in devices)
+            {
+                libinput_device_config_calibration_set_matrix(device, matrix);
+            }
+
             while (true)
             {
                 IntPtr ev;

@@ -121,16 +121,6 @@ namespace Avalonia.Controls.Primitives
             // Nothing to do here: overlay popups are implemented inside the window.
         }
 
-        [Unstable(ObsoletionMessages.MayBeRemovedInAvalonia12)]
-        public void ConfigurePosition(Visual target, PlacementMode placement, Point offset,
-            PopupAnchor anchor = PopupAnchor.None, PopupGravity gravity = PopupGravity.None,
-            PopupPositionerConstraintAdjustment constraintAdjustment = PopupPositionerConstraintAdjustment.All,
-            Rect? rect = null)
-        {
-            ((IPopupHost)this).ConfigurePosition(new PopupPositionRequest(target, placement, offset, anchor, gravity,
-                constraintAdjustment, rect, null));
-        }
-
         /// <inheritdoc />
         void IPopupHost.ConfigurePosition(PopupPositionRequest positionRequest)
         {
@@ -191,12 +181,8 @@ namespace Avalonia.Controls.Primitives
 
         double IManagedPopupPositionerPopup.Scaling => 1;
 
-        // TODO12: mark PrivateAPI or internal.
-        [Unstable("PopupHost is considered an internal API. Use Popup or any Popup-based controls (Flyout, Tooltip) instead.")]
-        public static IPopupHost CreatePopupHost(Visual target, IAvaloniaDependencyResolver? dependencyResolver)
-            => CreatePopupHost(target, dependencyResolver, false);
-
-        internal static IPopupHost CreatePopupHost(Visual target, IAvaloniaDependencyResolver? dependencyResolver, bool shouldUseOverlayLayer)
+        [PrivateApi]
+        public static IPopupHost CreatePopupHost(Visual target, IAvaloniaDependencyResolver? dependencyResolver, bool shouldUseOverlayLayer)
         {
             if (!shouldUseOverlayLayer)
             {
