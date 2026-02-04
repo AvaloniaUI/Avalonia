@@ -7,6 +7,7 @@ using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.ExpressionNodes;
 using Avalonia.Data.Core.Parsers;
+using Avalonia.Metadata;
 
 namespace Avalonia.Data;
 
@@ -70,6 +71,7 @@ public class CompiledBinding : BindingBase
     /// <summary>
     /// Gets or sets the binding path.
     /// </summary>
+    [ConstructorArgument("path")]
     public CompiledBindingPath? Path { get; set; }
 
     /// <summary>
