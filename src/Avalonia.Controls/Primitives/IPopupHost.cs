@@ -1,11 +1,9 @@
 using System;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives.PopupPositioning;
-using Avalonia.Diagnostics;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Metadata;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -17,8 +15,7 @@ namespace Avalonia.Controls.Primitives
     /// (<see cref="PopupRoot"/>) or an <see cref="OverlayPopupHost"/> which is created
     /// on an <see cref="OverlayLayer"/>.
     /// </remarks>
-    [NotClientImplementable]
-    [Unstable(ObsoletionMessages.MayBeRemovedInAvalonia12)]
+    [PrivateApi]
     public interface IPopupHost : IDisposable, IFocusScope
     {
         /// <summary>
