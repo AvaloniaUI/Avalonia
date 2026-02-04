@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using NUnit.Framework.Interfaces;
@@ -13,28 +12,14 @@ internal class AvaloniaTestMethodCommand : TestCommand
 {
     private readonly HeadlessUnitTestSession _session;
     private readonly TestCommand _innerCommand;
-    private readonly List<Action> _beforeTest;
-    private readonly List<Action> _afterTest;
-
-    // There are multiple problems with NUnit integration at the moment when we wrote this integration.
-    // NUnit doesn't have extensibility API for running on custom dispatcher/sync-context.
-    // See https://github.com/nunit/nunit/issues/2917 https://github.com/nunit/nunit/issues/2774
-    // To workaround that we had to replace inner TestMethodCommand with our own implementation while keeping original hierarchy of commands.
-    // Which will respect proper async/await awaiting code that works with our session and can be block-awaited to fit in NUnit.
-    // Also, we need to push BeforeTest/AfterTest callbacks to the very same session call.
-    // I hope there will be a better solution without reflection, but for now that's it.
-    private static FieldInfo s_innerCommand = typeof(DelegatingTestCommand)
-        .GetField("innerCommand", BindingFlags.Instance | BindingFlags.NonPublic)!;
-    private static FieldInfo s_beforeTest = typeof(BeforeAndAfterTestCommand)
-        .GetField("BeforeTest", BindingFlags.Instance | BindingFlags.NonPublic)!;
-    private static FieldInfo s_afterTest = typeof(BeforeAndAfterTestCommand)
-        .GetField("AfterTest", BindingFlags.Instance | BindingFlags.NonPublic)!;
+    private readonly List<Action<TestExecutionContext>> _beforeTest;
+    private readonly List<Action<TestExecutionContext>> _afterTest;
 
     private AvaloniaTestMethodCommand(
         HeadlessUnitTestSession session,
         TestCommand innerCommand,
-        List<Action> beforeTest,
-        List<Action> afterTest)
+        List<Action<TestExecutionContext>> beforeTest,
+        List<Action<TestExecutionContext>> afterTest)
         : base(innerCommand.Test)
     {
         _session = session;
@@ -45,47 +30,58 @@ internal class AvaloniaTestMethodCommand : TestCommand
 
     public static TestCommand ProcessCommand(HeadlessUnitTestSession session, TestCommand command)
     {
-        return ProcessCommand(session, command, new List<Action>(), new List<Action>());
+        return ProcessCommand(session, command, [], []);
     }
 
-    private static TestCommand ProcessCommand(HeadlessUnitTestSession session, TestCommand command, List<Action> before, List<Action> after)
+    private static TestCommand ProcessCommand(
+        HeadlessUnitTestSession session,
+        TestCommand command,
+        List<Action<TestExecutionContext>> before,
+        List<Action<TestExecutionContext>> after)
     {
-        if (command is BeforeAndAfterTestCommand beforeAndAfterTestCommand)
+        var beforeAndAfterTestCommand = command as BeforeAndAfterTestCommand;
+        if (beforeAndAfterTestCommand is not null)
         {
-            if (s_beforeTest.GetValue(beforeAndAfterTestCommand) is Action<TestExecutionContext> beforeTest)
+            ref var beforeTest = ref beforeAndAfterTestCommand.BeforeTest();
+            if (beforeTest is not null)
             {
-                Action<TestExecutionContext> beforeAction = c => before.Add(() => beforeTest(c));
-                s_beforeTest.SetValue(beforeAndAfterTestCommand, beforeAction);
+                before.Add(beforeTest);
+                beforeTest = _ => { };
             }
-            if (s_afterTest.GetValue(beforeAndAfterTestCommand) is Action<TestExecutionContext> afterTest)
+        }
+
+        var delegatingTestCommand = command as DelegatingTestCommand;
+        if (delegatingTestCommand is not null)
+        {
+            ref var innerCommand = ref delegatingTestCommand.InnerCommand();
+            innerCommand = ProcessCommand(session, innerCommand, before, after);
+        }
+
+        if (beforeAndAfterTestCommand is not null)
+        {
+            ref var afterTest = ref beforeAndAfterTestCommand.AfterTest();
+            if (afterTest is not null)
             {
-                Action<TestExecutionContext> afterAction = c => after.Add(() => afterTest(c));
-                s_afterTest.SetValue(beforeAndAfterTestCommand, afterAction);
+                after.Add(afterTest);
+                afterTest = _ => { };
             }
         }
         
-        if (command is DelegatingTestCommand delegatingTestCommand
-            && s_innerCommand.GetValue(delegatingTestCommand) is TestCommand inner)
-        {
-            s_innerCommand.SetValue(delegatingTestCommand, ProcessCommand(session, inner, before, after));
-        }
-        else if (command is TestMethodCommand methodCommand)
-        {
+        if (delegatingTestCommand is null && command is TestMethodCommand methodCommand)
             return new AvaloniaTestMethodCommand(session, methodCommand, before, after);
-        }
 
         return command;
     }
 
     public override TestResult Execute(TestExecutionContext context)
     {
-        return _session.DispatchCore(() => ExecuteTestMethod(context), true, default).GetAwaiter().GetResult();
+        return _session.DispatchCore(() => ExecuteTestMethod(context), true, context.CancellationToken).GetAwaiter().GetResult();
     }
 
     // Unfortunately, NUnit has issues with custom synchronization contexts, which means we need to add some hacks to make it work.
     private async Task<TestResult> ExecuteTestMethod(TestExecutionContext context)
     {
-        _beforeTest.ForEach(a => a());
+        _beforeTest.ForEach(a => a(context));
         
         var testMethod = _innerCommand.Test.Method;
         var methodInfo = testMethod!.MethodInfo;
@@ -108,7 +104,7 @@ internal class AvaloniaTestMethodCommand : TestCommand
 
         if (context.ExecutionStatus != TestExecutionStatus.AbortRequested)
         {
-            _afterTest.ForEach(a => a());
+            _afterTest.ForEach(a => a(context));
             Dispatcher.UIThread.RunJobs();
         }
         
