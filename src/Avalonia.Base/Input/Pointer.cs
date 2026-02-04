@@ -77,6 +77,7 @@ namespace Avalonia.Input
             if (oldVisual != null)
                 oldVisual.DetachedFromVisualTree -= OnCaptureDetached;
             Captured = control;
+            CaptureSource = source;
 
             if (source != CaptureSource.Platform)
                 PlatformCapture(control);
@@ -115,6 +116,7 @@ namespace Avalonia.Input
         public IInputElement? Captured { get; private set; }
 
         public PointerType Type { get; }
+
         public bool IsPrimary { get; }
 
         /// <summary>
@@ -123,6 +125,8 @@ namespace Avalonia.Input
         internal GestureRecognizer? CapturedGestureRecognizer { get; private set; }
 
         public bool IsGestureRecognitionSkipped { get; set; }
+
+        internal CaptureSource CaptureSource { get; private set; } = CaptureSource.Platform;
 
         public void Dispose()
         {
