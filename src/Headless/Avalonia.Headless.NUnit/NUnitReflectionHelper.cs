@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using NUnit.Framework.Interfaces;
 using NUnit.Framework.Internal;
 using NUnit.Framework.Internal.Commands;
 
@@ -17,7 +19,7 @@ namespace Avalonia.Headless.NUnit;
 ///
 /// 2026-02-04: the situation hasn't changed at all with NUnit 4.
 /// </summary>
-internal static class NUnitReflection
+internal static class NUnitReflectionHelper
 {
     [UnsafeAccessor(UnsafeAccessorKind.Field, Name = ReflectionDelegatingTestCommand.InnerCommandFieldName)]
     private static extern ref TestCommand DelegatingTestCommand_InnerCommand(DelegatingTestCommand instance);
@@ -27,6 +29,12 @@ internal static class NUnitReflection
 
     [UnsafeAccessor(UnsafeAccessorKind.Field, Name = ReflectionBeforeAndAfterTestCommand.AfterTestFieldName)]
     private static extern ref Action<TestExecutionContext>? BeforeAndAfterTestCommand_AfterTest(BeforeAndAfterTestCommand instance);
+
+    [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "_setUpMethods")]
+    private static extern ref IList<IMethodInfo> SetUpTearDownItem_SetUpMethods(SetUpTearDownItem instance);
+
+    [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "_tearDownMethods")]
+    private static extern ref IList<IMethodInfo> SetUpTearDownItem_TearDownMethods(SetUpTearDownItem instance);
 
     extension(DelegatingTestCommand instance)
     {
@@ -41,6 +49,15 @@ internal static class NUnitReflection
 
         public ref Action<TestExecutionContext>? AfterTest()
             => ref BeforeAndAfterTestCommand_AfterTest(instance);
+    }
+
+    extension(SetUpTearDownItem instance)
+    {
+        public ref IList<IMethodInfo> SetUpMethods()
+            => ref SetUpTearDownItem_SetUpMethods(instance);
+
+        public ref IList<IMethodInfo> TearDownMethods()
+            => ref SetUpTearDownItem_TearDownMethods(instance);
     }
 
     private sealed class ReflectionDelegatingTestCommand : DelegatingTestCommand
