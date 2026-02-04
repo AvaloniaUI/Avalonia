@@ -213,6 +213,12 @@ namespace Avalonia.Controls
             TextBox.InnerRightContentProperty.AddOwner<AutoCompleteBox>();
 
         /// <summary>
+        /// Defines the <see cref="ValueMemberBinding" /> property.
+        /// </summary>
+        public static readonly StyledProperty<BindingBase?> ValueMemberBindingProperty =
+            AvaloniaProperty.Register<AutoCompleteBox, BindingBase?>(nameof(ValueMemberBinding));
+
+        /// <summary>
         /// Gets or sets the caret index
         /// </summary>
         public int CaretIndex
@@ -332,26 +338,16 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the <see cref="T:Avalonia.Data.Binding" /> that
-        /// is used to get the values for display in the text portion of
-        /// the <see cref="AutoCompleteBox" />
-        /// control.
+        /// Gets or sets the  <see cref="BindingBase" /> that is used to get the values for display in the text portion
+        /// of the <see cref="AutoCompleteBox" /> control.
         /// </summary>
-        /// <value>The <see cref="T:Avalonia.Data.IBinding" /> object used
-        /// when binding to a collection property.</value>
+        /// <value>The <see cref="T:Avalonia.Data.BindingBase" /> object used when binding to a collection property.</value>
         [AssignBinding]
         [InheritDataTypeFromItems(nameof(ItemsSource))]
         public BindingBase? ValueMemberBinding
         {
-            get => _valueBindingEvaluator?.ValueBinding;
-            set
-            {
-                if (ValueMemberBinding != value)
-                {
-                    _valueBindingEvaluator = new BindingEvaluator<string>(value);
-                    OnValueMemberBindingChanged(value);
-                }
-            }
+            get => GetValue(ValueMemberBindingProperty);
+            set => SetValue(ValueMemberBindingProperty, value);
         }
 
         /// <summary>

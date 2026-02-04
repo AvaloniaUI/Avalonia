@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Data;
+using Avalonia.Metadata;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {

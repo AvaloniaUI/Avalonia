@@ -30,7 +30,7 @@ namespace Avalonia
     /// method.
     /// - Tracks the lifetime of the application.
     /// </remarks>
-    public class Application : AvaloniaObject, IDataContextProvider, IGlobalDataTemplates, IGlobalStyles, IThemeVariantHost, IResourceHost2, IApplicationPlatformEvents, IOptionalFeatureProvider
+    public class Application : AvaloniaObject, IDataContextProvider, IGlobalDataTemplates, IGlobalStyles, IThemeVariantHost, IResourceHost, IApplicationPlatformEvents, IOptionalFeatureProvider
     {
         /// <summary>
         /// The application-global data templates.
@@ -43,7 +43,6 @@ namespace Avalonia
         private Action<IReadOnlyList<IStyle>>? _stylesRemoved;
         private IApplicationLifetime? _applicationLifetime;
         private bool _setupCompleted;
-        private EventHandler<ResourcesChangedToken>? _resourcesChanged2;
 
         /// <summary>
         /// Defines the <see cref="DataContext"/> property.
@@ -61,12 +60,6 @@ namespace Avalonia
 
         /// <inheritdoc/>
         public event EventHandler<ResourcesChangedEventArgs>? ResourcesChanged;
-
-        event EventHandler<ResourcesChangedToken>? IResourceHost2.ResourcesChanged2
-        {
-            add => _resourcesChanged2 += value;
-            remove => _resourcesChanged2 -= value;
-        }
 
         [Obsolete("Use Application.Current.TryGetFeature<IActivatableLifetime>() instead.")]
         public event EventHandler<UrlOpenedEventArgs>? UrlsOpened;
@@ -239,14 +232,7 @@ namespace Avalonia
 
         void IResourceHost.NotifyHostedResourcesChanged(ResourcesChangedEventArgs e)
         {
-            _resourcesChanged2?.Invoke(this, ResourcesChangedToken.Create());
             ResourcesChanged?.Invoke(this, e);
-        }
-
-        void IResourceHost2.NotifyHostedResourcesChanged(ResourcesChangedToken token)
-        {
-            _resourcesChanged2?.Invoke(this, token);
-            ResourcesChanged?.Invoke(this, ResourcesChangedEventArgs.Empty);
         }
 
         void IStyleHost.StylesAdded(IReadOnlyList<IStyle> styles)
