@@ -8,6 +8,7 @@ using System.Text;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core.ExpressionNodes;
 using Avalonia.Data.Core.Parsers;
+using Avalonia.Data.Core.Plugins;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Logging;
@@ -256,9 +257,11 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
         ConvertAndPublishValue(AvaloniaProperty.UnsetValue, bindingError);
     }
 
-    internal void OnDataValidationError(Exception error)
+    internal void OnDataValidationError(Exception? error)
     {
-        var bindingError = new BindingError(error, BindingErrorType.DataValidationError);
+        var bindingError = error is not null ?
+            new BindingError(error, BindingErrorType.DataValidationError) :
+            null;
         PublishValue(UnchangedValue, bindingError);
     }
 
@@ -314,8 +317,10 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
         {
             return setter.WriteValueToSource(value, _nodes);
         }
-        catch
+        catch (Exception e)
         {
+            if (IsDataValidationEnabled)
+                OnDataValidationError(e.Unwrap());
             return false;
         }
     }

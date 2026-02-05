@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using Avalonia.Data;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Threading;
@@ -11,58 +10,70 @@ namespace Avalonia.Base.UnitTests.Data.Core.Plugins
     public class IndeiValidationPluginTests
     {
         [Fact]
-        public void Produces_BindingNotifications()
+        public void Validates_Values()
         {
-            var inpcAccessorPlugin = new InpcPropertyAccessorPlugin();
-            var validatorPlugin = new IndeiValidationPlugin();
             var data = new Data { Maximum = 5 };
-            var accessor = inpcAccessorPlugin.Start(new WeakReference<object?>(data), nameof(data.Value));
-            Assert.NotNull(accessor);
-            var validator = validatorPlugin.Start(new WeakReference<object?>(data), nameof(data.Value), accessor);
-            var result = new List<object?>();
+            var validatorPlugin = new IndeiDataValidationPlugin();
+            var validator = validatorPlugin.Start(data, nameof(data.Value));
 
-            validator.Subscribe(x => result.Add(x));
-            validator.SetValue(5, BindingPriority.LocalValue);
-            validator.SetValue(6, BindingPriority.LocalValue);
+            data.Value = 5;
+            Assert.Null(validator.GetDataValidationError());
+
+            data.Value = 6;
+            var error = Assert.IsType<DataValidationException>(validator.GetDataValidationError());
+            Assert.Equal("Must be less than Maximum", error.Message);
+
             data.Maximum = 10;
+            Assert.Null(validator.GetDataValidationError());
+
             data.Maximum = 5;
+            error = Assert.IsType<DataValidationException>(validator.GetDataValidationError());
+            Assert.Equal("Must be less than Maximum", error.Message);
+        }
 
-            Assert.Equal(new[]
-            {
-                new BindingNotification(0),
-                new BindingNotification(5),
+        [Fact]
+        public void Raises_Validation_Events()
+        {
+            var data = new Data { Maximum = 5 };
+            var validatorPlugin = new IndeiDataValidationPlugin();
+            var validator = validatorPlugin.Start(data, nameof(data.Value));
+            Exception? exception = null;
 
-                // Value is first signalled without an error as validation hasn't been updated.
-                new BindingNotification(6),
-                
-                // Then the ErrorsChanged event is fired.
-                new BindingNotification(new DataValidationException("Must be less than Maximum"), BindingErrorType.DataValidationError, 6),
+            Assert.True(validator.RaisesEvents);
+            validator.DataValidationChanged += (s, e) => exception = validator.GetDataValidationError();
 
-                // Maximum is changed to 10 so value is now valid.
-                new BindingNotification(6),
+            data.Value = 5;
+            Assert.Null(exception);
 
-                // And Maximum is changed back to 5.
-                new BindingNotification(new DataValidationException("Must be less than Maximum"), BindingErrorType.DataValidationError, 6),
-            }, result);
+            data.Value = 6;
+            var error = Assert.IsType<DataValidationException>(exception);
+            Assert.Equal("Must be less than Maximum", error.Message);
+
+            data.Maximum = 10;
+            Assert.Null(exception);
+
+            data.Maximum = 5;
+            error = Assert.IsType<DataValidationException>(exception);
+            Assert.Equal("Must be less than Maximum", error.Message);
         }
 
         [Fact]
         public void Subscribes_And_Unsubscribes()
         {
-            var inpcAccessorPlugin = new InpcPropertyAccessorPlugin();
-            var validatorPlugin = new IndeiValidationPlugin();
             var data = new Data { Maximum = 5 };
-            var accessor = inpcAccessorPlugin.Start(new WeakReference<object?>(data), nameof(data.Value));
-            Assert.NotNull(accessor);
-            var validator = validatorPlugin.Start(new WeakReference<object?>(data), nameof(data.Value), accessor);
+            var validatorPlugin = new IndeiDataValidationPlugin();
+            var validator = validatorPlugin.Start(data, nameof(data.Value));
 
             Assert.Equal(0, data.ErrorsChangedSubscriptionCount);
-            validator.Subscribe(_ => { });
+            validator.DataValidationChanged += Handler;
             Assert.Equal(1, data.ErrorsChangedSubscriptionCount);
-            validator.Unsubscribe();
+            validator.DataValidationChanged -= Handler;
+
             // Forces WeakEvent compact
             Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
             Assert.Equal(0, data.ErrorsChangedSubscriptionCount);
+            
+            static void Handler(object? sender, EventArgs e) { }
         }
 
         internal class Data : IndeiBase

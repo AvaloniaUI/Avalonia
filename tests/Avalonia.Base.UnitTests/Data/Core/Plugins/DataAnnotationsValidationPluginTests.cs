@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using Avalonia.Data;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.UnitTests;
@@ -18,7 +16,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Plugins
             var target = new DataAnnotationsValidationPlugin();
             var data = new Data();
 
-            Assert.True(target.Match(new WeakReference<object?>(data), nameof(Data.Between5And10)));
+            Assert.True(target.Match(data, nameof(Data.Between5And10)));
         }
 
         [Fact]
@@ -27,7 +25,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Plugins
             var target = new DataAnnotationsValidationPlugin();
             var data = new Data();
 
-            Assert.True(target.Match(new WeakReference<object?>(data), nameof(Data.PhoneNumber)));
+            Assert.True(target.Match(data, nameof(Data.PhoneNumber)));
         }
 
         [Fact]
@@ -36,69 +34,29 @@ namespace Avalonia.Base.UnitTests.Data.Core.Plugins
             var target = new DataAnnotationsValidationPlugin();
             var data = new Data();
 
-            Assert.False(target.Match(new WeakReference<object?>(data), nameof(Data.Unvalidated)));
+            Assert.False(target.Match(data, nameof(Data.Unvalidated)));
         }
 
         [Fact]
         public void Produces_Range_BindingNotificationsx()
         {
-            var inpcAccessorPlugin = new InpcPropertyAccessorPlugin();
-            var validatorPlugin = new DataAnnotationsValidationPlugin();
             var data = new Data();
-            var accessor = inpcAccessorPlugin.Start(new WeakReference<object?>(data), nameof(data.Between5And10));
-            Assert.NotNull(accessor);
-            var validator = validatorPlugin.Start(new WeakReference<object?>(data), nameof(data.Between5And10), accessor);
-            var result = new List<object?>();
-            
-            var errmsg = new RangeAttribute(5, 10).FormatErrorMessage(nameof(Data.Between5And10));
-
-            validator.Subscribe(x => result.Add(x));
-            validator.SetValue(3, BindingPriority.LocalValue);
-            validator.SetValue(7, BindingPriority.LocalValue);
-            validator.SetValue(11, BindingPriority.LocalValue);
-
-            Assert.Equal(new[]
-            {
-                new BindingNotification(5),
-                new BindingNotification(
-                    new DataValidationException(errmsg),
-                    BindingErrorType.DataValidationError,
-                    3),
-                new BindingNotification(7),
-                new BindingNotification(
-                    new DataValidationException(errmsg),
-                    BindingErrorType.DataValidationError,
-                    11),
-            }, result);
-        }
-
-        [Fact]
-        public void Produces_Aggregate_BindingNotificationsx()
-        {
-            var inpcAccessorPlugin = new InpcPropertyAccessorPlugin();
             var validatorPlugin = new DataAnnotationsValidationPlugin();
-            var data = new Data();
-            var accessor = inpcAccessorPlugin.Start(new WeakReference<object?>(data), nameof(data.PhoneNumber));
-            Assert.NotNull(accessor);
-            var validator = validatorPlugin.Start(new WeakReference<object?>(data), nameof(data.PhoneNumber), accessor);
-            var result = new List<object?>();
+            var validator = validatorPlugin.Start(data, nameof(data.Between5And10));
+            var errorMessage = new RangeAttribute(5, 10).FormatErrorMessage(nameof(Data.Between5And10));
 
-            validator.Subscribe(x => result.Add(x));
-            validator.SetValue("123456", BindingPriority.LocalValue);
-            validator.SetValue("abcdefghijklm", BindingPriority.LocalValue);
+            Assert.False(validator.RaisesEvents);
 
-            Assert.Equal(3, result.Count);
-            Assert.Equal(new BindingNotification(null), result[0]);
-            Assert.Equal(new BindingNotification("123456"), result[1]);
-            var errorResult = Assert.IsAssignableFrom<BindingNotification>(result[2]);
-            Assert.Equal(BindingErrorType.DataValidationError, errorResult.ErrorType);
-            Assert.Equal("abcdefghijklm", errorResult.Value);
-            var exceptions = Assert.IsAssignableFrom<AggregateException>(errorResult.Error).InnerExceptions;
-            Assert.True(exceptions.Any(ex =>
-                ex.Message.Contains("The PhoneNumber field is not a valid phone number.")));
-            Assert.True(exceptions.Any(ex =>
-                ex.Message.Contains("The field PhoneNumber must be a string or array type with a maximum length of '10'.")));
+            data.Between5And10 = 3;
+            var error = Assert.IsType<DataValidationException>(validator.GetDataValidationError());
+            Assert.Equal(errorMessage, error.Message);
 
+            data.Between5And10 = 7;
+            Assert.Null(validator.GetDataValidationError());
+
+            data.Between5And10 = 11;
+            error = Assert.IsType<DataValidationException>(validator.GetDataValidationError());
+            Assert.Equal(errorMessage, error.Message);
         }
 
         private class Data

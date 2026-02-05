@@ -17,6 +17,7 @@ internal sealed class PropertyAccessorNode : ExpressionNode, IPropertyAccessorNo
     private readonly bool _acceptsNull;
     private IPropertyAccessor? _accessor;
     private bool _enableDataValidation;
+    private MemberDataValidator? _dataValidator;
 
     public PropertyAccessorNode(string propertyName, IPropertyAccessorPlugin plugin, bool acceptsNull)
     {
@@ -65,15 +66,6 @@ internal sealed class PropertyAccessorNode : ExpressionNode, IPropertyAccessorNo
 
         if (_plugin.Start(reference, PropertyName) is { } accessor)
         {
-            if (_enableDataValidation)
-            {
-                foreach (var validator in BindingPlugins.s_dataValidators)
-                {
-                    if (validator.Match(reference, PropertyName))
-                        accessor = validator.Start(reference, PropertyName, accessor);
-                }
-            }
-
             _accessor = accessor;
             _accessor.Subscribe(_onValueChanged);
         }
@@ -81,16 +73,41 @@ internal sealed class PropertyAccessorNode : ExpressionNode, IPropertyAccessorNo
         {
             ClearValue();
         }
+
+        UpdateDataValidator(source);
     }
 
     protected override void Unsubscribe(object oldSource)
     {
         _accessor?.Dispose();
         _accessor = null;
+
+        if (_dataValidator is not null)
+            _dataValidator.DataValidationChanged -= OnDataValidationChanged;
+    }
+
+    private void UpdateDataValidator(object source)
+    {
+        if (!_enableDataValidation)
+            return;
+
+        if (_dataValidator?.RaisesEvents == true)
+            _dataValidator.DataValidationChanged -= OnDataValidationChanged;
+
+        _dataValidator = DataValidationPlugin.GetDataValidator(source, PropertyName);
+
+        if (_dataValidator?.RaisesEvents == true)
+            _dataValidator.DataValidationChanged += OnDataValidationChanged;
+    }
+
+    private void OnDataValidationChanged(object? sender, EventArgs e)
+    {
+        SetDataValidationError(_dataValidator?.GetDataValidationError());
     }
 
     private void OnValueChanged(object? newValue)
     {
-        SetValue(newValue);
+        var dataValidationError = _dataValidator?.GetDataValidationError();
+        SetValue(newValue, dataValidationError);
     }
 }

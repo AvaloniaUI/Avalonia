@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text;
+using Avalonia.Utilities;
 
 namespace Avalonia.Data.Core.ExpressionNodes;
 
@@ -126,11 +127,9 @@ internal abstract class ExpressionNode
     /// Notifies the <see cref="Owner"/> of a data validation error.
     /// </summary>
     /// <param name="error">The error.</param>
-    protected void SetDataValidationError(Exception error)
+    protected void SetDataValidationError(Exception? error)
     {
-        if (error is TargetInvocationException tie)
-            error = tie.InnerException!;
-        Owner?.OnDataValidationError(error);
+        Owner?.OnDataValidationError(error?.Unwrap());
     }
 
     /// <summary>

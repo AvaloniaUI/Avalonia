@@ -18,6 +18,7 @@ internal sealed class DynamicPluginPropertyAccessorNode : ExpressionNode, IPrope
     private readonly Action<object?> _onValueChanged;
     private IPropertyAccessor? _accessor;
     private bool _enableDataValidation;
+    private MemberDataValidator? _dataValidator;
 
     public DynamicPluginPropertyAccessorNode(string propertyName, bool acceptsNull)
     {
@@ -60,15 +61,6 @@ internal sealed class DynamicPluginPropertyAccessorNode : ExpressionNode, IPrope
         if (GetPlugin(source) is { } plugin &&
             plugin.Start(reference, PropertyName) is { } accessor)
         {
-            if (_enableDataValidation)
-            {
-                foreach (var validator in BindingPlugins.s_dataValidators)
-                {
-                    if (validator.Match(reference, PropertyName))
-                        accessor = validator.Start(reference, PropertyName, accessor);
-                }
-            }
-
             _accessor = accessor;
             _accessor.Subscribe(_onValueChanged);
         }
@@ -77,6 +69,8 @@ internal sealed class DynamicPluginPropertyAccessorNode : ExpressionNode, IPrope
             SetError(
                 $"Could not find a matching property accessor for '{PropertyName}' on '{source.GetType()}'.");
         }
+
+        UpdateDataValidator(source);
     }
 
     protected override void Unsubscribe(object oldSource)
@@ -85,9 +79,29 @@ internal sealed class DynamicPluginPropertyAccessorNode : ExpressionNode, IPrope
         _accessor = null;
     }
 
+    private void UpdateDataValidator(object source)
+    {
+        if (!_enableDataValidation)
+            return;
+
+        if (_dataValidator?.RaisesEvents == true)
+            _dataValidator.DataValidationChanged -= OnDataValidationChanged;
+
+        _dataValidator = DataValidationPlugin.GetDataValidator(source, PropertyName);
+
+        if (_dataValidator?.RaisesEvents == true)
+            _dataValidator.DataValidationChanged += OnDataValidationChanged;
+    }
+
+    private void OnDataValidationChanged(object? sender, EventArgs e)
+    {
+        SetDataValidationError(_dataValidator?.GetDataValidationError());
+    }
+
     private void OnValueChanged(object? newValue)
     {
-        SetValue(newValue);
+        var dataValidationError = _dataValidator?.GetDataValidationError();
+        SetValue(newValue, dataValidationError);
     }
 
     private IPropertyAccessorPlugin? GetPlugin(object? source)

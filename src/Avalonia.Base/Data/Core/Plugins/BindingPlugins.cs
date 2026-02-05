@@ -15,11 +15,9 @@ namespace Avalonia.Data.Core.Plugins
             new InpcPropertyAccessorPlugin(),
         };
 
-        internal static readonly List<IDataValidationPlugin> s_dataValidators = new()
+        internal static readonly List<DataValidationPlugin> s_dataValidators = new()
         {
-            new DataAnnotationsValidationPlugin(),
-            new IndeiValidationPlugin(),
-            new ExceptionValidationPlugin(),
+            new IndeiDataValidationPlugin(),
         };
 
         internal static readonly List<IStreamPlugin> s_streamHandlers = new()
@@ -33,11 +31,7 @@ namespace Avalonia.Data.Core.Plugins
         {
             // When building with AOT, don't create ReflectionMethodAccessorPlugin instance.
             // This branch can be eliminated in compile time with AOT.
-#if NET6_0_OR_GREATER
             if (System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported)
-#else
-            if (true)
-#endif
             {
                 s_propertyAccessors.Insert(1, new ReflectionMethodAccessorPlugin());
             }
@@ -53,7 +47,7 @@ namespace Avalonia.Data.Core.Plugins
         /// An ordered collection of validation checker plugins that can be used to customize
         /// the validation of view model and model data.
         /// </summary>
-        public static IList<IDataValidationPlugin> DataValidators => s_dataValidators;
+        public static IList<DataValidationPlugin> DataValidators => s_dataValidators;
 
         /// <summary>
         /// An ordered collection of stream plugins that can be used to customize the behavior
