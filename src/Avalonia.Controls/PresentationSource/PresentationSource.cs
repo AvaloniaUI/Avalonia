@@ -9,7 +9,7 @@ namespace Avalonia.Controls;
 
 internal partial class PresentationSource : IPresentationSource, IDisposable
 {
-    public ITopLevelImpl PlatformImpl { get; }
+    public ITopLevelImpl? PlatformImpl { get; private set; }
     private readonly PointerOverPreProcessor? _pointerOverPreProcessor;
     private readonly IDisposable? _pointerOverPreProcessorSubscription;
     private readonly IInputManager? _inputManager;
@@ -21,9 +21,14 @@ internal partial class PresentationSource : IPresentationSource, IDisposable
     {
         RootVisual = rootVisual;
         PlatformImpl = platformImpl;
-    
 
+    
         _inputManager = TryGetService<IInputManager>(dependencyResolver);
+        _handleInputCore = HandleInputCore;
+        
+        PlatformImpl.SetInputRoot(this);
+        PlatformImpl.Input = HandleInput;
+        
         _pointerOverPreProcessor = new PointerOverPreProcessor(this);
         _pointerOverPreProcessorSubscription = _inputManager?.PreProcess.Subscribe(_pointerOverPreProcessor);
     }
@@ -63,6 +68,7 @@ internal partial class PresentationSource : IPresentationSource, IDisposable
 
     public void Dispose()
     {
+        PlatformImpl = null;
         _pointerOverPreProcessor?.OnCompleted();
         _pointerOverPreProcessorSubscription?.Dispose();
     }
@@ -96,7 +102,7 @@ internal partial class PresentationSource : IPresentationSource, IDisposable
     }
 
     // TODO: Make popup positioner to use PresentationSource internally rather than TopLevel
-    public PixelPoint? GetLastPointerPosition(TopLevel topLevel)
+    public PixelPoint? GetLastPointerPosition(Visual topLevel)
     {
         return _pointerOverPreProcessor?.LastPosition;
     }

@@ -212,11 +212,9 @@ namespace Avalonia.Controls
 
             Renderer = new CompositingRenderer(this, impl.Compositor, () => PlatformImpl.Surfaces ?? []);
             Renderer.SceneInvalidated += SceneInvalidated;
-
-            impl.SetInputRoot(_source);
+            
 
             impl.Closed = HandleClosed;
-            impl.Input = HandleInput;
             impl.Paint = HandlePaint;
             impl.Resized = HandleResized;
             impl.ScalingChanged = HandleScalingChanged;
@@ -813,48 +811,6 @@ namespace Avalonia.Controls
             }
 
             return result;
-        }
-
-        /// <summary>
-        /// Handles input from <see cref="ITopLevelImpl.Input"/>.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        private void HandleInput(RawInputEventArgs e)
-        {
-            if (PlatformImpl != null)
-            {
-                Dispatcher.UIThread.Send(static state =>
-                {
-                    using var _ = Diagnostic.BeginLayoutInputPass();
-
-                    var (topLevel, e) = (ValueTuple<TopLevel, RawInputEventArgs>)state!;
-                    if (e is RawPointerEventArgs pointerArgs)
-                    {
-                        var hitTestElement = topLevel.InputHitTest(pointerArgs.Position, enabledElementsOnly: false);
-
-                        pointerArgs.InputHitTestResult = (hitTestElement, FirstEnabledAncestor(hitTestElement));
-                    }
-
-                    topLevel._inputManager?.ProcessInput(e);
-                }, (this, e));
-            }
-            else
-            {
-                Logger.TryGet(LogEventLevel.Warning, LogArea.Control)?.Log(
-                    this,
-                    "PlatformImpl is null, couldn't handle input.");
-            }
-        }
-
-        private static IInputElement? FirstEnabledAncestor(IInputElement? hitTestElement)
-        {
-            var candidate = hitTestElement;
-            while (candidate?.IsEffectivelyEnabled == false)
-            {
-                candidate = (candidate as Visual)?.VisualParent as IInputElement;
-            }
-
-            return candidate;
         }
 
         private void GlobalActualThemeVariantChanged(object? sender, EventArgs e)
