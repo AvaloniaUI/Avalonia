@@ -65,8 +65,8 @@ namespace Avalonia.Android.Platform.Specific.Helpers
                           AndroidKeyboardDevice.ConvertKey(e.KeyCode),
                           GetModifierKeys(e),
                           physicalKey,
-                          keyDeviceType,
-                          keySymbol);
+                          keySymbol,
+                          keyDeviceType);
 
             _view.Input?.Invoke(rawKeyEvent);
 
