@@ -31,17 +31,9 @@ internal class BindingExpressionVisitor<TIn>(LambdaExpression expression) : Expr
 {
     private const string IndexerGetterName = "get_Item";
     private const string MultiDimensionalArrayGetterMethodName = "Get";
-    private static readonly PropertyInfo s_avaloniaObjectIndexer;
-    private static readonly MethodInfo s_createDelegateMethod;
     private readonly LambdaExpression _rootExpression = expression;
     private readonly CompiledBindingPathBuilder _builder = new();
     private Expression? _head;
-
-    static BindingExpressionVisitor()
-    {
-        s_avaloniaObjectIndexer = typeof(AvaloniaObject).GetProperty("Item", [typeof(AvaloniaProperty)])!;
-        s_createDelegateMethod = typeof(MethodInfo).GetMethod("CreateDelegate", [typeof(Type), typeof(object)])!;
-    }
 
     /// <summary>
     /// Builds a compiled binding path from a lambda expression.
@@ -76,7 +68,7 @@ internal class BindingExpressionVisitor<TIn>(LambdaExpression expression) : Expr
 
     protected override Expression VisitIndex(IndexExpression node)
     {
-        if (node.Indexer == s_avaloniaObjectIndexer)
+        if (node.Indexer == BindingExpressionVisitorMembers.AvaloniaObjectIndexer)
         {
             var property = GetValue<AvaloniaProperty>(node.Arguments[0]);
             return Add(node.Object, node, x => x.Property(property, CreateAvaloniaPropertyAccessor));
@@ -170,7 +162,7 @@ internal class BindingExpressionVisitor<TIn>(LambdaExpression expression) : Expr
                 return Add(instance, node, x => builderMethod.Invoke(x, null));
             }
         }
-        else if (method == s_createDelegateMethod)
+        else if (method == BindingExpressionVisitorMembers.CreateDelegateMethod)
         {
             var methodInfo = GetValue<MethodInfo>(node.Object!);
             var delegateType = GetValue<Type>(node.Arguments[0]);
