@@ -16,7 +16,7 @@ namespace Avalonia.Input
         
         private static Interactive? GetTarget(IInputRoot root, Point local)
         {
-            var hit = root.InputHitTest(local) as Visual;
+            var hit = root.RootElement?.InputHitTest(local) as Visual;
             var target = hit?.GetSelfAndVisualAncestors()?.OfType<Interactive>()?.FirstOrDefault();
             if (target != null && DragDrop.GetAllowDrop(target))
                 return target;

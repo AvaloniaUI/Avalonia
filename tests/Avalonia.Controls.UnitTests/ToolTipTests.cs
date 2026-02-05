@@ -524,7 +524,7 @@ namespace Avalonia.Controls.UnitTests
                 AssertToolTipOpen(target);
 
                 var topLevel = TopLevel.GetTopLevel(target);
-                topLevel!.PlatformImpl!.Input!(new RawPointerEventArgs(s_mouseDevice, (ulong)DateTime.Now.Ticks, topLevel,
+                topLevel!.PlatformImpl!.Input!(new RawPointerEventArgs(s_mouseDevice, (ulong)DateTime.Now.Ticks, topLevel.InputRoot,
                     RawPointerEventType.LeaveWindow, default(RawPointerPoint), RawInputModifiers.None));
 
                 Assert.False(ToolTip.GetIsOpen(target));
@@ -577,7 +577,7 @@ namespace Avalonia.Controls.UnitTests
                 hitTesterMock.Setup(m => m.HitTestFirst(point, window, It.IsAny<Func<Visual, bool>>()))
                     .Returns(control);
 
-                var root = (IInputRoot?)control?.VisualRoot ?? window;
+                var root = (IInputRoot?)control?.VisualRoot?.PresentationSource ?? window.InputRoot;
                 var timestamp = (ulong)DateTime.Now.Ticks;
 
                 windowImpl.Object.Input!(new RawPointerEventArgs(s_mouseDevice, timestamp, root,
@@ -585,7 +585,7 @@ namespace Avalonia.Controls.UnitTests
 
                 if (lastRoot != null && lastRoot != root)
                 {
-                    ((TopLevel)lastRoot).PlatformImpl?.Input!(new RawPointerEventArgs(s_mouseDevice, timestamp,
+                    ((TopLevel)lastRoot.RootElement).PlatformImpl?.Input!(new RawPointerEventArgs(s_mouseDevice, timestamp,
                         lastRoot, RawPointerEventType.LeaveWindow, new Point(-1,-1), RawInputModifiers.None));
                 }
 

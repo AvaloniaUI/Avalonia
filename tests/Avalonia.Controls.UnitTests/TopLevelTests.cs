@@ -208,7 +208,7 @@ namespace Avalonia.Controls.UnitTests
                 var input = new RawKeyEventArgs(
                     new Mock<IKeyboardDevice>().Object,
                     0,
-                    target,
+                    target.InputRoot,
                     RawKeyEventType.KeyDown,
                     Key.A,
                     RawInputModifiers.None,

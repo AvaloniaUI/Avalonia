@@ -6,10 +6,12 @@ using System.Collections.Specialized;
 using Avalonia.Collections;
 using Avalonia.Data;
 using Avalonia.Diagnostics;
+using Avalonia.Input;
 using Avalonia.Logging;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
+using Avalonia.Platform;
 using Avalonia.Reactive;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
@@ -340,6 +342,8 @@ namespace Avalonia
         /// Gets the root of the visual tree, if the control is attached to a visual tree.
         /// </summary>
         protected internal IRenderRoot? VisualRoot => _visualRoot;
+
+        internal IInputRoot? GetInputRoot() => VisualRoot?.PresentationSource;
 
         internal RenderOptions RenderOptions
         {

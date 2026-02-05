@@ -1,3 +1,4 @@
+using Avalonia.Input;
 using Avalonia.Metadata;
 
 namespace Avalonia.Rendering
@@ -38,5 +39,11 @@ namespace Avalonia.Rendering
         /// <param name="point">The point in client coordinates.</param>
         /// <returns>The point in screen device coordinates.</returns>
         PixelPoint PointToScreen(Point point);
+        
+        /// <summary>
+        /// Temporary bridge to bring services from PresentationSource
+        /// (which currently lives in Avalonia.Controls) to Avalonia.Base.
+        /// </summary>
+        internal IPresentationSource PresentationSource { get; }
     }
 }

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Input.TextInput;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Platform;
@@ -14,7 +15,7 @@ using Moq;
 
 namespace Avalonia.UnitTests
 {
-    public class TestRoot : Decorator, IFocusScope, ILayoutRoot, IInputRoot, IRenderRoot, IStyleHost, ILogicalRoot
+    public class TestRoot : Decorator, IFocusScope, ILayoutRoot, IRenderRoot, IStyleHost, ILogicalRoot, IPresentationSource
     {
         private readonly NameScope _nameScope = new NameScope();
         private FocusManager? _focusManager;
@@ -65,12 +66,13 @@ namespace Avalonia.UnitTests
         IRenderer IRenderRoot.Renderer => Renderer;
         IHitTester IRenderRoot.HitTester => HitTester;
 
-        public IKeyboardNavigationHandler? KeyboardNavigationHandler => null;
         public IFocusManager FocusManager => _focusManager ??= new FocusManager(this);
         public IPlatformSettings? PlatformSettings => AvaloniaLocator.Current.GetService<IPlatformSettings>();
 
         public IInputElement? PointerOverElement { get; set; }
-        
+        public ITextInputMethodImpl? InputMethod { get; }
+        public InputElement RootElement => this;
+
         public bool ShowAccessKeys { get; set; }
 
         public IStyleHost? StylingParent { get; set; }
@@ -102,6 +104,8 @@ namespace Avalonia.UnitTests
         public Point PointToClient(PixelPoint p) => p.ToPoint(1);
 
         public PixelPoint PointToScreen(Point p) => PixelPoint.FromPoint(p, 1);
+        IPresentationSource IRenderRoot.PresentationSource => this;
+        
 
         public void RegisterChildrenNames()
         {
