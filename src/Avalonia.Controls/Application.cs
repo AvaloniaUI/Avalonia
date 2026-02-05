@@ -177,8 +177,8 @@ namespace Avalonia
         /// Currently supported lifetimes are:
         /// - <see cref="IClassicDesktopStyleApplicationLifetime"/>
         /// - <see cref="ISingleViewApplicationLifetime"/>
-        /// - <see cref="IControlledApplicationLifetime"/> 
-        /// - <see cref="IActivatableApplicationLifetime"/> 
+        /// - <see cref="ISingleTopLevelApplicationLifetime"/>
+        /// - <see cref="IControlledApplicationLifetime"/>
         /// </summary>
         public IApplicationLifetime? ApplicationLifetime
         {
