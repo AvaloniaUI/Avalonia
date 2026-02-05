@@ -21,7 +21,7 @@ namespace Avalonia.Controls.Platform
     {
         private readonly bool _isContextMenu;
         private IDisposable? _inputManagerSubscription;
-        private IRenderRoot? _root;
+        private TopLevel? _root;
         private RadioButtonGroupManager? _groupManager;
 
         public DefaultMenuInteractionHandler(bool isContextMenu)

@@ -1,13 +1,31 @@
+using System;
 using Avalonia.Input;
 using Avalonia.Platform;
 
 namespace Avalonia.Rendering;
 
-/// <summary>
-/// This is a temporary bridge interface to bring services from PresentationSource
-/// (which currently lives in Avalonia.Controls) to Avalonia.Base.
-/// </summary>
-internal interface IPresentationSource : IInputRoot
+public interface IPresentationSource
 {
     internal IPlatformSettings? PlatformSettings { get; }
+    
+    internal IRenderer Renderer { get; }
+    
+    internal IHitTester HitTester { get; }
+    
+    internal IInputRoot InputRoot { get; }
+    
+    public Visual? RootVisual { get; }
+    
+    /// <summary>
+    /// The scaling factor to use in rendering.
+    /// </summary>
+    double RenderScaling { get; }
+    
+    /// <summary>
+    /// Gets the client size of the window.
+    /// </summary>
+    internal Size ClientSize { get; }
+
+    internal PixelPoint PointToScreen(Point point);
+    internal Point PointToClient(PixelPoint point);
 }

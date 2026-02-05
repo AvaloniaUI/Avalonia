@@ -126,7 +126,7 @@ namespace Avalonia
                 (s, h) => s.Invalidated -= h);
 
         private Rect _bounds;
-        private IRenderRoot? _visualRoot;
+        internal IPresentationSource? PresentationSource { get; private set; }
         private Visual? _visualParent;
         private bool _hasMirrorTransform;
         private TargetWeakEventSubscriber<Visual, EventArgs>? _affectsRenderWeakSubscriber;
@@ -156,8 +156,6 @@ namespace Avalonia
         /// </summary>
         public Visual()
         {
-            _visualRoot = this as IRenderRoot;
-
             // Disable transitions until we're added to the visual tree.
             DisableTransitions();
 
@@ -341,9 +339,9 @@ namespace Avalonia
         /// <summary>
         /// Gets the root of the visual tree, if the control is attached to a visual tree.
         /// </summary>
-        protected internal IRenderRoot? VisualRoot => _visualRoot;
+        protected internal Visual? VisualRoot => PresentationSource?.RootVisual;
 
-        internal IInputRoot? GetInputRoot() => VisualRoot?.PresentationSource;
+        internal IInputRoot? GetInputRoot() => PresentationSource?.InputRoot;
 
         internal RenderOptions RenderOptions
         {
@@ -413,7 +411,7 @@ namespace Avalonia
         /// </summary>
         public void InvalidateVisual()
         {
-            VisualRoot?.Renderer.AddDirty(this);
+            PresentationSource?.Renderer.AddDirty(this);
         }
 
         /// <summary>
@@ -518,7 +516,7 @@ namespace Avalonia
         protected override void LogicalChildrenCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             base.LogicalChildrenCollectionChanged(sender, e);
-            VisualRoot?.Renderer.RecalculateChildren(this);
+            PresentationSource?.Renderer.RecalculateChildren(this);
         }
 
         /// <summary>
@@ -530,12 +528,8 @@ namespace Avalonia
         {
             Logger.TryGet(LogEventLevel.Verbose, LogArea.Visual)?.Log(this, "Attached to visual tree");
 
-            _visualRoot = e.Root;
+            PresentationSource = e.PresentationSource;
             RootedVisualChildrenCount++;
-            if (_visualParent is null)
-            {
-                throw new InvalidOperationException("Visual was attached to the root without being added to the visual parent first.");
-            }
 
             if (RenderTransform is IMutableTransform mutableTransform)
             {
@@ -543,27 +537,30 @@ namespace Avalonia
             }
 
             EnableTransitions();
-            if (_visualRoot.Renderer is IRendererWithCompositor compositingRenderer)
+            if (PresentationSource.Renderer is IRendererWithCompositor compositingRenderer)
             {
                 AttachToCompositor(compositingRenderer.Compositor);
             }
             InvalidateMirrorTransform();
-            UpdateIsEffectivelyVisible(_visualParent.IsEffectivelyVisible);
+            UpdateIsEffectivelyVisible(_visualParent?.IsEffectivelyVisible ?? true);
             OnAttachedToVisualTree(e);
             AttachedToVisualTree?.Invoke(this, e);
             InvalidateVisual();
 
-            _visualRoot.Renderer.RecalculateChildren(_visualParent);
+            if (_visualParent != null)
+            {
+                PresentationSource.Renderer.RecalculateChildren(_visualParent);
 
-            if (ZIndex != 0)
-                _visualParent.HasNonUniformZIndexChildren = true;
+                if (ZIndex != 0)
+                    _visualParent.HasNonUniformZIndexChildren = true;
+            }
 
             var visualChildren = VisualChildren;
             var visualChildrenCount = visualChildren.Count;
 
             for (var i = 0; i < visualChildrenCount; i++)
             {
-                if (visualChildren[i] is { } child && child._visualRoot != e.Root) // child may already have been attached within an event handler
+                if (visualChildren[i] is { } child && child.PresentationSource != e.PresentationSource) // child may already have been attached within an event handler
                 {
                     child.OnAttachedToVisualTreeCore(e);
                 }
@@ -578,8 +575,7 @@ namespace Avalonia
         protected virtual void OnDetachedFromVisualTreeCore(VisualTreeAttachmentEventArgs e)
         {
             Logger.TryGet(LogEventLevel.Verbose, LogArea.Visual)?.Log(this, "Detached from visual tree");
-
-            _visualRoot = this as IRenderRoot;
+            
             RootedVisualChildrenCount--;
 
             if (RenderTransform is IMutableTransform mutableTransform)
@@ -593,7 +589,9 @@ namespace Avalonia
             DetachFromCompositor();
 
             DetachedFromVisualTree?.Invoke(this, e);
-            e.Root.Renderer.AddDirty(this);
+            PresentationSource?.Renderer.AddDirty(this);
+            
+            PresentationSource = null;
 
             var visualChildren = VisualChildren;
             var visualChildrenCount = visualChildren.Count;
@@ -690,7 +688,7 @@ namespace Avalonia
                 parentVisual.HasNonUniformZIndexChildren = true;
 
             sender?.InvalidateVisual();
-            parent?.VisualRoot?.Renderer.RecalculateChildren(parent);
+            parent?.PresentationSource?.Renderer.RecalculateChildren(parent);
         }
 
         /// <summary>
@@ -718,17 +716,15 @@ namespace Avalonia
             var old = _visualParent;
             _visualParent = value;
 
-            if (_visualRoot is not null && old is not null)
+            if (PresentationSource is not null && old is not null)
             {
-                var e = new VisualTreeAttachmentEventArgs(old, _visualRoot);
+                var e = new VisualTreeAttachmentEventArgs(old, PresentationSource);
                 OnDetachedFromVisualTreeCore(e);
             }
 
-            if (_visualParent is IRenderRoot || _visualParent?.IsAttachedToVisualTree == true)
+            if (_visualParent?.IsAttachedToVisualTree == true)
             {
-                var root = this.FindAncestorOfType<IRenderRoot>() ??
-                    throw new AvaloniaInternalException("Visual is atached to visual tree but root could not be found.");
-                var e = new VisualTreeAttachmentEventArgs(_visualParent, root);
+                var e = new VisualTreeAttachmentEventArgs(_visualParent, _visualParent.PresentationSource!);
                 OnAttachedToVisualTreeCore(e);
             }
 
@@ -813,6 +809,27 @@ namespace Avalonia
             bool shouldApplyMirrorTransform = thisShouldBeMirrored != parentShouldBeMirrored;
 
             HasMirrorTransform = shouldApplyMirrorTransform;
+        }
+
+        internal void SetPresentationSourceForRootVisual(IPresentationSource? presentationSource)
+        {
+            if(presentationSource == PresentationSource)
+                return;
+            
+            if (PresentationSource != null)
+            {
+                if (presentationSource != null)
+                    throw new InvalidOperationException(
+                        "Visual is already attached to a presentation source. Only one presentation source can be attached to a visual tree.");
+                OnDetachedFromVisualTreeCore(new(this, PresentationSource));
+            }
+
+            PresentationSource = presentationSource;
+            if(PresentationSource != null)
+            {
+                var e = new VisualTreeAttachmentEventArgs(this, PresentationSource);
+                OnAttachedToVisualTreeCore(e);
+            }
         }
     }
 }

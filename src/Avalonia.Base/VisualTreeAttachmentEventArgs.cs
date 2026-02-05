@@ -13,11 +13,11 @@ namespace Avalonia
         /// Initializes a new instance of the <see cref="VisualTreeAttachmentEventArgs"/> class.
         /// </summary>
         /// <param name="parent">The parent that the visual is being attached to or detached from.</param>
-        /// <param name="root">The root visual.</param>
-        public VisualTreeAttachmentEventArgs(Visual parent, IRenderRoot root)
+        /// <param name="presentationSource">Presentation source this visual is being attached to.</param>
+        public VisualTreeAttachmentEventArgs(Visual parent, IPresentationSource presentationSource)
         {
             Parent = parent ?? throw new ArgumentNullException(nameof(parent));
-            Root = root ?? throw new ArgumentNullException(nameof(root));
+            PresentationSource = presentationSource ?? throw new ArgumentNullException(nameof(presentationSource));
         }
 
         /// <summary>
@@ -28,6 +28,10 @@ namespace Avalonia
         /// <summary>
         /// Gets the root of the visual tree that the visual is being attached to or detached from.
         /// </summary>
-        public IRenderRoot Root { get; }
+        public IPresentationSource PresentationSource { get; }
+
+        [Obsolete("Don't use")]
+        // TODO: Remove all usages from the codebase, write docs explaining that this is not necessary a TopLevel
+        public Visual Root => PresentationSource.RootVisual!;
     }
 }

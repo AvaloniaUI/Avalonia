@@ -15,7 +15,7 @@ using Moq;
 
 namespace Avalonia.UnitTests
 {
-    public class TestRoot : Decorator, IFocusScope, ILayoutRoot, IRenderRoot, IStyleHost, ILogicalRoot, IPresentationSource
+    public class TestRoot : Decorator, IFocusScope, ILayoutRoot, IStyleHost, ILogicalRoot, IPresentationSource, IInputRoot
     {
         private readonly NameScope _nameScope = new NameScope();
         private FocusManager? _focusManager;
@@ -27,6 +27,7 @@ namespace Avalonia.UnitTests
             LayoutManager = new LayoutManager(this);
             IsVisible = true;
             KeyboardNavigation.SetTabNavigation(this, KeyboardNavigationMode.Cycle);
+            SetPresentationSourceForRootVisual(this);
         }
 
         class NullHitTester : IHitTester
@@ -59,12 +60,14 @@ namespace Avalonia.UnitTests
         internal ILayoutManager LayoutManager { get; set; }
         ILayoutManager ILayoutRoot.LayoutManager => LayoutManager;
 
+        public Visual? RootVisual => this;
         public double RenderScaling => 1;
 
         internal IRenderer Renderer { get; set; }
         internal IHitTester HitTester { get; set; }
-        IRenderer IRenderRoot.Renderer => Renderer;
-        IHitTester IRenderRoot.HitTester => HitTester;
+        public IInputRoot InputRoot => this;
+        IRenderer IPresentationSource.Renderer => Renderer;
+        IHitTester IPresentationSource.HitTester => HitTester;
 
         public IFocusManager FocusManager => _focusManager ??= new FocusManager(this);
         public IPlatformSettings? PlatformSettings => AvaloniaLocator.Current.GetService<IPlatformSettings>();
@@ -104,7 +107,6 @@ namespace Avalonia.UnitTests
         public Point PointToClient(PixelPoint p) => p.ToPoint(1);
 
         public PixelPoint PointToScreen(Point p) => PixelPoint.FromPoint(p, 1);
-        IPresentationSource IRenderRoot.PresentationSource => this;
         
 
         public void RegisterChildrenNames()

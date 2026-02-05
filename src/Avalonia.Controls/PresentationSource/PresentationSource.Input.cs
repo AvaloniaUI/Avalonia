@@ -11,6 +11,8 @@ namespace Avalonia.Controls;
 
 internal partial class PresentationSource
 {
+    public IInputRoot InputRoot => this;
+    
     /// <summary>
     /// Handles input from <see cref="ITopLevelImpl.Input"/>.
     /// </summary>

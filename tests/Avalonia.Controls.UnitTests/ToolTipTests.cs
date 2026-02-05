@@ -38,8 +38,8 @@ namespace Avalonia.Controls.UnitTests
         {
             _toolTipOpenSubscription = ToolTip.IsOpenProperty.Changed.Subscribe(new AnonymousObserver<AvaloniaPropertyChangedEventArgs<bool>>(e =>
             {
-                if (e.Sender is Visual { VisualRoot: {} root } visual)
-                    OverlayLayer.GetOverlayLayer(visual)!.Measure(root.ClientSize);
+                if (e.Sender is Visual { VisualRoot: TopLevel {} root } visual)
+                    OverlayLayer.GetOverlayLayer(visual)?.Measure(root.ClientSize);
             }));
         }
 
@@ -585,7 +585,7 @@ namespace Avalonia.Controls.UnitTests
 
                 if (lastRoot != null && lastRoot != root)
                 {
-                    ((TopLevel)lastRoot.RootElement).PlatformImpl?.Input!(new RawPointerEventArgs(s_mouseDevice, timestamp,
+                    ((TopLevel)lastRoot.RootElement)?.PlatformImpl?.Input?.Invoke(new RawPointerEventArgs(s_mouseDevice, timestamp,
                         lastRoot, RawPointerEventType.LeaveWindow, new Point(-1,-1), RawInputModifiers.None));
                 }
 

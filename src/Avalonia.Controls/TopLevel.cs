@@ -40,7 +40,6 @@ namespace Avalonia.Controls
     [TemplatePart("PART_TransparencyFallback", typeof(Border))]
     public abstract class TopLevel : ContentControl,
         ILayoutRoot,
-        IRenderRoot,
         ICloseable,
         IStyleHost,
         ILogicalRoot
@@ -134,7 +133,6 @@ namespace Avalonia.Controls
         private Screens? _screens;
         private LayoutDiagnosticBridge? _layoutDiagnosticBridge;
         private PresentationSource _source;
-        IPresentationSource IRenderRoot.PresentationSource => _source;
         internal PresentationSource PresentationSource => _source;
         internal IInputRoot InputRoot => _source;
         
@@ -195,11 +193,13 @@ namespace Avalonia.Controls
             PlatformImpl = impl ?? throw new InvalidOperationException(
                 "Could not create window implementation: maybe no windowing subsystem was initialized?");
             dependencyResolver ??= AvaloniaLocator.Current;
-            _source = new PresentationSource(this, impl, dependencyResolver);
+            _source = new PresentationSource(this, impl, dependencyResolver, () => ClientSize);
             _source.RootVisual = this;
+            _source.Renderer.SceneInvalidated += SceneInvalidated;
 
             _scaling = ValidateScaling(impl.RenderScaling);
             _actualTransparencyLevel = PlatformImpl.TransparencyLevel;
+            
 
             
 
@@ -210,8 +210,7 @@ namespace Avalonia.Controls
             _globalStyles = TryGetService<IGlobalStyles>(dependencyResolver);
             _applicationThemeHost = TryGetService<IThemeVariantHost>(dependencyResolver);
 
-            Renderer = new CompositingRenderer(this, impl.Compositor, () => PlatformImpl.Surfaces ?? []);
-            Renderer.SceneInvalidated += SceneInvalidated;
+
             
 
             impl.Closed = HandleClosed;
@@ -439,17 +438,16 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the renderer for the window.
         /// </summary>
-        internal CompositingRenderer Renderer { get; }
-
-        internal IHitTester HitTester => HitTesterOverride ?? Renderer;
+        internal CompositingRenderer Renderer => _source.Renderer;
 
         // This property setter is here purely for lazy unit tests
         // that don't want to set up a proper hit-testable visual tree
         // and should be removed after fixing those tests
-        internal IHitTester? HitTesterOverride;
-
-        IRenderer IRenderRoot.Renderer => Renderer;
-        IHitTester IRenderRoot.HitTester => HitTester;
+        internal IHitTester? HitTesterOverride
+        {
+            get => _source.HitTesterOverride;
+            set => _source.HitTesterOverride = value;
+        }
 
         /// <summary>
         /// Gets a value indicating whether the renderer should draw specific diagnostics.
@@ -553,18 +551,6 @@ namespace Avalonia.Controls
         // TODO: Un-private
         private IPlatformSettings? PlatformSettings => AvaloniaLocator.Current.GetService<IPlatformSettings>();
 
-        /// <inheritdoc/>
-        Point IRenderRoot.PointToClient(PixelPoint p)
-        {
-            return PlatformImpl?.PointToClient(p) ?? default;
-        }
-
-        /// <inheritdoc/>
-        PixelPoint IRenderRoot.PointToScreen(Point p)
-        {
-            return PlatformImpl?.PointToScreen(p) ?? default;
-        }
-
         /// <summary>
         /// Gets the <see cref="TopLevel" /> for which the given <see cref="Visual"/> is hosted in.
         /// </summary>
@@ -572,7 +558,14 @@ namespace Avalonia.Controls
         /// <returns>The TopLevel</returns>
         public static TopLevel? GetTopLevel(Visual? visual)
         {
-            return visual?.VisualRoot as TopLevel;
+            while (visual != null)
+            {
+                if (visual is TopLevel tl)
+                    return tl;
+                visual = visual.VisualParent;
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -671,9 +664,7 @@ namespace Avalonia.Controls
         /// </summary>
         private protected virtual void HandleClosed()
         {
-            Renderer.SceneInvalidated -= SceneInvalidated;
-            // We need to wait for the renderer to complete any in-flight operations
-            Renderer.Dispose();
+            _source.Dispose();
             StopRendering();
             
             Debug.Assert(PlatformImpl != null);
@@ -691,7 +682,7 @@ namespace Avalonia.Controls
                 _applicationThemeHost.ActualThemeVariantChanged -= GlobalActualThemeVariantChanged;
             }
             
-            _source.Dispose();
+
             _layoutDiagnosticBridge?.Dispose();
             _layoutDiagnosticBridge = null;
             _backGestureSubscription?.Dispose();
@@ -699,8 +690,7 @@ namespace Avalonia.Controls
             var logicalArgs = new LogicalTreeAttachmentEventArgs(this, this, null);
             ((ILogical)this).NotifyDetachedFromLogicalTree(logicalArgs);
 
-            var visualArgs = new VisualTreeAttachmentEventArgs(this, this);
-            OnDetachedFromVisualTreeCore(visualArgs);
+            _source.RootVisual = null!;
             
             OnClosed(EventArgs.Empty);
 
@@ -751,15 +741,6 @@ namespace Avalonia.Controls
             }
 
             ActualTransparencyLevel = transparencyLevel;
-        }
-
-        /// <inheritdoc/>
-        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-        {
-            base.OnAttachedToVisualTree(e);
-
-            throw new InvalidOperationException(
-                $"Control '{GetType().Name}' is a top level control and cannot be added as a child.");
         }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -820,7 +801,6 @@ namespace Avalonia.Controls
 
         private void SceneInvalidated(object? sender, SceneInvalidatedEventArgs e)
         {
-            _source.SceneInvalidated(e.DirtyRect);
             UpdateToolTip(e.DirtyRect);
         }
 
