@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -960,6 +961,23 @@ namespace Avalonia.Base.UnitTests.Input
 
         private class TestFocusScope : Panel, IFocusScope
         {
+        }
+
+        [Fact]
+        public void IsKeyboardFocusWithin_Should_Be_Cleared_On_Element_Removal()
+        {
+            using var _ = UnitTestApplication.Start(TestServices.FocusableWindow);
+            var tb = new TextBox();
+            var border = new Border() { Child = tb };
+            var w = new Window() { Content = border };
+            w.Show();
+            tb.Focus();
+            Assert.True(tb.IsFocused);
+            Assert.True(border.IsKeyboardFocusWithin);
+            Dispatcher.UIThread.RunJobs();
+            border.Child = tb;
+            w.LayoutManager.ExecuteLayoutPass();
+            Assert.False(border.IsKeyboardFocusWithin);
         }
     }
 }
