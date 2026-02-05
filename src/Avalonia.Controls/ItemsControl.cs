@@ -720,7 +720,7 @@ namespace Avalonia.Controls
             {
                 var itemContainerTheme = ItemContainerTheme;
 
-                if (itemContainerTheme?.TargetType?.IsAssignableFrom(GetStyleKey(container)) == true)
+                if (itemContainerTheme?.TargetType?.IsAssignableFrom(container.StyleKey) == true)
                 {
                     // We have an ItemContainerTheme and it matches the container. Set the Theme
                     // property, and mark the container as having had ItemContainerTheme applied.
