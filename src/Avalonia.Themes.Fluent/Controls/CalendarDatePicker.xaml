@@ -94,7 +94,7 @@
                        Padding="{TemplateBinding Padding}"
                        PlaceholderText="{TemplateBinding PlaceholderText}"
                        PlaceholderForeground="{TemplateBinding PlaceholderForeground}"
-                       UseFloatingPlaceholderText="{TemplateBinding UseFloatingPlaceholderText}"
+                       UseFloatingPlaceholder="{TemplateBinding UseFloatingPlaceholder}"
                        HorizontalAlignment="Stretch"
                        VerticalAlignment="Stretch"
                        VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"

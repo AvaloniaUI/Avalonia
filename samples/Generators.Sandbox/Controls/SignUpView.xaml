@@ -18,7 +18,7 @@
                  x:Name="UserNameTextBox"
                  Text="{Binding UserName}"
                   PlaceholderText="Please, enter user name..."
-                  UseFloatingPlaceholderText="True" />
+                  UseFloatingPlaceholder="True" />
         <TextBlock x:Name="UserNameValidation"
                    Text="{Binding UserNameValidation}"
                    Foreground="Green"
@@ -27,7 +27,7 @@
                  x:Name="PasswordTextBox"
                  Text="{Binding Password}"
                  PlaceholderText="Please, enter your password..."
-                 UseFloatingPlaceholderText="True"
+                 UseFloatingPlaceholder="True"
                  PasswordChar="*" />
         <TextBlock x:Name="PasswordValidation"
                    Text="{Binding PasswordValidation}"
@@ -37,7 +37,7 @@
                  x:Name="ConfirmPasswordTextBox"
                  Text="{Binding ConfirmPassword}"
                  PlaceholderText="Please, confirm the password..."
-                 UseFloatingPlaceholderText="True"
+                 UseFloatingPlaceholder="True"
                  PasswordChar="*" />
         <TextBlock x:Name="ConfirmPasswordValidation"
                    Text="{Binding ConfirmPasswordValidation}"

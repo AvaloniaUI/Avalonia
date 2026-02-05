@@ -8,12 +8,12 @@
     <Button Name="ScreenRefresh"
             Content="Refresh"
             Click="ScreenRefresh_Click"/>
-    <TextBox Name="ScreenName" PlaceholderText="DisplayName" UseFloatingPlaceholderText="true" />
-    <TextBox Name="ScreenHandle" PlaceholderText="Handle" UseFloatingPlaceholderText="true" />
-    <TextBox Name="ScreenScaling" PlaceholderText="Scaling" UseFloatingPlaceholderText="true" />
-    <TextBox Name="ScreenBounds" PlaceholderText="Bounds" UseFloatingPlaceholderText="true" />
-    <TextBox Name="ScreenWorkArea" PlaceholderText="WorkArea" UseFloatingPlaceholderText="true" />
-    <TextBox Name="ScreenOrientation" PlaceholderText="Orientation" UseFloatingPlaceholderText="true" />
-    <TextBox Name="ScreenSameReference" PlaceholderText="Is same reference" UseFloatingPlaceholderText="true" />
+    <TextBox Name="ScreenName" PlaceholderText="DisplayName" UseFloatingPlaceholder="true" />
+    <TextBox Name="ScreenHandle" PlaceholderText="Handle" UseFloatingPlaceholder="true" />
+    <TextBox Name="ScreenScaling" PlaceholderText="Scaling" UseFloatingPlaceholder="true" />
+    <TextBox Name="ScreenBounds" PlaceholderText="Bounds" UseFloatingPlaceholder="true" />
+    <TextBox Name="ScreenWorkArea" PlaceholderText="WorkArea" UseFloatingPlaceholder="true" />
+    <TextBox Name="ScreenOrientation" PlaceholderText="Orientation" UseFloatingPlaceholder="true" />
+    <TextBox Name="ScreenSameReference" PlaceholderText="Is same reference" UseFloatingPlaceholder="true" />
   </StackPanel>
 </UserControl>

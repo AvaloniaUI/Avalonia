@@ -195,18 +195,18 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<string?> WatermarkProperty = PlaceholderTextProperty;
 
         /// <summary>
-        /// Defines the <see cref="UseFloatingPlaceholderText"/> property.
+        /// Defines the <see cref="UseFloatingPlaceholder"/> property.
         /// </summary>
-        public static readonly StyledProperty<bool> UseFloatingPlaceholderTextProperty =
-            AvaloniaProperty.Register<TextBox, bool>(nameof(UseFloatingPlaceholderText));
+        public static readonly StyledProperty<bool> UseFloatingPlaceholderProperty =
+            AvaloniaProperty.Register<TextBox, bool>(nameof(UseFloatingPlaceholder));
 
         /// <summary>
         /// Defines the <see cref="UseFloatingWatermark"/> property.
         /// </summary>
-        [Obsolete("Use UseFloatingPlaceholderTextProperty instead.", false)]
+        [Obsolete("Use UseFloatingPlaceholderProperty instead.", false)]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1022",
             Justification = "Obsolete property alias for backward compatibility.")]
-        public static readonly StyledProperty<bool> UseFloatingWatermarkProperty = UseFloatingPlaceholderTextProperty;
+        public static readonly StyledProperty<bool> UseFloatingWatermarkProperty = UseFloatingPlaceholderProperty;
 
         /// <summary>
         /// Defines the <see cref="PlaceholderForeground"/> property.
@@ -718,23 +718,23 @@ namespace Avalonia.Controls
         /// Gets or sets a value indicating whether the <see cref="PlaceholderText"/> will still be shown above the
         /// <see cref="Text"/> even after a text value is set.
         /// </summary>
-        public bool UseFloatingPlaceholderText
+        public bool UseFloatingPlaceholder
         {
-            get => GetValue(UseFloatingPlaceholderTextProperty);
-            set => SetValue(UseFloatingPlaceholderTextProperty, value);
+            get => GetValue(UseFloatingPlaceholderProperty);
+            set => SetValue(UseFloatingPlaceholderProperty, value);
         }
 
         /// <summary>
         /// Gets or sets a value indicating whether the <see cref="PlaceholderText"/> will still be shown above the
         /// <see cref="Text"/> even after a text value is set.
         /// </summary>
-        [Obsolete("Use UseFloatingPlaceholderText instead.", false)]
+        [Obsolete("Use UseFloatingPlaceholder instead.", false)]
         public bool UseFloatingWatermark
         {
-            get => UseFloatingPlaceholderText;
+            get => UseFloatingPlaceholder;
             [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012",
                 Justification = "Obsolete property setter for backward compatibility.")]
-            set => UseFloatingPlaceholderText = value;
+            set => UseFloatingPlaceholder = value;
         }
 
         /// <summary>

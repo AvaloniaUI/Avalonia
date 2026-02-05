@@ -21,14 +21,14 @@
         <TextBox Width="200" PlaceholderText="Numeric with placeholder" TextInputOptions.ContentType="Number" />
         <TextBox Width="200"
                  PlaceholderText="Floating Placeholder"
-                 UseFloatingPlaceholderText="True"
+                 UseFloatingPlaceholder="True"
                  Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit."/>
         <TextBox Width="200"
                  PlaceholderText="Custom Placeholder Color"
                  PlaceholderForeground="Red"/>
         <TextBox Width="200"
                  PlaceholderText="Floating Placeholder Color"
-                 UseFloatingPlaceholderText="True"
+                 UseFloatingPlaceholder="True"
                  PlaceholderForeground="Purple"/>
         <MaskedTextBox Width="200" ResetOnSpace="False"  Mask="(LLL) 999-0000"/>
 
@@ -42,7 +42,7 @@
                  PlaceholderText="Password Box"
                  Classes="revealPasswordButton"
                  TextInputOptions.ContentType="Password"
-                 UseFloatingPlaceholderText="True"
+                 UseFloatingPlaceholder="True"
                  PasswordChar="*"
                  Text="Password" />
         <TextBox Width="200" PlaceholderText="Suggestions are hidden" TextInputOptions.ShowSuggestions="False" />

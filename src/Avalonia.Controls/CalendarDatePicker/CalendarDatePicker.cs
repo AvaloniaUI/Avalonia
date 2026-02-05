@@ -881,7 +881,7 @@ namespace Avalonia.Controls
             {
                 SetCurrentValue(TextProperty, String.Empty);
 
-                if (string.IsNullOrEmpty(PlaceholderText) && !UseFloatingPlaceholderText)
+                if (string.IsNullOrEmpty(PlaceholderText) && !UseFloatingPlaceholder)
                 {
                     DateTimeFormatInfo dtfi = DateTimeHelper.GetCurrentDateFormat();
                     _defaultText = string.Empty;

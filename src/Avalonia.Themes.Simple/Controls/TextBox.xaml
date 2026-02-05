@@ -110,7 +110,7 @@
                        Text="{TemplateBinding PlaceholderText}">
               <TextBlock.IsVisible>
                 <MultiBinding Converter="{x:Static BoolConverters.And}">
-                  <Binding Path="UseFloatingPlaceholderText"
+                  <Binding Path="UseFloatingPlaceholder"
                            RelativeSource="{RelativeSource TemplatedParent}" />
                   <Binding Converter="{x:Static StringConverters.IsNotNullOrEmpty}"
                            Path="Text"

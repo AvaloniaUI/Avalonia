@@ -36,7 +36,7 @@
         <CalendarDatePicker Margin="0,0,0,8"
                     Name="DatePicker5"
                     PlaceholderText="Floating Placeholder"
-                    UseFloatingPlaceholderText="True"/>
+                    UseFloatingPlaceholder="True"/>
 
         <TextBlock Text="PlaceholderText with custom color"/>
         <CalendarDatePicker Margin="0,0,0,8"

@@ -101,7 +101,7 @@
                    BorderThickness="{TemplateBinding BorderThickness}"
                    CornerRadius="{TemplateBinding CornerRadius}"
                    DataValidationErrors.Errors="{TemplateBinding (DataValidationErrors.Errors)}"
-                   UseFloatingPlaceholderText="{TemplateBinding UseFloatingPlaceholderText}"
+                   UseFloatingPlaceholder="{TemplateBinding UseFloatingPlaceholder}"
                    PlaceholderText="{TemplateBinding PlaceholderText}"
                    PlaceholderForeground="{TemplateBinding PlaceholderForeground}" />
 
