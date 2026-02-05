@@ -9,7 +9,6 @@ using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.ExpressionNodes;
 using Avalonia.Data.Core.Parsers;
-using Avalonia.Utilities;
 using Avalonia.Metadata;
 
 namespace Avalonia.Data;
