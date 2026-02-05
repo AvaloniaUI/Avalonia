@@ -3,7 +3,55 @@
 <Suppressions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Animation.CustomAnimatorBase</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Animation.CustomAnimatorBase`1</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Animation.Easings.CubicBezierEasing</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:Avalonia.Controls.Primitives.IScrollable</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Diagnostics.AppliedStyle</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Diagnostics.StyledElementExtensions</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Diagnostics.StyleDiagnostics</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Input.DataObjectExtensions</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Input.IDataObject</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
   </Suppression>
@@ -21,7 +69,25 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Platform.IOptionalFeatureProvider</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:Avalonia.Platform.IReadableBitmapWithAlphaImpl</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Platform.OptionalFeatureProviderExtensions</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Styling.IStyleable</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
   </Suppression>
@@ -30,6 +96,18 @@
     <Target>T:Avalonia.Utilities.StringTokenizer</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Controls.AutoCompleteBox.BindingEvaluator`1</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Controls.NativeMenuItemToggleType</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
@@ -39,13 +117,67 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Markup.Xaml.ConstructorArgumentAttribute</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Markup.Xaml.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Markup.Xaml.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:Avalonia.Media.Fonts.FontFamilyLoader</Target>
     <Left>baseline/Avalonia/lib/net6.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net6.0/Avalonia.Base.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Animation.CustomAnimatorBase</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Animation.CustomAnimatorBase`1</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Animation.Easings.CubicBezierEasing</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:Avalonia.Controls.Primitives.IScrollable</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Diagnostics.AppliedStyle</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Diagnostics.StyledElementExtensions</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Diagnostics.StyleDiagnostics</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Input.DataObjectExtensions</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Input.IDataObject</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
   </Suppression>
@@ -63,7 +195,25 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Platform.IOptionalFeatureProvider</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:Avalonia.Platform.IReadableBitmapWithAlphaImpl</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Platform.OptionalFeatureProviderExtensions</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Styling.IStyleable</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
   </Suppression>
@@ -75,15 +225,63 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Controls.AutoCompleteBox.BindingEvaluator`1</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Controls.NativeMenuItemToggleType</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:Avalonia.Controls.Primitives.IScrollable</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Markup.Xaml.ConstructorArgumentAttribute</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Markup.Xaml.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Markup.Xaml.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:Avalonia.Media.Fonts.FontFamilyLoader</Target>
     <Left>baseline/Avalonia/lib/netstandard2.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/netstandard2.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>F:Avalonia.Controls.ResourcesChangedEventArgs.Empty</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>F:Avalonia.Data.BindingPriority.TemplatedParent</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>F:Avalonia.Input.DataFormats.FileNames</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>F:Avalonia.Input.DataFormats.Files</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>F:Avalonia.Input.DataFormats.Text</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
@@ -94,6 +292,84 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>F:Avalonia.Media.Fonts.FontCollectionBase._glyphTypefaceCache</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>F:Avalonia.Media.RadialGradientBrush.RadiusProperty</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Animation.Animation.SetAnimator(Avalonia.Animation.IAnimationSetter,Avalonia.Animation.CustomAnimatorBase)</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.AvaloniaObjectExtensions.Bind(Avalonia.AvaloniaObject,Avalonia.AvaloniaProperty,Avalonia.Data.BindingBase,System.Object)</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.ResourcesChangedEventArgs.#ctor</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Data.CompiledBindingPathBuilder.SetRawSource(System.Object)</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Data.ReflectionBinding.#ctor(System.String,Avalonia.Data.BindingMode)</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Input.DataObject.Contains(System.String)</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Input.DataObject.Get(System.String)</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Input.DataObject.GetDataFormats</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Input.DataObject.Set(System.String,System.Object)</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Input.DragDrop.DoDragDrop(Avalonia.Input.PointerEventArgs,Avalonia.Input.IDataObject,Avalonia.Input.DragDropEffects)</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Input.DragEventArgs.#ctor(Avalonia.Interactivity.RoutedEvent{Avalonia.Input.DragEventArgs},Avalonia.Input.IDataObject,Avalonia.Interactivity.Interactive,Avalonia.Point,Avalonia.Input.KeyModifiers)</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Input.DragEventArgs.get_Data</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
   </Suppression>
@@ -111,7 +387,85 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Input.Platform.IClipboard.GetDataAsync(System.String)</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Input.Platform.IClipboard.GetFormatsAsync</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Input.Platform.IClipboard.GetTextAsync</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Input.Platform.IClipboard.SetDataObjectAsync(Avalonia.Input.IDataObject)</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Input.Platform.IClipboard.SetTextAsync(System.String)</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Input.Platform.IClipboard.TryGetInProcessDataObjectAsync</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Input.Platform.IPlatformDragSource.DoDragDrop(Avalonia.Input.PointerEventArgs,Avalonia.Input.IDataObject,Avalonia.Input.DragDropEffects)</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Input.Raw.RawDragEvent.#ctor(Avalonia.Input.Raw.IDragDropDevice,Avalonia.Input.Raw.RawDragEventType,Avalonia.Input.IInputRoot,Avalonia.Point,Avalonia.Input.IDataObject,Avalonia.Input.DragDropEffects,Avalonia.Input.RawInputModifiers)</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Input.Raw.RawDragEvent.get_Data</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Input.TextInput.TextInputMethodClient.ShowInputPanel</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Media.Color.ToUint32</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Media.DrawingContext.PushPostTransform(Avalonia.Matrix)</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Media.DrawingContext.PushPreTransform(Avalonia.Matrix)</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Media.DrawingContext.PushTransformContainer</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
   </Suppression>
@@ -142,6 +496,30 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Media.Imaging.Bitmap.CopyPixels(Avalonia.Platform.ILockedFramebuffer,Avalonia.Platform.AlphaFormat)</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Media.Immutable.ImmutableRadialGradientBrush.get_Radius</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Media.IRadialGradientBrush.get_Radius</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Media.RadialGradientBrush.get_Radius</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Media.RadialGradientBrush.set_Radius(System.Double)</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
   </Suppression>
@@ -255,6 +633,18 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Rendering.Composition.ICompositionGpuImportedObject.get_ImportCompeted</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Utilities.AvaloniaResourcesIndexReaderWriter.WriteResources(System.IO.Stream,System.Collections.Generic.List{System.ValueTuple{System.String,System.Int32,System.Func{System.IO.Stream}}})</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Visuals.Platform.PathGeometryContext.ArcTo(Avalonia.Point,Avalonia.Size,System.Double,System.Boolean,Avalonia.Media.SweepDirection)</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
@@ -280,6 +670,18 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>F:Avalonia.Controls.Documents.Inline.TextDecorationsProperty</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>F:Avalonia.Controls.NativeMenuBar.EnableMenuItemClickForwardingProperty</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>F:Avalonia.Controls.NativeMenuItem.ToggleTypeProperty</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
   </Suppression>
@@ -364,6 +766,36 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Controls.Design.SetPreviewWith(Avalonia.Styling.IStyle,Avalonia.Controls.ITemplate{Avalonia.Controls.Control})</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.NativeMenuBar.SetEnableMenuItemClickForwarding(Avalonia.Controls.MenuItem,System.Boolean)</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.NativeMenuItem.get_ToggleType</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.Primitives.OverlayPopupHost.ConfigurePosition(Avalonia.Visual,Avalonia.Controls.PlacementMode,Avalonia.Point,Avalonia.Controls.Primitives.PopupPositioning.PopupAnchor,Avalonia.Controls.Primitives.PopupPositioning.PopupGravity,Avalonia.Controls.Primitives.PopupPositioning.PopupPositionerConstraintAdjustment,System.Nullable{Avalonia.Rect})</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.Primitives.OverlayPopupHost.CreatePopupHost(Avalonia.Visual,Avalonia.IAvaloniaDependencyResolver)</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.Primitives.PopupRoot.ConfigurePosition(Avalonia.Visual,Avalonia.Controls.PlacementMode,Avalonia.Point,Avalonia.Controls.Primitives.PopupPositioning.PopupAnchor,Avalonia.Controls.Primitives.PopupPositioning.PopupGravity,Avalonia.Controls.Primitives.PopupPositioning.PopupPositionerConstraintAdjustment,System.Nullable{Avalonia.Rect})</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
   </Suppression>
@@ -423,6 +855,18 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Data.Binding.#ctor(System.String,Avalonia.Data.BindingMode)</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Markup.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Markup.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Markup.Xaml.MarkupExtensions.ReflectionBindingExtension.#ctor(System.String,Avalonia.Data.BindingMode)</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Markup.Xaml.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Markup.Xaml.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>F:Avalonia.Media.Fonts.FontCollectionBase._glyphTypefaceCache</Target>
     <Left>baseline/Avalonia/lib/net6.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net6.0/Avalonia.Base.dll</Right>
@@ -453,6 +897,36 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>F:Avalonia.Controls.ResourcesChangedEventArgs.Empty</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>F:Avalonia.Data.BindingPriority.TemplatedParent</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>F:Avalonia.Input.DataFormats.FileNames</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>F:Avalonia.Input.DataFormats.Files</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>F:Avalonia.Input.DataFormats.Text</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>F:Avalonia.Media.DrawingImage.ViewboxProperty</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
@@ -460,6 +934,84 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>F:Avalonia.Media.Fonts.FontCollectionBase._glyphTypefaceCache</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>F:Avalonia.Media.RadialGradientBrush.RadiusProperty</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Animation.Animation.SetAnimator(Avalonia.Animation.IAnimationSetter,Avalonia.Animation.CustomAnimatorBase)</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.AvaloniaObjectExtensions.Bind(Avalonia.AvaloniaObject,Avalonia.AvaloniaProperty,Avalonia.Data.BindingBase,System.Object)</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.ResourcesChangedEventArgs.#ctor</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Data.CompiledBindingPathBuilder.SetRawSource(System.Object)</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Data.ReflectionBinding.#ctor(System.String,Avalonia.Data.BindingMode)</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Input.DataObject.Contains(System.String)</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Input.DataObject.Get(System.String)</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Input.DataObject.GetDataFormats</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Input.DataObject.Set(System.String,System.Object)</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Input.DragDrop.DoDragDrop(Avalonia.Input.PointerEventArgs,Avalonia.Input.IDataObject,Avalonia.Input.DragDropEffects)</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Input.DragEventArgs.#ctor(Avalonia.Interactivity.RoutedEvent{Avalonia.Input.DragEventArgs},Avalonia.Input.IDataObject,Avalonia.Interactivity.Interactive,Avalonia.Point,Avalonia.Input.KeyModifiers)</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Input.DragEventArgs.get_Data</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
   </Suppression>
@@ -477,7 +1029,85 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Input.Platform.IClipboard.GetDataAsync(System.String)</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Input.Platform.IClipboard.GetFormatsAsync</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Input.Platform.IClipboard.GetTextAsync</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Input.Platform.IClipboard.SetDataObjectAsync(Avalonia.Input.IDataObject)</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Input.Platform.IClipboard.SetTextAsync(System.String)</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Input.Platform.IClipboard.TryGetInProcessDataObjectAsync</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Input.Platform.IPlatformDragSource.DoDragDrop(Avalonia.Input.PointerEventArgs,Avalonia.Input.IDataObject,Avalonia.Input.DragDropEffects)</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Input.Raw.RawDragEvent.#ctor(Avalonia.Input.Raw.IDragDropDevice,Avalonia.Input.Raw.RawDragEventType,Avalonia.Input.IInputRoot,Avalonia.Point,Avalonia.Input.IDataObject,Avalonia.Input.DragDropEffects,Avalonia.Input.RawInputModifiers)</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Input.Raw.RawDragEvent.get_Data</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Input.TextInput.TextInputMethodClient.ShowInputPanel</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Media.Color.ToUint32</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Media.DrawingContext.PushPostTransform(Avalonia.Matrix)</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Media.DrawingContext.PushPreTransform(Avalonia.Matrix)</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Media.DrawingContext.PushTransformContainer</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
   </Suppression>
@@ -508,6 +1138,30 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Media.Imaging.Bitmap.CopyPixels(Avalonia.Platform.ILockedFramebuffer,Avalonia.Platform.AlphaFormat)</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Media.Immutable.ImmutableRadialGradientBrush.get_Radius</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Media.IRadialGradientBrush.get_Radius</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Media.RadialGradientBrush.get_Radius</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Media.RadialGradientBrush.set_Radius(System.Double)</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
   </Suppression>
@@ -621,6 +1275,18 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Rendering.Composition.ICompositionGpuImportedObject.get_ImportCompeted</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Utilities.AvaloniaResourcesIndexReaderWriter.WriteResources(System.IO.Stream,System.Collections.Generic.List{System.ValueTuple{System.String,System.Int32,System.Func{System.IO.Stream}}})</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Visuals.Platform.PathGeometryContext.ArcTo(Avalonia.Point,Avalonia.Size,System.Double,System.Boolean,Avalonia.Media.SweepDirection)</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
@@ -646,6 +1312,18 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>F:Avalonia.Controls.Documents.Inline.TextDecorationsProperty</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>F:Avalonia.Controls.NativeMenuBar.EnableMenuItemClickForwardingProperty</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>F:Avalonia.Controls.NativeMenuItem.ToggleTypeProperty</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
   </Suppression>
@@ -730,6 +1408,36 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Controls.Design.SetPreviewWith(Avalonia.Styling.IStyle,Avalonia.Controls.ITemplate{Avalonia.Controls.Control})</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.NativeMenuBar.SetEnableMenuItemClickForwarding(Avalonia.Controls.MenuItem,System.Boolean)</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.NativeMenuItem.get_ToggleType</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.Primitives.OverlayPopupHost.ConfigurePosition(Avalonia.Visual,Avalonia.Controls.PlacementMode,Avalonia.Point,Avalonia.Controls.Primitives.PopupPositioning.PopupAnchor,Avalonia.Controls.Primitives.PopupPositioning.PopupGravity,Avalonia.Controls.Primitives.PopupPositioning.PopupPositionerConstraintAdjustment,System.Nullable{Avalonia.Rect})</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.Primitives.OverlayPopupHost.CreatePopupHost(Avalonia.Visual,Avalonia.IAvaloniaDependencyResolver)</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.Primitives.PopupRoot.ConfigurePosition(Avalonia.Visual,Avalonia.Controls.PlacementMode,Avalonia.Point,Avalonia.Controls.Primitives.PopupPositioning.PopupAnchor,Avalonia.Controls.Primitives.PopupPositioning.PopupGravity,Avalonia.Controls.Primitives.PopupPositioning.PopupPositionerConstraintAdjustment,System.Nullable{Avalonia.Rect})</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
   </Suppression>
@@ -792,6 +1500,18 @@
     <Target>M:Avalonia.Dialogs.Internal.ManagedFileChooserFilterViewModel.#ctor(Avalonia.Platform.Storage.FilePickerFileType)</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Dialogs.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Dialogs.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Data.Binding.#ctor(System.String,Avalonia.Data.BindingMode)</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Markup.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Markup.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Markup.Xaml.MarkupExtensions.ReflectionBindingExtension.#ctor(System.String,Avalonia.Data.BindingMode)</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Markup.Xaml.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Markup.Xaml.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
@@ -1142,8 +1862,50 @@
     <Right>current/Avalonia/lib/netstandard2.0/Avalonia.OpenGL.dll</Right>
   </Suppression>
   <Suppression>
+    <DiagnosticId>CP0007</DiagnosticId>
+    <Target>T:Avalonia.Controls.ResourcesChangedEventArgs</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0007</DiagnosticId>
+    <Target>T:Avalonia.Controls.ResourcesChangedEventArgs</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:Avalonia.Input.DataObject</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:Avalonia.Media.ImmediateDrawingContext</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
     <DiagnosticId>CP0008</DiagnosticId>
     <Target>T:Avalonia.Media.StreamGeometryContext</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:Avalonia.Platform.IPlatformGraphicsContext</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:Avalonia.Platform.IPlatformGraphicsWithFeatures</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:Avalonia.Platform.IPlatformRenderInterfaceContext</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
   </Suppression>
@@ -1155,7 +1917,109 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:Avalonia.Application</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:Avalonia.Controls.Embedding.Offscreen.OffscreenTopLevelImplBase</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:Avalonia.Controls.Platform.IWin32OptionsTopLevelImpl</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:Avalonia.Platform.IPopupImpl</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:Avalonia.Platform.ITopLevelImpl</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:Avalonia.Platform.IWindowBaseImpl</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:Avalonia.Platform.IWindowImpl</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:Avalonia.Metal.IMetalDevice</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Metal.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Metal.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:Avalonia.OpenGL.Egl.EglContext</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.OpenGL.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.OpenGL.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:Avalonia.OpenGL.IGlContext</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.OpenGL.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.OpenGL.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:Avalonia.Vulkan.IVulkanDevice</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Vulkan.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Vulkan.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:Avalonia.Vulkan.IVulkanPlatformGraphicsContext</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Vulkan.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Vulkan.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:Avalonia.Input.DataObject</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:Avalonia.Media.ImmediateDrawingContext</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
     <Target>T:Avalonia.Media.StreamGeometryContext</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:Avalonia.Platform.IPlatformGraphicsContext</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:Avalonia.Platform.IPlatformGraphicsWithFeatures</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:Avalonia.Platform.IPlatformRenderInterfaceContext</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
   </Suppression>
@@ -1164,12 +2028,108 @@
     <Target>T:Avalonia.Platform.IWriteableBitmapImpl</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:Avalonia.Application</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:Avalonia.Controls.Embedding.Offscreen.OffscreenTopLevelImplBase</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:Avalonia.Controls.Platform.IWin32OptionsTopLevelImpl</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:Avalonia.Platform.IPopupImpl</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:Avalonia.Platform.ITopLevelImpl</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:Avalonia.Platform.IWindowBaseImpl</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:Avalonia.Platform.IWindowImpl</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:Avalonia.Metal.IMetalDevice</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Metal.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Metal.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:Avalonia.OpenGL.Egl.EglContext</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.OpenGL.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.OpenGL.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:Avalonia.OpenGL.IGlContext</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.OpenGL.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.OpenGL.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:Avalonia.Vulkan.IVulkanDevice</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Vulkan.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Vulkan.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:Avalonia.Vulkan.IVulkanPlatformGraphicsContext</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Vulkan.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Vulkan.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0009</DiagnosticId>
+    <Target>T:Avalonia.Controls.ResourcesChangedEventArgs</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0009</DiagnosticId>
+    <Target>T:Avalonia.Input.DataObject</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0009</DiagnosticId>
     <Target>T:Avalonia.Platform.Screen</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0009</DiagnosticId>
+    <Target>T:Avalonia.Controls.ResourcesChangedEventArgs</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0009</DiagnosticId>
+    <Target>T:Avalonia.Input.DataObject</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0009</DiagnosticId>

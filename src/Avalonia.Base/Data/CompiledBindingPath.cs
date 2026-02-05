@@ -203,12 +203,6 @@ namespace Avalonia.Data
             return this;
         }
 
-        [Obsolete("This method doesn't do anything anymore. Use Binding.Source instead.")]
-        public CompiledBindingPathBuilder SetRawSource(object? rawSource)
-        {
-            return this;
-        }
-
         public CompiledBindingPath Build() => new CompiledBindingPath(_elements.ToArray());
     }
 
