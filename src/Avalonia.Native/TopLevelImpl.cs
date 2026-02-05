@@ -566,8 +566,8 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
 
         public ILockedFramebuffer Lock()
         {
-            var w = _parent._savedLogicalSize.Width * _parent._savedScaling;
-            var h = _parent._savedLogicalSize.Height * _parent._savedScaling;
+            var w = Math.Max(_parent._savedLogicalSize.Width * _parent._savedScaling, 1);
+            var h = Math.Max(_parent._savedLogicalSize.Height * _parent._savedScaling, 1);
             var dpi = _parent._savedScaling * 96;
             return new DeferredFramebuffer(_target, cb =>
             {
