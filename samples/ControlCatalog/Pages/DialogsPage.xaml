@@ -49,15 +49,6 @@
         <Button Name="OpenFolderFromBookmark">Open Folder Bookmark</Button>
       </StackPanel>
     </Expander>
-    <Expander Header="Legacy OpenFileDialog">
-      <StackPanel Spacing="4">
-        <Button Name="OpenFile">_Open File</Button>
-        <Button Name="OpenMultipleFiles">Open _Multiple File</Button>
-        <Button Name="SaveFile">_Save File</Button>
-        <Button Name="SelectFolder">Select Fo_lder</Button>
-        <Button Name="OpenBoth">Select _Both</Button>
-      </StackPanel>
-    </Expander>
     
     <Expander Header="Launcher dialogs">
       <StackPanel Spacing="4">
