@@ -24,7 +24,6 @@ partial class ServerCompositionVisual
         | CompositionVisualChangedFields.AnchorPointAnimated
         | CompositionVisualChangedFields.CenterPoint
         | CompositionVisualChangedFields.CenterPointAnimated
-        | CompositionVisualChangedFields.AdornedVisual
         | CompositionVisualChangedFields.TransformMatrix
         | CompositionVisualChangedFields.Scale
         | CompositionVisualChangedFields.ScaleAnimated
@@ -63,7 +62,6 @@ partial class ServerCompositionVisual
         if (offset == s_IdOfSizeProperty
             || offset == s_IdOfAnchorPointProperty
             || offset == s_IdOfCenterPointProperty
-            || offset == s_IdOfAdornedVisualProperty
             || offset == s_IdOfTransformMatrixProperty
             || offset == s_IdOfScaleProperty
             || offset == s_IdOfRotationAngleProperty
