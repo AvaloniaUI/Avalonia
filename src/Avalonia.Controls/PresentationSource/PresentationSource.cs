@@ -4,10 +4,11 @@ using Avalonia.Input.TextInput;
 using Avalonia.Logging;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 
 namespace Avalonia.Controls;
 
-internal partial class PresentationSource : IPresentationSource, IDisposable
+internal partial class PresentationSource : IPresentationSource, IInputRoot, IDisposable
 {
     public ITopLevelImpl? PlatformImpl { get; private set; }
     private readonly PointerOverPreProcessor? _pointerOverPreProcessor;
@@ -17,9 +18,11 @@ internal partial class PresentationSource : IPresentationSource, IDisposable
 
     internal FocusManager FocusManager { get; } = new();
 
-    public PresentationSource(InputElement rootVisual, ITopLevelImpl platformImpl, IAvaloniaDependencyResolver dependencyResolver)
+    public PresentationSource(InputElement rootVisual, ITopLevelImpl platformImpl,
+        IAvaloniaDependencyResolver dependencyResolver, Func<Size> clientSizeProvider)
     {
-        RootVisual = rootVisual;
+        _clientSizeProvider = clientSizeProvider;
+
         PlatformImpl = platformImpl;
 
     
@@ -31,6 +34,11 @@ internal partial class PresentationSource : IPresentationSource, IDisposable
         
         _pointerOverPreProcessor = new PointerOverPreProcessor(this);
         _pointerOverPreProcessorSubscription = _inputManager?.PreProcess.Subscribe(_pointerOverPreProcessor);
+        
+        Renderer = new CompositingRenderer(this, PlatformImpl.Compositor, () => PlatformImpl.Surfaces ?? []);
+        Renderer.SceneInvalidated += SceneInvalidated;
+        RootVisual = rootVisual;
+        
     }
 
     // In WPF it's a Visual and it's nullable. For now we have it as non-nullable InputElement since 
@@ -41,7 +49,12 @@ internal partial class PresentationSource : IPresentationSource, IDisposable
         get => field;
         set
         {
+            field?.SetPresentationSourceForRootVisual(null);
             field = value;
+
+            field?.SetPresentationSourceForRootVisual(this);
+            Renderer.CompositionTarget.Root = field?.CompositionVisual;
+
             FocusManager.SetContentRoot(value as IInputElement);
         }
     }
@@ -68,6 +81,10 @@ internal partial class PresentationSource : IPresentationSource, IDisposable
 
     public void Dispose()
     {
+        Renderer.SceneInvalidated -= SceneInvalidated;
+        // We need to wait for the renderer to complete any in-flight operations
+        Renderer.Dispose();
+
         PlatformImpl = null;
         _pointerOverPreProcessor?.OnCompleted();
         _pointerOverPreProcessorSubscription?.Dispose();
@@ -93,12 +110,6 @@ internal partial class PresentationSource : IPresentationSource, IDisposable
         }
 
         return result;
-    }
-
-    // TODO: wire up directly to renderer after moving it here
-    public void SceneInvalidated(Rect dirtyRect)
-    {
-        _pointerOverPreProcessor?.SceneInvalidated(dirtyRect);
     }
 
     // TODO: Make popup positioner to use PresentationSource internally rather than TopLevel
